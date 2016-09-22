@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/reading_list/reading_list_entry.h"
 
+#include "base/memory/ptr_util.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ReadingListEntry, CompareIgnoreTitle) {
@@ -53,4 +55,78 @@ TEST(ReadingListEntry, DistilledState) {
   const GURL distilled_url("http://distilled.example.com");
   e.SetDistilledURL(distilled_url);
   EXPECT_EQ(ReadingListEntry::PROCESSED, e.DistilledState());
+}
+
+// Tests that the the time until next try increase exponentially when the state
+// changes from non-error to error.
+TEST(ReadingListEntry, TimeUntilNextTry) {
+  base::SimpleTestTickClock clock;
+  std::unique_ptr<net::BackoffEntry> backoff =
+      base::MakeUnique<net::BackoffEntry>(&ReadingListEntry::kBackoffPolicy,
+                                          &clock);
+
+  ReadingListEntry e(GURL("http://example.com"), "bar", std::move(backoff));
+
+  ASSERT_EQ(0, e.TimeUntilNextTry().InSeconds());
+
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  EXPECT_EQ(1, e.TimeUntilNextTry().InSeconds());
+  e.SetDistilledState(ReadingListEntry::WILL_RETRY);
+  EXPECT_EQ(1, e.TimeUntilNextTry().InSeconds());
+
+  e.SetDistilledState(ReadingListEntry::PROCESSING);
+  EXPECT_EQ(1, e.TimeUntilNextTry().InSeconds());
+
+  e.SetDistilledState(ReadingListEntry::WILL_RETRY);
+  EXPECT_EQ(2, e.TimeUntilNextTry().InSeconds());
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  EXPECT_EQ(2, e.TimeUntilNextTry().InSeconds());
+
+  e.SetDistilledState(ReadingListEntry::PROCESSING);
+  EXPECT_EQ(2, e.TimeUntilNextTry().InSeconds());
+
+  e.SetDistilledState(ReadingListEntry::WILL_RETRY);
+  EXPECT_EQ(4, e.TimeUntilNextTry().InSeconds());
+}
+
+// Tests that if the time until next try is in the past, 0 is returned.
+TEST(ReadingListEntry, TimeUntilNextTryInThePast) {
+  // Setup.
+  base::SimpleTestTickClock clock;
+  std::unique_ptr<net::BackoffEntry> backoff =
+      base::MakeUnique<net::BackoffEntry>(&ReadingListEntry::kBackoffPolicy,
+                                          &clock);
+  ReadingListEntry e(GURL("http://example.com"), "bar", std::move(backoff));
+
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  ASSERT_EQ(1, e.TimeUntilNextTry().InSeconds());
+
+  // Action.
+  clock.Advance(base::TimeDelta::FromSeconds(2));
+
+  // Test.
+  EXPECT_EQ(0, e.TimeUntilNextTry().InMilliseconds());
+}
+
+// Tests that if the time until next try is in the past, 0 is returned.
+TEST(ReadingListEntry, ResetTimeUntilNextTry) {
+  // Setup.
+  base::SimpleTestTickClock clock;
+  std::unique_ptr<net::BackoffEntry> backoff =
+      base::MakeUnique<net::BackoffEntry>(&ReadingListEntry::kBackoffPolicy,
+                                          &clock);
+  ReadingListEntry e(GURL("http://example.com"), "bar", std::move(backoff));
+
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  e.SetDistilledState(ReadingListEntry::PROCESSING);
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  ASSERT_EQ(2, e.TimeUntilNextTry().InSeconds());
+
+  // Action.
+  e.SetDistilledURL(GURL("http://example.com"));
+
+  // Test.
+  EXPECT_EQ(0, e.TimeUntilNextTry().InSeconds());
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  EXPECT_EQ(1, e.TimeUntilNextTry().InSeconds());
 }

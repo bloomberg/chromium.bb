@@ -4,23 +4,63 @@
 
 #include "ios/chrome/browser/reading_list/reading_list_entry.h"
 
+#include "base/memory/ptr_util.h"
+
+const net::BackoffEntry::Policy ReadingListEntry::kBackoffPolicy = {
+    // Number of initial errors (in sequence) to ignore before applying
+    // exponential back-off rules.
+    0,
+
+    // Initial delay for exponential back-off in ms.
+    1000,  // 1 second.
+
+    // Factor by which the waiting time will be multiplied.
+    2,
+
+    // Fuzzing percentage. ex: 10% will spread requests randomly
+    // between 90%-100% of the calculated time.
+    0,  // 0%.
+
+    // Maximum amount of time we are willing to delay our request in ms.
+    120 * 1000,  // 2 minutes.
+
+    // Time to keep an entry from being discarded even when it
+    // has no significant state, -1 to never discard.
+    -1,
+
+    false,  // Don't use initial delay unless the last request was an error.
+};
+
 ReadingListEntry::ReadingListEntry(const GURL& url, const std::string& title)
+    : ReadingListEntry(url, title, nullptr){};
+
+ReadingListEntry::ReadingListEntry(const GURL& url,
+                                   const std::string& title,
+                                   std::unique_ptr<net::BackoffEntry> backoff)
     : url_(url), title_(title), distilled_state_(WAITING) {
+  if (backoff) {
+    backoff_ = std::move(backoff);
+  } else {
+    backoff_ = base::MakeUnique<net::BackoffEntry>(&kBackoffPolicy);
+  }
   DCHECK(!url.is_empty());
   DCHECK(url.is_valid());
 }
+
 ReadingListEntry::ReadingListEntry(ReadingListEntry&& entry)
-    : url_(entry.URL()),
-      title_(entry.Title()),
-      distilled_url_(entry.DistilledURL()),
-      distilled_state_(entry.DistilledState()) {}
+    : url_(std::move(entry.url_)),
+      title_(std::move(entry.title_)),
+      distilled_url_(std::move(entry.distilled_url_)),
+      distilled_state_(std::move(entry.distilled_state_)),
+      backoff_(std::move(entry.backoff_)) {}
+
 ReadingListEntry::~ReadingListEntry() {}
 
 const GURL& ReadingListEntry::URL() const {
   return url_;
 }
 
-const std::string ReadingListEntry::Title() const {
+const std::string& ReadingListEntry::Title() const {
   return title_;
 }
 
@@ -32,11 +72,16 @@ const GURL& ReadingListEntry::DistilledURL() const {
   return distilled_url_;
 }
 
+base::TimeDelta ReadingListEntry::TimeUntilNextTry() const {
+  return backoff_->GetTimeUntilRelease();
+}
+
 ReadingListEntry& ReadingListEntry::operator=(ReadingListEntry&& other) {
-  url_ = other.url_;
-  title_ = other.title_;
-  distilled_url_ = other.distilled_url_;
-  distilled_state_ = other.distilled_state_;
+  url_ = std::move(other.url_);
+  title_ = std::move(other.title_);
+  distilled_url_ = std::move(other.distilled_url_);
+  distilled_state_ = std::move(other.distilled_state_);
+  backoff_ = std::move(other.backoff_);
   return *this;
 }
 
@@ -52,11 +97,19 @@ void ReadingListEntry::SetDistilledURL(const GURL& url) {
   DCHECK(url.is_valid());
   distilled_url_ = url;
   distilled_state_ = PROCESSED;
+  backoff_->Reset();
 }
 
 void ReadingListEntry::SetDistilledState(DistillationState distilled_state) {
   DCHECK(distilled_state != PROCESSED);  // use SetDistilledURL instead.
   DCHECK(distilled_state != WAITING);
+  // Increase time until next retry exponentially if the state change from a
+  // non-error state to an error state.
+  if ((distilled_state == WILL_RETRY || distilled_state == ERROR) &&
+      distilled_state_ != WILL_RETRY && distilled_state_ != ERROR) {
+    backoff_->InformOfRequest(false);
+  }
+
   distilled_state_ = distilled_state;
   distilled_url_ = GURL();
 }
