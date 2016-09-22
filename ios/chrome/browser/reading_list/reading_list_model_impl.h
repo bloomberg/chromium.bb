@@ -39,6 +39,10 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
   const ReadingListEntry& GetUnreadEntryAtIndex(size_t index) const override;
   const ReadingListEntry& GetReadEntryAtIndex(size_t index) const override;
 
+  bool CallbackEntryURL(
+      const GURL& url,
+      base::Callback<void(const ReadingListEntry&)> callback) const override;
+
   void RemoveEntryByUrl(const GURL& url) override;
 
   const ReadingListEntry& AddEntry(const GURL& url,

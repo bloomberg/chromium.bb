@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/observer_list.h"
 #include "ios/chrome/browser/reading_list/reading_list_entry.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_observer.h"
@@ -55,6 +56,13 @@ class ReadingListModel {
   // Returns a specific entry.
   virtual const ReadingListEntry& GetUnreadEntryAtIndex(size_t index) const = 0;
   virtual const ReadingListEntry& GetReadEntryAtIndex(size_t index) const = 0;
+
+  // Synchronously calls the |callback| with entry associated with this |url|.
+  // Does nothing if there is no entry associated.
+  // Returns whether the callback has been called.
+  virtual bool CallbackEntryURL(
+      const GURL& url,
+      base::Callback<void(const ReadingListEntry&)> callback) const = 0;
 
   // Adds |url| at the top of the unread entries, and removes entries with the
   // same |url| from everywhere else if they exist. The addition may be

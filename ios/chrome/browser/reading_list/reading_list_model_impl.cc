@@ -67,6 +67,25 @@ const ReadingListEntry& ReadingListModelImpl::GetReadEntryAtIndex(
   return read_[index];
 }
 
+bool ReadingListModelImpl::CallbackEntryURL(
+    const GURL& url,
+    base::Callback<void(const ReadingListEntry&)> callback) const {
+  DCHECK(loaded());
+  ReadingListEntry entry(url, std::string());
+  auto resultUnread = std::find(unread_.begin(), unread_.end(), entry);
+  if (resultUnread != unread_.end()) {
+    callback.Run(*resultUnread);
+    return true;
+  }
+
+  auto resultRead = std::find(read_.begin(), read_.end(), entry);
+  if (resultRead != read_.end()) {
+    callback.Run(*resultRead);
+    return true;
+  }
+  return false;
+}
+
 void ReadingListModelImpl::RemoveEntryByUrl(const GURL& url) {
   DCHECK(loaded());
   const ReadingListEntry entry(url, std::string());
