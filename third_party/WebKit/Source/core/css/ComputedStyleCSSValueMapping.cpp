@@ -577,6 +577,18 @@ static CSSPrimitiveValue* valueForLineHeight(const ComputedStyle& style)
     return zoomAdjustedPixelValue(floatValueForLength(length, style.getFontDescription().computedSize()), style);
 }
 
+static CSSValue* valueForPosition(const LengthPoint& position, const ComputedStyle& style)
+{
+    DCHECK((position.x() == Auto) == (position.y() == Auto));
+    if (position.x() == Auto) {
+        return CSSPrimitiveValue::createIdentifier(CSSValueAuto);
+    }
+    CSSValueList* list = CSSValueList::createSpaceSeparated();
+    list->append(*zoomAdjustedPixelValueForLength(position.x(), style));
+    list->append(*zoomAdjustedPixelValueForLength(position.y(), style));
+    return list;
+}
+
 static CSSValueID identifierForFamily(const AtomicString& family)
 {
     if (family == FontFamilyNames::webkit_cursive)
@@ -2729,6 +2741,12 @@ const CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, cons
 
     case CSSPropertyOffset:
         return valuesForShorthandProperty(offsetShorthand(), style, layoutObject, styledNode, allowVisitedStyle);
+
+    case CSSPropertyOffsetAnchor:
+        return valueForPosition(style.offsetAnchor(), style);
+
+    case CSSPropertyOffsetPosition:
+        return valueForPosition(style.offsetPosition(), style);
 
     case CSSPropertyOffsetPath:
         if (const StylePath* styleMotionPath = style.offsetPath())

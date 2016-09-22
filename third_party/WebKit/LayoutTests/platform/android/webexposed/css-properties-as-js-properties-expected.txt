@@ -190,8 +190,10 @@ motion
 objectFit
 objectPosition
 offset
+offsetAnchor
 offsetDistance
 offsetPath
+offsetPosition
 offsetRotation
 opacity
 order

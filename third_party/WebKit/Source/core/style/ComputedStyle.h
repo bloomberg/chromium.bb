@@ -980,6 +980,11 @@ public:
     LengthPoint objectPosition() const { return m_rareNonInheritedData->m_objectPosition; }
     void setObjectPosition(LengthPoint position) { SET_VAR(m_rareNonInheritedData, m_objectPosition, position); }
 
+    // offset-anchor
+    static LengthPoint initialOffsetAnchor() { return LengthPoint(Length(50.0, Percent), Length(50.0, Percent)); }
+    const LengthPoint& offsetAnchor() const { return m_rareNonInheritedData->m_transform->m_motion.m_anchor; }
+    void setOffsetAnchor(const LengthPoint& offsetAnchor) { SET_NESTED_VAR(m_rareNonInheritedData, m_transform, m_motion.m_anchor, offsetAnchor); }
+
     // offset-distance
     static Length initialOffsetDistance() { return Length(0, Fixed); }
     const Length& offsetDistance() const { return m_rareNonInheritedData->m_transform->m_motion.m_distance; }
@@ -989,6 +994,11 @@ public:
     static StylePath* initialOffsetPath() { return nullptr; }
     StylePath* offsetPath() const { return m_rareNonInheritedData->m_transform->m_motion.m_path.get(); }
     void setOffsetPath(PassRefPtr<StylePath>);
+
+    // offset-position
+    static LengthPoint initialOffsetPosition() { return LengthPoint(Length(Auto), Length(Auto)); }
+    const LengthPoint& offsetPosition() const { return m_rareNonInheritedData->m_transform->m_motion.m_position; }
+    void setOffsetPosition(const LengthPoint& offsetPosition) { SET_NESTED_VAR(m_rareNonInheritedData, m_transform, m_motion.m_position, offsetPosition); }
 
     // offset-rotation
     static StyleOffsetRotation initialOffsetRotation() { return StyleOffsetRotation(0, OffsetRotationAuto); }

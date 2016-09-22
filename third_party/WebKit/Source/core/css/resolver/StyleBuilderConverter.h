@@ -89,6 +89,7 @@ public:
     static float convertNumberOrPercentage(StyleResolverState&, const CSSValue&);
     static StyleOffsetRotation convertOffsetRotation(StyleResolverState&, const CSSValue&);
     static LengthPoint convertPosition(StyleResolverState&, const CSSValue&);
+    static LengthPoint convertPositionOrAuto(StyleResolverState&, const CSSValue&);
     static float convertPerspective(StyleResolverState&, const CSSValue&);
     static Length convertQuirkyLength(StyleResolverState&, const CSSValue&);
     static PassRefPtr<QuotesData> convertQuotes(StyleResolverState&, const CSSValue&);

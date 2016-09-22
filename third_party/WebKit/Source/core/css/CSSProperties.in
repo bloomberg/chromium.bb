@@ -260,8 +260,10 @@ motion-path alias_for=offset-path
 motion-rotation alias_for=offset-rotation
 object-fit type_name=ObjectFit
 object-position interpolable, converter=convertPosition
+offset-anchor runtime_flag=CSSOffsetPositionAnchor, converter=convertPositionOrAuto
 offset-distance interpolable, converter=convertLength
 offset-path converter=convertPathOrNone
+offset-position runtime_flag=CSSOffsetPositionAnchor, converter=convertPositionOrAuto
 offset-rotation interpolable, converter=convertOffsetRotation
 opacity interpolable, type_name=float
 order type_name=int

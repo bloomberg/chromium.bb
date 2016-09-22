@@ -814,6 +814,14 @@ LengthPoint StyleBuilderConverter::convertPosition(StyleResolverState& state, co
     );
 }
 
+LengthPoint StyleBuilderConverter::convertPositionOrAuto(StyleResolverState& state, const CSSValue& value)
+{
+    if (value.isValuePair())
+        return convertPosition(state, value);
+    DCHECK(toCSSPrimitiveValue(value).getValueID() == CSSValueAuto);
+    return LengthPoint(Length(Auto), Length(Auto));
+}
+
 static float convertPerspectiveLength(StyleResolverState& state, const CSSPrimitiveValue& primitiveValue)
 {
     return std::max(primitiveValue.computeLength<float>(state.cssToLengthConversionData()), 0.0f);

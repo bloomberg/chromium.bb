@@ -87938,6 +87938,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="541" label="offset-path"/>
   <int value="542" label="offset-rotation"/>
   <int value="543" label="offset"/>
+  <int value="544" label="offset-anchor"/>
+  <int value="545" label="offset-position"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">

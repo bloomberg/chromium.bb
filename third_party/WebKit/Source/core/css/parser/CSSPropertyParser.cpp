@@ -1547,6 +1547,14 @@ static CSSValue* consumeOffsetRotation(CSSParserTokenRange& range)
     return list;
 }
 
+CSSValue* consumeOffsetPosition(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    CSSValueID id = range.peek().id();
+    if (id == CSSValueAuto)
+        return consumeIdent(range);
+    return consumePosition(range, cssParserMode, UnitlessQuirk::Forbid);
+}
+
 static CSSValue* consumeTextEmphasisStyle(CSSParserTokenRange& range)
 {
     CSSValueID id = range.peek().id();
@@ -3330,6 +3338,9 @@ const CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProp
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
         return consumeTextDecorationLine(m_range);
+    case CSSPropertyOffsetAnchor:
+    case CSSPropertyOffsetPosition:
+        return consumeOffsetPosition(m_range, m_context.mode());
     case CSSPropertyD:
     case CSSPropertyOffsetPath:
         return consumePathOrNone(m_range);
