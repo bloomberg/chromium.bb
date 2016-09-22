@@ -79,16 +79,6 @@ public class InstantAppsHandlerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    public void testInstantAppsDisabled_dataReductionProxy() {
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("BANDWIDTH_REDUCTION_PROXY_ENABLED", true);
-        editor.apply();
-
-        assertFalse(mHandler.handleIncomingIntent(mContext, createViewIntent(), false));
-    }
-
-    @SmallTest
     public void testInstantAppsDisabled_mainIntent() {
         Intent i = new Intent(Intent.ACTION_MAIN);
         assertFalse(mHandler.handleIncomingIntent(mContext, i, false));

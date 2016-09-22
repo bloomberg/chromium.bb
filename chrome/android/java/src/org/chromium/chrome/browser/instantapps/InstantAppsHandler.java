@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.metrics.LaunchMetrics.TimesHistogramSample;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -169,7 +168,6 @@ public class InstantAppsHandler {
                         intent, IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false)
                 || (isCustomTabsIntent && !IntentUtils.safeGetBooleanExtra(
                         intent, CUSTOM_APPS_INSTANT_APP_EXTRA, false))
-                || DataReductionProxySettings.isEnabledBeforeNativeLoad(context)
                 || isIntentFromChrome(context, intent)
                 || (IntentHandler.getUrlFromIntent(intent) == null)) {
             Log.i(TAG, "Not handling with Instant Apps");
