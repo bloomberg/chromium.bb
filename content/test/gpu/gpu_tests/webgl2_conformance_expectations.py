@@ -442,6 +442,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'amd'], bug=644360)
 
     # Mac Pro with AMD GPU
+    self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
+        ['mac', ('amd', 0x679e)], bug=483282)
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
         ['mac', ('amd', 0x679e)], bug=636648)
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
