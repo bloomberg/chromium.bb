@@ -166,8 +166,9 @@ void URLDownloader::DistillerCallback(
 
 URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(
     const GURL& url,
-    std::vector<dom_distiller::DistillerViewerInterface::ImageInfo> images,
-    std::string html) {
+    const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
+        images,
+    const std::string& html) {
   if (CreateOfflineURLDirectory(url)) {
     return SaveHTMLForURL(SaveAndReplaceImagesInHTML(url, html, images), url)
                ? DOWNLOAD_SUCCESS
@@ -177,16 +178,16 @@ URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(
 }
 
 base::FilePath URLDownloader::OfflineDirectoryPath() {
-  return base_directory_.Append(kOfflineDirectory);
+  return base_directory_.Append(FILE_PATH_LITERAL(kOfflineDirectory));
 }
 
 base::FilePath URLDownloader::OfflineURLDirectoryPath(const GURL& url) {
   std::string hash = base::MD5String(url.spec());
-  return OfflineDirectoryPath().Append(hash);
+  return OfflineDirectoryPath().AppendASCII(hash);
 }
 
 base::FilePath URLDownloader::OfflineURLPagePath(const GURL& url) {
-  return OfflineURLDirectoryPath(url).Append("page.html");
+  return OfflineURLDirectoryPath(url).Append(FILE_PATH_LITERAL("page.html"));
 }
 
 bool URLDownloader::CreateOfflineURLDirectory(const GURL& url) {

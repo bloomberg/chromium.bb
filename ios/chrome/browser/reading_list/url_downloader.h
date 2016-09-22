@@ -113,8 +113,9 @@ class URLDownloader {
   // Saves distilled html to disk, including saving images and main file.
   SuccessState SaveDistilledHTML(
       const GURL& url,
-      std::vector<dom_distiller::DistillerViewerInterface::ImageInfo> images,
-      std::string html);
+      const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
+          images,
+      const std::string& html);
   // Callback for distillation completion.
   void DistillerCallback(
       const GURL& pageURL,
