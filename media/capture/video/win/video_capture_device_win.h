@@ -93,7 +93,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   bool CreateCapabilityMap();
   void SetAntiFlickerInCaptureFilter(const VideoCaptureParams& params);
   void SetErrorState(const tracked_objects::Location& from_here,
-                     const std::string& reason);
+                     const std::string& reason,
+                     HRESULT hr);
 
   const VideoCaptureDeviceDescriptor device_descriptor_;
   InternalState state_;
