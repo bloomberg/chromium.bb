@@ -1475,7 +1475,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)setDocumentURL:(const GURL&)newURL {
-  if (newURL != _documentURL) {
+  if (newURL != _documentURL && newURL.is_valid()) {
     _documentURL = newURL;
     _interactionRegisteredSinceLastURLChange = NO;
   }
@@ -5272,6 +5272,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   GURL webViewURL = net::GURLWithNSURL([_webView URL]);
+
+  // For failed navigations, WKWebView will sometimes revert to the previous URL
+  // before resettings its |isLoading| property to NO.  If this is the first
+  // navigation for the web view, this will result in an empty URL.
+  if (webViewURL.is_empty() || webViewURL == _documentURL)
+    return;
+
   if (_loadPhase == web::LOAD_REQUESTED &&
       ![_pendingNavigationInfo cancelled]) {
     // A fast back/forward within the same origin does not call
