@@ -19,7 +19,6 @@ source_set("common") {
   sources = [
     "it2me_confirmation_dialog.cc",
     "it2me_confirmation_dialog.h",
-    "it2me_confirmation_dialog_android.cc",
     "it2me_confirmation_dialog_linux.cc",
     "it2me_confirmation_dialog_mac.mm",
     "it2me_confirmation_dialog_proxy.cc",
@@ -30,13 +29,6 @@ source_set("common") {
     "it2me_native_messaging_host.cc",
     "it2me_native_messaging_host.h",
   ]
-
-  if (is_android) {
-    sources -= [
-      "it2me_native_messaging_host.cc",
-      "it2me_native_messaging_host.h",
-    ]
-  }
 
   if (is_chromeos) {
     sources += [ "it2me_confirmation_dialog_chromeos.cc" ]
@@ -74,7 +66,7 @@ source_set("common") {
   }
 }
 
-if (!is_chromeos && !is_android && enable_remoting_host) {
+if (!is_chromeos && enable_remoting_host) {
   if (is_win) {
     # GYP version:
     # //remoting/remoting_host_win.gypi:remoting_it2me_native_messaging_host
