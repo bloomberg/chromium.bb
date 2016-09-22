@@ -171,8 +171,6 @@ class CC_EXPORT LayerTreeHostImpl
       base::TimeDelta delayed_by = base::TimeDelta()) override;
   void ApplyScroll(ScrollNode* scroll_node, ScrollState* scroll_state);
   InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
-  bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
-                              ScrollDirection direction) override;
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::ScrollOffset& root_offset) override;

@@ -1193,37 +1193,6 @@ TEST_F(LayerTreeHostImplTest, ScrollByReturnsCorrectValue) {
           .did_scroll);
 }
 
-TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
-  SetupScrollAndContentsLayers(gfx::Size(200, 2000));
-  host_impl_->SetViewportSize(gfx::Size(100, 1000));
-
-  DrawFrame();
-
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
-            host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
-                                    InputHandler::WHEEL)
-                .thread);
-
-  // Trying to scroll if not user_scrollable_vertical will fail.
-  host_impl_->InnerViewportScrollLayer()->set_user_scrollable_vertical(false);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
-  DrawFrame();
-  EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
-      gfx::Point(), SCROLL_FORWARD));
-  EXPECT_FALSE(host_impl_->ScrollVerticallyByPage(
-      gfx::Point(), SCROLL_BACKWARD));
-
-  host_impl_->InnerViewportScrollLayer()->set_user_scrollable_vertical(true);
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
-  DrawFrame();
-  EXPECT_TRUE(host_impl_->ScrollVerticallyByPage(
-      gfx::Point(), SCROLL_FORWARD));
-  EXPECT_FLOAT_EQ(875.f,
-                  ScrollDelta(host_impl_->InnerViewportScrollLayer()).y());
-  EXPECT_TRUE(host_impl_->ScrollVerticallyByPage(
-      gfx::Point(), SCROLL_BACKWARD));
-}
-
 TEST_F(LayerTreeHostImplTest, ScrollWithUserUnscrollableLayers) {
   LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(200, 200));
   host_impl_->SetViewportSize(gfx::Size(100, 100));

@@ -128,9 +128,6 @@ class MockInputHandler : public cc::InputHandler {
                             const gfx::Vector2dF& scroll_delta,
                             base::TimeDelta));
   MOCK_METHOD1(ScrollBy, cc::InputHandlerScrollResult(cc::ScrollState*));
-  MOCK_METHOD2(ScrollVerticallyByPage,
-               bool(const gfx::Point& viewport_point,
-                    cc::ScrollDirection direction));
   MOCK_METHOD1(ScrollEnd, void(cc::ScrollState*));
   MOCK_METHOD0(FlingScrollBegin, cc::InputHandler::ScrollStatus());
 

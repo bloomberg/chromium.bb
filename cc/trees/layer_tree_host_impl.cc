@@ -3157,50 +3157,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   return scroll_result;
 }
 
-// This implements scrolling by page as described here:
-// http://msdn.microsoft.com/en-us/library/windows/desktop/ms645601(v=vs.85).aspx#_win32_The_Mouse_Wheel
-// for events with WHEEL_PAGESCROLL set.
-bool LayerTreeHostImpl::ScrollVerticallyByPage(const gfx::Point& viewport_point,
-                                               ScrollDirection direction) {
-  DCHECK(wheel_scrolling_);
-
-  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
-  ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-  if (scroll_node) {
-    for (; scroll_tree.parent(scroll_node);
-         scroll_node = scroll_tree.parent(scroll_node)) {
-      // The inner viewport layer represents the viewport.
-      if (!scroll_node->scrollable ||
-          scroll_node->is_outer_viewport_scroll_layer)
-        continue;
-
-      float height =
-          scroll_tree.scroll_clip_layer_bounds(scroll_node->id).height();
-
-      // These magical values match WebKit and are designed to scroll nearly the
-      // entire visible content height but leave a bit of overlap.
-      float page = std::max(height * 0.875f, 1.f);
-      if (direction == SCROLL_BACKWARD)
-        page = -page;
-
-      gfx::Vector2dF delta = gfx::Vector2dF(0.f, page);
-
-      gfx::Vector2dF applied_delta =
-          ScrollNodeWithLocalDelta(scroll_node, delta, 1.f, active_tree());
-
-      if (!applied_delta.IsZero()) {
-        client_->SetNeedsCommitOnImplThread();
-        SetNeedsRedraw();
-        client_->RenewTreePriority();
-        return true;
-      }
-
-      scroll_tree.set_currently_scrolling_node(scroll_node->id);
-    }
-  }
-  return false;
-}
-
 void LayerTreeHostImpl::RequestUpdateForSynchronousInputHandler() {
   UpdateRootLayerStateForSynchronousInputHandler();
 }
