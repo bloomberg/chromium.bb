@@ -169,8 +169,7 @@ class MediaSourcePlayerTest : public testing::Test {
                 base::Bind(&MockMediaPlayerManager::OnDecorderResourcesReleased,
                            base::Unretained(&manager_)),
                 base::WrapUnique(demuxer_),
-                GURL(),
-                kDefaultMediaSessionId),
+                GURL()),
         decoder_callback_hook_executed_(false),
         surface_texture_a_is_next_(true) {}
 

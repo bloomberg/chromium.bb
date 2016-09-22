@@ -21,7 +21,6 @@ class TaskRunner;
 namespace blink {
 class WebContentDecryptionModule;
 class WebMediaPlayerClient;
-class WebMediaSession;
 }
 
 namespace media {
@@ -56,8 +55,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       const Context3DCB& context_3d,
       const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
       blink::WebContentDecryptionModule* initial_cdm,
-      SurfaceManager* surface_manager,
-      blink::WebMediaSession* media_session);
+      SurfaceManager* surface_manager);
 
   ~WebMediaPlayerParams();
 
@@ -97,8 +95,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
   SurfaceManager* surface_manager() const { return surface_manager_; }
 
-  const blink::WebMediaSession* media_session() const { return media_session_; }
-
  private:
   DeferLoadCB defer_load_cb_;
   scoped_refptr<SwitchableAudioRendererSink> audio_renderer_sink_;
@@ -111,8 +107,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
 
   blink::WebContentDecryptionModule* initial_cdm_;
   SurfaceManager* surface_manager_;
-
-  blink::WebMediaSession* media_session_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebMediaPlayerParams);
 };

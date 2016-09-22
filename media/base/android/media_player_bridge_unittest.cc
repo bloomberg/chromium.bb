@@ -58,8 +58,7 @@ class MediaPlayerBridgeTest : public testing::Test {
                 base::Bind(&MockMediaPlayerManager::OnMediaResourcesRequested,
                            base::Unretained(&manager_)),
                 GURL(),
-                false,
-                kDefaultMediaSessionId) {}
+                false) {}
 
   void SetCanSeekForward(bool can_seek_forward) {
     bridge_.can_seek_forward_ = can_seek_forward;

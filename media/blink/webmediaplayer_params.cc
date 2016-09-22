@@ -21,8 +21,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     const Context3DCB& context_3d_cb,
     const AdjustAllocatedMemoryCB& adjust_allocated_memory_cb,
     blink::WebContentDecryptionModule* initial_cdm,
-    SurfaceManager* surface_manager,
-    blink::WebMediaSession* media_session)
+    SurfaceManager* surface_manager)
     : defer_load_cb_(defer_load_cb),
       audio_renderer_sink_(audio_renderer_sink),
       media_log_(media_log),
@@ -32,8 +31,7 @@ WebMediaPlayerParams::WebMediaPlayerParams(
       context_3d_cb_(context_3d_cb),
       adjust_allocated_memory_cb_(adjust_allocated_memory_cb),
       initial_cdm_(initial_cdm),
-      surface_manager_(surface_manager),
-      media_session_(media_session) {}
+      surface_manager_(surface_manager) {}
 
 WebMediaPlayerParams::~WebMediaPlayerParams() {}
 

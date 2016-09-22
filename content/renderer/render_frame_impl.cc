@@ -2625,8 +2625,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
     WebMediaPlayerClient* client,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     WebContentDecryptionModule* initial_cdm,
-    const blink::WebString& sink_id,
-    WebMediaSession* media_session) {
+    const blink::WebString& sink_id) {
   blink::WebMediaStream web_stream =
       GetWebMediaStreamFromWebMediaPlayerSource(source);
   if (!web_stream.isNull())
@@ -2670,7 +2669,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->compositor_task_runner(), context_3d_cb,
       base::Bind(&v8::Isolate::AdjustAmountOfExternalAllocatedMemory,
                  base::Unretained(blink::mainThreadIsolate())),
-      initial_cdm, media_surface_manager_, media_session);
+      initial_cdm, media_surface_manager_);
 
 #if defined(OS_ANDROID)
   if (!UseWebMediaPlayerImpl(url)) {

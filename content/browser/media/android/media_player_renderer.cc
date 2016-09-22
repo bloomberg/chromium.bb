@@ -54,8 +54,7 @@ void MediaPlayerRenderer::Initialize(
       this, base::Bind(&MediaPlayerRenderer::OnDecoderResourcesReleased,
                        weak_factory_.GetWeakPtr()),
       GURL(),  // frame_url
-      false,   // allow_crendentials
-      0));     // media_session_id
+      false));   // allow_crendentials
 
   // TODO(tguilbert): Register and Send the proper surface ID. See
   // crbug.com/627658

@@ -71,8 +71,7 @@ void RendererMediaPlayerManager::Initialize(
     int demuxer_client_id,
     const GURL& frame_url,
     bool allow_credentials,
-    int delegate_id,
-    int media_session_id) {
+    int delegate_id) {
   MediaPlayerHostMsg_Initialize_Params media_player_params;
   media_player_params.type = type;
   media_player_params.player_id = player_id;
@@ -82,7 +81,6 @@ void RendererMediaPlayerManager::Initialize(
   media_player_params.frame_url = frame_url;
   media_player_params.allow_credentials = allow_credentials;
   media_player_params.delegate_id = delegate_id;
-  media_player_params.media_session_id = media_session_id;
 
   Send(new MediaPlayerHostMsg_Initialize(routing_id(), media_player_params));
 }

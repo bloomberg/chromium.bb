@@ -48,11 +48,7 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
           player_id,
           manager,
           base::Bind(&DoNothing),
-          manager->GetLocalPlayer(player_id)->frame_url(),
-          // TODO(davve): Media session interaction with remote
-          // playback not defined. Use invalid session id for now.
-          // https://github.com/whatwg/mediasession/issues/123
-          media::kInvalidMediaSessionId),
+          manager->GetLocalPlayer(player_id)->frame_url()),
       width_(0),
       height_(0),
       url_(manager->GetLocalPlayer(player_id)->GetUrl()),

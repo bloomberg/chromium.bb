@@ -58,7 +58,6 @@
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/gamepad/NavigatorGamepad.h"
-#include "modules/mediasession/HTMLMediaElementMediaSession.h"
 #include "modules/mediasession/MediaSession.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerLinkResource.h"
@@ -787,15 +786,11 @@ std::unique_ptr<WebMediaPlayer> FrameLoaderClientImpl::createWebMediaPlayer(
     if (!webFrame || !webFrame->client())
         return nullptr;
 
-    WebMediaSession* webMediaSession = nullptr;
-    if (MediaSession* mediaSession = HTMLMediaElementMediaSession::session(htmlMediaElement))
-        webMediaSession = mediaSession->getWebMediaSession();
-
     HTMLMediaElementEncryptedMedia& encryptedMedia = HTMLMediaElementEncryptedMedia::from(htmlMediaElement);
     WebString sinkId(HTMLMediaElementAudioOutputDevice::sinkId(htmlMediaElement));
     return wrapUnique(webFrame->client()->createMediaPlayer(source,
         client, &encryptedMedia,
-        encryptedMedia.contentDecryptionModule(), sinkId, webMediaSession));
+        encryptedMedia.contentDecryptionModule(), sinkId));
 }
 
 std::unique_ptr<WebMediaSession> FrameLoaderClientImpl::createWebMediaSession()
