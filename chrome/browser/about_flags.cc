@@ -906,6 +906,10 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")},
 #endif
 #if defined(OS_CHROMEOS)
+    {"mash",
+     IDS_FLAGS_USE_MASH_NAME,
+     IDS_FLAGS_USE_MASH_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE("mash")},
     {"allow-touchpad-three-finger-click",
      IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME,
      IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_DESCRIPTION, kOsCrOS,

@@ -13,6 +13,8 @@
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 #include "base/command_line.h"
 #include "chrome/app/mash/mash_runner.h"
+#include "chrome/common/channel_info.h"
+#include "components/version_info/version_info.h"
 #endif
 
 #if defined(OS_WIN)
@@ -81,12 +83,16 @@ int ChromeMain(int argc, const char** argv) {
 #if !defined(OS_WIN)
   base::CommandLine::Init(params.argc, params.argv);
 #endif
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  // TODO(sky): only do this for dev builds and if on canary channel.
-  if (command_line.HasSwitch("mash"))
-    return MashMain();
-#endif
+
+  version_info::Channel channel = chrome::GetChannel();
+  if (channel == version_info::Channel::CANARY ||
+      channel == version_info::Channel::UNKNOWN) {
+    const base::CommandLine& command_line =
+        *base::CommandLine::ForCurrentProcess();
+    if (command_line.HasSwitch("mash"))
+      return MashMain();
+  }
+#endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 
   int rv = content::ContentMain(params);
 
