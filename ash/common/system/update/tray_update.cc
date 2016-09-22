@@ -64,7 +64,7 @@ SkColor IconColorForUpdateSeverity(UpdateInfo::UpdateSeverity severity,
     case UpdateInfo::UPDATE_NONE:
       return default_color;
     case UpdateInfo::UPDATE_LOW:
-      return for_menu ? gfx::kGoogleGreen700 : gfx::kGoogleGreen300;
+      return for_menu ? gfx::kGoogleGreen700 : kTrayIconColor;
     case UpdateInfo::UPDATE_ELEVATED:
       return for_menu ? gfx::kGoogleYellow700 : gfx::kGoogleYellow300;
     case UpdateInfo::UPDATE_HIGH:
