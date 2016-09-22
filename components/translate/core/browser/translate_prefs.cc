@@ -330,7 +330,8 @@ void TranslatePrefs::ResetTranslationIgnoredCount(const std::string& language) {
   update.Get()->SetInteger(language, 0);
 }
 
-int TranslatePrefs::GetTranslationAcceptedCount(const std::string& language) {
+int TranslatePrefs::GetTranslationAcceptedCount(
+    const std::string& language) const {
   const base::DictionaryValue* dict =
       prefs_->GetDictionary(kPrefTranslateAcceptedCount);
   int count = 0;

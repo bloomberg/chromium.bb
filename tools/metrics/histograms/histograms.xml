@@ -63115,6 +63115,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Counts translation target page schemes.</summary>
 </histogram>
 
+<histogram name="Translate.Ranker.Model.Status"
+    enum="TranslateRankerModelStatus">
+  <owner>rogerm@google.com</owner>
+  <summary>
+    Tracks the outcome of attempts to download a Translate Ranker Model.
+  </summary>
+</histogram>
+
+<histogram name="Translate.Ranker.Model.Version" units="date stamp">
+  <owner>rogerm@google.com</owner>
+  <summary>
+    The date tamp (e.g., 20160916 -&gt; 15 Sept 2016) which denotes the
+    TranslateRankerModel's version.
+  </summary>
+</histogram>
+
+<histogram name="Translate.Ranker.QueryResult" enum="BooleanAccepted">
+  <owner>rogerm@google.com</owner>
+  <summary>
+    Whether the TranslateRanker accepts or denies to show the translation
+    prompt.
+  </summary>
+</histogram>
+
 <histogram name="Translate.ReportLanguageDetectionError">
   <owner>kenjibaheux@google.com</owner>
   <summary>
@@ -98459,6 +98483,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="8" label="Auto translation by linked from a translated page"/>
   <int value="9" label="Show infobar"/>
   <int value="10" label="MIME-type is not supported"/>
+  <int value="11" label="Disabled by Key"/>
+  <int value="12" label="Language in ULP"/>
+  <int value="13" label="Aborted by translate ranker"/>
 </enum>
 
 <enum name="TranslateLanguage" type="int">
@@ -98481,6 +98508,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="CLD disagrees with Content-Language"/>
   <int value="5" label="CLD can be trusted"/>
   <int value="6" label="CLD can complement a sub code"/>
+</enum>
+
+<enum name="TranslateRankerModelStatus" type="int">
+  <int value="0" label="OK"/>
+  <int value="1" label="Download Throttled"/>
+  <int value="2" label="Download Failed"/>
+  <int value="3" label="Parse Failed"/>
+  <int value="4" label="Validation Failed"/>
 </enum>
 
 <enum name="TranslateScheme" type="int">

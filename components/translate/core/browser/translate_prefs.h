@@ -142,7 +142,7 @@ class TranslatePrefs {
   // These methods are used to track how many times the user has accepted the
   // translation for a specific language. (So we can present a UI to white-list
   // that language if the user keeps accepting translations).
-  int GetTranslationAcceptedCount(const std::string& language);
+  int GetTranslationAcceptedCount(const std::string& language) const;
   void IncrementTranslationAcceptedCount(const std::string& language);
   void ResetTranslationAcceptedCount(const std::string& language);
 

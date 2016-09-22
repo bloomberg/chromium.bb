@@ -25,7 +25,7 @@ enum MetricsNameIndex {
 // When Chrome Translate is ready to translate a page, one of following reason
 // decide the next browser action.
 // Note: Don't insert any item. It will change reporting UMA value, and break
-// the UMA dashboard page. Insteads, append it at the end of enum as suggested
+// the UMA dashboard page. Instead, append it at the end of enum as suggested
 // below.
 enum InitiationStatusType {
   INITIATION_STATUS_DISABLED_BY_PREFS,
@@ -41,6 +41,7 @@ enum InitiationStatusType {
   INITIATION_STATUS_MIME_TYPE_IS_NOT_SUPPORTED,
   INITIATION_STATUS_DISABLED_BY_KEY,
   INITIATION_STATUS_LANGUAGE_IN_ULP,
+  INITIATION_STATUS_ABORTED_BY_RANKER,
   // Insert new items here.
   INITIATION_STATUS_MAX,
 };

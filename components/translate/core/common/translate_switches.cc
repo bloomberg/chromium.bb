@@ -18,5 +18,8 @@ const char kTranslateScriptURL[] = "translate-script-url";
 // Overrides security-origin with which Translate runs in an isolated world.
 const char kTranslateSecurityOrigin[] = "translate-security-origin";
 
+// Overrides the URL from which the translate ranker model is downloaded.
+const char kTranslateRankerModelURL[] = "translate-ranker-model-url";
+
 }  // namespace switches
 }  // namespace translate
