@@ -150,10 +150,8 @@ PerformanceEntryVector PerformanceBase::getEntriesByName(const String& name, con
 
     if (entryType.isNull() || type == PerformanceEntry::Composite || type == PerformanceEntry::Render) {
         for (const auto& frame : m_frameTimingBuffer) {
-            if (frame->name() == name && (entryType.isNull()
-                || equalIgnoringCase(entryType, frame->entryType()))) {
+            if (frame->name() == name && (entryType.isNull() || entryType == frame->entryType()))
                 entries.append(frame);
-            }
         }
     }
 
@@ -213,7 +211,7 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, const Secur
         return true;
 
     const AtomicString& timingAllowOriginString = originalTimingAllowOrigin.isEmpty() ? response.httpHeaderField(HTTPNames::Timing_Allow_Origin) : originalTimingAllowOrigin;
-    if (timingAllowOriginString.isEmpty() || equalIgnoringCase(timingAllowOriginString, "null"))
+    if (timingAllowOriginString.isEmpty() || equalIgnoringASCIICase(timingAllowOriginString, "null"))
         return false;
 
     if (timingAllowOriginString == "*") {
