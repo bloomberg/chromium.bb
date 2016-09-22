@@ -71,12 +71,17 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     container_logical_height =
         box.containingBlock()->availableLogicalHeightForPercentageComputation();
   }
+  // When we have an override size, the container_logical_{width,height} will be
+  // used as the final size of the box, so it has to include border and
+  // padding.
   if (box.hasOverrideLogicalContentWidth()) {
-    container_logical_width = box.overrideLogicalContentWidth();
+    container_logical_width =
+        box.borderAndPaddingLogicalWidth() + box.overrideLogicalContentWidth();
     fixed_inline = true;
   }
   if (box.hasOverrideLogicalContentHeight()) {
-    container_logical_width = box.overrideLogicalContentHeight();
+    container_logical_height = box.borderAndPaddingLogicalHeight() +
+                               box.overrideLogicalContentHeight();
     fixed_block = true;
   }
 
