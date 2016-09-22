@@ -8,7 +8,6 @@
 
 #include "base/files/file_util.h"
 #import "base/mac/bind_objc_block.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
@@ -112,9 +111,7 @@ class URLDownloaderTest : public testing::Test {
   }
 
   void WaitUntilCondition(ConditionBlock condition) {
-    base::MessageLoop* messageLoop = base::MessageLoop::current();
-    DCHECK(messageLoop);
-    base::test::ios::WaitUntilCondition(condition, messageLoop,
+    base::test::ios::WaitUntilCondition(condition, true,
                                         base::TimeDelta::FromSeconds(1));
   }
 };

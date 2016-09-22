@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/message_loop/message_loop.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -216,9 +215,11 @@ TEST_F(MojoFacadeTest, Watch) {
   EXPECT_TRUE(base::StringToInt(result_as_string, &result));
   EXPECT_EQ(MOJO_RESULT_OK, static_cast<MojoResult>(result));
 
-  base::test::ios::WaitUntilCondition(^{
-    return callback_received;
-  }, base::MessageLoop::current(), base::TimeDelta());
+  base::test::ios::WaitUntilCondition(
+      ^{
+        return callback_received;
+      },
+      true, base::TimeDelta());
 }
 
 // Tests reading the message from the pipe.

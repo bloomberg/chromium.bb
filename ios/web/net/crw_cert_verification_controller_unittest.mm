@@ -68,9 +68,11 @@ class CRWCertVerificationControllerTest : public web::WebTest {
                  *status = callback_status;
                  completion_handler_called = true;
                }];
-    base::test::ios::WaitUntilCondition(^{
-      return completion_handler_called;
-    }, base::MessageLoop::current(), base::TimeDelta());
+    base::test::ios::WaitUntilCondition(
+        ^{
+          return completion_handler_called;
+        },
+        true, base::TimeDelta());
   }
 
   // Synchronously returns result of
@@ -88,9 +90,11 @@ class CRWCertVerificationControllerTest : public web::WebTest {
                         *status = callback_status;
                         completion_handler_called = true;
                       }];
-    base::test::ios::WaitUntilCondition(^{
-      return completion_handler_called;
-    }, base::MessageLoop::current(), base::TimeDelta());
+    base::test::ios::WaitUntilCondition(
+        ^{
+          return completion_handler_called;
+        },
+        true, base::TimeDelta());
   }
 
   scoped_refptr<net::X509Certificate> cert_;
