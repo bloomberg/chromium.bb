@@ -12,6 +12,8 @@
 Polymer({
   is: 'settings-cups-printers',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /** @type {!Array<!CupsPrinterInfo>} */
     printers: {
@@ -26,6 +28,31 @@ Polymer({
 
   /** @override */
   ready: function() {
+    this.updateCupsPrintersList_();
+    this.addWebUIListener('on-add-cups-printer', this.onAddPrinter_.bind(this));
+  },
+
+  /**
+   * @param {boolean} success
+   * @param {string} printerName
+   * @private
+   */
+  onAddPrinter_: function(success, printerName) {
+    if (!success)
+      return;
+
+    this.updateCupsPrintersList_();
+    var message = this.$.addPrinterMessage;
+    message.textContent = loadTimeData.getStringF(
+        'printerAddedSuccessfulMessage', printerName);
+    message.hidden = false;
+    window.setTimeout(function() {
+      message.hidden = true;
+    }, 3000);
+  },
+
+  /** @private */
+  updateCupsPrintersList_: function() {
     settings.CupsPrintersBrowserProxyImpl.getInstance().
         getCupsPrintersList().then(this.printersChanged_.bind(this));
   },

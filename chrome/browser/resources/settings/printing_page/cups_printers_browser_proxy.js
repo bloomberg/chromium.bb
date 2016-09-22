@@ -49,13 +49,19 @@ cr.define('settings', function() {
 
     /**
      * @param {string} printerId
+     * @param {string} printerName
      */
-    removeCupsPrinter: function(printerId) {},
+    removeCupsPrinter: function(printerId, printerName) {},
 
     /**
      * @return {!Promise<string>} The full path of the printer PPD file.
      */
     getCupsPrinterPPDPath: function() {},
+
+    /**
+     * @param {!CupsPrinterInfo} newPrinter
+     */
+    addCupsPrinter: function(newPrinter) {},
   };
 
   /**
@@ -77,8 +83,13 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    removeCupsPrinter: function(printerId) {
-      chrome.send('removeCupsPrinter', [printerId]);
+    removeCupsPrinter: function(printerId, printerName) {
+      chrome.send('removeCupsPrinter', [printerId, printerName]);
+    },
+
+    /** @override */
+    addCupsPrinter: function(newPrinter) {
+      chrome.send('addCupsPrinter', [newPrinter]);
     },
 
     /** @override */

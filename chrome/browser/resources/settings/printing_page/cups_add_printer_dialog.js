@@ -102,52 +102,16 @@ Polymer({
   },
 
   /** @private */
-  switchToManufacturerDialog_: function() {
+  switchToConfiguringDialog_: function() {
     this.$$('add-printer-dialog').close();
-    this.fire('open-manufacturer-model-dialog');
+    this.fire('open-configuring-printer-dialog');
   },
 
   /** @private */
   onAddressChanged_: function() {
-    this.$.searchInProgress.hidden = false;
-    this.$.searchFound.hidden = true;
-    this.$.searchNotFound.hidden = true;
-
-    var value = this.$.printerAddressInput.value;
-    if (this.isValidIpAddress_(value)) {
-      // TODO(xdai): Check if the printer address exists after the API is ready.
-      this.$.searchInProgress.hidden = true;
-      this.$.searchFound.hidden = false;
-      this.$.searchNotFound.hidden = true;
-    } else {
-      this.$.searchInProgress.hidden = true;
-      this.$.searchFound.hidden = true;
-      this.$.searchNotFound.hidden = false;
-    }
-  },
-
-  /**
-   * @param {string} ip
-   * @return {boolean}
-   * @private
-   */
-  isValidIpAddress_: function(ip) {
-    var addressRegex = RegExp('^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.' +
-                              '([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.' +
-                              '([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.' +
-                              '([01]?\\d\\d?|2[0-4]\\d|25[0-5])$');
-    return addressRegex.test(ip);
-  },
-
-  /**
-   * @param {string} printerName
-   * @param {string} printerAddress
-   * @return {boolean}
-   * @private
-   */
-  addPrinterNotAllowed_: function(printerName, printerAddress) {
-    return !printerName || !printerAddress ||
-           !this.isValidIpAddress_(printerAddress);
+    // TODO(xdai): Check if the printer address exists and then show the
+    // corresponding message after the API is ready.
+    // The format of address is: ip-address-or-hostname:port-number.
   },
 });
 
@@ -169,6 +133,11 @@ Polymer({
     /** @type {!Array<string>} */
     modelList: {
       type: Array,
+    },
+
+    setupFailed: {
+      type: Boolean,
+      value: false,
     },
   },
 
@@ -247,10 +216,16 @@ Polymer({
     this.$$('add-printer-dialog').close();
     this.fire('configuring-dialog-closed');
   },
+
+  close: function() {
+    this.$$('add-printer-dialog').close();
+  },
 });
 
 Polymer({
   is: 'settings-cups-add-printer-dialog',
+
+  behaviors: [WebUIListenerBehavior],
 
   properties: {
     /** @type {!CupsPrinterInfo} */
@@ -261,6 +236,12 @@ Polymer({
     /** @type {!CupsPrinterInfo} */
     newPrinter: {
       type: Object,
+    },
+
+    /** @type {boolean} whether the new printer setup is failed. */
+    setupFailed: {
+      type: Boolean,
+      value: false,
     },
 
     /** @private {string} */
@@ -290,9 +271,46 @@ Polymer({
     'open-manufacturer-model-dialog': 'openManufacturerModelDialog_',
   },
 
+  /** @override */
+  ready: function() {
+    this.addWebUIListener('on-add-cups-printer', this.onAddPrinter_.bind(this));
+  },
+
   /** Opens the Add printer discovery dialog. */
   open: function() {
+    this.resetData_();
     this.switchDialog_('', AddPrinterDialogs.DISCOVERY, 'showDiscoveryDialog_');
+  },
+
+  /**
+   * Reset all the printer data in the Add printer flow.
+   * @private
+   */
+  resetData_: function() {
+    if (this.selectedPrinter)
+      this.selectedPrinter = this.getEmptyPrinter_();
+    if (this.newPrinter)
+      this.newPrinter = this.getEmptyPrinter_();
+    this.setupFailed = false;
+  },
+
+  /**
+   * @return {!CupsPrinterInfo}
+   * @private
+   */
+  getEmptyPrinter_: function() {
+    return {
+      printerAddress: '',
+      printerDescription: '',
+      printerId: '',
+      printerManufacturer: '',
+      printerModel: '',
+      printerName: '',
+      printerPPDPath: '',
+      printerProtocol: 'ipp',
+      printerQueue: '',
+      printerStatus: '',
+    };
   },
 
   /** @private */
@@ -311,6 +329,8 @@ Polymer({
   openConfiguringPrinterDialog_: function() {
     this.switchDialog_(this.currentDialog_, AddPrinterDialogs.CONFIGURING,
                        'showConfiguringDialog_');
+    settings.CupsPrintersBrowserProxyImpl.getInstance().
+        addCupsPrinter(this.newPrinter);
   },
 
   /** @private */
@@ -366,5 +386,21 @@ Polymer({
       return this.newPrinter.printerName;
     }
     return '';
+  },
+
+  /**
+   * @param {boolean} success
+   * @param {string} printerName
+   * @private
+   */
+  onAddPrinter_: function(success, printerName) {
+    this.$$('add-printer-configuring-dialog').close();
+    if (success)
+      return;
+
+    if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER)
+      this.setupFailed = true;
+    this.switchDialog_(this.currentDialog_, AddPrinterDialogs.MANUFACTURER,
+                       'showManufacturerDialog_');
   },
 });

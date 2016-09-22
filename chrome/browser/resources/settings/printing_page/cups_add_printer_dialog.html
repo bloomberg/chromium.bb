@@ -184,9 +184,8 @@
         <paper-button class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancelButtonText}
         </paper-button>
-        <paper-button class="action-button" on-tap="switchToManufacturerDialog_"
-            disabled="[[addPrinterNotAllowed_(newPrinter.printerName,
-                                              newPrinter.printerAddress)]]">
+        <paper-button class="action-button" on-tap="switchToConfiguringDialog_"
+            disabled="[[!newPrinter.printerName]]">
           $i18n{addPrinterButtonText}
         </paper-button>
       </div>
@@ -223,6 +222,13 @@
           display: none;
         };
         width: 340px;
+      }
+
+      .error-message {
+        background-color: var(--google-red-100);
+        color: red;
+        margin-top: 10px;
+        padding: 10px 20px;
       }
 
       #manuallyAddPrinterButton {
@@ -270,6 +276,9 @@
               </paper-input>
             </div>
           </div>
+        </div>
+        <div class="error-message" hidden="[[!setupFailed]]">
+          Driver not found (exact error message TBD)
         </div>
       </div>
       <div class="dialog-buttons">
@@ -336,7 +345,8 @@
 
     <!-- Manufacturer and Model Dialog -->
     <template is="dom-if" if="[[showManufacturerDialog_]]" restamp>
-      <add-printer-manufacturer-model-dialog new-printer="{{newPrinter}}">
+      <add-printer-manufacturer-model-dialog new-printer="{{newPrinter}}"
+          setup-failed="[[setupFailed]]">
       </add-printer-manufacturer-model-dialog>
     </template>
 

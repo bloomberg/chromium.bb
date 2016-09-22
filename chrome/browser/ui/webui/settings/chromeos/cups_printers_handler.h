@@ -7,6 +7,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "chromeos/printing/printer_configuration.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
@@ -35,6 +36,12 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleGetCupsPrintersList(const base::ListValue* args);
   void HandleUpdateCupsPrinter(const base::ListValue* args);
   void HandleRemoveCupsPrinter(const base::ListValue* args);
+  void OnRemovedPrinter(const std::string& printer_id, bool success);
+
+  void HandleAddCupsPrinter(const base::ListValue* args);
+  void OnAddedPrinter(std::unique_ptr<Printer> printer, bool success);
+  void OnAddPrinterError();
+
   void HandleSelectPPDFile(const base::ListValue* args);
 
   // ui::SelectFileDialog::Listener override:

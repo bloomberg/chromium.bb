@@ -15,6 +15,24 @@
         color: blue;
         text-decoration: underline;
       }
+      
+      #message {
+        display: flex;
+        justify-content: center;
+        position: absolute;
+        top: 85%;
+        width: 100%;
+      }
+
+      .center {
+        background-color: black;
+        color: white;
+        font: 13px;
+        padding-bottom: 15px;
+        padding-top: 15px;
+        text-align: center;
+        width: 350px;
+      }
     </style>
 
     <div class="settings-box first">
@@ -29,6 +47,12 @@
     <settings-cups-printers-list printers="{{printers}}"
         search-term="[[searchTerm]]">
     </settings-cups-printers-list>
+
+    <div id="message">
+      <div class="center" id="addPrinterMessage" hidden>
+        $i18n{printerAddedSuccessfulMessage}
+      </div>
+    </div>
   </template>
   <script src="cups_printers.js"></script>
 </dom-module>

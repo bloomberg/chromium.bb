@@ -49,7 +49,8 @@ Polymer({
 
     var index = this.printers.indexOf(event.model.item);
     this.splice('printers', index, 1);
-    this.browserProxy_.removeCupsPrinter(event.model.item.printerId);
+    this.browserProxy_.removeCupsPrinter(event.model.item.printerId,
+                                         event.model.item.printerName);
   },
 
   /** @private */
