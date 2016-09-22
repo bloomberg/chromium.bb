@@ -4,7 +4,6 @@
 
 #include "ppapi/proxy/ppapi_proxy_test.h"
 
-#include <sstream>
 #include <tuple>
 
 #include "base/bind.h"
@@ -550,21 +549,19 @@ void TwoWayTest::SetUp() {
   io_thread_.StartWithOptions(options);
   plugin_thread_.Start();
 
-  // Construct the IPC handle name using the process ID so we can safely run
-  // multiple |TwoWayTest|s concurrently.
-  std::ostringstream handle_name;
-  handle_name << "TwoWayTestChannel" << base::GetCurrentProcId();
-  IPC::ChannelHandle handle(handle_name.str());
+  IPC::ChannelHandle local_handle, remote_handle;
+  IPC::Channel::GenerateMojoChannelHandlePair("TwoWayTestChannel",
+                                              &local_handle, &remote_handle);
   base::WaitableEvent remote_harness_set_up(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   plugin_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&SetUpRemoteHarness, remote_harness_, handle,
+      FROM_HERE, base::Bind(&SetUpRemoteHarness, remote_harness_, remote_handle,
                             base::RetainedRef(io_thread_.task_runner()),
                             &shutdown_event_, &remote_harness_set_up));
   remote_harness_set_up.Wait();
   local_harness_->SetUpHarnessWithChannel(
-      handle, io_thread_.task_runner().get(), &shutdown_event_,
+      local_handle, io_thread_.task_runner().get(), &shutdown_event_,
       true);  // is_client
 }
 
