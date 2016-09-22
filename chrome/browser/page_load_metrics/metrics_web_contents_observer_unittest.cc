@@ -277,14 +277,14 @@ TEST_F(MetricsWebContentsObserverTest, DontLogPrerender) {
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
   embedder_interface_->set_is_prerendering(true);
+  observer_->WasHidden();
 
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
   SimulateTimingUpdate(timing);
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   ASSERT_EQ(0, CountUpdatedTimingReported());
   ASSERT_EQ(0, CountCompleteTimingReported());
-  CheckErrorEvent(ERR_IPC_WITH_NO_RELEVANT_LOAD, 1);
-  CheckTotalErrorEvents();
+  CheckNoErrorEvents();
 }
 
 TEST_F(MetricsWebContentsObserverTest, DontLogNewTabPage) {

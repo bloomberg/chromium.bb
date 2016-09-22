@@ -302,6 +302,15 @@ PageLoadTracker::PageLoadTracker(
       aborted_chain_size_same_url_(aborted_chain_size_same_url),
       embedder_interface_(embedder_interface) {
   DCHECK(!navigation_handle->HasCommitted());
+  if (embedder_interface_->IsPrerendering(
+          navigation_handle->GetWebContents())) {
+    DCHECK(!started_in_foreground_);
+    // For the time being, we do not track prerenders. See crbug.com/648338 for
+    // details.
+    StopTracking();
+    return;
+  }
+
   embedder_interface_->RegisterObservers(this);
   for (const auto& observer : observers_) {
     observer->OnStart(navigation_handle, currently_committed_url,
@@ -756,11 +765,6 @@ void MetricsWebContentsObserver::WillStartNavigationRequest(
   }
 
   if (!ShouldTrackNavigation(navigation_handle))
-    return;
-
-  // TODO(bmcquade): add support for tracking prerendered pages when they become
-  // visible.
-  if (embedder_interface_->IsPrerendering(web_contents()))
     return;
 
   // Pass in the last committed url to the PageLoadTracker. If the MWCO has
