@@ -23,8 +23,7 @@ enum PolicyDomain {
   // The component ID for chrome policies is always the empty string.
   POLICY_DOMAIN_CHROME,
 
-  // The extensions policy domain is a work in progress. Included here for
-  // tests.
+  // The component ID for the extension policies is equal to the extension ID.
   POLICY_DOMAIN_EXTENSIONS,
 
   // Must be the last entry.
@@ -34,7 +33,6 @@ enum PolicyDomain {
 // Groups a policy domain and a component ID in a single object representing
 // a policy namespace. Objects of this class can be used as keys in std::maps.
 struct POLICY_EXPORT PolicyNamespace {
- public:
   PolicyNamespace();
   PolicyNamespace(PolicyDomain domain, const std::string& component_id);
   PolicyNamespace(const PolicyNamespace& other);
