@@ -193,7 +193,7 @@ void CaretBase::paintCaret(Node* node, GraphicsContext& context, const LayoutPoi
     LayoutRect drawingRect = localCaretRectWithoutUpdate();
     if (LayoutBlock* layoutObject = caretLayoutObject(node))
         layoutObject->flipForWritingMode(drawingRect);
-    drawingRect.moveBy(roundedIntPoint(paintOffset));
+    drawingRect.moveBy(paintOffset);
 
     const Color caretColor = node->layoutObject()->resolveColor(CSSPropertyColor);
     IntRect paintRect = pixelSnappedIntRect(drawingRect);
