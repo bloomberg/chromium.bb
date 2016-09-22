@@ -7426,8 +7426,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Crashpad.CrashReportSize" units="bytes">
-  <owner>scottmg@chromium.org</owner>
+  <owner>crashpad-dev@chromium.org</owner>
   <summary>The size of a crash report minidump on disk when captured.</summary>
+</histogram>
+
+<histogram name="Crashpad.ExceptionCaptureResult"
+    enum="CrashpadExceptionCaptureResult">
+  <owner>crashpad-dev@chromium.org</owner>
+  <summary>The outcome of execution of the Crashpad exception handler.</summary>
+</histogram>
+
+<histogram name="Crashpad.ExceptionCode.Mac" enum="CrashpadMacExceptionCodes">
+  <owner>crashpad-dev@chromium.org</owner>
+  <summary>The exception code encountered in a crash on Mac OS X.</summary>
+</histogram>
+
+<histogram name="Crashpad.ExceptionCode.Win" enum="CrashExitCodes">
+  <owner>crashpad-dev@chromium.org</owner>
+  <summary>The exception code encountered in a crash on Windows.</summary>
+</histogram>
+
+<histogram name="Crashpad.ExceptionEncountered"
+    enum="CrashpadExceptionProcessingState">
+  <owner>crashpad-dev@chromium.org</owner>
+  <summary>
+    A count of the number of exceptions handled by Crashpad with two buckets for
+    starting and finishing.
+  </summary>
 </histogram>
 
 <histogram name="CrashReport.BreakpadCrashDumpOutcome" enum="DumpOutcome">
@@ -74731,6 +74756,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2147483644" label="STATUS_SINGLE_STEP"/>
   <int value="2147483645" label="STATUS_BREAKPOINT"/>
   <int value="2147483646" label="STATUS_DATATYPE_MISALIGNMENT"/>
+</enum>
+
+<enum name="CrashpadExceptionCaptureResult" type="int">
+  <int value="0" label="kSuccess"/>
+  <int value="1" label="kUnexpectedExceptionBehavior"/>
+  <int value="2" label="kFailedDueToSuspendSelf"/>
+  <int value="3" label="kSnapshotFailed"/>
+  <int value="4" label="kExceptionInitializationFailed"/>
+  <int value="5" label="kPrepareNewCrashReportFailed"/>
+  <int value="6" label="kMinidumpWriteFailed"/>
+  <int value="7" label="kFinishWritingCrashReportFailed"/>
+</enum>
+
+<enum name="CrashpadExceptionProcessingState" type="int">
+  <int value="0" label="kStarted"/>
+  <int value="1" label="kFinished"/>
+</enum>
+
+<enum name="CrashpadMacExceptionCodes" type="int">
+  <int value="1" label="EXC_BAD_ACCESS"/>
+  <int value="2" label="EXC_BAD_INSTRUCTION"/>
+  <int value="10" label="EXC_CRASH"/>
 </enum>
 
 <enum name="CreatePersistentHistogramResult" type="int">
