@@ -169,8 +169,7 @@ void av1_idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
 
 void av1_idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
                        int eob) {
-  if (eob == 1)
-    aom_idct32x32_1_add(input, dest, stride);
+  if (eob == 1) aom_idct32x32_1_add(input, dest, stride);
 #if !CONFIG_ADAPT_SCAN
   else if (eob <= 34)
     // non-zero coeff only in upper-left 8x8
