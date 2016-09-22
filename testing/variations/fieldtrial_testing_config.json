@@ -1906,6 +1906,26 @@
             ]
         }
     ],
+    "TranslateRanker": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "EnforcementEnabled",
+                    "enable_features": [
+                        "TranslateRankerEnforcement"
+                    ]
+                }
+            ]
+        }
+    ],
     "TranslateUiLangTrial": [
         {
             "platforms": [
