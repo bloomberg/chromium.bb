@@ -21,7 +21,7 @@ HttpStreamFactoryImpl::Request::Request(
     HttpStreamRequest::Delegate* delegate,
     WebSocketHandshakeStreamBase::CreateHelper*
         websocket_handshake_stream_create_helper,
-    const BoundNetLog& net_log,
+    const NetLogWithSource& net_log,
     StreamType stream_type)
     : url_(url),
       helper_(helper),

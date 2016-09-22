@@ -142,7 +142,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
     }
   }
 
-  const net::BoundNetLog& NetLog() const override { return net_log_; }
+  const net::NetLogWithSource& NetLog() const override { return net_log_; }
 
   void AllowAddressReuse() override { NOTIMPLEMENTED(); }
 
@@ -184,7 +184,7 @@ class FakeDatagramServerSocket : public net::DatagramServerSocket {
   net::IPEndPoint address_;
   std::deque<UDPPacket>* sent_packets_;
   std::deque<UDPPacket> incoming_packets_;
-  net::BoundNetLog net_log_;
+  net::NetLogWithSource net_log_;
 
   scoped_refptr<net::IOBuffer> recv_buffer_;
   net::IPEndPoint* recv_address_;

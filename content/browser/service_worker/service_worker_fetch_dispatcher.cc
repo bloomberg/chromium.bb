@@ -57,7 +57,7 @@ std::unique_ptr<base::Value> NetLogFetchEventCallback(
   return std::move(dict);
 }
 
-void EndNetLogEventWithServiceWorkerStatus(const net::BoundNetLog& net_log,
+void EndNetLogEventWithServiceWorkerStatus(const net::NetLogWithSource& net_log,
                                            net::NetLogEventType type,
                                            ServiceWorkerStatusCode status) {
   net_log.EndEvent(type,
@@ -107,7 +107,7 @@ ServiceWorkerFetchDispatcher::ServiceWorkerFetchDispatcher(
     std::unique_ptr<ServiceWorkerFetchRequest> request,
     ServiceWorkerVersion* version,
     ResourceType resource_type,
-    const net::BoundNetLog& net_log,
+    const net::NetLogWithSource& net_log,
     const base::Closure& prepare_callback,
     const FetchCallback& fetch_callback)
     : version_(version),

@@ -75,7 +75,7 @@ class PolicyCertVerifierTest : public testing::Test {
                                       std::string(), net::CertificateList()),
                                   nullptr, verify_result,
                                   test_callback.callback(), request,
-                                  net::BoundNetLog());
+                                  net::NetLogWithSource());
   }
 
   bool SupportsAdditionalTrustAnchors() {

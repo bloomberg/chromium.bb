@@ -393,7 +393,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
 
   // Pointer to NetLog to report significant changes to the request for
   // debugging.
-  const net::BoundNetLog* net_log;
+  const net::NetLogWithSource* net_log;
 
   // The callback to call when we get a response from all event handlers.
   net::CompletionCallback callback;

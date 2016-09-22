@@ -67,7 +67,7 @@ class CronetUploadDataStream : public net::UploadDataStream {
 
  private:
   // net::UploadDataStream implementation:
-  int InitInternal(const net::BoundNetLog& net_log) override;
+  int InitInternal(const net::NetLogWithSource& net_log) override;
   int ReadInternal(net::IOBuffer* buf, int buf_len) override;
   void ResetInternal() override;
 

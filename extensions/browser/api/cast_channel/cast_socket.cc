@@ -88,7 +88,7 @@ class FakeCertVerifier : public net::CertVerifier {
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback&,
              std::unique_ptr<Request>*,
-             const net::BoundNetLog&) override {
+             const net::NetLogWithSource&) override {
     verify_result->Reset();
     verify_result->verified_cert = params.certificate();
     return net::OK;

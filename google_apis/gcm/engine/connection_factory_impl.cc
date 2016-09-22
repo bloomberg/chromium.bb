@@ -61,8 +61,8 @@ ConnectionFactoryImpl::ConnectionFactoryImpl(
       backoff_policy_(backoff_policy),
       gcm_network_session_(gcm_network_session),
       http_network_session_(http_network_session),
-      bound_net_log_(
-          net::BoundNetLog::Make(net_log, net::NetLogSourceType::SOCKET)),
+      net_log_(
+          net::NetLogWithSource::Make(net_log, net::NetLogSourceType::SOCKET)),
       pac_request_(NULL),
       connecting_(false),
       waiting_for_backoff_(false),
@@ -316,7 +316,7 @@ void ConnectionFactoryImpl::ConnectImpl() {
                  weak_ptr_factory_.GetWeakPtr()),
       &pac_request_,
       NULL,
-      bound_net_log_);
+      net_log_);
   if (status != net::ERR_IO_PENDING)
     OnProxyResolveDone(status);
 }
@@ -463,7 +463,7 @@ void ConnectionFactoryImpl::OnProxyResolveDone(int status) {
       ssl_config,
       ssl_config,
       net::PRIVACY_MODE_DISABLED,
-      bound_net_log_,
+      net_log_,
       &socket_handle_,
       base::Bind(&ConnectionFactoryImpl::OnConnectDone,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -534,7 +534,7 @@ int ConnectionFactoryImpl::ReconsiderProxyAfterError(int error) {
       GetCurrentEndpoint(), std::string(), error, &proxy_info_,
       base::Bind(&ConnectionFactoryImpl::OnProxyResolveDone,
                  weak_ptr_factory_.GetWeakPtr()),
-      &pac_request_, NULL, bound_net_log_);
+      &pac_request_, NULL, net_log_);
   if (status == net::OK || status == net::ERR_IO_PENDING) {
     CloseSocket();
   } else {

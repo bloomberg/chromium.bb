@@ -145,7 +145,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   }
 
   void Start(const BidirectionalStreamRequestInfo* request_info,
-             const BoundNetLog& net_log,
+             const NetLogWithSource& net_log,
              const base::WeakPtr<QuicChromiumClientSession> session) {
     stream_.reset(new BidirectionalStreamQuicImpl(session));
     stream_->Start(request_info, net_log, send_request_headers_automatically_,

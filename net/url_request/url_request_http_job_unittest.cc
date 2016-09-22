@@ -850,7 +850,7 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   // Fake implementation of HttpStreamBase methods.
   int InitializeStream(const HttpRequestInfo* request_info,
                        RequestPriority priority,
-                       const BoundNetLog& net_log,
+                       const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override {
     initialize_stream_was_called_ = true;
     return ERR_IO_PENDING;

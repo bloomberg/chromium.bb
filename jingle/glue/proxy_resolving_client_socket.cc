@@ -44,7 +44,7 @@ ProxyResolvingClientSocket::ProxyResolvingClientSocket(
       // current use cases do.
       proxy_url_("https://" + dest_host_port_pair_.ToString()),
       tried_direct_connect_fallback_(false),
-      bound_net_log_(net::BoundNetLog::Make(
+      net_log_(net::NetLogWithSource::Make(
           request_context_getter->GetURLRequestContext()->net_log(),
           net::NetLogSourceType::SOCKET)),
       weak_factory_(this) {
@@ -147,7 +147,7 @@ int ProxyResolvingClientSocket::Connect(
       proxy_resolve_callback_,
       &pac_request_,
       NULL,
-      bound_net_log_);
+      net_log_);
   if (status != net::ERR_IO_PENDING) {
     // We defer execution of ProcessProxyResolveDone instead of calling it
     // directly here for simplicity. From the caller's point of view,
@@ -204,7 +204,7 @@ void ProxyResolvingClientSocket::ProcessProxyResolveDone(int status) {
   // Now that we have resolved the proxy, we need to connect.
   status = net::InitSocketHandleForRawConnect(
       dest_host_port_pair_, network_session_.get(), proxy_info_, ssl_config_,
-      ssl_config_, net::PRIVACY_MODE_DISABLED, bound_net_log_, transport_.get(),
+      ssl_config_, net::PRIVACY_MODE_DISABLED, net_log_, transport_.get(),
       connect_callback_);
   if (status != net::ERR_IO_PENDING) {
     // Since this method is always called asynchronously. it is OK to call
@@ -292,7 +292,7 @@ int ProxyResolvingClientSocket::ReconsiderProxyAfterError(int error) {
 
   int rv = network_session_->proxy_service()->ReconsiderProxyAfterError(
       proxy_url_, std::string(), error, &proxy_info_, proxy_resolve_callback_,
-      &pac_request_, NULL, bound_net_log_);
+      &pac_request_, NULL, net_log_);
   if (rv == net::OK || rv == net::ERR_IO_PENDING) {
     CloseTransportSocket();
   } else {
@@ -370,11 +370,11 @@ int ProxyResolvingClientSocket::GetLocalAddress(
   return net::ERR_SOCKET_NOT_CONNECTED;
 }
 
-const net::BoundNetLog& ProxyResolvingClientSocket::NetLog() const {
+const net::NetLogWithSource& ProxyResolvingClientSocket::NetLog() const {
   if (transport_.get() && transport_->socket())
     return transport_->socket()->NetLog();
   NOTREACHED();
-  return bound_net_log_;
+  return net_log_;
 }
 
 void ProxyResolvingClientSocket::SetSubresourceSpeculation() {

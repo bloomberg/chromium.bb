@@ -6356,7 +6356,7 @@ class MockCTVerifier : public CTVerifier {
              const std::string& stapled_ocsp_response,
              const std::string& sct_list_from_tls_extension,
              ct::CTVerifyResult* result,
-             const BoundNetLog& net_log) override {
+             const NetLogWithSource& net_log) override {
     return net::OK;
   }
 
@@ -6375,7 +6375,7 @@ class MockCTPolicyEnforcer : public CTPolicyEnforcer {
   ct::CertPolicyCompliance DoesConformToCertPolicy(
       X509Certificate* cert,
       const SCTList& verified_scts,
-      const BoundNetLog& net_log) override {
+      const NetLogWithSource& net_log) override {
     return default_result_;
   }
 
@@ -8977,7 +8977,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
     ct::CertPolicyCompliance DoesConformToCertPolicy(
         X509Certificate* cert,
         const SCTList& verified_scts,
-        const BoundNetLog& net_log) override {
+        const NetLogWithSource& net_log) override {
       return ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
     }
 
@@ -8985,7 +8985,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
         X509Certificate* cert,
         const ct::EVCertsWhitelist* ev_whitelist,
         const SCTList& verified_scts,
-        const BoundNetLog& net_log) override {
+        const NetLogWithSource& net_log) override {
       return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS;
     }
   };

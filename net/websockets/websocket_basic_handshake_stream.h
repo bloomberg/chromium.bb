@@ -45,7 +45,7 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   // HttpStreamBase methods
   int InitializeStream(const HttpRequestInfo* request_info,
                        RequestPriority priority,
-                       const BoundNetLog& net_log,
+                       const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override;
   int SendRequest(const HttpRequestHeaders& request_headers,
                   HttpResponseInfo* response,

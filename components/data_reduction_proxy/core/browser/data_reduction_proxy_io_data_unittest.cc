@@ -166,13 +166,13 @@ TEST_F(DataReductionProxyIODataTest, TestResetBadProxyListOnDisableDataSaver) {
           ->proxy_service();
   net::ProxyInfo proxy_info;
   proxy_info.UseNamedProxy("http://foo2.com");
-  net::BoundNetLog bound_net_log;
+  net::NetLogWithSource net_log_with_source;
   const net::ProxyRetryInfoMap& bad_proxy_list =
       proxy_service->proxy_retry_info();
 
   // Simulate network error to add proxies to the bad proxy list.
   proxy_service->MarkProxiesAsBadUntil(proxy_info, base::TimeDelta::FromDays(1),
-                                       proxies, bound_net_log);
+                                       proxies, net_log_with_source);
   base::RunLoop().RunUntilIdle();
 
   // Verify that there are 2 proxies in the bad proxies list.

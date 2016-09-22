@@ -605,7 +605,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // Used to specify the context (cookie store, cache) for this request.
   const URLRequestContext* context() const;
 
-  const BoundNetLog& net_log() const { return net_log_; }
+  const NetLogWithSource& net_log() const { return net_log_; }
 
   // Returns the expected content size if available
   int64_t GetExpectedContentSize() const;
@@ -751,7 +751,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   NetworkDelegate* network_delegate_;
 
   // Tracks the time spent in various load states throughout this request.
-  BoundNetLog net_log_;
+  NetLogWithSource net_log_;
 
   std::unique_ptr<URLRequestJob> job_;
   std::unique_ptr<UploadDataStream> upload_data_stream_;

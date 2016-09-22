@@ -201,7 +201,7 @@ int AndroidUsbSocket::GetLocalAddress(net::IPEndPoint* address) const {
   return net::ERR_NOT_IMPLEMENTED;
 }
 
-const net::BoundNetLog& AndroidUsbSocket::NetLog() const {
+const net::NetLogWithSource& AndroidUsbSocket::NetLog() const {
   return net_log_;
 }
 

@@ -94,7 +94,7 @@ void ResolveProxyMsgHelper::StartPendingRequest() {
       req.url, std::string(), &proxy_info_,
       base::Bind(&ResolveProxyMsgHelper::OnResolveProxyCompleted,
                  base::Unretained(this)),
-      &req.pac_req, NULL, net::BoundNetLog());
+      &req.pac_req, NULL, net::NetLogWithSource());
 
   // Completed synchronously.
   if (result != net::ERR_IO_PENDING)

@@ -647,7 +647,7 @@ void PepperTCPSocketMessageFilter::DoConnect(
       request_info, net::DEFAULT_PRIORITY, &address_list_,
       base::Bind(&PepperTCPSocketMessageFilter::OnResolveCompleted,
                  base::Unretained(this), context),
-      &request_, net::BoundNetLog());
+      &request_, net::NetLogWithSource());
   if (net_result != net::ERR_IO_PENDING)
     OnResolveCompleted(context, net_result);
 }

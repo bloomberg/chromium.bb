@@ -102,7 +102,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                          DOWNLOAD_INTERRUPT_REASON_NONE,
                          false,
-                         net::BoundNetLog()) {}
+                         net::NetLogWithSource()) {}
   virtual ~MockDownloadItemImpl() {}
 
   MOCK_METHOD4(OnDownloadTargetDetermined,
@@ -268,12 +268,12 @@ class MockDownloadItemFactory
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
-      const net::BoundNetLog& bound_net_log) override;
+      const net::NetLogWithSource& net_log) override;
   DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const DownloadCreateInfo& info,
-      const net::BoundNetLog& bound_net_log) override;
+      const net::NetLogWithSource& net_log) override;
   DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
       uint32_t download_id,
@@ -281,7 +281,7 @@ class MockDownloadItemFactory
       const GURL& url,
       const std::string& mime_type,
       std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-      const net::BoundNetLog& bound_net_log) override;
+      const net::NetLogWithSource& net_log) override;
 
  private:
   std::map<uint32_t, MockDownloadItemImpl*> items_;
@@ -340,7 +340,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreatePersistedItem(
     DownloadDangerType danger_type,
     DownloadInterruptReason interrupt_reason,
     bool opened,
-    const net::BoundNetLog& bound_net_log) {
+    const net::NetLogWithSource& net_log) {
   DCHECK(items_.find(download_id) == items_.end());
   MockDownloadItemImpl* result =
       new StrictMock<MockDownloadItemImpl>(&item_delegate_);
@@ -355,7 +355,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreateActiveItem(
     DownloadItemImplDelegate* delegate,
     uint32_t download_id,
     const DownloadCreateInfo& info,
-    const net::BoundNetLog& bound_net_log) {
+    const net::NetLogWithSource& net_log) {
   DCHECK(items_.find(download_id) == items_.end());
 
   MockDownloadItemImpl* result =
@@ -381,7 +381,7 @@ DownloadItemImpl* MockDownloadItemFactory::CreateSavePageItem(
     const GURL& url,
     const std::string& mime_type,
     std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-    const net::BoundNetLog& bound_net_log) {
+    const net::NetLogWithSource& net_log) {
   DCHECK(items_.find(download_id) == items_.end());
 
   MockDownloadItemImpl* result =
@@ -408,7 +408,7 @@ class MockDownloadFileFactory
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<ByteStreamReader> byte_stream,
-      const net::BoundNetLog& bound_net_log,
+      const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     return MockCreateFile(*save_info, byte_stream.get());
   }

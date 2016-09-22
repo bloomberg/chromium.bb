@@ -62,7 +62,7 @@ class BaseFileTest : public testing::Test {
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base_file_.reset(new BaseFile(net::BoundNetLog()));
+    base_file_.reset(new BaseFile(net::NetLogWithSource()));
   }
 
   void TearDown() override {
@@ -120,7 +120,7 @@ class BaseFileTest : public testing::Test {
   // Create a file.  Returns the complete file path.
   base::FilePath CreateTestFile() {
     base::FilePath file_name;
-    BaseFile file((net::BoundNetLog()));
+    BaseFile file((net::NetLogWithSource()));
 
     EXPECT_EQ(
         DOWNLOAD_INTERRUPT_REASON_NONE,
@@ -141,7 +141,7 @@ class BaseFileTest : public testing::Test {
   // Create a file with the specified file name.
   void CreateFileWithName(const base::FilePath& file_name) {
     EXPECT_NE(base::FilePath::StringType(), file_name.value());
-    BaseFile duplicate_file((net::BoundNetLog()));
+    BaseFile duplicate_file((net::NetLogWithSource()));
     EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               duplicate_file.Initialize(file_name, temp_dir_.GetPath(),
                                         base::File(), 0, std::string(),
@@ -294,7 +294,7 @@ TEST_F(BaseFileTest, MultipleWritesInterruptedWithHash) {
   ASSERT_TRUE(base::CopyFile(base_file_->full_path(), new_file_path));
 
   // Create another file
-  BaseFile second_file((net::BoundNetLog()));
+  BaseFile second_file((net::NetLogWithSource()));
   ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             second_file.Initialize(new_file_path,
                                    base::FilePath(),
@@ -419,7 +419,7 @@ TEST_F(BaseFileTest, WriteWithError) {
   // Pass a file handle which was opened without the WRITE flag.
   // This should result in an error when writing.
   base::File file(path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_READ);
-  base_file_.reset(new BaseFile(net::BoundNetLog()));
+  base_file_.reset(new BaseFile(net::NetLogWithSource()));
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
             base_file_->Initialize(path, base::FilePath(), std::move(file), 0,
                                    std::string(),
@@ -460,7 +460,7 @@ TEST_F(BaseFileTest, AppendToBaseFile) {
   set_expected_data(kTestData4);
 
   // Use the file we've just created.
-  base_file_.reset(new BaseFile(net::BoundNetLog()));
+  base_file_.reset(new BaseFile(net::NetLogWithSource()));
   ASSERT_EQ(
       DOWNLOAD_INTERRUPT_REASON_NONE,
       base_file_->Initialize(existing_file_name, base::FilePath(), base::File(),
@@ -490,7 +490,7 @@ TEST_F(BaseFileTest, ReadonlyBaseFile) {
   EXPECT_TRUE(base::MakeFileUnwritable(readonly_file_name));
 
   // Try to overwrite it.
-  base_file_.reset(new BaseFile(net::BoundNetLog()));
+  base_file_.reset(new BaseFile(net::NetLogWithSource()));
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED,
             base_file_->Initialize(readonly_file_name, base::FilePath(),
                                    base::File(), 0, std::string(),

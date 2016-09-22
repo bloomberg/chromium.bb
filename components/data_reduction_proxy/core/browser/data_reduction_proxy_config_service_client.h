@@ -244,7 +244,7 @@ class DataReductionProxyConfigServiceClient
   std::unique_ptr<net::URLFetcher> fetcher_;
 
   // Used to correlate the start and end of requests.
-  net::BoundNetLog bound_net_log_;
+  net::NetLogWithSource net_log_with_source_;
 
   // Used to determine the latency in retrieving the Data Reduction Proxy
   // configuration.

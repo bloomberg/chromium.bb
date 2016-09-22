@@ -46,7 +46,7 @@ class NET_EXPORT_PRIVATE SpdyHttpStream : public SpdyStream::Delegate,
 
   int InitializeStream(const HttpRequestInfo* request_info,
                        RequestPriority priority,
-                       const BoundNetLog& net_log,
+                       const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override;
 
   int SendRequest(const HttpRequestHeaders& headers,

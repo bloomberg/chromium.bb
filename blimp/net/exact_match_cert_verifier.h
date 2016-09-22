@@ -33,7 +33,7 @@ class BLIMP_NET_EXPORT ExactMatchCertVerifier : public net::CertVerifier {
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
              std::unique_ptr<Request>* out_req,
-             const net::BoundNetLog& net_log) override;
+             const net::NetLogWithSource& net_log) override;
 
  private:
   scoped_refptr<net::X509Certificate> engine_cert_;

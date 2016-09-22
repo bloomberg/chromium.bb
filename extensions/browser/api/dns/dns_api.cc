@@ -59,7 +59,7 @@ void DnsResolveFunction::WorkOnIOThread() {
   int resolve_result = host_resolver->Resolve(
       request_info, net::DEFAULT_PRIORITY, addresses_.get(),
       base::Bind(&DnsResolveFunction::OnLookupFinished, this), &request_,
-      net::BoundNetLog());
+      net::NetLogWithSource());
 
   // Balanced in OnLookupFinished.
   AddRef();

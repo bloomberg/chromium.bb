@@ -726,7 +726,7 @@ int SSLClientSocketImpl::GetLocalAddress(IPEndPoint* addressList) const {
   return transport_->socket()->GetLocalAddress(addressList);
 }
 
-const BoundNetLog& SSLClientSocketImpl::NetLog() const {
+const NetLogWithSource& SSLClientSocketImpl::NetLog() const {
   return net_log_;
 }
 

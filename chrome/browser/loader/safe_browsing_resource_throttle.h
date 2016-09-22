@@ -177,7 +177,7 @@ class SafeBrowsingResourceThrottle
   scoped_refptr<safe_browsing::SafeBrowsingUIManager> ui_manager_;
   const net::URLRequest* request_;
   const content::ResourceType resource_type_;
-  net::BoundNetLog bound_net_log_;
+  net::NetLogWithSource net_log_with_source_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingResourceThrottle);
 };

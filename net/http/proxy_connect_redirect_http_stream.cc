@@ -23,7 +23,7 @@ ProxyConnectRedirectHttpStream::~ProxyConnectRedirectHttpStream() {}
 int ProxyConnectRedirectHttpStream::InitializeStream(
     const HttpRequestInfo* request_info,
     RequestPriority priority,
-    const BoundNetLog& net_log,
+    const NetLogWithSource& net_log,
     const CompletionCallback& callback) {
   NOTREACHED();
   return OK;

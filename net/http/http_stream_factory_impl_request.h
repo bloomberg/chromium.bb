@@ -52,7 +52,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
           HttpStreamRequest::Delegate* delegate,
           WebSocketHandshakeStreamBase::CreateHelper*
               websocket_handshake_stream_create_helper,
-          const BoundNetLog& net_log,
+          const NetLogWithSource& net_log,
           StreamType stream_type);
 
   ~Request() override;
@@ -60,7 +60,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   // The GURL from the HttpRequestInfo the started the Request.
   const GURL& url() const { return url_; }
 
-  const BoundNetLog& net_log() const { return net_log_; }
+  const NetLogWithSource& net_log() const { return net_log_; }
 
   // Called when the |helper_| determines the appropriate |spdy_session_key|
   // for the Request. Note that this does not mean that SPDY is necessarily
@@ -137,7 +137,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   WebSocketHandshakeStreamBase::CreateHelper* const
       websocket_handshake_stream_create_helper_;
   HttpStreamRequest::Delegate* const delegate_;
-  const BoundNetLog net_log_;
+  const NetLogWithSource net_log_;
 
   std::unique_ptr<const SpdySessionKey> spdy_session_key_;
 

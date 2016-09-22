@@ -63,7 +63,7 @@ class MockClientSocket : public net::StreamSocket {
   MOCK_CONST_METHOD0(IsConnectedAndIdle, bool());
   MOCK_CONST_METHOD1(GetPeerAddress, int(net::IPEndPoint*));
   MOCK_CONST_METHOD1(GetLocalAddress, int(net::IPEndPoint*));
-  MOCK_CONST_METHOD0(NetLog, const net::BoundNetLog&());
+  MOCK_CONST_METHOD0(NetLog, const net::NetLogWithSource&());
   MOCK_METHOD0(SetSubresourceSpeculation, void());
   MOCK_METHOD0(SetOmniboxSpeculation, void());
   MOCK_CONST_METHOD0(WasEverUsed, bool());
@@ -283,7 +283,7 @@ TEST_F(FakeSSLClientSocketTest, PassThroughMethods) {
   const int kSendBufferSize = 20;
   net::IPEndPoint ip_endpoint(net::IPAddress::IPv4AllZeros(), 80);
   const int kPeerAddress = 30;
-  net::BoundNetLog net_log;
+  net::NetLogWithSource net_log;
   EXPECT_CALL(*mock_client_socket, SetReceiveBufferSize(kReceiveBufferSize));
   EXPECT_CALL(*mock_client_socket, SetSendBufferSize(kSendBufferSize));
   EXPECT_CALL(*mock_client_socket, GetPeerAddress(&ip_endpoint)).

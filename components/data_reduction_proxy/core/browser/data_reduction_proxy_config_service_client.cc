@@ -218,14 +218,15 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   if (!enabled_)
     return;
 
-  bound_net_log_ = net::BoundNetLog::Make(
+  net_log_with_source_ = net::NetLogWithSource::Make(
       net_log_, net::NetLogSourceType::DATA_REDUCTION_PROXY);
   // Strip off query string parameters
   GURL::Replacements replacements;
   replacements.ClearQuery();
   GURL base_config_service_url =
       config_service_url_.ReplaceComponents(replacements);
-  event_creator_->BeginConfigRequest(bound_net_log_, base_config_service_url);
+  event_creator_->BeginConfigRequest(net_log_with_source_,
+                                     base_config_service_url);
   config_fetch_start_time_ = base::TimeTicks::Now();
 
   RetrieveRemoteConfig();
@@ -452,7 +453,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
       succeeded, refresh_duration, GetBackoffEntry()->GetTimeUntilRelease());
 
   SetConfigRefreshTimer(next_config_refresh_time);
-  event_creator_->EndConfigRequest(bound_net_log_, status.error(),
+  event_creator_->EndConfigRequest(net_log_with_source_, status.error(),
                                    response_code,
                                    GetBackoffEntry()->failure_count(), proxies,
                                    refresh_duration, next_config_refresh_time);

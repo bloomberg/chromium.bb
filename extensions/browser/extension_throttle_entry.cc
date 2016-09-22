@@ -78,7 +78,7 @@ ExtensionThrottleEntry::ExtensionThrottleEntry(
       backoff_entry_(&backoff_policy_),
       manager_(manager),
       url_id_(url_id),
-      net_log_(net::BoundNetLog::Make(
+      net_log_(net::NetLogWithSource::Make(
           manager->net_log(),
           net::NetLogSourceType::EXPONENTIAL_BACKOFF_THROTTLING)),
       ignore_user_gesture_load_flag_for_tests_(

@@ -90,7 +90,7 @@ class MockHttpStream : public HttpStream {
   // HttpStream implementation.
   int InitializeStream(const HttpRequestInfo* request_info,
                        RequestPriority priority,
-                       const BoundNetLog& net_log,
+                       const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override {
     return ERR_UNEXPECTED;
   }

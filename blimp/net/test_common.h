@@ -118,7 +118,7 @@ class MockStreamSocket : public net::StreamSocket {
   MOCK_CONST_METHOD0(IsConnectedAndIdle, bool());
   MOCK_CONST_METHOD1(GetPeerAddress, int(net::IPEndPoint*));
   MOCK_CONST_METHOD1(GetLocalAddress, int(net::IPEndPoint*));
-  MOCK_CONST_METHOD0(NetLog, const net::BoundNetLog&());
+  MOCK_CONST_METHOD0(NetLog, const net::NetLogWithSource&());
   MOCK_METHOD0(SetSubresourceSpeculation, void());
   MOCK_METHOD0(SetOmniboxSpeculation, void());
   MOCK_CONST_METHOD0(WasEverUsed, bool());

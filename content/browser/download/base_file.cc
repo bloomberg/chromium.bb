@@ -28,8 +28,7 @@
 
 namespace content {
 
-BaseFile::BaseFile(const net::BoundNetLog& bound_net_log)
-    : bound_net_log_(bound_net_log) {}
+BaseFile::BaseFile(const net::NetLogWithSource& net_log) : net_log_(net_log) {}
 
 BaseFile::~BaseFile() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
@@ -98,7 +97,7 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
   size_t write_count = 0;
   size_t len = data_len;
   const char* current_data = data;
-  bound_net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN);
+  net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN);
   while (len > 0) {
     write_count++;
     int write_result = file_.WriteAtCurrentPos(current_data, len);
@@ -115,8 +114,8 @@ DownloadInterruptReason BaseFile::AppendDataToFile(const char* data,
     current_data += write_size;
     bytes_so_far_ += write_size;
   }
-  bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN,
-                          net::NetLog::Int64Callback("bytes", data_len));
+  net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_WRITTEN,
+                    net::NetLog::Int64Callback("bytes", data_len));
 
   RecordDownloadWriteSize(data_len);
   RecordDownloadWriteLoopCount(write_count);
@@ -142,7 +141,7 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
 
   Close();
 
-  bound_net_log_.BeginEvent(
+  net_log_.BeginEvent(
       net::NetLogEventType::DOWNLOAD_FILE_RENAMED,
       base::Bind(&FileRenamedNetLogCallback, &full_path_, &new_path));
 
@@ -152,7 +151,7 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
   // permissions / security descriptors that makes sense in the new directory.
   rename_result = MoveFileAndAdjustPermissions(new_path);
 
-  bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_RENAMED);
+  net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_RENAMED);
 
   if (rename_result == DOWNLOAD_INTERRUPT_REASON_NONE)
     full_path_ = new_path;
@@ -169,19 +168,19 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
 
 void BaseFile::Detach() {
   detached_ = true;
-  bound_net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_FILE_DETACHED);
+  net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_FILE_DETACHED);
 }
 
 void BaseFile::Cancel() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!detached_);
 
-  bound_net_log_.AddEvent(net::NetLogEventType::CANCELLED);
+  net_log_.AddEvent(net::NetLogEventType::CANCELLED);
 
   Close();
 
   if (!full_path_.empty()) {
-    bound_net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_FILE_DELETED);
+    net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_FILE_DELETED);
     base::DeleteFile(full_path_, false);
   }
 
@@ -288,7 +287,7 @@ DownloadInterruptReason BaseFile::Open(const std::string& hash_so_far) {
     }
   }
 
-  bound_net_log_.BeginEvent(
+  net_log_.BeginEvent(
       net::NetLogEventType::DOWNLOAD_FILE_OPENED,
       base::Bind(&FileOpenedNetLogCallback, &full_path_, bytes_so_far_));
 
@@ -340,15 +339,14 @@ void BaseFile::ClearFile() {
   // This should only be called when we have a stream.
   DCHECK(file_.IsValid());
   file_.Close();
-  bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_OPENED);
+  net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_OPENED);
 }
 
 DownloadInterruptReason BaseFile::LogNetError(
     const char* operation,
     net::Error error) {
-  bound_net_log_.AddEvent(
-      net::NetLogEventType::DOWNLOAD_FILE_ERROR,
-      base::Bind(&FileErrorNetLogCallback, operation, error));
+  net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_FILE_ERROR,
+                    base::Bind(&FileErrorNetLogCallback, operation, error));
   return ConvertNetErrorToInterruptReason(error, DOWNLOAD_INTERRUPT_FROM_DISK);
 }
 
@@ -369,7 +367,7 @@ DownloadInterruptReason BaseFile::LogInterruptReason(
   DVLOG(1) << __func__ << "() operation:" << operation
            << " os_error:" << os_error
            << " reason:" << DownloadInterruptReasonToString(reason);
-  bound_net_log_.AddEvent(
+  net_log_.AddEvent(
       net::NetLogEventType::DOWNLOAD_FILE_ERROR,
       base::Bind(&FileInterruptedNetLogCallback, operation, os_error, reason));
   return reason;
@@ -384,10 +382,10 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
   DCHECK(!detached_);
   DCHECK(!full_path_.empty());
 
-  bound_net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
+  net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
   QuarantineFileResult result =
       QuarantineFile(full_path_, source_url, referrer_url, client_guid);
-  bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
+  net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
   switch (result) {
     case QuarantineFileResult::OK:
       return DOWNLOAD_INTERRUPT_REASON_NONE;

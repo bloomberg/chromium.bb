@@ -63,13 +63,13 @@ class NET_EXPORT StaleHostResolver : public net::HostResolver {
               net::AddressList* addresses,
               const net::CompletionCallback& callback,
               std::unique_ptr<Request>* out_req,
-              const net::BoundNetLog& net_log) override;
+              const net::NetLogWithSource& net_log) override;
 
   // The remaining public methods pass through to the inner resolver:
 
   int ResolveFromCache(const RequestInfo& info,
                        net::AddressList* addresses,
-                       const net::BoundNetLog& net_log) override;
+                       const net::NetLogWithSource& net_log) override;
   void SetDnsClientEnabled(bool enabled) override;
   net::HostCache* GetHostCache() override;
   std::unique_ptr<base::Value> GetDnsConfigAsValue() const override;

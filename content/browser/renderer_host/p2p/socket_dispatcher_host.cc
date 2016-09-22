@@ -75,7 +75,7 @@ class P2PSocketDispatcherHost::DnsRequest {
         info, net::DEFAULT_PRIORITY, &addresses_,
         base::Bind(&P2PSocketDispatcherHost::DnsRequest::OnDone,
                    base::Unretained(this)),
-        &request_, net::BoundNetLog());
+        &request_, net::NetLogWithSource());
     if (result != net::ERR_IO_PENDING)
       OnDone(result);
   }

@@ -102,7 +102,7 @@ class StaleHostResolver::RequestImpl {
             net::AddressList* addresses,
             const net::CompletionCallback& result_callback,
             std::unique_ptr<net::HostResolver::Request>* out_req,
-            const net::BoundNetLog& net_log,
+            const net::NetLogWithSource& net_log,
             const StaleEntryUsableCallback& usable_callback,
             base::TimeDelta stale_delay);
 
@@ -195,7 +195,7 @@ int StaleHostResolver::RequestImpl::Start(
     net::AddressList* addresses,
     const net::CompletionCallback& result_callback,
     std::unique_ptr<net::HostResolver::Request>* out_req,
-    const net::BoundNetLog& net_log,
+    const net::NetLogWithSource& net_log,
     const StaleEntryUsableCallback& usable_callback,
     base::TimeDelta stale_delay) {
   DCHECK(resolver);
@@ -365,7 +365,7 @@ int StaleHostResolver::Resolve(const RequestInfo& info,
                                net::AddressList* addresses,
                                const net::CompletionCallback& callback,
                                std::unique_ptr<Request>* out_req,
-                               const net::BoundNetLog& net_log) {
+                               const net::NetLogWithSource& net_log) {
   StaleHostResolver::RequestImpl::StaleEntryUsableCallback usable_callback =
       base::Bind(&StaleEntryIsUsable, options_);
 
@@ -381,7 +381,7 @@ int StaleHostResolver::Resolve(const RequestInfo& info,
 
 int StaleHostResolver::ResolveFromCache(const RequestInfo& info,
                                         net::AddressList* addresses,
-                                        const net::BoundNetLog& net_log) {
+                                        const net::NetLogWithSource& net_log) {
   return inner_resolver_->ResolveFromCache(info, addresses, net_log);
 }
 

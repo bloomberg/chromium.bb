@@ -110,7 +110,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionPassing) {
   net::HostResolver::RequestInfo info(net::HostPortPair("abcde", 80));
   net::AddressList addresses;
   EXPECT_EQ(net::OK, context->host_resolver()->ResolveFromCache(
-                         info, &addresses, net::BoundNetLog()));
+                         info, &addresses, net::NetLogWithSource()));
 }
 
 TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {

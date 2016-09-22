@@ -123,7 +123,8 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
   void QueryLeafIndex(base::StringPiece log_domain,
                       base::StringPiece leaf_hash,
                       MockLeafIndexCallback* callback) {
-    LogDnsClient log_client(mock_dns_.CreateDnsClient(), net::BoundNetLog());
+    LogDnsClient log_client(mock_dns_.CreateDnsClient(),
+                            net::NetLogWithSource());
     log_client.QueryLeafIndex(log_domain, leaf_hash, callback->AsCallback());
     callback->WaitUntilRun();
   }
@@ -132,7 +133,8 @@ class LogDnsClientTest : public ::testing::TestWithParam<net::IoMode> {
                        uint64_t leaf_index,
                        uint64_t tree_size,
                        MockAuditProofCallback* callback) {
-    LogDnsClient log_client(mock_dns_.CreateDnsClient(), net::BoundNetLog());
+    LogDnsClient log_client(mock_dns_.CreateDnsClient(),
+                            net::NetLogWithSource());
     log_client.QueryAuditProof(log_domain, leaf_index, tree_size,
                                callback->AsCallback());
     callback->WaitUntilRun();
@@ -514,7 +516,7 @@ TEST_P(LogDnsClientTest, QueryAuditProofReportsTimeout) {
 TEST_P(LogDnsClientTest, AdoptsLatestDnsConfigIfValid) {
   std::unique_ptr<net::DnsClient> tmp = mock_dns_.CreateDnsClient();
   net::DnsClient* dns_client = tmp.get();
-  LogDnsClient log_client(std::move(tmp), net::BoundNetLog());
+  LogDnsClient log_client(std::move(tmp), net::NetLogWithSource());
 
   // Get the current DNS config, modify it and broadcast the update.
   net::DnsConfig config(*dns_client->GetConfig());
@@ -530,7 +532,7 @@ TEST_P(LogDnsClientTest, AdoptsLatestDnsConfigIfValid) {
 TEST_P(LogDnsClientTest, IgnoresLatestDnsConfigIfInvalid) {
   std::unique_ptr<net::DnsClient> tmp = mock_dns_.CreateDnsClient();
   net::DnsClient* dns_client = tmp.get();
-  LogDnsClient log_client(std::move(tmp), net::BoundNetLog());
+  LogDnsClient log_client(std::move(tmp), net::NetLogWithSource());
 
   // Get the current DNS config, modify it and broadcast the update.
   net::DnsConfig config(*dns_client->GetConfig());

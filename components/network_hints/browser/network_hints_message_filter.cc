@@ -43,7 +43,7 @@ class DnsLookupRequest {
     return resolver_->Resolve(
         resolve_info, net::DEFAULT_PRIORITY, &addresses_,
         base::Bind(&DnsLookupRequest::OnLookupFinished, base::Owned(this)),
-        &request_, net::BoundNetLog());
+        &request_, net::NetLogWithSource());
   }
 
  private:

@@ -95,7 +95,7 @@ class SSLClientSocketImpl : public SSLClientSocket {
   bool IsConnectedAndIdle() const override;
   int GetPeerAddress(IPEndPoint* address) const override;
   int GetLocalAddress(IPEndPoint* address) const override;
-  const BoundNetLog& NetLog() const override;
+  const NetLogWithSource& NetLog() const override;
   void SetSubresourceSpeculation() override;
   void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
@@ -378,7 +378,7 @@ class SSLClientSocketImpl : public SSLClientSocket {
   // True if PKP is bypassed due to a local trust anchor.
   bool pkp_bypassed_;
 
-  BoundNetLog net_log_;
+  NetLogWithSource net_log_;
   base::WeakPtrFactory<SSLClientSocketImpl> weak_factory_;
 };
 

@@ -155,7 +155,7 @@ class ExtensionThrottleEntry : public ExtensionThrottleEntryInterface {
   // Canonicalized URL string that this entry is for; used for logging only.
   std::string url_id_;
 
-  net::BoundNetLog net_log_;
+  net::NetLogWithSource net_log_;
   bool ignore_user_gesture_load_flag_for_tests_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionThrottleEntry);

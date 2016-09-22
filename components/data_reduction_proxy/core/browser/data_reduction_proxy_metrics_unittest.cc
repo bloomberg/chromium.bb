@@ -188,8 +188,8 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
       EXPECT_TRUE(context.proxy_service()->MarkProxiesAsBadUntil(
           proxy_info, test_case.bypass_duration,
           std::vector<net::ProxyServer>(),
-          net::BoundNetLog::Make(context.net_log(),
-                                 net::NetLogSourceType::NONE)));
+          net::NetLogWithSource::Make(context.net_log(),
+                                      net::NetLogSourceType::NONE)));
     }
 
     EXPECT_EQ(test_case.expected_request_type,

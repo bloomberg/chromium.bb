@@ -25,7 +25,7 @@ class Value;
 }
 
 namespace net {
-class BoundNetLog;
+class NetLogWithSource;
 class ProxyServer;
 }
 
@@ -57,7 +57,7 @@ class DataReductionProxyEventCreator {
 
   // Adds a DATA_REDUCTION_PROXY_BYPASS_REQUESTED event to the event store
   // when the bypass reason is initiated by the data reduction proxy.
-  void AddBypassActionEvent(const net::BoundNetLog& net_log,
+  void AddBypassActionEvent(const net::NetLogWithSource& net_log,
                             DataReductionProxyBypassAction bypass_action,
                             const std::string& request_method,
                             const GURL& gurl,
@@ -67,7 +67,7 @@ class DataReductionProxyEventCreator {
   // Adds a DATA_REDUCTION_PROXY_BYPASS_REQUESTED event to the event store
   // when the bypass reason is not initiated by the data reduction proxy, such
   // as HTTP errors.
-  void AddBypassTypeEvent(const net::BoundNetLog& net_log,
+  void AddBypassTypeEvent(const net::NetLogWithSource& net_log,
                           DataReductionProxyBypassType bypass_type,
                           const std::string& request_method,
                           const GURL& gurl,
@@ -82,22 +82,24 @@ class DataReductionProxyEventCreator {
 
   // Adds a DATA_REDUCTION_PROXY_CANARY_REQUEST event to the event store
   // when the secure proxy request has started.
-  void BeginSecureProxyCheck(const net::BoundNetLog& net_log, const GURL& gurl);
+  void BeginSecureProxyCheck(const net::NetLogWithSource& net_log,
+                             const GURL& gurl);
 
   // Adds a DATA_REDUCTION_PROXY_CANARY_REQUEST event to the event store
   // when the secure proxy request has ended.
-  void EndSecureProxyCheck(const net::BoundNetLog& net_log,
+  void EndSecureProxyCheck(const net::NetLogWithSource& net_log,
                            int net_error,
                            int http_response_code,
                            bool succeeded);
 
   // Adds a DATA_REDUCTION_PROXY_CONFIG_REQUEST event to the event store
   // when the config request has started.
-  void BeginConfigRequest(const net::BoundNetLog& net_log, const GURL& url);
+  void BeginConfigRequest(const net::NetLogWithSource& net_log,
+                          const GURL& url);
 
   // Adds a DATA_REDUCTION_PROXY_CONFIG_REQUEST event to the event store
   // when the config request has ended.
-  void EndConfigRequest(const net::BoundNetLog& net_log,
+  void EndConfigRequest(const net::NetLogWithSource& net_log,
                         int net_error,
                         int http_response_code,
                         int failure_count,
@@ -120,27 +122,27 @@ class DataReductionProxyEventCreator {
                         const net::NetLog::ParametersCallback& callback);
 
   // Prepare and post a Data Reduction Proxy bypass event for the event store
-  // on a BoundNetLog.
-  void PostBoundNetLogBypassEvent(
-      const net::BoundNetLog& net_log,
+  // on a NetLogWithSource.
+  void PostNetLogWithSourceBypassEvent(
+      const net::NetLogWithSource& net_log,
       net::NetLogEventType type,
       net::NetLogEventPhase phase,
       int64_t expiration_ticks,
       const net::NetLog::ParametersCallback& callback);
 
   // Prepare and post a secure proxy check event for the event store on a
-  // BoundNetLog.
-  void PostBoundNetLogSecureProxyCheckEvent(
-      const net::BoundNetLog& net_log,
+  // NetLogWithSource.
+  void PostNetLogWithSourceSecureProxyCheckEvent(
+      const net::NetLogWithSource& net_log,
       net::NetLogEventType type,
       net::NetLogEventPhase phase,
       DataReductionProxyEventStorageDelegate::SecureProxyCheckState state,
       const net::NetLog::ParametersCallback& callback);
 
   // Prepare and post a config request event for the event store on a
-  // BoundNetLog.
-  void PostBoundNetLogConfigRequestEvent(
-      const net::BoundNetLog& net_log,
+  // NetLogWithSource.
+  void PostNetLogWithSourceConfigRequestEvent(
+      const net::NetLogWithSource& net_log,
       net::NetLogEventType type,
       net::NetLogEventPhase phase,
       const net::NetLog::ParametersCallback& callback);

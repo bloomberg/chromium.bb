@@ -62,7 +62,7 @@ class FailingSSLClientSocket : public SSLClientSocket {
     return ERR_SOCKET_NOT_CONNECTED;
   }
 
-  const BoundNetLog& NetLog() const override { return net_log_; }
+  const NetLogWithSource& NetLog() const override { return net_log_; }
 
   void SetSubresourceSpeculation() override {}
   void SetOmniboxSpeculation() override {}
@@ -118,7 +118,7 @@ class FailingSSLClientSocket : public SSLClientSocket {
   }
 
  private:
-  BoundNetLog net_log_;
+  NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(FailingSSLClientSocket);
 };

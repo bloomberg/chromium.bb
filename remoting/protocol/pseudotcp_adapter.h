@@ -73,7 +73,7 @@ class PseudoTcpAdapter : public P2PStreamSocket, base::NonThreadSafe {
 
   scoped_refptr<Core> core_;
 
-  net::BoundNetLog net_log_;
+  net::NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(PseudoTcpAdapter);
 };

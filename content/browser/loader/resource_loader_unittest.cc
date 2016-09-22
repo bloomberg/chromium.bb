@@ -494,7 +494,7 @@ class NonChunkedUploadDataStream : public net::UploadDataStream {
   }
 
  private:
-  int InitInternal(const net::BoundNetLog& net_log) override {
+  int InitInternal(const net::NetLogWithSource& net_log) override {
     SetSize(size_);
     stream_.Init(base::Bind(&NonChunkedUploadDataStream::OnInitCompleted,
                             base::Unretained(this)),

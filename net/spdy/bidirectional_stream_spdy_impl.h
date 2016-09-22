@@ -27,7 +27,7 @@ class Timer;
 
 namespace net {
 
-class BoundNetLog;
+class NetLogWithSource;
 class IOBuffer;
 class SpdyHeaderBlock;
 
@@ -42,7 +42,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl
 
   // BidirectionalStreamImpl implementation:
   void Start(const BidirectionalStreamRequestInfo* request_info,
-             const BoundNetLog& net_log,
+             const NetLogWithSource& net_log,
              bool send_request_headers_automatically,
              BidirectionalStreamImpl::Delegate* delegate,
              std::unique_ptr<base::Timer> timer) override;

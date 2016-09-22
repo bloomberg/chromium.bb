@@ -62,7 +62,7 @@ HttpStreamFactoryImpl::Request* HttpStreamFactoryImpl::JobController::Start(
     HttpStreamRequest::Delegate* delegate,
     WebSocketHandshakeStreamBase::CreateHelper*
         websocket_handshake_stream_create_helper,
-    const BoundNetLog& net_log,
+    const NetLogWithSource& net_log,
     HttpStreamRequest::StreamType stream_type,
     RequestPriority priority,
     const SSLConfig& server_ssl_config,
@@ -414,7 +414,7 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
   const bool was_alpn_negotiated = job->was_alpn_negotiated();
   const NextProto negotiated_protocol = job->negotiated_protocol();
   const bool using_spdy = job->using_spdy();
-  const BoundNetLog net_log = job->net_log();
+  const NetLogWithSource net_log = job->net_log();
 
   // Cache this so we can still use it if the JobController is deleted.
   HttpStreamFactoryImpl* factory = factory_;
@@ -594,7 +594,7 @@ void HttpStreamFactoryImpl::JobController::
   }
 }
 
-const BoundNetLog* HttpStreamFactoryImpl::JobController::GetNetLog(
+const NetLogWithSource* HttpStreamFactoryImpl::JobController::GetNetLog(
     Job* job) const {
   if (is_preconnect_ || (job_bound_ && bound_job_ != job))
     return nullptr;
@@ -621,7 +621,7 @@ void HttpStreamFactoryImpl::JobController::CreateJobs(
     const SSLConfig& proxy_ssl_config,
     HttpStreamRequest::Delegate* delegate,
     HttpStreamRequest::StreamType stream_type,
-    const BoundNetLog& net_log) {
+    const NetLogWithSource& net_log) {
   DCHECK(!main_job_);
   DCHECK(!alternative_job_);
   HostPortPair destination(HostPortPair::FromURL(request_info.url));

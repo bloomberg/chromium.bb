@@ -144,7 +144,7 @@ class HttpStreamFactoryImpl::Job {
     // Remove session from the SpdySessionRequestMap.
     virtual void RemoveRequestFromSpdySessionRequestMapForJob(Job* job) = 0;
 
-    virtual const BoundNetLog* GetNetLog(Job* job) const = 0;
+    virtual const NetLogWithSource* GetNetLog(Job* job) const = 0;
 
     virtual WebSocketHandshakeStreamBase::CreateHelper*
     websocket_handshake_stream_create_helper() = 0;
@@ -215,7 +215,7 @@ class HttpStreamFactoryImpl::Job {
   bool was_alpn_negotiated() const;
   NextProto negotiated_protocol() const;
   bool using_spdy() const;
-  const BoundNetLog& net_log() const { return net_log_; }
+  const NetLogWithSource& net_log() const { return net_log_; }
   HttpStreamRequest::StreamType stream_type() const { return stream_type_; }
 
   std::unique_ptr<HttpStream> ReleaseStream() { return std::move(stream_); }
@@ -397,14 +397,14 @@ class HttpStreamFactoryImpl::Job {
                               const SpdySessionKey& spdy_session_key,
                               const GURL& origin_url,
                               const AddressList& addresses,
-                              const BoundNetLog& net_log);
+                              const NetLogWithSource& net_log);
 
   const HttpRequestInfo request_info_;
   RequestPriority priority_;
   ProxyInfo proxy_info_;
   SSLConfig server_ssl_config_;
   SSLConfig proxy_ssl_config_;
-  const BoundNetLog net_log_;
+  const NetLogWithSource net_log_;
 
   CompletionCallback io_callback_;
   std::unique_ptr<ClientSocketHandle> connection_;

@@ -132,7 +132,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   }
 
   void Start(const BidirectionalStreamRequestInfo* request,
-             const BoundNetLog& net_log) {
+             const NetLogWithSource& net_log) {
     stream_->Start(request, net_log,
                    /*send_request_headers_automatically=*/false, this,
                    base::MakeUnique<base::Timer>(false, false));

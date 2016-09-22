@@ -141,7 +141,7 @@ class HostResolverImplChromeOSTest : public testing::Test {
   std::unique_ptr<chromeos::NetworkStateHandler> network_state_handler_;
   std::unique_ptr<net::HostResolver> host_resolver_;
   base::MessageLoop io_message_loop_;
-  net::BoundNetLog net_log_;
+  net::NetLogWithSource net_log_;
   std::unique_ptr<net::HostResolver::Request> request_;
 
   DISALLOW_COPY_AND_ASSIGN(HostResolverImplChromeOSTest);

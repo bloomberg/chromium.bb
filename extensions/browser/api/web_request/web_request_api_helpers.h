@@ -37,7 +37,7 @@ class Extension;
 }
 
 namespace net {
-class BoundNetLog;
+class NetLogWithSource;
 class URLRequest;
 }
 
@@ -257,18 +257,16 @@ EventResponseDelta* CalculateOnAuthRequiredDelta(
 // reported will be stored in |event_log_entries|.
 
 // Stores in |canceled| whether any extension wanted to cancel the request.
-void MergeCancelOfResponses(
-    const EventResponseDeltas& deltas,
-    bool* canceled,
-    const net::BoundNetLog* net_log);
+void MergeCancelOfResponses(const EventResponseDeltas& deltas,
+                            bool* canceled,
+                            const net::NetLogWithSource* net_log);
 // Stores in |*new_url| the redirect request of the extension with highest
 // precedence. Extensions that did not command to redirect the request are
 // ignored in this logic.
-void MergeRedirectUrlOfResponses(
-    const EventResponseDeltas& deltas,
-    GURL* new_url,
-    extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log);
+void MergeRedirectUrlOfResponses(const EventResponseDeltas& deltas,
+                                 GURL* new_url,
+                                 extensions::WarningSet* conflicting_extensions,
+                                 const net::NetLogWithSource* net_log);
 // Stores in |*new_url| the redirect request of the extension with highest
 // precedence. Extensions that did not command to redirect the request are
 // ignored in this logic.
@@ -276,7 +274,7 @@ void MergeOnBeforeRequestResponses(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log);
+    const net::NetLogWithSource* net_log);
 // Modifies the "Cookie" header in |request_headers| according to
 // |deltas.request_cookie_modifications|. Conflicts are currently ignored
 // silently.
@@ -284,14 +282,14 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log);
+    const net::NetLogWithSource* net_log);
 // Modifies the headers in |request_headers| according to |deltas|. Conflicts
 // are tried to be resolved.
 void MergeOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log);
+    const net::NetLogWithSource* net_log);
 // Modifies the "Set-Cookie" headers in |override_response_headers| according to
 // |deltas.response_cookie_modifications|. If |override_response_headers| is
 // NULL, a copy of |original_response_headers| is created. Conflicts are
@@ -301,7 +299,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log);
+    const net::NetLogWithSource* net_log);
 // Stores a copy of |original_response_header| into |override_response_headers|
 // that is modified according to |deltas|. If |deltas| does not instruct to
 // modify the response headers, |override_response_headers| remains empty.
@@ -314,7 +312,7 @@ void MergeOnHeadersReceivedResponses(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log);
+    const net::NetLogWithSource* net_log);
 // Merge the responses of blocked onAuthRequired handlers. The first
 // registered listener that supplies authentication credentials in a response,
 // if any, will have its authentication credentials used. |request| must be
@@ -325,7 +323,7 @@ bool MergeOnAuthRequiredResponses(
     const EventResponseDeltas& deltas,
     net::AuthCredentials* auth_credentials,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log);
+    const net::NetLogWithSource* net_log);
 
 // Triggers clearing each renderer's in-memory cache the next time it navigates.
 void ClearCacheOnNavigation();

@@ -207,7 +207,7 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
   int resolve_result = host_resolver->Resolve(
       request_info, net::DEFAULT_PRIORITY, &addresses_,
       base::Bind(&SocketExtensionWithDnsLookupFunction::OnDnsLookup, this),
-      &request_, net::BoundNetLog());
+      &request_, net::NetLogWithSource());
 
   if (resolve_result != net::ERR_IO_PENDING)
     OnDnsLookup(resolve_result);

@@ -139,12 +139,13 @@ HostResolverImplChromeOS::HostResolverImplChromeOS(
 HostResolverImplChromeOS::~HostResolverImplChromeOS() {
 }
 
-int HostResolverImplChromeOS::Resolve(const RequestInfo& info,
-                                      net::RequestPriority priority,
-                                      net::AddressList* addresses,
-                                      const net::CompletionCallback& callback,
-                                      std::unique_ptr<Request>* out_req,
-                                      const net::BoundNetLog& source_net_log) {
+int HostResolverImplChromeOS::Resolve(
+    const RequestInfo& info,
+    net::RequestPriority priority,
+    net::AddressList* addresses,
+    const net::CompletionCallback& callback,
+    std::unique_ptr<Request>* out_req,
+    const net::NetLogWithSource& source_net_log) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (ResolveLocalIPAddress(info, addresses))
     return net::OK;

@@ -228,7 +228,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   std::unique_ptr<base::Value> GetInfoAsValue(
       const std::set<HostPortPair>& aliases);
 
-  const BoundNetLog& net_log() const { return net_log_; }
+  const NetLogWithSource& net_log() const { return net_log_; }
 
   base::WeakPtr<QuicChromiumClientSession> GetWeakPtr();
 
@@ -268,7 +268,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // connected network. Migrates this session to the newly connected
   // network if the session has a pending migration.
   void OnNetworkConnected(NetworkChangeNotifier::NetworkHandle network,
-                          const BoundNetLog& bound_net_log);
+                          const NetLogWithSource& net_log);
 
   // Schedules a migration alarm to wait for a new network.
   void OnNoNewNetwork();
@@ -362,7 +362,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   CompletionCallback callback_;
   size_t num_total_streams_;
   base::TaskRunner* task_runner_;
-  BoundNetLog net_log_;
+  NetLogWithSource net_log_;
   std::vector<std::unique_ptr<QuicChromiumPacketReader>> packet_readers_;
   LoadTimingInfo::ConnectTiming connect_timing_;
   std::unique_ptr<QuicConnectionLogger> logger_;

@@ -58,7 +58,7 @@ class FakeSocket : public net::StreamSocket {
   bool IsConnectedAndIdle() const override;
   int GetPeerAddress(net::IPEndPoint* address) const override;
   int GetLocalAddress(net::IPEndPoint* address) const override;
-  const net::BoundNetLog& NetLog() const override;
+  const net::NetLogWithSource& NetLog() const override;
   void SetSubresourceSpeculation() override;
   void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
@@ -90,7 +90,7 @@ class FakeSocket : public net::StreamSocket {
   net::IPEndPoint peer_address_;
   net::IPEndPoint local_address_;
 
-  net::BoundNetLog net_log_;
+  net::NetLogWithSource net_log_;
 };
 
 void CreateRandomPacket(std::vector<char>* packet);

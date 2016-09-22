@@ -98,7 +98,7 @@ int PreresolveUrl(content::ResourceContext* resource_context,
       resolve_info, net::IDLE, addresses,
       base::Bind(&OnResolveComplete, base::Owned(request_holder),
                  base::Owned(addresses), callback),
-      request_holder->GetRequest(), net::BoundNetLog());
+      request_holder->GetRequest(), net::NetLogWithSource());
 }
 
 }  // namespace content

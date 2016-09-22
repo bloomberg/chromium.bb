@@ -204,7 +204,7 @@ const size_t HttpStreamParser::kChunkHeaderFooterSize = 12;
 HttpStreamParser::HttpStreamParser(ClientSocketHandle* connection,
                                    const HttpRequestInfo* request,
                                    GrowableIOBuffer* read_buffer,
-                                   const BoundNetLog& net_log)
+                                   const NetLogWithSource& net_log)
     : io_state_(STATE_NONE),
       request_(request),
       request_headers_(nullptr),

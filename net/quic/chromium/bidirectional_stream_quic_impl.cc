@@ -54,7 +54,7 @@ BidirectionalStreamQuicImpl::~BidirectionalStreamQuicImpl() {
 
 void BidirectionalStreamQuicImpl::Start(
     const BidirectionalStreamRequestInfo* request_info,
-    const BoundNetLog& net_log,
+    const NetLogWithSource& net_log,
     bool send_request_headers_automatically,
     BidirectionalStreamImpl::Delegate* delegate,
     std::unique_ptr<base::Timer> /* timer */) {

@@ -21,7 +21,7 @@
 
 namespace net {
 
-class BoundNetLog;
+class NetLogWithSource;
 class ClientSocketHandle;
 class HttpResponseInfo;
 struct HttpRequestInfo;
@@ -41,7 +41,7 @@ class NET_EXPORT_PRIVATE HttpBasicStream : public HttpStream {
   // HttpStream methods:
   int InitializeStream(const HttpRequestInfo* request_info,
                        RequestPriority priority,
-                       const BoundNetLog& net_log,
+                       const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override;
 
   int SendRequest(const HttpRequestHeaders& headers,

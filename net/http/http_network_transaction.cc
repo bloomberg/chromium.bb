@@ -128,7 +128,7 @@ HttpNetworkTransaction::~HttpNetworkTransaction() {
 
 int HttpNetworkTransaction::Start(const HttpRequestInfo* request_info,
                                   const CompletionCallback& callback,
-                                  const BoundNetLog& net_log) {
+                                  const NetLogWithSource& net_log) {
   net_log_ = net_log;
   request_ = request_info;
 

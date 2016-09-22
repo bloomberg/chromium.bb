@@ -183,7 +183,8 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       priority_(priority),
       server_ssl_config_(server_ssl_config),
       proxy_ssl_config_(proxy_ssl_config),
-      net_log_(BoundNetLog::Make(net_log, NetLogSourceType::HTTP_STREAM_JOB)),
+      net_log_(
+          NetLogWithSource::Make(net_log, NetLogSourceType::HTTP_STREAM_JOB)),
       io_callback_(base::Bind(&Job::OnIOComplete, base::Unretained(this))),
       connection_(new ClientSocketHandle),
       session_(session),
@@ -490,7 +491,7 @@ int HttpStreamFactoryImpl::Job::OnHostResolution(
     const SpdySessionKey& spdy_session_key,
     const GURL& origin_url,
     const AddressList& addresses,
-    const BoundNetLog& net_log) {
+    const NetLogWithSource& net_log) {
   // It is OK to dereference spdy_session_pool, because the
   // ClientSocketPoolManager will be destroyed in the same callback that
   // destroys the SpdySessionPool.
@@ -683,7 +684,7 @@ int HttpStreamFactoryImpl::Job::StartInternal() {
 }
 
 int HttpStreamFactoryImpl::Job::DoStart() {
-  const BoundNetLog* net_log = delegate_->GetNetLog(this);
+  const NetLogWithSource* net_log = delegate_->GetNetLog(this);
 
   if (net_log) {
     net_log_.BeginEvent(

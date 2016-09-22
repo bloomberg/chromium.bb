@@ -144,13 +144,9 @@ void PepperNetworkProxyHost::TryToSendUnsentRequests() {
                      weak_factory_.GetWeakPtr(),
                      request.reply_context,
                      base::Owned(proxy_info));
-      int result = proxy_service_->ResolveProxy(request.url,
-                                                std::string(),
-                                                proxy_info,
-                                                callback,
-                                                &pending_request,
-                                                NULL,
-                                                net::BoundNetLog());
+      int result = proxy_service_->ResolveProxy(
+          request.url, std::string(), proxy_info, callback, &pending_request,
+          NULL, net::NetLogWithSource());
       pending_requests_.push(pending_request);
       // If it was handled synchronously, we must run the callback now;
       // proxy_service_ won't run it for us in this case.

@@ -89,7 +89,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   // HttpStream methods
   int InitializeStream(const HttpRequestInfo* request_info,
                        RequestPriority priority,
-                       const BoundNetLog& net_log,
+                       const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override {
     return ERR_IO_PENDING;
   }
@@ -384,7 +384,7 @@ class CapturePreconnectsSocketPool : public ParentPool {
                     ClientSocketPool::RespectLimits respect_limits,
                     ClientSocketHandle* handle,
                     const CompletionCallback& callback,
-                    const BoundNetLog& net_log) override {
+                    const NetLogWithSource& net_log) override {
     ADD_FAILURE();
     return ERR_UNEXPECTED;
   }
@@ -392,7 +392,7 @@ class CapturePreconnectsSocketPool : public ParentPool {
   void RequestSockets(const std::string& group_name,
                       const void* socket_params,
                       int num_sockets,
-                      const BoundNetLog& net_log) override {
+                      const NetLogWithSource& net_log) override {
     last_num_streams_ = num_sockets;
   }
 
@@ -674,7 +674,7 @@ TEST_F(HttpStreamFactoryTest, JobNotifiesProxy) {
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
 
   // The proxy that failed should now be known to the proxy_service as bad.
@@ -759,7 +759,7 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
     std::unique_ptr<HttpStreamRequest> request(
         session->http_stream_factory()->RequestStream(
             request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-            BoundNetLog()));
+            NetLogWithSource()));
     waiter.WaitForStream();
 
     // The proxy that failed should now be known to the proxy_service as bad.
@@ -962,7 +962,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyMarkedAsBad) {
         std::unique_ptr<HttpStreamRequest> request(
             session->http_stream_factory()->RequestStream(
                 request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-                BoundNetLog()));
+                NetLogWithSource()));
         waiter.WaitForStream();
 
         // The proxy that failed should now be known to the proxy_service as
@@ -1065,7 +1065,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
       std::unique_ptr<HttpStreamRequest> request(
           session->http_stream_factory()->RequestStream(
               request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-              BoundNetLog()));
+              NetLogWithSource()));
       waiter.WaitForStream();
 
       // The proxy that failed should now be known to the proxy_service as
@@ -1231,7 +1231,7 @@ TEST_F(HttpStreamFactoryTest, PrivacyModeDisablesChannelId) {
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
 
   // The stream shouldn't come from spdy as we are using different privacy mode
@@ -1307,7 +1307,7 @@ TEST_F(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
   std::unique_ptr<HttpStreamRequest> request1(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
 
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 1);
@@ -1315,7 +1315,7 @@ TEST_F(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
   std::unique_ptr<HttpStreamRequest> request2(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
 
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 1);
@@ -1324,7 +1324,7 @@ TEST_F(HttpStreamFactoryTest, PrivacyModeUsesDifferentSocketPoolGroup) {
   std::unique_ptr<HttpStreamRequest> request3(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
 
   EXPECT_EQ(GetSocketPoolGroupCount(ssl_pool), 2);
@@ -1353,7 +1353,7 @@ TEST_F(HttpStreamFactoryTest, GetLoadState) {
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
 
   EXPECT_EQ(LOAD_STATE_RESOLVING_HOST, request->GetLoadState());
 
@@ -1382,7 +1382,7 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStream) {
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   ASSERT_TRUE(nullptr != waiter.stream());
@@ -1426,7 +1426,7 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverSSL) {
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   ASSERT_TRUE(nullptr != waiter.stream());
@@ -1468,7 +1468,7 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxy) {
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   ASSERT_TRUE(nullptr != waiter.stream());
@@ -1515,9 +1515,9 @@ TEST_F(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStream) {
   WebSocketStreamCreateHelper create_helper;
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(request_info, DEFAULT_PRIORITY,
-                                            ssl_config, ssl_config, &waiter,
-                                            &create_helper, BoundNetLog()));
+          ->RequestWebSocketHandshakeStream(
+              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+              &create_helper, NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(nullptr == waiter.stream());
@@ -1558,9 +1558,9 @@ TEST_F(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
   WebSocketStreamCreateHelper create_helper;
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(request_info, DEFAULT_PRIORITY,
-                                            ssl_config, ssl_config, &waiter,
-                                            &create_helper, BoundNetLog()));
+          ->RequestWebSocketHandshakeStream(
+              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+              &create_helper, NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(nullptr == waiter.stream());
@@ -1599,9 +1599,9 @@ TEST_F(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
   WebSocketStreamCreateHelper create_helper;
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(request_info, DEFAULT_PRIORITY,
-                                            ssl_config, ssl_config, &waiter,
-                                            &create_helper, BoundNetLog()));
+          ->RequestWebSocketHandshakeStream(
+              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+              &create_helper, NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(nullptr == waiter.stream());
@@ -1655,7 +1655,7 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStream) {
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory()->RequestStream(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(nullptr == waiter.websocket_stream());
@@ -1701,7 +1701,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_FALSE(waiter.websocket_stream());
@@ -1869,7 +1869,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   std::unique_ptr<HttpStreamRequest> request(
       session()->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
 
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
@@ -1885,7 +1885,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   bidi_request_info.priority = LOWEST;
 
   TestBidirectionalDelegate delegate;
-  stream_impl->Start(&bidi_request_info, BoundNetLog(),
+  stream_impl->Start(&bidi_request_info, NetLogWithSource(),
                      /*send_request_headers_automatically=*/true, &delegate,
                      nullptr);
   delegate.WaitUntilDone();
@@ -1934,7 +1934,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   std::unique_ptr<HttpStreamRequest> request(
       session()->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
 
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
@@ -1992,7 +1992,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   std::unique_ptr<HttpStreamRequest> request(
       session()->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
 
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
@@ -2008,7 +2008,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   bidi_request_info.priority = LOWEST;
 
   TestBidirectionalDelegate delegate;
-  stream_impl->Start(&bidi_request_info, BoundNetLog(),
+  stream_impl->Start(&bidi_request_info, NetLogWithSource(),
                      /*send_request_headers_automatically=*/true, &delegate,
                      nullptr);
   delegate.WaitUntilDone();
@@ -2059,7 +2059,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImplFailure) {
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
-          BoundNetLog()));
+          NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   ASSERT_THAT(waiter.error_status(), IsError(ERR_FAILED));
@@ -2105,9 +2105,9 @@ TEST_F(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStreamButGetSSL) {
   WebSocketStreamCreateHelper create_helper;
   std::unique_ptr<HttpStreamRequest> request1(
       session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(request_info, DEFAULT_PRIORITY,
-                                            ssl_config, ssl_config, &waiter1,
-                                            &create_helper, BoundNetLog()));
+          ->RequestWebSocketHandshakeStream(
+              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter1,
+              &create_helper, NetLogWithSource()));
   waiter1.WaitForStream();
   EXPECT_TRUE(waiter1.stream_done());
   ASSERT_TRUE(nullptr != waiter1.websocket_stream());
@@ -2152,9 +2152,9 @@ TEST_F(HttpStreamFactoryTest, DISABLED_RequestWebSocketSpdyHandshakeStream) {
   WebSocketStreamCreateHelper create_helper;
   std::unique_ptr<HttpStreamRequest> request1(
       session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(request_info, DEFAULT_PRIORITY,
-                                            ssl_config, ssl_config, &waiter1,
-                                            &create_helper, BoundNetLog()));
+          ->RequestWebSocketHandshakeStream(
+              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter1,
+              &create_helper, NetLogWithSource()));
   waiter1.WaitForStream();
   EXPECT_TRUE(waiter1.stream_done());
   ASSERT_TRUE(nullptr != waiter1.websocket_stream());
@@ -2165,9 +2165,9 @@ TEST_F(HttpStreamFactoryTest, DISABLED_RequestWebSocketSpdyHandshakeStream) {
   StreamRequestWaiter waiter2;
   std::unique_ptr<HttpStreamRequest> request2(
       session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(request_info, DEFAULT_PRIORITY,
-                                            ssl_config, ssl_config, &waiter2,
-                                            &create_helper, BoundNetLog()));
+          ->RequestWebSocketHandshakeStream(
+              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter2,
+              &create_helper, NetLogWithSource()));
   waiter2.WaitForStream();
   EXPECT_TRUE(waiter2.stream_done());
   ASSERT_TRUE(nullptr != waiter2.websocket_stream());
@@ -2231,9 +2231,9 @@ TEST_F(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   WebSocketStreamCreateHelper create_helper;
   std::unique_ptr<HttpStreamRequest> request(
       session->http_stream_factory_for_websocket()
-          ->RequestWebSocketHandshakeStream(request_info, DEFAULT_PRIORITY,
-                                            ssl_config, ssl_config, &waiter,
-                                            &create_helper, BoundNetLog()));
+          ->RequestWebSocketHandshakeStream(
+              request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+              &create_helper, NetLogWithSource()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_TRUE(nullptr == waiter.stream());

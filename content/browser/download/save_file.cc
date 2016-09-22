@@ -14,7 +14,7 @@ namespace content {
 //               Unfortunately, as it is, constructors of SaveFile don't always
 //               have access to the SavePackage at this point.
 SaveFile::SaveFile(const SaveFileCreateInfo* info, bool calculate_hash)
-    : file_(net::BoundNetLog()), info_(info) {
+    : file_(net::NetLogWithSource()), info_(info) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
   DCHECK(info);

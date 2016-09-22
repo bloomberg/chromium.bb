@@ -443,13 +443,12 @@ SpdyStreamRequest::~SpdyStreamRequest() {
   CancelRequest();
 }
 
-int SpdyStreamRequest::StartRequest(
-    SpdyStreamType type,
-    const base::WeakPtr<SpdySession>& session,
-    const GURL& url,
-    RequestPriority priority,
-    const BoundNetLog& net_log,
-    const CompletionCallback& callback) {
+int SpdyStreamRequest::StartRequest(SpdyStreamType type,
+                                    const base::WeakPtr<SpdySession>& session,
+                                    const GURL& url,
+                                    RequestPriority priority,
+                                    const NetLogWithSource& net_log,
+                                    const CompletionCallback& callback) {
   DCHECK(session);
   DCHECK(!session_);
   DCHECK(!stream_);
@@ -515,7 +514,7 @@ void SpdyStreamRequest::Reset() {
   stream_.reset();
   url_ = GURL();
   priority_ = MINIMUM_PRIORITY;
-  net_log_ = BoundNetLog();
+  net_log_ = NetLogWithSource();
   callback_.Reset();
 }
 
@@ -672,7 +671,8 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       session_unacked_recv_window_bytes_(0),
       stream_initial_send_window_size_(kDefaultInitialWindowSize),
       stream_max_recv_window_size_(stream_max_recv_window_size),
-      net_log_(BoundNetLog::Make(net_log, NetLogSourceType::HTTP2_SESSION)),
+      net_log_(
+          NetLogWithSource::Make(net_log, NetLogSourceType::HTTP2_SESSION)),
       verify_domain_authentication_(verify_domain_authentication),
       enable_sending_initial_data_(enable_sending_initial_data),
       enable_ping_based_connection_checking_(
@@ -767,10 +767,9 @@ bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
                  host_port_pair().host(), domain);
 }
 
-int SpdySession::GetPushStream(
-    const GURL& url,
-    base::WeakPtr<SpdyStream>* stream,
-    const BoundNetLog& stream_net_log) {
+int SpdySession::GetPushStream(const GURL& url,
+                               base::WeakPtr<SpdyStream>* stream,
+                               const NetLogWithSource& stream_net_log) {
   CHECK(!in_io_loop_);
 
   stream->reset();

@@ -58,7 +58,7 @@ class FailingCertVerifier : public net::CertVerifier {
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
              std::unique_ptr<Request>* out_req,
-             const net::BoundNetLog& net_log) override {
+             const net::NetLogWithSource& net_log) override {
     verify_result->verified_cert = params.certificate();
     verify_result->cert_status = net::CERT_STATUS_INVALID;
     return net::ERR_CERT_INVALID;
@@ -75,7 +75,7 @@ class IgnoresCTVerifier : public net::CTVerifier {
              const std::string& stapled_ocsp_response,
              const std::string& sct_list_from_tls_extension,
              net::ct::CTVerifyResult* result,
-             const net::BoundNetLog& net_log) override {
+             const net::NetLogWithSource& net_log) override {
     return net::OK;
   }
 
@@ -91,7 +91,7 @@ class IgnoresCTPolicyEnforcer : public net::CTPolicyEnforcer {
   net::ct::CertPolicyCompliance DoesConformToCertPolicy(
       net::X509Certificate* cert,
       const net::SCTList& verified_scts,
-      const net::BoundNetLog& net_log) override {
+      const net::NetLogWithSource& net_log) override {
     return net::ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
   }
 
@@ -99,7 +99,7 @@ class IgnoresCTPolicyEnforcer : public net::CTPolicyEnforcer {
       net::X509Certificate* cert,
       const net::ct::EVCertsWhitelist* ev_whitelist,
       const net::SCTList& verified_scts,
-      const net::BoundNetLog& net_log) override {
+      const net::NetLogWithSource& net_log) override {
     return net::ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
   }
 };
@@ -147,7 +147,7 @@ class NetStreamSocketAdapter : public net::StreamSocket {
     NOTREACHED();
     return net::ERR_FAILED;
   }
-  const net::BoundNetLog& NetLog() const override { return net_log_; }
+  const net::NetLogWithSource& NetLog() const override { return net_log_; }
   void SetSubresourceSpeculation() override { NOTREACHED(); }
   void SetOmniboxSpeculation() override { NOTREACHED(); }
   bool WasEverUsed() const override {
@@ -181,7 +181,7 @@ class NetStreamSocketAdapter : public net::StreamSocket {
 
  private:
   std::unique_ptr<P2PStreamSocket> socket_;
-  net::BoundNetLog net_log_;
+  net::NetLogWithSource net_log_;
 };
 
 // Implements P2PStreamSocket interface on top of net::StreamSocket.

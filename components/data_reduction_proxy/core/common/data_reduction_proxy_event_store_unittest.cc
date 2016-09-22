@@ -35,7 +35,7 @@ namespace data_reduction_proxy {
 class DataReductionProxyEventStoreTest : public testing::Test {
  public:
   DataReductionProxyEventStoreTest() : net_log_(new net::TestNetLog()) {
-    bound_net_log_ = net::BoundNetLog::Make(
+    net_log_with_source_ = net::NetLogWithSource::Make(
         net_log_.get(), net::NetLogSourceType::DATA_REDUCTION_PROXY);
   }
 
@@ -66,8 +66,8 @@ class DataReductionProxyEventStoreTest : public testing::Test {
 
   net::TestNetLog* net_log() { return net_log_.get(); }
 
-  const net::BoundNetLog& bound_net_log() {
-    return bound_net_log_;
+  const net::NetLogWithSource& net_log_with_source() {
+    return net_log_with_source_;
   }
 
   size_t event_count() const { return event_store_->stored_events_.size(); }
@@ -85,7 +85,7 @@ class DataReductionProxyEventStoreTest : public testing::Test {
   std::unique_ptr<net::TestNetLog> net_log_;
   std::unique_ptr<DataReductionProxyEventStore> event_store_;
   std::unique_ptr<DataReductionProxyEventCreator> event_creator_;
-  net::BoundNetLog bound_net_log_;
+  net::NetLogWithSource net_log_with_source_;
 };
 
 TEST_F(DataReductionProxyEventStoreTest, TestAddProxyEnabledEvent) {
@@ -109,7 +109,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddBypassActionEvent) {
   EXPECT_EQ(0u, event_count());
   EXPECT_EQ(nullptr, last_bypass_event());
   event_creator()->AddBypassActionEvent(
-      bound_net_log(), BYPASS_ACTION_TYPE_BYPASS, "GET", GURL(), false,
+      net_log_with_source(), BYPASS_ACTION_TYPE_BYPASS, "GET", GURL(), false,
       base::TimeDelta::FromMinutes(1));
   EXPECT_EQ(1u, event_count());
   net::TestNetLogEntry entry = GetSingleEntry();
@@ -121,9 +121,9 @@ TEST_F(DataReductionProxyEventStoreTest, TestAddBypassActionEvent) {
 TEST_F(DataReductionProxyEventStoreTest, TestAddBypassTypeEvent) {
   EXPECT_EQ(0u, event_count());
   EXPECT_EQ(nullptr, last_bypass_event());
-  event_creator()->AddBypassTypeEvent(bound_net_log(), BYPASS_EVENT_TYPE_LONG,
-                                      "GET", GURL(), false,
-                                      base::TimeDelta::FromMinutes(1));
+  event_creator()->AddBypassTypeEvent(net_log_with_source(),
+                                      BYPASS_EVENT_TYPE_LONG, "GET", GURL(),
+                                      false, base::TimeDelta::FromMinutes(1));
   EXPECT_EQ(1u, event_count());
   EXPECT_EQ(1u, net_log()->GetSize());
   net::TestNetLogEntry entry = GetSingleEntry();
@@ -145,7 +145,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestBeginSecureProxyCheck) {
   EXPECT_EQ(0u, event_count());
   EXPECT_EQ(DataReductionProxyEventStorageDelegate::CHECK_UNKNOWN,
             secure_proxy_check_state());
-  event_creator()->BeginSecureProxyCheck(bound_net_log(), GURL());
+  event_creator()->BeginSecureProxyCheck(net_log_with_source(), GURL());
   EXPECT_EQ(1u, event_count());
   EXPECT_EQ(1u, net_log()->GetSize());
   net::TestNetLogEntry entry = GetSingleEntry();
@@ -159,7 +159,8 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheck) {
   EXPECT_EQ(0u, event_count());
   EXPECT_EQ(DataReductionProxyEventStorageDelegate::CHECK_UNKNOWN,
             secure_proxy_check_state());
-  event_creator()->EndSecureProxyCheck(bound_net_log(), 0, net::HTTP_OK, true);
+  event_creator()->EndSecureProxyCheck(net_log_with_source(), 0, net::HTTP_OK,
+                                       true);
   EXPECT_EQ(1u, event_count());
   EXPECT_EQ(1u, net_log()->GetSize());
   net::TestNetLogEntry entry = GetSingleEntry();
@@ -196,7 +197,7 @@ TEST_F(DataReductionProxyEventStoreTest, TestEndSecureProxyCheckFailed) {
   EXPECT_EQ(DataReductionProxyEventStorageDelegate::CHECK_UNKNOWN,
             secure_proxy_check_state());
   for (const auto& test : tests) {
-    event_creator()->EndSecureProxyCheck(bound_net_log(), test.net_error,
+    event_creator()->EndSecureProxyCheck(net_log_with_source(), test.net_error,
                                          test.http_response_code,
                                          test.secure_proxy_check_succeeded);
     EXPECT_EQ(expected_event_count, net_log()->GetSize()) << test.test_case;

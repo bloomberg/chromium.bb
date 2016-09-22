@@ -53,7 +53,7 @@ class UploadMockURLRequestJob : public net::URLRequestJob {
     int rv = upload_stream_->Init(
         base::Bind(&UploadMockURLRequestJob::OnStreamInitialized,
                    base::Unretained(this)),
-        net::BoundNetLog());
+        net::NetLogWithSource());
     if (rv == net::ERR_IO_PENDING)
       return;
     OnStreamInitialized(rv);

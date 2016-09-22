@@ -128,7 +128,7 @@ class DownloadFileWithDelay : public DownloadFileImpl {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<ByteStreamReader> stream,
-      const net::BoundNetLog& bound_net_log,
+      const net::NetLogWithSource& net_log,
       std::unique_ptr<device::PowerSaveBlocker> power_save_blocker,
       base::WeakPtr<DownloadDestinationObserver> observer,
       base::WeakPtr<DownloadFileWithDelayFactory> owner);
@@ -174,7 +174,7 @@ class DownloadFileWithDelayFactory : public DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_download_directory,
       std::unique_ptr<ByteStreamReader> stream,
-      const net::BoundNetLog& bound_net_log,
+      const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override;
 
   void AddRenameCallback(base::Closure callback);
@@ -195,14 +195,14 @@ DownloadFileWithDelay::DownloadFileWithDelay(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> stream,
-    const net::BoundNetLog& bound_net_log,
+    const net::NetLogWithSource& net_log,
     std::unique_ptr<device::PowerSaveBlocker> power_save_blocker,
     base::WeakPtr<DownloadDestinationObserver> observer,
     base::WeakPtr<DownloadFileWithDelayFactory> owner)
     : DownloadFileImpl(std::move(save_info),
                        default_download_directory,
                        std::move(stream),
-                       bound_net_log,
+                       net_log,
                        observer),
       owner_(owner) {}
 
@@ -255,7 +255,7 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> stream,
-    const net::BoundNetLog& bound_net_log,
+    const net::NetLogWithSource& net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
   std::unique_ptr<device::PowerSaveBlocker> psb(new device::PowerSaveBlocker(
       device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
@@ -265,7 +265,7 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
   return new DownloadFileWithDelay(std::move(save_info),
                                    default_download_directory,
                                    std::move(stream),
-                                   bound_net_log,
+                                   net_log,
                                    std::move(psb),
                                    observer,
                                    weak_ptr_factory_.GetWeakPtr());
@@ -300,13 +300,13 @@ class CountingDownloadFile : public DownloadFileImpl {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<ByteStreamReader> stream,
-      const net::BoundNetLog& bound_net_log,
+      const net::NetLogWithSource& net_log,
       std::unique_ptr<device::PowerSaveBlocker> power_save_blocker,
       base::WeakPtr<DownloadDestinationObserver> observer)
       : DownloadFileImpl(std::move(save_info),
                          default_downloads_directory,
                          std::move(stream),
-                         bound_net_log,
+                         net_log,
                          observer) {}
 
   ~CountingDownloadFile() override {
@@ -354,7 +354,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
       std::unique_ptr<DownloadSaveInfo> save_info,
       const base::FilePath& default_downloads_directory,
       std::unique_ptr<ByteStreamReader> stream,
-      const net::BoundNetLog& bound_net_log,
+      const net::NetLogWithSource& net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
     std::unique_ptr<device::PowerSaveBlocker> psb(new device::PowerSaveBlocker(
         device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
@@ -364,7 +364,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
     return new CountingDownloadFile(std::move(save_info),
                                     default_downloads_directory,
                                     std::move(stream),
-                                    bound_net_log,
+                                    net_log,
                                     std::move(psb),
                                     observer);
   }

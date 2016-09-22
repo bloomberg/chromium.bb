@@ -146,7 +146,7 @@ class GCM_EXPORT ConnectionFactoryImpl :
   // credentials. If nullptr, is ignored.
   net::HttpNetworkSession* http_network_session_;
   // Net log to use in connection attempts.
-  net::BoundNetLog bound_net_log_;
+  net::NetLogWithSource net_log_;
   // The current PAC request, if one exists. Owned by the proxy service.
   net::ProxyService::PacRequest* pac_request_;
   // The current proxy info.

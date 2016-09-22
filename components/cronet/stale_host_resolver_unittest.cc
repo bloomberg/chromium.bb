@@ -181,7 +181,7 @@ class StaleHostResolverTest : public testing::Test {
         resolver_->Resolve(info, net::DEFAULT_PRIORITY, &resolve_addresses_,
                            base::Bind(&StaleHostResolverTest::OnResolveComplete,
                                       base::Unretained(this)),
-                           &request_, net::BoundNetLog());
+                           &request_, net::NetLogWithSource());
     if (rv != net::ERR_IO_PENDING) {
       resolve_pending_ = false;
       resolve_complete_ = true;

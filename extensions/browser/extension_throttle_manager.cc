@@ -158,7 +158,7 @@ bool ExtensionThrottleManager::enable_thread_checks() const {
 
 void ExtensionThrottleManager::set_net_log(net::NetLog* net_log) {
   DCHECK(net_log);
-  net_log_ = net::BoundNetLog::Make(
+  net_log_ = net::NetLogWithSource::Make(
       net_log, net::NetLogSourceType::EXPONENTIAL_BACKOFF_THROTTLING);
 }
 

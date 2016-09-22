@@ -644,7 +644,7 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
   bool success_response =
       base::StartsWith(response, "OK", base::CompareCase::SENSITIVE);
   if (event_creator_)
-    event_creator_->EndSecureProxyCheck(bound_net_log_, status.error(),
+    event_creator_->EndSecureProxyCheck(net_log_with_source_, status.error(),
                                         http_response_code, success_response);
 
   if (!status.is_success()) {
@@ -754,11 +754,11 @@ void DataReductionProxyConfig::RecordSecureProxyCheckFetchResult(
 void DataReductionProxyConfig::SecureProxyCheck(
     const GURL& secure_proxy_check_url,
     FetcherResponseCallback fetcher_callback) {
-  bound_net_log_ = net::BoundNetLog::Make(
+  net_log_with_source_ = net::NetLogWithSource::Make(
       net_log_, net::NetLogSourceType::DATA_REDUCTION_PROXY);
   if (event_creator_) {
     event_creator_->BeginSecureProxyCheck(
-        bound_net_log_, config_values_->secure_proxy_check_url());
+        net_log_with_source_, config_values_->secure_proxy_check_url());
   }
 
   secure_proxy_checker_->CheckIfSecureProxyIsAllowed(secure_proxy_check_url,

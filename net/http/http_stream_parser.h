@@ -47,7 +47,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   HttpStreamParser(ClientSocketHandle* connection,
                    const HttpRequestInfo* request,
                    GrowableIOBuffer* read_buffer,
-                   const BoundNetLog& net_log);
+                   const NetLogWithSource& net_log);
   virtual ~HttpStreamParser();
 
   // Sets whether or not HTTP/0.9 is only allowed on default ports. It's not
@@ -273,7 +273,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // The underlying socket.
   ClientSocketHandle* const connection_;
 
-  BoundNetLog net_log_;
+  NetLogWithSource net_log_;
 
   // Callback to be used when doing IO.
   CompletionCallback io_callback_;

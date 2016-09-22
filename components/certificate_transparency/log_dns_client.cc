@@ -82,7 +82,7 @@ bool ParseAuditPath(const net::DnsResponse& response,
 }  // namespace
 
 LogDnsClient::LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
-                           const net::BoundNetLog& net_log)
+                           const net::NetLogWithSource& net_log)
     : dns_client_(std::move(dns_client)),
       net_log_(net_log),
       weak_ptr_factory_(this) {

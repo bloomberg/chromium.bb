@@ -42,12 +42,12 @@ DownloadFileImpl::DownloadFileImpl(
     std::unique_ptr<DownloadSaveInfo> save_info,
     const base::FilePath& default_download_directory,
     std::unique_ptr<ByteStreamReader> stream,
-    const net::BoundNetLog& download_item_net_log,
+    const net::NetLogWithSource& download_item_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer)
-    : bound_net_log_(
-          net::BoundNetLog::Make(download_item_net_log.net_log(),
-                                 net::NetLogSourceType::DOWNLOAD_FILE)),
-      file_(bound_net_log_),
+    : net_log_(
+          net::NetLogWithSource::Make(download_item_net_log.net_log(),
+                                      net::NetLogSourceType::DOWNLOAD_FILE)),
+      file_(net_log_),
       save_info_(std::move(save_info)),
       default_download_directory_(default_download_directory),
       stream_reader_(std::move(stream)),
@@ -56,15 +56,15 @@ DownloadFileImpl::DownloadFileImpl(
       weak_factory_(this) {
   download_item_net_log.AddEvent(
       net::NetLogEventType::DOWNLOAD_FILE_CREATED,
-      bound_net_log_.source().ToEventParametersCallback());
-  bound_net_log_.BeginEvent(
+      net_log_.source().ToEventParametersCallback());
+  net_log_.BeginEvent(
       net::NetLogEventType::DOWNLOAD_FILE_ACTIVE,
       download_item_net_log.source().ToEventParametersCallback());
 }
 
 DownloadFileImpl::~DownloadFileImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  bound_net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ACTIVE);
+  net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ACTIVE);
 }
 
 void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
@@ -334,8 +334,8 @@ void DownloadFileImpl::StreamActive() {
                    file_.bytes_so_far(),
                    base::Passed(&hash_state)));
   }
-  if (bound_net_log_.IsCapturing()) {
-    bound_net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_STREAM_DRAINED,
+  if (net_log_.IsCapturing()) {
+    net_log_.AddEvent(net::NetLogEventType::DOWNLOAD_STREAM_DRAINED,
                             base::Bind(&FileStreamDrainedNetLogCallback,
                                        total_incoming_data_size, num_buffers));
   }

@@ -53,7 +53,7 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // The |dns_client| does not need to be configured first - this will be done
   // automatically as needed.
   LogDnsClient(std::unique_ptr<net::DnsClient> dns_client,
-               const net::BoundNetLog& net_log);
+               const net::NetLogWithSource& net_log);
   // Must be deleted on the same thread that it was created on.
   ~LogDnsClient() override;
 
@@ -121,7 +121,7 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // Used to perform DNS queries.
   std::unique_ptr<net::DnsClient> dns_client_;
   // Passed to the DNS client for logging.
-  net::BoundNetLog net_log_;
+  net::NetLogWithSource net_log_;
   // Leaf index queries that haven't completed yet.
   std::list<Query<LeafIndexCallback>> leaf_index_queries_;
   // Audit proof queries that haven't completed yet.

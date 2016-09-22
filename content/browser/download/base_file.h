@@ -36,7 +36,7 @@ class CONTENT_EXPORT BaseFile {
  public:
   // May be constructed on any thread.  All other routines (including
   // destruction) must occur on the FILE thread.
-  BaseFile(const net::BoundNetLog& bound_net_log);
+  BaseFile(const net::NetLogWithSource& net_log);
   ~BaseFile();
 
   // Returns DOWNLOAD_INTERRUPT_REASON_NONE on success, or a
@@ -223,7 +223,7 @@ class CONTENT_EXPORT BaseFile {
   // won't delete it on destruction.
   bool detached_ = false;
 
-  net::BoundNetLog bound_net_log_;
+  net::NetLogWithSource net_log_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseFile);
 };

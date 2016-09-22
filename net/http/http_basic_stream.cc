@@ -24,7 +24,7 @@ HttpBasicStream::~HttpBasicStream() {}
 
 int HttpBasicStream::InitializeStream(const HttpRequestInfo* request_info,
                                       RequestPriority priority,
-                                      const BoundNetLog& net_log,
+                                      const NetLogWithSource& net_log,
                                       const CompletionCallback& callback) {
   state_.Initialize(request_info, priority, net_log, callback);
   return OK;

@@ -69,7 +69,7 @@ class SocketTunnel : public base::NonThreadSafe {
     int result = host_resolver_->Resolve(
         request_info, net::DEFAULT_PRIORITY, &address_list_,
         base::Bind(&SocketTunnel::OnResolved, base::Unretained(this)),
-        &request_, net::BoundNetLog());
+        &request_, net::NetLogWithSource());
     if (result != net::ERR_IO_PENDING)
       OnResolved(result);
   }

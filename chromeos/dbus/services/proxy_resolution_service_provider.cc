@@ -134,7 +134,7 @@ class ProxyResolverImpl : public ProxyResolverInterface {
                    origin_thread);
     const int result = proxy_service->ResolveProxy(
         GURL(request->source_url_), std::string(), &request->proxy_info_,
-        completion_callback, NULL, NULL, net::BoundNetLog());
+        completion_callback, NULL, NULL, net::NetLogWithSource());
     if (result != net::ERR_IO_PENDING) {
       VLOG(1) << "Network proxy resolution completed synchronously.";
       completion_callback.Run(result);

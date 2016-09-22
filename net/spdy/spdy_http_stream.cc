@@ -64,7 +64,7 @@ SpdyHttpStream::~SpdyHttpStream() {
 
 int SpdyHttpStream::InitializeStream(const HttpRequestInfo* request_info,
                                      RequestPriority priority,
-                                     const BoundNetLog& stream_net_log,
+                                     const NetLogWithSource& stream_net_log,
                                      const CompletionCallback& callback) {
   DCHECK(!stream_);
   if (!spdy_session_)

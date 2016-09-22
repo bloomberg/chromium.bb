@@ -105,10 +105,9 @@ bool DevToolsNetworkTransaction::CheckFailed() {
   return false;
 }
 
-int DevToolsNetworkTransaction::Start(
-    const net::HttpRequestInfo* request,
-    const net::CompletionCallback& callback,
-    const net::BoundNetLog& net_log) {
+int DevToolsNetworkTransaction::Start(const net::HttpRequestInfo* request,
+                                      const net::CompletionCallback& callback,
+                                      const net::NetLogWithSource& net_log) {
   DCHECK(request);
   request_ = request;
 

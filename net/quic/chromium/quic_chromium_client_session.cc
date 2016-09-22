@@ -234,7 +234,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       pkp_bypassed_(false),
       num_total_streams_(0),
       task_runner_(task_runner),
-      net_log_(BoundNetLog::Make(net_log, NetLogSourceType::QUIC_SESSION)),
+      net_log_(NetLogWithSource::Make(net_log, NetLogSourceType::QUIC_SESSION)),
       logger_(new QuicConnectionLogger(this,
                                        connection_description,
                                        std::move(socket_performance_watcher),
@@ -1097,7 +1097,7 @@ void QuicChromiumClientSession::OnMigrationTimeout(size_t num_sockets) {
 
 void QuicChromiumClientSession::OnNetworkConnected(
     NetworkChangeNotifier::NetworkHandle network,
-    const BoundNetLog& bound_net_log) {
+    const NetLogWithSource& net_log) {
   // If migration_pending_ is false, there was no migration pending or
   // an earlier task completed migration.
   if (!migration_pending_)

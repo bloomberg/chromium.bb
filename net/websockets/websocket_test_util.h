@@ -26,7 +26,7 @@ class Origin;
 
 namespace net {
 
-class BoundNetLog;
+class NetLogWithSource;
 class MockClientSocketFactory;
 class ProxyService;
 class SequencedSocketData;

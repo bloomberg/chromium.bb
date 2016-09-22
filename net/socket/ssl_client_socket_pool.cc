@@ -106,12 +106,13 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
                              const SSLClientSocketContext& context,
                              Delegate* delegate,
                              NetLog* net_log)
-    : ConnectJob(group_name,
-                 timeout_duration,
-                 priority,
-                 respect_limits,
-                 delegate,
-                 BoundNetLog::Make(net_log, NetLogSourceType::CONNECT_JOB)),
+    : ConnectJob(
+          group_name,
+          timeout_duration,
+          priority,
+          respect_limits,
+          delegate,
+          NetLogWithSource::Make(net_log, NetLogSourceType::CONNECT_JOB)),
       params_(params),
       transport_pool_(transport_pool),
       socks_pool_(socks_pool),
@@ -583,7 +584,7 @@ int SSLClientSocketPool::RequestSocket(const std::string& group_name,
                                        RespectLimits respect_limits,
                                        ClientSocketHandle* handle,
                                        const CompletionCallback& callback,
-                                       const BoundNetLog& net_log) {
+                                       const NetLogWithSource& net_log) {
   const scoped_refptr<SSLSocketParams>* casted_socket_params =
       static_cast<const scoped_refptr<SSLSocketParams>*>(socket_params);
 
@@ -591,11 +592,10 @@ int SSLClientSocketPool::RequestSocket(const std::string& group_name,
                              respect_limits, handle, callback, net_log);
 }
 
-void SSLClientSocketPool::RequestSockets(
-    const std::string& group_name,
-    const void* params,
-    int num_sockets,
-    const BoundNetLog& net_log) {
+void SSLClientSocketPool::RequestSockets(const std::string& group_name,
+                                         const void* params,
+                                         int num_sockets,
+                                         const NetLogWithSource& net_log) {
   const scoped_refptr<SSLSocketParams>* casted_params =
       static_cast<const scoped_refptr<SSLSocketParams>*>(params);
 

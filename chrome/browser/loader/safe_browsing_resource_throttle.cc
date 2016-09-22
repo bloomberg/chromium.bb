@@ -94,8 +94,9 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
       ui_manager_(sb_service->ui_manager()),
       request_(request),
       resource_type_(resource_type),
-      bound_net_log_(net::BoundNetLog::Make(request->net_log().net_log(),
-                                            NetLogSourceType::SAFE_BROWSING)) {}
+      net_log_with_source_(
+          net::NetLogWithSource::Make(request->net_log().net_log(),
+                                      NetLogSourceType::SAFE_BROWSING)) {}
 
 SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {
   if (defer_state_ != DEFERRED_NONE) {
@@ -116,19 +117,19 @@ void SafeBrowsingResourceThrottle::BeginNetLogEvent(NetLogEventType type,
                                                     const GURL& url,
                                                     const char* name,
                                                     const char* value) {
-  bound_net_log_.BeginEvent(
+  net_log_with_source_.BeginEvent(
       type, base::Bind(&NetLogUrlCallback, request_, url, name, value));
   request_->net_log().AddEvent(
-      type, bound_net_log_.source().ToEventParametersCallback());
+      type, net_log_with_source_.source().ToEventParametersCallback());
 }
 
 void SafeBrowsingResourceThrottle::EndNetLogEvent(NetLogEventType type,
                                                   const char* name,
                                                   const char* value) {
-  bound_net_log_.EndEvent(
+  net_log_with_source_.EndEvent(
       type, base::Bind(&NetLogStringCallback, name, value));
   request_->net_log().AddEvent(
-      type, bound_net_log_.source().ToEventParametersCallback());
+      type, net_log_with_source_.source().ToEventParametersCallback());
 }
 
 void SafeBrowsingResourceThrottle::WillStartRequest(bool* defer) {

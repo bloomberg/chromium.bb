@@ -33,7 +33,7 @@ int ExactMatchCertVerifier::Verify(const RequestParams& params,
                                    net::CertVerifyResult* verify_result,
                                    const net::CompletionCallback& callback,
                                    std::unique_ptr<Request>* out_req,
-                                   const net::BoundNetLog& net_log) {
+                                   const net::NetLogWithSource& net_log) {
   verify_result->Reset();
   verify_result->verified_cert = engine_cert_;
 

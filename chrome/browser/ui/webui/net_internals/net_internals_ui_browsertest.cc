@@ -294,9 +294,9 @@ void NetInternalsTest::MessageHandler::GetNetLogFileContents(
                                  nullptr);
   g_browser_process->net_log()->AddGlobalEntry(
       net::NetLogEventType::NETWORK_IP_ADDRESSES_CHANGED);
-  net::BoundNetLog bound_net_log = net::BoundNetLog::Make(
+  net::NetLogWithSource net_log_with_source = net::NetLogWithSource::Make(
       g_browser_process->net_log(), net::NetLogSourceType::URL_REQUEST);
-  bound_net_log.BeginEvent(net::NetLogEventType::REQUEST_ALIVE);
+  net_log_with_source.BeginEvent(net::NetLogEventType::REQUEST_ALIVE);
   net_log_logger->StopObserving(nullptr);
   net_log_logger.reset();
 

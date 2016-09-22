@@ -932,7 +932,7 @@ bool Predictor::WouldLikelyProxyURL(const GURL& url) {
 
   net::ProxyInfo info;
   bool synchronous_success = proxy_service_->TryResolveProxySynchronously(
-      url, std::string(), &info, nullptr, net::BoundNetLog());
+      url, std::string(), &info, nullptr, net::NetLogWithSource());
 
   return synchronous_success && !info.is_direct();
 }

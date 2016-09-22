@@ -29,7 +29,7 @@ class PrivetV3ContextGetter::CertVerifier : public net::CertVerifier {
              net::CertVerifyResult* verify_result,
              const net::CompletionCallback& callback,
              std::unique_ptr<Request>* out_req,
-             const net::BoundNetLog& net_log) override {
+             const net::NetLogWithSource& net_log) override {
     verify_result->Reset();
     verify_result->verified_cert = params.certificate();
 

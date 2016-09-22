@@ -78,7 +78,7 @@ SpdySessionPool::~SpdySessionPool() {
 base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
     const SpdySessionKey& key,
     std::unique_ptr<ClientSocketHandle> connection,
-    const BoundNetLog& net_log,
+    const NetLogWithSource& net_log,
     int certificate_error_code,
     bool is_secure) {
   TRACE_EVENT0("net", "SpdySessionPool::CreateAvailableSessionFromSocket");
@@ -121,7 +121,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
 base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     const SpdySessionKey& key,
     const GURL& url,
-    const BoundNetLog& net_log) {
+    const NetLogWithSource& net_log) {
   UnclaimedPushedStreamMap::iterator url_it =
       unclaimed_pushed_streams_.find(url);
   if (!url.is_empty() && url_it != unclaimed_pushed_streams_.end()) {

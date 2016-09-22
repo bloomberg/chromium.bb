@@ -24,7 +24,7 @@ class FilePath;
 }
 
 namespace net {
-class BoundNetLog;
+class NetLogWithSource;
 }
 
 namespace content {
@@ -63,13 +63,13 @@ public:
       DownloadDangerType danger_type,
       DownloadInterruptReason interrupt_reason,
       bool opened,
-      const net::BoundNetLog& bound_net_log) = 0;
+      const net::NetLogWithSource& net_log) = 0;
 
   virtual DownloadItemImpl* CreateActiveItem(
       DownloadItemImplDelegate* delegate,
       uint32_t download_id,
       const DownloadCreateInfo& info,
-      const net::BoundNetLog& bound_net_log) = 0;
+      const net::NetLogWithSource& net_log) = 0;
 
   virtual DownloadItemImpl* CreateSavePageItem(
       DownloadItemImplDelegate* delegate,
@@ -78,7 +78,7 @@ public:
       const GURL& url,
       const std::string& mime_type,
       std::unique_ptr<DownloadRequestHandleInterface> request_handle,
-      const net::BoundNetLog& bound_net_log) = 0;
+      const net::NetLogWithSource& net_log) = 0;
 };
 
 }  // namespace content

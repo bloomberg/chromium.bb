@@ -68,7 +68,7 @@ class SpdyStreamTest : public ::testing::Test {
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
     SpdySessionKey key(HostPortPair("www.example.org", 80),
                        ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
-    return CreateInsecureSpdySession(session_.get(), key, BoundNetLog());
+    return CreateInsecureSpdySession(session_.get(), key, NetLogWithSource());
   }
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
@@ -161,9 +161,8 @@ TEST_F(SpdyStreamTest, SendDataAfterOpen) {
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   StreamDelegateSendImmediate delegate(stream, kPostBodyStringPiece);
@@ -242,7 +241,7 @@ TEST_F(SpdyStreamTest, Trailers) {
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
-      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   StreamDelegateWithTrailers delegate(stream, kPostBodyStringPiece);
@@ -282,9 +281,9 @@ TEST_F(SpdyStreamTest, PushedStream) {
 
   // Conjure up a stream.
   SpdyStreamRequest stream_request;
-  int result = stream_request.StartRequest(SPDY_PUSH_STREAM, spdy_session,
-                                           GURL(), DEFAULT_PRIORITY,
-                                           BoundNetLog(), CompletionCallback());
+  int result = stream_request.StartRequest(
+      SPDY_PUSH_STREAM, spdy_session, GURL(), DEFAULT_PRIORITY,
+      NetLogWithSource(), CompletionCallback());
   ASSERT_THAT(result, IsOk());
   base::WeakPtr<SpdyStream> stream = stream_request.ReleaseStream();
   ActivatePushStream(spdy_session.get(), stream.get());
@@ -438,9 +437,8 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   std::string body_data(3 * kMaxSpdyFrameChunkSize, 'x');
@@ -494,9 +492,8 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   std::string body_data(3 * kMaxSpdyFrameChunkSize, 'x');
@@ -548,9 +545,8 @@ TEST_F(SpdyStreamTest, UpperCaseHeaders) {
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   StreamDelegateDoNothing delegate(stream);
@@ -600,9 +596,8 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   StreamDelegateDoNothing delegate(stream);
@@ -618,7 +613,8 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
   data.RunUntilPaused();
 
   base::WeakPtr<SpdyStream> push_stream;
-  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, NetLogWithSource()),
+              IsOk());
   EXPECT_FALSE(push_stream);
 
   data.Resume();
@@ -667,9 +663,8 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   StreamDelegateDoNothing delegate(stream);
@@ -685,13 +680,15 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
   data.RunUntilPaused();
 
   base::WeakPtr<SpdyStream> push_stream;
-  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, NetLogWithSource()),
+              IsOk());
   EXPECT_TRUE(push_stream);
 
   data.Resume();
   data.RunUntilPaused();
 
-  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, NetLogWithSource()),
+              IsOk());
   EXPECT_FALSE(push_stream);
 
   data.Resume();
@@ -740,9 +737,8 @@ TEST_F(SpdyStreamTest, DuplicateHeaders) {
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   StreamDelegateDoNothing delegate(stream);
@@ -758,13 +754,15 @@ TEST_F(SpdyStreamTest, DuplicateHeaders) {
   data.RunUntilPaused();
 
   base::WeakPtr<SpdyStream> push_stream;
-  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, NetLogWithSource()),
+              IsOk());
   EXPECT_TRUE(push_stream);
 
   data.Resume();
   data.RunUntilPaused();
 
-  EXPECT_THAT(session->GetPushStream(url, &push_stream, BoundNetLog()), IsOk());
+  EXPECT_THAT(session->GetPushStream(url, &push_stream, NetLogWithSource()),
+              IsOk());
   EXPECT_FALSE(push_stream);
 
   data.Resume();
@@ -889,9 +887,8 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   StreamDelegateWithBody delegate(stream, kPostBodyStringPiece);
@@ -969,9 +966,8 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_BIDIRECTIONAL_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   StreamDelegateSendImmediate delegate(stream, kPostBodyStringPiece);
@@ -1051,9 +1047,8 @@ TEST_F(SpdyStreamTest, ReceivedBytes) {
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
-  base::WeakPtr<SpdyStream> stream =
-      CreateStreamSynchronously(
-          SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, BoundNetLog());
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url, LOWEST, NetLogWithSource());
   ASSERT_TRUE(stream);
 
   StreamDelegateDoNothing delegate(stream);

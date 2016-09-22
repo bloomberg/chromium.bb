@@ -44,7 +44,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   // HttpStream implementation.
   int InitializeStream(const HttpRequestInfo* request_info,
                        RequestPriority priority,
-                       const BoundNetLog& net_log,
+                       const NetLogWithSource& net_log,
                        const CompletionCallback& callback) override;
   int SendRequest(const HttpRequestHeaders& request_headers,
                   HttpResponseInfo* response,
@@ -198,7 +198,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   // Wraps raw_request_body_buf_ to read the remaining data progressively.
   scoped_refptr<DrainableIOBuffer> request_body_buf_;
 
-  BoundNetLog stream_net_log_;
+  NetLogWithSource stream_net_log_;
 
   QuicErrorCode quic_connection_error_;
 

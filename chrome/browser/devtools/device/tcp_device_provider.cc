@@ -40,7 +40,7 @@ class ResolveHostAndOpenSocket final {
         request_info, net::DEFAULT_PRIORITY, &address_list_,
         base::Bind(&ResolveHostAndOpenSocket::OnResolved,
                    base::Unretained(this)),
-        &request_, net::BoundNetLog());
+        &request_, net::NetLogWithSource());
     if (result != net::ERR_IO_PENDING)
       OnResolved(result);
   }

@@ -30,7 +30,7 @@ class ECPrivateKey;
 
 namespace net {
 
-class BoundNetLog;
+class NetLogWithSource;
 class HttpNetworkSession;
 class HttpRequestHeaders;
 struct HttpRequestInfo;
@@ -51,7 +51,7 @@ class NET_EXPORT_PRIVATE HttpStream {
   // Returns a net error code, possibly ERR_IO_PENDING.
   virtual int InitializeStream(const HttpRequestInfo* request_info,
                                RequestPriority priority,
-                               const BoundNetLog& net_log,
+                               const NetLogWithSource& net_log,
                                const CompletionCallback& callback) = 0;
 
   // Writes the headers and uploads body data to the underlying socket.

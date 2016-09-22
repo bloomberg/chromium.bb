@@ -83,7 +83,7 @@ const int kYieldAfterDurationMilliseconds = 20;
 const SpdyStreamId kFirstStreamId = 1;
 const SpdyStreamId kLastStreamId = 0x7fffffff;
 
-class BoundNetLog;
+class NetLogWithSource;
 struct LoadTimingInfo;
 class ProxyDelegate;
 class SpdyStream;
@@ -178,7 +178,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
                    const base::WeakPtr<SpdySession>& session,
                    const GURL& url,
                    RequestPriority priority,
-                   const BoundNetLog& net_log,
+                   const NetLogWithSource& net_log,
                    const CompletionCallback& callback);
 
   // Cancels any pending stream creation request. May be called
@@ -207,7 +207,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   SpdyStreamType type() const { return type_; }
   const GURL& url() const { return url_; }
   RequestPriority priority() const { return priority_; }
-  const BoundNetLog& net_log() const { return net_log_; }
+  const NetLogWithSource& net_log() const { return net_log_; }
 
   void Reset();
 
@@ -216,7 +216,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
   base::WeakPtr<SpdyStream> stream_;
   GURL url_;
   RequestPriority priority_;
-  BoundNetLog net_log_;
+  NetLogWithSource net_log_;
   CompletionCallback callback_;
 
   base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_;
@@ -322,10 +322,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // okay to create a new stream (in which case |spdy_stream| is
   // reset).  Returns an error (not ERR_IO_PENDING) otherwise, and
   // resets |spdy_stream|.
-  int GetPushStream(
-      const GURL& url,
-      base::WeakPtr<SpdyStream>* spdy_stream,
-      const BoundNetLog& stream_net_log);
+  int GetPushStream(const GURL& url,
+                    base::WeakPtr<SpdyStream>* spdy_stream,
+                    const NetLogWithSource& stream_net_log);
 
   // Initialize the session with the given connection. |is_secure|
   // must indicate whether |connection| uses an SSL socket or not; it
@@ -518,7 +517,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // session flow control.
   bool IsSendStalled() const { return session_send_window_size_ == 0; }
 
-  const BoundNetLog& net_log() const { return net_log_; }
+  const NetLogWithSource& net_log() const { return net_log_; }
 
   int GetPeerAddress(IPEndPoint* address) const;
   int GetLocalAddress(IPEndPoint* address) const;
@@ -1170,7 +1169,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // in the past.
   std::deque<SpdyStreamId> stream_send_unstall_queue_[NUM_PRIORITIES];
 
-  BoundNetLog net_log_;
+  NetLogWithSource net_log_;
 
   // Outside of tests, these should always be true.
   bool verify_domain_authentication_;

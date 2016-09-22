@@ -436,10 +436,9 @@ EventResponseDelta* CalculateOnAuthRequiredDelta(
   return result;
 }
 
-void MergeCancelOfResponses(
-    const EventResponseDeltas& deltas,
-    bool* canceled,
-    const net::BoundNetLog* net_log) {
+void MergeCancelOfResponses(const EventResponseDeltas& deltas,
+                            bool* canceled,
+                            const net::NetLogWithSource* net_log) {
   for (EventResponseDeltas::const_iterator i = deltas.begin();
        i != deltas.end(); ++i) {
     if ((*i)->cancel) {
@@ -462,7 +461,7 @@ static bool MergeRedirectUrlOfResponsesHelper(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log,
+    const net::NetLogWithSource* net_log,
     bool consider_only_cancel_scheme_urls) {
   bool redirected = false;
 
@@ -500,12 +499,10 @@ static bool MergeRedirectUrlOfResponsesHelper(
   return redirected;
 }
 
-void MergeRedirectUrlOfResponses(
-    const EventResponseDeltas& deltas,
-    GURL* new_url,
-    extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log) {
-
+void MergeRedirectUrlOfResponses(const EventResponseDeltas& deltas,
+                                 GURL* new_url,
+                                 extensions::WarningSet* conflicting_extensions,
+                                 const net::NetLogWithSource* net_log) {
   // First handle only redirects to data:// URLs and about:blank. These are a
   // special case as they represent a way of cancelling a request.
   if (MergeRedirectUrlOfResponsesHelper(
@@ -524,7 +521,7 @@ void MergeOnBeforeRequestResponses(
     const EventResponseDeltas& deltas,
     GURL* new_url,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log) {
+    const net::NetLogWithSource* net_log) {
   MergeRedirectUrlOfResponses(deltas, new_url, conflicting_extensions, net_log);
 }
 
@@ -650,7 +647,7 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log) {
+    const net::NetLogWithSource* net_log) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
   EventResponseDeltas::const_iterator delta;
@@ -723,7 +720,7 @@ void MergeOnBeforeSendHeadersResponses(
     const EventResponseDeltas& deltas,
     net::HttpRequestHeaders* request_headers,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log) {
+    const net::NetLogWithSource* net_log) {
   EventResponseDeltas::const_iterator delta;
 
   // Here we collect which headers we have removed or set to new values
@@ -1030,7 +1027,7 @@ void MergeCookiesInOnHeadersReceivedResponses(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log) {
+    const net::NetLogWithSource* net_log) {
   // Skip all work if there are no registered cookie modifications.
   bool cookie_modifications_exist = false;
   EventResponseDeltas::const_reverse_iterator delta;
@@ -1086,7 +1083,7 @@ void MergeOnHeadersReceivedResponses(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log) {
+    const net::NetLogWithSource* net_log) {
   EventResponseDeltas::const_iterator delta;
 
   // Here we collect which headers we have removed or added so far due to
@@ -1188,7 +1185,7 @@ bool MergeOnAuthRequiredResponses(
     const EventResponseDeltas& deltas,
     net::AuthCredentials* auth_credentials,
     extensions::WarningSet* conflicting_extensions,
-    const net::BoundNetLog* net_log) {
+    const net::NetLogWithSource* net_log) {
   CHECK(auth_credentials);
   bool credentials_set = false;
   std::string winning_extension_id;
