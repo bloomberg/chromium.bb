@@ -31,17 +31,17 @@ cr.define('cr_profile_avatar_selector', function() {
       });
 
       test('Displays avatars', function() {
-        assertEquals(3, avatarSelector.$.selector.items.length);
+        assertEquals(3, avatarSelector.$['avatar-grid'].items.length);
       });
 
       test('Can update avatars', function() {
         avatarSelector.pop('avatars');
         Polymer.dom.flush();
-        assertEquals(2, avatarSelector.$.selector.items.length);
+        assertEquals(2, avatarSelector.$['avatar-grid'].items.length);
       });
 
       test('No avatar is initially selected', function() {
-        var selector = avatarSelector.$.selector;
+        var selector = avatarSelector.$['avatar-grid'];
 
         assertFalse(!!avatarSelector.selectedAvatarUrl);
         assertFalse(selector.items[0].classList.contains('iron-selected'));
@@ -57,7 +57,7 @@ cr.define('cr_profile_avatar_selector', function() {
         document.body.appendChild(anotherAvatarSelector);
         Polymer.dom.flush();
 
-        var selector = anotherAvatarSelector.$.selector;
+        var selector = anotherAvatarSelector.$['avatar-grid'];
 
         assertEquals('chrome://avatar1.png',
                      anotherAvatarSelector.selectedAvatarUrl);
@@ -67,7 +67,7 @@ cr.define('cr_profile_avatar_selector', function() {
       });
 
       test('Can select avatar', function() {
-        var selector = avatarSelector.$.selector;
+        var selector = avatarSelector.$['avatar-grid'];
 
         // Simulate tapping the third avatar.
         MockInteractions.tap(selector.items[2]);
@@ -86,7 +86,7 @@ cr.define('cr_profile_avatar_selector', function() {
         });
 
         // Simulate tapping the second avatar.
-        MockInteractions.tap(avatarSelector.$.selector.items[1]);
+        MockInteractions.tap(avatarSelector.$['avatar-grid'].items[1]);
       });
     });
   }

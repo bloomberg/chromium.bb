@@ -114,6 +114,12 @@
   <structure name="IDR_CR_ELEMENTS_CR_PROFILE_AVATAR_SELECTOR_JS"
              file="../../webui/resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_PROFILE_AVATAR_ICON_SELECTOR_GRID_HTML"
+             file="../../webui/resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector_grid.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_PROFILE_AVATAR_SELECTOR_GRID_JS"
+             file="../../webui/resources/cr_elements/cr_profile_avatar_selector/cr_profile_avatar_selector_grid.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_SEARCH_FIELD_BEHAVIOR_HTML"
              file="../../webui/resources/cr_elements/cr_search_field/cr_search_field_behavior.html"
              type="chrome_html" />

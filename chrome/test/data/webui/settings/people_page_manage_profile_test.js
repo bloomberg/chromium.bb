@@ -53,7 +53,7 @@ cr.define('settings_people_page_manage_profile', function() {
       //  - has the correct icon selected
       //  - can select a new icon
       test('ManageProfileChangeIcon', function() {
-        var selector = manageProfile.$.selector.$.selector;
+        var selector = manageProfile.$.selector.$['avatar-grid'];
         assertTrue(!!selector);
 
         return browserProxy.whenCalled('getAvailableIcons').then(function() {
@@ -75,7 +75,7 @@ cr.define('settings_people_page_manage_profile', function() {
 
       // Tests profile icon updates pushed from the browser.
       test('ManageProfileIconUpdated', function() {
-        var selector = manageProfile.$.selector.$.selector;
+        var selector = manageProfile.$.selector.$['avatar-grid'];
         assertTrue(!!selector);
 
         return browserProxy.whenCalled('getAvailableIcons').then(function() {
