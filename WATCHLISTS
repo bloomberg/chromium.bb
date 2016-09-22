@@ -171,7 +171,6 @@
     },
     'battery_status': {
       'filepath': 'content/browser/battery_status/|'\
-                  'content/renderer/battery_status/|'\
                   'content/test/data/battery_status/|'\
                   'device/battery/',
     },
@@ -377,7 +376,9 @@
                   'content/common/device_sensors/|'\
                   'content/public/android/java/src/org/chromium/content/browser/DeviceSensors.java|'\
                   'content/public/android/javatests/src/org/chromium/content/browser/DeviceSensorsTest.java|'\
-                  'content/renderer/device_sensors/',
+                  'content/renderer/device_sensors/|'\
+                  'content/test/data/device_sensors/|'\
+                  'device/sensors/',
     },
     'developer_recommended_flags': {
       'filepath': 'developer_recommended_flags.gypi',
@@ -490,7 +491,7 @@
     },
     'i18n': {
       'filepath': 'base/i18n/|base/string|l10n|icu|'\
-        'locale_settings|encoding',
+                  'locale_settings|encoding',
     },
     'importer': {
       'filepath': 'import',
@@ -826,12 +827,10 @@
     },
     'spellcheck': {
       'filepath': 'chrome/browser/spellchecker/'\
-                   '|chrome/browser/tab_contents/spellchecker'\
-                   '|chrome/browser/tab_contents/spelling_menu'\
-                   '|chrome/common/spellcheck_'\
-                   '|chrome/renderer/spellchecker/'\
-                   '|third_party/hunspell/'\
-                   '|third_party/hunspell_dictionaries/'\
+                  '|chrome/browser/renderer_context_menu/spelling_'\
+                  '|components/spellcheck/'\
+                  '|third_party/hunspell/'\
+                  '|third_party/hunspell_dictionaries/',
     },
     'streams': {
       'filepath': 'content/browser/streams/',
@@ -1617,7 +1616,8 @@
                              'shimazu+serviceworker@chromium.org',
                              'tzik@chromium.org'],
     'blink_serviceworkers_tests': ['kenjibaheux+watch@chromium.org'],
-    'blink_spellcheck' : ['groby+blinkspell@chromium.org'],
+    'blink_spellcheck' : ['groby+blinkspell@chromium.org',
+                          'timvolodine@chromium.org'],
     'blink_spv2_layout_tests': ['jbroman+watch@chromium.org',
                                 'pdr+virtualspv2watchlist@chromium.org'],
     'blink_style': ['blink-reviews-style@chromium.org'],
@@ -1925,7 +1925,8 @@
                       'nasko+codewatch@chromium.org'],
     'spellcheck': ['groby+spellwatch@chromium.org',
                    'rlp+watch@chromium.org',
-                   'rouslan+spell@chromium.org'],
+                   'rouslan+spell@chromium.org',
+                   'timvolodine@chromium.org'],
     'streams': ['zork+watch@chromium.org'],
     'styleguide': ['danakj+watch@chromium.org',
                    'jbroman+cpp@chromium.org'],
