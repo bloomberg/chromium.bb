@@ -53,8 +53,8 @@ void SetBitmapAsWallpaper(const SkBitmap& bitmap) {
   // TODO(crbug.com/618922): Allow specifying layout.
   wallpaper_manager->SetCustomWallpaper(
       account_id, wallpaper_files_id, kAndroidWallpaperFilename,
-      wallpaper::WALLPAPER_LAYOUT_STRETCH, user_manager::User::CUSTOMIZED,
-      image, update_wallpaper);
+      wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+      user_manager::User::CUSTOMIZED, image, update_wallpaper);
 
   // TODO(crbug.com/618922): Register the wallpaper to Chrome OS wallpaper
   // picker. Currently the new wallpaper does not appear there. The best way to
