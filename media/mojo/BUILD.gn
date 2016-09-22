@@ -6,6 +6,7 @@ import("//testing/test.gni")
 
 test("media_mojo_unittests") {
   sources = [
+    "clients/mojo_audio_decoder_unittest.cc",
     "clients/mojo_renderer_unittest.cc",
     "common/media_type_converters_unittest.cc",
     "common/mojo_decoder_buffer_converter_unittest.cc",

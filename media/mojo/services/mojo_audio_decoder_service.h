@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
+#include "media/mojo/services/media_mojo_export.h"
 
 namespace media {
 
@@ -20,7 +21,8 @@ class MediaKeys;
 class MojoCdmServiceContext;
 class MojoDecoderBufferReader;
 
-class MojoAudioDecoderService : public mojom::AudioDecoder {
+class MEDIA_MOJO_EXPORT MojoAudioDecoderService
+    : NON_EXPORTED_BASE(public mojom::AudioDecoder) {
  public:
   MojoAudioDecoderService(
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
