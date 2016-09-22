@@ -305,7 +305,7 @@ def main():
                       help='Verbose level')
   parser.add_argument('--target',
                       help='GN target to generate project for.',
-                      default='//chrome/android:chrome_public_apk')
+                      default='//chrome/android:chrome_public_test_apk')
   parser.add_argument('--project-dir',
                       help='Root of the output project.',
                       default=os.path.join('$CHROMIUM_OUTPUT_DIR', 'gradle'))
@@ -324,7 +324,12 @@ def main():
       args.project_dir.replace('$CHROMIUM_OUTPUT_DIR', output_dir))
   logging.warning('Creating project at: %s', gradle_output_dir)
 
-  main_entry = _ProjectEntry(args.target)
+  target = args.target
+  # TODO(agrieve): See if it makes sense to utilize Gradle's test constructs for
+  # our instrumentation tests.
+  if target.endswith('_test_apk'):
+    target += '__apk'
+  main_entry = _ProjectEntry(target)
   logging.warning('Building .build_config files...')
   _RunNinja(output_dir, [main_entry.NinjaBuildConfigTarget()])
 
