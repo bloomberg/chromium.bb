@@ -46,19 +46,16 @@ class ResourcePrefetcherManager
   // Will create a new ResourcePrefetcher for the main frame url of the input
   // navigation if there isn't one already for the same URL or host (for host
   // based).
-  void MaybeAddPrefetch(
-      const NavigationID& navigation_id,
-      PrefetchKeyType key_type,
-      std::unique_ptr<ResourcePrefetcher::RequestVector> requests);
+  void MaybeAddPrefetch(const NavigationID& navigation_id,
+                        PrefetchKeyType key_type,
+                        const std::vector<GURL>& urls);
 
   // Stops the ResourcePrefetcher for the input navigation, if one was in
   // progress.
   void MaybeRemovePrefetch(const NavigationID& navigation_id);
 
   // ResourcePrefetcher::Delegate methods.
-  void ResourcePrefetcherFinished(
-      ResourcePrefetcher* prefetcher,
-      ResourcePrefetcher::RequestVector* requests) override;
+  void ResourcePrefetcherFinished(ResourcePrefetcher* prefetcher) override;
   net::URLRequestContext* GetURLRequestContext() override;
 
  private:
@@ -68,12 +65,6 @@ class ResourcePrefetcherManager
   typedef std::map<std::string, ResourcePrefetcher*> PrefetcherMap;
 
   ~ResourcePrefetcherManager() override;
-
-  // UI Thread. |predictor_| needs to be called on the UI thread.
-  void ResourcePrefetcherFinishedOnUI(
-      const NavigationID& navigation_id,
-      PrefetchKeyType key_type,
-      std::unique_ptr<ResourcePrefetcher::RequestVector> requests);
 
   ResourcePrefetchPredictor* predictor_;
   const ResourcePrefetchPredictorConfig config_;

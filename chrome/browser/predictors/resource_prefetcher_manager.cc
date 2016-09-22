@@ -53,7 +53,7 @@ void ResourcePrefetcherManager::ShutdownOnIOThread() {
 void ResourcePrefetcherManager::MaybeAddPrefetch(
     const NavigationID& navigation_id,
     PrefetchKeyType key_type,
-    std::unique_ptr<ResourcePrefetcher::RequestVector> requests) {
+    const std::vector<GURL>& urls) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Don't add a duplicate prefetch for the same host or URL.
@@ -62,8 +62,8 @@ void ResourcePrefetcherManager::MaybeAddPrefetch(
   if (base::ContainsKey(prefetcher_map_, key))
     return;
 
-  ResourcePrefetcher* prefetcher = new ResourcePrefetcher(
-      this, config_, navigation_id, key_type, std::move(requests));
+  ResourcePrefetcher* prefetcher =
+      new ResourcePrefetcher(this, config_, navigation_id, key_type, urls);
   prefetcher_map_.insert(std::make_pair(key, prefetcher));
   prefetcher->Start();
 }
@@ -90,18 +90,8 @@ void ResourcePrefetcherManager::MaybeRemovePrefetch(
 }
 
 void ResourcePrefetcherManager::ResourcePrefetcherFinished(
-    ResourcePrefetcher* resource_prefetcher,
-    ResourcePrefetcher::RequestVector* requests) {
+    ResourcePrefetcher* resource_prefetcher) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  // |predictor_| can only be accessed from the UI thread.
-  std::unique_ptr<ResourcePrefetcher::RequestVector> scoped_requests(requests);
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&ResourcePrefetcherManager::ResourcePrefetcherFinishedOnUI,
-                 this,
-                 resource_prefetcher->navigation_id(),
-                 resource_prefetcher->key_type(),
-                 base::Passed(&scoped_requests)));
 
   const GURL& main_frame_url =
       resource_prefetcher->navigation_id().main_frame_url;
@@ -112,20 +102,6 @@ void ResourcePrefetcherManager::ResourcePrefetcherFinished(
   DCHECK(it != prefetcher_map_.end());
   delete it->second;
   prefetcher_map_.erase(it);
-}
-
-void ResourcePrefetcherManager::ResourcePrefetcherFinishedOnUI(
-    const NavigationID& navigation_id,
-    PrefetchKeyType key_type,
-    std::unique_ptr<ResourcePrefetcher::RequestVector> requests) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // |predictor_| may have been set to NULL if the predictor is shutting down.
-  if (predictor_) {
-    predictor_->FinishedPrefetchForNavigation(navigation_id,
-                                              key_type,
-                                              requests.release());
-  }
 }
 
 net::URLRequestContext* ResourcePrefetcherManager::GetURLRequestContext() {

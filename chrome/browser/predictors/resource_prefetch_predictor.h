@@ -131,13 +131,6 @@ class ResourcePrefetchPredictor
   // Called when the main frame of a page completes loading.
   void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
 
-  // Called by ResourcePrefetcherManager to notify that prefetching has finished
-  // for a navigation. Should take ownership of |requests|.
-  virtual void FinishedPrefetchForNavigation(
-      const NavigationID& navigation_id,
-      PrefetchKeyType key_type,
-      ResourcePrefetcher::RequestVector* requests);
-
  private:
   friend class ::PredictorsHandler;
   friend class ResourcePrefetchPredictorTest;
@@ -166,27 +159,12 @@ class ResourcePrefetchPredictor
     INITIALIZED = 2
   };
 
-  // Stores prefetching results.
-  struct Result {
-    // Takes ownership of requests.
-    Result(PrefetchKeyType key_type,
-           ResourcePrefetcher::RequestVector* requests);
-    ~Result();
-
-    PrefetchKeyType key_type;
-    std::unique_ptr<ResourcePrefetcher::RequestVector> requests;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Result);
-  };
-
   typedef ResourcePrefetchPredictorTables::ResourceRow ResourceRow;
   typedef ResourcePrefetchPredictorTables::ResourceRows ResourceRows;
   typedef ResourcePrefetchPredictorTables::PrefetchData PrefetchData;
   typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
   typedef std::map<NavigationID, linked_ptr<std::vector<URLRequestSummary> > >
       NavigationMap;
-  typedef std::map<NavigationID, std::unique_ptr<Result>> ResultsMap;
 
   // Returns true if the main page request is supported for prediction.
   static bool IsHandledMainPage(net::URLRequest* request);
@@ -221,12 +199,12 @@ class ResourcePrefetchPredictor
   // navigation and fills in the |prefetch_data| to resources that need to be
   // prefetched.
   bool GetPrefetchData(const NavigationID& navigation_id,
-                       ResourcePrefetcher::RequestVector* prefetch_requests,
+                       std::vector<GURL>* urls,
                        PrefetchKeyType* key_type);
 
-  // Converts a PrefetchData into a ResourcePrefetcher::RequestVector.
+  // Converts a PrefetchData into a list of URLs.
   void PopulatePrefetcherRequest(const PrefetchData& data,
-                                 ResourcePrefetcher::RequestVector* requests);
+                                 std::vector<GURL>* urls);
 
   // Starts prefetching if it is enabled and prefetching data exists for the
   // NavigationID either at the URL or at the host level.
@@ -249,7 +227,7 @@ class ResourcePrefetchPredictor
   void OnHistoryAndCacheLoaded();
 
   // Removes data for navigations where the onload never fired. Will cleanup
-  // inflight_navigations_ and results_map_.
+  // inflight_navigations_.
   void CleanupAbandonedNavigations(const NavigationID& navigation_id);
 
   // Deletes all URLs from the predictor database, the caches and removes all
@@ -288,25 +266,6 @@ class ResourcePrefetchPredictor
       base::Callback<void(int)> report_network_type_callback,
       PrefetchKeyType key_type) const;
 
-  // Reports accuracy by comparing prefetched resources with resources that are
-  // actually used by the page.
-  void ReportAccuracyStats(PrefetchKeyType key_type,
-                           const std::vector<URLRequestSummary>& actual,
-                           ResourcePrefetcher::RequestVector* prefetched) const;
-
-  // Reports predicted accuracy i.e. by comparing resources that are actually
-  // used by the page with those that may have been prefetched.
-  void ReportPredictedAccuracyStats(
-      PrefetchKeyType key_type,
-      const std::vector<URLRequestSummary>& actual,
-      const ResourcePrefetcher::RequestVector& predicted) const;
-  void ReportPredictedAccuracyStatsHelper(
-      PrefetchKeyType key_type,
-      const ResourcePrefetcher::RequestVector& predicted,
-      const std::map<GURL, bool>& actual,
-      size_t total_resources_fetched_from_network,
-      size_t max_assumed_prefetched) const;
-
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,
                      bool all_history,
@@ -338,8 +297,6 @@ class ResourcePrefetchPredictor
   // Copy of the data in the predictor tables.
   std::unique_ptr<PrefetchDataMap> url_table_cache_;
   std::unique_ptr<PrefetchDataMap> host_table_cache_;
-
-  ResultsMap results_map_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;

@@ -318,16 +318,6 @@ bool ResourcePrefetchPredictor::URLRequestSummary::SummarizeResponse(
   return true;
 }
 
-ResourcePrefetchPredictor::Result::Result(
-    PrefetchKeyType i_key_type,
-    ResourcePrefetcher::RequestVector* i_requests)
-    : key_type(i_key_type),
-      requests(i_requests) {
-}
-
-ResourcePrefetchPredictor::Result::~Result() {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ResourcePrefetchPredictor.
 
@@ -403,19 +393,6 @@ void ResourcePrefetchPredictor::RecordMainFrameLoadComplete(
       NOTREACHED() << "Unexpected initialization_state_: "
                    << initialization_state_;
   }
-}
-
-void ResourcePrefetchPredictor::FinishedPrefetchForNavigation(
-    const NavigationID& navigation_id,
-    PrefetchKeyType key_type,
-    ResourcePrefetcher::RequestVector* requests) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  std::unique_ptr<Result> result(new Result(key_type, requests));
-  // Add the results to the results map.
-  if (!results_map_.insert(std::make_pair(navigation_id, std::move(result)))
-           .second)
-    DLOG(FATAL) << "Returning results for existing navigation.";
 }
 
 void ResourcePrefetchPredictor::Shutdown() {
@@ -521,9 +498,9 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
 
 bool ResourcePrefetchPredictor::GetPrefetchData(
     const NavigationID& navigation_id,
-    ResourcePrefetcher::RequestVector* prefetch_requests,
+    std::vector<GURL>* urls,
     PrefetchKeyType* key_type) {
-  DCHECK(prefetch_requests);
+  DCHECK(urls);
   DCHECK(key_type);
 
   *key_type = PREFETCH_KEY_TYPE_URL;
@@ -536,29 +513,27 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
     PrefetchDataMap::const_iterator iterator =
         url_table_cache_->find(main_frame_url.spec());
     if (iterator != url_table_cache_->end())
-      PopulatePrefetcherRequest(iterator->second, prefetch_requests);
+      PopulatePrefetcherRequest(iterator->second, urls);
   }
-  if (!prefetch_requests->empty())
-    return true;
 
   bool use_host_data = config_.IsPrefetchingEnabled(profile_) ?
       config_.IsHostPrefetchingEnabled(profile_) :
       config_.IsHostLearningEnabled();
-  if (use_host_data) {
+  if (urls->empty() && use_host_data) {
     PrefetchDataMap::const_iterator iterator =
         host_table_cache_->find(main_frame_url.host());
     if (iterator != host_table_cache_->end()) {
       *key_type = PREFETCH_KEY_TYPE_HOST;
-      PopulatePrefetcherRequest(iterator->second, prefetch_requests);
+      PopulatePrefetcherRequest(iterator->second, urls);
     }
   }
 
-  return !prefetch_requests->empty();
+  return !urls->empty();
 }
 
 void ResourcePrefetchPredictor::PopulatePrefetcherRequest(
     const PrefetchData& data,
-    ResourcePrefetcher::RequestVector* requests) {
+    std::vector<GURL>* urls) {
   for (const ResourceRow& row : data.resources) {
     float confidence = static_cast<float>(row.number_of_hits) /
                        (row.number_of_hits + row.number_of_misses);
@@ -567,9 +542,7 @@ void ResourcePrefetchPredictor::PopulatePrefetcherRequest(
       continue;
     }
 
-    ResourcePrefetcher::Request* req =
-        new ResourcePrefetcher::Request(row.resource_url);
-    requests->push_back(req);
+    urls->push_back(row.resource_url);
   }
 }
 
@@ -579,20 +552,17 @@ void ResourcePrefetchPredictor::StartPrefetching(
     return;
 
   // Prefer URL based data first.
-  std::unique_ptr<ResourcePrefetcher::RequestVector> requests(
-      new ResourcePrefetcher::RequestVector);
+  std::vector<GURL> urls;
   PrefetchKeyType key_type;
-  if (!GetPrefetchData(navigation_id, requests.get(), &key_type)) {
+  if (!GetPrefetchData(navigation_id, &urls, &key_type)) {
     // No prefetching data at host or URL level.
     return;
   }
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
-                 prefetch_manager_,
-                 navigation_id,
-                 key_type,
-                 base::Passed(&requests)));
+                 prefetch_manager_, navigation_id, key_type, urls));
 }
 
 void ResourcePrefetchPredictor::StopPrefetching(
@@ -671,15 +641,6 @@ void ResourcePrefetchPredictor::CleanupAbandonedNavigations(
     if (it->first.IsSameRenderer(navigation_id) ||
         (time_now - it->first.creation_time > max_navigation_age)) {
       inflight_navigations_.erase(it++);
-    } else {
-      ++it;
-    }
-  }
-  for (ResultsMap::const_iterator it = results_map_.begin();
-       it != results_map_.end();) {
-    if (it->first.IsSameRenderer(navigation_id) ||
-        (time_now - it->first.creation_time > max_navigation_age)) {
-      results_map_.erase(it++);
     } else {
       ++it;
     }
@@ -777,9 +738,6 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
                     config_.max_hosts_to_track,
                     host_table_cache_.get());
   }
-
-  // Remove the navigation from the results map.
-  results_map_.erase(navigation_id);
 }
 
 void ResourcePrefetchPredictor::LearnNavigation(
