@@ -4,7 +4,7 @@
 
 #include "components/sync/engine_impl/worker_entity_tracker.h"
 
-#include <stdint.h>
+#include <algorithm>
 
 #include "base/logging.h"
 #include "components/sync/base/model_type.h"
@@ -95,6 +95,10 @@ void WorkerEntityTracker::RequestCommit(const CommitRequestData& data) {
     ClearPendingCommit();
     return;
   }
+
+  // There's no conflict; increase base_version_ if there was a commit response
+  // the processor didn't know about.
+  base_version_ = std::max(base_version_, highest_commit_response_version_);
 
   // Otherwise, keep the data associated with this pending commit
   // so it can be committed at the next possible opportunity.

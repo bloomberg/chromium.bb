@@ -73,10 +73,6 @@ void ModelTypeWorker::UpdateCryptographer(
   DCHECK(cryptographer);
   cryptographer_ = std::move(cryptographer);
   OnCryptographerUpdated();
-
-  // Nudge the scheduler if we're now allowed to commit.
-  if (CanCommitItems())
-    nudge_handler_->NudgeForCommit(type_);
 }
 
 // UpdateHandler implementation.
@@ -240,9 +236,8 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   if (commit_entities.size() == 0)
     return std::unique_ptr<CommitContribution>();
 
-  return std::unique_ptr<CommitContribution>(
-      new NonBlockingTypeCommitContribution(data_type_state_.type_context(),
-                                            commit_entities, this));
+  return base::MakeUnique<NonBlockingTypeCommitContribution>(
+      data_type_state_.type_context(), commit_entities, this);
 }
 
 void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {

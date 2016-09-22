@@ -169,4 +169,21 @@ TEST_F(WorkerEntityTrackerTest, ReflectedUpdateDoesntClobberCommit) {
   EXPECT_TRUE(entity_->HasPendingCommit());
 }
 
+// Request two commits, both with the same old version. The second commit should
+// have the updated server version.
+TEST_F(WorkerEntityTrackerTest, QuickCommits) {
+  const int64_t kLocalBaseVersion = 10;
+  const int64_t kCommitResponseVersion = 11;
+  entity_->RequestCommit(MakeCommitRequestData(1, kLocalBaseVersion));
+  CommitResponseData ack;
+  ack.response_version = kCommitResponseVersion;
+  ack.id = kServerId;
+  entity_->ReceiveCommitResponse(&ack);
+
+  entity_->RequestCommit(MakeCommitRequestData(1, kLocalBaseVersion));
+  sync_pb::SyncEntity pb_entity;
+  entity_->PopulateCommitProto(&pb_entity);
+  EXPECT_EQ(kCommitResponseVersion, pb_entity.version());
+}
+
 }  // namespace syncer_v2

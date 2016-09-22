@@ -279,30 +279,22 @@ class ModelTypeWorkerTest : public ::testing::Test {
     const std::string tag_hash = GenerateTagHash(name);
     CommitRequestData data = mock_type_processor_->CommitRequest(
         tag_hash, GenerateSpecifics(name, value));
-    CommitRequestDataList list;
-    list.push_back(data);
-    worker_->EnqueueForCommit(list);
+    worker_->EnqueueForCommit({data});
   }
 
   void DeleteRequest(const std::string& tag) {
     const std::string tag_hash = GenerateTagHash(tag);
     CommitRequestData data = mock_type_processor_->DeleteRequest(tag_hash);
-    CommitRequestDataList list;
-    list.push_back(data);
-    worker_->EnqueueForCommit(list);
+    worker_->EnqueueForCommit({data});
   }
 
   // Pretend to receive update messages from the server.
 
   void TriggerTypeRootUpdateFromServer() {
     sync_pb::SyncEntity entity = mock_server_.TypeRootUpdate();
-    SyncEntityList entity_list;
-    entity_list.push_back(&entity);
-
     StatusController dummy_status;
-
     worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                       mock_server_.GetContext(), entity_list,
+                                       mock_server_.GetContext(), {&entity},
                                        &dummy_status);
     worker_->PassiveApplyUpdates(&dummy_status);
   }
@@ -318,13 +310,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
                     entity.mutable_specifics());
     }
 
-    SyncEntityList entity_list;
-    entity_list.push_back(&entity);
-
     StatusController dummy_status;
-
     worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                       mock_server_.GetContext(), entity_list,
+                                       mock_server_.GetContext(), {&entity},
                                        &dummy_status);
   }
 
@@ -346,13 +334,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
                     entity.mutable_specifics());
     }
 
-    SyncEntityList entity_list;
-    entity_list.push_back(&entity);
-
     StatusController dummy_status;
-
     worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
-                                       mock_server_.GetContext(), entity_list,
+                                       mock_server_.GetContext(), {&entity},
                                        &dummy_status);
     worker_->ApplyUpdates(&dummy_status);
   }
@@ -769,9 +753,7 @@ TEST_F(ModelTypeWorkerTest, EncryptionBlocksCommits) {
 
   // Once the cryptographer is returned to a normal state, we should be able to
   // commit again.
-  EXPECT_EQ(1, GetNumCommitNudges());
   UpdateLocalCryptographer();
-  EXPECT_EQ(2, GetNumCommitNudges());
   EXPECT_TRUE(WillCommit());
 
   // Verify the committed entity was properly encrypted.
@@ -886,6 +868,30 @@ TEST_F(ModelTypeWorkerTest, EncryptedUpdateOverridesPendingCommit) {
   EXPECT_EQ(0U, updates_list.size());
 }
 
+// Commit twice, both times with the kUncommittedVersion base version. Then
+// verify the second time through that we see the correct version.
+TEST_F(ModelTypeWorkerTest, OldVersionCommit) {
+  NormalInitialize();
+  CommitRequest(kTag1, kValue1);
+  EXPECT_TRUE(WillCommit());
+  DoSuccessfulCommit();
+  int commit_version = processor()->GetCommitResponse(kHash1).response_version;
+  EXPECT_NE(kUncommittedVersion, commit_version);
+
+  // Create a custom commit request using the old base_version.
+  CommitRequestData data =
+      processor()->CommitRequest(kHash1, GenerateSpecifics(kTag1, kValue2));
+  data.base_version = kUncommittedVersion;
+  worker()->EnqueueForCommit({data});
+  EXPECT_TRUE(WillCommit());
+  DoSuccessfulCommit();
+  sync_pb::ClientToServerMessage message = server()->GetNthCommitMessage(1);
+  const google::protobuf::RepeatedPtrField<sync_pb::SyncEntity>& entries =
+      message.commit().entries();
+  ASSERT_EQ(1, entries.size());
+  EXPECT_EQ(entries.Get(0).version(), commit_version);
+}
+
 // Test decryption of pending updates saved across a restart.
 TEST_F(ModelTypeWorkerTest, RestorePendingEntries) {
   // Create a fake pending update.
@@ -905,9 +911,7 @@ TEST_F(ModelTypeWorkerTest, RestorePendingEntries) {
   update.response_version = 100;
 
   // Inject the update during CommitQueue initialization.
-  UpdateResponseDataList saved_pending_updates;
-  saved_pending_updates.push_back(update);
-  InitializeWithPendingUpdates(saved_pending_updates);
+  InitializeWithPendingUpdates({update});
 
   // Update will be undecryptable at first.
   EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
@@ -949,9 +953,7 @@ TEST_F(ModelTypeWorkerTest, RestoreApplicableEntries) {
   update.response_version = 100;
 
   // Inject the update during CommitQueue initialization.
-  UpdateResponseDataList saved_pending_updates;
-  saved_pending_updates.push_back(update);
-  InitializeWithPendingUpdates(saved_pending_updates);
+  InitializeWithPendingUpdates({update});
 
   // Verify the item gets decrypted and sent back to the model thread.
   // TODO(maxbogue): crbug.com/529498: Uncomment when pending updates are
@@ -1012,11 +1014,8 @@ TEST_F(ModelTypeWorkerTest, ReceiveCorruptEncryption) {
   entity.mutable_specifics()->mutable_encrypted()->mutable_blob()->replace(
       0, 4, "xyz!");
 
-  SyncEntityList entity_list;
-  entity_list.push_back(&entity);
-
   // If a corrupt update could trigger a crash, this is where it would happen.
-  DeliverRawUpdates(entity_list);
+  DeliverRawUpdates({&entity});
 
   EXPECT_FALSE(processor()->HasUpdateResponse(kHash1));
 

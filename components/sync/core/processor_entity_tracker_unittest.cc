@@ -469,6 +469,12 @@ TEST_F(ProcessorEntityTrackerTest, LocalChangesInterleaved) {
   EXPECT_EQ(specifics_hash_v2, entity->metadata().specifics_hash());
   EXPECT_EQ(specifics_hash_v1, entity->metadata().base_specifics_hash());
 
+  EXPECT_TRUE(entity->IsUnsynced());
+  EXPECT_FALSE(entity->RequiresCommitRequest());
+  EXPECT_FALSE(entity->RequiresCommitData());
+  EXPECT_FALSE(entity->CanClearMetadata());
+  EXPECT_TRUE(entity->HasCommitData());
+
   // Ack the second commit.
   entity->ReceiveCommitResponse(GenerateAckData(request_v2, kId, 3));
 
