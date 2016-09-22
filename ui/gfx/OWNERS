@@ -20,7 +20,8 @@ per-file interpolated_transform*=vollick@chromium.org
 
 # GPU memory buffer interface.
 per-file gpu_memory_buffer*=reveman@chromium.org
-per-file buffer*=reveman@chromium.org
+per-file buffer_format*=reveman@chromium.org
+per-file *buffer_types.*=reveman@chromium.org
 
 # Vector icons.
 per-file *vector_icon*=estade@chromium.org
