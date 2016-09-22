@@ -5,10 +5,21 @@
 ## Usage
 
 ```shell
-build/android/gradle/generate_gradle.py --output-directory out-gn/Debug --target //chrome/android:chrome_public_test_apk
+build/android/gradle/generate_gradle.py --output-directory out-gn/Debug
 ```
 
-This creates a project at `out-gn/Debug/gradle`. To create elsewhere: `--project-dir foo`
+This creates a project at `out-gn/Debug/gradle`. To create elsewhere:
+
+```shell
+build/android/gradle/generate_gradle.py --output-directory out-gn/Debug --project-dir my-project
+```
+
+By default, only common targets are generated. To customize the list of targets
+to generate projects for:
+
+```shell
+build/android/gradle/generate_gradle.py --output-directory out-gn/Debug --target //some:target_apk --target //some/other:target_apk
+```
 
 For first-time Android Studio users:
 
