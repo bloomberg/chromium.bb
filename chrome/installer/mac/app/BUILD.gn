@@ -2,8 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//testing/test.gni")
 import("//build/config/mac/rules.gni")
+import("//build/util/branding.gni")
+import("//testing/test.gni")
 
 source_set("mac_installer_base") {
   visibility = [ ":*" ]
@@ -29,8 +30,13 @@ source_set("mac_installer_base") {
 }
 
 mac_app_bundle("mac_installer_app") {
+  output_name = "$chrome_product_installer_full_name"
   info_plist = "Info.plist"
-  extra_substitutions = [ "MACOSX_DEPLOYMENT_TARGET=10.9" ]
+  extra_substitutions = [
+    "MACOSX_DEPLOYMENT_TARGET=10.9",
+    "PRODUCT_INSTALLER_FULLNAME=$chrome_product_installer_full_name",
+    "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
+  ]
   sources = [
     "AppDelegate.h",
     "AppDelegate.mm",
