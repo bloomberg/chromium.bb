@@ -8809,7 +8809,7 @@ Polymer({
     }
   },
   onFirstRender: function() {
-    requestAnimationFrame(function() {
+    setTimeout(function() {
       chrome.send('metricsHandler:recordTime', [ 'History.ResultsRenderedTime', window.performance.now() ]);
     });
     if (!this.hasDrawer_) {

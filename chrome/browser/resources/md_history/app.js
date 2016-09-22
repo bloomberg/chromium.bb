@@ -113,9 +113,7 @@ Polymer({
   },
 
   onFirstRender: function() {
-    // requestAnimationFrame allows measurement immediately before the next
-    // repaint, but after the first page of <iron-list> items has stamped.
-    requestAnimationFrame(function() {
+    setTimeout(function() {
       chrome.send(
           'metricsHandler:recordTime',
           ['History.ResultsRenderedTime', window.performance.now()]);
