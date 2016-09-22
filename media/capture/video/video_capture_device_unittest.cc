@@ -72,10 +72,16 @@
 #endif
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::SaveArg;
 
 namespace media {
 namespace {
+
+void DumpError(const tracked_objects::Location& location,
+               const std::string& message) {
+  DPLOG(ERROR) << location.ToString() << " " << message;
+}
 
 class MockVideoCaptureClient : public VideoCaptureDevice::Client {
  public:
@@ -90,8 +96,9 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
 
   explicit MockVideoCaptureClient(
       base::Callback<void(const VideoCaptureFormat&)> frame_cb)
-      : main_thread_(base::ThreadTaskRunnerHandle::Get()),
-        frame_cb_(frame_cb) {}
+      : main_thread_(base::ThreadTaskRunnerHandle::Get()), frame_cb_(frame_cb) {
+    ON_CALL(*this, OnError(_, _)).WillByDefault(Invoke(DumpError));
+  }
 
   void OnIncomingCapturedData(const uint8_t* data,
                               int length,
