@@ -6,11 +6,6 @@
 // compilation with ADVANCED_OPTIMIZATIONS. See http://goo.gl/FwOgy
 
 // Script to set windowId.
-
-
-// Namespace for module, used as presence beacon for injection checks.
-__gCrWeb['windowIdObject'] = {};
-
 (function() {
   // CRWJSWindowIDManager replaces $(WINDOW_ID) with appropriate string upon
   // injection.

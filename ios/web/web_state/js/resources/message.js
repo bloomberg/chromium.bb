@@ -62,7 +62,7 @@ __gCrWeb.message = {};
 
   function sendQueue_(queueObject) {
     // Do nothing if windowId has not been set.
-    if (!__gCrWeb.windowIdObject || typeof __gCrWeb.windowId != 'string') {
+    if (typeof __gCrWeb.windowId != 'string') {
       return;
     }
     // Some pages/plugins implement Object.prototype.toJSON, which can result
