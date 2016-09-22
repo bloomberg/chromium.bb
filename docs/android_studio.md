@@ -13,8 +13,8 @@ This creates a project at `out-gn/Debug/gradle`. To create elsewhere: `--project
 For first-time Android Studio users:
 
  * Avoid running the setup wizard.
-    * The wizard will force you to download unwanted SDK componentns to `//third_party/android_tools`.
-    * To skip it. Select "Cancel" when it comes up.
+    * The wizard will force you to download unwanted SDK components to `//third_party/android_tools`.
+    * To skip it, select "Cancel" when it comes up.
 
 To import the project:
 
@@ -23,7 +23,7 @@ To import the project:
 You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
 
  * After regenerating, Android Studio should prompt you to "Sync". If it doesn't, use:
-    * Help-&gt;Find Action-&gt;Sync Project with Gradle Files
+    * Help -&gt; Find Action -&gt; Sync Project with Gradle Files
 
 
 ## How it Works
@@ -54,38 +54,14 @@ all to `extracted-srcjars/` subdirectories for each target that contains them.
 includes `R.java`).
 ***
 
-### Building with Gradle
-
-Gradle builds can be done from the command-line after importing the project into
-Android Studio (importing into the IDE causes the Gradle wrapper to be added).
-
-    cd $GRADLE_PROJECT_DIR && bash gradlew
-
-The resulting artifacts are not terribly useful. They are missing assets,
-resources, native libraries, etc.
-
-## Status (as of Sept 21, 2016)
-
-### What currently works
-
- * Tested with Android Studio v2.2.
- * Basic Java editing and compiling works.
-
-### Roadmap / what's not yet implemented ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
-
- * JUnit Test targets
- * Better support for instrumtation tests (they are treated as non-test .apks right now)
- * Make gradle aware of resources and assets
- * Make gradle aware of native code via pointing it at the location of our .so
- * Add a mode in which gradle is responsible for generating `R.java`
- * Add support for native code editing
- * Make the "Make Project" button work correctly
-
 ## Android Studio Tips
 
  * Configuration instructions can be found [here](http://tools.android.com/tech-docs/configuration). One suggestions:
     * Launch it with more RAM: `STUDIO_VM_OPTIONS=-Xmx2048m /opt/android-studio-stable/bin/studio-launcher.sh`
  * If you ever need to reset it: `rm -r ~/.AndroidStudio*/`
+ * Import Android style settings:
+    * Help -&gt; Find Action -&gt; Code Style -&gt; Java -&gt; Manage -&gt; Import
+       * Select `third_party/android_platform/development/ide/intellij/codestyles/AndroidStyle.xml`
 
 ### Useful Shortcuts
 
@@ -99,3 +75,29 @@ resources, native libraries, etc.
  * `Ctrl + Alt + O`: Organize imports
  * `Alt + Enter`: Quick Fix (use on underlined errors)
 
+### Building from the Command Line
+
+Gradle builds can be done from the command-line after importing the project into
+Android Studio (importing into the IDE causes the Gradle wrapper to be added).
+
+    cd $GRADLE_PROJECT_DIR && bash gradlew
+
+The resulting artifacts are not terribly useful. They are missing assets,
+resources, native libraries, etc.
+
+## Status (as of Sept 21, 2016)
+
+### What works
+
+ * Tested with Android Studio v2.2.
+ * Basic Java editing and compiling works.
+
+### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
+
+ * JUnit Test targets
+ * Better support for instrumtation tests (they are treated as non-test .apks right now)
+ * Make gradle aware of resources and assets
+ * Make gradle aware of native code via pointing it at the location of our .so
+ * Add a mode in which gradle is responsible for generating `R.java`
+ * Add support for native code editing
+ * Make the "Make Project" button work correctly

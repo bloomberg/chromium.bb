@@ -9,17 +9,19 @@ License File: NOT_SHIPPED
 Security Critical: no
 
 Description:
-Android Platform engineering tools, specifically stack symbolization scripts
-and a jar containing the AOSP framework to compile the Android WebView
-glue layer against. The AOSP framework is built from the Android release tag
-after which it is named, and the jar can be built by invoking make on the
-android_system_stubs target.
-
-Also includes a ported copy of the Android relocation packing tool source,
-along with the files required to build it in the chromium tree.
+Android Platform engineering tools, specifically:
+1. stack symbolization scripts
+2. jars containing the AOSP framework to compile the Android WebView glue layer
+   against. The AOSP framework is built from the Android release tag
+   after which it is named, and the jar can be built by invoking make on the
+   android_system_stubs target.
+3. A ported copy of the Android relocation packing tool source, along with the
+   files required to build it in the chromium tree.
+4. IntelliJ formatting settings.
+   Taken from commit: 622d3d4c5b3bee50fd335f3282d9e9d64ae0f5f7
 
 Local Modifications:
-Only picked the few scripts needed by chrome.
+Only picked the few components useful to Chromium (as listed above).
 
 The scripts have been modified to better suit Chromium development. Changes
 include, but are not limited to, the following:
