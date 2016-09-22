@@ -47,7 +47,8 @@ AvPipelineImpl::AvPipelineImpl(MediaPipelineBackend::Decoder* decoder,
       pending_read_(false),
       cast_cdm_context_(NULL),
       player_tracker_callback_id_(kNoCallbackId),
-      weak_factory_(this) {
+      weak_factory_(this),
+      decrypt_weak_factory_(this) {
   DCHECK(decoder_);
   decoder_->SetDelegate(this);
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -147,6 +148,13 @@ void AvPipelineImpl::Stop() {
   CMALOG(kLogControl) << __FUNCTION__;
   // Stop feeding the pipeline.
   enable_feeding_ = false;
+  // Drop any pending asynchronous decryption, so any pending
+  // OnBufferDecrypted() callback will not be called. StartPlayingFrom() sets
+  // enable_feeding_ back to true, so if a pending decryption callback from
+  // before Stop() is allowed to complete after StartPlayingFrom() is called
+  // again, it will think everything is fine and try to push a buffer, resulting
+  // in a double push.
+  decrypt_weak_factory_.InvalidateWeakPtrs();
   set_state(kStopped);
 }
 
@@ -235,10 +243,10 @@ void AvPipelineImpl::ProcessPendingBuffer() {
     if (decrypt_context->CanDecryptToBuffer()) {
       auto buffer = pending_buffer_;
       pending_buffer_ = nullptr;
-      DecryptDecoderBuffer(
-          buffer, decrypt_context.get(),
-          base::Bind(&AvPipelineImpl::OnBufferDecrypted, weak_this_,
-                     base::Passed(&decrypt_context)));
+      DecryptDecoderBuffer(buffer, decrypt_context.get(),
+                           base::Bind(&AvPipelineImpl::OnBufferDecrypted,
+                                      decrypt_weak_factory_.GetWeakPtr(),
+                                      base::Passed(&decrypt_context)));
 
       return;
     }

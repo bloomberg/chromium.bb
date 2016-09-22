@@ -172,6 +172,10 @@ class AvPipelineImpl : MediaPipelineBackend::Decoder::Delegate {
 
   base::WeakPtr<AvPipelineImpl> weak_this_;
   base::WeakPtrFactory<AvPipelineImpl> weak_factory_;
+  // Special weak factory used for asynchronous decryption. This allows us to
+  // cancel pending asynchronous decryption (by invalidating this factory's weak
+  // ptrs) without affecting other bound callbacks.
+  base::WeakPtrFactory<AvPipelineImpl> decrypt_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AvPipelineImpl);
 };
