@@ -160,5 +160,9 @@ def FindTarget(target):
     return lambda _argv: cros_test_lib.main(module=module)
 
 
-if __name__ == '__main__':
+def DoMain():
   commandline.ScriptWrapperMain(FindTarget)
+
+
+if __name__ == '__main__':
+  DoMain()
