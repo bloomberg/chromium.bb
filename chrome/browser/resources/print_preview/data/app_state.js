@@ -6,6 +6,54 @@ cr.define('print_preview', function() {
   'use strict';
 
   /**
+   * Object used to represent a recent destination in the app state.
+   * @constructor
+   */
+  function RecentDestination(destination) {
+    /**
+     * ID of the RecentDestination.
+     * @type {string}
+     */
+    this.id = destination.id;
+
+    /**
+     * Origin of the RecentDestination.
+     * @type {string}
+     */
+    this.origin = destination.origin;
+
+    /**
+     * Account the RecentDestination is registered for.
+     * @type {string}
+     */
+    this.account = destination.account || '';
+
+    /**
+     * CDD of the RecentDestination.
+     * @type {print_preview.Cdd}
+     */
+    this.capabilities = destination.capabilities;
+
+    /**
+     * Name of the RecentDestination.
+     * @type {string}
+     */
+    this.name = destination.name || '';
+
+    /**
+     * Extension ID associated with the RecentDestination.
+     * @type {string}
+     */
+    this.extensionId = destination.extension_id || '';
+
+    /**
+     * Extension name associated with the RecentDestination.
+     * @type {string}
+     */
+    this.extensionName = destination.extension_name || '';
+  };
+
+  /**
    * Object used to get and persist the print preview application state.
    * @constructor
    */
@@ -18,6 +66,7 @@ cr.define('print_preview', function() {
     this.state_ = {};
     this.state_[AppState.Field.VERSION] = AppState.VERSION_;
     this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = true;
+    this.state_[AppState.Field.RECENT_DESTINATIONS] = [];
 
     /**
      * Whether the app state has been initialized. The app state will ignore all
@@ -29,18 +78,19 @@ cr.define('print_preview', function() {
   };
 
   /**
+   * Number of recent print destinations to store across browser sessions.
+   * @const {number}
+   */
+  AppState.NUM_DESTINATIONS_ = 3;
+
+
+  /**
    * Enumeration of field names for serialized app state.
    * @enum {string}
    */
   AppState.Field = {
     VERSION: 'version',
-    SELECTED_DESTINATION_ID: 'selectedDestinationId',
-    SELECTED_DESTINATION_ACCOUNT: 'selectedDestinationAccount',
-    SELECTED_DESTINATION_ORIGIN: 'selectedDestinationOrigin',
-    SELECTED_DESTINATION_CAPABILITIES: 'selectedDestinationCapabilities',
-    SELECTED_DESTINATION_NAME: 'selectedDestinationName',
-    SELECTED_DESTINATION_EXTENSION_ID: 'selectedDestinationExtensionId',
-    SELECTED_DESTINATION_EXTENSION_NAME: 'selectedDestinationExtensionName',
+    RECENT_DESTINATIONS: 'recentDestinations',
     IS_GCP_PROMO_DISMISSED: 'isGcpPromoDismissed',
     DPI: 'dpi',
     MEDIA_SIZE: 'mediaSize',
@@ -74,14 +124,27 @@ cr.define('print_preview', function() {
   AppState.NATIVE_FUNCTION_NAME_ = 'saveAppState';
 
   AppState.prototype = {
+
+    /**
+     * Helper function to get the most recent destination.
+     * @return {?RecentDestination} The most recent value of the
+     *     destination.
+     */
+    getSelectedDestination_: function() {
+      return (this.state_[AppState.Field.RECENT_DESTINATIONS].length > 0) ?
+          this.state_[AppState.Field.RECENT_DESTINATIONS][0] : null;
+    },
+
     /** @return {?string} ID of the selected destination. */
     get selectedDestinationId() {
-      return this.state_[AppState.Field.SELECTED_DESTINATION_ID];
+      return this.getSelectedDestination_ ?
+          this.getSelectedDestination_.id : null;
     },
 
     /** @return {?string} Account the selected destination is registered for. */
     get selectedDestinationAccount() {
-      return this.state_[AppState.Field.SELECTED_DESTINATION_ACCOUNT];
+      return this.getSelectedDestination_ ?
+          this.getSelectedDestination_.account : null;
     },
 
     /**
@@ -89,24 +152,28 @@ cr.define('print_preview', function() {
      *     selected destination.
      */
     get selectedDestinationOrigin() {
-      return this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN];
+      return this.getSelectedDestination_ ?
+          this.getSelectedDestination_.origin : null;
     },
 
     /** @return {?print_preview.Cdd} CDD of the selected destination. */
     get selectedDestinationCapabilities() {
-      return this.state_[AppState.Field.SELECTED_DESTINATION_CAPABILITIES];
+      return this.getSelectedDestination_ ?
+          this.getSelectedDestination_.capabilities : null;
     },
 
     /** @return {?string} Name of the selected destination. */
     get selectedDestinationName() {
-      return this.state_[AppState.Field.SELECTED_DESTINATION_NAME];
+      return this.getSelectedDestination_ ?
+          this.getSelectedDestination_.name : null;
     },
 
     /**
      * @return {?string} Extension ID associated with the selected destination.
      */
     get selectedDestinationExtensionId() {
-      return this.state_[AppState.Field.SELECTED_DESTINATION_EXTENSION_ID];
+      return this.getSelectedDestination_ ?
+          this.getSelectedDestination_.extensionId : null;
     },
 
     /**
@@ -114,7 +181,24 @@ cr.define('print_preview', function() {
      *     destination.
      */
     get selectedDestinationExtensionName() {
-      return this.state_[AppState.Field.SELECTED_DESTINATION_EXTENSION_NAME];
+      return this.getSelectedDestination_ ?
+          this.getSelectedDestination_.extensionName : null;
+    },
+
+    /**
+     * @return {?RecentDestination} The most recent destination, which is
+     *     currently the selected destination.
+     */
+    get selectedDestination() {
+      return this.getSelectedDestination_;
+    },
+
+    /**
+     * @return {?Array<!RecentDestination>} The AppState.NUM_DESTINATIONS_ most
+     *     recent destinations.
+     */
+    get recentDestinations() {
+      return this.state_[AppState.Field.RECENT_DESTINATIONS];
     },
 
     /** @return {boolean} Whether the GCP promotion has been dismissed. */
@@ -164,6 +248,22 @@ cr.define('print_preview', function() {
       } else {
         // Set some state defaults.
         this.state_[AppState.Field.IS_GCP_PROMO_DISMISSED] = false;
+        this.state_[AppState.Field.RECENT_DESTINATIONS] = [];
+      }
+      if (!this.state_[AppState.Field.RECENT_DESTINATIONS]) {
+        this.state_[AppState.Field.RECENT_DESTINATIONS] = [];
+      } else if (!(this.state_[AppState.Field.RECENT_DESTINATIONS] instanceof
+            Array)) {
+        var tmp = this.state_[AppState.Field.RECENT_DESTINATIONS];
+        this.state_[AppState.Field.RECENT_DESTINATIONS] = [tmp];
+      } else if (!this.state_[AppState.Field.RECENT_DESTINATIONS][0] ||
+          !this.state_[AppState.Field.RECENT_DESTINATIONS][0].id) {
+        // read in incorrectly
+        this.state_[AppState.Field.RECENT_DESTINATIONS] = [];
+      } else if (this.state_[AppState.Field.RECENT_DESTINATIONS].length >
+          AppState.NUM_DESTINATIONS_) {
+        this.state_[AppState.Field.RECENT_DESTINATIONS].length =
+            AppState.NUM_DESTINATIONS_;
       }
     },
 
@@ -197,16 +297,36 @@ cr.define('print_preview', function() {
     persistSelectedDestination: function(dest) {
       if (!this.isInitialized_)
         return;
-      this.state_[AppState.Field.SELECTED_DESTINATION_ID] = dest.id;
-      this.state_[AppState.Field.SELECTED_DESTINATION_ACCOUNT] = dest.account;
-      this.state_[AppState.Field.SELECTED_DESTINATION_ORIGIN] = dest.origin;
-      this.state_[AppState.Field.SELECTED_DESTINATION_CAPABILITIES] =
-          dest.capabilities;
-      this.state_[AppState.Field.SELECTED_DESTINATION_NAME] = dest.displayName;
-      this.state_[AppState.Field.SELECTED_DESTINATION_EXTENSION_ID] =
-          dest.extensionId;
-      this.state_[AppState.Field.SELECTED_DESTINATION_EXTENSION_NAME] =
-          dest.extensionName;
+
+      // Determine if this destination is already in the recent destinations,
+      // and where in the array it is located.
+      var newDestination = new RecentDestination(dest);
+      var indexFound = this.state_[
+          AppState.Field.RECENT_DESTINATIONS].findIndex(function(recent) {
+            return (newDestination.id == recent.id &&
+                    newDestination.origin == recent.origin);
+          });
+
+      // No change
+      if (indexFound == 0) {
+        this.persist_();
+        return;
+      }
+
+      // Shift the array so that the nth most recent destination is located at
+      // index n.
+      if (indexFound == -1 &&
+          this.state_[AppState.Field.RECENT_DESTINATIONS].length ==
+          AppState.NUM_DESTINATIONS_) {
+        indexFound = AppState.NUM_DESTINATIONS_ - 1;
+      }
+      if (indexFound != -1)
+        this.state_[AppState.Field.RECENT_DESTINATIONS].splice(indexFound, 1);
+
+      // Add the most recent destination
+      this.state_[AppState.Field.RECENT_DESTINATIONS].splice(
+          0, 0, newDestination);
+
       this.persist_();
     },
 

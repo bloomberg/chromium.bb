@@ -458,16 +458,42 @@ cr.define('print_preview', function() {
       var capabilities = null;
       var extensionId = '';
       var extensionName = '';
-      if (this.appState_.selectedDestinationId &&
-          this.appState_.selectedDestinationOrigin) {
-        origin = this.appState_.selectedDestinationOrigin;
-        id = this.appState_.selectedDestinationId;
-        account = this.appState_.selectedDestinationAccount || '';
-        name = this.appState_.selectedDestinationName || '';
-        capabilities = this.appState_.selectedDestinationCapabilities;
-        extensionId = this.appState_.selectedDestinationExtensionId || '';
-        extensionName = this.appState_.selectedDestinationExtensionName || '';
+      var foundDestination = false;
+      if (this.appState_.recentDestinations) {
+        // Run through the destinations backwards the most recently used is set
+        // as the initially selected destination.
+        for (var i = this.appState_.recentDestinations.length - 1; i >= 0;
+             i--) {
+          origin = this.appState_.recentDestinations[i].origin;
+          id = this.appState_.recentDestinations[i].id;
+          account = this.appState_.recentDestinations[i].account || '';
+          name = this.appState_.recentDestinations[i].name || '';
+          capabilities = this.appState_.recentDestinations[i].capabilities;
+          extensionId = this.appState_.recentDestinations[i].extensionId ||
+                        '';
+          extensionName =
+              this.appState_.recentDestinations[i].extensionName || '';
+          var candidate =
+              this.destinationMap_[this.getDestinationKey_(origin,
+                                                           id, account)];
+          if (candidate != null) {
+            this.selectDestination(candidate);
+            candidate.isRecent = true;
+            foundDestination = true;
+          } else {
+            foundDestination = this.fetchPreselectedDestination_(
+                                    origin,
+                                    id,
+                                    account,
+                                    name,
+                                    capabilities,
+                                    extensionId,
+                                    extensionName);
+          }
+        }
       }
+      if (foundDestination) return;
+      // Try the system default
       var candidate =
           this.destinationMap_[this.getDestinationKey_(origin, id, account)];
       if (candidate != null) {
@@ -1128,6 +1154,11 @@ cr.define('print_preview', function() {
       var key = this.getKey_(destination);
       var existingDestination = this.destinationMap_[key];
       if (existingDestination == null) {
+        destination.isRecent |= this.appState_.recentDestinations.some(
+            function(recent) {
+              return (destination.id == recent.id &&
+                      destination.origin == recent.origin);
+            }, this);
         this.destinations_.push(destination);
         this.destinationMap_[key] = destination;
         return true;

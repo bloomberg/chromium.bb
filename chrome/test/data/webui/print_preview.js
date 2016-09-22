@@ -352,12 +352,61 @@ function getCddTemplate(printerId) {
   };
 }
 
+// Test restore settings with one destination.
 TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreLocalDestination',
     function() {
   this.initialSettings_.serializedAppStateStr_ =
-      '{"version":2,"selectedDestinationId":"ID",' +
-      '"selectedDestinationOrigin":"local"}';
+      '{"version":2,"recentDestinations":[{"id":"ID", "origin":"local",' +
+        '"account":"", "capabilities":0, "name":"", "extensionId":"",' +
+            '"extensionName":""}]}';
   this.setInitialSettings();
+
+  testDone();
+});
+
+//Test with multiple destinations
+TEST_F('PrintPreviewWebUITest', 'TestPrintPreviewRestoreMultipleDestinations',
+    function() {
+  this.initialSettings_.serializedAppStateStr_ =
+      '{"version":2,"recentDestinations":[{"id":"ID1", "origin":"local",' +
+        '"account":"", "capabilities":0, "name":"", "extensionId":"",' +
+            '"extensionName":""},' +
+      '{"id":"ID2", "origin":"local",' +
+        '"account":"", "capabilities":0, "name":"", "extensionId":"",' +
+            '"extensionName":""},' +
+      '{"id":"ID3", "origin":"local",' +
+        '"account":"", "capabilities":0, "name":"", "extensionId":"",' +
+            '"extensionName":""}]}';
+  this.setInitialSettings();
+
+  // Set capabilities for the three recently used destinations + 1 more
+  this.setCapabilities(getCddTemplate('ID1'));
+  this.setCapabilities(getCddTemplate('ID2'));
+  this.setCapabilities(getCddTemplate('ID3'));
+  this.setCapabilities(getCddTemplate('ID4'));
+
+  // The most recently used destination should be the currently selected one.
+  // This is ID1.
+  assertEquals(
+      'ID1', printPreview.destinationStore_.selectedDestination.id);
+
+  // Look through the destinations. ID1, ID2, and ID3 should all be recent.
+  var destinations = printPreview.destinationStore_.destinations_;
+  var ids_found = [];
+
+  for (var i = 0; i < destinations.length; i++) {
+    if (!destinations[i])
+      continue;
+    if (destinations[i].isRecent)
+      ids_found.push(destinations[i].id);
+  }
+
+  // Make sure there were 3 recent destinations and that they are the correct
+  // IDs.
+  assertEquals(3, ids_found.length);
+  assertNotEquals(-1, ids_found.indexOf("ID1"));
+  assertNotEquals(-1, ids_found.indexOf("ID2"));
+  assertNotEquals(-1, ids_found.indexOf("ID3"));
 
   testDone();
 });
