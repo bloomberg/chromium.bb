@@ -314,7 +314,7 @@ cd $TEMP_DIR
 echo "Generate config files."
 all_platforms="--enable-external-build --enable-postproc --enable-multi-res-encoding --enable-temporal-denoising"
 all_platforms="${all_platforms} --enable-vp9-temporal-denoising --enable-vp9-postproc --size-limit=16384x16384"
-all_platforms="${all_platforms} --enable-realtime-only"
+all_platforms="${all_platforms} --enable-realtime-only --disable-install-docs"
 x86_platforms="--enable-pic --as=yasm $DISABLE_AVX $HIGHBD"
 gen_config_files linux/ia32 "--target=x86-linux-gcc ${all_platforms} ${x86_platforms}"
 gen_config_files linux/x64 "--target=x86_64-linux-gcc ${all_platforms} ${x86_platforms}"
