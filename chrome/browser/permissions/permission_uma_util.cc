@@ -496,8 +496,8 @@ void PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
       UMA_HISTOGRAM_BOOLEAN(
           "Permissions.Prompt.Accepted.Persisted.VideoCapture", toggle_enabled);
       break;
-    case PermissionType::PLUGINS:
-      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Accepted.Persisted.Plugins",
+    case PermissionType::FLASH:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Accepted.Persisted.Flash",
                             toggle_enabled);
       break;
     // The user is not prompted for these permissions, thus there is no accept
@@ -547,8 +547,8 @@ void PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
       UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.VideoCapture",
                             toggle_enabled);
       break;
-    case PermissionType::PLUGINS:
-      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.Plugins",
+    case PermissionType::FLASH:
+      UMA_HISTOGRAM_BOOLEAN("Permissions.Prompt.Denied.Persisted.Flash",
                             toggle_enabled);
       break;
     // The user is not prompted for these permissions, thus there is no deny
@@ -669,10 +669,10 @@ void PermissionUmaUtil::RecordPermissionAction(
       UMA_HISTOGRAM_ENUMERATION("Permissions.Action.VideoCapture", action,
                                 PERMISSION_ACTION_NUM);
       break;
-    case PermissionType::PLUGINS:
-      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Plugins",
-                            "Permissions.Action.SecureOrigin.Plugins",
-                            "Permissions.Action.InsecureOrigin.Plugins",
+    case PermissionType::FLASH:
+      PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Flash",
+                            "Permissions.Action.SecureOrigin.Flash",
+                            "Permissions.Action.InsecureOrigin.Flash",
                             action);
       break;
     // The user is not prompted for these permissions, thus there is no

@@ -50,8 +50,8 @@ PermissionReport::PermissionType PermissionTypeForReport(
       return PermissionReport::VIDEO_CAPTURE;
     case PermissionType::BACKGROUND_SYNC:
       return PermissionReport::BACKGROUND_SYNC;
-    case PermissionType::PLUGINS:
-      return PermissionReport::PLUGINS;
+    case PermissionType::FLASH:
+      return PermissionReport::FLASH;
     case PermissionType::NUM:
       break;
   }

@@ -34,7 +34,7 @@ enum class PermissionRequestType {
   PERMISSION_NOTIFICATIONS,
   PERMISSION_PROTECTED_MEDIA_IDENTIFIER,
   PERMISSION_PUSH_MESSAGING,
-  PERMISSION_PLUGINS,
+  PERMISSION_FLASH,
   // NUM must be the last value in the enum.
   NUM
 };

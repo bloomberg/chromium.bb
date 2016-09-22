@@ -31,7 +31,7 @@
 #include "content/public/browser/web_contents.h"
 
 #if defined(ENABLE_PLUGINS)
-#include "chrome/browser/plugins/plugins_permission_context.h"
+#include "chrome/browser/plugins/flash_permission_context.h"
 #endif
 
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
@@ -105,7 +105,7 @@ ContentSettingsType PermissionTypeToContentSetting(PermissionType permission) {
       return CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
     case PermissionType::BACKGROUND_SYNC:
       return CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC;
-    case PermissionType::PLUGINS:
+    case PermissionType::FLASH:
       return CONTENT_SETTINGS_TYPE_PLUGINS;
     case PermissionType::NUM:
       // This will hit the NOTREACHED below.
@@ -257,8 +257,8 @@ PermissionManager::PermissionManager(Profile* profile)
   permission_contexts_[PermissionType::BACKGROUND_SYNC] =
       base::MakeUnique<BackgroundSyncPermissionContext>(profile);
 #if defined(ENABLE_PLUGINS)
-  permission_contexts_[PermissionType::PLUGINS] =
-      base::MakeUnique<PluginsPermissionContext>(profile);
+  permission_contexts_[PermissionType::FLASH] =
+      base::MakeUnique<FlashPermissionContext>(profile);
 #endif
 }
 
