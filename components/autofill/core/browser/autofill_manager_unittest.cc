@@ -92,8 +92,7 @@ class TestPaymentsClient : public payments::PaymentsClient {
 
   ~TestPaymentsClient() override {}
 
-  void GetUploadDetails(const std::vector<AutofillProfile>& addresses,
-                        const std::string& app_locale) override {
+  void GetUploadDetails(const std::string& app_locale) override {
     delegate_->OnDidGetUploadDetails(
         app_locale == "en-US" ? AutofillClient::SUCCESS
                               : AutofillClient::PERMANENT_FAILURE,

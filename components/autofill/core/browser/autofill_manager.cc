@@ -12,7 +12,6 @@
 #include <map>
 #include <set>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -1130,7 +1129,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
     }
 
     // All required data is available, start the upload process.
-    payments_client_->GetUploadDetails(upload_request_.profiles, app_locale_);
+    payments_client_->GetUploadDetails(app_locale_);
   }
 }
 
