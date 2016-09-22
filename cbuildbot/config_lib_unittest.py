@@ -543,28 +543,35 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
     # This confirms they are exactly the same.
     self.assertDictEqual(new, src)
 
-  def testUnusedTemplates(self):
+  def testTemplatesToSave(self):
+    def _invert(x):
+      return not x
+
     config = config_lib.SiteConfig()
-    config.AddTemplate('base', foo=True)
+    config.AddTemplate('base', foo=True, important=False)
+    config.AddTemplate('callable', important=_invert)
     config.AddTemplate('unused', bar=True)
     config.Add('build1', config.templates.base, var=1)
     config.Add('build2', var=2)
     config.Add('build3', config.templates.base, var=3)
+    config.Add('build4', config.templates.callable, var=4)
 
     self.assertItemsEqual(
         config.templates,
         {
-            'base': {'_template': 'base', 'foo': True},
+            'base': {'_template': 'base', 'foo': True, 'important': False},
+            'callable': {'_template': 'callable', 'important': _invert},
             'unused': {'_template': 'unused', 'bar': True},
         }
     )
 
-    results = config._UsedTemplates()
+    results = config._TemplatesToSave()
 
     self.assertItemsEqual(
         results,
         {
             'base': {'_template': 'base', 'foo': True},
+            'callable': {'_template': 'callable', 'important': True},
         }
     )
 

@@ -196,8 +196,6 @@ class BuildConfig(AttrDict):
     """
     return {k: cls._delete_key_sentinel for k in keys}
 
-
-
   def GetBotId(self, remote_trybot=False):
     """Get the 'bot id' of a particular bot.
 
@@ -1326,17 +1324,32 @@ class SiteConfig(dict):
 
     return cfg
 
-  def _UsedTemplates(self):
+  def _TemplatesToSave(self):
     """Return a version of self._templates with only used templates.
+
+    Templates have callables/delete keys resolved against GetDefault() to
+    ensure they can be safely saved to json.
 
     Returns:
       Dict copy of self._templates with all unreferenced templates removed.
     """
+    defaults = self.GetDefault()
+
     # All templates used. We ignore child configs since they
     # should exist at top level.
     used = set(c.get('_template', None) for c in self.itervalues())
     used.discard(None)
-    return {k: self._templates[k] for k in used}
+
+    result = {}
+
+    for name in used:
+      # Expand any special values (callables, etc)
+      expanded = defaults.derive(self._templates[name])
+      # Hide anything that matches the default.
+      save = {k: v for k, v in expanded.iteritems() if defaults.get(k) != v}
+      result[name] = save
+
+    return result
 
   def SaveConfigToString(self):
     """Save this Config object to a Json format string."""
@@ -1348,7 +1361,7 @@ class SiteConfig(dict):
       config_dict[k] = self.HideDefaults(k, v)
 
     config_dict['_default'] = default
-    config_dict['_templates'] = self._UsedTemplates()
+    config_dict['_templates'] = self._TemplatesToSave()
     config_dict['_site_params'] = SiteParameters.HideDefaults(site_params)
 
     return PrettyJsonDict(config_dict)

@@ -197,12 +197,7 @@
             "important": true,
             "manifest_version": true,
             "overlays": "both",
-            "uprev": false,
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            "uprev": false
         },
         "asan": {
             "_template": "asan",
@@ -217,14 +212,12 @@
             "profile": "asan",
             "vm_tests": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            ]
         },
         "chrome_perf": {
             "_template": "chrome_perf",
             "build_type": "chrome",
             "chrome_rev": "tot",
-            "chrome_sdk": false,
             "chromeos_official": true,
             "description": "Chrome Performance test bot",
             "hw_tests": [
@@ -236,12 +229,9 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "important": false,
             "internal": true,
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-            "manifest_version": false,
             "overlays": "both",
-            "run_gce_tests": false,
             "unittests": false,
             "uprev": false,
             "use_chrome_lkgm": true,
@@ -249,8 +239,7 @@
                 "-cros-debug",
                 "chrome_internal"
             ],
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "chrome_pfq": {
             "_template": "chrome_pfq",
@@ -276,18 +265,12 @@
             "uprev": false,
             "useflags": [
                 "chrome_internal"
-            ],
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            ]
         },
         "chrome_pfq_cheets_informational": {
             "_template": "chrome_pfq_cheets_informational",
             "build_type": "chrome",
             "chrome_rev": "tot",
-            "chrome_sdk": false,
             "chromeos_official": true,
             "description": "Informational Chrome Uprev & Build (internal)",
             "hw_tests": [
@@ -298,27 +281,19 @@
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": false,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": null,\n    \"minimum_duts\": 3,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 3,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "important": false,
             "internal": true,
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-            "manifest_version": false,
             "overlays": "both",
             "unittests": false,
             "uprev": false,
             "useflags": [
                 "chrome_internal"
-            ],
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            ]
         },
         "chrome_pfq_informational": {
             "_template": "chrome_pfq_informational",
             "build_type": "chrome",
             "chrome_rev": "tot",
-            "chrome_sdk": false,
             "chromeos_official": true,
             "description": "Informational Chrome Uprev & Build (internal)",
             "hw_tests_override": [
@@ -327,27 +302,19 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "important": false,
             "internal": true,
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-            "manifest_version": false,
             "overlays": "both",
             "unittests": false,
             "uprev": false,
             "useflags": [
                 "chrome_internal"
-            ],
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            ]
         },
         "chrome_pfq_informational_gn": {
             "_template": "chrome_pfq_informational_gn",
             "build_type": "chrome",
             "chrome_rev": "tot",
-            "chrome_sdk": false,
             "chromeos_official": true,
             "description": "Informational Chrome Uprev & Build (internal)",
             "hw_tests_override": [
@@ -356,22 +323,15 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "important": false,
             "internal": true,
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-            "manifest_version": false,
             "overlays": "both",
             "unittests": false,
             "uprev": false,
             "useflags": [
                 "chrome_internal",
                 "gn"
-            ],
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            ]
         },
         "chromium_pfq": {
             "_template": "chromium_pfq",
@@ -393,18 +353,12 @@
             "overlays": "both",
             "prebuilts": "public",
             "unittests": false,
-            "uprev": false,
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            "uprev": false
         },
         "chromium_pfq_informational": {
             "_template": "chromium_pfq_informational",
             "build_type": "chrome",
             "chrome_rev": "tot",
-            "chrome_sdk": false,
             "description": "Informational Chromium Uprev & Build (public)",
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -412,22 +366,13 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "important": false,
-            "manifest_version": false,
-            "overlays": "public",
             "unittests": false,
-            "uprev": false,
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            "uprev": false
         },
         "chromium_pfq_informational_gn": {
             "_template": "chromium_pfq_informational_gn",
             "build_type": "chrome",
             "chrome_rev": "tot",
-            "chrome_sdk": false,
             "description": "Informational Chromium Uprev & Build (public)",
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -435,28 +380,18 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "important": false,
-            "manifest_version": false,
-            "overlays": "public",
             "unittests": false,
             "uprev": false,
             "useflags": [
                 "gn"
-            ],
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            ]
         },
         "compile_only_pre_cq": {
             "_template": "compile_only_pre_cq",
             "archive": false,
             "build_packages_in_background": true,
             "build_type": "binary",
-            "chrome_sdk": false,
             "chrome_sdk_build_chrome": false,
-            "chroot_replace": true,
             "compilecheck": true,
             "cpe_export": false,
             "debug_symbols": false,
@@ -477,33 +412,24 @@
             ],
             "important": true,
             "manifest_version": true,
-            "overlays": "public",
             "pre_cq": true,
-            "prebuilts": false,
-            "run_gce_tests": false,
             "trybot_list": true,
             "unittests": false,
             "upload_standalone_images": false,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "depthcharge_firmware": {
             "_template": "depthcharge_firmware",
-            "afdo_use": false,
             "archive_build_debug": true,
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
             "binhost_key": "RELEASE_BINHOST",
             "build_timeout": 28200,
             "build_type": "canary",
-            "chrome_sdk": false,
             "chromeos_official": true,
             "description": "Firmware Canary",
-            "dev_installer_prebuilts": false,
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
             "factory_toolkit": false,
-            "git_sync": false,
-            "hw_tests": [],
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -511,10 +437,8 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
             "hwqual": true,
-            "image_test": false,
             "images": [],
             "internal": true,
-            "manifest": "default.xml",
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
@@ -522,44 +446,32 @@
                 "virtual/chromeos-firmware",
                 "chromeos-base/autotest-all"
             ],
-            "paygen": false,
             "push_image": true,
-            "run_gce_tests": false,
             "sign_types": [
                 "firmware"
             ],
-            "signer_tests": false,
             "sync_chrome": false,
-            "trybot_list": false,
             "unittests": false,
-            "upload_hw_test_artifacts": true,
-            "upload_symbols": false,
             "useflags": [
                 "chromeless_tty",
                 "depthcharge"
             ],
-            "usepkg_build_packages": true,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "depthcharge_full_firmware": {
             "_template": "depthcharge_full_firmware",
             "archive_build_debug": true,
             "build_type": "full",
-            "chrome_sdk": false,
             "description": "Firmware Informational",
-            "dev_installer_prebuilts": false,
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
             "factory_toolkit": false,
             "git_sync": true,
-            "hw_tests": [],
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "image_test": false,
             "images": [],
             "internal": true,
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -568,41 +480,29 @@
                 "virtual/chromeos-firmware",
                 "chromeos-base/autotest-all"
             ],
-            "paygen": false,
-            "run_gce_tests": false,
             "sign_types": [
                 "firmware"
             ],
-            "signer_tests": false,
             "sync_chrome": false,
-            "trybot_list": false,
             "unittests": false,
-            "upload_hw_test_artifacts": true,
-            "upload_symbols": false,
             "useflags": [
                 "chromeless_tty",
                 "depthcharge"
             ],
-            "usepkg_build_packages": true,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "factory": {
             "_template": "factory",
-            "afdo_use": false,
             "archive_build_debug": true,
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
             "binhost_key": "RELEASE_BINHOST",
             "build_timeout": 28200,
             "build_type": "canary",
-            "chrome_sdk": false,
             "chromeos_official": true,
             "description": "Factory Builds",
             "dev_installer_prebuilts": true,
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
-            "git_sync": false,
-            "hw_tests": [],
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -622,7 +522,6 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
-            "paygen": false,
             "push_image": true,
             "sign_types": [
                 "factory"
@@ -630,7 +529,6 @@
             "signer_tests": true,
             "trybot_list": true,
             "upload_hw_test_artifacts": false,
-            "upload_symbols": false,
             "useflags": [
                 "-cros-debug",
                 "chrome_internal"
@@ -649,21 +547,16 @@
         },
         "firmware": {
             "_template": "firmware",
-            "afdo_use": false,
             "archive_build_debug": true,
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
             "binhost_key": "RELEASE_BINHOST",
             "build_timeout": 28200,
             "build_type": "canary",
-            "chrome_sdk": false,
             "chromeos_official": true,
             "description": "Firmware Canary",
-            "dev_installer_prebuilts": false,
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
             "factory_toolkit": false,
-            "git_sync": false,
-            "hw_tests": [],
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -671,10 +564,8 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
             "hwqual": true,
-            "image_test": false,
             "images": [],
             "internal": true,
-            "manifest": "default.xml",
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
@@ -682,24 +573,16 @@
                 "virtual/chromeos-firmware",
                 "chromeos-base/autotest-all"
             ],
-            "paygen": false,
             "push_image": true,
-            "run_gce_tests": false,
             "sign_types": [
                 "firmware"
             ],
-            "signer_tests": false,
             "sync_chrome": false,
-            "trybot_list": false,
             "unittests": false,
-            "upload_hw_test_artifacts": true,
-            "upload_symbols": false,
             "useflags": [
                 "chromeless_tty"
             ],
-            "usepkg_build_packages": true,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "full": {
             "_template": "full",
@@ -736,7 +619,6 @@
             "description": "Full release build with next minor GCC toolchain revision",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
             "gcc_githash": "svn-mirror/google/gcc-4_9",
-            "git_sync": false,
             "hw_tests": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -765,15 +647,12 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
-            "run_gce_tests": false,
-            "trybot_list": false,
             "useflags": [
                 "-cros-debug",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "incremental": {
             "_template": "incremental",
@@ -787,7 +666,6 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "overlays": "public",
             "uprev": false
         },
         "llvm_next_toolchain": {
@@ -800,7 +678,6 @@
             "chrome_sdk": true,
             "description": "Full release build with LLVM (next) toolchain",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
-            "git_sync": false,
             "hw_tests": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -825,15 +702,12 @@
             "manifest_version": true,
             "overlays": "both",
             "profile": "llvm",
-            "run_gce_tests": false,
-            "trybot_list": false,
             "useflags": [
                 "clang",
                 "llvm-next"
             ],
             "usepkg_build_packages": false,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "llvm_toolchain": {
             "_template": "llvm_toolchain",
@@ -845,7 +719,6 @@
             "chrome_sdk": true,
             "description": "Full release build with LLVM toolchain",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
-            "git_sync": false,
             "hw_tests": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -870,24 +743,19 @@
             "manifest_version": true,
             "overlays": "both",
             "profile": "llvm",
-            "run_gce_tests": false,
-            "trybot_list": false,
             "useflags": [
                 "-cros-debug",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "no_vmtest_pre_cq": {
             "_template": "no_vmtest_pre_cq",
             "archive": false,
             "build_packages_in_background": true,
             "build_type": "binary",
-            "chrome_sdk": false,
             "chrome_sdk_build_chrome": false,
-            "chroot_replace": true,
             "cpe_export": false,
             "debug_symbols": false,
             "description": "Verifies compilation, building an image, and unit tests if supported.",
@@ -907,14 +775,10 @@
             ],
             "important": true,
             "manifest_version": true,
-            "overlays": "public",
             "pre_cq": true,
-            "prebuilts": false,
-            "run_gce_tests": false,
             "trybot_list": true,
             "upload_standalone_images": false,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "paladin": {
             "_template": "paladin",
@@ -935,7 +799,6 @@
             ],
             "important": true,
             "manifest_version": true,
-            "overlays": "public",
             "prebuilts": "public",
             "trybot_list": true,
             "upload_standalone_images": false,
@@ -953,27 +816,22 @@
             "build_type": "payloads",
             "builder_class_name": "release_builders.GeneratePayloadsBuilder",
             "description": "Regenerate release payloads.",
-            "hw_tests": [],
             "hw_tests_override": [],
             "internal": true,
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
             "paygen": true,
-            "run_gce_tests": false,
             "unittests": false,
             "upload_hw_test_artifacts": false,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "pre_cq": {
             "_template": "pre_cq",
             "archive": false,
             "build_packages_in_background": true,
             "build_type": "binary",
-            "chrome_sdk": false,
             "chrome_sdk_build_chrome": false,
-            "chroot_replace": true,
             "cpe_export": false,
             "debug_symbols": false,
             "description": "Verifies compilation, building an image, and vm/unit tests if supported.",
@@ -993,22 +851,18 @@
             ],
             "important": true,
             "manifest_version": true,
-            "overlays": "public",
             "pre_cq": true,
-            "prebuilts": false,
             "trybot_list": true,
             "upload_standalone_images": false,
             "vm_tests": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            ]
         },
         "pre_flight_branch": {
             "_template": "pre_flight_branch",
             "active_waterfall": "chromeos_release",
             "branch": true,
             "build_timeout": 1200,
-            "build_type": "pfq",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
             "important": true,
             "internal": true,
@@ -1017,14 +871,8 @@
             "overlays": "both",
             "prebuilts": "private",
             "sync_chrome": true,
-            "trybot_list": false,
-            "uprev": true,
             "useflags": [
                 "chrome_internal"
-            ],
-            "vm_tests": [
-                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
-                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
@@ -1046,7 +894,6 @@
             "description": "Release Builds (canary) (internal)",
             "dev_installer_prebuilts": true,
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
-            "git_sync": false,
             "hw_tests": [
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 1,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"sanity\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 4,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 6,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -1101,7 +948,6 @@
             "_template": "release_afdo_generate",
             "afdo_generate_min": true,
             "afdo_update_ebuild": true,
-            "afdo_use": false,
             "archive_build_debug": true,
             "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
             "binhost_bucket": "gs://chromeos-dev-installer",
@@ -1111,9 +957,7 @@
             "chrome_sdk": true,
             "chromeos_official": true,
             "description": "Release Builds (canary) (internal)",
-            "dev_installer_prebuilts": false,
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
-            "git_sync": false,
             "hw_tests": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 4800,\n    \"warn_only\": true\n}"
             ],
@@ -1133,13 +977,10 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
-            "paygen": false,
-            "push_image": false,
             "sign_types": [
                 "recovery"
             ],
             "signer_tests": true,
-            "trybot_list": false,
             "upload_symbols": true,
             "useflags": [
                 "-cros-debug",
@@ -1169,9 +1010,7 @@
             "chrome_sdk": true,
             "chromeos_official": true,
             "description": "Release Builds (canary) (internal)",
-            "dev_installer_prebuilts": false,
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Canaries",
-            "git_sync": false,
             "hw_tests": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 4,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -1198,13 +1037,10 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
-            "paygen": false,
-            "push_image": false,
             "sign_types": [
                 "recovery"
             ],
             "signer_tests": true,
-            "trybot_list": false,
             "upload_symbols": true,
             "useflags": [
                 "-cros-debug",
@@ -1232,7 +1068,6 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "overlays": "public",
             "uprev": false,
             "vm_tests": [
                 "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 7200\n}"
@@ -1264,7 +1099,6 @@
             "chrome_sdk": true,
             "description": "Toolchain Builds (internal)",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Continuous",
-            "git_sync": false,
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -1282,21 +1116,17 @@
             "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
             "manifest_version": true,
             "overlays": "both",
-            "run_gce_tests": false,
-            "trybot_list": false,
             "useflags": [
                 "-cros-debug",
                 "chrome_internal"
             ],
             "usepkg_build_packages": false,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "tot_asan_informational": {
             "_template": "tot_asan_informational",
             "build_type": "chrome",
             "chrome_rev": "tot",
-            "chrome_sdk": false,
             "description": "Build TOT Chrome with Address Sanitizer (Clang)",
             "disk_layout": "2gb-rootfs",
             "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-ASAN",
@@ -1306,37 +1136,26 @@
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
                 "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
             ],
-            "important": false,
-            "manifest_version": false,
-            "overlays": "public",
             "profile": "asan",
-            "unittests": true,
             "uprev": false,
             "vm_tests": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            ]
         },
         "unittest_stress": {
             "_template": "unittest_stress",
             "build_type": "tryjob",
             "builder_class_name": "test_builders.UnittestStressBuilder",
             "description": "Run Unittests repeatedly to look for flake.",
-            "hw_tests": [],
             "hw_tests_override": [],
             "manifest_version": true,
-            "run_gce_tests": false,
-            "vm_tests": [],
-            "vm_tests_override": null
+            "vm_tests": []
         },
         "wificell_pre_cq": {
             "_template": "wificell_pre_cq",
-            "archive": true,
             "build_packages_in_background": true,
             "build_type": "binary",
-            "chrome_sdk": false,
             "chrome_sdk_build_chrome": false,
-            "chroot_replace": true,
             "cpe_export": false,
             "debug_symbols": false,
             "description": "WiFi tests acting as pre-cq for WiFi related changes",
@@ -1351,23 +1170,19 @@
             "hw_tests_override": [
                 "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": null,\n    \"minimum_duts\": 1,\n    \"num\": 6,\n    \"offload_failures_only\": false,\n    \"pool\": \"wificell-pre-cq\",\n    \"priority\": \"DEFAULT\",\n    \"retry\": false,\n    \"suite\": \"wificell-pre-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}"
             ],
-            "image_test": false,
             "images": [
                 "base",
                 "test"
             ],
             "important": true,
             "manifest_version": true,
-            "overlays": "public",
             "pre_cq": true,
-            "prebuilts": false,
             "trybot_list": true,
             "unittests": false,
             "upload_standalone_images": false,
             "vm_tests": [
                 "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-            ],
-            "vm_tests_override": null
+            ]
         }
     },
     "amd64-gcc-toolchain": {
