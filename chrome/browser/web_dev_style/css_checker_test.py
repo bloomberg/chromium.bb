@@ -140,6 +140,21 @@ div {
     border-left: 5px;
     border: 5px solid red;""")
 
+  def testCssAlphaWithVariables(self):
+    self.VerifyContentIsValid("""
+#id {
+  --zzyxx-xylophone: 3px;
+  --ignore-me: {
+    /* TODO(dbeam): fix this by creating a "sort context". If we simply strip
+     * off the mixin, the inside contents will be compared to the outside
+     * contents, which isn't what we want. */
+    visibility: hidden;
+    color: black;
+  };
+  --aardvark-animal: var(--zzyxz-xylophone);
+}
+""")
+
   def testCssBracesHaveSpaceBeforeAndNothingAfter(self):
     self.VerifyContentsProducesOutput("""
 /* Hello! */div/* Comment here*/{
