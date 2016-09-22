@@ -665,11 +665,21 @@ void NativeThemeWin::PaintIndirect(SkCanvas* destination_canvas,
   //                  keeping a cache of the resulting bitmaps.
 
   // Create an offscreen canvas that is backed by an HDC.
+  // This can fail if we don't have access to GDI or if lower-level Windows
+  // calls fail, possibly due to GDI handle exhaustion.
   base::win::ScopedCreateDC offscreen_hdc(
       skia::CreateOffscreenSurface(rect.width(), rect.height()));
+  if (!offscreen_hdc.IsValid())
+    return;
+
+  // Will be NULL if lower-level Windows calls fail, or if the backing
+  // allocated is 0 pixels in size (which should never happen according to
+  // Windows documentation).
   sk_sp<SkSurface> offscreen_surface =
       skia::MapPlatformSurface(offscreen_hdc.Get());
-  DCHECK(offscreen_surface);
+  if (!offscreen_surface)
+    return;
+
   SkCanvas* offscreen_canvas = offscreen_surface->getCanvas();
   DCHECK(offscreen_canvas);
 
