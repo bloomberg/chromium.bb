@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -86,7 +87,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   void TearDown() override {
     store_->RemoveObserver(&observer_);
     store_.reset();
-    RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Install an expectation on |observer_| for an error code.
@@ -106,13 +107,13 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
                 RetrievePolicyForUser(cryptohome_id_, _))
         .WillOnce(SaveArg<1>(&retrieve_callback));
     store_->Load();
-    RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&session_manager_client_);
     ASSERT_FALSE(retrieve_callback.is_null());
 
     // Run the callback.
     retrieve_callback.Run(response);
-    RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   // Verifies that store_->policy_map() has the HomepageLocation entry with
@@ -148,7 +149,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
                 StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
         .WillOnce(SaveArg<2>(&store_callback));
     store_->Store(policy_.policy());
-    RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&session_manager_client_);
     ASSERT_FALSE(store_callback.is_null());
 
@@ -175,7 +176,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
                 RetrievePolicyForUser(cryptohome_id_, _))
         .WillOnce(SaveArg<1>(&retrieve_callback));
     store_callback.Run(true);
-    RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(previous_policy.Equals(store_->policy_map()));
     EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
     Mock::VerifyAndClearExpectations(&session_manager_client_);
@@ -184,7 +185,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     // Finish the retrieve callback.
     EXPECT_CALL(observer_, OnStoreLoaded(store_.get()));
     retrieve_callback.Run(policy_.GetBlob());
-    RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(store_->policy());
     EXPECT_EQ(policy_.policy_data().SerializeAsString(),
               store_->policy()->SerializeAsString());
@@ -196,11 +197,6 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
     EXPECT_FALSE(store_->policy());
     EXPECT_TRUE(store_->policy_map().empty());
     EXPECT_EQ(CloudPolicyStore::STATUS_VALIDATION_ERROR, store_->status());
-  }
-
-  void RunUntilIdle() {
-    loop_.RunUntilIdle();
-    loop_.RunUntilIdle();
   }
 
   base::FilePath user_policy_dir() {
@@ -261,7 +257,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStoreValidationFail) {
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
       .Times(0);
   store_->Store(policy_.policy());
-  RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
 }
 
@@ -277,7 +273,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, InitialStoreMissingSignatureFailure) {
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
       .Times(0);
   store_->Store(policy_.policy());
-  RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
 }
 
@@ -307,7 +303,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest,
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
       .Times(0);
   store_->Store(policy_.policy());
-  RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
 }
 
@@ -321,7 +317,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithRotationValidationError) {
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
       .Times(0);
   store_->Store(policy_.policy());
-  RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
 }
 
@@ -332,14 +328,14 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreFail) {
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
       .WillOnce(SaveArg<2>(&store_callback));
   store_->Store(policy_.policy());
-  RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
   ASSERT_FALSE(store_callback.is_null());
 
   // Let the store operation complete.
   ExpectError(CloudPolicyStore::STATUS_STORE_ERROR);
   store_callback.Run(false);
-  RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(store_->policy());
   EXPECT_TRUE(store_->policy_map().empty());
   EXPECT_EQ(CloudPolicyStore::STATUS_STORE_ERROR, store_->status());
@@ -356,7 +352,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreValidationError) {
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
       .Times(0);
   store_->Store(policy_.policy());
-  RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
 }
 
@@ -375,7 +371,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithoutPolicyKey) {
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
       .Times(0);
   store_->Store(policy_.policy());
-  RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
 }
 
@@ -390,7 +386,7 @@ TEST_F(UserCloudPolicyStoreChromeOSTest, StoreWithInvalidSignature) {
               StorePolicyForUser(cryptohome_id_, policy_.GetBlob(), _))
       .Times(0);
   store_->Store(policy_.policy());
-  RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(&session_manager_client_);
 }
 

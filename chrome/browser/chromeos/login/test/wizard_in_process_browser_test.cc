@@ -7,7 +7,9 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -44,11 +46,11 @@ void WizardInProcessBrowserTest::SetUpOnMainThread() {
 }
 
 void WizardInProcessBrowserTest::TearDownOnMainThread() {
-  // LoginDisplayHost owns controllers and all windows.
-  base::MessageLoopForUI::current()->task_runner()->DeleteSoon(FROM_HERE,
-                                                               host_);
+  ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
 
-  base::MessageLoopForUI::current()->RunUntilIdle();
+  // LoginDisplayHost owns controllers and all windows.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, host_);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace chromeos

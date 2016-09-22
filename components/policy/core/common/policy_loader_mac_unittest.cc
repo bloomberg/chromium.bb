@@ -13,6 +13,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "components/policy/core/common/async_policy_provider.h"
@@ -176,7 +177,8 @@ TEST_F(PolicyLoaderMacTest, Invalid) {
 
   // Make the provider read the updated |prefs_|.
   provider_->RefreshPolicies();
-  loop_.RunUntilIdle();
+  ASSERT_TRUE(base::MessageLoopForIO::IsCurrent());
+  base::RunLoop().RunUntilIdle();
   const PolicyBundle kEmptyBundle;
   EXPECT_TRUE(provider_->policies().Equals(kEmptyBundle));
 }
@@ -191,7 +193,8 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
 
   // Make the provider read the updated |prefs_|.
   provider_->RefreshPolicies();
-  loop_.RunUntilIdle();
+  ASSERT_TRUE(base::MessageLoopForIO::IsCurrent());
+  base::RunLoop().RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(test_keys::kKeyString, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
