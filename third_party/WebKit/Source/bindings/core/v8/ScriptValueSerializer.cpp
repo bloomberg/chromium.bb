@@ -362,10 +362,9 @@ void SerializedScriptValueWriter::writeTransferredImageBitmap(uint32_t index)
     doWriteUint32(index);
 }
 
-void SerializedScriptValueWriter::writeTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t canvasId, uint32_t clientId, uint32_t localId, uint64_t nonce)
+void SerializedScriptValueWriter::writeTransferredOffscreenCanvas(uint32_t width, uint32_t height, uint32_t canvasId, uint32_t clientId, uint32_t localId, uint64_t nonce)
 {
     append(OffscreenCanvasTransferTag);
-    doWriteUint32(index);
     doWriteUint32(width);
     doWriteUint32(height);
     doWriteUint32(canvasId);
@@ -885,7 +884,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerializeObject(v8::L
         if (!m_transferredOffscreenCanvas.tryGet(object, &index)) {
             return handleError(Status::DataCloneError, "A OffscreenCanvas could not be cloned.", next);
         }
-        return writeTransferredOffscreenCanvas(object, index, next);
+        return writeTransferredOffscreenCanvas(object, next);
     }
     if (V8ImageBitmap::hasInstance(object, isolate())) {
         return writeAndGreyImageBitmap(object, next);
@@ -1208,7 +1207,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeAndGreyArrayBuffer
     return nullptr;
 }
 
-ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredOffscreenCanvas(v8::Local<v8::Value> value, uint32_t index, StateBase* next)
+ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredOffscreenCanvas(v8::Local<v8::Value> value, StateBase* next)
 {
     OffscreenCanvas* offscreenCanvas = V8OffscreenCanvas::toImpl(value.As<v8::Object>());
     if (!offscreenCanvas)
@@ -1217,7 +1216,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializer::writeTransferredOffscre
         return handleError(Status::DataCloneError, "An OffscreenCanvas is detached and could not be cloned.", next);
     if (offscreenCanvas->renderingContext())
         return handleError(Status::DataCloneError, "An OffscreenCanvas with a context could not be cloned.", next);
-    m_writer.writeTransferredOffscreenCanvas(index, offscreenCanvas->width(), offscreenCanvas->height(), offscreenCanvas->getAssociatedCanvasId(), offscreenCanvas->clientId(), offscreenCanvas->localId(), offscreenCanvas->nonce());
+    m_writer.writeTransferredOffscreenCanvas(offscreenCanvas->width(), offscreenCanvas->height(), offscreenCanvas->getAssociatedCanvasId(), offscreenCanvas->clientId(), offscreenCanvas->localId(), offscreenCanvas->nonce());
     return nullptr;
 }
 
@@ -1578,10 +1577,8 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
     case OffscreenCanvasTransferTag: {
         if (!m_version)
             return false;
-        uint32_t index, width, height, canvasId, clientId, localId;
+        uint32_t width, height, canvasId, clientId, localId;
         uint64_t nonce;
-        if (!doReadUint32(&index))
-            return false;
         if (!doReadUint32(&width))
             return false;
         if (!doReadUint32(&height))
@@ -1594,7 +1591,7 @@ bool SerializedScriptValueReader::readWithTag(SerializationTag tag, v8::Local<v8
             return false;
         if (!doReadUint64(&nonce))
             return false;
-        if (!deserializer.tryGetTransferredOffscreenCanvas(index, width, height, canvasId, clientId, localId, nonce, value))
+        if (!deserializer.tryGetTransferredOffscreenCanvas(width, height, canvasId, clientId, localId, nonce, value))
             return false;
         break;
     }
@@ -2410,7 +2407,7 @@ bool ScriptValueDeserializer::tryGetTransferredSharedArrayBuffer(uint32_t index,
     return true;
 }
 
-bool ScriptValueDeserializer::tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t canvasId, uint32_t clientId, uint32_t localId, uint64_t nonce, v8::Local<v8::Value>* object)
+bool ScriptValueDeserializer::tryGetTransferredOffscreenCanvas(uint32_t width, uint32_t height, uint32_t canvasId, uint32_t clientId, uint32_t localId, uint64_t nonce, v8::Local<v8::Value>* object)
 {
     OffscreenCanvas* offscreenCanvas = OffscreenCanvas::create(width, height);
     offscreenCanvas->setAssociatedCanvasId(canvasId);
