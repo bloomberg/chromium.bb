@@ -13,7 +13,9 @@
 
 TEST(NotificationResponseBuilderMacTest, TestNotificationClick) {
   base::scoped_nsobject<NotificationBuilder> builder(
-      [[NotificationBuilder alloc] init]);
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
   [builder setTitle:@"Title"];
   [builder setSubTitle:@"https://www.miguel.com"];
   [builder setContextMessage:@""];
@@ -40,7 +42,9 @@ TEST(NotificationResponseBuilderMacTest, TestNotificationClick) {
 
 TEST(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
   base::scoped_nsobject<NotificationBuilder> builder(
-      [[NotificationBuilder alloc] init]);
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
   [builder setTitle:@"Title"];
   [builder setSubTitle:@"https://www.miguel.com"];
   [builder setContextMessage:@""];
@@ -75,7 +79,9 @@ TEST(NotificationResponseBuilderMacTest, TestNotificationSettingsClick) {
 
 TEST(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
   base::scoped_nsobject<NotificationBuilder> builder(
-      [[NotificationBuilder alloc] init]);
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
   [builder setTitle:@"Title"];
   [builder setSubTitle:@"https://www.miguel.com"];
   [builder setContextMessage:@""];
@@ -113,7 +119,9 @@ TEST(NotificationResponseBuilderMacTest, TestNotificationOneActionClick) {
 
 TEST(NotificationResponseBuilderMacTest, TestNotificationTwoActionClick) {
   base::scoped_nsobject<NotificationBuilder> builder(
-      [[NotificationBuilder alloc] init]);
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
   [builder setTitle:@"Title"];
   [builder setSubTitle:@"https://www.miguel.com"];
   [builder setContextMessage:@""];
@@ -153,7 +161,9 @@ TEST(NotificationResponseBuilderMacTest, TestNotificationTwoActionClick) {
 TEST(NotificationResponseBuilderMacTest,
      TestNotificationTwoActionSettingsClick) {
   base::scoped_nsobject<NotificationBuilder> builder(
-      [[NotificationBuilder alloc] init]);
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
   [builder setTitle:@"Title"];
   [builder setSubTitle:@"https://www.miguel.com"];
   [builder setContextMessage:@""];

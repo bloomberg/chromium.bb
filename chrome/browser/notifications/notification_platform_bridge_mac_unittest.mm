@@ -16,7 +16,9 @@ namespace {
 
 NSMutableDictionary* BuildDefaultNotificationResponse() {
   base::scoped_nsobject<NotificationBuilder> builder(
-      [[NotificationBuilder alloc] init]);
+      [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
+                                         optionsLabel:@"Options"
+                                        settingsLabel:@"Settings"]);
   [builder setTitle:@"Title"];
   [builder setSubTitle:@"https://www.miguel.com"];
   [builder setOrigin:@"https://www.miguel.com/"];

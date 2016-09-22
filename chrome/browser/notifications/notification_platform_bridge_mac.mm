@@ -149,7 +149,11 @@ void NotificationPlatformBridgeMac::Display(
     bool incognito,
     const Notification& notification) {
   base::scoped_nsobject<NotificationBuilder> builder(
-      [[NotificationBuilder alloc] init]);
+      [[NotificationBuilder alloc]
+      initWithCloseLabel:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_CLOSE)
+            optionsLabel:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_OPTIONS)
+           settingsLabel:l10n_util::GetNSString(
+                             IDS_NOTIFICATION_BUTTON_SETTINGS)]);
 
   [builder setTitle:base::SysUTF16ToNSString(notification.title())];
   [builder setContextMessage:base::SysUTF16ToNSString(notification.message())];
