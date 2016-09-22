@@ -124,7 +124,8 @@ void WindowManagerApplication::InitWindowManager(
 }
 
 void WindowManagerApplication::OnStart(const shell::Identity& identity) {
-  aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak"));
+  aura_init_.reset(new views::AuraInit(connector(), "ash_mus_resources.pak",
+                                       "ash_mus_resources_200.pak"));
   gpu_service_ = ui::GpuService::Create(connector());
   compositor_context_factory_.reset(
       new views::SurfaceContextFactory(gpu_service_.get()));

@@ -150,6 +150,7 @@ service("mus") {
   deps = [
     ":lib",
     ":resources",
+    ":resources_200",
     "//services/shell/public/cpp",
   ]
 
@@ -160,7 +161,10 @@ service("mus") {
     "//services/ui",
   ]
 
-  resources = [ "$root_out_dir/ash_mus_resources.pak" ]
+  resources = [
+    "$root_out_dir/ash_mus_resources.pak",
+    "$root_out_dir/ash_mus_resources_200.pak",
+  ]
 }
 
 service_manifest("manifest") {
@@ -168,7 +172,7 @@ service_manifest("manifest") {
   source = "manifest.json"
 }
 
-# TODO: Load resources at additional scales and load locale-specific strings.
+# TODO: Load locale-specific strings.
 # TODO: Avoid duplication between Mash and Chrome pak files: crbug.com/628715.
 repack("resources") {
   output = "$root_out_dir/ash_mus_resources.pak"
@@ -186,6 +190,20 @@ repack("resources") {
     "//ui/resources",
     "//ui/strings",
     "//ui/views/mus:resources",
+    "//ui/views/resources",
+  ]
+}
+
+repack("resources_200") {
+  output = "$root_out_dir/ash_mus_resources_200.pak"
+  sources = [
+    "$root_gen_dir/ash/resources/ash_resources_200_percent.pak",
+    "$root_gen_dir/ui/resources/ui_resources_200_percent.pak",
+    "$root_gen_dir/ui/views/resources/views_resources_200_percent.pak",
+  ]
+  deps = [
+    "//ash/resources",
+    "//ui/resources",
     "//ui/views/resources",
   ]
 }

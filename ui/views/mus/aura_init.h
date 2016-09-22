@@ -32,7 +32,13 @@ class ViewsDelegate;
 // |resource_file| is the path to the apk file containing the resources.
 class VIEWS_MUS_EXPORT AuraInit {
  public:
-  AuraInit(shell::Connector* connector, const std::string& resource_file);
+  // |resource_file| is the file to load strings and 1x icons from.
+  // |resource_file_200| can be an empty string, otherwise it is the file to
+  // load 2x icons from.
+  AuraInit(shell::Connector* connector,
+           const std::string& resource_file,
+           const std::string& resource_file_200 = std::string());
+
   ~AuraInit();
 
  private:
@@ -43,6 +49,7 @@ class VIEWS_MUS_EXPORT AuraInit {
 #endif
 
   const std::string resource_file_;
+  const std::string resource_file_200_;
 
   std::unique_ptr<aura::Env> env_;
   std::unique_ptr<ViewsDelegate> views_delegate_;
