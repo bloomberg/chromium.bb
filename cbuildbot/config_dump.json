@@ -4835,12 +4835,9 @@
     },
     "celes-cheets-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "celes-cheets"
         ],
-        "buildslave_type": "gce_beefy",
-        "chrome_sdk_build_chrome": false,
         "description": "Cheets release builders",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -5217,12 +5214,9 @@
     },
     "chell-cheets-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "chell-cheets"
         ],
-        "buildslave_type": "gce_beefy",
-        "chrome_sdk_build_chrome": false,
         "description": "Cheets release builders",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -8460,12 +8454,9 @@
     },
     "glados-cheets-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "glados-cheets"
         ],
-        "buildslave_type": "gce_beefy",
-        "chrome_sdk_build_chrome": false,
         "description": "Cheets release builders",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
@@ -13023,12 +13014,9 @@
     },
     "lulu-cheets-release": {
         "_template": "release",
-        "active_waterfall": "chromeos",
         "boards": [
             "lulu-cheets"
         ],
-        "buildslave_type": "gce_beefy",
-        "chrome_sdk_build_chrome": false,
         "description": "Cheets release builders",
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"arc-bvt-cq\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",

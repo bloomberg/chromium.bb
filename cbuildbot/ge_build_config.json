@@ -182,18 +182,6 @@
       ]
     },
     {
-      "name": "celes-cheets",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "strago",
-          "arch": "UNKNOWN"
-        }
-      ]
-    },
-    {
       "name": "chell",
       "configs": [
         {
@@ -202,18 +190,6 @@
           "leader_board": false,
           "board_group": "glados",
           "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "chell-cheets",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "glados",
-          "arch": "UNKNOWN"
         }
       ]
     },
@@ -380,18 +356,6 @@
           "builder": "RELEASE",
           "experimental": true,
           "leader_board": true,
-          "board_group": "glados",
-          "arch": "UNKNOWN"
-        }
-      ]
-    },
-    {
-      "name": "glados-cheets",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
           "board_group": "glados",
           "arch": "UNKNOWN"
         }
@@ -634,18 +598,6 @@
           "leader_board": false,
           "board_group": "auron",
           "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "lulu-cheets",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "auron",
-          "arch": "UNKNOWN"
         }
       ]
     },
