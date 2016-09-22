@@ -211,6 +211,14 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
         return promise;
     }
 
+    if ((m_layer.leftBounds().size() != 0 && m_layer.leftBounds().size() != 4)
+        || (m_layer.rightBounds().size() != 0 && m_layer.rightBounds().size() != 4)) {
+        forceExitPresent();
+        DOMException* exception = DOMException::create(InvalidStateError, "Layer bounds must either be an empty array or have 4 values");
+        resolver->reject(exception);
+        return promise;
+    }
+
     if (!m_capabilities->hasExternalDisplay()) {
         // TODO: Need a proper VR compositor, but for the moment on mobile
         // we'll just make the canvas fullscreen so that VrShell can pick it
@@ -295,7 +303,7 @@ void VRDisplay::updateLayerBounds()
     device::blink::VRLayerBoundsPtr leftBounds = device::blink::VRLayerBounds::New();
     device::blink::VRLayerBoundsPtr rightBounds = device::blink::VRLayerBounds::New();
 
-    if (m_layer.hasLeftBounds()) {
+    if (m_layer.leftBounds().size() == 4) {
         leftBounds->left = m_layer.leftBounds()[0];
         leftBounds->top = m_layer.leftBounds()[1];
         leftBounds->width = m_layer.leftBounds()[2];
@@ -308,7 +316,7 @@ void VRDisplay::updateLayerBounds()
         leftBounds->height = 1.0f;
     }
 
-    if (m_layer.hasRightBounds()) {
+    if (m_layer.rightBounds().size() == 4) {
         rightBounds->left = m_layer.rightBounds()[0];
         rightBounds->top = m_layer.rightBounds()[1];
         rightBounds->width = m_layer.rightBounds()[2];

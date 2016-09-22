@@ -17,6 +17,6 @@ typedef HTMLCanvasElement VRSource;
   // [1] top offset of the bounds (0.0 - 1.0)
   // [2] width of the bounds (0.0 - 1.0)
   // [3] height of the bounds (0.0 - 1.0)
-  sequence<float>? leftBounds; //= [0.0, 0.0, 0.5, 1.0];
-  sequence<float>? rightBounds; //= [0.5, 0.0, 0.5, 1.0];
+  sequence<float> leftBounds = []; //= [0.0, 0.0, 0.5, 1.0];
+  sequence<float> rightBounds = []; //= [0.5, 0.0, 0.5, 1.0];
 };
