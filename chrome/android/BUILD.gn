@@ -297,6 +297,7 @@ android_library("chrome_java") {
       "//components/sync/android:sync_java",
       "//components/url_formatter/android:url_formatter_java",
       "//components/web_contents_delegate_android:web_contents_delegate_android_java",
+      "//ui/base/mojo:mojo_bindings_java",
     ]
   }
 

@@ -20,6 +20,7 @@ _typemap_imports = [
   "//services/shell/public/cpp/typemaps.gni",
   "//services/ui/public/interfaces/display/typemaps.gni",
   "//skia/public/interfaces/typemaps.gni",
+  "//ui/base/mojo/typemaps.gni",
   "//ui/events/devices/mojo/typemaps.gni",
   "//ui/events/mojo/typemaps.gni",
   "//ui/gfx/typemaps.gni",

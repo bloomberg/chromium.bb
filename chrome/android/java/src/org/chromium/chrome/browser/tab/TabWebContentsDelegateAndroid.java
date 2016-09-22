@@ -40,7 +40,7 @@ import org.chromium.components.web_contents_delegate_android.WebContentsDelegate
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ResourceRequestBody;
-import org.chromium.ui.WindowOpenDisposition;
+import org.chromium.mojom.ui.mojom.WindowOpenDisposition;
 
 /**
  * A basic {@link TabWebContentsDelegateAndroid} that forwards some calls to the registered

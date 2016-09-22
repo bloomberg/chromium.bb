@@ -31,7 +31,7 @@ import org.chromium.chrome.browser.ntp.ForeignSessionHelper.ForeignSessionWindow
 import org.chromium.chrome.browser.ntp.RecentlyClosedBridge.RecentlyClosedTab;
 import org.chromium.chrome.browser.signin.SigninAccessPoint;
 import org.chromium.chrome.browser.signin.SigninAndSyncView;
-import org.chromium.ui.WindowOpenDisposition;
+import org.chromium.mojom.ui.mojom.WindowOpenDisposition;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.ArrayList;

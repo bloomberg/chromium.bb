@@ -7,8 +7,9 @@
 
 #include "ui/base/ui_base_export.h"
 
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui
+// DEPRECATED: Instead of introducing new references to this enum, use
+// the generated ui::mojom::WindowOpenDisposition in
+// ui/base/mojo/window_open_disposition.mojom.h.
 enum class WindowOpenDisposition {
   UNKNOWN,
   CURRENT_TAB,
