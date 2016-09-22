@@ -29,10 +29,6 @@ namespace base {
 class Value;
 }  // namespace base
 
-namespace net {
-class HttpRequestHeaders;
-}  // namespace net
-
 namespace ntp_snippets {
 
 // Fetches snippet data for the NTP from the server.

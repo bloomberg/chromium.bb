@@ -68,7 +68,6 @@ public class ChromeBackgroundService extends GcmTaskService {
                                 context, params.getExtras(), waiter, taskTag);
                         break;
 
-                    case SnippetsLauncher.TASK_TAG_WIFI_CHARGING:
                     case SnippetsLauncher.TASK_TAG_WIFI:
                     case SnippetsLauncher.TASK_TAG_FALLBACK:
                         handleFetchSnippets(context, taskTag);

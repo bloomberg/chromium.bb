@@ -260,9 +260,8 @@ class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
 
 class MockScheduler : public NTPSnippetsScheduler {
  public:
-  MOCK_METHOD4(Schedule,
-               bool(base::TimeDelta period_wifi_charging,
-                    base::TimeDelta period_wifi,
+  MOCK_METHOD3(Schedule,
+               bool(base::TimeDelta period_wifi,
                     base::TimeDelta period_fallback,
                     base::Time reschedule_time));
   MOCK_METHOD0(Unschedule, bool());
@@ -469,7 +468,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
 };
 
 TEST_F(NTPSnippetsServiceTest, ScheduleOnStart) {
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _));
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
   auto service = MakeSnippetsService();
 
   // When we have no snippets are all, loading the service initiates a fetch.
@@ -480,7 +479,7 @@ TEST_F(NTPSnippetsServiceTest, ScheduleOnStart) {
 TEST_F(NTPSnippetsServiceTest, Full) {
   std::string json_str(GetTestJson({GetSnippet()}));
 
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _));
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), json_str);
@@ -505,7 +504,7 @@ TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
   std::string json_str(
       GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)}));
 
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _));
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
   auto service = MakeSnippetsService();
 
   LoadFromJSONString(service.get(), json_str);
@@ -552,7 +551,7 @@ TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
 }
 
 TEST_F(NTPSnippetsServiceTest, Clear) {
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _));
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
   auto service = MakeSnippetsService();
 
   std::string json_str(GetTestJson({GetSnippet()}));
@@ -565,7 +564,7 @@ TEST_F(NTPSnippetsServiceTest, Clear) {
 }
 
 TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _));
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
   auto service = MakeSnippetsService();
 
   std::string first("http://first");
@@ -650,7 +649,7 @@ TEST_F(NTPSnippetsServiceTest, LoadIncompleteJsonWithExistingSnippets) {
 }
 
 TEST_F(NTPSnippetsServiceTest, Dismiss) {
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _)).Times(2);
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
   auto service = MakeSnippetsService();
 
   std::string json_str(
@@ -888,9 +887,9 @@ TEST_F(NTPSnippetsServiceTest, DismissShouldRespectAllKnownUrls) {
 TEST_F(NTPSnippetsServiceTest, StatusChanges) {
   {
     InSequence s;
-    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _));
+    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
     EXPECT_CALL(mock_scheduler(), Unschedule());
-    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _, _));
+    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
   }
   auto service = MakeSnippetsService();
 

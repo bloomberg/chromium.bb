@@ -51,22 +51,14 @@ namespace {
 const int kMaxSnippetCount = 10;
 
 // Default values for snippets fetching intervals - once per day only.
-const int kDefaultFetchingIntervalWifiChargingSeconds = 0;
 const int kDefaultFetchingIntervalWifiSeconds = 0;
 const int kDefaultFetchingIntervalFallbackSeconds = 24 * 60 * 60;
 
 // Variation parameters than can override the default fetching intervals.
-const char kFetchingIntervalWifiChargingParamName[] =
-    "fetching_interval_wifi_charging_seconds";
 const char kFetchingIntervalWifiParamName[] =
     "fetching_interval_wifi_seconds";
 const char kFetchingIntervalFallbackParamName[] =
     "fetching_interval_fallback_seconds";
-
-// These define the times of day during which we will fetch via Wifi (without
-// charging) - 6 AM to 10 PM.
-const int kWifiFetchingHourMin = 6;
-const int kWifiFetchingHourMax = 22;
 
 const int kDefaultExpiryTimeMins = 3 * 24 * 60;
 
@@ -101,58 +93,16 @@ base::TimeDelta GetFetchingInterval(const char* switch_name,
   return base::TimeDelta::FromSeconds(value_seconds);
 }
 
-base::TimeDelta GetFetchingIntervalWifiCharging() {
-  return GetFetchingInterval(switches::kFetchingIntervalWifiChargingSeconds,
-                             kFetchingIntervalWifiChargingParamName,
-                             kDefaultFetchingIntervalWifiChargingSeconds);
-}
-
-base::TimeDelta GetFetchingIntervalWifi(const base::Time& now) {
-  // Only fetch via Wifi (without charging) during the proper times of day.
-  base::Time::Exploded exploded;
-  now.LocalExplode(&exploded);
-  if (kWifiFetchingHourMin <= exploded.hour &&
-      exploded.hour < kWifiFetchingHourMax) {
-    return GetFetchingInterval(switches::kFetchingIntervalWifiSeconds,
-                               kFetchingIntervalWifiParamName,
-                               kDefaultFetchingIntervalWifiSeconds);
-  }
-  return base::TimeDelta();
+base::TimeDelta GetFetchingIntervalWifi() {
+  return GetFetchingInterval(switches::kFetchingIntervalWifiSeconds,
+                             kFetchingIntervalWifiParamName,
+                             kDefaultFetchingIntervalWifiSeconds);
 }
 
 base::TimeDelta GetFetchingIntervalFallback() {
   return GetFetchingInterval(switches::kFetchingIntervalFallbackSeconds,
                              kFetchingIntervalFallbackParamName,
                              kDefaultFetchingIntervalFallbackSeconds);
-}
-
-base::Time GetRescheduleTime(const base::Time& now) {
-  base::Time::Exploded exploded;
-  now.LocalExplode(&exploded);
-  // The scheduling changes at both |kWifiFetchingHourMin| and
-  // |kWifiFetchingHourMax|. Find the time of the next one that we'll hit.
-  bool next_day = false;
-  if (exploded.hour < kWifiFetchingHourMin) {
-    exploded.hour = kWifiFetchingHourMin;
-  } else if (exploded.hour < kWifiFetchingHourMax) {
-    exploded.hour = kWifiFetchingHourMax;
-  } else {
-    next_day = true;
-    exploded.hour = kWifiFetchingHourMin;
-  }
-  // In any case, reschedule at the full hour.
-  exploded.minute = 0;
-  exploded.second = 0;
-  exploded.millisecond = 0;
-  base::Time reschedule;
-  if (!base::Time::FromLocalExploded(exploded, &reschedule)) {
-    return GetRescheduleTime(now + base::TimeDelta::FromDays(1));
-  }
-
-  if (next_day)
-    reschedule += base::TimeDelta::FromDays(1);
-
-  return reschedule;
 }
 
 // Extracts the hosts from |suggestions| and returns them in a set.
@@ -286,10 +236,9 @@ void NTPSnippetsService::RescheduleFetching() {
     return;
 
   if (ready()) {
-    base::Time now = base::Time::Now();
-    scheduler_->Schedule(
-        GetFetchingIntervalWifiCharging(), GetFetchingIntervalWifi(now),
-        GetFetchingIntervalFallback(), GetRescheduleTime(now));
+    scheduler_->Schedule(GetFetchingIntervalWifi(),
+                         GetFetchingIntervalFallback(),
+                         /*reschedule_time=*/base::Time());
   } else {
     scheduler_->Unschedule();
   }

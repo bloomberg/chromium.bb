@@ -23,16 +23,14 @@ NTPSnippetsLauncher* NTPSnippetsLauncher::Get() {
   return g_snippets_launcher.Pointer();
 }
 
-bool NTPSnippetsLauncher::Schedule(base::TimeDelta period_wifi_charging,
-                                   base::TimeDelta period_wifi,
+bool NTPSnippetsLauncher::Schedule(base::TimeDelta period_wifi,
                                    base::TimeDelta period_fallback,
                                    base::Time reschedule_time) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_SnippetsLauncher_schedule(
-      env, java_launcher_, period_wifi_charging.InSeconds(),
-      period_wifi.InSeconds(), period_fallback.InSeconds(),
+      env, java_launcher_, period_wifi.InSeconds(), period_fallback.InSeconds(),
       reschedule_time.ToJavaTime());
 }
 

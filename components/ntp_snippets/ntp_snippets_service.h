@@ -15,7 +15,6 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category.h"
@@ -29,16 +28,9 @@
 #include "components/ntp_snippets/ntp_snippets_status_service.h"
 #include "components/ntp_snippets/request_throttler.h"
 #include "components/suggestions/suggestions_service.h"
-#include "components/sync/driver/sync_service_observer.h"
 
 class PrefRegistrySimple;
 class PrefService;
-class SigninManagerBase;
-
-namespace base {
-class RefCountedMemory;
-class Value;
-}
 
 namespace gfx {
 class Image;
@@ -53,14 +45,9 @@ namespace suggestions {
 class SuggestionsProfile;
 }
 
-namespace sync_driver {
-class SyncService;
-}
-
 namespace ntp_snippets {
 
 class NTPSnippetsDatabase;
-class NTPSnippetsServiceObserver;
 
 // Retrieves fresh content data (articles) from the server, stores them and
 // provides them as content suggestions.
@@ -121,8 +108,7 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
     return snippets_fetcher_.get();
   }
 
-  // (Re)schedules the periodic fetching of snippets. This is necessary because
-  // the schedule depends on the time of day.
+  // (Re)schedules the periodic fetching of snippets.
   void RescheduleFetching();
 
   // ContentSuggestionsProvider implementation
