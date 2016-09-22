@@ -14,6 +14,8 @@ source_set("base") {
     "delayed_unique_notifier.h",
     "histograms.cc",
     "histograms.h",
+    "index_rect.cc",
+    "index_rect.h",
     "invalidation_region.cc",
     "invalidation_region.h",
     "list_container.h",

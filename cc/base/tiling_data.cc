@@ -12,6 +12,11 @@
 
 namespace cc {
 
+namespace {
+// IndexRect which is at left top corner of the positive quadrant.
+const IndexRect kNonPositiveQuadrantIndexRect(-1, -1, -1, -1);
+}
+
 static int ComputeNumTiles(int max_texture_size,
                            int total_size,
                            int border_texels) {
@@ -303,14 +308,14 @@ void TilingData::RecomputeNumTiles() {
 TilingData::BaseIterator::BaseIterator() : index_x_(-1), index_y_(-1) {
 }
 
-TilingData::Iterator::Iterator() {
+TilingData::Iterator::Iterator() : index_rect_(kNonPositiveQuadrantIndexRect) {
   done();
 }
 
 TilingData::Iterator::Iterator(const TilingData* tiling_data,
                                const gfx::Rect& consider_rect,
                                bool include_borders)
-    : left_(-1), right_(-1), bottom_(-1) {
+    : index_rect_(kNonPositiveQuadrantIndexRect) {
   if (tiling_data->num_tiles_x() <= 0 || tiling_data->num_tiles_y() <= 0) {
     done();
     return;
@@ -324,17 +329,22 @@ TilingData::Iterator::Iterator(const TilingData* tiling_data,
   if (include_borders) {
     index_x_ = tiling_data->FirstBorderTileXIndexFromSrcCoord(rect.x());
     index_y_ = tiling_data->FirstBorderTileYIndexFromSrcCoord(rect.y());
-    right_ = tiling_data->LastBorderTileXIndexFromSrcCoord(rect.right() - 1);
-    bottom_ = tiling_data->LastBorderTileYIndexFromSrcCoord(rect.bottom() - 1);
+    index_rect_ = IndexRect(
+        index_x_,
+        tiling_data->LastBorderTileXIndexFromSrcCoord(rect.right() - 1),
+        index_y_,
+        tiling_data->LastBorderTileYIndexFromSrcCoord(rect.bottom() - 1));
+    DCHECK(index_rect_.is_valid());
     top_left_tile = tiling_data->TileBoundsWithBorder(index_x_, index_y_);
   } else {
     index_x_ = tiling_data->TileXIndexFromSrcCoord(rect.x());
     index_y_ = tiling_data->TileYIndexFromSrcCoord(rect.y());
-    right_ = tiling_data->TileXIndexFromSrcCoord(rect.right() - 1);
-    bottom_ = tiling_data->TileYIndexFromSrcCoord(rect.bottom() - 1);
+    index_rect_ = IndexRect(
+        index_x_, tiling_data->TileXIndexFromSrcCoord(rect.right() - 1),
+        index_y_, tiling_data->TileYIndexFromSrcCoord(rect.bottom() - 1));
+    DCHECK(index_rect_.is_valid());
     top_left_tile = tiling_data->TileBounds(index_x_, index_y_);
   }
-  left_ = index_x_;
 
   // Index functions always return valid indices, so explicitly check
   // for non-intersecting rects.
@@ -347,17 +357,19 @@ TilingData::Iterator& TilingData::Iterator::operator++() {
     return *this;
 
   index_x_++;
-  if (index_x_ > right_) {
-    index_x_ = left_;
+  if (index_x_ > index_rect_.right()) {
+    index_x_ = index_rect_.left();
     index_y_++;
-    if (index_y_ > bottom_)
+    if (index_y_ > index_rect_.bottom())
       done();
   }
 
   return *this;
 }
 
-TilingData::BaseDifferenceIterator::BaseDifferenceIterator() {
+TilingData::BaseDifferenceIterator::BaseDifferenceIterator()
+    : consider_index_rect_(kNonPositiveQuadrantIndexRect),
+      ignore_index_rect_(kNonPositiveQuadrantIndexRect) {
   done();
 }
 
@@ -365,14 +377,8 @@ TilingData::BaseDifferenceIterator::BaseDifferenceIterator(
     const TilingData* tiling_data,
     const gfx::Rect& consider_rect,
     const gfx::Rect& ignore_rect)
-    : consider_left_(-1),
-      consider_top_(-1),
-      consider_right_(-1),
-      consider_bottom_(-1),
-      ignore_left_(-1),
-      ignore_top_(-1),
-      ignore_right_(-1),
-      ignore_bottom_(-1) {
+    : consider_index_rect_(kNonPositiveQuadrantIndexRect),
+      ignore_index_rect_(kNonPositiveQuadrantIndexRect) {
   if (tiling_data->num_tiles_x() <= 0 || tiling_data->num_tiles_y() <= 0) {
     done();
     return;
@@ -387,29 +393,33 @@ TilingData::BaseDifferenceIterator::BaseDifferenceIterator(
     return;
   }
 
-  consider_left_ = tiling_data->TileXIndexFromSrcCoord(consider.x());
-  consider_top_ = tiling_data->TileYIndexFromSrcCoord(consider.y());
-  consider_right_ = tiling_data->TileXIndexFromSrcCoord(consider.right() - 1);
-  consider_bottom_ = tiling_data->TileYIndexFromSrcCoord(consider.bottom() - 1);
+  consider_index_rect_ =
+      IndexRect(tiling_data->TileXIndexFromSrcCoord(consider.x()),
+                tiling_data->TileXIndexFromSrcCoord(consider.right() - 1),
+                tiling_data->TileYIndexFromSrcCoord(consider.y()),
+                tiling_data->TileYIndexFromSrcCoord(consider.bottom() - 1));
+  DCHECK(consider_index_rect_.is_valid());
 
   gfx::Rect ignore(ignore_rect);
   ignore.Intersect(tiling_bounds_rect);
 
   if (!ignore.IsEmpty()) {
-    ignore_left_ = tiling_data->TileXIndexFromSrcCoord(ignore.x());
-    ignore_top_ = tiling_data->TileYIndexFromSrcCoord(ignore.y());
-    ignore_right_ = tiling_data->TileXIndexFromSrcCoord(ignore.right() - 1);
-    ignore_bottom_ = tiling_data->TileYIndexFromSrcCoord(ignore.bottom() - 1);
+    ignore_index_rect_ =
+        IndexRect(tiling_data->TileXIndexFromSrcCoord(ignore.x()),
+                  tiling_data->TileXIndexFromSrcCoord(ignore.right() - 1),
+                  tiling_data->TileYIndexFromSrcCoord(ignore.y()),
+                  tiling_data->TileYIndexFromSrcCoord(ignore.bottom() - 1));
+    DCHECK(ignore_index_rect_.is_valid());
 
     // Clamp ignore indices to consider indices.
-    ignore_left_ = std::max(ignore_left_, consider_left_);
-    ignore_top_ = std::max(ignore_top_, consider_top_);
-    ignore_right_ = std::min(ignore_right_, consider_right_);
-    ignore_bottom_ = std::min(ignore_bottom_, consider_bottom_);
+    ignore_index_rect_.ClampTo(consider_index_rect_);
 
-    if (ignore_left_ == consider_left_ && ignore_right_ == consider_right_ &&
-        ignore_top_ == consider_top_ && ignore_bottom_ == consider_bottom_) {
-      consider_left_ = consider_top_ = consider_right_ = consider_bottom_ = -1;
+    // If ignore rect is invalid, reset.
+    if (!ignore_index_rect_.is_valid())
+      ignore_index_rect_ = kNonPositiveQuadrantIndexRect;
+
+    if (ignore_index_rect_ == consider_index_rect_) {
+      consider_index_rect_ = kNonPositiveQuadrantIndexRect;
       done();
       return;
     }
@@ -418,11 +428,9 @@ TilingData::BaseDifferenceIterator::BaseDifferenceIterator(
 
 bool TilingData::BaseDifferenceIterator::HasConsiderRect() const {
   // Consider indices are either all valid or all equal to -1.
-  DCHECK((0 <= consider_left_ && consider_left_ <= consider_right_ &&
-          0 <= consider_top_ && consider_top_ <= consider_bottom_) ||
-         (consider_left_ == -1 && consider_top_ == -1 &&
-          consider_right_ == -1 && consider_bottom_ == -1));
-  return consider_left_ != -1;
+  DCHECK(consider_index_rect_.is_in_positive_quadrant() ||
+         consider_index_rect_ == kNonPositiveQuadrantIndexRect);
+  return consider_index_rect_.left() != -1;
 }
 
 TilingData::DifferenceIterator::DifferenceIterator() {
@@ -438,10 +446,10 @@ TilingData::DifferenceIterator::DifferenceIterator(
     return;
   }
 
-  index_x_ = consider_left_;
-  index_y_ = consider_top_;
+  index_x_ = consider_index_rect_.left();
+  index_y_ = consider_index_rect_.top();
 
-  if (in_ignore_rect())
+  if (ignore_index_rect_.Contains(index_x_, index_y_))
     ++(*this);
 }
 
@@ -450,24 +458,25 @@ TilingData::DifferenceIterator& TilingData::DifferenceIterator::operator++() {
     return *this;
 
   index_x_++;
-  if (in_ignore_rect())
-    index_x_ = ignore_right_ + 1;
+  if (ignore_index_rect_.Contains(index_x_, index_y_))
+    index_x_ = ignore_index_rect_.right() + 1;
 
-  if (index_x_ > consider_right_) {
-    index_x_ = consider_left_;
+  if (index_x_ > consider_index_rect_.right()) {
+    index_x_ = consider_index_rect_.left();
     index_y_++;
 
-    if (in_ignore_rect()) {
-      index_x_ = ignore_right_ + 1;
+    if (ignore_index_rect_.Contains(index_x_, index_y_)) {
+      index_x_ = ignore_index_rect_.right() + 1;
       // If the ignore rect spans the whole consider rect horizontally, then
       // ignore_right + 1 will be out of bounds.
-      if (in_ignore_rect() || index_x_ > consider_right_) {
-        index_y_ = ignore_bottom_ + 1;
-        index_x_ = consider_left_;
+      if (ignore_index_rect_.Contains(index_x_, index_y_) ||
+          index_x_ > consider_index_rect_.right()) {
+        index_y_ = ignore_index_rect_.bottom() + 1;
+        index_x_ = consider_index_rect_.left();
       }
     }
 
-    if (index_y_ > consider_bottom_)
+    if (index_y_ > consider_index_rect_.bottom())
       done();
   }
 
@@ -558,10 +567,10 @@ operator++() {
     index_y_ += delta_y_;
     ++current_step_;
 
-    if (in_consider_rect()) {
+    if (consider_index_rect_.Contains(index_x_, index_y_)) {
       cannot_hit_consider_count = 0;
 
-      if (!in_ignore_rect())
+      if (!ignore_index_rect_.Contains(index_x_, index_y_))
         break;
 
       // Steps needed to reach the very edge of the ignore rect, while remaining
@@ -569,16 +578,16 @@ operator++() {
       int steps_to_edge = 0;
       switch (direction_) {
         case UP:
-          steps_to_edge = index_y_ - ignore_top_;
+          steps_to_edge = index_y_ - ignore_index_rect_.top();
           break;
         case LEFT:
-          steps_to_edge = index_x_ - ignore_left_;
+          steps_to_edge = index_x_ - ignore_index_rect_.left();
           break;
         case DOWN:
-          steps_to_edge = ignore_bottom_ - index_y_;
+          steps_to_edge = ignore_index_rect_.bottom() - index_y_;
           break;
         case RIGHT:
-          steps_to_edge = ignore_right_ - index_x_;
+          steps_to_edge = ignore_index_rect_.right() - index_x_;
           break;
       }
 
@@ -597,24 +606,28 @@ operator++() {
       bool can_hit_consider_rect = false;
       switch (direction_) {
         case UP:
-          if (valid_column() && consider_bottom_ < index_y_)
-            steps_to_take = index_y_ - consider_bottom_ - 1;
-          can_hit_consider_rect |= consider_right_ >= index_x_;
+          if (consider_index_rect_.valid_column(index_x_) &&
+              consider_index_rect_.bottom() < index_y_)
+            steps_to_take = index_y_ - consider_index_rect_.bottom() - 1;
+          can_hit_consider_rect |= consider_index_rect_.right() >= index_x_;
           break;
         case LEFT:
-          if (valid_row() && consider_right_ < index_x_)
-            steps_to_take = index_x_ - consider_right_ - 1;
-          can_hit_consider_rect |= consider_top_ <= index_y_;
+          if (consider_index_rect_.valid_row(index_y_) &&
+              consider_index_rect_.right() < index_x_)
+            steps_to_take = index_x_ - consider_index_rect_.right() - 1;
+          can_hit_consider_rect |= consider_index_rect_.top() <= index_y_;
           break;
         case DOWN:
-          if (valid_column() && consider_top_ > index_y_)
-            steps_to_take = consider_top_ - index_y_ - 1;
-          can_hit_consider_rect |= consider_left_ <= index_x_;
+          if (consider_index_rect_.valid_column(index_x_) &&
+              consider_index_rect_.top() > index_y_)
+            steps_to_take = consider_index_rect_.top() - index_y_ - 1;
+          can_hit_consider_rect |= consider_index_rect_.left() <= index_x_;
           break;
         case RIGHT:
-          if (valid_row() && consider_left_ > index_x_)
-            steps_to_take = consider_left_ - index_x_ - 1;
-          can_hit_consider_rect |= consider_bottom_ >= index_y_;
+          if (consider_index_rect_.valid_row(index_y_) &&
+              consider_index_rect_.left() > index_x_)
+            steps_to_take = consider_index_rect_.left() - index_x_ - 1;
+          can_hit_consider_rect |= consider_index_rect_.bottom() >= index_y_;
           break;
       }
       steps_to_take = std::min(steps_to_take, max_steps);
@@ -655,7 +668,8 @@ void TilingData::SpiralDifferenceIterator::switch_direction() {
   }
 }
 
-TilingData::ReverseSpiralDifferenceIterator::ReverseSpiralDifferenceIterator() {
+TilingData::ReverseSpiralDifferenceIterator::ReverseSpiralDifferenceIterator()
+    : around_index_rect_(kNonPositiveQuadrantIndexRect) {
   done();
 }
 
@@ -665,10 +679,7 @@ TilingData::ReverseSpiralDifferenceIterator::ReverseSpiralDifferenceIterator(
     const gfx::Rect& ignore_rect,
     const gfx::Rect& center_rect)
     : BaseDifferenceIterator(tiling_data, consider_rect, ignore_rect),
-      around_left_(-1),
-      around_top_(-1),
-      around_right_(-1),
-      around_bottom_(-1),
+      around_index_rect_(kNonPositiveQuadrantIndexRect),
       direction_(LEFT),
       delta_x_(-1),
       delta_y_(0),
@@ -680,53 +691,65 @@ TilingData::ReverseSpiralDifferenceIterator::ReverseSpiralDifferenceIterator(
     return;
   }
 
+  int around_left = 0;
   // Determine around left, such that it is between -1 and num_tiles_x.
   if (center_rect.x() < 0 || center_rect.IsEmpty())
-    around_left_ = -1;
+    around_left = -1;
   else if (center_rect.x() >= tiling_data->tiling_size().width())
-    around_left_ = tiling_data->num_tiles_x();
+    around_left = tiling_data->num_tiles_x();
   else
-    around_left_ = tiling_data->TileXIndexFromSrcCoord(center_rect.x());
+    around_left = tiling_data->TileXIndexFromSrcCoord(center_rect.x());
 
   // Determine around top, such that it is between -1 and num_tiles_y.
+  int around_top = 0;
   if (center_rect.y() < 0 || center_rect.IsEmpty())
-    around_top_ = -1;
+    around_top = -1;
   else if (center_rect.y() >= tiling_data->tiling_size().height())
-    around_top_ = tiling_data->num_tiles_y();
+    around_top = tiling_data->num_tiles_y();
   else
-    around_top_ = tiling_data->TileYIndexFromSrcCoord(center_rect.y());
+    around_top = tiling_data->TileYIndexFromSrcCoord(center_rect.y());
 
   // Determine around right, such that it is between -1 and num_tiles_x.
+  int around_right = 0;
   int right_src_coord = center_rect.right() - 1;
   if (right_src_coord < 0 || center_rect.IsEmpty()) {
-    around_right_ = -1;
+    around_right = -1;
   } else if (right_src_coord >= tiling_data->tiling_size().width()) {
-    around_right_ = tiling_data->num_tiles_x();
+    around_right = tiling_data->num_tiles_x();
   } else {
-    around_right_ = tiling_data->TileXIndexFromSrcCoord(right_src_coord);
+    around_right = tiling_data->TileXIndexFromSrcCoord(right_src_coord);
   }
 
   // Determine around bottom, such that it is between -1 and num_tiles_y.
+  int around_bottom = 0;
   int bottom_src_coord = center_rect.bottom() - 1;
   if (bottom_src_coord < 0 || center_rect.IsEmpty()) {
-    around_bottom_ = -1;
+    around_bottom = -1;
   } else if (bottom_src_coord >= tiling_data->tiling_size().height()) {
-    around_bottom_ = tiling_data->num_tiles_y();
+    around_bottom = tiling_data->num_tiles_y();
   } else {
-    around_bottom_ = tiling_data->TileYIndexFromSrcCoord(bottom_src_coord);
+    around_bottom = tiling_data->TileYIndexFromSrcCoord(bottom_src_coord);
   }
+
+  around_index_rect_ =
+      IndexRect(around_left, around_right, around_top, around_bottom);
+  DCHECK(around_index_rect_.is_valid());
 
   // Figure out the maximum distance from the around edge to consider edge.
   int max_distance = 0;
-  max_distance = std::max(max_distance, around_top_ - consider_top_);
-  max_distance = std::max(max_distance, around_left_ - consider_left_);
-  max_distance = std::max(max_distance, consider_bottom_ - around_bottom_);
-  max_distance = std::max(max_distance, consider_right_ - around_right_);
+  max_distance = std::max(
+      max_distance, around_index_rect_.top() - consider_index_rect_.top());
+  max_distance = std::max(
+      max_distance, around_index_rect_.left() - consider_index_rect_.left());
+  max_distance = std::max(max_distance, consider_index_rect_.bottom() -
+                                            around_index_rect_.bottom());
+  max_distance = std::max(
+      max_distance, consider_index_rect_.right() - around_index_rect_.right());
 
-  // The step count is the length of the edge (around_right_ - around_left_ + 1)
-  // plus twice the max distance to pad (to the right and to the left). This way
-  // the initial rect is the size proportional to the center, but big enough
-  // to cover the consider rect.
+  // The step count is the length of the edge
+  // (around_index_rect_.num_indices_x()) plus twice the max distance to pad
+  // (to the right and to the left). This way the initial rect is the size
+  // proportional to the center, but big enough to cover the consider rect.
   //
   // C = consider rect
   // A = around rect
@@ -747,12 +770,13 @@ TilingData::ReverseSpiralDifferenceIterator::ReverseSpiralDifferenceIterator(
   //     m ..........
   //     d ..........
   //     - ..........I
-  vertical_step_count_ = around_bottom_ - around_top_ + 1 + 2 * max_distance;
-  horizontal_step_count_ = around_right_ - around_left_ + 1 + 2 * max_distance;
+  vertical_step_count_ = around_index_rect_.num_indices_y() + 2 * max_distance;
+  horizontal_step_count_ =
+      around_index_rect_.num_indices_x() + 2 * max_distance;
 
   // Start with one to the right of the padded around rect.
-  index_x_ = around_right_ + max_distance + 1;
-  index_y_ = around_bottom_ + max_distance;
+  index_x_ = around_index_rect_.right() + max_distance + 1;
+  index_y_ = around_index_rect_.bottom() + max_distance;
 
   // The current index is outside a valid tile, so advance immediately.
   ++(*this);
@@ -761,7 +785,7 @@ TilingData::ReverseSpiralDifferenceIterator::ReverseSpiralDifferenceIterator(
 TilingData::ReverseSpiralDifferenceIterator&
     TilingData::ReverseSpiralDifferenceIterator::
     operator++() {
-  while (!in_around_rect()) {
+  while (!around_index_rect_.Contains(index_x_, index_y_)) {
     if (needs_direction_switch())
       switch_direction();
 
@@ -769,12 +793,12 @@ TilingData::ReverseSpiralDifferenceIterator&
     index_y_ += delta_y_;
     ++current_step_;
 
-    if (in_around_rect()) {
+    if (around_index_rect_.Contains(index_x_, index_y_)) {
       break;
-    } else if (in_consider_rect()) {
+    } else if (consider_index_rect_.Contains(index_x_, index_y_)) {
       // If the tile is in the consider rect but not in ignore rect, then it's a
       // valid tile to visit.
-      if (!in_ignore_rect())
+      if (!ignore_index_rect_.Contains(index_x_, index_y_))
         break;
 
       // Steps needed to reach the very edge of the ignore rect, while remaining
@@ -782,16 +806,16 @@ TilingData::ReverseSpiralDifferenceIterator&
       int steps_to_edge = 0;
       switch (direction_) {
         case UP:
-          steps_to_edge = index_y_ - ignore_top_;
+          steps_to_edge = index_y_ - ignore_index_rect_.top();
           break;
         case LEFT:
-          steps_to_edge = index_x_ - ignore_left_;
+          steps_to_edge = index_x_ - ignore_index_rect_.left();
           break;
         case DOWN:
-          steps_to_edge = ignore_bottom_ - index_y_;
+          steps_to_edge = ignore_index_rect_.bottom() - index_y_;
           break;
         case RIGHT:
-          steps_to_edge = ignore_right_ - index_x_;
+          steps_to_edge = ignore_index_rect_.right() - index_x_;
           break;
       }
 
@@ -814,20 +838,24 @@ TilingData::ReverseSpiralDifferenceIterator&
       // update steps to take.
       switch (direction_) {
         case UP:
-          if (valid_column() && consider_bottom_ < index_y_)
-            steps_to_take = index_y_ - consider_bottom_ - 1;
+          if (consider_index_rect_.valid_column(index_x_) &&
+              consider_index_rect_.bottom() < index_y_)
+            steps_to_take = index_y_ - consider_index_rect_.bottom() - 1;
           break;
         case LEFT:
-          if (valid_row() && consider_right_ < index_x_)
-            steps_to_take = index_x_ - consider_right_ - 1;
+          if (consider_index_rect_.valid_row(index_y_) &&
+              consider_index_rect_.right() < index_x_)
+            steps_to_take = index_x_ - consider_index_rect_.right() - 1;
           break;
         case DOWN:
-          if (valid_column() && consider_top_ > index_y_)
-            steps_to_take = consider_top_ - index_y_ - 1;
+          if (consider_index_rect_.valid_column(index_x_) &&
+              consider_index_rect_.top() > index_y_)
+            steps_to_take = consider_index_rect_.top() - index_y_ - 1;
           break;
         case RIGHT:
-          if (valid_row() && consider_left_ > index_x_)
-            steps_to_take = consider_left_ - index_x_ - 1;
+          if (consider_index_rect_.valid_row(index_y_) &&
+              consider_index_rect_.left() > index_x_)
+            steps_to_take = consider_index_rect_.left() - index_x_ - 1;
           break;
       }
       steps_to_take = std::min(steps_to_take, max_steps);
@@ -840,7 +868,7 @@ TilingData::ReverseSpiralDifferenceIterator&
   }
 
   // Once we enter the around rect, we're done.
-  if (in_around_rect())
+  if (around_index_rect_.Contains(index_x_, index_y_))
     done();
   return *this;
 }

@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "cc/base/cc_export.h"
+#include "cc/base/index_rect.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -98,9 +99,7 @@ class CC_EXPORT TilingData {
     Iterator& operator++();
 
    private:
-    int left_;
-    int right_;
-    int bottom_;
+    IndexRect index_rect_;
   };
 
   class CC_EXPORT BaseDifferenceIterator : public BaseIterator {
@@ -111,23 +110,9 @@ class CC_EXPORT TilingData {
                            const gfx::Rect& ignore_rect);
 
     bool HasConsiderRect() const;
-    bool in_consider_rect() const {
-      return index_x_ >= consider_left_ && index_x_ <= consider_right_ &&
-             index_y_ >= consider_top_ && index_y_ <= consider_bottom_;
-    }
-    bool in_ignore_rect() const {
-      return index_x_ >= ignore_left_ && index_x_ <= ignore_right_ &&
-             index_y_ >= ignore_top_ && index_y_ <= ignore_bottom_;
-    }
 
-    int consider_left_;
-    int consider_top_;
-    int consider_right_;
-    int consider_bottom_;
-    int ignore_left_;
-    int ignore_top_;
-    int ignore_right_;
-    int ignore_bottom_;
+    IndexRect consider_index_rect_;
+    IndexRect ignore_index_rect_;
   };
 
   // Iterate through all indices whose bounds (not including borders) intersect
@@ -154,13 +139,6 @@ class CC_EXPORT TilingData {
     SpiralDifferenceIterator& operator++();
 
    private:
-    bool valid_column() const {
-      return index_x_ >= consider_left_ && index_x_ <= consider_right_;
-    }
-    bool valid_row() const {
-      return index_y_ >= consider_top_ && index_y_ <= consider_bottom_;
-    }
-
     int current_step_count() const {
       return (direction_ == UP || direction_ == DOWN) ? vertical_step_count_
                                                       : horizontal_step_count_;
@@ -190,17 +168,6 @@ class CC_EXPORT TilingData {
     ReverseSpiralDifferenceIterator& operator++();
 
    private:
-    bool in_around_rect() const {
-      return index_x_ >= around_left_ && index_x_ <= around_right_ &&
-             index_y_ >= around_top_ && index_y_ <= around_bottom_;
-    }
-    bool valid_column() const {
-      return index_x_ >= consider_left_ && index_x_ <= consider_right_;
-    }
-    bool valid_row() const {
-      return index_y_ >= consider_top_ && index_y_ <= consider_bottom_;
-    }
-
     int current_step_count() const {
       return (direction_ == UP || direction_ == DOWN) ? vertical_step_count_
                                                       : horizontal_step_count_;
@@ -209,10 +176,7 @@ class CC_EXPORT TilingData {
     bool needs_direction_switch() const;
     void switch_direction();
 
-    int around_left_;
-    int around_top_;
-    int around_right_;
-    int around_bottom_;
+    IndexRect around_index_rect_;
 
     enum Direction { LEFT, UP, RIGHT, DOWN };
 
