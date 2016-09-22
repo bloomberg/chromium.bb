@@ -395,6 +395,7 @@ void WebMediaPlayerImpl::play() {
   paused_ = false;
   is_idle_ = false;
   pipeline_.SetPlaybackRate(playback_rate_);
+  background_pause_timer_.Stop();
 
   if (data_source_)
     data_source_->MediaIsPlaying();
