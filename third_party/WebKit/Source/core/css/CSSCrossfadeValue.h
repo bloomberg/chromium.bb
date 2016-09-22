@@ -59,7 +59,7 @@ public:
     bool isPending() const;
     bool knownToBeOpaque(const LayoutObject&) const;
 
-    void loadSubimages(Document*);
+    void loadSubimages(const Document&);
 
     bool hasFailedOrCanceledSubresources() const;
 

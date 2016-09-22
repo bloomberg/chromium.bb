@@ -100,10 +100,8 @@ StyleImage* CSSImageSetValue::cachedImage(float deviceScaleFactor) const
     return m_cachedImage.get();
 }
 
-StyleImage* CSSImageSetValue::cacheImage(Document* document, float deviceScaleFactor, CrossOriginAttributeValue crossOrigin)
+StyleImage* CSSImageSetValue::cacheImage(const Document& document, float deviceScaleFactor, CrossOriginAttributeValue crossOrigin)
 {
-    ASSERT(document);
-
     if (!m_imagesInSet.size())
         fillImageSet();
 
@@ -112,13 +110,13 @@ StyleImage* CSSImageSetValue::cacheImage(Document* document, float deviceScaleFa
         // All forms of scale should be included: Page::pageScaleFactor(), LocalFrame::pageZoomFactor(),
         // and any CSS transforms. https://bugs.webkit.org/show_bug.cgi?id=81698
         ImageWithScale image = bestImageForScaleFactor(deviceScaleFactor);
-        FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), FetchInitiatorTypeNames::css);
+        FetchRequest request(ResourceRequest(document.completeURL(image.imageURL)), FetchInitiatorTypeNames::css);
         request.mutableResourceRequest().setHTTPReferrer(image.referrer);
 
         if (crossOrigin != CrossOriginAttributeNotSet)
-            request.setCrossOriginAccessControl(document->getSecurityOrigin(), crossOrigin);
+            request.setCrossOriginAccessControl(document.getSecurityOrigin(), crossOrigin);
 
-        if (ImageResource* cachedImage = ImageResource::fetch(request, document->fetcher()))
+        if (ImageResource* cachedImage = ImageResource::fetch(request, document.fetcher()))
             m_cachedImage = StyleFetchedImageSet::create(cachedImage, image.scaleFactor, this, request.url());
         else
             m_cachedImage = StyleInvalidImage::create(image.imageURL);

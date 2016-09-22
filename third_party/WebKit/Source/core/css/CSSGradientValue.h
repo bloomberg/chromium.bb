@@ -109,7 +109,7 @@ public:
     bool isPending() const { return false; }
     bool knownToBeOpaque(const LayoutObject&) const;
 
-    void loadSubimages(Document*) { }
+    void loadSubimages(const Document&) { }
 
     void getStopColors(Vector<Color>& stopColors, const LayoutObject&) const;
 

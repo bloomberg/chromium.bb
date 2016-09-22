@@ -31,9 +31,9 @@
 
 namespace blink {
 
-StyleFetchedImage::StyleFetchedImage(ImageResource* image, Document* document, const KURL& url)
+StyleFetchedImage::StyleFetchedImage(ImageResource* image, const Document& document, const KURL& url)
     : m_image(image)
-    , m_document(document)
+    , m_document(&document)
     , m_url(url)
 {
     m_isImageResource = true;

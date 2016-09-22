@@ -36,7 +36,7 @@
 
 namespace blink {
 
-static inline SVGCursorElement* resourceReferencedByCursorElement(const String& url, TreeScope& treeScope)
+static inline SVGCursorElement* resourceReferencedByCursorElement(const String& url, const TreeScope& treeScope)
 {
     Element* element = SVGURIReference::targetElementFromIRIString(url, treeScope);
     return isSVGCursorElement(element) ? toSVGCursorElement(element) : nullptr;
@@ -97,7 +97,7 @@ StyleImage* CSSCursorImageValue::cachedImage(float deviceScaleFactor) const
     return m_cachedImage.get();
 }
 
-StyleImage* CSSCursorImageValue::cacheImage(Document* document, float deviceScaleFactor)
+StyleImage* CSSCursorImageValue::cacheImage(const Document& document, float deviceScaleFactor)
 {
     if (m_imageValue->isImageSetValue())
         return toCSSImageSetValue(*m_imageValue).cacheImage(document, deviceScaleFactor);
@@ -108,11 +108,11 @@ StyleImage* CSSCursorImageValue::cacheImage(Document* document, float deviceScal
         // For SVG images we need to lazily substitute in the correct URL. Rather than attempt
         // to change the URL of the CSSImageValue (which would then change behavior like cssText),
         // we create an alternate CSSImageValue to use.
-        if (hasFragmentInURL() && document) {
+        if (hasFragmentInURL()) {
             CSSImageValue* imageValue = toCSSImageValue(m_imageValue.get());
             // FIXME: This will fail if the <cursor> element is in a shadow DOM (bug 59827)
-            if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), *document)) {
-                CSSImageValue* svgImageValue = CSSImageValue::create(document->completeURL(cursorElement->href()->currentValue()->value()));
+            if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), document)) {
+                CSSImageValue* svgImageValue = CSSImageValue::create(document.completeURL(cursorElement->href()->currentValue()->value()));
                 svgImageValue->setReferrer(imageValue->referrer());
                 m_cachedImage = svgImageValue->cacheImage(document);
                 return m_cachedImage.get();

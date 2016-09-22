@@ -47,7 +47,7 @@ public:
 
     bool isCachePending(float deviceScaleFactor) const;
     StyleImage* cachedImage(float deviceScaleFactor) const;
-    StyleImage* cacheImage(Document*, float deviceScaleFactor, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
+    StyleImage* cacheImage(const Document&, float deviceScaleFactor, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
 
     String customCSSText() const;
 

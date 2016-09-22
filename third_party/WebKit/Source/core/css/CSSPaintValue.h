@@ -31,7 +31,7 @@ public:
     bool isPending() const { return true; }
     bool knownToBeOpaque(const LayoutObject&) const;
 
-    void loadSubimages(Document*) { }
+    void loadSubimages(const Document&) { }
 
     bool equals(const CSSPaintValue&) const;
 

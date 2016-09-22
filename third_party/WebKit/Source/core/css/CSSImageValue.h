@@ -56,7 +56,7 @@ public:
 
     bool isCachePending() const { return !m_cachedImage; }
     StyleImage* cachedImage() const { ASSERT(!isCachePending()); return m_cachedImage.get(); }
-    StyleImage* cacheImage(Document*, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
+    StyleImage* cacheImage(const Document&, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
 
     const String& url() const { return m_absoluteURL; }
 
@@ -81,7 +81,7 @@ public:
     void setInitiator(const AtomicString& name) { m_initiatorName = name; }
 
     DECLARE_TRACE_AFTER_DISPATCH();
-    void restoreCachedResourceIfNeeded(Document&) const;
+    void restoreCachedResourceIfNeeded(const Document&) const;
 
 private:
     CSSImageValue(const AtomicString& rawValue, const KURL&, StyleImage*);

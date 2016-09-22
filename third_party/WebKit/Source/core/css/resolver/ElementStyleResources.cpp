@@ -136,7 +136,7 @@ void ElementStyleResources::loadPendingSVGDocuments(ComputedStyle* computedStyle
 StyleImage* ElementStyleResources::loadPendingImage(ComputedStyle* style, StylePendingImage* pendingImage, CrossOriginAttributeValue crossOrigin)
 {
     if (CSSImageValue* imageValue = pendingImage->cssImageValue())
-        return imageValue->cacheImage(m_document, crossOrigin);
+        return imageValue->cacheImage(*m_document, crossOrigin);
 
     if (CSSPaintValue* paintValue = pendingImage->cssPaintValue()) {
         StyleGeneratedImage* image = StyleGeneratedImage::create(*paintValue);
@@ -145,15 +145,15 @@ StyleImage* ElementStyleResources::loadPendingImage(ComputedStyle* style, StyleP
     }
 
     if (CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue()) {
-        imageGeneratorValue->loadSubimages(m_document);
+        imageGeneratorValue->loadSubimages(*m_document);
         return StyleGeneratedImage::create(*imageGeneratorValue);
     }
 
     if (CSSCursorImageValue* cursorImageValue = pendingImage->cssCursorImageValue())
-        return cursorImageValue->cacheImage(m_document, m_deviceScaleFactor);
+        return cursorImageValue->cacheImage(*m_document, m_deviceScaleFactor);
 
     if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
-        return imageSetValue->cacheImage(m_document, m_deviceScaleFactor, crossOrigin);
+        return imageSetValue->cacheImage(*m_document, m_deviceScaleFactor, crossOrigin);
 
     ASSERT_NOT_REACHED();
     return nullptr;

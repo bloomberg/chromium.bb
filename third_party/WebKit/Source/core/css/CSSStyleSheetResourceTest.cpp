@@ -93,8 +93,7 @@ TEST_F(CSSStyleSheetResourceTest, PruneCanCauseEviction)
         contents->parserAppendRule(
             StyleRule::create(CSSSelectorList::adoptSelectorVector(selectors), ImmutableStylePropertySet::create(&property, 1, HTMLStandardMode)));
 
-        // TODO(rune@opera.com): loadSubimages should take Document&.
-        crossfade->loadSubimages(&document());
+        crossfade->loadSubimages(document());
         Resource* imageResource = memoryCache()->resourceForURL(imageURL, MemoryCache::defaultCacheIdentifier());
         ASSERT_TRUE(imageResource);
         ResourceResponse imageResponse;

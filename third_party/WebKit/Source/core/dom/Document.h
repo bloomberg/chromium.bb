@@ -470,7 +470,7 @@ public:
     // auto is specified.
     void pageSizeAndMarginsInPixels(int pageIndex, DoubleSize& pageSize, int& marginTop, int& marginRight, int& marginBottom, int& marginLeft);
 
-    ResourceFetcher* fetcher() { return m_fetcher.get(); }
+    ResourceFetcher* fetcher() const { return m_fetcher.get(); }
 
     void initialize();
     virtual void shutdown();

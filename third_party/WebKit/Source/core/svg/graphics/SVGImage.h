@@ -85,7 +85,7 @@ public:
     // Service CSS and SMIL animations.
     void serviceAnimations(double monotonicAnimationStartTime);
 
-    void updateUseCounters(Document&) const;
+    void updateUseCounters(const Document&) const;
 
     // The defaultObjectSize is assumed to be unzoomed, i.e. it should
     // not have the effective zoom level applied. The returned size is

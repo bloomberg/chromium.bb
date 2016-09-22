@@ -484,7 +484,7 @@ SVGImageChromeClient& SVGImage::chromeClientForTesting()
     return *m_chromeClient;
 }
 
-void SVGImage::updateUseCounters(Document& document) const
+void SVGImage::updateUseCounters(const Document& document) const
 {
     if (SVGSVGElement* rootElement = svgRootElement(m_page.get())) {
         if (rootElement->timeContainer()->hasAnimations())

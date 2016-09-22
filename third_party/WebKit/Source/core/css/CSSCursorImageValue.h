@@ -52,7 +52,7 @@ public:
     bool isCachePending(float deviceScaleFactor) const;
     String cachedImageURL() const;
     StyleImage* cachedImage(float deviceScaleFactor) const;
-    StyleImage* cacheImage(Document*, float deviceScaleFactor);
+    StyleImage* cacheImage(const Document&, float deviceScaleFactor);
 
     bool equals(const CSSCursorImageValue&) const;
 

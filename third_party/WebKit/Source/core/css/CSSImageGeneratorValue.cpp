@@ -203,7 +203,7 @@ bool CSSImageGeneratorValue::knownToBeOpaque(const LayoutObject& layoutObject) c
     return false;
 }
 
-void CSSImageGeneratorValue::loadSubimages(Document* document)
+void CSSImageGeneratorValue::loadSubimages(const Document& document)
 {
     switch (getClassType()) {
     case CrossfadeClass:
