@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_BLUETOOTH_PUBLIC_INTERFACES_BLUETOOTH_UUID_STRUCT_TRAITS_H_
-#define DEVICE_BLUETOOTH_PUBLIC_INTERFACES_BLUETOOTH_UUID_STRUCT_TRAITS_H_
+#ifndef DEVICE_BLUETOOTH_PUBLIC_INTERFACES_UUID_STRUCT_TRAITS_H_
+#define DEVICE_BLUETOOTH_PUBLIC_INTERFACES_UUID_STRUCT_TRAITS_H_
 
 #include <string>
 
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "device/bluetooth/public/interfaces/bluetooth_uuid.mojom.h"
+#include "device/bluetooth/public/interfaces/uuid.mojom.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<device::mojom::BluetoothUUIDDataView,
-                    device::BluetoothUUID> {
+struct StructTraits<bluetooth::mojom::UUIDDataView, device::BluetoothUUID> {
   static const std::string& uuid(const device::BluetoothUUID& uuid) {
     return uuid.canonical_value();
   }
 
-  static bool Read(device::mojom::BluetoothUUIDDataView input,
+  static bool Read(bluetooth::mojom::UUIDDataView input,
                    device::BluetoothUUID* output) {
     std::string result;
     if (!input.ReadUuid(&result))
@@ -37,4 +36,4 @@ struct StructTraits<device::mojom::BluetoothUUIDDataView,
 
 }  // namespace mojo
 
-#endif  // DEVICE_BLUETOOTH_PUBLIC_INTERFACES_BLUETOOTH_UUID_STRUCT_TRAITS_H_
+#endif  // DEVICE_BLUETOOTH_PUBLIC_INTERFACES_UUID_STRUCT_TRAITS_H_
