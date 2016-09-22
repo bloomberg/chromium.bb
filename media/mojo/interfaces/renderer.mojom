@@ -13,7 +13,7 @@ import "url/mojo/url.mojom";
 interface Renderer {
   // Initializes the Renderer with one or both of an audio and video stream,
   // executing the callback with whether the initialization succeeded.
-  Initialize(RendererClient client,
+  Initialize(associated RendererClient client,
              DemuxerStream? audio,
              DemuxerStream? video,
              url.mojom.Url? url) => (bool success);

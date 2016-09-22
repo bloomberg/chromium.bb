@@ -13,7 +13,7 @@
 #include "media/base/renderer.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -136,7 +136,7 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   mojom::RendererPtr remote_renderer_;
 
   // Binding for RendererClient, bound to the |task_runner_|.
-  mojo::Binding<RendererClient> binding_;
+  mojo::AssociatedBinding<RendererClient> client_binding_;
 
   bool encountered_error_ = false;
 

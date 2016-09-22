@@ -40,14 +40,16 @@ MojoRendererService::MojoRendererService(
 
 MojoRendererService::~MojoRendererService() {}
 
-void MojoRendererService::Initialize(mojom::RendererClientPtr client,
-                                     mojom::DemuxerStreamPtr audio,
-                                     mojom::DemuxerStreamPtr video,
-                                     const base::Optional<GURL>& url,
-                                     const InitializeCallback& callback) {
+void MojoRendererService::Initialize(
+    mojom::RendererClientAssociatedPtrInfo client,
+    mojom::DemuxerStreamPtr audio,
+    mojom::DemuxerStreamPtr video,
+    const base::Optional<GURL>& url,
+    const InitializeCallback& callback) {
   DVLOG(1) << __FUNCTION__;
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
-  client_ = std::move(client);
+
+  client_.Bind(std::move(client));
   state_ = STATE_INITIALIZING;
 
   if (url == base::nullopt) {

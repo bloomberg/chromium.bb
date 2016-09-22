@@ -46,7 +46,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   ~MojoRendererService() final;
 
   // mojom::Renderer implementation.
-  void Initialize(mojom::RendererClientPtr client,
+  void Initialize(mojom::RendererClientAssociatedPtrInfo client,
                   mojom::DemuxerStreamPtr audio,
                   mojom::DemuxerStreamPtr video,
                   const base::Optional<GURL>& url,
@@ -110,7 +110,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   base::RepeatingTimer time_update_timer_;
   base::TimeDelta last_media_time_;
 
-  mojom::RendererClientPtr client_;
+  mojom::RendererClientAssociatedPtr client_;
 
   // Hold a reference to the CDM set on the |renderer_| so that the CDM won't be
   // destructed while the |renderer_| is still using it.

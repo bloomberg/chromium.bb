@@ -28,7 +28,7 @@ MojoRenderer::MojoRenderer(
       video_overlay_factory_(std::move(video_overlay_factory)),
       video_renderer_sink_(video_renderer_sink),
       remote_renderer_info_(remote_renderer.PassInterface()),
-      binding_(this),
+      client_binding_(this),
       media_time_interpolator_(&media_clock_) {
   DVLOG(1) << __FUNCTION__;
 }
@@ -104,11 +104,14 @@ void MojoRenderer::InitializeRendererFromStreams(
 
   BindRemoteRendererIfNeeded();
 
+  mojom::RendererClientAssociatedPtrInfo client_ptr_info;
+  client_binding_.Bind(&client_ptr_info, remote_renderer_.associated_group());
+
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
-      binding_.CreateInterfacePtrAndBind(), std::move(audio_stream),
+      std::move(client_ptr_info), std::move(audio_stream),
       std::move(video_stream), base::nullopt,
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
@@ -119,11 +122,14 @@ void MojoRenderer::InitializeRendererFromUrl(media::RendererClient* client) {
 
   BindRemoteRendererIfNeeded();
 
+  mojom::RendererClientAssociatedPtrInfo client_ptr_info;
+  client_binding_.Bind(&client_ptr_info, remote_renderer_.associated_group());
+
   // Using base::Unretained(this) is safe because |this| owns
   // |remote_renderer_|, and the callback won't be dispatched if
   // |remote_renderer_| is destroyed.
   remote_renderer_->Initialize(
-      binding_.CreateInterfacePtrAndBind(), mojom::DemuxerStreamPtr(),
+      std::move(client_ptr_info), mojom::DemuxerStreamPtr(),
       mojom::DemuxerStreamPtr(), demuxer_stream_provider_->GetUrl(),
       base::Bind(&MojoRenderer::OnInitialized, base::Unretained(this), client));
 }
