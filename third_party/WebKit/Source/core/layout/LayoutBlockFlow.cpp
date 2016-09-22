@@ -3366,13 +3366,10 @@ void LayoutBlockFlow::setAncestorShouldPaintFloatingObject(const LayoutBox& floa
                 floatingObject.setShouldPaint(true);
                 return;
             }
-        } else if (floatingObject.shouldPaint()) {
+        } else {
             floatingObject.setShouldPaint(false);
-            return;
         }
     }
-    // We should have found the ancestor to update shouldPaint flag.
-    ASSERT_NOT_REACHED();
 }
 
 bool LayoutBlockFlow::allowsPaginationStrut() const

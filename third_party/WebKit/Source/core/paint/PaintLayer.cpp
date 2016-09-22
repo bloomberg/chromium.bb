@@ -2366,10 +2366,11 @@ GraphicsLayer* PaintLayer::graphicsLayerBackingForScrolling() const
 
 bool PaintLayer::canPaintBackgroundOntoScrollingContentsLayer() const
 {
-    return !isRootLayer()
-        && scrollsOverflow()
-        && layoutObject()->hasLocalEquivalentBackground()
-        && !stackingNode()->hasNegativeZOrderList();
+    if (isRootLayer() || !scrollsOverflow() || !layoutObject()->hasLocalEquivalentBackground())
+        return false;
+
+    m_stackingNode->updateLayerListsIfNeeded();
+    return !m_stackingNode->hasNegativeZOrderList();
 }
 
 void PaintLayer::ensureCompositedLayerMapping()
