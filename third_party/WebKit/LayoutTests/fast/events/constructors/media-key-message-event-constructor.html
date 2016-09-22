@@ -8,28 +8,27 @@
 
 description("This tests the constructor for the MediaKeyMessageEvent DOM class.");
 
-// No initializer is passed.
-shouldBe("new MediaKeyMessageEvent('eventType').bubbles", "false");
-shouldBe("new MediaKeyMessageEvent('eventType').cancelable", "false");
-shouldBeEqualToString("new MediaKeyMessageEvent('eventType').messageType", "license-request");
-shouldBeNull("new MediaKeyMessageEvent('eventType').message");
+var arrayBuffer = new ArrayBuffer(1);
+
+// Default values for bubbles and cancelable.
+shouldBe("new MediaKeyMessageEvent('eventType', { messageType: 'license-request', message: arrayBuffer }).bubbles", "false");
+shouldBe("new MediaKeyMessageEvent('eventType', { messageType: 'license-request', message: arrayBuffer }).cancelable", "false");
 
 // bubbles is passed.
-shouldBe("new MediaKeyMessageEvent('eventType', { bubbles: false }).bubbles", "false");
-shouldBe("new MediaKeyMessageEvent('eventType', { bubbles: true }).bubbles", "true");
+shouldBe("new MediaKeyMessageEvent('eventType', { bubbles: false, messageType: 'license-request', message: arrayBuffer }).bubbles", "false");
+shouldBe("new MediaKeyMessageEvent('eventType', { bubbles: true, messageType: 'license-request', message: arrayBuffer }).bubbles", "true");
 
 // cancelable is passed.
-shouldBe("new MediaKeyMessageEvent('eventType', { cancelable: false }).cancelable", "false");
-shouldBe("new MediaKeyMessageEvent('eventType', { cancelable: true }).cancelable", "true");
+shouldBe("new MediaKeyMessageEvent('eventType', { cancelable: false, messageType: 'license-request', message: arrayBuffer }).cancelable", "false");
+shouldBe("new MediaKeyMessageEvent('eventType', { cancelable: true, messageType: 'license-request', message: arrayBuffer }).cancelable", "true");
 
 // message is passed.
-var arrayBuffer = new ArrayBuffer(1);
-shouldBe("new MediaKeyMessageEvent('eventType', { message: arrayBuffer }).message", "arrayBuffer");
+shouldBe("new MediaKeyMessageEvent('eventType', { messageType: 'license-request', message: arrayBuffer }).message", "arrayBuffer");
 
 // messageType is passed.
-shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { messageType: 'license-request' }).messageType", "license-request");
-shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { messageType: 'license-renewal' }).messageType", "license-renewal");
-shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { messageType: 'license-release' }).messageType", "license-release");
+shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { messageType: 'license-request', message: arrayBuffer }).messageType", "license-request");
+shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { messageType: 'license-renewal', message: arrayBuffer }).messageType", "license-renewal");
+shouldBeEqualToString("new MediaKeyMessageEvent('eventType', { messageType: 'license-release', message: arrayBuffer }).messageType", "license-release");
 
 </script>
 </body>

@@ -1001,6 +1001,34 @@
                 });
             }, 'Test MediaKeys setServerCertificate().');
 
+            function test_valid_message_type(message_type)
+            {
+                var event = new MediaKeyMessageEvent('eventType', { messageType: message_type, message: new ArrayBuffer(0) } );
+                assert_equals(event.messageType, message_type);
+            }
+
+            test(function(test)
+            {
+                // Valid MediaKeyMessageType values.
+                test_valid_message_type('license-request');
+                test_valid_message_type('license-renewal');
+                test_valid_message_type('license-release');
+                // TODO(jrummell): Add 'individualization-request' if the final
+                // spec includes it. http://crbug.com/628437.
+
+                // Invalid MediaKeyMessageType values should throw a TypeError.
+                assert_throws(new TypeError, function() {
+                    new MediaKeyMessageEvent('eventType', { messageType: 'something-else', message: new ArrayBuffer(0) } );
+                });
+
+                // Missing required values should throw a TypeError.
+                assert_throws(new TypeError, function() {
+                    new MediaKeyMessageEvent('eventType', { message: new ArrayBuffer(0) } );
+                });
+                assert_throws(new TypeError, function() {
+                    new MediaKeyMessageEvent('eventType', { messageType: 'license-request' } );
+                });
+            }, 'Test MediaKeyMessageEvent.');
 
             // FIXME: Add syntax checks for MediaKeys.IsTypeSupported().
             // FIXME: Add syntax checks for MediaKeyError and MediaKeySession events.
