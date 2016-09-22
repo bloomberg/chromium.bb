@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
@@ -110,14 +111,21 @@ void AppendStringIfNotEmpty(const AutofillProfile& profile,
     list->AppendString(value);
 }
 
+// Returns a dictionary with the structure expected by Payments RPCs, containing
+// each of the fields in |profile|, formatted according to |app_locale|. If
+// |include_non_location_data| is false, the name and phone number in |profile|
+// are not included.
 std::unique_ptr<base::DictionaryValue> BuildAddressDictionary(
     const AutofillProfile& profile,
-    const std::string& app_locale) {
+    const std::string& app_locale,
+    bool include_non_location_data) {
   std::unique_ptr<base::DictionaryValue> postal_address(
       new base::DictionaryValue());
 
-  SetStringIfNotEmpty(profile, NAME_FULL, app_locale, "recipient_name",
-                      postal_address.get());
+  if (include_non_location_data) {
+    SetStringIfNotEmpty(profile, NAME_FULL, app_locale,
+                        PaymentsClient::kRecipientName, postal_address.get());
+  }
 
   std::unique_ptr<base::ListValue> address_lines(new base::ListValue());
   AppendStringIfNotEmpty(profile, ADDRESS_HOME_LINE1, app_locale,
@@ -143,8 +151,11 @@ std::unique_ptr<base::DictionaryValue> BuildAddressDictionary(
 
   std::unique_ptr<base::DictionaryValue> address(new base::DictionaryValue());
   address->Set("postal_address", std::move(postal_address));
-  SetStringIfNotEmpty(profile, PHONE_HOME_WHOLE_NUMBER, app_locale,
-                      "phone_number", address.get());
+
+  if (include_non_location_data) {
+    SetStringIfNotEmpty(profile, PHONE_HOME_WHOLE_NUMBER, app_locale,
+                        PaymentsClient::kPhoneNumber, address.get());
+  }
 
   return address;
 }
@@ -209,8 +220,9 @@ class UnmaskCardRequest : public PaymentsRequest {
 
 class GetUploadDetailsRequest : public PaymentsRequest {
  public:
-  GetUploadDetailsRequest(const std::string& app_locale)
-      : app_locale_(app_locale) {}
+  GetUploadDetailsRequest(const std::vector<AutofillProfile>& addresses,
+                          const std::string& app_locale)
+      : addresses_(addresses), app_locale_(app_locale) {}
   ~GetUploadDetailsRequest() override {}
 
   std::string GetRequestUrlPath() override {
@@ -224,6 +236,18 @@ class GetUploadDetailsRequest : public PaymentsRequest {
     std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
     context->SetString("language_code", app_locale_);
     request_dict.Set("context", std::move(context));
+
+    std::unique_ptr<base::ListValue> addresses(new base::ListValue());
+    for (const AutofillProfile& profile : addresses_) {
+      // These addresses are used by Payments to (1) accurately determine the
+      // user's country in order to show the correct legal documents and (2) to
+      // verify that the addresses are valid for their purposes so that we don't
+      // offer save in a case where it would definitely fail (e.g. P.O. boxes).
+      // The final parameter directs BuildAddressDictionary to omit names and
+      // phone numbers, which aren't useful for these purposes.
+      addresses->Append(BuildAddressDictionary(profile, app_locale_, false));
+    }
+    request_dict.Set("address", std::move(addresses));
 
     std::string request_content;
     base::JSONWriter::Write(request_dict, &request_content);
@@ -249,6 +273,7 @@ class GetUploadDetailsRequest : public PaymentsRequest {
   }
 
  private:
+  std::vector<AutofillProfile> addresses_;
   std::string app_locale_;
   base::string16 context_token_;
   std::unique_ptr<base::DictionaryValue> legal_message_;
@@ -283,7 +308,7 @@ class UploadCardRequest : public PaymentsRequest {
 
     std::unique_ptr<base::ListValue> addresses(new base::ListValue());
     for (const AutofillProfile& profile : request_details_.profiles) {
-      addresses->Append(BuildAddressDictionary(profile, app_locale));
+      addresses->Append(BuildAddressDictionary(profile, app_locale, true));
     }
     request_dict.Set("address", std::move(addresses));
 
@@ -330,6 +355,9 @@ class UploadCardRequest : public PaymentsRequest {
 
 }  // namespace
 
+const std::string PaymentsClient::kRecipientName = "recipient_name";
+const std::string PaymentsClient::kPhoneNumber = "phone_number";
+
 PaymentsClient::UnmaskRequestDetails::UnmaskRequestDetails() {}
 PaymentsClient::UnmaskRequestDetails::~UnmaskRequestDetails() {}
 
@@ -360,8 +388,11 @@ void PaymentsClient::UnmaskCard(
   IssueRequest(base::MakeUnique<UnmaskCardRequest>(request_details), true);
 }
 
-void PaymentsClient::GetUploadDetails(const std::string& app_locale) {
-  IssueRequest(base::MakeUnique<GetUploadDetailsRequest>(app_locale), false);
+void PaymentsClient::GetUploadDetails(
+    const std::vector<AutofillProfile>& addresses,
+    const std::string& app_locale) {
+  IssueRequest(base::MakeUnique<GetUploadDetailsRequest>(addresses, app_locale),
+               false);
 }
 
 void PaymentsClient::UploadCard(

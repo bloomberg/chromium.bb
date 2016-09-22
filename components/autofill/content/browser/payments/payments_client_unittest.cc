@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -82,7 +84,7 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
   void StartGettingUploadDetails() {
     token_service_->AddAccount("example@gmail.com");
     identity_provider_->LogIn("example@gmail.com");
-    client_->GetUploadDetails("language-LOCALE");
+    client_->GetUploadDetails(BuildTestProfiles(), "language-LOCALE");
   }
 
   void StartUploading() {
@@ -94,7 +96,12 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
     request_details.context_token = base::ASCIIToUTF16("context token");
     request_details.risk_data = "some risk data";
     request_details.app_locale = "language-LOCALE";
+    request_details.profiles = BuildTestProfiles();
     client_->UploadCard(request_details);
+  }
+
+  const std::string& GetUploadData() {
+    return factory_.GetFetcherByID(0)->upload_data();
   }
 
   void IssueOAuthToken() {
@@ -135,6 +142,40 @@ class PaymentsClientTest : public testing::Test, public PaymentsClientDelegate {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PaymentsClientTest);
+
+  std::vector<AutofillProfile> BuildTestProfiles() {
+    std::vector<AutofillProfile> profiles;
+    profiles.push_back(BuildProfile("John", "Smith", "1234 Main St.", "Miami",
+                                    "FL", "32006", "212-555-0162"));
+    profiles.push_back(BuildProfile("Pat", "Jones", "432 Oak Lane", "Lincoln",
+                                    "OH", "43005", "(834)555-0090"));
+    return profiles;
+  }
+
+  AutofillProfile BuildProfile(base::StringPiece first_name,
+                               base::StringPiece last_name,
+                               base::StringPiece address_line,
+                               base::StringPiece city,
+                               base::StringPiece state,
+                               base::StringPiece zip,
+                               base::StringPiece phone_number) {
+    AutofillProfile profile;
+
+    profile.SetInfo(AutofillType(NAME_FIRST), ASCIIToUTF16(first_name),
+                    "en-US");
+    profile.SetInfo(AutofillType(NAME_LAST), ASCIIToUTF16(last_name), "en-US");
+    profile.SetInfo(AutofillType(ADDRESS_HOME_LINE1),
+                    ASCIIToUTF16(address_line), "en-US");
+    profile.SetInfo(AutofillType(ADDRESS_HOME_CITY), ASCIIToUTF16(city),
+                    "en-US");
+    profile.SetInfo(AutofillType(ADDRESS_HOME_STATE), ASCIIToUTF16(state),
+                    "en-US");
+    profile.SetInfo(AutofillType(ADDRESS_HOME_ZIP), ASCIIToUTF16(zip), "en-US");
+    profile.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER),
+                    ASCIIToUTF16(phone_number), "en-US");
+
+    return profile;
+  }
 };
 
 TEST_F(PaymentsClientTest, OAuthError) {
@@ -163,11 +204,57 @@ TEST_F(PaymentsClientTest, GetDetailsSuccess) {
   EXPECT_NE(nullptr, legal_message_.get());
 }
 
+TEST_F(PaymentsClientTest, GetDetailsRemovesNonLocationData) {
+  StartGettingUploadDetails();
+
+  // Verify that the recipient name field and test names appear nowhere in the
+  // upload data.
+  EXPECT_TRUE(GetUploadData().find(PaymentsClient::kRecipientName) ==
+              std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("John") == std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("Smith") == std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("Pat") == std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("Jones") == std::string::npos);
+
+  // Verify that the phone number field and test numbers appear nowhere in the
+  // upload data.
+  EXPECT_TRUE(GetUploadData().find(PaymentsClient::kPhoneNumber) ==
+              std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("212") == std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("555") == std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("0162") == std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("834") == std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("0090") == std::string::npos);
+}
+
 TEST_F(PaymentsClientTest, UploadSuccess) {
   StartUploading();
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
+}
+
+TEST_F(PaymentsClientTest, UploadIncludesNonLocationData) {
+  StartUploading();
+
+  // Verify that the recipient name field and test names do appear in the upload
+  // data.
+  EXPECT_TRUE(GetUploadData().find(PaymentsClient::kRecipientName) !=
+              std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("John") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("Smith") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("Pat") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("Jones") != std::string::npos);
+
+  // Verify that the phone number field and test numbers do appear in the upload
+  // data.
+  EXPECT_TRUE(GetUploadData().find(PaymentsClient::kPhoneNumber) !=
+              std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("212") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("555") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("0162") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("834") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("0090") != std::string::npos);
 }
 
 TEST_F(PaymentsClientTest, GetDetailsFollowedByUploadSuccess) {
