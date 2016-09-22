@@ -168,17 +168,73 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
     test_config.apply(config_lib.BuildConfig.delete_keys(base_config))
     self.assertEqual(test_config, {'qzr': 'flp'})
 
-  def testCallableOverrides(self):
-    append_foo = lambda x: x + 'foo' if x else 'foo'
-    base = config_lib.BuildConfig()
-    override = config_lib.BuildConfig(foo=append_foo)
-    self.assertIn('foo', override)
+  def testApplyCallable(self):
+    # Callable that adds a configurable amount.
+    append = lambda x: lambda base: base + ' ' + x
 
-    base.apply(override)
-    self.assertEqual(base, {'foo': 'foo'})
+    site_config = config_lib.SiteConfig()
 
-    base.apply(override)
-    self.assertEqual(base, {'foo': 'foofoo'})
+    site_config.AddTemplate('add1', foo=append('one'))
+    site_config.AddTemplate('add2', foo=append('two'))
+    site_config.AddTemplate('fixed', foo='fixed')
+
+    site_config.AddTemplate('derived',
+                            site_config.templates.add1)
+
+    site_config.AddTemplate('stacked',
+                            site_config.templates.add1,
+                            site_config.templates.add2)
+
+    site_config.AddTemplate('stackedDeep',
+                            site_config.templates.fixed,
+                            site_config.templates.add1,
+                            site_config.templates.add1,
+                            site_config.templates.add1,
+                            foo=append('deep'))
+
+    site_config.AddTemplate('stackedDeeper',
+                            site_config.templates.stacked,
+                            site_config.templates.stackedDeep,
+                            foo=append('deeper'))
+
+    base = config_lib.BuildConfig(foo='base')
+
+    # Basic apply.
+    result = base.derive(site_config.templates.add1)
+    self.assertEqual(result.foo, 'base one')
+
+    # Callable template + local callable.
+    result = base.derive(site_config.templates.add1, foo=append('local'))
+    self.assertEqual(result.foo, 'base one local')
+
+    # Callable template + local fixed.
+    result = base.derive(site_config.templates.add1, foo='local')
+    self.assertEqual(result.foo, 'local')
+
+    # Derived template.
+    result = base.derive(site_config.templates.derived)
+    self.assertEqual(result.foo, 'base one')
+
+    # Template with fixed override after stacking template (all callable magic
+    # should disappear).
+    result = base.derive(site_config.templates.fixed)
+    self.assertEqual(result.foo, 'fixed')
+
+    # Template with stacked.
+    result = base.derive(site_config.templates.stacked)
+    self.assertEqual(result.foo, 'base one two')
+
+    # Callables on top of fixed from template.
+    result = base.derive(site_config.templates.stackedDeep)
+    self.assertEqual(result.foo, 'fixed one one one deep')
+
+    # Just get crazy with it.
+    result = base.derive(site_config.templates.stackedDeeper)
+    self.assertEqual(result.foo, 'fixed one one one deep deeper')
+
+    # Ensure objects derived from weren't modified.
+    self.assertEqual(base.foo, 'base')
+    self.assertEqual(site_config.templates.fixed.foo, 'fixed')
 
   def AssertDeepCopy(self, obj1, obj2, obj3):
     """Assert that |obj3| is a deep copy of |obj1|.

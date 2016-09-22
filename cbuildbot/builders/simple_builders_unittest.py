@@ -9,7 +9,7 @@ import copy
 import os
 
 from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot import chromeos_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.builders import simple_builders
@@ -60,7 +60,7 @@ class SimpleBuilderTest(cros_test_lib.MockTempDirTestCase):
 
   def _initConfig(self, bot_id, extra_argv=None, override_hw_test_config=None):
     """Return normal options/build_config for |bot_id|"""
-    site_config = chromeos_config.GetConfig()
+    site_config = config_lib.GetConfig()
     build_config = copy.deepcopy(site_config[bot_id])
     build_config['master'] = False
     build_config['important'] = False

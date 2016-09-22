@@ -250,17 +250,46 @@ class BuildConfig(AttrDict):
     inherits.append(kwargs)
 
     for update_config in inherits:
-      for k, v in update_config.iteritems():
-        if callable(v):
-          self[k] = v(self.get(k))
+      keys_to_delete = []
+
+      for name, value in update_config.iteritems():
+
+        if callable(value):
+          # If we are applying to a fixed value, we resolve to a fixed value.
+          # Otherwise, we save off a callable to apply later, perhaps with
+          # nested callables (IE: we curry them). This allows us to use
+          # callables in templates, and apply templates to each other and still
+          # get the expected result when we use them later on.
+          #
+          # Delaying the resolution of callables is safe, because "Add()" always
+          # applies against the default, which has fixed values for everything.
+
+          if name in self:
+            # apply it to the current value.
+            if callable(self[name]):
+              # If we have no fixed value to resolve with, stack the callables.
+              def stack(new_callable, old_callable):
+                """Helper method to isolate namespace for closure."""
+                return lambda fixed: new_callable(old_callable(fixed))
+
+              self[name] = stack(value, self[name])
+            else:
+              # If the current value was a fixed value, apply the callable.
+              self[name] = value(self[name])
+          else:
+            # If we had no value to apply it to, save it for later.
+            self[name] = value
+
+        elif value is self._delete_key_sentinel:
+          # Delete keys are saved off for later.
+          keys_to_delete.append(name)
+
         else:
-          self[k] = v
+          # Simple values overwrite whatever we do or don't have.
+          self[name] = value
 
-      keys_to_delete = [k for k in self if
-                        self[k] is self._delete_key_sentinel]
-
-      for k in keys_to_delete:
-        self.pop(k)
+      for name in keys_to_delete:
+        self.pop(name)
 
     return self
 
@@ -1315,11 +1344,8 @@ class SiteConfig(dict):
 
     kwargs.setdefault('_template', name)
 
-    if args:
-      cfg = args[0].derive(*args[1:], **kwargs)
-    else:
-      cfg = BuildConfig(*args, **kwargs)
-
+    cfg = BuildConfig()
+    cfg.apply(*args, **kwargs)
     self._templates[name] = cfg
 
     return cfg

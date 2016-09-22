@@ -91,12 +91,13 @@ class ConfigClassTest(GenerateChromeosConfigTestBase):
   """Tests of the config class itself."""
 
   def testAppendUseflags(self):
-    base_config = config_lib.BuildConfig()
+    base_config = config_lib.BuildConfig(useflags=[])
     inherited_config_1 = base_config.derive(
         useflags=chromeos_config.append_useflags(
             ['foo', 'bar', '-baz']))
     inherited_config_2 = inherited_config_1.derive(
         useflags=chromeos_config.append_useflags(['-bar', 'baz']))
+    self.assertEqual(base_config.useflags, [])
     self.assertEqual(inherited_config_1.useflags, ['-baz', 'bar', 'foo'])
     self.assertEqual(inherited_config_2.useflags, ['-bar', 'baz', 'foo'])
 
