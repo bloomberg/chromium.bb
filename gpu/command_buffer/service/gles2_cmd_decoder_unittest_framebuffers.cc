@@ -3697,6 +3697,111 @@ TEST_P(GLES3DecoderTest, BlitFramebufferDisabledReadBuffer) {
   }
 }
 
+TEST_P(GLES3DecoderTest, BlitFramebufferMissingDepthOrStencil) {
+  // Run BlitFramebufferCHROMIUM with depth or stencil bits, from/to a read/draw
+  // framebuffer that doesn't have depth/stencil. The bits should be silently
+  // ignored.
+  DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
+                     kServiceRenderbufferId);
+  DoRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
+                        GL_DEPTH24_STENCIL8, 1, 1, GL_NO_ERROR);
+  GLuint color_renderbuffer = client_renderbuffer_id_ + 1;
+  GLuint color_renderbuffer_service = kServiceRenderbufferId + 1;
+  EXPECT_CALL(*gl_, GenRenderbuffersEXT(1, _))
+      .WillOnce(SetArgPointee<1>(color_renderbuffer_service))
+      .RetiresOnSaturation();
+  DoBindRenderbuffer(GL_RENDERBUFFER, color_renderbuffer,
+                     color_renderbuffer_service);
+  DoRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, GL_RGBA8, 1, 1, GL_NO_ERROR);
+  DoBindFramebuffer(GL_DRAW_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                            GL_RENDERBUFFER, client_renderbuffer_id_,
+                            kServiceRenderbufferId, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, client_renderbuffer_id_,
+                            kServiceRenderbufferId, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            GL_RENDERBUFFER, color_renderbuffer,
+                            color_renderbuffer_service, GL_NO_ERROR);
+
+  EXPECT_CALL(*gl_, GenFramebuffersEXT(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  GLuint color_fbo = client_framebuffer_id_ + 1;
+  DoBindFramebuffer(GL_READ_FRAMEBUFFER, color_fbo, kNewServiceId);
+  DoFramebufferRenderbuffer(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                            GL_RENDERBUFFER, color_renderbuffer,
+                            color_renderbuffer_service, GL_NO_ERROR);
+
+  {
+    SetupExpectationsForFramebufferClearing(
+        GL_DRAW_FRAMEBUFFER,  // target
+        GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT |
+            GL_STENCIL_BUFFER_BIT,  // clear bits
+        0,
+        0, 0, 0,  // color
+        0,        // stencil
+        1.0f,     // depth
+        false,    // scissor test
+        0, 0, 128, 64);
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1,
+                                         _, _))
+        .Times(0);
+    BlitFramebufferCHROMIUM cmd;
+    cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+
+  // Same using DEPTH_STENCIL_ATTACHMENT instead of separate ones.
+  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                            GL_RENDERBUFFER, 0, 0, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, 0, 0, GL_NO_ERROR);
+  DoFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, client_renderbuffer_id_,
+                            kServiceRenderbufferId, GL_NO_ERROR);
+  {
+    EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_DRAW_FRAMEBUFFER))
+        .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1,
+                                         _, _))
+        .Times(0);
+    BlitFramebufferCHROMIUM cmd;
+    cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+
+  // Switch FBOs and try the same.
+  DoBindFramebuffer(GL_READ_FRAMEBUFFER, client_framebuffer_id_,
+                    kServiceFramebufferId);
+  DoBindFramebuffer(GL_DRAW_FRAMEBUFFER, color_fbo, kNewServiceId);
+  {
+    EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1,
+                                         _, _))
+        .Times(0);
+    BlitFramebufferCHROMIUM cmd;
+    cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  }
+}
+
 // TODO(gman): PixelStorei
 
 // TODO(gman): SwapBuffers

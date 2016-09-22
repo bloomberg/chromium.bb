@@ -7595,24 +7595,28 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     DCHECK(read_framebuffer && draw_framebuffer);
     if ((mask & GL_DEPTH_BUFFER_BIT) != 0) {
       const Framebuffer::Attachment* depth_buffer_read =
-          read_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
+          read_framebuffer->GetDepthAttachment();
       const Framebuffer::Attachment* depth_buffer_draw =
-          draw_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
-      if (depth_buffer_draw &&
-          depth_buffer_draw->IsSameAttachment(depth_buffer_read)) {
+          draw_framebuffer->GetDepthAttachment();
+      if (!depth_buffer_draw || !depth_buffer_read) {
+        mask &= ~GL_DEPTH_BUFFER_BIT;
+      } else if (depth_buffer_draw->IsSameAttachment(depth_buffer_read)) {
         is_feedback_loop = FeedbackLoopTrue;
       }
     }
     if ((mask & GL_STENCIL_BUFFER_BIT) != 0) {
       const Framebuffer::Attachment* stencil_buffer_read =
-          read_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
+          read_framebuffer->GetStencilAttachment();
       const Framebuffer::Attachment* stencil_buffer_draw =
-          draw_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
-      if (stencil_buffer_draw &&
-          stencil_buffer_draw->IsSameAttachment(stencil_buffer_read)) {
+          draw_framebuffer->GetStencilAttachment();
+      if (!stencil_buffer_draw || !stencil_buffer_read) {
+        mask &= ~GL_STENCIL_BUFFER_BIT;
+      } else if (stencil_buffer_draw->IsSameAttachment(stencil_buffer_read)) {
         is_feedback_loop = FeedbackLoopTrue;
       }
     }
+    if (!mask)
+      return;
   }
 
   GLenum src_internal_format = GetBoundReadFramebufferInternalFormat();

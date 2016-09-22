@@ -832,9 +832,8 @@ void GLES2DecoderTestBase::SetupExpectationsForFramebufferClearingMulti(
     EXPECT_CALL(*gl_, ClearStencil(0))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, StencilMask(static_cast<GLuint>(-1)))
-        .Times(1)
-        .RetiresOnSaturation();
+    SetupExpectationsForStencilMask(static_cast<GLuint>(-1),
+                                    static_cast<GLuint>(-1));
   }
   if ((clear_bits & GL_DEPTH_BUFFER_BIT) != 0) {
     EXPECT_CALL(*gl_, ClearDepth(1.0f))

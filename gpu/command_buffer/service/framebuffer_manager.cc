@@ -692,26 +692,36 @@ GLsizei Framebuffer::GetSamples() const {
   return attachment->samples();
 }
 
-GLenum Framebuffer::GetDepthFormat() const {
+const Framebuffer::Attachment* Framebuffer::GetDepthAttachment() const {
   auto iter = attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT);
   if (iter == attachments_.end())
     iter = attachments_.find(GL_DEPTH_ATTACHMENT);
   if (iter == attachments_.end())
-    return 0;
+    return nullptr;
   Attachment* attachment = iter->second.get();
   DCHECK(attachment);
-  return attachment->internal_format();
+  return attachment;
 }
 
-GLenum Framebuffer::GetStencilFormat() const {
+const Framebuffer::Attachment* Framebuffer::GetStencilAttachment() const {
   auto iter = attachments_.find(GL_DEPTH_STENCIL_ATTACHMENT);
   if (iter == attachments_.end())
     iter = attachments_.find(GL_STENCIL_ATTACHMENT);
   if (iter == attachments_.end())
-    return 0;
+    return nullptr;
   Attachment* attachment = iter->second.get();
   DCHECK(attachment);
-  return attachment->internal_format();
+  return attachment;
+}
+
+GLenum Framebuffer::GetDepthFormat() const {
+  const Attachment* attachment = GetDepthAttachment();
+  return attachment ? attachment->internal_format() : 0;
+}
+
+GLenum Framebuffer::GetStencilFormat() const {
+  const Attachment* attachment = GetStencilAttachment();
+  return attachment ? attachment->internal_format() : 0;
 }
 
 GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {

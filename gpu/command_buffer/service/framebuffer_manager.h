@@ -151,6 +151,12 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   bool HasColorAttachment(int index) const;
   bool HasDepthAttachment() const;
   bool HasStencilAttachment() const;
+  // The following look at DEPTH_STENCIL_ATTACHMENT or
+  // DEPTH_ATTACHMENT/STENCIL_ATTACHMENT.
+  // TODO(piman): DEPTH_STENCIL_ATTACHMENT is not a real attachment point,
+  // except for WebGL1. Fix this.  http://crbug.com/630568
+  const Attachment* GetDepthAttachment() const;
+  const Attachment* GetStencilAttachment() const;
   GLenum GetDepthFormat() const;
   GLenum GetStencilFormat() const;
   GLenum GetDrawBufferInternalFormat() const;
