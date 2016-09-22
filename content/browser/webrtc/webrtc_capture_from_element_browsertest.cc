@@ -8,6 +8,11 @@
 #include "content/public/common/content_switches.h"
 #include "media/base/test_data_util.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#include "base/sys_info.h"
+#endif
+
 #if defined(ENABLE_MOJO_RENDERER)
 // Remote mojo renderer does not send audio/video frames back to the renderer
 // process and hence does not support capture: https://crbug.com/641559.
@@ -70,6 +75,16 @@ IN_PROC_BROWSER_TEST_F(WebRtcCaptureFromElementBrowserTest,
 
 IN_PROC_BROWSER_TEST_P(WebRtcCaptureFromElementBrowserTest,
                        MAYBE_CaptureFromMediaElement) {
+#if defined(OS_ANDROID)
+  // TODO(mcasas): flaky on Lollipop Low-End devices, investigate and reconnect
+  // https://crbug.com/626299
+  if (base::SysInfo::IsLowEndDevice() &&
+      base::android::BuildInfo::GetInstance()->sdk_int() <
+          base::android::SDK_VERSION_MARSHMALLOW) {
+    return;
+  }
+#endif
+
   MakeTypicalCall(
       base::StringPrintf("testCaptureFromMediaElement(\"%s\", %d, %d, %d);",
                          GetParam().filename.c_str(),
