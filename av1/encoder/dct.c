@@ -38,6 +38,20 @@ static INLINE void range_check(const tran_low_t *input, const int size,
 #endif
 }
 
+#if CONFIG_CB4X4
+static void fdct2(const tran_low_t *input, tran_low_t *output) {
+  tran_high_t s0, s1;
+  const tran_low_t x0 = input[0];
+  const tran_low_t x1 = input[1];
+
+  s0 = (tran_high_t)x0 + x1;
+  s1 = (tran_high_t)x0 - x1;
+
+  output[0] = (tran_low_t)s0;
+  output[1] = (tran_low_t)s1;
+}
+#endif
+
 static void fdct4(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
   tran_low_t step[4];
@@ -694,6 +708,22 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
 }
 #endif  // CONFIG_EXT_TX
 
+#if CONFIG_CB4X4
+static void fadst2(const tran_low_t *input, tran_low_t *output) {
+  tran_high_t s0, s1;
+  tran_low_t x0, x1;
+
+  x0 = input[0];
+  x1 = input[1];
+
+  s0 = sinpi_1_5 * x0 + sinpi_2_5 * x1;
+  s1 = sinpi_2_5 * x0 - sinpi_1_5 * x1;
+
+  output[0] = (tran_low_t)fdct_round_shift(s0);
+  output[1] = (tran_low_t)fdct_round_shift(s1);
+}
+#endif
+
 static void fadst4(const tran_low_t *input, tran_low_t *output) {
   tran_high_t x0, x1, x2, x3;
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
@@ -1100,6 +1130,12 @@ static void maybe_flip_input(const int16_t **src, int *src_stride, int l,
   }
 }
 #endif  // CONFIG_EXT_TX
+
+#if CONFIG_CB4X4
+static const transform_2d FHT_2[] = {
+  { fdct2, fdct2 }, { fadst2, fdct2 }, { fdct2, fadst2 }, { fadst2, fadst2 },
+};
+#endif
 
 static const transform_2d FHT_4[] = {
   { fdct4, fdct4 },    // DCT_DCT  = 0

@@ -242,6 +242,20 @@ void av1_idct8x8_1_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   }
 }
 
+#if CONFIG_CB4X4
+void av1_iadst2_c(const tran_low_t *input, tran_low_t *output) {
+  tran_high_t s0, s1;
+  const tran_low_t x0 = input[0];
+  const tran_low_t x1 = input[1];
+
+  s0 = sinpi_1_5 * x0 + sinpi_2_5 * x1;
+  s1 = sinpi_2_5 * x0 - sinpi_1_5 * x1;
+
+  output[0] = WRAPLOW(dct_const_round_shift(s0), 8);
+  output[1] = WRAPLOW(dct_const_round_shift(s1), 8);
+}
+#endif
+
 void av1_iadst4_c(const tran_low_t *input, tran_low_t *output) {
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
 
