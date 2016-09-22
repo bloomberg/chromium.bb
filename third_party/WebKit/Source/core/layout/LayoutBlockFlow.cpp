@@ -980,6 +980,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
         return;
     }
 
+    LayoutUnit strutToPropagate;
     if (remainingLogicalHeight == pageLogicalHeight) {
         // We're at the very top of a page or column.
         if (lineBox != firstRootBox())
@@ -988,10 +989,8 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
         // case it's a float) margin, we may want to set a strut on the block, so that everything
         // ends up in the next column or page. Setting a strut on the block is also important when
         // it comes to satisfying orphan requirements.
-        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, pageLogicalHeight)) {
-            LayoutUnit strut = logicalOffset + marginBeforeIfFloating();
-            setPaginationStrutPropagatedFromChild(strut);
-        }
+        if (shouldSetStrutOnBlock(*this, lineBox, logicalOffset, lineIndex, pageLogicalHeight))
+            strutToPropagate = logicalOffset + marginBeforeIfFloating();
     } else if (lineBox == firstRootBox() && allowsPaginationStrut()) {
         // This is the first line in the block. The block may still start in the previous column or
         // page, and if that's the case, attempt to pull it over to where this line is, so that we
@@ -1003,9 +1002,17 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
             // room for the top border, padding and (if it's a float) margin and the line in one
             // column or page.
             if (totalLogicalOffset + lineHeight <= pageLogicalHeight)
-                setPaginationStrutPropagatedFromChild(strut);
+                strutToPropagate = strut;
         }
     }
+
+    // If we found that some preceding content (lines, border and padding) belongs together with
+    // this line, we should pull the entire block with us to the fragmentainer we're currently
+    // in. We need to avoid this when the block precedes the first fragmentainer, though. We
+    // shouldn't fragment content there, but rather let it appear in the overflow area before the
+    // first fragmentainer.
+    if (strutToPropagate && offsetFromLogicalTopOfFirstPage() > LayoutUnit())
+        setPaginationStrutPropagatedFromChild(strutToPropagate);
 
     paginatedContentWasLaidOut(logicalOffset + lineHeight);
 }
