@@ -66,12 +66,6 @@ void AudioRendererMixerInput::Start() {
 
   // Note: OnRenderError() may be called immediately after this call returns.
   mixer_->AddErrorCallback(error_cb_);
-
-  if (!pending_switch_callback_.is_null()) {
-    SwitchOutputDevice(pending_switch_device_id_,
-                       pending_switch_security_origin_,
-                       base::ResetAndReturn(&pending_switch_callback_));
-  }
 }
 
 void AudioRendererMixerInput::Stop() {
@@ -89,11 +83,6 @@ void AudioRendererMixerInput::Stop() {
   }
 
   started_ = false;
-
-  if (!pending_switch_callback_.is_null()) {
-    base::ResetAndReturn(&pending_switch_callback_)
-        .Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
-  }
 }
 
 void AudioRendererMixerInput::Play() {
@@ -133,19 +122,6 @@ void AudioRendererMixerInput::SwitchOutputDevice(
     const std::string& device_id,
     const url::Origin& security_origin,
     const OutputDeviceStatusCB& callback) {
-  if (!mixer_) {
-    if (pending_switch_callback_.is_null()) {
-      pending_switch_callback_ = callback;
-      pending_switch_device_id_ = device_id;
-      pending_switch_security_origin_ = security_origin;
-    } else {
-      callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
-    }
-
-    return;
-  }
-
-  DCHECK(pending_switch_callback_.is_null());
   if (device_id == device_id_) {
     callback.Run(OUTPUT_DEVICE_STATUS_OK);
     return;
@@ -160,16 +136,20 @@ void AudioRendererMixerInput::SwitchOutputDevice(
     return;
   }
 
-  bool was_playing = playing_;
-  Stop();
   device_id_ = device_id;
   security_origin_ = security_origin;
-  mixer_ = new_mixer;
-  mixer_->AddErrorCallback(error_cb_);
-  started_ = true;
 
-  if (was_playing)
-    Play();
+  if (mixer_) {
+    bool was_playing = playing_;
+    Stop();
+    mixer_ = new_mixer;
+    mixer_->AddErrorCallback(error_cb_);
+    started_ = true;
+    if (was_playing)
+      Play();
+  } else {
+    mixer_pool_->ReturnMixer(new_mixer);
+  }
 
   callback.Run(OUTPUT_DEVICE_STATUS_OK);
 }

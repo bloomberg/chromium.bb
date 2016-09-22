@@ -260,36 +260,35 @@ TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceToUnauthorizedDevice) {
   mixer_input_->Stop();
 }
 
-// Test that calling SwitchOutputDevice() before Start() is resolved after
-// a call to Start().
+// Test that calling SwitchOutputDevice() before Start() succeeds.
 TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceBeforeStart) {
   base::RunLoop run_loop;
+  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_OK));
   mixer_input_->SwitchOutputDevice(
       kDefaultDeviceId, url::Origin(),
       base::Bind(&AudioRendererMixerInputTest::SwitchCallback,
                  base::Unretained(this), &run_loop));
-  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_OK));
   mixer_input_->Start();
   run_loop.Run();
   mixer_input_->Stop();
 }
 
-// Test that calling SwitchOutputDevice() without ever calling Start() fails
-// cleanly after calling Stop().
+// Test that calling SwitchOutputDevice() succeeds even if Start() is never
+// called.
 TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceWithoutStart) {
   base::RunLoop run_loop;
+  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_OK));
   mixer_input_->SwitchOutputDevice(
       kDefaultDeviceId, url::Origin(),
       base::Bind(&AudioRendererMixerInputTest::SwitchCallback,
                  base::Unretained(this), &run_loop));
-  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
   mixer_input_->Stop();
   run_loop.Run();
 }
 
 // Test creation with an invalid device. OnRenderError() should be called.
-// Play() and Pause() should not cause crashes, even if they have no effect.
-// SwitchOutputDevice() should fail.
+// Play(), Pause() and SwitchOutputDevice() should not cause crashes, even if
+// they have no effect.
 TEST_F(AudioRendererMixerInputTest, CreateWithInvalidDevice) {
   // |mixer_input_| was initialized during construction.
   mixer_input_->Stop();
@@ -301,13 +300,31 @@ TEST_F(AudioRendererMixerInputTest, CreateWithInvalidDevice) {
   mixer_input_->Play();
   mixer_input_->Pause();
   base::RunLoop run_loop;
-  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL));
+  EXPECT_CALL(*this, SwitchCallbackCalled(testing::_));
   mixer_input_->SwitchOutputDevice(
       kDefaultDeviceId, url::Origin(),
       base::Bind(&AudioRendererMixerInputTest::SwitchCallback,
                  base::Unretained(this), &run_loop));
   mixer_input_->Stop();
   run_loop.Run();
+}
+
+// Test that calling SwitchOutputDevice() works after calling Stop(), and that
+// restarting works after the call to SwitchOutputDevice().
+TEST_F(AudioRendererMixerInputTest, SwitchOutputDeviceAfterStopBeforeRestart) {
+  mixer_input_->Start();
+  mixer_input_->Stop();
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(*this, SwitchCallbackCalled(OUTPUT_DEVICE_STATUS_OK));
+  mixer_input_->SwitchOutputDevice(
+      kDefaultDeviceId, url::Origin(),
+      base::Bind(&AudioRendererMixerInputTest::SwitchCallback,
+                 base::Unretained(this), &run_loop));
+  run_loop.Run();
+
+  mixer_input_->Start();
+  mixer_input_->Stop();
 }
 
 }  // namespace media
