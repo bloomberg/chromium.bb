@@ -235,6 +235,8 @@ void NTPSnippetsService::RescheduleFetching() {
   if (!scheduler_)
     return;
 
+  // TODO(treib): This isn't correct - we don't want to un-schedule if we're
+  // in the NOT_INITED state. crbug.com/646842
   if (ready()) {
     scheduler_->Schedule(GetFetchingIntervalWifi(),
                          GetFetchingIntervalFallback(),
@@ -551,6 +553,13 @@ void NTPSnippetsService::OnFetchFinished(
 
   // TODO(sfiera): notify only when a category changed above.
   NotifyNewSuggestions();
+
+  // Reschedule after a successful fetch. This resets all currently scheduled
+  // fetches, to make sure the fallback interval triggers only if no wifi fetch
+  // succeeded, and also that we don't do a background fetch immediately after
+  // a user-initiated one.
+  if (snippets)
+    RescheduleFetching();
 }
 
 void NTPSnippetsService::MergeSnippets(Category category,
@@ -834,6 +843,9 @@ void NTPSnippetsService::EnterStateEnabled(bool fetch_snippets) {
             &NTPSnippetsService::OnSuggestionsChanged, base::Unretained(this)));
   }
 
+  // TODO(treib): This resets all currently scheduled fetches on each Chrome
+  // start. Maybe store the currently scheduled values in prefs, and only
+  // reschedule if they have changed? crbug.com/646842
   RescheduleFetching();
 }
 
