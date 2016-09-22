@@ -337,7 +337,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
 
             @Override
             public void onItemAdded(OfflinePageDownloadItem item) {
-                mOfflinePageItems.add(createOfflinePageItemWrapper(item));
+                OfflinePageItemWrapper wrapper = createOfflinePageItemWrapper(item);
+                mOfflinePageItems.add(wrapper);
+                mFilePathsToItemsMap.addItem(wrapper);
                 updateFilter();
             }
 
@@ -350,7 +352,9 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             public void onItemUpdated(OfflinePageDownloadItem item) {
                 int index = findItemIndex(mOfflinePageItems, item.getGuid());
                 if (index != INVALID_INDEX) {
-                    mOfflinePageItems.set(index, createOfflinePageItemWrapper(item));
+                    OfflinePageItemWrapper wrapper = createOfflinePageItemWrapper(item);
+                    mOfflinePageItems.set(index, wrapper);
+                    mFilePathsToItemsMap.replaceItem(wrapper);
                     updateFilter();
                 }
             }
