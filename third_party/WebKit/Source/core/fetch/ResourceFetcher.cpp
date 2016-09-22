@@ -444,12 +444,16 @@ Resource* ResourceFetcher::requestResource(FetchRequest& request, const Resource
         }
     }
 
-    bool isStaticData = request.resourceRequest().url().protocolIsData() || substituteData.isValid() || m_archive;
+    bool isDataUrl = request.resourceRequest().url().protocolIsData();
+    bool isStaticData = isDataUrl || substituteData.isValid() || m_archive;
     Resource* resource(nullptr);
     if (isStaticData) {
         resource = resourceForStaticData(request, factory, substituteData);
-        // Abort the request if the archive doesn't contain the resource.
-        if (!resource && m_archive)
+        // Abort the request if the archive doesn't contain the resource, except
+        // in the case of data URLs which might have resources such as fonts
+        // that need to be decoded only on demand.  These data URLs are allowed
+        // to be processed using the normal ResourceFetcher machinery.
+        if (!resource && !isDataUrl && m_archive)
             return nullptr;
     }
     if (!resource)

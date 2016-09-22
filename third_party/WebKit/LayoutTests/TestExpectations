@@ -974,6 +974,8 @@ crbug.com/595483 [ Android ] fast/hidpi/clip-text-in-hidpi.html [ Failure Crash 
 
 crbug.com/591500 [ Win10 ] printing/webgl-repeated-printing.html [ Failure ]
 
+crbug.com/647122 mhtml/data-uri-font.mht [ NeedsRebaseline ]
+
 crbug.com/591500 [ Win10 ] printing/simultaneous-position-float-change.html [ Failure ]
 crbug.com/591500 [ Win10 ] printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/simultaneous-position-float-change.html [ Failure ]
