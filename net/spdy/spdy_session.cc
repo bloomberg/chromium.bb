@@ -623,7 +623,6 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
 SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
                          HttpServerProperties* http_server_properties,
                          TransportSecurityState* transport_security_state,
-                         bool verify_domain_authentication,
                          bool enable_sending_initial_data,
                          bool enable_ping_based_connection_checking,
                          size_t session_max_recv_window_size,
@@ -673,7 +672,6 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       stream_max_recv_window_size_(stream_max_recv_window_size),
       net_log_(
           NetLogWithSource::Make(net_log, NetLogSourceType::HTTP2_SESSION)),
-      verify_domain_authentication_(verify_domain_authentication),
       enable_sending_initial_data_(enable_sending_initial_data),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
@@ -753,9 +751,6 @@ void SpdySession::InitializeWithSocket(
 }
 
 bool SpdySession::VerifyDomainAuthentication(const std::string& domain) {
-  if (!verify_domain_authentication_)
-    return true;
-
   if (availability_state_ == STATE_DRAINING)
     return false;
 

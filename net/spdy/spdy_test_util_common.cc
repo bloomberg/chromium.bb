@@ -672,10 +672,6 @@ void SpdySessionPoolPeer::RemoveAliases(const SpdySessionKey& key) {
   pool_->RemoveAliases(key);
 }
 
-void SpdySessionPoolPeer::DisableDomainAuthenticationVerification() {
-  pool_->verify_domain_authentication_ = false;
-}
-
 void SpdySessionPoolPeer::SetEnableSendingInitialData(bool enabled) {
   pool_->enable_sending_initial_data_ = enabled;
 }

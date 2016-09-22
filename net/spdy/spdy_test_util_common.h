@@ -270,7 +270,6 @@ class SpdySessionPoolPeer {
   explicit SpdySessionPoolPeer(SpdySessionPool* pool);
 
   void RemoveAliases(const SpdySessionKey& key);
-  void DisableDomainAuthenticationVerification();
   void SetEnableSendingInitialData(bool enabled);
   void SetSessionMaxRecvWindowSize(size_t window);
   void SetStreamInitialRecvWindowSize(size_t window);

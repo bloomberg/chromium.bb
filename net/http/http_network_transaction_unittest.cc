@@ -12768,18 +12768,18 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  SpdySessionPoolPeer pool_peer(session->spdy_session_pool());
-  pool_peer.DisableDomainAuthenticationVerification();
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.next_proto = kProtoHTTP2;
+  ssl.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(ssl.cert);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   SpdySerializedFrame host1_req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   spdy_util_.UpdateWithStreamDestruction(1);
   SpdySerializedFrame host2_req(
-      spdy_util_.ConstructSpdyGet("https://www.gmail.com", 3, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://mail.example.com", 3, LOWEST));
   MockWrite spdy_writes[] = {
       CreateMockWrite(host1_req, 0), CreateMockWrite(host2_req, 3),
   };
@@ -12821,8 +12821,8 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   ASSERT_THAT(ReadTransaction(&trans1, &response_data), IsOk());
   EXPECT_EQ("hello!", response_data);
 
-  // Preload www.gmail.com into HostCache.
-  HostPortPair host_port("www.gmail.com", 443);
+  // Preload mail.example.com into HostCache.
+  HostPortPair host_port("mail.example.com", 443);
   HostResolver::RequestInfo resolve_info(host_port);
   AddressList ignored;
   std::unique_ptr<HostResolver::Request> request;
@@ -12835,7 +12835,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
 
   HttpRequestInfo request2;
   request2.method = "GET";
-  request2.url = GURL("https://www.gmail.com/");
+  request2.url = GURL("https://mail.example.com/");
   request2.load_flags = 0;
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
@@ -12857,18 +12857,18 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   // Set up a special HttpNetworkSession with a MockCachingHostResolver.
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  SpdySessionPoolPeer pool_peer(session->spdy_session_pool());
-  pool_peer.DisableDomainAuthenticationVerification();
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.next_proto = kProtoHTTP2;
+  ssl.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(ssl.cert);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   SpdySerializedFrame host1_req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   spdy_util_.UpdateWithStreamDestruction(1);
   SpdySerializedFrame host2_req(
-      spdy_util_.ConstructSpdyGet("https://www.gmail.com", 3, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://mail.example.com", 3, LOWEST));
   MockWrite spdy_writes[] = {
       CreateMockWrite(host1_req, 0), CreateMockWrite(host2_req, 3),
   };
@@ -12912,7 +12912,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
 
   HttpRequestInfo request2;
   request2.method = "GET";
-  request2.url = GURL("https://www.gmail.com/");
+  request2.url = GURL("https://mail.example.com/");
   request2.load_flags = 0;
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 
@@ -12970,23 +12970,24 @@ class OneTimeCachingHostResolver : public HostResolver {
 TEST_F(HttpNetworkTransactionTest,
        UseIPConnectionPoolingWithHostCacheExpiration) {
   // Set up a special HttpNetworkSession with a OneTimeCachingHostResolver.
-  OneTimeCachingHostResolver host_resolver(HostPortPair("www.gmail.com", 443));
+  OneTimeCachingHostResolver host_resolver(
+      HostPortPair("mail.example.com", 443));
   HttpNetworkSession::Params params =
       SpdySessionDependencies::CreateSessionParams(&session_deps_);
   params.host_resolver = &host_resolver;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  SpdySessionPoolPeer pool_peer(session->spdy_session_pool());
-  pool_peer.DisableDomainAuthenticationVerification();
 
   SSLSocketDataProvider ssl(ASYNC, OK);
   ssl.next_proto = kProtoHTTP2;
+  ssl.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+  ASSERT_TRUE(ssl.cert);
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
 
   SpdySerializedFrame host1_req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
   spdy_util_.UpdateWithStreamDestruction(1);
   SpdySerializedFrame host2_req(
-      spdy_util_.ConstructSpdyGet("https://www.gmail.com", 3, LOWEST));
+      spdy_util_.ConstructSpdyGet("https://mail.example.com", 3, LOWEST));
   MockWrite spdy_writes[] = {
       CreateMockWrite(host1_req, 0), CreateMockWrite(host2_req, 3),
   };
@@ -13029,7 +13030,7 @@ TEST_F(HttpNetworkTransactionTest,
   EXPECT_EQ("hello!", response_data);
 
   // Preload cache entries into HostCache.
-  HostResolver::RequestInfo resolve_info(HostPortPair("www.gmail.com", 443));
+  HostResolver::RequestInfo resolve_info(HostPortPair("mail.example.com", 443));
   AddressList ignored;
   std::unique_ptr<HostResolver::Request> request;
   rv = host_resolver.Resolve(resolve_info, DEFAULT_PRIORITY, &ignored,
@@ -13040,7 +13041,7 @@ TEST_F(HttpNetworkTransactionTest,
 
   HttpRequestInfo request2;
   request2.method = "GET";
-  request2.url = GURL("https://www.gmail.com/");
+  request2.url = GURL("https://mail.example.com/");
   request2.load_flags = 0;
   HttpNetworkTransaction trans2(DEFAULT_PRIORITY, session.get());
 

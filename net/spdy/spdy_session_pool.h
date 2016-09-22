@@ -218,7 +218,6 @@ class NET_EXPORT SpdySessionPool
   HostResolver* const resolver_;
 
   // Defaults to true. May be controlled via SpdySessionPoolPeer for tests.
-  bool verify_domain_authentication_;
   bool enable_sending_initial_data_;
   bool enable_ping_based_connection_checking_;
   size_t session_max_recv_window_size_;
