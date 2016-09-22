@@ -53,6 +53,13 @@ scoped_refptr<ActivityIconLoader> GetIconLoader() {
   return arc_service_manager ? arc_service_manager->icon_loader() : nullptr;
 }
 
+void CloseTabIfNeeded(int render_process_host_id, int routing_id) {
+  WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_host_id, routing_id);
+  if (web_contents && web_contents->GetController().IsInitialNavigation())
+    web_contents->Close();
+}
+
 // Called when the dialog is closed.
 void OnIntentPickerClosed(int render_process_host_id,
                           int routing_id,
@@ -77,6 +84,7 @@ void OnIntentPickerClosed(int render_process_host_id,
       // Launch the selected app.
       intent_helper->HandleUrl(url.spec(),
                                handlers[selected_app_index]->package_name);
+      CloseTabIfNeeded(render_process_host_id, routing_id);
       break;
     }
     case ArcNavigationThrottle::CloseReason::ERROR:
