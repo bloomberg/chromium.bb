@@ -24,6 +24,7 @@ import android.view.inputmethod.InputConnection;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.parameter.Parameter;
@@ -1302,7 +1303,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
-    @RetryOnFailure
+    @DisabledTest(message = "crbug.com/628964")
     public void testContentEditableEvents_SetComposingText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
         waitForEventLogs("selectionchange,selectionchange");
@@ -1338,7 +1339,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
-    @RetryOnFailure
+    @DisabledTest(message = "crbug.com/628964")
     public void testContentEditableEvents_CommitText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
         waitForEventLogs("selectionchange,selectionchange");
@@ -1362,7 +1363,7 @@ public class ImeTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"TextInput"})
-    @RetryOnFailure
+    @DisabledTest(message = "crbug.com/628964")
     public void testContentEditableEvents_DeleteSurroundingText() throws Throwable {
         focusElementAndWaitForStateUpdate("contenteditable_event");
         waitForEventLogs("selectionchange,selectionchange");
