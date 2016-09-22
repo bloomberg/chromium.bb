@@ -733,7 +733,6 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
     bool imageHasLoaded = imageLoader().image() && !imageLoader().image()->isLoading() && !imageLoader().image()->errorOccurred();
     bool imageStillLoading = !imageHasLoaded && imageLoader().hasPendingActivity() && !imageLoader().hasPendingError() && !imageSourceURL().isEmpty();
     bool imageHasImage = imageLoader().image() && imageLoader().image()->hasImage();
-    bool imageIsDocument = imageLoader().isLoadingImageDocument() && imageLoader().image() && !imageLoader().image()->errorOccurred();
 
     // Icky special case for deferred images:
     // A deferred image is not loading, does have pending activity, does not
@@ -747,7 +746,7 @@ void HTMLImageElement::selectSourceURL(ImageLoader::UpdateFromElementBehavior be
     // Instead of dealing with that, there's a separate check that the
     // ImageResource has non-null image data associated with it, which isn't
     // folded into imageHasLoaded above.
-    if ((imageHasLoaded && imageHasImage) || imageStillLoading || imageIsDocument)
+    if ((imageHasLoaded && imageHasImage) || imageStillLoading)
         ensurePrimaryContent();
     else
         ensureFallbackContent();
