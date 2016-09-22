@@ -183,6 +183,7 @@ class MultiplexedBindingState {
                     scoped_refptr<base::SingleThreadTaskRunner> runner,
                     const char* interface_name,
                     std::unique_ptr<MessageReceiver> request_validator,
+                    bool passes_associated_kinds,
                     bool has_sync_methods,
                     MessageReceiverWithResponderStatus* stub,
                     uint32_t interface_version);
@@ -207,7 +208,8 @@ class BindingState<Interface, true> : public MultiplexedBindingState {
     MultiplexedBindingState::BindInternal(
         std::move(handle), runner, Interface::Name_,
         base::MakeUnique<typename Interface::RequestValidator_>(),
-        Interface::HasSyncMethods_, &stub_, Interface::Version_);
+        Interface::PassesAssociatedKinds_, Interface::HasSyncMethods_, &stub_,
+        Interface::Version_);
     stub_.serialization_context()->group_controller = router_;
   }
 

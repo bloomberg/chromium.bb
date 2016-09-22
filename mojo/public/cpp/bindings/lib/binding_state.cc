@@ -141,13 +141,19 @@ void MultiplexedBindingState::BindInternal(
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const char* interface_name,
     std::unique_ptr<MessageReceiver> request_validator,
+    bool passes_associated_kinds,
     bool has_sync_methods,
     MessageReceiverWithResponderStatus* stub,
     uint32_t interface_version) {
   DCHECK(!router_);
 
-  router_ = new MultiplexRouter(
-      std::move(handle), MultiplexRouter::MULTI_INTERFACE, false, runner);
+  MultiplexRouter::Config config =
+      passes_associated_kinds
+          ? MultiplexRouter::MULTI_INTERFACE
+          : (has_sync_methods
+                 ? MultiplexRouter::SINGLE_INTERFACE_WITH_SYNC_METHODS
+                 : MultiplexRouter::SINGLE_INTERFACE);
+  router_ = new MultiplexRouter(std::move(handle), config, false, runner);
   router_->SetMasterInterfaceName(interface_name);
 
   endpoint_client_.reset(new InterfaceEndpointClient(
