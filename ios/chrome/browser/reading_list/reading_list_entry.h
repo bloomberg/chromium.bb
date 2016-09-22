@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/macros.h"
 #include "url/gurl.h"
 
 // An entry in the reading list. The URL is a unique identifier for an entry, as
@@ -15,7 +16,7 @@
 class ReadingListEntry {
  public:
   ReadingListEntry(const GURL& url, const std::string& title);
-  ReadingListEntry(const ReadingListEntry& entry);
+  ReadingListEntry(ReadingListEntry&& entry);
   ~ReadingListEntry();
 
   // Entries are created in WAITING state. At some point they will be PROCESSING
@@ -34,7 +35,7 @@ class ReadingListEntry {
   // be called if the state is "PROCESSED".
   const GURL& DistilledURL() const;
 
-  ReadingListEntry& operator=(const ReadingListEntry& other);
+  ReadingListEntry& operator=(ReadingListEntry&& other);
   bool operator==(const ReadingListEntry& other) const;
 
   // Sets the title.
@@ -49,6 +50,8 @@ class ReadingListEntry {
   std::string title_;
   GURL distilled_url_;
   DistillationState distilled_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadingListEntry);
 };
 
 #endif  // IOS_CHROME_BROWSER_READING_LIST_READING_LIST_ENTRY_H_

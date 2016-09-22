@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "ios/chrome/browser/reading_list/reading_list_entry.h"
 #include "ios/chrome/browser/reading_list/reading_list_model.h"
 
@@ -18,12 +19,12 @@ ReadingListDownloadService::ReadingListDownloadService(
     base::FilePath chrome_profile_path)
     : reading_list_model_(reading_list_model) {
   DCHECK(reading_list_model);
-  url_downloader_ = std::unique_ptr<URLDownloader>(
-      new URLDownloader(distiller_service, prefs, chrome_profile_path,
-                        base::Bind(&ReadingListDownloadService::OnDownloadEnd,
-                                   base::Unretained(this)),
-                        base::Bind(&ReadingListDownloadService::OnDeleteEnd,
-                                   base::Unretained(this))));
+  url_downloader_ = base::MakeUnique<URLDownloader>(
+      distiller_service, prefs, chrome_profile_path,
+      base::Bind(&ReadingListDownloadService::OnDownloadEnd,
+                 base::Unretained(this)),
+      base::Bind(&ReadingListDownloadService::OnDeleteEnd,
+                 base::Unretained(this)));
 }
 
 ReadingListDownloadService::~ReadingListDownloadService() {}
@@ -74,12 +75,13 @@ void ReadingListDownloadService::DownloadAllEntries() {
   DCHECK(reading_list_model_->loaded());
   size_t size = reading_list_model_->unread_size();
   for (size_t i = 0; i < size; i++) {
-    ReadingListEntry entry = reading_list_model_->GetUnreadEntryAtIndex(i);
+    const ReadingListEntry& entry =
+        reading_list_model_->GetUnreadEntryAtIndex(i);
     this->DownloadEntry(entry);
   }
   size = reading_list_model_->read_size();
   for (size_t i = 0; i < size; i++) {
-    ReadingListEntry entry = reading_list_model_->GetReadEntryAtIndex(i);
+    const ReadingListEntry& entry = reading_list_model_->GetReadEntryAtIndex(i);
     this->DownloadEntry(entry);
   }
 }

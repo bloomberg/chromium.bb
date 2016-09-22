@@ -20,12 +20,16 @@ TEST(ReadingListEntry, CompareFailureIgnoreTitle) {
   EXPECT_FALSE(e1 == e2);
 }
 
-TEST(ReadingListEntry, CopyAreEquals) {
-  const ReadingListEntry e1(GURL("http://example.com"), "bar");
-  const ReadingListEntry e2(e1);
+TEST(ReadingListEntry, MovesAreEquals) {
+  ReadingListEntry e1(GURL("http://example.com"), "bar");
+  ReadingListEntry e2(GURL("http://example.com"), "bar");
+  ASSERT_EQ(e1, e2);
+  ASSERT_EQ(e1.Title(), e2.Title());
 
-  EXPECT_EQ(e1, e2);
-  EXPECT_EQ(e1.Title(), e2.Title());
+  ReadingListEntry e3(std::move(e1));
+
+  EXPECT_EQ(e3, e2);
+  EXPECT_EQ(e3.Title(), e2.Title());
 }
 
 TEST(ReadingListEntry, DistilledURL) {

@@ -103,10 +103,10 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
     const std::string& title) {
   DCHECK(loaded());
   RemoveEntryByUrl(url);
-  const ReadingListEntry entry(url, title);
+  ReadingListEntry entry(url, title);
   FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
                     ReadingListWillAddUnreadEntry(this, entry));
-  unread_.insert(unread_.begin(), entry);
+  unread_.insert(unread_.begin(), std::move(entry));
   hasUnseen_ = true;
   if (storageLayer_ && !IsPerformingBatchUpdates()) {
     storageLayer_->SavePersistentUnreadList(unread_);
@@ -119,8 +119,7 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
 
 void ReadingListModelImpl::MarkReadByURL(const GURL& url) {
   DCHECK(loaded());
-  const ReadingListEntry entry(url, std::string());
-
+  ReadingListEntry entry(url, std::string());
   auto result = std::find(unread_.begin(), unread_.end(), entry);
   if (result == unread_.end())
     return;
@@ -129,8 +128,9 @@ void ReadingListModelImpl::MarkReadByURL(const GURL& url) {
       ReadingListModelObserver, observers_,
       ReadingListWillMoveEntry(this, std::distance(unread_.begin(), result)));
 
-  read_.insert(read_.begin(), *result);
+  read_.insert(read_.begin(), std::move(*result));
   unread_.erase(result);
+
   if (storageLayer_ && !IsPerformingBatchUpdates()) {
     storageLayer_->SavePersistentUnreadList(unread_);
     storageLayer_->SavePersistentReadList(read_);

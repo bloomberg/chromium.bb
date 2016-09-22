@@ -9,7 +9,7 @@ ReadingListEntry::ReadingListEntry(const GURL& url, const std::string& title)
   DCHECK(!url.is_empty());
   DCHECK(url.is_valid());
 }
-ReadingListEntry::ReadingListEntry(const ReadingListEntry& entry)
+ReadingListEntry::ReadingListEntry(ReadingListEntry&& entry)
     : url_(entry.URL()),
       title_(entry.Title()),
       distilled_url_(entry.DistilledURL()),
@@ -32,7 +32,7 @@ const GURL& ReadingListEntry::DistilledURL() const {
   return distilled_url_;
 }
 
-ReadingListEntry& ReadingListEntry::operator=(const ReadingListEntry& other) {
+ReadingListEntry& ReadingListEntry::operator=(ReadingListEntry&& other) {
   url_ = other.url_;
   title_ = other.title_;
   distilled_url_ = other.distilled_url_;

@@ -64,6 +64,8 @@ class ReadingListModelImpl : public ReadingListModel, public KeyedService {
   std::unique_ptr<ReadingListModelStorage> storageLayer_;
   bool hasUnseen_;
   bool loaded_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadingListModelImpl);
 };
 
 #endif  // IOS_CHROME_BROWSER_READING_LIST_READING_LIST_MODEL_MEMORY_H_

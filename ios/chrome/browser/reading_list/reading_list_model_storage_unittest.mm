@@ -31,8 +31,9 @@ TEST(ReadingListStorage, CheckEmpties) {
 
 TEST(ReadingListStorage, SaveOneRead) {
   NSUserDefaults* defaults = FakeNonPersistentUserDefaults();
-  static const std::vector<ReadingListEntry> entries{
-      ReadingListEntry(GURL("http://read.example.com"), "read title")};
+  std::vector<ReadingListEntry> entries;
+  entries.push_back(
+      ReadingListEntry(GURL("http://read.example.com"), "read title"));
 
   {
     ReadingListModelStorageDefaults storage(defaults);
@@ -51,8 +52,9 @@ TEST(ReadingListStorage, SaveOneRead) {
 
 TEST(ReadingListStorage, SaveOneUnead) {
   NSUserDefaults* defaults = FakeNonPersistentUserDefaults();
-  static const std::vector<ReadingListEntry> entries{
-      ReadingListEntry(GURL("http://unread.example.com"), "unread title")};
+  std::vector<ReadingListEntry> entries;
+  entries.push_back(
+      ReadingListEntry(GURL("http://unread.example.com"), "unread title"));
 
   {
     ReadingListModelStorageDefaults storage(defaults);
@@ -69,8 +71,9 @@ TEST(ReadingListStorage, SaveOneUnead) {
 
 TEST(ReadingListStorage, SaveOneModified) {
   NSUserDefaults* defaults = FakeNonPersistentUserDefaults();
-  static std::vector<ReadingListEntry> entries{
-      ReadingListEntry(GURL("http://unread.example.com"), "unread title")};
+  std::vector<ReadingListEntry> entries;
+  entries.push_back(
+      ReadingListEntry(GURL("http://unread.example.com"), "unread title"));
   {
     ReadingListModelStorageDefaults storage(defaults);
     entries[0].SetDistilledURL(GURL("http://distilled.example.com"));
