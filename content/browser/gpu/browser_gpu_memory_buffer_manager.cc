@@ -192,7 +192,6 @@ uint32_t BrowserGpuMemoryBufferManager::GetImageTextureTarget(
   }
 
   switch (gpu::GetNativeGpuMemoryBufferType()) {
-    case gfx::SURFACE_TEXTURE_BUFFER:
     case gfx::OZONE_NATIVE_PIXMAP:
       // GPU memory buffers that are shared with the GL using EGLImages
       // require TEXTURE_EXTERNAL_OES.

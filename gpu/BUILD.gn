@@ -331,11 +331,6 @@ test("gpu_unittests") {
     "ipc/common/struct_traits_unittest.cc",
   ]
 
-  if (is_android) {
-    sources +=
-        [ "ipc/client/gpu_memory_buffer_impl_surface_texture_unittest.cc" ]
-  }
-
   if (is_mac) {
     sources += [ "ipc/client/gpu_memory_buffer_impl_io_surface_unittest.cc" ]
   }

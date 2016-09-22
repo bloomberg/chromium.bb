@@ -174,7 +174,6 @@ class VideoCaptureBufferPoolImpl::GpuMemoryBufferTracker final
         return true;
       }
       case gfx::IO_SURFACE_BUFFER:
-      case gfx::SURFACE_TEXTURE_BUFFER:
       case gfx::OZONE_NATIVE_PIXMAP:
         *new_handle = current_gmb_handle;
         return true;

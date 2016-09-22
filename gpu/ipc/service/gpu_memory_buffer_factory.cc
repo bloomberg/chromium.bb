@@ -12,10 +12,6 @@
 #include "gpu/ipc/service/gpu_memory_buffer_factory_io_surface.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "gpu/ipc/service/gpu_memory_buffer_factory_surface_texture.h"
-#endif
-
 #if defined(USE_OZONE)
 #include "gpu/ipc/service/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 #endif
@@ -27,9 +23,6 @@ std::unique_ptr<GpuMemoryBufferFactory>
 GpuMemoryBufferFactory::CreateNativeType() {
 #if defined(OS_MACOSX)
   return base::WrapUnique(new GpuMemoryBufferFactoryIOSurface);
-#endif
-#if defined(OS_ANDROID)
-  return base::WrapUnique(new GpuMemoryBufferFactorySurfaceTexture);
 #endif
 #if defined(USE_OZONE)
   return base::WrapUnique(new GpuMemoryBufferFactoryOzoneNativePixmap);

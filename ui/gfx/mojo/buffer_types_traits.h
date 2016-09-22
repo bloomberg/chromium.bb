@@ -150,8 +150,6 @@ struct EnumTraits<gfx::mojom::GpuMemoryBufferType, gfx::GpuMemoryBufferType> {
         return gfx::mojom::GpuMemoryBufferType::SHARED_MEMORY_BUFFER;
       case gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER:
         return gfx::mojom::GpuMemoryBufferType::IO_SURFACE_BUFFER;
-      case gfx::GpuMemoryBufferType::SURFACE_TEXTURE_BUFFER:
-        return gfx::mojom::GpuMemoryBufferType::SURFACE_TEXTURE_BUFFER;
       case gfx::GpuMemoryBufferType::OZONE_NATIVE_PIXMAP:
         return gfx::mojom::GpuMemoryBufferType::OZONE_NATIVE_PIXMAP;
     }
@@ -170,9 +168,6 @@ struct EnumTraits<gfx::mojom::GpuMemoryBufferType, gfx::GpuMemoryBufferType> {
         return true;
       case gfx::mojom::GpuMemoryBufferType::IO_SURFACE_BUFFER:
         *out = gfx::GpuMemoryBufferType::IO_SURFACE_BUFFER;
-        return true;
-      case gfx::mojom::GpuMemoryBufferType::SURFACE_TEXTURE_BUFFER:
-        *out = gfx::GpuMemoryBufferType::SURFACE_TEXTURE_BUFFER;
         return true;
       case gfx::mojom::GpuMemoryBufferType::OZONE_NATIVE_PIXMAP:
         *out = gfx::GpuMemoryBufferType::OZONE_NATIVE_PIXMAP;

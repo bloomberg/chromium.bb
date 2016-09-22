@@ -12,10 +12,6 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl_io_surface.h"
 #endif
 
-#if defined(OS_ANDROID)
-#include "gpu/ipc/client/gpu_memory_buffer_impl_surface_texture.h"
-#endif
-
 #if defined(USE_OZONE)
 #include "gpu/ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
 #endif
@@ -51,11 +47,6 @@ std::unique_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImpl::CreateFromHandle(
 #if defined(OS_MACOSX)
     case gfx::IO_SURFACE_BUFFER:
       return GpuMemoryBufferImplIOSurface::CreateFromHandle(
-          handle, size, format, usage, callback);
-#endif
-#if defined(OS_ANDROID)
-    case gfx::SURFACE_TEXTURE_BUFFER:
-      return GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
           handle, size, format, usage, callback);
 #endif
 #if defined(USE_OZONE)

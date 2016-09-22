@@ -96,8 +96,6 @@ target(link_target_type, "ipc_service_sources") {
   }
   if (is_android) {
     sources += [
-      "gpu_memory_buffer_factory_surface_texture.cc",
-      "gpu_memory_buffer_factory_surface_texture.h",
       "image_transport_surface_android.cc",
       "stream_texture_android.cc",
       "stream_texture_android.h",
@@ -167,7 +165,6 @@ test("gpu_ipc_service_unittests") {
   ]
   libs = []
   if (is_android) {
-    sources += [ "gpu_memory_buffer_factory_surface_texture_unittest.cc" ]
     deps += [ "//ui/android:ui_java" ]
   }
   if (is_mac) {
