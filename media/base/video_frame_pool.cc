@@ -82,7 +82,11 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
   if (!frame.get()) {
     frame = VideoFrame::CreateZeroInitializedFrame(
         format, coded_size, visible_rect, natural_size, timestamp);
-    LOG_IF(ERROR, !frame.get()) << "Failed to create a video frame";
+    // This can happen if the arguments are not valid.
+    if (!frame) {
+      LOG(ERROR) << "Failed to create a video frame";
+      return nullptr;
+    }
   }
 
   scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
