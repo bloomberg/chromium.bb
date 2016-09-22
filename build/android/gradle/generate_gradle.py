@@ -115,7 +115,7 @@ class _ProjectEntry(object):
 
   def ProjectName(self):
     """Returns the Gradle project name."""
-    return self.GradleSubdir().replace(os.path.sep, '\\$')
+    return self.GradleSubdir().replace(os.path.sep, '>')
 
   def BuildConfig(self):
     """Reads and returns the project's .build_config JSON."""
