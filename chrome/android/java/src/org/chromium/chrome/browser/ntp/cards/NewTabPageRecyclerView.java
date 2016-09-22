@@ -393,7 +393,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
                     + peekingHeight;  // E.
 
             // The height of the region in which the the peeking card will snap.
-            int snapScrollHeight = (peekingCardView.getHeight() / 2) + headerView.getHeight();
+            int snapScrollHeight = peekingHeight + headerView.getHeight();
 
             scrollOutOfRegion(start,
                               start + snapScrollHeight,
