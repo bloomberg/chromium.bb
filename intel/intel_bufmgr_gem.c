@@ -64,6 +64,7 @@
 #include "string.h"
 
 #include "i915_drm.h"
+#include "uthash.h"
 
 #ifdef HAVE_VALGRIND
 #include <valgrind.h>
@@ -130,7 +131,9 @@ typedef struct _drm_intel_bufmgr_gem {
 
 	drmMMListHead managers;
 
-	drmMMListHead named;
+	drm_intel_bo_gem *name_table;
+	drm_intel_bo_gem *handle_table;
+
 	drmMMListHead vma_cache;
 	int vma_count, vma_open, vma_max;
 
@@ -175,7 +178,9 @@ struct _drm_intel_bo_gem {
          * List contains both flink named and prime fd'd objects
 	 */
 	unsigned int global_name;
-	drmMMListHead name_list;
+
+	UT_hash_handle handle_hh;
+	UT_hash_handle name_hh;
 
 	/**
 	 * Index of the buffer within the validation list while preparing a
@@ -799,14 +804,17 @@ retry:
 			}
 		}
 	}
-	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	if (!alloc_from_cache) {
 		struct drm_i915_gem_create create;
 
 		bo_gem = calloc(1, sizeof(*bo_gem));
 		if (!bo_gem)
-			return NULL;
+			goto err;
+
+		/* drm_intel_gem_bo_free calls DRMLISTDEL() for an uninitialized
+		   list (vma_list), so better set the list head here */
+		DRMINITLISTHEAD(&bo_gem->vma_list);
 
 		bo_gem->bo.size = bo_size;
 
@@ -816,12 +824,13 @@ retry:
 		ret = drmIoctl(bufmgr_gem->fd,
 			       DRM_IOCTL_I915_GEM_CREATE,
 			       &create);
-		bo_gem->gem_handle = create.handle;
-		bo_gem->bo.handle = bo_gem->gem_handle;
 		if (ret != 0) {
 			free(bo_gem);
-			return NULL;
+			goto err;
 		}
+
+		bo_gem->gem_handle = create.handle;
+		bo_gem->bo.handle = bo_gem->gem_handle;
 		bo_gem->bo.bufmgr = bufmgr;
 		bo_gem->bo.align = alignment;
 
@@ -829,16 +838,14 @@ retry:
 		bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
 		bo_gem->stride = 0;
 
-		/* drm_intel_gem_bo_free calls DRMLISTDEL() for an uninitialized
-		   list (vma_list), so better set the list head here */
-		DRMINITLISTHEAD(&bo_gem->name_list);
-		DRMINITLISTHEAD(&bo_gem->vma_list);
 		if (drm_intel_gem_bo_set_tiling_internal(&bo_gem->bo,
 							 tiling_mode,
-							 stride)) {
-		    drm_intel_gem_bo_free(&bo_gem->bo);
-		    return NULL;
-		}
+							 stride))
+			goto err_free;
+
+		HASH_ADD(handle_hh, bufmgr_gem->handle_table,
+			 gem_handle, sizeof(bo_gem->gem_handle),
+			 bo_gem);
 	}
 
 	bo_gem->name = name;
@@ -851,11 +858,18 @@ retry:
 	bo_gem->use_48b_address_range = false;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, alignment);
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	DBG("bo_create: buf %d (%s) %ldb\n",
 	    bo_gem->gem_handle, bo_gem->name, size);
 
 	return &bo_gem->bo;
+
+err_free:
+	drm_intel_gem_bo_free(&bo_gem->bo);
+err:
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+	return NULL;
 }
 
 static drm_intel_bo *
@@ -956,6 +970,9 @@ drm_intel_gem_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
 	if (!bo_gem)
 		return NULL;
 
+	atomic_set(&bo_gem->refcount, 1);
+	DRMINITLISTHEAD(&bo_gem->vma_list);
+
 	bo_gem->bo.size = size;
 
 	memclear(userptr);
@@ -974,6 +991,8 @@ drm_intel_gem_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
 		return NULL;
 	}
 
+	pthread_mutex_lock(&bufmgr_gem->lock);
+
 	bo_gem->gem_handle = userptr.handle;
 	bo_gem->bo.handle = bo_gem->gem_handle;
 	bo_gem->bo.bufmgr    = bufmgr;
@@ -985,11 +1004,11 @@ drm_intel_gem_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
 	bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
 	bo_gem->stride       = 0;
 
-	DRMINITLISTHEAD(&bo_gem->name_list);
-	DRMINITLISTHEAD(&bo_gem->vma_list);
+	HASH_ADD(handle_hh, bufmgr_gem->handle_table,
+		 gem_handle, sizeof(bo_gem->gem_handle),
+		 bo_gem);
 
 	bo_gem->name = name;
-	atomic_set(&bo_gem->refcount, 1);
 	bo_gem->validate_index = -1;
 	bo_gem->reloc_tree_fences = 0;
 	bo_gem->used_as_reloc_target = false;
@@ -998,6 +1017,7 @@ drm_intel_gem_bo_alloc_userptr(drm_intel_bufmgr *bufmgr,
 	bo_gem->use_48b_address_range = false;
 
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, 0);
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	DBG("bo_create_userptr: "
 	    "ptr %p buf %d (%s) size %ldb, stride 0x%x, tile mode %d\n",
@@ -1087,7 +1107,6 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	int ret;
 	struct drm_gem_open open_arg;
 	struct drm_i915_gem_get_tiling get_tiling;
-	drmMMListHead *list;
 
 	/* At the moment most applications only have a few named bo.
 	 * For instance, in a DRI client only the render buffers passed
@@ -1096,15 +1115,11 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	 * provides a sufficiently fast match.
 	 */
 	pthread_mutex_lock(&bufmgr_gem->lock);
-	for (list = bufmgr_gem->named.next;
-	     list != &bufmgr_gem->named;
-	     list = list->next) {
-		bo_gem = DRMLISTENTRY(drm_intel_bo_gem, list, name_list);
-		if (bo_gem->global_name == handle) {
-			drm_intel_gem_bo_reference(&bo_gem->bo);
-			pthread_mutex_unlock(&bufmgr_gem->lock);
-			return &bo_gem->bo;
-		}
+	HASH_FIND(name_hh, bufmgr_gem->name_table,
+		  &handle, sizeof(handle), bo_gem);
+	if (bo_gem) {
+		drm_intel_gem_bo_reference(&bo_gem->bo);
+		goto out;
 	}
 
 	memclear(open_arg);
@@ -1115,29 +1130,26 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	if (ret != 0) {
 		DBG("Couldn't reference %s handle 0x%08x: %s\n",
 		    name, handle, strerror(errno));
-		pthread_mutex_unlock(&bufmgr_gem->lock);
-		return NULL;
+		bo_gem = NULL;
+		goto out;
 	}
         /* Now see if someone has used a prime handle to get this
          * object from the kernel before by looking through the list
          * again for a matching gem_handle
          */
-	for (list = bufmgr_gem->named.next;
-	     list != &bufmgr_gem->named;
-	     list = list->next) {
-		bo_gem = DRMLISTENTRY(drm_intel_bo_gem, list, name_list);
-		if (bo_gem->gem_handle == open_arg.handle) {
-			drm_intel_gem_bo_reference(&bo_gem->bo);
-			pthread_mutex_unlock(&bufmgr_gem->lock);
-			return &bo_gem->bo;
-		}
+	HASH_FIND(handle_hh, bufmgr_gem->handle_table,
+		  &open_arg.handle, sizeof(open_arg.handle), bo_gem);
+	if (bo_gem) {
+		drm_intel_gem_bo_reference(&bo_gem->bo);
+		goto out;
 	}
 
 	bo_gem = calloc(1, sizeof(*bo_gem));
-	if (!bo_gem) {
-		pthread_mutex_unlock(&bufmgr_gem->lock);
-		return NULL;
-	}
+	if (!bo_gem)
+		goto out;
+
+	atomic_set(&bo_gem->refcount, 1);
+	DRMINITLISTHEAD(&bo_gem->vma_list);
 
 	bo_gem->bo.size = open_arg.size;
 	bo_gem->bo.offset = 0;
@@ -1145,7 +1157,6 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	bo_gem->bo.virtual = NULL;
 	bo_gem->bo.bufmgr = bufmgr;
 	bo_gem->name = name;
-	atomic_set(&bo_gem->refcount, 1);
 	bo_gem->validate_index = -1;
 	bo_gem->gem_handle = open_arg.handle;
 	bo_gem->bo.handle = open_arg.handle;
@@ -1153,27 +1164,33 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 	bo_gem->reusable = false;
 	bo_gem->use_48b_address_range = false;
 
+	HASH_ADD(handle_hh, bufmgr_gem->handle_table,
+		 gem_handle, sizeof(bo_gem->gem_handle), bo_gem);
+	HASH_ADD(name_hh, bufmgr_gem->name_table,
+		 global_name, sizeof(bo_gem->global_name), bo_gem);
+
 	memclear(get_tiling);
 	get_tiling.handle = bo_gem->gem_handle;
 	ret = drmIoctl(bufmgr_gem->fd,
 		       DRM_IOCTL_I915_GEM_GET_TILING,
 		       &get_tiling);
-	if (ret != 0) {
-		drm_intel_gem_bo_unreference(&bo_gem->bo);
-		pthread_mutex_unlock(&bufmgr_gem->lock);
-		return NULL;
-	}
+	if (ret != 0)
+		goto err_unref;
+
 	bo_gem->tiling_mode = get_tiling.tiling_mode;
 	bo_gem->swizzle_mode = get_tiling.swizzle_mode;
 	/* XXX stride is unknown */
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, 0);
-
-	DRMINITLISTHEAD(&bo_gem->vma_list);
-	DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
-	pthread_mutex_unlock(&bufmgr_gem->lock);
 	DBG("bo_create_from_handle: %d (%s)\n", handle, bo_gem->name);
 
+out:
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 	return &bo_gem->bo;
+
+err_unref:
+	drm_intel_gem_bo_free(&bo_gem->bo);
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+	return NULL;
 }
 
 static void
@@ -1199,6 +1216,10 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 		drm_munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
 		bufmgr_gem->vma_count--;
 	}
+
+	if (bo_gem->global_name)
+		HASH_DELETE(name_hh, bufmgr_gem->name_table, bo_gem);
+	HASH_DELETE(handle_hh, bufmgr_gem->handle_table, bo_gem);
 
 	/* Close this object */
 	memclear(close);
@@ -1376,8 +1397,6 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 		drm_intel_gem_bo_close_vma(bufmgr_gem, bo_gem);
 		drm_intel_gem_bo_mark_mmaps_incoherent(bo);
 	}
-
-	DRMLISTDEL(&bo_gem->name_list);
 
 	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
 	/* Put the buffer into our internal cache for reuse if we can. */
@@ -2610,7 +2629,6 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	uint32_t handle;
 	drm_intel_bo_gem *bo_gem;
 	struct drm_i915_gem_get_tiling get_tiling;
-	drmMMListHead *list;
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 	ret = drmPrimeFDToHandle(bufmgr_gem->fd, prime_fd, &handle);
@@ -2625,22 +2643,20 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	 * for named buffers, we must not create two bo's pointing at the same
 	 * kernel object
 	 */
-	for (list = bufmgr_gem->named.next;
-	     list != &bufmgr_gem->named;
-	     list = list->next) {
-		bo_gem = DRMLISTENTRY(drm_intel_bo_gem, list, name_list);
-		if (bo_gem->gem_handle == handle) {
-			drm_intel_gem_bo_reference(&bo_gem->bo);
-			pthread_mutex_unlock(&bufmgr_gem->lock);
-			return &bo_gem->bo;
-		}
+	HASH_FIND(name_hh, bufmgr_gem->name_table,
+		  &handle, sizeof(handle), bo_gem);
+	if (bo_gem) {
+		drm_intel_gem_bo_reference(&bo_gem->bo);
+		goto out;
 	}
 
 	bo_gem = calloc(1, sizeof(*bo_gem));
-	if (!bo_gem) {
-		pthread_mutex_unlock(&bufmgr_gem->lock);
-		return NULL;
-	}
+	if (!bo_gem)
+		goto out;
+
+	atomic_set(&bo_gem->refcount, 1);
+	DRMINITLISTHEAD(&bo_gem->vma_list);
+
 	/* Determine size of bo.  The fd-to-handle ioctl really should
 	 * return the size, but it doesn't.  If we have kernel 3.12 or
 	 * later, we can lseek on the prime fd to get the size.  Older
@@ -2656,8 +2672,8 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	bo_gem->bo.bufmgr = bufmgr;
 
 	bo_gem->gem_handle = handle;
-
-	atomic_set(&bo_gem->refcount, 1);
+	HASH_ADD(handle_hh, bufmgr_gem->handle_table,
+		 gem_handle, sizeof(bo_gem->gem_handle), bo_gem);
 
 	bo_gem->name = "prime";
 	bo_gem->validate_index = -1;
@@ -2667,26 +2683,26 @@ drm_intel_bo_gem_create_from_prime(drm_intel_bufmgr *bufmgr, int prime_fd, int s
 	bo_gem->reusable = false;
 	bo_gem->use_48b_address_range = false;
 
-	DRMINITLISTHEAD(&bo_gem->vma_list);
-	DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
-	pthread_mutex_unlock(&bufmgr_gem->lock);
-
 	memclear(get_tiling);
 	get_tiling.handle = bo_gem->gem_handle;
-	ret = drmIoctl(bufmgr_gem->fd,
-		       DRM_IOCTL_I915_GEM_GET_TILING,
-		       &get_tiling);
-	if (ret != 0) {
-		DBG("create_from_prime: failed to get tiling: %s\n", strerror(errno));
-		drm_intel_gem_bo_unreference(&bo_gem->bo);
-		return NULL;
-	}
+	if (drmIoctl(bufmgr_gem->fd,
+		     DRM_IOCTL_I915_GEM_GET_TILING,
+		     &get_tiling))
+		goto err;
+
 	bo_gem->tiling_mode = get_tiling.tiling_mode;
 	bo_gem->swizzle_mode = get_tiling.swizzle_mode;
 	/* XXX stride is unknown */
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem, 0);
 
+out:
+	pthread_mutex_unlock(&bufmgr_gem->lock);
 	return &bo_gem->bo;
+
+err:
+	drm_intel_gem_bo_free(&bo_gem->bo);
+	pthread_mutex_unlock(&bufmgr_gem->lock);
+	return NULL;
 }
 
 int
@@ -2694,11 +2710,6 @@ drm_intel_bo_gem_export_to_prime(drm_intel_bo *bo, int *prime_fd)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-
-	pthread_mutex_lock(&bufmgr_gem->lock);
-        if (DRMLISTEMPTY(&bo_gem->name_list))
-                DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
-	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	if (drmPrimeHandleToFD(bufmgr_gem->fd, bo_gem->gem_handle,
 			       DRM_CLOEXEC, prime_fd) != 0)
@@ -2714,27 +2725,23 @@ drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t * name)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-	int ret;
 
 	if (!bo_gem->global_name) {
 		struct drm_gem_flink flink;
 
 		memclear(flink);
 		flink.handle = bo_gem->gem_handle;
+		if (drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_FLINK, &flink))
+			return -errno;
 
 		pthread_mutex_lock(&bufmgr_gem->lock);
-
-		ret = drmIoctl(bufmgr_gem->fd, DRM_IOCTL_GEM_FLINK, &flink);
-		if (ret != 0) {
-			pthread_mutex_unlock(&bufmgr_gem->lock);
-			return -errno;
+		if (!bo_gem->global_name) {
+			HASH_ADD(name_hh, bufmgr_gem->name_table,
+				 global_name, sizeof(bo_gem->global_name),
+				 bo_gem);
+			bo_gem->global_name = flink.name;
+			bo_gem->reusable = false;
 		}
-
-		bo_gem->global_name = flink.name;
-		bo_gem->reusable = false;
-
-                if (DRMLISTEMPTY(&bo_gem->name_list))
-                        DRMLISTADDTAIL(&bo_gem->name_list, &bufmgr_gem->named);
 		pthread_mutex_unlock(&bufmgr_gem->lock);
 	}
 
@@ -3691,7 +3698,6 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	    drm_intel_gem_get_pipe_from_crtc_id;
 	bufmgr_gem->bufmgr.bo_references = drm_intel_gem_bo_references;
 
-	DRMINITLISTHEAD(&bufmgr_gem->named);
 	init_cache_buckets(bufmgr_gem);
 
 	DRMINITLISTHEAD(&bufmgr_gem->vma_cache);
