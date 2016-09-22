@@ -57,11 +57,6 @@ class V4L2CaptureDelegate final
 
   void TakePhoto(VideoCaptureDevice::TakePhotoCallback callback);
 
-  void GetPhotoCapabilities(
-      VideoCaptureDevice::GetPhotoCapabilitiesCallback callback);
-  void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
-                       VideoCaptureDevice::SetPhotoOptionsCallback callback);
-
   void SetRotation(int rotation);
 
  private:

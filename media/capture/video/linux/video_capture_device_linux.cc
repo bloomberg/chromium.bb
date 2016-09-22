@@ -91,26 +91,6 @@ void VideoCaptureDeviceLinux::TakePhoto(TakePhotoCallback callback) {
                             base::Passed(&callback)));
 }
 
-void VideoCaptureDeviceLinux::GetPhotoCapabilities(
-    GetPhotoCapabilitiesCallback callback) {
-  if (!v4l2_thread_.IsRunning())
-    return;  // Wrong state.
-  v4l2_thread_.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&V4L2CaptureDelegate::GetPhotoCapabilities,
-                            capture_impl_, base::Passed(&callback)));
-}
-
-void VideoCaptureDeviceLinux::SetPhotoOptions(
-    mojom::PhotoSettingsPtr settings,
-    SetPhotoOptionsCallback callback) {
-  if (!v4l2_thread_.IsRunning())
-    return;  // Wrong state.
-  v4l2_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&V4L2CaptureDelegate::SetPhotoOptions, capture_impl_,
-                 base::Passed(&settings), base::Passed(&callback)));
-}
-
 void VideoCaptureDeviceLinux::SetRotation(int rotation) {
   if (v4l2_thread_.IsRunning()) {
     v4l2_thread_.task_runner()->PostTask(
