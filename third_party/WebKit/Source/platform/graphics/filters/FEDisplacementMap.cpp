@@ -48,8 +48,8 @@ FEDisplacementMap* FEDisplacementMap::create(Filter* filter, ChannelSelectorType
 FloatRect FEDisplacementMap::mapEffect(const FloatRect& rect) const
 {
     FloatRect result = rect;
-    result.inflateX(getFilter()->applyHorizontalScale(m_scale / 2));
-    result.inflateY(getFilter()->applyVerticalScale(m_scale / 2));
+    result.inflateX(getFilter()->applyHorizontalScale(std::abs(m_scale) / 2));
+    result.inflateY(getFilter()->applyVerticalScale(std::abs(m_scale) / 2));
     return result;
 }
 
