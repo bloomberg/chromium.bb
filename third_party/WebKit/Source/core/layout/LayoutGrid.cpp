@@ -1791,13 +1791,6 @@ void LayoutGrid::dirtyGrid()
     if (m_gridIsDirty)
         return;
 
-    // Even if this could be redundant, it could be seen as a defensive strategy against
-    // style changes events happening during the layout phase or even while the painting process
-    // is still ongoing.
-    // Forcing a new layout for the Grid layout would cancel any ongoing painting and ensure
-    // the grid and its children are correctly laid out according to the new style rules.
-    setNeedsLayout(LayoutInvalidationReason::GridChanged);
-
     m_grid.resize(0);
     m_gridItemArea.clear();
     m_gridItemsOverflowingGridArea.resize(0);
