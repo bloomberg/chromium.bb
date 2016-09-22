@@ -19,8 +19,8 @@ Polymer({
     },
 
     /**
-     * The contextual item that this menu was clicked for.
-     *  e.g. the data used to render an item in an <iron-list> or <dom-repeat>
+     * The contextual item that this menu was clicked for, e.g. the data used to
+     * render an item in an <iron-list> or <dom-repeat>.
      * @type {?Object}
      */
     itemData: {
@@ -120,16 +120,16 @@ Polymer({
   /**
    * Opens the menu at the anchor location.
    * @param {!Element} anchor The location to display the menu.
-   * @param {!Object} itemData The contextual item's data.
+   * @param {!Object=} opt_itemData The contextual item's data.
    */
-  openMenu: function(anchor, itemData) {
+  openMenu: function(anchor, opt_itemData) {
     if (this.lastAnchor_ == anchor && this.menuOpen)
       return;
 
     if (this.menuOpen)
       this.closeMenu();
 
-    this.itemData = itemData;
+    this.itemData = opt_itemData || null;
     this.lastAnchor_ = anchor;
     this.$.dropdown.restoreFocusOnClose = true;
 
@@ -150,13 +150,13 @@ Polymer({
   /**
    * Toggles the menu for the anchor that is passed in.
    * @param {!Element} anchor The location to display the menu.
-   * @param {!Object} itemData The contextual item's data.
+   * @param {!Object=} opt_itemData The contextual item's data.
    */
-  toggleMenu: function(anchor, itemData) {
+  toggleMenu: function(anchor, opt_itemData) {
     if (anchor == this.lastAnchor_ && this.menuOpen)
       this.closeMenu();
     else
-      this.openMenu(anchor, itemData);
+      this.openMenu(anchor, opt_itemData);
   },
 
   /**
