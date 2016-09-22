@@ -85,8 +85,16 @@ BluetoothAdapter::DeviceList MockBluetoothAdapter::GetMockDevices() {
 void MockBluetoothAdapter::RegisterAdvertisement(
     std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
     const CreateAdvertisementCallback& callback,
-    const CreateAdvertisementErrorCallback& error_callback) {
+    const AdvertisementErrorCallback& error_callback) {
   callback.Run(new MockBluetoothAdvertisement);
 }
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+void MockBluetoothAdapter::SetAdvertisingInterval(
+    const base::TimeDelta& min,
+    const base::TimeDelta& max,
+    const base::Closure& callback,
+    const AdvertisementErrorCallback& error_callback) {}
+#endif
 
 }  // namespace device

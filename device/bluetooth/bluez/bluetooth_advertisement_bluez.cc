@@ -47,8 +47,7 @@ device::BluetoothAdvertisement::ErrorCode GetErrorCodeFromErrorStrings(
 }
 
 void RegisterErrorCallbackConnector(
-    const device::BluetoothAdapter::CreateAdvertisementErrorCallback&
-        error_callback,
+    const device::BluetoothAdapter::AdvertisementErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   LOG(ERROR) << "Error while registering advertisement. error_name = "
@@ -57,8 +56,7 @@ void RegisterErrorCallbackConnector(
 }
 
 void UnregisterErrorCallbackConnector(
-    const device::BluetoothAdapter::CreateAdvertisementErrorCallback&
-        error_callback,
+    const device::BluetoothAdapter::AdvertisementErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
   LOG(WARNING) << "Error while unregistering advertisement. error_name = "
@@ -95,7 +93,7 @@ BluetoothAdvertisementBlueZ::BluetoothAdvertisementBlueZ(
 
 void BluetoothAdvertisementBlueZ::Register(
     const base::Closure& success_callback,
-    const device::BluetoothAdapter::CreateAdvertisementErrorCallback&
+    const device::BluetoothAdapter::AdvertisementErrorCallback&
         error_callback) {
   DCHECK(bluez::BluezDBusManager::Get());
   bluez::BluezDBusManager::Get()

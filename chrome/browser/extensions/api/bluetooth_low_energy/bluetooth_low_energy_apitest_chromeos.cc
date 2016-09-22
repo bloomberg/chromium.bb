@@ -108,6 +108,16 @@ IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs,
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs,
+                       SetAdvertisingInterval) {
+  EnterKioskSession();
+  SetAutoLaunchApp();
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/bluetooth_low_energy/"
+                         "set_advertising_interval"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(BluetoothLowEnergyApiTestChromeOs, CreateService) {
   EnterKioskSession();
   SetAutoLaunchApp();

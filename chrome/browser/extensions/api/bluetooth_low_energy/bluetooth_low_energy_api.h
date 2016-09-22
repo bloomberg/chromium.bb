@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -464,9 +465,6 @@ class BluetoothLowEnergyRegisterAdvertisementFunction
  private:
   void SuccessCallback(scoped_refptr<device::BluetoothAdvertisement>);
   void ErrorCallback(device::BluetoothAdvertisement::ErrorCode status);
-
-  // The instance ID of the requested descriptor.
-  std::string instance_id_;
 };
 
 class BluetoothLowEnergyUnregisterAdvertisementFunction
@@ -485,9 +483,25 @@ class BluetoothLowEnergyUnregisterAdvertisementFunction
   void SuccessCallback(int advertisement_id);
   void ErrorCallback(int advertisement_id,
                      device::BluetoothAdvertisement::ErrorCode status);
+};
 
-  // The instance ID of the requested descriptor.
-  std::string instance_id_;
+class BluetoothLowEnergySetAdvertisingIntervalFunction
+    : public BLEPeripheralExtensionFunction<
+          extensions::api::bluetooth_low_energy::SetAdvertisingInterval::
+              Params> {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetoothLowEnergy.setAdvertisingInterval",
+                             BLUETOOTHLOWENERGY_SETADVERTISINGINTERVAL);
+
+ protected:
+  ~BluetoothLowEnergySetAdvertisingIntervalFunction() override {}
+
+  // BluetoothLowEnergyExtensionFunctionDeprecated override.
+  void DoWork() override;
+
+ private:
+  void SuccessCallback();
+  void ErrorCallback(device::BluetoothAdvertisement::ErrorCode status);
 };
 
 class BluetoothLowEnergyCreateServiceFunction

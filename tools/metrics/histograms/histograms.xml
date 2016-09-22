@@ -79445,6 +79445,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1145" label="LANGUAGESETTINGSPRIVATE_ENABLELANGUAGE"/>
   <int value="1146" label="LANGUAGESETTINGSPRIVATE_DISABLELANGUAGE"/>
   <int value="1147" label="FILEMANAGERPRIVATEINTERNAL_GETDIRECTORYSIZE"/>
+  <int value="1148" label="BLUETOOTHLOWENERGY_SETADVERTISINGINTERVAL"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">

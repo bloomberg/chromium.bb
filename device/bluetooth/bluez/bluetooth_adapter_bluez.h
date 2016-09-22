@@ -34,6 +34,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class TimeDelta;
 }  // namespace base
 
 namespace device {
@@ -123,7 +124,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void RegisterAdvertisement(
       std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
-      const CreateAdvertisementErrorCallback& error_callback) override;
+      const AdvertisementErrorCallback& error_callback) override;
+
+  void SetAdvertisingInterval(
+      const base::TimeDelta& min,
+      const base::TimeDelta& max,
+      const base::Closure& callback,
+      const AdvertisementErrorCallback& error_callback) override;
 
   device::BluetoothLocalGattService* GetGattService(
       const std::string& identifier) const override;

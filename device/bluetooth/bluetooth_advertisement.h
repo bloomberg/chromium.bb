@@ -37,6 +37,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdvertisement
                                          // is not registered.
     ERROR_ADVERTISEMENT_INVALID_LENGTH,  // Advertisement is not of a valid
                                          // length.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+    ERROR_INVALID_ADVERTISEMENT_INTERVAL,  // Advertisement interval specified
+                                           // is out of valid range.
+#endif
     INVALID_ADVERTISEMENT_ERROR_CODE
   };
 

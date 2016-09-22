@@ -4,6 +4,9 @@
 
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
 
+#include <algorithm>
+#include <cstdint>
+#include <limits>
 #include <memory>
 #include <set>
 #include <string>
@@ -17,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -39,6 +43,7 @@
 #include "device/bluetooth/dbus/bluetooth_gatt_application_service_provider.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_input_client.h"
+#include "device/bluetooth/dbus/bluetooth_le_advertising_manager_client.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -125,6 +130,22 @@ void OnRegisterationErrorCallback(
 
 void DoNothingOnError(
     device::BluetoothGattService::GattErrorCode /*error_code*/) {}
+
+void SetIntervalErrorCallbackConnector(
+    const device::BluetoothAdapter::AdvertisementErrorCallback& error_callback,
+    const std::string& error_name,
+    const std::string& error_message) {
+  LOG(ERROR) << "Error while registering advertisement. error_name = "
+             << error_name << ", error_message = " << error_message;
+
+  device::BluetoothAdvertisement::ErrorCode code = device::
+      BluetoothAdvertisement::ErrorCode::INVALID_ADVERTISEMENT_ERROR_CODE;
+  if (error_name == bluetooth_advertising_manager::kErrorInvalidArguments) {
+    code = device::BluetoothAdvertisement::ErrorCode::
+        ERROR_INVALID_ADVERTISEMENT_INTERVAL;
+  }
+  error_callback.Run(code);
+}
 
 }  // namespace
 
@@ -442,10 +463,29 @@ void BluetoothAdapterBlueZ::RegisterAudioSink(
 void BluetoothAdapterBlueZ::RegisterAdvertisement(
     std::unique_ptr<device::BluetoothAdvertisement::Data> advertisement_data,
     const CreateAdvertisementCallback& callback,
-    const CreateAdvertisementErrorCallback& error_callback) {
+    const AdvertisementErrorCallback& error_callback) {
   scoped_refptr<BluetoothAdvertisementBlueZ> advertisement(
       new BluetoothAdvertisementBlueZ(std::move(advertisement_data), this));
   advertisement->Register(base::Bind(callback, advertisement), error_callback);
+}
+
+void BluetoothAdapterBlueZ::SetAdvertisingInterval(
+    const base::TimeDelta& min,
+    const base::TimeDelta& max,
+    const base::Closure& callback,
+    const AdvertisementErrorCallback& error_callback) {
+  DCHECK(bluez::BluezDBusManager::Get());
+  uint16_t min_ms = static_cast<uint16_t>(
+      std::min(static_cast<int64_t>(std::numeric_limits<uint16_t>::max()),
+               min.InMilliseconds()));
+  uint16_t max_ms = static_cast<uint16_t>(
+      std::min(static_cast<int64_t>(std::numeric_limits<uint16_t>::max()),
+               max.InMilliseconds()));
+  bluez::BluezDBusManager::Get()
+      ->GetBluetoothLEAdvertisingManagerClient()
+      ->SetAdvertisingInterval(
+          object_path_, min_ms, max_ms, callback,
+          base::Bind(&SetIntervalErrorCallbackConnector, error_callback));
 }
 
 device::BluetoothLocalGattService* BluetoothAdapterBlueZ::GetGattService(

@@ -109,6 +109,32 @@ class BluetoothAdvertisementManagerClientImpl
                    weak_ptr_factory_.GetWeakPtr(), error_callback));
   }
 
+  void SetAdvertisingInterval(const dbus::ObjectPath& manager_object_path,
+                              uint16_t min_interval_ms,
+                              uint16_t max_interval_ms,
+                              const base::Closure& callback,
+                              const ErrorCallback& error_callback) override {
+    // TODO(rkc): Replace the string "SetAdvertisingInterval" with the correct
+    // constant in service_constants.h once cros_system_api DEPS are rolled.
+    dbus::MethodCall method_call(
+        bluetooth_advertising_manager::kBluetoothAdvertisingManagerInterface,
+        "SetAdvertisingIntervals");
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendUint16(min_interval_ms);
+    writer.AppendUint16(max_interval_ms);
+
+    DCHECK(object_manager_);
+    dbus::ObjectProxy* object_proxy =
+        object_manager_->GetObjectProxy(manager_object_path);
+    object_proxy->CallMethodWithErrorCallback(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&BluetoothAdvertisementManagerClientImpl::OnSuccess,
+                   weak_ptr_factory_.GetWeakPtr(), callback),
+        base::Bind(&BluetoothAdvertisementManagerClientImpl::OnError,
+                   weak_ptr_factory_.GetWeakPtr(), error_callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     DCHECK(bus);

@@ -15,8 +15,13 @@
 
 namespace bluez {
 
-const char FakeBluetoothLEAdvertisingManagerClient::kAdvertisingManagerPath[] =
-    "/fake/hci0";
+namespace {
+
+constexpr char kAdvertisingManagerPath[] = "/fake/hci0";
+constexpr uint16_t kMinIntervalMs = 20;
+constexpr uint16_t kMaxIntervalMs = 10240;
+
+}  // namespace
 
 FakeBluetoothLEAdvertisingManagerClient::
     FakeBluetoothLEAdvertisingManagerClient() {}
@@ -81,6 +86,21 @@ void FakeBluetoothLEAdvertisingManagerClient::UnregisterAdvertisement(
     currently_registered_ = dbus::ObjectPath("");
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
   }
+}
+
+void FakeBluetoothLEAdvertisingManagerClient::SetAdvertisingInterval(
+    const dbus::ObjectPath& object_path,
+    uint16_t min_interval_ms,
+    uint16_t max_interval_ms,
+    const base::Closure& callback,
+    const ErrorCallback& error_callback) {
+  if (min_interval_ms < kMinIntervalMs || max_interval_ms > kMaxIntervalMs ||
+      min_interval_ms > max_interval_ms) {
+    error_callback.Run(bluetooth_advertising_manager::kErrorInvalidArguments,
+                       "Invalid interval.");
+    return;
+  }
+  callback.Run();
 }
 
 void FakeBluetoothLEAdvertisingManagerClient::

@@ -87,6 +87,10 @@ const char kStatusAdvertisementAlreadyExists[] =
     "An advertisement is already advertising";
 const char kStatusAdvertisementDoesNotExist[] =
     "This advertisement does not exist";
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+const char kStatusInvalidAdvertisingInterval[] =
+    "Invalid advertising interval specified.";
+#endif
 
 // Returns the correct error string based on error status |status|. This is used
 // to set the value of |chrome.runtime.lastError.message| and should not be
@@ -1296,6 +1300,45 @@ void BluetoothLowEnergyUnregisterAdvertisementFunction::ErrorCallback(
       SetError(kErrorOperationFailed);
   }
   SendResponse(false);
+}
+
+// SetAdvertisingInterval:
+
+template class BLEPeripheralExtensionFunction<
+    apibtle::SetAdvertisingInterval::Params>;
+
+void BluetoothLowEnergySetAdvertisingIntervalFunction::DoWork() {
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  BluetoothLowEnergyEventRouter* event_router =
+      GetEventRouter(browser_context());
+  event_router->adapter()->SetAdvertisingInterval(
+      base::TimeDelta::FromMilliseconds(params_->min_interval),
+      base::TimeDelta::FromMilliseconds(params_->max_interval),
+      base::Bind(
+          &BluetoothLowEnergySetAdvertisingIntervalFunction::SuccessCallback,
+          this),
+      base::Bind(
+          &BluetoothLowEnergySetAdvertisingIntervalFunction::ErrorCallback,
+          this));
+#endif
+}
+
+void BluetoothLowEnergySetAdvertisingIntervalFunction::SuccessCallback() {
+  Respond(NoArguments());
+}
+
+void BluetoothLowEnergySetAdvertisingIntervalFunction::ErrorCallback(
+    device::BluetoothAdvertisement::ErrorCode status) {
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  switch (status) {
+    case device::BluetoothAdvertisement::ErrorCode::
+        ERROR_INVALID_ADVERTISEMENT_INTERVAL:
+      Respond(Error(kStatusInvalidAdvertisingInterval));
+      break;
+    default:
+      Respond(Error(kErrorOperationFailed));
+  }
+#endif
 }
 
 // createService:

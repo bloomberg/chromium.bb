@@ -18,6 +18,7 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_audio_sink.h"
@@ -244,7 +245,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       base::Callback<void(scoped_refptr<BluetoothAudioSink>)>;
   using CreateAdvertisementCallback =
       base::Callback<void(scoped_refptr<BluetoothAdvertisement>)>;
-  using CreateAdvertisementErrorCallback =
+  using AdvertisementErrorCallback =
       base::Callback<void(BluetoothAdvertisement::ErrorCode)>;
 
   // Returns a weak pointer to a new adapter.  For platforms with asynchronous
@@ -438,7 +439,17 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   virtual void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
-      const CreateAdvertisementErrorCallback& error_callback) = 0;
+      const AdvertisementErrorCallback& error_callback) = 0;
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  // Sets the interval between two consecutive advertisements. Valid ranges
+  // for the interval are from 20ms to 10.24 seconds, with min <= max.
+  virtual void SetAdvertisingInterval(
+      const base::TimeDelta& min,
+      const base::TimeDelta& max,
+      const base::Closure& callback,
+      const AdvertisementErrorCallback& error_callback) = 0;
+#endif
 
   // Returns the local GATT services associated with this adapter with the
   // given identifier. Returns NULL if the service doesn't exist.

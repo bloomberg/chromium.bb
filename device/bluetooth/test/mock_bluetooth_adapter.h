@@ -137,7 +137,14 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   void RegisterAdvertisement(
       std::unique_ptr<BluetoothAdvertisement::Data> advertisement_data,
       const CreateAdvertisementCallback& callback,
-      const CreateAdvertisementErrorCallback& error_callback) override;
+      const AdvertisementErrorCallback& error_callback) override;
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  void SetAdvertisingInterval(
+      const base::TimeDelta& min,
+      const base::TimeDelta& max,
+      const base::Closure& callback,
+      const AdvertisementErrorCallback& error_callback) override;
+#endif
   virtual ~MockBluetoothAdapter();
 
   MOCK_METHOD1(RemovePairingDelegateInternal,
