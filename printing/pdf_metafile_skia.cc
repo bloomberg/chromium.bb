@@ -195,8 +195,7 @@ bool PdfMetafileSkia::FinishDocument() {
     canvas->drawPicture(page.content_);
     doc->endPage();
   }
-  if (!doc->close())
-    return false;
+  doc->close();
 
   data_->pdf_data_.reset(stream.detachAsStream());
   return true;
