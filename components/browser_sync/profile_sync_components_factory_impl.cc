@@ -49,13 +49,6 @@
 #include "net/url_request/url_request_context_getter.h"
 
 using bookmarks::BookmarkModel;
-using browser_sync::AutofillDataTypeController;
-using browser_sync::AutofillProfileDataTypeController;
-using browser_sync::ChromeReportUnrecoverableError;
-using browser_sync::HistoryDeleteDirectivesDataTypeController;
-using browser_sync::PasswordDataTypeController;
-using browser_sync::SyncBackendHost;
-using browser_sync::TypedUrlDataTypeController;
 using sync_bookmarks::BookmarkChangeProcessor;
 using sync_bookmarks::BookmarkDataTypeController;
 using sync_bookmarks::BookmarkModelAssociator;
@@ -68,6 +61,8 @@ using sync_driver::ProxyDataTypeController;
 using sync_driver::UIDataTypeController;
 using sync_driver_v2::UIModelTypeController;
 using sync_sessions::SessionDataTypeController;
+
+namespace browser_sync {
 
 namespace {
 
@@ -182,7 +177,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   bool wallet_disabled = disabled_types.Has(syncer::AUTOFILL_WALLET_DATA);
   if (!wallet_disabled) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<browser_sync::AutofillWalletDataTypeController>(
+        base::MakeUnique<AutofillWalletDataTypeController>(
             syncer::AUTOFILL_WALLET_DATA, db_thread_, error_callback,
             sync_client_, web_data_service_));
   }
@@ -192,7 +187,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!wallet_disabled &&
       !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<browser_sync::AutofillWalletDataTypeController>(
+        base::MakeUnique<AutofillWalletDataTypeController>(
             syncer::AUTOFILL_WALLET_METADATA, db_thread_, error_callback,
             sync_client_, web_data_service_));
   }
@@ -296,20 +291,19 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
                                  encryption_handler, backend, observer);
 }
 
-browser_sync::SyncBackendHost*
-ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
+SyncBackendHost* ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
     const std::string& name,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::FilePath& sync_folder) {
-  return new browser_sync::SyncBackendHostImpl(
-      name, sync_client_, ui_thread_, invalidator, sync_prefs, sync_folder);
+  return new SyncBackendHostImpl(name, sync_client_, ui_thread_, invalidator,
+                                 sync_prefs, sync_folder);
 }
 
 std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
 ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
-  return base::MakeUnique<browser_sync::LocalDeviceInfoProviderImpl>(
-      channel_, version_, is_tablet_);
+  return base::MakeUnique<LocalDeviceInfoProviderImpl>(channel_, version_,
+                                                       is_tablet_);
 }
 
 class TokenServiceProvider
@@ -426,3 +420,5 @@ void ProfileSyncComponentsFactoryImpl::OverridePrefsForUssTest(bool use_uss) {
 
 bool ProfileSyncComponentsFactoryImpl::
     override_prefs_controller_to_uss_for_test_ = false;
+
+}  // namespace browser_sync

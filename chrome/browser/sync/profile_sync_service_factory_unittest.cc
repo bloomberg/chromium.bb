@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_switches.h"
 
+using browser_sync::ProfileSyncService;
 using sync_driver::DataTypeController;
 
 class ProfileSyncServiceFactoryTest : public testing::Test {

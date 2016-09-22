@@ -52,6 +52,8 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #endif
 
+using browser_sync::ProfileSyncService;
+
 namespace {
 
 void UpdateNetworkTimeOnUIThread(base::Time network_time,
@@ -82,7 +84,7 @@ ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
 ProfileSyncService* ProfileSyncServiceFactory::GetForProfile(
     Profile* profile) {
   if (!ProfileSyncService::IsSyncAllowedByFlag())
-    return NULL;
+    return nullptr;
 
   return static_cast<ProfileSyncService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
@@ -198,7 +200,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
 // static
 bool ProfileSyncServiceFactory::HasProfileSyncService(Profile* profile) {
-  return GetInstance()->GetServiceForBrowserContext(profile, false) != NULL;
+  return GetInstance()->GetServiceForBrowserContext(profile, false) != nullptr;
 }
 
 // static

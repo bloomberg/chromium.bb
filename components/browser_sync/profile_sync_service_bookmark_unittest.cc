@@ -359,7 +359,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
         local_merge_result_(syncer::BOOKMARKS),
         syncer_merge_result_(syncer::BOOKMARKS) {
     CHECK(data_dir_.CreateUniqueTempDir());
-    browser_sync::ProfileSyncServiceBundle::SyncClientBuilder builder(
+    ProfileSyncServiceBundle::SyncClientBuilder builder(
         &profile_sync_service_bundle_);
     builder.SetBookmarkModelCallback(base::Bind(
         &ProfileSyncServiceBookmarkTest::model, base::Unretained(this)));
@@ -815,7 +815,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
  private:
   base::TestMessageLoop message_loop_;
   base::ScopedTempDir data_dir_;
-  browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
+  ProfileSyncServiceBundle profile_sync_service_bundle_;
 
   std::unique_ptr<sync_driver::FakeSyncClient> sync_client_;
   std::unique_ptr<BookmarkModel> model_;

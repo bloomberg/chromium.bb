@@ -25,22 +25,25 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "url/gurl.h"
 
-class ProfileSyncService;
 class SupervisedUserService;
 
 namespace bookmarks {
 class BookmarkModel;
-}
+}  // namespace bookmarks
+
+namespace browser_sync {
+class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace history {
 class HistoryService;
-struct QueryOptions;
 class QueryResults;
-}
+struct QueryOptions;
+}  // namespace history
 
 namespace sync_driver {
 class SyncServiceObserver;
-}
+}  // namespace sync_driver
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler : public content::WebUIMessageHandler,
@@ -77,7 +80,7 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
     std::unique_ptr<base::DictionaryValue> ToValue(
         bookmarks::BookmarkModel* bookmark_model,
         SupervisedUserService* supervised_user_service,
-        const ProfileSyncService* sync_service,
+        const browser_sync::ProfileSyncService* sync_service,
         bool limit_title_length) const;
 
     // Comparison function for sorting HistoryEntries from newest to oldest.
@@ -244,7 +247,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
       web_history_service_observer_;
 
   // ProfileSyncService observer listens to late initialization of history sync.
-  ScopedObserver<ProfileSyncService, sync_driver::SyncServiceObserver>
+  ScopedObserver<browser_sync::ProfileSyncService,
+                 sync_driver::SyncServiceObserver>
       sync_service_observer_;
 
   // Whether the last call to Web History returned synced results.

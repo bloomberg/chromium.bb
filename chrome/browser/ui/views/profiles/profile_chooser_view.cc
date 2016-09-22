@@ -1027,7 +1027,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     chrome::OpenUpdateChromeDialog(browser_);
   } else if (sender == sync_error_signin_again_button_) {
     if (ProfileSyncServiceFactory::GetForProfile(browser_->profile()))
-      ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+      browser_sync::ProfileSyncService::SyncEvent(
+          browser_sync::ProfileSyncService::STOP_FROM_OPTIONS);
     SigninManagerFactory::GetForProfile(browser_->profile())
         ->SignOut(signin_metrics::USER_CLICKED_SIGNOUT_SETTINGS,
                   signin_metrics::SignoutDelete::IGNORE_METRIC);

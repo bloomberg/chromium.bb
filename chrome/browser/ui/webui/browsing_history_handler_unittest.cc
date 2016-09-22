@@ -77,10 +77,11 @@ bool ResultEquals(
 
 void IgnoreBoolAndDoNothing(bool ignored_argument) {}
 
-class TestSyncService : public TestProfileSyncService {
+class TestSyncService : public browser_sync::TestProfileSyncService {
  public:
   explicit TestSyncService(Profile* profile)
-      : TestProfileSyncService(CreateProfileSyncServiceParamsForTest(profile)),
+      : browser_sync::TestProfileSyncService(
+            CreateProfileSyncServiceParamsForTest(profile)),
         sync_active_(true) {}
 
   bool IsSyncActive() const override { return sync_active_; }

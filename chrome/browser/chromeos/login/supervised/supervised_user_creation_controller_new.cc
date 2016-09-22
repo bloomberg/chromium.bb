@@ -307,13 +307,13 @@ void SupervisedUserCreationControllerNew::OnAddKeySuccess() {
 
   VLOG(1) << " Phase 3 : Create/update user on chrome.com/manage";
 
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(
           creation_context_->manager_profile);
-  ProfileSyncService::SyncStatusSummary status =
+  browser_sync::ProfileSyncService::SyncStatusSummary status =
       sync_service->QuerySyncStatusSummary();
 
-  if (status == ProfileSyncService::DATATYPES_NOT_INITIALIZED)
+  if (status == browser_sync::ProfileSyncService::DATATYPES_NOT_INITIALIZED)
     consumer_->OnLongCreationWarning();
 
   creation_context_->registration_utility =

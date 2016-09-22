@@ -21,6 +21,7 @@
 using bookmarks::BookmarkNode;
 using bookmarks_helper::AddFolder;
 using bookmarks_helper::SetTitle;
+using browser_sync::ProfileSyncService;
 using sync_integration_test_util::AwaitCommitActivityCompletion;
 
 namespace {

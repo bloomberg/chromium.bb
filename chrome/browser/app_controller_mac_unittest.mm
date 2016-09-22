@@ -124,7 +124,8 @@ TEST_F(AppControllerTest, TestSigninMenuItemNoErrors) {
       IDS_SYNC_MENU_SYNCED_LABEL, base::UTF8ToUTF16(username));
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   signin->SetAuthenticatedAccountInfo(username, username);
-  ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile_);
+  browser_sync::ProfileSyncService* sync =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   sync->SetFirstSetupComplete();
   [AppController updateSigninItem:syncMenuItem
                        shouldShow:YES
@@ -144,7 +145,8 @@ TEST_F(AppControllerTest, TestSigninMenuItemAuthError) {
   std::string username = "foo@example.com";
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   signin->SetAuthenticatedAccountInfo(username, username);
-  ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile_);
+  browser_sync::ProfileSyncService* sync =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   sync->SetFirstSetupComplete();
   // Force an auth error.
   FakeAuthStatusProvider provider(

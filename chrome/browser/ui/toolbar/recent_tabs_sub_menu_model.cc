@@ -711,8 +711,9 @@ void RecentTabsSubMenuModel::ClearLocalEntries() {
 sync_sessions::OpenTabsUIDelegate*
 RecentTabsSubMenuModel::GetOpenTabsUIDelegate() {
   if (!open_tabs_delegate_) {
-    ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
-        GetForProfile(browser_->profile());
+    browser_sync::ProfileSyncService* service =
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+            browser_->profile());
     // Only return the delegate if it exists and it is done syncing sessions.
     if (service && service->IsSyncActive())
       open_tabs_delegate_ = service->GetOpenTabsUIDelegate();

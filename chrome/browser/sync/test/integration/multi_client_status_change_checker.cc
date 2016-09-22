@@ -9,8 +9,8 @@
 #include "components/browser_sync/profile_sync_service.h"
 
 MultiClientStatusChangeChecker::MultiClientStatusChangeChecker(
-    std::vector<ProfileSyncService*> services)
-  : services_(services) {}
+    std::vector<browser_sync::ProfileSyncService*> services)
+    : services_(services) {}
 
 MultiClientStatusChangeChecker::~MultiClientStatusChangeChecker() {}
 
@@ -22,8 +22,11 @@ void MultiClientStatusChangeChecker::Wait() {
     return;
   }
 
-  ScopedObserver<ProfileSyncService, MultiClientStatusChangeChecker> obs(this);
-  for (std::vector<ProfileSyncService*>::iterator it = services_.begin();
+  ScopedObserver<browser_sync::ProfileSyncService,
+                 MultiClientStatusChangeChecker>
+      obs(this);
+  for (std::vector<browser_sync::ProfileSyncService*>::iterator it =
+           services_.begin();
        it != services_.end(); ++it) {
     obs.Add(*it);
   }

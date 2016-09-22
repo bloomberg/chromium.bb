@@ -18,7 +18,7 @@ namespace {
 // Returns true if the user is signed in and full history sync is enabled,
 // and false otherwise.
 bool IsHistorySyncEnabled(Profile* profile) {
-  ProfileSyncService* sync =
+  browser_sync::ProfileSyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   return sync &&
       sync->IsSyncActive() &&

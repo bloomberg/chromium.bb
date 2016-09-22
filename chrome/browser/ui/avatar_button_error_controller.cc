@@ -84,12 +84,12 @@ void AvatarButtonErrorController::SyncErrorObserver::OnErrorChanged() {
 }
 
 bool AvatarButtonErrorController::SyncErrorObserver::HasSyncError() {
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (switches::IsMaterialDesignUserMenu() && sync_service) {
     SyncErrorController* sync_error_controller =
         sync_service->sync_error_controller();
-    ProfileSyncService::Status status;
+    browser_sync::ProfileSyncService::Status status;
     sync_service->QueryDetailedSyncStatus(&status);
     return sync_service->HasUnrecoverableError() ||
            status.sync_protocol_error.action == syncer::UPGRADE_CLIENT ||
@@ -102,7 +102,7 @@ SyncErrorController* AvatarButtonErrorController::SyncErrorObserver::
     GetSyncErrorControllerIfNeeded() {
   if (!switches::IsMaterialDesignUserMenu())
     return nullptr;
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   return sync_service ? sync_service->sync_error_controller() : nullptr;
 }

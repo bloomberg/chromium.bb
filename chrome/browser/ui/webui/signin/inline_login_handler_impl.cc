@@ -328,7 +328,7 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
     }
     LogSigninReason(reason);
   } else {
-    ProfileSyncService* sync_service =
+    browser_sync::ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile_);
     SigninErrorController* error_controller =
         SigninErrorControllerFactory::GetForProfile(profile_);

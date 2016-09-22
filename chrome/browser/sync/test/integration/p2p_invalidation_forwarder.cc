@@ -10,10 +10,9 @@
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 P2PInvalidationForwarder::P2PInvalidationForwarder(
-    ProfileSyncService* sync_service,
+    browser_sync::ProfileSyncService* sync_service,
     invalidation::P2PInvalidationService* invalidation_service)
-  : sync_service_(sync_service),
-    invalidation_service_(invalidation_service) {
+    : sync_service_(sync_service), invalidation_service_(invalidation_service) {
   sync_service_->AddObserver(this);
 }
 

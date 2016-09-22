@@ -2001,7 +2001,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientBookmarksSyncTest,
 
   // Set a passphrase and enable encryption on Client 0. Client 1 will not
   // understand the bookmark updates.
-  SetEncryptionPassphrase(0, kValidPassphrase, ProfileSyncService::EXPLICIT);
+  SetEncryptionPassphrase(0, kValidPassphrase,
+                          browser_sync::ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((0))));
   ASSERT_TRUE(EnableEncryption(0));
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));

@@ -195,7 +195,7 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
 sync_sessions::OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
     content::WebUI* web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
   // Only return the delegate if it exists and it is done syncing sessions.
@@ -208,7 +208,7 @@ sync_sessions::OpenTabsUIDelegate* ForeignSessionHandler::GetOpenTabsUIDelegate(
 void ForeignSessionHandler::RegisterMessages() {
   Profile* profile = Profile::FromWebUI(web_ui());
 
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
   // NOTE: The ProfileSyncService can be null in tests.
@@ -239,7 +239,7 @@ void ForeignSessionHandler::OnForeignSessionUpdated() {
 
 bool ForeignSessionHandler::IsTabSyncEnabled() {
   Profile* profile = Profile::FromWebUI(web_ui());
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   return service && service->GetActiveDataTypes().Has(syncer::PROXY_TABS);
 }

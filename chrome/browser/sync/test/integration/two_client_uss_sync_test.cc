@@ -16,6 +16,7 @@
 #include "components/sync/api/fake_model_type_service.h"
 
 using browser_sync::ChromeSyncClient;
+using browser_sync::ProfileSyncComponentsFactoryImpl;
 using syncer_v2::FakeModelTypeService;
 using syncer_v2::ModelTypeService;
 using syncer_v2::SharedModelTypeProcessor;

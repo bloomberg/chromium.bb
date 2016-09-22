@@ -100,7 +100,7 @@ PasswordGenerationPopupControllerImpl::PasswordGenerationPopupControllerImpl(
 
   int link_id = IDS_MANAGE_PASSWORDS_LINK;
   int help_text_id = IDS_PASSWORD_GENERATION_PROMPT;
-  const ProfileSyncService* sync_service =
+  const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
   if (password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service)) {

@@ -348,7 +348,7 @@ api::sessions::Device SessionsGetDevicesFunction::CreateDeviceModel(
 }
 
 bool SessionsGetDevicesFunction::RunSync() {
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(GetProfile());
   if (!(service && service->GetPreferredDataTypes().Has(syncer::SESSIONS))) {
     // Sync not enabled.
@@ -495,7 +495,7 @@ bool SessionsRestoreFunction::RestoreLocalSession(const SessionId& session_id,
 
 bool SessionsRestoreFunction::RestoreForeignSession(const SessionId& session_id,
                                                     Browser* browser) {
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(GetProfile());
   if (!(service && service->GetPreferredDataTypes().Has(syncer::SESSIONS))) {
     SetError(kSessionSyncError);

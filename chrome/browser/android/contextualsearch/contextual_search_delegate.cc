@@ -412,7 +412,7 @@ bool ContextualSearchDelegate::CanSendPageURL(
 
   // Check that the user has sync enabled, is logged in, and syncs their Chrome
   // History.
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   sync_driver::SyncPrefs sync_prefs(profile->GetPrefs());
   if (service == NULL || !service->CanSyncStart() ||

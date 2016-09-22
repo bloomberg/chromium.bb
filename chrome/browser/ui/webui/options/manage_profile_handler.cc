@@ -76,7 +76,7 @@ ManageProfileHandler::ManageProfileHandler()
 }
 
 ManageProfileHandler::~ManageProfileHandler() {
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
   // Sync may be disabled in tests.
   if (service)
@@ -151,7 +151,7 @@ void ManageProfileHandler::InitializeHandler() {
       prefs::kSupervisedUserCreationAllowed,
       base::Bind(&ManageProfileHandler::OnCreateSupervisedUserPrefChange,
                  base::Unretained(this)));
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   // Sync may be disabled for tests.
   if (service)
@@ -474,8 +474,8 @@ void ManageProfileHandler::RequestCreateProfileUpdate(
       SigninManagerFactory::GetForProfile(profile);
   base::string16 username =
       base::UTF8ToUTF16(manager->GetAuthenticatedAccountInfo().email);
-  ProfileSyncService* service =
-     ProfileSyncServiceFactory::GetForProfile(profile);
+  browser_sync::ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
   GoogleServiceAuthError::State state = GoogleServiceAuthError::NONE;
 
   // |service| might be null if Sync is disabled from the command line.

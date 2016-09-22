@@ -6,6 +6,8 @@
 
 #include <utility>
 
+namespace browser_sync {
+
 syncer::TestIdFactory* TestProfileSyncService::id_factory() {
   return &id_factory_;
 }
@@ -30,3 +32,5 @@ void TestProfileSyncService::OnConfigureDone(
 syncer::UserShare* TestProfileSyncService::GetUserShare() const {
   return backend_->GetUserShare();
 }
+
+}  // namespace browser_sync

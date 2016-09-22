@@ -21,21 +21,24 @@
 #include "components/sync/driver/sync_service_observer.h"
 
 class LoginUIService;
-class ProfileSyncService;
 class SigninManagerBase;
+
+namespace browser_sync {
+class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace content {
 class WebContents;
 class WebUI;
-}
+}  // namespace content
 
 namespace signin_metrics {
 enum class AccessPoint;
-}
+}  // namespace signin_metrics
 
 namespace sync_driver {
 class SyncSetupInProgressHandle;
-}
+}  // namespace sync_driver
 
 namespace settings {
 
@@ -124,7 +127,7 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Helper routine that gets the ProfileSyncService associated with the parent
   // profile.
-  ProfileSyncService* GetSyncService() const;
+  browser_sync::ProfileSyncService* GetSyncService() const;
 
   // Returns the LoginUIService for the parent profile.
   LoginUIService* GetLoginUIService() const;
@@ -195,7 +198,8 @@ class PeopleHandler : public SettingsPageUIHandler,
 
   // Manages observer lifetimes.
   ScopedObserver<SigninManagerBase, PeopleHandler> signin_observer_;
-  ScopedObserver<ProfileSyncService, PeopleHandler> sync_service_observer_;
+  ScopedObserver<browser_sync::ProfileSyncService, PeopleHandler>
+      sync_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PeopleHandler);
 };

@@ -94,6 +94,7 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+using browser_sync::ProfileSyncService;
 using content::BrowserThread;
 
 namespace switches {

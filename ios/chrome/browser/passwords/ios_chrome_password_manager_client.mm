@@ -54,7 +54,7 @@ IOSChromePasswordManagerClient::IOSChromePasswordManagerClient(
 IOSChromePasswordManagerClient::~IOSChromePasswordManagerClient() = default;
 
 PasswordSyncState IOSChromePasswordManagerClient::GetPasswordSyncState() const {
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(
           delegate_.browserState);
   return password_manager_util::GetPasswordSyncState(sync_service);

@@ -33,6 +33,7 @@
 #include "components/sync/engine/sync_string_conversions.h"
 #include "google_apis/gaia/gaia_constants.h"
 
+using browser_sync::ProfileSyncService;
 using syncer::SyncCycleSnapshot;
 
 namespace {

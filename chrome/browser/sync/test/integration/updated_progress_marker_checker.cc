@@ -8,7 +8,8 @@
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 UpdatedProgressMarkerChecker::UpdatedProgressMarkerChecker(
-    ProfileSyncService* service) : SingleClientStatusChangeChecker(service) {}
+    browser_sync::ProfileSyncService* service)
+    : SingleClientStatusChangeChecker(service) {}
 
 UpdatedProgressMarkerChecker::~UpdatedProgressMarkerChecker() {}
 

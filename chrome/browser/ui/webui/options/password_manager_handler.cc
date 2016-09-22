@@ -135,7 +135,7 @@ void PasswordManagerHandler::GetLocalizedValues(
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
 
-  const ProfileSyncService* sync_service =
+  const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(GetProfile());
   int title_id =
       password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service)

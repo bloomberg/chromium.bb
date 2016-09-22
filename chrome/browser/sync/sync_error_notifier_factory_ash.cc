@@ -39,7 +39,7 @@ KeyedService* SyncErrorNotifierFactory::BuildServiceInstanceFor(
     return NULL;
 
   Profile* profile = static_cast<Profile*>(context);
-  ProfileSyncService* profile_sync_service =
+  browser_sync::ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   if (!profile_sync_service)

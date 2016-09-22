@@ -79,7 +79,7 @@ class SyncGlobalErrorTest : public BrowserWithTestWindowTest {
 
 // Utility function to test that SyncGlobalError behaves correctly for the given
 // error condition.
-void VerifySyncGlobalErrorResult(ProfileSyncServiceMock* service,
+void VerifySyncGlobalErrorResult(browser_sync::ProfileSyncServiceMock* service,
                                  FakeLoginUIService* login_ui_service,
                                  Browser* browser,
                                  SyncErrorController* error,
@@ -125,7 +125,7 @@ void VerifySyncGlobalErrorResult(ProfileSyncServiceMock* service,
 
 // Test that SyncGlobalError shows an error if a passphrase is required.
 TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
-  ProfileSyncServiceMock service(
+  browser_sync::ProfileSyncServiceMock service(
       CreateProfileSyncServiceParamsForTest(profile()));
 
   FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(

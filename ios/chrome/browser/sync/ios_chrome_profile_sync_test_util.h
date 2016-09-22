@@ -23,7 +23,8 @@ class BrowserState;
 
 // Helper method for constructing ProfileSyncService mocks. If |sync_client|
 // is null, a fresh one is created.
-ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
+browser_sync::ProfileSyncService::InitParams
+CreateProfileSyncServiceParamsForTest(
     std::unique_ptr<sync_driver::SyncClient> sync_client,
     ios::ChromeBrowserState* browser_state);
 

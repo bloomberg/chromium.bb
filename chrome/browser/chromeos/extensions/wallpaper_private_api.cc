@@ -368,7 +368,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetSyncSettingFunction::Run() {
   Profile* profile =  Profile::FromBrowserContext(browser_context());
-  ProfileSyncService* sync =
+  browser_sync::ProfileSyncService* sync =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetBoolean("syncThemes",

@@ -26,10 +26,11 @@ using syncer::ModelType;
 using testing::_;
 using testing::Return;
 
+namespace browser_sync {
+
 namespace {
 
-class SyncBackendHostForProfileSyncTest
-    : public browser_sync::SyncBackendHostImpl {
+class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
  public:
   SyncBackendHostForProfileSyncTest(
       const base::FilePath& temp_dir,
@@ -53,8 +54,7 @@ class SyncBackendHostForProfileSyncTest
       const base::Closure& retry_callback) override;
 
  protected:
-  void InitCore(
-      std::unique_ptr<browser_sync::DoInitializeOptions> options) override;
+  void InitCore(std::unique_ptr<DoInitializeOptions> options) override;
 
  private:
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
@@ -72,7 +72,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     const base::Closure& callback)
-    : browser_sync::SyncBackendHostImpl(
+    : SyncBackendHostImpl(
           "dummy_debug_name",
           sync_client,
           ui_thread,
@@ -84,10 +84,10 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 
 void SyncBackendHostForProfileSyncTest::InitCore(
-    std::unique_ptr<browser_sync::DoInitializeOptions> options) {
+    std::unique_ptr<DoInitializeOptions> options) {
   options->http_bridge_factory =
       std::unique_ptr<syncer::HttpPostProviderFactory>(
-          new browser_sync::TestHttpBridgeFactory());
+          new TestHttpBridgeFactory());
   options->sync_manager_factory.reset(
       new syncer::SyncManagerFactoryForProfileSyncTest(callback_));
   options->credentials.email = "testuser@gmail.com";
@@ -105,7 +105,7 @@ void SyncBackendHostForProfileSyncTest::InitCore(
           factory_switches,
           syncer::InternalComponentsFactory::STORAGE_IN_MEMORY, nullptr));
 
-  browser_sync::SyncBackendHostImpl::InitCore(std::move(options));
+  SyncBackendHostImpl::InitCore(std::move(options));
 }
 
 void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
@@ -234,3 +234,5 @@ bool CreateRootHelper::success() {
 void CreateRootHelper::CreateRootCallback() {
   success_ = test_->CreateRoot(model_type_);
 }
+
+}  // namespace browser_sync

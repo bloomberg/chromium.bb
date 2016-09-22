@@ -13,6 +13,8 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 
+namespace browser_sync {
+
 namespace {
 
 // Determines whether there are any typed URLs in a history backend.
@@ -43,8 +45,6 @@ class HasTypedURLsTask : public history::HistoryDBTask {
 };
 
 }  // namespace
-
-namespace sync_driver {
 
 SigninConfirmationHelper::SigninConfirmationHelper(
     history::HistoryService* history_service,
@@ -117,4 +117,4 @@ void SigninConfirmationHelper::ReturnResult(bool result) {
   }
 }
 
-}  // namespace sync_driver
+}  // namespace browser_sync

@@ -242,7 +242,7 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
 #endif
       url_request_context_(new net::TestURLRequestContextGetter(
           base::ThreadTaskRunnerHandle::Get())) {
-  browser_sync::RegisterPrefsForProfileSyncService(pref_service_.registry());
+  RegisterPrefsForProfileSyncService(pref_service_.registry());
   auth_service_.set_auto_post_fetch_response_on_message_loop(true);
   account_tracker_.Initialize(&signin_client_);
   signin_manager_.Initialize(&pref_service_);

@@ -7,12 +7,12 @@
 #include <vector>
 
 SingleClientStatusChangeChecker::SingleClientStatusChangeChecker(
-    ProfileSyncService* service)
-  : MultiClientStatusChangeChecker(
-      std::vector<ProfileSyncService*>(1, service)) {}
+    browser_sync::ProfileSyncService* service)
+    : MultiClientStatusChangeChecker(
+          std::vector<browser_sync::ProfileSyncService*>(1, service)) {}
 
 SingleClientStatusChangeChecker::~SingleClientStatusChangeChecker() {}
 
-ProfileSyncService* SingleClientStatusChangeChecker::service() {
+browser_sync::ProfileSyncService* SingleClientStatusChangeChecker::service() {
   return services()[0];
 }

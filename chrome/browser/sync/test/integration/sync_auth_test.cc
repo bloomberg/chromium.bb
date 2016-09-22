@@ -50,14 +50,14 @@ const char kMalformedOAuth2Token[] = "{ \"foo\": ";
 
 class TestForAuthError : public SingleClientStatusChangeChecker {
  public:
-  explicit TestForAuthError(ProfileSyncService* service);
+  explicit TestForAuthError(browser_sync::ProfileSyncService* service);
   ~TestForAuthError() override;
   bool IsExitConditionSatisfied() override;
   std::string GetDebugMessage() const override;
 };
 
-TestForAuthError::TestForAuthError(ProfileSyncService* service)
-  : SingleClientStatusChangeChecker(service) {}
+TestForAuthError::TestForAuthError(browser_sync::ProfileSyncService* service)
+    : SingleClientStatusChangeChecker(service) {}
 
 TestForAuthError::~TestForAuthError() {}
 

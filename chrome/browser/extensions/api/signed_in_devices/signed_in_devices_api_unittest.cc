@@ -138,8 +138,8 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
   EXPECT_NE(public_id3, public_id2);
 }
 
-class ProfileSyncServiceMockForExtensionTests:
-    public ProfileSyncServiceMock {
+class ProfileSyncServiceMockForExtensionTests
+    : public browser_sync::ProfileSyncServiceMock {
  public:
   explicit ProfileSyncServiceMockForExtensionTests(Profile* p)
       : ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(p)) {}

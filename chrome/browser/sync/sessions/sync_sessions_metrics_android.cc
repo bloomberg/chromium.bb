@@ -35,7 +35,7 @@ void RecordYoungestForeignTabAgeOnNTP(
   if (shouldInstrument) {
     Profile* profile = ProfileManager::GetActiveUserProfile();
     if (profile) {
-      ProfileSyncService* sync =
+      browser_sync::ProfileSyncService* sync =
           ProfileSyncServiceFactory::GetForProfile(profile);
       if (sync) {
         sync_sessions::SessionsSyncManager* sessions =

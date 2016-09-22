@@ -136,7 +136,7 @@ bool IsLocalOnlyResult(const BrowsingHistoryHandler::HistoryEntry& entry) {
 
 // Gets the name and type of a device for the given sync client ID.
 // |name| and |type| are out parameters.
-void GetDeviceNameAndType(const ProfileSyncService* sync_service,
+void GetDeviceNameAndType(const browser_sync::ProfileSyncService* sync_service,
                           const std::string& client_id,
                           std::string* name,
                           std::string* type) {
@@ -233,7 +233,7 @@ std::unique_ptr<base::DictionaryValue>
 BrowsingHistoryHandler::HistoryEntry::ToValue(
     BookmarkModel* bookmark_model,
     SupervisedUserService* supervised_user_service,
-    const ProfileSyncService* sync_service,
+    const browser_sync::ProfileSyncService* sync_service,
     bool limit_title_length) const {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   SetUrlAndTitle(result.get(), limit_title_length);
@@ -372,7 +372,7 @@ void BrowsingHistoryHandler::RegisterMessages() {
     // If |web_history| is not available, it means that the history sync is
     // disabled. Observe |sync_service| so that we can attach the listener
     // in case it gets enabled later.
-    ProfileSyncService* sync_service =
+    browser_sync::ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile);
     if (sync_service)
       sync_service_observer_.Add(sync_service);
@@ -767,7 +767,7 @@ void BrowsingHistoryHandler::ReturnResultsToFrontEnd() {
     supervised_user_service =
         SupervisedUserServiceFactory::GetForProfile(profile);
 #endif
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
   // Combine the local and remote results into |query_results_|, and remove

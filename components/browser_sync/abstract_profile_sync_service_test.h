@@ -19,11 +19,13 @@
 #include "components/sync/core/change_record.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class TestProfileSyncService;
-
 namespace syncer {
 struct UserShare;
 }  //  namespace syncer
+
+namespace browser_sync {
+
+class TestProfileSyncService;
 
 class ProfileSyncServiceTestHelper {
  public:
@@ -50,11 +52,10 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
  protected:
   // Creates a TestProfileSyncService instance based on
-  // |profile_sync_service_bundle_|, with start behavior
-  // browser_sync::AUTO_START. Passes |callback| down to
-  // SyncManagerForProfileSyncTest to be used by NotifyInitializationSuccess.
-  // |sync_client| is passed to the service. The created service is stored in
-  // |sync_service_|.
+  // |profile_sync_service_bundle_|, with start behavior AUTO_START. Passes
+  // |callback| down to SyncManagerForProfileSyncTest to be used by
+  // NotifyInitializationSuccess. |sync_client| is passed to the service. The
+  // created service is stored in |sync_service_|.
   void CreateSyncService(std::unique_ptr<sync_driver::SyncClient> sync_client,
                          const base::Closure& initialization_success_callback);
 
@@ -67,7 +68,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   // inheritance of its template arguments.
   base::Callback<sync_driver::SyncService*(void)> GetSyncServiceCallback();
 
-  browser_sync::ProfileSyncServiceBundle* profile_sync_service_bundle() {
+  ProfileSyncServiceBundle* profile_sync_service_bundle() {
     return &profile_sync_service_bundle_;
   }
 
@@ -76,7 +77,7 @@ class AbstractProfileSyncServiceTest : public testing::Test {
   base::Thread data_type_thread_;
 
   base::TestMessageLoop message_loop_;
-  browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
+  ProfileSyncServiceBundle profile_sync_service_bundle_;
   std::unique_ptr<TestProfileSyncService> sync_service_;
 
   base::ScopedTempDir temp_dir_;  // To pass to the backend host.
@@ -103,5 +104,7 @@ class CreateRootHelper {
 
   DISALLOW_COPY_AND_ASSIGN(CreateRootHelper);
 };
+
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_BROWSER_SYNC_ABSTRACT_PROFILE_SYNC_SERVICE_TEST_H_

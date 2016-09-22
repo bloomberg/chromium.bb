@@ -77,8 +77,6 @@ using base::ASCIIToUTF16;
 using base::Time;
 using base::TimeDelta;
 using base::WaitableEvent;
-using browser_sync::AutofillDataTypeController;
-using browser_sync::AutofillProfileDataTypeController;
 using syncer::AUTOFILL;
 using syncer::AUTOFILL_PROFILE;
 using syncer::BaseNode;
@@ -94,6 +92,8 @@ using testing::ElementsAre;
 using testing::Not;
 using testing::SetArgumentPointee;
 using testing::Return;
+
+namespace browser_sync {
 
 namespace {
 
@@ -424,7 +424,7 @@ class ProfileSyncServiceAutofillTest
 
     web_data_service_->StartSyncableService();
 
-    browser_sync::ProfileSyncServiceBundle::SyncClientBuilder builder(
+    ProfileSyncServiceBundle::SyncClientBuilder builder(
         profile_sync_service_bundle());
     builder.SetPersonalDataManager(personal_data_manager_.get());
     builder.SetSyncServiceCallback(GetSyncServiceCallback());
@@ -1470,3 +1470,5 @@ TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
              << sync_entries[i].key().value();
   }
 }
+
+}  // namespace browser_sync

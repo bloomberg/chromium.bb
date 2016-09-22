@@ -34,6 +34,8 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SetArgPointee;
 using ::testing::_;
+using browser_sync::ProfileSyncService;
+using browser_sync::ProfileSyncServiceMock;
 using content::BrowserThread;
 
 // A number of distinct states of the ProfileSyncService can be generated for

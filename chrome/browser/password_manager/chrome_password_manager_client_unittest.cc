@@ -44,6 +44,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using browser_sync::ProfileSyncServiceMock;
 using content::BrowserContext;
 using content::WebContents;
 using sessions::GetPasswordStateFromNavigation;

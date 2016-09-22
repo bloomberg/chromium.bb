@@ -574,7 +574,7 @@ bool PermissionUmaUtil::IsOptedIntoPermissionActionReporting(Profile* profile) {
   if (!profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
     return false;
 
-  ProfileSyncService* profile_sync_service =
+  browser_sync::ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   // Do not report if profile can't get a profile sync service or sync cannot

@@ -20,8 +20,11 @@
 #include "components/sync/js/js_event_handler.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class ProfileSyncService;
 class SigninManagerBase;
+
+namespace browser_sync {
+class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace sync_driver {
 class SyncService;
@@ -106,7 +109,7 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // onAboutInfoUpdated event.
   void SendAboutInfo();
 
-  ProfileSyncService* GetProfileSyncService();
+  browser_sync::ProfileSyncService* GetProfileSyncService();
 
   base::WeakPtr<syncer::JsController> js_controller_;
 

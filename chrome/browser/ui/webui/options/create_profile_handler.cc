@@ -330,12 +330,13 @@ bool CreateProfileHandler::ProcessSupervisedCreateProfileArgs(
       // If sync is not yet fully initialized, the creation may take extra time,
       // so show a message. Import doesn't wait for an acknowledgment, so it
       // won't have the same potential delay.
-      ProfileSyncService* sync_service =
+      browser_sync::ProfileSyncService* sync_service =
           ProfileSyncServiceFactory::GetInstance()->GetForProfile(
               Profile::FromWebUI(web_ui()));
-      ProfileSyncService::SyncStatusSummary status =
+      browser_sync::ProfileSyncService::SyncStatusSummary status =
           sync_service->QuerySyncStatusSummary();
-      if (status == ProfileSyncService::DATATYPES_NOT_INITIALIZED) {
+      if (status ==
+          browser_sync::ProfileSyncService::DATATYPES_NOT_INITIALIZED) {
         ShowProfileCreationWarning(l10n_util::GetStringUTF16(
             IDS_PROFILES_CREATE_SUPERVISED_JUST_SIGNED_IN));
       }

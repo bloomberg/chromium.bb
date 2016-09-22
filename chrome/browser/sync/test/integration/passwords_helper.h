@@ -45,9 +45,10 @@ void RemoveLogins(password_manager::PasswordStore* store);
 
 // Sets the cryptographer's encryption passphrase for the profile at index
 // |index| to |passphrase|, and passphrase type |type|.
-void SetEncryptionPassphrase(int index,
-                             const std::string& passphrase,
-                             ProfileSyncService::PassphraseType type);
+void SetEncryptionPassphrase(
+    int index,
+    const std::string& passphrase,
+    browser_sync::ProfileSyncService::PassphraseType type);
 
 // Sets the cryptographer's decryption passphrase for the profile at index
 // |index| to |passphrase|. Returns false if the operation failed, and true

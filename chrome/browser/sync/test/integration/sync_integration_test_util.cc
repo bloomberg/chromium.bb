@@ -41,7 +41,7 @@ class ServerCountMatchStatusChecker
 
 class PassphraseRequiredChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit PassphraseRequiredChecker(ProfileSyncService* service)
+  explicit PassphraseRequiredChecker(browser_sync::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -53,7 +53,7 @@ class PassphraseRequiredChecker : public SingleClientStatusChangeChecker {
 
 class PassphraseAcceptedChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit PassphraseAcceptedChecker(ProfileSyncService* service)
+  explicit PassphraseAcceptedChecker(browser_sync::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -68,19 +68,19 @@ class PassphraseAcceptedChecker : public SingleClientStatusChangeChecker {
 
 namespace sync_integration_test_util {
 
-bool AwaitPassphraseRequired(ProfileSyncService* service) {
+bool AwaitPassphraseRequired(browser_sync::ProfileSyncService* service) {
   PassphraseRequiredChecker checker(service);
   checker.Wait();
   return !checker.TimedOut();
 }
 
-bool AwaitPassphraseAccepted(ProfileSyncService* service) {
+bool AwaitPassphraseAccepted(browser_sync::ProfileSyncService* service) {
   PassphraseAcceptedChecker checker(service);
   checker.Wait();
   return !checker.TimedOut();
 }
 
-bool AwaitCommitActivityCompletion(ProfileSyncService* service) {
+bool AwaitCommitActivityCompletion(browser_sync::ProfileSyncService* service) {
   UpdatedProgressMarkerChecker checker(service);
   checker.Wait();
   return !checker.TimedOut();

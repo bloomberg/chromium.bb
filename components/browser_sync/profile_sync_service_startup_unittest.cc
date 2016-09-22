@@ -33,7 +33,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::SyncBackendHostMock;
 using sync_driver::DataTypeManager;
 using sync_driver::DataTypeManagerMock;
 using testing::_;
@@ -41,6 +40,8 @@ using testing::AnyNumber;
 using testing::DoAll;
 using testing::Mock;
 using testing::Return;
+
+namespace browser_sync {
 
 namespace {
 
@@ -88,7 +89,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
   void CreateSyncService(ProfileSyncService::StartBehavior start_behavior) {
     component_factory_ = profile_sync_service_bundle_.component_factory();
-    browser_sync::ProfileSyncServiceBundle::SyncClientBuilder builder(
+    ProfileSyncServiceBundle::SyncClientBuilder builder(
         &profile_sync_service_bundle_);
     ProfileSyncService::InitParams init_params =
         profile_sync_service_bundle_.CreateBasicInitParams(start_behavior,
@@ -139,9 +140,8 @@ class ProfileSyncServiceStartupTest : public testing::Test {
     return data_type_manager;
   }
 
-  browser_sync::SyncBackendHostMock* SetUpSyncBackendHost() {
-    browser_sync::SyncBackendHostMock* sync_backend_host =
-        new browser_sync::SyncBackendHostMock();
+  SyncBackendHostMock* SetUpSyncBackendHost() {
+    SyncBackendHostMock* sync_backend_host = new SyncBackendHostMock();
     EXPECT_CALL(*component_factory_, CreateSyncBackendHost(_, _, _, _))
         .WillOnce(Return(sync_backend_host));
     return sync_backend_host;
@@ -152,7 +152,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
+  ProfileSyncServiceBundle profile_sync_service_bundle_;
   std::unique_ptr<ProfileSyncService> sync_service_;
   SyncServiceObserverMock observer_;
   sync_driver::DataTypeStatusTable data_type_status_table_;
@@ -479,3 +479,5 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   sync_blocker.reset();
   EXPECT_FALSE(sync_service_->IsSyncActive());
 }
+
+}  // namespace browser_sync

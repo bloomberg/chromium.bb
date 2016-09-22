@@ -49,7 +49,8 @@ class MockWebContentsObserver : public content::WebContentsObserver {
                void(const GURL&, content::ReloadType));
 };
 
-class OneClickTestProfileSyncService : public TestProfileSyncService {
+class OneClickTestProfileSyncService
+    : public browser_sync::TestProfileSyncService {
  public:
   ~OneClickTestProfileSyncService() override {}
 
@@ -76,9 +77,8 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
   }
 
  private:
-  explicit OneClickTestProfileSyncService(
-      ProfileSyncService::InitParams init_params)
-      : TestProfileSyncService(std::move(init_params)),
+  explicit OneClickTestProfileSyncService(InitParams init_params)
+      : browser_sync::TestProfileSyncService(std::move(init_params)),
         first_setup_in_progress_(false),
         sync_active_(false) {}
 
@@ -126,10 +126,9 @@ class OneClickSigninSyncObserverTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     web_contents_observer_.reset(new MockWebContentsObserver(web_contents()));
-    sync_service_ =
-        static_cast<OneClickTestProfileSyncService*>(
-            ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-                profile(), OneClickTestProfileSyncService::Build));
+    sync_service_ = static_cast<OneClickTestProfileSyncService*>(
+        ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile(), OneClickTestProfileSyncService::Build));
   }
 
   void TearDown() override {
@@ -173,10 +172,9 @@ class OneClickSigninSyncObserverTest : public ChromeRenderViewHostTestHarness {
 // observer immediately loads the continue URL.
 TEST_F(OneClickSigninSyncObserverTest, NoSyncService_RedirectsImmediately) {
   // Simulate disabling Sync.
-  sync_service_ =
-      static_cast<OneClickTestProfileSyncService*>(
-          ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-              profile(), BuildNullService));
+  sync_service_ = static_cast<OneClickTestProfileSyncService*>(
+      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), BuildNullService));
 
   // The observer should immediately redirect to the continue URL.
   EXPECT_CALL(*web_contents_observer_, DidStartNavigationToPendingEntry(_, _));

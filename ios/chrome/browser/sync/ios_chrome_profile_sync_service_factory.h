@@ -13,23 +13,25 @@
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
-}
+}  // namespace base
+
+namespace browser_sync {
+class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace ios {
 class ChromeBrowserState;
-}
-
-class ProfileSyncService;
+}  // namespace ios
 
 // Singleton that owns all ProfileSyncService and associates them with
 // ios::ChromeBrowserState.
 class IOSChromeProfileSyncServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
-  static ProfileSyncService* GetForBrowserState(
+  static browser_sync::ProfileSyncService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
-  static ProfileSyncService* GetForBrowserStateIfExists(
+  static browser_sync::ProfileSyncService* GetForBrowserStateIfExists(
       ios::ChromeBrowserState* browser_state);
 
   static IOSChromeProfileSyncServiceFactory* GetInstance();

@@ -186,8 +186,9 @@ NTPUserDataLogger::NTPUserDataLogger(content::WebContents* contents)
   // been used to populate the page, and we want to learn about its state when
   // the NTP is being generated.
   if (contents) {
-    ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(contents->GetBrowserContext()));
+    browser_sync::ProfileSyncService* sync =
+        ProfileSyncServiceFactory::GetForProfile(
+            Profile::FromBrowserContext(contents->GetBrowserContext()));
     if (sync) {
       sync_sessions::SessionsSyncManager* sessions =
           static_cast<sync_sessions::SessionsSyncManager*>(

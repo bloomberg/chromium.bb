@@ -44,6 +44,8 @@ using ::testing::Mock;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::Values;
+using browser_sync::ProfileSyncService;
+using browser_sync::ProfileSyncServiceMock;
 
 typedef GoogleServiceAuthError AuthError;
 

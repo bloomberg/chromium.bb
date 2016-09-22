@@ -100,7 +100,6 @@
 #include "components/sync/core/read_transaction.h"
 #endif
 
-using browser_sync::SyncBackendHost;
 using sync_driver::ChangeProcessor;
 using sync_driver::DataTypeController;
 using sync_driver::DataTypeManager;
@@ -120,6 +119,8 @@ using syncer::SyncProtocolError;
 using syncer::WeakHandle;
 using syncer_v2::ModelTypeStore;
 using syncer_v2::SharedModelTypeProcessor;
+
+namespace browser_sync {
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -270,7 +271,7 @@ void ProfileSyncService::Initialize() {
 
   // We don't pass StartupController an Unretained reference to future-proof
   // against the controller impl changing to post tasks.
-  startup_controller_.reset(new browser_sync::StartupController(
+  startup_controller_.reset(new StartupController(
       &sync_prefs_,
       base::Bind(&ProfileSyncService::CanBackendStart, base::Unretained(this)),
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
@@ -279,10 +280,9 @@ void ProfileSyncService::Initialize() {
       sync_client_->GetSyncSessionsClient()->GetLocalSessionEventRouter());
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
-  sync_stopped_reporter_.reset(new browser_sync::SyncStoppedReporter(
+  sync_stopped_reporter_.reset(new SyncStoppedReporter(
       sync_service_url_, local_device_->GetSyncUserAgent(),
-      url_request_context_,
-      browser_sync::SyncStoppedReporter::ResultCallback()));
+      url_request_context_, SyncStoppedReporter::ResultCallback()));
   sessions_sync_manager_.reset(new SessionsSyncManager(
       sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
       std::move(router),
@@ -524,7 +524,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       std::unique_ptr<syncer::SyncManagerFactory>(
           new syncer::SyncManagerFactory()),
       MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr()),
-      base::Bind(browser_sync::ChromeReportUnrecoverableError, channel_),
+      base::Bind(ChromeReportUnrecoverableError, channel_),
       http_post_provider_factory_getter, std::move(saved_nigori_state_));
 }
 
@@ -538,8 +538,8 @@ bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
 }
 
 void ProfileSyncService::OnProtocolEvent(const syncer::ProtocolEvent& event) {
-  FOR_EACH_OBSERVER(browser_sync::ProtocolEventObserver,
-                    protocol_event_observers_, OnProtocolEvent(event));
+  FOR_EACH_OBSERVER(ProtocolEventObserver, protocol_event_observers_,
+                    OnProtocolEvent(event));
 }
 
 void ProfileSyncService::OnDirectoryTypeCommitCounterUpdated(
@@ -1387,8 +1387,7 @@ void ProfileSyncService::OnConfigureDone(
     backend_->EnableEncryptEverything();
   NotifyObservers();
 
-  if (migrator_.get() &&
-      migrator_->state() != browser_sync::BackendMigrator::IDLE) {
+  if (migrator_.get() && migrator_->state() != BackendMigrator::IDLE) {
     // Migration in progress.  Let the migrator know we just finished
     // configuring something.  It will be up to the migrator to call
     // StartSyncingWithServer() if migration is now finished.
@@ -1762,7 +1761,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
             this));
 
     // We create the migrator at the same time.
-    migrator_.reset(new browser_sync::BackendMigrator(
+    migrator_.reset(new BackendMigrator(
         debug_identifier_, GetUserShare(), this, data_type_manager_.get(),
         base::Bind(&ProfileSyncService::StartSyncingWithServer,
                    base::Unretained(this))));
@@ -1808,7 +1807,7 @@ bool ProfileSyncService::HasUnsyncedItems() const {
   return false;
 }
 
-browser_sync::BackendMigrator* ProfileSyncService::GetBackendMigratorForTest() {
+BackendMigrator* ProfileSyncService::GetBackendMigratorForTest() {
   return migrator_.get();
 }
 
@@ -2116,7 +2115,7 @@ void ProfileSyncService::RemoveObserver(
 }
 
 void ProfileSyncService::AddProtocolEventObserver(
-    browser_sync::ProtocolEventObserver* observer) {
+    ProtocolEventObserver* observer) {
   protocol_event_observers_.AddObserver(observer);
   if (HasSyncingBackend()) {
     backend_->RequestBufferedProtocolEventsAndEnableForwarding();
@@ -2124,7 +2123,7 @@ void ProfileSyncService::AddProtocolEventObserver(
 }
 
 void ProfileSyncService::RemoveProtocolEventObserver(
-    browser_sync::ProtocolEventObserver* observer) {
+    ProtocolEventObserver* observer) {
   protocol_event_observers_.RemoveObserver(observer);
   if (HasSyncingBackend() &&
       !protocol_event_observers_.might_have_observers()) {
@@ -2510,3 +2509,5 @@ void ProfileSyncService::OnSetupInProgressHandleDestroyed() {
     ReconfigureDatatypeManager();
   NotifyObservers();
 }
+
+}  // namespace browser_sync

@@ -48,6 +48,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
+using browser_sync::ProfileSyncService;
 using content::BrowserThread;
 
 namespace {
@@ -83,17 +84,17 @@ ScopedJavaLocalRef<jintArray> ModelTypeSetToJavaIntArray(
 }  // namespace
 
 ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
-    : profile_(NULL),
-      sync_service_(NULL),
+    : profile_(nullptr),
+      sync_service_(nullptr),
       weak_java_profile_sync_service_(env, obj) {
-  if (g_browser_process == NULL ||
-      g_browser_process->profile_manager() == NULL) {
+  if (g_browser_process == nullptr ||
+      g_browser_process->profile_manager() == nullptr) {
     NOTREACHED() << "Browser process or profile manager not initialized";
     return;
   }
 
   profile_ = ProfileManager::GetActiveUserProfile();
-  if (profile_ == NULL) {
+  if (profile_ == nullptr) {
     NOTREACHED() << "Sync Init: Profile not found.";
     return;
   }

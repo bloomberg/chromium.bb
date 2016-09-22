@@ -23,18 +23,21 @@
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
 #include "url/gurl.h"
 
-class ProfileSyncService;
 class SupervisedUserService;
 
 namespace bookmarks {
 class BookmarkModel;
-}
+}  // namespace bookmarks
+
+namespace browser_sync {
+class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace history {
 class HistoryService;
 struct QueryOptions;
 class QueryResults;
-}
+}  // namespace history
 
 // The handler for Javascript messages related to the "history" view.
 class BrowsingHistoryHandler : public web::WebUIIOSMessageHandler,
@@ -72,7 +75,7 @@ class BrowsingHistoryHandler : public web::WebUIIOSMessageHandler,
     std::unique_ptr<base::DictionaryValue> ToValue(
         bookmarks::BookmarkModel* bookmark_model,
         SupervisedUserService* supervised_user_service,
-        const ProfileSyncService* sync_service) const;
+        const browser_sync::ProfileSyncService* sync_service) const;
 
     // Comparison function for sorting HistoryEntries from newest to oldest.
     static bool SortByTimeDescending(const HistoryEntry& entry1,

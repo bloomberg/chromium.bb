@@ -20,7 +20,8 @@
 // of this checker.  Please do not use it in new tests.
 class UpdatedProgressMarkerChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit UpdatedProgressMarkerChecker(ProfileSyncService* service);
+  explicit UpdatedProgressMarkerChecker(
+      browser_sync::ProfileSyncService* service);
   ~UpdatedProgressMarkerChecker() override;
 
   bool IsExitConditionSatisfied() override;

@@ -22,6 +22,8 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using browser_sync::ProfileSyncServiceMock;
+
 namespace {
 constexpr char kTestingGaiaId[] = "gaia_id";
 constexpr char kTestingUsername[] = "fake_username";
@@ -55,7 +57,7 @@ class PermissionUmaUtilTest : public testing::Test {
     preferences->SetBoolean(prefs::kSafeBrowsingEnabled, enabled);
   }
 
-  ProfileSyncService* GetProfileSyncService() {
+  browser_sync::ProfileSyncService* GetProfileSyncService() {
     return ProfileSyncServiceFactory::GetForProfile(profile());
   }
 

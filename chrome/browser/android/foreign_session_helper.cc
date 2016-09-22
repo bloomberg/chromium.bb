@@ -40,8 +40,8 @@ using sync_sessions::SyncedSession;
 namespace {
 
 OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
-      GetForProfile(profile);
+  browser_sync::ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
   // Only return the delegate if it exists and it is done syncing sessions.
   if (!service || !service->IsSyncActive())
@@ -145,8 +145,8 @@ static jlong Init(JNIEnv* env,
 
 ForeignSessionHelper::ForeignSessionHelper(Profile* profile)
     : profile_(profile), scoped_observer_(this) {
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
-      GetForProfile(profile);
+  browser_sync::ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 
   // NOTE: The ProfileSyncService can be null in tests.
   if (service)
@@ -164,16 +164,16 @@ void ForeignSessionHelper::Destroy(JNIEnv* env,
 jboolean ForeignSessionHelper::IsTabSyncEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
-      GetForProfile(profile_);
+  browser_sync::ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   return service && service->GetActiveDataTypes().Has(syncer::PROXY_TABS);
 }
 
 void ForeignSessionHelper::TriggerSessionSync(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
-      GetForProfile(profile_);
+  browser_sync::ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   if (!service)
     return;
 

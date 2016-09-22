@@ -30,7 +30,8 @@ void StartSyncOnUIThread(const base::FilePath& profile,
     return;
   }
 
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetForProfile(p);
+  browser_sync::ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(p);
   if (!service) {
     DVLOG(2) << "No ProfileSyncService for profile, can't start sync.";
     return;

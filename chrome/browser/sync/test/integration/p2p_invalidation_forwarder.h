@@ -9,11 +9,13 @@
 #include "base/macros.h"
 #include "components/sync/driver/sync_service_observer.h"
 
+namespace browser_sync {
 class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace invalidation {
 class P2PInvalidationService;
-};
+}  // namespace invalidation
 
 // This class links the ProfileSyncService to a P2PInvalidationService.
 //
@@ -25,7 +27,7 @@ class P2PInvalidationService;
 class P2PInvalidationForwarder : public sync_driver::SyncServiceObserver {
  public:
   P2PInvalidationForwarder(
-      ProfileSyncService* sync_service,
+      browser_sync::ProfileSyncService* sync_service,
       invalidation::P2PInvalidationService* invalidation_service);
   ~P2PInvalidationForwarder() override;
 
@@ -34,7 +36,7 @@ class P2PInvalidationForwarder : public sync_driver::SyncServiceObserver {
   void OnSyncCycleCompleted() override;
 
  private:
-  ProfileSyncService* sync_service_;
+  browser_sync::ProfileSyncService* sync_service_;
   invalidation::P2PInvalidationService* invalidation_service_;
 
   DISALLOW_COPY_AND_ASSIGN(P2PInvalidationForwarder);

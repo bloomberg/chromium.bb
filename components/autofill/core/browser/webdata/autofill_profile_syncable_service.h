@@ -27,7 +27,9 @@
 #include "components/sync/api/syncable_service.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 
+namespace browser_sync {
 class ProfileSyncServiceAutofillTest;
+}  // namespace browser_sync
 
 namespace autofill {
 
@@ -117,7 +119,7 @@ class AutofillProfileSyncableService
   static syncer::SyncData CreateData(const AutofillProfile& profile);
 
  private:
-  friend class ::ProfileSyncServiceAutofillTest;
+  friend class browser_sync::ProfileSyncServiceAutofillTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,
                            UpdateField);
   FRIEND_TEST_ALL_PREFIXES(AutofillProfileSyncableServiceTest,

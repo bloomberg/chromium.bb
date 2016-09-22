@@ -84,7 +84,7 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   ScopedVector<browsing_data::BrowsingDataCounter> counters_;
 
   // Informs us whether the user is syncing their data.
-  ProfileSyncService* sync_service_;
+  browser_sync::ProfileSyncService* sync_service_;
 
   // Whether we should show a notice about other forms of browsing history.
   bool should_show_history_notice_;

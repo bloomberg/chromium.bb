@@ -33,8 +33,8 @@ class SyncExponentialBackoffTest : public SyncTest {
 // exponential backoff after it encounters an error.
 class ExponentialBackoffChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit ExponentialBackoffChecker(ProfileSyncService* pss)
-        : SingleClientStatusChangeChecker(pss) {
+  explicit ExponentialBackoffChecker(browser_sync::ProfileSyncService* pss)
+      : SingleClientStatusChangeChecker(pss) {
     const SyncCycleSnapshot& snap = service()->GetLastCycleSnapshot();
     retry_verifier_.Initialize(snap);
   }

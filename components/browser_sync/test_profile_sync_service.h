@@ -16,6 +16,8 @@ namespace sync_driver {
 class SyncPrefs;
 }  // namespace sync_driver
 
+namespace browser_sync {
+
 class TestProfileSyncService : public ProfileSyncService {
  public:
   explicit TestProfileSyncService(InitParams init_params);
@@ -46,5 +48,7 @@ class TestProfileSyncService : public ProfileSyncService {
 
   DISALLOW_COPY_AND_ASSIGN(TestProfileSyncService);
 };
+
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_BROWSER_SYNC_TEST_PROFILE_SYNC_SERVICE_H_

@@ -34,7 +34,7 @@ class SyncStartupTrackerTest : public testing::Test {
   }
   void SetUp() override {
     profile_.reset(new TestingProfile());
-    mock_pss_ = static_cast<ProfileSyncServiceMock*>(
+    mock_pss_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile_.get(), BuildMockProfileSyncService));
 
@@ -64,7 +64,7 @@ class SyncStartupTrackerTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   GoogleServiceAuthError no_error_;
   std::unique_ptr<TestingProfile> profile_;
-  ProfileSyncServiceMock* mock_pss_;
+  browser_sync::ProfileSyncServiceMock* mock_pss_;
   MockObserver observer_;
 };
 

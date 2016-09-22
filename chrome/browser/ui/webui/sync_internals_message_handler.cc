@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
 
+using browser_sync::ProfileSyncService;
 using syncer::JsEventDetails;
 using syncer::ModelTypeSet;
 using syncer::WeakHandle;

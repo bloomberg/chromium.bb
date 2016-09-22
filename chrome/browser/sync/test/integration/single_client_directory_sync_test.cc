@@ -49,7 +49,8 @@ bool WaitForExistingTasksOnLoop(base::MessageLoop* loop) {
 // A status change checker that waits for an unrecoverable sync error to occur.
 class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncUnrecoverableErrorChecker(ProfileSyncService* service)
+  explicit SyncUnrecoverableErrorChecker(
+      browser_sync::ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
@@ -64,10 +65,10 @@ class SyncUnrecoverableErrorChecker : public SingleClientStatusChangeChecker {
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
                        StopThenDisableDeletesDirectory) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ProfileSyncService* sync_service = GetSyncService(0);
+  browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
   base::FilePath directory_path = sync_service->GetDirectoryPathForTest();
   ASSERT_TRUE(base::DirectoryExists(directory_path));
-  sync_service->RequestStop(ProfileSyncService::CLEAR_DATA);
+  sync_service->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
 
   // Wait for StartupController::StartUp()'s tasks to finish.
   base::RunLoop run_loop;
@@ -96,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
   // Flush the directory to the backing store and wait until the flush
   // completes.
-  ProfileSyncService* sync_service = GetSyncService(0);
+  browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
   sync_service->FlushDirectory();
   base::MessageLoop* sync_loop = sync_service->GetSyncLoopForTest();
   ASSERT_TRUE(WaitForExistingTasksOnLoop(sync_loop));

@@ -16,20 +16,23 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 class LoginUIService;
-class ProfileSyncService;
 class SigninManagerBase;
+
+namespace browser_sync {
+class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace content {
 class WebContents;
-}
+}  // namespace content
 
 namespace signin_metrics {
 enum class AccessPoint;
-}
+}  // namespace signin_metrics
 
 namespace sync_driver {
 class SyncSetupInProgressHandle;
-}
+}  // namespace sync_driver
 
 class SyncSetupHandler : public options::OptionsPageUIHandler,
                          public SyncStartupTracker::Observer,
@@ -97,7 +100,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
 
   // Helper routine that gets the ProfileSyncService associated with the parent
   // profile.
-  ProfileSyncService* GetSyncService() const;
+  browser_sync::ProfileSyncService* GetSyncService() const;
 
   // Returns the LoginUIService for the parent profile.
   LoginUIService* GetLoginUIService() const;

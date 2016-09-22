@@ -43,7 +43,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using browser_sync::TypedUrlDataTypeController;
 using history::HistoryBackend;
 using history::HistoryBackendNotifier;
 using history::TypedUrlSyncableService;
@@ -51,6 +50,8 @@ using testing::DoAll;
 using testing::Return;
 using testing::SetArgumentPointee;
 using testing::_;
+
+namespace browser_sync {
 
 namespace {
 
@@ -185,7 +186,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     history_service_->set_task_runner(data_type_thread()->task_runner());
     history_service_->set_backend(history_backend_);
 
-    browser_sync::ProfileSyncServiceBundle::SyncClientBuilder builder(
+    ProfileSyncServiceBundle::SyncClientBuilder builder(
         profile_sync_service_bundle());
     builder.SetHistoryService(history_service_.get());
     builder.SetSyncServiceCallback(GetSyncServiceCallback());
@@ -1050,3 +1051,5 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreModificationWithoutValidVisit) {
   // The change should be ignored.
   ASSERT_EQ(0U, new_sync_entries.size());
 }
+
+}  // namespace browser_sync

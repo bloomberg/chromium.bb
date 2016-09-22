@@ -13,20 +13,23 @@ template <typename T>
 struct DefaultSingletonTraits;
 }
 
+namespace browser_sync {
+class ProfileSyncService;
+}  // namespace browser_sync
+
 namespace sync_driver {
 class SyncClient;
 class SyncService;
 }
 
 class Profile;
-class ProfileSyncService;
 
 class ProfileSyncServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
   typedef base::Callback<std::unique_ptr<sync_driver::SyncClient>(Profile*)>
       SyncClientFactory;
 
-  static ProfileSyncService* GetForProfile(Profile* profile);
+  static browser_sync::ProfileSyncService* GetForProfile(Profile* profile);
   static bool HasProfileSyncService(Profile* profile);
 
   // Convenience method that returns the ProfileSyncService as a

@@ -190,7 +190,7 @@ void SupervisedUserService::Init() {
       base::Bind(&SupervisedUserService::OnForceSessionSyncChanged,
                  base::Unretained(this)));
 
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   // Can be null in tests.
   if (sync_service)
@@ -586,7 +586,7 @@ void SupervisedUserService::SetActive(bool active) {
     theme_service->UseDefaultTheme();
 #endif
 
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   sync_service->SetEncryptEverythingAllowed(!active_);
 
@@ -719,7 +719,7 @@ void SupervisedUserService::FinishSetupSyncWhenReady() {
     return;
 
   // Continue in FinishSetupSync() once the Sync backend has been initialized.
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (service->IsBackendInitialized()) {
     FinishSetupSync();
@@ -730,7 +730,7 @@ void SupervisedUserService::FinishSetupSyncWhenReady() {
 }
 
 void SupervisedUserService::FinishSetupSync() {
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   DCHECK(service->IsBackendInitialized());
 
@@ -974,7 +974,7 @@ void SupervisedUserService::Shutdown() {
   SetActive(false);
   sync_blocker_.reset();
 
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
 
   // Can be null in tests.
@@ -1252,7 +1252,7 @@ syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
 
 #if !defined(OS_ANDROID)
 void SupervisedUserService::OnStateChanged() {
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (waiting_for_sync_initialization_ && service->IsBackendInitialized()) {
     waiting_for_sync_initialization_ = false;

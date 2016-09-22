@@ -98,8 +98,9 @@ class SearchTabHelperTest : public ChromeRenderViewHostTestHarness {
 
   // Configure the account to |sync_history| or not.
   void SetHistorySync(bool sync_history) {
-    ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
+    browser_sync::ProfileSyncServiceMock* sync_service =
+        static_cast<browser_sync::ProfileSyncServiceMock*>(
+            ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile()));
 
     syncer::ModelTypeSet result;
     if (sync_history) {

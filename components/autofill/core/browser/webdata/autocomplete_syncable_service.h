@@ -25,16 +25,18 @@
 #include "components/sync/api/sync_error.h"
 #include "components/sync/api/syncable_service.h"
 
+namespace browser_sync {
 class FakeServerUpdater;
 class ProfileSyncServiceAutofillTest;
+}  // namespace browser_sync
 
 namespace syncer {
 class SyncErrorFactory;
-}
+}  // namespace syncer
 
 namespace sync_pb {
 class AutofillSpecifics;
-}
+}  // namespace sync_pb
 
 namespace autofill {
 
@@ -98,8 +100,8 @@ class AutocompleteSyncableService
   virtual bool SaveChangesToWebData(const std::vector<AutofillEntry>& entries);
 
  private:
-  friend class ::FakeServerUpdater;
-  friend class ::ProfileSyncServiceAutofillTest;
+  friend class browser_sync::FakeServerUpdater;
+  friend class browser_sync::ProfileSyncServiceAutofillTest;
 
   // This is a helper map used only in Merge/Process* functions. The lifetime
   // of the iterator is longer than the map object. The bool in the pair is used

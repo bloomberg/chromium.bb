@@ -62,6 +62,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #endif
 
+using browser_sync::ProfileSyncService;
 using content::WebContents;
 using l10n_util::GetStringFUTF16;
 using l10n_util::GetStringUTF16;

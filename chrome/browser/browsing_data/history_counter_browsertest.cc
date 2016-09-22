@@ -383,7 +383,8 @@ IN_PROC_BROWSER_TEST_F(HistoryCounterTest, DISABLED_RestartOnSyncChange) {
   // Set up the Sync client.
   ASSERT_TRUE(SetupClients());
   static const int kFirstProfileIndex = 0;
-  ProfileSyncService* sync_service = GetSyncService(kFirstProfileIndex);
+  browser_sync::ProfileSyncService* sync_service =
+      GetSyncService(kFirstProfileIndex);
   Profile* profile = GetProfile(kFirstProfileIndex);
 
   // Set up the fake web history service and the counter.

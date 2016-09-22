@@ -19,6 +19,8 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+namespace browser_sync {
+
 class ProfileSyncServiceMock : public ProfileSyncService {
  public:
   explicit ProfileSyncServiceMock(InitParams init_params);
@@ -64,8 +66,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_CONST_METHOD0(GetRegisteredDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD0(GetLastCycleSnapshot, syncer::SyncCycleSnapshot());
 
-  MOCK_METHOD1(QueryDetailedSyncStatus,
-               bool(browser_sync::SyncBackendHost::Status* result));
+  MOCK_METHOD1(QueryDetailedSyncStatus, bool(SyncBackendHost::Status* result));
   MOCK_CONST_METHOD0(GetAuthError, const GoogleServiceAuthError&());
   MOCK_CONST_METHOD0(IsFirstSetupInProgress, bool());
   MOCK_CONST_METHOD0(GetLastSyncedTimeString, base::string16());
@@ -97,5 +98,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
 
   MOCK_METHOD0(OnSetupInProgressHandleDestroyed, void());
 };
+
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_MOCK_H_

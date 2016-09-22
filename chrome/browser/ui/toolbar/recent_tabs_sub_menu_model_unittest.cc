@@ -166,7 +166,7 @@ class RecentTabsSubMenuModelTest
 
  private:
   TestingProfile testing_profile_;
-  ProfileSyncServiceMock sync_service_;
+  browser_sync::ProfileSyncServiceMock sync_service_;
   std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
   std::unique_ptr<sync_sessions::SessionsSyncManager> manager_;
   std::unique_ptr<sync_driver::LocalDeviceInfoProviderMock> local_device_;

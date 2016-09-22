@@ -192,7 +192,7 @@ ScopedJavaLocalRef<jobject> FaviconHelper::GetSyncedFaviconImageForURL(
 
   std::string page_url = ConvertJavaStringToUTF8(env, j_page_url);
 
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   DCHECK(sync_service);
 

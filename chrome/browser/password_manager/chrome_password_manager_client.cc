@@ -389,7 +389,7 @@ ChromePasswordManagerClient::GetPasswordStore() const {
 
 password_manager::PasswordSyncState
 ChromePasswordManagerClient::GetPasswordSyncState() const {
-  const ProfileSyncService* sync_service =
+  const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   return password_manager_util::GetPasswordSyncState(sync_service);
 }
@@ -584,7 +584,7 @@ bool ChromePasswordManagerClient::ShouldAnnotateNavigationEntries(
   if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
     return false;
 
-  ProfileSyncService* profile_sync_service =
+  browser_sync::ProfileSyncService* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   if (!profile_sync_service || !profile_sync_service->IsSyncActive() ||
       profile_sync_service->IsUsingSecondaryPassphrase()) {

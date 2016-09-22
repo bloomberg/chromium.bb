@@ -256,7 +256,6 @@ class SyncBackendHostCore
 
  private:
   friend class base::RefCountedThreadSafe<SyncBackendHostCore>;
-  friend class SyncBackendHostForProfileSyncTest;
 
   ~SyncBackendHostCore() override;
 

@@ -38,6 +38,8 @@
 #include "ios/web/public/web_thread.h"
 #include "url/gurl.h"
 
+using browser_sync::ProfileSyncService;
+
 namespace {
 
 void UpdateNetworkTimeOnUIThread(base::Time network_time,

@@ -14,11 +14,14 @@
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
 class Profile;
+
+namespace browser_sync {
 class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace sync_driver {
 class SyncSetupInProgressHandle;
-}
+}  // namespace sync_driver
 
 // An instance of this class is basically our notion of a "sync client" for
 // automation purposes. It harnesses the ProfileSyncService member of the
@@ -90,7 +93,7 @@ class ProfileSyncServiceHarness {
   bool AwaitSyncSetupCompletion();
 
   // Returns the ProfileSyncService member of the sync client.
-  ProfileSyncService* service() const { return service_; }
+  browser_sync::ProfileSyncService* service() const { return service_; }
 
   // Returns the debug name for this profile. Used for logging.
   const std::string& profile_debug_name() const { return profile_debug_name_; }
@@ -142,7 +145,7 @@ class ProfileSyncServiceHarness {
   Profile* profile_;
 
   // ProfileSyncService object associated with |profile_|.
-  ProfileSyncService* service_;
+  browser_sync::ProfileSyncService* service_;
 
   // Prevents Sync from running until configuration is complete.
   std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;

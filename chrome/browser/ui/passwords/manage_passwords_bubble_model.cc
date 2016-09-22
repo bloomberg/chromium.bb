@@ -63,7 +63,7 @@ std::vector<autofill::PasswordForm> DeepCopyForms(
 
 password_bubble_experiment::SmartLockBranding GetSmartLockBrandingState(
     Profile* profile) {
-  const ProfileSyncService* sync_service =
+  const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return password_bubble_experiment::GetSmartLockBrandingState(sync_service);
 }
@@ -436,7 +436,7 @@ bool ManagePasswordsBubbleModel::ShouldShowGoogleSmartLockWelcome() const {
 bool ManagePasswordsBubbleModel::ReplaceToShowSignInPromoIfNeeded() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
   PrefService* prefs = GetProfile()->GetPrefs();
-  const ProfileSyncService* sync_service =
+  const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(GetProfile());
   if (password_bubble_experiment::ShouldShowChromeSignInPasswordPromo(
           prefs, sync_service)) {

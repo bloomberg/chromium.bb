@@ -63,7 +63,7 @@ class SyncInternalsUITestWithService : public ChromeRenderViewHostTestHarness {
 
   virtual void SetUp() {
     NiceMock<ProfileMock>* profile_mock = new NiceMock<ProfileMock>();
-    StrictMock<ProfileSyncServiceMock> profile_sync_service_mock;
+    StrictMock<browser_sync::ProfileSyncServiceMock> profile_sync_service_mock;
     EXPECT_CALL(*profile_mock, GetProfileSyncService())
         .WillOnce(Return(&profile_sync_service_mock));
     browser_context_.reset(profile_mock);
@@ -150,7 +150,7 @@ class SyncInternalsUITestWithoutService
   virtual void SetUp() {
     NiceMock<ProfileMock>* profile_mock = new NiceMock<ProfileMock>();
     EXPECT_CALL(*profile_mock, GetProfileSyncService())
-        .WillOnce(Return(static_cast<ProfileSyncService*>(NULL)));
+        .WillOnce(Return(static_cast<browser_sync::ProfileSyncService*>(NULL)));
     browser_context_.reset(profile_mock);
 
     ChromeRenderViewHostTestHarness::SetUp();

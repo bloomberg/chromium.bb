@@ -3259,7 +3259,7 @@ TEST_F(SearchProviderTest, CanSendURL) {
   profile_.GetPrefs()->SetBoolean(sync_driver::prefs::kSyncTabs, true);
 
   // Tab sync is encrypted.
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_);
   syncer::ModelTypeSet encrypted_types = service->GetEncryptedDataTypes();
   encrypted_types.Put(syncer::SESSIONS);

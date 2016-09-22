@@ -35,7 +35,6 @@
 
 class PrefRegistrySimple;
 class PrefService;
-class ProfileSyncService;
 
 namespace gfx {
 class ImageSkia;

@@ -16,7 +16,7 @@ class HistoryService;
 class QueryResults;
 }
 
-namespace sync_driver {
+namespace browser_sync {
 
 // Helper class for sync signin to check some asynchronous conditions. Call
 // either CheckHasHistory or CheckHasTypedUrls or both, and |return_result|
@@ -65,6 +65,6 @@ class SigninConfirmationHelper {
   DISALLOW_COPY_AND_ASSIGN(SigninConfirmationHelper);
 };
 
-}  // namespace sync_driver
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_BROWSER_SYNC_SIGNIN_CONFIRMATION_HELPER_H_

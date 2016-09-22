@@ -158,7 +158,7 @@ void IOSChromeSyncClient::Initialize() {
     net::URLRequestContextGetter* url_request_context_getter =
         browser_state_->GetRequestContext();
 
-    component_factory_.reset(new ProfileSyncComponentsFactoryImpl(
+    component_factory_.reset(new browser_sync::ProfileSyncComponentsFactoryImpl(
         this, ::GetChannel(), ::GetVersionString(),
         ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET,
         *base::CommandLine::ForCurrentProcess(),
@@ -397,7 +397,7 @@ void IOSChromeSyncClient::GetDeviceInfoTrackers(
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
   for (ios::ChromeBrowserState* browser_state : browser_state_list) {
-    ProfileSyncService* profile_sync_service =
+    browser_sync::ProfileSyncService* profile_sync_service =
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
     if (profile_sync_service != nullptr) {
       const sync_driver::DeviceInfoTracker* tracker =

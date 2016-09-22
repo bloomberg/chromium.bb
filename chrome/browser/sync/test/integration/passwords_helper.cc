@@ -123,9 +123,10 @@ void RemoveLogins(PasswordStore* store) {
   }
 }
 
-void SetEncryptionPassphrase(int index,
-                             const std::string& passphrase,
-                             ProfileSyncService::PassphraseType type) {
+void SetEncryptionPassphrase(
+    int index,
+    const std::string& passphrase,
+    browser_sync::ProfileSyncService::PassphraseType type) {
   ProfileSyncServiceFactory::GetForProfile(
       test()->GetProfile(index))->SetEncryptionPassphrase(passphrase, type);
 }

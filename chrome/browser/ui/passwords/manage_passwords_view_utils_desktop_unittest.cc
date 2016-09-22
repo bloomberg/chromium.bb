@@ -72,9 +72,10 @@ class ManagePasswordsViewUtilDesktopTest : public testing::Test {
         base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName, name);
   }
 
-  ProfileSyncService* GetSyncServiceForSmartLockUser() {
-    ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_));
+  browser_sync::ProfileSyncService* GetSyncServiceForSmartLockUser() {
+    browser_sync::ProfileSyncServiceMock* sync_service =
+        static_cast<browser_sync::ProfileSyncServiceMock*>(
+            ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_));
     EXPECT_CALL(*sync_service, IsSyncActive()).WillRepeatedly(Return(true));
     EXPECT_CALL(*sync_service, IsFirstSetupComplete())
         .WillRepeatedly(Return(true));
@@ -85,9 +86,10 @@ class ManagePasswordsViewUtilDesktopTest : public testing::Test {
     return sync_service;
   }
 
-  ProfileSyncService* GetSyncServiceForNonSmartLockUser() {
-    ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
-        ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_));
+  browser_sync::ProfileSyncService* GetSyncServiceForNonSmartLockUser() {
+    browser_sync::ProfileSyncServiceMock* sync_service =
+        static_cast<browser_sync::ProfileSyncServiceMock*>(
+            ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_));
     EXPECT_CALL(*sync_service, IsSyncActive()).WillRepeatedly(Return(false));
     return sync_service;
   }
@@ -155,7 +157,7 @@ TEST_F(ManagePasswordsViewUtilDesktopTest, GetPasswordManagerSettingsStringId) {
     base::FieldTrialList field_trial_list(
         base::MakeUnique<base::MockEntropyProvider>());
     SCOPED_TRACE(testing::Message(test_case.description));
-    ProfileSyncService* sync_service;
+    browser_sync::ProfileSyncService* sync_service;
     if (test_case.user_type == SMART_LOCK_USER)
       sync_service = GetSyncServiceForSmartLockUser();
     else

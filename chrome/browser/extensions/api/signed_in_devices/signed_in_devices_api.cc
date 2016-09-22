@@ -99,7 +99,8 @@ std::vector<std::unique_ptr<DeviceInfo>> GetAllSignedInDevices(
 
 std::unique_ptr<DeviceInfo> GetLocalDeviceInfo(const std::string& extension_id,
                                                Profile* profile) {
-  ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile);
+  browser_sync::ProfileSyncService* pss =
+      ProfileSyncServiceFactory::GetForProfile(profile);
   if (!pss) {
     return std::unique_ptr<DeviceInfo>();
   }

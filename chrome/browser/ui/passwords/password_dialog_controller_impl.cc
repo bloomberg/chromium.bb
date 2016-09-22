@@ -21,7 +21,7 @@
 namespace {
 
 bool IsSmartLockBrandingEnabled(Profile* profile) {
-  const ProfileSyncService* sync_service =
+  const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return password_bubble_experiment::IsSmartLockUser(sync_service);
 }

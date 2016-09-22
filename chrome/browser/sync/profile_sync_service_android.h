@@ -20,12 +20,15 @@
 #include "google/cacheinvalidation/include/types.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+class Profile;
+
+namespace browser_sync {
+class ProfileSyncService;
+}
+
 namespace sync_driver {
 class SyncSetupInProgressHandle;
 }
-
-class Profile;
-class ProfileSyncService;
 
 // Android wrapper of the ProfileSyncService which provides access from the Java
 // layer. Note that on Android, there's only a single profile, and therefore
@@ -199,7 +202,7 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   Profile* profile_;
 
   // A reference to the sync service for this profile.
-  ProfileSyncService* sync_service_;
+  browser_sync::ProfileSyncService* sync_service_;
 
   // Prevents Sync from running until configuration is complete.
   std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;

@@ -61,10 +61,6 @@ class SigninManagerWrapper;
 class SyncErrorController;
 class SyncTypePreferenceProvider;
 
-namespace browser_sync {
-class BackendMigrator;
-}  // namespace browser_sync
-
 namespace sync_driver {
 class DataTypeManager;
 class DeviceInfoSyncService;
@@ -98,6 +94,10 @@ struct UserShare;
 namespace sync_pb {
 class EncryptedData;
 }  // namespace sync_pb
+
+namespace browser_sync {
+
+class BackendMigrator;
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.  Each subsystem is logically thought of as being
@@ -189,7 +189,7 @@ class ProfileSyncService : public sync_driver::SyncService,
                            public SigninManagerBase::Observer,
                            public GaiaCookieManagerService::Observer {
  public:
-  typedef browser_sync::SyncBackendHost::Status Status;
+  typedef SyncBackendHost::Status Status;
   typedef base::Callback<bool(void)> PlatformSyncAllowedProvider;
 
   enum SyncEventCodes {
@@ -325,10 +325,8 @@ class ProfileSyncService : public sync_driver::SyncService,
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
   tracked_objects::Location unrecoverable_error_location() const override;
-  void AddProtocolEventObserver(
-      browser_sync::ProtocolEventObserver* observer) override;
-  void RemoveProtocolEventObserver(
-      browser_sync::ProtocolEventObserver* observer) override;
+  void AddProtocolEventObserver(ProtocolEventObserver* observer) override;
+  void RemoveProtocolEventObserver(ProtocolEventObserver* observer) override;
   void AddTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer) override;
   void RemoveTypeDebugInfoObserver(
@@ -479,7 +477,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   bool HasUnsyncedItems() const;
 
   // Used by ProfileSyncServiceHarness.  May return NULL.
-  browser_sync::BackendMigrator* GetBackendMigratorForTest();
+  BackendMigrator* GetBackendMigratorForTest();
 
   // Used by tests to inspect interaction with OAuth2TokenService.
   bool IsRetryingAccessTokenFetchForTest() const;
@@ -630,7 +628,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Our asynchronous backend to communicate with sync components living on
   // other threads.
-  std::unique_ptr<browser_sync::SyncBackendHost> backend_;
+  std::unique_ptr<SyncBackendHost> backend_;
 
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or
@@ -671,10 +669,7 @@ class ProfileSyncService : public sync_driver::SyncService,
     SYNC_INITIAL_STATE_LIMIT
   };
 
-  friend class ProfileSyncServicePasswordTest;
-  friend class SyncTest;
   friend class TestProfileSyncService;
-  FRIEND_TEST_ALL_PREFIXES(ProfileSyncServiceTest, InitialState);
 
   // Stops the sync engine. Does NOT set IsSyncRequested to false. Use
   // RequestStop for that. |data_fate| controls whether the local sync data is
@@ -879,8 +874,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   std::unique_ptr<sync_driver::DataTypeManager> data_type_manager_;
 
   base::ObserverList<sync_driver::SyncServiceObserver> observers_;
-  base::ObserverList<browser_sync::ProtocolEventObserver>
-      protocol_event_observers_;
+  base::ObserverList<ProtocolEventObserver> protocol_event_observers_;
   base::ObserverList<syncer::TypeDebugInfoObserver> type_debug_info_observers_;
 
   std::set<SyncTypePreferenceProvider*> preference_providers_;
@@ -913,7 +907,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   // if they e.g. don't remember their explicit passphrase.
   bool encryption_pending_;
 
-  std::unique_ptr<browser_sync::BackendMigrator> migrator_;
+  std::unique_ptr<BackendMigrator> migrator_;
 
   // This is the last |SyncProtocolError| we received from the server that had
   // an action set on it.
@@ -980,12 +974,12 @@ class ProfileSyncService : public sync_driver::SyncService,
   std::unique_ptr<syncer::NetworkResources> network_resources_;
 
   StartBehavior start_behavior_;
-  std::unique_ptr<browser_sync::StartupController> startup_controller_;
+  std::unique_ptr<StartupController> startup_controller_;
 
   // The full path to the sync data directory.
   base::FilePath directory_path_;
 
-  std::unique_ptr<browser_sync::SyncStoppedReporter> sync_stopped_reporter_;
+  std::unique_ptr<SyncStoppedReporter> sync_stopped_reporter_;
 
   // Listens for the system being under memory pressure.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
@@ -1025,5 +1019,7 @@ class ProfileSyncService : public sync_driver::SyncService,
 };
 
 bool ShouldShowActionOnUI(const syncer::SyncProtocolError& error);
+
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_SERVICE_H_

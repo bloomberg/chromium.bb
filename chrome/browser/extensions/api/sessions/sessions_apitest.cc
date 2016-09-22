@@ -192,9 +192,11 @@ std::unique_ptr<KeyedService> ExtensionSessionsTest::BuildProfileSyncService(
               sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id")));
 
   Profile* profile = static_cast<Profile*>(context);
-  ProfileSyncServiceMock* sync_service =
-      new ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(
-          base::MakeUnique<browser_sync::ChromeSyncClient>(profile), profile));
+  browser_sync::ProfileSyncServiceMock* sync_service =
+      new browser_sync::ProfileSyncServiceMock(
+          CreateProfileSyncServiceParamsForTest(
+              base::MakeUnique<browser_sync::ChromeSyncClient>(profile),
+              profile));
   static_cast<browser_sync::ChromeSyncClient*>(sync_service->GetSyncClient())
       ->SetSyncApiComponentFactoryForTesting(std::move(factory));
   return base::WrapUnique(sync_service);
@@ -210,9 +212,10 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   Profile* profile =
       Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
   profile_manager->RegisterTestingProfile(profile, true, false);
-  ProfileSyncServiceMock* service = static_cast<ProfileSyncServiceMock*>(
-      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
-      profile, &ExtensionSessionsTest::BuildProfileSyncService));
+  browser_sync::ProfileSyncServiceMock* service =
+      static_cast<browser_sync::ProfileSyncServiceMock*>(
+          ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+              profile, &ExtensionSessionsTest::BuildProfileSyncService));
 
   syncer::ModelTypeSet preferred_types;
   preferred_types.Put(syncer::SESSIONS);

@@ -44,6 +44,8 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using browser_sync::ProfileSyncService;
+
 namespace {
 
 // UMA histogram for tracking what users do when presented with the signin

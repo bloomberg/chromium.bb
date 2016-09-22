@@ -21,6 +21,8 @@
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_api_component_factory_mock.h"
 
+using browser_sync::ProfileSyncService;
+
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     Profile* profile) {
   auto sync_client = base::MakeUnique<browser_sync::ChromeSyncClient>(profile);
@@ -69,7 +71,7 @@ std::unique_ptr<TestingProfile> MakeSignedInTestingProfile() {
 
 std::unique_ptr<KeyedService> BuildMockProfileSyncService(
     content::BrowserContext* context) {
-  return base::MakeUnique<ProfileSyncServiceMock>(
+  return base::MakeUnique<browser_sync::ProfileSyncServiceMock>(
       CreateProfileSyncServiceParamsForTest(
           Profile::FromBrowserContext(context)));
 }

@@ -32,6 +32,8 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace browser_sync {
+
 class ProfileSyncComponentsFactoryImpl
     : public sync_driver::SyncApiComponentFactory {
  public:
@@ -68,9 +70,9 @@ class ProfileSyncComponentsFactoryImpl
           debug_info_listener,
       const sync_driver::DataTypeController::TypeMap* controllers,
       const sync_driver::DataTypeEncryptionHandler* encryption_handler,
-      browser_sync::SyncBackendHost* backend,
+      SyncBackendHost* backend,
       sync_driver::DataTypeManagerObserver* observer) override;
-  browser_sync::SyncBackendHost* CreateSyncBackendHost(
+  SyncBackendHost* CreateSyncBackendHost(
       const std::string& name,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
@@ -126,5 +128,7 @@ class ProfileSyncComponentsFactoryImpl
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncComponentsFactoryImpl);
 };
+
+}  // namespace browser_sync
 
 #endif  // COMPONENTS_BROWSER_SYNC_PROFILE_SYNC_COMPONENTS_FACTORY_IMPL_H__

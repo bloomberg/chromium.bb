@@ -17,11 +17,14 @@
 
 class AppSyncUIStateObserver;
 class Profile;
+
+namespace browser_sync {
 class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace extensions {
 class ExtensionRegistry;
-}
+}  // namespace extensions
 
 // AppSyncUIState watches app sync and installation and change its state
 // accordingly. Its status is for UI display only. It only watches for new
@@ -75,7 +78,7 @@ class AppSyncUIState : public KeyedService,
                          const extensions::Extension* extension) override;
 
   Profile* profile_;
-  ProfileSyncService* sync_service_;
+  browser_sync::ProfileSyncService* sync_service_;
 
   // Timer to limit how much time STATUS_SYNCING is allowed.
   base::OneShotTimer max_syncing_status_timer_;

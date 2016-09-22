@@ -186,16 +186,15 @@ class SyncBackendHostCaptureClearServerData : public SyncBackendHostMock {
 };
 
 ACTION(ReturnNewSyncBackendHostMock) {
-  return new browser_sync::SyncBackendHostMock();
+  return new SyncBackendHostMock();
 }
 
 ACTION(ReturnNewSyncBackendHostNoReturn) {
-  return new browser_sync::SyncBackendHostNoReturn();
+  return new SyncBackendHostNoReturn();
 }
 
 ACTION_P(ReturnNewMockHostCollectDeleteDirParam, delete_dir_param) {
-  return new browser_sync::SyncBackendHostMockCollectDeleteDirParam(
-      delete_dir_param);
+  return new SyncBackendHostMockCollectDeleteDirParam(delete_dir_param);
 }
 
 void OnClearServerDataCalled(
@@ -384,7 +383,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
 
  private:
   base::MessageLoop message_loop_;
-  browser_sync::ProfileSyncServiceBundle profile_sync_service_bundle_;
+  ProfileSyncServiceBundle profile_sync_service_bundle_;
   std::unique_ptr<ProfileSyncService> service_;
 
   // The current component factory used by sync. May be null if the server

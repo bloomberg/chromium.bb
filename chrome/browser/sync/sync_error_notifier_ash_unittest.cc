@@ -104,7 +104,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
 
     profile_ = profile_manager_->CreateTestingProfile(kTestAccountId);
 
-    service_.reset(new ProfileSyncServiceMock(
+    service_.reset(new browser_sync::ProfileSyncServiceMock(
         CreateProfileSyncServiceParamsForTest(profile_)));
 
     FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
@@ -168,7 +168,7 @@ class SyncErrorNotifierTest : public AshTestBase  {
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<SyncErrorController> error_controller_;
   std::unique_ptr<SyncErrorNotifier> error_notifier_;
-  std::unique_ptr<ProfileSyncServiceMock> service_;
+  std::unique_ptr<browser_sync::ProfileSyncServiceMock> service_;
   TestingProfile* profile_;
   FakeLoginUI login_ui_;
   NotificationUIManager* notification_ui_manager_;

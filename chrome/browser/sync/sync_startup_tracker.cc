@@ -11,8 +11,8 @@
 SyncStartupTracker::SyncStartupTracker(Profile* profile, Observer* observer)
     : profile_(profile),
       observer_(observer) {
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetForProfile(
-      profile_);
+  browser_sync::ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (service)
     service->AddObserver(this);
 
@@ -20,8 +20,8 @@ SyncStartupTracker::SyncStartupTracker(Profile* profile, Observer* observer)
 }
 
 SyncStartupTracker::~SyncStartupTracker() {
-  ProfileSyncService* service = ProfileSyncServiceFactory::GetForProfile(
-      profile_);
+  browser_sync::ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (service)
     service->RemoveObserver(this);
 }
@@ -53,7 +53,7 @@ SyncStartupTracker::SyncServiceState SyncStartupTracker::GetSyncServiceState(
   if (!profile->IsSyncAllowed())
     return SYNC_STARTUP_ERROR;
 
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   // If no service exists or it can't be started, treat as a startup error.

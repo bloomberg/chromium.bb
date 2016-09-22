@@ -13,8 +13,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/status_change_checker.h"
 
-class ProfileSyncService;
 class ProgressMarkerWatcher;
+
+namespace browser_sync {
+class ProfileSyncService;
+}  // namespace browser_sync
 
 // Waits until all provided clients have finished committing any unsynced items
 // and downloading each others' udpates.
@@ -31,21 +34,21 @@ class ProgressMarkerWatcher;
 class QuiesceStatusChangeChecker : public StatusChangeChecker {
  public:
   explicit QuiesceStatusChangeChecker(
-      std::vector<ProfileSyncService*> services);
+      std::vector<browser_sync::ProfileSyncService*> services);
   ~QuiesceStatusChangeChecker() override;
 
   // Blocks until all clients have quiesced or we time out.
   void Wait();
 
   // A callback function for some helper objects.
-  void OnServiceStateChanged(ProfileSyncService* service);
+  void OnServiceStateChanged(browser_sync::ProfileSyncService* service);
 
   // Implementation of StatusChangeChecker.
   bool IsExitConditionSatisfied() override;
   std::string GetDebugMessage() const override;
 
  private:
-  std::vector<ProfileSyncService*> services_;
+  std::vector<browser_sync::ProfileSyncService*> services_;
   ScopedVector<ProgressMarkerWatcher> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(QuiesceStatusChangeChecker);

@@ -66,11 +66,11 @@ std::vector<GlobalError*> GetSignedInServiceErrors(Profile* profile) {
 }
 
 // If a signed in service is reporting an error, returns the GlobalError
-// object associated with that service, or NULL if no errors are reported.
+// object associated with that service, or null if no errors are reported.
 GlobalError* GetSignedInServiceError(Profile* profile) {
   std::vector<GlobalError*> errors = GetSignedInServiceErrors(profile);
   if (errors.empty())
-    return NULL;
+    return nullptr;
   return errors[0];
 }
 
@@ -82,8 +82,10 @@ base::string16 GetSigninMenuLabel(Profile* profile) {
     return error->MenuItemLabel();
 
   // No errors, so just display the signed in user, if any.
-  ProfileSyncService* service = profile->IsSyncAllowed() ?
-      ProfileSyncServiceFactory::GetForProfile(profile) : NULL;
+  browser_sync::ProfileSyncService* service =
+      profile->IsSyncAllowed()
+          ? ProfileSyncServiceFactory::GetForProfile(profile)
+          : nullptr;
 
   // Even if the user is signed in, don't display the "signed in as..."
   // label if we're still setting up sync.

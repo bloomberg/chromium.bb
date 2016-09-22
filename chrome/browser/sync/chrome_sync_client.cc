@@ -494,7 +494,7 @@ void ChromeSyncClient::GetDeviceInfoTrackers(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profile_list = profile_manager->GetLoadedProfiles();
   for (Profile* profile : profile_list) {
-    const ProfileSyncService* profile_sync_service =
+    const browser_sync::ProfileSyncService* profile_sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile);
     if (profile_sync_service != nullptr) {
       const sync_driver::DeviceInfoTracker* tracker =

@@ -71,7 +71,7 @@ KeyedService* SuggestionsServiceFactory::BuildServiceInstanceFor(
       SigninManagerFactory::GetForProfile(profile);
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   std::unique_ptr<SuggestionsStore> suggestions_store(

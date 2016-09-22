@@ -43,7 +43,8 @@ SignedInDevicesChangeObserver::SignedInDevicesChangeObserver(
     const std::string& extension_id,
     Profile* profile) : extension_id_(extension_id),
                         profile_(profile) {
-  ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile_);
+  browser_sync::ProfileSyncService* pss =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (pss) {
     DCHECK(pss->GetDeviceInfoTracker());
     pss->GetDeviceInfoTracker()->AddObserver(this);
@@ -51,7 +52,8 @@ SignedInDevicesChangeObserver::SignedInDevicesChangeObserver(
 }
 
 SignedInDevicesChangeObserver::~SignedInDevicesChangeObserver() {
-  ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile_);
+  browser_sync::ProfileSyncService* pss =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
   if (pss) {
     DCHECK(pss->GetDeviceInfoTracker());
     pss->GetDeviceInfoTracker()->RemoveObserver(this);

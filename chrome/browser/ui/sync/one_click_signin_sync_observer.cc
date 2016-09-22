@@ -34,7 +34,7 @@ OneClickSigninSyncObserver::OneClickSigninSyncObserver(
       weak_ptr_factory_(this) {
   DCHECK(!continue_url_.is_empty());
 
-  ProfileSyncService* sync_service = GetSyncService(web_contents);
+  browser_sync::ProfileSyncService* sync_service = GetSyncService(web_contents);
   if (sync_service) {
     sync_service->AddObserver(this);
   } else {
@@ -53,7 +53,8 @@ OneClickSigninSyncObserver::OneClickSigninSyncObserver(
 OneClickSigninSyncObserver::~OneClickSigninSyncObserver() {}
 
 void OneClickSigninSyncObserver::WebContentsDestroyed() {
-  ProfileSyncService* sync_service = GetSyncService(web_contents());
+  browser_sync::ProfileSyncService* sync_service =
+      GetSyncService(web_contents());
   if (sync_service)
     sync_service->RemoveObserver(this);
 
@@ -61,7 +62,8 @@ void OneClickSigninSyncObserver::WebContentsDestroyed() {
 }
 
 void OneClickSigninSyncObserver::OnStateChanged() {
-  ProfileSyncService* sync_service = GetSyncService(web_contents());
+  browser_sync::ProfileSyncService* sync_service =
+      GetSyncService(web_contents());
 
   // At this point, the sign-in process is complete, and control has been handed
   // back to the sync engine. Close the gaia sign in tab if the |continue_url_|
@@ -99,7 +101,7 @@ void OneClickSigninSyncObserver::LoadContinueUrl() {
       std::string());
 }
 
-ProfileSyncService* OneClickSigninSyncObserver::GetSyncService(
+browser_sync::ProfileSyncService* OneClickSigninSyncObserver::GetSyncService(
     content::WebContents* web_contents) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

@@ -74,7 +74,7 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
       ios::SigninManagerFactory::GetForBrowserState(browser_state);
   ProfileOAuth2TokenService* token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
   base::FilePath database_dir(
       browser_state->GetStatePath().Append(kThumbnailDirectory));

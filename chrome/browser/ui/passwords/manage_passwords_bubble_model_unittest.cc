@@ -53,10 +53,11 @@ const char kSiteOrigin[] = "http://example.com/login";
 const char kUsername[] = "Admin";
 const char kUIDismissalReasonMetric[] = "PasswordManager.UIDismissalReason";
 
-class TestSyncService : public ProfileSyncServiceMock {
+class TestSyncService : public browser_sync::ProfileSyncServiceMock {
  public:
   explicit TestSyncService(Profile* profile)
-      : ProfileSyncServiceMock(CreateProfileSyncServiceParamsForTest(profile)),
+      : browser_sync::ProfileSyncServiceMock(
+            CreateProfileSyncServiceParamsForTest(profile)),
         smartlock_enabled_(false) {}
   ~TestSyncService() override {}
 

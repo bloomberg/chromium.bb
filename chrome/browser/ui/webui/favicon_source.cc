@@ -146,7 +146,7 @@ bool FaviconSource::ShouldServiceRequest(const net::URLRequest* request) const {
 
 bool FaviconSource::HandleMissingResource(const IconRequest& request) {
   // If the favicon is not available, try to use the synced favicon.
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
   sync_sessions::OpenTabsUIDelegate* open_tabs =
       sync_service ? sync_service->GetOpenTabsUIDelegate() : nullptr;

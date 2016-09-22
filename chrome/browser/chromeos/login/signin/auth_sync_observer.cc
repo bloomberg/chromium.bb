@@ -19,7 +19,10 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 
 class Profile;
+
+namespace browser_sync {
 class ProfileSyncService;
+}  // namespace browser_sync
 
 namespace chromeos {
 
@@ -31,14 +34,14 @@ AuthSyncObserver::~AuthSyncObserver() {
 }
 
 void AuthSyncObserver::StartObserving() {
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_service->AddObserver(this);
 }
 
 void AuthSyncObserver::Shutdown() {
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   if (sync_service)
     sync_service->RemoveObserver(this);
@@ -47,7 +50,7 @@ void AuthSyncObserver::Shutdown() {
 void AuthSyncObserver::OnStateChanged() {
   DCHECK(user_manager::UserManager::Get()->IsLoggedInAsUserWithGaiaAccount() ||
          user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser());
-  ProfileSyncService* sync_service =
+  browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(profile_);

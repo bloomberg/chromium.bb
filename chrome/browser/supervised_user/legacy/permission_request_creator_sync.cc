@@ -32,15 +32,14 @@ const char kNotificationSetting[] = "custodian-notification-setting";
 PermissionRequestCreatorSync::PermissionRequestCreatorSync(
     SupervisedUserSettingsService* settings_service,
     SupervisedUserSharedSettingsService* shared_settings_service,
-    ProfileSyncService* sync_service,
+    browser_sync::ProfileSyncService* sync_service,
     const std::string& name,
     const std::string& supervised_user_id)
     : settings_service_(settings_service),
       shared_settings_service_(shared_settings_service),
       sync_service_(sync_service),
       name_(name),
-      supervised_user_id_(supervised_user_id) {
-}
+      supervised_user_id_(supervised_user_id) {}
 
 PermissionRequestCreatorSync::~PermissionRequestCreatorSync() {}
 

@@ -11,8 +11,9 @@
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "content/public/browser/notification_service.h"
 
-P2PSyncRefresher::P2PSyncRefresher(Profile* profile,
-                                   ProfileSyncService* sync_service)
+P2PSyncRefresher::P2PSyncRefresher(
+    Profile* profile,
+    browser_sync::ProfileSyncService* sync_service)
     : profile_(profile), sync_service_(sync_service) {
   sync_service_->AddObserver(this);
 }

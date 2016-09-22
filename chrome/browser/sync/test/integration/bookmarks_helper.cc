@@ -267,7 +267,7 @@ void SetFaviconImpl(Profile* profile,
     favicon_service->SetFavicons(node->url(), icon_url, favicon_base::FAVICON,
                                  image);
     } else {
-      ProfileSyncService* pss =
+      browser_sync::ProfileSyncService* pss =
           ProfileSyncServiceFactory::GetForProfile(profile);
       sync_bookmarks::BookmarkChangeProcessor::ApplyBookmarkFavicon(
           node, pss->GetSyncClient(), icon_url, image.As1xPNGBytes());
@@ -829,10 +829,11 @@ namespace {
 class CountBookmarksWithTitlesMatchingChecker
     : public SingleClientStatusChangeChecker {
  public:
-  CountBookmarksWithTitlesMatchingChecker(ProfileSyncService* service,
-                                          int profile_index,
-                                          const std::string& title,
-                                          int expected_count)
+  CountBookmarksWithTitlesMatchingChecker(
+      browser_sync::ProfileSyncService* service,
+      int profile_index,
+      const std::string& title,
+      int expected_count)
       : SingleClientStatusChangeChecker(service),
         profile_index_(profile_index),
         title_(title),
@@ -860,7 +861,7 @@ class CountBookmarksWithTitlesMatchingChecker
 bool AwaitCountBookmarksWithTitlesMatching(int profile,
                                            const std::string& title,
                                            int expected_count) {
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       sync_datatype_helper::test()->GetSyncService(profile);
   CountBookmarksWithTitlesMatchingChecker checker(service,
                                                   profile,

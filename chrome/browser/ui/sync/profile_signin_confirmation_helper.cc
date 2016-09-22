@@ -96,8 +96,8 @@ void CheckShouldPromptForNewProfile(
   history::HistoryService* service =
       HistoryServiceFactory::GetForProfileWithoutCreating(profile);
   // Fire asynchronous queries for profile data.
-  sync_driver::SigninConfirmationHelper* helper =
-      new sync_driver::SigninConfirmationHelper(service, return_result);
+  browser_sync::SigninConfirmationHelper* helper =
+      new browser_sync::SigninConfirmationHelper(service, return_result);
   helper->CheckHasHistory(kHistoryEntriesBeforeNewProfilePrompt);
   helper->CheckHasTypedURLs();
 }

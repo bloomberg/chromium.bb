@@ -183,7 +183,7 @@ base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
 }
 
 bool IsSyncingAutosignSetting(Profile* profile) {
-  const ProfileSyncService* sync_service =
+  const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   return (sync_service && sync_service->IsFirstSetupComplete() &&
           sync_service->IsSyncActive() &&

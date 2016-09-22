@@ -48,6 +48,8 @@
 #include "components/sync/driver/sync_error_controller.h"
 #endif  // defined(OS_CHROMEOS)
 
+using browser_sync::ProfileSyncService;
+
 typedef GoogleServiceAuthError AuthError;
 
 namespace sync_ui_util {
@@ -176,7 +178,7 @@ MessageType GetStatusInfo(Profile* profile,
         // otherwise show generic unrecoverable error message.
         ProfileSyncService::Status status;
         service->QueryDetailedSyncStatus(&status);
-        if (ShouldShowActionOnUI(status.sync_protocol_error)) {
+        if (browser_sync::ShouldShowActionOnUI(status.sync_protocol_error)) {
           GetStatusForActionableError(status.sync_protocol_error, status_label);
         } else {
           status_label->assign(l10n_util::GetStringFUTF16(
@@ -212,7 +214,7 @@ MessageType GetStatusInfo(Profile* profile,
       // We don't have an auth error. Check for an actionable error.
       ProfileSyncService::Status status;
       service->QueryDetailedSyncStatus(&status);
-      if (ShouldShowActionOnUI(status.sync_protocol_error)) {
+      if (browser_sync::ShouldShowActionOnUI(status.sync_protocol_error)) {
         if (status_label) {
           GetStatusForActionableError(status.sync_protocol_error,
                                       status_label);
@@ -286,7 +288,7 @@ MessageType GetStatusInfo(Profile* profile,
       result_type = SYNC_ERROR;
       ProfileSyncService::Status status;
       service->QueryDetailedSyncStatus(&status);
-      if (ShouldShowActionOnUI(status.sync_protocol_error)) {
+      if (browser_sync::ShouldShowActionOnUI(status.sync_protocol_error)) {
         if (status_label) {
           GetStatusForActionableError(status.sync_protocol_error,
               status_label);

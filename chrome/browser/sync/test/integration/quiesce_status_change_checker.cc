@@ -16,13 +16,13 @@
 namespace {
 
 // Returns true if this service is disabled.
-bool IsSyncDisabled(ProfileSyncService* service) {
+bool IsSyncDisabled(browser_sync::ProfileSyncService* service) {
   return !service->IsSetupInProgress() && !service->IsFirstSetupComplete();
 }
 
 // Returns true if these services have matching progress markers.
-bool ProgressMarkersMatch(const ProfileSyncService* service1,
-                          const ProfileSyncService* service2) {
+bool ProgressMarkersMatch(const browser_sync::ProfileSyncService* service1,
+                          const browser_sync::ProfileSyncService* service2) {
   const syncer::ModelTypeSet common_types =
       Intersection(service1->GetActiveDataTypes(),
                    service2->GetActiveDataTypes());
@@ -70,9 +70,8 @@ bool ProgressMarkersMatch(const ProfileSyncService* service1,
 // more reliable status checkers.
 class ProgressMarkerWatcher : public sync_driver::SyncServiceObserver {
  public:
-  ProgressMarkerWatcher(
-      ProfileSyncService* service,
-      QuiesceStatusChangeChecker* quiesce_checker);
+  ProgressMarkerWatcher(browser_sync::ProfileSyncService* service,
+                        QuiesceStatusChangeChecker* quiesce_checker);
   ~ProgressMarkerWatcher() override;
   void OnStateChanged() override;
 
@@ -82,19 +81,20 @@ class ProgressMarkerWatcher : public sync_driver::SyncServiceObserver {
  private:
   void UpdateHasLatestProgressMarkers();
 
-  ProfileSyncService* service_;
+  browser_sync::ProfileSyncService* service_;
   QuiesceStatusChangeChecker* quiesce_checker_;
-  ScopedObserver<ProfileSyncService, ProgressMarkerWatcher> scoped_observer_;
+  ScopedObserver<browser_sync::ProfileSyncService, ProgressMarkerWatcher>
+      scoped_observer_;
   bool probably_has_latest_progress_markers_;
 };
 
 ProgressMarkerWatcher::ProgressMarkerWatcher(
-    ProfileSyncService* service,
+    browser_sync::ProfileSyncService* service,
     QuiesceStatusChangeChecker* quiesce_checker)
-  : service_(service),
-    quiesce_checker_(quiesce_checker),
-    scoped_observer_(this),
-    probably_has_latest_progress_markers_(false) {
+    : service_(service),
+      quiesce_checker_(quiesce_checker),
+      scoped_observer_(this),
+      probably_has_latest_progress_markers_(false) {
   scoped_observer_.Add(service);
   UpdateHasLatestProgressMarkers();
 }
@@ -143,8 +143,8 @@ bool ProgressMarkerWatcher::IsSyncDisabled() {
 }
 
 QuiesceStatusChangeChecker::QuiesceStatusChangeChecker(
-    std::vector<ProfileSyncService*> services)
-  : services_(services) {
+    std::vector<browser_sync::ProfileSyncService*> services)
+    : services_(services) {
   DCHECK_LE(1U, services_.size());
   for (size_t i = 0; i < services_.size(); ++i) {
     observers_.push_back(new ProgressMarkerWatcher(services[i], this));
@@ -178,8 +178,9 @@ bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
     }
   }
 
-  std::vector<ProfileSyncService*> enabled_services;
-  for (std::vector<ProfileSyncService*>::const_iterator it = services_.begin();
+  std::vector<browser_sync::ProfileSyncService*> enabled_services;
+  for (std::vector<browser_sync::ProfileSyncService*>::const_iterator it =
+           services_.begin();
        it != services_.end(); ++it) {
     if (!IsSyncDisabled(*it)) {
       enabled_services.push_back(*it);
@@ -191,9 +192,9 @@ bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
     return true;
   }
 
-  std::vector<ProfileSyncService*>::const_iterator it1 =
+  std::vector<browser_sync::ProfileSyncService*>::const_iterator it1 =
       enabled_services.begin();
-  std::vector<ProfileSyncService*>::const_iterator it2 =
+  std::vector<browser_sync::ProfileSyncService*>::const_iterator it2 =
       enabled_services.begin();
   it2++;
 
@@ -216,6 +217,6 @@ std::string QuiesceStatusChangeChecker::GetDebugMessage() const {
 }
 
 void QuiesceStatusChangeChecker::OnServiceStateChanged(
-    ProfileSyncService* service) {
+    browser_sync::ProfileSyncService* service) {
   CheckExitCondition();
 }

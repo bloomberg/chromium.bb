@@ -205,8 +205,9 @@ BrowserOptionsHandler::BrowserOptionsHandler()
 }
 
 BrowserOptionsHandler::~BrowserOptionsHandler() {
-  ProfileSyncService* sync_service(ProfileSyncServiceFactory::
-      GetInstance()->GetForProfile(Profile::FromWebUI(web_ui())));
+  browser_sync::ProfileSyncService* sync_service(
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+          Profile::FromWebUI(web_ui())));
   if (sync_service)
     sync_service->RemoveObserver(this);
 
@@ -953,7 +954,7 @@ void BrowserOptionsHandler::InitializeHandler() {
   g_browser_process->profile_manager()->
       GetProfileAttributesStorage().AddObserver(this);
 
-  ProfileSyncService* sync_service(
+  browser_sync::ProfileSyncService* sync_service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
   // TODO(blundell): Use a ScopedObserver to observe the PSS so that cleanup on
   // destruction is automatic.
@@ -1538,7 +1539,7 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
       SigninManagerFactory::GetForProfile(profile)->IsSignoutProhibited();
 #endif
 
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
   DCHECK(signin);

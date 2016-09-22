@@ -81,7 +81,7 @@ content::WebContents* TabModel::GetActiveWebContents() const {
 
 void TabModel::BroadcastSessionRestoreComplete() {
   if (profile_) {
-    ProfileSyncService* sync_service =
+    browser_sync::ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile_);
     if (sync_service)
       sync_service->OnSessionRestoreComplete();

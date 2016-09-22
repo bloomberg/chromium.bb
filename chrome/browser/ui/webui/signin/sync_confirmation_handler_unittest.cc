@@ -107,7 +107,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
         SigninManagerFactory::GetForProfile(profile()));
   }
 
-  ProfileSyncService* sync() {
+  browser_sync::ProfileSyncService* sync() {
     return ProfileSyncServiceFactory::GetForProfile(profile());
   }
 

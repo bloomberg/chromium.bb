@@ -140,7 +140,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
       !ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(profile))
     return;
 
-  ProfileSyncService* service =
+  browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> sync_logs(
       sync_driver::sync_ui_util::ConstructAboutInformation(

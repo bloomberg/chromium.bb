@@ -92,8 +92,9 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   std::unique_ptr<TaskObserver> task_observer_;
 
   // ProfileSyncService to observe sync state changes.
-  ProfileSyncService* sync_service_;
-  ScopedObserver<ProfileSyncService, sync_driver::SyncServiceObserver>
+  browser_sync::ProfileSyncService* sync_service_;
+  ScopedObserver<browser_sync::ProfileSyncService,
+                 sync_driver::SyncServiceObserver>
       sync_service_observer_;
 
   // Used to listen for pref changes to allow / disallow deleting browsing data.
