@@ -57,6 +57,7 @@ class RequestQueueStoreTestBase : public testing::Test {
   // Callback used for add/update request.
   void AddOrUpdateDone(UpdateStatus result);
   void AddRequestDone(ItemActionStatus status);
+  void UpdateRequestDone(std::unique_ptr<UpdateRequestsResult> result);
   void UpdateMultipleRequestsDone(
       const RequestQueue::UpdateMultipleRequestResults& results,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
@@ -81,6 +82,10 @@ class RequestQueueStoreTestBase : public testing::Test {
   }
   ItemActionStatus last_add_status() const { return last_add_status_; }
 
+  UpdateRequestsResult* last_update_result() const {
+    return last_update_result_.get();
+  }
+
  protected:
   base::ScopedTempDir temp_directory_;
 
@@ -88,6 +93,7 @@ class RequestQueueStoreTestBase : public testing::Test {
   LastResult last_result_;
   UpdateStatus last_update_status_;
   ItemActionStatus last_add_status_;
+  std::unique_ptr<UpdateRequestsResult> last_update_result_;
   RequestQueue::UpdateMultipleRequestResults last_multiple_update_results_;
   RequestQueue::UpdateMultipleRequestResults last_remove_results_;
   std::vector<std::unique_ptr<SavePageRequest>> last_requests_;
@@ -120,6 +126,7 @@ void RequestQueueStoreTestBase::ClearResults() {
   last_add_status_ = ItemActionStatus::NOT_FOUND;
   last_remove_results_.clear();
   last_requests_.clear();
+  last_update_result_.reset(nullptr);
 }
 
 void RequestQueueStoreTestBase::GetRequestsDone(
@@ -135,6 +142,11 @@ void RequestQueueStoreTestBase::AddOrUpdateDone(UpdateStatus status) {
 
 void RequestQueueStoreTestBase::AddRequestDone(ItemActionStatus status) {
   last_add_status_ = status;
+}
+
+void RequestQueueStoreTestBase::UpdateRequestDone(
+    std::unique_ptr<UpdateRequestsResult> result) {
+  last_update_result_ = std::move(result);
 }
 
 void RequestQueueStoreTestBase::UpdateMultipleRequestsDone(
@@ -273,15 +285,33 @@ TYPED_TEST(RequestQueueStoreTest, UpdateRequest) {
   base::Time new_creation_time =
       creation_time + base::TimeDelta::FromMinutes(1);
   base::Time activation_time = creation_time + base::TimeDelta::FromHours(6);
+  // Try updating an existing request.
   SavePageRequest updated_request(kRequestId, kUrl, kClientId,
                                   new_creation_time, activation_time,
                                   kUserRequested);
-  store->AddOrUpdateRequest(
-      updated_request, base::Bind(&RequestQueueStoreTestBase::AddOrUpdateDone,
-                                  base::Unretained(this)));
-  ASSERT_EQ(UpdateStatus::FAILED, this->last_update_status());
+  // Try to update a non-existing request.
+  SavePageRequest updated_request2(kRequestId2, kUrl, kClientId,
+                                   new_creation_time, activation_time,
+                                   kUserRequested);
+  std::vector<SavePageRequest> requests_to_update{updated_request,
+                                                  updated_request2};
+  store->UpdateRequests(
+      requests_to_update,
+      base::Bind(&RequestQueueStoreTestBase::UpdateRequestDone,
+                 base::Unretained(this)));
+  ASSERT_FALSE(this->last_update_result());
   this->PumpLoop();
-  ASSERT_EQ(UpdateStatus::UPDATED, this->last_update_status());
+  ASSERT_TRUE(this->last_update_result());
+  EXPECT_EQ(2UL, this->last_update_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId, this->last_update_result()->item_statuses[0].first);
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            this->last_update_result()->item_statuses[0].second);
+  EXPECT_EQ(kRequestId2, this->last_update_result()->item_statuses[1].first);
+  EXPECT_EQ(ItemActionStatus::NOT_FOUND,
+            this->last_update_result()->item_statuses[1].second);
+  EXPECT_EQ(1UL, this->last_update_result()->updated_items.size());
+  EXPECT_EQ(updated_request,
+            *(this->last_update_result()->updated_items.begin()));
 
   // Verifying get reqeust results after a request was updated.
   this->ClearResults();

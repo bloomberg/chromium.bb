@@ -15,6 +15,8 @@
 
 namespace offline_pages {
 
+typedef StoreUpdateResult<SavePageRequest> UpdateRequestsResult;
+
 // Interface for classes storing save page requests.
 class RequestQueueStore {
  public:
@@ -29,7 +31,8 @@ class RequestQueueStore {
       std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
       GetRequestsCallback;
   typedef base::Callback<void(ItemActionStatus)> AddCallback;
-  typedef base::Callback<void(UpdateStatus)> UpdateCallback;
+  typedef base::Callback<void(std::unique_ptr<UpdateRequestsResult>)>
+      UpdateCallback;
   typedef base::Callback<void(
       const RequestQueue::UpdateMultipleRequestResults& /* statuses*/,
       std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
@@ -50,10 +53,9 @@ class RequestQueueStore {
   virtual void AddRequest(const SavePageRequest& offline_page,
                           const AddCallback& callback) = 0;
 
-  // Asynchronously adds or updates request in store.
-  // Result of the update is passed in the callback.
-  virtual void AddOrUpdateRequest(const SavePageRequest& request,
-                                  const UpdateCallback& callback) = 0;
+  // Asynchronously updates requests in store.
+  virtual void UpdateRequests(const std::vector<SavePageRequest>& requests,
+                              const UpdateCallback& callback) = 0;
 
   // Asynchronously removes requests from the store using their IDs.
   // Result of the update, and a number of removed pages is passed in the

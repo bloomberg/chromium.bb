@@ -33,7 +33,7 @@ void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,
   RequestsMap::iterator iter = requests_.find(request.request_id());
   ItemActionStatus status;
   if (iter == requests_.end()) {
-    requests_.insert(std::make_pair(request.request_id(), request));
+    requests_.insert(iter, std::make_pair(request.request_id(), request));
     status = ItemActionStatus::SUCCESS;
   } else {
     status = ItemActionStatus::ALREADY_EXISTS;
@@ -43,15 +43,28 @@ void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,
                                                 base::Bind(callback, status));
 }
 
-void RequestQueueInMemoryStore::AddOrUpdateRequest(
-    const SavePageRequest& request,
+void RequestQueueInMemoryStore::UpdateRequests(
+    const std::vector<SavePageRequest>& requests,
     const UpdateCallback& callback) {
-  RequestsMap::iterator iter = requests_.find(request.request_id());
-  if (iter != requests_.end())
-    requests_.erase(iter);
-  requests_.insert(std::make_pair(request.request_id(), request));
+  std::unique_ptr<UpdateRequestsResult> result(
+      new UpdateRequestsResult(StoreState::LOADED));
+
+  ItemActionStatus status;
+  for (const auto& request : requests) {
+    RequestsMap::iterator iter = requests_.find(request.request_id());
+    if (iter != requests_.end()) {
+      status = ItemActionStatus::SUCCESS;
+      iter->second = request;
+      result->updated_items.push_back(request);
+    } else {
+      status = ItemActionStatus::NOT_FOUND;
+    }
+    result->item_statuses.push_back(
+        std::make_pair(request.request_id(), status));
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, UpdateStatus::UPDATED));
+      FROM_HERE, base::Bind(callback, base::Passed(&result)));
 }
 
 void RequestQueueInMemoryStore::RemoveRequests(

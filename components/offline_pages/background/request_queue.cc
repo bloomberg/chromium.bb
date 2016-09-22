@@ -51,13 +51,24 @@ void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
 }
 
 // Completes the update request call.
-// TODO(petewil): Move callers to the UpdateMultipleRequestDone callback
-void UpdateRequestDone(const RequestQueue::UpdateRequestCallback& callback,
-                       RequestQueueStore::UpdateStatus status) {
-  RequestQueue::UpdateRequestResult result =
-      (status == RequestQueueStore::UpdateStatus::UPDATED)
-          ? RequestQueue::UpdateRequestResult::SUCCESS
-          : RequestQueue::UpdateRequestResult::STORE_FAILURE;
+// TODO(fgorski): For specific cases, check that appropriate items were updated.
+void UpdateRequestsDone(const RequestQueue::UpdateRequestCallback& callback,
+                        std::unique_ptr<UpdateRequestsResult> store_result) {
+  RequestQueue::UpdateRequestResult result;
+  if (store_result->store_state != StoreState::LOADED) {
+    result = RequestQueue::UpdateRequestResult::STORE_FAILURE;
+  } else if (store_result->item_statuses.size() == 0) {
+    result = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+  } else {
+    ItemActionStatus status = store_result->item_statuses.begin()->second;
+    if (status == ItemActionStatus::STORE_ERROR)
+      result = RequestQueue::UpdateRequestResult::STORE_FAILURE;
+    else if (status == ItemActionStatus::NOT_FOUND)
+      result = RequestQueue::UpdateRequestResult::REQUEST_DOES_NOT_EXIST;
+    else
+      result = RequestQueue::UpdateRequestResult::SUCCESS;
+  }
+
   callback.Run(result);
 }
 
@@ -101,7 +112,7 @@ void RequestQueue::UpdateRequest(const SavePageRequest& update_request,
   // by currying the update_callback as a parameter to be used when calling
   // GetForUpdateDone.  The actual request queue store get operation will not
   // see this bound parameter, but just pass it along.  GetForUpdateDone then
-  // passes it into the AddOrUpdateRequest method, where it ends up calling back
+  // passes it into the UpdateRequests method, where it ends up calling back
   // to the request queue client.
   // TODO(petewil): This would be more efficient if the store supported a call
   // to get a single item by ID.  Change this code to use that API when added.
@@ -114,7 +125,7 @@ void RequestQueue::UpdateRequest(const SavePageRequest& update_request,
 // We need a different version of the GetCallback that can take the curried
 // update_callback as a parameter, and call back into the request queue store
 // implementation.  This must be a member function because we need access to
-// the store pointer to call AddOrUpdateRequest.
+// the store pointer to call UpdateRequests.
 void RequestQueue::GetForUpdateDone(
     const UpdateRequestCallback& update_callback,
     const SavePageRequest& update_request,
@@ -141,8 +152,9 @@ void RequestQueue::GetForUpdateDone(
   }
 
   // Since the request exists, update it.
-  store_->AddOrUpdateRequest(update_request,
-                             base::Bind(&UpdateRequestDone, update_callback));
+  std::vector<SavePageRequest> update_requests{update_request};
+  store_->UpdateRequests(update_requests,
+                         base::Bind(&UpdateRequestsDone, update_callback));
 }
 
 void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,

@@ -25,8 +25,8 @@ class RequestQueueInMemoryStore : public RequestQueueStore {
   void GetRequests(const GetRequestsCallback& callback) override;
   void AddRequest(const SavePageRequest& offline_page,
                   const AddCallback& callback) override;
-  void AddOrUpdateRequest(const SavePageRequest& request,
-                          const UpdateCallback& callback) override;
+  void UpdateRequests(const std::vector<SavePageRequest>& requests,
+                      const UpdateCallback& callback) override;
 
   // Remove requests by request ID. The callback will get a list of
   // UpdateMultipleRequestResults and a list of the removed requests (for use by

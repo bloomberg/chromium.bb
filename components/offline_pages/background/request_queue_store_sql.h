@@ -36,8 +36,8 @@ class RequestQueueStoreSQL : public RequestQueueStore {
   void GetRequests(const GetRequestsCallback& callback) override;
   void AddRequest(const SavePageRequest& offline_page,
                   const AddCallback& callback) override;
-  void AddOrUpdateRequest(const SavePageRequest& offline_page,
-                          const UpdateCallback& callback) override;
+  void UpdateRequests(const std::vector<SavePageRequest>& requests,
+                      const UpdateCallback& callback) override;
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const RemoveCallback& callback) override;
   void ChangeRequestsState(
