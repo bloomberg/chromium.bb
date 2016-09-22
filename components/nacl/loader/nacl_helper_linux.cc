@@ -36,6 +36,7 @@
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/sandbox_linux/nacl_sandbox_linux.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/send_zygote_child_ping_linux.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "ipc/ipc_descriptors.h"
@@ -116,7 +117,7 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
   nacl_sandbox->SealLayerOneSandbox();
   nacl_sandbox->CheckSandboxingStateWithPolicy();
 
-  base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
+  base::GlobalDescriptors::GetInstance()->Set(kMojoIPCChannel,
                                               browser_fd.release());
 
   // The Mojo EDK must be initialized before using IPC.
@@ -152,7 +153,7 @@ void ChildNaClLoaderInit(std::vector<base::ScopedFD> child_fds,
       child_fds[content::ZygoteForkDelegate::kPIDOracleFDIndex].get()));
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kProcessChannelID, channel_id);
+      switches::kMojoChannelToken, channel_id);
 
   // Save the browser socket and close the rest.
   base::ScopedFD browser_fd(

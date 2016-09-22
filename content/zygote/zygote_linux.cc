@@ -37,6 +37,7 @@
 #include "content/common/set_process_title.h"
 #include "content/common/zygote_commands_linux.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_linux.h"
 #include "content/public/common/send_zygote_child_ping_linux.h"
@@ -430,20 +431,16 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
   base::ScopedFD read_pipe, write_pipe;
   base::ProcessId pid = 0;
   if (helper) {
-    int ipc_channel_fd = LookUpFd(fd_mapping, kPrimaryIPCChannel);
-    if (ipc_channel_fd < 0) {
-      DLOG(ERROR) << "Failed to find kPrimaryIPCChannel in FD mapping";
-      return -1;
-    }
     int mojo_channel_fd = LookUpFd(fd_mapping, kMojoIPCChannel);
     if (mojo_channel_fd < 0) {
       DLOG(ERROR) << "Failed to find kMojoIPCChannel in FD mapping";
       return -1;
     }
+    int ipc_channel_fd = LookUpFd(fd_mapping, kPrimaryIPCChannel);
+    DCHECK_EQ(-1, ipc_channel_fd);
     std::vector<int> fds;
-    fds.push_back(ipc_channel_fd);  // kBrowserFDIndex
+    fds.push_back(mojo_channel_fd);  // kBrowserFDIndex
     fds.push_back(pid_oracle.get());  // kPIDOracleFDIndex
-    fds.push_back(mojo_channel_fd);  // kMojoParentFDIndex
     pid = helper->Fork(process_type, fds, channel_id);
 
     // Helpers should never return in the child process.
@@ -569,7 +566,7 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
   std::string process_type;
   std::string channel_id;
   const std::string channel_id_prefix = std::string("--")
-      + switches::kProcessChannelID + std::string("=");
+      + switches::kMojoChannelToken + std::string("=");
 
   if (!iter.ReadString(&process_type))
     return -1;

@@ -49,14 +49,14 @@ class ZygoteForkDelegate {
 
   // Indexes of FDs in the vector passed to Fork().
   enum {
-    // Used to pass in the descriptor for talking to the Browser
+    // Used to pass in the descriptor for talking to the Browser.
+    // Because the children use ChannelMojo, this is actually the Mojo fd.
     kBrowserFDIndex,
     // The PID oracle is used in the protocol for discovering the
     // child process's real PID from within the SUID sandbox.
     // The child process is required to write to the socket after
     // successfully forking.
     kPIDOracleFDIndex,
-    kMojoParentFDIndex,
     kNumPassedFDs  // Number of FDs in the vector passed to Fork().
   };
 

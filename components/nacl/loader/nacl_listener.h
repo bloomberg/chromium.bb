@@ -28,6 +28,12 @@ class SyncChannel;
 class SyncMessageFilter;
 }
 
+namespace mojo {
+namespace edk {
+class ScopedIPCSupport;
+}  // namespace edk
+}  // namespace mojo
+
 // The NaClListener is an IPC channel listener that waits for a
 // request to start a NaCl module.
 class NaClListener : public IPC::Listener {
@@ -118,6 +124,8 @@ class NaClListener : public IPC::Listener {
   PrefetchedResourceFilesMap prefetched_resource_files_;
 
   bool is_started_;
+
+  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClListener);
 };

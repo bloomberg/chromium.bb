@@ -22,6 +22,7 @@
 #include "base/process/process_iterator.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -49,10 +50,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "net/socket/socket_descriptor.h"
 #include "ppapi/host/host_factory.h"
 #include "ppapi/host/ppapi_host.h"
@@ -307,9 +310,11 @@ NaClProcessHost::NaClProcessHost(
       process_type_(process_type),
       profile_directory_(profile_directory),
       render_view_id_(render_view_id),
+      mojo_child_token_(mojo::edk::GenerateRandomToken()),
       weak_factory_(this) {
   process_.reset(content::BrowserChildProcessHost::Create(
-      static_cast<content::ProcessType>(PROCESS_TYPE_NACL_LOADER), this));
+      static_cast<content::ProcessType>(PROCESS_TYPE_NACL_LOADER), this,
+      mojo_child_token_));
 
   // Set the display name so the user knows what plugin the process is running.
   // We aren't on the UI thread so getting the pref locale for language
@@ -577,9 +582,13 @@ void NaClProcessHost::LaunchNaClGdb() {
 }
 
 bool NaClProcessHost::LaunchSelLdr() {
-  std::string channel_id = process_->GetHost()->CreateChannel();
-  if (channel_id.empty()) {
-    SendErrorToRenderer("CreateChannel() failed");
+  DCHECK(!mojo_child_token_.empty());
+  std::string mojo_channel_token =
+      process_->GetHost()->CreateChannelMojo(mojo_child_token_);
+  // |mojo_child_token_| is no longer used.
+  base::STLClearObject(&mojo_child_token_);
+  if (mojo_channel_token.empty()) {
+    SendErrorToRenderer("CreateChannelMojo() failed");
     return false;
   }
 
@@ -639,7 +648,7 @@ bool NaClProcessHost::LaunchSelLdr() {
                               (uses_nonsfi_mode_ ?
                                switches::kNaClLoaderNonSfiProcess :
                                switches::kNaClLoaderProcess));
-  cmd_line->AppendSwitchASCII(switches::kProcessChannelID, channel_id);
+  cmd_line->AppendSwitchASCII(switches::kMojoChannelToken, mojo_channel_token);
   if (NaClBrowser::GetDelegate()->DialogsAreSuppressed())
     cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
@@ -651,7 +660,7 @@ bool NaClProcessHost::LaunchSelLdr() {
 #if defined(OS_WIN)
   if (RunningOnWOW64()) {
     if (!NaClBrokerService::GetInstance()->LaunchLoader(
-            weak_factory_.GetWeakPtr(), channel_id)) {
+            weak_factory_.GetWeakPtr(), mojo_channel_token)) {
       SendErrorToRenderer("broker service did not launch process");
       return false;
     }

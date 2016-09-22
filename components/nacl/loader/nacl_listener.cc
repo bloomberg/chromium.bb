@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/run_loop.h"
 #include "components/nacl/loader/nacl_listener.h"
 
 #include <errno.h>
@@ -11,6 +10,7 @@
 #include <string.h>
 
 #include <memory>
+#include <utility>
 
 #if defined(OS_POSIX)
 #include <unistd.h>
@@ -18,6 +18,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -29,17 +30,22 @@
 #include "components/nacl/loader/nacl_ipc_adapter.h"
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "components/nacl/loader/nacl_validation_query.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "native_client/src/public/chrome_main.h"
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_desc.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
+#include "base/posix/global_descriptors.h"
+#include "content/public/common/content_descriptors.h"
 #endif
 
 #if defined(OS_LINUX)
@@ -50,6 +56,7 @@
 #include <io.h>
 
 #include "content/public/common/sandbox_init.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 #endif
 
 namespace {
@@ -173,6 +180,20 @@ NaClListener::NaClListener()
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
   DCHECK(g_listener == NULL);
   g_listener = this;
+
+  mojo_ipc_support_ =
+      base::MakeUnique<mojo::edk::ScopedIPCSupport>(io_thread_.task_runner());
+#if defined(OS_WIN)
+  mojo::edk::ScopedPlatformHandle platform_channel(
+      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
+          *base::CommandLine::ForCurrentProcess()));
+#else
+  mojo::edk::ScopedPlatformHandle platform_channel(
+      mojo::edk::PlatformHandle(
+          base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
+#endif
+  DCHECK(platform_channel.is_valid());
+  mojo::edk::SetParentPipeHandle(std::move(platform_channel));
 }
 
 NaClListener::~NaClListener() {
@@ -221,9 +242,13 @@ class FileTokenMessageFilter : public IPC::MessageFilter {
 };
 
 void NaClListener::Listen() {
-  std::string channel_name =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessChannelID);
+  mojo::ScopedMessagePipeHandle handle(
+      mojo::edk::CreateChildMessagePipe(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kMojoChannelToken)));
+  DCHECK(handle.is_valid());
+  IPC::ChannelHandle channel_handle(handle.release());
+
   channel_ = IPC::SyncChannel::Create(this, io_thread_.task_runner().get(),
                                       &shutdown_event_);
   filter_ = channel_->CreateSyncMessageFilter();
@@ -231,7 +256,7 @@ void NaClListener::Listen() {
   IPC::AttachmentBroker* global = IPC::AttachmentBroker::GetGlobal();
   if (global && !global->IsPrivilegedBroker())
     global->RegisterBrokerCommunicationChannel(channel_.get());
-  channel_->Init(channel_name, IPC::Channel::MODE_CLIENT, true);
+  channel_->Init(channel_handle, IPC::Channel::MODE_CLIENT, true);
   main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   base::RunLoop().Run();
 }

@@ -27,6 +27,7 @@ source_set("broker") {
     "//components/nacl/common:switches",
     "//content/public/common:static_switches",
     "//ipc",
+    "//mojo/edk/system",
     "//sandbox",
   ]
 

@@ -58,10 +58,12 @@ config("static_switches_defines") {
 source_set("static_switches") {
   public = [
     "content_switches.h",
+    "mojo_channel_switches.h",
   ]
   sources = [
     "//content/common/content_export.h",
     "content_switches.cc",
+    "mojo_channel_switches.cc",
   ]
 
   public_configs = [ ":static_switches_defines" ]

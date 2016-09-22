@@ -265,6 +265,9 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // reporting crash information.
   base::SharedMemory crash_info_shmem_;
 
+  // Randomly generated token identifying the child process to Mojo.
+  std::string mojo_child_token_;
+
   base::WeakPtrFactory<NaClProcessHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);

@@ -4,9 +4,13 @@
 
 #include "components/nacl/loader/nonsfi/nonsfi_listener.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/file_descriptor_posix.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "base/posix/global_descriptors.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -14,10 +18,14 @@
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/loader/nacl_trusted_listener.h"
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
+#include "content/public/common/content_descriptors.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/ipc_sync_channel.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
 #include "native_client/src/public/nonsfi/irt_random.h"
 #include "ppapi/nacl_irt/irt_manifest.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
@@ -36,15 +44,29 @@ NonSfiListener::NonSfiListener()
       key_fd_map_(new std::map<std::string, int>) {
   io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+
+  mojo_ipc_support_ =
+      base::MakeUnique<mojo::edk::ScopedIPCSupport>(io_thread_.task_runner());
+  mojo::edk::ScopedPlatformHandle platform_channel(
+      mojo::edk::PlatformHandle(
+          base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
+  DCHECK(platform_channel.is_valid());
+  mojo::edk::SetParentPipeHandle(std::move(platform_channel));
 }
 
 NonSfiListener::~NonSfiListener() {
 }
 
 void NonSfiListener::Listen() {
+  mojo::ScopedMessagePipeHandle handle(
+      mojo::edk::CreateChildMessagePipe(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kMojoChannelToken)));
+  DCHECK(handle.is_valid());
+  IPC::ChannelHandle channel_handle = IPC::ChannelHandle(handle.release());
+
   channel_ = IPC::SyncChannel::Create(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessChannelID),
+      channel_handle,
       IPC::Channel::MODE_CLIENT,
       this,  // As a Listener.
       io_thread_.task_runner().get(),

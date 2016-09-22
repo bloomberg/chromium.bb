@@ -4,6 +4,8 @@
 
 #include "components/nacl/broker/nacl_broker_listener.h"
 
+#include <utility>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -11,16 +13,22 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/win/win_util.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_debug_exception_handler_win.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "ipc/attachment_broker_unprivileged.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_policy.h"
 
 namespace {
@@ -42,10 +50,14 @@ NaClBrokerListener::~NaClBrokerListener() {
 }
 
 void NaClBrokerListener::Listen() {
-  std::string channel_name =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kProcessChannelID);
-  channel_ = IPC::Channel::CreateClient(channel_name, this);
+  mojo::ScopedMessagePipeHandle handle(
+      mojo::edk::CreateChildMessagePipe(
+          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+              switches::kMojoChannelToken)));
+  DCHECK(handle.is_valid());
+  IPC::ChannelHandle channel_handle(handle.release());
+
+  channel_ = IPC::Channel::CreateClient(channel_handle, this);
   IPC::AttachmentBroker* broker = IPC::AttachmentBroker::GetGlobal();
   if (broker && !broker->IsPrivilegedBroker())
     broker->RegisterBrokerCommunicationChannel(channel_.get());
@@ -91,8 +103,24 @@ void NaClBrokerListener::OnChannelError() {
 }
 
 void NaClBrokerListener::OnLaunchLoaderThroughBroker(
-    const std::string& loader_channel_id) {
+    const std::string& loader_channel_token) {
   base::ProcessHandle loader_handle_in_browser = 0;
+
+  // Mojo channel setup is a little bit convoluted. The normal way an initial
+  // Mojo message pipe is setup is that a secret string token is passed from the
+  // parent to the child on the command line. That token is then used by the
+  // child to create the message pipe. However, the token isn't meant for this
+  // process, but rather the NaCl loader which is the grandchild of the browser,
+  // and tokens can only be used by a direct child.
+  //
+  // To work around this limitation, use the normal process twice to create one
+  // message pipe between the browser and this process and another between this
+  // process and the NaCl loader process and then fuse them with
+  // mojo::FuseMessagePipes() to create a single message pipe connecting the
+  // browser and the NaCl loader process.
+  mojo::ScopedMessagePipeHandle loader_message_pipe(
+      mojo::edk::CreateChildMessagePipe(loader_channel_token));
+  DCHECK(loader_message_pipe.is_valid());
 
   // Create the path to the nacl broker/loader executable - it's the executable
   // this code is running in.
@@ -105,14 +133,36 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
     cmd_line->AppendSwitchASCII(switches::kProcessType,
                                 switches::kNaClLoaderProcess);
 
-    cmd_line->AppendSwitchASCII(switches::kProcessChannelID,
-                                loader_channel_id);
+    // Mojo IPC setup.
+    mojo::edk::PlatformChannelPair channel_pair;
+    mojo::edk::ScopedPlatformHandle parent_handle =
+        channel_pair.PassServerHandle();
+    mojo::edk::ScopedPlatformHandle client_handle =
+        channel_pair.PassClientHandle();
+    base::HandlesToInheritVector handles;
+    handles.push_back(client_handle.get().handle);
+    cmd_line->AppendSwitchASCII(
+        mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch,
+        base::UintToString(base::win::HandleToUint32(handles[0])));
+    const std::string mojo_child_token = mojo::edk::GenerateRandomToken();
+    const std::string mojo_channel_token = mojo::edk::GenerateRandomToken();
+    mojo::ScopedMessagePipeHandle host_message_pipe =
+        mojo::edk::CreateParentMessagePipe(mojo_channel_token,
+                                           mojo_child_token);
+    cmd_line->AppendSwitchASCII(switches::kMojoChannelToken,
+                                mojo_channel_token);
+    CHECK_EQ(MOJO_RESULT_OK,
+             mojo::FuseMessagePipes(std::move(loader_message_pipe),
+                                    std::move(host_message_pipe)));
 
     base::Process loader_process;
     sandbox::ResultCode result = content::StartSandboxedProcess(
-        this, cmd_line, base::HandlesToInheritVector(), &loader_process);
+        this, cmd_line, handles, &loader_process);
 
     if (result == sandbox::SBOX_ALL_OK) {
+      mojo::edk::ChildProcessLaunched(loader_process.Handle(),
+                                      std::move(parent_handle),
+                                      mojo_child_token);
       // Note: PROCESS_DUP_HANDLE is necessary here, because:
       // 1) The current process is the broker, which is the loader's parent.
       // 2) The browser is not the loader's parent, and so only gets the
@@ -126,9 +176,14 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
           browser_process_.Handle(), &loader_handle_in_browser,
           PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION | PROCESS_TERMINATE,
           FALSE, 0);
+    } else {
+      mojo::edk::ChildProcessLaunchFailed(mojo_child_token);
     }
   }
-  channel_->Send(new NaClProcessMsg_LoaderLaunched(loader_channel_id,
+
+  // Although |loader_channel_token| is "consumed", it is passed back to the
+  // browser which uses it as an ID to identify loader processes.
+  channel_->Send(new NaClProcessMsg_LoaderLaunched(loader_channel_token,
                                                    loader_handle_in_browser));
 }
 
