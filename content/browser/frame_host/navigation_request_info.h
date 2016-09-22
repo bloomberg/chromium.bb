@@ -28,6 +28,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                         const url::Origin& request_initiator,
                         bool is_main_frame,
                         bool parent_is_main_frame,
+                        bool are_ancestors_secure,
                         int frame_tree_node_id);
   ~NavigationRequestInfo();
 
@@ -43,6 +44,10 @@ struct CONTENT_EXPORT NavigationRequestInfo {
 
   const bool is_main_frame;
   const bool parent_is_main_frame;
+
+  // Whether all ancestor frames of the frame that is navigating have a secure
+  // origin. True for main frames.
+  const bool are_ancestors_secure;
 
   const int frame_tree_node_id;
 };

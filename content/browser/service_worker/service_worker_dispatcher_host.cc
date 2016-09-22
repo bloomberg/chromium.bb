@@ -23,6 +23,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_handle.h"
+#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -785,14 +786,38 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     return;
   }
 
-  ServiceWorkerProviderHost::FrameSecurityLevel parent_frame_security_level =
-      is_parent_frame_secure
-          ? ServiceWorkerProviderHost::FrameSecurityLevel::SECURE
-          : ServiceWorkerProviderHost::FrameSecurityLevel::INSECURE;
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-      std::unique_ptr<ServiceWorkerProviderHost>(new ServiceWorkerProviderHost(
-          render_process_id_, route_id, provider_id, provider_type,
-          parent_frame_security_level, GetContext()->AsWeakPtr(), this));
+  std::unique_ptr<ServiceWorkerProviderHost> provider_host;
+  if (IsBrowserSideNavigationEnabled() &&
+      ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id)) {
+    // PlzNavigate
+    // Retrieve the provider host previously created for navigation requests.
+    ServiceWorkerNavigationHandleCore* navigation_handle_core =
+        GetContext()->GetNavigationHandleCore(provider_id);
+    if (navigation_handle_core != nullptr)
+      provider_host = navigation_handle_core->RetrievePreCreatedHost();
+
+    // If no host is found, the navigation has been cancelled in the meantime.
+    // Just return as the navigation will be stopped in the renderer as well.
+    if (provider_host == nullptr)
+      return;
+    DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, provider_type);
+    provider_host->CompleteNavigationInitialized(render_process_id_, route_id,
+                                                 this);
+  } else {
+    if (ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id)) {
+      bad_message::ReceivedBadMessage(
+          this, bad_message::SWDH_PROVIDER_CREATED_NO_HOST);
+      return;
+    }
+    ServiceWorkerProviderHost::FrameSecurityLevel parent_frame_security_level =
+        is_parent_frame_secure
+            ? ServiceWorkerProviderHost::FrameSecurityLevel::SECURE
+            : ServiceWorkerProviderHost::FrameSecurityLevel::INSECURE;
+    provider_host = std::unique_ptr<ServiceWorkerProviderHost>(
+        new ServiceWorkerProviderHost(
+            render_process_id_, route_id, provider_id, provider_type,
+            parent_frame_security_level, GetContext()->AsWeakPtr(), this));
+  }
   GetContext()->AddProviderHost(std::move(provider_host));
 }
 

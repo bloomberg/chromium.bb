@@ -179,7 +179,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       std::unique_ptr<NavigationData> navigation_data) override;
   void OnRequestFailed(bool has_stale_copy_in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
-  void OnServiceWorkerEncountered() override;
 
   // Called when the NavigationThrottles have been checked by the
   // NavigationHandle.

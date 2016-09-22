@@ -2071,7 +2071,8 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
 void ResourceDispatcherHostImpl::BeginNavigationRequest(
     ResourceContext* resource_context,
     const NavigationRequestInfo& info,
-    NavigationURLLoaderImplCore* loader) {
+    NavigationURLLoaderImplCore* loader,
+    ServiceWorkerNavigationHandleCore* service_worker_handle_core) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the
   // browser-side navigations project.
   CHECK(IsBrowserSideNavigationEnabled());
@@ -2201,6 +2202,15 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
         new_request.get(),
         blob_context->GetBlobDataFromPublicURL(new_request->url()));
   }
+
+  RequestContextFrameType frame_type =
+      info.is_main_frame ? REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL
+                         : REQUEST_CONTEXT_FRAME_TYPE_NESTED;
+  ServiceWorkerRequestHandler::InitializeForNavigation(
+      new_request.get(), service_worker_handle_core, blob_context,
+      info.begin_params.skip_service_worker, resource_type,
+      info.begin_params.request_context_type, frame_type,
+      info.are_ancestors_secure, info.common_params.post_data);
 
   // TODO(davidben): Attach AppCacheInterceptor.
 

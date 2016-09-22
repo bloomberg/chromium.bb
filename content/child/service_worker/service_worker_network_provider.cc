@@ -7,6 +7,7 @@
 #include "base/atomic_sequence_num.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/service_worker/service_worker_provider_context.h"
+#include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -57,18 +58,34 @@ ServiceWorkerNetworkProvider* ServiceWorkerNetworkProvider::FromDocumentState(
 std::unique_ptr<ServiceWorkerNetworkProvider>
 ServiceWorkerNetworkProvider::CreateForNavigation(
     int route_id,
+    const RequestNavigationParams& request_params,
     blink::WebLocalFrame* frame,
     bool content_initiated) {
+  bool browser_side_navigation = IsBrowserSideNavigationEnabled();
+  bool should_create_provider_for_window = false;
+  int service_worker_provider_id = kInvalidServiceWorkerProviderId;
+  std::unique_ptr<ServiceWorkerNetworkProvider> network_provider;
+
   // Determine if a ServiceWorkerNetworkProvider should be created and properly
   // initialized for the navigation. A default ServiceWorkerNetworkProvider
   // will always be created since it is expected in a certain number of places,
   // however it will have an invalid id.
-  bool should_create_provider_for_window =
-      ((frame->effectiveSandboxFlags() & blink::WebSandboxFlags::Origin) !=
-       blink::WebSandboxFlags::Origin);
+  // PlzNavigate: |service_worker_provider_id| can be sent by the browser, if
+  // it already created the SeviceWorkerProviderHost.
+  if (browser_side_navigation && !content_initiated) {
+    should_create_provider_for_window =
+        request_params.should_create_service_worker;
+    service_worker_provider_id = request_params.service_worker_provider_id;
+    DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
+               service_worker_provider_id) ||
+           service_worker_provider_id == kInvalidServiceWorkerProviderId);
+  } else {
+    should_create_provider_for_window =
+        ((frame->effectiveSandboxFlags() & blink::WebSandboxFlags::Origin) !=
+         blink::WebSandboxFlags::Origin);
+  }
 
   // Now create the ServiceWorkerNetworkProvider (with invalid id if needed).
-  std::unique_ptr<ServiceWorkerNetworkProvider> network_provider;
   if (should_create_provider_for_window) {
     // Ideally Document::isSecureContext would be called here, but the document
     // is not created yet, and due to redirects the URL may change. So pass
@@ -77,10 +94,20 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     // control the document.
     const bool is_parent_frame_secure = IsFrameSecure(frame->parent());
 
-    network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
-        new ServiceWorkerNetworkProvider(route_id,
-                                         SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-                                         is_parent_frame_secure));
+    if (service_worker_provider_id == kInvalidServiceWorkerProviderId) {
+      network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
+          new ServiceWorkerNetworkProvider(route_id,
+                                           SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                           is_parent_frame_secure));
+    } else {
+      CHECK(browser_side_navigation);
+      DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(
+          service_worker_provider_id));
+      network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
+          new ServiceWorkerNetworkProvider(
+              route_id, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+              service_worker_provider_id, is_parent_frame_secure));
+    }
   } else {
     network_provider = std::unique_ptr<ServiceWorkerNetworkProvider>(
         new ServiceWorkerNetworkProvider());
@@ -91,9 +118,11 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     int route_id,
     ServiceWorkerProviderType provider_type,
+    int browser_provider_id,
     bool is_parent_frame_secure)
-    : provider_id_(GetNextProviderId()) {
-  DCHECK(provider_id_ != kInvalidServiceWorkerProviderId);
+    : provider_id_(browser_provider_id) {
+  if (provider_id_ == kInvalidServiceWorkerProviderId)
+    return;
   if (!ChildThreadImpl::current())
     return;  // May be null in some tests.
   context_ = new ServiceWorkerProviderContext(
@@ -102,6 +131,15 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   ChildThreadImpl::current()->Send(new ServiceWorkerHostMsg_ProviderCreated(
       provider_id_, route_id, provider_type, is_parent_frame_secure));
 }
+
+ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
+    int route_id,
+    ServiceWorkerProviderType provider_type,
+    bool is_parent_frame_secure)
+    : ServiceWorkerNetworkProvider(route_id,
+                                   provider_type,
+                                   GetNextProviderId(),
+                                   is_parent_frame_secure) {}
 
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider()
     : provider_id_(kInvalidServiceWorkerProviderId) {}

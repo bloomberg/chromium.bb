@@ -29,6 +29,8 @@ namespace content {
 
 class NavigatorDelegate;
 class ResourceRequestBodyImpl;
+class ServiceWorkerContextWrapper;
+class ServiceWorkerNavigationHandle;
 
 // This class keeps track of a single navigation. It is created upon receipt of
 // a DidStartProvisionalLoad IPC in a RenderFrameHost. The RenderFrameHost owns
@@ -165,6 +167,13 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // request was a redirect that changed the method to GET - for example 302).
   const scoped_refptr<ResourceRequestBodyImpl>& resource_request_body() const {
     return resource_request_body_;
+  }
+
+  // PlzNavigate
+  void InitServiceWorkerHandle(
+      ServiceWorkerContextWrapper* service_worker_context);
+  ServiceWorkerNavigationHandle* service_worker_handle() const {
+    return service_worker_handle_.get();
   }
 
   typedef base::Callback<void(NavigationThrottle::ThrottleCheckResult)>
@@ -322,6 +331,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // This callback will be run when all throttle checks have been performed.
   ThrottleChecksFinishedCallback complete_callback_;
+
+  // PlzNavigate
+  // Manages the lifetime of a pre-created ServiceWorkerProviderHost until a
+  // corresponding ServiceWorkerNetworkProvider is created in the renderer.
+  std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
   // Embedder data tied to this navigation.
   std::unique_ptr<NavigationData> navigation_data_;

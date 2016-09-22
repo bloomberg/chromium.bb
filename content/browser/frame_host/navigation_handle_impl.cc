@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/common/frame_messages.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/content_browser_client.h"
@@ -344,6 +345,13 @@ void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
 
 NavigationData* NavigationHandleImpl::GetNavigationData() {
   return navigation_data_.get();
+}
+
+void NavigationHandleImpl::InitServiceWorkerHandle(
+    ServiceWorkerContextWrapper* service_worker_context) {
+  DCHECK(IsBrowserSideNavigationEnabled());
+  service_worker_handle_.reset(
+      new ServiceWorkerNavigationHandle(service_worker_context));
 }
 
 void NavigationHandleImpl::WillStartRequest(

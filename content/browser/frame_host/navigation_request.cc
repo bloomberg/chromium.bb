@@ -16,6 +16,7 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -27,6 +28,7 @@
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_response.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
@@ -64,6 +66,37 @@ void UpdateLoadFlagsWithCacheFlags(
     default:
       break;
   }
+}
+
+// This is based on SecurityOrigin::isPotentiallyTrustworthy.
+// TODO(clamy): This should be function in url::Origin.
+bool IsPotentiallyTrustworthyOrigin(const url::Origin& origin) {
+  if (origin.unique())
+    return false;
+
+  if (origin.scheme() == url::kHttpsScheme ||
+      origin.scheme() == url::kAboutScheme ||
+      origin.scheme() == url::kDataScheme ||
+      origin.scheme() == url::kWssScheme ||
+      origin.scheme() == url::kFileScheme) {
+    return true;
+  }
+
+  if (net::IsLocalhost(origin.host()))
+    return true;
+
+  // TODO(clamy): Check for whitelisted origins.
+  return false;
+}
+
+// TODO(clamy): This should be function in FrameTreeNode.
+bool IsSecureFrame(FrameTreeNode* frame) {
+  while (frame) {
+    if (!IsPotentiallyTrustworthyOrigin(frame->current_origin()))
+      return false;
+    frame = frame->parent();
+  }
+  return true;
 }
 
 }  // namespace
@@ -300,6 +333,16 @@ void NavigationRequest::OnResponseStarted(
     return;
   }
 
+  // Update the service worker params of the request params.
+  request_params_.should_create_service_worker =
+      (frame_tree_node_->pending_sandbox_flags() &
+       blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
+  if (navigation_handle_->service_worker_handle()) {
+    request_params_.service_worker_provider_id =
+        navigation_handle_->service_worker_handle()
+            ->service_worker_provider_host_id();
+  }
+
   // Update the lofi state of the request.
   if (response->head.is_using_lofi)
     common_params_.lofi_state = LOFI_ON;
@@ -357,14 +400,6 @@ void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
                                                         common_params_.url);
 }
 
-void NavigationRequest::OnServiceWorkerEncountered() {
-  request_params_.should_create_service_worker = true;
-
-  // TODO(clamy): the navigation should be sent to a RenderFrameHost to be
-  // picked up by the ServiceWorker.
-  NOTIMPLEMENTED();
-}
-
 void NavigationRequest::OnStartChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   CHECK(result != NavigationThrottle::DEFER);
@@ -393,9 +428,17 @@ void NavigationRequest::OnStartChecksComplete(
       browser_context, navigating_frame_host->GetSiteInstance());
   DCHECK(partition);
 
-  ServiceWorkerContextWrapper* service_worker_context =
-      static_cast<ServiceWorkerContextWrapper*>(
-          partition->GetServiceWorkerContext());
+  // Only initialize the ServiceWorkerNavigationHandle if it can be created for
+  // this frame.
+  bool can_create_service_worker =
+      (frame_tree_node_->pending_sandbox_flags() &
+       blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
+  if (can_create_service_worker) {
+    ServiceWorkerContextWrapper* service_worker_context =
+        static_cast<ServiceWorkerContextWrapper*>(
+            partition->GetServiceWorkerContext());
+    navigation_handle_->InitServiceWorkerHandle(service_worker_context);
+  }
 
   // Mark the fetch_start (Navigation Timing API).
   request_params_.navigation_timing.fetch_start = base::TimeTicks::Now();
@@ -417,8 +460,9 @@ void NavigationRequest::OnStartChecksComplete(
       base::MakeUnique<NavigationRequestInfo>(
           common_params_, begin_params_, first_party_for_cookies,
           frame_tree_node_->current_origin(), frame_tree_node_->IsMainFrame(),
-          parent_is_main_frame, frame_tree_node_->frame_tree_node_id()),
-      service_worker_context, this);
+          parent_is_main_frame, IsSecureFrame(frame_tree_node_->parent()),
+          frame_tree_node_->frame_tree_node_id()),
+      navigation_handle_->service_worker_handle(), this);
 }
 
 void NavigationRequest::OnRedirectChecksComplete(

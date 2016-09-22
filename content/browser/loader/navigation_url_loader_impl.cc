@@ -12,6 +12,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/navigation_url_loader_impl_core.h"
+#include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
@@ -22,7 +23,7 @@ namespace content {
 NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     BrowserContext* browser_context,
     std::unique_ptr<NavigationRequestInfo> request_info,
-    ServiceWorkerContextWrapper* service_worker_context_wrapper,
+    ServiceWorkerNavigationHandle* service_worker_handle,
     NavigationURLLoaderDelegate* delegate)
     : delegate_(delegate), weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -37,11 +38,13 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       "navigation", "Navigation timeToResponseStarted", core_,
       request_info->common_params.navigation_start,
       "FrameTreeNode id", request_info->frame_tree_node_id);
+  ServiceWorkerNavigationHandleCore* service_worker_handle_core =
+      service_worker_handle ? service_worker_handle->core() : nullptr;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NavigationURLLoaderImplCore::Start, base::Unretained(core_),
                  browser_context->GetResourceContext(),
-                 service_worker_context_wrapper, base::Passed(&request_info)));
+                 service_worker_handle_core, base::Passed(&request_info)));
 }
 
 NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
@@ -99,12 +102,6 @@ void NavigationURLLoaderImpl::NotifyRequestStarted(base::TimeTicks timestamp) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delegate_->OnRequestStarted(timestamp);
-}
-
-void NavigationURLLoaderImpl::NotifyServiceWorkerEncountered() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  delegate_->OnServiceWorkerEncountered();
 }
 
 }  // namespace content

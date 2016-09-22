@@ -51,14 +51,17 @@ ServiceWorkerProviderHost::OneShotGetReadyCallback::~OneShotGetReadyCallback() {
 // static
 std::unique_ptr<ServiceWorkerProviderHost>
 ServiceWorkerProviderHost::PreCreateNavigationHost(
-    base::WeakPtr<ServiceWorkerContextCore> context) {
+    base::WeakPtr<ServiceWorkerContextCore> context,
+    bool are_ancestors_secure) {
   CHECK(IsBrowserSideNavigationEnabled());
   // Generate a new browser-assigned id for the host.
   int provider_id = g_next_navigation_provider_id--;
   return std::unique_ptr<ServiceWorkerProviderHost>(
       new ServiceWorkerProviderHost(
           ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE, provider_id,
-          SERVICE_WORKER_PROVIDER_FOR_WINDOW, FrameSecurityLevel::UNINITIALIZED,
+          SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+          are_ancestors_secure ? FrameSecurityLevel::SECURE
+                               : FrameSecurityLevel::INSECURE,
           context, nullptr));
 }
 

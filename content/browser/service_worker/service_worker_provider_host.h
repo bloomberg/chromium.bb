@@ -59,9 +59,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // PlzNavigate
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerNetworkProvider will later be created in the renderer, should
-  // the navigation succeed.
+  // the navigation succeed. |is_parent_frame_is_secure| should be true for main
+  // frames. Otherwise it is true iff all ancestor frames of this frame have a
+  // secure origin.
   static std::unique_ptr<ServiceWorkerProviderHost> PreCreateNavigationHost(
-      base::WeakPtr<ServiceWorkerContextCore> context);
+      base::WeakPtr<ServiceWorkerContextCore> context,
+      bool are_ancestors_secure);
 
   enum class FrameSecurityLevel { UNINITIALIZED, INSECURE, SECURE };
 

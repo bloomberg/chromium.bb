@@ -318,6 +318,13 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // Timing of navigation events.
   NavigationTiming navigation_timing;
 
+  // PlzNavigate
+  // The ServiceWorkerProviderHost ID used for navigations, if it was already
+  // created by the browser. Set to kInvalidServiceWorkerProviderId otherwise.
+  // This parameter is not used in the current navigation architecture, where
+  // it will always be equal to kInvalidServiceWorkerProviderId.
+  int service_worker_provider_id;
+
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for
   // implementing LoadDataWithBaseUrl API method to circumvent the restriction

@@ -24,6 +24,7 @@ class WebLocalFrame;
 namespace content {
 
 class ServiceWorkerProviderContext;
+struct RequestNavigationParams;
 
 // A unique provider_id is generated for each instance.
 // Instantiated prior to the main resource load being started and remains
@@ -48,9 +49,16 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider
 
   static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForNavigation(
       int route_id,
+      const RequestNavigationParams& request_params,
       blink::WebLocalFrame* frame,
       bool content_initiated);
 
+  // PlzNavigate
+  // The |browser_provider_id| is initialized by the browser for navigations.
+  ServiceWorkerNetworkProvider(int route_id,
+                               ServiceWorkerProviderType type,
+                               int browser_provider_id,
+                               bool is_parent_frame_secure);
   ServiceWorkerNetworkProvider(int route_id,
                                ServiceWorkerProviderType type,
                                bool is_parent_frame_secure);

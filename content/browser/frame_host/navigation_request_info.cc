@@ -14,6 +14,7 @@ NavigationRequestInfo::NavigationRequestInfo(
     const url::Origin& request_initiator,
     bool is_main_frame,
     bool parent_is_main_frame,
+    bool are_ancestors_secure,
     int frame_tree_node_id)
     : common_params(common_params),
       begin_params(begin_params),
@@ -21,6 +22,7 @@ NavigationRequestInfo::NavigationRequestInfo(
       request_initiator(request_initiator),
       is_main_frame(is_main_frame),
       parent_is_main_frame(parent_is_main_frame),
+      are_ancestors_secure(are_ancestors_secure),
       frame_tree_node_id(frame_tree_node_id) {}
 
 NavigationRequestInfo::~NavigationRequestInfo() {}

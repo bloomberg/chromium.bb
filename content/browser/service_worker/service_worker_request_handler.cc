@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_url_request_job.h"
@@ -87,6 +88,56 @@ void FinalizeHandlerInitialization(
 }
 
 }  // namespace
+
+// PlzNavigate
+void ServiceWorkerRequestHandler::InitializeForNavigation(
+    net::URLRequest* request,
+    ServiceWorkerNavigationHandleCore* navigation_handle_core,
+    storage::BlobStorageContext* blob_storage_context,
+    bool skip_service_worker,
+    ResourceType resource_type,
+    RequestContextType request_context_type,
+    RequestContextFrameType frame_type,
+    bool is_parent_frame_secure,
+    scoped_refptr<ResourceRequestBodyImpl> body) {
+  CHECK(IsBrowserSideNavigationEnabled());
+
+  // Only create a handler when there is a ServiceWorkerNavigationHandlerCore
+  // to take ownership of a pre-created SeviceWorkerProviderHost.
+  if (!navigation_handle_core)
+    return;
+
+  // Create the handler even for insecure HTTP since it's used in the
+  // case of redirect to HTTPS.
+  if (!request->url().SchemeIsHTTPOrHTTPS() &&
+      !OriginCanAccessServiceWorkers(request->url())) {
+    return;
+  }
+
+  if (!navigation_handle_core->context_wrapper() ||
+      !navigation_handle_core->context_wrapper()->context()) {
+    return;
+  }
+
+  // Initialize the SWProviderHost.
+  std::unique_ptr<ServiceWorkerProviderHost> provider_host =
+      ServiceWorkerProviderHost::PreCreateNavigationHost(
+          navigation_handle_core->context_wrapper()->context()->AsWeakPtr(),
+          is_parent_frame_secure);
+
+  FinalizeHandlerInitialization(
+      request, provider_host.get(), blob_storage_context, skip_service_worker,
+      FETCH_REQUEST_MODE_SAME_ORIGIN, FETCH_CREDENTIALS_MODE_INCLUDE,
+      FetchRedirectMode::MANUAL_MODE, resource_type, request_context_type,
+      frame_type, body);
+
+  // Transfer ownership to the ServiceWorkerNavigationHandleCore.
+  // In the case of a successful navigation, the SWProviderHost will be
+  // transferred to its "final" destination in the OnProviderCreated handler. If
+  // the navigation fails, it will be destroyed along with the
+  // ServiceWorkerNavigationHandleCore.
+  navigation_handle_core->DidPreCreateProviderHost(std::move(provider_host));
+}
 
 void ServiceWorkerRequestHandler::InitializeHandler(
     net::URLRequest* request,
