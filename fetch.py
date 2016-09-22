@@ -182,9 +182,6 @@ class GclientGitSvnCheckout(GclientGitCheckout, SvnCheckout):
       wd = os.path.join(self.base, real_path)
       if self.options.dry_run:
         print 'cd %s' % wd
-      if svn_spec.get('auto'):
-        self.run_git('auto-svn', cwd=wd)
-        continue
       self.run_git('svn', 'init', svn_spec['svn_url'], cwd=wd)
       self.run_git('config', '--unset-all', 'svn-remote.svn.fetch', cwd=wd)
       for svn_branch, git_ref in svn_spec.get('git_svn_fetch', {}).items():

@@ -4400,8 +4400,8 @@ def CMDdcommit(parser, args):
   if not settings.GetIsGitSvn():
     if git_footers.get_footer_svn_id():
       # If it looks like previous commits were mirrored with git-svn.
-      message = """This repository appears to be a git-svn mirror, but no
-upstream SVN master is set. You probably need to run 'git auto-svn' once."""
+      message = """This repository appears to be a git-svn mirror, but we
+don't support git-svn mirrors anymore."""
     else:
       message = """This doesn't appear to be an SVN repository.
 If your project has a true, writeable git repository, you probably want to run

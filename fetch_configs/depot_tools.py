@@ -23,11 +23,8 @@ class DepotTools(config_util.Config):
     }
     spec = {
       'solutions': [solution],
-      'auto': True,
     }
-    checkout_type = 'gclient_git_svn'
-    if props.get('nosvn'):
-      checkout_type = 'gclient_git'
+    checkout_type = 'gclient_git'
     spec_type = '%s_spec' % checkout_type
     return {
       'type': checkout_type,
