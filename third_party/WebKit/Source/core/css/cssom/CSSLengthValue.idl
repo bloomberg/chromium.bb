@@ -10,9 +10,9 @@ enum LengthType {
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSLengthValue : CSSStyleValue {
-    [RaisesException, NewObject] CSSLengthValue add(CSSLengthValue other);
-    [RaisesException, NewObject] CSSLengthValue subtract(CSSLengthValue other);
-    [RaisesException, NewObject] CSSLengthValue multiply(double value);
+    [NewObject] CSSLengthValue add(CSSLengthValue other);
+    [NewObject] CSSLengthValue subtract(CSSLengthValue other);
+    [NewObject] CSSLengthValue multiply(double value);
     [RaisesException, NewObject] CSSLengthValue divide(double value);
 
     [RaisesException, NewObject] static CSSLengthValue from(DOMString cssText);

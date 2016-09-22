@@ -73,9 +73,9 @@ bool CSSCalcLength::containsPercent() const
     return has(CSSPrimitiveValue::UnitType::Percentage);
 }
 
-CSSLengthValue* CSSCalcLength::addInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSCalcLength::addInternal(const CSSLengthValue* other)
 {
-    CSSCalcLength* result = CSSCalcLength::create(other, exceptionState);
+    CSSCalcLength* result = CSSCalcLength::create(other);
     for (int i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (hasAtIndex(i)) {
             result->setAtIndex(getAtIndex(i) + result->getAtIndex(i), i);
@@ -84,9 +84,9 @@ CSSLengthValue* CSSCalcLength::addInternal(const CSSLengthValue* other, Exceptio
     return result;
 }
 
-CSSLengthValue* CSSCalcLength::subtractInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSCalcLength::subtractInternal(const CSSLengthValue* other)
 {
-    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
+    CSSCalcLength* result = CSSCalcLength::create(this);
     if (other->type() == CalcLengthType) {
         const CSSCalcLength* o = toCSSCalcLength(other);
         for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
@@ -101,9 +101,9 @@ CSSLengthValue* CSSCalcLength::subtractInternal(const CSSLengthValue* other, Exc
     return result;
 }
 
-CSSLengthValue* CSSCalcLength::multiplyInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSCalcLength::multiplyInternal(double x)
 {
-    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
+    CSSCalcLength* result = CSSCalcLength::create(this);
     for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (hasAtIndex(i)) {
             result->setAtIndex(getAtIndex(i) * x, i);
@@ -112,9 +112,10 @@ CSSLengthValue* CSSCalcLength::multiplyInternal(double x, ExceptionState& except
     return result;
 }
 
-CSSLengthValue* CSSCalcLength::divideInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSCalcLength::divideInternal(double x)
 {
-    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
+    DCHECK_NE(x, 0);
+    CSSCalcLength* result = CSSCalcLength::create(this);
     for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (hasAtIndex(i)) {
             result->setAtIndex(getAtIndex(i) / x, i);

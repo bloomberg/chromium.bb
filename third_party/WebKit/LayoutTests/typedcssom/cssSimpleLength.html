@@ -15,7 +15,7 @@ test(function() {
   assert_true(result instanceof CSSSimpleLength);
   assert_equals(result.value, 15.1);
   assert_equals(result.type, 'px');
-}, 'Test that adding CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value.');
+}, 'Adding CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value.');
 
 test(function() {
   var simpleLength1 = new CSSSimpleLength(5.1, 'px');
@@ -26,7 +26,7 @@ test(function() {
   assert_true(result instanceof CSSCalcLength);
   assert_equals(result.px, 5.1);
   assert_equals(result.percent, 10);
-}, 'Test that adding CSSSimpleLengths with different units produces a calc length with the correct values.');
+}, 'Adding CSSSimpleLengths with different units produces a calc length with the correct values.');
 
 test(function() {
   var simpleLength1 = new CSSSimpleLength(5.1, 'px');
@@ -39,7 +39,7 @@ test(function() {
   assert_true(result instanceof CSSSimpleLength);
   assert_equals(result.value, -4.9);
   assert_equals(result.type, 'px');
-}, 'Test that subtracting CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value.');
+}, 'Subtracting CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value.');
 
 test(function() {
   var simpleLength1 = new CSSSimpleLength(5.1, 'px');
@@ -50,7 +50,7 @@ test(function() {
   assert_true(result instanceof CSSCalcLength);
   assert_equals(result.px, 5.1);
   assert_equals(result.percent, -10);
-}, 'Test that subtracting CSSSimpleLengths with different units produces a calc length with the correct values.');
+}, 'Subtracting CSSSimpleLengths with different units produces a calc length with the correct values.');
 
 test(function() {
   var simpleLength = new CSSSimpleLength(5.2, 'px');
@@ -60,7 +60,7 @@ test(function() {
   assert_true(result instanceof CSSSimpleLength);
   assert_approx_equals(result.value, 20.8, 0.00000001);
   assert_equals(result.type, 'px');
-}, 'Test that multiplying a CSSSimpleLength produces a new CSSSimpleLength with the correct value.');
+}, 'Multiplying a CSSSimpleLength produces a new CSSSimpleLength with the correct value.');
 
 test(function() {
   var simpleLength = new CSSSimpleLength(25, 'px');
@@ -70,7 +70,12 @@ test(function() {
   assert_true(result instanceof CSSSimpleLength);
   assert_equals(result.value, 12.5);
   assert_equals(result.type, 'px');
-}, 'Test that dividing a CSSSimpleLength produces a new CSSSimpleLength with the correct value.');
+}, 'Dividing a CSSSimpleLength produces a new CSSSimpleLength with the correct value.');
+
+test(function() {
+  var simpleLength = new CSSSimpleLength(1, 'px');
+  assert_throws(new RangeError(), function() { simpleLength.divide(0); });
+}, 'Dividing by zero throws a RangeError');
 
 test(function() {
   var values = [
@@ -112,7 +117,7 @@ test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_equals(values[i].input.cssText, values[i].cssText);
   }
-}, 'Test that the CSSSimpleLength css string is generated correctly for each unit type.');
+}, 'cssText is generated correctly for each unit type.');
 
 test(function() {
   var values = [
@@ -125,7 +130,7 @@ test(function() {
   for (var i = 0; i < values.length; ++i) {
     assert_throws(null, function() { new CSSSimpleLength(values[i].value, values[i].unit); });
   }
-}, 'Test that invalid input throws an exception.');
+}, 'Invalid input throws an exception.');
 
 </script>
 

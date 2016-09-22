@@ -19,9 +19,9 @@ class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
 public:
     static CSSPrimitiveValue::UnitType unitFromName(const String& name);
 
-    CSSLengthValue* add(const CSSLengthValue* other, ExceptionState&);
-    CSSLengthValue* subtract(const CSSLengthValue* other, ExceptionState&);
-    CSSLengthValue* multiply(double, ExceptionState&);
+    CSSLengthValue* add(const CSSLengthValue* other);
+    CSSLengthValue* subtract(const CSSLengthValue* other);
+    CSSLengthValue* multiply(double);
     CSSLengthValue* divide(double, ExceptionState&);
 
     virtual bool containsPercent() const = 0;
@@ -33,10 +33,10 @@ public:
 protected:
     CSSLengthValue() {}
 
-    virtual CSSLengthValue* addInternal(const CSSLengthValue* other, ExceptionState&);
-    virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other, ExceptionState&);
-    virtual CSSLengthValue* multiplyInternal(double, ExceptionState&);
-    virtual CSSLengthValue* divideInternal(double, ExceptionState&);
+    virtual CSSLengthValue* addInternal(const CSSLengthValue* other);
+    virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other);
+    virtual CSSLengthValue* multiplyInternal(double);
+    virtual CSSLengthValue* divideInternal(double);
 
     static bool isSupportedLengthUnit(CSSPrimitiveValue::UnitType unit)
     {

@@ -54,10 +54,10 @@ public:
 
     StyleValueType type() const override { return CalcLengthType; }
 protected:
-    CSSLengthValue* addInternal(const CSSLengthValue* other, ExceptionState&) override;
-    CSSLengthValue* subtractInternal(const CSSLengthValue* other, ExceptionState&) override;
-    CSSLengthValue* multiplyInternal(double, ExceptionState&) override;
-    CSSLengthValue* divideInternal(double, ExceptionState&) override;
+    CSSLengthValue* addInternal(const CSSLengthValue* other) override;
+    CSSLengthValue* subtractInternal(const CSSLengthValue* other) override;
+    CSSLengthValue* multiplyInternal(double) override;
+    CSSLengthValue* divideInternal(double) override;
 
 private:
     CSSCalcLength();

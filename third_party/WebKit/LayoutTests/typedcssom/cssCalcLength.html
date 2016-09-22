@@ -7,7 +7,7 @@ test(function() {
   assert_throws(null, function() { new CSSCalcLength(); });
   assert_throws(null, function() { new CSSCalcLength({}); });
   assert_throws(null, function() { new CSSCalcLength({foo: 1}); });
-}, 'Test that passing invalid arguments to CSSCalcLength throws an exception.');
+}, 'Passing invalid arguments to CSSCalcLength throws an exception.');
 
 test(function() {
   var calcLength1 = new CSSCalcLength({px: 1, percent: 2.2});
@@ -20,7 +20,7 @@ test(function() {
   assert_true(result instanceof CSSCalcLength);
   assert_equals(result.px, 4);
   assert_equals(result.percent, 6.5);
-}, 'Test that adding two CSSCalcLengths produces a new CSSCalcLength with the correct value.');
+}, 'Adding two CSSCalcLengths produces a new CSSCalcLength with the correct value.');
 
 test(function() {
   var calcLength1 = new CSSCalcLength({px: 1, percent: 2.2});
@@ -33,7 +33,7 @@ test(function() {
   assert_true(result instanceof CSSCalcLength);
   assert_equals(result.px, -2);
   assert_approx_equals(result.percent, -2.1, 0.000001);
-}, 'Test that subtracting two CSSCalcLengths produces a new CSSCalcLength with the correct values.');
+}, 'Subtracting two CSSCalcLengths produces a new CSSCalcLength with the correct values.');
 
 test(function() {
   var calcLength = new CSSCalcLength({px: 1, percent: 5.2});
@@ -42,7 +42,7 @@ test(function() {
   assert_not_equals(calcLength, result);
   assert_equals(result.px, 3);
   assert_approx_equals(result.percent, 15.6, 0.000001);
-}, 'Test that multiplying a CSSCalcLength produces a new CSSCalcLength with the correct values.');
+}, 'Multiplying a CSSCalcLength produces a new CSSCalcLength with the correct values.');
 
 test(function() {
   var calcLength = new CSSCalcLength({px: 3, percent: 15.6});
@@ -51,7 +51,12 @@ test(function() {
   assert_not_equals(calcLength, result);
   assert_equals(result.px, 1);
   assert_equals(result.percent, 5.2);
-}, 'Test that dividing a CSSCalcLength produces a new CSSCalcLength with the correct values.');
+}, 'Dividing a CSSCalcLength produces a new CSSCalcLength with the correct values.');
+
+test(function() {
+  var calcLength = new CSSCalcLength({px: 4, percent: 1});
+  assert_throws(new RangeError(), function() { calcLength.divide(0); });
+}, 'Dividing by zero throws a RangeError');
 
 test(function() {
   var values = [
@@ -68,7 +73,7 @@ test(function() {
     assert_equals(values[i].input.cssText, values[i].cssText);
   }
 
-}, 'Test that the CSS string method for a CSSCalcLength produces the correct result');
+}, 'cssText produces the correct string');
 
 </script>
 

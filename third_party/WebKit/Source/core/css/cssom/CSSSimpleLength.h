@@ -44,10 +44,10 @@ public:
     CSSValue* toCSSValue() const override;
 
 protected:
-    virtual CSSLengthValue* addInternal(const CSSLengthValue* other, ExceptionState&);
-    virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other, ExceptionState&);
-    virtual CSSLengthValue* multiplyInternal(double, ExceptionState&);
-    virtual CSSLengthValue* divideInternal(double, ExceptionState&);
+    virtual CSSLengthValue* addInternal(const CSSLengthValue* other);
+    virtual CSSLengthValue* subtractInternal(const CSSLengthValue* other);
+    virtual CSSLengthValue* multiplyInternal(double);
+    virtual CSSLengthValue* divideInternal(double);
 
 private:
     CSSSimpleLength(double value, CSSPrimitiveValue::UnitType unit) : CSSLengthValue(), m_unit(unit), m_value(value) {}

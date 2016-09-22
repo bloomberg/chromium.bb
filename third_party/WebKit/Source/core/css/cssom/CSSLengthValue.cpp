@@ -36,53 +36,71 @@ CSSLengthValue* CSSLengthValue::from(const CSSCalcDictionary& dictionary, Except
     return CSSCalcLength::create(dictionary, exceptionState);
 }
 
-CSSLengthValue* CSSLengthValue::add(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::add(const CSSLengthValue* other)
 {
-    if (type() == other->type() || type() == CalcLengthType)
-        return addInternal(other, exceptionState);
+    if (type() == CalcLengthType)
+        return addInternal(other);
 
-    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
-    return result->add(other, exceptionState);
+    DCHECK_EQ(type(), SimpleLengthType);
+    if (other->type() == SimpleLengthType
+        && toCSSSimpleLength(this)->unit() == toCSSSimpleLength(other)->unit()) {
+        return addInternal(other);
+    }
+
+    // TODO(meade): This CalcLength is immediately thrown away. We might want
+    // to optimize this at some point.
+    CSSCalcLength* result = CSSCalcLength::create(this);
+    return result->add(other);
 }
 
-CSSLengthValue* CSSLengthValue::subtract(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::subtract(const CSSLengthValue* other)
 {
-    if (type() == other->type() || type() == CalcLengthType)
-        return subtractInternal(other, exceptionState);
+    if (type() == CalcLengthType)
+        return subtractInternal(other);
 
-    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
-    return result->subtract(other, exceptionState);
+    DCHECK_EQ(type(), SimpleLengthType);
+    if (other->type() == SimpleLengthType
+        && toCSSSimpleLength(this)->unit() == toCSSSimpleLength(other)->unit()) {
+        return subtractInternal(other);
+    }
+
+    CSSCalcLength* result = CSSCalcLength::create(this);
+    return result->subtract(other);
 }
 
-CSSLengthValue* CSSLengthValue::multiply(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSLengthValue::multiply(double x)
 {
-    return multiplyInternal(x, exceptionState);
+    return multiplyInternal(x);
 }
 
 CSSLengthValue* CSSLengthValue::divide(double x, ExceptionState& exceptionState)
 {
-    return divideInternal(x, exceptionState);
+    if (x == 0) {
+        exceptionState.throwRangeError("Cannot divide by zero");
+        return nullptr;
+    }
+    return divideInternal(x);
 }
 
-CSSLengthValue* CSSLengthValue::addInternal(const CSSLengthValue*, ExceptionState&)
+CSSLengthValue* CSSLengthValue::addInternal(const CSSLengthValue*)
 {
     NOTREACHED();
     return nullptr;
 }
 
-CSSLengthValue* CSSLengthValue::subtractInternal(const CSSLengthValue*, ExceptionState&)
+CSSLengthValue* CSSLengthValue::subtractInternal(const CSSLengthValue*)
 {
     NOTREACHED();
     return nullptr;
 }
 
-CSSLengthValue* CSSLengthValue::multiplyInternal(double, ExceptionState&)
+CSSLengthValue* CSSLengthValue::multiplyInternal(double)
 {
     NOTREACHED();
     return nullptr;
 }
 
-CSSLengthValue* CSSLengthValue::divideInternal(double, ExceptionState&)
+CSSLengthValue* CSSLengthValue::divideInternal(double)
 {
     NOTREACHED();
     return nullptr;

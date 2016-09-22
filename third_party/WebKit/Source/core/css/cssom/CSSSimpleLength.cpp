@@ -20,35 +20,28 @@ bool CSSSimpleLength::containsPercent() const
     return lengthUnit() == CSSPrimitiveValue::UnitType::Percentage;
 }
 
-CSSLengthValue* CSSSimpleLength::addInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSSimpleLength::addInternal(const CSSLengthValue* other)
 {
     const CSSSimpleLength* o = toCSSSimpleLength(other);
-    if (m_unit == o->m_unit)
-        return create(m_value + o->value(), m_unit);
-
-    // Different units resolve to a calc.
-    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
-    return result->add(other, exceptionState);
+    DCHECK_EQ(m_unit, o->m_unit);
+    return create(m_value + o->value(), m_unit);
 }
 
-CSSLengthValue* CSSSimpleLength::subtractInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSSimpleLength::subtractInternal(const CSSLengthValue* other)
 {
     const CSSSimpleLength* o = toCSSSimpleLength(other);
-    if (m_unit == o->m_unit)
-        return create(m_value - o->value(), m_unit);
-
-    // Different units resolve to a calc.
-    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
-    return result->subtract(other, exceptionState);
+    DCHECK_EQ(m_unit, o->m_unit);
+    return create(m_value - o->value(), m_unit);
 }
 
-CSSLengthValue* CSSSimpleLength::multiplyInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSSimpleLength::multiplyInternal(double x)
 {
     return create(m_value * x, m_unit);
 }
 
-CSSLengthValue* CSSSimpleLength::divideInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSSimpleLength::divideInternal(double x)
 {
+    DCHECK_NE(x, 0);
     return create(m_value / x, m_unit);
 }
 
