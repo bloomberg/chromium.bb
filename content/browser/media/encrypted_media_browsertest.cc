@@ -10,9 +10,11 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 #endif
 
 #if defined(ENABLE_MOJO_RENDERER)
@@ -23,6 +25,10 @@
 
 // Available key systems.
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
+
+#if defined(OS_ANDROID)
+const char kExternalClearKeyKeySystem[] = "org.chromium.externalclearkey";
+#endif
 
 // Supported media types.
 const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
@@ -60,7 +66,9 @@ static bool IsMSESupported() {
 
 // Tests encrypted media playback with a combination of parameters:
 // - char*: Key system name.
-// - bool: True to load media using MSE, otherwise use src.
+// - SrcType: The type of video src used to load media, MSE or SRC.
+// It is okay to run this test as a non-parameterized test, in this case,
+// GetParam() should not be called.
 class EncryptedMediaTest : public content::MediaBrowserTest,
     public testing::WithParamInterface<std::tr1::tuple<const char*, SrcType> > {
  public:
@@ -142,6 +150,10 @@ class EncryptedMediaTest : public content::MediaBrowserTest,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(
         switches::kDisableGestureRequirementForMediaPlayback);
+#if defined(OS_ANDROID)
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    media::kExternalClearKeyForTesting.name);
+#endif
   }
 };
 
@@ -214,5 +226,17 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, UnknownKeySystemThrowsException) {
                         kWebMVorbisAudioOnly, "com.example.foo", MSE,
                         kEmeNotSupportedError);
 }
+
+#if defined(OS_ANDROID)
+// On Android, External Clear Key is supported in //content/shell/ by using mojo
+// CDM with AesDecryptor running in the GPU process.
+// On other platforms, External Clear Key is supported in chrome/, so it is
+// tested in browser_tests.
+IN_PROC_BROWSER_TEST_F(EncryptedMediaTest, ExternalClearKeyPlayback) {
+  RunSimpleEncryptedMediaTest("bear-320x240-av_enc-av.webm",
+                              kWebMVorbisAudioVP8Video,
+                              kExternalClearKeyKeySystem, MSE);
+}
+#endif
 
 }  // namespace content

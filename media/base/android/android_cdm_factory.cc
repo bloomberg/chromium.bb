@@ -4,11 +4,15 @@
 
 #include "media/base/android/android_cdm_factory.h"
 
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_config.h"
+#include "media/base/key_system_names.h"
 #include "media/base/key_systems.h"
+#include "media/base/media_switches.h"
+#include "media/cdm/aes_decryptor.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "url/gurl.h"
 
@@ -33,6 +37,17 @@ void AndroidCdmFactory::Create(
 
   if (!security_origin.is_valid()) {
     bound_cdm_created_cb.Run(nullptr, "Invalid origin.");
+    return;
+  }
+
+  // Create AesDecryptor here to support External Clear Key key system.
+  // This is used for testing.
+  if (base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting) &&
+      IsExternalClearKey(key_system)) {
+    scoped_refptr<MediaKeys> cdm(
+        new AesDecryptor(security_origin, session_message_cb, session_closed_cb,
+                         session_keys_change_cb));
+    bound_cdm_created_cb.Run(cdm, "");
     return;
   }
 

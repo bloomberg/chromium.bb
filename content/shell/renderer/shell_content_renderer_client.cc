@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "components/cdm/renderer/external_clear_key_key_system_properties.h"
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/test/test_mojo_service.mojom.h"
 #include "content/shell/common/shell_switches.h"
@@ -23,6 +24,11 @@
 
 #if defined(ENABLE_PLUGINS)
 #include "ppapi/shared_impl/ppapi_switches.h"
+#endif
+
+#if defined(OS_ANDROID)
+#include "base/feature_list.h"
+#include "media/base/media_switches.h"
 #endif
 
 namespace content {
@@ -133,5 +139,18 @@ void ShellContentRendererClient::ExposeInterfacesToBrowser(
   interface_registry->AddInterface<mojom::TestMojoService>(
       base::Bind(&CreateTestMojoService));
 }
+
+#if defined(OS_ANDROID)
+void ShellContentRendererClient::AddSupportedKeySystems(
+    std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {
+  if (!base::FeatureList::IsEnabled(media::kExternalClearKeyForTesting))
+    return;
+
+  static const char kExternalClearKeyKeySystem[] =
+      "org.chromium.externalclearkey";
+  key_systems->emplace_back(
+      new cdm::ExternalClearKeyProperties(kExternalClearKeyKeySystem));
+}
+#endif
 
 }  // namespace content

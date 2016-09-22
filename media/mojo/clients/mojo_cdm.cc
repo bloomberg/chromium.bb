@@ -84,8 +84,8 @@ MojoCdm::~MojoCdm() {
   base::AutoLock auto_lock(lock_);
 
   // Release |decryptor_| on the correct thread. If GetDecryptor() is never
-  // called but |decryptor_ptr_| is not null, it is not bound to any thread and
-  // is safe to be released on the current thread.
+  // called but |decryptor_ptr_info_| is not null, it is not bound to any thread
+  // and is safe to be released on the current thread.
   if (decryptor_task_runner_ &&
       !decryptor_task_runner_->BelongsToCurrentThread() && decryptor_) {
     decryptor_task_runner_->DeleteSoon(FROM_HERE, decryptor_.release());
@@ -219,9 +219,11 @@ media::Decryptor* MojoCdm::GetDecryptor() {
   DCHECK(decryptor_task_runner_->BelongsToCurrentThread());
 
   // Can be called on a different thread.
-  if (decryptor_ptr_) {
+  if (decryptor_ptr_info_.is_valid()) {
     DCHECK(!decryptor_);
-    decryptor_.reset(new MojoDecryptor(std::move(decryptor_ptr_)));
+    mojom::DecryptorPtr decryptor_ptr;
+    decryptor_ptr.Bind(std::move(decryptor_ptr_info_));
+    decryptor_.reset(new MojoDecryptor(std::move(decryptor_ptr)));
   }
 
   return decryptor_.get();
@@ -306,7 +308,7 @@ void MojoCdm::OnCdmInitialized(mojom::CdmPromiseResultPtr result,
     base::AutoLock auto_lock(lock_);
     DCHECK_NE(CdmContext::kInvalidCdmId, cdm_id);
     cdm_id_ = cdm_id;
-    decryptor_ptr_ = std::move(decryptor);
+    decryptor_ptr_info_ = decryptor.PassInterface();
   }
 
   pending_init_promise_->resolve();

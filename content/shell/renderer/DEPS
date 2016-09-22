@@ -1,5 +1,6 @@
 include_rules = [
   "+gin",
+  "+components/cdm",
   "+components/web_cache/renderer",
   "+components/plugins/renderer",
   "+components/test_runner",

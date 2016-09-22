@@ -220,6 +220,7 @@ static_library("content_shell_lib") {
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//cc",
+    "//components/cdm/renderer",
     "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
     "//components/plugins/renderer",
     "//components/test_runner:test_runner",

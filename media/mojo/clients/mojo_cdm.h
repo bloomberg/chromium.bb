@@ -140,10 +140,10 @@ class MojoCdm : public MediaKeys,
   // be invalid if initialization succeeded.
   int cdm_id_;
 
-  // The DecryptorPtr exposed by the remote CDM. Set after initialization is
-  // completed and cleared after |decryptor_| is created. May be null after
-  // initialization if the CDM doesn't support a Decryptor.
-  mojom::DecryptorPtr decryptor_ptr_;
+  // The DecryptorPtrInfo exposed by the remote CDM. Set after initialization
+  // is completed and cleared after |decryptor_| is created. May be invalid
+  // after initialization if the CDM doesn't support a Decryptor.
+  mojom::DecryptorPtrInfo decryptor_ptr_info_;
 
   // Decryptor based on |decryptor_ptr_|, lazily created in GetDecryptor().
   // Since GetDecryptor() can be called on a different thread, use

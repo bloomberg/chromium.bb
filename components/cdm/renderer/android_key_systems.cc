@@ -91,9 +91,7 @@ class AndroidPlatformKeySystemProperties : public KeySystemProperties {
   const SupportedCodecs supported_codecs_;
 };
 
-}  // namespace
-
-static SupportedKeySystemResponse QueryKeySystemSupport(
+SupportedKeySystemResponse QueryKeySystemSupport(
     const std::string& key_system) {
   SupportedKeySystemRequest request;
   SupportedKeySystemResponse response;
@@ -108,6 +106,8 @@ static SupportedKeySystemResponse QueryKeySystemSupport(
       << "unrecognized codec";
   return response;
 }
+
+}  // namespace
 
 void AddAndroidWidevine(
     std::vector<std::unique_ptr<KeySystemProperties>>* concrete_key_systems) {

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 #include "content/public/renderer/content_renderer_client.h"
 
 namespace web_cache {
@@ -35,6 +36,12 @@ class ShellContentRendererClient : public ContentRendererClient {
 
   void ExposeInterfacesToBrowser(
       shell::InterfaceRegistry* interface_registry) override;
+
+#if defined(OS_ANDROID)
+  void AddSupportedKeySystems(
+      std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems)
+      override;
+#endif
 
  private:
   std::unique_ptr<web_cache::WebCacheImpl> web_cache_impl_;
