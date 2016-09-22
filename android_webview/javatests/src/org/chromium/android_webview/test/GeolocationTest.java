@@ -304,6 +304,7 @@ public class GeolocationTest extends AwTestBase {
 
     @Feature({"AndroidWebView"})
     @SmallTest
+    @RetryOnFailure
     public void testDenyAccessByDefault() throws Throwable {
         initAwContents(new DefaultPermisionAwContentClient());
         loadDataWithBaseUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), RAW_HTML,

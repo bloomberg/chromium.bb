@@ -37,6 +37,7 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
     }
 
     @MediumTest
+    @RetryOnFailure
     public void testStackQueueOrder() throws InterruptedException {
         final Snackbar stackbar = Snackbar.make("stack", mDefaultController,
                 Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);

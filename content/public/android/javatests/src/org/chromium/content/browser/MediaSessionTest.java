@@ -354,6 +354,7 @@ public class MediaSessionTest extends ContentShellTestBase {
 
     @MediumTest
     @Feature({"MediaSession"})
+    @RetryOnFailure
     public void testMediaResumeAfterTransientFocusLoss() throws Exception {
         assertEquals(AudioManager.AUDIOFOCUS_LOSS, mAudioFocusChangeListener.getAudioFocusState());
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);

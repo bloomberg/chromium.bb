@@ -282,6 +282,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature({"FindInPage"})
+    @RetryOnFailure
     public void testFindNextPreviousIncognitoTab() throws InterruptedException {
         String query = "pitts";
         newIncognitoTabFromMenu();

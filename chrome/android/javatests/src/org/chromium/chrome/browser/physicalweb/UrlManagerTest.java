@@ -166,6 +166,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testAddUrlNoResolutionDoesNothing() throws Exception {
         addEmptyPwsResult();
         addUrlInfo1();

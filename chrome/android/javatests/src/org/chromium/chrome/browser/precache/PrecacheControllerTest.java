@@ -183,6 +183,7 @@ public class PrecacheControllerTest extends InstrumentationTestCase {
 
     @SmallTest
     @Feature({"Precache"})
+    @RetryOnFailure
     public void testStartWhenAlreadyStarted() {
         verifyBeginPrecaching();
 

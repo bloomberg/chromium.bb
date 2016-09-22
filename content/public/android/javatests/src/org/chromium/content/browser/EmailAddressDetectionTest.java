@@ -7,6 +7,7 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 
 /**
  * Test suite for email address detection.
@@ -23,6 +24,7 @@ public class EmailAddressDetectionTest extends ContentDetectionTestBase {
 
     @MediumTest
     @Feature({"ContentDetection", "TabContents"})
+    @RetryOnFailure
     public void testValidEmailAddresses() throws Throwable {
         startActivityWithTestUrl("content/test/data/android/content_detection/email.html");
 

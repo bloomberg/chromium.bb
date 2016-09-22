@@ -252,6 +252,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
     }
 
     @MediumTest
+    @RetryOnFailure
     public void testUndoDelete() throws Exception {
         // Adapter positions:
         // 0 = date
@@ -330,6 +331,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
     }
 
     @MediumTest
+    @RetryOnFailure
     public void testUndoDeleteDuplicatesSelected() throws Exception {
         // Adapter positions:
         // 0 = date
