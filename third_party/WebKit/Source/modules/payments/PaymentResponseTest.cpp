@@ -48,6 +48,7 @@ TEST(PaymentResponseTest, DataCopiedOver)
     input->method_name = "foo";
     input->stringified_details = "{\"transactionId\": 123}";
     input->shipping_option = "standardShippingOption";
+    input->payer_name = "Jon Doe";
     input->payer_email = "abc@gmail.com";
     input->payer_phone = "0123";
     MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
@@ -56,6 +57,7 @@ TEST(PaymentResponseTest, DataCopiedOver)
 
     EXPECT_EQ("foo", output.methodName());
     EXPECT_EQ("standardShippingOption", output.shippingOption());
+    EXPECT_EQ("Jon Doe", output.payerName());
     EXPECT_EQ("abc@gmail.com", output.payerEmail());
     EXPECT_EQ("0123", output.payerPhone());
 

@@ -134,6 +134,7 @@ struct TypeConverter<PaymentOptionsPtr, blink::PaymentOptions> {
     static PaymentOptionsPtr Convert(const blink::PaymentOptions& input)
     {
         PaymentOptionsPtr output = PaymentOptions::New();
+        output->request_payer_name = input.requestPayerName();
         output->request_payer_email = input.requestPayerEmail();
         output->request_payer_phone = input.requestPayerPhone();
         output->request_shipping = input.requestShipping();
@@ -596,8 +597,10 @@ void PaymentRequest::OnPaymentResponse(mojom::blink::PaymentResponsePtr response
         }
     }
 
-    if ((m_options.requestPayerEmail() && response->payer_email.isEmpty())
+    if ((m_options.requestPayerName() && response->payer_name.isEmpty())
+        || (m_options.requestPayerEmail() && response->payer_email.isEmpty())
         || (m_options.requestPayerPhone() && response->payer_phone.isEmpty())
+        || (!m_options.requestPayerName() && !response->payer_name.isNull())
         || (!m_options.requestPayerEmail() && !response->payer_email.isNull())
         || (!m_options.requestPayerPhone() && !response->payer_phone.isNull())) {
         m_showResolver->reject(DOMException::create(SyntaxError));

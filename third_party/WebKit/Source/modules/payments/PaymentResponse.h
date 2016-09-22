@@ -36,6 +36,7 @@ public:
     ScriptValue details(ScriptState*, ExceptionState&) const;
     PaymentAddress* shippingAddress() const { return m_shippingAddress.get(); }
     const String& shippingOption() const { return m_shippingOption; }
+    const String& payerName() const { return m_payerName; }
     const String& payerEmail() const { return m_payerEmail; }
     const String& payerPhone() const { return m_payerPhone; }
 
@@ -48,6 +49,7 @@ private:
     String m_stringifiedDetails;
     Member<PaymentAddress> m_shippingAddress;
     String m_shippingOption;
+    String m_payerName;
     String m_payerEmail;
     String m_payerPhone;
     Member<PaymentCompleter> m_paymentCompleter;

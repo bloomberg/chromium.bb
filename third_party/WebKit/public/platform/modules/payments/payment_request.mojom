@@ -61,6 +61,7 @@ struct PaymentResponse {
 
   PaymentAddress? shipping_address;
   string? shipping_option;
+  string? payer_name;
   string? payer_email;
   string? payer_phone;
 };
@@ -106,6 +107,7 @@ struct PaymentDetails {
 };
 
 struct PaymentOptions {
+  bool request_payer_name;
   bool request_payer_email;
   bool request_payer_phone;
   bool request_shipping;

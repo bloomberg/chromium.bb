@@ -18,6 +18,7 @@ PaymentResponse::PaymentResponse(mojom::blink::PaymentResponsePtr response, Paym
     , m_stringifiedDetails(response->stringified_details)
     , m_shippingAddress(response->shipping_address ? new PaymentAddress(std::move(response->shipping_address)) : nullptr)
     , m_shippingOption(response->shipping_option)
+    , m_payerName(response->payer_name)
     , m_payerEmail(response->payer_email)
     , m_payerPhone(response->payer_phone)
     , m_paymentCompleter(paymentCompleter)
