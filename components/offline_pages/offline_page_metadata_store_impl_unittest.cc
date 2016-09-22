@@ -235,7 +235,7 @@ class OfflinePageMetadataStoreTest : public testing::Test {
       const std::vector<OfflinePageItem>& offline_pages);
   void AddCallback(ItemActionStatus status);
   void UpdateCallback(CalledCallback called_callback,
-                      std::unique_ptr<StoreUpdateResult> result);
+                      std::unique_ptr<OfflinePagesUpdateResult> result);
   void ResetCallback(bool status);
 
   void ClearResults();
@@ -244,12 +244,14 @@ class OfflinePageMetadataStoreTest : public testing::Test {
   void CheckThatOfflinePageCanBeSaved(
       std::unique_ptr<OfflinePageMetadataStore> store);
 
-  StoreUpdateResult* last_update_result() { return last_update_result_.get(); }
+  OfflinePagesUpdateResult* last_update_result() {
+    return last_update_result_.get();
+  }
 
  protected:
   CalledCallback last_called_callback_;
   Status last_status_;
-  std::unique_ptr<StoreUpdateResult> last_update_result_;
+  std::unique_ptr<OfflinePagesUpdateResult> last_update_result_;
   std::vector<OfflinePageItem> offline_pages_;
   OfflinePageMetadataStoreFactory factory_;
 
@@ -291,7 +293,7 @@ void OfflinePageMetadataStoreTest::AddCallback(ItemActionStatus status) {
 
 void OfflinePageMetadataStoreTest::UpdateCallback(
     CalledCallback called_callback,
-    std::unique_ptr<StoreUpdateResult> result) {
+    std::unique_ptr<OfflinePagesUpdateResult> result) {
   last_called_callback_ = called_callback;
   last_status_ = result->updated_items.size() > 0 ? STATUS_TRUE : STATUS_FALSE;
   last_update_result_ = std::move(result);

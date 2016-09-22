@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "components/offline_pages/background/request_queue.h"
 #include "components/offline_pages/background/save_page_request.h"
-#include "components/offline_pages/offline_page_types.h"
+#include "components/offline_pages/offline_store_types.h"
 
 namespace offline_pages {
 

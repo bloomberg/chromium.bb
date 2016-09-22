@@ -11,38 +11,13 @@
 
 #include "base/callback.h"
 #include "components/offline_pages/offline_page_item.h"
-#include "components/offline_pages/offline_page_types.h"
+#include "components/offline_pages/offline_store_types.h"
 
 class GURL;
 
 namespace offline_pages {
 
-// TODO(fgorski): This enum is meant to replace |LoadStatus|.
-// Current store state. When LOADED, the store is operational. When
-// initialization or reset fails, it is reflected appropriately.
-enum class StoreState {
-  NOT_LOADED,      // Store is not loaded yet.
-  LOADED,          // Store is properly loaded and operational.
-  FAILED_LOADING,  // Store initialization failed.
-  FAILED_RESET,    // Resetting the store failed.
-};
-
-class StoreUpdateResult {
- public:
-  explicit StoreUpdateResult(StoreState state);
-  ~StoreUpdateResult();
-
-  // List of Offline ID to item action status mappings.
-  // It is meant to be consumed by the original caller of the operation.
-  std::vector<std::pair<int64_t, ItemActionStatus>> item_statuses;
-
-  // List of successfully updated offline page items as seen after operation
-  // concludes. It is meant to be used when passing to the observers.
-  std::vector<OfflinePageItem> updated_items;
-
-  // State of the store after the operation is done.
-  StoreState store_state;
-};
+typedef StoreUpdateResult<OfflinePageItem> OfflinePagesUpdateResult;
 
 // OfflinePageMetadataStore keeps metadata for the offline pages.
 // Ability to create multiple instances of the store as well as behavior of
@@ -66,7 +41,7 @@ class OfflinePageMetadataStore {
   typedef base::Callback<void(LoadStatus, const std::vector<OfflinePageItem>&)>
       LoadCallback;
   typedef base::Callback<void(ItemActionStatus)> AddCallback;
-  typedef base::Callback<void(std::unique_ptr<StoreUpdateResult>)>
+  typedef base::Callback<void(std::unique_ptr<OfflinePagesUpdateResult>)>
       UpdateCallback;
   typedef base::Callback<void(bool)> ResetCallback;
 

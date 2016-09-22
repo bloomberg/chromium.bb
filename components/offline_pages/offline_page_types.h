@@ -57,14 +57,6 @@ enum class DeletePageResult {
   RESULT_COUNT,
 };
 
-// Statuses referring to actions taken on items in the stores.
-enum class ItemActionStatus {
-  SUCCESS,
-  ALREADY_EXISTS,
-  NOT_FOUND,
-  STORE_ERROR,
-};
-
 typedef std::set<GURL> CheckPagesExistOfflineResult;
 typedef std::vector<int64_t> MultipleOfflineIdResult;
 typedef std::vector<OfflinePageItem> MultipleOfflinePageItemResult;

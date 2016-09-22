@@ -32,6 +32,7 @@
 #include "components/offline_pages/offline_page_model_event_logger.h"
 #include "components/offline_pages/offline_page_storage_manager.h"
 #include "components/offline_pages/offline_page_types.h"
+#include "components/offline_pages/offline_store_types.h"
 
 class GURL;
 namespace base {
@@ -190,13 +191,14 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void OnDeleteArchiveFilesDone(const std::vector<int64_t>& offline_ids,
                                 const DeletePageCallback& callback,
                                 bool success);
-  void OnRemoveOfflinePagesDone(const DeletePageCallback& callback,
-                                std::unique_ptr<StoreUpdateResult> result);
+  void OnRemoveOfflinePagesDone(
+      const DeletePageCallback& callback,
+      std::unique_ptr<OfflinePagesUpdateResult> result);
   void InformDeletePageDone(const DeletePageCallback& callback,
                             DeletePageResult result);
 
   void OnMarkPageAccesseDone(const OfflinePageItem& offline_page_item,
-                             std::unique_ptr<StoreUpdateResult> result);
+                             std::unique_ptr<OfflinePagesUpdateResult> result);
 
   // Callbacks for checking metadata consistency.
   void CheckMetadataConsistencyForArchivePaths(
@@ -242,7 +244,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   // Callback completing page expiration.
   void OnExpirePageDone(const base::Time& expiration_time,
-                        std::unique_ptr<StoreUpdateResult> result);
+                        std::unique_ptr<OfflinePagesUpdateResult> result);
 
   // Clears expired pages if there are any.
   void ClearStorageIfNeeded(

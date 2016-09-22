@@ -698,7 +698,7 @@ void OfflinePageModelImpl::ExpirePages(
 
 void OfflinePageModelImpl::OnExpirePageDone(
     const base::Time& expiration_time,
-    std::unique_ptr<StoreUpdateResult> result) {
+    std::unique_ptr<OfflinePagesUpdateResult> result) {
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.ExpirePage.StoreUpdateResult",
                         result->updated_items.size() > 0);
   for (const auto& expired_page : result->updated_items) {
@@ -814,7 +814,7 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
 
 void OfflinePageModelImpl::OnMarkPageAccesseDone(
     const OfflinePageItem& offline_page_item,
-    std::unique_ptr<StoreUpdateResult> result) {
+    std::unique_ptr<OfflinePagesUpdateResult> result) {
   // Update the item in the cache only upon success.
   if (result->updated_items.size() > 0)
     offline_pages_[offline_page_item.offline_id] = offline_page_item;
@@ -950,7 +950,7 @@ void OfflinePageModelImpl::OnDeleteArchiveFilesDone(
 
 void OfflinePageModelImpl::OnRemoveOfflinePagesDone(
     const DeletePageCallback& callback,
-    std::unique_ptr<StoreUpdateResult> result) {
+    std::unique_ptr<OfflinePagesUpdateResult> result) {
   ReportPageHistogramsAfterDelete(offline_pages_, result->updated_items,
                                   GetCurrentTime());
 

@@ -331,7 +331,8 @@ void PostStoreUpdateResultForIds(
     const std::vector<int64_t>& offline_ids,
     ItemActionStatus action_status,
     const OfflinePageMetadataStore::UpdateCallback& callback) {
-  std::unique_ptr<StoreUpdateResult> result(new StoreUpdateResult(store_state));
+  std::unique_ptr<OfflinePagesUpdateResult> result(
+      new OfflinePagesUpdateResult(store_state));
   for (const auto& offline_id : offline_ids)
     result->item_statuses.push_back(std::make_pair(offline_id, action_status));
   runner->PostTask(FROM_HERE, base::Bind(callback, base::Passed(&result)));
@@ -361,8 +362,8 @@ void UpdateOfflinePagesSync(
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const std::vector<OfflinePageItem>& pages,
     const OfflinePageMetadataStore::UpdateCallback& callback) {
-  std::unique_ptr<StoreUpdateResult> result(
-      new StoreUpdateResult(StoreState::LOADED));
+  std::unique_ptr<OfflinePagesUpdateResult> result(
+      new OfflinePagesUpdateResult(StoreState::LOADED));
 
   sql::Transaction transaction(db);
   if (!transaction.Begin()) {
@@ -394,8 +395,8 @@ void RemoveOfflinePagesSync(
     scoped_refptr<base::SingleThreadTaskRunner> runner,
     const OfflinePageMetadataStore::UpdateCallback& callback) {
   // TODO(fgorski): Perhaps add metrics here.
-  std::unique_ptr<StoreUpdateResult> result(
-      new StoreUpdateResult(StoreState::LOADED));
+  std::unique_ptr<OfflinePagesUpdateResult> result(
+      new OfflinePagesUpdateResult(StoreState::LOADED));
 
   // If you create a transaction but don't Commit() it is automatically
   // rolled back by its destructor when it falls out of scope.

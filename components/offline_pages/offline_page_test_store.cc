@@ -56,8 +56,8 @@ void OfflinePageTestStore::UpdateOfflinePages(
     const UpdateCallback& callback) {
   // TODO(fgorski): Cover scenario where new items are being created while they
   // shouldn't.
-  std::unique_ptr<StoreUpdateResult> result(
-      new StoreUpdateResult(StoreState::LOADED));
+  std::unique_ptr<OfflinePagesUpdateResult> result(
+      new OfflinePagesUpdateResult(StoreState::LOADED));
   if (scenario_ == TestScenario::WRITE_FAILED) {
     for (const auto& page : pages) {
       result->item_statuses.push_back(
@@ -81,8 +81,8 @@ void OfflinePageTestStore::UpdateOfflinePages(
 void OfflinePageTestStore::RemoveOfflinePages(
     const std::vector<int64_t>& offline_ids,
     const UpdateCallback& callback) {
-  std::unique_ptr<StoreUpdateResult> result(
-      new StoreUpdateResult(StoreState::LOADED));
+  std::unique_ptr<OfflinePagesUpdateResult> result(
+      new OfflinePagesUpdateResult(StoreState::LOADED));
 
   ASSERT_FALSE(offline_ids.empty());
   if (scenario_ == TestScenario::REMOVE_FAILED) {
