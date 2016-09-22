@@ -121,7 +121,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
             view.setTextViewText(R.id.title, mTitle);
             view.setTextViewText(R.id.body, mBody);
             view.setTextViewText(R.id.origin, mOrigin);
-            view.setImageViewBitmap(R.id.icon, mLargeIcon);
+            view.setImageViewBitmap(R.id.icon, getNormalizedLargeIcon());
             view.setViewPadding(R.id.title, 0, scaledPadding, 0, 0);
             view.setViewPadding(R.id.body_container, 0, scaledPadding, 0, scaledPadding);
             addWorkProfileBadge(view);

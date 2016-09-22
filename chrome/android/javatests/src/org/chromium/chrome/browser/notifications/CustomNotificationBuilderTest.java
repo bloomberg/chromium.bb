@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.DisplayMetrics;
@@ -75,16 +76,12 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
                         .addSettingsAction(
                                 0 /* iconId */, "settings", createIntent(context, "SettingsButton"))
                         .build();
+
+        assertSmallNotificationIconAsExpected(context, notification, smallIcon);
+        assertLargeNotificationIconAsExpected(context, notification, largeIcon);
+
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
-
-        assertNotNull(((ImageView) compactView.findViewById(R.id.icon)).getDrawable());
-        assertNotNull(((ImageView) bigView.findViewById(R.id.icon)).getDrawable());
-
-        assertTrue(smallIcon.sameAs(
-                NotificationTestUtil.getSmallIconFromNotification(context, notification)));
-        assertTrue(largeIcon.sameAs(
-                NotificationTestUtil.getLargeIconFromNotification(context, notification)));
 
         assertEquals("title", getIdenticalText(R.id.title, compactView, bigView));
         assertEquals("body", getIdenticalText(R.id.body, compactView, bigView));
@@ -183,34 +180,20 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
                         .addAction(actionIcon, "button", createIntent(context, "ActionButton"))
                         .build();
 
-        // The large icon should not be painted white.
-        Bitmap notificationLargeIcon =
-                NotificationTestUtil.getLargeIconFromNotification(context, notification);
-        assertNotNull(notificationLargeIcon);
-        assertEquals(Color.RED, notificationLargeIcon.getPixel(0, 0));
-
-        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
+        // The large icon should be unchanged.
+        assertLargeNotificationIconAsExpected(context, notification, largeIcon);
 
         // Small icons should be painted white.
-        // Check the small icon view's bitmap is correctly rendered.
-        int smallIconId = CustomNotificationBuilder.useMaterial() ? R.id.small_icon_overlay
-                                                                  : R.id.small_icon_footer;
-        ImageView smallIconView = (ImageView) bigView.findViewById(smallIconId);
-        Bitmap smallIconBitmap = ((BitmapDrawable) smallIconView.getDrawable()).getBitmap();
-        assertEquals(Color.WHITE, smallIconBitmap.getPixel(0, 0));
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            // For M+ we can also check the notification's member bitmap.
-            assertEquals(Color.WHITE,
-                    NotificationTestUtil.getBitmapFromIcon(context, notification.getSmallIcon())
-                            .getPixel(0, 0));
-        }
+        Bitmap whiteIcon = Bitmap.createBitmap(
+                new int[] {Color.WHITE}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
+        assertSmallNotificationIconAsExpected(context, notification, whiteIcon);
 
         // Action icons should be painted white.
         assertEquals(1, NotificationTestUtil.getActions(notification).length);
+        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
         ImageView actionIconView = (ImageView) bigView.findViewById(R.id.button_icon);
         Bitmap actionIconBitmap = ((BitmapDrawable) actionIconView.getDrawable()).getBitmap();
-        assertEquals(Color.WHITE, actionIconBitmap.getPixel(0, 0));
+        assertTrue(whiteIcon.sameAs(actionIconBitmap));
     }
 
     @SmallTest
@@ -263,6 +246,84 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
         assertEquals(10, CustomNotificationBuilder.calculateScaledPadding(1.2f, metrics));
         assertEquals(0, CustomNotificationBuilder.calculateScaledPadding(1.3f, metrics));
         assertEquals(0, CustomNotificationBuilder.calculateScaledPadding(1000.0f, metrics));
+    }
+
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testGeneratesLargeIconFromOriginWhenNoLargeIconProvided() {
+        Context context = getInstrumentation().getTargetContext();
+        NotificationBuilderBase notificationBuilder =
+                new CustomNotificationBuilder(context).setOrigin("https://www.google.com");
+
+        Notification notification = notificationBuilder.build();
+
+        Bitmap expectedIcon = NotificationBuilderBase.createIconGenerator(context.getResources())
+                                      .generateIconForUrl("https://www.google.com");
+
+        assertLargeNotificationIconAsExpected(context, notification, expectedIcon);
+    }
+
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testGeneratesLargeIconFromOriginWhenLargeIconProvidedIsNull() {
+        Context context = getInstrumentation().getTargetContext();
+        NotificationBuilderBase notificationBuilder = new CustomNotificationBuilder(context)
+                                                              .setOrigin("https://www.chromium.org")
+                                                              .setLargeIcon(null);
+
+        Notification notification = notificationBuilder.build();
+
+        Bitmap expectedIcon = NotificationBuilderBase.createIconGenerator(context.getResources())
+                                      .generateIconForUrl("https://www.chromium.org");
+
+        assertLargeNotificationIconAsExpected(context, notification, expectedIcon);
+    }
+
+    private static void assertLargeNotificationIconAsExpected(
+            Context context, Notification notification, Bitmap expectedIcon) {
+        // 1. Check large icon property on the notification.
+
+        Bitmap icon = NotificationTestUtil.getLargeIconFromNotification(context, notification);
+        assertNotNull(icon);
+        assertTrue(expectedIcon.sameAs(icon));
+
+        // 2. Check the large icon in the custom layouts.
+
+        View compactView = notification.contentView.apply(context, new LinearLayout(context));
+        Drawable compactViewIcon = ((ImageView) compactView.findViewById(R.id.icon)).getDrawable();
+        assertNotNull(compactViewIcon);
+        assertTrue(expectedIcon.sameAs(((BitmapDrawable) compactViewIcon).getBitmap()));
+
+        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
+        Drawable bigViewIcon = ((ImageView) bigView.findViewById(R.id.icon)).getDrawable();
+        assertNotNull(bigViewIcon);
+        assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
+    }
+
+    private static void assertSmallNotificationIconAsExpected(
+            Context context, Notification notification, Bitmap expectedIcon) {
+        // 1. Check small icon property on the notification, for M+.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Bitmap icon =
+                    NotificationTestUtil.getBitmapFromIcon(context, notification.getSmallIcon());
+            assertNotNull(icon);
+            assertTrue(expectedIcon.sameAs(icon));
+        }
+
+        // 2. Check the small icon in the custom layouts.
+
+        int smallIconId = CustomNotificationBuilder.useMaterial() ? R.id.small_icon_overlay
+                                                                  : R.id.small_icon_footer;
+        View compactView = notification.contentView.apply(context, new LinearLayout(context));
+        Drawable compactViewIcon =
+                ((ImageView) compactView.findViewById(smallIconId)).getDrawable();
+        assertNotNull(compactViewIcon);
+        assertTrue(expectedIcon.sameAs(((BitmapDrawable) compactViewIcon).getBitmap()));
+
+        View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
+        Drawable bigViewIcon = ((ImageView) bigView.findViewById(smallIconId)).getDrawable();
+        assertNotNull(bigViewIcon);
+        assertTrue(expectedIcon.sameAs(((BitmapDrawable) bigViewIcon).getBitmap()));
     }
 
     /**

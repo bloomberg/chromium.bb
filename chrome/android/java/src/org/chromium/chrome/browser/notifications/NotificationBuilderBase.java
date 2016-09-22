@@ -85,7 +85,6 @@ public abstract class NotificationBuilderBase {
     protected CharSequence mOrigin;
     protected CharSequence mTickerText;
     protected Bitmap mImage;
-    protected Bitmap mLargeIcon;
     protected int mSmallIconId;
     protected Bitmap mSmallIconBitmap;
     protected PendingIntent mContentIntent;
@@ -96,6 +95,8 @@ public abstract class NotificationBuilderBase {
     protected long[] mVibratePattern;
     protected long mTimestamp;
     protected boolean mRenotify;
+
+    private Bitmap mLargeIcon;
 
     public NotificationBuilderBase(Resources resources) {
         mLargeIconWidthPx =
