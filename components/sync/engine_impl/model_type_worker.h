@@ -12,7 +12,7 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 #include "components/sync/base/cryptographer.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/core/non_blocking_sync_common.h"
@@ -55,8 +55,7 @@ class WorkerEntityTracker;
 // cancel the pending commit.
 class ModelTypeWorker : public syncer::UpdateHandler,
                         public syncer::CommitContributor,
-                        public CommitQueue,
-                        public base::NonThreadSafe {
+                        public CommitQueue {
  public:
   ModelTypeWorker(syncer::ModelType type,
                   const sync_pb::DataTypeState& initial_state,
@@ -67,7 +66,6 @@ class ModelTypeWorker : public syncer::UpdateHandler,
 
   syncer::ModelType GetModelType() const;
 
-  bool IsEncryptionRequired() const;
   void UpdateCryptographer(
       std::unique_ptr<syncer::Cryptographer> cryptographer);
 
@@ -124,7 +122,7 @@ class ModelTypeWorker : public syncer::UpdateHandler,
   void OnCryptographerUpdated();
 
   // Attempts to decrypt the given specifics and return them in the |out|
-  // parameter. Assumes cryptographer->CanDecrypt(specifics) returned true.
+  // parameter. Assumes cryptographer_->CanDecrypt(specifics) returned true.
   //
   // Returns false if the decryption failed. There are no guarantees about the
   // contents of |out| when that happens.
@@ -132,9 +130,8 @@ class ModelTypeWorker : public syncer::UpdateHandler,
   // In theory, this should never fail. Only corrupt or invalid entries could
   // cause this to fail, and no clients are known to create such entries. The
   // failure case is an attempt to be defensive against bad input.
-  static bool DecryptSpecifics(syncer::Cryptographer* cryptographer,
-                               const sync_pb::EntitySpecifics& in,
-                               sync_pb::EntitySpecifics* out);
+  bool DecryptSpecifics(const sync_pb::EntitySpecifics& in,
+                        sync_pb::EntitySpecifics* out);
 
   // Returns the entity tracker for the given |tag_hash|, or nullptr.
   WorkerEntityTracker* GetEntityTracker(const std::string& tag_hash);
@@ -177,6 +174,7 @@ class ModelTypeWorker : public syncer::UpdateHandler,
   // they can all be sent to the processor at once.
   UpdateResponseDataList pending_updates_;
 
+  base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<ModelTypeWorker> weak_ptr_factory_;
 };
 

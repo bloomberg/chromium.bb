@@ -63,20 +63,15 @@ ModelTypeWorker::~ModelTypeWorker() {
 }
 
 ModelType ModelTypeWorker::GetModelType() const {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   return type_;
-}
-
-bool ModelTypeWorker::IsEncryptionRequired() const {
-  return !!cryptographer_;
 }
 
 void ModelTypeWorker::UpdateCryptographer(
     std::unique_ptr<Cryptographer> cryptographer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(cryptographer);
   cryptographer_ = std::move(cryptographer);
-
-  // Update our state and that of the proxy.
   OnCryptographerUpdated();
 
   // Nudge the scheduler if we're now allowed to commit.
@@ -86,18 +81,19 @@ void ModelTypeWorker::UpdateCryptographer(
 
 // UpdateHandler implementation.
 bool ModelTypeWorker::IsInitialSyncEnded() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return data_type_state_.initial_sync_done();
 }
 
 void ModelTypeWorker::GetDownloadProgress(
     sync_pb::DataTypeProgressMarker* progress_marker) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   progress_marker->CopyFrom(data_type_state_.progress_marker());
 }
 
 void ModelTypeWorker::GetDataTypeContext(
     sync_pb::DataTypeContext* context) const {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   context->CopyFrom(data_type_state_.type_context());
 }
 
@@ -106,7 +102,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     const sync_pb::DataTypeContext& mutated_context,
     const SyncEntityList& applicable_updates,
     syncer::StatusController* status) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // TODO(rlarocque): Handle data type context conflicts.
   *data_type_state_.mutable_type_context() = mutated_context;
@@ -114,8 +110,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
 
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     // Skip updates for permanent folders.
-    // TODO(stanisc): crbug.com/516866: might need to handle this for
-    // hierarchical datatypes.
+    // TODO(crbug.com/516866): might need to handle this for hierarchical types.
     if (!update_entity->server_defined_unique_tag().empty())
       continue;
 
@@ -123,7 +118,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     const std::string& client_tag_hash =
         update_entity->client_defined_unique_tag();
 
-    // TODO(stanisc): crbug.com/516866: this wouldn't be true for bookmarks.
+    // TODO(crbug.com/516866): this wouldn't be true for bookmarks.
     DCHECK(!client_tag_hash.empty());
 
     // Prepare the message for the model thread.
@@ -152,19 +147,17 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       response_data.entity = data.PassToPtr();
       entity->ReceiveUpdate(response_data);
       pending_updates_.push_back(response_data);
-    } else if (specifics.has_encrypted() && cryptographer_ &&
+    } else if (cryptographer_ &&
                cryptographer_->CanDecrypt(specifics.encrypted())) {
-      // Encrypted, but we know the key.
-      if (DecryptSpecifics(cryptographer_.get(), specifics, &data.specifics)) {
+      // Encrypted and we know the key.
+      if (DecryptSpecifics(specifics, &data.specifics)) {
         response_data.entity = data.PassToPtr();
         response_data.encryption_key_name = specifics.encrypted().key_name();
         entity->ReceiveUpdate(response_data);
         pending_updates_.push_back(response_data);
       }
-    } else if (specifics.has_encrypted() &&
-               (!cryptographer_ ||
-                !cryptographer_->CanDecrypt(specifics.encrypted()))) {
-      // Can't decrypt right now.  Ask the entity tracker to handle it.
+    } else {
+      // Can't decrypt right now. Ask the entity tracker to handle it.
       data.specifics = specifics;
       response_data.entity = data.PassToPtr();
       entity->ReceiveEncryptedUpdate(response_data);
@@ -175,7 +168,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
 }
 
 void ModelTypeWorker::ApplyUpdates(syncer::StatusController* status) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   // This should only ever be called after one PassiveApplyUpdates.
   DCHECK(data_type_state_.initial_sync_done());
   // Download cycle is done, pass all updates to the processor.
@@ -183,6 +176,7 @@ void ModelTypeWorker::ApplyUpdates(syncer::StatusController* status) {
 }
 
 void ModelTypeWorker::PassiveApplyUpdates(syncer::StatusController* status) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // This should only be called at the end of the very first download cycle.
   DCHECK(!data_type_state_.initial_sync_done());
   // Indicate to the processor that the initial download is done. The initial
@@ -201,10 +195,9 @@ void ModelTypeWorker::ApplyPendingUpdates() {
 }
 
 void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
-  DCHECK(CalledOnValidThread());
-
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsTypeInitialized())
-      << "Asked to commit items before type was initialized.  "
+      << "Asked to commit items before type was initialized. "
       << "ModelType is: " << ModelTypeToString(type_);
 
   for (const CommitRequestData& commit : list) {
@@ -222,7 +215,7 @@ void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
 // CommitContributor implementation.
 std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     size_t max_entries) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   // There shouldn't be a GetUpdates in progress when a commit is triggered.
   DCHECK(pending_updates_.empty());
 
@@ -253,6 +246,7 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
 }
 
 void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (CommitResponseData& response : *response_list) {
     WorkerEntityTracker* entity = GetEntityTracker(response.client_tag_hash);
 
@@ -267,7 +261,7 @@ void ModelTypeWorker::OnCommitResponse(CommitResponseDataList* response_list) {
     entity->ReceiveCommitResponse(&response);
   }
 
-  // Send the responses back to the model thread.  It needs to know which
+  // Send the responses back to the model thread. It needs to know which
   // items have been successfully committed so it can save that information in
   // permanent storage.
   model_type_processor_->OnCommitCompleted(data_type_state_, *response_list);
@@ -289,8 +283,7 @@ bool ModelTypeWorker::CanCommitItems() const {
     return false;
 
   // Don't commit if we should be encrypting but don't have the required keys.
-  if (IsEncryptionRequired() &&
-      (!cryptographer_ || !cryptographer_->is_ready())) {
+  if (cryptographer_ && !cryptographer_->is_ready()) {
     return false;
   }
 
@@ -303,7 +296,7 @@ void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
   // Initial commits need our help to generate a client ID.
   if (sync_entity->version() == kUncommittedVersion) {
     DCHECK(!sync_entity->has_id_string());
-    // TODO(stanisc): This is incorrect for bookmarks for two reasons:
+    // TODO(crbug.com/516866): This is incorrect for bookmarks for two reasons:
     // 1) Won't be able to match previously committed bookmarks to the ones
     //    with server ID.
     // 2) Recommitting an item in a case of failing to receive commit response
@@ -317,9 +310,9 @@ void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
   }
 
   // Encrypt the specifics and hide the title if necessary.
-  if (IsEncryptionRequired()) {
-    // IsEncryptionRequired() && CanCommitItems() implies
-    // that the cryptographer is valid and ready to encrypt.
+  if (cryptographer_) {
+    // If there is a cryptographer and CanCommitItems() is true then the
+    // cryptographer is valid and ready to encrypt.
     sync_pb::EntitySpecifics encrypted_specifics;
     bool result = cryptographer_->Encrypt(
         sync_entity->specifics(), encrypted_specifics.mutable_encrypted());
@@ -328,12 +321,11 @@ void ModelTypeWorker::AdjustCommitProto(sync_pb::SyncEntity* sync_entity) {
     sync_entity->set_name("encrypted");
   }
 
-  // Always include enough specifics to identify the type.  Do this even in
+  // Always include enough specifics to identify the type. Do this even in
   // deletion requests, where the specifics are otherwise invalid.
   AddDefaultFieldValue(type_, sync_entity->mutable_specifics());
 
-  // TODO(stanisc): crbug.com/516866:
-  // Call sync_entity->set_parent_id_string(...) for hierarchical entities here.
+  // TODO(crbug.com/516866): Set parent_id_string for hierarchical types here.
 }
 
 void ModelTypeWorker::OnCryptographerUpdated() {
@@ -353,25 +345,18 @@ void ModelTypeWorker::OnCryptographerUpdated() {
     new_encryption_key = true;
   }
 
-  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
-       ++it) {
-    if (it->second->HasEncryptedUpdate()) {
-      const UpdateResponseData& encrypted_update =
-          it->second->GetEncryptedUpdate();
+  for (const auto& kv : entities_) {
+    WorkerEntityTracker* entity = kv.second.get();
+    if (entity->HasEncryptedUpdate()) {
+      const UpdateResponseData& encrypted_update = entity->GetEncryptedUpdate();
       const EntityData& data = encrypted_update.entity.value();
-
-      // We assume all pending updates are encrypted items for which we
-      // don't have the key.
       DCHECK(data.specifics.has_encrypted());
 
       if (cryptographer_->CanDecrypt(data.specifics.encrypted())) {
         EntityData decrypted_data;
-        if (DecryptSpecifics(cryptographer_.get(), data.specifics,
-                             &decrypted_data.specifics)) {
+        if (DecryptSpecifics(data.specifics, &decrypted_data.specifics)) {
           // Copy other fields one by one since EntityData doesn't allow
           // copying.
-          // TODO(stanisc): this code is likely to be removed once we get
-          // rid of pending updates.
           decrypted_data.id = data.id;
           decrypted_data.client_tag_hash = data.client_tag_hash;
           decrypted_data.non_unique_name = data.non_unique_name;
@@ -385,7 +370,7 @@ void ModelTypeWorker::OnCryptographerUpdated() {
               data.specifics.encrypted().key_name();
           response_datas.push_back(decrypted_update);
 
-          it->second->ClearEncryptedUpdate();
+          entity->ClearEncryptedUpdate();
         }
       }
     }
@@ -400,14 +385,13 @@ void ModelTypeWorker::OnCryptographerUpdated() {
   }
 }
 
-bool ModelTypeWorker::DecryptSpecifics(Cryptographer* cryptographer,
-                                       const sync_pb::EntitySpecifics& in,
+bool ModelTypeWorker::DecryptSpecifics(const sync_pb::EntitySpecifics& in,
                                        sync_pb::EntitySpecifics* out) {
+  DCHECK(cryptographer_);
   DCHECK(in.has_encrypted());
-  DCHECK(cryptographer->CanDecrypt(in.encrypted()));
+  DCHECK(cryptographer_->CanDecrypt(in.encrypted()));
 
-  std::string plaintext;
-  plaintext = cryptographer->DecryptToString(in.encrypted());
+  std::string plaintext = cryptographer_->DecryptToString(in.encrypted());
   if (plaintext.empty()) {
     LOG(ERROR) << "Failed to decrypt a decryptable entity";
     return false;
