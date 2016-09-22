@@ -66141,6 +66141,57 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebApk.Install.InfoBarShown" enum="WebApkInstallInfoBarShown">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    WebAPKs are PWAs wrapped in an Android apk, installed from an app banner or
+    the add to homescreen menu item. This stat tracks whether the installation
+    is triggered by an app banner or by the add to homescreen menu.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Install.InstallEvent" enum="WebApkInstallEvent">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    WebAPKs are PWAs wrapped in an Android apk, installed from an app banner or
+    the add to homescreen menu item. This stat tracks the WebAPKs installation
+    events, including whether the infobar is ignored, whether the infobar is
+    dismissed by the user before or during the installation, as well as whether
+    the installation was successful.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Install.InstallSource" enum="WebApkInstallSource">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    WebAPKs are PWAs wrapped in an Android apk, installed from an app banner or
+    the add to homescreen menu item. If the installation is via an app banner,
+    user could either accept to install or dismiss the infobar; while via the
+    add to homescreen menu, the installation will start automatically. This stat
+    tracks the ways that user accepts to install a WebAPK.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.Install.UserAction" enum="WebApkUserAction">
+  <owner>hanxi@chromium.org</owner>
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    WebAPKs are PWAs wrapped in an Android apk, installed from an app banner or
+    the add to homescreen menu item. If the user clicks the add to homescreen
+    menu, and a WebAPK has been installed before, an infobar with an open button
+    will show. The open button will also show on the infobar after a successful
+    installation. This stat tracks whether user clicks the open button on the
+    infobar or dismiss it.
+  </summary>
+</histogram>
+
 <histogram name="Webapp.Splashscreen.BackgroundColor"
     enum="SplashscreenColorStatus">
   <owner>mlamouri@chromium.org</owner>
@@ -99509,6 +99560,31 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Session, No Warmup, Warmup called from another UID"/>
   <int value="3" label="Session, No Warmup"/>
   <int value="4" label="Session, Warmup"/>
+</enum>
+
+<enum name="WebApkInstallEvent" type="int">
+  <int value="0" label="Infobar is ignored"/>
+  <int value="1" label="Infobar is dismissed before installation"/>
+  <int value="2" label="Infobar is dismissed during installation"/>
+  <int value="3" label="Success"/>
+  <int value="4" label="Failed"/>
+</enum>
+
+<enum name="WebApkInstallInfoBarShown" type="int">
+  <int value="0" label="WebApk infobar shown from the app banner"/>
+  <int value="1" label="WebApk infobar shown from the add to homescreen menu"/>
+</enum>
+
+<enum name="WebApkInstallSource" type="int">
+  <int value="0" label="Installation started from the app banner"/>
+  <int value="1" label="Installation started from the add to homescreen menu"/>
+</enum>
+
+<enum name="WebApkUserAction" type="int">
+  <int value="0" label="Open a previously installed WebAPK"/>
+  <int value="1" label="Dismiss to open a previously installed WebAPK"/>
+  <int value="2" label="Open a newly installed WebAPK"/>
+  <int value="3" label="Dismiss to open a newly installed WebAPK"/>
 </enum>
 
 <enum name="WebBluetoothConnectGATTOutcome" type="int">

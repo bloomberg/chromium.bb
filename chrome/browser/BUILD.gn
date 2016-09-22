@@ -3193,6 +3193,8 @@ split_static_library("browser") {
       "android/webapk/webapk_icon_hasher.h",
       "android/webapk/webapk_installer.cc",
       "android/webapk/webapk_installer.h",
+      "android/webapk/webapk_metrics.cc",
+      "android/webapk/webapk_metrics.h",
       "android/webapk/webapk_update_manager.cc",
       "android/webapk/webapk_update_manager.h",
       "android/webapk/webapk_web_manifest_checker.cc",

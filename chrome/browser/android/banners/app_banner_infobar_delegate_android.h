@@ -79,6 +79,15 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   bool AcceptWebApk(content::WebContents* web_contents);
 
  private:
+  // The states of a WebAPK installation, where the infobar is displayed during
+  // the entire installation process. This state is used to correctly record
+  // UMA metrics.
+  enum InstallState {
+    INSTALL_NOT_STARTED,
+    INSTALLING,
+    INSTALLED,
+  };
+
   // Delegate for promoting a web app.
   AppBannerInfoBarDelegateAndroid(
       base::WeakPtr<AppBannerManager> weak_manager,
@@ -103,6 +112,7 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
   void SendBannerAccepted(content::WebContents* web_contents,
                           const std::string& platform);
   void OnWebApkInstallFinished(bool success, const std::string& webapk_package);
+  void TrackWebApkInstallationDismissEvents(InstallState install_state);
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -132,6 +142,9 @@ class AppBannerInfoBarDelegateAndroid : public ConfirmInfoBarDelegate {
 
   std::string webapk_package_name_;
   bool is_webapk_;
+
+  // Indicates the current state of a WebAPK installation.
+  InstallState install_state_;
 
   base::WeakPtrFactory<AppBannerInfoBarDelegateAndroid> weak_ptr_factory_;
 
