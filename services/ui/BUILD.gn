@@ -38,6 +38,7 @@ service("ui") {
 
   data_deps = [
     ":manifest",
+    "//services/ui/ime/test_ime_driver",
   ]
 
   resources = [

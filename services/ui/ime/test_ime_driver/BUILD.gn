@@ -17,7 +17,6 @@ source_set("lib") {
   deps = [
     "//base",
     "//services/shell/public/cpp",
-    "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
   ]
 }
@@ -31,13 +30,11 @@ service("test_ime_driver") {
     ":lib",
     "//base",
     "//services/shell/public/cpp",
-    "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
   ]
 
   data_deps = [
     ":manifest",
-    "//services/ui",
   ]
 }
 
