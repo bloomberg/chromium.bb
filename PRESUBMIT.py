@@ -1806,26 +1806,6 @@ def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   return results
 
 
-def _CheckForCopyrightedCode(input_api, output_api):
-  """Verifies that newly added code doesn't contain copyrighted material
-  and is properly licensed under the standard Chromium license.
-
-  As there can be false positives, we maintain a whitelist file. This check
-  also verifies that the whitelist file is up to date.
-  """
-  import sys
-  original_sys_path = sys.path
-  try:
-    sys.path = sys.path + [input_api.os_path.join(
-        input_api.PresubmitLocalPath(), 'tools')]
-    from copyright_scanner import copyright_scanner
-  finally:
-    # Restore sys.path to what it was before.
-    sys.path = original_sys_path
-
-  return copyright_scanner.ScanAtPresubmit(input_api, output_api)
-
-
 def _CheckSingletonInHeaders(input_api, output_api):
   """Checks to make sure no header files have |Singleton<|."""
   def FileFilter(affected_file):
@@ -2004,7 +1984,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoDeprecatedJS(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
-  results.extend(_CheckForCopyrightedCode(input_api, output_api))
   results.extend(_CheckForWindowsLineEndings(input_api, output_api))
   results.extend(_CheckSingletonInHeaders(input_api, output_api))
   results.extend(_CheckNoDeprecatedCompiledResourcesGYP(input_api, output_api))
