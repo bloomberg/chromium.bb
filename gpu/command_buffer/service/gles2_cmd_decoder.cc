@@ -11109,7 +11109,7 @@ error::Error GLES2DecoderImpl::HandleSwapBuffersWithDamageCHROMIUM(
                                      &is_tracing);
   if (is_tracing) {
     bool is_offscreen = !!offscreen_target_frame_buffer_.get();
-    ScopedFramebufferBinder binder(this, GetBackbufferServiceId());
+    ScopedFramebufferBinder binder(this, GetBoundDrawFramebufferServiceId());
     gpu_state_tracer_->TakeSnapshotWithCurrentFramebuffer(
         is_offscreen ? offscreen_size_ : surface_->GetSize());
   }
@@ -11143,7 +11143,7 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
                                      &is_tracing);
   if (is_tracing) {
     bool is_offscreen = !!offscreen_target_frame_buffer_.get();
-    ScopedFramebufferBinder binder(this, GetBackbufferServiceId());
+    ScopedFramebufferBinder binder(this, GetBoundDrawFramebufferServiceId());
     gpu_state_tracer_->TakeSnapshotWithCurrentFramebuffer(
         is_offscreen ? offscreen_size_ : surface_->GetSize());
   }
@@ -14338,7 +14338,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("gpu.debug"),
                                      &is_tracing);
   if (is_tracing) {
-    ScopedFramebufferBinder binder(this, GetBackbufferServiceId());
+    ScopedFramebufferBinder binder(this, GetBoundDrawFramebufferServiceId());
     gpu_state_tracer_->TakeSnapshotWithCurrentFramebuffer(
         is_offscreen ? offscreen_size_ : surface_->GetSize());
   }
