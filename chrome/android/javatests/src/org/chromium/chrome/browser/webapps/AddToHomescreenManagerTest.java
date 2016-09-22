@@ -72,7 +72,7 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
             + "<title>" + META_APP_NAME_PAGE_TITLE + "</title>"
             + "</head><body>Webapp capable</body></html>");
 
-    private static final String MANIFEST_PATH = "/chrome/test/data/webapps/manifest_test_page.html";
+    private static final String MANIFEST_PATH = "/chrome/test/data/banners/manifest_test_page.html";
     private static final String MANIFEST_TITLE = "Web app banner test page";
 
     private static final String MANIFEST_TIMES_OUT_NO_SERVICE_WORKER_HTML =
@@ -212,6 +212,7 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        ChromeWebApkHost.initForTesting(false);
         mTestServer = EmbeddedTestServer.createAndStartFileServer(
                 getInstrumentation().getContext(), Environment.getExternalStorageDirectory());
         // Register handler for "slow?10000" URL.
@@ -345,7 +346,6 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     @MediumTest
     @Feature("{Webapp}")
     public void testAddShortcutManifestFetchTimesOutWhenWebApkDisabled() throws Exception {
-        ChromeWebApkHost.initForTesting(false);
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
                 mTestServer, mTab, mTestServer.getURL("/slow?10000"));
         checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
@@ -354,7 +354,6 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     @MediumTest
     @Feature("{Webapp}")
     public void testAddShortcutManifestFetchTimesOutWhenNotPwa() throws Exception {
-        ChromeWebApkHost.initForTesting(false);
         loadUrl(MANIFEST_TIMES_OUT_NO_SERVICE_WORKER_HTML, MANIFEST_TITLE);
         checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
     }

@@ -474,7 +474,6 @@ android_library("chrome_test_java") {
     "//chrome/test/data/popup_blocker/",
     "//chrome/test/data/push_messaging/",
     "//chrome/test/data/translate/",
-    "//chrome/test/data/webapps/",
     "//chrome/test/media_router/resources/",
     "//content/test/data/android/geolocation.html",
     "//content/test/data/android/media_permissions.html",
