@@ -79,6 +79,8 @@ void DispatchOnLaunchedEventImpl(
 app_runtime::LaunchSource GetLaunchSourceEnum(
     extensions::AppLaunchSource source) {
   switch (source) {
+    case extensions::SOURCE_UNTRACKED:
+      return app_runtime::LAUNCH_SOURCE_UNTRACKED;
     case extensions::SOURCE_APP_LAUNCHER:
       return app_runtime::LAUNCH_SOURCE_APP_LAUNCHER;
     case extensions::SOURCE_NEW_TAB_PAGE:

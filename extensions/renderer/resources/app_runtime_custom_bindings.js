@@ -46,7 +46,8 @@ eventBindings.registerArgumentMassager('app.runtime.onLaunched',
         var data = {
           isKioskSession: launchData.isKioskSession,
           isPublicSession: launchData.isPublicSession,
-          source: launchData.source
+          source: launchData.source,
+          actionData: launchData.actionData
         };
         if (items.length !== 0) {
           data.id = launchData.id;

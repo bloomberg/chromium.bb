@@ -17,6 +17,7 @@ namespace app.runtime {
 
   // Enumeration of app launch sources.
   enum LaunchSource {
+    untracked,
     app_launcher,
     new_tab_page,
     reload,
