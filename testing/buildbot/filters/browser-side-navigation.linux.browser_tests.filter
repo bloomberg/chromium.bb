@@ -85,8 +85,6 @@
 -InstallableManagerBrowserTest.CheckWebapp
 -IsolatedAppTest.CookieIsolation
 -IsolatedAppTest.CrossProcessClientRedirect
--LaunchWebAuthFlowFunctionTest.InteractiveFirstNavigationSuccess
--LaunchWebAuthFlowFunctionTest.NonInteractiveSuccess
 -LoginPromptBrowserTest.TestCancelAuth_OnBack
 -LoginPromptBrowserTest.TestCancelAuth_OnForward
 -LogWebUIUrlTest.TestUberPage
