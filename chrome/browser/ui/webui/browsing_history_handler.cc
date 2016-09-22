@@ -418,6 +418,7 @@ void BrowsingHistoryHandler::OnStateChanged() {
 }
 
 void BrowsingHistoryHandler::WebHistoryTimeout() {
+  has_synced_results_ = false;
   // TODO(dubroy): Communicate the failure to the front end.
   if (!query_task_tracker_.HasTrackedTasks())
     ReturnResultsToFrontEnd();
@@ -438,8 +439,6 @@ void BrowsingHistoryHandler::QueryHistory(
 
   query_results_.clear();
   results_info_value_.Clear();
-  has_synced_results_ = false;
-  has_other_forms_of_browsing_history_ = false;
 
   history::HistoryService* hs = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
@@ -481,6 +480,8 @@ void BrowsingHistoryHandler::QueryHistory(
   } else {
     // The notice could not have been shown, because there is no web history.
     RecordMetricsForNoticeAboutOtherFormsOfBrowsingHistory(false);
+    has_synced_results_ = false;
+    has_other_forms_of_browsing_history_ = false;
   }
 }
 
