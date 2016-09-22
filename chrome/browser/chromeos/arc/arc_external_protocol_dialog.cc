@@ -75,16 +75,19 @@ void OnIntentPickerClosed(int render_process_host_id,
 
   switch (close_reason) {
     case ArcNavigationThrottle::CloseReason::ALWAYS_PRESSED: {
-      intent_helper->AddPreferredPackage(
-          handlers[selected_app_index]->package_name);
-      // fall through.
+      // TODO(yusukes): Add NOTREACHED(); break; here once b/31665510 is fixed.
+      // fall through, for now.
     }
-    case ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED:
-    case ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND: {
+    case ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED: {
       // Launch the selected app.
       intent_helper->HandleUrl(url.spec(),
                                handlers[selected_app_index]->package_name);
       CloseTabIfNeeded(render_process_host_id, routing_id);
+      break;
+    }
+    case ArcNavigationThrottle::CloseReason::PREFERRED_ACTIVITY_FOUND: {
+      // Our OnUrlHandlerList callback does not search for a preferred activity.
+      NOTREACHED();
       break;
     }
     case ArcNavigationThrottle::CloseReason::ERROR:
