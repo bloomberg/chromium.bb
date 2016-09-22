@@ -340,7 +340,7 @@ void MediaStream::addRemoteTrack(MediaStreamComponent* component)
     track->registerMediaStream(this);
     m_descriptor->addComponent(component);
 
-    scheduleDispatchEvent(MediaStreamTrackEvent::create(EventTypeNames::addtrack, false, false, track));
+    scheduleDispatchEvent(MediaStreamTrackEvent::create(EventTypeNames::addtrack, track));
 
     if (!active() && !track->ended()) {
         m_descriptor->setActive(true);
@@ -379,7 +379,7 @@ void MediaStream::removeRemoteTrack(MediaStreamComponent* component)
     MediaStreamTrack* track = (*tracks)[index];
     track->unregisterMediaStream(this);
     tracks->remove(index);
-    scheduleDispatchEvent(MediaStreamTrackEvent::create(EventTypeNames::removetrack, false, false, track));
+    scheduleDispatchEvent(MediaStreamTrackEvent::create(EventTypeNames::removetrack, track));
 
     if (active() && emptyOrOnlyEndedTracks()) {
         m_descriptor->setActive(false);

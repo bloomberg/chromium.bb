@@ -3886,6 +3886,10 @@ interface MediaStreamTrack : EventTarget
     setter onended
     setter onmute
     setter onunmute
+interface MediaStreamTrackEvent : Event
+    attribute @@toStringTag
+    getter track
+    method constructor
 interface MessageChannel
     attribute @@toStringTag
     getter port1

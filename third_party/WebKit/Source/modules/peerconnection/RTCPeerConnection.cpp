@@ -1096,7 +1096,7 @@ void RTCPeerConnection::didAddRemoteStream(const WebMediaStream& remoteStream)
     MediaStream* stream = MediaStream::create(getExecutionContext(), remoteStream);
     m_remoteStreams.append(stream);
 
-    scheduleDispatchEvent(MediaStreamEvent::create(EventTypeNames::addstream, false, false, stream));
+    scheduleDispatchEvent(MediaStreamEvent::create(EventTypeNames::addstream, stream));
 }
 
 void RTCPeerConnection::didRemoveRemoteStream(const WebMediaStream& remoteStream)
@@ -1117,7 +1117,7 @@ void RTCPeerConnection::didRemoveRemoteStream(const WebMediaStream& remoteStream
     DCHECK(pos != kNotFound);
     m_remoteStreams.remove(pos);
 
-    scheduleDispatchEvent(MediaStreamEvent::create(EventTypeNames::removestream, false, false, stream));
+    scheduleDispatchEvent(MediaStreamEvent::create(EventTypeNames::removestream, stream));
 }
 
 void RTCPeerConnection::didAddRemoteDataChannel(WebRTCDataChannelHandler* handler)

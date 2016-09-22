@@ -37,7 +37,7 @@ class MediaStreamEvent final : public Event {
 public:
     ~MediaStreamEvent() override;
 
-    static MediaStreamEvent* create(const AtomicString& type, bool canBubble, bool cancelable, MediaStream*);
+    static MediaStreamEvent* create(const AtomicString& type, MediaStream*);
     static MediaStreamEvent* create(const AtomicString& type, const MediaStreamEventInit& initializer);
 
     MediaStream* stream() const;
@@ -48,7 +48,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    MediaStreamEvent(const AtomicString& type, bool canBubble, bool cancelable, MediaStream*);
+    MediaStreamEvent(const AtomicString& type, MediaStream*);
     MediaStreamEvent(const AtomicString& type, const MediaStreamEventInit&);
 
     Member<MediaStream> m_stream;
