@@ -46,6 +46,8 @@ static_library("ntp_snippets") {
     "ntp_snippets_service.h",
     "ntp_snippets_status_service.cc",
     "ntp_snippets_status_service.h",
+    "offline_pages/offline_page_proxy.cc",
+    "offline_pages/offline_page_proxy.h",
     "offline_pages/offline_page_suggestions_provider.cc",
     "offline_pages/offline_page_suggestions_provider.h",
     "physical_web_pages/physical_web_page_suggestions_provider.cc",
