@@ -768,7 +768,9 @@ void RenderWidgetHostViewAndroid::ImeCompositionRangeChanged(
   ime_adapter_android_.SetCharacterBounds(character_bounds_float);
 }
 
-void RenderWidgetHostViewAndroid::FocusedNodeChanged(bool is_editable_node) {
+void RenderWidgetHostViewAndroid::FocusedNodeChanged(
+    bool is_editable_node,
+    const gfx::Rect& node_bounds_in_screen) {
   ime_adapter_android_.FocusedNodeChanged(is_editable_node);
 }
 

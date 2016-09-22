@@ -152,7 +152,7 @@ void TextInputManager::SelectionBoundsChanged(
   // views).
   gfx::Point anchor_origin_transformed =
       view->TransformPointToRootCoordSpace(params.anchor_rect.origin());
-#if defined(USE_AURA)
+
   gfx::SelectionBound anchor_bound, focus_bound;
 
   anchor_bound.SetEdge(gfx::PointF(anchor_origin_transformed),
@@ -192,7 +192,7 @@ void TextInputManager::SelectionBoundsChanged(
 
   selection_region_map_[view].anchor = anchor_bound;
   selection_region_map_[view].focus = focus_bound;
-#else
+
   if (params.anchor_rect == params.focus_rect) {
     selection_region_map_[view].caret_rect.set_origin(
         anchor_origin_transformed);
@@ -202,7 +202,7 @@ void TextInputManager::SelectionBoundsChanged(
       anchor_origin_transformed);
   selection_region_map_[view].first_selection_rect.set_size(
       params.anchor_rect.size());
-#endif  // USE_AURA
+
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnSelectionBoundsChanged(this, view));
 }

@@ -1073,8 +1073,6 @@ void RenderViewHostImpl::OnFocusedNodeChanged(
     bool is_editable_node,
     const gfx::Rect& node_bounds_in_viewport) {
   is_focused_element_editable_ = is_editable_node;
-  if (GetWidget()->GetView())
-    GetWidget()->GetView()->FocusedNodeChanged(is_editable_node);
 
   // None of the rest makes sense without a view.
   if (!GetWidget()->GetView())
@@ -1087,6 +1085,10 @@ void RenderViewHostImpl::OnFocusedNodeChanged(
   gfx::Rect node_bounds_in_screen(origin.x(), origin.y(),
                                   node_bounds_in_viewport.width(),
                                   node_bounds_in_viewport.height());
+
+  GetWidget()->GetView()->FocusedNodeChanged(
+      is_editable_node, node_bounds_in_screen);
+
   FocusedNodeDetails details = {is_editable_node, node_bounds_in_screen};
   NotificationService::current()->Notify(NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
                                          Source<RenderViewHost>(this),

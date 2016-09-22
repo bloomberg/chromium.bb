@@ -699,6 +699,18 @@ void RenderWidgetHostViewMac::SpeakText(const std::string& text) {
   [NSApp speakString:base::SysUTF8ToNSString(text)];
 }
 
+RenderWidgetHostViewBase*
+    RenderWidgetHostViewMac::GetFocusedViewForTextSelection() {
+  // We obtain the TextSelection from focused RWH which is obtained from the
+  // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
+  // and the focused RWH will be that of the embedder which is incorrect. In
+  // this case we should use TextSelection for |this| since RWHV for guest
+  // forwards text selection information to its platform view.
+  return is_guest_view_hack_ ? this : GetFocusedWidget()
+                                          ? GetFocusedWidget()->GetView()
+                                          : nullptr;
+}
+
 void RenderWidgetHostViewMac::UpdateBackingStoreProperties() {
   if (!render_widget_host_)
     return;
@@ -913,21 +925,58 @@ void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
   composition_bounds_ = info->character_bounds;
 }
 
+void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view) {
+  DCHECK_EQ(GetTextInputManager(), text_input_manager);
+
+  // The rest of the code is to support the Mac Zoom feature tracking the
+  // text caret; we can skip it if that feature is not currently enabled.
+  if (!UAZoomEnabled())
+    return;
+
+  RenderWidgetHostViewBase* focused_view = GetFocusedViewForTextSelection();
+  if (!focused_view)
+    return;
+
+  const TextInputManager::SelectionRegion* region =
+      GetTextInputManager()->GetSelectionRegion(focused_view);
+  if (!region)
+    return;
+
+  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view_);
+  if (!enclosing_window)
+    return;
+
+  // Create a rectangle for the edge of the selection focus, which will be
+  // the same as the caret position if the selection is collapsed. That's
+  // what we want to try to keep centered on-screen if possible.
+  gfx::Rect gfx_caret_rect(region->focus.edge_top_rounded().x(),
+                           region->focus.edge_top_rounded().y(),
+                           1, region->focus.GetHeight());
+
+  // Convert the caret rect to CG-style flipped widget-relative coordinates.
+  NSRect caret_rect = NSRectFromCGRect(gfx_caret_rect.ToCGRect());
+  caret_rect.origin.y = NSHeight([cocoa_view_ bounds]) -
+      (caret_rect.origin.y + caret_rect.size.height);
+
+  // Now convert that to screen coordinates.
+  caret_rect = [cocoa_view_ convertRect:caret_rect toView:nil];
+  caret_rect = [enclosing_window convertRectToScreen:caret_rect];
+
+  // Finally, flip it again because UAZoomChangeFocus wants unflipped screen
+  // coordinates, and call UAZoomChangeFocus to initiate the scroll.
+  caret_rect.origin.y = FlipYFromRectToScreen(
+      caret_rect.origin.y, caret_rect.size.height);
+  UAZoomChangeFocus(&caret_rect, &caret_rect, kUAZoomFocusTypeInsertionPoint);
+}
+
 void RenderWidgetHostViewMac::OnTextSelectionChanged(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
   DCHECK_EQ(GetTextInputManager(), text_input_manager);
 
-  // We obtain the TextSelection from focused RWH which is obtained from the
-  // frame tree. BrowserPlugin-based guests' RWH is not part of the frame tree
-  // and the focused RWH will be that of the embedder which is incorrect. In
-  // this case we should use TextSelection for |this| since RWHV for guest
-  // forwards text selection information to its platform view.
-  RenderWidgetHostViewBase* focused_view =
-      is_guest_view_hack_ ? this : GetFocusedWidget()
-                                       ? GetFocusedWidget()->GetView()
-                                       : nullptr;
-
+  RenderWidgetHostViewBase* focused_view = GetFocusedViewForTextSelection();
   if (!focused_view)
     return;
 
@@ -1309,6 +1358,19 @@ bool RenderWidgetHostViewMac::HasAcceleratedSurface(
   if (accelerated_widget_mac)
     return accelerated_widget_mac->HasFrameOfSize(desired_size);
   return false;
+}
+
+void RenderWidgetHostViewMac::FocusedNodeChanged(
+    bool is_editable_node,
+    const gfx::Rect& node_bounds_in_screen) {
+  // If the Mac Zoom feature is enabled, update it with the bounds of the
+  // current focused node so that it can ensure that it's scrolled into view.
+  // Don't do anything if it's an editable node, as this will be handled by
+  // OnSelectionBoundsChanged instead.
+  if (UAZoomEnabled() && !is_editable_node) {
+    NSRect bounds = NSRectFromCGRect(node_bounds_in_screen.ToCGRect());
+    UAZoomChangeFocus(&bounds, NULL, kUAZoomFocusTypeOther);
+  }
 }
 
 void RenderWidgetHostViewMac::OnSwapCompositorFrame(

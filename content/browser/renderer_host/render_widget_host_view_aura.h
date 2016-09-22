@@ -204,7 +204,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const gfx::Point& point,
       RenderWidgetHostViewBase* target_view) override;
 
-  void FocusedNodeChanged(bool is_editable_node) override;
+  void FocusedNodeChanged(bool is_editable_node,
+                          const gfx::Rect& node_bounds_in_screen) override;
 
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;

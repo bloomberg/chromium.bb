@@ -67,7 +67,6 @@ class CONTENT_EXPORT TextInputManager {
     SelectionRegion();
     SelectionRegion(const SelectionRegion& other);
 
-    // The following variables are only used on Aura platforms.
     // The begining of the selection region.
     gfx::SelectionBound anchor;
     // The end of the selection region (caret position).

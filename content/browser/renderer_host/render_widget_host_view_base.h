@@ -204,7 +204,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible();
 
   // Informs that the focused DOM node has changed.
-  virtual void FocusedNodeChanged(bool is_editable_node) {}
+  virtual void FocusedNodeChanged(bool is_editable_node,
+                                  const gfx::Rect& node_bounds_in_screen) {}
 
   virtual void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
                                      cc::CompositorFrame frame) {}

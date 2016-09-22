@@ -2054,7 +2054,9 @@ gfx::Point RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
                                                                   target_view);
 }
 
-void RenderWidgetHostViewAura::FocusedNodeChanged(bool editable) {
+void RenderWidgetHostViewAura::FocusedNodeChanged(
+    bool editable,
+    const gfx::Rect& node_bounds_in_screen) {
 #if defined(OS_WIN)
   if (!editable && virtual_keyboard_requested_) {
     virtual_keyboard_requested_ = false;
