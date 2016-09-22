@@ -19,6 +19,7 @@ constexpr CGFloat kDesiredBubbleWidth = 370;
 constexpr CGFloat kFramePadding = 16;
 constexpr CGFloat kDesiredRowWidth = kDesiredBubbleWidth - 2 * kFramePadding;
 constexpr CGFloat kItemLabelSpacing = 10;
+constexpr CGFloat kMinUsernameSize = 50;
 constexpr CGFloat kRelatedControlHorizontalPadding = 2;
 constexpr CGFloat kRelatedControlVerticalSpacing = 8;
 constexpr CGFloat kTitleTextInset = 2;
@@ -36,7 +37,8 @@ NSSize LabelSize(int resourceID);
 void InitLabel(NSTextField* textField, const base::string16& text);
 
 // Returns widths of 2 columns, that are proportional to |columnsWidth| and
-// their total width is equal to |maxWidth|.
+// their total width is equal to |maxWidth|. The first column won't be shrunk to
+// less than |kMinUsernameSize|.
 std::pair<CGFloat, CGFloat> GetResizedColumns(
     CGFloat maxWidth,
     std::pair<CGFloat, CGFloat> columnsWidth);
