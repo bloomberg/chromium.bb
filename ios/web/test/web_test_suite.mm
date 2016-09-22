@@ -4,28 +4,15 @@
 
 #include "ios/web/public/test/web_test_suite.h"
 
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/url_schemes.h"
-#include "ios/web/web_thread_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace web {
-
-class WebTestSuiteListener : public testing::EmptyTestEventListener {
- public:
-  WebTestSuiteListener() {}
-  void OnTestEnd(const testing::TestInfo& test_info) override {
-    WebThreadImpl::FlushThreadPoolHelperForTesting();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebTestSuiteListener);
-};
 
 WebTestSuite::WebTestSuite(int argc, char** argv)
     : base::TestSuite(argc, argv),
@@ -40,9 +27,6 @@ void WebTestSuite::Initialize() {
   // are correctly registered with the statistics recorder and can be queried
   // by tests.
   base::StatisticsRecorder::Initialize();
-
-  testing::UnitTest::GetInstance()->listeners().Append(
-      new WebTestSuiteListener);
 
   RegisterWebSchemes(false);
 

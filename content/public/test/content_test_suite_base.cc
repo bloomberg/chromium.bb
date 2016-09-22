@@ -7,12 +7,10 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/test/test_suite.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/utility_process_host_impl.h"
@@ -55,17 +53,6 @@
 
 namespace content {
 
-class ContentTestSuiteBaseListener : public testing::EmptyTestEventListener {
- public:
-  ContentTestSuiteBaseListener() {
-  }
-  void OnTestEnd(const testing::TestInfo& test_info) override {
-    BrowserThreadImpl::FlushThreadPoolHelperForTesting();
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentTestSuiteBaseListener);
-};
-
 ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
     : base::TestSuite(argc, argv) {
 }
@@ -102,8 +89,6 @@ void ContentTestSuiteBase::Initialize() {
 #endif
 #endif
 
-  testing::UnitTest::GetInstance()->listeners().Append(
-      new ContentTestSuiteBaseListener);
   ui::MaterialDesignController::Initialize();
 }
 
