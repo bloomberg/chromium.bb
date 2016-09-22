@@ -366,6 +366,7 @@ public class ContextualSearchFieldTrial {
         return sSuppressionTaps.intValue();
     }
 
+    // TODO(donnd): Remove once bar-integration is fully landed if still unused (native only).
     static boolean isNowOnTapBarIntegrationEnabled() {
         if (sIsNowOnTapBarIntegrationEnabled == null) {
             sIsNowOnTapBarIntegrationEnabled = getBooleanParam(

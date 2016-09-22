@@ -45,6 +45,8 @@ const char kContextualSearchResponseMidParam[] = "mid";
 const char kContextualSearchResponseResolvedTermParam[] = "resolved_term";
 const char kContextualSearchPreventPreload[] = "prevent_preload";
 const char kContextualSearchMentions[] = "mentions";
+const char kContextualSearchCaption[] = "caption";
+const char kContextualSearchThumbnail[] = "thumbnail";
 const char kContextualSearchServerEndpoint[] = "_/contextualsearch?";
 const int kContextualSearchRequestVersion = 2;
 const int kContextualSearchMaxSelection = 100;
@@ -55,12 +57,6 @@ const char kDoPreventPreloadValue[] = "1";
 // The number of characters that should be shown after the selected expression.
 const int kSurroundingSizeForUI = 60;
 
-// Contextual Cards (aka Now on Tap) integration.
-const char kContextualSearchContextualCards[] = "contextual_cards";
-const char kContextualSearchCards[] = "cards";
-const char kContextualSearchSingleCard[] = "singleCard";
-const char kContextualSearchSubTitle[] = "subtitle";
-const char kContextualSearchThumbnailUri[] = "thumbnail.uri";
 // The version of the Now on Tap API that we want to invoke.
 const int kNowOnTapVersion = 1;
 
@@ -502,7 +498,9 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
   }
 
   if (field_trial_->IsNowOnTapBarIntegrationEnabled()) {
-    DecodeContextualCardsResponse(*dict.get(), caption, thumbnail_url);
+    // Get the basic Bar data for Now on Tap integration directly from the root.
+    dict->GetString(kContextualSearchCaption, caption);
+    dict->GetString(kContextualSearchThumbnail, thumbnail_url);
   }
 }
 
@@ -545,37 +543,4 @@ base::string16 ContextualSearchDelegate::SurroundingTextForIcing(
   *start = start_offset;
   *end = end_offset;
   return result_text;
-}
-
-void ContextualSearchDelegate::DecodeContextualCardsResponse(
-    const base::DictionaryValue& dict,
-    std::string* subtitle,
-    std::string* thumbnail) {
-  const base::DictionaryValue* contextual_cards_dict = nullptr;
-  if (!dict.GetDictionary(kContextualSearchContextualCards,
-                          &contextual_cards_dict))
-    return;
-
-  const base::ListValue* card_list = nullptr;
-  if (!contextual_cards_dict->GetList(kContextualSearchCards, &card_list))
-    return;
-
-  // TODO(donnd): remove these DCHECKS.  They are not needed since we never
-  // dereference if the values are missing.
-  DCHECK(card_list);
-  for (const auto& card : *card_list) {
-    const base::DictionaryValue* card_dict = nullptr;
-    if (!card->GetAsDictionary(&card_dict))
-      continue;
-
-    DCHECK(card_dict);
-    const base::DictionaryValue* single_card = nullptr;
-    if (!card_dict->GetDictionary(kContextualSearchSingleCard, &single_card))
-      continue;
-
-    DCHECK(single_card);
-    single_card->GetString(kContextualSearchSubTitle, subtitle);
-    single_card->GetString(kContextualSearchThumbnailUri, thumbnail);
-    return;
-  }
 }
