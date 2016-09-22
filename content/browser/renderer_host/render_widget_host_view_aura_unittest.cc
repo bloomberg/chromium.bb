@@ -2868,6 +2868,38 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchEventPositionsArentRounded) {
   EXPECT_EQ(kY, pointer_state().GetY(0));
 }
 
+TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelNotPreciseScrollEvent) {
+  SetUpOverscrollEnvironment();
+
+  // Simulate wheel events.
+  SimulateWheelEvent(-5, 0, 0, false);    // sent directly
+  SimulateWheelEvent(-60, 1, 0, false);    // enqueued
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+
+  // Receive ACK the first wheel event as not processed.
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // ScrollBegin, ScrollUpdate, MouseWheel will be queued events
+  EXPECT_EQ(3U, GetSentMessageCountAndResetSink());
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+
+  SendInputEventACK(WebInputEvent::MouseWheel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  // ScrollUpdate, MouseWheel will be queued events
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  SendInputEventACK(WebInputEvent::GestureScrollUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
+  EXPECT_EQ(OVERSCROLL_NONE, overscroll_delegate()->current_mode());
+}
+
 TEST_F(RenderWidgetHostViewAuraOverscrollTest, WheelScrollEventOverscrolls) {
   SetUpOverscrollEnvironment();
 

@@ -50,8 +50,6 @@ bool OverscrollController::ShouldProcessEvent(
       case blink::WebInputEvent::GestureScrollEnd: {
         const blink::WebGestureEvent& gesture =
             static_cast<const blink::WebGestureEvent&>(event);
-        if (gesture.sourceDevice == blink::WebGestureDeviceTouchpad)
-          return true;
         blink::WebGestureEvent::ScrollUnits scrollUnits;
         switch (event.type) {
           case blink::WebInputEvent::GestureScrollBegin:
