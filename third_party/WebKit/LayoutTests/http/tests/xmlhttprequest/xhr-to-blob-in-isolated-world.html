@@ -6,8 +6,11 @@ if (!window.testRunner) {
     document.body.appendChild(document.createTextNode("This test requires window.testRunner"));
 } else {
     testRunner.dumpAsText();
-    testRunner.setIsolatedWorldSecurityOrigin(1, "chrome-extension://123");
-    testRunner.evaluateScriptInIsolatedWorld(1, "var xhr = new XMLHttpRequest(); xhr.open('GET', 'blob:chrome-extension://123/456789', false); xhr.send();");
+    // Can't use chrome-extension:// since it's an unknown scheme and
+    // will fail validation in content/ land; so pretend that
+    // gopher://adblskgasgf is a chrome extension origin.
+    testRunner.setIsolatedWorldSecurityOrigin(1, "gopher://adblskgasgf");
+    testRunner.evaluateScriptInIsolatedWorld(1, "var xhr = new XMLHttpRequest(); xhr.open('GET', 'blob:gopher://adblskgasgf/456789', false); xhr.send();");
 }
 </script>
 </body>

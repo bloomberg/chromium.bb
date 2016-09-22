@@ -67,6 +67,31 @@ enum ChildProcessSecurityGrants {
   DELETE_FILE_GRANT            = DELETE_FILE_PERMISSION,
 };
 
+// https://crbug.com/646278 Valid blob URLs should contain canonically
+// serialized origins.
+bool IsMalformedBlobUrl(const GURL& url) {
+  if (!url.SchemeIsBlob())
+    return false;
+
+  // If the part after blob: survives a roundtrip through url::Origin, then
+  // it's a normal blob URL.
+  std::string canonical_origin = url::Origin(url).Serialize();
+  canonical_origin.append(1, '/');
+  if (base::StartsWith(url.GetContent(), canonical_origin,
+                       base::CompareCase::INSENSITIVE_ASCII))
+    return false;
+
+  // blob:blobinternal:// is used by blink for stream URLs. This doesn't survive
+  // url::Origin canonicalization -- blobinternal is a fake scheme -- but allow
+  // it anyway. TODO(nick): Added speculatively, might be unnecessary.
+  if (base::StartsWith(url.GetContent(), "blobinternal://",
+                       base::CompareCase::INSENSITIVE_ASCII))
+    return false;
+
+  // This is a malformed blob URL.
+  return true;
+}
+
 }  // namespace
 
 // The SecurityState class is used to maintain per-child process security state
@@ -579,6 +604,9 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     return false;
   }
 
+  if (IsMalformedBlobUrl(url))
+    return false;
+
   // If the process can commit the URL, it can request it.
   if (CanCommitURL(child_id, url))
     return true;
@@ -596,6 +624,9 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
   // Of all the pseudo schemes, only about:blank is allowed to commit.
   if (IsPseudoScheme(url.scheme()))
     return base::LowerCaseEqualsASCII(url.spec(), url::kAboutBlankURL);
+
+  if (IsMalformedBlobUrl(url))
+    return false;
 
   // TODO(creis): Tighten this for Site Isolation, so that a URL from a site
   // that is isolated can only be committed in a process dedicated to that site.
