@@ -22,17 +22,21 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
- * A simple {@link LayoutManager} that shows multiple tabs without animation.
+ * A simple LayoutManager that shows multiple tabs without animation.
  */
 public class CustomTabLayoutManager extends LayoutManagerDocument {
 
     TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
         @Override
         public void didAddTab(Tab tab, TabLaunchType type) {
-            int newIndex = TabModelUtils.getTabIndexById(getTabModelSelector().getModel(false),
-                    tab.getId());
-            getActiveLayout().onTabCreated(time(), tab.getId(), newIndex,
-                    getTabModelSelector().getCurrentTabId(), false, false, 0f, 0f);
+            if (type == TabLaunchType.FROM_RESTORE) {
+                getActiveLayout().onTabRestored(time(), tab.getId());
+            } else {
+                int newIndex = TabModelUtils.getTabIndexById(getTabModelSelector().getModel(false),
+                        tab.getId());
+                getActiveLayout().onTabCreated(time(), tab.getId(), newIndex,
+                        getTabModelSelector().getCurrentTabId(), false, false, 0f, 0f);
+            }
         }
 
         @Override
