@@ -14,6 +14,7 @@ import json
 
 from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.webkit_finder import WebKitFinder
+from webkitpy.layout_tests.models.test_expectations import TestExpectations
 
 # Import destination directories (under LayoutTests/imported/).
 WPT_DEST_NAME = 'wpt'
@@ -188,6 +189,9 @@ class DepsUpdater(object):
             self.print_('## Deleting temp repo directory %s.' % temp_repo_path)
             self.rmtree(temp_repo_path)
 
+        self.print_('## Updating TestExpectations for any removed or renamed tests.')
+        self.update_test_expectations(self._list_deleted_tests(), self._list_renamed_tests())
+
         return '%s@%s' % (dest_dir_name, master_commitish)
 
     def commit_changes_if_needed(self, chromium_commitish, import_commitish):
@@ -303,7 +307,7 @@ class DepsUpdater(object):
             self.print_('## Timed out waiting for try results.')
             return
         if try_results and self.git_cl.has_failing_try_results(try_results):
-            self.write_test_expectations()
+            self.fetch_new_expectations_and_baselines()
 
         # Second try: if there are failures, then abort.
         self.git_cl.run(['set-commit', '--rietveld'])
@@ -360,8 +364,7 @@ class DepsUpdater(object):
             directory_to_owner: A dict mapping layout test directories to emails.
 
         Returns:
-            A list of the email addresses to be notified for the current
-            import.
+            A list of the email addresses to be notified for the current import.
         """
         email_addresses = set()
         for file_path in changed_files:
@@ -373,10 +376,60 @@ class DepsUpdater(object):
                 email_addresses.add(directory_to_owner[test_dir])
         return sorted(email_addresses)
 
-    def write_test_expectations(self):
+    def fetch_new_expectations_and_baselines(self):
+        """Adds new expectations and downloads baselines based on try job results, then commits and uploads the change."""
         self.print_('## Adding test expectations lines to LayoutTests/TestExpectations.')
         script_path = self.path_from_webkit_base('Tools', 'Scripts', 'update-w3c-test-expectations')
         self.run([self.host.executable, script_path, '--verbose'])
         message = 'Modify TestExpectations or download new baselines for tests.'
         self.check_run(['git', 'commit', '-a', '-m', message])
         self.git_cl.run(['upload', '-m', message, '--rietveld'])
+
+    def update_test_expectations(self, deleted_tests, renamed_tests):
+        """Updates the TestExpectations file entries for tests that have been deleted or renamed."""
+        port = self.host.port_factory.get()
+        test_expectations = TestExpectations(port, include_overrides=False)
+        # Tests for which files don't exist aren't stored in TestExpectationsModel,
+        # so methods like TestExpectations.remove_expectation_line don't work; instead
+        # we can run through the TestExpectationLine objects that were parsed.
+        # FIXME: This won't work for removed or renamed directories with test expectations
+        # that are directories rather than individual tests.
+        new_lines = []
+        changed_lines = []
+        for expectation_line in test_expectations.expectations():
+            if expectation_line.name in deleted_tests:
+                continue
+            if expectation_line.name in renamed_tests:
+                expectation_line.name = renamed_tests[expectation_line.name]
+                # Upon parsing the file, a "path does not exist" warning is expected
+                # to be there for tests that have been renamed, and if there are warnings,
+                # then the original string is used. If the warnings are reset, then the
+                # expectation line is re-serialized when output.
+                expectation_line.warnings = []
+                changed_lines.append(expectation_line)
+            new_lines.append(expectation_line)
+        self.host.filesystem.write_text_file(
+            port.path_to_generic_test_expectations_file(),
+            TestExpectations.list_to_string(new_lines, reconstitute_only_these=changed_lines))
+
+    def _list_deleted_tests(self):
+        """Returns a list of layout tests that have been deleted."""
+        out = self.check_run(['git', 'diff', 'origin/master', '--diff-filter=D', '--name-only'])
+        deleted_tests = []
+        for line in out.splitlines():
+            test = self.finder.layout_test_name(line)
+            if test:
+                deleted_tests.append(test)
+        return deleted_tests
+
+    def _list_renamed_tests(self):
+        """Returns a dict mapping source to dest name for layout tests that have been renamed."""
+        out = self.check_run(['git', 'diff', 'origin/master', '--diff-filter=R', '--name-status'])
+        renamed_tests = {}
+        for line in out.splitlines():
+            _, source_path, dest_path = line.split()
+            source_test = self.finder.layout_test_name(source_path)
+            dest_test = self.finder.layout_test_name(dest_path)
+            if source_test and dest_test:
+                renamed_tests[source_test] = dest_test
+        return renamed_tests

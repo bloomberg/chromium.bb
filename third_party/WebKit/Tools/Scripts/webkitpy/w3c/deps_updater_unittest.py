@@ -12,6 +12,7 @@ from webkitpy.common.system.filesystem_mock import MockFileSystem
 class DepsUpdaterTest(unittest.TestCase):
 
     def test_is_manual_test_regular_test(self):
+        # TODO(qyearsley): Refactor these tests to re-use the MockFileSystem from the MockHost.
         updater = DepsUpdater(MockHost())
         fs = MockFileSystem()
         dirname = '/mock-checkout/third_party/WebKit/LayoutTests/imported/wpt/a'
@@ -65,3 +66,24 @@ class DepsUpdaterTest(unittest.TestCase):
         self.assertEqual(
             updater.parse_directory_owners(data_file),
             {'foo/bar': 'charizard@gmail.com', 'foo/baz': 'blastoise@gmail.com'})
+
+    def test_update_test_expectations(self):
+        host = MockHost()
+        host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'] = (
+            'Bug(test) some/test/a.html [ Failure ]\n'
+            'Bug(test) some/test/b.html [ Failure ]\n'
+            'Bug(test) some/test/c.html [ Failure ]\n')
+        host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites'] = '[]'
+        host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/new/a.html'] = ''
+        host.filesystem.files['/mock-checkout/third_party/WebKit/LayoutTests/new/b.html'] = ''
+        updater = DepsUpdater(host)
+        deleted_tests = ['some/test/b.html']
+        renamed_test_pairs = {
+            'some/test/a.html': 'new/a.html',
+            'some/test/c.html': 'new/c.html',
+        }
+        updater.update_test_expectations(deleted_tests, renamed_test_pairs)
+        self.assertMultiLineEqual(
+            host.filesystem.read_text_file('/mock-checkout/third_party/WebKit/LayoutTests/TestExpectations'),
+            ('Bug(test) new/a.html [ Failure ]\n'
+             'Bug(test) new/c.html [ Failure ]\n'))
