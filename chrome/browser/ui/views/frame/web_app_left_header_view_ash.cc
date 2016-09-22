@@ -92,7 +92,8 @@ void WebAppLeftHeaderView::ShowWebsiteSettings() const {
       ChromeSecurityStateModelClient::FromWebContents(tab);
   DCHECK(security_model_client);
 
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  security_model_client->GetSecurityInfo(&security_info);
   chrome::ShowWebsiteSettings(browser_view_->browser(), tab,
-                              nav_entry->GetVirtualURL(),
-                              security_model_client->GetSecurityInfo());
+                              nav_entry->GetVirtualURL(), security_info);
 }

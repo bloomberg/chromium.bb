@@ -164,8 +164,10 @@ bool OfflinePageMHTMLArchiver::HasConnectionSecurityError() {
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents_);
   DCHECK(model_client);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   return security_state::SecurityStateModel::SecurityLevel::SECURITY_ERROR ==
-         model_client->GetSecurityInfo().security_level;
+         security_info.security_level;
 }
 
 void OfflinePageMHTMLArchiver::ReportFailure(ArchiverResult result) {

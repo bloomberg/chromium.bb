@@ -1278,7 +1278,9 @@ content::SecurityStyle Browser::GetSecurityStyle(
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   DCHECK(model_client);
-  return model_client->GetSecurityStyle(model_client->GetSecurityInfo(),
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
+  return model_client->GetSecurityStyle(security_info,
                                         security_style_explanations);
 }
 

@@ -168,9 +168,9 @@ void CheckSecureExplanations(
 
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-  const SecurityStateModel::SecurityInfo& security_info =
-      ChromeSecurityStateModelClient::FromWebContents(web_contents)
-          ->GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  ChromeSecurityStateModelClient::FromWebContents(web_contents)
+      ->GetSecurityInfo(&security_info);
 
   const char *protocol, *key_exchange, *cipher, *mac;
   int ssl_version =
@@ -215,8 +215,8 @@ void CheckSecurityInfoForSecure(
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(contents);
   ASSERT_TRUE(model_client);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model_client->GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   EXPECT_EQ(expect_security_level, security_info.security_level);
   EXPECT_EQ(expect_sha1_status, security_info.sha1_deprecation_status);
   EXPECT_EQ(expect_mixed_content_status, security_info.mixed_content_status);
@@ -235,8 +235,8 @@ void CheckSecurityInfoForNonSecure(content::WebContents* contents) {
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(contents);
   ASSERT_TRUE(model_client);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model_client->GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
   EXPECT_EQ(SecurityStateModel::NO_DEPRECATED_SHA1,
             security_info.sha1_deprecation_status);
@@ -332,8 +332,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, HttpPage) {
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(contents);
   ASSERT_TRUE(model_client);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model_client->GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
   EXPECT_EQ(SecurityStateModel::NO_DEPRECATED_SHA1,
             security_info.sha1_deprecation_status);
@@ -492,8 +492,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   ASSERT_TRUE(model_client);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model_client->GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
 
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
@@ -521,8 +521,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   ASSERT_TRUE(model_client);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model_client->GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
 
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
@@ -552,8 +552,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   ASSERT_TRUE(model_client);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model_client->GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
 
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
@@ -1466,8 +1466,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTestURLRequestWithSCTs,
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   ASSERT_TRUE(model_client);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model_client->GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityStateModel::SECURE, security_info.security_level);
   EXPECT_EQ(kTestSCTStatuses, security_info.sct_verify_statuses);
 }

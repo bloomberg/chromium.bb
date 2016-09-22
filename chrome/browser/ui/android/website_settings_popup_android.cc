@@ -54,11 +54,13 @@ WebsiteSettingsPopupAndroid::WebsiteSettingsPopupAndroid(
   ChromeSecurityStateModelClient* security_model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   DCHECK(security_model_client);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  security_model_client->GetSecurityInfo(&security_info);
 
   presenter_.reset(new WebsiteSettings(
       this, Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
-      nav_entry->GetURL(), security_model_client->GetSecurityInfo()));
+      nav_entry->GetURL(), security_info));
 }
 
 WebsiteSettingsPopupAndroid::~WebsiteSettingsPopupAndroid() {}

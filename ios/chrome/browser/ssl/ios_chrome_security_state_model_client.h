@@ -24,8 +24,8 @@ class IOSChromeSecurityStateModelClient
  public:
   ~IOSChromeSecurityStateModelClient() override;
 
-  const security_state::SecurityStateModel::SecurityInfo& GetSecurityInfo()
-      const;
+  void GetSecurityInfo(
+      security_state::SecurityStateModel::SecurityInfo* result) const;
 
   // SecurityStateModelClient:
   void GetVisibleSecurityState(

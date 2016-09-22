@@ -55,9 +55,9 @@ IOSChromeSecurityStateModelClient::IOSChromeSecurityStateModelClient(
 
 IOSChromeSecurityStateModelClient::~IOSChromeSecurityStateModelClient() {}
 
-const security_state::SecurityStateModel::SecurityInfo&
-IOSChromeSecurityStateModelClient::GetSecurityInfo() const {
-  return security_state_model_->GetSecurityInfo();
+void IOSChromeSecurityStateModelClient::GetSecurityInfo(
+    security_state::SecurityStateModel::SecurityInfo* result) const {
+  return security_state_model_->GetSecurityInfo(result);
 }
 
 bool IOSChromeSecurityStateModelClient::RetrieveCert(

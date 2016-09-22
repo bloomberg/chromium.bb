@@ -192,20 +192,12 @@ class SecurityStateModel {
   SecurityStateModel();
   virtual ~SecurityStateModel();
 
-  // Returns a SecurityInfo describing the current page. Results are
-  // cached so that computation is only done when the relevant security
-  // state has changed.
-  const SecurityInfo& GetSecurityInfo() const;
+  // Populates |result| to describe the current page.
+  void GetSecurityInfo(SecurityInfo* result) const;
 
   void SetClient(SecurityStateModelClient* client);
 
  private:
-  // Caches the SecurityInfo for the visible page. Marked
-  // mutable so that the const accessor GetSecurityInfo() can update the
-  // cached values.
-  mutable SecurityInfo security_info_;
-  mutable VisibleSecurityState visible_security_state_;
-
   SecurityStateModelClient* client_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityStateModel);

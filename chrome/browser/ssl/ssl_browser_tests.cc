@@ -1190,8 +1190,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkFileAsNonSecure) {
   ASSERT_TRUE(model_client);
 
   ui_test_utils::NavigateToURL(browser(), GURL("file:///"));
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            model_client->GetSecurityInfo().security_level);
+            security_info.security_level);
 }
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkAboutAsNonSecure) {
@@ -1209,8 +1211,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkAboutAsNonSecure) {
   ASSERT_TRUE(model_client);
 
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            model_client->GetSecurityInfo().security_level);
+            security_info.security_level);
 }
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
@@ -1228,8 +1232,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
   ASSERT_TRUE(model_client);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            model_client->GetSecurityInfo().security_level);
+            security_info.security_level);
 }
 
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkBlobAsNonSecure) {
@@ -1249,8 +1255,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkBlobAsNonSecure) {
   ui_test_utils::NavigateToURL(
       browser(),
       GURL("blob:chrome://newtab/49a463bb-fac8-476c-97bf-5d7076c3ea1a"));
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::NONE,
-            model_client->GetSecurityInfo().security_level);
+            security_info.security_level);
 }
 
 #if defined(USE_NSS_CERTS)
@@ -2334,10 +2342,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   ChromeSecurityStateModelClient* client =
       ChromeSecurityStateModelClient::FromWebContents(tab);
   ASSERT_TRUE(client);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
-            client->GetSecurityInfo().mixed_content_status);
+            security_info.mixed_content_status);
   EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
-            client->GetSecurityInfo().content_with_cert_errors_status);
+            security_info.content_with_cert_errors_status);
 
   // Navigate to safe page that has Worker loading unsafe content.
   // Expect content to load but be marked as auth broken due to running insecure
@@ -2350,10 +2360,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsInWorkerWithUserException) {
   CheckWorkerLoadResult(tab, true);  // Worker loads insecure content
   CheckAuthenticationBrokenState(tab, CertError::NONE, AuthState::NONE);
 
+  client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
-            client->GetSecurityInfo().mixed_content_status);
+            security_info.mixed_content_status);
   EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_RAN,
-            client->GetSecurityInfo().content_with_cert_errors_status);
+            security_info.content_with_cert_errors_status);
 }
 
 // Visits a page with unsafe content and makes sure that if a user exception to
@@ -2367,11 +2378,13 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   ChromeSecurityStateModelClient* client =
       ChromeSecurityStateModelClient::FromWebContents(tab);
   ASSERT_TRUE(client);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
-            client->GetSecurityInfo().mixed_content_status);
+            security_info.mixed_content_status);
   EXPECT_EQ(
       security_state::SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
-      client->GetSecurityInfo().content_with_cert_errors_status);
+      security_info.content_with_cert_errors_status);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
@@ -2401,11 +2414,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeContentsWithUserException) {
   CheckAuthenticationBrokenState(tab, net::CERT_STATUS_COMMON_NAME_INVALID,
                                  AuthState::NONE);
 
+  client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
-            client->GetSecurityInfo().mixed_content_status);
+            security_info.mixed_content_status);
   EXPECT_EQ(
       security_state::SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
-      client->GetSecurityInfo().content_with_cert_errors_status);
+      security_info.content_with_cert_errors_status);
 }
 
 // Like the test above, but only displaying inactive content (an image).
@@ -2418,10 +2432,12 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnsafeImageWithUserException) {
   ChromeSecurityStateModelClient* client =
       ChromeSecurityStateModelClient::FromWebContents(tab);
   ASSERT_TRUE(client);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  client->GetSecurityInfo(&security_info);
   EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_NONE,
-            client->GetSecurityInfo().mixed_content_status);
+            security_info.mixed_content_status);
   EXPECT_EQ(security_state::SecurityStateModel::CONTENT_STATUS_DISPLAYED,
-            client->GetSecurityInfo().content_with_cert_errors_status);
+            security_info.content_with_cert_errors_status);
 
   int img_width;
   EXPECT_TRUE(content::ExecuteScriptAndExtractInt(

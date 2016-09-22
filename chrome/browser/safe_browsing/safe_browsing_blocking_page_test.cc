@@ -575,9 +575,11 @@ class SafeBrowsingBlockingPageBrowserTest
     ChromeSecurityStateModelClient* model_client =
         ChromeSecurityStateModelClient::FromWebContents(tab);
     ASSERT_TRUE(model_client);
+    security_state::SecurityStateModel::SecurityInfo security_info;
+    model_client->GetSecurityInfo(&security_info);
     EXPECT_EQ(security_state::SecurityStateModel::SECURITY_ERROR,
-              model_client->GetSecurityInfo().security_level);
-    EXPECT_TRUE(model_client->GetSecurityInfo().fails_malware_check);
+              security_info.security_level);
+    EXPECT_TRUE(security_info.fails_malware_check);
     // TODO(felt): Restore this check when https://crbug.com/641187 is fixed.
     // EXPECT_EQ(cert_status, model_client->GetSecurityInfo().cert_status);
   }

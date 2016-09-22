@@ -123,9 +123,11 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   ChromeSecurityStateModelClient* security_model_client =
       ChromeSecurityStateModelClient::FromWebContents(tab);
   DCHECK(security_model_client);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  security_model_client->GetSecurityInfo(&security_info);
 
   chrome::ShowWebsiteSettings(browser, tab, nav_entry->GetVirtualURL(),
-                              security_model_client->GetSecurityInfo());
+                              security_info);
   return true;
 }
 

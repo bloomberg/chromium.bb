@@ -26,8 +26,8 @@ class ChromeSecurityStateModelClient
  public:
   ~ChromeSecurityStateModelClient() override;
 
-  const security_state::SecurityStateModel::SecurityInfo& GetSecurityInfo()
-      const;
+  void GetSecurityInfo(
+      security_state::SecurityStateModel::SecurityInfo* result) const;
 
   // Returns the SecurityStyle that should be applied to a WebContents
   // with the given |security_info|. Populates

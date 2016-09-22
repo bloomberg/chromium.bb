@@ -97,8 +97,10 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
 
   const ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
   if (model_client &&
-      model_client->GetSecurityInfo().security_level ==
+      security_info.security_level ==
           security_state::SecurityStateModel::SECURITY_ERROR)
     return true;
 

@@ -122,8 +122,8 @@ TEST(SecurityStateModelTest, SHA1Warning) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
@@ -136,8 +136,8 @@ TEST(SecurityStateModelTest, SHA1WarningMixedContent) {
   SecurityStateModel model;
   model.SetClient(&client);
   client.SetDisplayedMixedContent(true);
-  const SecurityStateModel::SecurityInfo& security_info1 =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info1;
+  model.GetSecurityInfo(&security_info1);
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info1.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_DISPLAYED,
@@ -147,8 +147,8 @@ TEST(SecurityStateModelTest, SHA1WarningMixedContent) {
   client.set_initial_security_level(SecurityStateModel::SECURITY_ERROR);
   client.SetDisplayedMixedContent(false);
   client.SetRanMixedContent(true);
-  const SecurityStateModel::SecurityInfo& security_info2 =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info2;
+  model.GetSecurityInfo(&security_info2);
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info2.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_RAN,
@@ -164,8 +164,8 @@ TEST(SecurityStateModelTest, SHA1WarningBrokenHTTPS) {
   model.SetClient(&client);
   client.set_initial_security_level(SecurityStateModel::SECURITY_ERROR);
   client.AddCertStatus(net::CERT_STATUS_DATE_INVALID);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
@@ -183,8 +183,8 @@ TEST(SecurityStateModelTest, SecureProtocolAndCiphersuite) {
   client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_2
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   client.SetCipherSuite(ciphersuite);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_EQ(net::OBSOLETE_SSL_NONE, security_info.obsolete_ssl_status);
 }
 
@@ -198,8 +198,8 @@ TEST(SecurityStateModelTest, NonsecureProtocol) {
   client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_1
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   client.SetCipherSuite(ciphersuite);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_EQ(net::OBSOLETE_SSL_MASK_PROTOCOL, security_info.obsolete_ssl_status);
 }
 
@@ -213,8 +213,8 @@ TEST(SecurityStateModelTest, NonsecureCiphersuite) {
   client.set_connection_status(net::SSL_CONNECTION_VERSION_TLS1_2
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   client.SetCipherSuite(ciphersuite);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_EQ(net::OBSOLETE_SSL_MASK_KEY_EXCHANGE | net::OBSOLETE_SSL_MASK_CIPHER,
             security_info.obsolete_ssl_status);
 }
@@ -231,8 +231,8 @@ TEST(SecurityStateModelTest, MalwareOverride) {
                                << net::SSL_CONNECTION_VERSION_SHIFT);
   client.SetCipherSuite(ciphersuite);
   client.set_fails_malware_check(true);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_TRUE(security_info.fails_malware_check);
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
 }
@@ -244,8 +244,8 @@ TEST(SecurityStateModelTest, MalwareWithoutCOnnectionState) {
   SecurityStateModel model;
   model.SetClient(&client);
   client.set_fails_malware_check(true);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_TRUE(security_info.fails_malware_check);
   EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
 }
@@ -262,8 +262,8 @@ TEST(SecurityStateModelTest, PasswordFieldWarning) {
   SecurityStateModel model;
   model.SetClient(&client);
   client.set_displayed_password_field_on_http(true);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityStateModel::HTTP_SHOW_WARNING,
             security_info.security_level);
 }
@@ -280,8 +280,8 @@ TEST(SecurityStateModelTest, CreditCardFieldWarning) {
   SecurityStateModel model;
   model.SetClient(&client);
   client.set_displayed_credit_card_field_on_http(true);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityStateModel::HTTP_SHOW_WARNING,
             security_info.security_level);
 }
@@ -297,8 +297,8 @@ TEST(SecurityStateModelTest, HttpWarningNotSetWithoutSwitch) {
   model.SetClient(&client);
   client.set_displayed_password_field_on_http(true);
   client.set_displayed_credit_card_field_on_http(true);
-  const SecurityStateModel::SecurityInfo& security_info =
-      model.GetSecurityInfo();
+  SecurityStateModel::SecurityInfo security_info;
+  model.GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityStateModel::NONE, security_info.security_level);
 }
 

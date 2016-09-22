@@ -293,30 +293,14 @@ SecurityStateModel::SecurityStateModel() {}
 
 SecurityStateModel::~SecurityStateModel() {}
 
-const SecurityStateModel::SecurityInfo& SecurityStateModel::GetSecurityInfo()
-    const {
+void SecurityStateModel::GetSecurityInfo(
+    SecurityStateModel::SecurityInfo* result) const {
   scoped_refptr<net::X509Certificate> cert = nullptr;
   client_->RetrieveCert(&cert);
 
-  // Check if the cached |security_info_| must be recomputed.
   VisibleSecurityState new_visible_state;
   client_->GetVisibleSecurityState(&new_visible_state);
-  bool visible_security_state_changed =
-      !(visible_security_state_ == new_visible_state);
-  if (!visible_security_state_changed) {
-    // A cert must be present in order for the site to be considered
-    // EV_SECURE, and the cert might have been removed since the
-    // security level was last computed.
-    if (security_info_.security_level == EV_SECURE && !cert) {
-      security_info_.security_level = SECURE;
-    }
-    return security_info_;
-  }
-
-  visible_security_state_ = new_visible_state;
-  SecurityInfoForRequest(client_, visible_security_state_, cert,
-                         &security_info_);
-  return security_info_;
+  SecurityInfoForRequest(client_, new_visible_state, cert, result);
 }
 
 void SecurityStateModel::SetClient(SecurityStateModelClient* client) {

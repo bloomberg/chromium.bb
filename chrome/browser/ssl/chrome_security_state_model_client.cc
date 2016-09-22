@@ -320,9 +320,9 @@ content::SecurityStyle ChromeSecurityStateModelClient::GetSecurityStyle(
   return security_style;
 }
 
-const SecurityStateModel::SecurityInfo&
-ChromeSecurityStateModelClient::GetSecurityInfo() const {
-  return security_state_model_->GetSecurityInfo();
+void ChromeSecurityStateModelClient::GetSecurityInfo(
+    SecurityStateModel::SecurityInfo* result) const {
+  security_state_model_->GetSecurityInfo(result);
 }
 
 bool ChromeSecurityStateModelClient::RetrieveCert(

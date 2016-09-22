@@ -113,9 +113,11 @@ bool LocationIconView::OnActivate(const ui::Event& event) {
   ChromeSecurityStateModelClient* model_client =
       ChromeSecurityStateModelClient::FromWebContents(contents);
   DCHECK(model_client);
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  model_client->GetSecurityInfo(&security_info);
 
   location_bar_->delegate()->ShowWebsiteSettings(
-      contents, entry->GetVirtualURL(), model_client->GetSecurityInfo());
+      contents, entry->GetVirtualURL(), security_info);
   return true;
 }
 

@@ -76,7 +76,9 @@ ChromeToolbarModelDelegate::GetSecurityLevel() const {
   if (!web_contents)
     return security_state::SecurityStateModel::NONE;
   auto* client = ChromeSecurityStateModelClient::FromWebContents(web_contents);
-  return client->GetSecurityInfo().security_level;
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  client->GetSecurityInfo(&security_info);
+  return security_info.security_level;
 }
 
 scoped_refptr<net::X509Certificate> ChromeToolbarModelDelegate::GetCertificate()
@@ -91,10 +93,12 @@ bool ChromeToolbarModelDelegate::FailsMalwareCheck() const {
   content::WebContents* web_contents = GetActiveWebContents();
   // If there is no active WebContents (which can happen during toolbar
   // initialization), so nothing can fail.
-  return web_contents &&
-         ChromeSecurityStateModelClient::FromWebContents(web_contents)
-             ->GetSecurityInfo()
-             .fails_malware_check;
+  if (!web_contents)
+    return false;
+  security_state::SecurityStateModel::SecurityInfo security_info;
+  ChromeSecurityStateModelClient::FromWebContents(web_contents)
+      ->GetSecurityInfo(&security_info);
+  return security_info.fails_malware_check;
 }
 
 content::NavigationController*
