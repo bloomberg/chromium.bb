@@ -31,6 +31,7 @@
 #include "core/svg/SVGTransformTearOff.h"
 
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGMatrixTearOff.h"
 
 namespace blink {
 
@@ -47,6 +48,11 @@ DEFINE_TRACE(SVGTransformTearOff)
 {
     visitor->trace(m_matrixTearoff);
     SVGPropertyTearOff<SVGTransform>::trace(visitor);
+}
+
+SVGTransformTearOff* SVGTransformTearOff::create(SVGMatrixTearOff* matrix)
+{
+    return create(SVGTransform::create(matrix->value()), nullptr, PropertyIsNotAnimVal);
 }
 
 SVGMatrixTearOff* SVGTransformTearOff::matrix()

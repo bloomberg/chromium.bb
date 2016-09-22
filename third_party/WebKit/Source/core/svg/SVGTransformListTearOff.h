@@ -32,10 +32,12 @@
 #define SVGTransformListTearOff_h
 
 #include "core/svg/SVGTransformList.h"
-#include "core/svg/SVGTransformTearOff.h"
 #include "core/svg/properties/SVGListPropertyTearOffHelper.h"
 
 namespace blink {
+
+class SVGMatrixTearOff;
+class SVGTransformTearOff;
 
 class SVGTransformListTearOff final
     : public SVGListPropertyTearOffHelper<SVGTransformListTearOff, SVGTransformList>

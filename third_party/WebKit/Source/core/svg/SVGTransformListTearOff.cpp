@@ -30,7 +30,7 @@
 
 #include "core/svg/SVGTransformListTearOff.h"
 
-#include "core/svg/SVGSVGElement.h"
+#include "core/svg/SVGTransformTearOff.h"
 
 namespace blink {
 
@@ -45,7 +45,7 @@ SVGTransformListTearOff::~SVGTransformListTearOff()
 
 SVGTransformTearOff* SVGTransformListTearOff::createSVGTransformFromMatrix(SVGMatrixTearOff* matrix) const
 {
-    return SVGSVGElement::createSVGTransformFromMatrix(matrix);
+    return SVGTransformTearOff::create(matrix);
 }
 
 SVGTransformTearOff* SVGTransformListTearOff::consolidate(ExceptionState& exceptionState)

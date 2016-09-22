@@ -32,12 +32,13 @@
 #define SVGTransformTearOff_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
+class SVGMatrixTearOff;
 
 class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -56,6 +57,7 @@ public:
     {
         return new SVGTransformTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
+    static SVGTransformTearOff* create(SVGMatrixTearOff*);
 
     ~SVGTransformTearOff() override;
 

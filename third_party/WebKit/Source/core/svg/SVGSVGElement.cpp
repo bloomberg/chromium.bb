@@ -42,6 +42,7 @@
 #include "core/page/FrameTree.h"
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGNumberTearOff.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGRectTearOff.h"
@@ -423,7 +424,7 @@ SVGTransformTearOff* SVGSVGElement::createSVGTransform()
 
 SVGTransformTearOff* SVGSVGElement::createSVGTransformFromMatrix(SVGMatrixTearOff* matrix)
 {
-    return SVGTransformTearOff::create(SVGTransform::create(matrix->value()), 0, PropertyIsNotAnimVal);
+    return SVGTransformTearOff::create(matrix);
 }
 
 AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScope mode) const

@@ -22,9 +22,9 @@
 #include "core/svg/SVGGraphicsElement.h"
 
 #include "core/SVGNames.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/layout/svg/LayoutSVGPath.h"
 #include "core/svg/SVGElementRareData.h"
+#include "core/svg/SVGMatrixTearOff.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
