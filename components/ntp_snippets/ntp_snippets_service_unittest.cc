@@ -294,7 +294,10 @@ class FakeContentSuggestionsProviderObserver
   void OnCategoryStatusChanged(ContentSuggestionsProvider* provider,
                                Category category,
                                CategoryStatus new_status) override {
-    loaded_.Signal();
+    if (category.IsKnownCategory(KnownCategories::ARTICLES) &&
+        IsCategoryStatusAvailable(new_status)) {
+      loaded_.Signal();
+    }
     statuses_[category] = new_status;
   }
 
@@ -347,9 +350,7 @@ class NTPSnippetsServiceTest : public ::testing::Test {
                           kTestContentSuggestionsServerEndpoint}}),
         fake_url_fetcher_factory_(
             /*default_factory=*/&failing_url_fetcher_factory_),
-        test_url_(kTestContentSuggestionsServerWithAPIKey),
-
-        observer_(base::MakeUnique<FakeContentSuggestionsProviderObserver>()) {
+        test_url_(kTestContentSuggestionsServerWithAPIKey) {
     NTPSnippetsService::RegisterProfilePrefs(utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
 
@@ -368,8 +369,13 @@ class NTPSnippetsServiceTest : public ::testing::Test {
   }
 
   std::unique_ptr<NTPSnippetsService> MakeSnippetsService() {
-    CHECK(!observer_->Loaded());
+    auto service = MakeSnippetsServiceWithoutInitialization();
+    WaitForSnippetsServiceInitialization();
+    return service;
+  }
 
+  std::unique_ptr<NTPSnippetsService>
+  MakeSnippetsServiceWithoutInitialization() {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
@@ -388,12 +394,9 @@ class NTPSnippetsServiceTest : public ::testing::Test {
 
     auto image_fetcher = base::MakeUnique<NiceMock<MockImageFetcher>>();
     image_fetcher_ = image_fetcher.get();
-
-    // Add an initial fetch response, as the service tries to fetch when there
-    // is nothing in the DB.
-    SetUpFetchResponse(GetTestJson(std::vector<std::string>()));
-
-    auto service = base::MakeUnique<NTPSnippetsService>(
+    EXPECT_FALSE(observer_);
+    observer_ = base::MakeUnique<FakeContentSuggestionsProviderObserver>();
+    return base::MakeUnique<NTPSnippetsService>(
         observer_.get(), &category_factory_, utils_.pref_service(), nullptr,
         "fr", &scheduler_, std::move(snippets_fetcher),
         std::move(image_fetcher), /*image_decoder=*/nullptr,
@@ -401,15 +404,23 @@ class NTPSnippetsServiceTest : public ::testing::Test {
                                               task_runner),
         base::MakeUnique<NTPSnippetsStatusService>(utils_.fake_signin_manager(),
                                                    utils_.pref_service()));
+  }
+
+  void WaitForSnippetsServiceInitialization() {
+    EXPECT_TRUE(observer_);
+    EXPECT_FALSE(observer_->Loaded());
+
+    // Add an initial fetch response, as the service tries to fetch when there
+    // is nothing in the DB.
+    SetUpFetchResponse(GetTestJson(std::vector<std::string>()));
 
     base::RunLoop().RunUntilIdle();
     observer_->WaitForLoad();
-    return service;
   }
 
   void ResetSnippetsService(std::unique_ptr<NTPSnippetsService>* service) {
     service->reset();
-    observer_ = base::MakeUnique<FakeContentSuggestionsProviderObserver>();
+    observer_.reset();
     *service = MakeSnippetsService();
   }
 
@@ -503,6 +514,46 @@ TEST_F(NTPSnippetsServiceTest, DontRescheduleAfterFailedFetch) {
   // A failed fetch should NOT trigger another |Schedule|.
   EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(0);
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
+}
+
+TEST_F(NTPSnippetsServiceTest, DontRescheduleBeforeInit) {
+  // We should get two |Schedule| calls: The first when initialization
+  // completes, the second one after the automatic (since the service doesn't
+  // have any data yet) fetch finishes.
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
+  // The |RescheduleFetching| call shouldn't do anything (in particular not
+  // result in an |Unschedule|), since the service isn't initialized yet.
+  EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
+  auto service = MakeSnippetsServiceWithoutInitialization();
+  service->RescheduleFetching();
+  WaitForSnippetsServiceInitialization();
+
+  // Now that initialization has finished, |RescheduleFetching| should work.
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
+  service->RescheduleFetching();
+}
+
+TEST_F(NTPSnippetsServiceTest, RescheduleOnStateChange) {
+  {
+    InSequence s;
+    // Initial startup.
+    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
+    // Service gets disabled.
+    EXPECT_CALL(mock_scheduler(), Unschedule());
+    // Service gets enabled again.
+    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
+  }
+  auto service = MakeSnippetsService();
+  ASSERT_TRUE(service->ready());
+  base::RunLoop().RunUntilIdle();
+
+  service->OnDisabledReasonChanged(DisabledReason::EXPLICITLY_DISABLED);
+  ASSERT_FALSE(service->ready());
+  base::RunLoop().RunUntilIdle();
+
+  service->OnDisabledReasonChanged(DisabledReason::NONE);
+  ASSERT_TRUE(service->ready());
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(NTPSnippetsServiceTest, Full) {
@@ -909,12 +960,6 @@ TEST_F(NTPSnippetsServiceTest, DismissShouldRespectAllKnownUrls) {
 }
 
 TEST_F(NTPSnippetsServiceTest, StatusChanges) {
-  {
-    InSequence s;
-    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
-    EXPECT_CALL(mock_scheduler(), Unschedule());
-    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
-  }
   auto service = MakeSnippetsService();
 
   // Simulate user signed out

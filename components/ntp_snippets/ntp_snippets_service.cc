@@ -235,8 +235,11 @@ void NTPSnippetsService::RescheduleFetching() {
   if (!scheduler_)
     return;
 
-  // TODO(treib): This isn't correct - we don't want to un-schedule if we're
-  // in the NOT_INITED state. crbug.com/646842
+  // If we're NOT_INITED, we don't know whether to schedule or un-schedule.
+  // We'll reschedule on the next state change anyway, so do nothing here.
+  if (state_ == State::NOT_INITED)
+    return;
+
   if (ready()) {
     scheduler_->Schedule(GetFetchingIntervalWifi(),
                          GetFetchingIntervalFallback(),
@@ -855,24 +858,17 @@ void NTPSnippetsService::EnterStateReady() {
         suggestions_service_->AddCallback(base::Bind(
             &NTPSnippetsService::OnSuggestionsChanged, base::Unretained(this)));
   }
-
-  // TODO(treib): This resets all currently scheduled fetches on each Chrome
-  // start. Maybe store the currently scheduled values in prefs, and only
-  // reschedule if they have changed? crbug.com/646842
-  RescheduleFetching();
 }
 
 void NTPSnippetsService::EnterStateDisabled() {
   NukeAllSnippets();
   expiry_timer_.Stop();
   suggestions_service_subscription_.reset();
-  RescheduleFetching();
 }
 
 void NTPSnippetsService::EnterStateError() {
   expiry_timer_.Stop();
   suggestions_service_subscription_.reset();
-  RescheduleFetching();
   snippets_status_service_.reset();
 }
 
@@ -932,7 +928,7 @@ void NTPSnippetsService::EnterState(State state) {
     case State::NOT_INITED:
       // Initial state, it should not be possible to get back there.
       NOTREACHED();
-      return;
+      break;
 
     case State::READY:
       DCHECK(state_ == State::NOT_INITED || state_ == State::DISABLED);
@@ -940,7 +936,7 @@ void NTPSnippetsService::EnterState(State state) {
       DVLOG(1) << "Entering state: READY";
       state_ = State::READY;
       EnterStateReady();
-      return;
+      break;
 
     case State::DISABLED:
       DCHECK(state_ == State::NOT_INITED || state_ == State::READY);
@@ -948,14 +944,20 @@ void NTPSnippetsService::EnterState(State state) {
       DVLOG(1) << "Entering state: DISABLED";
       state_ = State::DISABLED;
       EnterStateDisabled();
-      return;
+      break;
 
     case State::ERROR_OCCURRED:
       DVLOG(1) << "Entering state: ERROR_OCCURRED";
       state_ = State::ERROR_OCCURRED;
       EnterStateError();
-      return;
+      break;
   }
+
+  // Schedule or un-schedule background fetching after each state change.
+  // TODO(treib): This resets all currently scheduled fetches on each Chrome
+  // start. Maybe store the currently scheduled values in prefs, and only
+  // reschedule if they have changed? crbug.com/646842
+  RescheduleFetching();
 }
 
 void NTPSnippetsService::NotifyNewSuggestions() {

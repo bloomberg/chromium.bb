@@ -146,6 +146,7 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
 
  private:
   friend class NTPSnippetsServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, RescheduleOnStateChange);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, StatusChanges);
 
   // Possible state transitions:
