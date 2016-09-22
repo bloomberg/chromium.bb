@@ -11,9 +11,7 @@
 namespace media_router {
 
 MediaRouterUIService::MediaRouterUIService(Profile* profile)
-    : action_controller_(profile) {
-  DCHECK(media_router::MediaRouterEnabled(profile));
-}
+    : action_controller_(profile) {}
 
 MediaRouterUIService::~MediaRouterUIService() {}
 

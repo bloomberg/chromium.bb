@@ -49,4 +49,16 @@ KeyedService* MediaRouterUIServiceFactory::BuildServiceInstanceFor(
   return new MediaRouterUIService(Profile::FromBrowserContext(context));
 }
 
+bool MediaRouterUIServiceFactory::ServiceIsCreatedWithBrowserContext() const {
+#if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+  return true;
+#else
+  return false;
+#endif
+}
+
+bool MediaRouterUIServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
+}
+
 }  // namespace media_router

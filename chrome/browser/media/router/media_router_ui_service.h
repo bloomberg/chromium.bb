@@ -24,6 +24,8 @@ class MediaRouterUIService : public KeyedService {
   static MediaRouterUIService* Get(Profile* profile);
 
  private:
+  friend class MediaRouterUIBrowserTest;
+
   MediaRouterActionController action_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterUIService);

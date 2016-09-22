@@ -10,6 +10,11 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
+class ToolbarActionsModel;
+
+namespace extensions {
+class ComponentMigrationHelper;
+}  // namespace extensions
 
 // The class for the contextual menu for the Media Router action.
 class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
@@ -24,6 +29,12 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
                            ToggleCloudServicesItem);
 #endif  // GOOGLE_CHROME_BUILD
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterContextualMenuUnitTest,
+                           ToggleAlwaysShowIconItem);
+
+  // Gets or sets the "Always show icon" option.
+  bool GetAlwaysShowActionPref() const;
+  void SetAlwaysShowActionPref(bool always_show);
 
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
@@ -32,10 +43,10 @@ class MediaRouterContextualMenu : public ui::SimpleMenuModel::Delegate {
   void ExecuteCommand(int command_id, int event_flags) override;
 
   void ReportIssue();
-  void RemoveMediaRouterComponentAction();
 
-  Browser* browser_;
+  Browser* const browser_;
   ui::SimpleMenuModel menu_model_;
+  extensions::ComponentMigrationHelper* const component_migration_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterContextualMenu);
 };

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_dialog_controller_impl.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -52,10 +53,9 @@ constexpr const int kWidth = 340;
 // will look like.
 class MediaRouterDialogDelegate : public WebDialogDelegate {
  public:
-  MediaRouterDialogDelegate(base::WeakPtr<MediaRouterAction> action,
+  explicit MediaRouterDialogDelegate(
       const base::WeakPtr<MediaRouterDialogControllerImpl>& controller)
-      : action_(action),
-        controller_(controller) {}
+      : controller_(controller) {}
   ~MediaRouterDialogDelegate() override {}
 
   // WebDialogDelegate implementation.
@@ -86,8 +86,6 @@ class MediaRouterDialogDelegate : public WebDialogDelegate {
   void OnDialogClosed(const std::string& json_retval) override {
     // We don't delete |this| here because this class is owned
     // by ConstrainedWebDialogDelegate.
-    if (action_)
-      action_->OnPopupHidden();
   }
 
   void OnCloseContents(WebContents* source, bool* out_close_dialog) override {
@@ -234,7 +232,7 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
   // |web_dialog_delegate|'s owner is |constrained_delegate|.
   // |constrained_delegate| is owned by the parent |views::View|.
   WebDialogDelegate* web_dialog_delegate =
-      new MediaRouterDialogDelegate(action_, weak_ptr_factory_.GetWeakPtr());
+      new MediaRouterDialogDelegate(weak_ptr_factory_.GetWeakPtr());
 
   // |ShowConstrainedWebDialogWithAutoResize()| will end up creating
   // ConstrainedWebDialogDelegateViewViews containing a WebContents containing
@@ -267,12 +265,14 @@ void MediaRouterDialogControllerImpl::CreateMediaRouterDialog() {
       media_router_dialog, this));
 
   if (action_)
-    action_->OnPopupShown();
+    action_->OnDialogShown();
 }
 
 void MediaRouterDialogControllerImpl::Reset() {
   MediaRouterDialogController::Reset();
   dialog_observer_.reset();
+  if (action_)
+    action_->OnDialogHidden();
 }
 
 void MediaRouterDialogControllerImpl::OnDialogNavigated(

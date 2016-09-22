@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_UI_SERVICE_FACTORY_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_UI_SERVICE_FACTORY_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
@@ -25,6 +26,7 @@ class MediaRouterUIServiceFactory : public BrowserContextKeyedServiceFactory {
 
  private:
   friend struct base::DefaultSingletonTraits<MediaRouterUIServiceFactory>;
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUIServiceFactoryUnitTest, CreateService);
 
   MediaRouterUIServiceFactory();
   ~MediaRouterUIServiceFactory() override;
@@ -34,6 +36,8 @@ class MediaRouterUIServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context) const override;
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
+  bool ServiceIsCreatedWithBrowserContext() const override;
+  bool ServiceIsNULLWhileTesting() const override;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterUIServiceFactory);
 };

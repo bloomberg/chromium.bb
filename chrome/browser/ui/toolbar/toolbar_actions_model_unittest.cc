@@ -1312,36 +1312,6 @@ TEST_F(ToolbarActionsModelUnitTest, ToolbarModelPrefChange) {
             observer()->inserted_count() - observer()->removed_count());
 }
 
-TEST_F(ToolbarActionsModelUnitTest, ComponentExtensionsAddedToEnd) {
-  Init();
-
-  ASSERT_TRUE(AddBrowserActionExtensions());
-
-  EXPECT_EQ(browser_action_a()->id(), GetActionIdAtIndex(0));
-  EXPECT_EQ(browser_action_b()->id(), GetActionIdAtIndex(1));
-  EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(2));
-
-  const char kName[] = "component";
-  extensions::DictionaryBuilder manifest;
-  manifest.Set("name", kName)
-      .Set("description", "An extension")
-      .Set("manifest_version", 2)
-      .Set("version", "1.0.0")
-      .Set("browser_action", extensions::DictionaryBuilder().Build());
-  scoped_refptr<const extensions::Extension> component_extension =
-      extensions::ExtensionBuilder()
-          .SetManifest(manifest.Build())
-          .SetID(crx_file::id_util::GenerateId(kName))
-          .SetLocation(extensions::Manifest::COMPONENT)
-          .Build();
-  service()->AddExtension(component_extension.get());
-
-  EXPECT_EQ(component_extension.get()->id(), GetActionIdAtIndex(0));
-  EXPECT_EQ(browser_action_a()->id(), GetActionIdAtIndex(1));
-  EXPECT_EQ(browser_action_b()->id(), GetActionIdAtIndex(2));
-  EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(3));
-}
-
 // Test various different reorderings, removals, and reinsertions of the
 // toolbar with component actions.
 TEST_F(ToolbarActionsModelUnitTest,

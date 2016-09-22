@@ -276,11 +276,13 @@ void ToolbarActionsModel::OnReady() {
   actions_initialized_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnToolbarModelInitialized());
 
-  // Handle component action migrations.  We must make sure that observers are
-  // notified of initialization first, so that the associated widgets are
-  // created.
-  ComponentToolbarActionsFactory::GetInstance()->HandleComponentMigrations(
-      component_migration_helper_.get(), profile_);
+  if (use_redesign_) {
+    // Handle component action migrations.  We must make sure that observers are
+    // notified of initialization first, so that the associated widgets are
+    // created.
+    ComponentToolbarActionsFactory::GetInstance()->HandleComponentMigrations(
+        component_migration_helper_.get(), profile_);
+  }
 }
 
 size_t ToolbarActionsModel::FindNewPositionFromLastKnownGood(
@@ -327,11 +329,10 @@ void ToolbarActionsModel::AddExtension(const extensions::Extension* extension) {
   if (!ShouldAddExtension(extension))
     return;
 
-  AddItem(ToolbarItem(extension->id(), EXTENSION_ACTION),
-          extensions::Manifest::IsComponentLocation(extension->location()));
+  AddItem(ToolbarItem(extension->id(), EXTENSION_ACTION));
 }
 
-void ToolbarActionsModel::AddItem(const ToolbarItem& item, bool is_component) {
+void ToolbarActionsModel::AddItem(const ToolbarItem& item) {
   // We only use AddItem() once the system is initialized.
   DCHECK(actions_initialized_);
 
@@ -342,7 +343,7 @@ void ToolbarActionsModel::AddItem(const ToolbarItem& item, bool is_component) {
   // extensions go at their previous position.
   size_t new_index = 0;
   if (is_new_extension) {
-    new_index = is_component ? 0 : visible_icon_count();
+    new_index = visible_icon_count();
     // For the last-known position, we use the index of the extension that is
     // just before this extension, plus one. (Note that this isn't the same
     // as new_index + 1, because last_known_positions_ can include disabled
@@ -632,7 +633,7 @@ void ToolbarActionsModel::AddComponentAction(const std::string& action_id) {
   DCHECK(use_redesign_);
   ToolbarItem component_item(action_id, COMPONENT_ACTION);
   DCHECK(!HasItem(component_item));
-  AddItem(component_item, true);
+  AddItem(component_item);
 }
 
 void ToolbarActionsModel::RemoveComponentAction(const std::string& action_id) {

@@ -44,8 +44,13 @@ class MediaRouterUIServiceFactoryUnitTest : public testing::Test {
 };
 
 TEST_F(MediaRouterUIServiceFactoryUnitTest, CreateService) {
-  MediaRouterUIService* service =
-      MediaRouterUIServiceFactory::GetForBrowserContext(profile());
+  // We call BuildServiceInstanceFor() directly because
+  // MediaRouterUIServiceFactory::GetForBrowserContext() is set to return a
+  // nullptr for a test profile.
+  std::unique_ptr<MediaRouterUIService> service(
+      static_cast<MediaRouterUIService*>(
+          MediaRouterUIServiceFactory::GetInstance()->BuildServiceInstanceFor(
+              profile())));
   ASSERT_TRUE(service);
 }
 

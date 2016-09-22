@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/toolbar/component_toolbar_actions_factory.h"
 #include "chrome/browser/ui/toolbar/media_router_action.h"
 #include "chrome/browser/ui/toolbar/media_router_contextual_menu.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -18,6 +22,11 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
+
+    toolbar_actions_model_ =
+        extensions::extension_action_test_util::CreateToolbarModelForProfile(
+            profile());
+
     signin_manager_ =
         SigninManagerFactory::GetInstance()->GetForProfile(profile());
     browser_action_test_util_.reset(
@@ -35,12 +44,16 @@ class MediaRouterContextualMenuUnitTest : public BrowserWithTestWindowTest {
 
   SigninManagerBase* signin_manager() { return signin_manager_; }
   ui::SimpleMenuModel* model() { return model_; }
+  ToolbarActionsModel* toolbar_actions_model() {
+    return toolbar_actions_model_;
+  }
 
  private:
   std::unique_ptr<BrowserActionTestUtil> browser_action_test_util_;
   std::unique_ptr<MediaRouterAction> action_;
   SigninManagerBase* signin_manager_;
   ui::SimpleMenuModel* model_;
+  ToolbarActionsModel* toolbar_actions_model_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterContextualMenuUnitTest);
 };
@@ -115,3 +128,29 @@ TEST_F(MediaRouterContextualMenuUnitTest, ToggleCloudServicesItem) {
       IDC_MEDIA_ROUTER_CLOUD_SERVICES_TOGGLE));
 }
 #endif  // GOOGLE_CHROME_BUILD
+
+TEST_F(MediaRouterContextualMenuUnitTest, ToggleAlwaysShowIconItem) {
+  MediaRouterContextualMenu menu(browser());
+  extensions::ComponentMigrationHelper* const component_migration_helper =
+      toolbar_actions_model()->component_migration_helper();
+
+  // Whether the option is checked should reflect the pref.
+  component_migration_helper->SetComponentActionPref(
+      ComponentToolbarActionsFactory::kMediaRouterActionId, true);
+  EXPECT_TRUE(
+      menu.IsCommandIdChecked(IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION));
+
+  component_migration_helper->SetComponentActionPref(
+      ComponentToolbarActionsFactory::kMediaRouterActionId, false);
+  EXPECT_FALSE(
+      menu.IsCommandIdChecked(IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION));
+
+  // Executing the option should toggle the pref.
+  menu.ExecuteCommand(IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION, 0);
+  EXPECT_TRUE(component_migration_helper->GetComponentActionPref(
+      ComponentToolbarActionsFactory::kMediaRouterActionId));
+
+  menu.ExecuteCommand(IDC_MEDIA_ROUTER_ALWAYS_SHOW_TOOLBAR_ACTION, 0);
+  EXPECT_FALSE(component_migration_helper->GetComponentActionPref(
+      ComponentToolbarActionsFactory::kMediaRouterActionId));
+}
