@@ -645,6 +645,11 @@ crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.htm
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
+crbug.com/647922 svg/zoom/page/zoom-img-preserveAspectRatio-support-1.html [ NeedsManualRebaseline ]
+crbug.com/647922 fast/borders/webkit-border-radius.html [ NeedsManualRebaseline ]
+crbug.com/647922 fast/borders/borderRadiusDotted04.html [ NeedsManualRebaseline ]
+crbug.com/647922 fast/borders/border-radius-different-width-001-double.html [ NeedsManualRebaseline ]
+
 # The failure in the next line is due to virtual/gpu bots using osmesa
 # Under osmesa, skia's filter quality doesn't work correctly. This test is expected to pass
 # when we swith to swiftshader.
