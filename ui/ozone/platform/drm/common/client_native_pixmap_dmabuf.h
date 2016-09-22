@@ -12,33 +12,32 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/native_pixmap_handle.h"
 #include "ui/ozone/public/client_native_pixmap.h"
 
 namespace ui {
 
 class ClientNativePixmapDmaBuf : public ClientNativePixmap {
  public:
-  static std::unique_ptr<ClientNativePixmap> ImportFromDmabuf(
-      const gfx::NativePixmapHandle& handle,
-      const gfx::Size& size);
+  static std::unique_ptr<ClientNativePixmap>
+  ImportFromDmabuf(int dmabuf_fd, const gfx::Size& size, int stride);
 
   ~ClientNativePixmapDmaBuf() override;
 
   // Overridden from ClientNativePixmap.
-  bool Map() override;
+  void* Map() override;
   void Unmap() override;
-
-  void* GetMemoryAddress(size_t plane) const override;
-  int GetStride(size_t plane) const override;
+  void GetStride(int* stride) const override;
 
  private:
-  ClientNativePixmapDmaBuf(const gfx::NativePixmapHandle& handle,
-                           const gfx::Size& size);
+  ClientNativePixmapDmaBuf(int dmabuf_fd,
+                           const gfx::Size& size,
+                           int stride,
+                           size_t map_size);
 
-  const gfx::NativePixmapHandle pixmap_handle_;
-  const gfx::Size size_;
   base::ScopedFD dmabuf_fd_;
+  const size_t map_size_;
+  const gfx::Size size_;
+  const int stride_;
   void* data_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientNativePixmapDmaBuf);

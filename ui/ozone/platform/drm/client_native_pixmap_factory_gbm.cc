@@ -21,19 +21,12 @@ class ClientNativePixmapGbm : public ClientNativePixmap {
   ClientNativePixmapGbm() {}
   ~ClientNativePixmapGbm() override {}
 
-  bool Map() override {
-    NOTREACHED();
-    return false;
-  }
-  void Unmap() override { NOTREACHED(); }
-  void* GetMemoryAddress(size_t plane) const override {
+  void* Map() override {
     NOTREACHED();
     return nullptr;
   }
-  int GetStride(size_t plane) const override {
-    NOTREACHED();
-    return 0;
-  }
+  void Unmap() override { NOTREACHED(); }
+  void GetStride(int* stride) const override { NOTREACHED(); }
 };
 
 }  // namespace
@@ -80,20 +73,21 @@ class ClientNativePixmapFactoryGbm : public ClientNativePixmapFactory {
       const gfx::Size& size,
       gfx::BufferUsage usage) override {
     DCHECK(!handle.fds.empty());
+    base::ScopedFD scoped_fd(handle.fds[0].fd);
     switch (usage) {
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
       case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
 #if defined(OS_CHROMEOS)
-        return ClientNativePixmapDmaBuf::ImportFromDmabuf(handle, size);
+        // TODO(dcastagna): Add support for pixmaps with multiple FDs for non
+        // scanout buffers.
+        return ClientNativePixmapDmaBuf::ImportFromDmabuf(
+            scoped_fd.release(), size, handle.planes[0].stride);
 #else
         NOTREACHED();
         return nullptr;
 #endif
       case gfx::BufferUsage::GPU_READ:
       case gfx::BufferUsage::SCANOUT:
-        // Close all the fds.
-        for (const auto& fd : handle.fds)
-          base::ScopedFD scoped_fd(fd.fd);
         return base::WrapUnique(new ClientNativePixmapGbm);
     }
     NOTREACHED();

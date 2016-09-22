@@ -535,9 +535,9 @@ void drm_create_prime_buffer(wl_client* client,
   }
 
   std::vector<gfx::NativePixmapPlane> planes;
-  planes.emplace_back(stride0, offset0, 0, 0);
-  planes.emplace_back(stride1, offset1, 0, 0);
-  planes.emplace_back(stride2, offset2, 0, 0);
+  planes.emplace_back(stride0, offset0, 0);
+  planes.emplace_back(stride1, offset1, 0);
+  planes.emplace_back(stride2, offset2, 0);
   std::vector<base::ScopedFD> fds;
 
   size_t num_planes =
@@ -693,7 +693,7 @@ void linux_buffer_params_create(wl_client* client,
       return;
     }
     LinuxBufferParams::Plane& plane = plane_it->second;
-    planes.emplace_back(plane.stride, plane.offset, 0, 0);
+    planes.emplace_back(plane.stride, plane.offset, 0);
     if (plane.fd.is_valid())
       fds.push_back(std::move(plane.fd));
   }

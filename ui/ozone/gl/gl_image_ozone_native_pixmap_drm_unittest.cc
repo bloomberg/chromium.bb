@@ -50,10 +50,6 @@ scoped_refptr<ui::NativePixmap> CreateYVU420Pixmap(const gfx::Size& size,
       0, pitches[0] * size.height() + pitches[1] * size.height() / 2,
       pitches[0] * size.height(),
   };
-  std::vector<size_t> sizes{pitches[0] * size.height(),
-                            pitches[1] * size.height() / 2,
-                            pitches[2] * size.height() / 2};
-
   size_t byte_number = pitches[0] * size.height() +
                        pitches[1] * size.height() / 2 +
                        pitches[2] * size.height() / 2;
@@ -93,7 +89,7 @@ scoped_refptr<ui::NativePixmap> CreateYVU420Pixmap(const gfx::Size& size,
   gfx::NativePixmapHandle pixmap_handle;
   pixmap_handle.fds.emplace_back(fd, false);
   for (int i = 0; i < 3; i++) {
-    pixmap_handle.planes.emplace_back(pitches[i], offsets[i], sizes[i], 0);
+    pixmap_handle.planes.emplace_back(pitches[i], offsets[i], 0);
   }
   ui::SurfaceFactoryOzone* surface_factory =
       ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
