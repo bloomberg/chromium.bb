@@ -112,6 +112,7 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_MOUSELOCK,
 #endif
     CONTENT_SETTINGS_TYPE_FULLSCREEN,
+    CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
 };
 
@@ -123,7 +124,9 @@ bool ShouldShowPermission(ContentSettingsType type) {
   // (http://crbug.com/577396).
 #if !defined(OS_ANDROID)
   // Fullscreen and mouselock settings are no longer shown (always allow).
-  if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
+  // Autoplay is Android-only at the moment.
+  if (type == CONTENT_SETTINGS_TYPE_AUTOPLAY ||
+      type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
       type == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
     return false;
   }

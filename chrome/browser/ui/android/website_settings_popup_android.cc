@@ -103,6 +103,7 @@ void WebsiteSettingsPopupAndroid::SetPermissionInfo(
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_KEYGEN);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
 
   std::map<ContentSettingsType, ContentSetting>
       user_specified_settings_to_display;

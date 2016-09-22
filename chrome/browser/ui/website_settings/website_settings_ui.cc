@@ -115,6 +115,9 @@ const PermissionsUIInfo kPermissionsUIInfo[] = {
     {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
      IDS_WEBSITE_SETTINGS_TYPE_BACKGROUND_SYNC, IDR_BLOCKED_BACKGROUND_SYNC,
      IDR_ALLOWED_BACKGROUND_SYNC},
+    // Autoplay is Android-only at the moment, and the Origin Info bubble in
+    // Android ignores these block/allow icon pairs, so we can specify 0 there.
+    {CONTENT_SETTINGS_TYPE_AUTOPLAY, IDS_WEBSITE_SETTINGS_TYPE_AUTOPLAY, 0, 0},
 };
 
 std::unique_ptr<WebsiteSettingsUI::SecurityDescription>
