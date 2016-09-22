@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "third_party/skia/include/core/SkStream.h"
 
 namespace blimp {
 namespace engine {
@@ -52,15 +51,13 @@ BlimpEnginePictureCache::CalculateCacheUpdateAndFlush() {
 }
 
 void BlimpEnginePictureCache::Put(const SkPicture* picture) {
-  SkDynamicMemoryWStream stream;
-  picture->serialize(&stream, pixel_serializer_);
-  DCHECK_GE(stream.bytesWritten(), 0u);
+  sk_sp<SkData> data = picture->serialize(pixel_serializer_);
+  DCHECK_GE(data->size(), 0u);
 
   // Store the picture data until it is sent to the client.
   pictures_.insert(
       std::make_pair(picture->uniqueID(),
-                     cc::PictureData(picture->uniqueID(),
-                                     sk_sp<SkData>(stream.copyToData()))));
+                     cc::PictureData(picture->uniqueID(), std::move(data))));
 }
 
 }  // namespace engine

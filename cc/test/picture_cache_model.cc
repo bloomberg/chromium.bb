@@ -8,7 +8,6 @@
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkStream.h"
 
 class SkPixelSerializer;
 
@@ -16,14 +15,9 @@ namespace cc {
 namespace {
 
 sk_sp<SkPicture> CopySkPicture(const SkPicture* picture) {
-  SkDynamicMemoryWStream write_stream;
-  picture->serialize(&write_stream, nullptr);
-  DCHECK_GT(write_stream.bytesWritten(), 0u);
-
-  sk_sp<SkData> data(write_stream.copyToData());
-
-  SkMemoryStream read_stream(data);
-  return SkPicture::MakeFromStream(&read_stream, nullptr);
+  sk_sp<SkData> data = picture->serialize();
+  DCHECK_GT(data->size(), 0u);
+  return SkPicture::MakeFromData(data.get());
 }
 
 }  // namespace

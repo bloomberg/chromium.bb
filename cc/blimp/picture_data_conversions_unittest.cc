@@ -18,7 +18,6 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkStream.h"
 
 namespace cc {
 namespace {
@@ -31,10 +30,9 @@ sk_sp<const SkPicture> CreateSkPicture(SkColor color) {
 }
 
 sk_sp<SkData> SerializePicture(sk_sp<const SkPicture> picture) {
-  SkDynamicMemoryWStream stream;
-  picture->serialize(&stream, nullptr);
-  DCHECK(stream.bytesWritten());
-  return sk_sp<SkData>(stream.copyToData());
+  sk_sp<SkData> data = picture->serialize();
+  DCHECK_GT(data->size(), 0u);
+  return data;
 }
 
 bool SamePicture(sk_sp<const SkPicture> picture,

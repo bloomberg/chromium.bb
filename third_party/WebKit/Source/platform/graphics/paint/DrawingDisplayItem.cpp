@@ -10,7 +10,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkPictureAnalyzer.h"
-#include "third_party/skia/include/core/SkStream.h"
 
 namespace blink {
 
@@ -53,15 +52,8 @@ static bool picturesEqual(const SkPicture* picture1, const SkPicture* picture2)
     if (picture1->approximateOpCount() != picture2->approximateOpCount())
         return false;
 
-    SkDynamicMemoryWStream picture1Serialized;
-    picture1->serialize(&picture1Serialized);
-    SkDynamicMemoryWStream picture2Serialized;
-    picture2->serialize(&picture2Serialized);
-    if (picture1Serialized.bytesWritten() != picture2Serialized.bytesWritten())
-        return false;
-
-    sk_sp<SkData> data1(picture1Serialized.copyToData());
-    sk_sp<SkData> data2(picture2Serialized.copyToData());
+    sk_sp<SkData> data1 = picture1->serialize();
+    sk_sp<SkData> data2 = picture2->serialize();
     return data1->equals(data2.get());
 }
 

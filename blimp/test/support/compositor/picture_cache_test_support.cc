@@ -13,7 +13,6 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkStream.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -30,10 +29,9 @@ sk_sp<const SkPicture> CreateSkPicture(SkColor color) {
 }
 
 sk_sp<SkData> SerializePicture(sk_sp<const SkPicture> picture) {
-  SkDynamicMemoryWStream stream;
-  picture->serialize(&stream, nullptr);
-  DCHECK(stream.bytesWritten());
-  return sk_sp<SkData>(stream.copyToData());
+  sk_sp<SkData> data = picture->serialize();
+  DCHECK_GT(data->size(), 0u);
+  return data;
 }
 
 BlobId GetBlobId(sk_sp<const SkPicture> picture) {
@@ -42,8 +40,7 @@ BlobId GetBlobId(sk_sp<const SkPicture> picture) {
 }
 
 sk_sp<const SkPicture> DeserializePicture(sk_sp<SkData> data) {
-  SkMemoryStream stream(data);
-  return SkPicture::MakeFromStream(&stream, nullptr);
+  return SkPicture::MakeFromData(data.get());
 }
 
 bool PicturesEqual(sk_sp<const SkPicture> picture,
