@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/file_video_capture_device.h"
@@ -28,6 +29,7 @@ base::FilePath GetFilePathFromCommandLine() {
 std::unique_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  base::ThreadRestrictions::AssertIOAllowed();
 #if defined(OS_WIN)
   return std::unique_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(
       base::FilePath(base::SysUTF8ToWide(device_descriptor.display_name))));
@@ -41,6 +43,8 @@ void FileVideoCaptureDeviceFactory::GetDeviceDescriptors(
     VideoCaptureDeviceDescriptors* device_descriptors) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(device_descriptors->empty());
+  base::ThreadRestrictions::SetIOAllowed(true);
+
   const base::FilePath command_line_file_path = GetFilePathFromCommandLine();
   device_descriptors->emplace_back(
 #if defined(OS_WIN)
@@ -63,6 +67,7 @@ void FileVideoCaptureDeviceFactory::GetSupportedFormats(
     const VideoCaptureDeviceDescriptor& device_descriptor,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  base::ThreadRestrictions::AssertIOAllowed();
 
   VideoCaptureFormat capture_format;
   if (!FileVideoCaptureDevice::GetVideoCaptureFormat(
