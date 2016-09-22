@@ -1848,8 +1848,8 @@ TEST_P(ParameterizedVisualViewportTest, ResizeWithScrollAnchoring)
     FrameView& frameView = *webViewImpl()->mainFrameImpl()->frameView();
     frameView.layoutViewportScrollableArea()->setScrollPosition(DoublePoint(700, 500), ProgrammaticScroll);
 
-    webViewImpl()->resize(IntSize(400, 300));
-    EXPECT_POINT_EQ(DoublePoint(300, 200), frameView.layoutViewportScrollableArea()->scrollPositionDouble());
+    webViewImpl()->resize(IntSize(800, 300));
+    EXPECT_POINT_EQ(DoublePoint(700, 200), frameView.layoutViewportScrollableArea()->scrollPositionDouble());
 
     RuntimeEnabledFeatures::setScrollAnchoringEnabled(wasScrollAnchoringEnabled);
 }

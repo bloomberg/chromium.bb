@@ -59,7 +59,7 @@ protected:
     {
         Element* scrollingElement = document().scrollingElement();
         if (delta.width())
-            scrollingElement->setScrollTop(scrollingElement->scrollLeft() + delta.width());
+            scrollingElement->setScrollLeft(scrollingElement->scrollLeft() + delta.width());
         if (delta.height())
             scrollingElement->setScrollTop(scrollingElement->scrollTop() + delta.height());
     }
@@ -939,6 +939,65 @@ TEST_F(ScrollAnchorCornerTest, CornersVerticalRL)
         "<div id='a'></div>");
 
     checkCorner(Corner::TopRight, DoublePoint(-20,  20), DoubleSize(-100, 0));
+}
+
+TEST_F(ScrollAnchorTest, IgnoreNonBlockLayoutAxis)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body {"
+        "        margin: 0; line-height: 0;"
+        "        width: 1200px; height: 1200px;"
+        "    }"
+        "    div {"
+        "        width: 100px; height: 100px;"
+        "        border: 5px solid gray;"
+        "        display: inline-block;"
+        "        box-sizing: border-box;"
+        "    }"
+        "</style>"
+        "<div id='a'></div><br>"
+        "<div id='b'></div><div id='c'></div>");
+
+    ScrollableArea* viewport = layoutViewport();
+    scrollLayoutViewport(DoubleSize(150, 0));
+
+    Element* a = document().getElementById("a");
+    Element* b = document().getElementById("b");
+    Element* c = document().getElementById("c");
+
+    a->setAttribute(HTMLNames::styleAttr, "height: 150px");
+    update();
+    EXPECT_EQ(DoublePoint(150, 0), viewport->scrollPositionDouble());
+    EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
+
+    scrollLayoutViewport(DoubleSize(0, 50));
+
+    a->setAttribute(HTMLNames::styleAttr, "height: 200px");
+    b->setAttribute(HTMLNames::styleAttr, "width: 150px");
+    update();
+    EXPECT_EQ(DoublePoint(150, 100), viewport->scrollPositionDouble());
+    EXPECT_EQ(c->layoutObject(), scrollAnchor(viewport).anchorObject());
+
+    a->setAttribute(HTMLNames::styleAttr, "height: 100px");
+    b->setAttribute(HTMLNames::styleAttr, "width: 100px");
+    document().documentElement()->setAttribute(HTMLNames::styleAttr, "writing-mode: vertical-rl");
+    document().scrollingElement()->setScrollLeft(0);
+    document().scrollingElement()->setScrollTop(0);
+    scrollLayoutViewport(DoubleSize(0, 150));
+
+    a->setAttribute(HTMLNames::styleAttr, "width: 150px");
+    update();
+    EXPECT_EQ(DoublePoint(0, 150), viewport->scrollPositionDouble());
+    EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
+
+    scrollLayoutViewport(DoubleSize(-50, 0));
+
+    a->setAttribute(HTMLNames::styleAttr, "width: 200px");
+    b->setAttribute(HTMLNames::styleAttr, "height: 150px");
+    update();
+    EXPECT_EQ(DoublePoint(-100, 150), viewport->scrollPositionDouble());
+    EXPECT_EQ(c->layoutObject(), scrollAnchor(viewport).anchorObject());
 }
 
 }

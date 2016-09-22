@@ -57,11 +57,10 @@ static LayoutBoxItem scrollerLayoutBoxItem(const ScrollableArea* scroller)
     return LayoutBoxItem(scrollerLayoutBox(scroller));
 }
 
-static Corner cornerFromCandidateRect(const LayoutObject* layoutObject)
+static Corner cornerToAnchor(const ScrollableArea* scroller)
 {
-    ASSERT(layoutObject);
-    if (layoutObject->style()->isFlippedBlocksWritingMode()
-        || !layoutObject->style()->isLeftToRightDirection())
+    const ComputedStyle* style = scrollerLayoutBox(scroller)->style();
+    if (style->isFlippedBlocksWritingMode() || !style->isLeftToRightDirection())
         return Corner::TopRight;
     return Corner::TopLeft;
 }
@@ -160,7 +159,7 @@ ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate)
     if (occupiesSpace && visibleRect.intersects(candidateRect)) {
         return ExamineResult(
             visibleRect.contains(candidateRect) ? Return : Constrain,
-            cornerFromCandidateRect(candidate));
+            cornerToAnchor(m_scroller));
     } else {
         return ExamineResult(Skip);
     }
@@ -218,7 +217,10 @@ void ScrollAnchor::save()
         return;
     m_saved = true;
     DCHECK(m_scroller);
-    if (m_scroller->scrollPosition() == IntPoint::zero()) {
+
+    ScrollbarOrientation blockLayoutAxis =
+        scrollerLayoutBox(m_scroller)->isHorizontalWritingMode() ? VerticalScrollbar : HorizontalScrollbar;
+    if (m_scroller->scrollPosition(blockLayoutAxis) == 0) {
         clear();
         return;
     }
@@ -248,8 +250,15 @@ IntSize ScrollAnchor::computeAdjustment() const
     // (For example, anchor moving from 2.4px -> 2.6px is really 2px -> 3px, so we
     // should scroll by 1px instead of 0.2px.) This is true regardless of whether
     // the ScrollableArea actually uses fractional scroll positions.
-    return roundedIntSize(computeRelativeOffset(m_anchorObject, m_scroller, m_corner)) -
+    IntSize delta = roundedIntSize(computeRelativeOffset(m_anchorObject, m_scroller, m_corner)) -
         roundedIntSize(m_savedRelativeOffset);
+
+    // Only adjust on the block layout axis.
+    if (scrollerLayoutBox(m_scroller)->isHorizontalWritingMode())
+        delta.setWidth(0);
+    else
+        delta.setHeight(0);
+    return delta;
 }
 
 void ScrollAnchor::restore()
