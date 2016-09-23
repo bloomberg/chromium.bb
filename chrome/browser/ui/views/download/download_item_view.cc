@@ -14,13 +14,11 @@
 #include "base/files/file_path.h"
 #include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
-#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -46,7 +44,6 @@
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
@@ -62,7 +59,6 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/focusable_border.h"
@@ -193,7 +189,6 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
       weak_ptr_factory_(this) {
   SetInkDropMode(InkDropMode::ON);
   DCHECK(download());
-  DCHECK(ui::MaterialDesignController::IsModeMaterial());
   download()->AddObserver(this);
   set_context_menu_controller(this);
 
@@ -225,7 +220,7 @@ DownloadItemView::~DownloadItemView() {
   // ExperienceSampling: If the user took no action to remove the warning
   // before it disappeared, then the user effectively dismissed the download
   // without keeping it.
-  if (sampling_event_.get())
+  if (sampling_event_)
     sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kIgnore);
 }
 
@@ -423,7 +418,7 @@ bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
           download()->GetTargetFilePath(), IconLoader::SMALL);
       views::Widget* widget = GetWidget();
       DragDownloadItem(download(), icon,
-                       widget ? widget->GetNativeView() : NULL);
+                       widget ? widget->GetNativeView() : nullptr);
     }
   } else if (ExceededDragThreshold(event.location() - drag_start_point_)) {
     dragging_ = true;
@@ -563,10 +558,10 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
     // user did this to detect whether we're being clickjacked.
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download", warning_duration);
     // ExperienceSampling: User chose to proceed with a dangerous download.
-    if (sampling_event_.get()) {
+    if (sampling_event_) {
       sampling_event_->CreateUserDecisionEvent(
           ExperienceSamplingEvent::kProceed);
-      sampling_event_.reset(NULL);
+      sampling_event_.reset();
     }
     // This will change the state and notify us.
     download()->ValidateDangerousDownload();
@@ -826,9 +821,9 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
   // release is seen, which means RootView sends us another mouse press no
   // matter where the user pressed. To force RootView to recalculate the
   // mouse target during the mouse press we explicitly set the mouse handler
-  // to NULL.
+  // to null.
   static_cast<views::internal::RootView*>(GetWidget()->GetRootView())
-      ->SetMouseHandler(NULL);
+      ->SetMouseHandler(nullptr);
 
   if (!context_menu_.get())
     context_menu_.reset(new DownloadShelfContextMenuView(download()));
@@ -908,22 +903,17 @@ void DownloadItemView::ClearWarningDialog() {
   dropdown_state_ = NORMAL;
 
   // ExperienceSampling: User proceeded through the warning.
-  if (sampling_event_.get()) {
+  if (sampling_event_) {
     sampling_event_->CreateUserDecisionEvent(ExperienceSamplingEvent::kProceed);
-    sampling_event_.reset(NULL);
+    sampling_event_.reset();
   }
   // Remove the views used by the warning dialog.
-  if (save_button_) {
-    RemoveChildView(save_button_);
-    delete save_button_;
-    save_button_ = NULL;
-  }
-  RemoveChildView(discard_button_);
+  delete save_button_;
+  save_button_ = nullptr;
   delete discard_button_;
-  discard_button_ = NULL;
-  RemoveChildView(dangerous_download_label_);
+  discard_button_ = nullptr;
   delete dangerous_download_label_;
-  dangerous_download_label_ = NULL;
+  dangerous_download_label_ = nullptr;
   dangerous_download_label_sized_ = false;
 
   // We need to load the icon now that the download has the real path.
