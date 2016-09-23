@@ -51,6 +51,9 @@
                   '|testing/android/' \
                   '|tools/android/'
     },
+    'android_java': {
+      'filepath': '/java/'
+    },
     'android_loading': {
       'filepath': 'tools/android/loading/'
     },
@@ -1388,12 +1391,15 @@
                       'nektar+watch@chromium.org',
                       'yuzo+watch@chromium.org'],
     'activity_log': ['felt@chromium.org'],
-    'add_to_homescreen': ['dominickn+watch@chromium.org'],
+    'add_to_homescreen': ['agrieve+watch@chromium.org',
+                          'dominickn+watch@chromium.org'],
     'android_crash_reporting': ['asvitkine+watch@chromium.org'],
     'android_crazy_linker': ['johnmaguire+watch@google.com'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
-    'android_infra': ['jbudorick+watch@chromium.org',
+    'android_infra': ['agrieve+watch@chromium.org',
+                      'jbudorick+watch@chromium.org',
                       'mikecase+watch@chromium.org'],
+    'android_java': ['agrieve+watch@chromium.org'],
     'android_loading': ['gabadie+watch@chromium.org',
                         'lizeb+watch-android-loading@chromium.org'],
     'android_media': ['avayvod+watch@chromium.org',
@@ -1780,7 +1786,8 @@
                     'mvanouwerkerk@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
     'gfx_image': ['rsesek+watch@chromium.org'],
-    'gn': ['dpranke@chromium.org',
+    'gn': ['agrieve+watch@chromium.org',
+           'dpranke@chromium.org',
            'tfarina@chromium.org'],
     'gpu': ['piman+watch@chromium.org'],
     'history_ui': ['dbeam+watch-history@chromium.org',
