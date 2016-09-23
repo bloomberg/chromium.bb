@@ -43,9 +43,7 @@ void AppListServiceViews::ShowForProfile(Profile* requested_profile) {
 void AppListServiceViews::ShowForAppInstall(Profile* profile,
                                             const std::string& extension_id,
                                             bool start_discovery_tracking) {
-  if (app_list::switches::IsExperimentalAppListEnabled())
-    ShowForProfileInternal(profile, app_list::AppListModel::STATE_APPS);
-
+  ShowForProfileInternal(profile, app_list::AppListModel::STATE_APPS);
   AppListServiceImpl::ShowForAppInstall(profile, extension_id,
                                         start_discovery_tracking);
 }

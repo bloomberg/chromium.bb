@@ -66,9 +66,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
   AppListModel* model() { return model_; }
   AppListViewDelegate* view_delegate() { return delegate_; }
 
-  // Returns true if the app list should be centered and in landscape mode.
-  bool ShouldCenterWindow() const;
-
   // Called when the search box's visibility is changed.
   void NotifySearchBoxVisibilityChanged();
 

@@ -272,13 +272,8 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect rect(GetContentsBounds());
-  if (apps_grid_view_->IsSelectedView(this)) {
+  if (apps_grid_view_->IsSelectedView(this))
     canvas->FillRect(rect, kSelectedColor);
-  } else if (is_highlighted_ && !is_installing_ &&
-             !app_list::switches::IsExperimentalAppListEnabled()) {
-    canvas->FillRect(rect, kHighlightedColor);
-    return;
-  }
 
   if (ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
     DCHECK(apps_grid_view_->model()->folders_enabled());
@@ -312,20 +307,14 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 }
 
 void AppListItemView::StateChanged() {
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-      shadow_animator_.animation()->Show();
-    } else {
-      shadow_animator_.animation()->Hide();
-    }
-  }
-
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+    shadow_animator_.animation()->Show();
     // Show the hover/tap highlight: for tap, lighter highlight replaces darker
     // keyboard selection; for mouse hover, keyboard selection takes precedence.
     if (!apps_grid_view_->IsSelectedView(this) || state() == STATE_PRESSED)
       SetItemIsHighlighted(true);
   } else {
+    shadow_animator_.animation()->Hide();
     SetItemIsHighlighted(false);
     if (item_weak_)
       item_weak_->set_highlighted(false);

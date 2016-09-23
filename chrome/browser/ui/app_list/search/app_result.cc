@@ -16,8 +16,7 @@ AppResult::AppResult(Profile* profile,
     : profile_(profile),
       app_id_(app_id),
       controller_(controller) {
-  if (app_list::switches::IsExperimentalAppListEnabled())
-    set_display_type(is_recommendation ? DISPLAY_RECOMMENDATION : DISPLAY_TILE);
+  set_display_type(is_recommendation ? DISPLAY_RECOMMENDATION : DISPLAY_TILE);
 }
 
 AppResult::~AppResult() {

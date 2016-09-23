@@ -33,11 +33,6 @@ SearchBoxModel::SearchBoxModel() {
 SearchBoxModel::~SearchBoxModel() {
 }
 
-void SearchBoxModel::SetIcon(const gfx::ImageSkia& icon) {
-  icon_ = icon;
-  FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, IconChanged());
-}
-
 void SearchBoxModel::SetSpeechRecognitionButton(
     std::unique_ptr<SearchBoxModel::SpeechButtonProperty> speech_button) {
   speech_button_ = std::move(speech_button);

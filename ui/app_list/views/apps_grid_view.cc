@@ -48,24 +48,17 @@ namespace {
 // other pages.
 const int kDragBufferPx = 20;
 
-// Padding space in pixels for fixed layout.
-const int kBottomPadding = 2;
-const int kLeftRightPadding = 24;
-
 // Padding space in pixels between pages.
 const int kPagePadding = 40;
 
 // Preferred tile size when showing in fixed layout.
-const int kPreferredTileWidth = 88;
-const int kPreferredTileHeight = 98;
-
-const int kExperimentalPreferredTileWidth = 100;
-const int kExperimentalPreferredTileHeight = 100;
+const int kPreferredTileWidth = 100;
+const int kPreferredTileHeight = 100;
 
 // Padding on each side of a tile.
-const int kExperimentalTileLeftRightPadding = 10;
-const int kExperimentalTileBottomPadding = 6;
-const int kExperimentalTileTopPadding = 6;
+const int kTileLeftRightPadding = 10;
+const int kTileBottomPadding = 6;
+const int kTileTopPadding = 6;
 
 // Width in pixels of the area on the sides that triggers a page flip.
 const int kPageFlipZoneSize = 40;
@@ -91,20 +84,13 @@ const int kFolderDroppingCircleRadius = 39;
 
 // Returns the size of a tile view excluding its padding.
 gfx::Size GetTileViewSize() {
-  return switches::IsExperimentalAppListEnabled()
-             ? gfx::Size(kExperimentalPreferredTileWidth,
-                         kExperimentalPreferredTileHeight)
-             : gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
+  return gfx::Size(kPreferredTileWidth, kPreferredTileHeight);
 }
 
 // Returns the padding around a tile view.
 gfx::Insets GetTilePadding() {
-  if (!switches::IsExperimentalAppListEnabled())
-    return gfx::Insets();
-
-  return gfx::Insets(
-      -kExperimentalTileTopPadding, -kExperimentalTileLeftRightPadding,
-      -kExperimentalTileBottomPadding, -kExperimentalTileLeftRightPadding);
+  return gfx::Insets(-kTileTopPadding, -kTileLeftRightPadding,
+                     -kTileBottomPadding, -kTileLeftRightPadding);
 }
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
@@ -276,13 +262,8 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
   cols_ = cols;
   rows_per_page_ = rows_per_page;
 
-  if (switches::IsExperimentalAppListEnabled()) {
-    SetBorder(views::Border::CreateEmptyBorder(
-        0, kExperimentalAppsGridPadding, 0, kExperimentalAppsGridPadding));
-  } else {
-    SetBorder(views::Border::CreateEmptyBorder(
-        0, kLeftRightPadding, kBottomPadding, kLeftRightPadding));
-  }
+  SetBorder(views::Border::CreateEmptyBorder(0, kAppsGridPadding, 0,
+                                             kAppsGridPadding));
 }
 
 // static

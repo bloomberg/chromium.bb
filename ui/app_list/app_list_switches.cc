@@ -11,7 +11,7 @@ namespace app_list {
 namespace switches {
 
 // Specifies the chrome-extension:// URL for the contents of an additional page
-// added to the experimental app launcher.
+// added to the app launcher.
 const char kCustomLauncherPage[] = "custom-launcher-page";
 
 // If set, the app list will not be dismissed when it loses focus. This is
@@ -58,16 +58,6 @@ bool IsVoiceSearchEnabled() {
 #else
   return false;
 #endif
-}
-
-bool IsExperimentalAppListEnabled() {
-  // TODO(mgiuca): Remove this function. (https://crbug.com/531059)
-  return true;
-}
-
-bool IsCenteredAppListEnabled() {
-  // TODO(mgiuca): Remove this function. (https://crbug.com/531059)
-  return true;
 }
 
 bool ShouldNotDismissOnBlur() {

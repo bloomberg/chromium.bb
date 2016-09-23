@@ -214,26 +214,14 @@ AppListView::~AppListView() {
   RemoveAllChildViews(true);
 }
 
-void AppListView::InitAsBubbleAttachedToAnchor(
-    gfx::NativeView parent,
-    int initial_apps_page,
-    views::View* anchor,
-    const gfx::Vector2d& anchor_offset,
-    views::BubbleBorder::Arrow arrow,
-    bool border_accepts_events) {
-  SetAnchorView(anchor);
-  InitAsBubbleInternal(
-      parent, initial_apps_page, arrow, border_accepts_events, anchor_offset);
-}
-
 void AppListView::InitAsBubbleAtFixedLocation(
     gfx::NativeView parent,
     int initial_apps_page,
     const gfx::Point& anchor_point_in_screen,
     views::BubbleBorder::Arrow arrow,
     bool border_accepts_events) {
-  SetAnchorView(NULL);
   SetAnchorRect(gfx::Rect(anchor_point_in_screen, gfx::Size()));
+  // TODO(mgiuca): Inline InitAsBubbleInternal, since there is only one caller.
   InitAsBubbleInternal(
       parent, initial_apps_page, arrow, border_accepts_events, gfx::Vector2d());
 }
@@ -326,10 +314,6 @@ void AppListView::SetAppListOverlayVisible(bool visible) {
     if (!visible)
       search_box_view_->search_box()->RequestFocus();
   }
-}
-
-bool AppListView::ShouldCenterWindow() const {
-  return delegate_->ShouldCenterWindow();
 }
 
 gfx::Size AppListView::GetPreferredSize() const {
@@ -599,26 +583,14 @@ void AppListView::GetWidgetHitTestMask(gfx::Path* mask) const {
 
 bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
-  if (switches::IsExperimentalAppListEnabled()) {
-    // If the ContentsView does not handle the back action, then this is the
-    // top level, so we close the app list.
-    if (!app_list_main_view_->contents_view()->Back()) {
-      GetWidget()->Deactivate();
-      CloseAppList();
-    }
-  } else if (app_list_main_view_->search_box_view()->HasSearch()) {
-    app_list_main_view_->search_box_view()->ClearSearch();
-  } else if (app_list_main_view_->contents_view()
-                 ->apps_container_view()
-                 ->IsInFolderView()) {
-    app_list_main_view_->contents_view()
-        ->apps_container_view()
-        ->app_list_folder_view()
-        ->CloseFolderPage();
-  } else {
+
+  // If the ContentsView does not handle the back action, then this is the
+  // top level, so we close the app list.
+  if (!app_list_main_view_->contents_view()->Back()) {
     GetWidget()->Deactivate();
     CloseAppList();
   }
+
   // Don't let DialogClientView handle the accelerator.
   return true;
 }

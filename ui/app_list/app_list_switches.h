@@ -27,11 +27,6 @@ bool APP_LIST_EXPORT IsFolderUIEnabled();
 
 bool APP_LIST_EXPORT IsVoiceSearchEnabled();
 
-// Deprecated. These always return true.
-// TODO(mgiuca): Remove (https://crbug.com/531059).
-bool APP_LIST_EXPORT IsExperimentalAppListEnabled();
-bool APP_LIST_EXPORT IsCenteredAppListEnabled();
-
 // Determines whether the app list should not be dismissed on focus loss.
 bool APP_LIST_EXPORT ShouldNotDismissOnBlur();
 

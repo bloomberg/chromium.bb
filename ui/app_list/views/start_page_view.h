@@ -22,7 +22,7 @@ class CustomLauncherPageBackgroundView;
 class SearchResultTileItemView;
 class TileItemView;
 
-// The start page for the experimental app list.
+// The start page for the app list.
 class APP_LIST_EXPORT StartPageView : public AppListPage {
  public:
   StartPageView(AppListMainView* app_list_main_view,

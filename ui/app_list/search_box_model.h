@@ -47,10 +47,6 @@ class APP_LIST_EXPORT SearchBoxModel {
   SearchBoxModel();
   ~SearchBoxModel();
 
-  // Sets/gets the icon on the left side of edit box.
-  void SetIcon(const gfx::ImageSkia& icon);
-  const gfx::ImageSkia& icon() const { return icon_; }
-
   // Sets/gets the properties for the button of speech recognition.
   void SetSpeechRecognitionButton(
       std::unique_ptr<SpeechButtonProperty> speech_button);
@@ -80,7 +76,6 @@ class APP_LIST_EXPORT SearchBoxModel {
   void RemoveObserver(SearchBoxModelObserver* observer);
 
  private:
-  gfx::ImageSkia icon_;
   std::unique_ptr<SpeechButtonProperty> speech_button_;
   base::string16 hint_text_;
   base::string16 accessible_name_;

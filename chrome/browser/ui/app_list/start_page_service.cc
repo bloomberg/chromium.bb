@@ -328,16 +328,13 @@ StartPageService::StartPageService(Profile* profile)
       search_engine_is_google_(false),
       backoff_entry_(&kDoodleBackoffPolicy),
       weak_factory_(this) {
-  if (switches::IsExperimentalAppListEnabled()) {
-    TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile_);
-    const TemplateURL* default_provider =
-        template_url_service->GetDefaultSearchProvider();
-    search_engine_is_google_ =
-        default_provider->GetEngineType(
-            template_url_service->search_terms_data()) ==
-        SEARCH_ENGINE_GOOGLE;
-  }
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_);
+  const TemplateURL* default_provider =
+      template_url_service->GetDefaultSearchProvider();
+  search_engine_is_google_ =
+      default_provider->GetEngineType(
+          template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
   network_change_observer_.reset(new NetworkChangeObserver(this));
 }
@@ -377,15 +374,14 @@ void StartPageService::UpdateRecognitionState() {
 void StartPageService::Init() {
   // Do not load the start page web contents in tests because many tests assume
   // no WebContents exist except the ones they make.
-  if (switches::IsExperimentalAppListEnabled() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kTestType)) {
-    content::BrowserThread::PostDelayedTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&StartPageService::LoadContentsIfNeeded,
-                   weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(kLoadContentsDelaySeconds));
-  }
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
+    return;
+
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&StartPageService::LoadContentsIfNeeded,
+                 weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(kLoadContentsDelaySeconds));
 }
 
 void StartPageService::LoadContentsIfNeeded() {
@@ -413,9 +409,6 @@ void StartPageService::AppListShown() {
 }
 
 void StartPageService::AppListHidden() {
-  if (!app_list::switches::IsExperimentalAppListEnabled())
-    UnloadContents();
-
   if (speech_recognizer_) {
     StopSpeechRecognition();
   }
@@ -474,8 +467,7 @@ bool StartPageService::HotwordEnabled() {
 }
 
 content::WebContents* StartPageService::GetStartPageContents() {
-  return app_list::switches::IsExperimentalAppListEnabled() ? contents_.get()
-                                                            : NULL;
+  return contents_.get();
 }
 
 content::WebContents* StartPageService::GetSpeechRecognitionContents() {

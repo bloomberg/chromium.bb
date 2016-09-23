@@ -51,22 +51,18 @@ class SearchCardView : public views::View {
 }  // namespace
 
 SearchResultPageView::SearchResultPageView() : selected_index_(0) {
-  if (switches::IsExperimentalAppListEnabled()) {
-    gfx::ShadowValue shadow = GetShadowForZHeight(kSearchResultZHeight);
-    std::unique_ptr<views::Border> border(new views::ShadowBorder(shadow));
+  gfx::ShadowValue shadow = GetShadowForZHeight(kSearchResultZHeight);
+  std::unique_ptr<views::Border> border(new views::ShadowBorder(shadow));
 
-    gfx::Insets insets = gfx::Insets(kTopPadding, kExperimentalSearchBoxPadding,
-                                     0, kExperimentalSearchBoxPadding);
-    insets += -border->GetInsets();
+  gfx::Insets insets =
+      gfx::Insets(kTopPadding, kSearchBoxPadding, 0, kSearchBoxPadding);
+  insets += -border->GetInsets();
 
-    views::BoxLayout* layout =
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, kGroupSpacing);
-    layout->set_inside_border_insets(insets);
+  views::BoxLayout* layout =
+      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, kGroupSpacing);
+  layout->set_inside_border_insets(insets);
 
-    SetLayoutManager(layout);
-  } else {
-    SetLayoutManager(new views::FillLayout);
-  }
+  SetLayoutManager(layout);
 }
 
 SearchResultPageView::~SearchResultPageView() {
@@ -82,11 +78,7 @@ void SearchResultPageView::SetSelection(bool select) {
 void SearchResultPageView::AddSearchResultContainerView(
     AppListModel::SearchResults* results_model,
     SearchResultContainerView* result_container) {
-  views::View* view_to_add = result_container;
-  if (switches::IsExperimentalAppListEnabled())
-    view_to_add = new SearchCardView(result_container);
-
-  AddChildView(view_to_add);
+  AddChildView(new SearchCardView(result_container));
   result_container_views_.push_back(result_container);
   result_container->SetResults(results_model);
   result_container->set_delegate(this);
@@ -175,23 +167,21 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
     old_selection->SetSelectedIndex(old_selection->num_results() - 1);
   }
 
-  if (switches::IsExperimentalAppListEnabled()) {
-    // Sort the result container views by their score.
-    std::sort(result_container_views_.begin(), result_container_views_.end(),
-              [](const SearchResultContainerView* a,
-                 const SearchResultContainerView* b) -> bool {
-                return a->container_score() > b->container_score();
-              });
+  // Sort the result container views by their score.
+  std::sort(result_container_views_.begin(), result_container_views_.end(),
+            [](const SearchResultContainerView* a,
+               const SearchResultContainerView* b) -> bool {
+              return a->container_score() > b->container_score();
+            });
 
-    int result_y_index = 0;
-    for (size_t i = 0; i < result_container_views_.size(); ++i) {
-      SearchResultContainerView* view = result_container_views_[i];
-      ReorderChildView(view->parent(), i);
+  int result_y_index = 0;
+  for (size_t i = 0; i < result_container_views_.size(); ++i) {
+    SearchResultContainerView* view = result_container_views_[i];
+    ReorderChildView(view->parent(), i);
 
-      view->NotifyFirstResultYIndex(result_y_index);
+    view->NotifyFirstResultYIndex(result_y_index);
 
-      result_y_index += view->GetYSize();
-    }
+    result_y_index += view->GetYSize();
   }
 
   Layout();
@@ -244,9 +234,7 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
 }
 
 int SearchResultPageView::GetSearchBoxZHeight() const {
-  return switches::IsExperimentalAppListEnabled()
-             ? kSearchResultZHeight
-             : AppListPage::GetSearchBoxZHeight();
+  return kSearchResultZHeight;
 }
 
 void SearchResultPageView::OnHidden() {

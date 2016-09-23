@@ -50,15 +50,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
 
-  // Initializes the widget and use a given |anchor| plus an |anchor_offset| for
-  // positioning.
-  void InitAsBubbleAttachedToAnchor(gfx::NativeView parent,
-                                    int initial_apps_page,
-                                    views::View* anchor,
-                                    const gfx::Vector2d& anchor_offset,
-                                    views::BubbleBorder::Arrow arrow,
-                                    bool border_accepts_events);
-
   // Initializes the widget and use a fixed |anchor_point_in_screen| for
   // positioning.
   void InitAsBubbleAtFixedLocation(gfx::NativeView parent,
@@ -94,9 +85,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Enables/disables a semi-transparent overlay over the app list (good for
   // hiding the app list when a modal dialog is being shown).
   void SetAppListOverlayVisible(bool visible);
-
-  // Returns true if the app list should be centered and in landscape mode.
-  bool ShouldCenterWindow() const;
 
   views::Widget* search_box_widget() const { return search_box_widget_; }
 

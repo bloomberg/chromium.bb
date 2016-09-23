@@ -72,7 +72,6 @@ class ASH_EXPORT AppListPresenterDelegate
   void OnKeyboardClosed() override;
 
   // ShellObserver overrides:
-  void OnShelfAlignmentChanged(WmWindow* root_window) override;
   void OnOverviewModeStarting() override;
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
@@ -82,9 +81,6 @@ class ASH_EXPORT AppListPresenterDelegate
 
   // Whether the app list is visible (or in the process of being shown).
   bool is_visible_ = false;
-
-  // Whether the app list should remain centered.
-  bool is_centered_ = false;
 
   // Not owned. Pointer is guaranteed to be valid while this object is alive.
   app_list::AppListPresenter* presenter_;

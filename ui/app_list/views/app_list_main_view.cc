@@ -151,9 +151,7 @@ void AppListMainView::ShowAppListWhenReady() {
 }
 
 void AppListMainView::ResetForShow() {
-  if (switches::IsExperimentalAppListEnabled())
-    contents_view_->SetActiveState(AppListModel::STATE_START);
-
+  contents_view_->SetActiveState(AppListModel::STATE_START);
   contents_view_->apps_container_view()->ResetForShowApps();
   // We clear the search when hiding so when app list appears it is not showing
   // search results.
@@ -180,10 +178,6 @@ void AppListMainView::ModelChanged() {
 void AppListMainView::SetDragAndDropHostOfCurrentAppList(
     ApplicationDragAndDropHost* drag_and_drop_host) {
   contents_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
-}
-
-bool AppListMainView::ShouldCenterWindow() const {
-  return delegate_->ShouldCenterWindow();
 }
 
 PaginationModel* AppListMainView::GetAppsPaginationModel() {

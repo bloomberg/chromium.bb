@@ -49,22 +49,20 @@ void ContentsView::Init(AppListModel* model) {
 
   AppListViewDelegate* view_delegate = app_list_main_view_->view_delegate();
 
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    std::vector<views::View*> custom_page_views =
-        view_delegate->CreateCustomPageWebViews(GetLocalBounds().size());
-    // Only add the first custom page view as STATE_CUSTOM_LAUNCHER_PAGE. Ignore
-    // any subsequent custom pages.
-    if (!custom_page_views.empty()) {
-      custom_page_view_ = new CustomLauncherPageView(custom_page_views[0]);
+  std::vector<views::View*> custom_page_views =
+      view_delegate->CreateCustomPageWebViews(GetLocalBounds().size());
+  // Only add the first custom page view as STATE_CUSTOM_LAUNCHER_PAGE. Ignore
+  // any subsequent custom pages.
+  if (!custom_page_views.empty()) {
+    custom_page_view_ = new CustomLauncherPageView(custom_page_views[0]);
 
-      AddLauncherPage(custom_page_view_,
-                      AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
-    }
-
-    // Start page.
-    start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
-    AddLauncherPage(start_page_view_, AppListModel::STATE_START);
+    AddLauncherPage(custom_page_view_,
+                    AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
   }
+
+  // Start page.
+  start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
+  AddLauncherPage(start_page_view_, AppListModel::STATE_START);
 
   // Search results UI.
   search_results_page_view_ = new SearchResultPageView();
@@ -73,11 +71,9 @@ void ContentsView::Init(AppListModel* model) {
   search_results_page_view_->AddSearchResultContainerView(
       results, new SearchResultListView(app_list_main_view_, view_delegate));
 
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    search_results_page_view_->AddSearchResultContainerView(
-        results, new SearchResultTileItemListView(
-                     GetSearchBoxView()->search_box(), view_delegate));
-  }
+  search_results_page_view_->AddSearchResultContainerView(
+      results, new SearchResultTileItemListView(
+                   GetSearchBoxView()->search_box(), view_delegate));
   AddLauncherPage(search_results_page_view_,
                   AppListModel::STATE_SEARCH_RESULTS);
 
@@ -85,9 +81,7 @@ void ContentsView::Init(AppListModel* model) {
 
   AddLauncherPage(apps_container_view_, AppListModel::STATE_APPS);
 
-  int initial_page_index = app_list::switches::IsExperimentalAppListEnabled()
-                               ? GetPageIndexForState(AppListModel::STATE_START)
-                               : GetPageIndexForState(AppListModel::STATE_APPS);
+  int initial_page_index = GetPageIndexForState(AppListModel::STATE_START);
   DCHECK_GE(initial_page_index, 0);
 
   page_before_search_ = initial_page_index;
@@ -200,22 +194,20 @@ void ContentsView::ActivePageChanged() {
 
   app_list_main_view_->model()->SetState(state);
 
-  if (switches::IsExperimentalAppListEnabled()) {
-    DCHECK(start_page_view_);
+  DCHECK(start_page_view_);
 
-    // Set the visibility of the search box's back button.
-    app_list_main_view_->search_box_view()->back_button()->SetVisible(
-        state != AppListModel::STATE_START);
-    app_list_main_view_->search_box_view()->Layout();
-    bool folder_active = (state == AppListModel::STATE_APPS)
-        ? apps_container_view_->IsInFolderView() : false;
-    app_list_main_view_->search_box_view()->SetBackButtonLabel(folder_active);
+  // Set the visibility of the search box's back button.
+  app_list_main_view_->search_box_view()->back_button()->SetVisible(
+      state != AppListModel::STATE_START);
+  app_list_main_view_->search_box_view()->Layout();
+  bool folder_active = (state == AppListModel::STATE_APPS)
+                           ? apps_container_view_->IsInFolderView()
+                           : false;
+  app_list_main_view_->search_box_view()->SetBackButtonLabel(folder_active);
 
-    // Whenever the page changes, the custom launcher page is considered to have
-    // been reset.
-    app_list_main_view_->model()->ClearCustomLauncherPageSubpages();
-  }
-
+  // Whenever the page changes, the custom launcher page is considered to have
+  // been reset.
+  app_list_main_view_->model()->ClearCustomLauncherPageSubpages();
   app_list_main_view_->search_box_view()->ResetTabFocus(false);
 }
 
@@ -360,10 +352,8 @@ int ContentsView::AddLauncherPage(AppListPage* view,
 gfx::Rect ContentsView::GetDefaultSearchBoxBounds() const {
   gfx::Rect search_box_bounds(0, 0, GetDefaultContentsSize().width(),
                               GetSearchBoxView()->GetPreferredSize().height());
-  if (switches::IsExperimentalAppListEnabled()) {
-    search_box_bounds.set_y(kExperimentalSearchBoxPadding);
-    search_box_bounds.Inset(kExperimentalSearchBoxPadding, 0);
-  }
+  search_box_bounds.set_y(kSearchBoxPadding);
+  search_box_bounds.Inset(kSearchBoxPadding, 0);
   return search_box_bounds;
 }
 

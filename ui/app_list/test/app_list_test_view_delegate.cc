@@ -100,10 +100,6 @@ const AppListViewDelegate::Users& AppListTestViewDelegate::GetUsers() const {
   return users_;
 }
 
-bool AppListTestViewDelegate::ShouldCenterWindow() const {
-  return app_list::switches::IsCenteredAppListEnabled();
-}
-
 void AppListTestViewDelegate::ReplaceTestModel(int item_count) {
   model_.reset(new AppListTestModel);
   model_->PopulateApps(item_count);

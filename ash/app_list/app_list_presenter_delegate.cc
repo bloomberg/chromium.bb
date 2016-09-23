@@ -35,60 +35,6 @@
 namespace ash {
 namespace {
 
-// The minimal anchor position offset to make sure that the bubble is still on
-// the screen with 8 pixels spacing on the left / right. This constant is a
-// result of minimal bubble arrow sizes and offsets.
-const int kMinimalAnchorPositionOffset = 57;
-
-// Gets arrow location based on shelf alignment.
-views::BubbleBorder::Arrow GetBubbleArrow(aura::Window* window) {
-  DCHECK(Shell::HasInstance());
-  WmShelf* shelf = WmShelf::ForWindow(WmWindowAura::Get(window));
-  switch (shelf->alignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      return views::BubbleBorder::BOTTOM_CENTER;
-    case SHELF_ALIGNMENT_LEFT:
-      return views::BubbleBorder::LEFT_CENTER;
-    case SHELF_ALIGNMENT_RIGHT:
-      return views::BubbleBorder::RIGHT_CENTER;
-  }
-  NOTREACHED();
-  return views::BubbleBorder::BOTTOM_CENTER;
-}
-
-// Using |button_bounds|, determine the anchor offset so that the bubble gets
-// shown above the shelf (used for the alternate shelf theme).
-gfx::Vector2d GetAnchorPositionOffsetToShelf(const gfx::Rect& button_bounds,
-                                             views::Widget* widget) {
-  DCHECK(Shell::HasInstance());
-  ShelfAlignment shelf_alignment =
-      WmShelf::ForWindow(WmLookup::Get()->GetWindowForWidget(widget))
-          ->alignment();
-  gfx::Point anchor(button_bounds.CenterPoint());
-  switch (shelf_alignment) {
-    case SHELF_ALIGNMENT_BOTTOM:
-    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
-      if (base::i18n::IsRTL()) {
-        int screen_width = widget->GetWorkAreaBoundsInScreen().width();
-        return gfx::Vector2d(
-            std::min(screen_width - kMinimalAnchorPositionOffset - anchor.x(),
-                     0),
-            0);
-      }
-      return gfx::Vector2d(
-          std::max(kMinimalAnchorPositionOffset - anchor.x(), 0), 0);
-    case SHELF_ALIGNMENT_LEFT:
-      return gfx::Vector2d(
-          0, std::max(kMinimalAnchorPositionOffset - anchor.y(), 0));
-    case SHELF_ALIGNMENT_RIGHT:
-      return gfx::Vector2d(
-          0, std::max(kMinimalAnchorPositionOffset - anchor.y(), 0));
-  }
-  NOTREACHED();
-  return gfx::Vector2d();
-}
-
 // Gets the point at the center of the display that a particular view is on.
 // This calculation excludes the virtual keyboard area. If the height of the
 // display area is less than |minimum_height|, its bottom will be extended to
@@ -117,8 +63,7 @@ gfx::Point GetCenterOfDisplayForView(views::View* view, int minimum_height) {
 bool IsFullscreenAppListEnabled() {
 #if defined(OS_CHROMEOS)
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kAshEnableFullscreenAppList) &&
-         app_list::switches::IsExperimentalAppListEnabled();
+      switches::kAshEnableFullscreenAppList);
 #else
   return false;
 #endif
@@ -168,7 +113,6 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
                                 ->GetContainer(kShellWindowId_AppListContainer);
   WmShelf* shelf = WmShelf::ForWindow(WmWindowAura::Get(container));
   AppListButton* applist_button = shelf->shelf_widget()->GetAppListButton();
-  is_centered_ = view->ShouldCenterWindow();
   bool is_fullscreen = IsFullscreenAppListEnabled() &&
                        WmShell::Get()
                            ->maximize_mode_controller()
@@ -177,28 +121,17 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
     view->InitAsFramelessWindow(
         container, current_apps_page,
         ScreenUtil::GetDisplayWorkAreaBoundsInParent(container));
-  } else if (is_centered_) {
+  } else {
     // Note: We can't center the app list until we have its dimensions, so we
     // init at (0, 0) and then reset its anchor point.
     view->InitAsBubbleAtFixedLocation(container, current_apps_page,
                                       gfx::Point(), views::BubbleBorder::FLOAT,
                                       true /* border_accepts_events */);
-    // The experimental app list is centered over the display of the app list
-    // button that was pressed (if triggered via keyboard, this is the display
-    // with the currently focused window).
+    // The app list is centered over the display of the app list button that was
+    // pressed (if triggered via keyboard, this is the display with the
+    // currently focused window).
     view->SetAnchorPoint(GetCenterOfDisplayForView(
         applist_button, GetMinimumBoundsHeightForAppList(view)));
-  } else {
-    gfx::Rect applist_button_bounds = applist_button->GetBoundsInScreen();
-    // We need the location of the button within the local screen.
-    applist_button_bounds =
-        ScreenUtil::ConvertRectFromScreen(root_window, applist_button_bounds);
-    view->InitAsBubbleAttachedToAnchor(
-        container, current_apps_page, applist_button,
-        GetAnchorPositionOffsetToShelf(applist_button_bounds,
-                                       applist_button->GetWidget()),
-        GetBubbleArrow(container), true /* border_accepts_events */);
-    view->SetArrowPaintType(views::BubbleBorder::PAINT_NONE);
   }
 
   keyboard::KeyboardController* keyboard_controller =
@@ -246,11 +179,8 @@ void AppListPresenterDelegate::UpdateBounds() {
     return;
 
   view_->UpdateBounds();
-
-  if (is_centered_) {
-    view_->SetAnchorPoint(GetCenterOfDisplayForView(
-        view_, GetMinimumBoundsHeightForAppList(view_)));
-  }
+  view_->SetAnchorPoint(GetCenterOfDisplayForView(
+      view_, GetMinimumBoundsHeightForAppList(view_)));
 }
 
 gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
@@ -333,11 +263,6 @@ void AppListPresenterDelegate::OnKeyboardClosed() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppListPresenterDelegate, ShellObserver implementation:
-void AppListPresenterDelegate::OnShelfAlignmentChanged(WmWindow* root_window) {
-  if (view_)
-    view_->SetBubbleArrow(GetBubbleArrow(view_->GetWidget()->GetNativeView()));
-}
-
 void AppListPresenterDelegate::OnOverviewModeStarting() {
   if (is_visible_)
     presenter_->Dismiss();

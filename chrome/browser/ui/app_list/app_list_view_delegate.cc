@@ -107,8 +107,7 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
                                std::vector<GURL>* urls) {
   // First, check the command line.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (app_list::switches::IsExperimentalAppListEnabled() &&
-      command_line->HasSwitch(app_list::switches::kCustomLauncherPage)) {
+  if (command_line->HasSwitch(app_list::switches::kCustomLauncherPage)) {
     GURL custom_launcher_page_url(command_line->GetSwitchValueASCII(
         app_list::switches::kCustomLauncherPage));
 
@@ -253,11 +252,9 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     tracked_objects::ScopedTracker tracking_profile(
         FROM_HERE_WITH_EXPLICIT_FUNCTION(
             "431326 AppListViewDelegate TemplateURL etc."));
-    if (app_list::switches::IsExperimentalAppListEnabled()) {
-      TemplateURLService* template_url_service =
-          TemplateURLServiceFactory::GetForProfile(profile_);
-      template_url_service_observer_.Add(template_url_service);
-    }
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile_);
+    template_url_service_observer_.Add(template_url_service);
 
     model_ = app_list::AppListSyncableServiceFactory::GetForProfile(profile_)
                  ->GetModel();
@@ -693,25 +690,6 @@ AppListViewDelegate::GetUsers() const {
   return users_;
 }
 
-bool AppListViewDelegate::ShouldCenterWindow() const {
-  // Some ChromeOS devices (those that support TouchView mode) turn this flag on
-  // by default, which ensures that the app list is consistently centered on
-  // those devices. This avoids having the app list change shape and position as
-  // the user enters and exits TouchView mode.
-  if (app_list::switches::IsCenteredAppListEnabled())
-    return true;
-
-  // keyboard depends upon Aura.
-#if defined(USE_AURA)
-  // If the virtual keyboard is enabled, use the new app list position. The old
-  // position is too tall, and doesn't fit in the left-over screen space.
-  if (keyboard::IsKeyboardEnabled())
-    return true;
-#endif
-
-  return false;
-}
-
 void AppListViewDelegate::AddObserver(
     app_list::AppListViewDelegateObserver* observer) {
   observers_.AddObserver(observer);
@@ -723,9 +701,6 @@ void AppListViewDelegate::RemoveObserver(
 }
 
 void AppListViewDelegate::OnTemplateURLServiceChanged() {
-  if (!app_list::switches::IsExperimentalAppListEnabled())
-    return;
-
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
   const TemplateURL* default_provider =

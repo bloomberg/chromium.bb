@@ -53,10 +53,10 @@ const int kMenuXOffsetFromButton = -7;
 const int kBackgroundBorderCornerRadius = 2;
 
 // A background that paints a solid white rounded rect with a thin grey border.
-class ExperimentalSearchBoxBackground : public views::Background {
+class SearchBoxBackground : public views::Background {
  public:
-  ExperimentalSearchBoxBackground() {}
-  ~ExperimentalSearchBoxBackground() override {}
+  SearchBoxBackground() {}
+  ~SearchBoxBackground() override {}
 
  private:
   // views::Background overrides:
@@ -69,7 +69,7 @@ class ExperimentalSearchBoxBackground : public views::Background {
     canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, paint);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ExperimentalSearchBoxBackground);
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxBackground);
 };
 
 }  // namespace
@@ -121,7 +121,6 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       view_delegate_(view_delegate),
       model_(NULL),
       content_container_(new views::View),
-      icon_view_(NULL),
       back_button_(NULL),
       speech_button_(NULL),
       menu_button_(NULL),
@@ -131,27 +130,16 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   SetLayoutManager(new views::FillLayout);
   AddChildView(content_container_);
 
-  if (switches::IsExperimentalAppListEnabled()) {
-    SetShadow(GetShadowForZHeight(2));
-    back_button_ = new SearchBoxImageButton(this);
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    back_button_->SetImage(
-        views::ImageButton::STATE_NORMAL,
-        rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
-    back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                    views::ImageButton::ALIGN_MIDDLE);
-    SetBackButtonLabel(false);
-    content_container_->AddChildView(back_button_);
-
-    content_container_->set_background(new ExperimentalSearchBoxBackground());
-  } else {
-    set_background(
-        views::Background::CreateSolidBackground(kSearchBoxBackground));
-    SetBorder(
-        views::Border::CreateSolidSidedBorder(0, 0, 1, 0, kTopSeparatorColor));
-    icon_view_ = new views::ImageView;
-    content_container_->AddChildView(icon_view_);
-  }
+  SetShadow(GetShadowForZHeight(2));
+  back_button_ = new SearchBoxImageButton(this);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  back_button_->SetImage(views::ImageButton::STATE_NORMAL,
+                         rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
+  back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                  views::ImageButton::ALIGN_MIDDLE);
+  SetBackButtonLabel(false);
+  content_container_->AddChildView(back_button_);
+  content_container_->set_background(new SearchBoxBackground());
 
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kHorizontal, kPadding, 0,
@@ -172,7 +160,8 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   layout->SetFlexForView(search_box_, 1);
 
 #if !defined(OS_CHROMEOS)
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  // TODO(mgiuca): Remove the menu (this code doesn't run on non-Chrome-OS so
+  // the menu will never be created). https://crbug.com/600915.
   menu_button_ = new views::MenuButton(base::string16(), this, false);
   menu_button_->SetBorder(views::Border::NullBorder());
   menu_button_->SetImage(views::Button::STATE_NORMAL,
@@ -200,7 +189,6 @@ void SearchBoxView::ModelChanged() {
   model_ = view_delegate_->GetModel();
   DCHECK(model_);
   model_->search_box()->AddObserver(this);
-  IconChanged();
   SpeechRecognitionButtonPropChanged();
   HintTextChanged();
 }
@@ -430,11 +418,6 @@ void SearchBoxView::OnMenuButtonClicked(views::MenuButton* source,
       menu_button_->GetBoundsInScreen().bottom_right() +
       gfx::Vector2d(kMenuXOffsetFromButton, kMenuYOffsetFromButton);
   menu_->RunMenuAt(menu_button_, menu_location);
-}
-
-void SearchBoxView::IconChanged() {
-  if (icon_view_)
-    icon_view_->SetImage(model_->search_box()->icon());
 }
 
 void SearchBoxView::SpeechRecognitionButtonPropChanged() {

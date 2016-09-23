@@ -128,15 +128,11 @@ class TestAppWindowRegistryObserver
 };
 
 // Click the "All Apps" button from the app launcher start page. Assumes that
-// the app launcher is open to the start page. On the non-experimental launcher,
-// does nothing.
+// the app launcher is open to the start page.
 // |display_origin| is the top-left corner of the active display, in screen
 // coordinates.
 void ClickAllAppsButtonFromStartPage(ui::test::EventGenerator* generator,
                                      const gfx::Point& display_origin) {
-  if (!app_list::switches::IsExperimentalAppListEnabled())
-    return;
-
   AppListServiceAshTestApi service_test;
 
   app_list::StartPageView* start_page_view = service_test.GetStartPageView();

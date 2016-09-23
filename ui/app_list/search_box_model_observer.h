@@ -11,9 +11,6 @@ namespace app_list {
 
 class APP_LIST_EXPORT SearchBoxModelObserver {
  public:
-  // Invoked when icon is changed.
-  virtual void IconChanged() = 0;
-
   // Invoked when the some properties of the speech recognition button is
   // changed.
   virtual void SpeechRecognitionButtonPropChanged() = 0;

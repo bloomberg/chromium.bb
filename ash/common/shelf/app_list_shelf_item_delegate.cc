@@ -43,15 +43,9 @@ base::string16 AppListShelfItemDelegate::GetTitle() {
   ShelfModel* model = WmShell::Get()->shelf_model();
   DCHECK(model);
   int title_id;
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    title_id = model->status() == ShelfModel::STATUS_LOADING
-                   ? IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE
-                   : IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE;
-  } else {
-    title_id = model->status() == ShelfModel::STATUS_LOADING
-                   ? IDS_ASH_SHELF_APP_LIST_SYNCING_TITLE
-                   : IDS_ASH_SHELF_APP_LIST_TITLE;
-  }
+  title_id = model->status() == ShelfModel::STATUS_LOADING
+                 ? IDS_ASH_SHELF_APP_LIST_LAUNCHER_SYNCING_TITLE
+                 : IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE;
   return l10n_util::GetStringUTF16(title_id);
 }
 

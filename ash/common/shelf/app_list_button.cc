@@ -47,9 +47,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
     set_ink_drop_visible_opacity(kShelfInkDropVisibleOpacity);
   }
   SetAccessibleName(
-      app_list::switches::IsExperimentalAppListEnabled()
-          ? l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE)
-          : l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_TITLE));
+      l10n_util::GetStringUTF16(IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE));
   SetSize(
       gfx::Size(GetShelfConstant(SHELF_SIZE), GetShelfConstant(SHELF_SIZE)));
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(

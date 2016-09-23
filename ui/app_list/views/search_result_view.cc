@@ -246,15 +246,10 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect content_rect(rect);
-  if (!switches::IsExperimentalAppListEnabled())
-    content_rect.set_height(rect.height() - kBorderSize);
-
   const bool selected = list_view_->IsResultViewSelected(this);
   const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
 
-  canvas->FillRect(content_rect, switches::IsExperimentalAppListEnabled()
-                                     ? kCardBackgroundColor
-                                     : kContentsBackgroundColor);
+  canvas->FillRect(content_rect, kCardBackgroundColor);
 
   // Possibly call FillRect a second time (these colours are partially
   // transparent, so the previous FillRect is not redundant).
@@ -263,7 +258,7 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
   else if (hover)
     canvas->FillRect(content_rect, kHighlightedColor);
 
-  if (switches::IsExperimentalAppListEnabled() && !is_last_result_) {
+  if (!is_last_result_) {
     gfx::Rect line_rect = content_rect;
     line_rect.set_height(kBorderSize);
     line_rect.set_y(content_rect.bottom() - kBorderSize);

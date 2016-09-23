@@ -146,9 +146,7 @@ void AppListServiceAsh::ShowForProfile(Profile* /*default_profile*/) {
 void AppListServiceAsh::ShowForAppInstall(Profile* profile,
                                           const std::string& extension_id,
                                           bool start_discovery_tracking) {
-  if (app_list::switches::IsExperimentalAppListEnabled())
-    ShowAndSwitchToState(app_list::AppListModel::STATE_APPS);
-
+  ShowAndSwitchToState(app_list::AppListModel::STATE_APPS);
   AppListServiceImpl::ShowForAppInstall(profile, extension_id,
                                         start_discovery_tracking);
 }

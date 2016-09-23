@@ -344,10 +344,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
   EnableChromeVox();
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::FOCUS_SHELF));
-  if (app_list::switches::IsExperimentalAppListEnabled())
-    EXPECT_EQ("Launcher", speech_monitor_.GetNextUtterance());
-  else
-    EXPECT_EQ("Apps", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ("Launcher", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
 
   EXPECT_EQ("Shelf", speech_monitor_.GetNextUtterance());

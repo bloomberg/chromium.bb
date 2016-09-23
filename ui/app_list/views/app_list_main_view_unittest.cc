@@ -275,11 +275,9 @@ TEST_F(AppListMainViewTest, MouseHoverToHighlight) {
   AppListItemView* item0 = RootViewModel()->view_at(0);
   AppListItemView* item1 = RootViewModel()->view_at(1);
 
-  // If experimental launcher, switch to All Apps page
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    GetContentsView()->SetActiveState(AppListModel::STATE_APPS);
-    GetContentsView()->Layout();
-  }
+  // Switch to All Apps page.
+  GetContentsView()->SetActiveState(AppListModel::STATE_APPS);
+  GetContentsView()->Layout();
 
   generator.MoveMouseTo(item0->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(item0->is_highlighted());
@@ -310,11 +308,9 @@ TEST_F(AppListMainViewTest, MAYBE_TapGestureToHighlight) {
                                      main_widget_->GetNativeWindow());
   AppListItemView* item = RootViewModel()->view_at(0);
 
-  // If experimental launcher, switch to All Apps page
-  if (app_list::switches::IsExperimentalAppListEnabled()) {
-    GetContentsView()->SetActiveState(AppListModel::STATE_APPS);
-    GetContentsView()->Layout();
-  }
+  // Switch to All Apps page.
+  GetContentsView()->SetActiveState(AppListModel::STATE_APPS);
+  GetContentsView()->Layout();
 
   generator.set_current_location(item->GetBoundsInScreen().CenterPoint());
   generator.PressTouch();

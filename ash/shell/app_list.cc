@@ -216,20 +216,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     }
   }
 
-  gfx::ImageSkia CreateSearchBoxIcon() {
-    const base::string16 icon_text = base::ASCIIToUTF16("ash");
-    const gfx::Size icon_size(32, 32);
-
-    gfx::Canvas canvas(icon_size, 1.0f, false /* is_opaque */);
-    canvas.DrawStringRectWithFlags(
-        icon_text, gfx::FontList(), SK_ColorBLACK, gfx::Rect(icon_size),
-        gfx::Canvas::TEXT_ALIGN_CENTER | gfx::Canvas::NO_SUBPIXEL_RENDERING);
-
-    return gfx::ImageSkia(canvas.ExtractImageRep());
-  }
-
   void DecorateSearchBox(app_list::SearchBoxModel* search_box_model) {
-    search_box_model->SetIcon(CreateSearchBoxIcon());
     search_box_model->SetHintText(base::ASCIIToUTF16("Type to search..."));
   }
 
@@ -241,8 +228,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   const Users& GetUsers() const override { return users_; }
-
-  bool ShouldCenterWindow() const override { return false; }
 
   app_list::AppListModel* GetModel() override { return model_.get(); }
 

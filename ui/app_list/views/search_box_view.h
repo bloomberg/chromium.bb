@@ -111,7 +111,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
                            const ui::Event* event) override;
 
   // Overridden from SearchBoxModelObserver:
-  void IconChanged() override;
   void SpeechRecognitionButtonPropChanged() override;
   void HintTextChanged() override;
   void SelectionModelChanged() override;
@@ -128,7 +127,6 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   std::unique_ptr<AppListMenuViews> menu_;
 
   views::View* content_container_;     // Owned by views hierarchy.
-  views::ImageView* icon_view_;  // Owned by views hierarchy.
   SearchBoxImageButton* back_button_;    // Owned by views hierarchy.
   SearchBoxImageButton* speech_button_;  // Owned by views hierarchy.
   views::MenuButton* menu_button_;  // Owned by views hierarchy.

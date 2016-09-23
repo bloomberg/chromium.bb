@@ -83,7 +83,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
 #endif
   bool IsSpeechRecognitionEnabled() override;
   const Users& GetUsers() const override;
-  bool ShouldCenterWindow() const override;
   void AddObserver(AppListViewDelegateObserver* observer) override;
   void RemoveObserver(AppListViewDelegateObserver* observer) override;
 

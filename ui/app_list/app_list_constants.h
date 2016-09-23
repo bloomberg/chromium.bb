@@ -70,19 +70,13 @@ APP_LIST_EXPORT extern const int kTileIconSize;
 
 APP_LIST_EXPORT extern const SkColor kIconColor;
 
-APP_LIST_EXPORT extern const int kCenteredPreferredCols;
-APP_LIST_EXPORT extern const int kCenteredPreferredRows;
-
-APP_LIST_EXPORT extern const int kExperimentalPreferredCols;
-APP_LIST_EXPORT extern const int kExperimentalPreferredRows;
-
 APP_LIST_EXPORT extern const size_t kNumStartPageTiles;
 APP_LIST_EXPORT extern const size_t kMaxSearchResults;
 
 APP_LIST_EXPORT extern const int kReorderDroppingCircleRadius;
 
-APP_LIST_EXPORT extern const int kExperimentalAppsGridPadding;
-APP_LIST_EXPORT extern const int kExperimentalSearchBoxPadding;
+APP_LIST_EXPORT extern const int kAppsGridPadding;
+APP_LIST_EXPORT extern const int kSearchBoxPadding;
 
 APP_LIST_EXPORT extern size_t kMaxFolderItems;
 APP_LIST_EXPORT extern const size_t kNumFolderTopItems;

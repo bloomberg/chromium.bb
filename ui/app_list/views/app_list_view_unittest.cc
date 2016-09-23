@@ -98,7 +98,7 @@ class AppListViewTestContext {
   // Tests that pressing the search box's back button navigates correctly.
   void RunBackTest();
 
-  // Tests displaying of the experimental app list and shows the start page.
+  // Tests displaying of the app list and shows the start page.
   void RunStartPageTest();
 
   // Tests switching rapidly between multiple pages of the launcher.
@@ -160,11 +160,6 @@ class UnitTestViewDelegate : public app_list::test::AppListTestViewDelegate {
  public:
   explicit UnitTestViewDelegate(AppListViewTestContext* parent)
       : parent_(parent) {}
-
-  // Overridden from app_list::AppListViewDelegate:
-  bool ShouldCenterWindow() const override {
-    return app_list::switches::IsCenteredAppListEnabled();
-  }
 
   // Overridden from app_list::test::AppListTestViewDelegate:
   void ViewClosing() override { parent_->NativeWidgetClosing(); }
