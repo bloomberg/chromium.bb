@@ -39,7 +39,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html', bug=634519)
 
     # All platforms.
-    self.Fail('conformance2/buffers/getBufferSubData.html', bug=649250)
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         bug=664740)
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)

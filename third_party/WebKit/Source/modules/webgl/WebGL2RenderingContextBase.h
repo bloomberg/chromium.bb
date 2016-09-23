@@ -40,8 +40,6 @@ public:
 
     void copyBufferSubData(GLenum, GLenum, long long, long long, long long);
     void getBufferSubData(GLenum, long long, DOMArrayBufferView*, GLuint, GLuint);
-    // TODO(zmo): Obsolete, remove after WebGL2 conformance tests are updated.
-    void getBufferSubData(GLenum, long long, DOMArrayBuffer*);
 
     /* Framebuffer objects */
     bool validateTexFuncLayer(const char*, GLenum texTarget, GLint layer);

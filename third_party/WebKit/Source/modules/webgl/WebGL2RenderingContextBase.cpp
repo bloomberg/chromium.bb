@@ -330,34 +330,6 @@ void WebGL2RenderingContextBase::getBufferSubData(GLenum target, long long srcBy
     contextGL()->UnmapBuffer(target);
 }
 
-void WebGL2RenderingContextBase::getBufferSubData(GLenum target, long long srcByteOffset, DOMArrayBuffer* dstData)
-{
-    const char* funcName = "getBufferSubData";
-    if (isContextLost())
-        return;
-
-    if (!dstData) {
-        synthesizeGLError(GL_INVALID_VALUE, funcName, "ArrayBuffer can not be null");
-        return;
-    }
-    if (!validateValueFitNonNegInt32(funcName, "srcByteOffset", srcByteOffset)) {
-        return;
-    }
-    WebGLBuffer* buffer = validateBufferDataTarget(funcName, target);
-    if (!buffer)
-        return;
-    if (srcByteOffset + dstData->byteLength() > buffer->getSize()) {
-        synthesizeGLError(GL_INVALID_VALUE, funcName, "buffer overflow");
-        return;
-    }
-
-    void* mappedData = contextGL()->MapBufferRange(target, static_cast<GLintptr>(srcByteOffset), dstData->byteLength(), GL_MAP_READ_BIT);
-    if (!mappedData)
-        return;
-    memcpy(dstData->data(), mappedData, dstData->byteLength());
-    contextGL()->UnmapBuffer(target);
-}
-
 void WebGL2RenderingContextBase::blitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter)
 {
     if (isContextLost())
