@@ -85,6 +85,10 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
     return agent_host_ ? agent_host_->GetFaviconURL() : GURL();
   }
 
+  std::string GetFrontendURL() override {
+    return std::string();
+  }
+
   bool Activate() override {
     TabModel* model;
     int index;
@@ -92,13 +96,6 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate,
       return false;
     model->SetActiveIndex(index);
     return true;
-  }
-
-  bool Inspect() override {
-    MaterializeAgentHost();
-    if (agent_host_)
-      return agent_host_->Inspect();
-    return false;
   }
 
   void Reload() override {
@@ -166,10 +163,6 @@ DevToolsManagerDelegateAndroid::DevToolsManagerDelegateAndroid()
 }
 
 DevToolsManagerDelegateAndroid::~DevToolsManagerDelegateAndroid() {
-}
-
-void DevToolsManagerDelegateAndroid::Inspect(
-    DevToolsAgentHost* agent_host) {
 }
 
 base::DictionaryValue* DevToolsManagerDelegateAndroid::HandleCommand(

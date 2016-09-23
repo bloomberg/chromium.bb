@@ -37,23 +37,7 @@ ChromeDevToolsManagerDelegate::~ChromeDevToolsManagerDelegate() {
 
 void ChromeDevToolsManagerDelegate::Inspect(
     content::DevToolsAgentHost* agent_host) {
-  Profile* profile =
-      Profile::FromBrowserContext(agent_host->GetBrowserContext());
-  if (!profile)
-    return;
-  std::string type = agent_host->GetType();
-  if (type == content::DevToolsAgentHost::kTypeSharedWorker ||
-      type == content::DevToolsAgentHost::kTypeServiceWorker) {
-    DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
-    return;
-  }
-  if (type == content::DevToolsAgentHost::kTypeFrame) {
-    DevToolsWindow::OpenDevToolsWindow(profile, agent_host);
-    return;
-  }
-  content::WebContents* web_contents = agent_host->GetWebContents();
-  if (web_contents)
-    DevToolsWindow::OpenDevToolsWindow(web_contents);
+  DevToolsWindow::OpenDevToolsWindow(agent_host, nullptr);
 }
 
 base::DictionaryValue* ChromeDevToolsManagerDelegate::HandleCommand(

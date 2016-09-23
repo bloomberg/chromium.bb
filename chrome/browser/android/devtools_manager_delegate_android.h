@@ -19,7 +19,6 @@ class DevToolsManagerDelegateAndroid : public content::DevToolsManagerDelegate {
   ~DevToolsManagerDelegateAndroid() override;
 
   // content::DevToolsManagerDelegate implementation.
-  void Inspect(content::DevToolsAgentHost* agent_host) override;
   void DevToolsAgentStateChanged(content::DevToolsAgentHost* agent_host,
                                  bool attached) override;
   base::DictionaryValue* HandleCommand(

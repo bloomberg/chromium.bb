@@ -108,13 +108,13 @@ class AdbClientSocketTest : public InProcessBrowserTest,
     ASSERT_EQ(2U, webview_pages.size());
 
     scoped_refptr<content::DevToolsAgentHost> chrome_target(
-        android_bridge_->CreatePageTarget(chrome_pages[0]));
+        chrome_pages[0]->CreateTarget());
     scoped_refptr<content::DevToolsAgentHost> chrome_beta_target(
-        android_bridge_->CreatePageTarget(chrome_beta_pages[0]));
+        chrome_beta_pages[0]->CreateTarget());
     scoped_refptr<content::DevToolsAgentHost> webview_target_0(
-        android_bridge_->CreatePageTarget(webview_pages[0]));
+        webview_pages[0]->CreateTarget());
     scoped_refptr<content::DevToolsAgentHost> webview_target_1(
-        android_bridge_->CreatePageTarget(webview_pages[1]));
+        webview_pages[1]->CreateTarget());
 
     // Check that we have non-empty description for webview pages.
     ASSERT_EQ(0U, chrome_target->GetDescription().size());

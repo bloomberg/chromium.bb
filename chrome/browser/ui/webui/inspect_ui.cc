@@ -8,6 +8,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/devtools/devtools_targets_ui.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
+#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/singleton_tabs.h"
@@ -303,7 +304,9 @@ void InspectUI::Inspect(const std::string& source_id,
   scoped_refptr<DevToolsAgentHost> target = FindTarget(source_id, target_id);
   if (target) {
     const std::string target_type = target->GetType();
-    target->Inspect();
+    Profile* profile = Profile::FromBrowserContext(
+        web_ui()->GetWebContents()->GetBrowserContext());
+    DevToolsWindow::OpenDevToolsWindow(target, profile);
     ForceUpdateIfNeeded(source_id, target_type);
   }
 }

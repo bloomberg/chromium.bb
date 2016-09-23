@@ -23,9 +23,6 @@ class AwDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
   ~AwDevToolsManagerDelegate() override;
 
   // content::DevToolsManagerDelegate implementation.
-  void Inspect(content::DevToolsAgentHost* agent_host) override;
-  void DevToolsAgentStateChanged(content::DevToolsAgentHost* agent_host,
-                                 bool attached) override;
   std::string GetTargetDescription(content::RenderFrameHost* host) override;
   std::string GetDiscoveryPageHTML() override;
 

@@ -57,12 +57,12 @@ GURL ForwardingAgentHost::GetFaviconURL() {
   return delegate_->GetFaviconURL();
 }
 
-bool ForwardingAgentHost::Activate() {
-  return delegate_->Activate();
+std::string ForwardingAgentHost::GetFrontendURL() {
+  return delegate_->GetFrontendURL();
 }
 
-bool ForwardingAgentHost::Inspect() {
-  return delegate_->Inspect();
+bool ForwardingAgentHost::Activate() {
+  return delegate_->Activate();
 }
 
 void ForwardingAgentHost::Reload() {

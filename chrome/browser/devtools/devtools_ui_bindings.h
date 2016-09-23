@@ -48,6 +48,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
     virtual ~Delegate() {}
     virtual void ActivateWindow() = 0;
     virtual void CloseWindow() = 0;
+    virtual void Inspect(scoped_refptr<content::DevToolsAgentHost> host) = 0;
     virtual void SetInspectedPageBounds(const gfx::Rect& rect) = 0;
     virtual void InspectElementCompleted() = 0;
     virtual void SetIsDocked(bool is_docked) = 0;

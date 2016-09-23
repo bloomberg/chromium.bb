@@ -24,13 +24,6 @@ CastDevToolsDelegate::CastDevToolsDelegate() {
 CastDevToolsDelegate::~CastDevToolsDelegate() {
 }
 
-void CastDevToolsDelegate::Inspect(DevToolsAgentHost* agent_host) {
-}
-
-void CastDevToolsDelegate::DevToolsAgentStateChanged(
-    DevToolsAgentHost* agent_host, bool attached) {
-}
-
 std::string CastDevToolsDelegate::GetDiscoveryPageHTML() {
 #if defined(OS_ANDROID)
   return std::string();

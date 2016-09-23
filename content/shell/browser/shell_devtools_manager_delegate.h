@@ -23,9 +23,6 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
   ~ShellDevToolsManagerDelegate() override;
 
   // DevToolsManagerDelegate implementation.
-  void Inspect(DevToolsAgentHost* agent_host) override {}
-  void DevToolsAgentStateChanged(DevToolsAgentHost* agent_host,
-                                 bool attached) override {}
   scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
   std::string GetFrontendResource(const std::string& path) override;

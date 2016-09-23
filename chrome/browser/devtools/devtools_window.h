@@ -77,10 +77,11 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // ToggleDevToolsWindow().
   static void OpenDevToolsWindow(content::WebContents* inspected_web_contents);
 
-  // Open or reveal DevTools window. This window will be undocked.
+  // Open or reveal DevTools window, with no special action. Use |profile| to
+  // open client window in, default to |host|'s profile if none given.
   static void OpenDevToolsWindow(
-      Profile* profile,
-      const scoped_refptr<content::DevToolsAgentHost>& agent_host);
+      scoped_refptr<content::DevToolsAgentHost> host,
+      Profile* profile);
 
   // Perform specified action for current WebContents inside a |browser|.
   // This may close currently open DevTools window.
@@ -217,6 +218,10 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   static void AddCreationCallbackForTest(const CreationCallback& callback);
   static void RemoveCreationCallbackForTest(const CreationCallback& callback);
 
+  static void OpenDevToolsWindowForFrame(
+      Profile* profile,
+      const scoped_refptr<content::DevToolsAgentHost>& agent_host);
+
   // DevTools lifecycle typically follows this way:
   // - Toggle/Open: client call;
   // - Create;
@@ -304,6 +309,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // content::DevToolsUIBindings::Delegate overrides
   void ActivateWindow() override;
   void CloseWindow() override;
+  void Inspect(scoped_refptr<content::DevToolsAgentHost> host) override;
   void SetInspectedPageBounds(const gfx::Rect& rect) override;
   void InspectElementCompleted() override;
   void SetIsDocked(bool is_docked) override;

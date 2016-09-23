@@ -11,6 +11,7 @@
 
 namespace content {
 
+class BrowserContext;
 class DevToolsExternalAgentProxy;
 
 // Describes the interface for sending messages to an external DevTools agent.
@@ -39,11 +40,11 @@ class DevToolsExternalAgentProxyDelegate {
   // Returns the favicon url for this agent host.
   virtual GURL GetFaviconURL() = 0;
 
+  // Returns the front-end url for this agent host.
+  virtual std::string GetFrontendURL() = 0;
+
   // Activates agent host.
   virtual bool Activate() = 0;
-
-  // Initiates external agent host inspection.
-  virtual bool Inspect() = 0;
 
   // Reloads agent host.
   virtual void Reload() = 0;

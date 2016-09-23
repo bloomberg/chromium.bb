@@ -46,12 +46,14 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
   std::string GetParentId() override;
   std::string GetDescription() override;
   GURL GetFaviconURL() override;
+  std::string GetFrontendURL() override;
   base::TimeTicks GetLastActivityTime() override;
   BrowserContext* GetBrowserContext() override;
   WebContents* GetWebContents() override;
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* wc) override;
-  bool Inspect() override;
+
+  bool Inspect();
 
   // DevToolsProtocolDelegate implementation.
   void SendProtocolResponse(int session_id,

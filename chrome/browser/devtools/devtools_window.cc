@@ -466,13 +466,49 @@ void DevToolsWindow::OpenDevToolsWindow(
 
 // static
 void DevToolsWindow::OpenDevToolsWindow(
+    scoped_refptr<content::DevToolsAgentHost> agent_host,
+    Profile* profile) {
+  if (!profile)
+    profile = Profile::FromBrowserContext(agent_host->GetBrowserContext());
+
+  if (!profile)
+    return;
+
+  std::string type = agent_host->GetType();
+  bool is_worker = type == DevToolsAgentHost::kTypeServiceWorker ||
+                   type == DevToolsAgentHost::kTypeSharedWorker;
+
+  if (!agent_host->GetFrontendURL().empty()) {
+    bool is_v8_only = type == "node";
+    DevToolsWindow::OpenExternalFrontend(profile, agent_host->GetFrontendURL(),
+                                         agent_host, is_worker, is_v8_only);
+    return;
+  }
+
+  if (is_worker) {
+    DevToolsWindow::OpenDevToolsWindowForWorker(profile, agent_host);
+    return;
+  }
+
+  if (type == content::DevToolsAgentHost::kTypeFrame) {
+    DevToolsWindow::OpenDevToolsWindowForFrame(profile, agent_host);
+    return;
+  }
+
+  content::WebContents* web_contents = agent_host->GetWebContents();
+  if (web_contents)
+    DevToolsWindow::OpenDevToolsWindow(web_contents);
+}
+
+// static
+void DevToolsWindow::OpenDevToolsWindow(
     content::WebContents* inspected_web_contents,
     const DevToolsToggleAction& action) {
   ToggleDevToolsWindow(inspected_web_contents, true, action, "");
 }
 
 // static
-void DevToolsWindow::OpenDevToolsWindow(
+void DevToolsWindow::OpenDevToolsWindowForFrame(
     Profile* profile,
     const scoped_refptr<content::DevToolsAgentHost>& agent_host) {
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
@@ -569,8 +605,8 @@ void DevToolsWindow::InspectElement(
   if (agent->GetType() == content::DevToolsAgentHost::kTypePage) {
     OpenDevToolsWindow(agent->GetWebContents());
   } else {
-    OpenDevToolsWindow(Profile::FromBrowserContext(agent->GetBrowserContext()),
-                       agent);
+    OpenDevToolsWindowForFrame(Profile::FromBrowserContext(
+                                   agent->GetBrowserContext()), agent);
   }
   DevToolsWindow* window = FindDevToolsWindow(agent.get());
   if (window) {
@@ -1076,6 +1112,10 @@ void DevToolsWindow::CloseWindow() {
   DCHECK(is_docked_);
   life_stage_ = kClosing;
   main_web_contents_->DispatchBeforeUnload();
+}
+
+void DevToolsWindow::Inspect(scoped_refptr<content::DevToolsAgentHost> host) {
+  DevToolsWindow::OpenDevToolsWindow(host, nullptr);
 }
 
 void DevToolsWindow::SetInspectedPageBounds(const gfx::Rect& rect) {

@@ -1015,7 +1015,7 @@ void RenderFrameDevToolsAgentHost::OnRequestNewWindow(
   if (IsAttached() && sender->GetRoutingID() != new_routing_id && frame_host) {
     scoped_refptr<DevToolsAgentHost> agent =
         DevToolsAgentHost::GetOrCreateFor(frame_host);
-    success = agent->Inspect();
+    success = static_cast<DevToolsAgentHostImpl*>(agent.get())->Inspect();
   }
 
   sender->Send(new DevToolsAgentMsg_RequestNewWindow_ACK(

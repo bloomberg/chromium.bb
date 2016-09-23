@@ -183,11 +183,11 @@ class CONTENT_EXPORT DevToolsAgentHost
   // Returns the favicon url for this host.
   virtual GURL GetFaviconURL() = 0;
 
+  // Returns the favicon url for this host.
+  virtual std::string GetFrontendURL() = 0;
+
   // Activates agent host. Returns false if the operation failed.
   virtual bool Activate() = 0;
-
-  // Opens devtools for this agent host. Returns false if the operation failed.
-  virtual bool Inspect() = 0;
 
   // Reloads the host.
   virtual void Reload() = 0;

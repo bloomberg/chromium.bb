@@ -201,6 +201,10 @@ GURL DevToolsAgentHostImpl::GetFaviconURL() {
   return GURL();
 }
 
+std::string DevToolsAgentHostImpl::GetFrontendURL() {
+  return std::string();
+}
+
 base::TimeTicks DevToolsAgentHostImpl::GetLastActivityTime() {
   return base::TimeTicks();
 }

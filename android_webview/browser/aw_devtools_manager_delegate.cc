@@ -24,13 +24,6 @@ AwDevToolsManagerDelegate::AwDevToolsManagerDelegate() {
 AwDevToolsManagerDelegate::~AwDevToolsManagerDelegate() {
 }
 
-void AwDevToolsManagerDelegate::Inspect(DevToolsAgentHost* agent_host) {
-}
-
-void AwDevToolsManagerDelegate::DevToolsAgentStateChanged(
-    DevToolsAgentHost* agent_host, bool attached) {
-}
-
 std::string AwDevToolsManagerDelegate::GetTargetDescription(
     RenderFrameHost* host) {
   content::WebContents* web_contents =

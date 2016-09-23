@@ -195,6 +195,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
 
   void ActivateWindow() override;
   void CloseWindow() override {}
+  void Inspect(scoped_refptr<content::DevToolsAgentHost> host) override {}
   void SetInspectedPageBounds(const gfx::Rect& rect) override {}
   void InspectElementCompleted() override {}
   void SetIsDocked(bool is_docked) override {}
@@ -812,12 +813,12 @@ void DevToolsUIBindings::PerformActionOnRemotePage(const std::string& page_id,
   if (!host)
     return;
   if (action == kRemotePageActionInspect)
-    host->Inspect();
-  if (action == kRemotePageActionReload)
+    delegate_->Inspect(host);
+  else if (action == kRemotePageActionReload)
     host->Reload();
-  if (action == kRemotePageActionActivate)
+  else if (action == kRemotePageActionActivate)
     host->Activate();
-  if (action == kRemotePageActionClose)
+  else if (action == kRemotePageActionClose)
     host->Close();
 }
 

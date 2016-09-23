@@ -37,7 +37,6 @@ class BrowserDevToolsAgentHost : public DevToolsAgentHostImpl {
   std::string GetTitle() override;
   GURL GetURL() override;
   bool Activate() override;
-  bool Inspect() override;
   void Reload() override;
   bool Close() override;
   bool DispatchProtocolMessage(const std::string& message) override;

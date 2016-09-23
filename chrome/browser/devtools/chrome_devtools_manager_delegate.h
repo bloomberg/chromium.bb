@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 
+namespace content {
+class BrowserContext;
+}
+
 class DevToolsNetworkProtocolHandler;
 
 class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {

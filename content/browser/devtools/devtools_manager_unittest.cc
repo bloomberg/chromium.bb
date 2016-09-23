@@ -240,14 +240,13 @@ class TestExternalAgentDelegate: public DevToolsExternalAgentProxyDelegate {
 
   void Detach() override { recordEvent("Detach"); };
 
-  std::string GetType() override { return ""; }
-  std::string GetTitle() override { return ""; }
-  std::string GetDescription() override { return ""; }
+  std::string GetType() override { return std::string(); }
+  std::string GetTitle() override { return std::string(); }
+  std::string GetDescription() override { return std::string(); }
   GURL GetURL() override { return GURL(); }
   GURL GetFaviconURL() override { return GURL(); }
-
+  std::string GetFrontendURL() override { return std::string(); }
   bool Activate() override { return false; };
-  bool Inspect() override { return false; };
   void Reload() override { };
   bool Close() override { return false; };
 

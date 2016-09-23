@@ -73,10 +73,6 @@ bool BrowserDevToolsAgentHost::Activate() {
   return false;
 }
 
-bool BrowserDevToolsAgentHost::Inspect() {
-  return false;
-}
-
 bool BrowserDevToolsAgentHost::Close() {
   return false;
 }

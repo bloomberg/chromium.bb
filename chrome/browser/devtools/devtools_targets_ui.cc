@@ -65,7 +65,6 @@ const char kAdbPagesList[] = "pages";
 
 const char kAdbScreenWidthField[] = "adbScreenWidth";
 const char kAdbScreenHeightField[] = "adbScreenHeight";
-const char kAdbAttachedForeignField[]  = "adbAttachedForeign";
 
 const char kPortForwardingPorts[] = "ports";
 const char kPortForwardingBrowserId[] = "browserId";
@@ -370,13 +369,8 @@ void AdbTargetsUIHandler::DeviceListChanged(
       remote_browsers_[browser_id] = browser;
             browser_data->Set(kAdbPagesList, page_list);
       for (const auto& page : browser->pages()) {
-        scoped_refptr<DevToolsAgentHost> host =
-            android_bridge_->CreatePageTarget(page);
+        scoped_refptr<DevToolsAgentHost> host = page->CreateTarget();
         std::unique_ptr<base::DictionaryValue> target_data = Serialize(host);
-        target_data->SetBoolean(
-            kAdbAttachedForeignField,
-            host->IsAttached() &&
-                !android_bridge_->HasDevToolsWindow(host->GetId()));
         // Pass the screen size in the target object to make sure that
         // the caching logic does not prevent the target item from updating
         // when the screen size changes.

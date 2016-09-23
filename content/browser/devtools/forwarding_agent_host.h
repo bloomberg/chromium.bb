@@ -39,8 +39,8 @@ class ForwardingAgentHost
   std::string GetTitle() override;
   GURL GetURL() override;
   GURL GetFaviconURL() override;
+  std::string GetFrontendURL() override;
   bool Activate() override;
-  bool Inspect() override;
   void Reload() override;
   bool Close() override;
 
