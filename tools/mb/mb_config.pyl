@@ -78,6 +78,10 @@
       'Android Tests (x86 emulator)': 'android_debug_static_bot_x86',
       'Android Builder (dbg)': 'android_debug_static_bot_vr_shell',
       'Android deterministic': 'android_without_codecs_release_bot_minimal_symbols',
+      'Blimp Android Client':
+        '//build/args/bots/chromium.fyi/blimp_client_rel.gn',
+      'Blimp Linux Engine':
+        '//build/args/bots/chromium.fyi/blimp_engine_rel.gn',
       'Browser Side Navigation Linux': 'release_bot',
       'CFI Linux CF': 'cfi_full_cfi_diag_release_static',
       'CFI Linux ToT': 'cfi_full_clang_tot_release_static',
