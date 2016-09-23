@@ -10255,6 +10255,205 @@
             "chrome_internal"
         ]
     },
+    "hana-chrome-pfq": {
+        "_template": "chrome_pfq",
+        "boards": [
+            "hana"
+        ],
+        "important": false,
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "hana-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "hana"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "hana-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "hana"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "hana-full": {
+        "_template": "full",
+        "boards": [
+            "hana"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "hana-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "hana"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
+    "hana-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "hana"
+        ],
+        "description": "Commit Queue (internal)",
+        "important": false,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "prebuilts": "private",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "hana-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "hana"
+        ]
+    },
+    "hana-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "hana"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "hana-release": {
+        "_template": "release",
+        "boards": [
+            "hana"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "hana-release-afdo": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "hana"
+        ],
+        "child_configs": [
+            {
+                "_template": "release_afdo_generate",
+                "boards": [
+                    "hana"
+                ],
+                "grouped": true,
+                "name": "hana-release-afdo-generate",
+                "vm_tests": [],
+                "vm_tests_override": null
+            },
+            {
+                "_template": "release_afdo_use",
+                "boards": [
+                    "hana"
+                ],
+                "grouped": true,
+                "name": "hana-release-afdo-use",
+                "vm_tests": [],
+                "vm_tests_override": null
+            }
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "hana-release-afdo-generate": {
+        "_template": "release_afdo_generate",
+        "boards": [
+            "hana"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "hana-release-afdo-use": {
+        "_template": "release_afdo_use",
+        "boards": [
+            "hana"
+        ],
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "hana-tot-chrome-pfq-informational": {
+        "_template": "chrome_pfq_informational",
+        "boards": [
+            "hana"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "hana-tot-chrome-pfq-informational-gn": {
+        "_template": "chrome_pfq_informational_gn",
+        "boards": [
+            "hana"
+        ],
+        "manifest": "official.xml",
+        "vm_tests": []
+    },
+    "hana-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "hana"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "hana-tot-chromium-pfq-informational-gn": {
+        "_template": "chromium_pfq_informational_gn",
+        "boards": [
+            "hana"
+        ],
+        "useflags": [
+            "-chrome_internal",
+            "gn"
+        ],
+        "vm_tests": []
+    },
+    "hana-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "hana"
+        ],
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "overlays": "both",
+        "useflags": [
+            "chrome_internal"
+        ]
+    },
     "heli-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
