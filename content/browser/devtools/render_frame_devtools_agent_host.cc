@@ -538,6 +538,7 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif
+  browser_handler_->Detached();
   if (emulation_handler_)
     emulation_handler_->Detached();
   if (page_handler_)

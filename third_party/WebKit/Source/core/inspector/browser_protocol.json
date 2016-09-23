@@ -4354,6 +4354,14 @@
                     { "name": "title", "type": "string" },
                     { "name": "url", "type": "string" }
                 ]
+            },
+            {
+                "id": "RemoteLocation",
+                "type": "object",
+                "properties": [
+                    { "name": "host", "type": "string" },
+                    { "name": "port", "type": "integer" }
+                ]
             }
         ],
         "commands": [
@@ -4409,6 +4417,15 @@
                 "description": "Returns target information for all potential targets.",
                 "handlers": ["browser"],
                 "async": true
+            },
+            {
+                "name": "setRemoteLocations",
+                "parameters": [
+
+                    { "name": "locations", "type": "array", "items": { "$ref": "RemoteLocation" }, "description": "List of remote locations" }
+                ],
+                "description": "Enables target discovery for the specified locations.",
+                "handlers": ["browser"]
             },
             {
                 "name": "attach",

@@ -11,7 +11,6 @@
 
 namespace content {
 
-class BrowserContext;
 class DevToolsExternalAgentProxy;
 
 // Describes the interface for sending messages to an external DevTools agent.

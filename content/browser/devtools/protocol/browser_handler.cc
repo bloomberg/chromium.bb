@@ -27,6 +27,12 @@ void BrowserHandler::SetClient(std::unique_ptr<Client> client) {
   client_.swap(client);
 }
 
+void BrowserHandler::Detached() {
+  for (const auto& host : attached_hosts_)
+    host->DetachClient(this);
+  attached_hosts_.clear();
+}
+
 Response BrowserHandler::CreateBrowserContext(std::string* out_context_id) {
   // For layering reasons this needs to be handled by
   // DevToolsManagerDelegate::HandleCommand.
@@ -136,6 +142,11 @@ Response BrowserHandler::SendMessage(const std::string& target_id,
   if (!agent_host)
     return Response::ServerError("No target with given id found");
   agent_host->DispatchProtocolMessage(this, message);
+  return Response::OK();
+}
+
+Response BrowserHandler::SetRemoteLocations(
+    const std::vector<std::unique_ptr<base::DictionaryValue>>& locations) {
   return Response::OK();
 }
 

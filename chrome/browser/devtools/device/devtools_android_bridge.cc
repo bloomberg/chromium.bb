@@ -689,6 +689,13 @@ DevToolsAndroidBridge::RemoteDevice::~RemoteDevice() {
 
 // DevToolsAndroidBridge ------------------------------------------------------
 
+// static
+void DevToolsAndroidBridge::QueryCompleteDevices(
+    AndroidDeviceManager* device_manager,
+    const DeviceListCallback& callback) {
+  new DiscoveryRequest(device_manager, callback);
+}
+
 DevToolsAndroidBridge::DevToolsAndroidBridge(
     Profile* profile)
     : profile_(profile),

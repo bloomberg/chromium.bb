@@ -32,6 +32,7 @@ class BrowserHandler : public DevToolsAgentHostClient {
   ~BrowserHandler() override;
 
   void SetClient(std::unique_ptr<Client> client);
+  void Detached();
 
   Response CreateBrowserContext(std::string* out_context_id);
   Response DisposeBrowserContext(const std::string& context_id,
@@ -48,6 +49,8 @@ class BrowserHandler : public DevToolsAgentHostClient {
   Response Detach(const std::string& target_id, bool* out_success);
   Response SendMessage(const std::string& target_id,
                        const std::string& message);
+  Response SetRemoteLocations(
+      const std::vector<std::unique_ptr<base::DictionaryValue>>&);
 
  private:
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,

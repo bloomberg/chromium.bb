@@ -190,6 +190,15 @@ class DevToolsAndroidBridge : public KeyedService {
     virtual ~PortForwardingListener() {}
   };
 
+  using CompleteDevice = std::pair<scoped_refptr<AndroidDeviceManager::Device>,
+                    scoped_refptr<RemoteDevice>>;
+  using CompleteDevices = std::vector<CompleteDevice>;
+  using DeviceListCallback = base::Callback<void(const CompleteDevices&)>;
+
+  static void QueryCompleteDevices(
+      AndroidDeviceManager* device_manager,
+      const DeviceListCallback& callback);
+
   void AddPortForwardingListener(PortForwardingListener* listener);
   void RemovePortForwardingListener(PortForwardingListener* listener);
 
@@ -217,11 +226,6 @@ class DevToolsAndroidBridge : public KeyedService {
   using TCPProviderCallback =
       base::Callback<void(scoped_refptr<TCPDeviceProvider>)>;
   void set_tcp_provider_callback_for_test(TCPProviderCallback callback);
-
-  using CompleteDevice = std::pair<scoped_refptr<AndroidDeviceManager::Device>,
-                    scoped_refptr<RemoteDevice>>;
-  using CompleteDevices = std::vector<CompleteDevice>;
-  using DeviceListCallback = base::Callback<void(const CompleteDevices&)>;
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
