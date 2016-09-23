@@ -1008,6 +1008,13 @@ hooks = [
                 "-s", "src/v8/test/fuzzer/wasm_asmjs.tar.gz.sha1",
     ],
   },
+  {
+    'name': 'clang_format_merge_driver',
+    'pattern': '.',
+    'action': [ 'python',
+                'src/tools/clang_format_merge_driver/install_git_hook.py',
+    ],
+  },
 ]
 
 recursedeps = [
