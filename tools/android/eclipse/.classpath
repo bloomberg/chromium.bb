@@ -114,6 +114,7 @@ to the classpath for downstream development. See "additional_entries" below.
     <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric/src/main/java"/>
     <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric/src/main/java"/>
     <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-annotations/src/main/java"/>
+    <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-resources/src/main/java"/>
     <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-shadows/shadows-core/src/main/java"/>
     <classpathentry kind="src" path="third_party/robolectric/robolectric/robolectric-utils/src/main/java"/>
     <classpathentry kind="src" path="tools/android/findbugs_plugin/src"/>

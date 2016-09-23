@@ -7,9 +7,12 @@ package org.chromium.components.invalidation;
 import android.accounts.Account;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.google.ipc.invalidation.external.client.InvalidationListener.RegistrationState;
 import com.google.ipc.invalidation.external.client.contrib.AndroidListener;
@@ -20,6 +23,8 @@ import com.google.protos.ipc.invalidation.Types.ClientType;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CollectionUtil;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelTypeHelper;
@@ -35,6 +40,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nullable;
 
@@ -61,7 +67,8 @@ public class InvalidationClientService extends AndroidListener {
     @VisibleForTesting
     static final int CLIENT_TYPE = ClientType.CHROME_SYNC_ANDROID;
 
-    private static final String TAG = "cr.invalidation";
+    private static final String TAG = "cr_invalidation";
+    private static final String CLIENT_SERVICE_KEY = "ipc.invalidation.ticl.listener_service_class";
 
     /**
      * Whether the underlying notification client has been started. This boolean is updated when a
@@ -75,6 +82,43 @@ public class InvalidationClientService extends AndroidListener {
      * true if the client has not yet gone ready.
      */
     @Nullable private static byte[] sClientId;
+
+    private static AtomicReference<Class<? extends InvalidationClientService>> sServiceClass =
+            new AtomicReference<>();
+
+    private static Class<? extends InvalidationClientService>
+            findRegisteredInvalidationClientService() {
+        Context context = ContextUtils.getApplicationContext();
+        PackageManager packageManager = context.getPackageManager();
+        ApplicationInfo appInfo;
+        try {
+            appInfo = packageManager.getApplicationInfo(context.getPackageName(),
+                    PackageManager.GET_META_DATA);
+            if (appInfo.metaData != null) {
+                String serviceMetadata = appInfo.metaData.getString(CLIENT_SERVICE_KEY, null);
+                if (serviceMetadata == null) return InvalidationClientService.class;
+
+                Class<?> foundClass = Class.forName(serviceMetadata);
+                Class<? extends InvalidationClientService> serviceClass =
+                        foundClass.asSubclass(InvalidationClientService.class);
+                return serviceClass;
+            }
+        } catch (NameNotFoundException | ClassNotFoundException | ClassCastException e) {
+            Log.e(TAG, "Unable to find registered client service", e);
+        }
+        return InvalidationClientService.class;
+    }
+
+    /**
+     * @return The registered {@link InvalidationClientService} class reference to use for
+     *         interacting with the service.
+     */
+    public static Class<? extends InvalidationClientService> getRegisteredClass() {
+        if (sServiceClass.get() == null) {
+            sServiceClass.compareAndSet(null, findRegisteredInvalidationClientService());
+        }
+        return sServiceClass.get();
+    }
 
     @Override
     public void onHandleIntent(Intent intent) {

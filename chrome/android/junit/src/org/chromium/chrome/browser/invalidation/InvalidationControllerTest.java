@@ -8,6 +8,9 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.os.Bundle;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
@@ -16,7 +19,6 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
-import org.chromium.components.invalidation.InvalidationClientService;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.ModelTypeHelper;
@@ -32,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowLooper;
 
@@ -91,6 +94,20 @@ public class InvalidationControllerTest {
         Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
         mShadowActivity = Shadows.shadowOf(activity);
         mContext = activity;
+
+        RobolectricPackageManager packageManager =
+                (RobolectricPackageManager) mContext.getPackageManager();
+        Bundle metaData = new Bundle();
+        metaData.putString(
+                "ipc.invalidation.ticl.listener_service_class",
+                ChromeInvalidationClientService.class.getName());
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        applicationInfo.metaData = metaData;
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.packageName = mContext.getPackageName();
+        packageInfo.applicationInfo = applicationInfo;
+        packageManager.addPackage(packageInfo);
+
         ContextUtils.initApplicationContextForTests(mContext.getApplicationContext());
 
         ModelTypeHelper.setTestDelegate(new ModelTypeHelper.TestDelegate() {
@@ -439,7 +456,8 @@ public class InvalidationControllerTest {
     private static void validateIntentComponent(Intent intent) {
         Assert.assertNotNull(intent.getComponent());
         Assert.assertEquals(
-                InvalidationClientService.class.getName(), intent.getComponent().getClassName());
+                ChromeInvalidationClientService.class.getName(),
+                intent.getComponent().getClassName());
     }
 
     /**

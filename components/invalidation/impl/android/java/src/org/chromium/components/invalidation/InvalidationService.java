@@ -69,7 +69,8 @@ public class InvalidationService {
         Account account = invalidationPreferences.getSavedSyncedAccount();
         Intent registerIntent = InvalidationIntentProtocol.createRegisterIntent(
                 account, objectSources, objectNames);
-        registerIntent.setClass(mContext, InvalidationClientService.class);
+        registerIntent.setClass(
+                mContext, InvalidationClientService.getRegisteredClass());
         mContext.startService(registerIntent);
     }
 
