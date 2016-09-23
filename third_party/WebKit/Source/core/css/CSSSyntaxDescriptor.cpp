@@ -10,7 +10,6 @@
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/parser/CSSParserIdioms.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/parser/CSSTokenizer.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 
@@ -194,12 +193,6 @@ const CSSValue* consumeSyntaxComponent(const CSSSyntaxComponent& syntax, CSSPars
     if (!range.atEnd())
         return nullptr;
     return result;
-}
-
-const CSSValue* CSSSyntaxDescriptor::parse(const String& value) const
-{
-    CSSTokenizer::Scope scope(value);
-    return parse(scope.tokenRange());
 }
 
 const CSSValue* CSSSyntaxDescriptor::parse(CSSParserTokenRange range) const

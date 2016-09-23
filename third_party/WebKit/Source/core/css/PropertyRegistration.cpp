@@ -9,6 +9,7 @@
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/PropertyDescriptor.h"
 #include "core/css/PropertyRegistry.h"
+#include "core/css/parser/CSSTokenizer.h"
 #include "core/css/parser/CSSVariableParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -79,7 +80,8 @@ void PropertyRegistration::registerProperty(ExecutionContext* executionContext, 
     }
 
     if (descriptor.hasInitialValue()) {
-        const CSSValue* initial = syntaxDescriptor.parse(descriptor.initialValue());
+        CSSTokenizer::Scope scope(descriptor.initialValue());
+        const CSSValue* initial = syntaxDescriptor.parse(scope.tokenRange());
         if (!initial) {
             exceptionState.throwDOMException(SyntaxError, "The initial value provided does not parse for the given syntax.");
             return;
@@ -88,13 +90,14 @@ void PropertyRegistration::registerProperty(ExecutionContext* executionContext, 
             exceptionState.throwDOMException(SyntaxError, "The initial value provided is not computationally independent.");
             return;
         }
-        registry.registerProperty(atomicName, syntaxDescriptor, descriptor.inherits(), initial);
+        RefPtr<CSSVariableData> initialVariableData = CSSVariableData::create(scope.tokenRange(), false);
+        registry.registerProperty(atomicName, syntaxDescriptor, descriptor.inherits(), initial, initialVariableData.release());
     } else {
         if (!syntaxDescriptor.isTokenStream()) {
             exceptionState.throwDOMException(SyntaxError, "An initial value must be provided if the syntax is not '*'");
             return;
         }
-        registry.registerProperty(atomicName, syntaxDescriptor, descriptor.inherits(), nullptr);
+        registry.registerProperty(atomicName, syntaxDescriptor, descriptor.inherits(), nullptr, nullptr);
     }
 
     // TODO(timloh): Invalidate only elements with this custom property set

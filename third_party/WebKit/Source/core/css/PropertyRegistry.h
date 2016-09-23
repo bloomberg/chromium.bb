@@ -24,12 +24,17 @@ public:
 
     class Registration : public GarbageCollectedFinalized<Registration> {
     public:
-        Registration(const CSSSyntaxDescriptor& syntax, bool inherits, const CSSValue* initial)
-        : m_syntax(syntax), m_inherits(inherits), m_initial(initial) { }
+        Registration(const CSSSyntaxDescriptor& syntax, bool inherits, const CSSValue* initial, PassRefPtr<CSSVariableData> initialVariableData)
+        : m_syntax(syntax)
+        , m_inherits(inherits)
+        , m_initial(initial)
+        , m_initialVariableData(initialVariableData)
+        { }
 
         const CSSSyntaxDescriptor& syntax() const { return m_syntax; }
         bool inherits() const { return m_inherits; }
         const CSSValue* initial() const { return m_initial; }
+        CSSVariableData* initialVariableData() const { return m_initialVariableData.get(); }
 
         DEFINE_INLINE_TRACE() { visitor->trace(m_initial); }
 
@@ -37,9 +42,10 @@ public:
         const CSSSyntaxDescriptor m_syntax;
         const bool m_inherits;
         const Member<const CSSValue> m_initial;
+        const RefPtr<CSSVariableData> m_initialVariableData;
     };
 
-    void registerProperty(const AtomicString&, const CSSSyntaxDescriptor&, bool inherits, const CSSValue* initial);
+    void registerProperty(const AtomicString&, const CSSSyntaxDescriptor&, bool inherits, const CSSValue* initial, PassRefPtr<CSSVariableData> initialVariableData);
     void unregisterProperty(const AtomicString&);
     const Registration* registration(const AtomicString&) const;
 

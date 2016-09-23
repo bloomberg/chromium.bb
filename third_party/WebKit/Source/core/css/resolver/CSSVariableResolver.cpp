@@ -35,38 +35,37 @@ bool CSSVariableResolver::resolveFallback(CSSParserTokenRange range, Vector<CSSP
 
 CSSVariableData* CSSVariableResolver::valueForCustomProperty(AtomicString name)
 {
-    // TODO(timloh): Registered properties shouldn't return nullptr in failure
-    // cases (aside from cycles?), but instead return the initial/inherited value.
     if (m_variablesSeen.contains(name)) {
         m_cycleStartPoints.add(name);
         return nullptr;
     }
 
-    if (!m_styleVariableData)
-        return nullptr;
-    CSSVariableData* variableData = m_styleVariableData->getVariable(name);
+    DCHECK(m_registry || !RuntimeEnabledFeatures::cssVariables2Enabled());
+    const PropertyRegistry::Registration* registration = m_registry ? m_registry->registration(name) : nullptr;
+
+    CSSVariableData* variableData = nullptr;
+    if (m_styleVariableData)
+        variableData = m_styleVariableData->getVariable(name);
     if (!variableData)
-        return nullptr;
+        return registration ? registration->initialVariableData() : nullptr;
     if (!variableData->needsVariableResolution())
         return variableData;
-    RefPtr<CSSVariableData> newVariableData = resolveCustomProperty(name, *variableData);
 
-    DCHECK(m_registry || !RuntimeEnabledFeatures::cssVariables2Enabled());
-    if (m_registry) {
-        const PropertyRegistry::Registration* registration = m_registry->registration(name);
-        if (registration) {
-            const CSSValue* parsedValue = nullptr;
-            if (newVariableData) {
-                parsedValue = newVariableData->parseForSyntax(registration->syntax());
-                if (parsedValue)
-                    parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(m_styleResolverState, *parsedValue);
-                else
-                    newVariableData = nullptr;
-            }
-            m_styleVariableData->setVariable(name, newVariableData);
-            m_styleVariableData->setRegisteredInheritedProperty(name, parsedValue);
-            return newVariableData.get();
+    RefPtr<CSSVariableData> newVariableData = resolveCustomProperty(name, *variableData);
+    if (registration) {
+        const CSSValue* parsedValue = nullptr;
+        if (newVariableData) {
+            parsedValue = newVariableData->parseForSyntax(registration->syntax());
+            if (parsedValue)
+                parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(m_styleResolverState, *parsedValue);
+            else
+                newVariableData = nullptr;
         }
+        m_styleVariableData->setVariable(name, newVariableData);
+        m_styleVariableData->setRegisteredInheritedProperty(name, parsedValue);
+        if (!newVariableData)
+            return registration->initialVariableData();
+        return newVariableData.get();
     }
 
     m_styleVariableData->setVariable(name, newVariableData);

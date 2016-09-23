@@ -47,7 +47,6 @@ public:
     CSSSyntaxDescriptor(String syntax);
 
     const CSSValue* parse(CSSParserTokenRange) const;
-    const CSSValue* parse(const String&) const;
     bool isValid() const { return !m_syntaxComponents.isEmpty(); }
     bool isTokenStream() const { return m_syntaxComponents.size() == 1 && m_syntaxComponents[0].m_type == CSSSyntaxType::TokenStream; }
 
