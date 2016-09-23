@@ -431,5 +431,37 @@ TEST(V8ScriptValueSerializerTest, InvalidImageBitmapDecode)
     }
 }
 
+TEST(V8ScriptValueSerializerTest, TransferImageBitmap)
+{
+    // More thorough tests exist in LayoutTests/.
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 7);
+    surface->getCanvas()->clear(SK_ColorRED);
+    sk_sp<SkImage> image = surface->makeImageSnapshot();
+    ImageBitmap* imageBitmap = ImageBitmap::create(StaticBitmapImage::create(image));
+
+    v8::Local<v8::Value> wrapper = toV8(imageBitmap, scope.getScriptState());
+    Transferables transferables;
+    transferables.imageBitmaps.append(imageBitmap);
+    v8::Local<v8::Value> result = roundTrip(wrapper, scope, nullptr, &transferables);
+    ASSERT_TRUE(V8ImageBitmap::hasInstance(result, scope.isolate()));
+    ImageBitmap* newImageBitmap = V8ImageBitmap::toImpl(result.As<v8::Object>());
+    ASSERT_EQ(IntSize(10, 7), newImageBitmap->size());
+
+    // Check that the pixel at (3, 3) is red.
+    uint8_t pixel[4] = {};
+    sk_sp<SkImage> newImage = newImageBitmap->bitmapImage()->imageForCurrentFrame();
+    ASSERT_TRUE(newImage->readPixels(
+        SkImageInfo::Make(1, 1, kRGBA_8888_SkColorType, kPremul_SkAlphaType),
+        &pixel, 4, 3, 3));
+    ASSERT_THAT(pixel, ::testing::ElementsAre(255, 0, 0, 255));
+
+    // Check also that the underlying image contents were transferred.
+    EXPECT_EQ(image, newImage);
+    EXPECT_TRUE(imageBitmap->isNeutered());
+}
+
 } // namespace
 } // namespace blink

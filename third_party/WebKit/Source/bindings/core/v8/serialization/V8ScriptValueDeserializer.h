@@ -64,6 +64,9 @@ private:
     // Message ports which were transferred in.
     const MessagePortArray* m_transferredMessagePorts = nullptr;
 
+    // ImageBitmaps which were transferred in.
+    HeapVector<Member<ImageBitmap>> m_transferredImageBitmaps;
+
     // Set during deserialize after the header is read.
     uint32_t m_version = 0;
 #if DCHECK_IS_ON()

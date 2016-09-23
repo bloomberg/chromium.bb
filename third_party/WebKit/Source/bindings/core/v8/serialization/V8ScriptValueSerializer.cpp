@@ -99,6 +99,10 @@ void V8ScriptValueSerializer::finalizeTransfer(ExceptionState& exceptionState)
     m_serializedScriptValue->transferArrayBuffers(isolate, m_transferables->arrayBuffers, exceptionState);
     if (exceptionState.hadException())
         return;
+
+    m_serializedScriptValue->transferImageBitmaps(isolate, m_transferables->imageBitmaps, exceptionState);
+    if (exceptionState.hadException())
+        return;
 }
 
 void V8ScriptValueSerializer::writeUTF8String(const String& string)
@@ -121,6 +125,19 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable, Excepti
                 "An ImageBitmap is detached and could not be cloned.");
             return false;
         }
+
+        // If this ImageBitmap was transferred, it can be serialized by index.
+        size_t index = kNotFound;
+        if (m_transferables)
+            index = m_transferables->imageBitmaps.find(imageBitmap);
+        if (index != kNotFound) {
+            DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
+            writeTag(ImageBitmapTransferTag);
+            writeUint32(static_cast<uint32_t>(index));
+            return true;
+        }
+
+        // Otherwise, it must be fully serialized.
         // Warning: using N32ColorType here is not portable (across CPU
         // architectures, across platforms, etc.).
         RefPtr<Uint8Array> pixels = imageBitmap->copyBitmapData(

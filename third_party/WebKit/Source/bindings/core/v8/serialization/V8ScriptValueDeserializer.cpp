@@ -81,6 +81,13 @@ void V8ScriptValueDeserializer::transfer()
             }
         }
     }
+
+    // Transfer image bitmaps.
+    if (auto* imageBitmapContents = m_serializedScriptValue->getImageBitmapContentsArray()) {
+        m_transferredImageBitmaps.reserveInitialCapacity(imageBitmapContents->size());
+        for (const auto& image : *imageBitmapContents)
+            m_transferredImageBitmaps.append(ImageBitmap::create(image));
+    }
 }
 
 bool V8ScriptValueDeserializer::readUTF8String(String* string)
@@ -112,6 +119,12 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(SerializationTag tag)
         if (!computedPixelLength.IsValid() || computedPixelLength.ValueOrDie() != pixelLength)
             return nullptr;
         return ImageBitmap::create(pixels, width, height, isPremultiplied, originClean);
+    }
+    case ImageBitmapTransferTag: {
+        uint32_t index = 0;
+        if (!readUint32(&index) || index >= m_transferredImageBitmaps.size())
+            return nullptr;
+        return m_transferredImageBitmaps[index].get();
     }
     case ImageDataTag: {
         uint32_t width = 0, height = 0, pixelLength = 0;
