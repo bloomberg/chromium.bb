@@ -397,7 +397,6 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/location.cc',
       'base/logging.cc',
       'base/md5.cc',
-      'base/memory/ref_counted.cc',
       'base/memory/ref_counted_memory.cc',
       'base/memory/singleton.cc',
       'base/memory/weak_ptr.cc',
