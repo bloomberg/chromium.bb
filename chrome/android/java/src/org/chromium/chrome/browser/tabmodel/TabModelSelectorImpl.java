@@ -57,9 +57,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     private CloseAllTabsDelegate mCloseAllTabsDelegate;
 
-    private ChromeTabCreator mRegularTabCreator;
-    private ChromeTabCreator mIncognitoTabCreator;
-
     /**
      * Builds a {@link TabModelSelectorImpl} instance.
      * @param activity      The {@link ChromeActivity} this model selector lives in.
@@ -108,11 +105,6 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         mTabSaver = new TabPersistentStore(persistencePolicy, this, mActivity, mActivity,
                 persistentStoreObserver, mergeTabs);
         mOrderController = new TabModelOrderController(this);
-        mRegularTabCreator = new ChromeTabCreator(
-                mActivity, windowAndroid, mOrderController, mTabSaver, false);
-        mIncognitoTabCreator = new ChromeTabCreator(
-                mActivity, windowAndroid, mOrderController, mTabSaver, true);
-        mActivity.setTabCreators(mRegularTabCreator, mIncognitoTabCreator);
     }
 
     @Override
@@ -161,14 +153,16 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         assert !mActiveState : "onNativeLibraryReady called twice!";
         mTabContentManager = tabContentProvider;
 
-        TabModelImpl normalModel = new TabModelImpl(false, mRegularTabCreator, mIncognitoTabCreator,
+        ChromeTabCreator regularTabCreator = (ChromeTabCreator) mActivity.getTabCreator(false);
+        ChromeTabCreator incognitoTabCreator = (ChromeTabCreator) mActivity.getTabCreator(true);
+        TabModelImpl normalModel = new TabModelImpl(false, regularTabCreator, incognitoTabCreator,
                 mUma, mOrderController, mTabContentManager, mTabSaver, this, mIsUndoSupported);
         TabModel incognitoModel = new IncognitoTabModel(new IncognitoTabModelImplCreator(
-                mRegularTabCreator, mIncognitoTabCreator, mUma, mOrderController,
+                regularTabCreator, incognitoTabCreator, mUma, mOrderController,
                 mTabContentManager, mTabSaver, this));
         initialize(isIncognitoSelected(), normalModel, incognitoModel);
-        mRegularTabCreator.setTabModel(normalModel, mTabContentManager);
-        mIncognitoTabCreator.setTabModel(incognitoModel, mTabContentManager);
+        regularTabCreator.setTabModel(normalModel, mOrderController, mTabContentManager);
+        incognitoTabCreator.setTabModel(incognitoModel, mOrderController, mTabContentManager);
         mTabSaver.setTabContentManager(mTabContentManager);
 
         addObserver(new EmptyTabModelSelectorObserver() {
@@ -178,6 +172,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                 if (TabModelUtils.getTabById(getCurrentModel(), tab.getId()) != null) {
                     mTabContentManager.invalidateIfChanged(tab.getId(), tab.getUrl());
                 }
+
+                if (tab.hasPendingLoadParams()) mTabSaver.addTabToSaveQueue(tab);
             }
         });
 

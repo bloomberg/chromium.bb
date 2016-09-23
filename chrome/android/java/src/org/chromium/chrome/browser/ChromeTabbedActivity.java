@@ -1035,6 +1035,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             finish();
             return;
         }
+        setTabCreators(
+                new ChromeTabCreator(this, getWindowAndroid(), false),
+                new ChromeTabCreator(this, getWindowAndroid(), true));
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(mTabModelSelectorImpl) {
 
             private boolean mIsFirstPageLoadStart = true;

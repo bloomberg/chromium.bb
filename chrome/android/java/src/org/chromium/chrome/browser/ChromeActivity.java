@@ -107,7 +107,6 @@ import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
-import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -1219,10 +1218,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
-     * Sets the {@link ChromeTabCreator}s owned by this {@link ChromeActivity}.
-     * @param regularTabCreator A {@link ChromeTabCreator} instance.
+     * Sets the {@link org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator}s owned by
+     * this {@link ChromeActivity}.
+     * @param regularTabCreator The creator for normal tabs.
+     * @param incognitoTabCreator The creator for incognito tabs.
      */
-    public void setTabCreators(TabCreatorManager.TabCreator regularTabCreator,
+    protected void setTabCreators(TabCreatorManager.TabCreator regularTabCreator,
             TabCreatorManager.TabCreator incognitoTabCreator) {
         mRegularTabCreator = regularTabCreator;
         mIncognitoTabCreator = incognitoTabCreator;

@@ -52,7 +52,9 @@ import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabIdManager;
+import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -68,6 +70,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.base.WindowAndroid;
 
 /**
  * The activity for custom tabs. It will be launched on top of a client's task.
@@ -125,6 +128,22 @@ public class CustomTabActivity extends ChromeActivity {
 
             mConnection.notifyPageLoadMetric(
                     mSession, PageLoadMetrics.FIRST_CONTENTFUL_PAINT, firstContentfulPaintMs);
+        }
+    }
+
+    private static class CustomTabCreator extends ChromeTabCreator {
+        private final boolean mSupportsUrlBarHiding;
+
+        public CustomTabCreator(
+                ChromeActivity activity, WindowAndroid nativeWindow, boolean incognito,
+                boolean supportsUrlBarHiding) {
+            super(activity, nativeWindow, incognito);
+            mSupportsUrlBarHiding = supportsUrlBarHiding;
+        }
+
+        @Override
+        public TabDelegateFactory createDefaultTabDelegateFactory() {
+            return new CustomTabDelegateFactory(mSupportsUrlBarHiding);
         }
     }
 
@@ -271,6 +290,13 @@ public class CustomTabActivity extends ChromeActivity {
                 getTaskId(), getSavedInstanceState() != null);
         setTabModelSelector(new TabModelSelectorImpl(
                 this, persistencePolicy, getWindowAndroid(), false));
+        setTabCreators(
+                new CustomTabCreator(
+                        this, getWindowAndroid(), false,
+                        mIntentDataProvider.shouldEnableUrlBarHiding()),
+                new CustomTabCreator(
+                        this, getWindowAndroid(), true,
+                        mIntentDataProvider.shouldEnableUrlBarHiding()));
 
         getToolbarManager().setCloseButtonDrawable(mIntentDataProvider.getCloseButtonDrawable());
         getToolbarManager().setShowTitle(mIntentDataProvider.getTitleVisibilityState()

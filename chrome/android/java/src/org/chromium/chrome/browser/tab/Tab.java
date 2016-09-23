@@ -2648,6 +2648,14 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
+     * @return Whether there are pending {@link LoadUrlParams} associated with the tab.  This
+     *         indicates the tab was created for lazy load.
+     */
+    public boolean hasPendingLoadParams() {
+        return mPendingLoadParams != null;
+    }
+
+    /**
      * @return Parameters that should be used for a lazily loaded Tab.  May be null.
      */
     private LoadUrlParams getPendingLoadParams() {
