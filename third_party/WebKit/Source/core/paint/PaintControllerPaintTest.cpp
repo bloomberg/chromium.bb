@@ -130,9 +130,12 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag)
         TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence),
         TestDisplayItem(layoutView(), DisplayItem::clipTypeToEndClipType(DisplayItem::kClipFrameToVisibleContentRect)));
 
+    const PaintChunk& backgroundChunk = rootPaintController().paintChunks()[0];
+    EXPECT_TRUE(backgroundChunk.properties.scroll->isRoot());
+
     const EffectPaintPropertyNode* effectNode = div.objectPaintProperties()->effect();
     EXPECT_EQ(0.5f, effectNode->opacity());
-    const PaintChunk& chunk = rootPaintController().paintChunks()[2];
+    const PaintChunk& chunk = rootPaintController().paintChunks()[1];
     EXPECT_EQ(*div.layer(), chunk.id->client);
     EXPECT_EQ(effectNode, chunk.properties.effect.get());
 

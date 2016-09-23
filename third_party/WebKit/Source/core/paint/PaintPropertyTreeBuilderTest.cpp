@@ -40,29 +40,6 @@ public:
         setBodyInnerHTML(String(inputBuffer->data(), inputBuffer->size()));
     }
 
-    const TransformPaintPropertyNode* rootTransform()
-    {
-        FrameView* frameView = document().view();
-        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-            return frameView->layoutView()->objectPaintProperties()->paintOffsetTranslation();
-        return frameView->rootTransform();
-    }
-
-    const ClipPaintPropertyNode* rootClip()
-    {
-        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-            return document().view()->layoutView()->objectPaintProperties()->localBorderBoxProperties()->geometryPropertyTreeState.clip.get();
-        return document().view()->rootClip();
-    }
-
-    const ScrollPaintPropertyNode* rootScroll()
-    {
-        FrameView* frameView = document().view();
-        if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-            return frameView->layoutView()->objectPaintProperties()->scroll();
-        return frameView->rootScroll();
-    }
-
     const TransformPaintPropertyNode* framePreTranslation()
     {
         FrameView* frameView = document().view();
@@ -170,7 +147,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition)
     EXPECT_EQ(frameContentClip(), target1Properties->overflowClip()->parent());
     // target1 should not have it's own scroll node and instead should inherit positionedScroll's.
     const ObjectPaintProperties* positionedScrollProperties = positionedScroll->layoutObject()->objectPaintProperties();
-    EXPECT_EQ(rootScroll(), positionedScrollProperties->scroll()->parent());
+    EXPECT_TRUE(positionedScrollProperties->scroll()->parent()->isRoot());
     EXPECT_EQ(TransformationMatrix().translate(0, -3), positionedScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
     EXPECT_EQ(nullptr, target1Properties->scroll());
 
@@ -189,7 +166,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition)
     EXPECT_EQ(scrollerProperties->overflowClip(), target2Properties->overflowClip()->parent());
     // target2 should not have it's own scroll node and instead should inherit transformedScroll's.
     const ObjectPaintProperties* transformedScrollProperties = transformedScroll->layoutObject()->objectPaintProperties();
-    EXPECT_EQ(rootScroll(), transformedScrollProperties->scroll()->parent());
+    EXPECT_TRUE(transformedScrollProperties->scroll()->parent()->isRoot());
     EXPECT_EQ(TransformationMatrix().translate(0, -5), transformedScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
     EXPECT_EQ(nullptr, target2Properties->scroll());
 
@@ -255,15 +232,13 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional)
     frameView->updateAllLifecyclePhases();
     EXPECT_EQ(TransformationMatrix(), framePreTranslation()->matrix());
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-        EXPECT_EQ(rootTransform(), framePreTranslation()->parent());
-    EXPECT_EQ(nullptr, rootTransform()->parent());
+        EXPECT_TRUE(framePreTranslation()->parent()->isRoot());
+
     EXPECT_EQ(TransformationMatrix().translate(0, -100), frameScrollTranslation()->matrix());
     EXPECT_EQ(framePreTranslation(), frameScrollTranslation()->parent());
     EXPECT_EQ(framePreTranslation(), frameContentClip()->localTransformSpace());
     EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), frameContentClip()->clipRect());
-    EXPECT_EQ(rootClip(), frameContentClip()->parent());
-    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-        EXPECT_EQ(nullptr, rootClip()->parent());
+    EXPECT_TRUE(frameContentClip()->parent()->isRoot());
 
     LayoutViewItem layoutViewItem = document().layoutViewItem();
     const ObjectPaintProperties* layoutViewProperties = layoutViewItem.objectPaintProperties();
@@ -1781,7 +1756,7 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties)
 
     const ObjectPaintProperties* overflowHiddenScrollProperties = overflowHidden->layoutObject()->objectPaintProperties();
     // Because the frameView is does not scroll, overflowHidden's scroll should be under the root.
-    EXPECT_EQ(rootScroll(), overflowHiddenScrollProperties->scroll()->parent());
+    EXPECT_TRUE(overflowHiddenScrollProperties->scroll()->parent()->isRoot());
     EXPECT_EQ(TransformationMatrix().translate(0, -37), overflowHiddenScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
     // This should match the overflow's dimensions.
     EXPECT_EQ(IntSize(5, 3), overflowHiddenScrollProperties->scroll()->clip());
@@ -1830,7 +1805,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties)
 
     const ObjectPaintProperties* overflowAScrollProperties = overflowA->layoutObject()->objectPaintProperties();
     // Because the frameView is does not scroll, overflowA's scroll should be under the root.
-    EXPECT_EQ(rootScroll(), overflowAScrollProperties->scroll()->parent());
+    EXPECT_TRUE(overflowAScrollProperties->scroll()->parent()->isRoot());
     EXPECT_EQ(TransformationMatrix().translate(0, -37), overflowAScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
     EXPECT_EQ(IntSize(5, 3), overflowAScrollProperties->scroll()->clip());
     // 107 is the forceScroll element plus the height of the overflow scroll child (overflowB).
@@ -1920,7 +1895,7 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested)
 
     const ObjectPaintProperties* fixedOverflowScrollProperties = fixedOverflow->layoutObject()->objectPaintProperties();
     // The fixed position overflow scroll node is parented under the root, not the dom-order parent or frame's scroll.
-    EXPECT_EQ(rootScroll(), fixedOverflowScrollProperties->scroll()->parent());
+    EXPECT_TRUE(fixedOverflowScrollProperties->scroll()->parent()->isRoot());
     EXPECT_EQ(TransformationMatrix().translate(0, -43), fixedOverflowScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
     EXPECT_EQ(IntSize(13, 11), fixedOverflowScrollProperties->scroll()->clip());
     EXPECT_EQ(IntSize(13, 4000), fixedOverflowScrollProperties->scroll()->bounds());
@@ -1969,7 +1944,7 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties)
 
     const ObjectPaintProperties* overflowAScrollProperties = overflowA->layoutObject()->objectPaintProperties();
     // Because the frameView is does not scroll, overflowA's scroll should be under the root.
-    EXPECT_EQ(rootScroll(), overflowAScrollProperties->scroll()->parent());
+    EXPECT_TRUE(overflowAScrollProperties->scroll()->parent()->isRoot());
     EXPECT_EQ(TransformationMatrix().translate(0, -37), overflowAScrollProperties->scroll()->scrollOffsetTranslation()->matrix());
     EXPECT_EQ(IntSize(20, 20), overflowAScrollProperties->scroll()->clip());
     // 100 is the forceScroll element's height because the overflow child does not contribute to the height.
@@ -2125,16 +2100,16 @@ TEST_P(PaintPropertyTreeBuilderTest, BackgroundAttachmentFixedMainThreadScrollRe
     Element* overflowA = document().getElementById("overflowA");
     Element* overflowB = document().getElementById("overflowB");
 
-    EXPECT_TRUE(rootScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
     EXPECT_FALSE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
     EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_TRUE(overflowB->layoutObject()->objectPaintProperties()->scroll()->parent()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
 
     // Removing a main thread scrolling reason should update the entire tree.
     overflowB->removeAttribute("class");
     document().view()->updateAllLifecyclePhases();
-    EXPECT_FALSE(rootScroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
     EXPECT_FALSE(overflowA->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
     EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
+    EXPECT_FALSE(overflowB->layoutObject()->objectPaintProperties()->scroll()->parent()->hasMainThreadScrollingReasons(MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects));
 }
 
 } // namespace blink

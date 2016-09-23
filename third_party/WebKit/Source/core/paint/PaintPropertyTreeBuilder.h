@@ -76,7 +76,7 @@ struct PaintPropertyTreeBuilderContext {
 // It expects to be invoked for each layout tree node in DOM order during InPrePaint phase.
 class PaintPropertyTreeBuilder {
 public:
-    void buildTreeRootNodes(FrameView&, PaintPropertyTreeBuilderContext&);
+    PaintPropertyTreeBuilderContext setupInitialContext();
     void buildTreeNodes(FrameView&, PaintPropertyTreeBuilderContext&);
     void buildTreeNodesForSelf(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     void buildTreeNodesForChildren(const LayoutObject&, PaintPropertyTreeBuilderContext&);

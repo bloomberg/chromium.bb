@@ -46,22 +46,12 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
         // TODO(pdr): Make this conditional on the rootLayerScrolls setting.
         Optional<ScopedPaintChunkProperties> scopedPaintChunkProperties;
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            TransformPaintPropertyNode* transform = m_frameView->scrollTranslation() ? m_frameView->scrollTranslation() : m_frameView->preTranslation();
-            ClipPaintPropertyNode* clip = m_frameView->contentClip();
-            ScrollPaintPropertyNode* scroll = m_frameView->scroll();
-            PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
-            if (frameView().frame().isLocalRoot()) {
-                properties.transform = frameView().rootTransform();
-                properties.clip = frameView().rootClip();
-                properties.effect = frameView().rootEffect();
-            }
-            if (transform || clip || scroll) {
-                if (transform)
-                    properties.transform = transform;
-                if (scroll)
-                    properties.scroll = scroll;
-                if (clip)
-                    properties.clip = clip;
+            if (const PropertyTreeState* contentsState = m_frameView->totalPropertyTreeStateForContents()) {
+                PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
+                properties.transform = contentsState->transform;
+                properties.clip = contentsState->clip;
+                properties.effect = contentsState->effect;
+                properties.scroll = contentsState->scroll;
                 scopedPaintChunkProperties.emplace(context.getPaintController(), *frameView().layoutView(), properties);
             }
         }

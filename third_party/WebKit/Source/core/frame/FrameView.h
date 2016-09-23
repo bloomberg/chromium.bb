@@ -32,6 +32,7 @@
 #include "core/frame/RootFrameViewport.h"
 #include "core/layout/ScrollAnchor.h"
 #include "core/paint/FirstMeaningfulPaintDetector.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -39,10 +40,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/paint/ClipPaintPropertyNode.h"
-#include "platform/graphics/paint/EffectPaintPropertyNode.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
-#include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/Scrollbar.h"
 #include "public/platform/WebDisplayMode.h"
@@ -609,16 +606,11 @@ public:
     void setContentClip(PassRefPtr<ClipPaintPropertyNode> contentClip) { m_contentClip = contentClip; }
     ClipPaintPropertyNode* contentClip() const { return m_contentClip.get(); }
 
-    // We store no-op paint property tree nodes at the root of the tree.
-    // TODO(pdr): Remove this concept in favor of null nodes, see: crbug.com/645615
-    void setRootTransform(PassRefPtr<TransformPaintPropertyNode> rootTransform) { m_rootTransform = rootTransform; }
-    TransformPaintPropertyNode* rootTransform() const { return m_rootTransform.get(); }
-    void setRootClip(PassRefPtr<ClipPaintPropertyNode> rootClip) { m_rootClip = rootClip; }
-    ClipPaintPropertyNode* rootClip() const { return m_rootClip.get(); }
-    void setRootEffect(PassRefPtr<EffectPaintPropertyNode> rootEffect) { m_rootEffect = rootEffect; }
-    EffectPaintPropertyNode* rootEffect() const { return m_rootEffect.get(); }
-    void setRootScroll(PassRefPtr<ScrollPaintPropertyNode> rootScroll) { m_rootScroll = rootScroll; }
-    ScrollPaintPropertyNode* rootScroll() const { return m_rootScroll.get(); }
+    // The property tree state that should be used for painting contents. These
+    // properties are either created by this FrameView or are inherited from
+    // an ancestor.
+    void setTotalPropertyTreeStateForContents(std::unique_ptr<PropertyTreeState> state) { m_totalPropertyTreeStateForContents = std::move(state); }
+    const PropertyTreeState* totalPropertyTreeStateForContents() const { return m_totalPropertyTreeStateForContents.get(); }
 
     // TODO(ojan): Merge this with IntersectionObserver once it lands.
     IntRect computeVisibleArea();
@@ -932,13 +924,10 @@ private:
     // The content clip clips the document (= LayoutView) but not the scrollbars.
     // TODO(trchen): This will not be needed once settings->rootLayerScrolls() is enabled.
     RefPtr<ClipPaintPropertyNode> m_contentClip;
-
-    // These nodes represent the root nodes of each property tree.
-    // Only the root frame should create them and they will be no-op.
-    RefPtr<TransformPaintPropertyNode> m_rootTransform;
-    RefPtr<ClipPaintPropertyNode> m_rootClip;
-    RefPtr<EffectPaintPropertyNode> m_rootEffect;
-    RefPtr<ScrollPaintPropertyNode> m_rootScroll;
+    // The property tree state that should be used for painting contents. These
+    // properties are either created by this FrameView or are inherited from
+    // an ancestor.
+    std::unique_ptr<PropertyTreeState> m_totalPropertyTreeStateForContents;
 
     // This is set on the local root frame view only.
     DocumentLifecycle::LifecycleState m_currentUpdateLifecyclePhasesTargetState;

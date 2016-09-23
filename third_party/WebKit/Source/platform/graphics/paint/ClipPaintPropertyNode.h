@@ -42,6 +42,7 @@ public:
 
     // Reference to inherited clips, or nullptr if this is the only clip.
     const ClipPaintPropertyNode* parent() const { return m_parent.get(); }
+    bool isRoot() const { return !m_parent; }
 
 private:
     ClipPaintPropertyNode(PassRefPtr<const ClipPaintPropertyNode> parent, PassRefPtr<const TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)

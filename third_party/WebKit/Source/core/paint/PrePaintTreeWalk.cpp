@@ -28,9 +28,9 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame)
 {
     DCHECK(rootFrame.frame().document()->lifecycle().state() == DocumentLifecycle::InPrePaint);
 
-    PrePaintTreeWalkContext rootContext;
-    m_propertyTreeBuilder.buildTreeRootNodes(rootFrame, rootContext.treeBuilderContext);
-    walk(rootFrame, rootContext);
+    PrePaintTreeWalkContext initialContext;
+    initialContext.treeBuilderContext = m_propertyTreeBuilder.setupInitialContext();
+    walk(rootFrame, initialContext);
     m_paintInvalidator.processPendingDelayedPaintInvalidations();
 }
 

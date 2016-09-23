@@ -40,6 +40,9 @@ public:
 
     void addPropertyNode(const PropertyTreeNode* node, String debugInfo)
     {
+        // showAllPropertyNodes determines the root node itself so roots should
+        // not be added explicitly.
+        DCHECK(node && !node->isRoot());
         m_nodeToDebugString.set(node, debugInfo);
     }
 
@@ -69,16 +72,27 @@ private:
 
     void showAllPropertyNodes(const PropertyTreeNode* node, unsigned indent = 0)
     {
-        if (node) {
-            StringBuilder stringBuilder;
-            for (unsigned i = 0; i < indent; i++)
-                stringBuilder.append(' ');
-            if (m_nodeToDebugString.contains(node))
-                stringBuilder.append(m_nodeToDebugString.get(node));
-            stringBuilder.append(String::format(" %p", node));
-            Traits::printNodeAsString(node, stringBuilder);
-            fprintf(stderr, "%s\n", stringBuilder.toString().ascii().data());
+        // If no node is specified, show the root node.
+        if (!node) {
+            for (const auto* childNode : m_nodeToDebugString.keys()) {
+                if (childNode->parent() && childNode->parent()->isRoot()) {
+                    showAllPropertyNodes(childNode->parent());
+                    break;
+                }
+            }
+            return;
         }
+
+        StringBuilder stringBuilder;
+        for (unsigned i = 0; i < indent; i++)
+            stringBuilder.append(' ');
+        if (node->isRoot())
+            stringBuilder.append("root");
+        else if (m_nodeToDebugString.contains(node))
+            stringBuilder.append(m_nodeToDebugString.get(node));
+        stringBuilder.append(String::format(" %p", node));
+        Traits::printNodeAsString(node, stringBuilder);
+        fprintf(stderr, "%s\n", stringBuilder.toString().ascii().data());
 
         for (const auto* childNode : m_nodeToDebugString.keys()) {
             if (childNode->parent() == node)
@@ -94,8 +108,6 @@ class PropertyTreePrinterTraits<TransformPaintPropertyNode> {
 public:
     static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<TransformPaintPropertyNode>& printer)
     {
-        if (const TransformPaintPropertyNode* rootTransform = frameView.rootTransform())
-            printer.addPropertyNode(rootTransform, "RootTransform (FrameView)");
         if (const TransformPaintPropertyNode* preTranslation = frameView.preTranslation())
             printer.addPropertyNode(preTranslation, "PreTranslation (FrameView)");
         if (const TransformPaintPropertyNode* scrollTranslation = frameView.scrollTranslation())
@@ -144,8 +156,6 @@ class PropertyTreePrinterTraits<ClipPaintPropertyNode> {
 public:
     static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<ClipPaintPropertyNode>& printer)
     {
-        if (const ClipPaintPropertyNode* rootClip = frameView.rootClip())
-            printer.addPropertyNode(rootClip, "RootClip (FrameView)");
         if (const ClipPaintPropertyNode* contentClip = frameView.contentClip())
             printer.addPropertyNode(contentClip, "ContentClip (FrameView)");
     }
@@ -174,8 +184,6 @@ class PropertyTreePrinterTraits<EffectPaintPropertyNode> {
 public:
     static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<EffectPaintPropertyNode>& printer)
     {
-        if (const EffectPaintPropertyNode* rootEffect = frameView.rootEffect())
-            printer.addPropertyNode(rootEffect, "RootEffect (FrameView)");
     }
 
     static void addObjectPaintProperties(const LayoutObject& object, const ObjectPaintProperties& paintProperties, PropertyTreePrinter<EffectPaintPropertyNode>& printer)
@@ -195,8 +203,6 @@ class PropertyTreePrinterTraits<ScrollPaintPropertyNode> {
 public:
     static void addFrameViewProperties(const FrameView& frameView, PropertyTreePrinter<ScrollPaintPropertyNode>& printer)
     {
-        if (const ScrollPaintPropertyNode* rootScroll = frameView.rootScroll())
-            printer.addPropertyNode(rootScroll, "RootScroll (FrameView)");
         if (const ScrollPaintPropertyNode* scroll = frameView.scroll())
             printer.addPropertyNode(scroll, "Scroll (FrameView)");
     }
@@ -399,17 +405,26 @@ private:
             writePaintPropertyNode(*scroll, &object, "scroll");
     }
 
+    template <typename PropertyTreeNode>
+    static const PropertyTreeNode* getRoot(const PropertyTreeNode* node)
+    {
+        while (node && !node->isRoot())
+            node = node->parent();
+        return node;
+    }
+
     void writeFrameViewPaintPropertyNodes(const FrameView& frameView)
     {
-        TransformPaintPropertyNode* rootTransform = frameView.rootTransform();
-        if (rootTransform)
-            writePaintPropertyNode(*rootTransform, &frameView, "rootTransform");
-        ClipPaintPropertyNode* rootClip = frameView.rootClip();
-        if (rootClip)
-            writePaintPropertyNode(*rootClip, &frameView, "rootClip");
-        EffectPaintPropertyNode* rootEffect = frameView.rootEffect();
-        if (rootEffect)
-            writePaintPropertyNode(*rootEffect, &frameView, "rootEffect");
+        if (const auto* contentsState = frameView.totalPropertyTreeStateForContents()) {
+            if (const auto* root = getRoot(contentsState->transform))
+                writePaintPropertyNode(*root, &frameView, "rootTransform");
+            if (const auto* root = getRoot(contentsState->clip))
+                writePaintPropertyNode(*root, &frameView, "rootClip");
+            if (const auto* root = getRoot(contentsState->effect))
+                writePaintPropertyNode(*root, &frameView, "rootEffect");
+            if (const auto* root = getRoot(contentsState->scroll))
+                writePaintPropertyNode(*root, &frameView, "rootScroll");
+        }
         TransformPaintPropertyNode* preTranslation = frameView.preTranslation();
         if (preTranslation)
             writePaintPropertyNode(*preTranslation, &frameView, "preTranslation");
@@ -490,6 +505,7 @@ CORE_EXPORT void showAllPropertyTrees(const blink::FrameView& rootFrame)
     showTransformPropertyTree(rootFrame);
     showClipPropertyTree(rootFrame);
     showEffectPropertyTree(rootFrame);
+    showScrollPropertyTree(rootFrame);
 }
 
 void showTransformPropertyTree(const blink::FrameView& rootFrame)

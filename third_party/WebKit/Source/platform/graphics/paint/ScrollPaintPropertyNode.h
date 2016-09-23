@@ -53,6 +53,7 @@ public:
     }
 
     ScrollPaintPropertyNode* parent() const { return m_parent.get(); }
+    bool isRoot() const { return !m_parent; }
 
     // Transform that the scroll is relative to.
     const TransformPaintPropertyNode* scrollOffsetTranslation() const { return m_scrollOffsetTranslation.get(); }
@@ -78,6 +79,10 @@ public:
     void addMainThreadScrollingReasons(MainThreadScrollingReasons reasons)
     {
         m_mainThreadScrollingReasons |= reasons;
+    }
+    void clearMainThreadScrollingReasons()
+    {
+        m_mainThreadScrollingReasons = 0;
     }
 
 private:

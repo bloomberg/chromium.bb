@@ -35,6 +35,7 @@ public:
 
     // Parent effect or nullptr if this is the root effect.
     const EffectPaintPropertyNode* parent() const { return m_parent.get(); }
+    bool isRoot() const { return !m_parent; }
 
 private:
     EffectPaintPropertyNode(PassRefPtr<const EffectPaintPropertyNode> parent, float opacity)

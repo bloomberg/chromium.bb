@@ -20,28 +20,49 @@
 
 namespace blink {
 
-void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPropertyTreeBuilderContext& context)
-{
-    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-        return;
-
-    if (!rootFrame.rootTransform() || rootFrame.rootTransform()->parent()) {
-        rootFrame.setRootTransform(TransformPaintPropertyNode::create(nullptr, TransformationMatrix(), FloatPoint3D()));
-        rootFrame.setRootClip(ClipPaintPropertyNode::create(nullptr, rootFrame.rootTransform(), FloatRoundedRect(LayoutRect::infiniteIntRect())));
-        rootFrame.setRootEffect(EffectPaintPropertyNode::create(nullptr, 1.0));
-        rootFrame.setRootScroll(ScrollPaintPropertyNode::create(nullptr, rootFrame.rootTransform(), IntSize(), IntSize(), false, false));
-    } else {
-        DCHECK(rootFrame.rootClip() && !rootFrame.rootClip()->parent());
-        DCHECK(rootFrame.rootEffect() && !rootFrame.rootEffect()->parent());
-        DCHECK(rootFrame.rootScroll() && !rootFrame.rootScroll()->parent());
-        // Ensure main thread scroll reasons are reset.
-        rootFrame.rootScroll()->update(nullptr, rootFrame.rootTransform(), IntSize(), IntSize(), false, false);
+namespace {
+    TransformPaintPropertyNode* rootTransformNode()
+    {
+        DEFINE_STATIC_REF(TransformPaintPropertyNode, rootTransform, (TransformPaintPropertyNode::create(nullptr, TransformationMatrix(), FloatPoint3D())));
+        return rootTransform;
     }
 
-    context.current.transform = context.absolutePosition.transform = context.fixedPosition.transform = rootFrame.rootTransform();
-    context.current.scroll = rootFrame.rootScroll();
-    context.current.clip = context.absolutePosition.clip = context.fixedPosition.clip = rootFrame.rootClip();
-    context.currentEffect = rootFrame.rootEffect();
+    ClipPaintPropertyNode* rootClipNode()
+    {
+        DEFINE_STATIC_REF(ClipPaintPropertyNode, rootClip, (ClipPaintPropertyNode::create(nullptr, rootTransformNode(), FloatRoundedRect(LayoutRect::infiniteIntRect()))));
+        return rootClip;
+    }
+
+    EffectPaintPropertyNode* rootEffectNode()
+    {
+        DEFINE_STATIC_REF(EffectPaintPropertyNode, rootEffect, (EffectPaintPropertyNode::create(nullptr, 1.0)));
+        return rootEffect;
+    }
+
+    ScrollPaintPropertyNode* rootScrollNode()
+    {
+        DEFINE_STATIC_REF(ScrollPaintPropertyNode, rootScroll, (ScrollPaintPropertyNode::create(nullptr, rootTransformNode(), IntSize(), IntSize(), false, false)));
+        return rootScroll;
+    }
+}
+
+PaintPropertyTreeBuilderContext PaintPropertyTreeBuilder::setupInitialContext()
+{
+    PaintPropertyTreeBuilderContext context;
+
+    // TODO(pdr): Update the root layer scrolling paths to use the static root nodes.
+    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+        return context;
+
+    context.current.transform = context.absolutePosition.transform = context.fixedPosition.transform = rootTransformNode();
+    context.current.scroll = context.absolutePosition.scroll = context.fixedPosition.scroll = rootScrollNode();
+    context.current.clip = context.absolutePosition.clip = context.fixedPosition.clip = rootClipNode();
+    context.currentEffect = rootEffectNode();
+
+    // Ensure scroll tree properties are reset. They will be rebuilt during the tree walk.
+    rootScrollNode()->clearMainThreadScrollingReasons();
+
+    return context;
 }
 
 void createOrUpdateFrameViewPreTranslation(FrameView& frameView,
@@ -156,6 +177,9 @@ void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropert
     context.fixedPosition = context.current;
     context.fixedPosition.transform = frameView.preTranslation();
     context.fixedPosition.scroll = initialScroll;
+
+    std::unique_ptr<PropertyTreeState> contentsState(new PropertyTreeState(context.current.transform, context.current.clip, context.currentEffect, context.current.scroll));
+    frameView.setTotalPropertyTreeStateForContents(std::move(contentsState));
 }
 
 void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)

@@ -47,6 +47,7 @@ public:
     // Parent transform that this transform is relative to, or nullptr if this
     // is the root transform.
     const TransformPaintPropertyNode* parent() const { return m_parent.get(); }
+    bool isRoot() const { return !m_parent; }
 
     // If true, content with this transform node (or its descendant) appears in
     // the plane of its parent. This is implemented by flattening the total

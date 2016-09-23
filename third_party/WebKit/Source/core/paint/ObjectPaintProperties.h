@@ -20,6 +20,21 @@
 
 namespace blink {
 
+// A complete set of paint properties including those that are inherited from other objects.
+struct PropertyTreeState {
+    PropertyTreeState(const TransformPaintPropertyNode* transformState,
+        const ClipPaintPropertyNode* clipState, const EffectPaintPropertyNode* effectState,
+        const ScrollPaintPropertyNode* scrollState)
+        : transform(transformState), clip(clipState), effect(effectState), scroll(scrollState)
+    {
+        DCHECK(transform && clip && effect && scroll);
+    }
+    const TransformPaintPropertyNode* transform;
+    const ClipPaintPropertyNode* clip;
+    const EffectPaintPropertyNode* effect;
+    const ScrollPaintPropertyNode* scroll;
+};
+
 // This class stores property tree related information associated with a LayoutObject.
 // Currently there are two groups of information:
 // 1. The set of property nodes created locally by this LayoutObject.
@@ -79,6 +94,7 @@ public:
     // baked into in the context here. However for properties that affects only children,
     // for example, perspective and overflow clip, those should be applied by the painter
     // at the right painting step.
+    // TODO(pdr): Refactor this to use PropertyTreeState.
     struct LocalBorderBoxProperties {
         LayoutPoint paintOffset;
         GeometryPropertyTreeState geometryPropertyTreeState;
