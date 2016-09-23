@@ -47,6 +47,7 @@ public:
 
 protected:
     PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
+    bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
     AnimatableLengthPoint(PassRefPtr<AnimatableValue> x, PassRefPtr<AnimatableValue> y)

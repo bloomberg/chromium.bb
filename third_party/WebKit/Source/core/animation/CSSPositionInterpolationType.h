@@ -9,6 +9,7 @@
 
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
 #include "core/animation/ListInterpolationFunctions.h"
+#include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValuePair.h"
 
 namespace blink {
@@ -22,6 +23,9 @@ public:
 private:
     InterpolationValue maybeConvertValue(const CSSValue& value, const StyleResolverState&, ConversionCheckers&) const final
     {
+        if (!value.isValuePair()) {
+            return nullptr;
+        }
         const CSSValuePair& pair = toCSSValuePair(value);
         return ListInterpolationFunctions::createList(2, [&pair](size_t index) {
             return CSSPositionAxisListInterpolationType::convertPositionAxisCSSValue(index == 0 ? pair.first() : pair.second());

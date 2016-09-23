@@ -197,6 +197,8 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
             applicableTypes->append(wrapUnique(new CSSPositionAxisListInterpolationType(cssProperty)));
             break;
         case CSSPropertyObjectPosition:
+        case CSSPropertyOffsetAnchor:
+        case CSSPropertyOffsetPosition:
         case CSSPropertyPerspectiveOrigin:
             applicableTypes->append(wrapUnique(new CSSPositionInterpolationType(cssProperty)));
             break;

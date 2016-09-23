@@ -175,12 +175,16 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop, const ComputedStyl
         return a.minHeight() == b.minHeight();
     case CSSPropertyMinWidth:
         return a.minWidth() == b.minWidth();
-    case CSSPropertyOffsetDistance:
-        return a.offsetDistance() == b.offsetDistance();
-    case CSSPropertyOffsetRotation:
-        return a.offsetRotation() == b.offsetRotation();
     case CSSPropertyObjectPosition:
         return a.objectPosition() == b.objectPosition();
+    case CSSPropertyOffsetAnchor:
+        return a.offsetAnchor() == b.offsetAnchor();
+    case CSSPropertyOffsetDistance:
+        return a.offsetDistance() == b.offsetDistance();
+    case CSSPropertyOffsetPosition:
+        return a.offsetPosition() == b.offsetPosition();
+    case CSSPropertyOffsetRotation:
+        return a.offsetRotation() == b.offsetRotation();
     case CSSPropertyOpacity:
         return a.opacity() == b.opacity();
     case CSSPropertyOrphans:

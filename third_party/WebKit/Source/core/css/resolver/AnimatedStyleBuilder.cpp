@@ -641,8 +641,14 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
     case CSSPropertyTransformOrigin:
         style->setTransformOrigin(animatableValueToTransformOrigin(value, state));
         return;
+    case CSSPropertyOffsetAnchor:
+        style->setOffsetAnchor(animatableValueToLengthPoint(value, state));
+        return;
     case CSSPropertyOffsetDistance:
         style->setOffsetDistance(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyOffsetPosition:
+        style->setOffsetPosition(animatableValueToLengthPoint(value, state));
         return;
     case CSSPropertyOffsetRotation:
         style->setOffsetRotation(StyleOffsetRotation(

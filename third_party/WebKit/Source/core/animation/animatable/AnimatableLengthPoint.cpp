@@ -32,6 +32,12 @@
 
 namespace blink {
 
+bool AnimatableLengthPoint::usesDefaultInterpolationWith(const AnimatableValue* value) const
+{
+    const AnimatableLengthPoint* other = toAnimatableLengthPoint(value);
+    return this->x()->isUnknown() || other->x()->isUnknown();
+}
+
 PassRefPtr<AnimatableValue> AnimatableLengthPoint::interpolateTo(const AnimatableValue* value, double fraction) const
 {
     const AnimatableLengthPoint* lengthPoint = toAnimatableLengthPoint(value);

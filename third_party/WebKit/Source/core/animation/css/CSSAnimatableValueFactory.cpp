@@ -550,12 +550,16 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         DEFINE_STATIC_REF(ScaleTransformOperation, initialScale, ScaleTransformOperation::create(1, 1, 1, TransformOperation::Scale3D));
         return createFromTransformProperties(style.scale(), style.effectiveZoom(), initialScale);
     }
-    case CSSPropertyTransformOrigin:
-        return createFromTransformOrigin(style.transformOrigin(), style);
+    case CSSPropertyOffsetAnchor:
+        return createFromLengthPoint(style.offsetAnchor(), style);
     case CSSPropertyOffsetDistance:
         return createFromLength(style.offsetDistance(), style);
+    case CSSPropertyOffsetPosition:
+        return createFromLengthPoint(style.offsetPosition(), style);
     case CSSPropertyOffsetRotation:
         return createFromDoubleAndBool(style.offsetRotation().angle, style.offsetRotation().type == OffsetRotationAuto, style);
+    case CSSPropertyTransformOrigin:
+        return createFromTransformOrigin(style.transformOrigin(), style);
     case CSSPropertyWebkitPerspectiveOriginX:
         return createFromLength(style.perspectiveOriginX(), style);
     case CSSPropertyWebkitPerspectiveOriginY:

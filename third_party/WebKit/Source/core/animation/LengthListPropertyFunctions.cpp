@@ -82,6 +82,8 @@ ValueRange LengthListPropertyFunctions::getValueRange(CSSPropertyID property)
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyObjectPosition:
+    case CSSPropertyOffsetAnchor:
+    case CSSPropertyOffsetPosition:
     case CSSPropertyPerspectiveOrigin:
     case CSSPropertyTransformOrigin:
     case CSSPropertyWebkitMaskPositionX:
@@ -141,6 +143,10 @@ bool LengthListPropertyFunctions::getLengthList(CSSPropertyID property, const Co
 
     case CSSPropertyObjectPosition:
         return appendToVector(style.objectPosition(), result);
+    case CSSPropertyOffsetAnchor:
+        return appendToVector(style.offsetAnchor(), result);
+    case CSSPropertyOffsetPosition:
+        return appendToVector(style.offsetPosition(), result);
     case CSSPropertyPerspectiveOrigin:
         return appendToVector(style.perspectiveOrigin(), result);
     case CSSPropertyBorderBottomLeftRadius:
@@ -200,6 +206,12 @@ void LengthListPropertyFunctions::setLengthList(CSSPropertyID property, Computed
 
     case CSSPropertyObjectPosition:
         style.setObjectPosition(pointFromVector(lengthList));
+        return;
+    case CSSPropertyOffsetAnchor:
+        style.setOffsetAnchor(pointFromVector(lengthList));
+        return;
+    case CSSPropertyOffsetPosition:
+        style.setOffsetPosition(pointFromVector(lengthList));
         return;
     case CSSPropertyPerspectiveOrigin:
         style.setPerspectiveOrigin(pointFromVector(lengthList));
