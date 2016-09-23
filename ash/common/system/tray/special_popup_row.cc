@@ -7,6 +7,7 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
+#include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/throbber_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
@@ -96,36 +97,23 @@ void SpecialPopupRow::SetContent(views::View* view) {
 }
 
 views::Button* SpecialPopupRow::AddBackButton(views::ButtonListener* listener) {
-  return AddImageButton(listener, kSystemMenuArrowBackIcon,
-                        IDS_ASH_STATUS_TRAY_PREVIOUS_MENU, false);
+  return AddSystemMenuButton(listener, kSystemMenuArrowBackIcon,
+                             IDS_ASH_STATUS_TRAY_PREVIOUS_MENU, false);
 }
 
 views::Button* SpecialPopupRow::AddSettingsButton(
     views::ButtonListener* listener) {
-  return AddImageButton(listener, kSystemMenuSettingsIcon,
-                        IDS_ASH_STATUS_TRAY_SETTINGS, true);
+  return AddSystemMenuButton(listener, kSystemMenuSettingsIcon,
+                             IDS_ASH_STATUS_TRAY_SETTINGS, true);
 }
 
-views::ImageButton* SpecialPopupRow::AddImageButton(
+SystemMenuButton* SpecialPopupRow::AddSystemMenuButton(
     views::ButtonListener* listener,
     const gfx::VectorIcon& icon,
     int accessible_name_id,
     bool after_content) {
-  views::ImageButton* button = new views::ImageButton(listener);
-
-  gfx::ImageSkia image = gfx::CreateVectorIcon(icon, kMenuIconColor);
-  button->SetImage(views::Button::STATE_NORMAL, &image);
-  const int horizontal_padding = (kMenuButtonSize - image.width()) / 2;
-  const int vertical_padding = (kMenuButtonSize - image.height()) / 2;
-  button->SetBorder(
-      views::Border::CreateEmptyBorder(vertical_padding, horizontal_padding,
-                                       vertical_padding, horizontal_padding));
-
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  button->SetTooltipText(bundle.GetLocalizedString(accessible_name_id));
-  button->SetFocusForPlatform();
-  button->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
+  SystemMenuButton* button =
+      new SystemMenuButton(listener, icon, accessible_name_id);
 
   if (after_content)
     AddViewAfterContent(button);

@@ -14,12 +14,12 @@
 namespace views {
 class Button;
 class ButtonListener;
-class ImageButton;
 class Label;
 class ToggleButton;
 }
 
 namespace ash {
+class SystemMenuButton;
 class ThrobberView;
 class TrayItemView;
 class TrayPopupHeaderButton;
@@ -81,10 +81,10 @@ class ASH_EXPORT SpecialPopupRow : public views::View {
 
   void SetTextLabelMd(int string_id, ViewClickListener* listener);
   void SetTextLabelNonMd(int string_id, ViewClickListener* listener);
-  views::ImageButton* AddImageButton(views::ButtonListener* listener,
-                                     const gfx::VectorIcon& icon,
-                                     int accessible_name_id,
-                                     bool after_content);
+  SystemMenuButton* AddSystemMenuButton(views::ButtonListener* listener,
+                                        const gfx::VectorIcon& icon,
+                                        int accessible_name_id,
+                                        bool after_content);
 
   // The container for the views positioned before |content_|.
   views::View* views_before_content_container_;
