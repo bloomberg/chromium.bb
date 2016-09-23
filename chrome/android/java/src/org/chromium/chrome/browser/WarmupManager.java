@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.view.ContextThemeWrapper;
 import android.view.InflateException;
 import android.view.LayoutInflater;
@@ -71,6 +72,10 @@ public final class WarmupManager {
      */
     public void initializeViewHierarchy(Context baseContext, int toolbarContainerId) {
         TraceEvent.begin("WarmupManager.initializeViewHierarchy");
+        // Inflating the view hierarchy causes StrictMode violations on some
+        // devices. Since layout inflation should happen on the UI thread, allow
+        // the disk reads. crbug.com/644243.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             ThreadUtils.assertOnUiThread();
             if (mMainView != null && mToolbarContainerId == toolbarContainerId) return;
@@ -90,6 +95,7 @@ public final class WarmupManager {
             Log.e(TAG, "Inflation exception.", e);
             mMainView = null;
         } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
             TraceEvent.end("WarmupManager.initializeViewHierarchy");
         }
     }
