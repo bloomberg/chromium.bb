@@ -88,7 +88,7 @@ gfx::ImageSkiaRep ArcAppIcon::Source::GetImageForScale(float scale) {
   int resource_id;
   if (host_ && host_->app_id() == arc::kPlayStoreAppId) {
     resource_id = scale >= 1.5f ?
-        IDR_ARC_SUPPORT_ICON_48 : IDR_ARC_SUPPORT_ICON_96;
+        IDR_ARC_SUPPORT_ICON_96 : IDR_ARC_SUPPORT_ICON_48;
   } else {
     resource_id = IDR_APP_DEFAULT_ICON;
   }
