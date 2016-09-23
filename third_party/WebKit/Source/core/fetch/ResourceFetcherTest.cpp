@@ -661,4 +661,26 @@ TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndUse)
     EXPECT_FALSE(resource->isPreloaded());
 }
 
+TEST_F(ResourceFetcherTest, Revalidate304)
+{
+    KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.html");
+    Resource* resource = Resource::create(url, Resource::Raw);
+    memoryCache()->add(resource);
+    ResourceResponse response;
+    response.setURL(url);
+    response.setHTTPStatusCode(304);
+    response.setHTTPHeaderField("etag", "1234567890");
+    resource->responseReceived(response, nullptr);
+    resource->finish();
+
+    ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
+    FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
+    Platform::current()->getURLLoaderMockFactory()->registerURL(url, WebURLResponse(), "");
+    Resource* newResource = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Raw));
+    fetcher->stopFetching();
+    Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
+
+    EXPECT_NE(resource, newResource);
+}
+
 } // namespace blink
