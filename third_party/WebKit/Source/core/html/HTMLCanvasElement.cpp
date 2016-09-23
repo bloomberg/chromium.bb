@@ -61,7 +61,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Canvas2DImageBufferSurface.h"
 #include "platform/graphics/CanvasMetrics.h"
-#include "platform/graphics/CanvasSurfaceLayerBridgeClientImpl.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/RecordingImageBufferSurface.h"
@@ -69,8 +68,10 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/transforms/AffineTransform.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
+#include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/PtrUtil.h"
 #include <math.h>
@@ -1288,8 +1289,9 @@ String HTMLCanvasElement::getIdFromControl(const Element* element)
 bool HTMLCanvasElement::createSurfaceLayer()
 {
     DCHECK(!m_surfaceLayerBridge);
-    std::unique_ptr<CanvasSurfaceLayerBridgeClient> bridgeClient = wrapUnique(new CanvasSurfaceLayerBridgeClientImpl());
-    m_surfaceLayerBridge = wrapUnique(new CanvasSurfaceLayerBridge(std::move(bridgeClient)));
+    mojom::blink::OffscreenCanvasSurfacePtr service;
+    Platform::current()->interfaceProvider()->getInterface(mojo::GetProxy(&service));
+    m_surfaceLayerBridge = wrapUnique(new CanvasSurfaceLayerBridge(std::move(service)));
     return m_surfaceLayerBridge->createSurfaceLayer(this->width(), this->height());
 }
 

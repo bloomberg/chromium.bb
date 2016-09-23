@@ -18,9 +18,9 @@
 
 namespace blink {
 
-CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(std::unique_ptr<CanvasSurfaceLayerBridgeClient> client)
+CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(mojom::blink::OffscreenCanvasSurfacePtr service)
+    : m_service(std::move(service))
 {
-    m_client = std::move(client);
 }
 
 CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge()
@@ -29,7 +29,7 @@ CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge()
 
 bool CanvasSurfaceLayerBridge::createSurfaceLayer(int canvasWidth, int canvasHeight)
 {
-    if (!m_client->syncGetSurfaceId(&m_surfaceId))
+    if (!m_service->GetSurfaceId(&m_surfaceId))
         return false;
 
     cc::SurfaceLayer::SatisfyCallback satisfyCallback = convertToBaseCallback(WTF::bind(&CanvasSurfaceLayerBridge::satisfyCallback, WTF::unretained(this)));
@@ -44,12 +44,12 @@ bool CanvasSurfaceLayerBridge::createSurfaceLayer(int canvasWidth, int canvasHei
 
 void CanvasSurfaceLayerBridge::satisfyCallback(const cc::SurfaceSequence& sequence)
 {
-    m_client->asyncSatisfy(sequence);
+    m_service->Satisfy(sequence);
 }
 
 void CanvasSurfaceLayerBridge::requireCallback(const cc::SurfaceId& surfaceId, const cc::SurfaceSequence& sequence)
 {
-    m_client->asyncRequire(surfaceId, sequence);
+    m_service->Require(surfaceId, sequence);
 }
 
 } // namespace blink
