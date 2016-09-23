@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,8 +47,7 @@ void ResourcePrefetcherManager::ShutdownOnUIThread() {
 
 void ResourcePrefetcherManager::ShutdownOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  base::STLDeleteContainerPairSecondPointers(prefetcher_map_.begin(),
-                                             prefetcher_map_.end());
+  prefetcher_map_.clear();
 }
 
 void ResourcePrefetcherManager::MaybeAddPrefetch(
@@ -64,7 +64,7 @@ void ResourcePrefetcherManager::MaybeAddPrefetch(
 
   ResourcePrefetcher* prefetcher =
       new ResourcePrefetcher(this, config_, navigation_id, key_type, urls);
-  prefetcher_map_.insert(std::make_pair(key, prefetcher));
+  prefetcher_map_[key] = base::WrapUnique(prefetcher);
   prefetcher->Start();
 }
 
@@ -73,8 +73,7 @@ void ResourcePrefetcherManager::MaybeRemovePrefetch(
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // Look for a URL based prefetch first.
-  PrefetcherMap::iterator it = prefetcher_map_.find(
-      navigation_id.main_frame_url.spec());
+  auto it = prefetcher_map_.find(navigation_id.main_frame_url.spec());
   if (it != prefetcher_map_.end() &&
       it->second->navigation_id() == navigation_id) {
     it->second->Stop();
@@ -98,9 +97,8 @@ void ResourcePrefetcherManager::ResourcePrefetcherFinished(
   const std::string key =
       resource_prefetcher->key_type() == PREFETCH_KEY_TYPE_HOST ?
           main_frame_url.host() : main_frame_url.spec();
-  PrefetcherMap::iterator it = prefetcher_map_.find(key);
+  auto it = prefetcher_map_.find(key);
   DCHECK(it != prefetcher_map_.end());
-  delete it->second;
   prefetcher_map_.erase(it);
 }
 

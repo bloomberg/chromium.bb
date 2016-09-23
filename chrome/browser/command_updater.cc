@@ -7,8 +7,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/command_updater_delegate.h"
 
@@ -25,8 +25,6 @@ CommandUpdater::CommandUpdater(CommandUpdaterDelegate* delegate)
 }
 
 CommandUpdater::~CommandUpdater() {
-  base::STLDeleteContainerPairSecondPointers(commands_.begin(),
-                                             commands_.end());
 }
 
 bool CommandUpdater::SupportsCommand(int id) const {
@@ -34,7 +32,7 @@ bool CommandUpdater::SupportsCommand(int id) const {
 }
 
 bool CommandUpdater::IsCommandEnabled(int id) const {
-  const CommandMap::const_iterator command(commands_.find(id));
+  auto command = commands_.find(id);
   if (command == commands_.end())
     return false;
   return command->second->enabled;
@@ -63,10 +61,8 @@ void CommandUpdater::RemoveCommandObserver(int id, CommandObserver* observer) {
 }
 
 void CommandUpdater::RemoveCommandObserver(CommandObserver* observer) {
-  for (CommandMap::const_iterator it = commands_.begin();
-       it != commands_.end();
-       ++it) {
-    Command* command = it->second;
+  for (const auto& command_pair : commands_) {
+    Command* command = command_pair.second.get();
     if (command)
       command->observers.RemoveObserver(observer);
   }
@@ -84,9 +80,10 @@ void CommandUpdater::UpdateCommandEnabled(int id, bool enabled) {
 CommandUpdater::Command* CommandUpdater::GetCommand(int id, bool create) {
   bool supported = SupportsCommand(id);
   if (supported)
-    return commands_[id];
+    return commands_[id].get();
+
   DCHECK(create);
-  Command* command = new Command;
-  commands_[id] = command;
-  return command;
+  std::unique_ptr<Command>& entry = commands_[id];
+  entry = base::MakeUnique<Command>();
+  return entry.get();
 }

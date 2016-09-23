@@ -91,12 +91,12 @@ class MacKeychainPasswordFormAdapter {
 
   // Changes the password for keychain_item to |password|; returns true if the
   // password was successfully changed.
-  bool SetKeychainItemPassword(const SecKeychainItemRef& keychain_item,
+  bool SetKeychainItemPassword(SecKeychainItemRef keychain_item,
                                const std::string& password);
 
   // Sets the creator code of keychain_item to creator_code; returns true if the
   // creator code was successfully set.
-  bool SetKeychainItemCreatorCode(const SecKeychainItemRef& keychain_item,
+  bool SetKeychainItemCreatorCode(SecKeychainItemRef keychain_item,
                                   OSType creator_code);
 
   // Returns the creator code to be used for a Keychain search, depending on
@@ -117,7 +117,8 @@ class MacKeychainPasswordFormAdapter {
 namespace internal_keychain_helpers {
 
 // Pair of pointers to a SecKeychainItemRef and a corresponding PasswordForm.
-typedef std::pair<SecKeychainItemRef*, autofill::PasswordForm*> ItemFormPair;
+typedef std::pair<SecKeychainItemRef, std::unique_ptr<autofill::PasswordForm>>
+    ItemFormPair;
 
 // Sets the fields of |form| based on the keychain data from |keychain_item|.
 // Fields that can't be determined from |keychain_item| will be unchanged. If
@@ -136,14 +137,14 @@ typedef std::pair<SecKeychainItemRef*, autofill::PasswordForm*> ItemFormPair;
 // function with |extract_password_data| set to false, and retrieve the password
 // later (accessing other fields doesn't require authorization).
 bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
-                                      const SecKeychainItemRef& keychain_item,
+                                      SecKeychainItemRef keychain_item,
                                       autofill::PasswordForm* form,
                                       bool extract_password_data);
 
 // Returns true if |keychain_item| has the application-specific creator code in
 // its attributes.
 bool HasCreatorCode(const AppleKeychain& keychain,
-                    const SecKeychainItemRef& keychain_item);
+                    SecKeychainItemRef keychain_item);
 
 // Use FormMatchStrictness to configure which forms are considered a match by
 // FormsMatchForMerge:

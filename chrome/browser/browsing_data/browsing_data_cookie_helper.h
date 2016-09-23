@@ -78,7 +78,8 @@ class BrowsingDataCookieHelper
 // cookies.
 class CannedBrowsingDataCookieHelper : public BrowsingDataCookieHelper {
  public:
-  typedef std::map<GURL, canonical_cookie::CookieHashSet*> OriginCookieSetMap;
+  typedef std::map<GURL, std::unique_ptr<canonical_cookie::CookieHashSet>>
+      OriginCookieSetMap;
 
   explicit CannedBrowsingDataCookieHelper(
       net::URLRequestContextGetter* request_context);

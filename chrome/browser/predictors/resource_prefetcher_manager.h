@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREDICTORS_RESOURCE_PREFETCHER_MANAGER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -21,7 +22,7 @@ namespace predictors {
 struct NavigationID;
 class ResourcePrefetchPredictor;
 
-// Manages prefetches for multple navigations.
+// Manages prefetches for multiple navigations.
 //  - Created and owned by the resource prefetch predictor.
 //  - Needs to be refcounted as it is de-referenced on two different threads.
 //  - Created on the UI thread, but most functions are called in the IO thread.
@@ -62,15 +63,13 @@ class ResourcePrefetcherManager
   friend class base::RefCountedThreadSafe<ResourcePrefetcherManager>;
   friend class MockResourcePrefetcherManager;
 
-  typedef std::map<std::string, ResourcePrefetcher*> PrefetcherMap;
-
   ~ResourcePrefetcherManager() override;
 
   ResourcePrefetchPredictor* predictor_;
   const ResourcePrefetchPredictorConfig config_;
   net::URLRequestContextGetter* const context_getter_;
 
-  PrefetcherMap prefetcher_map_;  // Owns the ResourcePrefetcher pointers.
+  std::map<std::string, std::unique_ptr<ResourcePrefetcher>> prefetcher_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetcherManager);
 };

@@ -14,9 +14,9 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -534,9 +534,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
 
   appShimMenuController_.reset();
 
-  base::STLDeleteContainerPairSecondPointers(
-      profileBookmarkMenuBridgeMap_.begin(),
-      profileBookmarkMenuBridgeMap_.end());
+  profileBookmarkMenuBridgeMap_.clear();
 }
 
 - (void)didEndMainMessageLoop {
@@ -883,11 +881,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
         GetLastUsedProfile()];
   }
 
-  auto it = profileBookmarkMenuBridgeMap_.find(profilePath);
-  if (it != profileBookmarkMenuBridgeMap_.end()) {
-    delete it->second;
-    profileBookmarkMenuBridgeMap_.erase(it);
-  }
+  profileBookmarkMenuBridgeMap_.erase(profilePath);
 }
 
 // Returns true if there is a modal window (either window- or application-
@@ -1559,9 +1553,10 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   if (it == profileBookmarkMenuBridgeMap_.end()) {
     base::scoped_nsobject<NSMenu> submenu([[bookmarkItem submenu] copy]);
     bookmarkMenuBridge_ = new BookmarkMenuBridge(profile, submenu);
-    profileBookmarkMenuBridgeMap_[profile->GetPath()] = bookmarkMenuBridge_;
+    profileBookmarkMenuBridgeMap_[profile->GetPath()] =
+        base::WrapUnique(bookmarkMenuBridge_);
   } else {
-    bookmarkMenuBridge_ = it->second;
+    bookmarkMenuBridge_ = it->second.get();
   }
 
   // No need to |BuildMenu| here.  It is done lazily upon menu access.

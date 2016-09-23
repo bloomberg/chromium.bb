@@ -20,7 +20,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "content/child/request_extra_data.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/resource_messages.h"
@@ -149,8 +148,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   }
 
   ~ResourceDispatcherTest() override {
-    base::STLDeleteContainerPairSecondPointers(shared_memory_map_.begin(),
-                                               shared_memory_map_.end());
+    shared_memory_map_.clear();
     dispatcher_.reset();
     base::RunLoop().RunUntilIdle();
   }
@@ -264,7 +262,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
   void NotifySetDataBuffer(int request_id, size_t buffer_size) {
     base::SharedMemory* shared_memory = new base::SharedMemory();
     ASSERT_FALSE(shared_memory_map_[request_id]);
-    shared_memory_map_[request_id] = shared_memory;
+    shared_memory_map_[request_id] = base::WrapUnique(shared_memory);
     EXPECT_TRUE(shared_memory->CreateAndMapAnonymous(buffer_size));
 
     base::SharedMemoryHandle duplicate_handle;
@@ -343,7 +341,7 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
 
  private:
   // Map of request IDs to shared memory.
-  std::map<int, base::SharedMemory*> shared_memory_map_;
+  std::map<int, std::unique_ptr<base::SharedMemory>> shared_memory_map_;
 
   std::vector<IPC::Message> message_queue_;
   base::MessageLoop message_loop_;

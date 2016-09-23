@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -109,8 +109,6 @@ void CannedBrowsingDataCookieHelper::AddChangedCookie(
 }
 
 void CannedBrowsingDataCookieHelper::Reset() {
-  base::STLDeleteContainerPairSecondPointers(origin_cookie_set_map_.begin(),
-                                             origin_cookie_set_map_.end());
   origin_cookie_set_map_.clear();
 }
 
@@ -145,7 +143,7 @@ void CannedBrowsingDataCookieHelper::StartFetching(
 void CannedBrowsingDataCookieHelper::DeleteCookie(
     const net::CanonicalCookie& cookie) {
   for (const auto& pair : origin_cookie_set_map_)
-    DeleteMatchingCookie(cookie, pair.second);
+    DeleteMatchingCookie(cookie, pair.second.get());
   BrowsingDataCookieHelper::DeleteCookie(cookie);
 }
 
@@ -157,17 +155,13 @@ bool CannedBrowsingDataCookieHelper::DeleteMatchingCookie(
 
 canonical_cookie::CookieHashSet* CannedBrowsingDataCookieHelper::GetCookiesFor(
     const GURL& first_party_origin) {
-  OriginCookieSetMap::iterator it =
-      origin_cookie_set_map_.find(first_party_origin);
-  if (it == origin_cookie_set_map_.end()) {
-    canonical_cookie::CookieHashSet* cookies =
-        new canonical_cookie::CookieHashSet;
-    origin_cookie_set_map_.insert(
-        std::pair<GURL, canonical_cookie::CookieHashSet*>(first_party_origin,
-                                                          cookies));
-    return cookies;
-  }
-  return it->second;
+  std::unique_ptr<canonical_cookie::CookieHashSet>& entry =
+      origin_cookie_set_map_[first_party_origin];
+  if (entry)
+    return entry.get();
+
+  entry = base::MakeUnique<canonical_cookie::CookieHashSet>();
+  return entry.get();
 }
 
 void CannedBrowsingDataCookieHelper::AddCookie(

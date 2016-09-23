@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -284,8 +284,6 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
   chromeos::LoginState::Get()->RemoveObserver(this);
-  base::STLDeleteContainerPairSecondPointers(user_data_.begin(),
-                                             user_data_.end());
   user_data_.clear();
 }
 
@@ -380,9 +378,10 @@ void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {
 
   const auto it = user_data_.find(account_id_);
   if (it == user_data_.end())
-    user_data_.insert(std::make_pair(account_id_, new UserData()));
+    user_data_.insert(
+        std::make_pair(account_id_, base::MakeUnique<UserData>()));
 
-  UserData* data = user_data_[account_id_];
+  UserData* data = user_data_[account_id_].get();
 
   if (data->state != USER_DATA_STATE_INITIAL)
     return;
@@ -401,7 +400,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     const chromeos::EasyUnlockDeviceKeyDataList& devices) {
   allow_cryptohome_backoff_ = false;
 
-  UserData* data = user_data_[account_id];
+  UserData* data = user_data_[account_id].get();
   data->state = USER_DATA_STATE_LOADED;
   if (success) {
     data->devices = devices;
@@ -475,5 +474,5 @@ const EasyUnlockServiceSignin::UserData*
     return nullptr;
   if (it->second->state != USER_DATA_STATE_LOADED)
     return nullptr;
-  return it->second;
+  return it->second.get();
 }

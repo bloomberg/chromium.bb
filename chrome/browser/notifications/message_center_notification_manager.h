@@ -93,13 +93,14 @@ class MessageCenterNotificationManager
   message_center::MessageCenter* message_center_;  // Weak, global.
 
   // Use a map by notification_id since this mapping is the most often used.
-  typedef std::map<std::string, ProfileNotification*> NotificationMap;
-  NotificationMap profile_notifications_;
+  std::map<std::string, std::unique_ptr<ProfileNotification>>
+      profile_notifications_;
 
   // Helpers that add/remove the notification from local map.
   // The local map takes ownership of profile_notification object.
-  void AddProfileNotification(ProfileNotification* profile_notification);
-  void RemoveProfileNotification(ProfileNotification* profile_notification);
+  void AddProfileNotification(
+      std::unique_ptr<ProfileNotification> profile_notification);
+  void RemoveProfileNotification(const std::string& notification_id);
 
   // Returns the ProfileNotification for the |id|, or NULL if no such
   // notification is found.

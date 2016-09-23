@@ -110,7 +110,14 @@ template <class T>
 void STLDeleteValues(T* container) {
   if (!container)
     return;
-  STLDeleteContainerPairSecondPointers(container->begin(), container->end());
+
+  auto it = container->begin();
+  while (it != container->end()) {
+    auto temp = it;
+    ++it;
+    delete temp->second;
+  }
+
   container->clear();
 }
 

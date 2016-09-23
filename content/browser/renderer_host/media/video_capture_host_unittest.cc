@@ -16,9 +16,9 @@
 #include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -166,9 +166,8 @@ class MockVideoCaptureHost : public VideoCaptureHost {
   int GetReceivedDib() {
     if (filled_dib_.empty())
       return 0;
-    std::map<int, base::SharedMemory*>::iterator it = filled_dib_.begin();
+    auto it = filled_dib_.begin();
     int h = it->first;
-    delete it->second;
     filled_dib_.erase(it);
 
     return h;
@@ -176,8 +175,6 @@ class MockVideoCaptureHost : public VideoCaptureHost {
 
  private:
   ~MockVideoCaptureHost() override {
-    base::STLDeleteContainerPairSecondPointers(filled_dib_.begin(),
-                                               filled_dib_.end());
   }
 
   // This method is used to dispatch IPC messages to the renderer. We intercept
@@ -208,24 +205,23 @@ class MockVideoCaptureHost : public VideoCaptureHost {
                                   uint32_t length,
                                   int buffer_id) {
     OnNewBufferCreated(device_id, handle, length, buffer_id);
-    base::SharedMemory* dib = new base::SharedMemory(handle, false);
+    std::unique_ptr<base::SharedMemory> dib =
+        base::MakeUnique<base::SharedMemory>(handle, false);
     dib->Map(length);
-    filled_dib_[buffer_id] = dib;
+    filled_dib_[buffer_id] = std::move(dib);
   }
 
   void OnBufferFreedDispatch(int device_id, int buffer_id) {
     OnBufferFreed(device_id, buffer_id);
 
-    std::map<int, base::SharedMemory*>::iterator it =
-        filled_dib_.find(buffer_id);
+    auto it = filled_dib_.find(buffer_id);
     ASSERT_TRUE(it != filled_dib_.end());
-    delete it->second;
     filled_dib_.erase(it);
   }
 
   void OnBufferFilledDispatch(
       const VideoCaptureMsg_BufferReady_Params& params) {
-    base::SharedMemory* dib = filled_dib_[params.buffer_id];
+    base::SharedMemory* dib = filled_dib_[params.buffer_id].get();
     ASSERT_TRUE(dib != NULL);
     if (dump_video_) {
       if (dumper_.coded_size().IsEmpty())
@@ -246,7 +242,7 @@ class MockVideoCaptureHost : public VideoCaptureHost {
     OnStateChanged(device_id, state);
   }
 
-  std::map<int, base::SharedMemory*> filled_dib_;
+  std::map<int, std::unique_ptr<base::SharedMemory>> filled_dib_;
   bool return_buffers_;
   bool dump_video_;
   media::VideoCaptureFormat format_;

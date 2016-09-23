@@ -61,7 +61,8 @@ class WorkAreaWatcherObserver;
   // a weak pointer that is updated to match the corresponding cache entry
   // during a profile switch.
   BookmarkMenuBridge* bookmarkMenuBridge_;
-  std::map<base::FilePath, BookmarkMenuBridge*> profileBookmarkMenuBridgeMap_;
+  std::map<base::FilePath, std::unique_ptr<BookmarkMenuBridge>>
+      profileBookmarkMenuBridgeMap_;
 
   std::unique_ptr<HistoryMenuBridge> historyMenuBridge_;
 

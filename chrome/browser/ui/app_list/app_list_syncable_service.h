@@ -74,7 +74,7 @@ class AppListSyncableService : public syncer::SyncableService,
     virtual ~Observer() = default;
   };
 
-  using SyncItemMap = std::map<std::string, SyncItem*>;
+  using SyncItemMap = std::map<std::string, std::unique_ptr<SyncItem>>;
 
   // Populates the model when |extension_system| is ready.
   AppListSyncableService(Profile* profile,
@@ -173,7 +173,7 @@ class AppListSyncableService : public syncer::SyncableService,
   bool RemoveDefaultApp(AppListItem* item, SyncItem* sync_item);
 
   // Deletes a sync item from |sync_items_| and sends a DELETE action.
-  void DeleteSyncItem(SyncItem* sync_item);
+  void DeleteSyncItem(const std::string& item_id);
 
   // Updates existing entry in |sync_items_| from |app_item|.
   void UpdateSyncItem(AppListItem* app_item);

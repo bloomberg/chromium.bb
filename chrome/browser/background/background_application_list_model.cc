@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <set>
 
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -147,8 +147,6 @@ void BackgroundApplicationListModel::Application::RequestIcon(
 }
 
 BackgroundApplicationListModel::~BackgroundApplicationListModel() {
-  base::STLDeleteContainerPairSecondPointers(applications_.begin(),
-                                             applications_.end());
 }
 
 BackgroundApplicationListModel::BackgroundApplicationListModel(Profile* profile)
@@ -194,8 +192,10 @@ void BackgroundApplicationListModel::AssociateApplicationData(
                  << " exceeded.  Ignoring.";
       return;
     }
-    application = new Application(this, extension);
-    applications_[extension->id()] = application;
+    std::unique_ptr<Application> application_ptr =
+        base::MakeUnique<Application>(this, extension);
+    application = application_ptr.get();
+    applications_[extension->id()] = std::move(application_ptr);
     Update();
     application->RequestIcon(extension_misc::EXTENSION_ICON_BITTY);
   }
@@ -203,11 +203,7 @@ void BackgroundApplicationListModel::AssociateApplicationData(
 
 void BackgroundApplicationListModel::DissociateApplicationData(
     const Extension* extension) {
-  ApplicationMap::iterator found = applications_.find(extension->id());
-  if (found != applications_.end()) {
-    delete found->second;
-    applications_.erase(found);
-  }
+  applications_.erase(extension->id());
 }
 
 const Extension* BackgroundApplicationListModel::GetExtension(
@@ -220,16 +216,16 @@ const BackgroundApplicationListModel::Application*
 BackgroundApplicationListModel::FindApplication(
     const Extension* extension) const {
   const std::string& id = extension->id();
-  ApplicationMap::const_iterator found = applications_.find(id);
-  return (found == applications_.end()) ? NULL : found->second;
+  auto found = applications_.find(id);
+  return (found == applications_.end()) ? nullptr : found->second.get();
 }
 
 BackgroundApplicationListModel::Application*
 BackgroundApplicationListModel::FindApplication(
     const Extension* extension) {
   const std::string& id = extension->id();
-  ApplicationMap::iterator found = applications_.find(id);
-  return (found == applications_.end()) ? NULL : found->second;
+  auto found = applications_.find(id);
+  return (found == applications_.end()) ? nullptr : found->second.get();
 }
 
 const gfx::ImageSkia* BackgroundApplicationListModel::GetIcon(
@@ -238,7 +234,7 @@ const gfx::ImageSkia* BackgroundApplicationListModel::GetIcon(
   if (application)
     return application->icon_.get();
   AssociateApplicationData(extension);
-  return NULL;
+  return nullptr;
 }
 
 int BackgroundApplicationListModel::GetPosition(

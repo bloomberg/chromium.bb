@@ -17,9 +17,9 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/mac/security_wrappers.h"
@@ -47,10 +47,10 @@ class KeychainSearch {
   explicit KeychainSearch(const AppleKeychain& keychain);
   ~KeychainSearch();
 
-  // Sets up a keycahin search based on an non "null" (NULL for char*,
+  // Sets up a keychain search based on an non "null" (NULL for char*,
   // The appropriate "Any" entry for other types) arguments.
   //
-  // IMPORTANT: Any paramaters passed in *must* remain valid for as long as the
+  // IMPORTANT: Any parameters passed in *must* remain valid for as long as the
   // KeychainSearch object, since the search uses them by reference.
   void Init(const char* server,
             const UInt32* port,
@@ -325,7 +325,7 @@ PasswordForm::Scheme SchemeForAuthType(SecAuthenticationType auth_type) {
 }
 
 bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
-                                      const SecKeychainItemRef& keychain_item,
+                                      SecKeychainItemRef keychain_item,
                                       PasswordForm* form,
                                       bool extract_password_data) {
   DCHECK(form);
@@ -457,7 +457,7 @@ bool FillPasswordFormFromKeychainItem(const AppleKeychain& keychain,
 }
 
 bool HasChromeCreatorCode(const AppleKeychain& keychain,
-                          const SecKeychainItemRef& keychain_item) {
+                          SecKeychainItemRef keychain_item) {
   SecKeychainAttributeInfo attr_info;
   UInt32 tags[] = {kSecCreatorItemAttr};
   attr_info.count = arraysize(tags);
@@ -576,15 +576,14 @@ std::vector<ItemFormPair> ExtractAllKeychainItemAttributesIntoPasswordForms(
   MacKeychainPasswordFormAdapter keychain_adapter(&keychain);
   *keychain_items = keychain_adapter.GetAllPasswordFormKeychainItems();
   std::vector<ItemFormPair> item_form_pairs;
-  for (std::vector<SecKeychainItemRef>::iterator i = keychain_items->begin();
-       i != keychain_items->end(); ++i) {
-    PasswordForm* form_without_password = new PasswordForm();
+  for (const auto& keychain_item : *keychain_items) {
+    std::unique_ptr<PasswordForm> form_without_password =
+        base::MakeUnique<PasswordForm>();
     internal_keychain_helpers::FillPasswordFormFromKeychainItem(
-        keychain,
-        *i,
-        form_without_password,
+        keychain, keychain_item, form_without_password.get(),
         false);  // Load password attributes, but not password data.
-    item_form_pairs.push_back(std::make_pair(&(*i), form_without_password));
+    item_form_pairs.push_back(
+        std::make_pair(keychain_item, std::move(form_without_password)));
   }
   return item_form_pairs;
 }
@@ -625,8 +624,6 @@ void GetPasswordsForForms(const AppleKeychain& keychain,
       });
   database_forms->swap(unused_db_forms);
 
-  base::STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
-                                             item_form_pairs.end());
   for (SecKeychainItemRef item : keychain_items) {
     keychain.Free(item);
   }
@@ -699,7 +696,7 @@ ScopedVector<autofill::PasswordForm> ExtractPasswordsMergeableWithForm(
       // returned forms.
       std::unique_ptr<PasswordForm> form_with_password(new PasswordForm());
       FillPasswordFormFromKeychainItem(
-          keychain, *(i->first), form_with_password.get(),
+          keychain, i->first, form_with_password.get(),
           true);  // Load password attributes and data.
       // Do not include blacklisted items found in the keychain.
       if (!form_with_password->blacklisted_by_user)
@@ -745,10 +742,8 @@ bool MacKeychainPasswordFormAdapter::HasPasswordsMergeableWithForm(
   std::vector<SecKeychainItemRef> matches =
       MatchingKeychainItems(query_form.signon_realm, query_form.scheme,
                             NULL, username.c_str());
-  for (std::vector<SecKeychainItemRef>::iterator i = matches.begin();
-       i != matches.end(); ++i) {
-    keychain_->Free(*i);
-  }
+  for (SecKeychainItemRef item : matches)
+    keychain_->Free(item);
 
   return !matches.empty();
 }
@@ -880,11 +875,11 @@ SecKeychainItemRef MacKeychainPasswordFormAdapter::KeychainItemForForm(
   if (matches.empty()) {
     return NULL;
   }
+
   // Free all items after the first, since we won't be returning them.
-  for (std::vector<SecKeychainItemRef>::iterator i = matches.begin() + 1;
-       i != matches.end(); ++i) {
+  for (auto i = matches.begin() + 1; i != matches.end(); ++i)
     keychain_->Free(*i);
-  }
+
   return matches[0];
 }
 
@@ -942,7 +937,8 @@ SecAuthenticationType MacKeychainPasswordFormAdapter::AuthTypeForScheme(
 }
 
 bool MacKeychainPasswordFormAdapter::SetKeychainItemPassword(
-    const SecKeychainItemRef& keychain_item, const std::string& password) {
+    SecKeychainItemRef keychain_item,
+    const std::string& password) {
   OSStatus result = keychain_->ItemModifyAttributesAndData(keychain_item, NULL,
                                                            password.size(),
                                                            password.c_str());
@@ -950,7 +946,8 @@ bool MacKeychainPasswordFormAdapter::SetKeychainItemPassword(
 }
 
 bool MacKeychainPasswordFormAdapter::SetKeychainItemCreatorCode(
-    const SecKeychainItemRef& keychain_item, OSType creator_code) {
+    SecKeychainItemRef keychain_item,
+    OSType creator_code) {
   SecKeychainAttribute attr = { kSecCreatorItemAttr, sizeof(creator_code),
                                 &creator_code };
   SecKeychainAttributeList attrList = { 1, &attr };
@@ -1040,8 +1037,6 @@ PasswordStoreMac::MigrationResult PasswordStoreMac::ImportFromKeychain(
       DCHECK(removed);
     }
   }
-  base::STLDeleteContainerPairSecondPointers(item_form_pairs.begin(),
-                                             item_form_pairs.end());
   for (SecKeychainItemRef item : keychain_items)
     keychain->Free(item);
 

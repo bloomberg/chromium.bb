@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_COMMAND_UPDATER_H_
 #define CHROME_BROWSER_COMMAND_UPDATER_H_
 
+#include <memory>
+
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "ui/base/window_open_disposition.h"
@@ -75,8 +77,7 @@ class CommandUpdater {
   CommandUpdaterDelegate* delegate_;
 
   // This is a map of command IDs to states and observer lists
-  typedef base::hash_map<int, Command*> CommandMap;
-  CommandMap commands_;
+  base::hash_map<int, std::unique_ptr<Command>> commands_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandUpdater);
 };

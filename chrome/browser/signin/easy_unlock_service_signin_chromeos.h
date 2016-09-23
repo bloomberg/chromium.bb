@@ -131,7 +131,7 @@ class EasyUnlockServiceSignin
   AccountId account_id_;
 
   // Maps account ids to their fetched cryptohome key data.
-  std::map<AccountId, UserData*> user_data_;
+  std::map<AccountId, std::unique_ptr<UserData>> user_data_;
 
   // Whether failed attempts to load user data should be retried.
   // This is to handle case where cryptohome daemon is not started in time the

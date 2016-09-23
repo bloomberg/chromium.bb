@@ -11,7 +11,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
@@ -125,9 +125,6 @@ BrowserStatusMonitor::~BrowserStatusMonitor() {
       settings_window_observer_.get());
 
   browser_tab_strip_tracker_.StopObservingAndSendOnBrowserRemoved();
-
-  base::STLDeleteContainerPairSecondPointers(
-      webcontents_to_observer_map_.begin(), webcontents_to_observer_map_.end());
 }
 
 void BrowserStatusMonitor::UpdateAppItemState(
@@ -310,7 +307,7 @@ void BrowserStatusMonitor::AddWebContentsObserver(
   if (webcontents_to_observer_map_.find(contents) ==
           webcontents_to_observer_map_.end()) {
     webcontents_to_observer_map_[contents] =
-        new LocalWebContentsObserver(contents, this);
+        base::MakeUnique<LocalWebContentsObserver>(contents, this);
   }
 }
 
@@ -318,7 +315,6 @@ void BrowserStatusMonitor::RemoveWebContentsObserver(
     content::WebContents* contents) {
   DCHECK(webcontents_to_observer_map_.find(contents) !=
       webcontents_to_observer_map_.end());
-  delete webcontents_to_observer_map_[contents];
   webcontents_to_observer_map_.erase(contents);
 }
 
