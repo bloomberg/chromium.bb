@@ -5,13 +5,13 @@
 #ifndef SERVICES_UI_WS_PLATFORM_DISPLAY_DELEGATE_H_
 #define SERVICES_UI_WS_PLATFORM_DISPLAY_DELEGATE_H_
 
-#include "services/ui/ws/ids.h"
-
-namespace ui {
-class Event;
+namespace gfx {
+class Size;
 }
 
 namespace ui {
+
+class Event;
 
 namespace ws {
 
@@ -23,6 +23,10 @@ struct ViewportMetrics;
 /// and responses to changes in viewport size.
 class PlatformDisplayDelegate {
  public:
+  // Creates the root window for this display. The new root window will have
+  // |size| in DIP initially.
+  virtual void CreateRootWindow(const gfx::Size& size) = 0;
+
   // Returns the root window of this display.
   virtual ServerWindow* GetRootWindow() = 0;
 

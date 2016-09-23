@@ -6,16 +6,12 @@
 #define SERVICES_UI_WS_FRAME_GENERATOR_DELEGATE_H_
 
 #include "base/macros.h"
+#include "services/ui/ws/viewport_metrics.h"
 
 namespace ui {
 namespace ws {
 
 class ServerWindow;
-
-struct ViewportMetrics {
-  gfx::Rect bounds;
-  float device_scale_factor = 0.f;
-};
 
 class FrameGeneratorDelegate {
  public:

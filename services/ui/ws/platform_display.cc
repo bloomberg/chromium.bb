@@ -59,26 +59,33 @@ DefaultPlatformDisplay::DefaultPlatformDisplay(
 #if !defined(OS_ANDROID)
       cursor_loader_(ui::CursorLoader::Create()),
 #endif
-      frame_generator_(new FrameGenerator(this, init_params.surfaces_state)) {
-  metrics_.bounds = init_params.display_bounds;
+      frame_generator_(new FrameGenerator(this, init_params.surfaces_state)),
+      metrics_(init_params.metrics) {
 }
 
 void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
   delegate_ = delegate;
 
+  DCHECK(!metrics_.pixel_size.IsEmpty());
+
+  // TODO(kylechar): The origin here isn't right if any displays have
+  // scale_factor other than 1.0 but will prevent windows from being stacked.
+  gfx::Rect bounds(metrics_.bounds.origin(), metrics_.pixel_size);
 #if defined(OS_WIN)
-  platform_window_.reset(new ui::WinWindow(this, metrics_.bounds));
+  platform_window_.reset(new ui::WinWindow(this, bounds));
 #elif defined(USE_X11)
   platform_window_.reset(new ui::X11Window(this));
 #elif defined(OS_ANDROID)
   platform_window_.reset(new ui::PlatformWindowAndroid(this));
 #elif defined(USE_OZONE)
-  platform_window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-      this, metrics_.bounds);
+  platform_window_ =
+      ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);
 #else
   NOTREACHED() << "Unsupported platform";
 #endif
-  platform_window_->SetBounds(metrics_.bounds);
+  delegate_->CreateRootWindow(metrics_.bounds.size());
+
+  platform_window_->SetBounds(bounds);
   platform_window_->Show();
 }
 
@@ -178,20 +185,17 @@ void DefaultPlatformDisplay::OnGpuChannelEstablished(
 }
 
 void DefaultPlatformDisplay::UpdateMetrics(const gfx::Rect& bounds,
+                                           const gfx::Size& pixel_size,
                                            float device_scale_factor) {
-  if (display::Display::HasForceDeviceScaleFactor())
-    device_scale_factor = display::Display::GetForcedDeviceScaleFactor();
-
   // We don't care about the origin of the platform window, as that may not be
   // related to the origin of the display in our screen space.
-  if (metrics_.bounds.size() == bounds.size() &&
+  if (metrics_.bounds == bounds && metrics_.pixel_size == pixel_size &&
       metrics_.device_scale_factor == device_scale_factor)
     return;
 
-  // TODO(kylechar): If the window size is updated then we may need to update
-  // the origin for any other windows.
   ViewportMetrics old_metrics = metrics_;
-  metrics_.bounds.set_size(bounds.size());
+  metrics_.bounds = bounds;
+  metrics_.pixel_size = pixel_size;
   metrics_.device_scale_factor = device_scale_factor;
   delegate_->OnViewportMetricsChanged(old_metrics, metrics_);
 }
@@ -203,7 +207,12 @@ void DefaultPlatformDisplay::UpdateEventRootLocation(ui::LocatedEvent* event) {
 }
 
 void DefaultPlatformDisplay::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  UpdateMetrics(new_bounds, metrics_.device_scale_factor);
+  // TODO(kylechar): We're updating the bounds assuming that the device scale
+  // factor is 1 here. The correct thing to do is let PlatformSreen know the
+  // display size has changed and let it update the display.
+  gfx::Size pixel_size = new_bounds.size();
+  gfx::Rect bounds = gfx::Rect(metrics_.bounds.origin(), pixel_size);
+  UpdateMetrics(bounds, pixel_size, metrics_.device_scale_factor);
 }
 
 void DefaultPlatformDisplay::OnDamageRect(const gfx::Rect& damaged_region) {
@@ -271,7 +280,6 @@ void DefaultPlatformDisplay::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
     float device_scale_factor) {
   frame_generator_->OnAcceleratedWidgetAvailable(widget);
-  UpdateMetrics(metrics_.bounds, device_scale_factor);
 }
 
 void DefaultPlatformDisplay::OnAcceleratedWidgetDestroyed() {

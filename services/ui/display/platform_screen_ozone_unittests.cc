@@ -38,6 +38,8 @@ const int64_t kDefaultDisplayId = 1;
 struct DisplayState {
   int64_t id;
   gfx::Rect bounds;
+  gfx::Size size;
+  float device_scale_factor;
 };
 
 // Matchers that operate on DisplayState.
@@ -83,16 +85,22 @@ class TestPlatformScreenDelegate : public PlatformScreenDelegate {
   }
 
  private:
-  void OnDisplayAdded(int64_t id, const gfx::Rect& bounds) override {
-    added_.push_back({id, bounds});
+  void OnDisplayAdded(int64_t id,
+                      const gfx::Rect& bounds,
+                      const gfx::Size& pixel_size,
+                      float device_scale_factor) override {
+    added_.push_back({id, bounds, pixel_size, device_scale_factor});
   }
 
   void OnDisplayRemoved(int64_t id) override {
-    removed_.push_back({id, gfx::Rect()});
+    removed_.push_back({id, gfx::Rect(), gfx::Size(), 1.0f});
   }
 
-  void OnDisplayModified(int64_t id, const gfx::Rect& bounds) override {
-    modified_.push_back({id, bounds});
+  void OnDisplayModified(int64_t id,
+                         const gfx::Rect& bounds,
+                         const gfx::Size& pixel_size,
+                         float device_scale_factor) override {
+    modified_.push_back({id, bounds, pixel_size, device_scale_factor});
   }
 
   std::vector<DisplayState> added_;

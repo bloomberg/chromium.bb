@@ -84,7 +84,7 @@ void FrameGenerator::Draw() {
     return;
 
   const ViewportMetrics& metrics = delegate_->GetViewportMetrics();
-  const gfx::Rect output_rect(metrics.bounds.size());
+  const gfx::Rect output_rect(metrics.pixel_size);
   dirty_rect_.Intersect(output_rect);
   // TODO(fsamuel): We should add a trace for generating a top level frame.
   cc::CompositorFrame frame(GenerateCompositorFrame(output_rect));

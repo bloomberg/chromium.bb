@@ -9,6 +9,7 @@
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace display {
@@ -19,17 +20,25 @@ class PlatformScreen;
 // and/or virtual displays by PlatformScreen.
 class PlatformScreenDelegate {
  public:
-  // TODO(kylechar): We need to provide more than just the window bounds when
-  // displays are added or modified.
+  // Called when a display is added. |id| is the display id for the new display,
+  // |bounds| is the display origin and size in DIP, |pixel_size| is the size
+  // of the display in DDP and |device_scale_factor| is the output device pixel
+  // scale factor.
+  virtual void OnDisplayAdded(int64_t id,
+                              const gfx::Rect& bounds,
+                              const gfx::Size& pixel_size,
+                              float device_scale_factor) = 0;
 
-  // Called when a display is added. |bounds| is in DIP.
-  virtual void OnDisplayAdded(int64_t id, const gfx::Rect& bounds) = 0;
-
-  // Called when a display is removed.
+  // Called when a display is removed. |id| is the display id for the display
+  // that was removed.
   virtual void OnDisplayRemoved(int64_t id) = 0;
 
-  // Called when a display is modified. |bounds| is in DIP.
-  virtual void OnDisplayModified(int64_t id, const gfx::Rect& bounds) = 0;
+  // Called when a display is modified. See OnDisplayAdded() for parameter
+  // information.
+  virtual void OnDisplayModified(int64_t id,
+                                 const gfx::Rect& bounds,
+                                 const gfx::Size& pixel_size,
+                                 float device_scale_factor) = 0;
 
  protected:
   virtual ~PlatformScreenDelegate() {}

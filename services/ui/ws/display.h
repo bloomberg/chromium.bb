@@ -168,6 +168,7 @@ class Display : public PlatformDisplayDelegate,
       WindowManagerWindowTreeFactory* factory);
 
   // PlatformDisplayDelegate:
+  void CreateRootWindow(const gfx::Size& size) override;
   ServerWindow* GetRootWindow() override;
   bool IsInHighContrastMode() override;
   void OnEvent(const ui::Event& event) override;

@@ -47,12 +47,13 @@ class PlatformScreenOzone
   // TODO(kylechar): This struct is just temporary until we migrate
   // DisplayManager code out of ash so it can be used here.
   struct DisplayInfo {
-    DisplayInfo(int64_t new_id, const gfx::Rect& new_bounds)
-        : id(new_id), bounds(new_bounds) {}
-
-    int64_t id;
-    // The display bounds.
+    int64_t id = Display::kInvalidDisplayID;
+    // The display bounds in DIP.
     gfx::Rect bounds;
+    // Display size in DDP.
+    gfx::Size pixel_size;
+    // The display device pixel scale factor, either 1 or 2.
+    float device_scale_factor = 1.0f;
     // The display bounds have been modified and delegate should be updated.
     bool modified = false;
     // The display has been removed and delegate should be updated.
@@ -89,6 +90,9 @@ class PlatformScreenOzone
   // Returns an iterator to the cached display with |display_id| or an end
   // iterator if there is no display with that id.
   CachedDisplayIterator GetCachedDisplayIterator(int64_t display_id);
+
+  // Converts |snapshot| into a DisplayInfo.
+  DisplayInfo DisplayInfoFromSnapshot(const ui::DisplaySnapshot& snapshot);
 
   // ui::DisplayConfigurator::Observer:
   void OnDisplayModeChanged(

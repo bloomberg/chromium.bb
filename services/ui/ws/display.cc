@@ -285,6 +285,19 @@ void Display::CreateWindowManagerDisplayRootFromFactory(
       std::move(display_root_ptr));
 }
 
+void Display::CreateRootWindow(const gfx::Size& size) {
+  DCHECK(!root_);
+
+  root_.reset(window_server_->CreateServerWindow(
+      display_manager()->GetAndAdvanceNextRootId(),
+      ServerWindow::Properties()));
+  root_->SetBounds(gfx::Rect(size));
+  root_->SetVisible(true);
+  focus_controller_.reset(new FocusController(this, root_.get()));
+  focus_controller_->AddObserver(this);
+  InitWindowManagerDisplayRootsIfNecessary();
+}
+
 ServerWindow* Display::GetRootWindow() {
   return root_.get();
 }
@@ -311,23 +324,15 @@ void Display::OnNativeCaptureLost() {
 
 void Display::OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
                                        const ViewportMetrics& new_metrics) {
+  if (!root_)
+    return;
+
   gfx::Rect new_bounds(new_metrics.bounds.size());
-  if (!root_) {
-    root_.reset(window_server_->CreateServerWindow(
-        display_manager()->GetAndAdvanceNextRootId(),
-        ServerWindow::Properties()));
-    root_->SetBounds(new_bounds);
-    root_->SetVisible(true);
-    focus_controller_.reset(new FocusController(this, root_.get()));
-    focus_controller_->AddObserver(this);
-    InitWindowManagerDisplayRootsIfNecessary();
-  } else {
-    root_->SetBounds(new_bounds);
-    for (auto& pair : window_manager_display_root_map_)
-      pair.second->root()->SetBounds(new_bounds);
-  }
-  if (init_called_)
-    display_manager()->OnDisplayUpdate(this);
+  root_->SetBounds(new_bounds);
+  for (auto& pair : window_manager_display_root_map_)
+    pair.second->root()->SetBounds(new_bounds);
+
+  display_manager()->OnDisplayUpdate(this);
 }
 
 void Display::OnCompositorFrameDrawn() {

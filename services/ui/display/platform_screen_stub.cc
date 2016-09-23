@@ -11,12 +11,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/shell/public/cpp/interface_registry.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace display {
 namespace {
 
 const int64_t kDisplayId = 1;
+constexpr gfx::Size kDisplaySize(1024, 768);
 
 }  // namespace
 
@@ -30,7 +33,14 @@ PlatformScreenStub::PlatformScreenStub() : weak_ptr_factory_(this) {}
 PlatformScreenStub::~PlatformScreenStub() {}
 
 void PlatformScreenStub::FixedSizeScreenConfiguration() {
-  delegate_->OnDisplayAdded(kDisplayId, gfx::Rect(1024, 768));
+  float device_scale_factor = 1.0f;
+  if (Display::HasForceDeviceScaleFactor())
+    device_scale_factor = Display::GetForcedDeviceScaleFactor();
+
+  gfx::Size scaled_size =
+      gfx::ScaleToRoundedSize(kDisplaySize, 1.0f / device_scale_factor);
+  delegate_->OnDisplayAdded(kDisplayId, gfx::Rect(scaled_size), kDisplaySize,
+                            device_scale_factor);
 }
 
 void PlatformScreenStub::AddInterfaces(shell::InterfaceRegistry* registry) {}

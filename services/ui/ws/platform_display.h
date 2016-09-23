@@ -143,7 +143,9 @@ class DefaultPlatformDisplay : public PlatformDisplay,
       scoped_refptr<gpu::GpuChannelHost> gpu_channel) override;
 
  private:
-  void UpdateMetrics(const gfx::Rect& bounds, float device_scale_factor);
+  void UpdateMetrics(const gfx::Rect& bounds,
+                     const gfx::Size& pixel_size,
+                     float device_scale_factor);
 
   // Update the root_location of located events to be relative to the origin
   // of this display. For example, if the origin of this display is (1800, 0)

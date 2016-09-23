@@ -15,6 +15,10 @@ namespace ws {
 WindowTreeHostFactory::WindowTreeHostFactory(WindowServer* window_server,
                                              const UserId& user_id)
     : window_server_(window_server), user_id_(user_id) {
+  platform_display_init_params_.metrics.bounds.set_width(1024);
+  platform_display_init_params_.metrics.bounds.set_height(768);
+  platform_display_init_params_.metrics.pixel_size.SetSize(1024, 768);
+  platform_display_init_params_.metrics.device_scale_factor = 1.0f;
   platform_display_init_params_.surfaces_state =
       window_server_->GetSurfacesState();
 }

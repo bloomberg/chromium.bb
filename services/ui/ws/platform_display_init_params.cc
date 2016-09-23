@@ -4,17 +4,15 @@
 
 #include "services/ui/ws/platform_display_init_params.h"
 
-#include "services/ui/display/platform_screen.h"
 #include "services/ui/surfaces/surfaces_state.h"
+#include "ui/display/display.h"
 
 namespace ui {
 namespace ws {
 
 PlatformDisplayInitParams::PlatformDisplayInitParams()
-    : display_bounds(gfx::Rect(0, 0, 1024, 768)), display_id(1) {}
+    : display_id(display::Display::kInvalidDisplayID) {}
 
-PlatformDisplayInitParams::PlatformDisplayInitParams(
-    const PlatformDisplayInitParams& other) = default;
 PlatformDisplayInitParams::~PlatformDisplayInitParams() {}
 
 }  // namespace ws

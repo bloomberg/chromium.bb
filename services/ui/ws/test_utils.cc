@@ -41,10 +41,7 @@ class TestPlatformDisplay : public PlatformDisplay {
 
   // PlatformDisplay:
   void Init(PlatformDisplayDelegate* delegate) override {
-    // It is necessary to tell the delegate about the ViewportMetrics to make
-    // sure that the DisplayBinding is correctly initialized (and a root-window
-    // is created).
-    delegate->OnViewportMetricsChanged(ViewportMetrics(), display_metrics_);
+    delegate->CreateRootWindow(display_metrics_.bounds.size());
   }
   int64_t GetId() const override { return id_; }
   void SchedulePaint(const ServerWindow* window,

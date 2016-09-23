@@ -5,6 +5,7 @@
 #include "services/ui/ws/display_manager.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "services/ui/display/platform_screen.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
@@ -166,10 +167,16 @@ void DisplayManager::OnActiveUserIdChanged(const UserId& previously_active_id,
     current_window_manager_state->Activate(mouse_location_on_screen);
 }
 
-void DisplayManager::OnDisplayAdded(int64_t id, const gfx::Rect& bounds) {
+void DisplayManager::OnDisplayAdded(int64_t id,
+                                    const gfx::Rect& bounds,
+                                    const gfx::Size& pixel_size,
+                                    float scale_factor) {
+  TRACE_EVENT1("mus-ws", "OnDisplayAdded", "id", id);
   PlatformDisplayInitParams params;
-  params.display_bounds = bounds;
   params.display_id = id;
+  params.metrics.bounds = bounds;
+  params.metrics.pixel_size = pixel_size;
+  params.metrics.device_scale_factor = scale_factor;
   params.surfaces_state = window_server_->GetSurfacesState();
 
   ws::Display* display = new ws::Display(window_server_, params);
@@ -179,12 +186,16 @@ void DisplayManager::OnDisplayAdded(int64_t id, const gfx::Rect& bounds) {
 }
 
 void DisplayManager::OnDisplayRemoved(int64_t id) {
+  TRACE_EVENT1("mus-ws", "OnDisplayRemoved", "id", id);
   Display* display = GetDisplayById(id);
   if (display)
     DestroyDisplay(display);
 }
 
-void DisplayManager::OnDisplayModified(int64_t id, const gfx::Rect& bounds) {
+void DisplayManager::OnDisplayModified(int64_t id,
+                                       const gfx::Rect& bounds,
+                                       const gfx::Size& pixel_size,
+                                       float scale_factor) {
   // TODO(kylechar): Implement.
   NOTREACHED();
 }

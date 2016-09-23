@@ -25,6 +25,28 @@ namespace {
 // Needed for DisplayConfigurator::ForceInitialConfigure.
 const SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
+const float kInchInMm = 25.4f;
+
+float ComputeDisplayDPI(const gfx::Size& pixel_size,
+                        const gfx::Size& physical_size) {
+  DCHECK(!physical_size.IsEmpty());
+  return (pixel_size.width() / static_cast<float>(physical_size.width())) *
+         kInchInMm;
+}
+
+// Finds the device scale factor based on the display DPI. Will use forced
+// device scale factor if provided via command line.
+float FindDeviceScaleFactor(float dpi) {
+  if (Display::HasForceDeviceScaleFactor())
+    return Display::GetForcedDeviceScaleFactor();
+
+  // TODO(kylechar): If dpi > 150 then ash uses 1.25 now. Ignoring that for now.
+  if (dpi > 200.0)
+    return 2.0f;
+  else
+    return 1.0f;
+}
+
 }  // namespace
 
 // static
@@ -86,9 +108,9 @@ void PlatformScreenOzone::ToggleVirtualDisplay() {
     return;
 
   if (cached_displays_.size() == 1) {
-    const gfx::Size& display_size = cached_displays_[0].bounds.size();
+    const gfx::Size& pixel_size = cached_displays_[0].pixel_size;
     wait_for_display_config_update_ =
-        fake_display_controller_->AddDisplay(display_size) !=
+        fake_display_controller_->AddDisplay(pixel_size) !=
         Display::kInvalidDisplayID;
   } else if (cached_displays_.size() > 1) {
     wait_for_display_config_update_ =
@@ -110,12 +132,12 @@ void PlatformScreenOzone::ProcessRemovedDisplays(
         current_ids.end()) {
       display.removed = true;
       if (primary_display_id_ == display.id)
-        primary_display_id_ = display::Display::kInvalidDisplayID;
+        primary_display_id_ = Display::kInvalidDisplayID;
     }
   }
 
   // If the primary display was removed find a new primary display id.
-  if (primary_display_id_ == display::Display::kInvalidDisplayID) {
+  if (primary_display_id_ == Display::kInvalidDisplayID) {
     for (const DisplayInfo& display : cached_displays_) {
       if (!display.removed) {
         primary_display_id_ = display.id;
@@ -131,9 +153,11 @@ void PlatformScreenOzone::ProcessModifiedDisplays(
     auto iter = GetCachedDisplayIterator(snapshot->display_id());
     if (iter != cached_displays_.end()) {
       DisplayInfo& display_info = *iter;
-      const ui::DisplayMode* current_mode = snapshot->current_mode();
-      if (current_mode->size() != display_info.bounds.size()) {
-        display_info.bounds.set_size(current_mode->size());
+      DisplayInfo new_info = DisplayInfoFromSnapshot(*snapshot);
+
+      if (new_info.bounds.size() != display_info.bounds.size() ||
+          new_info.device_scale_factor != display_info.device_scale_factor) {
+        display_info = new_info;
         display_info.modified = true;
       }
     }
@@ -162,7 +186,9 @@ void PlatformScreenOzone::UpdateCachedDisplays() {
       // Check if the window bounds have changed and update delegate.
       if (display_info.modified) {
         display_info.modified = false;
-        delegate_->OnDisplayModified(display_info.id, display_info.bounds);
+        delegate_->OnDisplayModified(display_info.id, display_info.bounds,
+                                     display_info.pixel_size,
+                                     display_info.device_scale_factor);
       }
       ++iter;
     }
@@ -178,18 +204,19 @@ void PlatformScreenOzone::AddNewDisplays(
     if (GetCachedDisplayIterator(id) != cached_displays_.end())
       continue;
 
-    const ui::DisplayMode* current_mode = snapshot->current_mode();
-    gfx::Rect bounds(next_display_origin_, current_mode->size());
-
-    // Move the origin so that next display is to the right of current display.
-    next_display_origin_.Offset(current_mode->size().width(), 0);
-
     // If we have no primary display then this one should be it.
-    if (primary_display_id_ == display::Display::kInvalidDisplayID)
+    if (primary_display_id_ == Display::kInvalidDisplayID)
       primary_display_id_ = id;
 
-    cached_displays_.push_back(DisplayInfo(id, bounds));
-    delegate_->OnDisplayAdded(id, bounds);
+    DisplayInfo display_info = DisplayInfoFromSnapshot(*snapshot);
+
+    // Move the origin so that next display is to the right of current display.
+    next_display_origin_.Offset(display_info.bounds.width(), 0);
+
+    cached_displays_.push_back(display_info);
+    delegate_->OnDisplayAdded(display_info.id, display_info.bounds,
+                              display_info.pixel_size,
+                              display_info.device_scale_factor);
   }
 }
 
@@ -199,6 +226,24 @@ PlatformScreenOzone::GetCachedDisplayIterator(int64_t display_id) {
                       [display_id](const DisplayInfo& display_info) {
                         return display_info.id == display_id;
                       });
+}
+
+PlatformScreenOzone::DisplayInfo PlatformScreenOzone::DisplayInfoFromSnapshot(
+    const ui::DisplaySnapshot& snapshot) {
+  const ui::DisplayMode* current_mode = snapshot.current_mode();
+  DCHECK(current_mode);
+
+  DisplayInfo display_info;
+  display_info.id = snapshot.display_id();
+  display_info.pixel_size = current_mode->size();
+  display_info.device_scale_factor = FindDeviceScaleFactor(
+      ComputeDisplayDPI(current_mode->size(), snapshot.physical_size()));
+  // Get DIP size based on device scale factor. We are assuming the
+  // ui scale factor is always 1.0 here for now.
+  gfx::Size scaled_size = gfx::ScaleToRoundedSize(
+      current_mode->size(), 1.0f / display_info.device_scale_factor);
+  display_info.bounds = gfx::Rect(next_display_origin_, scaled_size);
+  return display_info;
 }
 
 void PlatformScreenOzone::OnDisplayModeChanged(
