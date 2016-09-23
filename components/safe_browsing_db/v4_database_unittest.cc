@@ -105,12 +105,14 @@ class V4DatabaseTest : public PlatformTest {
   }
 
   void SetupInfoMapAndExpectedState() {
-    store_id_file_names_.emplace_back(win_malware_id_, "win_url_malware");
+    list_infos_.emplace_back(true, "win_url_malware", win_malware_id_,
+                             SB_THREAT_TYPE_URL_MALWARE);
     expected_identifiers_.push_back(win_malware_id_);
     expected_store_paths_.push_back(
         database_dirname_.AppendASCII("win_url_malware.fake"));
 
-    store_id_file_names_.emplace_back(linux_malware_id_, "linux_url_malware");
+    list_infos_.emplace_back(true, "linux_url_malware", linux_malware_id_,
+                             SB_THREAT_TYPE_URL_MALWARE);
     expected_identifiers_.push_back(linux_malware_id_);
     expected_store_paths_.push_back(
         database_dirname_.AppendASCII("linux_url_malware.fake"));
@@ -151,9 +153,9 @@ class V4DatabaseTest : public PlatformTest {
     for (const auto& store_state_iter : store_state_map) {
       ListIdentifier identifier = store_state_iter.first;
       ListUpdateResponse* lur = new ListUpdateResponse;
-      lur->set_platform_type(identifier.platform_type);
-      lur->set_threat_entry_type(identifier.threat_entry_type);
-      lur->set_threat_type(identifier.threat_type);
+      lur->set_platform_type(identifier.platform_type());
+      lur->set_threat_entry_type(identifier.threat_entry_type());
+      lur->set_threat_type(identifier.threat_type());
       lur->set_new_client_state(store_state_iter.second);
       if (use_valid_response_type) {
         lur->set_response_type(ListUpdateResponse::FULL_UPDATE);
@@ -200,7 +202,7 @@ class V4DatabaseTest : public PlatformTest {
   content::TestBrowserThreadBundle thread_bundle_;
   bool created_but_not_called_back_;
   bool created_and_called_back_;
-  StoreIdAndFileNames store_id_file_names_;
+  ListInfos list_infos_;
   std::vector<ListIdentifier> expected_identifiers_;
   std::vector<base::FilePath> expected_store_paths_;
   bool expected_resets_successfully_;
@@ -217,7 +219,7 @@ TEST_F(V4DatabaseTest, TestSetupDatabaseWithFakeStores) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -231,7 +233,7 @@ TEST_F(V4DatabaseTest, TestSetupDatabaseWithFakeStoresFailsReset) {
   expected_resets_successfully_ = false;
   RegisterFactory(!expected_resets_successfully_);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -245,7 +247,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithNewStates) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -276,7 +278,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithNoNewState) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -307,7 +309,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithEmptyUpdate) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -339,7 +341,7 @@ TEST_F(V4DatabaseTest, TestApplyUpdateWithInvalidUpdate) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -370,7 +372,7 @@ TEST_F(V4DatabaseTest, TestAllStoresMatchFullHash) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_, hash_prefix_matches);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -397,7 +399,7 @@ TEST_F(V4DatabaseTest, TestNoStoreMatchesFullHash) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_, hash_prefix_matches);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -420,7 +422,7 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHash) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_, hash_prefix_matches);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();
@@ -451,7 +453,7 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHashBecauseOfStoresToMatch) {
   expected_resets_successfully_ = true;
   RegisterFactory(!expected_resets_successfully_, hash_prefix_matches);
 
-  V4Database::Create(task_runner_, database_dirname_, store_id_file_names_,
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
                      callback_db_ready_);
   created_but_not_called_back_ = true;
   task_runner_->RunPendingTasks();

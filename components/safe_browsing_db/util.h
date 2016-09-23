@@ -16,46 +16,11 @@
 
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 
 class GURL;
 
 namespace safe_browsing {
-
-// Different types of threats that SafeBrowsing protects against.
-enum SBThreatType {
-  // No threat at all.
-  SB_THREAT_TYPE_SAFE,
-
-  // The URL is being used for phishing.
-  SB_THREAT_TYPE_URL_PHISHING,
-
-  // The URL hosts malware.
-  SB_THREAT_TYPE_URL_MALWARE,
-
-  // The URL hosts unwanted programs.
-  SB_THREAT_TYPE_URL_UNWANTED,
-
-  // The download URL is malware.
-  SB_THREAT_TYPE_BINARY_MALWARE_URL,
-
-  // Url detected by the client-side phishing model.  Note that unlike the
-  // above values, this does not correspond to a downloaded list.
-  SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
-
-  // The Chrome extension or app (given by its ID) is malware.
-  SB_THREAT_TYPE_EXTENSION,
-
-  // Url detected by the client-side malware IP list. This IP list is part
-  // of the client side detection model.
-  SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
-
-  // Url leads to a blacklisted resource script. Note that no warnings should be
-  // shown on this threat type, but an incident report might be sent.
-  SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
-
-  // Url abuses a permission API.
-  SB_THREAT_TYPE_API_ABUSE,
-};
 
 // Metadata that indicates what kind of URL match this is.
 enum class ThreatPatternType {

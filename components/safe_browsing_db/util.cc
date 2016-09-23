@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
-#include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "crypto/sha2.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"

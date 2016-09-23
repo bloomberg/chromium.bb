@@ -30,27 +30,39 @@ typedef base::Callback<void()> DatabaseUpdatedCallback;
 // storage on disk.
 typedef base::hash_map<ListIdentifier, std::unique_ptr<V4Store>> StoreMap;
 
-// TODO(vakh): Find the canonical place where these are defined and update the
-// comment to point to that place.
-struct StoreIdAndFileName {
-  // The list being read from/written to the disk.
-  ListIdentifier list_id;
+// Associates metadata for a list with its ListIdentifier.
+struct ListInfo {
+  ListInfo(const bool fetch_updates,
+           const std::string& filename,
+           const ListIdentifier& list_id,
+           const SBThreatType sb_threat_type);
+  ~ListInfo();
+
+  ListIdentifier list_id() const { return list_id_; }
+  std::string filename() const { return filename_; }
+  SBThreatType sb_threat_type() const { return sb_threat_type_; }
+  bool fetch_updates() const { return fetch_updates_; }
+
+ private:
+  // Whether to fetch and store updates for this list.
+  bool fetch_updates_;
 
   // The ASCII name of the file on disk. This file is created inside the
   // user-data directory. For instance, the ListIdentifier could be for URL
   // expressions for UwS on Windows platform, and the corresponding file on disk
   // could be named: "UrlUws.store"
-  std::string filename;
+  std::string filename_;
 
-  StoreIdAndFileName(const ListIdentifier& list_id,
-                     const std::string& filename);
-  ~StoreIdAndFileName();
+  // The list being read from/written to the disk.
+  ListIdentifier list_id_;
 
- private:
-  StoreIdAndFileName();
+  // The threat type enum value for this store.
+  SBThreatType sb_threat_type_;
+
+  ListInfo();
 };
 
-using StoreIdAndFileNames = std::vector<StoreIdAndFileName>;
+typedef std::vector<ListInfo> ListInfos;
 
 // Factory for creating V4Database. Tests implement this factory to create fake
 // databases for testing.
@@ -60,7 +72,7 @@ class V4DatabaseFactory {
   virtual V4Database* CreateV4Database(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_dir_path,
-      const StoreIdAndFileNames& store_id_file_names) = 0;
+      const ListInfos& list_infos) = 0;
 };
 
 // The on-disk databases are shared among all profiles, as it doesn't contain
@@ -79,7 +91,7 @@ class V4Database {
   static void Create(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_path,
-      const StoreIdAndFileNames& store_id_file_names,
+      const ListInfos& list_infos,
       NewDatabaseReadyCallback callback);
 
   // Destroys the provided v4_database on its task_runner since this may be a
@@ -133,7 +145,7 @@ class V4Database {
   static void CreateOnTaskRunner(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       const base::FilePath& base_path,
-      const StoreIdAndFileNames& store_id_file_names,
+      const ListInfos& list_infos,
       const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
       NewDatabaseReadyCallback callback);
 

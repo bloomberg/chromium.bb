@@ -149,15 +149,15 @@ TEST_F(V4LocalDatabaseManagerTest, TestGetSeverestThreatTypeAndMetadata) {
   SBThreatType result_threat_type;
   ThreatMetadata metadata;
 
-  V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(&result_threat_type,
-                                                           &metadata, fhis);
+  v4_local_database_manager_->GetSeverestThreatTypeAndMetadata(
+      &result_threat_type, &metadata, fhis);
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
   EXPECT_EQ("malware_popid", metadata.population_id);
 
   // Reversing the list has no effect.
   std::reverse(std::begin(fhis), std::end(fhis));
-  V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(&result_threat_type,
-                                                           &metadata, fhis);
+  v4_local_database_manager_->GetSeverestThreatTypeAndMetadata(
+      &result_threat_type, &metadata, fhis);
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
   EXPECT_EQ("malware_popid", metadata.population_id);
 }

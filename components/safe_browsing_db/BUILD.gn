@@ -154,8 +154,10 @@ static_library("util") {
     "util.cc",
     "util.h",
   ]
-  deps = [
+  public_deps = [
     ":v4_protocol_manager_util",
+  ]
+  deps = [
     "//base",
     "//crypto",
     "//net",
@@ -226,8 +228,10 @@ source_set("v4_protocol_manager_util") {
     "v4_protocol_manager_util.cc",
     "v4_protocol_manager_util.h",
   ]
-  deps = [
+  public_deps = [
     ":safebrowsing_proto",
+  ]
+  deps = [
     "//base",
     "//net",
     "//url",

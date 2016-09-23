@@ -63,6 +63,43 @@ struct V4ProtocolConfig {
   ~V4ProtocolConfig();
 };
 
+// Different types of threats that SafeBrowsing protects against. This is the
+// type that's returned to the clients of SafeBrowsing in Chromium.
+enum SBThreatType {
+  // No threat at all.
+  SB_THREAT_TYPE_SAFE,
+
+  // The URL is being used for phishing.
+  SB_THREAT_TYPE_URL_PHISHING,
+
+  // The URL hosts malware.
+  SB_THREAT_TYPE_URL_MALWARE,
+
+  // The URL hosts unwanted programs.
+  SB_THREAT_TYPE_URL_UNWANTED,
+
+  // The download URL is malware.
+  SB_THREAT_TYPE_BINARY_MALWARE_URL,
+
+  // Url detected by the client-side phishing model.  Note that unlike the
+  // above values, this does not correspond to a downloaded list.
+  SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+
+  // The Chrome extension or app (given by its ID) is malware.
+  SB_THREAT_TYPE_EXTENSION,
+
+  // Url detected by the client-side malware IP list. This IP list is part
+  // of the client side detection model.
+  SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
+
+  // Url leads to a blacklisted resource script. Note that no warnings should be
+  // shown on this threat type, but an incident report might be sent.
+  SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
+
+  // Url abuses a permission API.
+  SB_THREAT_TYPE_API_ABUSE,
+};
+
 // The information required to uniquely identify each list the client is
 // interested in maintaining and downloading from the SafeBrowsing servers.
 // For example, for digests of Malware binaries on Windows:
@@ -71,10 +108,6 @@ struct V4ProtocolConfig {
 // threat_type = MALWARE
 struct ListIdentifier {
  public:
-  PlatformType platform_type;
-  ThreatEntryType threat_entry_type;
-  ThreatType threat_type;
-
   ListIdentifier(PlatformType, ThreatEntryType, ThreatType);
   explicit ListIdentifier(const ListUpdateResponse&);
 
@@ -82,7 +115,15 @@ struct ListIdentifier {
   bool operator!=(const ListIdentifier& other) const;
   size_t hash() const;
 
+  PlatformType platform_type() const { return platform_type_; }
+  ThreatEntryType threat_entry_type() const { return threat_entry_type_; }
+  ThreatType threat_type() const { return threat_type_; }
+
  private:
+  PlatformType platform_type_;
+  ThreatEntryType threat_entry_type_;
+  ThreatType threat_type_;
+
   ListIdentifier();
 };
 

@@ -78,9 +78,9 @@ class SafeBrowsingDatabaseManagerTest : public testing::Test {
     FindFullHashesResponse response;
     response.mutable_negative_cache_duration()->set_seconds(600);
     ThreatMatch* m = response.add_matches();
-    m->set_platform_type(list_id.platform_type);
-    m->set_threat_entry_type(list_id.threat_entry_type);
-    m->set_threat_type(list_id.threat_type);
+    m->set_platform_type(list_id.platform_type());
+    m->set_threat_entry_type(list_id.threat_entry_type());
+    m->set_threat_type(list_id.threat_type());
     m->mutable_threat()->set_hash(full_hash);
     m->mutable_cache_duration()->set_seconds(300);
 

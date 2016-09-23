@@ -23,35 +23,19 @@ namespace {
 const ThreatSeverity kLeastSeverity =
     std::numeric_limits<ThreatSeverity>::max();
 
-// TODO(vakh): Implement this to populate the vector appopriately.
-// Filed as http://crbug.com/608075
-// Any stores added/removed to/from here likely need an update in
-// GetSBThreatTypeForList and GetThreatSeverity.
-// TODO(vakh): Add a compile-time check or DCHECK to enforce this.
-StoreIdAndFileNames GetStoreIdAndFileNames() {
-  return StoreIdAndFileNames(
-      {StoreIdAndFileName(GetUrlMalwareId(), "UrlMalware.store"),
-       StoreIdAndFileName(GetUrlSocEngId(), "UrlSoceng.store")});
-}
-
-// Returns the SBThreatType corresponding to a given SafeBrowsing list.
-SBThreatType GetSBThreatTypeForList(const ListIdentifier& list_id) {
-  if (list_id == GetChromeUrlApiId()) {
-    return SB_THREAT_TYPE_API_ABUSE;
-  } else if (list_id == GetUrlMalwareId()) {
-    return SB_THREAT_TYPE_URL_MALWARE;
-  } else if (list_id == GetUrlSocEngId()) {
-    return SB_THREAT_TYPE_URL_PHISHING;
-  } else {
-    NOTREACHED() << "Unknown list encountered in GetSBThreatTypeForList";
-    return SB_THREAT_TYPE_SAFE;
-  }
+ListInfos GetListInfos() {
+  return ListInfos(
+      {ListInfo(true, "UrlMalware.store", GetUrlMalwareId(),
+                SB_THREAT_TYPE_URL_MALWARE),
+       ListInfo(true, "UrlSoceng.store", GetUrlSocEngId(),
+                SB_THREAT_TYPE_URL_PHISHING),
+       ListInfo(false, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE)});
 }
 
 // Returns the severity information about a given SafeBrowsing list. The lowest
 // value is 0, which represents the most severe list.
 ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
-  switch (list_id.threat_type) {
+  switch (list_id.threat_type()) {
     case MALWARE_THREAT:
     case SOCIAL_ENGINEERING_PUBLIC:
       return 0;
@@ -77,11 +61,9 @@ V4LocalDatabaseManager::PendingCheck::PendingCheck(
 V4LocalDatabaseManager::PendingCheck::~PendingCheck() {}
 
 V4LocalDatabaseManager::V4LocalDatabaseManager(const base::FilePath& base_path)
-    : base_path_(base_path),
-      enabled_(false),
-      store_id_file_names_(GetStoreIdAndFileNames()) {
+    : base_path_(base_path), enabled_(false), list_infos_(GetListInfos()) {
   DCHECK(!base_path_.empty());
-  DCHECK(!store_id_file_names_.empty());
+  DCHECK(!list_infos_.empty());
 
   DVLOG(1) << "V4LocalDatabaseManager::V4LocalDatabaseManager: "
            << "base_path_: " << base_path_.AsUTF8Unsafe();
@@ -220,12 +202,12 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
           base::MakeUnique<PendingCheck>(
               client, ClientCallbackType::CHECK_BROWSE_URL, url);
 
+      pending_clients_.insert(client);
+
       v4_get_hash_protocol_manager_->GetFullHashes(
           full_hash_to_store_and_hash_prefixes,
           base::Bind(&V4LocalDatabaseManager::OnFullHashResponse,
                      base::Unretained(this), base::Passed(&pending_check)));
-
-      pending_clients_.insert(client);
 
       return false;
     }
@@ -236,7 +218,6 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
   }
 }
 
-// static
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
     SBThreatType* result_threat_type,
     ThreatMetadata* metadata,
@@ -271,16 +252,10 @@ void V4LocalDatabaseManager::OnFullHashResponse(
     return;
   }
 
-  if (full_hash_infos.empty()) {
-    // The resource is not known to be unsafe. Respond right away.
-    RespondToClient(std::move(pending_check));
-    return;
-  }
-
+  // Find out the most severe threat, if any, to report to the client.
   GetSeverestThreatTypeAndMetadata(&pending_check->result_threat_type,
                                    &pending_check->url_metadata,
                                    full_hash_infos);
-
   RespondToClient(std::move(pending_check));
   pending_clients_.erase(it);
 }
@@ -331,7 +306,7 @@ void V4LocalDatabaseManager::SetupUpdateProtocolManager(
 
 void V4LocalDatabaseManager::SetupDatabase() {
   DCHECK(!base_path_.empty());
-  DCHECK(!store_id_file_names_.empty());
+  DCHECK(!list_infos_.empty());
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Only get a new task runner if there isn't one already. If the service has
@@ -347,8 +322,7 @@ void V4LocalDatabaseManager::SetupDatabase() {
   // has been created, swap it out on the IO thread.
   NewDatabaseReadyCallback db_ready_callback = base::Bind(
       &V4LocalDatabaseManager::DatabaseReady, base::Unretained(this));
-  V4Database::Create(task_runner_, base_path_, store_id_file_names_,
-                     db_ready_callback);
+  V4Database::Create(task_runner_, base_path_, list_infos_, db_ready_callback);
 }
 
 void V4LocalDatabaseManager::DatabaseReady(
@@ -404,11 +378,22 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
   }
 }
 
+// Returns the SBThreatType corresponding to a given SafeBrowsing list.
+SBThreatType V4LocalDatabaseManager::GetSBThreatTypeForList(
+    const ListIdentifier& list_id) {
+  auto it = std::find_if(
+      std::begin(list_infos_), std::end(list_infos_),
+      [&list_id](ListInfo const& li) { return li.list_id() == list_id; });
+  DCHECK(list_infos_.end() != it);
+  DCHECK_NE(SB_THREAT_TYPE_SAFE, it->sb_threat_type());
+  return it->sb_threat_type();
+}
+
 std::unordered_set<ListIdentifier>
 V4LocalDatabaseManager::GetStoresForFullHashRequests() {
   std::unordered_set<ListIdentifier> stores_for_full_hash;
-  for (auto it : store_id_file_names_) {
-    stores_for_full_hash.insert(it.list_id);
+  for (auto it : list_infos_) {
+    stores_for_full_hash.insert(it.list_id());
   }
   return stores_for_full_hash;
 }

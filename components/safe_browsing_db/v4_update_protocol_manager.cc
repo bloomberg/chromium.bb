@@ -201,10 +201,10 @@ std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto() {
     const auto& list_to_update = entry.first;
     const auto& state = entry.second;
     ListUpdateRequest* list_update_request = request.add_list_update_requests();
-    list_update_request->set_platform_type(list_to_update.platform_type);
+    list_update_request->set_platform_type(list_to_update.platform_type());
     list_update_request->set_threat_entry_type(
-        list_to_update.threat_entry_type);
-    list_update_request->set_threat_type(list_to_update.threat_type);
+        list_to_update.threat_entry_type());
+    list_update_request->set_threat_type(list_to_update.threat_type());
 
     if (!state.empty()) {
       list_update_request->set_state(state);

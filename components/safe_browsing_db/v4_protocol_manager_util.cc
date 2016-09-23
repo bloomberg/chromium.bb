@@ -62,9 +62,9 @@ std::string Escape(const std::string& url) {
 }  // namespace
 
 std::ostream& operator<<(std::ostream& os, const ListIdentifier& id) {
-  os << "{hash: " << id.hash() << "; platform_type: " << id.platform_type
-     << "; threat_entry_type: " << id.threat_entry_type
-     << "; threat_type: " << id.threat_type << "}";
+  os << "{hash: " << id.hash() << "; platform_type: " << id.platform_type()
+     << "; threat_entry_type: " << id.threat_entry_type()
+     << "; threat_type: " << id.threat_type() << "}";
   return os;
 }
 
@@ -123,9 +123,9 @@ size_t StoreAndHashPrefix::hash() const {
 }
 
 bool ListIdentifier::operator==(const ListIdentifier& other) const {
-  return platform_type == other.platform_type &&
-         threat_entry_type == other.threat_entry_type &&
-         threat_type == other.threat_type;
+  return platform_type_ == other.platform_type_ &&
+         threat_entry_type_ == other.threat_entry_type_ &&
+         threat_type_ == other.threat_type_;
 }
 
 bool ListIdentifier::operator!=(const ListIdentifier& other) const {
@@ -133,9 +133,9 @@ bool ListIdentifier::operator!=(const ListIdentifier& other) const {
 }
 
 size_t ListIdentifier::hash() const {
-  std::size_t first = std::hash<unsigned int>()(platform_type);
-  std::size_t second = std::hash<unsigned int>()(threat_entry_type);
-  std::size_t third = std::hash<unsigned int>()(threat_type);
+  std::size_t first = std::hash<unsigned int>()(platform_type_);
+  std::size_t second = std::hash<unsigned int>()(threat_entry_type_);
+  std::size_t third = std::hash<unsigned int>()(threat_type_);
 
   std::size_t interim = base::HashInts(first, second);
   return base::HashInts(interim, third);
@@ -146,9 +146,9 @@ ListIdentifier::ListIdentifier() {}
 ListIdentifier::ListIdentifier(PlatformType platform_type,
                                ThreatEntryType threat_entry_type,
                                ThreatType threat_type)
-    : platform_type(platform_type),
-      threat_entry_type(threat_entry_type),
-      threat_type(threat_type) {
+    : platform_type_(platform_type),
+      threat_entry_type_(threat_entry_type),
+      threat_type_(threat_type) {
   DCHECK(PlatformType_IsValid(platform_type));
   DCHECK(ThreatEntryType_IsValid(threat_entry_type));
   DCHECK(ThreatType_IsValid(threat_type));

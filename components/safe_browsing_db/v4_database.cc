@@ -23,24 +23,24 @@ V4StoreFactory* V4Database::factory_ = NULL;
 void V4Database::Create(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::FilePath& base_path,
-    const StoreIdAndFileNames& store_id_file_names,
+    const ListInfos& list_infos,
     NewDatabaseReadyCallback new_db_callback) {
   DCHECK(base_path.IsAbsolute());
-  DCHECK(!store_id_file_names.empty());
+  DCHECK(!list_infos.empty());
 
   const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner =
       base::MessageLoop::current()->task_runner();
   db_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&V4Database::CreateOnTaskRunner, db_task_runner, base_path,
-                 store_id_file_names, callback_task_runner, new_db_callback));
+                 list_infos, callback_task_runner, new_db_callback));
 }
 
 // static
 void V4Database::CreateOnTaskRunner(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::FilePath& base_path,
-    const StoreIdAndFileNames& store_id_file_names,
+    const ListInfos& list_infos,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
     NewDatabaseReadyCallback new_db_callback) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());
@@ -55,9 +55,14 @@ void V4Database::CreateOnTaskRunner(
   }
 
   std::unique_ptr<StoreMap> store_map = base::MakeUnique<StoreMap>();
-  for (const auto& it : store_id_file_names) {
-    const base::FilePath store_path = base_path.AppendASCII(it.filename);
-    (*store_map)[it.list_id].reset(
+  for (const auto& it : list_infos) {
+    if (!it.fetch_updates()) {
+      // This list doesn't need to be fetched or stored on disk.
+      continue;
+    }
+
+    const base::FilePath store_path = base_path.AppendASCII(it.filename());
+    (*store_map)[it.list_id()].reset(
         factory_->CreateV4Store(db_task_runner, store_path));
   }
   std::unique_ptr<V4Database> v4_database(
@@ -184,12 +189,18 @@ void V4Database::GetStoresMatchingFullHash(
   }
 }
 
-StoreIdAndFileName::StoreIdAndFileName(const ListIdentifier& list_id,
-                                       const std::string& filename)
-    : list_id(list_id), filename(filename) {
-  DCHECK(!filename.empty());
+ListInfo::ListInfo(const bool fetch_updates,
+                   const std::string& filename,
+                   const ListIdentifier& list_id,
+                   const SBThreatType sb_threat_type)
+    : fetch_updates_(fetch_updates),
+      filename_(filename),
+      list_id_(list_id),
+      sb_threat_type_(sb_threat_type) {
+  DCHECK(!fetch_updates_ || !filename_.empty());
+  DCHECK_NE(SB_THREAT_TYPE_SAFE, sb_threat_type_);
 }
 
-StoreIdAndFileName::~StoreIdAndFileName() {}
+ListInfo::~ListInfo() {}
 
 }  // namespace safe_browsing

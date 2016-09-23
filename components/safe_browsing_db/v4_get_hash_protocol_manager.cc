@@ -240,9 +240,9 @@ V4GetHashProtocolManager::V4GetHashProtocolManager(
       clock_(new base::DefaultClock()) {
   DCHECK(!stores_to_request.empty());
   for (const ListIdentifier& store : stores_to_request) {
-    platform_types_.insert(store.platform_type);
-    threat_entry_types_.insert(store.threat_entry_type);
-    threat_types_.insert(store.threat_type);
+    platform_types_.insert(store.platform_type());
+    threat_entry_types_.insert(store.threat_entry_type());
+    threat_types_.insert(store.threat_type());
   }
 }
 

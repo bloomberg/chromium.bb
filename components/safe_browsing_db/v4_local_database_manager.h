@@ -117,6 +117,16 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   ~V4LocalDatabaseManager() override;
 
+  // Returns the SBThreatType for a given ListIdentifier.
+  SBThreatType GetSBThreatTypeForList(const ListIdentifier& list_id);
+
+  // Finds the most severe |SBThreatType| and the corresponding |metadata| from
+  // |full_hash_infos|.
+  void GetSeverestThreatTypeAndMetadata(
+      SBThreatType* result_threat_type,
+      ThreatMetadata* metadata,
+      const std::vector<FullHashInfo>& full_hash_infos);
+
   // The callback called each time the protocol manager downloads updates
   // successfully.
   void UpdateRequestCompleted(
@@ -129,7 +139,7 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   void SetupDatabase();
 
   // Called when the |v4_get_hash_protocol_manager_| has the full hash response
-  // avaialble for the URL that we requested. It determines the severest
+  // available for the URL that we requested. It determines the severest
   // threat type and responds to the |client| with that information.
   void OnFullHashResponse(std::unique_ptr<PendingCheck> pending_check,
                           const std::vector<FullHashInfo>& full_hash_infos);
@@ -145,13 +155,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // of |pending_check|.
   void RespondToClient(std::unique_ptr<PendingCheck> pending_check);
 
-  // Finds the most severe |SBThreatType| and the corresponding |metadata| from
-  // |full_hash_infos|.
-  static void GetSeverestThreatTypeAndMetadata(
-      SBThreatType* result_threat_type,
-      ThreatMetadata* metadata,
-      const std::vector<FullHashInfo>& full_hash_infos);
-
   // The base directory under which to create the files that contain hashes.
   const base::FilePath base_path_;
 
@@ -162,9 +165,11 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // SafeBrowsing service.
   PendingClients pending_clients_;
 
-  // The list of stores to manage (for hash prefixes and full hashes), along
-  // with the corresponding filename on disk for each of them.
-  StoreIdAndFileNames store_id_file_names_;
+  // The list of stores to manage (for hash prefixes and full hashes). Each
+  // element contains the identifier for the store, the corresponding
+  // SBThreatType, whether to fetch hash prefixes for that store, and the
+  // name of the file on disk that would contain the prefixes, if applicable.
+  ListInfos list_infos_;
 
   // The protocol manager that downloads the hash prefix updates.
   std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
