@@ -255,7 +255,11 @@ public class MultiWindowUtils implements ActivityStateListener {
         return false;
     }
 
-    private boolean isActivityVisible(Activity activity) {
+    /**
+     * @param activity The Activity whose visibility to test.
+     * @return True iff the given Activity is currently visible.
+     */
+    public static boolean isActivityVisible(Activity activity) {
         if (activity == null) return false;
         int activityState = ApplicationStatus.getStateForActivity(activity);
         // In Android N multi-window mode, only one activity is resumed at a time. The other

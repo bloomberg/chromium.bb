@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -327,9 +328,13 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
         if (getActivity() == null) return;
 
         // If the user deleted their browsing history, the dialog about other forms of history
-        // is enabled, and it has never been shown before, show it. Otherwise, just close this
-        // preference screen.
-        if (getSelectedOptions().contains(DialogOption.CLEAR_HISTORY)
+        // is enabled, and it has never been shown before, show it. Note that opening a new
+        // DialogFragment is only possible if the Activity is visible.
+        //
+        // If conditions to show the dialog about other forms of history are not met, just close
+        // this preference screen.
+        if (MultiWindowUtils.isActivityVisible(getActivity())
+                && getSelectedOptions().contains(DialogOption.CLEAR_HISTORY)
                 && mIsDialogAboutOtherFormsOfBrowsingHistoryEnabled
                 && !OtherFormsOfHistoryDialogFragment.wasDialogShown(getActivity())) {
             mDialogAboutOtherFormsOfBrowsingHistory = new OtherFormsOfHistoryDialogFragment();
