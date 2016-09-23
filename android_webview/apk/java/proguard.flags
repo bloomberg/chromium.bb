@@ -50,11 +50,6 @@
 }
 -dontnote com.android.webview.chromium.PlatformServiceBridgeGoogle
 
-# AwDebug is accessed by reflection.
--keep class org.chromium.android_webview.AwDebug {
-  public static boolean dumpWithoutCrashing(...);
-}
-
 #TODO(hush): remove after N release. crbug.com/546762
 -keep class com.android.webview.chromium.ContentSettingsAdapter {
   public void setDisabledActionModeMenuItems(int);
