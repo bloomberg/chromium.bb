@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+
+<!-- READ BEFORE UPDATING:
+If this test is updated make sure to increment the "revision" value of the
+associated test in content/test/gpu/page_sets/pixel_tests.py. This will ensure
+that the baseline images are regenerated on the next run.
+-->
+
+<html>
+<head>
+<title>OffscreenCanvas 2d commit flow on worker thread: blue square on white background.</title>
+<style type="text/css">
+.nomargin {
+  margin: 0px auto;
+}
+</style>
+<script id="myWorker" type="text/worker">
+self.onmessage = function(e) {
+    var transferredCanvas = e.data;
+    var offscreen2d = transferredCanvas.getContext("2d");
+    offscreen2d.fillStyle = "blue";
+    offscreen2d.fillRect(0, 0, transferredCanvas.width, transferredCanvas.height);
+    offscreen2d.commit();
+    self.postMessage("");
+};
+</script>
+<script>
+var g_swapsBeforeAck = 15;
+
+function makeWorker(script)
+{
+   var blob = new Blob([script]);
+   return new Worker(URL.createObjectURL(blob));
+}
+
+function waitForFinish()
+{
+  if (g_swapsBeforeAck == 0) {
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send("SUCCESS");
+  } else {
+    g_swapsBeforeAck--;
+    document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
+    window.webkitRequestAnimationFrame(waitForFinish);
+  }
+}
+
+function main()
+{
+  var canvas2D = document.getElementById("c");
+  var offscreenCanvas = canvas2D.transferControlToOffscreen();
+  var worker = makeWorker(document.getElementById("myWorker").textContent);
+  worker.postMessage(offscreenCanvas, [offscreenCanvas]);
+  worker.onmessage = function (e) {
+      waitForFinish();
+  };
+}
+</script>
+</head>
+<body onload="main()">
+<div style="position:relative; width:350px; height:350px; background-color:white">
+</div>
+<div id="container" style="position:absolute; top:0px; left:0px">
+<canvas id="c" width="320" height="320" class="nomargin"></canvas>
+</div>
+</body>
+</html>

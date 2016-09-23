@@ -53,7 +53,8 @@ void OffscreenCanvasRenderingContext2D::commit(ExceptionState& exceptionState)
         exceptionState.throwDOMException(InvalidStateError, "Commit() was called on a context whose OffscreenCanvas is not associated with a canvas element.");
         return;
     }
-    getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame(nullptr);
+    RefPtr<StaticBitmapImage> image = this->transferToStaticBitmapImage();
+    getOffscreenCanvas()->getOrCreateFrameDispatcher()->dispatchFrame(std::move(image));
 }
 
 // BaseRenderingContext2D implementation
@@ -124,16 +125,24 @@ ImageBuffer* OffscreenCanvasRenderingContext2D::imageBuffer() const
     return m_imageBuffer.get();
 }
 
-ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionState& exceptionState)
+RefPtr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::transferToStaticBitmapImage()
 {
     if (!imageBuffer())
         return nullptr;
     sk_sp<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferAcceleration, SnapshotReasonTransferToImageBitmap);
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(std::move(skImage));
     image->setOriginClean(this->originClean());
+    return image;
+}
+
+ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionState& exceptionState)
+{
+    RefPtr<StaticBitmapImage> image = transferToStaticBitmapImage();
+    if (!image)
+        return nullptr;
     m_imageBuffer.reset(); // "Transfer" means no retained buffer
     m_needsMatrixClipRestore = true;
-    return ImageBitmap::create(image.release());
+    return ImageBitmap::create(std::move(image));
 }
 
 PassRefPtr<Image> OffscreenCanvasRenderingContext2D::getImage(AccelerationHint hint, SnapshotReason reason) const

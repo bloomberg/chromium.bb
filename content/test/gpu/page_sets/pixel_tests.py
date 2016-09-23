@@ -193,6 +193,24 @@ class PixelTestsStorySet(story_set_module.StorySet):
       expectations=expectations))
 
     self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_acceleratedOffscreen2d_commit_main.html',
+      name=base_name + '.OffscreenCanvasAccelerated2D' + es3_suffix,
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      story_set=self,
+      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
+      expectations=expectations))
+
+    self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_acceleratedOffscreen2d_commit_worker.html',
+      name=base_name + '.OffscreenCanvasAccelerated2DWorker' + es3_suffix,
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      story_set=self,
+      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
+      expectations=expectations))
+
+    self.AddStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_canvas2d.html',
       name=base_name + '.Canvas2DRedBox' + es3_suffix,
       test_rect=[0, 0, 300, 300],

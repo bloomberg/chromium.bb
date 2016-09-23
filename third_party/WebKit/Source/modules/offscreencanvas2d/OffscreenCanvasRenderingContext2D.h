@@ -86,6 +86,8 @@ private:
     std::unique_ptr<ImageBuffer> m_imageBuffer;
 
     bool isPaintable() const final;
+
+    RefPtr<StaticBitmapImage> transferToStaticBitmapImage();
 };
 
 DEFINE_TYPE_CASTS(OffscreenCanvasRenderingContext2D, CanvasRenderingContext, context,

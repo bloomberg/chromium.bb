@@ -31,9 +31,13 @@ private:
     const cc::SurfaceId m_surfaceId;
     const int m_width;
     const int m_height;
-    cc::mojom::blink::MojoCompositorFrameSinkPtr m_sink;
 
+    unsigned m_nextResourceId;
     HashMap<unsigned, RefPtr<StaticBitmapImage>> m_cachedImages;
+
+    bool verifyImageSize(const sk_sp<SkImage>&);
+
+    cc::mojom::blink::MojoCompositorFrameSinkPtr m_sink;
     mojo::Binding<cc::mojom::blink::MojoCompositorFrameSinkClient> m_binding;
 };
 

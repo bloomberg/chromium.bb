@@ -16,6 +16,7 @@
 #include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
@@ -26,6 +27,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(uint32_t 
     : m_surfaceId(cc::SurfaceId(clientId, localId, nonce))
     , m_width(width)
     , m_height(height)
+    , m_nextResourceId(1u)
     , m_binding(this)
 {
     DCHECK(!m_sink.is_bound());
@@ -36,6 +38,10 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(uint32_t 
 
 void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(RefPtr<StaticBitmapImage> image)
 {
+    if (!image)
+        return;
+    if (!verifyImageSize(image->imageForCurrentFrame()))
+        return;
     cc::CompositorFrame frame;
     frame.metadata.device_scale_factor = 1.0f;
     frame.delegated_frame_data.reset(new cc::DelegatedFrameData);
@@ -48,17 +54,15 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(RefPtr<StaticBitmapImage>
     cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
     sqs->SetAll(gfx::Transform(), bounds.size(), bounds, bounds, false, 1.f, SkXfermode::kSrcOver_Mode, 0);
 
-    unsigned nextResourceId = 1u;
-    // TODO(xidachen): for now, we just submit a SolidColor frame to compositor in the 2d case,
-    // we should extract data from image.
-    if (!image) {
+    if (!image->isTextureBacked()) {
+        // TODO(xlai): Make unaccelerated 2d canvas work. See crbug.com/563858
+        // This is a temporary code that submits a solidColor frame.
         cc::SolidColorDrawQuad* quad = pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
         const bool forceAntialiasingOff = false;
         quad->SetNew(sqs, bounds, bounds, SK_ColorGREEN, forceAntialiasingOff);
-    } else { // WebGL
-        DCHECK(image->isTextureBacked());
+    } else {
         cc::TransferableResource resource;
-        resource.id = nextResourceId;
+        resource.id = m_nextResourceId;
         resource.format = cc::ResourceFormat::RGBA_8888;
         // TODO(crbug.com/645590): filter should respect the image-rendering CSS property of associated canvas element.
         resource.filter = GL_LINEAR;
@@ -69,11 +73,12 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(RefPtr<StaticBitmapImage>
         resource.is_software = false;
         // TODO(crbug.com/646022): making this overlay-able.
         resource.is_overlay_candidate = false;
+
         frame.delegated_frame_data->resource_list.push_back(std::move(resource));
 
         // Hold ref to |image|, to keep it alive until the browser ReturnResources.
         // It guarantees that the resource is not re-used or deleted.
-        m_cachedImages.add(nextResourceId++, std::move(image));
+        m_cachedImages.add(m_nextResourceId++, std::move(image));
 
         cc::TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
         gfx::Size rectSize(m_width, m_height);
@@ -100,6 +105,13 @@ void OffscreenCanvasFrameDispatcherImpl::ReturnResources(Vector<cc::mojom::blink
 {
     for (const auto& resource : resources)
         m_cachedImages.remove(resource->id);
+}
+
+bool OffscreenCanvasFrameDispatcherImpl::verifyImageSize(const sk_sp<SkImage>& image)
+{
+    if (image && image->width() == m_width && image->height() == m_height)
+        return true;
+    return false;
 }
 
 } // namespace blink
