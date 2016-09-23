@@ -67,22 +67,11 @@ NET_EXPORT void HistogramBrokenAlternateProtocolLocation(
 
 enum AlternateProtocol {
   NPN_HTTP_2,
-  ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION = NPN_HTTP_2,
   QUIC,
-  ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION = QUIC,
   UNINITIALIZED_ALTERNATE_PROTOCOL,
 };
 
-// Simply returns whether |protocol| is between
-// ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION and
-// ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION (inclusive).
 NET_EXPORT bool IsAlternateProtocolValid(AlternateProtocol protocol);
-
-enum AlternateProtocolSize {
-  NUM_VALID_ALTERNATE_PROTOCOLS =
-    ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION -
-    ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION + 1,
-};
 
 NET_EXPORT const char* AlternateProtocolToString(AlternateProtocol protocol);
 NET_EXPORT AlternateProtocol AlternateProtocolFromString(

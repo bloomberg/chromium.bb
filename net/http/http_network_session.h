@@ -299,7 +299,6 @@ class NET_EXPORT HttpNetworkSession
   std::set<HttpResponseBodyDrainer*> response_drainers_;
 
   NextProtoVector next_protos_;
-  bool enabled_protocols_[NUM_VALID_ALTERNATE_PROTOCOLS];
 
   Params params_;
 

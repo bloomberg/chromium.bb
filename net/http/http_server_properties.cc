@@ -26,8 +26,16 @@ void HistogramBrokenAlternateProtocolLocation(
 }
 
 bool IsAlternateProtocolValid(AlternateProtocol protocol) {
-  return protocol >= ALTERNATE_PROTOCOL_MINIMUM_VALID_VERSION &&
-      protocol <= ALTERNATE_PROTOCOL_MAXIMUM_VALID_VERSION;
+  switch (protocol) {
+    case NPN_HTTP_2:
+      return true;
+    case QUIC:
+      return true;
+    case UNINITIALIZED_ALTERNATE_PROTOCOL:
+      return false;
+  }
+  NOTREACHED();
+  return false;
 }
 
 const char* AlternateProtocolToString(AlternateProtocol protocol) {
