@@ -110,6 +110,9 @@ SEQUENCE {
 #-----END BASIC_CONSTRAINTS-----
           }
         }
+#-----BEGIN EXTENSION-----
+# (For adding in another extension at the end of the list)
+#-----END EXTENSION-----
       }
     }
   }

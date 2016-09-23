@@ -79,6 +79,7 @@ scoped_refptr<ParsedCertificate> ParsedCertificate::CreateInternal(
     DataSource source,
     const ParseCertificateOptions& options,
     CertErrors* errors) {
+  // TODO(crbug.com/634443): Add errors
   scoped_refptr<ParsedCertificate> result(new ParsedCertificate);
 
   switch (source) {

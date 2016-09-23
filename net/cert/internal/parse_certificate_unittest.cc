@@ -362,69 +362,60 @@ TEST(ParseTbsCertificateTest, ValidityRelaxed) {
   RunTbsCertificateTest("tbs_validity_relaxed.pem");
 }
 
-// Reads a PEM file containing a block "EXTENSION". This input will be
-// passed to ParseExtension, and the results filled in |out|.
-bool ParseExtensionFromFile(const std::string& file_name,
-                            ParsedExtension* out,
-                            std::string* data) {
-  const PemBlockMapping mappings[] = {
-      {"EXTENSION", data},
-  };
-
-  EXPECT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
-  return ParseExtension(der::Input(data), out);
+der::Input DavidBenOid() {
+  // This OID corresponds with
+  // 1.2.840.113554.4.1.72585.0 (https://davidben.net/oid)
+  static const uint8_t kOid[] = {0x2a, 0x86, 0x48, 0x86, 0xf7, 0x12,
+                                 0x04, 0x01, 0x84, 0xb7, 0x09, 0x00};
+  return der::Input(kOid);
 }
 
 // Parses an Extension whose critical field is true (255).
-TEST(ParseExtensionTest, Critical) {
-  std::string data;
-  ParsedExtension extension;
-  ASSERT_TRUE(
-      ParseExtensionFromFile("extension_critical.pem", &extension, &data));
-
-  EXPECT_TRUE(extension.critical);
-
-  const uint8_t kExpectedOid[] = {0x55, 0x1d, 0x13};
-  EXPECT_EQ(der::Input(kExpectedOid), extension.oid);
+TEST(ParseCertificateTest, ExtensionCritical) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("extension_critical.pem");
+  ASSERT_TRUE(cert);
 
   const uint8_t kExpectedValue[] = {0x30, 0x00};
+
+  auto it = cert->unparsed_extensions().find(DavidBenOid());
+  ASSERT_NE(cert->unparsed_extensions().end(), it);
+  const auto& extension = it->second;
+
+  EXPECT_TRUE(extension.critical);
+  EXPECT_EQ(DavidBenOid(), extension.oid);
   EXPECT_EQ(der::Input(kExpectedValue), extension.value);
 }
 
 // Parses an Extension whose critical field is false (omitted).
-TEST(ParseExtensionTest, NotCritical) {
-  std::string data;
-  ParsedExtension extension;
-  ASSERT_TRUE(
-      ParseExtensionFromFile("extension_not_critical.pem", &extension, &data));
-
-  EXPECT_FALSE(extension.critical);
-
-  const uint8_t kExpectedOid[] = {0x55, 0x1d, 0x13};
-  EXPECT_EQ(der::Input(kExpectedOid), extension.oid);
+TEST(ParseCertificateTest, ExtensionNotCritical) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("extension_not_critical.pem");
+  ASSERT_TRUE(cert);
 
   const uint8_t kExpectedValue[] = {0x30, 0x00};
+
+  auto it = cert->unparsed_extensions().find(DavidBenOid());
+  ASSERT_NE(cert->unparsed_extensions().end(), it);
+  const auto& extension = it->second;
+
+  EXPECT_FALSE(extension.critical);
+  EXPECT_EQ(DavidBenOid(), extension.oid);
   EXPECT_EQ(der::Input(kExpectedValue), extension.value);
 }
 
 // Parses an Extension whose critical field is 0. This is in one sense FALSE,
 // however because critical has DEFAULT of false this is in fact invalid
 // DER-encoding.
-TEST(ParseExtensionTest, Critical0) {
-  std::string data;
-  ParsedExtension extension;
-  ASSERT_FALSE(
-      ParseExtensionFromFile("extension_critical_0.pem", &extension, &data));
+TEST(ParseCertificateTest, ExtensionCritical0) {
+  ASSERT_FALSE(ParseCertificateFromFile("extension_critical_0.pem"));
 }
 
 // Parses an Extension whose critical field is 3. Under DER-encoding BOOLEAN
 // values must an octet of either all zero bits, or all 1 bits, so this is not
 // valid.
-TEST(ParseExtensionTest, Critical3) {
-  std::string data;
-  ParsedExtension extension;
-  ASSERT_FALSE(
-      ParseExtensionFromFile("extension_critical_3.pem", &extension, &data));
+TEST(ParseCertificateTest, ExtensionCritical3) {
+  ASSERT_FALSE(ParseCertificateFromFile("extension_critical_3.pem"));
 }
 
 // Runs a test for extensions parsing. The input file is a PEM file which
@@ -485,12 +476,7 @@ TEST(ParseExtensionsTest, UnknownCritical) {
                                   &extensions, &data);
 
   ASSERT_EQ(1u, extensions.size());
-  // This OID corresponds with
-  // 1.2.840.113554.4.1.72585.0 (https://davidben.net/oid)
-  const uint8_t oid[] = {0x2a, 0x86, 0x48, 0x86, 0xf7, 0x12,
-                         0x04, 0x01, 0x84, 0xb7, 0x09, 0x00};
-
-  auto iter = extensions.find(der::Input(oid));
+  auto iter = extensions.find(DavidBenOid());
   ASSERT_TRUE(iter != extensions.end());
   EXPECT_TRUE(iter->second.critical);
   EXPECT_EQ(4u, iter->second.value.Length());
@@ -504,12 +490,7 @@ TEST(ParseExtensionsTest, UnknownNonCritical) {
                                   &extensions, &data);
 
   ASSERT_EQ(1u, extensions.size());
-  // This OID corresponds with
-  // 1.2.840.113554.4.1.72585.0 (https://davidben.net/oid)
-  const uint8_t oid[] = {0x2a, 0x86, 0x48, 0x86, 0xf7, 0x12,
-                         0x04, 0x01, 0x84, 0xb7, 0x09, 0x00};
-
-  auto iter = extensions.find(der::Input(oid));
+  auto iter = extensions.find(DavidBenOid());
   ASSERT_TRUE(iter != extensions.end());
   EXPECT_FALSE(iter->second.critical);
   EXPECT_EQ(4u, iter->second.value.Length());
