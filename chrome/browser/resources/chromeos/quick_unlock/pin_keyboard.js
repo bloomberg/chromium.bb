@@ -93,6 +93,17 @@ Polymer({
   },
 
   /**
+   * @override
+   */
+  attached: function() {
+    // Remove the space/enter key binds from the polymer
+    // iron-a11y-keys-behavior.
+    var digitButtons = Polymer.dom(this.root).querySelectorAll('.digit-button');
+    for (var i = 0; i < digitButtons.length; ++i)
+      digitButtons[i].keyEventTarget = null;
+  },
+
+  /**
    * Gets the container holding the password field.
    * @type {!HTMLInputElement}
    */
@@ -209,7 +220,7 @@ Polymer({
   /**
    * Keypress does not handle backspace but handles the char codes nicely, so we
    * have a seperate event to process the backspaces.
-   * @param {Event} event Keypress Event object.
+   * @param {Event} event Keydown Event object.
    * @private
    */
   onKeyDown_: function(event) {
@@ -241,6 +252,21 @@ Polymer({
       this.firePinSubmitEvent_();
       event.preventDefault();
       return;
+    }
+
+    // Space pressed. We want the old polymer function of space activating the
+    // button with focus.
+    if (code == 32) {
+      // Check if target was a number button.
+      if (event.target.hasAttribute('value')) {
+        this.value += event.target.getAttribute('value');
+        return;
+      }
+      // Check if target was backspace button.
+      if (event.target.classList.contains('backspace-button')) {
+        this.onPinClear_();
+        return;
+      }
     }
 
     this.value += String.fromCharCode(code);

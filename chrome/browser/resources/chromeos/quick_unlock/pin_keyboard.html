@@ -76,28 +76,10 @@
         opacity: var(--dark-primary-opacity);
       }
 
-      .digit-button.backspace-button[disabled] {
+      .digit-button.backspace-button:not([has-content]) {
         color: #000;
         opacity: 0.26;
         padding: 14px;
-      }
-
-      .digit-button.submit-button {
-        color: var(--google-blue-500);
-        height: 43px;
-        left: 137px;
-        margin: 0;
-        min-height: 43px;
-        min-width: 43px;
-        opacity: var(--light-primary-opacity);
-        padding: 11.5px 10px;
-        position: absolute;
-        width: 43px;
-      }
-
-      .digit-button.submit-button[disabled] {
-        color: #000;
-        opacity: 0.26;
       }
 
       .digit-button inner-text {
@@ -215,7 +197,7 @@
             <inner-text>$i18n{pinKeyboard0}</inner-text>
           </paper-button>
           <paper-icon-button class="digit-button backspace-button"
-                             disabled="[[!hasInput_(value)]]"
+                             has-content$="[[hasInput_(value)]]"
                              icon="pin-keyboard:backspace"
                              on-pointerdown="onBackspacePointerDown_"
                              on-pointerout="onBackspacePointerOut_"
