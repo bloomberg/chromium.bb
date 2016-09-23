@@ -296,10 +296,11 @@ ChildThreadImpl::Options::Options()
     : channel_name(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessChannelID)),
       use_mojo_channel(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kMojoApplicationChannelToken)),
+                           switches::kMojoApplicationChannelToken) ||
+                       base::CommandLine::ForCurrentProcess()->HasSwitch(
+                           switches::kMojoChannelToken)),
       auto_start_mojo_shell_connection(true),
-      connect_to_browser(false) {
-}
+      connect_to_browser(false) {}
 
 ChildThreadImpl::Options::Options(const Options& other) = default;
 
