@@ -199,7 +199,7 @@ class HostControllersManager {
     }
     // Create a new host controller.
     std::unique_ptr<HostController> host_controller(HostController::Create(
-        device_port, host_port, adb_port, GetExitNotifierFD(),
+        device_serial, device_port, host_port, adb_port, GetExitNotifierFD(),
         base::Bind(&HostControllersManager::DeleteHostController,
                    weak_ptr_factory_.GetWeakPtr())));
     if (!host_controller.get()) {
