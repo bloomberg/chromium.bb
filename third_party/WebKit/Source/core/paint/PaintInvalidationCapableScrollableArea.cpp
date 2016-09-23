@@ -28,7 +28,9 @@ void PaintInvalidationCapableScrollableArea::willRemoveScrollbar(Scrollbar& scro
 static LayoutRect scrollControlPaintInvalidationRect(const IntRect& scrollControlRect, const LayoutBox& box, const PaintInvalidatorContext& context)
 {
     LayoutRect paintInvalidationRect(scrollControlRect);
-    if (!paintInvalidationRect.isEmpty())
+    // No need to apply any paint offset. Scroll controls paint in a different transform space than their contained box
+    // (the scrollbarPaintOffset transform node).
+    if (!paintInvalidationRect.isEmpty() && !RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         context.mapLocalRectToPaintInvalidationBacking(box, paintInvalidationRect);
     return paintInvalidationRect;
 }

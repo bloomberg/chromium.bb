@@ -21,16 +21,15 @@ void computeChunkBoundsAndOpaqueness(const DisplayItemList& displayItems, Vector
         FloatRect bounds;
         SkRegion knownToBeOpaqueRegion;
         for (const DisplayItem& item : displayItems.itemsInPaintChunk(chunk)) {
+            bounds.unite(FloatRect(item.client().visualRect()));
             if (!item.isDrawing())
                 continue;
             const auto& drawing = static_cast<const DrawingDisplayItem&>(item);
             if (const SkPicture* picture = drawing.picture()) {
-                const SkRect& pictureRect = picture->cullRect();
-                bounds.unite(pictureRect);
                 if (drawing.knownToBeOpaque()) {
-                    // TODO(pdr): This may be too conservative and fail due to
-                    // floating point precision issues.
+                    // TODO(pdr): It may be too conservative to round in to the enclosedIntRect.
                     SkIRect conservativelyRoundedPictureRect;
+                    const SkRect& pictureRect = picture->cullRect();
                     pictureRect.roundIn(&conservativelyRoundedPictureRect);
                     knownToBeOpaqueRegion.op(conservativelyRoundedPictureRect, SkRegion::kUnion_Op);
                 }

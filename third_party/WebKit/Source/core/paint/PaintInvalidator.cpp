@@ -47,18 +47,25 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(GeometryMapper& geometr
     if (object.isBox())
         toLayoutBox(object).flipForWritingMode(rect);
 
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+        // In SPv2, visual rects are in the space of their local transform node.
+        rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
+        return LayoutRect(rect);
+    }
+
     LayoutRect result;
     if (context.forcedSubtreeInvalidationFlags & PaintInvalidatorContext::ForcedSubtreeSlowPathRect) {
         result = slowMapToVisualRectInAncestorSpace(object, *context.paintInvalidationContainer, rect);
     } else if (object == context.paintInvalidationContainer) {
         result = LayoutRect(rect);
     } else {
+        rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
+
         GeometryPropertyTreeState currentTreeState(context.treeBuilderContext.current.transform, context.treeBuilderContext.current.clip, context.treeBuilderContext.currentEffect);
         GeometryPropertyTreeState containerTreeState;
         const ObjectPaintProperties* containerPaintProperties = context.paintInvalidationContainer->objectPaintProperties();
         containerPaintProperties->getContentsProperties(containerTreeState);
 
-        rect.moveBy(FloatPoint(context.treeBuilderContext.current.paintOffset));
         bool success = false;
         result = LayoutRect(geometryMapper.mapToVisualRectInDestinationSpace(rect, currentTreeState, containerTreeState, success));
         DCHECK(success);

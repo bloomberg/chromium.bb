@@ -74,7 +74,12 @@ private:
     // a paint chunk does not necessarily start at (0, 0) and could even be negative. Internally
     // the generated layer translates the paint chunk to align the bounding box to (0, 0) and
     // return the actual origin of the paint chunk in output parameter layerOffset.
-    scoped_refptr<cc::Layer> layerForPaintChunk(const PaintArtifact&, const PaintChunk&, gfx::Vector2dF& layerOffset);
+    scoped_refptr<cc::Layer> layerForPaintChunk(const PaintArtifact&, const PaintChunk&, gfx::Vector2dF& layerOffset,
+        Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients);
+
+    // Finds a client among the current vector of clients that matches the paint chunk's id,
+    // or otherwise allocates a new one.
+    std::unique_ptr<ContentLayerClientImpl> clientForPaintChunk(const PaintChunk&);
 
     scoped_refptr<cc::Layer> m_rootLayer;
     std::unique_ptr<WebLayer> m_webLayer;

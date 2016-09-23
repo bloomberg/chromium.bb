@@ -50,8 +50,13 @@ class PaintArtifactCompositor::ContentLayerClientImpl : public cc::ContentLayerC
     WTF_MAKE_NONCOPYABLE(ContentLayerClientImpl);
     USING_FAST_MALLOC(ContentLayerClientImpl);
 public:
-    ContentLayerClientImpl(scoped_refptr<cc::DisplayItemList> list, const gfx::Rect& paintableRegion)
-        : m_ccDisplayItemList(std::move(list)), m_paintableRegion(paintableRegion) { }
+    ContentLayerClientImpl(Optional<DisplayItem::Id> paintChunkId)
+        : m_id(paintChunkId), m_ccPictureLayer(cc::PictureLayer::Create(this))
+    {
+    }
+
+    void SetDisplayList(scoped_refptr<cc::DisplayItemList> ccDisplayItemList) { m_ccDisplayItemList = std::move(ccDisplayItemList); }
+    void SetPaintableRegion(gfx::Rect region) { m_paintableRegion = region; }
 
     // cc::ContentLayerClient
     gfx::Rect PaintableRegion() override { return m_paintableRegion; }
@@ -66,7 +71,16 @@ public:
         return 0;
     }
 
+    scoped_refptr<cc::PictureLayer> ccPictureLayer() { return m_ccPictureLayer; }
+
+    bool matches(const PaintChunk& paintChunk)
+    {
+        return m_id && paintChunk.id && *m_id == *paintChunk.id;
+    }
+
 private:
+    Optional<PaintChunk::Id> m_id;
+    scoped_refptr<cc::PictureLayer> m_ccPictureLayer;
     scoped_refptr<cc::DisplayItemList> m_ccDisplayItemList;
     gfx::Rect m_paintableRegion;
 };
@@ -186,7 +200,19 @@ void setMinimalPropertyTrees(cc::PropertyTrees* propertyTrees, int ownerId)
 
 } // namespace
 
-scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Vector2dF& layerOffset)
+std::unique_ptr<PaintArtifactCompositor::ContentLayerClientImpl> PaintArtifactCompositor::clientForPaintChunk(const PaintChunk& paintChunk)
+{
+    // TODO(chrishtr): for now, just using a linear walk. In the future we can optimize this by using the same techniques used in
+    // PaintController for display lists.
+    for (auto& client : m_contentLayerClients) {
+        if (client && client->matches(paintChunk))
+            return std::move(client);
+    }
+    return wrapUnique(new ContentLayerClientImpl(paintChunk.id));
+}
+
+scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const PaintArtifact& paintArtifact, const PaintChunk& paintChunk, gfx::Vector2dF& layerOffset,
+    Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients)
 {
     DCHECK(paintChunk.size());
 
@@ -194,20 +220,30 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(const Paint
     if (scoped_refptr<cc::Layer> foreignLayer = foreignLayerForPaintChunk(paintArtifact, paintChunk, layerOffset))
         return foreignLayer;
 
-    // The common case: create a layer for painted content.
+    // The common case: create or reuse a PictureLayer for painted content.
+    std::unique_ptr<ContentLayerClientImpl> contentLayerClient = clientForPaintChunk(paintChunk);
+
     gfx::Rect combinedBounds = enclosingIntRect(paintChunk.bounds);
     scoped_refptr<cc::DisplayItemList> displayList = recordPaintChunk(paintArtifact, paintChunk, combinedBounds);
-    std::unique_ptr<ContentLayerClientImpl> contentLayerClient = wrapUnique(
-        new ContentLayerClientImpl(std::move(displayList), gfx::Rect(combinedBounds.size())));
+    contentLayerClient->SetDisplayList(std::move(displayList));
+    contentLayerClient->SetPaintableRegion(gfx::Rect(combinedBounds.size()));
 
     layerOffset = combinedBounds.OffsetFromOrigin();
-    scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(contentLayerClient.get());
-    layer->SetBounds(combinedBounds.size());
-    layer->SetIsDrawable(true);
+    scoped_refptr<cc::PictureLayer> ccPictureLayer = contentLayerClient->ccPictureLayer();
+    ccPictureLayer->SetBounds(combinedBounds.size());
+    ccPictureLayer->SetIsDrawable(true);
     if (paintChunk.knownToBeOpaque)
-        layer->SetContentsOpaque(true);
-    m_contentLayerClients.append(std::move(contentLayerClient));
-    return layer;
+        ccPictureLayer->SetContentsOpaque(true);
+    for (auto& invalidation : paintChunk.rasterInvalidationRects) {
+        IntRect rect(enclosingIntRect(invalidation));
+        gfx::Rect ccInvalidationRect(rect.x(), rect.y(), std::max(0, rect.width()), std::max(0, rect.height()));
+        // Raster paintChunk.rasterInvalidationRects is in the space of the containing transform node, so need to subtract off the layer offset.
+        ccInvalidationRect.Offset(-combinedBounds.OffsetFromOrigin());
+        ccPictureLayer->SetNeedsDisplayRect(ccInvalidationRect);
+    }
+
+    newContentLayerClients.append(std::move(contentLayerClient));
+    return ccPictureLayer;
 }
 
 namespace {
@@ -516,11 +552,11 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     PropertyTreeManager propertyTreeManager(*layerTree->property_trees(), m_rootLayer.get());
     propertyTreeManager.setDeviceScaleFactor(layerTree->device_scale_factor());
 
-    m_contentLayerClients.clear();
-    m_contentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
+    Vector<std::unique_ptr<ContentLayerClientImpl>> newContentLayerClients;
+    newContentLayerClients.reserveCapacity(paintArtifact.paintChunks().size());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
         gfx::Vector2dF layerOffset;
-        scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, layerOffset);
+        scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, layerOffset, newContentLayerClients);
 
         int transformId = propertyTreeManager.compositorIdForTransformNode(paintChunk.properties.transform.get());
         int scrollId = propertyTreeManager.compositorIdForScrollNode(paintChunk.properties.scroll.get());
@@ -547,6 +583,8 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
         if (m_extraDataForTestingEnabled)
             m_extraDataForTesting->contentLayers.append(layer);
     }
+    m_contentLayerClients.clear();
+    m_contentLayerClients.swap(newContentLayerClients);
 
     // Mark the property trees as having been rebuilt.
     layerTree->property_trees()->sequence_number = kPropertyTreeSequenceNumber;
