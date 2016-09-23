@@ -149,8 +149,8 @@ class WebRtcLogUploaderTest : public testing::Test {
   void VerifyRtpDumpInMultipart(const std::string& post_data,
                                 const std::string& dump_name,
                                 const std::string& dump_content) {
-    std::vector<std::string> lines;
-    base::SplitStringUsingSubstr(post_data, "\r\n", &lines);
+    std::vector<std::string> lines = base::SplitStringUsingSubstr(
+        post_data, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
     std::string name_line = "Content-Disposition: form-data; name=\"";
     name_line.append(dump_name);

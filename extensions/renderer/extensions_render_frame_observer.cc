@@ -40,15 +40,15 @@ StackTrace GetStackTraceFromMessage(base::string16* message,
 
   if (message->find(base::UTF8ToUTF16(kStackFrameDelimiter)) !=
           base::string16::npos) {
-    base::SplitStringUsingSubstr(*message,
-                                 base::UTF8ToUTF16(kStackFrameDelimiter),
-                                 &pieces);
+    pieces = base::SplitStringUsingSubstr(
+        *message, base::UTF8ToUTF16(kStackFrameDelimiter),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
     *message = pieces[0];
     index = 1;
   } else if (!stack_trace.empty()) {
-    base::SplitStringUsingSubstr(stack_trace,
-                                 base::UTF8ToUTF16(kStackFrameDelimiter),
-                                 &pieces);
+    pieces = base::SplitStringUsingSubstr(
+        stack_trace, base::UTF8ToUTF16(kStackFrameDelimiter),
+        base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   }
 
   // If we got a stack trace, parse each frame from the text.

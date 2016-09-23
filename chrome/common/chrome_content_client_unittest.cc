@@ -26,22 +26,30 @@ void CheckUserAgentStringOrdering(bool mobile_device) {
   ChromeContentClient content_client;
   std::string buffer = content_client.GetUserAgent();
 
-  base::SplitStringUsingSubstr(buffer, "Mozilla/5.0 (", &pieces);
+  pieces = base::SplitStringUsingSubstr(buffer, "Mozilla/5.0 (",
+                                        base::TRIM_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
   ASSERT_EQ(2u, pieces.size());
   buffer = pieces[1];
   EXPECT_EQ("", pieces[0]);
 
-  base::SplitStringUsingSubstr(buffer, ") AppleWebKit/", &pieces);
+  pieces = base::SplitStringUsingSubstr(buffer, ") AppleWebKit/",
+                                        base::TRIM_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
   ASSERT_EQ(2u, pieces.size());
   buffer = pieces[1];
   std::string os_str = pieces[0];
 
-  base::SplitStringUsingSubstr(buffer, " (KHTML, like Gecko) ", &pieces);
+  pieces = base::SplitStringUsingSubstr(buffer, " (KHTML, like Gecko) ",
+                                        base::TRIM_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
   ASSERT_EQ(2u, pieces.size());
   buffer = pieces[1];
   std::string webkit_version_str = pieces[0];
 
-  base::SplitStringUsingSubstr(buffer, " Safari/", &pieces);
+  pieces = base::SplitStringUsingSubstr(buffer, " Safari/",
+                                        base::TRIM_WHITESPACE,
+                                        base::SPLIT_WANT_ALL);
   ASSERT_EQ(2u, pieces.size());
   std::string product_str = pieces[0];
   std::string safari_version_str = pieces[1];

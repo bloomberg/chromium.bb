@@ -283,8 +283,8 @@ void ReceivedResponse(const AndroidDeviceManager::DeviceInfoCallback& callback,
     callback.Run(device_info);
     return;
   }
-  std::vector<std::string> outputs;
-  base::SplitStringUsingSubstr(response, kSeparator, &outputs);
+  std::vector<std::string> outputs = base::SplitStringUsingSubstr(
+      response, kSeparator, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (outputs.size() != 5) {
     callback.Run(device_info);
     return;

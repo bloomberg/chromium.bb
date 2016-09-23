@@ -101,8 +101,8 @@ autofill_private::AddressEntry ProfileToAddressEntry(
   // Parse |label| so that it can be used to create address metadata.
   base::string16 separator =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_SUMMARY_SEPARATOR);
-  std::vector<base::string16> label_pieces;
-  base::SplitStringUsingSubstr(label, separator, &label_pieces);
+  std::vector<base::string16> label_pieces = base::SplitStringUsingSubstr(
+      label, separator, base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // Create address metadata and add it to |address|.
   std::unique_ptr<autofill_private::AutofillMetadata> metadata(

@@ -1036,16 +1036,17 @@ void GesturePropertyProvider::ParseXorgConfFile(const std::string& content) {
   // Sections are delimited by the "EndSection" keyword.
   // Lines are delimited by "\n".
   // Pieces are delimited by all white-spaces.
-  std::vector<std::string> sections;
-  base::SplitStringUsingSubstr(content, "EndSection", &sections);
-  for (size_t i = 0; i < sections.size(); ++i) {
+  for (const std::string& section :
+       base::SplitStringUsingSubstr(content, "EndSection",
+                                    base::TRIM_WHITESPACE,
+                                    base::SPLIT_WANT_ALL)) {
     // Create a new configuration section.
     configurations_.push_back(
         base::MakeUnique<internal::ConfigurationSection>());
     internal::ConfigurationSection* config = configurations_.back().get();
 
     // Break the section into lines.
-    base::StringTokenizer lines(sections[i], "\n");
+    base::StringTokenizer lines(section, "\n");
     bool is_input_class_section = true;
     bool has_checked_section_type = false;
     while (is_input_class_section && lines.GetNext()) {

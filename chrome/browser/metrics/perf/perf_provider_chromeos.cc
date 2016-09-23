@@ -98,8 +98,8 @@ bool GetInt64Param(const std::map<std::string, std::string>& params,
 // Parses the key. e.g.: "PerfCommand::arm::0" returns "arm"
 bool ExtractPerfCommandCpuSpecifier(const std::string& key,
                                     std::string* cpu_specifier) {
-  std::vector<std::string> tokens;
-  base::SplitStringUsingSubstr(key, "::", &tokens);
+  std::vector<std::string> tokens = base::SplitStringUsingSubstr(
+      key, "::", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   if (tokens.size() != 3)
     return false;
   if (tokens[0] != "PerfCommand")

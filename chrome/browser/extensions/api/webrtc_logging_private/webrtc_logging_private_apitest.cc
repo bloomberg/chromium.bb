@@ -301,8 +301,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest, TestStartStopUpload) {
   EXPECT_NE(std::string::npos, log_part.find("Cpu brand:"));
 
   // Check the multipart contents.
-  std::vector<std::string> multipart_lines;
-  base::SplitStringUsingSubstr(multipart, "\r\n", &multipart_lines);
+  std::vector<std::string> multipart_lines = base::SplitStringUsingSubstr(
+      multipart, "\r\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   ASSERT_EQ(31, static_cast<int>(multipart_lines.size()));
 
   EXPECT_STREQ(&boundary[0], multipart_lines[0].c_str());
