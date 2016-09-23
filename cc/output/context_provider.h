@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "cc/base/cc_export.h"
-#include "cc/output/context_cache_controller.h"
 #include "gpu/command_buffer/common/capabilities.h"
 
 class GrContext;
@@ -27,6 +26,7 @@ namespace gles2 { class GLES2Interface; }
 }
 
 namespace cc {
+class ContextCacheController;
 struct ManagedMemoryPolicy;
 
 class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
@@ -36,10 +36,18 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   // lock from GetLock(), so is not always supported. Most use of
   // ContextProvider should be single-thread only on the thread that
   // BindToCurrentThread is run on.
-  class CC_EXPORT ScopedContextLock {
+  class ScopedContextLock {
    public:
-    explicit ScopedContextLock(ContextProvider* context_provider);
-    ~ScopedContextLock();
+    explicit ScopedContextLock(ContextProvider* context_provider)
+        : context_provider_(context_provider),
+          context_lock_(*context_provider_->GetLock()) {
+      // Allow current thread to use |context_provider_|.
+      context_provider_->DetachFromThread();
+    }
+    ~ScopedContextLock() {
+      // Allow usage by thread for which |context_provider_| is bound to.
+      context_provider_->DetachFromThread();
+    }
 
     gpu::gles2::GLES2Interface* ContextGL() {
       return context_provider_->ContextGL();
@@ -48,7 +56,6 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
    private:
     ContextProvider* const context_provider_;
     base::AutoLock context_lock_;
-    std::unique_ptr<ContextCacheController::ScopedBusy> busy_;
   };
 
   // Bind the 3d context to the current thread. This should be called before
