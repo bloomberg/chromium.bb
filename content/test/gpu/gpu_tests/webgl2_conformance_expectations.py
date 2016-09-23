@@ -467,9 +467,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=606074)
 
     self.Fail('deqp/functional/gles3/texturespecification/' +
-        'basic_copyteximage2d.html',
-        ['mac', 'intel'], bug=620067)
-    self.Fail('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['mac', 'intel'], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +

@@ -1120,6 +1120,17 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   static GLenum AdjustTexFormat(const gles2::FeatureInfo* feature_info,
                                 GLenum format);
 
+  void WorkaroundCopyTexImageCubeMap(
+      DecoderTextureState* texture_state,
+      ContextState* state,
+      DecoderFramebufferState* framebuffer_state,
+      TextureRef* texture_ref,
+      const char* function_name,
+      const DoTexImageArguments& args) {
+    DoCubeMapWorkaround(texture_state, state, framebuffer_state,
+                        texture_ref, function_name, args);
+  }
+
  private:
   friend class Texture;
   friend class TextureRef;
@@ -1156,6 +1167,14 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                                        ContextState* state,
                                        const DoTexSubImageArguments& args,
                                        const PixelStoreParams& unpack_params);
+
+  void DoCubeMapWorkaround(
+      DecoderTextureState* texture_state,
+      ContextState* state,
+      DecoderFramebufferState* framebuffer_state,
+      TextureRef* texture_ref,
+      const char* function_name,
+      const DoTexImageArguments& args);
 
   void StartTracking(TextureRef* texture);
   void StopTracking(TextureRef* texture);

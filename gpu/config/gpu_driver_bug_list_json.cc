@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.00",
+  "version": "9.01",
   "entries": [
     {
       "id": 1,
@@ -2017,6 +2017,18 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_av_sample_buffer_display_layer"
+      ]
+    },
+    {
+      "id": 189,
+      "description": "Do TexImage2D first before CopyTexImage2D for cube map texture on Intel Mac",
+      "cr_bugs": [648197],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "do_teximage_before_copyteximage_to_cube_map"
       ]
     }
   ]

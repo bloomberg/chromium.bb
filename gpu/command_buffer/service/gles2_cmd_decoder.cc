@@ -13373,6 +13373,16 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
 
       glDeleteTextures(1, &temp_texture);
     } else {
+      if (workarounds().do_teximage_before_copyteximage_to_cube_map &&
+          texture->target() == GL_TEXTURE_CUBE_MAP &&
+          target != GL_TEXTURE_CUBE_MAP_POSITIVE_X) {
+        TextureManager::DoTexImageArguments args = {
+          target, level, final_internal_format, width, height, 1, border,
+          format, type, nullptr, pixels_size, 0,
+          TextureManager::DoTexImageArguments::kTexImage2D };
+        texture_manager()->WorkaroundCopyTexImageCubeMap(&texture_state_,
+            &state_, &framebuffer_state_, texture_ref, func_name, args);
+      }
       glCopyTexImage2D(target, level, final_internal_format, copyX, copyY,
                        copyWidth, copyHeight, border);
     }

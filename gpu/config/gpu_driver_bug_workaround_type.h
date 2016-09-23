@@ -79,6 +79,8 @@
          disable_transparent_visuals)                        \
   GPU_OP(DISABLE_WEBGL_RGB_MULTISAMPLING_USAGE,              \
          disable_webgl_rgb_multisampling_usage)              \
+  GPU_OP(DO_TEXIMAGE_BEFORE_COPYTEXIMAGE_TO_CUBE_MAP,        \
+         do_teximage_before_copyteximage_to_cube_map)        \
   GPU_OP(ETC1_POWER_OF_TWO_ONLY,                             \
          etc1_power_of_two_only)                             \
   GPU_OP(EMULATE_ABS_INT_FUNCTION,                           \

@@ -315,6 +315,26 @@ GLuint ToGLuint(const void* ptr) {
 base::LazyInstance<const FormatTypeValidator>::Leaky g_format_type_validator =
     LAZY_INSTANCE_INITIALIZER;
 
+class ScopedResetPixelUnpackBuffer{
+ public:
+  explicit ScopedResetPixelUnpackBuffer(ContextState* state)
+      : buffer_(nullptr) {
+    buffer_ = state->bound_pixel_unpack_buffer.get();
+    if (buffer_) {
+      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    }
+  }
+
+  ~ScopedResetPixelUnpackBuffer() {
+    if (buffer_) {
+      glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer_->service_id());
+    }
+  }
+
+ private:
+    Buffer* buffer_;
+};
+
 }  // namespace anonymous
 
 TextureManager::DestructionObserver::DestructionObserver() {}
@@ -2402,6 +2422,55 @@ bool TextureManager::ValidateTexImage(
   return true;
 }
 
+void TextureManager::DoCubeMapWorkaround(
+    DecoderTextureState* texture_state,
+    ContextState* state,
+    DecoderFramebufferState* framebuffer_state,
+    TextureRef* texture_ref,
+    const char* function_name,
+    const DoTexImageArguments& args) {
+  // This workaround code does not work with an unpack buffer bound.
+  ScopedResetPixelUnpackBuffer scoped_reset_pbo(state);
+
+  std::vector<GLenum> undefined_faces;
+  Texture* texture = texture_ref->texture();
+  if (texture_state->force_cube_complete) {
+    int width = 0;
+    int height = 0;
+    for (unsigned i = 0; i < 6; i++) {
+      GLenum target = static_cast<GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+      bool defined = texture->GetLevelSize(
+          target, args.level, &width, &height, nullptr);
+      if (!defined && target != args.target)
+        undefined_faces.push_back(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+    }
+  } else {
+    DCHECK(args.target != GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+    int width = 0;
+    int height = 0;
+    if (!texture->GetLevelSize(GL_TEXTURE_CUBE_MAP_POSITIVE_X, args.level,
+                               &width, &height, nullptr)) {
+      undefined_faces.push_back(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
+    }
+  }
+  if (!memory_type_tracker_->EnsureGPUMemoryAvailable(
+          (undefined_faces.size() + 1) * args.pixels_size)) {
+    ERRORSTATE_SET_GL_ERROR(state->GetErrorState(), GL_OUT_OF_MEMORY,
+                            function_name, "out of memory");
+    return;
+  }
+  DoTexImageArguments new_args = args;
+  std::unique_ptr<char[]> zero(new char[args.pixels_size]);
+  memset(zero.get(), 0, args.pixels_size);
+  for (GLenum face : undefined_faces) {
+    new_args.target = face;
+    new_args.pixels = zero.get();
+    DoTexImage(texture_state, state, framebuffer_state,
+               function_name, texture_ref, new_args);
+    texture->MarkLevelAsInternalWorkaround(face, args.level);
+  }
+}
+
 void TextureManager::ValidateAndDoTexImage(
     DecoderTextureState* texture_state,
     ContextState* state,
@@ -2424,44 +2493,8 @@ void TextureManager::ValidateAndDoTexImage(
        (texture_state->force_cube_map_positive_x_allocation &&
         args.target != GL_TEXTURE_CUBE_MAP_POSITIVE_X));
   if (need_cube_map_workaround && !buffer) {
-    // TODO(zmo): The following code does not work with an unpack buffer bound.
-    std::vector<GLenum> undefined_faces;
-    if (texture_state->force_cube_complete) {
-      int width = 0;
-      int height = 0;
-      for (unsigned i = 0; i < 6; i++) {
-        GLenum target = static_cast<GLenum>(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-        bool defined = texture->GetLevelSize(
-            target, args.level, &width, &height, nullptr);
-        if (!defined && target != args.target)
-          undefined_faces.push_back(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-      }
-    } else {
-      DCHECK(texture_state->force_cube_map_positive_x_allocation &&
-             args.target != GL_TEXTURE_CUBE_MAP_POSITIVE_X);
-      int width = 0;
-      int height = 0;
-      if (!texture->GetLevelSize(GL_TEXTURE_CUBE_MAP_POSITIVE_X, args.level,
-                                 &width, &height, nullptr)) {
-        undefined_faces.push_back(GL_TEXTURE_CUBE_MAP_POSITIVE_X);
-      }
-    }
-    if (!memory_type_tracker_->EnsureGPUMemoryAvailable(
-            (undefined_faces.size() + 1) * args.pixels_size)) {
-      ERRORSTATE_SET_GL_ERROR(state->GetErrorState(), GL_OUT_OF_MEMORY,
-                              function_name, "out of memory");
-      return;
-    }
-    DoTexImageArguments new_args = args;
-    std::unique_ptr<char[]> zero(new char[args.pixels_size]);
-    memset(zero.get(), 0, args.pixels_size);
-    for (GLenum face : undefined_faces) {
-      new_args.target = face;
-      new_args.pixels = zero.get();
-      DoTexImage(texture_state, state, framebuffer_state,
-                 function_name, texture_ref, new_args);
-      texture->MarkLevelAsInternalWorkaround(face, args.level);
-    }
+    DoCubeMapWorkaround(texture_state, state, framebuffer_state,
+                        texture_ref, function_name, args);
   }
 
   if (texture_state->unpack_overlapping_rows_separately_unpack_buffer &&
