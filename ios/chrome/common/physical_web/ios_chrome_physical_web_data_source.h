@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #import "base/mac/scoped_nsobject.h"
-#include "components/physical_web/data_source/physical_web_data_source.h"
+#include "components/physical_web/data_source/physical_web_data_source_impl.h"
 
 namespace base {
 class ListValue;
@@ -17,7 +17,7 @@ class PhysicalWebListener;
 @class PhysicalWebScanner;
 
 // iOS implementation of PhysicalWebDataSource
-class IOSChromePhysicalWebDataSource : public PhysicalWebDataSource {
+class IOSChromePhysicalWebDataSource : public PhysicalWebDataSourceImpl {
  public:
   IOSChromePhysicalWebDataSource();
   ~IOSChromePhysicalWebDataSource() override;
@@ -36,12 +36,6 @@ class IOSChromePhysicalWebDataSource : public PhysicalWebDataSource {
   // Returns boolean |true| if network requests are disabled and there are one
   // or more discovered URLs that have not been sent to the resolution service.
   bool HasUnresolvedDiscoveries() override;
-
-  // Register for changes to Physical Web URLs and associated page metadata.
-  void RegisterListener(PhysicalWebListener* physical_web_listener) override;
-
-  // Unregister for changes to Physical Web URLs and associated page metadata.
-  void UnregisterListener(PhysicalWebListener* physical_web_listener) override;
 
  private:
   // Scanner for nearby Physical Web URL devices.

@@ -45,9 +45,3 @@ std::unique_ptr<base::ListValue> IOSChromePhysicalWebDataSource::GetMetadata() {
 bool IOSChromePhysicalWebDataSource::HasUnresolvedDiscoveries() {
   return [scanner_ unresolvedBeaconsCount] > 0;
 }
-
-void IOSChromePhysicalWebDataSource::RegisterListener(
-    PhysicalWebListener* physical_web_listener) {}
-
-void IOSChromePhysicalWebDataSource::UnregisterListener(
-    PhysicalWebListener* physical_web_listener) {}
