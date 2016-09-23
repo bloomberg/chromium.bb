@@ -992,6 +992,14 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
           'TOC-Continuous',
   )
 
+  site_config.AddTemplate(
+      'external',
+      internal=False,
+      overlays=constants.PUBLIC_OVERLAYS,
+      manifest_repo_url=site_config.params['MANIFEST_URL'],
+      manifest=constants.DEFAULT_MANIFEST,
+  )
+
   # This builds with more source available.
   site_config.AddTemplate(
       'internal',
@@ -2030,12 +2038,12 @@ def _GetConfig(site_config, ge_build_config, board_configs,
       _base_configs['x86-generic'],
   )
 
+  # Build external source, for an internal board.
   site_config.Add(
       'daisy-incremental',
       site_config.templates.incremental,
-      _base_configs['daisy'].derive(
-          config_lib.BuildConfig.delete_keys(site_config.templates.internal),
-          manifest=config_lib.BuildConfig.delete_key()),
+      _base_configs['daisy'],
+      site_config.templates.external,
       useflags=append_useflags(['-chrome_internal']),
   )
 
@@ -2086,13 +2094,13 @@ def _GetConfig(site_config, ge_build_config, board_configs,
       trybot_list=True)
 
   # pylint: disable=bad-continuation
-  _CreateConfigsForBoards(
-      site_config.templates.chromium_pfq_informational,
-      ['x86-generic', 'amd64-generic'],
+  site_config.AddForBoards(
       'telem-chromium-pfq-informational',
-      **site_config.templates.telemetry.derive(
-          site_config.templates.chrome_try,
-          _template=(config_lib.BuildConfig.delete_key()))
+      ['x86-generic', 'amd64-generic'],
+      board_configs,
+      site_config.templates.chromium_pfq_informational,
+      site_config.templates.telemetry,
+      site_config.templates.chrome_try,
   )
 
   #
