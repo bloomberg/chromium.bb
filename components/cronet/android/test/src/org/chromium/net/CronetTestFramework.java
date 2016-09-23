@@ -5,7 +5,6 @@
 package org.chromium.net;
 
 import android.content.Context;
-import android.os.ConditionVariable;
 import android.os.Environment;
 
 import static junit.framework.Assert.assertEquals;
@@ -15,13 +14,8 @@ import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.net.URLStreamHandlerFactory;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.HashMap;
 
 /**
  * Framework for testing Cronet.
@@ -55,8 +49,6 @@ public class CronetTestFramework {
     public static final class LibraryInitType {
         // Initializes Cronet Async API.
         public static final String CRONET = "cronet";
-        // Initializes Cronet legacy API.
-        public static final String LEGACY = "legacy";
         // Initializes Cronet HttpURLConnection API.
         public static final String HTTP_URL_CONNECTION = "http_url_connection";
         // Do not initialize.
@@ -67,38 +59,12 @@ public class CronetTestFramework {
 
     public URLStreamHandlerFactory mStreamHandlerFactory;
     public CronetEngine mCronetEngine;
-    @SuppressWarnings("deprecation")
-    HttpUrlRequestFactory mRequestFactory;
 
     private final String[] mCommandLine;
     private final Context mContext;
 
-    private String mUrl;
-    private int mHttpStatusCode = 0;
-
     // CronetEngine.Builder used for this activity.
     private CronetEngine.Builder mCronetEngineBuilder;
-
-    @SuppressWarnings("deprecation")
-    private class TestHttpUrlRequestListener implements HttpUrlRequestListener {
-        private final ConditionVariable mComplete = new ConditionVariable();
-
-        public TestHttpUrlRequestListener() {}
-
-        @Override
-        public void onResponseStarted(HttpUrlRequest request) {
-            mHttpStatusCode = request.getHttpStatusCode();
-        }
-
-        @Override
-        public void onRequestComplete(HttpUrlRequest request) {
-            mComplete.open();
-        }
-
-        public void blockForComplete() {
-            mComplete.block();
-        }
-    }
 
     // TODO(crbug.com/547160): Fix this findbugs error and remove the suppression.
     @SuppressFBWarnings("EI_EXPOSE_REP2")
@@ -127,12 +93,6 @@ public class CronetTestFramework {
 
         switch (initString) {
             case LibraryInitType.NONE:
-                break;
-            case LibraryInitType.LEGACY:
-                mRequestFactory = initRequestFactory();
-                if (appUrl != null) {
-                    startWithURL(appUrl);
-                }
                 break;
             case LibraryInitType.HTTP_URL_CONNECTION:
                 mCronetEngine = initCronetEngine();
@@ -244,12 +204,6 @@ public class CronetTestFramework {
         return mCronetEngineBuilder.build();
     }
 
-    // Helper function to initialize request factory. Also used in testing.
-    @SuppressWarnings("deprecation")
-    public HttpUrlRequestFactory initRequestFactory() {
-        return HttpUrlRequestFactory.createFactory(mContext, mCronetEngineBuilder);
-    }
-
     private String getCommandLineArg(String key) {
         if (mCommandLine != null) {
             for (int i = 0; i < mCommandLine.length; ++i) {
@@ -261,45 +215,7 @@ public class CronetTestFramework {
         return null;
     }
 
-    @SuppressWarnings("deprecation")
-    private void applyCommandLineToHttpUrlRequest(HttpUrlRequest request) {
-        String postData = getCommandLineArg(POST_DATA_KEY);
-        if (postData != null) {
-            InputStream dataStream = new ByteArrayInputStream(postData.getBytes());
-            ReadableByteChannel dataChannel = Channels.newChannel(dataStream);
-            request.setUploadChannel("text/plain", dataChannel, postData.length());
-            request.setHttpMethod("POST");
-        }
-    }
-
-    @SuppressWarnings("deprecation")
-    public void startWithURL(String url) {
-        Log.i(TAG, "Cronet started: %s", url);
-        mUrl = url;
-
-        HashMap<String, String> headers = new HashMap<String, String>();
-        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
-        HttpUrlRequest request = mRequestFactory.createRequest(
-                url, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
-        applyCommandLineToHttpUrlRequest(request);
-        request.start();
-        listener.blockForComplete();
-    }
-
-    public String getUrl() {
-        return mUrl;
-    }
-
-    public int getHttpStatusCode() {
-        return mHttpStatusCode;
-    }
-
     public void startNetLog() {
-        if (mRequestFactory != null) {
-            mRequestFactory.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
-                            + "/cronet_sample_netlog_old_api.json",
-                    false);
-        }
         if (mCronetEngine != null) {
             mCronetEngine.startNetLogToFile(Environment.getExternalStorageDirectory().getPath()
                             + "/cronet_sample_netlog_new_api.json",
@@ -308,9 +224,6 @@ public class CronetTestFramework {
     }
 
     public void stopNetLog() {
-        if (mRequestFactory != null) {
-            mRequestFactory.stopNetLog();
-        }
         if (mCronetEngine != null) {
             mCronetEngine.stopNetLog();
         }

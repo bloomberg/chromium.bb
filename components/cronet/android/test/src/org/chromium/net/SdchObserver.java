@@ -24,14 +24,9 @@ public class SdchObserver {
      * Constructor.
      * @param targetUrl the target url on which sdch encoding will be used.
      * @param contextAdapter the native context adapter to register the observer.
-     * @param isLegacyApi whether legacy api is used.
      */
-    public SdchObserver(String targetUrl, long contextAdapter, boolean isLegacyAPI) {
-        if (isLegacyAPI) {
-            nativeAddSdchObserverLegacyAPI(targetUrl, contextAdapter);
-        } else {
-            nativeAddSdchObserver(targetUrl, contextAdapter);
-        }
+    public SdchObserver(String targetUrl, long contextAdapter) {
+        nativeAddSdchObserver(targetUrl, contextAdapter);
         mAddBlock.block();
         mAddBlock.close();
     }
@@ -57,5 +52,4 @@ public class SdchObserver {
     }
 
     private native void nativeAddSdchObserver(String targetUrl, long contextAdapter);
-    private native void nativeAddSdchObserverLegacyAPI(String targetUrl, long contextAdapter);
 }

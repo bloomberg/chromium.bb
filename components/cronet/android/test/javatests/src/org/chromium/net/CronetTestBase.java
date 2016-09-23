@@ -79,18 +79,6 @@ public class CronetTestBase extends AndroidTestCase {
     }
 
     /**
-     * Starts the CronetTest framework for the legacy API.
-     * @param url if non-null, a request will be made with that url.
-     */
-    protected CronetTestFramework startCronetTestFrameworkForLegacyApi(String url) {
-        String[] commandLineArgs = {
-                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.LEGACY};
-        mCronetTestFramework =
-                startCronetTestFrameworkWithUrlAndCommandLineArgs(url, commandLineArgs);
-        return mCronetTestFramework;
-    }
-
-    /**
      * Returns {@code true} when test is being run against system HttpURLConnection implementation.
      */
     protected boolean testingSystemHttpURLConnection() {

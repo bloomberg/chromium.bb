@@ -6,7 +6,6 @@ package org.chromium.net;
 
 import android.os.ConditionVariable;
 import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -18,7 +17,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.concurrent.Executors;
 
 /**
@@ -66,34 +64,6 @@ public class QuicTest extends CronetTestBase {
     protected void tearDown() throws Exception {
         QuicTestServer.shutdownQuicTestServer();
         super.tearDown();
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
-    @SuppressWarnings("deprecation")
-    @OnlyRunNativeCronet
-    public void testQuicLoadUrl_LegacyAPI() throws Exception {
-        String[] commandLineArgs = {
-                CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.LEGACY};
-        mTestFramework = new CronetTestFramework(null, commandLineArgs, getContext(), mBuilder);
-        String quicURL = QuicTestServer.getServerURL() + "/simple.txt";
-
-        HashMap<String, String> headers = new HashMap<String, String>();
-        TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
-
-        // Although the native stack races QUIC and SPDY for the first request,
-        // since there is no http server running on the corresponding TCP port,
-        // QUIC will always succeed with a 200 (see
-        // net::HttpStreamFactoryImpl::Request::OnStreamFailed).
-        HttpUrlRequest request = mTestFramework.mRequestFactory.createRequest(
-                quicURL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
-        request.start();
-        listener.blockForComplete();
-        assertEquals(200, listener.mHttpStatusCode);
-        assertEquals(
-                "This is a simple text file served by QUIC.\n",
-                listener.mResponseAsString);
-        assertEquals("quic/1+spdy/3", listener.mNegotiatedProtocol);
     }
 
     @LargeTest

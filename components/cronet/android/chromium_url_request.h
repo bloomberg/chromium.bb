@@ -40,8 +40,6 @@ enum UrlRequestError {
   REQUEST_ERROR_TOO_MANY_REDIRECTS = 5,
 };
 
-bool ChromiumUrlRequestRegisterJni(JNIEnv* env);
-
 }  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_ANDROID_CHROMIUM_URL_REQUEST_H_
