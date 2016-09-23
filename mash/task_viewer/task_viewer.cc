@@ -23,7 +23,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/mus/aura_init.h"
@@ -50,7 +50,8 @@ class TaskViewerContents : public views::WidgetDelegateView,
         table_view_(nullptr),
         table_view_parent_(nullptr),
         kill_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("Kill Process"))),
+            views::MdTextButton::Create(this,
+                                        base::ASCIIToUTF16("Kill Process"))),
         observer_(nullptr),
         weak_ptr_factory_(this) {
     // We don't want to show an empty UI on startup, so just block until we
@@ -64,7 +65,6 @@ class TaskViewerContents : public views::WidgetDelegateView,
     table_view_parent_ = table_view_->CreateParentIfNecessary();
     AddChildView(table_view_parent_);
 
-    kill_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(kill_button_);
   }
   ~TaskViewerContents() override {
@@ -260,7 +260,7 @@ class TaskViewerContents : public views::WidgetDelegateView,
 
   views::TableView* table_view_;
   views::View* table_view_parent_;
-  views::LabelButton* kill_button_;
+  views::MdTextButton* kill_button_;
   ui::TableModelObserver* observer_;
 
   std::vector<std::unique_ptr<InstanceInfo>> instances_;

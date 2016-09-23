@@ -105,7 +105,6 @@ class ModalWindow : public views::WidgetDelegateView,
         color_(g_colors[g_color_index]),
         open_button_(MdTextButton::Create(this, base::ASCIIToUTF16("Moar!"))) {
     ++g_color_index %= arraysize(g_colors);
-    open_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(open_button_);
   }
   ~ModalWindow() override {}

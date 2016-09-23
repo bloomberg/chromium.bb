@@ -12,7 +12,7 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "ui/views/background.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/window_manager_connection.h"
@@ -28,9 +28,8 @@ class ScreenlockView : public views::WidgetDelegateView,
   explicit ScreenlockView(shell::Connector* connector)
       : connector_(connector),
         unlock_button_(
-            new views::LabelButton(this, base::ASCIIToUTF16("Unlock"))) {
+            views::MdTextButton::Create(this, base::ASCIIToUTF16("Unlock"))) {
     set_background(views::Background::CreateSolidBackground(SK_ColorYELLOW));
-    unlock_button_->SetStyle(views::Button::STYLE_BUTTON);
     AddChildView(unlock_button_);
   }
   ~ScreenlockView() override {}
@@ -65,7 +64,7 @@ class ScreenlockView : public views::WidgetDelegateView,
   }
 
   shell::Connector* connector_;
-  views::LabelButton* unlock_button_;
+  views::MdTextButton* unlock_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenlockView);
 };
