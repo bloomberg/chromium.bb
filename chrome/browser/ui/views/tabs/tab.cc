@@ -378,7 +378,7 @@ gfx::Path GetBorderPath(float scale,
 #endif
 
     SkScalar left = kTabInset;
-    SkScalar top = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
+    SkScalar top = SkIntToScalar(0);
     SkScalar right = SkIntToScalar(size.width()) - kTabInset;
     SkScalar bottom = SkIntToScalar(size.height());
 
@@ -388,21 +388,15 @@ gfx::Path GetBorderPath(float scale,
     // Left end cap.
     path.lineTo(left + kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
     path.lineTo(left + kTabCapWidth - kTabTopCurveWidth,
-                 top + kTabTopCurveWidth);
+                top + kTabTopCurveWidth);
     path.lineTo(left + kTabCapWidth, top);
-
-    // Extend over the top shadow area if we have one and the caller wants it.
-    if (top > 0 && extend_to_top) {
-      path.lineTo(left + kTabCapWidth, 0);
-      path.lineTo(right - kTabCapWidth, 0);
-    }
 
     // Connect to the right cap.
     path.lineTo(right - kTabCapWidth, top);
 
     // Right end cap.
     path.lineTo(right - kTabCapWidth + kTabTopCurveWidth,
-                 top + kTabTopCurveWidth);
+                top + kTabTopCurveWidth);
     path.lineTo(right - kTabBottomCurveWidth, bottom - kTabBottomCurveWidth);
     path.lineTo(right, bottom);
 
@@ -889,17 +883,6 @@ int Tab::GetImmersiveHeight() {
 }
 
 // static
-int Tab::GetYInsetForActiveTabBackground() {
-  // The computed value here is strangely less than the height of the area atop
-  // the tab that doesn't get a background painted; otherwise, we could compute
-  // the value by simply using GetLayoutInsets(TAB).top().  My suspicion is that
-  // originally there was some sort of off-by-one error in how this background
-  // was painted, and theme authors compensated; now we're stuck perpetuating it
-  // as a result.
-  return GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) + 1;
-}
-
-// static
 float Tab::GetInverseDiagonalSlope() {
   // This is computed from the border path as follows:
   // * The unscaled endcap width is enough for the whole stroke outer curve,
@@ -1041,8 +1024,7 @@ void Tab::Layout() {
     const gfx::Size close_button_size(close_button_->GetPreferredSize());
     const int top = lb.y() + (lb.height() - close_button_size.height() + 1) / 2;
     const int left = kAfterTitleSpacing;
-    const int close_button_end = lb.right() +
-        GetLayoutConstant(TAB_CLOSE_BUTTON_TRAILING_PADDING_OVERLAP);
+    const int close_button_end = lb.right();
     close_button_->SetPosition(
         gfx::Point(close_button_end - close_button_size.width() - left, 0));
     const int bottom = height() - close_button_size.height() - top;
@@ -1299,7 +1281,7 @@ void Tab::PaintTab(gfx::Canvas* canvas, const gfx::Path& clip) {
   const int kActiveTabFillId = IDR_THEME_TOOLBAR;
   const bool has_custom_image =
       GetThemeProvider()->HasCustomImage(kActiveTabFillId);
-  const int y_offset = -GetYInsetForActiveTabBackground();
+  const int y_offset = -GetLayoutInsets(TAB).top();
   if (IsActive()) {
     PaintTabBackgroundUsingFillId(canvas, canvas, true, kActiveTabFillId,
                                   has_custom_image, y_offset);
@@ -1375,8 +1357,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas,
   // only providing a custom frame image, |has_custom_image| will be true, but
   // we should use the |background_offset_| here.
   const ui::ThemeProvider* tp = GetThemeProvider();
-  const int y_offset = tp->HasCustomImage(fill_id) ?
-      -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) : background_offset_.y();
+  const int y_offset = tp->HasCustomImage(fill_id) ? 0 : background_offset_.y();
 
   // We only cache the image when it's the default image and we're not hovered,
   // to avoid caching a background image that isn't the same for all tabs.

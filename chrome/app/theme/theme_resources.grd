@@ -147,21 +147,6 @@
       <if expr="is_win">
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="common/favicon_conflicts.png" />
       </if>
-      <!-- Ash doesn't draw rounded content area, so needs a special top
-           image. -->
-      <if expr="not use_ash">
-        <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_CENTER" file="common/content_top_center.png" />
-      </if>
-      <if expr="use_ash">
-        <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_CENTER" file="common/ash/content_top_center.png" />
-      </if>
-      <if expr="not chromeos">
-        <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_CENTER_DESKTOP" file="common/content_top_center.png" />
-      </if>
-      <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_LEFT_CORNER" file="common/content_top_left_corner.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_LEFT_CORNER_MASK" file="common/content_top_left_corner_mask.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_RIGHT_CORNER" file="common/content_top_right_corner.png" />
-      <structure type="chrome_scaled_image" name="IDR_CONTENT_TOP_RIGHT_CORNER_MASK" file="common/content_top_right_corner_mask.png" />
       <structure type="chrome_scaled_image" name="IDR_COOKIE_ICON" file="common/cookie.png" />
       <structure type="chrome_scaled_image" name="IDR_COOKIE_STORAGE_ICON" file="common/cookie_storage.png" />
       <structure type="chrome_scaled_image" name="IDR_DEVELOPER_MODE_HIGHLIGHT_BOTTOM_LEFT" file="common/developer_mode_highlight_bottom_left.png" />
@@ -236,10 +221,8 @@
         <structure type="chrome_scaled_image" name="IDR_GOOGLE_ICON" file="google_chrome/google_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_HELP_MENU" file="common/help_16.png" />
-      <if expr="toolkit_views or is_macosx or is_ios">
+      <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_HOME" file="common/browser_home_normal.png" />
-      </if>
-      <if expr="toolkit_views or is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_HOME_H" file="common/browser_home_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_HOME_P" file="common/browser_home_pressed.png" />
       </if>

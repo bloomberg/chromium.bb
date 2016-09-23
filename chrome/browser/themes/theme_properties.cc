@@ -195,9 +195,11 @@ constexpr int kToolbarButtonIDs[] = {
     IDR_FORWARD_D,
     IDR_FORWARD_H,
     IDR_FORWARD_P,
+#if defined(OS_MACOSX)
     IDR_HOME,
     IDR_HOME_H,
     IDR_HOME_P,
+#endif
     IDR_RELOAD,
     IDR_RELOAD_H,
     IDR_RELOAD_P,

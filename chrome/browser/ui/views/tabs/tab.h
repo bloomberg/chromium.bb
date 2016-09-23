@@ -158,11 +158,6 @@ class Tab : public gfx::AnimationDelegate,
   // Returns the height for immersive mode tabs.
   static int GetImmersiveHeight();
 
-  // Returns the Y inset within the tab bounds for drawing the background image.
-  // This is necessary for correct vertical alignment of the frame, tab, and
-  // toolbar images with custom themes.
-  static int GetYInsetForActiveTabBackground();
-
   // Returns the inverse of the slope of the diagonal portion of the tab outer
   // border.  (This is a positive value, so it's specifically for the slope of
   // the leading edge.)

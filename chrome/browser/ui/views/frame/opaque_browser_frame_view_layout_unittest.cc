@@ -74,7 +74,6 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   gfx::Size GetTabstripPreferredSize() const override {
     return IsTabStripVisible() ? gfx::Size(78, 29) : gfx::Size();
   }
-  int GetToolbarLeadingCornerClientWidth() const override { return 0; }
 
  private:
   base::string16 window_title_;

@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/common/profile_management_switches.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -180,13 +179,9 @@ int OpaqueBrowserFrameViewLayout::NonClientTopHeight(bool restored) const {
 
 int OpaqueBrowserFrameViewLayout::GetTabStripInsetsTop(bool restored) const {
   const int top = NonClientTopHeight(restored);
-  // Annoyingly, the pre-MD layout uses different heights for the hit-test
-  // exclusion region (which we want here, since we're trying to size the border
-  // so that the region above the tab's hit-test zone matches) versus the shadow
-  // thickness.
-  const int exclusion = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
-  return (!restored && (IsTitleBarCondensed() || delegate_->IsFullscreen())) ?
-      top : (top + kNonClientRestoredExtraThickness - exclusion);
+  return (!restored && (IsTitleBarCondensed() || delegate_->IsFullscreen()))
+             ? top
+             : (top + kNonClientRestoredExtraThickness);
 }
 
 int OpaqueBrowserFrameViewLayout::TitlebarTopThickness(bool restored) const {
@@ -368,12 +363,7 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
   // Any buttons/icon/title were laid out based on the frame border thickness,
   // but the tabstrip bounds need to be based on the non-client border thickness
   // on any side where there aren't other buttons forcing a larger inset.
-  const bool md = ui::MaterialDesignController::IsModeMaterial();
   int min_button_width = NonClientBorderThickness();
-  // In non-MD, the toolbar has a rounded corner that we don't want the tabstrip
-  // to overlap.
-  if (!md && !incognito_icon_ && delegate_->IsToolbarVisible())
-    min_button_width += delegate_->GetToolbarLeadingCornerClientWidth();
   leading_button_start_ = std::max(leading_button_start_, min_button_width);
   // The trailing corner is a mirror of the leading one.
   trailing_button_start_ = std::max(trailing_button_start_, min_button_width);
@@ -392,9 +382,8 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
     }
     const int bottom = GetTabStripInsetsTop(false) +
         delegate_->GetTabStripHeight() - insets.bottom();
-    const int y = (md || !IsTitleBarCondensed()) ?
-        (bottom - size.height()) : FrameBorderThickness(false);
-    incognito_icon_->SetBounds(x, y, size.width(), bottom - y);
+    incognito_icon_->SetBounds(x, bottom - size.height(), size.width(),
+                               size.height());
   }
 
   minimum_size_for_buttons_ +=

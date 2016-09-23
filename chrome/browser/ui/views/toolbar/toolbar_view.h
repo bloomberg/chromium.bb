@@ -41,7 +41,6 @@ class ToolbarView : public views::AccessiblePaneView,
                     public content::NotificationObserver,
                     public CommandObserver,
                     public views::ButtonListener,
-                    public views::ViewTargeterDelegate,
                     public AppMenuIconController::Delegate {
  public:
   // The view class name.
@@ -160,10 +159,6 @@ class ToolbarView : public views::AccessiblePaneView,
                               // bar, used for popups.
   };
 
-  // views::ViewTargeterDelegate:
-  bool DoesIntersectRect(const views::View* target,
-                         const gfx::Rect& rect) const override;
-
   // AppMenuIconController::Delegate:
   void UpdateSeverity(AppMenuIconController::IconType type,
                       AppMenuIconPainter::Severity severity,
@@ -193,8 +188,6 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowOutdatedInstallNotification(bool auto_update_enabled);
 
   void OnShowHomeButtonChanged();
-
-  int content_shadow_height() const;
 
   // Controls. Most of these can be null, e.g. in popup windows. Only
   // |location_bar_| is guaranteed to exist.

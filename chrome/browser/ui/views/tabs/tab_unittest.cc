@@ -265,15 +265,13 @@ TEST_F(TabTest, HitTestTopPixel) {
   int middle_y = tab.height() / 2;
   EXPECT_FALSE(tab.HitTestPoint(gfx::Point(0, middle_y)));
 
-  // Normally, tabs should not be hit if we click in the exclusion region, only
-  // if we click below it.
-  const int exclusion = GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT);
+  // Tabs should not be hit if we click above them.
   int middle_x = tab.width() / 2;
-  EXPECT_FALSE(tab.HitTestPoint(gfx::Point(middle_x, exclusion - 1)));
-  EXPECT_TRUE(tab.HitTestPoint(gfx::Point(middle_x, exclusion)));
+  EXPECT_FALSE(tab.HitTestPoint(gfx::Point(middle_x, -1)));
+  EXPECT_TRUE(tab.HitTestPoint(gfx::Point(middle_x, 0)));
 
-  // If the window is maximized, however, we want clicks in the top edge to
-  // select the tab.
+  // Make sure top edge clicks still select the tab when the window is
+  // maximized.
   widget.Maximize();
   EXPECT_TRUE(tab.HitTestPoint(gfx::Point(middle_x, 0)));
 

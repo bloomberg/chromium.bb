@@ -68,7 +68,6 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/focus/view_storage.h"
-#include "ui/views/view_targeter.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -103,15 +102,6 @@ bool HasAshShell() {
 }
 #endif  // OS_CHROMEOS
 
-// Returns the y-position that will center an element of height
-// |child_height| inside an element of height |parent_height|. For
-// material design excess padding is placed below, for non-material
-// it is placed above.
-int CenteredChildY(int parent_height, int child_height) {
-  int roundoff_amount = ui::MaterialDesignController::IsModeMaterial() ? 0 : 1;
-  return (parent_height - child_height + roundoff_amount) / 2;
-}
-
 }  // namespace
 
 // static
@@ -134,9 +124,6 @@ ToolbarView::ToolbarView(Browser* browser)
                         ? DISPLAYMODE_NORMAL
                         : DISPLAYMODE_LOCATION) {
   set_id(VIEW_ID_TOOLBAR);
-
-  SetEventTargeter(
-      std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
 
   chrome::AddCommandObserver(browser_, IDC_BACK, this);
   chrome::AddCommandObserver(browser_, IDC_FORWARD, this);
@@ -496,7 +483,7 @@ void ToolbarView::Layout() {
   // Set child_y such that buttons appear vertically centered.
   const int child_height =
       std::min(back_->GetPreferredSize().height(), height());
-  const int child_y = CenteredChildY(height(), child_height);
+  const int child_y = (height() - child_height) / 2;
 
   // If the window is maximized, we extend the back button to the left so that
   // clicking on the left-most pixel will activate the back button.
@@ -561,7 +548,7 @@ void ToolbarView::Layout() {
   const int location_bar_width = available_width;
 
   const int location_height = location_bar_->GetPreferredSize().height();
-  const int location_y = CenteredChildY(height(), location_height);
+  const int location_y = (height() - location_height) / 2;
 
   location_bar_->SetBounds(next_element_x, location_y,
                            location_bar_width, location_height);
@@ -634,20 +621,6 @@ void ToolbarView::RemovePaneFocus() {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, private:
 
-// views::ViewTargeterDelegate:
-bool ToolbarView::DoesIntersectRect(const views::View* target,
-                                    const gfx::Rect& rect) const {
-  CHECK_EQ(target, this);
-
-  // Fall through to the tab strip above us if none of |rect| intersects
-  // with this view (intersection with the top shadow edge does not
-  // count as intersection with this view).
-  if (rect.bottom() < content_shadow_height())
-    return false;
-  // Otherwise let our superclass take care of it.
-  return ViewTargeterDelegate::DoesIntersectRect(this, rect);
-}
-
 // AppMenuIconController::Delegate:
 void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
                                  AppMenuIconPainter::Severity severity,
@@ -715,20 +688,12 @@ gfx::Size ToolbarView::GetSizeInternal(
 
 gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
   if (is_display_mode_normal()) {
-    // For Material Design the size of the toolbar is computed using the size
-    // of the location bar and constant padding values. For non-material the
-    // size is based on the provided assets.
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      int content_height = std::max(back_->GetPreferredSize().height(),
-                                    location_bar_->GetPreferredSize().height());
-      int padding = GetLayoutInsets(TOOLBAR).height();
-      size.SetToMax(gfx::Size(0, content_height + padding));
-    } else {
-      gfx::ImageSkia* normal_background =
-          GetThemeProvider()->GetImageSkiaNamed(IDR_CONTENT_TOP_CENTER);
-      size.SetToMax(
-          gfx::Size(0, normal_background->height() - content_shadow_height()));
-    }
+    // The size of the toolbar is computed using the size of the location bar
+    // and constant padding values.
+    int content_height = std::max(back_->GetPreferredSize().height(),
+                                  location_bar_->GetPreferredSize().height());
+    int padding = GetLayoutInsets(TOOLBAR).height();
+    size.SetToMax(gfx::Size(0, content_height + padding));
   }
   return size;
 }
@@ -736,47 +701,32 @@ gfx::Size ToolbarView::SizeForContentSize(gfx::Size size) const {
 void ToolbarView::LoadImages() {
   const ui::ThemeProvider* tp = GetThemeProvider();
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    const SkColor normal_color =
-        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
-    const SkColor disabled_color =
-        tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
+  const SkColor normal_color =
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
+  const SkColor disabled_color =
+      tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE);
 
-    back_->SetImage(views::Button::STATE_NORMAL,
-                    gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK,
-                                          normal_color));
-    back_->SetImage(views::Button::STATE_DISABLED,
-                    gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK,
-                                          disabled_color));
-    forward_->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD,
-                              normal_color));
-    forward_->SetImage(
-        views::Button::STATE_DISABLED,
-        gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD,
-                              disabled_color));
-    home_->SetImage(views::Button::STATE_NORMAL,
-                    gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_HOME,
-                                          normal_color));
-    app_menu_button_->UpdateIcon();
+  back_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK, normal_color));
+  back_->SetImage(
+      views::Button::STATE_DISABLED,
+      gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_BACK, disabled_color));
+  forward_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD, normal_color));
+  forward_->SetImage(views::Button::STATE_DISABLED,
+                     gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_FORWARD,
+                                           disabled_color));
+  home_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(gfx::VectorIconId::NAVIGATE_HOME, normal_color));
+  app_menu_button_->UpdateIcon();
 
-    back_->set_ink_drop_base_color(normal_color);
-    forward_->set_ink_drop_base_color(normal_color);
-    home_->set_ink_drop_base_color(normal_color);
-    app_menu_button_->set_ink_drop_base_color(normal_color);
-  } else {
-    back_->SetImage(views::Button::STATE_NORMAL,
-                    *(tp->GetImageSkiaNamed(IDR_BACK)));
-    back_->SetImage(views::Button::STATE_DISABLED,
-                    *(tp->GetImageSkiaNamed(IDR_BACK_D)));
-    forward_->SetImage(views::Button::STATE_NORMAL,
-                       *(tp->GetImageSkiaNamed(IDR_FORWARD)));
-    forward_->SetImage(views::Button::STATE_DISABLED,
-                       *(tp->GetImageSkiaNamed(IDR_FORWARD_D)));
-    home_->SetImage(views::Button::STATE_NORMAL,
-                    *(tp->GetImageSkiaNamed(IDR_HOME)));
-  }
+  back_->set_ink_drop_base_color(normal_color);
+  forward_->set_ink_drop_base_color(normal_color);
+  home_->set_ink_drop_base_color(normal_color);
+  app_menu_button_->set_ink_drop_base_color(normal_color);
 
   reload_->LoadImages();
 }
@@ -798,12 +748,4 @@ void ToolbarView::ShowOutdatedInstallNotification(bool auto_update_enabled) {
 void ToolbarView::OnShowHomeButtonChanged() {
   Layout();
   SchedulePaint();
-}
-
-int ToolbarView::content_shadow_height() const {
-#if defined(USE_ASH)
-  return GetLayoutConstant(TOOLBAR_CONTENT_SHADOW_HEIGHT_ASH);
-#else
-  return GetLayoutConstant(TOOLBAR_CONTENT_SHADOW_HEIGHT);
-#endif
 }

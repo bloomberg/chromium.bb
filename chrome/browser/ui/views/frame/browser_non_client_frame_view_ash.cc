@@ -504,7 +504,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
   const gfx::ImageSkia* const bg = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   const int x = toolbar_bounds.x();
   const int y = toolbar_bounds.y();
-  const int bg_y = GetTopInset(false) + Tab::GetYInsetForActiveTabBackground();
+  const int bg_y = GetTopInset(false) + GetLayoutInsets(TAB).top();
   const int w = toolbar_bounds.width();
   const int h = toolbar_bounds.height();
   const SkColor separator_color =

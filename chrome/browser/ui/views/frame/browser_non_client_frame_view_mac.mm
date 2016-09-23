@@ -143,13 +143,11 @@ void BrowserNonClientFrameViewMac::PaintToolbarBackground(gfx::Canvas* canvas) {
 
   const ui::ThemeProvider* tp = GetThemeProvider();
   gfx::ImageSkia* border = tp->GetImageSkiaNamed(IDR_TOOLBAR_SHADE_TOP);
-  const int top_inset =
-      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) - border->height();
 
   const int x = bounds.x();
-  const int y = bounds.y() + top_inset;
+  const int y = bounds.y() - border->height();
   const int w = bounds.width();
-  const int h = bounds.height() - top_inset;
+  const int h = bounds.height() + border->height();
 
   // The tabstrip border image height is 2*scale pixels, but only the bottom 2
   // pixels contain the actual border (the rest is transparent). We can't draw

@@ -173,8 +173,6 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
       (browser()->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
        browser()->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR)) ?
            toolbar_->GetMinimumSize() : gfx::Size());
-  if (tabstrip_size.height() && toolbar_size.height())
-    toolbar_size.Enlarge(0, -GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP));
   gfx::Size bookmark_bar_size;
   if (bookmark_bar_ &&
       bookmark_bar_->visible() &&
@@ -404,14 +402,11 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
 int BrowserViewLayout::LayoutToolbar(int top) {
   int browser_view_width = vertical_layout_rect_.width();
   bool toolbar_visible = delegate_->IsToolbarVisible();
-  int y = top;
-  y -= (toolbar_visible && delegate_->IsTabStripVisible()) ?
-      GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) : 0;
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
   toolbar_->SetVisible(toolbar_visible);
-  toolbar_->SetBounds(vertical_layout_rect_.x(), y, browser_view_width, height);
-
-  return y + height;
+  toolbar_->SetBounds(vertical_layout_rect_.x(), top, browser_view_width,
+                      height);
+  return toolbar_->bounds().bottom();
 }
 
 int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top, int browser_view_y) {

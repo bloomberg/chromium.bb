@@ -96,8 +96,7 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
   EXPECT_EQ(expected_tabstrip_origin.x(), tabstrip->x());
   EXPECT_EQ(expected_tabstrip_origin.y(), tabstrip->y());
   EXPECT_EQ(0, toolbar->x());
-  const int overlap = GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
-  EXPECT_EQ(tabstrip->bounds().bottom() - overlap, toolbar->y());
+  EXPECT_EQ(tabstrip->bounds().bottom(), toolbar->y());
   EXPECT_EQ(0, contents_container->x());
   EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
   EXPECT_EQ(top_container->bounds().bottom(), contents_container->y());
@@ -136,10 +135,9 @@ TEST_F(BrowserViewTest, BrowserViewLayout) {
 
   // Bookmark bar layout on NTP.
   EXPECT_EQ(0, bookmark_bar->x());
-  EXPECT_EQ(
-      tabstrip->bounds().bottom() + toolbar->height() - overlap -
-          views::NonClientFrameView::kClientEdgeThickness,
-      bookmark_bar->y());
+  EXPECT_EQ(tabstrip->bounds().bottom() + toolbar->height() -
+                views::NonClientFrameView::kClientEdgeThickness,
+            bookmark_bar->y());
   EXPECT_EQ(toolbar->bounds().bottom(), contents_container->y());
   // Contents view has a "top margin" pushing it below the bookmark bar.
   EXPECT_EQ(bookmark_bar->height() -
