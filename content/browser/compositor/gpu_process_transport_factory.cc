@@ -482,8 +482,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       } else if (capabilities.surfaceless) {
 #if defined(OS_MACOSX)
         display_output_surface = base::MakeUnique<GpuOutputSurfaceMac>(
-            context_provider, data->surface_handle, compositor->vsync_manager(),
-            begin_frame_source.get(),
+            compositor->widget(), context_provider, data->surface_handle,
+            compositor->vsync_manager(), begin_frame_source.get(),
             CreateOverlayCandidateValidator(compositor->widget()),
             GetGpuMemoryBufferManager());
 #else

@@ -16,7 +16,6 @@ struct GPU_EXPORT GpuProcessHostedCALayerTreeParamsMac {
   GpuProcessHostedCALayerTreeParamsMac();
   ~GpuProcessHostedCALayerTreeParamsMac();
 
-  int surface_handle = 0;
   CAContextID ca_context_id = 0;
   bool fullscreen_low_power_ca_context_valid = false;
   CAContextID fullscreen_low_power_ca_context_id = 0;

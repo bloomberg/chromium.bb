@@ -7,12 +7,15 @@
 
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
 
+#include "ui/gfx/native_widget_types.h"
+
 namespace content {
 
 class GpuOutputSurfaceMac
     : public GpuSurfacelessBrowserCompositorOutputSurface {
  public:
   GpuOutputSurfaceMac(
+      gfx::AcceleratedWidget widget,
       scoped_refptr<ContextProviderCommandBuffer> context,
       gpu::SurfaceHandle surface_handle,
       scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
@@ -34,6 +37,8 @@ class GpuOutputSurfaceMac
   void SetSurfaceSuspendedForRecycle(bool suspended) override;
 
  private:
+  gfx::AcceleratedWidget widget_;
+
   // Store remote layers in a separate structure, so that non-Objective-C files
   // may include this header.
   struct RemoteLayers;

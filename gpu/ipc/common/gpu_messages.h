@@ -77,7 +77,6 @@ IPC_STRUCT_BEGIN(GpuCommandBufferMsg_SwapBuffersCompleted_Params)
   // TODO(ccameron): Remove these parameters once the CALayer tree is hosted in
   // the browser process.
   // https://crbug.com/604052
-  IPC_STRUCT_MEMBER(gpu::SurfaceHandle, surface_handle)
   // Only one of ca_context_id or io_surface may be non-0.
   IPC_STRUCT_MEMBER(CAContextID, ca_context_id)
   IPC_STRUCT_MEMBER(bool, fullscreen_low_power_ca_context_valid)

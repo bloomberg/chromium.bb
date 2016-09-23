@@ -766,7 +766,6 @@ void CommandBufferProxyImpl::OnSwapBuffersCompleted(
     const GpuCommandBufferMsg_SwapBuffersCompleted_Params& params) {
 #if defined(OS_MACOSX)
   gpu::GpuProcessHostedCALayerTreeParamsMac params_mac;
-  params_mac.surface_handle = params.surface_handle;
   params_mac.ca_context_id = params.ca_context_id;
   params_mac.fullscreen_low_power_ca_context_valid =
       params.fullscreen_low_power_ca_context_valid;

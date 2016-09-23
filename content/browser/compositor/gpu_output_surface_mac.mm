@@ -12,6 +12,7 @@
 #include "gpu/ipc/client/gpu_process_hosted_ca_layer_tree_params.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/compositor/compositor.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/mac/io_surface.h"
 
@@ -48,6 +49,7 @@ struct GpuOutputSurfaceMac::RemoteLayers {
 };
 
 GpuOutputSurfaceMac::GpuOutputSurfaceMac(
+    gfx::AcceleratedWidget widget,
     scoped_refptr<ContextProviderCommandBuffer> context,
     gpu::SurfaceHandle surface_handle,
     scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
@@ -65,6 +67,7 @@ GpuOutputSurfaceMac::GpuOutputSurfaceMac(
           GL_RGBA,
           gfx::BufferFormat::RGBA_8888,
           gpu_memory_buffer_manager),
+      widget_(widget),
       remote_layers_(new RemoteLayers) {}
 
 GpuOutputSurfaceMac::~GpuOutputSurfaceMac() {}
@@ -85,9 +88,7 @@ void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
   remote_layers_->UpdateLayers(params_mac->ca_context_id,
                                params_mac->fullscreen_low_power_ca_context_id);
   if (should_show_frames_state_ == SHOULD_SHOW_FRAMES) {
-    ui::AcceleratedWidgetMac* widget = ui::AcceleratedWidgetMac::Get(
-        content::GpuSurfaceTracker::Get()->AcquireNativeWidget(
-            params_mac->surface_handle));
+    ui::AcceleratedWidgetMac* widget = ui::AcceleratedWidgetMac::Get(widget_);
     if (widget) {
       if (remote_layers_->content_layer) {
         widget->GotCALayerFrame(

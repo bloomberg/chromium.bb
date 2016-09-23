@@ -5,17 +5,13 @@
 #include "gpu/ipc/service/image_transport_surface.h"
 
 #include "base/macros.h"
+#include "gpu/ipc/service/image_transport_surface_overlay_mac.h"
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 
 namespace gpu {
-
-scoped_refptr<gl::GLSurface> ImageTransportSurfaceCreateNativeSurface(
-    GpuChannelManager* manager,
-    GpuCommandBufferStub* stub,
-    SurfaceHandle handle);
 
 namespace {
 
@@ -55,10 +51,10 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     case gl::kGLImplementationDesktopGL:
     case gl::kGLImplementationDesktopGLCoreProfile:
     case gl::kGLImplementationAppleGL:
-      return ImageTransportSurfaceCreateNativeSurface(manager, stub,
-                                                      surface_handle);
+      return make_scoped_refptr<gl::GLSurface>(
+          new ImageTransportSurfaceOverlayMac(stub));
     case gl::kGLImplementationMockGL:
-      return new gl::GLSurfaceStub;
+      return make_scoped_refptr<gl::GLSurface>(new gl::GLSurfaceStub);
     default:
       // Content shell in DRT mode spins up a gpu process which needs an
       // image transport surface, but that surface isn't used to read pixel
@@ -70,7 +66,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
       scoped_refptr<gl::GLSurface> surface(new DRTSurfaceOSMesa());
       if (!surface.get() || !surface->Initialize(format))
         return surface;
-      return scoped_refptr<gl::GLSurface>(
+      return make_scoped_refptr<gl::GLSurface>(
           new PassThroughImageTransportSurface(manager, stub, surface.get()));
   }
 }

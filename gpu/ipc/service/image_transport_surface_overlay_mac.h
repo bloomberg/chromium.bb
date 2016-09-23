@@ -35,8 +35,7 @@ namespace gpu {
 class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
                                         public ui::GpuSwitchingObserver {
  public:
-  ImageTransportSurfaceOverlayMac(GpuCommandBufferStub* stub,
-                                  SurfaceHandle handle);
+  explicit ImageTransportSurfaceOverlayMac(GpuCommandBufferStub* stub);
 
   // GLSurface implementation
   bool Initialize(gl::GLSurface::Format format) override;
@@ -69,7 +68,6 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
 
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
   void SendAcceleratedSurfaceBuffersSwapped(
-      gpu::SurfaceHandle surface_handle,
       CAContextID ca_context_id,
       bool fullscreen_low_power_ca_context_valid,
       CAContextID fullscreen_low_power_ca_context_id,
@@ -80,7 +78,6 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
 
   base::WeakPtr<GpuCommandBufferStub> stub_;
-  SurfaceHandle handle_;
   std::vector<ui::LatencyInfo> latency_info_;
 
   bool use_remote_layer_api_;

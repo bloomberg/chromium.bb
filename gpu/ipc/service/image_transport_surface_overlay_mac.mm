@@ -59,18 +59,9 @@ void IOSurfaceContextNoOp(scoped_refptr<ui::IOSurfaceContext>) {
 
 namespace gpu {
 
-scoped_refptr<gl::GLSurface> ImageTransportSurfaceCreateNativeSurface(
-    GpuChannelManager* manager,
-    GpuCommandBufferStub* stub,
-    SurfaceHandle handle) {
-  return new ImageTransportSurfaceOverlayMac(stub, handle);
-}
-
 ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
-    GpuCommandBufferStub* stub,
-    SurfaceHandle handle)
+    GpuCommandBufferStub* stub)
     : stub_(stub->AsWeakPtr()),
-      handle_(handle),
       use_remote_layer_api_(ui::RemoteLayerAPISupported()),
       scale_factor_(1),
       gl_renderer_id_(0) {
@@ -141,7 +132,6 @@ void ImageTransportSurfaceOverlayMac::SetLatencyInfo(
 }
 
 void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
-    gpu::SurfaceHandle surface_handle,
     CAContextID ca_context_id,
     bool fullscreen_low_power_ca_context_valid,
     CAContextID fullscreen_low_power_ca_context_id,
@@ -155,7 +145,6 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
                        "width", size.width());
 
   GpuCommandBufferMsg_SwapBuffersCompleted_Params params;
-  params.surface_handle = surface_handle;
   params.ca_context_id = ca_context_id;
   params.fullscreen_low_power_ca_context_valid =
       fullscreen_low_power_ca_context_valid;
@@ -283,7 +272,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
       io_surface_mach_port.reset(IOSurfaceCreateMachPort(io_surface));
   }
   SendAcceleratedSurfaceBuffersSwapped(
-      handle_, ca_context_id, fullscreen_low_power_layer_valid,
+      ca_context_id, fullscreen_low_power_layer_valid,
       fullscreen_low_power_ca_context_id, io_surface_mach_port, pixel_size_,
       scale_factor_, std::move(latency_info_));
 
