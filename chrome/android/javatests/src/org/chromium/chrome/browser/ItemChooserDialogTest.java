@@ -5,15 +5,13 @@
 package org.chromium.chrome.browser;
 
 import android.app.Dialog;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.text.SpannableString;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -118,7 +116,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
                 }));
     }
 
-    @SmallTest
+    @LargeTest
     public void testSimpleItemSelection() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -159,7 +157,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.dismiss();
     }
 
-    @SmallTest
+    @LargeTest
     public void testNoItemsAddedDiscoveryIdle() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -187,7 +185,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.dismiss();
     }
 
-    @SmallTest
+    @LargeTest
     public void testDisabledSelection() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -204,8 +202,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.dismiss();
     }
 
-    @DisabledTest(message = "https://crbug.com/646097")
-    @SmallTest
+    @LargeTest
     public void testAddOrUpdateItemAndRemoveItemFromList() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -282,9 +279,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.dismiss();
     }
 
-    @FlakyTest
-//    @SmallTest
-//    crbug.com/629579
+    @LargeTest
     public void testAddItemWithSameNameToListAndRemoveItemFromList() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -342,7 +337,7 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         mChooserDialog.dismiss();
     }
 
-    @SmallTest
+    @LargeTest
     public void testListHeight() throws InterruptedException {
         // 500 * .3 is 150, which is 48 * 3.125. 48 * 3.5 is 168.
         assertEquals(168, ItemChooserDialog.getListHeight(500, 1.0f));

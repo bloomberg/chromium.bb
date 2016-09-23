@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.test.MoreAsserts;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -171,7 +171,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         return message.replaceAll("</?[^>]*link[^>]*>", "");
     }
 
-    @SmallTest
+    @LargeTest
     public void testCancel() throws InterruptedException {
         ItemChooserDialog itemChooser = mChooserDialog.mItemChooserDialog;
         Dialog dialog = itemChooser.getDialogForTesting();
@@ -203,7 +203,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         assertEquals("", mChooserDialog.mFinishedDeviceId);
     }
 
-    @SmallTest
+    @LargeTest
     public void testSelectItem() throws InterruptedException {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
 
@@ -238,7 +238,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         assertEquals("id-2", mChooserDialog.mFinishedDeviceId);
     }
 
-    @SmallTest
+    @LargeTest
     public void testNoLocationPermission() throws InterruptedException {
         ItemChooserDialog itemChooser = mChooserDialog.mItemChooserDialog;
         Dialog dialog = itemChooser.getDialogForTesting();
@@ -303,7 +303,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         mChooserDialog.closeDialog();
     }
 
-    @SmallTest
+    @LargeTest
     public void testNoLocationServices() throws InterruptedException {
         ItemChooserDialog itemChooser = mChooserDialog.mItemChooserDialog;
         Dialog dialog = itemChooser.getDialogForTesting();

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.app.Dialog;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -127,7 +127,7 @@ public class UsbChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
                 "</?link2>", "").replaceAll("</?link>", "");
     }
 
-    @SmallTest
+    @LargeTest
     public void testCancel() throws InterruptedException {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -149,7 +149,7 @@ public class UsbChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
         });
     }
 
-    @SmallTest
+    @LargeTest
     public void testSelectItem() throws InterruptedException {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
 
