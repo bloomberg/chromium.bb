@@ -418,107 +418,34 @@ TEST(ParseCertificateTest, ExtensionCritical3) {
   ASSERT_FALSE(ParseCertificateFromFile("extension_critical_3.pem"));
 }
 
-// Runs a test for extensions parsing. The input file is a PEM file which
-// contains a DER-encoded Extensions sequence, as well as the expected value
-// for each contained extension.
-void EnsureParsingExtensionsSucceeds(
-    const std::string& file_name,
-    std::map<der::Input, ParsedExtension>* extensions,
-    std::string* data) {
-  const PemBlockMapping mappings[] = {
-      // Test Input.
-      {"EXTENSIONS", data},
-  };
-
-  ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
-  ASSERT_TRUE(ParseExtensions(der::Input(data), extensions));
-}
-
-// Runs a test that verifies extensions parsing fails. The input file is a PEM
-// file which contains a DER-encoded Extensions sequence.
-void EnsureParsingExtensionsFails(const std::string& file_name) {
-  std::string data;
-
-  const PemBlockMapping mappings[] = {
-      {"EXTENSIONS", &data},
-  };
-
-  std::map<der::Input, ParsedExtension> extensions;
-  ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
-  ASSERT_FALSE(ParseExtensions(der::Input(&data), &extensions));
-}
-
 // Parses an Extensions that is an empty sequence.
-TEST(ParseExtensionsTest, EmptySequence) {
-  EnsureParsingExtensionsFails("extensions_empty_sequence.pem");
+TEST(ParseCertificateTest, ExtensionsEmptySequence) {
+  ASSERT_FALSE(ParseCertificateFromFile("extensions_empty_sequence.pem"));
 }
 
 // Parses an Extensions that is not a sequence.
-TEST(ParseExtensionsTest, NotSequence) {
-  EnsureParsingExtensionsFails("extensions_not_sequence.pem");
+TEST(ParseCertificateTest, ExtensionsNotSequence) {
+  ASSERT_FALSE(ParseCertificateFromFile("extensions_not_sequence.pem"));
 }
 
 // Parses an Extensions that has data after the sequence.
-TEST(ParseExtensionsTest, DataAfterSequence) {
-  EnsureParsingExtensionsFails("extensions_data_after_sequence.pem");
+TEST(ParseCertificateTest, ExtensionsDataAfterSequence) {
+  ASSERT_FALSE(ParseCertificateFromFile("extensions_data_after_sequence.pem"));
 }
 
 // Parses an Extensions that contains duplicated key usages.
-TEST(ParseExtensionsTest, DuplicateKeyUsage) {
-  EnsureParsingExtensionsFails("extensions_duplicate_key_usage.pem");
-}
-
-// Parses an Extensions that contains an unknown critical extension.
-TEST(ParseExtensionsTest, UnknownCritical) {
-  std::string data;
-  std::map<der::Input, ParsedExtension> extensions;
-  EnsureParsingExtensionsSucceeds("extensions_unknown_critical.pem",
-                                  &extensions, &data);
-
-  ASSERT_EQ(1u, extensions.size());
-  auto iter = extensions.find(DavidBenOid());
-  ASSERT_TRUE(iter != extensions.end());
-  EXPECT_TRUE(iter->second.critical);
-  EXPECT_EQ(4u, iter->second.value.Length());
-}
-
-// Parses an Extensions that contains an unknown non-critical extension.
-TEST(ParseExtensionsTest, UnknownNonCritical) {
-  std::string data;
-  std::map<der::Input, ParsedExtension> extensions;
-  EnsureParsingExtensionsSucceeds("extensions_unknown_non_critical.pem",
-                                  &extensions, &data);
-
-  ASSERT_EQ(1u, extensions.size());
-  auto iter = extensions.find(DavidBenOid());
-  ASSERT_TRUE(iter != extensions.end());
-  EXPECT_FALSE(iter->second.critical);
-  EXPECT_EQ(4u, iter->second.value.Length());
-}
-
-// Parses an Extensions that contains a basic constraints.
-TEST(ParseExtensionsTest, BasicConstraints) {
-  std::string data;
-  std::map<der::Input, ParsedExtension> extensions;
-  EnsureParsingExtensionsSucceeds("extensions_basic_constraints.pem",
-                                  &extensions, &data);
-
-  ASSERT_EQ(1u, extensions.size());
-
-  auto iter = extensions.find(BasicConstraintsOid());
-  ASSERT_TRUE(iter != extensions.end());
-  EXPECT_TRUE(iter->second.critical);
-  EXPECT_EQ(2u, iter->second.value.Length());
+TEST(ParseCertificateTest, ExtensionsDuplicateKeyUsage) {
+  ASSERT_FALSE(ParseCertificateFromFile("extensions_duplicate_key_usage.pem"));
 }
 
 // Parses an Extensions that contains an extended key usages.
-TEST(ParseExtensionsTest, ExtendedKeyUsage) {
-  std::string data;
-  std::map<der::Input, ParsedExtension> extensions;
-  EnsureParsingExtensionsSucceeds("extensions_extended_key_usage.pem",
-                                  &extensions, &data);
+TEST(ParseCertificateTest, ExtendedKeyUsage) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("extended_key_usage.pem");
+  ASSERT_TRUE(cert);
 
-  ASSERT_EQ(1u, extensions.size());
+  const auto& extensions = cert->unparsed_extensions();
+  ASSERT_EQ(3u, extensions.size());
 
   auto iter = extensions.find(ExtKeyUsageOid());
   ASSERT_TRUE(iter != extensions.end());
@@ -527,28 +454,30 @@ TEST(ParseExtensionsTest, ExtendedKeyUsage) {
 }
 
 // Parses an Extensions that contains a key usage.
-TEST(ParseExtensionsTest, KeyUsage) {
-  std::string data;
-  std::map<der::Input, ParsedExtension> extensions;
-  EnsureParsingExtensionsSucceeds("extensions_key_usage.pem", &extensions,
-                                  &data);
+TEST(ParseCertificateTest, KeyUsage) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("key_usage.pem");
+  ASSERT_TRUE(cert);
 
-  ASSERT_EQ(1u, extensions.size());
+  ASSERT_TRUE(cert->has_key_usage());
 
-  auto iter = extensions.find(KeyUsageOid());
-  ASSERT_TRUE(iter != extensions.end());
-  EXPECT_TRUE(iter->second.critical);
-  EXPECT_EQ(4u, iter->second.value.Length());
+  EXPECT_EQ(5u, cert->key_usage().unused_bits());
+  const uint8_t kExpectedBytes[] = {0xA0};
+  EXPECT_EQ(der::Input(kExpectedBytes), cert->key_usage().bytes());
+
+  EXPECT_TRUE(cert->key_usage().AssertsBit(0));
+  EXPECT_FALSE(cert->key_usage().AssertsBit(1));
+  EXPECT_TRUE(cert->key_usage().AssertsBit(2));
 }
 
 // Parses an Extensions that contains a policies extension.
-TEST(ParseExtensionsTest, Policies) {
-  std::string data;
-  std::map<der::Input, ParsedExtension> extensions;
-  EnsureParsingExtensionsSucceeds("extensions_policies.pem", &extensions,
-                                  &data);
+TEST(ParseCertificateTest, Policies) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("policies.pem");
+  ASSERT_TRUE(cert);
 
-  ASSERT_EQ(1u, extensions.size());
+  const auto& extensions = cert->unparsed_extensions();
+  ASSERT_EQ(3u, extensions.size());
 
   auto iter = extensions.find(CertificatePoliciesOid());
   ASSERT_TRUE(iter != extensions.end());
@@ -557,40 +486,28 @@ TEST(ParseExtensionsTest, Policies) {
 }
 
 // Parses an Extensions that contains a subjectaltname extension.
-TEST(ParseExtensionsTest, SubjectAltName) {
-  std::string data;
-  std::map<der::Input, ParsedExtension> extensions;
-  EnsureParsingExtensionsSucceeds("extensions_subject_alt_name.pem",
-                                  &extensions, &data);
+TEST(ParseCertificateTest, SubjectAltName) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("subject_alt_name.pem");
+  ASSERT_TRUE(cert);
 
-  ASSERT_EQ(1u, extensions.size());
-
-  auto iter = extensions.find(SubjectAltNameOid());
-  ASSERT_TRUE(iter != extensions.end());
-  EXPECT_FALSE(iter->second.critical);
-  EXPECT_EQ(23u, iter->second.value.Length());
+  ASSERT_TRUE(cert->has_subject_alt_names());
 }
 
 // Parses an Extensions that contains multiple extensions, sourced from a
 // real-world certificate.
-TEST(ParseExtensionsTest, Real) {
-  std::string data;
-  std::map<der::Input, ParsedExtension> extensions;
-  EnsureParsingExtensionsSucceeds("extensions_real.pem", &extensions, &data);
+TEST(ParseCertificateTest, ExtensionsReal) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("extensions_real.pem");
+  ASSERT_TRUE(cert);
 
-  ASSERT_EQ(7u, extensions.size());
+  const auto& extensions = cert->unparsed_extensions();
+  ASSERT_EQ(4u, extensions.size());
 
-  auto iter = extensions.find(KeyUsageOid());
-  ASSERT_TRUE(iter != extensions.end());
-  EXPECT_TRUE(iter->second.critical);
-  EXPECT_EQ(4u, iter->second.value.Length());
+  EXPECT_TRUE(cert->has_key_usage());
+  EXPECT_TRUE(cert->has_basic_constraints());
 
-  iter = extensions.find(BasicConstraintsOid());
-  ASSERT_TRUE(iter != extensions.end());
-  EXPECT_TRUE(iter->second.critical);
-  EXPECT_EQ(8u, iter->second.value.Length());
-
-  iter = extensions.find(CertificatePoliciesOid());
+  auto iter = extensions.find(CertificatePoliciesOid());
   ASSERT_TRUE(iter != extensions.end());
   EXPECT_FALSE(iter->second.critical);
   EXPECT_EQ(16u, iter->second.value.Length());

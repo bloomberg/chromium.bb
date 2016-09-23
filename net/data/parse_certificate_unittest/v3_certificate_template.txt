@@ -81,6 +81,7 @@ SEQUENCE {
       }
     }
     [3] {
+#-----BEGIN EXTENSIONS-----
       SEQUENCE {
         SEQUENCE {
           # subjectKeyIdentifier
@@ -114,6 +115,7 @@ SEQUENCE {
 # (For adding in another extension at the end of the list)
 #-----END EXTENSION-----
       }
+#-----END EXTENSIONS-----
     }
   }
   SEQUENCE {
