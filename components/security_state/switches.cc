@@ -8,11 +8,10 @@ namespace security_state {
 namespace switches {
 
 // Use to opt-in to marking HTTP as non-secure.
-const char kMarkNonSecureAs[] = "mark-non-secure-as";
-const char kMarkNonSecureAsNeutral[] = "neutral";
-const char kMarkNonSecureAsNonSecure[] = "non-secure";
-const char kMarkNonSecureWithPasswordsOrCcAsNonSecure[] =
-    "non-secure-passwords-cc";
+const char kMarkHttpAs[] = "mark-non-secure-as";
+const char kMarkHttpAsNeutral[] = "neutral";
+const char kMarkHttpAsDangerous[] = "non-secure";
+const char kMarkHttpWithPasswordsOrCcWithChip[] = "non-secure-passwords-cc";
 
 }  // namespace switches
 }  // namespace security_state

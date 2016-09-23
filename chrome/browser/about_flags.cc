@@ -195,16 +195,15 @@ const FeatureEntry::Choice kPassiveListenersChoices[] = {
      switches::kPassiveListenersDefault, "forcealltrue"},
 };
 
-const FeatureEntry::Choice kMarkNonSecureAsChoices[] = {
+const FeatureEntry::Choice kMarkHttpAsChoices[] = {
     {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
-    {IDS_MARK_NON_SECURE_AS_NEUTRAL, security_state::switches::kMarkNonSecureAs,
-     security_state::switches::kMarkNonSecureAsNeutral},
-    {IDS_MARK_NON_SECURE_AS_NON_SECURE,
-     security_state::switches::kMarkNonSecureAs,
-     security_state::switches::kMarkNonSecureAsNonSecure},
-    {IDS_MARK_NON_SECURE_WITH_PASSWORDS_OR_CC_AS_NON_SECURE,
-     security_state::switches::kMarkNonSecureAs,
-     security_state::switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure}};
+    {IDS_MARK_HTTP_AS_NEUTRAL, security_state::switches::kMarkHttpAs,
+     security_state::switches::kMarkHttpAsNeutral},
+    {IDS_MARK_HTTP_AS_DANGEROUS, security_state::switches::kMarkHttpAs,
+     security_state::switches::kMarkHttpAsDangerous},
+    {IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP,
+     security_state::switches::kMarkHttpAs,
+     security_state::switches::kMarkHttpWithPasswordsOrCcWithChip}};
 
 const FeatureEntry::Choice kDataReductionProxyLoFiChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -1536,9 +1535,8 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_SECURITY_FEATURES_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnablePotentiallyAnnoyingSecurityFeatures)},
 #endif
-    {"mark-non-secure-as", IDS_MARK_NON_SECURE_AS_NAME,
-     IDS_MARK_NON_SECURE_AS_DESCRIPTION, kOsAll,
-     MULTI_VALUE_TYPE(kMarkNonSecureAsChoices)},
+    {"mark-non-secure-as", IDS_MARK_HTTP_AS_NAME, IDS_MARK_HTTP_AS_DESCRIPTION,
+     kOsAll, MULTI_VALUE_TYPE(kMarkHttpAsChoices)},
     {"enable-site-per-process", IDS_FLAGS_SITE_PER_PROCESS_NAME,
      IDS_FLAGS_SITE_PER_PROCESS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},

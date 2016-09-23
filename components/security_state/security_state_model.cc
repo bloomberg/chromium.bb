@@ -23,27 +23,27 @@ namespace {
 enum MarkHttpStatus { NEUTRAL, NON_SECURE, HTTP_SHOW_WARNING, LAST_STATUS };
 
 // If |switch_or_field_trial_group| corresponds to a valid
-// MarkNonSecureAs group, sets |*level| and |*histogram_status| to the
+// MarkHttpAs group, sets |*level| and |*histogram_status| to the
 // appropriate values and returns true. Otherwise, returns false.
 bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
     std::string switch_or_field_trial_group,
     bool displayed_sensitive_input_on_http,
     SecurityStateModel::SecurityLevel* level,
     MarkHttpStatus* histogram_status) {
-  if (switch_or_field_trial_group == switches::kMarkNonSecureAsNeutral) {
+  if (switch_or_field_trial_group == switches::kMarkHttpAsNeutral) {
     *level = SecurityStateModel::NONE;
     *histogram_status = NEUTRAL;
     return true;
   }
 
-  if (switch_or_field_trial_group == switches::kMarkNonSecureAsNonSecure) {
+  if (switch_or_field_trial_group == switches::kMarkHttpAsDangerous) {
     *level = SecurityStateModel::SECURITY_ERROR;
     *histogram_status = NON_SECURE;
     return true;
   }
 
   if (switch_or_field_trial_group ==
-      switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure) {
+      switches::kMarkHttpWithPasswordsOrCcWithChip) {
     if (displayed_sensitive_input_on_http) {
       *level = SecurityStateModel::HTTP_SHOW_WARNING;
       *histogram_status = HTTP_SHOW_WARNING;
@@ -61,7 +61,7 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
     bool displayed_sensitive_input_on_http) {
   std::string choice =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kMarkNonSecureAs);
+          switches::kMarkHttpAs);
   std::string group = base::FieldTrialList::FindFullName("MarkNonSecureAs");
 
   const char kEnumeration[] = "MarkHttpAs";

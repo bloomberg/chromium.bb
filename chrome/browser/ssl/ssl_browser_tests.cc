@@ -1178,8 +1178,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestWSSInvalidCertAndGoForward) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkFileAsNonSecure) {
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::CreateFieldTrial(
-          "MarkNonSecureAs",
-          security_state::switches::kMarkNonSecureAsNonSecure);
+          "MarkNonSecureAs", security_state::switches::kMarkHttpAsDangerous);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1199,8 +1198,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkFileAsNonSecure) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkAboutAsNonSecure) {
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::CreateFieldTrial(
-          "MarkNonSecureAs",
-          security_state::switches::kMarkNonSecureAsNonSecure);
+          "MarkNonSecureAs", security_state::switches::kMarkHttpAsDangerous);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1220,8 +1218,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkAboutAsNonSecure) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::CreateFieldTrial(
-          "MarkNonSecureAs",
-          security_state::switches::kMarkNonSecureAsNonSecure);
+          "MarkNonSecureAs", security_state::switches::kMarkHttpAsDangerous);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -1241,8 +1238,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
 IN_PROC_BROWSER_TEST_F(SSLUITest, MarkBlobAsNonSecure) {
   scoped_refptr<base::FieldTrial> trial =
       base::FieldTrialList::CreateFieldTrial(
-          "MarkNonSecureAs",
-          security_state::switches::kMarkNonSecureAsNonSecure);
+          "MarkNonSecureAs", security_state::switches::kMarkHttpAsDangerous);
 
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();

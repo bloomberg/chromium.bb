@@ -254,8 +254,8 @@ TEST(SecurityStateModelTest, MalwareWithoutCOnnectionState) {
 // to HTTP_SHOW_WARNING when the command-line switch is set.
 TEST(SecurityStateModelTest, PasswordFieldWarning) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kMarkNonSecureAs,
-      switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure);
+      switches::kMarkHttpAs,
+      switches::kMarkHttpWithPasswordsOrCcWithChip);
   TestSecurityStateModelClient client;
   client.UseHttpUrl();
   client.set_initial_security_level(SecurityStateModel::NONE);
@@ -272,8 +272,8 @@ TEST(SecurityStateModelTest, PasswordFieldWarning) {
 // to HTTP_SHOW_WARNING when the command-line switch is set.
 TEST(SecurityStateModelTest, CreditCardFieldWarning) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kMarkNonSecureAs,
-      switches::kMarkNonSecureWithPasswordsOrCcAsNonSecure);
+      switches::kMarkHttpAs,
+      switches::kMarkHttpWithPasswordsOrCcWithChip);
   TestSecurityStateModelClient client;
   client.UseHttpUrl();
   client.set_initial_security_level(SecurityStateModel::NONE);

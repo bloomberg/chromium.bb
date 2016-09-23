@@ -5279,20 +5279,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG">
         Debug only if manifest URL ends with debug.nmf.
       </message>
-      <message name="IDS_MARK_NON_SECURE_AS_NAME" desc="Name of the 'Mark Non-Secure Origins As' lab.">
+      <message name="IDS_MARK_HTTP_AS_NAME" desc="Name of the 'Mark Non-Secure Origins As' lab.">
         Mark non-secure origins as non-secure
       </message>
-      <message name="IDS_MARK_NON_SECURE_AS_DESCRIPTION" desc="Description of the 'Mark Non-Secure Origins As' lab.">
-        Change the UI treatment for non-secure (HTTP) origins
+      <message name="IDS_MARK_HTTP_AS_DESCRIPTION" desc="Description of the 'Mark Non-Secure Origins As' lab.">
+        Change the UI treatment for HTTP pages
       </message>
-      <message name="IDS_MARK_NON_SECURE_AS_NEUTRAL">
-        Always mark non-secure origins as neutral
+      <message name="IDS_MARK_HTTP_AS_NEUTRAL">
+        Always mark HTTP as neutral
       </message>
-      <message name="IDS_MARK_NON_SECURE_AS_NON_SECURE">
-        Always mark non-secure origins as non-secure
+      <message name="IDS_MARK_HTTP_AS_DANGEROUS">
+        Always mark HTTP as actively dangerous
       </message>
-      <message name="IDS_MARK_NON_SECURE_WITH_PASSWORDS_OR_CC_AS_NON_SECURE">
-        Mark non-secure origins as non-secure when password or credit card fields are detected
+      <message name="IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP">
+        Display a verbose state when password or credit card fields are detected on an HTTP page
       </message>
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME" desc="Name of the 'Save Page as MHTML' lab.">
         Save Page as MHTML
