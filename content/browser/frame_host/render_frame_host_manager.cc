@@ -540,6 +540,8 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     // pending/speculative RenderFrameHost replaces the current one in the
     // commit call below.
     CommitPending();
+    if (IsBrowserSideNavigationEnabled())
+      frame_tree_node_->ResetNavigationRequest(false);
   } else if (render_frame_host == render_frame_host_.get()) {
     // A same-process navigation committed while a simultaneous cross-process
     // navigation is still ongoing.
@@ -555,6 +557,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     if (was_caused_by_user_gesture) {
       if (IsBrowserSideNavigationEnabled()) {
         CleanUpNavigation();
+        frame_tree_node_->ResetNavigationRequest(false);
       } else {
         CancelPending();
       }

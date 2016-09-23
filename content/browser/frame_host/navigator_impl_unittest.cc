@@ -1172,4 +1172,74 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, CrossSiteClaimWithinPage) {
   EXPECT_EQ(process()->bad_msg_count(), bad_msg_count + 1);
 }
 
+// Tests that an ongoing NavigationRequest is deleted when a same-site
+// user-initiated navigation commits.
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       NavigationRequestDeletedWhenUserInitiatedCommits) {
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.chromium.org/foo");
+  const GURL kUrl3("http://www.google.com/");
+
+  contents()->NavigateAndCommit(kUrl1);
+  FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+
+  // Navigate same-site.
+  int entry_id = RequestNavigation(node, kUrl2);
+  main_test_rfh()->PrepareForCommit();
+  EXPECT_TRUE(main_test_rfh()->is_loading());
+  EXPECT_FALSE(node->navigation_request());
+
+  // Start a new cross-site navigation. The current RFH should still be trying
+  // to commit the previous navigation, but we create a NavigationRequest in the
+  // FrameTreeNode.
+  RequestNavigation(node, kUrl3);
+  EXPECT_TRUE(main_test_rfh()->is_loading());
+  EXPECT_TRUE(node->navigation_request());
+  EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
+
+  // The first navigation commits. This should clear up the speculative RFH and
+  // the ongoing NavigationRequest.
+  main_test_rfh()->SendNavigate(1, entry_id, true, kUrl2);
+  EXPECT_FALSE(node->navigation_request());
+  EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
+}
+
+// Tests that an ongoing NavigationRequest is deleted when a cross-site
+// navigation commits.
+TEST_F(NavigatorTestWithBrowserSideNavigation,
+       NavigationRequestDeletedWhenCrossSiteCommits) {
+  const GURL kUrl1("http://www.chromium.org/");
+  const GURL kUrl2("http://www.google.com/");
+  const GURL kUrl3("http://www.google.com/foo");
+
+  contents()->NavigateAndCommit(kUrl1);
+  FrameTreeNode* node = main_test_rfh()->frame_tree_node();
+
+  // Navigate cross-site.
+  int entry_id = RequestNavigation(node, kUrl2);
+  main_test_rfh()->PrepareForCommit();
+  TestRenderFrameHost* speculative_rfh = GetSpeculativeRenderFrameHost(node);
+  ASSERT_TRUE(speculative_rfh);
+  EXPECT_TRUE(speculative_rfh->is_loading());
+  EXPECT_FALSE(node->navigation_request());
+
+  // Start a new cross-site navigation to the same-site as the ongoing
+  // navigation. The speculative RFH should still be live and trying
+  // to commit the previous navigation, and we create a NavigationRequest in the
+  // FrameTreeNode.
+  RequestNavigation(node, kUrl3);
+  TestRenderFrameHost* speculative_rfh_2 = GetSpeculativeRenderFrameHost(node);
+  ASSERT_TRUE(speculative_rfh_2);
+  EXPECT_EQ(speculative_rfh_2, speculative_rfh);
+  EXPECT_TRUE(speculative_rfh->is_loading());
+  EXPECT_TRUE(node->navigation_request());
+
+  // The first navigation commits. This should clear up the speculative RFH and
+  // the ongoing NavigationRequest.
+  speculative_rfh->SendNavigate(1, entry_id, true, kUrl2);
+  EXPECT_FALSE(node->navigation_request());
+  EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
+  EXPECT_EQ(speculative_rfh, main_test_rfh());
+}
+
 }  // namespace content
