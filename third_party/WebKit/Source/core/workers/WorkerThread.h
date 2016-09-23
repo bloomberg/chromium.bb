@@ -225,6 +225,11 @@ private:
     void setExitCode(const MutexLocker&, ExitCode);
     bool isThreadStateMutexLocked(const MutexLocker&);
 
+    // This internally acquires |m_threadStateMutex|. If you already have the
+    // lock or you're on the main thread, you should consider directly accessing
+    // |m_requestedToTerminate|.
+    bool checkRequestedToTerminateOnWorkerThread();
+
     ExitCode getExitCodeForTesting();
 
     // Accessed only on the main thread.
@@ -233,14 +238,13 @@ private:
     // Set on the main thread and checked on both the main and worker threads.
     bool m_requestedToTerminate = false;
 
-    ThreadState m_threadState = ThreadState::NotStarted;
-
     // Accessed only on the worker thread.
     bool m_pausedInDebugger = false;
 
     // Set on the worker thread and checked on both the main and worker threads.
     bool m_runningDebuggerTask = false;
 
+    ThreadState m_threadState = ThreadState::NotStarted;
     ExitCode m_exitCode = ExitCode::NotTerminated;
 
     long long m_forceTerminationDelayInMs;

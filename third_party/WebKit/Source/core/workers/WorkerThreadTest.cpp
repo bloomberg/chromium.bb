@@ -85,7 +85,7 @@ protected:
 
     void expectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization()
     {
-        EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(AtMost(1));
+        EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
         EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(AtMost(1));
         EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _)).Times(AtMost(1));
         EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(_)).Times(AtMost(1));
@@ -174,15 +174,11 @@ TEST_F(WorkerThreadTest, AsyncTerminate_ImmediatelyAfterStart)
     expectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization();
     start();
 
-    // There are two possible cases depending on timing:
-    // (1) If the thread hasn't been initialized on the worker thread yet,
-    // terminate() should not attempt to shut down the thread.
-    // (2) If the thread has already been initialized on the worker thread,
-    // terminate() should gracefully shut down the thread.
+    // The worker thread is not being blocked, so the worker thread should be
+    // gracefully shut down.
     m_workerThread->terminate();
     m_workerThread->waitForShutdownForTesting();
-    ExitCode exitCode = getExitCode();
-    EXPECT_EQ(ExitCode::GracefullyTerminated, exitCode);
+    EXPECT_EQ(ExitCode::GracefullyTerminated, getExitCode());
 }
 
 TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart)
@@ -192,10 +188,14 @@ TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart)
 
     // There are two possible cases depending on timing:
     // (1) If the thread hasn't been initialized on the worker thread yet,
-    // terminateAndWait() should not attempt to shut down the thread.
+    // terminateAndWait() should wait for initialization and shut down the
+    // thread immediately after that.
     // (2) If the thread has already been initialized on the worker thread,
     // terminateAndWait() should synchronously forcibly terminates the worker
     // execution.
+    // TODO(nhiroki): Make this test deterministically pass through the case 1),
+    // that is, terminateAndWait() is called before initializeOnWorkerThread().
+    // Then, rename this test to SyncTerminate_BeforeInitialization.
     m_workerThread->terminateAndWait();
     ExitCode exitCode = getExitCode();
     EXPECT_TRUE(ExitCode::GracefullyTerminated == exitCode || ExitCode::SyncForciblyTerminated == exitCode);
