@@ -1384,7 +1384,7 @@ void LayoutBlock::computeBlockPreferredLogicalWidths(LayoutUnit& minLogicalWidth
         }
 
         if (child->isFloating()) {
-            if (childStyle->floating() == EFloat::LeftFloat)
+            if (childStyle->floating() == EFloat::Left)
                 floatLeftWidth += w;
             else
                 floatRightWidth += w;

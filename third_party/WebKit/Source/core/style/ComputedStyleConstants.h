@@ -125,7 +125,7 @@ enum EPosition {
 };
 
 enum class EFloat : unsigned {
-    NoFloat, LeftFloat, RightFloat
+    None, Left, Right
 };
 
 enum EMarginCollapse { MarginCollapseCollapse, MarginCollapseSeparate, MarginCollapseDiscard };

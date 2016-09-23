@@ -830,7 +830,7 @@ public:
     }
 
     // float
-    static EFloat initialFloating() { return EFloat::NoFloat; }
+    static EFloat initialFloating() { return EFloat::None; }
     EFloat floating() const { return static_cast<EFloat>(m_nonInheritedData.m_floating); }
     void setFloating(EFloat v) { m_nonInheritedData.m_floating = static_cast<unsigned>(v); }
 
@@ -2143,7 +2143,7 @@ public:
         const LayoutRectOutsets insets, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const;
 
     // Float utility functions.
-    bool isFloating() const { return floating() != EFloat::NoFloat; }
+    bool isFloating() const { return floating() != EFloat::None; }
 
     // Mix-blend-mode utility functions.
     bool hasBlendMode() const { return blendMode() != WebBlendModeNormal; }

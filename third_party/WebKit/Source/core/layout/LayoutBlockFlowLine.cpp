@@ -1387,8 +1387,8 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
                 if (child->isFloating()) {
                     const ComputedStyle& childStyle = child->styleRef();
                     clearPreviousFloat = (prevFloat
-                        && ((prevFloat->styleRef().floating() == EFloat::LeftFloat && (childStyle.clear() & ClearLeft))
-                            || (prevFloat->styleRef().floating() == EFloat::RightFloat && (childStyle.clear() & ClearRight))));
+                        && ((prevFloat->styleRef().floating() == EFloat::Left && (childStyle.clear() & ClearLeft))
+                            || (prevFloat->styleRef().floating() == EFloat::Right && (childStyle.clear() & ClearRight))));
                     prevFloat = child;
                 } else {
                     clearPreviousFloat = false;

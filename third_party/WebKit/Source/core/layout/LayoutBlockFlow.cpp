@@ -2892,7 +2892,7 @@ LayoutPoint LayoutBlockFlow::computeLogicalLocationForFloat(const FloatingObject
 
     bool insideFlowThread = flowThreadContainingBlock();
 
-    if (childBox->style()->floating() == EFloat::LeftFloat) {
+    if (childBox->style()->floating() == EFloat::Left) {
         LayoutUnit heightRemainingLeft = LayoutUnit(1);
         LayoutUnit heightRemainingRight = LayoutUnit(1);
         floatLogicalLeft = logicalLeftOffsetForPositioningFloat(logicalTopOffset, logicalLeftOffset, &heightRemainingLeft);

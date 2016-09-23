@@ -218,7 +218,7 @@ static void adjustStyleForHTMLElement(ComputedStyle& style, HTMLElement& element
     if (isHTMLRTElement(element)) {
         // Ruby text does not support float or position. This might change with evolution of the specification.
         style.setPosition(StaticPosition);
-        style.setFloating(EFloat::NoFloat);
+        style.setFloating(EFloat::None);
         return;
     }
 
@@ -317,7 +317,7 @@ static void adjustStyleForDisplay(ComputedStyle& style, const ComputedStyle& par
         style.setWritingMode(TopToBottomWritingMode);
 
     if (parentStyle.isDisplayFlexibleOrGridBox()) {
-        style.setFloating(EFloat::NoFloat);
+        style.setFloating(EFloat::None);
         style.setDisplay(equivalentBlockDisplay(style.display()));
 
         // We want to count vertical percentage paddings/margins on flex items because our current
