@@ -206,6 +206,12 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
             list.add(wrapper);
             mFilePathsToItemsMap.addItem(wrapper);
         } else {
+            DownloadItemWrapper previousWrapper = list.get(index);
+            // If the previous item was selected, the updated item should be selected as well.
+            if (getSelectionDelegate().isItemSelected(previousWrapper)) {
+                getSelectionDelegate().toggleSelectionForItem(previousWrapper);
+                getSelectionDelegate().toggleSelectionForItem(wrapper);
+            }
             // Update the old one.
             list.set(index, wrapper);
             mFilePathsToItemsMap.replaceItem(wrapper);

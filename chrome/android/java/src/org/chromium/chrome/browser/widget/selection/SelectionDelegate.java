@@ -34,25 +34,25 @@ public class SelectionDelegate<E> {
 
     /**
      * Toggles the selected state for the given item.
-     * @param itemId The id of the item to toggle.
+     * @param item The item to toggle.
      * @return Whether the item is selected.
      */
-    public boolean toggleSelectionForItem(E itemId) {
-        if (mSelectedItems.contains(itemId)) mSelectedItems.remove(itemId);
-        else mSelectedItems.add(itemId);
+    public boolean toggleSelectionForItem(E item) {
+        if (mSelectedItems.contains(item)) mSelectedItems.remove(item);
+        else mSelectedItems.add(item);
 
         notifyObservers();
 
-        return isItemSelected(itemId);
+        return isItemSelected(item);
     }
 
     /**
-     * True if the bookmark is selected. False otherwise.
-     * @param itemId The id of the item.
+     * True if the item is selected. False otherwise.
+     * @param item The item.
      * @return Whether the item is selected.
      */
-    public boolean isItemSelected(E itemId) {
-        return mSelectedItems.contains(itemId);
+    public boolean isItemSelected(E item) {
+        return mSelectedItems.contains(item);
     }
 
     /**
