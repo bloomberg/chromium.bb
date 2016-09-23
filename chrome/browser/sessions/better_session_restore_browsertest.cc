@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
@@ -34,6 +35,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/md_history_ui.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -480,6 +483,48 @@ IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, SessionCookiesBrowserClose) {
   // The browsing session will be continued; just wait for the page to reload
   // and check the stored data.
   CheckReloadedPageRestored(new_browser);
+}
+
+// Test that switching MD History on behaves correctly with session restore.
+IN_PROC_BROWSER_TEST_F(ContinueWhereILeftOffTest, MDHistoryUpgrade) {
+  MdHistoryUI::use_test_title_ = true;
+  Browser* current_browser = browser();
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(features::kMaterialDesignHistory);
+    content::WebContents* web_contents =
+        current_browser->tab_strip_model()->GetActiveWebContents();
+    content::TitleWatcher title_watcher(web_contents,
+                                        base::ASCIIToUTF16("History"));
+    ui_test_utils::NavigateToURL(current_browser, GURL("chrome://history"));
+    base::string16 final_title = title_watcher.WaitAndGetTitle();
+    EXPECT_EQ(3u, current_browser->tab_strip_model()
+                     ->GetActiveWebContents()
+                     ->GetAllFrames()
+                     .size());
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kMaterialDesignHistory);
+    current_browser = QuitBrowserAndRestore(browser(), false);
+    // The new history page should have loaded.
+    CheckTitle(current_browser, base::ASCIIToUTF16("MD History"));
+    EXPECT_EQ(1u, current_browser->tab_strip_model()
+                     ->GetActiveWebContents()
+                     ->GetAllFrames()
+                     .size());
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(features::kMaterialDesignHistory);
+    current_browser = QuitBrowserAndRestore(current_browser, false);
+    // The old history page should have loaded.
+    CheckTitle(current_browser, base::ASCIIToUTF16("History"));
+    EXPECT_EQ(3u, current_browser->tab_strip_model()
+                     ->GetActiveWebContents()
+                     ->GetAllFrames()
+                     .size());
+  }
 }
 
 // Test that leaving a popup open will not prevent session restore.

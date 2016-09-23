@@ -35,7 +35,8 @@
 
 namespace {
 
-content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
+content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
+                                                      bool use_test_title) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIHistoryHost);
 
@@ -99,7 +100,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("signInPromo", IDS_MD_HISTORY_SIGN_IN_PROMO);
   source->AddLocalizedString("signInPromoDesc",
                              IDS_MD_HISTORY_SIGN_IN_PROMO_DESC);
-  source->AddLocalizedString("title", IDS_HISTORY_TITLE);
+  if (use_test_title)
+    source->AddString("title", "MD History");
+  else
+    source->AddLocalizedString("title", IDS_HISTORY_TITLE);
 
   source->AddString(
       "sidebarFooter",
@@ -207,6 +211,8 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
 
 }  // namespace
 
+bool MdHistoryUI::use_test_title_ = false;
+
 MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
   web_ui->AddMessageHandler(new BrowsingHistoryHandler());
@@ -217,7 +223,7 @@ MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
     web_ui->AddMessageHandler(new HistoryLoginHandler());
   }
 
-  data_source_ = CreateMdHistoryUIHTMLSource(profile);
+  data_source_ = CreateMdHistoryUIHTMLSource(profile, use_test_title_);
   content::WebUIDataSource::Add(profile, data_source_);
 
   web_ui->RegisterMessageCallback("menuPromoShown",
