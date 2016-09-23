@@ -383,6 +383,12 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_INSECURE_PASSIVE_CONTENT" desc="Text that is displayed in the header of the Website Settings popup if the website uses secure transport but included passive resources (e.g. images) over non-secure transport.">
         Your connection to this site is private, but someone on the network might be able to change the look of the page.
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_INSECURE_WEBVR_CONTENT_TRANSIENT" desc="Text that is displayed temporarily as a large toast on first entering a WebVR page over non-secure transport.">
+        Your connection to this site is not private. To exit VR mode at any time, remove headset and press back.
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_INSECURE_WEBVR_CONTENT_PERMANENT" desc="Text that is displayed in a small permanent notification on a WebVR page loaded over non-secure transport. (Should be short, does not need to be a complete sentence.)">
+        Not secure
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_NUM_COOKIES" desc="The label of the counts for allowed cookies that are in use on the page.">
         {NUM_COOKIES, plural, =1 {1 in use} other {# in use}}
       </message>
