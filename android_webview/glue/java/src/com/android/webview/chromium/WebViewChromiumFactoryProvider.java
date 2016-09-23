@@ -18,6 +18,7 @@ import android.os.Build;
 import android.os.Looper;
 import android.os.Process;
 import android.os.StrictMode;
+import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.webkit.CookieManager;
@@ -198,13 +199,20 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private void initialize(WebViewDelegate webViewDelegate) {
         mWebViewDelegate = webViewDelegate;
+        Context ctx = mWebViewDelegate.getApplication().getApplicationContext();
 
-        checkStorageIsNotDeviceProtected(mWebViewDelegate.getApplication());
+        // If the application context is DE, but we have credentials, use a CE context instead
+        try {
+            checkStorageIsNotDeviceProtected(mWebViewDelegate.getApplication());
+        } catch (IllegalArgumentException e) {
+            if (!ctx.getSystemService(UserManager.class).isUserUnlocked()) {
+                throw e;
+            }
+            ctx = ctx.createCredentialProtectedStorageContext();
+        }
 
         // WebView needs to make sure to always use the wrapped application context.
-        ContextUtils.initApplicationContext(
-                ResourcesContextWrapperFactory.get(
-                        mWebViewDelegate.getApplication().getApplicationContext()));
+        ContextUtils.initApplicationContext(ResourcesContextWrapperFactory.get(ctx));
 
         if (isBuildDebuggable()) {
             // Suppress the StrictMode violation as this codepath is only hit on debuggable builds.
