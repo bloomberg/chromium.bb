@@ -7,6 +7,7 @@
 
 namespace headless {
 namespace switches {
+extern const char kDeterministicFetch[];
 extern const char kDumpDom[];
 extern const char kProxyServer[];
 extern const char kRemoteDebuggingAddress[];

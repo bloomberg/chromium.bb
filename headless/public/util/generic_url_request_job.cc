@@ -48,12 +48,13 @@ void GenericURLRequestJob::SetExtraRequestHeaders(
 }
 
 void GenericURLRequestJob::Start() {
-  auto callback = [this](RewriteResult result, const GURL& url) {
+  auto callback = [this](RewriteResult result, const GURL& url,
+                         const std::string& method) {
     switch (result) {
       case RewriteResult::kAllow:
         // Note that we use the rewritten url for selecting cookies.
         // Also, rewriting does not affect the request initiator.
-        PrepareCookies(url, url::Origin(url));
+        PrepareCookies(url, method, url::Origin(url));
         break;
       case RewriteResult::kDeny:
         DispatchStartError(net::ERR_FILE_NOT_FOUND);
@@ -66,14 +67,15 @@ void GenericURLRequestJob::Start() {
     }
   };
 
-  if (!delegate_->BlockOrRewriteRequest(request_->url(), request_->referrer(),
-                                        callback)) {
-    PrepareCookies(request()->url(),
+  if (!delegate_->BlockOrRewriteRequest(request_->url(), request_->method(),
+                                        request_->referrer(), callback)) {
+    PrepareCookies(request_->url(), request_->method(),
                    url::Origin(request_->first_party_for_cookies()));
   }
 }
 
 void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,
+                                          const std::string& method,
                                           const url::Origin& site_for_cookies) {
   net::CookieStore* cookie_store = request_->context()->cookie_store();
   net::CookieOptions options;
@@ -98,11 +100,12 @@ void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,
   cookie_store->GetCookieListWithOptionsAsync(
       rewritten_url, options,
       base::Bind(&GenericURLRequestJob::OnCookiesAvailable,
-                 weak_factory_.GetWeakPtr(), rewritten_url));
+                 weak_factory_.GetWeakPtr(), rewritten_url, method));
 }
 
 void GenericURLRequestJob::OnCookiesAvailable(
     const GURL& rewritten_url,
+    const std::string& method,
     const net::CookieList& cookie_list) {
   // TODO(alexclarke): Set user agent.
   // Pass cookies, the referrer and any extra headers into the fetch request.
@@ -114,15 +117,16 @@ void GenericURLRequestJob::OnCookiesAvailable(
                                    request_->referrer());
 
   // The resource may have been supplied in the request.
-  const HttpResponse* matched_resource =
-      delegate_->MaybeMatchResource(rewritten_url, extra_request_headers_);
+  const HttpResponse* matched_resource = delegate_->MaybeMatchResource(
+      rewritten_url, method, extra_request_headers_);
 
   if (matched_resource) {
     OnFetchCompleteExtractHeaders(
         matched_resource->final_url, matched_resource->http_response_code,
         matched_resource->response_data, matched_resource->response_data_size);
   } else {
-    url_fetcher_->StartFetch(rewritten_url, extra_request_headers_, this);
+    url_fetcher_->StartFetch(rewritten_url, method, extra_request_headers_,
+                             this);
   }
 }
 

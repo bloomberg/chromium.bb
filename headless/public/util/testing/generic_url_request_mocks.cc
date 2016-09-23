@@ -19,16 +19,18 @@ MockGenericURLRequestJobDelegate::~MockGenericURLRequestJobDelegate() {}
 
 bool MockGenericURLRequestJobDelegate::BlockOrRewriteRequest(
     const GURL& url,
+    const std::string& method,
     const std::string& referrer,
     GenericURLRequestJob::RewriteCallback callback) {
   if (should_block_)
-    callback(GenericURLRequestJob::RewriteResult::kDeny, GURL());
+    callback(GenericURLRequestJob::RewriteResult::kDeny, GURL(), method);
   return should_block_;
 }
 
 const GenericURLRequestJob::HttpResponse*
 MockGenericURLRequestJobDelegate::MaybeMatchResource(
     const GURL& url,
+    const std::string& method,
     const net::HttpRequestHeaders& request_headers) {
   return nullptr;
 }

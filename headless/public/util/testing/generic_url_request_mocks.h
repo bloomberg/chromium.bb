@@ -33,11 +33,13 @@ class MockGenericURLRequestJobDelegate : public GenericURLRequestJob::Delegate {
 
   bool BlockOrRewriteRequest(
       const GURL& url,
+      const std::string& method,
       const std::string& referrer,
       GenericURLRequestJob::RewriteCallback callback) override;
 
   const GenericURLRequestJob::HttpResponse* MaybeMatchResource(
       const GURL& url,
+      const std::string& method,
       const net::HttpRequestHeaders& request_headers) override;
 
   void OnResourceLoadComplete(const GURL& final_url,

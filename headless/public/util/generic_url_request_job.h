@@ -38,8 +38,8 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
                              public URLFetcher::ResultListener {
  public:
   enum class RewriteResult { kAllow, kDeny, kFailure };
-  using RewriteCallback =
-      std::function<void(RewriteResult result, const GURL& url)>;
+  using RewriteCallback = std::function<
+      void(RewriteResult result, const GURL& url, const std::string& method)>;
 
   struct HttpResponse {
     GURL final_url;
@@ -58,6 +58,7 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
     // with the result, or false to indicate that no rewriting is necessary.
     // Called on an arbitrary thread.
     virtual bool BlockOrRewriteRequest(const GURL& url,
+                                       const std::string& method,
                                        const std::string& referrer,
                                        RewriteCallback callback) = 0;
 
@@ -65,6 +66,7 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
     // Called on an arbitrary thread.
     virtual const HttpResponse* MaybeMatchResource(
         const GURL& url,
+        const std::string& method,
         const net::HttpRequestHeaders& request_headers) = 0;
 
     // Signals that a resource load has finished. Called on an arbitrary thread.
@@ -104,9 +106,11 @@ class GenericURLRequestJob : public ManagedDispatchURLRequestJob,
 
  private:
   void PrepareCookies(const GURL& rewritten_url,
+                      const std::string& method,
                       const url::Origin& site_for_cookies);
 
   void OnCookiesAvailable(const GURL& rewritten_url,
+                          const std::string& method,
                           const net::CookieList& cookie_list);
 
   std::unique_ptr<URLFetcher> url_fetcher_;

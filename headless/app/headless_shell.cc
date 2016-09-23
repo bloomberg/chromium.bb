@@ -25,6 +25,8 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
+#include "headless/public/util/deterministic_dispatcher.h"
+#include "headless/public/util/deterministic_http_protocol_handler.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
@@ -73,7 +75,25 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   void OnStart(HeadlessBrowser* browser) {
     browser_ = browser;
 
-    browser_context_ = browser_->CreateBrowserContextBuilder().Build();
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            headless::switches::kDeterministicFetch)) {
+      deterministic_dispatcher_.reset(
+          new headless::DeterministicDispatcher(browser_->BrowserIOThread()));
+
+      headless::ProtocolHandlerMap protocol_handlers;
+      protocol_handlers[url::kHttpScheme] =
+          base::MakeUnique<headless::DeterministicHttpProtocolHandler>(
+              deterministic_dispatcher_.get(), browser->BrowserIOThread());
+      protocol_handlers[url::kHttpsScheme] =
+          base::MakeUnique<headless::DeterministicHttpProtocolHandler>(
+              deterministic_dispatcher_.get(), browser->BrowserIOThread());
+
+      browser_context_ = browser_->CreateBrowserContextBuilder()
+                             .SetProtocolHandlers(std::move(protocol_handlers))
+                             .Build();
+    } else {
+      browser_context_ = browser_->CreateBrowserContextBuilder().Build();
+    }
 
     HeadlessWebContents::Builder builder(
         browser_context_->CreateWebContentsBuilder());
@@ -335,6 +355,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   bool processed_page_ready_;
   std::unique_ptr<net::FileStream> screenshot_file_stream_;
   HeadlessBrowserContext* browser_context_;
+  std::unique_ptr<headless::DeterministicDispatcher> deterministic_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessShell);
 };

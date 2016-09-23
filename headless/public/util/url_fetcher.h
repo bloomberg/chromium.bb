@@ -22,8 +22,6 @@ class HttpResponseHeaders;
 namespace headless {
 
 // An interface for fetching URLs. Note these are only intended to be used once.
-// TODO(alexclarke): Implement a URLFetcher that can backend onto a URLRequest
-// and hook this up in headless_shell under a flag.
 class URLFetcher {
  public:
   URLFetcher() {}
@@ -63,6 +61,7 @@ class URLFetcher {
 
   // Instructs the sub-class to fetch the resource.
   virtual void StartFetch(const GURL& rewritten_url,
+                          const std::string& method,
                           const net::HttpRequestHeaders& request_headers,
                           ResultListener* result_listener) = 0;
 
