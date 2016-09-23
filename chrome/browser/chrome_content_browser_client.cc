@@ -1617,6 +1617,11 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     MaybeAppendBlinkSettingsSwitchForFieldTrial(
         browser_command_line, command_line);
 
+#if defined(OS_ANDROID)
+    // If the platform is Android, force the distillability service on.
+    command_line->AppendSwitch(switches::kEnableDistillabilityService);
+#endif
+
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
 #if defined(OS_ANDROID)
@@ -1648,6 +1653,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kDisableJavaScriptHarmonyShipping,
       switches::kDisableNewBookmarkApps,
       switches::kEnableBenchmarking,
+      switches::kEnableDistillabilityService,
       switches::kEnableNaCl,
 #if !defined(DISABLE_NACL)
       switches::kEnableNaClDebug,

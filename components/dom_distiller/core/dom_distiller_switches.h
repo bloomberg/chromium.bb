@@ -10,6 +10,9 @@
 
 namespace switches {
 
+// Switch to enable the distillability service on the renderer.
+extern const char kEnableDistillabilityService[];
+
 // Switch to enable the DOM distiller.
 extern const char kEnableDomDistiller[];
 

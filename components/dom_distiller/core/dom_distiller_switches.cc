@@ -6,6 +6,7 @@
 
 namespace switches {
 
+const char kEnableDistillabilityService[] = "enable-distillability-service";
 const char kEnableDomDistiller[] = "enable-dom-distiller";
 const char kEnableSyncArticles[] = "enable-sync-articles";
 const char kReaderModeHeuristics[] = "reader-mode-heuristics";

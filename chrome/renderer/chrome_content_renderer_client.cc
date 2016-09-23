@@ -69,6 +69,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
+#include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/localized_error.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
@@ -510,9 +511,12 @@ void ChromeContentRendererClient::RenderFrameCreated(
   new dom_distiller::DistillerJsRenderFrameObserver(
       render_frame, chrome::ISOLATED_WORLD_ID_CHROME_INTERNAL);
 
-  // Create DistillabilityAgent to send distillability updates to
-  // DistillabilityDriver in the browser process.
-  new dom_distiller::DistillabilityAgent(render_frame);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableDistillabilityService)) {
+    // Create DistillabilityAgent to send distillability updates to
+    // DistillabilityDriver in the browser process.
+    new dom_distiller::DistillabilityAgent(render_frame);
+  }
 
   // Set up a mojo service to test if this page is a contextual search page.
   new contextual_search::OverlayJsRenderFrameObserver(render_frame);

@@ -96,6 +96,7 @@ class DistillablePageUtilsBrowserTestOption : public InProcessBrowserTest {
     command_line->AppendSwitch(switches::kEnableDomDistiller);
     command_line->AppendSwitchASCII(switches::kReaderModeHeuristics,
         Option);
+    command_line->AppendSwitch(switches::kEnableDistillabilityService);
   }
 
   void SetUpOnMainThread() override {
