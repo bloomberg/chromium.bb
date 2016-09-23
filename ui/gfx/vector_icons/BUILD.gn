@@ -22,6 +22,7 @@ action("aggregate_vector_icons") {
     "browser_tools_error.icon",
     "browser_tools_update.icon",
     "business.icon",
+    "check_circle.1x.icon",
     "check_circle.icon",
     "checkbox_active.icon",
     "checkbox_normal.icon",

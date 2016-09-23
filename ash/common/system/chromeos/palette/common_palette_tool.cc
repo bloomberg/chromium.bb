@@ -8,6 +8,7 @@
 #include "ash/common/system/chromeos/palette/palette_ids.h"
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
+#include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/view_click_listener.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -21,18 +22,6 @@
 
 namespace ash {
 namespace {
-
-// Size of the icons in DP.
-const int kIconSize = 20;
-
-// Distance between the icon and the check from the egdes in DP.
-const int kMarginFromEdges = 14;
-
-// Extra distance between the icon and the left edge in DP.
-const int kExtraMarginFromLeftEdge = 4;
-
-// Distance between the icon and the name of the tool in DP.
-const int kMarginBetweenIconAndText = 18;
 
 void AddHistogramTimes(PaletteToolId id, base::TimeDelta duration) {
   if (id == PaletteToolId::LASER_POINTER) {
@@ -98,17 +87,18 @@ void CommonPaletteTool::OnViewClicked(views::View* sender) {
 
 views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
   gfx::ImageSkia icon =
-      CreateVectorIcon(GetPaletteIcon(), kIconSize, gfx::kChromeIconGrey);
+      CreateVectorIcon(GetPaletteIcon(), kMenuIconSize, gfx::kChromeIconGrey);
   gfx::ImageSkia check = CreateVectorIcon(gfx::VectorIconId::CHECK_CIRCLE,
-                                          kIconSize, gfx::kGoogleGreen700);
+                                          kMenuIconSize, gfx::kGoogleGreen700);
 
   highlight_view_ = new HoverHighlightView(this);
   highlight_view_->SetBorder(
-      views::Border::CreateEmptyBorder(0, kExtraMarginFromLeftEdge, 0, 0));
-  highlight_view_->AddIconAndLabelCustomSize(icon, name, false, kIconSize,
-                                             kMarginFromEdges,
-                                             kMarginBetweenIconAndText);
-  highlight_view_->AddRightIcon(check, kIconSize);
+      views::Border::CreateEmptyBorder(0, kMenuSeparatorVerticalPadding, 0, 0));
+  const int interior_button_padding = (kMenuButtonSize - kMenuIconSize) / 2;
+  highlight_view_->AddIconAndLabelCustomSize(
+      icon, name, false, kMenuIconSize, interior_button_padding,
+      interior_button_padding + kMenuSeparatorVerticalPadding);
+  highlight_view_->AddRightIcon(check, kMenuIconSize);
 
   if (enabled())
     highlight_view_->SetHighlight(true);

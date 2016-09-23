@@ -325,7 +325,7 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK" desc="The label used in the accessibility menu of the
     system tray to toggle on/off spoken feedback feature.">
-        ChromeVox (Spoken feedback)
+        ChromeVox (spoken feedback)
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_HIGH_CONTRAST_MODE" desc="The label used in the accessibility menu of the system tray to toggle on/off high contrast feature.">
         High contrast mode

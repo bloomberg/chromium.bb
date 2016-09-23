@@ -4,6 +4,7 @@
 
 #include "ash/common/accessibility_types.h"
 #include "ash/common/login_status.h"
+#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/magnifier/magnification_controller.h"
@@ -869,8 +870,13 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_FALSE(IsLargeCursorMenuShownOnDetailMenu());
   EXPECT_TRUE(IsAutoclickMenuShownOnDetailMenu());
   EXPECT_TRUE(IsVirtualKeyboardMenuShownOnDetailMenu());
-  EXPECT_TRUE(IsHelpShownOnDetailMenu());
-  EXPECT_TRUE(IsSettingsShownOnDetailMenu());
+  if (ash::MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    EXPECT_FALSE(IsHelpShownOnDetailMenu());
+    EXPECT_FALSE(IsSettingsShownOnDetailMenu());
+  } else {
+    EXPECT_TRUE(IsHelpShownOnDetailMenu());
+    EXPECT_TRUE(IsSettingsShownOnDetailMenu());
+  }
   CloseDetailMenu();
 
   SetLoginStatus(ash::LoginStatus::LOCKED);

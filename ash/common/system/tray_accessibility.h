@@ -21,6 +21,10 @@ namespace chromeos {
 class TrayAccessibilityTest;
 }
 
+namespace gfx {
+struct VectorIcon;
+}
+
 namespace views {
 class Button;
 class ImageView;
@@ -48,6 +52,7 @@ class AccessibilityPopupView : public TrayNotificationView {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityPopupView);
 };
 
+// Create the detailed view of accessibility tray.
 class AccessibilityDetailedView : public TrayDetailsView,
                                   public ShellObserver {
  public:
@@ -63,12 +68,15 @@ class AccessibilityDetailedView : public TrayDetailsView,
   // Add the accessibility feature list.
   void AppendAccessibilityList();
 
-  // Add help entries.
+  // Add help entries. Only used for non-MD.
   void AppendHelpEntries();
 
+  // Helper function to create entries in the detailed accessibility view. The
+  // |icon| parameter is used to create button icons for MD only.
   HoverHighlightView* AddScrollListItem(const base::string16& text,
                                         bool highlight,
-                                        bool checked);
+                                        bool checked,
+                                        const gfx::VectorIcon& icon);
 
   views::View* spoken_feedback_view_;
   views::View* high_contrast_view_;
