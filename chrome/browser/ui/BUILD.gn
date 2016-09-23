@@ -445,6 +445,7 @@ split_static_library("ui") {
   public_deps = [
     "//components/dom_distiller/core",
     "//components/sync",
+    "//components/translate/content/browser",
     "//content/public/browser",
   ]
   deps = [
@@ -542,7 +543,6 @@ split_static_library("ui") {
     "//components/syncable_prefs",
     "//components/toolbar",
     "//components/tracing:startup_tracing",
-    "//components/translate/content/browser",
     "//components/undo",
     "//components/update_client",
     "//components/upload_list",
