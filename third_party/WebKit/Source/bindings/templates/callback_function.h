@@ -12,6 +12,9 @@
 namespace blink {
 
 class ScriptState;
+{% for forward_declaration in forward_declarations %}
+class {{forward_declaration}};
+{% endfor %}
 
 class {{exported}}{{v8_class}} final : public GarbageCollectedFinalized<{{v8_class}}> {
 

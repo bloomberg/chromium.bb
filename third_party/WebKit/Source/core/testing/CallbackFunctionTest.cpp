@@ -7,6 +7,8 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8TestCallback.h"
+#include "bindings/core/v8/V8TestInterfaceCallback.h"
+#include "core/html/HTMLDivElement.h"
 
 namespace blink {
 
@@ -23,6 +25,14 @@ String CallbackFunctionTest::testCallback(ScriptState* scriptState, V8TestCallba
         return String("SUCCESS: ") + returnValue;
     }
     return String("Error!");
+}
+
+void CallbackFunctionTest::testInterfaceCallback(ScriptState* scriptState, V8TestInterfaceCallback* callback, HTMLDivElement* divElement, ExceptionState& exceptionState)
+{
+    ScriptWrappable* scriptWrappable;
+
+    callback->call(scriptState, scriptWrappable = nullptr, divElement);
+    return;
 }
 
 } // namespace blink

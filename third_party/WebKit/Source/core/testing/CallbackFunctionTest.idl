@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 [ExperimentalCallbackFunction] callback TestCallback = DOMString (DOMString message1, DOMString message2);
+[ExperimentalCallbackFunction] callback TestInterfaceCallback = void (HTMLDivElement divElement);
 
 interface CallbackFunctionTest {
     [CallWith=ScriptState, RaisesException] DOMString testCallback(TestCallback callback, DOMString message1, DOMString message2);
+    [CallWith=ScriptState, RaisesException] void testInterfaceCallback(TestInterfaceCallback callback, HTMLDivElement divElement);
 };

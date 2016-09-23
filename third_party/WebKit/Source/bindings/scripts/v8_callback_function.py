@@ -27,9 +27,15 @@ def callback_function_context(callback_function):
     includes.update(CALLBACK_FUNCTION_CPP_INCLUDES)
     idl_type = callback_function.idl_type
     idl_type_str = str(idl_type)
+    forward_declarations = []
+    for argument in callback_function.arguments:
+        if argument.idl_type.is_interface_type:
+            forward_declarations.append(argument.idl_type)
+        argument.idl_type.add_includes_for_type(callback_function.extended_attributes)
     context = {
         'cpp_class': callback_function.name,
-        'cpp_includes': sorted(CALLBACK_FUNCTION_CPP_INCLUDES),
+        'cpp_includes': sorted(includes),
+        'forward_declarations': sorted(forward_declarations),
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
         'return_cpp_type': (idl_type.cpp_type + '&') if idl_type.cpp_type != 'void' else None,

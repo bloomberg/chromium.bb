@@ -2,8 +2,9 @@
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script>
+var callbackFunctionTest = internals.callbackFunctionTest();
+
 test(function() {
-    var callbackFunctionTest = internals.callbackFunctionTest();
     var callback1 = function(msg1, msg2) {
         return msg1 + ', ' + msg2;
     };
@@ -14,4 +15,13 @@ test(function() {
     };
     assert_equals(callbackFunctionTest.testCallback(callback2, 'hello', 'world'), 'SUCCESS: hellohello worldworld');
 }, 'Callback function which takes two strings');
+
+test(function() {
+    var divElement = document.createElement('div');
+    var addInnerHTML = function(d) {
+        d.innerHTML = 'hello';
+    };
+    callbackFunctionTest.testInterfaceCallback(addInnerHTML, divElement);
+    assert_equals(divElement.innerHTML, 'hello');
+}, 'Callback function which takes a interface');
 </script>

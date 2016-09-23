@@ -34,6 +34,7 @@ callback VoidCallbackFunction = void ();
 callback AnyCallbackFunctionOptionalAnyArg = any (optional any optionalAnyArg);
 [ExperimentalCallbackFunction] callback VoidExperimentalCallbackFunction = void ();
 [ExperimentalCallbackFunction] callback LongExperimentalCallbackFunction = long (long num1, long num2);
+[ExperimentalCallbackFunction] callback VoidCallbackFunctionInterfaceArg = void (HTMLDivElement divElement);
 // No extended attributes on the interface; those go in TestInterface.idl
 interface TestObject {
     // Constants

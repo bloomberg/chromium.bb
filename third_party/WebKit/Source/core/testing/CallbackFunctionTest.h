@@ -12,8 +12,10 @@
 namespace blink {
 
 class ExceptionState;
+class HTMLDivElement;
 class ScriptState;
 class V8TestCallback;
+class V8TestInterfaceCallback;
 
 class CallbackFunctionTest final : public GarbageCollected<CallbackFunctionTest>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -23,6 +25,7 @@ public:
     static CallbackFunctionTest* create() { return new CallbackFunctionTest(); }
 
     String testCallback(ScriptState*, V8TestCallback*, const String&, const String&, ExceptionState&);
+    void testInterfaceCallback(ScriptState*, V8TestInterfaceCallback*, HTMLDivElement*, ExceptionState&);
 };
 
 } // namespace blink
