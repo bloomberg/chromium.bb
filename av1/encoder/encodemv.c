@@ -30,8 +30,8 @@ void av1_entropy_mv_init(void) {
   av1_tokens_from_tree(mv_fp_encodings, av1_mv_fp_tree);
 }
 
-static void encode_mv_component(aom_writer *w, int comp,
-                                const nmv_component *mvcomp, int usehp) {
+static void encode_mv_component(aom_writer *w, int comp, nmv_component *mvcomp,
+                                int usehp) {
   int offset;
   const int sign = comp < 0;
   const int mag = sign ? -comp : comp;
@@ -150,6 +150,7 @@ static void update_mv(aom_writer *w, const unsigned int ct[2], aom_prob *cur_p,
 #endif
 }
 
+#if !CONFIG_EC_ADAPT || !CONFIG_DAALA_EC
 static void write_mv_update(const aom_tree_index *tree,
                             aom_prob probs[/*n - 1*/],
                             const unsigned int counts[/*n - 1*/], int n,
@@ -164,17 +165,24 @@ static void write_mv_update(const aom_tree_index *tree,
   for (i = 0; i < n - 1; ++i)
     update_mv(w, branch_ct[i], &probs[i], MV_UPDATE_PROB);
 }
+#endif
 
 void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
                          nmv_context_counts *const nmv_counts) {
-  int i, j;
+  int i;
 #if CONFIG_REF_MV
+  int j;
   int nmv_ctx = 0;
   for (nmv_ctx = 0; nmv_ctx < NMV_CONTEXTS; ++nmv_ctx) {
     nmv_context *const mvc = &cm->fc->nmvc[nmv_ctx];
     nmv_context_counts *const counts = &nmv_counts[nmv_ctx];
+
     write_mv_update(av1_mv_joint_tree, mvc->joints, counts->joints, MV_JOINTS,
                     w);
+#if CONFIG_DAALA_EC
+    av1_tree_to_cdf(av1_mv_joint_tree, cm->fc->nmvc.joints,
+                    cm->fc->nmvc.joint_cdf);
+#endif
 
     for (i = 0; i < 2; ++i) {
       nmv_component *comp = &mvc->comps[i];
@@ -210,7 +218,13 @@ void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
   nmv_context *const mvc = &cm->fc->nmvc;
   nmv_context_counts *const counts = nmv_counts;
 
+  int j;
+#if !CONFIG_EC_ADAPT || !CONFIG_DAALA_EC
   write_mv_update(av1_mv_joint_tree, mvc->joints, counts->joints, MV_JOINTS, w);
+#if CONFIG_DAALA_EC
+  av1_tree_to_cdf(av1_mv_joint_tree, cm->fc->nmvc.joints,
+                  cm->fc->nmvc.joint_cdf);
+#endif
 
   for (i = 0; i < 2; ++i) {
     nmv_component *comp = &mvc->comps[i];
@@ -243,6 +257,7 @@ void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
     av1_tree_to_cdf(av1_mv_fp_tree, mvc->comps[i].fp, mvc->comps[i].fp_cdf);
 #endif
   }
+#endif  // CONFIG_EC_ADAPT, CONFIG_DAALA_EC
 
   if (usehp) {
     for (i = 0; i < 2; ++i) {
@@ -255,7 +270,7 @@ void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
 }
 
 void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
-                   const nmv_context *mvctx, int usehp) {
+                   nmv_context *mvctx, int usehp) {
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
   usehp = usehp && av1_use_mv_hp(ref);

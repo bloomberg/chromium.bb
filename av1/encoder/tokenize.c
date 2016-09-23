@@ -319,7 +319,7 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
 
 static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
 #if CONFIG_RANS || CONFIG_DAALA_EC
-                             const aom_cdf_prob (*token_cdf)[ENTROPY_TOKENS],
+                             aom_cdf_prob (*token_cdf)[ENTROPY_TOKENS],
 #endif  // CONFIG_RANS
                              int32_t extra, uint8_t token,
                              uint8_t skip_eob_node, unsigned int *counts) {
@@ -425,12 +425,11 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
     v = qcoeff[scan[c]];
 
     while (!v) {
-      add_token(
-          &t, coef_probs[band[c]][pt],
+      add_token(&t, coef_probs[band[c]][pt],
 #if CONFIG_RANS || CONFIG_DAALA_EC
-          (const aom_cdf_prob(*)[ENTROPY_TOKENS]) & coef_cdfs[band[c]][pt],
+                &coef_cdfs[band[c]][pt],
 #endif
-          0, ZERO_TOKEN, skip_eob, counts[band[c]][pt]);
+                0, ZERO_TOKEN, skip_eob, counts[band[c]][pt]);
       eob_branch[band[c]][pt] += !skip_eob;
 
       skip_eob = 1;
@@ -444,7 +443,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
     add_token(&t, coef_probs[band[c]][pt],
 #if CONFIG_RANS || CONFIG_DAALA_EC
-              (const aom_cdf_prob(*)[ENTROPY_TOKENS]) & coef_cdfs[band[c]][pt],
+              &coef_cdfs[band[c]][pt],
 #endif
               extra, (uint8_t)token, (uint8_t)skip_eob, counts[band[c]][pt]);
     eob_branch[band[c]][pt] += !skip_eob;

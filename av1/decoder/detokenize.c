@@ -47,32 +47,31 @@ static INLINE int read_coeff(const aom_prob *probs, int n, aom_reader *r) {
 }
 
 #if CONFIG_AOM_QM
-static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
-                        tran_low_t *dqcoeff, TX_SIZE tx_size, const int16_t *dq,
-                        int ctx, const int16_t *scan, const int16_t *nb,
-                        aom_reader *r, const qm_val_t *iqm[2][TX_SIZES])
+static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
+                        TX_SIZE tx_size, const int16_t *dq, int ctx,
+                        const int16_t *scan, const int16_t *nb, aom_reader *r,
+                        const qm_val_t *iqm[2][TX_SIZES])
 #else
-static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
-                        tran_low_t *dqcoeff, TX_SIZE tx_size, const int16_t *dq,
-                        int ctx, const int16_t *scan, const int16_t *nb,
-                        aom_reader *r)
+static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
+                        TX_SIZE tx_size, const int16_t *dq, int ctx,
+                        const int16_t *scan, const int16_t *nb, aom_reader *r)
 #endif
 {
   FRAME_COUNTS *counts = xd->counts;
   const int max_eob = 1 << (tx_size_1d_log2[tx_size] * 2);
-  const FRAME_CONTEXT *const fc = xd->fc;
+  FRAME_CONTEXT *const fc = xd->fc;
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
 #if CONFIG_AOM_QM
   const qm_val_t *iqmatrix = iqm[!ref][tx_size];
 #endif
   int band, c = 0;
-  const aom_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
+  aom_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       fc->coef_probs[tx_size][type][ref];
   const aom_prob *prob;
 #if CONFIG_RANS || CONFIG_DAALA_EC
-  const aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+  aom_cdf_prob(*coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       fc->coef_cdfs[tx_size][type][ref];
-  const aom_cdf_prob(*cdf)[ENTROPY_TOKENS];
+  aom_cdf_prob(*cdf)[ENTROPY_TOKENS];
 #endif  // CONFIG_RANS
   unsigned int(*coef_counts)[COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1];
   unsigned int(*eob_branch_count)[COEFF_CONTEXTS];
