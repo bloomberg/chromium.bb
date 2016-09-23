@@ -285,24 +285,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 }
             }
         }
-
-        /*
-         * Requires ACCESS_WIFI_STATE permission to get the real link speed, else returns
-         * UNKNOWN_LINK_SPEED.
-         */
-        int getLinkSpeedInMbps() {
-            if (!mHasWifiPermission || mWifiManager == null) return UNKNOWN_LINK_SPEED;
-            final WifiInfo wifiInfo = getWifiInfo();
-            if (wifiInfo == null) return UNKNOWN_LINK_SPEED;
-
-            // wifiInfo.getLinkSpeed returns the current wifi linkspeed, which can change even
-            // though the connection type hasn't changed.
-            return wifiInfo.getLinkSpeed();
-        }
-
-        boolean getHasWifiPermission() {
-            return mHasWifiPermission;
-        }
     }
 
     // This class gets called back by ConnectivityManager whenever networks come
@@ -592,8 +574,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mWifiSSID = getCurrentWifiSSID(networkState);
         mMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
         mMaxBandwidthConnectionType = mConnectionType;
-        mIntentFilter =
-                new NetworkConnectivityIntentFilter(mWifiManagerDelegate.getHasWifiPermission());
+        mIntentFilter = new NetworkConnectivityIntentFilter();
         mRegistrationPolicy = policy;
         mRegistrationPolicy.init(this);
     }
@@ -860,17 +841,10 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     /**
      * Returns the bandwidth of the current connection in Mbps. The result is
      * derived from the NetInfo v3 specification's mapping from network type to
-     * max link speed. In cases where more information is available, such as wifi,
-     * that is used instead. For more on NetInfo, see http://w3c.github.io/netinfo/.
+     * max link speed. In cases where more information is available that is used
+     * instead. For more on NetInfo, see http://w3c.github.io/netinfo/.
      */
     public double getCurrentMaxBandwidthInMbps(NetworkState networkState) {
-        if (convertToConnectionType(networkState) == ConnectionType.CONNECTION_WIFI) {
-            final int link_speed = mWifiManagerDelegate.getLinkSpeedInMbps();
-            if (link_speed != UNKNOWN_LINK_SPEED) {
-                return link_speed;
-            }
-        }
-
         return NetworkChangeNotifier.getMaxBandwidthForConnectionSubtype(
                 convertToConnectionSubtype(networkState));
     }
@@ -886,8 +860,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         final NetworkState networkState = getCurrentNetworkState();
         if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {
             connectionTypeChanged(networkState);
-            maxBandwidthChanged(networkState);
-        } else if (WifiManager.RSSI_CHANGED_ACTION.equals(intent.getAction())) {
             maxBandwidthChanged(networkState);
         }
     }
@@ -916,9 +888,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     private static class NetworkConnectivityIntentFilter extends IntentFilter {
-        NetworkConnectivityIntentFilter(boolean monitorRSSI) {
+        NetworkConnectivityIntentFilter() {
             addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-            if (monitorRSSI) addAction(WifiManager.RSSI_CHANGED_ACTION);
         }
     }
 
