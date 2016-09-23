@@ -884,29 +884,20 @@ DocumentFragment* Range::createContextualFragment(const String& markup, Exceptio
     if (!element || isHTMLHtmlElement(element)) {
         Document& document = node->document();
 
-        if (document.isHTMLDocument() || document.isXHTMLDocument()) {
+        if (document.isSVGDocument()) {
+            element = document.documentElement();
+            if (!element)
+                element = SVGSVGElement::create(document);
+        } else {
             // Optimization over spec: try to reuse the existing <body> element, if it is available.
             element = document.body();
             if (!element)
                 element = HTMLBodyElement::create(document);
-        } else if (document.isSVGDocument()) {
-            element = document.documentElement();
-            if (!element)
-                element = SVGSVGElement::create(document);
         }
     }
 
-    if (!element || (!element->isHTMLElement() && !element->isSVGElement())) {
-        exceptionState.throwDOMException(NotSupportedError, "The range's container must be an HTML or SVG Element, Document, or DocumentFragment.");
-        return nullptr;
-    }
-
     // Steps 3, 4, 5.
-    DocumentFragment* fragment = blink::createContextualFragment(markup, element, AllowScriptingContentAndDoNotMarkAlreadyStarted, exceptionState);
-    if (!fragment)
-        return nullptr;
-
-    return fragment;
+    return blink::createContextualFragment(markup, element, AllowScriptingContentAndDoNotMarkAlreadyStarted, exceptionState);
 }
 
 

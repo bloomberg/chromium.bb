@@ -19,5 +19,5 @@ try {
 }
 
 var result = document.getElementById('result');
-result.textContent = (thrownException && thrownException.message === "Failed to execute 'createContextualFragment' on 'Range': The range's container must be an HTML or SVG Element, Document, or DocumentFragment.") ? 'PASS' : 'FAIL';
+result.textContent = thrownException ? 'FAIL' : 'PASS';
 </script>
