@@ -265,6 +265,13 @@ protected: // For unittests
 
     bool initialize(const IntSize&, bool useMultisampling);
 
+    // Shared memory bitmaps that were released by the compositor and can be used again by this DrawingBuffer.
+    struct RecycledBitmap {
+        std::unique_ptr<cc::SharedBitmap> bitmap;
+        IntSize size;
+    };
+    Vector<RecycledBitmap> m_recycledBitmaps;
+
 private:
     // All parameters necessary to generate the texture that will be passed to
     // prepareMailbox.
@@ -486,12 +493,6 @@ private:
     };
     // Mailboxes that were released by the compositor can be used again by this DrawingBuffer.
     Deque<RefPtr<RecycledMailbox>> m_recycledMailboxQueue;
-    struct RecycledBitmap {
-        std::unique_ptr<cc::SharedBitmap> bitmap;
-        IntSize size;
-    };
-    // Shared memory bitmaps that were released by the compositor and can be used again by this DrawingBuffer.
-    Vector<RecycledBitmap> m_recycledBitmap;
 
     // If the width and height of the Canvas's backing store don't
     // match those that we were given in the most recent call to

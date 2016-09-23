@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/blink/web_layer_impl.h"
+#include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/test/mock_webclipboard_impl.h"
@@ -117,6 +118,7 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
   }
   renderer_scheduler_ = blink::scheduler::CreateRendererSchedulerForTests();
   web_thread_ = renderer_scheduler_->CreateMainThread();
+  shared_bitmap_manager_.reset(new cc::TestSharedBitmapManager);
 
   // Set up a FeatureList instance, so that code using that API will not hit a
   // an error that it's not set. Cleared by ClearInstanceForTesting() below.
@@ -197,6 +199,13 @@ blink::WebURLLoader* TestBlinkWebUnitTestSupport::createURLLoader() {
 
 blink::WebString TestBlinkWebUnitTestSupport::userAgent() {
   return blink::WebString::fromUTF8("test_runner/0.0.0.0");
+}
+
+std::unique_ptr<cc::SharedBitmap>
+TestBlinkWebUnitTestSupport::allocateSharedBitmap(
+    const blink::WebSize& size) {
+  return shared_bitmap_manager_
+      ->AllocateSharedBitmap(gfx::Size(size.width, size.height));
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::queryLocalizedString(

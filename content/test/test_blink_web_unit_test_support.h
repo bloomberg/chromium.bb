@@ -33,6 +33,10 @@ class RendererScheduler;
 }
 }
 
+namespace cc {
+class TestSharedBitmapManager;
+}
+
 namespace content {
 
 // An implementation of BlinkPlatformImpl for tests.
@@ -75,6 +79,9 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
 
   blink::WebThread* currentThread() override;
 
+  std::unique_ptr<cc::SharedBitmap> allocateSharedBitmap(
+      const blink::WebSize& size) override;
+
   void getPluginList(bool refresh,
                      const blink::WebSecurityOrigin& mainFrameOrigin,
                      blink::WebPluginListBuilder* builder) override;
@@ -91,6 +98,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   cc_blink::WebCompositorSupportImpl compositor_support_;
   std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler_;
   std::unique_ptr<blink::WebThread> web_thread_;
+  std::unique_ptr<cc::TestSharedBitmapManager> shared_bitmap_manager_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   blink::WebThemeEngine* active_theme_engine_ = nullptr;
