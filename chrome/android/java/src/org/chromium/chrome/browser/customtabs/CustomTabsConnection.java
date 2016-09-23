@@ -105,8 +105,6 @@ public class CustomTabsConnection {
     private final AtomicBoolean mWarmupHasBeenCalled = new AtomicBoolean();
     private final AtomicBoolean mWarmupHasBeenFinished = new AtomicBoolean();
     private ExternalPrerenderHandler mExternalPrerenderHandler;
-    // TODO(lizeb): Remove once crbug.com/630303 is fixed.
-    private boolean mPageLoadMetricsEnabled;
 
     /**
      * <strong>DO NOT CALL</strong>
@@ -562,12 +560,6 @@ public class CustomTabsConnection {
         return true;
     }
 
-    // TODO(lizeb): Remove once crbug.com/630303 is fixed.
-    @VisibleForTesting
-    void enablePageLoadMetricsCallbacks() {
-        mPageLoadMetricsEnabled = true;
-    }
-
     /**
      * Notifies the application of a page load metric.
      *
@@ -580,7 +572,6 @@ public class CustomTabsConnection {
      */
     boolean notifyPageLoadMetric(CustomTabsSessionToken session, String metricName, long offsetMs) {
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
-        if (!mPageLoadMetricsEnabled) return false;
         if (callback == null) return false;
         Bundle args = new Bundle();
         args.putLong(metricName, offsetMs);

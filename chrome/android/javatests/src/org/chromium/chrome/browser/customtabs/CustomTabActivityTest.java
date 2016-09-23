@@ -827,10 +827,6 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     @SmallTest
     @RetryOnFailure
     public void testPageLoadMetricIsSent() {
-        Context context = getInstrumentation().getTargetContext().getApplicationContext();
-        CustomTabsConnection connection = CustomTabsConnection.getInstance((Application) context);
-        connection.enablePageLoadMetricsCallbacks();
-
         final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
         CustomTabsCallback cb = new CustomTabsCallback() {
             @Override
