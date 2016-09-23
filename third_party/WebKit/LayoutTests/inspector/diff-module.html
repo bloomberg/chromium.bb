@@ -1,0 +1,62 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function initialize_DiffTest()
+{
+    InspectorTest.preloadModule("diff");
+}
+
+function test()
+{
+    print(WebInspector.Diff.charDiff("test this sentence.", "test that sentence"));
+    print(WebInspector.Diff.lineDiff(["test this sentence."], ["test that sentence"]));
+    print(WebInspector.Diff.lineDiff(["a", "b", "c"], ["a", "c"]));
+    print(WebInspector.Diff.lineDiff(["a", "b", "c"], ["b", "a", "c"]));
+    print(WebInspector.Diff.lineDiff(["a", "c"], ["a", "b", "c"]));
+    print(WebInspector.Diff.lineDiff(
+        [
+            "for (var i = 0; i < 100; i++) {",
+            "    willBeLeftAlone()",
+            "    willBeDeleted();",
+            "}",
+            "for (var j = 0; j < 100; j++) {",
+            "    console.log('something changed');",
+            "    willBeDeletedAgain();",
+            "}"
+        ],
+        [
+            "for (var i = 0; i < 100; i++) {",
+            "    willBeLeftAlone();",
+            "}",
+            "insertThisLine();",
+            "for (var j = 0; j < 100; j++) {",
+            "    console.log('changed');",
+            "}"
+        ]));
+    InspectorTest.completeTest();
+    function print(results)
+    {
+        InspectorTest.addResult("");
+        for (var i = 0; i < results.length; i++) {
+            var result = results[i];
+            var type = "Unknown";
+            if (result[0] === WebInspector.Diff.Operation.Equal)
+                type = "=";
+            else if (result[0] === WebInspector.Diff.Operation.Insert)
+                type = "+";
+            else if (result[0] === WebInspector.Diff.Operation.Delete)
+                type = "-";
+            else if (result[0] === WebInspector.Diff.Operation.Edit)
+                type = "E";
+            InspectorTest.addResult(type + ": " + JSON.stringify(result[1], null, 4));
+        }
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that the Diff module correctly diffs things.</p>
+</body>
+</html>
