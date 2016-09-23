@@ -597,6 +597,33 @@ _cheets_boards = frozenset([
     'lulu-cheets',
 ])
 
+_cheets_x86_boards = _cheets_boards | frozenset([
+    'auron_paine',
+    'auron_yuna',
+    'banon',
+    'cave',
+    'celes',
+    'chell',
+    'cyan',
+    'edgar',
+    'gandof',
+    'glados',
+    'glimmer-cheets',
+    'kunimitsu',
+    'lars',
+    'lulu',
+    'reef',
+    'reks',
+    'samus',
+    'sentry',
+    'setzer',
+    'strago',
+    'terra',
+    'ultima',
+    'umaro',
+    'wizpig',
+])
+
 _lakitu_boards = frozenset([
     'lakitu',
     'lakitu_next',
@@ -626,13 +653,7 @@ _base_layout_boards = _lakitu_boards
 _no_unittest_boards = frozenset((
 ))
 
-_no_vmtest_boards = _arm_boards | _brillo_boards | _cheets_boards | frozenset((
-    'cave',
-    'cyan',
-    'lulu',
-    'reef',
-    'samus',
-))
+_no_vmtest_boards = _arm_boards | _brillo_boards | _cheets_x86_boards
 
 # This is a list of configs that should be included on the main waterfall, but
 # aren't included by default (see IsDefaultMainWaterfall). This loosely
