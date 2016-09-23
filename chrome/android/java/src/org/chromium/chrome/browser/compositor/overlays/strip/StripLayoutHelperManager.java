@@ -109,6 +109,8 @@ public class StripLayoutHelperManager implements SceneOverlay {
     public void destroy() {
         mTabStripTreeProvider.destroy();
         mTabStripTreeProvider = null;
+        mIncognitoHelper.destroy();
+        mNormalHelper.destroy();
     }
 
     @Override

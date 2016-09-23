@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
@@ -623,6 +624,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *                      accounting. When null, TabUma will not be initialized.
      * @param frozenState State containing information about this Tab, if it was persisted.
      */
+    @SuppressLint("HandlerLeak")
     public Tab(int id, int parentId, boolean incognito, Context context,
             WindowAndroid window, TabLaunchType type, TabCreationState creationState,
             TabState frozenState) {
@@ -2103,6 +2105,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mPreviousFullscreenContentOffsetY = Float.NaN;
 
         mNeedsReload = false;
+
+        // Remove pending handler actions to prevent memory leaks.
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     /**

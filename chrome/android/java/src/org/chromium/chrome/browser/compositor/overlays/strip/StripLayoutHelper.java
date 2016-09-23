@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.overlays.strip;
 
 import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.createAnimation;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.Handler;
@@ -214,6 +215,13 @@ public class StripLayoutHelper {
         mShouldCascadeTabs = screenWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
         mStripStacker = mShouldCascadeTabs ? mCascadingStripStacker : mScrollingStripStacker;
         mIsFirstLayoutPass = true;
+    }
+
+    /**
+     * Cleans up internal state.
+     */
+    public void destroy() {
+        mStripTabEventHandler.removeCallbacksAndMessages(null);
     }
 
     /**
@@ -1506,6 +1514,7 @@ public class StripLayoutHelper {
         }
     }
 
+    @SuppressLint("HandlerLeak")
     private class StripTabEventHandler extends Handler {
         @Override
         public void handleMessage(Message m) {
