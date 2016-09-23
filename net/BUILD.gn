@@ -390,9 +390,11 @@ component("net") {
     # Brotli support.
     if (!disable_brotli_filter) {
       sources += [ "filter/brotli_filter.cc" ]
+      sources += [ "filter/brotli_source_stream.cc" ]
       deps += [ "//third_party/brotli" ]
     } else {
       sources += [ "filter/brotli_filter_disabled.cc" ]
+      sources += [ "filter/brotli_source_stream_disabled.cc" ]
     }
   }
 }
@@ -1579,6 +1581,7 @@ test("net_unittests") {
   # Also, exclude the test from iOS for now (needs to read input data files).
   if (disable_brotli_filter || is_ios) {
     sources -= [ "filter/brotli_filter_unittest.cc" ]
+    sources -= [ "filter/brotli_source_stream_unittest.cc" ]
   }
 
   if (is_android) {
