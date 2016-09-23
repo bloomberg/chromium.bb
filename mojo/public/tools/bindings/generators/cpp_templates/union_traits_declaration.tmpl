@@ -11,19 +11,13 @@ struct {{export_attribute}} UnionTraits<{{mojom_type}}::DataView,
   }
 
 {%- for field in union.fields %}
-{%-   set return_ref = field.kind|is_object_kind or
-                       field.kind|is_any_handle_or_interface_kind %}
-{%-   if return_ref %}
-  static decltype(std::declval<{{mojom_type}}>().get_{{field.name}}())
-      {{field.name}}({{mojom_type}}Ptr& input) {
+{%-   set maybe_const_in = "" if field.kind|contains_handles_or_interfaces else "const" %}
+{%-   set maybe_const_out = "" if field.kind|contains_handles_or_interfaces or not field.kind|is_reference_kind else "const" %}
+{#    We want the field accessor to be const whenever possible to allow
+      structs to be used as map keys. #}
+  static {{maybe_const_out}} {{field.kind|cpp_union_trait_getter_return_type}} {{field.name}}({{maybe_const_in}} {{mojom_type}}Ptr& input) {
     return input->get_{{field.name}}();
   }
-{%-   else %}
-  static decltype(std::declval<{{mojom_type}}>().get_{{field.name}}())
-      {{field.name}}(const {{mojom_type}}Ptr& input) {
-    return input->get_{{field.name}}();
-  }
-{%-   endif %}
 {%- endfor %}
 
   static bool Read({{mojom_type}}::DataView input, {{mojom_type}}Ptr* output);

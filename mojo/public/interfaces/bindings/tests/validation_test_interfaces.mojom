@@ -91,6 +91,7 @@ interface ConformanceTestInterface {
   Method17(array<InterfaceA> param0);
   Method18(UnionA? param0);
   Method19(Recursive recursive);
+  Method20(map<StructB, uint8> param0);
 };
 
 struct BasicStruct {

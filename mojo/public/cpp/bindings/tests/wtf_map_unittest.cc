@@ -7,7 +7,10 @@
 #include "mojo/public/cpp/bindings/lib/wtf_serialization.h"
 #include "mojo/public/cpp/bindings/tests/container_test_util.h"
 #include "mojo/public/cpp/bindings/tests/map_common_test.h"
+#include "mojo/public/cpp/bindings/tests/rect_blink.h"
 #include "mojo/public/cpp/bindings/wtf_array.h"
+#include "mojo/public/interfaces/bindings/tests/rect.mojom-blink.h"
+#include "mojo/public/interfaces/bindings/tests/test_structs.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/wtf/text/WTFString.h"
 
@@ -60,6 +63,49 @@ TEST_F(WTFMapTest, MoveFromAndToWTFHashMap_MoveOnly) {
 
   ASSERT_EQ(0u, mojo_map.size());
   ASSERT_TRUE(mojo_map.is_null());
+}
+
+static blink::RectPtr MakeRect(int32_t x,
+                               int32_t y,
+                               int32_t width,
+                               int32_t height) {
+  blink::RectPtr rect_ptr = blink::Rect::New();
+  rect_ptr->x = x;
+  rect_ptr->y = y;
+  rect_ptr->width = width;
+  rect_ptr->height = height;
+  return rect_ptr;
+}
+
+TEST_F(WTFMapTest, StructKey) {
+  WTF::HashMap<blink::RectPtr, int32_t> map;
+  map.add(MakeRect(1, 2, 3, 4), 123);
+
+  blink::RectPtr key = MakeRect(1, 2, 3, 4);
+  ASSERT_NE(map.end(), map.find(key));
+  ASSERT_EQ(123, map.find(key)->value);
+
+  map.remove(key);
+  ASSERT_EQ(0u, map.size());
+}
+
+static blink::ContainsHashablePtr MakeContainsHashablePtr(RectBlink rect) {
+  blink::ContainsHashablePtr ptr = blink::ContainsHashable::New();
+  ptr->rect = rect;
+  return ptr;
+}
+
+TEST_F(WTFMapTest, TypemappedStructKey) {
+  WTF::HashMap<blink::ContainsHashablePtr, int32_t> map;
+  map.add(MakeContainsHashablePtr(RectBlink(1, 2, 3, 4)), 123);
+
+  blink::ContainsHashablePtr key =
+      MakeContainsHashablePtr(RectBlink(1, 2, 3, 4));
+  ASSERT_NE(map.end(), map.find(key));
+  ASSERT_EQ(123, map.find(key)->value);
+
+  map.remove(key);
+  ASSERT_EQ(0u, map.size());
 }
 
 }  // namespace

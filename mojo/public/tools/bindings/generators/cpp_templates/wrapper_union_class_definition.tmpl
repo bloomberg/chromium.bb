@@ -65,3 +65,23 @@ void {{union.name}}::DestroyActive() {
 {%- endfor %}
   }
 }
+
+{%- if union|is_hashable %}
+size_t {{union.name}}::Hash(size_t seed) const {
+  seed = mojo::internal::HashCombine(seed, static_cast<uint32_t>(tag_));
+  switch (tag_) {
+{%  for field in union.fields %}
+    case Tag::{{field.name|upper}}:
+{%-   if for_blink %}
+      return mojo::internal::WTFHash(seed, data_.{{field.name}});
+{%-   else %}
+      return mojo::internal::Hash(seed, data_.{{field.name}});
+{%-   endif %}
+{%- endfor %}
+    default:
+      NOTREACHED();
+      return seed;
+  }
+}
+
+{%- endif %}

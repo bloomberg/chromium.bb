@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/clone_equals_util.h"
+#include "mojo/public/cpp/bindings/lib/hash_util.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
@@ -180,6 +181,10 @@ class Array {
     if (is_null() != other.is_null())
       return false;
     return internal::Equals(vec_, other.vec_);
+  }
+
+  size_t Hash(size_t seed) const {
+    return is_null() ? seed : internal::Hash(seed, vec_);
   }
 
  private:

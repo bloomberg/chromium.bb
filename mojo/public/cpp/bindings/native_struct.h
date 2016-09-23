@@ -39,6 +39,7 @@ class MOJO_CPP_BINDINGS_EXPORT NativeStruct {
 
   NativeStructPtr Clone() const;
   bool Equals(const NativeStruct& other) const;
+  size_t Hash(size_t seed) const;
 
   Array<uint8_t> data;
 };

@@ -13,3 +13,16 @@
 
 {{struct.name}}::~{{struct.name}}() {
 }
+
+{%- if struct|is_hashable %}
+size_t {{struct.name}}::Hash(size_t seed) const {
+{%-   for field in struct.fields %}
+{%-     if for_blink %}
+  seed = mojo::internal::WTFHash(seed, this->{{field.name}});
+{%-     else %}
+  seed = mojo::internal::Hash(seed, this->{{field.name}});
+{%-     endif %}
+{%-   endfor %}
+  return seed;
+}
+{%- endif %}

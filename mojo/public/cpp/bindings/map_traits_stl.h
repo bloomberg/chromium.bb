@@ -94,14 +94,10 @@ struct MapTraits<std::unordered_map<K, V>> {
   static V& GetValue(Iterator& iterator) { return iterator->second; }
   static const V& GetValue(ConstIterator& iterator) { return iterator->second; }
 
-  static bool Insert(std::unordered_map<K, V>& input, const K& key, V&& value) {
-    input.insert(std::make_pair(key, std::forward<V>(value)));
-    return true;
-  }
-  static bool Insert(std::unordered_map<K, V>& input,
-                     const K& key,
-                     const V& value) {
-    input.insert(std::make_pair(key, value));
+  template <typename IK, typename IV>
+  static bool Insert(std::unordered_map<K, V>& input, IK&& key, IV&& value) {
+    input.insert(
+        std::make_pair(std::forward<IK>(key), std::forward<IV>(value)));
     return true;
   }
 

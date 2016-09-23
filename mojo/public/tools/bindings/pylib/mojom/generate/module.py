@@ -294,6 +294,20 @@ class UnionField(Field): pass
 
 
 class Struct(ReferenceKind):
+  """A struct with typed fields.
+
+  Attributes:
+    name: {str} The name of the struct type.
+    native_only: {bool} Does the struct have a body (i.e. any fields) or is it
+        purely a native struct.
+    module: {Module} The defining module.
+    imported_from: {dict} Information about where this union was
+        imported from.
+    fields: {List[StructField]} The members of the union.
+    attributes: {dict} Additional information about the struct, such as
+        if it's a native struct.
+  """
+
   ReferenceKind.AddSharedProperty('name')
   ReferenceKind.AddSharedProperty('native_only')
   ReferenceKind.AddSharedProperty('module')
@@ -425,11 +439,6 @@ class Map(ReferenceKind):
                              ']')
       if IsNullableKind(key_kind):
         raise Exception("Nullable kinds cannot be keys in maps.")
-      if IsStructKind(key_kind):
-        # TODO(erg): It would sometimes be nice if we could key on struct
-        # values. However, what happens if the struct has a handle in it? Or
-        # non-copyable data like an array?
-        raise Exception("Structs cannot be keys in maps.")
       if IsAnyHandleKind(key_kind):
         raise Exception("Handles cannot be keys in maps.")
       if IsAnyInterfaceKind(key_kind):
@@ -840,3 +849,39 @@ def HasSyncMethods(interface):
     if method.sync:
       return True
   return False
+
+
+def ContainsHandlesOrInterfaces(kind):
+  """Check if the kind contains any handles.
+
+  This check is recursive so it checks all struct fields, containers elements,
+  etc.
+
+  Args:
+    struct: {Kind} The kind to check.
+
+  Returns:
+    {bool}: True if the kind contains handles.
+  """
+  # We remember the types we already checked to avoid infinite recursion when
+  # checking recursive (or mutually recursive) types:
+  checked = set()
+  def Check(kind):
+    if kind.spec in checked:
+      return False
+    checked.add(kind.spec)
+    if IsStructKind(kind):
+      return any(Check(field.kind) for field in kind.fields)
+    elif IsUnionKind(kind):
+      return any(Check(field.kind) for field in kind.fields)
+    elif IsAnyHandleKind(kind):
+      return True
+    elif IsAnyInterfaceKind(kind):
+      return True
+    elif IsArrayKind(kind):
+      return Check(kind.kind)
+    elif IsMapKind(kind):
+      return Check(kind.key_kind) or Check(kind.value_kind)
+    else:
+      return False
+  return Check(kind)

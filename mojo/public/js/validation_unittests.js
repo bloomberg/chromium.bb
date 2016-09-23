@@ -234,9 +234,11 @@ define([
       // logic in *RequestValidator and *ResponseValidator is ported from
       // cpp to js.
       // TODO(crbug/640298): Implement max recursion depth for JS.
+      // TODO(crbug/628104): Support struct map keys for JS.
       if (testFiles[i].indexOf("overflow") != -1 ||
           testFiles[i].indexOf("mthd11") != -1 ||
           testFiles[i].indexOf("conformance_mthd19") != -1 ||
+          testFiles[i].indexOf("conformance_mthd20") != -1 ||
           testFiles[i].indexOf("enum") != -1 ||
           testFiles[i].indexOf("no_such_method") != -1 ||
           testFiles[i].indexOf("invalid_request_flags") != -1 ||

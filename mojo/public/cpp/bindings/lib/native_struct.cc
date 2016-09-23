@@ -4,6 +4,8 @@
 
 #include "mojo/public/cpp/bindings/native_struct.h"
 
+#include "mojo/public/cpp/bindings/lib/hash_util.h"
+
 namespace mojo {
 
 // static
@@ -25,6 +27,10 @@ NativeStructPtr NativeStruct::Clone() const {
 
 bool NativeStruct::Equals(const NativeStruct& other) const {
   return data.Equals(other.data);
+}
+
+size_t NativeStruct::Hash(size_t seed) const {
+  return internal::Hash(seed, data);
 }
 
 }  // namespace mojo

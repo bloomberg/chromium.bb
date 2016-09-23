@@ -46,6 +46,10 @@ class {{export_attribute}} {{struct.name}} {
                 T, {{struct.name}}>::value>::type* = nullptr>
   bool Equals(const T& other) const;
 
+{%- if struct|is_hashable %}
+  size_t Hash(size_t seed) const;
+{%- endif %}
+
 {%- set serialization_result_type = "mojo::WTFArray<uint8_t>"
         if for_blink else "mojo::Array<uint8_t>" %}
 

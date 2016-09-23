@@ -6,12 +6,16 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <unordered_map>
 #include <utility>
 
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/tests/container_test_util.h"
 #include "mojo/public/cpp/bindings/tests/map_common_test.h"
+#include "mojo/public/cpp/bindings/tests/rect_chromium.h"
+#include "mojo/public/interfaces/bindings/tests/rect.mojom.h"
+#include "mojo/public/interfaces/bindings/tests/test_structs.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -220,6 +224,46 @@ TEST_F(MapTest, MoveFromAndToSTLMap_MoveOnly) {
 
   ASSERT_EQ(0u, mojo_map.size());
   ASSERT_TRUE(mojo_map.is_null());
+}
+
+static RectPtr MakeRect(int32_t x, int32_t y, int32_t width, int32_t height) {
+  RectPtr rect_ptr = Rect::New();
+  rect_ptr->x = x;
+  rect_ptr->y = y;
+  rect_ptr->width = width;
+  rect_ptr->height = height;
+  return rect_ptr;
+}
+
+TEST_F(MapTest, StructKey) {
+  std::unordered_map<RectPtr, int32_t> map;
+  map.insert(std::make_pair(MakeRect(1, 2, 3, 4), 123));
+
+  RectPtr key = MakeRect(1, 2, 3, 4);
+  ASSERT_NE(map.end(), map.find(key));
+  ASSERT_EQ(123, map.find(key)->second);
+
+  map.erase(key);
+  ASSERT_EQ(0u, map.size());
+}
+
+static ContainsHashablePtr MakeContainsHashablePtr(RectChromium rect) {
+  ContainsHashablePtr ptr = ContainsHashable::New();
+  ptr->rect = rect;
+  return ptr;
+}
+
+TEST_F(MapTest, TypemappedStructKey) {
+  std::unordered_map<ContainsHashablePtr, int32_t> map;
+  map.insert(
+      std::make_pair(MakeContainsHashablePtr(RectChromium(1, 2, 3, 4)), 123));
+
+  ContainsHashablePtr key = MakeContainsHashablePtr(RectChromium(1, 2, 3, 4));
+  ASSERT_NE(map.end(), map.find(key));
+  ASSERT_EQ(123, map.find(key)->second);
+
+  map.erase(key);
+  ASSERT_EQ(0u, map.size());
 }
 
 }  // namespace

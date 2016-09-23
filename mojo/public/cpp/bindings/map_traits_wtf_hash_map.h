@@ -46,20 +46,13 @@ struct MapTraits<WTF::HashMap<K, V>> {
   static V& GetValue(Iterator& iterator) { return iterator->value; }
   static const V& GetValue(ConstIterator& iterator) { return iterator->value; }
 
-  static bool Insert(WTF::HashMap<K, V>& input, const K& key, V&& value) {
+  template <typename IK, typename IV>
+  static bool Insert(WTF::HashMap<K, V>& input, IK&& key, IV&& value) {
     if (!WTF::HashMap<K, V>::isValidKey(key)) {
-      LOG(ERROR) << "The key value is disallowed by WTF::HashMap: " << key;
+      LOG(ERROR) << "The key value is disallowed by WTF::HashMap";
       return false;
     }
-    input.add(key, std::forward<V>(value));
-    return true;
-  }
-  static bool Insert(WTF::HashMap<K, V>& input, const K& key, const V& value) {
-    if (!WTF::HashMap<K, V>::isValidKey(key)) {
-      LOG(ERROR) << "The key value is disallowed by WTF::HashMap: " << key;
-      return false;
-    }
-    input.add(key, value);
+    input.add(std::forward<IK>(key), std::forward<IV>(value));
     return true;
   }
 

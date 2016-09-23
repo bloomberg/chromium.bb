@@ -33,6 +33,10 @@ class {{export_attribute}} {{union.name}} {
                 T, {{union.name}}>::value>::type* = nullptr>
   bool Equals(const T& other) const;
 
+{%- if union|is_hashable %}
+  size_t Hash(size_t seed) const;
+{%- endif %}
+
   Tag which() const {
     return tag_;
   }

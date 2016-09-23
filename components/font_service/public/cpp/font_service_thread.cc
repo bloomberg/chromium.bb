@@ -124,7 +124,7 @@ void FontServiceThread::OnMatchFamilyNameComplete(
   DCHECK_EQ(GetThreadId(), base::PlatformThread::CurrentId());
   pending_waitable_events_.erase(done_event);
 
-  *out_valid = font_identity;
+  *out_valid = !font_identity.is_null();
   if (font_identity) {
     out_font_identity->fID = font_identity->id;
     out_font_identity->fTTCIndex = font_identity->ttc_index;

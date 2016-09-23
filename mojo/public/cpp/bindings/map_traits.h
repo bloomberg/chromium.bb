@@ -37,13 +37,13 @@ namespace mojo {
 //     static const V& GetValue(CustomConstIterator& iterator);
 //
 //     // Returning false results in deserialization failure and causes the
-//     // message pipe receiving it to be disconnected.
+//     // message pipe receiving it to be disconnected. |IK| and |IV| are
+//     // separate input key/value template parameters that allows for the
+//     // the key/value types to be forwarded.
+//     template <typename IK, typename IV>
 //     static bool Insert(CustomMap<K, V>& input,
-//                        const K& key,
-//                        V&& value);
-//     static bool Insert(CustomMap<K, V>& input,
-//                        const K& key,
-//                        const V& value);
+//                        IK&& key,
+//                        IV&& value);
 //
 //     static void SetToEmpty(CustomMap<K, V>* output);
 //   };

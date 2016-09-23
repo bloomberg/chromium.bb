@@ -110,6 +110,7 @@ def ParseTypemap(typemap):
         'move_only': 'move_only' in attributes,
         'copyable_pass_by_value': 'copyable_pass_by_value' in attributes,
         'nullable_is_same_type': 'nullable_is_same_type' in attributes,
+        'hashable': 'hashable' in attributes,
         'public_headers': values['public_headers'],
         'traits_headers': values['traits_headers'],
     }

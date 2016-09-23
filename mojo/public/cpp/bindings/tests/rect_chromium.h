@@ -55,6 +55,12 @@ class RectChromium {
 
   int GetArea() const { return width_ * height_; }
 
+  bool operator==(const RectChromium& other) const {
+    return (x() == other.x() && y() == other.y() && width() == other.width() &&
+            height() == other.height());
+  }
+  bool operator!=(const RectChromium& other) const { return !(*this == other); }
+
  private:
   int x_ = 0;
   int y_ = 0;
@@ -64,5 +70,18 @@ class RectChromium {
 
 }  // namespace test
 }  // namespace mojo
+
+namespace std {
+
+template <>
+struct hash<mojo::test::RectChromium> {
+  size_t operator()(const mojo::test::RectChromium& value) {
+    // Terrible hash function:
+    return (std::hash<int>()(value.x()) ^ std::hash<int>()(value.y()) ^
+            std::hash<int>()(value.width()) ^ std::hash<int>()(value.height()));
+  }
+};
+
+}  // namespace std
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_RECT_CHROMIUM_H_

@@ -7,10 +7,12 @@
 
 #include <stddef.h>
 
+#include <functional>
 #include <string>
 
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
+#include "mojo/public/cpp/bindings/lib/hash_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 
 namespace mojo {
@@ -192,5 +194,16 @@ struct TypeConverter<String, const char*> {
 };
 
 }  // namespace mojo
+
+namespace std {
+
+template <>
+struct hash<mojo::String> {
+  size_t operator()(const mojo::String& value) const {
+    return value.is_null() ? 0 : hash<std::string>()(value.get());
+  }
+};
+
+}  // namespace std
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_STRING_H_
