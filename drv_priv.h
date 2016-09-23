@@ -61,7 +61,7 @@ struct backend
 		drv_format_t format;
 		uint64_t usage;
 	}
-	format_list[18];
+	format_list[19];
 };
 
 #endif
