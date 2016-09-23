@@ -24,7 +24,7 @@ class BLINK_PLATFORM_EXPORT ThrottledTimeDomain : public RealTimeDomain {
   void RequestWakeup(base::TimeTicks now, base::TimeDelta delay) override;
   bool MaybeAdvanceTime() override;
 
-  using TimeDomain::ClearExpiredWakeups;
+  using TimeDomain::WakeupReadyDelayedQueues;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ThrottledTimeDomain);

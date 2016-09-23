@@ -146,7 +146,6 @@ void ThrottlingHelper::PumpThrottledTasks() {
   TRACE_EVENT0(tracing_category_, "ThrottlingHelper::PumpThrottledTasks");
   pending_pump_throttled_tasks_runtime_ = base::TimeTicks();
 
-  LazyNow lazy_low(tick_clock_);
   for (const TaskQueueMap::value_type& map_entry : throttled_queues_) {
     TaskQueue* task_queue = map_entry.first;
     if (!map_entry.second.enabled || task_queue->IsEmpty())
@@ -155,15 +154,14 @@ void ThrottlingHelper::PumpThrottledTasks() {
     task_queue->SetQueueEnabled(true);
     task_queue->InsertFence();
   }
-  // Make sure NextScheduledRunTime gives us an up-to date result.
-  time_domain_->ClearExpiredWakeups();
 
   base::TimeTicks next_scheduled_delayed_task;
   // Maybe schedule a call to ThrottlingHelper::PumpThrottledTasks if there is
   // a pending delayed task. NOTE posting a non-delayed task in the future will
   // result in ThrottlingHelper::OnTimeDomainHasImmediateWork being called.
   if (time_domain_->NextScheduledRunTime(&next_scheduled_delayed_task)) {
-    MaybeSchedulePumpThrottledTasksLocked(FROM_HERE, lazy_low.Now(),
+    LazyNow lazy_now(tick_clock_);
+    MaybeSchedulePumpThrottledTasksLocked(FROM_HERE, lazy_now.Now(),
                                           next_scheduled_delayed_task);
   }
 }

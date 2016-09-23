@@ -189,11 +189,13 @@ void TaskQueueManager::MaybeScheduleDelayedWork(
       main_thread_pending_wakeups_.end()) {
     return;
   }
-
   // De-duplicate DoWork posts.
   base::TimeTicks run_time = now + delay;
-  if (!main_thread_pending_wakeups_.insert(run_time).second)
+  if (!main_thread_pending_wakeups_.empty() &&
+      *main_thread_pending_wakeups_.begin() <= run_time) {
     return;
+  }
+  main_thread_pending_wakeups_.insert(run_time);
   delegate_->PostDelayedTask(
       from_here, base::Bind(&TaskQueueManager::DoWork,
                             weak_factory_.GetWeakPtr(), run_time, true),

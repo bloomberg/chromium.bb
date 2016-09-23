@@ -24,16 +24,16 @@ class TaskQueueImpl;
 class TaskQueueManager;
 class TaskQueueManagerDelegate;
 
-// The TimeDomain's job is to keep track of moments when delayed tasks have been
-// scheduled to fire and to notify their TaskQueues via UpdateDelayedWorkQueue.
+// The TimeDomain's job is to wake task queues up when their next delayed tasks
+// are due to fire. TaskQueues request a wake up via ScheduleDelayedWork, when
+// the wake up is due the TimeDomain calls TaskQueue::WakeUpForDelayedWork.
+// The TimeDomain communicates with the TaskQueueManager to actually schedule
+// the wake-ups on the underlying base::MessageLoop. Various levels of de-duping
+// are employed to prevent unnecessary posting of TaskQueueManager::DoWork.
 //
-// The time domain keeps track of the next wakeup required to pump delayed tasks
-// and issues |RequestWakeup| calls to the subclass as needed.  Where possible
-// it tried to de-dupe these wakeups. Ideally it would be possible to cancel
-// them, but that's not currently supported by the base message loop.
-//
-// The clock itself is provided by subclasses of the TimeDomain and it may be
-// the real wall clock or a synthetic (virtual) time base.
+// Note the TimeDomain only knows about the first wakeup per queue, it's the
+// responsibility of TaskQueueImpl to keep the time domain up to date if this
+// changes.
 class BLINK_PLATFORM_EXPORT TimeDomain {
  public:
   class BLINK_PLATFORM_EXPORT Observer {
@@ -89,17 +89,12 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   // UpdateWorkQueue on.
   void RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue);
 
-  // Schedules a call to TaskQueueImpl::MoveReadyDelayedTasksToDelayedWorkQueue
-  // when this TimeDomain reaches |delayed_run_time|.
+  // Schedules a call to TaskQueueImpl::WakeUpForDelayedWork when this
+  // TimeDomain reaches |delayed_run_time|.  This supersedes any previously
+  // registered wakeup for |queue|.
   void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                            base::TimeTicks delayed_run_time,
                            base::TimeTicks now);
-
-  // Cancels a call to TaskQueueImpl::MoveReadyDelayedTasksToDelayedWorkQueue
-  // previously requested with ScheduleDelayedWork.  Note this only works if
-  // delayed_run_time is _not_ the next scheduled run time.
-  void CancelDelayedWork(internal::TaskQueueImpl* queue,
-                         base::TimeTicks delayed_run_time);
 
   // Registers the |queue|.
   void RegisterQueue(internal::TaskQueueImpl* queue);
@@ -133,19 +128,23 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   // has elapsed.
   void WakeupReadyDelayedQueues(LazyNow* lazy_now);
 
- protected:
-  // Clears expired entries from |delayed_wakeup_multimap_|. Caution needs to be
-  // taken to ensure TaskQueueImpl::UpdateDelayedWorkQueue is called on the
-  // affected queues.
-  void ClearExpiredWakeups();
-
  private:
   void MoveNewlyUpdatableQueuesIntoUpdatableQueueSet();
 
-  typedef std::multimap<base::TimeTicks, internal::TaskQueueImpl*>
-      DelayedWakeupMultimap;
+  using DelayedWakeupMultimap =
+      std::multimap<base::TimeTicks, internal::TaskQueueImpl*>;
 
   DelayedWakeupMultimap delayed_wakeup_multimap_;
+
+  // This map makes it easy to remove a queue from |delayed_wakeup_multimap_|.
+  // NOTE inserting or removing elements from a std::map does not invalidate any
+  // iterators.
+  using QueueToDelayedWakeupMultimapIteratorMap =
+      std::unordered_map<internal::TaskQueueImpl*,
+                         DelayedWakeupMultimap::iterator>;
+
+  QueueToDelayedWakeupMultimapIteratorMap
+      queue_to_delayed_wakeup_multimap_iterator_map_;
 
   // This lock guards only |newly_updatable_|.  It's not expected to be heavily
   // contended.

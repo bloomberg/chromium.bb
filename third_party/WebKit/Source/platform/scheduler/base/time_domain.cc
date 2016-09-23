@@ -29,17 +29,17 @@ void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
   DCHECK_EQ(queue->GetTimeDomain(), this);
   UnregisterAsUpdatableTaskQueue(queue);
 
-  // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
-  // little awkward since it's keyed by time. O(n) running time.
-  for (DelayedWakeupMultimap::iterator iter = delayed_wakeup_multimap_.begin();
-       iter != delayed_wakeup_multimap_.end();) {
-    if (iter->second == queue) {
-      // O(1) amortized.
-      iter = delayed_wakeup_multimap_.erase(iter);
-    } else {
-      iter++;
-    }
-  }
+  // If present remove |task_queue| from delayed_wakeup_multimap_.
+  // O(log n)
+  QueueToDelayedWakeupMultimapIteratorMap::iterator it =
+      queue_to_delayed_wakeup_multimap_iterator_map_.find(queue);
+
+  if (it == queue_to_delayed_wakeup_multimap_iterator_map_.end())
+    return;
+
+  // O(1) amortized.
+  delayed_wakeup_multimap_.erase(it->second);
+  queue_to_delayed_wakeup_multimap_iterator_map_.erase(it);
 }
 
 void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
@@ -53,72 +53,53 @@ void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
   if (UnregisterAsUpdatableTaskQueue(queue))
     destination_time_domain->updatable_queue_set_.insert(queue);
 
+  // If present remove |task_queue| from delayed_wakeup_multimap_.
+  // O(log n)
+  QueueToDelayedWakeupMultimapIteratorMap::iterator it =
+      queue_to_delayed_wakeup_multimap_iterator_map_.find(queue);
+
+  if (it == queue_to_delayed_wakeup_multimap_iterator_map_.end())
+    return;
+
   base::TimeTicks destination_now = destination_time_domain->Now();
-  // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
-  // little awkward since it's keyed by time. O(n) running time.
-  for (DelayedWakeupMultimap::iterator iter = delayed_wakeup_multimap_.begin();
-       iter != delayed_wakeup_multimap_.end();) {
-    if (iter->second == queue) {
-      destination_time_domain->ScheduleDelayedWork(queue, iter->first,
-                                                   destination_now);
-      // O(1) amortized.
-      iter = delayed_wakeup_multimap_.erase(iter);
-    } else {
-      iter++;
-    }
-  }
+  destination_time_domain->ScheduleDelayedWork(queue, it->second->first,
+                                               destination_now);
+
+  // O(1) amortized.
+  delayed_wakeup_multimap_.erase(it->second);
+  queue_to_delayed_wakeup_multimap_iterator_map_.erase(it);
 }
 
 void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                                      base::TimeTicks delayed_run_time,
                                      base::TimeTicks now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  // We only want to store a single wakeup per queue, so we need to remove any
+  // previously registered wake up for |queue|.
+  QueueToDelayedWakeupMultimapIteratorMap::iterator it =
+      queue_to_delayed_wakeup_multimap_iterator_map_.find(queue);
+
+  if (it != queue_to_delayed_wakeup_multimap_iterator_map_.end())
+    delayed_wakeup_multimap_.erase(it->second);
+
   if (delayed_wakeup_multimap_.empty() ||
       delayed_run_time < delayed_wakeup_multimap_.begin()->first) {
     base::TimeDelta delay = std::max(base::TimeDelta(), delayed_run_time - now);
     RequestWakeup(now, delay);
   }
 
-  delayed_wakeup_multimap_.insert(std::make_pair(delayed_run_time, queue));
+  if (it != queue_to_delayed_wakeup_multimap_iterator_map_.end()) {
+    // TODO(alexclarke): Use C++17 extract & insert to more efficiently modify
+    // |queue_to_delayed_wakeup_multimap_iterator_map_|.
+    it->second = delayed_wakeup_multimap_.insert({delayed_run_time, queue});
+  } else {
+    // Insert the wakeup and store the map iterator for later convenience.
+    queue_to_delayed_wakeup_multimap_iterator_map_.insert(
+        {queue, delayed_wakeup_multimap_.insert({delayed_run_time, queue})});
+  }
+
   if (observer_)
     observer_->OnTimeDomainHasDelayedWork();
-}
-
-void TimeDomain::CancelDelayedWork(internal::TaskQueueImpl* queue,
-                                   base::TimeTicks delayed_run_time) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  auto iterpair = delayed_wakeup_multimap_.equal_range(delayed_run_time);
-  for (auto it = iterpair.first; it != iterpair.second; ++it) {
-    if (it->second == queue) {
-      base::TimeTicks prev_first_wakeup =
-          delayed_wakeup_multimap_.begin()->first;
-
-      // Note we only erase the entry corresponding to |queue|, there might be
-      // other queues that happen to require a wake up at |delayed_run_time|
-      // which we must respect.
-      delayed_wakeup_multimap_.erase(it);
-
-      // If |delayed_wakeup_multimap_| is now empty, there's nothing to be done.
-      // Sadly the base TaskRunner does and some OSes don't support cancellation
-      // so we can't cancel something requested with RequestWakeup.
-      if (delayed_wakeup_multimap_.empty())
-        break;
-
-      base::TimeTicks first_wakeup = delayed_wakeup_multimap_.begin()->first;
-
-      // If the first_wakeup hasn't changed we don't need to do anything, the
-      // wakeup was already requested.
-      if (first_wakeup == prev_first_wakeup)
-        break;
-
-      // The first wakeup has changed, we need to re-schedule.
-      base::TimeTicks now = Now();
-      base::TimeDelta delay = std::max(base::TimeDelta(), first_wakeup - now);
-      RequestWakeup(now, delay);
-      break;
-    }
-  }
 }
 
 void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {
@@ -186,33 +167,20 @@ void TimeDomain::WakeupReadyDelayedQueues(LazyNow* lazy_now) {
   // Wake up any queues with pending delayed work.  Note std::multipmap stores
   // the elements sorted by key, so the begin() iterator points to the earliest
   // queue to wakeup.
-  std::set<internal::TaskQueueImpl*> dedup_set;
   while (!delayed_wakeup_multimap_.empty()) {
     DelayedWakeupMultimap::iterator next_wakeup =
         delayed_wakeup_multimap_.begin();
     if (next_wakeup->first > lazy_now->Now())
       break;
-    // A queue could have any number of delayed tasks pending so it's worthwhile
-    // deduping calls to UpdateDelayedWorkQueue since it takes a lock.
-    // NOTE the order in which these are called matters since the order
-    // in which EnqueueTaskLocks is called is respected when choosing which
-    // queue to execute a task from.
-    if (dedup_set.insert(next_wakeup->second).second) {
-      next_wakeup->second->MoveReadyDelayedTasksToDelayedWorkQueue(lazy_now);
-    }
-    delayed_wakeup_multimap_.erase(next_wakeup);
-  }
-}
 
-void TimeDomain::ClearExpiredWakeups() {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  LazyNow lazy_now(CreateLazyNow());
-  while (!delayed_wakeup_multimap_.empty()) {
-    DelayedWakeupMultimap::iterator next_wakeup =
-        delayed_wakeup_multimap_.begin();
-    if (next_wakeup->first > lazy_now.Now())
-      break;
+    internal::TaskQueueImpl* queue = next_wakeup->second;
+
+    // O(1) amortized.
     delayed_wakeup_multimap_.erase(next_wakeup);
+    // O(log n).
+    queue_to_delayed_wakeup_multimap_iterator_map_.erase(queue);
+
+    queue->WakeUpForDelayedWork(lazy_now);
   }
 }
 
