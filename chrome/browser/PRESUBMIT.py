@@ -55,14 +55,16 @@ def _CommonChecks(input_api, output_api):
     def _html_css_js_resource(p):
       return p.endswith(('.html', '.css', '.js')) and p.startswith(search_dirs)
 
-    BLACKLIST = ['chrome/browser/resources/md_downloads/crisper.js',
-                 'chrome/browser/resources/md_downloads/vulcanized.html',
-                 'chrome/browser/resources/md_history/app.crisper.js',
-                 'chrome/browser/resources/md_history/app.vulcanized.html',
-                 'chrome/browser/resources/pdf/index.html',
-                 'chrome/browser/resources/pdf/index.js']
+    def _vulcanized_resource(p):
+      return p.endswith(('vulcanized.html', 'crisper.js'))
+
+    BLACKLIST = [
+        'chrome/browser/resources/pdf/index.html',
+        'chrome/browser/resources/pdf/index.js'
+    ]
     def is_resource(maybe_resource):
       return (maybe_resource.LocalPath() not in BLACKLIST and
+          not _vulcanized_resource(maybe_resource.LocalPath()) and
           _html_css_js_resource(maybe_resource.AbsoluteLocalPath()))
 
     results.extend(resource_checker.ResourceChecker(

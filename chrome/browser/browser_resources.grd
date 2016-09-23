@@ -239,6 +239,8 @@
           <then>
             <include name="IDR_MD_HISTORY_APP_VULCANIZED_HTML" file="resources\md_history\app.vulcanized.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
             <include name="IDR_MD_HISTORY_APP_CRISPER_JS" file="resources\md_history\app.crisper.js" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+            <include name="IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_HTML" file="resources\md_history\lazy_load.vulcanized.html" allowexternalscript="true" type="BINDATA" />
+            <include name="IDR_MD_HISTORY_LAZY_LOAD_CRISPER_JS" file="resources\md_history\lazy_load.crisper.js" allowexternalscript="true" type="BINDATA" />
           </then>
           <else>
             <include name="IDR_MD_HISTORY_APP_HTML" file="resources\md_history\app.html" type="BINDATA" />
@@ -256,6 +258,7 @@
             <include name="IDR_MD_HISTORY_HISTORY_TOOLBAR_HTML" file="resources\md_history\history_toolbar.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_HISTORY_TOOLBAR_JS" file="resources\md_history\history_toolbar.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_ICONS_HTML" file="resources\md_history\icons.html" type="BINDATA" />
+            <include name="IDR_MD_HISTORY_LAZY_LOAD_HTML" file="resources\md_history\lazy_load.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_LIST_CONTAINER_HTML" file="resources\md_history\list_container.html" type="BINDATA" />
             <include name="IDR_MD_HISTORY_LIST_CONTAINER_JS" file="resources\md_history\list_container.js" type="BINDATA" />
             <include name="IDR_MD_HISTORY_SEARCHED_LABEL_HTML" file="resources\md_history\searched_label.html" type="BINDATA" />

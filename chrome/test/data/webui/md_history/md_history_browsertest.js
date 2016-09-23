@@ -47,9 +47,11 @@ MaterialHistoryBrowserTest.prototype = {
 
     suiteSetup(function() {
       // Wait for the top-level app element to be upgraded.
-      return waitForAppUpgrade().then(function() {
-        $('history-app').queryState_.queryingDisabled = true;
-      });
+      return waitForAppUpgrade()
+          .then(function() { return md_history.ensureLazyLoaded(); })
+          .then(function() {
+            $('history-app').queryState_.queryingDisabled = true;
+          });
     });
   },
 };
@@ -137,19 +139,20 @@ MaterialHistoryWithQueryParamTest.prototype = {
   /** @override */
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);
+    // This message handler needs to be registered before the test since the
+    // query can happen immediately after the element is upgraded. However,
+    // since there may be a delay as well, the test might check the global var
+    // too early as well. In this case the test will have overtaken the
+    // callback.
+    registerMessageCallback('queryHistory', this, function (info) {
+      window.historyQueryInfo = info;
+    });
 
     suiteSetup(function() {
-      // This message handler needs to be registered before the test since the
-      // query can happen immediately after the element is upgraded. However,
-      // since there may be a delay as well, the test might check the global var
-      // too early as well. In this case the test will have overtaken the
-      // callback.
-      registerMessageCallback('queryHistory', this, function (info) {
-        window.historyQueryInfo = info;
-      });
-
       // Wait for the top-level app element to be upgraded.
-      return waitForAppUpgrade();
+      return waitForAppUpgrade().then(function() {
+        md_history.ensureLazyLoaded();
+      });
     });
   },
 };

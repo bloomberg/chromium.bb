@@ -141,6 +141,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                           IDR_MD_HISTORY_APP_VULCANIZED_HTML);
   source->AddResourcePath("app.crisper.js",
                           IDR_MD_HISTORY_APP_CRISPER_JS);
+  source->AddResourcePath("lazy_load.html",
+                          IDR_MD_HISTORY_LAZY_LOAD_VULCANIZED_HTML);
+  source->AddResourcePath("lazy_load.crisper.js",
+                          IDR_MD_HISTORY_LAZY_LOAD_CRISPER_JS);
 #else
   source->AddResourcePath("app.html", IDR_MD_HISTORY_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_HISTORY_APP_JS);
@@ -166,6 +170,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddResourcePath("history_toolbar.js",
                           IDR_MD_HISTORY_HISTORY_TOOLBAR_JS);
   source->AddResourcePath("icons.html", IDR_MD_HISTORY_ICONS_HTML);
+  source->AddResourcePath("lazy_load.html", IDR_MD_HISTORY_LAZY_LOAD_HTML);
   source->AddResourcePath("list_container.html",
                           IDR_MD_HISTORY_LIST_CONTAINER_HTML);
   source->AddResourcePath("list_container.js",

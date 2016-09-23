@@ -1,17 +1,15 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tab.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://history/browser_service.html">
 <link rel="import" href="chrome://history/icons.html">
 <link rel="import" href="chrome://history/shared_style.html">
+
+<!-- Lazy loaded: iron-dropdown, paper-button, paper-icon-button-light,
+  paper-tab, paper-tabs. -->
 
 <dom-module id="history-toolbar">
   <template>
@@ -65,8 +63,14 @@
       }
 
       #info-button {
+        /* Additional styles for unresolved <button>. */
+        background: none;
+        border: none;
+        color: inherit;
         height: 32px;
         margin: 6px;
+        outline: none;
+        padding: 0;
         width: 32px;
       }
 

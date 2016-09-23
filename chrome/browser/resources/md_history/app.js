@@ -2,6 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.define('md_history', function() {
+  var lazyLoadPromise = null;
+  function ensureLazyLoaded() {
+    if (!lazyLoadPromise) {
+      lazyLoadPromise = new Promise(function(resolve, reject) {
+        Polymer.Base.importHref(
+            'chrome://history/lazy_load.html', resolve, reject, true);
+      });
+    }
+    return lazyLoadPromise;
+  }
+
+  return {
+    ensureLazyLoaded: ensureLazyLoaded,
+  };
+});
+
 Polymer({
   is: 'history-app',
 
@@ -124,6 +141,9 @@ Polymer({
     if (!this.hasDrawer_) {
       this.focusToolbarSearchField();
     }
+
+    // Lazily load the remainder of the UI.
+    md_history.ensureLazyLoaded();
   },
 
   /** Overridden from IronScrollTargetBehavior */

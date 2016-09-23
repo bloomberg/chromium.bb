@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/cr/ui.html">
 <link rel="import" href="chrome://resources/html/cr/ui/command.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/app-layout/app-drawer/app-drawer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/app-route/app-location.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/app-route/app-route.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
@@ -9,10 +8,11 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-scroll-target-behavior/iron-scroll-target-behavior.html">
 <link rel="import" href="chrome://history/history_toolbar.html">
 <link rel="import" href="chrome://history/list_container.html">
-<link rel="import" href="chrome://history/synced_device_manager.html">
 <link rel="import" href="chrome://history/side_bar.html">
 <link rel="import" href="chrome://history/shared_style.html">
 <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
+
+<!-- Lazy loaded: history-synced-device-manager, app-drawer. -->
 
 <dom-module id="history-app">
   <template>
@@ -50,6 +50,10 @@
       #content,
       #content > * {
         height: 100%;
+      }
+
+      #drawer:unresolved {
+        display: none;
       }
 
       #drawer-header {

@@ -85,13 +85,11 @@ cr.define('md_history.history_routing_test_with_query_param', function() {
   function registerTests() {
     suite('routing-with-query-param', function() {
       var app;
-      var list;
       var toolbar;
       var expectedQuery;
 
       suiteSetup(function() {
         app = $('history-app');
-        sidebar = app.$['side-bar']
         toolbar = app.$['toolbar'];
         expectedQuery = 'query';
       });

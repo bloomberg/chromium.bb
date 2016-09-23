@@ -48,22 +48,21 @@ _VULCANIZE_BASE_ARGS = [
   '--strip-comments',
 ]
 
+def _run_cmd(cmd_parts, stdout=None):
+  cmd = "'" + "' '".join(cmd_parts) + "'"
+  process = subprocess.Popen(
+      cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+  stdout, stderr = process.communicate()
+
+  if stderr:
+    print >> sys.stderr, '%s failed: %s' % (cmd, stderr)
+    raise
+
+  return stdout
 
 def _vulcanize(directory, host, html_in_file, html_out_file='vulcanized.html',
                js_out_file='crisper.js', extra_args=None):
-  def _run_cmd(cmd_parts, stdout=None):
-    cmd = "'" + "' '".join(cmd_parts) + "'"
-    process = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-    stdout, stderr = process.communicate()
-
-    if stderr:
-      print >> sys.stderr, '%s failed: %s' % (cmd, stderr)
-      raise
-
-    return stdout
-
-  print 'Vulcanizing %s' % directory
+  print 'Vulcanizing %s/%s' % (directory, html_in_file)
 
   target_path = os.path.join(_HERE_PATH, directory)
   html_in_path = os.path.join(target_path, html_in_file)
@@ -92,14 +91,21 @@ def _vulcanize(directory, host, html_in_file, html_out_file='vulcanized.html',
                          '--beautify', 'indent-level=2,quote_style=3',
                          '--comments', '/Copyright|license|LICENSE|\<\/?if/',
                          '--output', js_out_path])
-    _run_cmd(['polymer-css-build', html_out_path])
   finally:
     os.remove(tmp.name)
+
+
+def _css_build(directory, files):
+  target_path = os.path.join(_HERE_PATH, directory)
+  paths = map(lambda f: os.path.join(target_path, f), files)
+
+  _run_cmd(['polymer-css-build'] + paths)
 
 
 def main():
   _vulcanize(directory='md_downloads', host='downloads',
              html_in_file='downloads.html')
+  _css_build(directory='md_downloads', files=['vulcanized.html'])
 
   # Already loaded by history.html:
   history_extra_args = ['--exclude', 'chrome://resources/html/util.html',
@@ -108,6 +114,16 @@ def main():
              html_out_file='app.vulcanized.html', js_out_file='app.crisper.js',
              extra_args=history_extra_args)
 
+  # Ensures that no file transitively imported by app.vulcanized.html is
+  # imported by lazy_load.vulcanized.html.
+  lazy_load_extra_args = ['--exclude', 'chrome://history/app.html']
+  _vulcanize(directory='md_history', host='history',
+             html_in_file='lazy_load.html',
+             html_out_file='lazy_load.vulcanized.html',
+             js_out_file='lazy_load.crisper.js',
+             extra_args=history_extra_args + lazy_load_extra_args)
+  _css_build(directory='md_history', files=['app.vulcanized.html',
+                                            'lazy_load.vulcanized.html'])
 
 if __name__ == '__main__':
   main()

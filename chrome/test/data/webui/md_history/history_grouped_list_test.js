@@ -16,13 +16,6 @@ cr.define('md_history.history_grouped_list_test', function() {
       var PER_MONTH_RESULTS;
 
       suiteSetup(function() {
-        app = $('history-app');
-        app.grouped_ = true;
-
-        listContainer = app.$['history'];
-        toolbar = app.$['toolbar'];
-        sidebar = app.$['content-side-bar'];
-
         SIMPLE_RESULTS = [
           createHistoryEntry('2016-03-16', 'https://www.google.com/'),
           createHistoryEntry('2016-03-16', 'https://en.wikipedia.org/DankMeme'),
@@ -46,7 +39,15 @@ cr.define('md_history.history_grouped_list_test', function() {
           createHistoryEntry('2016-03-1', 'https://en.wikipedia.org'),
           createHistoryEntry('2016-03-1', 'https://en.wikipedia.org')
         ];
+      });
 
+      setup(function() {
+        app = replaceApp();
+        app.grouped_ = true;
+
+        listContainer = app.$['history'];
+        toolbar = app.$['toolbar'];
+        sidebar = app.$['content-side-bar'];
         return flush().then(function() {
           groupedList = app.$.history.$$('#grouped-list');
           assertTrue(!!groupedList);
@@ -304,12 +305,6 @@ cr.define('md_history.history_grouped_list_test', function() {
         assertEquals(
             JSON.stringify(expected),
             JSON.stringify(groupedList.buildRemovalTree_(paths)));
-      });
-
-      teardown(function() {
-        app.unselectAll();
-        app.set('queryState_.results', []);
-        app.set('queryState_.searchedTerm', '');
       });
     });
   }
