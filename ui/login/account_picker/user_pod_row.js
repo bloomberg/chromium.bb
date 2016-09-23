@@ -1442,6 +1442,7 @@ cr.define('login', function() {
       this.passwordElement.value = '';
       if (this.pinKeyboard)
         this.pinKeyboard.value = '';
+      this.updateInput_();
       this.classList.toggle('signing-in', false);
       if (takeFocus) {
         if (!this.multiProfilesPolicyApplied)
