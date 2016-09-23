@@ -5487,13 +5487,14 @@ window_create_menu(struct display *display,
 
 static struct zxdg_positioner_v6 *
 create_simple_positioner(struct display *display,
-			 int x, int y)
+			 int x, int y, int w, int h)
 {
 	struct zxdg_positioner_v6 *positioner;
 
 	positioner = zxdg_shell_v6_create_positioner(display->xdg_shell);
 	fail_on_null(positioner, 0, __FILE__, __LINE__);
 	zxdg_positioner_v6_set_anchor_rect(positioner, x, y, 1, 1);
+	zxdg_positioner_v6_set_size(positioner, w, h);
 	zxdg_positioner_v6_set_anchor(positioner,
 				      ZXDG_POSITIONER_V6_ANCHOR_TOP |
 				      ZXDG_POSITIONER_V6_ANCHOR_LEFT);
@@ -5545,7 +5546,9 @@ window_show_menu(struct display *display,
 
 	positioner = create_simple_positioner(display,
 					      window->x - (ix + parent_geometry.x),
-					      window->y - (iy + parent_geometry.y));
+					      window->y - (iy + parent_geometry.y),
+					      frame_width(menu->frame),
+					      frame_height(menu->frame));
 	window->xdg_popup =
 		zxdg_surface_v6_get_popup(window->xdg_surface,
 					  parent->xdg_surface,
