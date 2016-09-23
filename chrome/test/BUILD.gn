@@ -4966,6 +4966,7 @@ if (is_android) {
       "//chrome/android:chrome_java",
       "//content/public/android:content_java",
     ]
+    srcjar_deps = [ "//chrome/android:chrome_locale_pak_srcjar" ]
   }
 }
 

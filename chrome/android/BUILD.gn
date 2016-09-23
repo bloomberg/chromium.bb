@@ -66,7 +66,7 @@ jinja_template("chrome_sync_shell_android_manifest") {
   ]
 }
 
-locale_pak_resources("chrome_locale_paks") {
+locale_pak_assets("chrome_locale_pak") {
   sources = [
     "$root_out_dir/locales/am.pak",
     "$root_out_dir/locales/ar.pak",
@@ -125,7 +125,6 @@ android_resources("chrome_java_resources") {
     "//chrome/android/java/res_chromium",
   ]
   deps = [
-    ":chrome_locale_paks",
     ":chrome_strings_grd",
     "//chrome/app:java_strings_grd",
     "//components/policy:app_restrictions_resources",
@@ -263,7 +262,11 @@ android_library("chrome_java") {
     # From java_sources.gni.
     java_files = chrome_java_sources
 
+    # Allow downstream targets to specify their own locale pak files.
+    jar_excluded_patterns += [ "*/LocalePakFiles.class" ]
+
     srcjar_deps += [
+      ":chrome_locale_pak_srcjar",
       "//chrome:page_info_connection_type_javagen",
       "//chrome:website_settings_action_javagen",
       "//components/browsing_data/core:browsing_data_utils_java",
@@ -671,9 +674,10 @@ template("chrome_public_apk_tmpl_shared") {
     forward_variables_from(invoker, "*")
 
     native_lib_version_rule = "//build/util:chrome_version_json"
-
+    srcjar_deps = [ ":chrome_locale_pak_srcjar" ]
     deps += [
       ":chrome_java",
+      ":chrome_locale_pak_assets",
       ":chrome_public_apk_assets",
       ":chrome_public_apk_resources",
       "//base:base_java",

@@ -4,10 +4,10 @@
 
 package org.chromium.android_webview.shell;
 
-import org.chromium.android_webview.R;
 import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.app.ContentApplication;
+import org.chromium.ui.LocalePakFiles;
 import org.chromium.ui.base.ResourceBundle;
 
 /**
@@ -25,7 +25,7 @@ public class AwShellApplication extends ContentApplication {
 
     @Override
     protected void initializeLibraryDependencies() {
-        ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
+        ResourceBundle.initializeLocalePaks(LocalePakFiles.getFiles());
     }
 
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")

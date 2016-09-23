@@ -43,11 +43,17 @@ android_library("glue") {
   deps = glue_library_deps
   srcjar_deps = [
     ":glue_resource_rewriter",
+    "//android_webview:locale_pak_srcjar",
     "//base:base_build_config_gen",
   ]
 
-  # New versions of BuildConfig.java will be created when creating an apk.
-  jar_excluded_patterns = [ "*/BuildConfig.class" ]
+  jar_excluded_patterns = [
+    # New versions of BuildConfig.java will be created when creating an apk.
+    "*/BuildConfig.class",
+
+    # Allow downstream targets to specify their own locale pak files.
+    "*/LocalePakFiles.class",
+  ]
 
   # Always build upstream or downstream target with public or internal
   # framework jar respectively.

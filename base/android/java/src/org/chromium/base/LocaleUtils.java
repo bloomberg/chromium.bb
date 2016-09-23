@@ -24,8 +24,18 @@ public class LocaleUtils {
      * used by Chromium.
      */
     public static String getLocale(Locale locale) {
-        String language = locale.getLanguage();
+        String language = getLanguage(locale);
         String country = locale.getCountry();
+
+        return country.isEmpty() ? language : language + "-" + country;
+    }
+
+    /**
+     * @return the language for the given locale, translating
+     * Android deprecated languages codes into modern ones used by Chromium.
+     */
+    public static String getLanguage(Locale locale) {
+        String language = locale.getLanguage();
 
         // Android uses deprecated lanuages codes for Hebrew and Indonesian but Chromium uses the
         // updated codes. Also, Android uses "tl" while Chromium uses "fil" for Tagalog/Filipino.
@@ -38,7 +48,7 @@ public class LocaleUtils {
         } else if ("tl".equals(language)) {
             language = "fil";
         }
-        return country.isEmpty() ? language : language + "-" + country;
+        return language;
     }
 
     /**
