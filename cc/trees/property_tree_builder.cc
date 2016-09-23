@@ -849,6 +849,14 @@ static inline bool HasCopyRequest(LayerImpl* layer) {
   return !layer->test_properties()->copy_requests.empty();
 }
 
+static inline bool PropertyChanged(Layer* layer) {
+  return layer->subtree_property_changed();
+}
+
+static inline bool PropertyChanged(LayerImpl* layer) {
+  return false;
+}
+
 template <typename LayerType>
 bool ShouldCreateRenderSurface(LayerType* layer,
                                gfx::Transform current_transform,
@@ -1025,6 +1033,7 @@ bool AddEffectNodeIfNeeded(
   node.subtree_hidden = HideLayerAndSubtree(layer);
   node.is_currently_animating_opacity = OpacityIsAnimating(layer);
   node.is_currently_animating_filter = FilterIsAnimating(layer);
+  node.effect_changed = PropertyChanged(layer);
 
   EffectTree& effect_tree = data_for_children->property_trees->effect_tree;
   if (MaskLayer(layer)) {

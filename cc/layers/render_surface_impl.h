@@ -161,9 +161,11 @@ class CC_EXPORT RenderSurfaceImpl {
 
   bool HasCopyRequest() const;
 
-  void ResetPropertyChangedFlag() { surface_property_changed_ = false; }
+  void ResetPropertyChangedFlags();
   bool SurfacePropertyChanged() const;
   bool SurfacePropertyChangedOnlyFromDescendant() const;
+  bool AncestorPropertyChanged() const;
+  void NoteAncestorPropertyChanged();
 
   DamageTracker* damage_tracker() const { return damage_tracker_.get(); }
 
@@ -225,6 +227,7 @@ class CC_EXPORT RenderSurfaceImpl {
   // Is used to calculate the content rect from property trees.
   gfx::Rect accumulated_content_rect_;
   bool surface_property_changed_ : 1;
+  bool ancestor_property_changed_ : 1;
 
   bool contributes_to_drawn_surface_ : 1;
 

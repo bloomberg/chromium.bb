@@ -95,7 +95,6 @@ Layer::Layer()
       should_check_backface_visibility_(false),
       force_render_surface_for_testing_(false),
       subtree_property_changed_(false),
-      layer_property_changed_(false),
       may_contain_video_(false),
       safe_opaque_background_color_(0),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
@@ -473,7 +472,7 @@ void Layer::SetBackgroundFilters(const FilterOperations& filters) {
   if (inputs_.background_filters == filters)
     return;
   inputs_.background_filters = filters;
-  SetLayerPropertyChanged();
+  SetSubtreePropertyChanged();
   SetNeedsCommit();
 }
 
@@ -1172,7 +1171,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetDrawsContent(DrawsContent());
   // subtree_property_changed_ is propagated to all descendants while building
   // property trees. So, it is enough to check it only for the current layer.
-  if (subtree_property_changed_ || layer_property_changed_)
+  if (subtree_property_changed_)
     layer->NoteLayerPropertyChanged();
   layer->set_may_contain_video(may_contain_video_);
   layer->SetMasksToBounds(inputs_.masks_to_bounds);
@@ -1217,7 +1216,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
 
   // Reset any state that should be cleared for the next update.
   subtree_property_changed_ = false;
-  layer_property_changed_ = false;
   inputs_.update_rect = gfx::Rect();
 
   layer_tree_->RemoveLayerShouldPushProperties(this);
@@ -1384,7 +1382,6 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   base->set_may_contain_video(may_contain_video_);
   base->set_hide_layer_and_subtree(inputs_.hide_layer_and_subtree);
   base->set_subtree_property_changed(subtree_property_changed_);
-  base->set_layer_property_changed(layer_property_changed_);
 
   // TODO(nyquist): Add support for serializing FilterOperations for
   // |filters_| and |background_filters_|. See crbug.com/541321.
@@ -1475,7 +1472,6 @@ void Layer::FromLayerSpecificPropertiesProto(
   may_contain_video_ = base.may_contain_video();
   inputs_.hide_layer_and_subtree = base.hide_layer_and_subtree();
   subtree_property_changed_ = base.subtree_property_changed();
-  layer_property_changed_ = base.layer_property_changed();
   inputs_.masks_to_bounds = base.masks_to_bounds();
   inputs_.main_thread_scrolling_reasons = base.main_thread_scrolling_reasons();
   inputs_.non_fast_scrollable_region =
@@ -1617,13 +1613,6 @@ void Layer::SetSubtreePropertyChanged() {
   if (subtree_property_changed_)
     return;
   subtree_property_changed_ = true;
-  SetNeedsPushProperties();
-}
-
-void Layer::SetLayerPropertyChanged() {
-  if (layer_property_changed_)
-    return;
-  layer_property_changed_ = true;
   SetNeedsPushProperties();
 }
 

@@ -956,6 +956,87 @@ class LayerTreeHostTestDamageWithReplica : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDamageWithReplica);
 
+class LayerTreeHostTestSurfaceDamage : public LayerTreeHostTest {
+ protected:
+  void SetupTree() override {
+    root_ = Layer::Create();
+    child_ = Layer::Create();
+    grand_child_ = Layer::Create();
+
+    layer_tree()->SetRootLayer(root_);
+    root_->AddChild(child_);
+    child_->AddChild(grand_child_);
+
+    root_->SetBounds(gfx::Size(50, 50));
+    root_->SetMasksToBounds(true);
+    child_->SetForceRenderSurfaceForTesting(true);
+
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->SourceFrameNumber()) {
+      case 1:
+        grand_child_->SetOpacity(0.9f);
+        break;
+      case 2:
+        root_->SetBounds(gfx::Size(20, 20));
+        break;
+      case 3:
+        child_->SetDoubleSided(false);
+        break;
+    }
+  }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    LayerImpl* root_impl = impl->active_tree()->LayerById(root_->id());
+    LayerImpl* child_impl = impl->active_tree()->LayerById(child_->id());
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_TRUE(root_impl->render_surface()->AncestorPropertyChanged());
+        EXPECT_TRUE(child_impl->render_surface()->AncestorPropertyChanged());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        EXPECT_FALSE(root_impl->render_surface()->AncestorPropertyChanged());
+        EXPECT_FALSE(child_impl->render_surface()->AncestorPropertyChanged());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        EXPECT_TRUE(root_impl->render_surface()->AncestorPropertyChanged());
+        EXPECT_TRUE(child_impl->render_surface()->AncestorPropertyChanged());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 3:
+        EXPECT_FALSE(root_impl->render_surface()->AncestorPropertyChanged());
+        EXPECT_TRUE(child_impl->render_surface()->AncestorPropertyChanged());
+        EndTest();
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 4:
+        EXPECT_FALSE(root_impl->render_surface()->AncestorPropertyChanged());
+        EXPECT_FALSE(child_impl->render_surface()->AncestorPropertyChanged());
+        EndTest();
+        break;
+    }
+
+    return draw_result;
+  }
+
+  void AfterTest() override {}
+
+ private:
+  scoped_refptr<Layer> root_;
+  scoped_refptr<Layer> child_;
+  scoped_refptr<Layer> grand_child_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSurfaceDamage);
+
 // Verify damage status of property trees is preserved after commit.
 class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
  protected:

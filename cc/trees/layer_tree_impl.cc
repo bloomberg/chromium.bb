@@ -491,6 +491,9 @@ void LayerTreeImpl::MoveChangeTrackingToLayers() {
   for (auto* layer : *this) {
     if (layer->LayerPropertyChanged())
       layer->NoteLayerPropertyChanged();
+    if (layer->render_surface() &&
+        layer->render_surface()->AncestorPropertyChanged())
+      layer->render_surface()->NoteAncestorPropertyChanged();
   }
 }
 

@@ -84,7 +84,6 @@ message BaseLayerProperties {
   optional bool may_contain_video = 55;
   optional bool hide_layer_and_subtree = 10;
   optional bool subtree_property_changed = 47;
-  optional bool layer_property_changed = 54;
   // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
   // repeated FilterOperation filters = 12;
   // repeated FilterOperation background_filters = 13;

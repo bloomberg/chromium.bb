@@ -414,9 +414,10 @@ TEST_F(DamageTrackerTest, VerifyDamageForPropertyChanges) {
 
   // Then, test the actual layer movement.
   ClearDamageForAllSurfaces(root);
-  child->SetPosition(gfx::PointF(200.f, 230.f));
-  child->NoteLayerPropertyChanged();
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  gfx::Transform translation;
+  translation.Translate(100.f, 130.f);
+  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
+      translation, child->transform_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
 
   // Expect damage to be the combination of the previous one and the new one.
@@ -1074,17 +1075,14 @@ TEST_F(DamageTrackerTest, VerifyDamageForSurfaceChangeFromAncestorLayer) {
 
   LayerImpl* root = CreateAndSetUpTestTreeWithTwoSurfaces();
   LayerImpl* child1 = root->test_properties()->children[0];
-  LayerImpl* grand_child1 = child1->test_properties()->children[0];
-  LayerImpl* grand_child2 = child1->test_properties()->children[1];
   gfx::Rect child_damage_rect;
   gfx::Rect root_damage_rect;
 
   ClearDamageForAllSurfaces(root);
-  child1->SetPosition(gfx::PointF(50.f, 50.f));
-  child1->NoteLayerPropertyChanged();
-  grand_child1->NoteLayerPropertyChanged();
-  grand_child2->NoteLayerPropertyChanged();
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  gfx::Transform translation;
+  translation.Translate(-50.f, -50.f);
+  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
+      translation, child1->transform_tree_index(), root->layer_tree_impl());
   EmulateDrawingOneFrame(root);
   child_damage_rect =
           child1->render_surface()->damage_tracker()->current_damage_rect();
@@ -1272,15 +1270,17 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
   //         reflected areas to be damaged on the target.
   ClearDamageForAllSurfaces(root);
   gfx::Rect old_content_rect = child1->render_surface()->content_rect();
-  grand_child1->SetPosition(gfx::PointF(195.f, 205.f));
-  grand_child1->NoteLayerPropertyChanged();
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  gfx::Transform translation;
+  translation.Translate(-5.f, 5.f);
+  root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
+      translation, grand_child1->transform_tree_index(),
+      root->layer_tree_impl());
+  grand_child1->test_properties()->transform = translation;
   EmulateDrawingOneFrame(root);
   ASSERT_EQ(old_content_rect.width(),
             child1->render_surface()->content_rect().width());
   ASSERT_EQ(old_content_rect.height(),
             child1->render_surface()->content_rect().height());
-
   grand_child_damage_rect =
           grand_child1->render_surface()->
               damage_tracker()->current_damage_rect();
@@ -1665,7 +1665,7 @@ TEST_F(DamageTrackerTest, HugeDamageRect) {
   const int kRange = 5000;
 
   for (int i = 0; i < kRange; ++i) {
-    LayerImpl* root = CreateTestTreeWithOneSurface();
+    LayerImpl* root = CreateAndSetUpTestTreeWithOneSurface();
     LayerImpl* child = root->test_properties()->children[0];
 
     gfx::Transform transform;

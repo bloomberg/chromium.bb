@@ -24,6 +24,7 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
+#include "cc/trees/transform_node.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -33,6 +34,7 @@ namespace cc {
 RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owning_layer)
     : owning_layer_(owning_layer),
       surface_property_changed_(false),
+      ancestor_property_changed_(false),
       contributes_to_drawn_surface_(false),
       nearest_occlusion_immune_ancestor_(nullptr),
       target_render_surface_layer_index_history_(0),
@@ -333,15 +335,33 @@ bool RenderSurfaceImpl::SurfacePropertyChanged() const {
   //   change. As of now, these are the only two properties that can be affected
   //   by descendant layers.
   //
-  // - all other property changes come from the owning layer (or some ancestor
-  //   layer that propagates its change to the owning layer).
+  // - all other property changes come from the surface's property tree nodes
+  //   (or some ancestor node that propagates its change to one of these nodes).
   //
   DCHECK(owning_layer_);
-  return surface_property_changed_ || owning_layer_->LayerPropertyChanged();
+  return surface_property_changed_ || AncestorPropertyChanged();
 }
 
 bool RenderSurfaceImpl::SurfacePropertyChangedOnlyFromDescendant() const {
-  return surface_property_changed_ && !owning_layer_->LayerPropertyChanged();
+  return surface_property_changed_ && !AncestorPropertyChanged();
+}
+
+bool RenderSurfaceImpl::AncestorPropertyChanged() const {
+  const PropertyTrees* property_trees =
+      owning_layer_->layer_tree_impl()->property_trees();
+  return ancestor_property_changed_ || property_trees->full_tree_damaged ||
+         property_trees->transform_tree.Node(TransformTreeIndex())
+             ->transform_changed ||
+         property_trees->effect_tree.Node(EffectTreeIndex())->effect_changed;
+}
+
+void RenderSurfaceImpl::NoteAncestorPropertyChanged() {
+  ancestor_property_changed_ = true;
+}
+
+void RenderSurfaceImpl::ResetPropertyChangedFlags() {
+  surface_property_changed_ = false;
+  ancestor_property_changed_ = false;
 }
 
 void RenderSurfaceImpl::ClearLayerLists() {

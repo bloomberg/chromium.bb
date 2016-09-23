@@ -482,7 +482,7 @@ void LayerImpl::ResetChangeTracking() {
   damage_rect_.SetRect(0, 0, 0, 0);
 
   if (render_surface_)
-    render_surface_->ResetPropertyChangedFlag();
+    render_surface_->ResetPropertyChangedFlags();
 }
 
 int LayerImpl::num_copy_requests_in_target_subtree() {
