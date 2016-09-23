@@ -15452,6 +15452,35 @@ read aloud to screenreader users to announce that a completion is available.">
         No thanks
       </message>
     </if>
+
+    <!-- Windows 10 Welcome page strings -->
+    <if expr="is_win">
+      <message name="IDS_WIN10_WELCOME_OPEN_SETTINGS" desc="A link which, when clicked, will cause a particular page to open in the external Windows Settings dialog.">
+        Open Windows Settings
+      </message>
+      <message name="IDS_WIN10_WELCOME_CLICK_EDGE" desc="An instruction asking the user to find the Web Browser section of the Windows Settings dialog, then click on Microsoft Edge, which is the current default.">
+        Click <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Microsoft Edge<ph name="END_BOLD">&lt;/strong&gt;</ph> under Web Browser
+      </message>
+      <message name="IDS_WIN10_WELCOME_BROWSER_LABEL" desc="The label on the Default Web Browser section of the Windows Settings dialog. Used in a mock screenshot illustrating the dialog.">
+        Web browser
+      </message>
+      <message name="IDS_WIN10_WELCOME_EDGE_LABEL" desc="The name of the Microsoft web browser. Used in a mock screenshot illustrating the Windows Settings dialog.">
+        Microsoft Edge
+      </message>
+      <message name="IDS_WIN10_WELCOME_RIGHT_CLICK_TASKBAR" desc="An instruction asking the user to right click on the Chrome/Chromium logo appearing in their Windows taskbar.">
+        Right click the <ph name="SMALL_PRODUCT_LOGO">&lt;div class="logo-small"&gt;&lt;/div&gt;</ph> icon in the taskbar
+      </message>
+      <message name="IDS_WIN10_WELCOME_PIN_INSTRUCTION" desc="An instruction asking the user to choose the Pin to Taskbar option from the right-click menu.">
+        Select <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Pin to taskbar<ph name="END_BOLD">&lt;/strong&gt;</ph>
+      </message>
+      <message name="IDS_WIN10_WELCOME_PIN_LABEL" desc="The name of the option in the Windows right-click menu for pinning an app to the taskbar. Used in a mock screenshot illustrating the Windows Settings dialog.">
+        Pin to taskbar
+      </message>
+      <message name="IDS_WIN10_WELCOME_CONTINUE" desc="The label on a button which navigates away from the Windows 10 Welcome page.">
+        Continue
+      </message>
+    </if>
+
    </messages>
  </release>
 </grit>
