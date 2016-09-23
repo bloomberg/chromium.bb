@@ -149,6 +149,10 @@ class _ProjectEntry(object):
       self._build_config = build_utils.ReadJson(_RebasePath(path))
     return self._build_config
 
+  def GetType(self):
+    """Returns the target type from its .build_config."""
+    return self.BuildConfig()['deps_info']['type']
+
 
 def _ComputeJavaSourceDirs(java_files):
   """Returns the list of source directories for the given files."""
@@ -368,8 +372,14 @@ def main():
     targets = [re.sub(r'_test_apk$', '_test_apk__apk', t) for t in targets]
 
   main_entries = [_ProjectEntry(t) for t in targets]
+
   logging.warning('Building .build_config files...')
   _RunNinja(output_dir, [e.NinjaBuildConfigTarget() for e in main_entries])
+
+  # There are many unused libraries, so restrict to those that are actually used
+  # when using --all.
+  if args.all:
+    main_entries = [e for e in main_entries if e.GetType() == 'android_apk']
 
   all_entries = _FindAllProjectEntries(main_entries)
   logging.info('Found %d dependent build_config targets.', len(all_entries))
@@ -381,12 +391,12 @@ def main():
   project_entries = []
   srcjar_tuples = []
   for entry in all_entries:
-    build_config = entry.BuildConfig()
-    if build_config['deps_info']['type'] not in ('android_apk', 'java_library'):
+    if entry.GetType() not in ('android_apk', 'java_library'):
       continue
 
     entry_output_dir = os.path.join(gradle_output_dir, entry.GradleSubdir())
     relativize = lambda x, d=entry_output_dir: _RebasePath(x, d)
+    build_config = entry.BuildConfig()
 
     srcjars = _RebasePath(build_config['gradle'].get('bundled_srcjars', []))
     if not args.use_gradle_process_resources:
@@ -425,7 +435,7 @@ def main():
     targets = _RebasePath([s[0] for s in srcjar_tuples], output_dir)
     _RunNinja(output_dir, targets)
     _ExtractSrcjars(gradle_output_dir, srcjar_tuples)
-  logging.warning('Project created successfully!')
+  logging.warning('Project created! (%d subprojects)', len(project_entries))
   logging.warning('Generated projects work best with Android Studio 2.2')
   logging.warning('For more tips: https://chromium.googlesource.com/chromium'
                   '/src.git/+/master/docs/android_studio.md')
