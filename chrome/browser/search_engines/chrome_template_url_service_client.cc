@@ -70,8 +70,8 @@ void ChromeTemplateURLServiceClient::RestoreExtensionInfoIfNecessary(
   if (url.SchemeIs(extensions::kExtensionScheme)) {
     const std::string& extension_id = url.host();
     template_url->set_extension_info(
-        base::MakeUnique<TemplateURL::AssociatedExtensionInfo>(
-            TemplateURL::OMNIBOX_API_EXTENSION, extension_id));
+        base::MakeUnique<TemplateURL::AssociatedExtensionInfo>(extension_id));
+    template_url->set_type(TemplateURL::OMNIBOX_API_EXTENSION);
   }
 }
 

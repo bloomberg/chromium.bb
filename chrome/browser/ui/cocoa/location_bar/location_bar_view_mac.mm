@@ -710,7 +710,7 @@ NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
   const TemplateURL* template_url = TemplateURLServiceFactory::GetForProfile(
       profile())->GetTemplateURLForKeyword(keyword);
   if (template_url &&
-      (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
+      (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)) {
     return extensions::OmniboxAPI::Get(profile())->
         GetOmniboxIcon(template_url->GetExtensionId()).AsNSImage();
   }

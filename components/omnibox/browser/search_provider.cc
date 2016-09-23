@@ -515,7 +515,7 @@ void SearchProvider::UpdateMatches() {
     // relevances with minimal impact, preserving other suggested relevances.
     const TemplateURL* keyword_url = providers_.GetKeywordProviderURL();
     const bool is_extension_keyword = (keyword_url != NULL) &&
-        (keyword_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION);
+        (keyword_url->type() == TemplateURL::OMNIBOX_API_EXTENSION);
     if ((keyword_url != NULL) && !is_extension_keyword &&
         (FindTopMatch() == matches_.end())) {
       // In non-extension keyword mode, disregard the keyword verbatim suggested
@@ -954,7 +954,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
     // to the keyword verbatim search query.  Do not create other matches
     // of type SEARCH_OTHER_ENGINE.
     if (keyword_url &&
-        (keyword_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION)) {
+        (keyword_url->type() != TemplateURL::OMNIBOX_API_EXTENSION)) {
       bool keyword_relevance_from_server;
       const int keyword_verbatim_relevance =
           GetKeywordVerbatimRelevance(&keyword_relevance_from_server);

@@ -268,18 +268,20 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   const SettingsOverrides* settings = SettingsOverrides::Get(extension);
   DCHECK(settings);
   DCHECK(settings->search_engine);
-  std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info(
-      new TemplateURL::AssociatedExtensionInfo(
-          TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, extension->id()));
+  auto info =
+      base::MakeUnique<TemplateURL::AssociatedExtensionInfo>(extension->id());
   info->wants_to_be_default_engine = settings->search_engine->is_default;
+
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile_);
   info->install_time = prefs->GetInstallTime(extension->id());
   std::string install_parameter = prefs->GetInstallParam(extension->id());
   std::unique_ptr<TemplateURLData> data = ConvertSearchProvider(
       profile_->GetPrefs(), *settings->search_engine, install_parameter);
   data->show_in_default_list = info->wants_to_be_default_engine;
-  url_service_->AddExtensionControlledTURL(base::MakeUnique<TemplateURL>(*data),
-                                           std::move(info));
+  auto turl = base::MakeUnique<TemplateURL>(
+      *data, TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+
+  url_service_->AddExtensionControlledTURL(std::move(turl), std::move(info));
 }
 
 template <>

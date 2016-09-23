@@ -370,7 +370,7 @@ void ApplyDefaultSuggestionForExtensionKeyword(
     const TemplateURL* keyword,
     const base::string16& remaining_input,
     AutocompleteMatch* match) {
-  DCHECK(keyword->GetType() == TemplateURL::OMNIBOX_API_EXTENSION);
+  DCHECK(keyword->type() == TemplateURL::OMNIBOX_API_EXTENSION);
 
   std::unique_ptr<omnibox::SuggestResult> suggestion(
       GetOmniboxDefaultSuggestion(profile, keyword->GetExtensionId()));

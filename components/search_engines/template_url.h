@@ -498,15 +498,15 @@ class TemplateURL {
     NORMAL_CONTROLLED_BY_EXTENSION,
     // The keyword associated with an extension that uses the Omnibox API.
     OMNIBOX_API_EXTENSION,
+    // Installed only on this device. Should not be synced.
+    LOCAL,
   };
 
   // An AssociatedExtensionInfo represents information about the extension that
   // added the search engine.
   struct AssociatedExtensionInfo {
-    AssociatedExtensionInfo(Type type, const std::string& extension_id);
+    explicit AssociatedExtensionInfo(const std::string& extension_id);
     ~AssociatedExtensionInfo();
-
-    Type type;
 
     std::string extension_id;
 
@@ -518,7 +518,7 @@ class TemplateURL {
     base::Time install_time;
   };
 
-  explicit TemplateURL(const TemplateURLData& data);
+  explicit TemplateURL(const TemplateURLData& data, Type type = NORMAL);
   ~TemplateURL();
 
   // Generates a suitable keyword for the specified url, which must be valid.
@@ -612,6 +612,11 @@ class TemplateURL {
     return contextual_search_url_ref_;
   }
 
+  Type type() const { return type_; }
+  // TODO(ianwen): remove set_type() once RestoreExtensionInfoIfNecessary() no
+  // longer needs it.
+  void set_type(Type type) { type_ = type; }
+
   // This setter shouldn't be used except by TemplateURLService and
   // TemplateURLServiceClient implementations.
   void set_extension_info(
@@ -636,8 +641,6 @@ class TemplateURL {
   // |other|.
   bool HasSameKeywordAs(const TemplateURLData& other,
                         const SearchTermsData& search_terms_data) const;
-
-  Type GetType() const;
 
   // Returns the id of the extension that added this search engine. Only call
   // this for TemplateURLs of type NORMAL_CONTROLLED_BY_EXTENSION or
@@ -753,6 +756,8 @@ class TemplateURL {
   TemplateURLRef new_tab_url_ref_;
   TemplateURLRef contextual_search_url_ref_;
   std::unique_ptr<AssociatedExtensionInfo> extension_info_;
+
+  Type type_;
 
   // Caches the computed engine type across successive calls to GetEngineType().
   mutable SearchEngineType engine_type_;

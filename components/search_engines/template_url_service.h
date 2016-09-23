@@ -178,7 +178,7 @@ class TemplateURLService : public WebDataServiceConsumer,
                                 const base::string16& keyword,
                                 const std::string& url);
 
-  // Adds a search engine with the specified info.
+  // Adds a search engine with the specified info for extensions.
   TemplateURL* AddExtensionControlledTURL(
       std::unique_ptr<TemplateURL> template_url,
       std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info);

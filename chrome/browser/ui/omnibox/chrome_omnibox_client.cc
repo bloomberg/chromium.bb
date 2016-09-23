@@ -212,7 +212,7 @@ gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
       TemplateURLServiceFactory::GetForProfile(profile_);
   const TemplateURL* template_url = match.GetTemplateURL(service, false);
   if (template_url &&
-      (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)) {
+      (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)) {
     return extensions::OmniboxAPI::Get(profile_)
         ->GetOmniboxPopupIcon(template_url->GetExtensionId());
   }
@@ -224,7 +224,7 @@ bool ChromeOmniboxClient::ProcessExtensionKeyword(
     const AutocompleteMatch& match,
     WindowOpenDisposition disposition,
     OmniboxNavigationObserver* observer) {
-  if (template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION)
+  if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION)
     return false;
 
   // Strip the keyword + leading space off the input, but don't exceed

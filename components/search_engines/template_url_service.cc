@@ -189,6 +189,12 @@ bool Contains(TemplateURLService::OwnedTemplateURLVector* template_urls,
   return FindTemplateURL(template_urls, turl) != template_urls->end();
 }
 
+bool IsCreatedByExtension(TemplateURL* template_url) {
+  return template_url->type() ==
+             TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION ||
+         template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION;
+}
+
 }  // namespace
 
 // TemplateURLService::LessWithPrefix -----------------------------------------
@@ -471,10 +477,11 @@ TemplateURL* TemplateURLService::AddExtensionControlledTURL(
   DCHECK(template_url);
   DCHECK_EQ(kInvalidTemplateURLID, template_url->id());
   DCHECK(info);
-  DCHECK_NE(TemplateURL::NORMAL, info->type);
+  DCHECK_NE(TemplateURL::NORMAL, template_url->type());
   DCHECK_EQ(info->wants_to_be_default_engine,
             template_url->show_in_default_list());
-  DCHECK(!FindTemplateURLForExtension(info->extension_id, info->type));
+  DCHECK(
+      !FindTemplateURLForExtension(info->extension_id, template_url->type()));
   template_url->extension_info_.swap(info);
 
   KeywordWebDataService::BatchModeScoper scoper(web_data_service_.get());
@@ -561,10 +568,10 @@ void TemplateURLService::RegisterOmniboxKeyword(
   data.SetKeyword(base::UTF8ToUTF16(keyword));
   data.SetURL(template_url_string);
   std::unique_ptr<TemplateURL::AssociatedExtensionInfo> info(
-      new TemplateURL::AssociatedExtensionInfo(
-          TemplateURL::OMNIBOX_API_EXTENSION, extension_id));
-  AddExtensionControlledTURL(base::MakeUnique<TemplateURL>(data),
-                             std::move(info));
+      new TemplateURL::AssociatedExtensionInfo(extension_id));
+  AddExtensionControlledTURL(
+      base::MakeUnique<TemplateURL>(data, TemplateURL::OMNIBOX_API_EXTENSION),
+      std::move(info));
 }
 
 TemplateURLService::TemplateURLVector TemplateURLService::GetTemplateURLs() {
@@ -577,7 +584,7 @@ TemplateURLService::TemplateURLVector TemplateURLService::GetTemplateURLs() {
 void TemplateURLService::IncrementUsageCount(TemplateURL* url) {
   DCHECK(url);
   // Extension-controlled search engines are not persisted.
-  if (url->GetType() != TemplateURL::NORMAL)
+  if (url->type() != TemplateURL::NORMAL)
     return;
   if (!Contains(&template_urls_, url))
     return;
@@ -602,7 +609,7 @@ bool TemplateURLService::CanMakeDefault(const TemplateURL* url) {
         DefaultSearchManager::FROM_FALLBACK)) &&
       (url != GetDefaultSearchProvider()) &&
       url->url_ref().SupportsReplacement(search_terms_data()) &&
-      (url->GetType() == TemplateURL::NORMAL);
+      (url->type() == TemplateURL::NORMAL);
 }
 
 void TemplateURLService::SetUserSelectedDefaultSearchProvider(
@@ -610,7 +617,7 @@ void TemplateURLService::SetUserSelectedDefaultSearchProvider(
   // Omnibox keywords cannot be made default. Extension-controlled search
   // engines can be made default only by the extension itself because they
   // aren't persisted.
-  DCHECK(!url || (url->GetType() == TemplateURL::NORMAL));
+  DCHECK(!url || !IsCreatedByExtension(url));
   if (load_failed_) {
     // Skip the DefaultSearchManager, which will persist to user preferences.
     if ((default_search_provider_source_ == DefaultSearchManager::FROM_USER) ||
@@ -867,7 +874,7 @@ base::string16 TemplateURLService::GetKeywordShortName(
   // to track changes to the model, this should become a DCHECK.
   if (template_url) {
     *is_omnibox_api_extension_keyword =
-        template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION;
+        template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION;
     return template_url->AdjustedShortNameForLocaleDirection();
   }
   *is_omnibox_api_extension_keyword = false;
@@ -904,7 +911,7 @@ syncer::SyncDataList TemplateURLService::GetAllSyncData(
     if (turl->created_by_policy())
       continue;
     // We don't sync extension-controlled search engines.
-    if (turl->GetType() != TemplateURL::NORMAL)
+    if (turl->type() != TemplateURL::NORMAL)
       continue;
     current_data.push_back(CreateSyncDataFromTemplateURL(*turl));
   }
@@ -1210,7 +1217,7 @@ void TemplateURLService::ProcessTemplateURLChange(
     return;
 
   // Avoid syncing extension-controlled search engines.
-  if (turl->GetType() == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION)
+  if (turl->type() == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION)
     return;
 
   syncer::SyncChangeList changes;
@@ -1351,10 +1358,10 @@ TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   // delete these from sync.
   DCHECK(client);
   client->RestoreExtensionInfoIfNecessary(turl.get());
-  if (turl->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)
+  if (turl->type() == TemplateURL::OMNIBOX_API_EXTENSION)
     return nullptr;
 
-  DCHECK_EQ(TemplateURL::NORMAL, turl->GetType());
+  DCHECK_EQ(TemplateURL::NORMAL, turl->type());
   if (reset_keyword || deduped) {
     if (reset_keyword)
       turl->ResetKeywordIfNecessary(search_terms_data, true);
@@ -1465,8 +1472,8 @@ void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
       // non-Omnibox API TemplateURL with a given keyword.
       if ((turl.get() != template_url) && (turl->keyword() == keyword) &&
           (!best_fallback ||
-           (best_fallback->GetType() != TemplateURL::OMNIBOX_API_EXTENSION) ||
-           ((turl->GetType() == TemplateURL::OMNIBOX_API_EXTENSION) &&
+           (best_fallback->type() != TemplateURL::OMNIBOX_API_EXTENSION) ||
+           ((turl->type() == TemplateURL::OMNIBOX_API_EXTENSION) &&
             (turl->id() > best_fallback->id()))))
         best_fallback = turl.get();
     }
@@ -1479,7 +1486,7 @@ void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
     }
   }
 
-  if (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)
+  if (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)
     return;
 
   if (!template_url->sync_guid().empty())
@@ -1492,7 +1499,7 @@ void TemplateURLService::RemoveFromMaps(TemplateURL* template_url) {
 
 void TemplateURLService::AddToMaps(TemplateURL* template_url) {
   bool template_url_is_omnibox_api =
-      template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION;
+      template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION;
   const base::string16& keyword = template_url->keyword();
   KeywordToTURLAndMeaningfulLength::const_iterator i =
       keyword_to_turl_and_length_.find(keyword);
@@ -1506,7 +1513,7 @@ void TemplateURLService::AddToMaps(TemplateURL* template_url) {
     //   Manually-modified keywords > extension keywords > replaceable keywords
     // When there are multiple extensions, the last-added wins.
     bool existing_url_is_omnibox_api =
-        existing_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION;
+        existing_url->type() == TemplateURL::OMNIBOX_API_EXTENSION;
     DCHECK(existing_url_is_omnibox_api || template_url_is_omnibox_api);
     if (existing_url_is_omnibox_api ?
         !CanReplace(template_url) : CanReplace(existing_url)) {
@@ -1640,12 +1647,12 @@ bool TemplateURLService::CanReplace(const TemplateURL* t_url) {
 TemplateURL* TemplateURLService::FindNonExtensionTemplateURLForKeyword(
     const base::string16& keyword) {
   TemplateURL* keyword_turl = GetTemplateURLForKeyword(keyword);
-  if (!keyword_turl || (keyword_turl->GetType() == TemplateURL::NORMAL))
+  if (!keyword_turl || (keyword_turl->type() == TemplateURL::NORMAL))
     return keyword_turl;
   // The extension keyword in the model may be hiding a replaceable
   // non-extension keyword.  Look for it.
   for (const auto& turl : template_urls_) {
-    if ((turl->GetType() == TemplateURL::NORMAL) &&
+    if ((turl->type() == TemplateURL::NORMAL) &&
         (turl->keyword() == keyword))
       return turl.get();
   }
@@ -1658,7 +1665,7 @@ bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
   if (!Contains(&template_urls_, existing_turl))
     return false;
 
-  DCHECK_NE(TemplateURL::OMNIBOX_API_EXTENSION, existing_turl->GetType());
+  DCHECK_NE(TemplateURL::OMNIBOX_API_EXTENSION, existing_turl->type());
 
   base::string16 old_keyword(existing_turl->keyword());
   keyword_to_turl_and_length_.erase(old_keyword);
@@ -1694,7 +1701,7 @@ bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
     //     case we delete the existing keyword if it's replaceable, or else undo
     //     the change in keyword for |existing_turl|.
     TemplateURL* existing_keyword_turl = i->second.first;
-    if (existing_keyword_turl->GetType() != TemplateURL::NORMAL) {
+    if (existing_keyword_turl->type() != TemplateURL::NORMAL) {
       if (!CanReplace(existing_turl)) {
         AddToMap(existing_turl);
         AddToDomainMap(existing_turl);
@@ -2014,15 +2021,15 @@ TemplateURL* TemplateURLService::AddNoNotify(
   // that any "pre-existing" entries we find are actually coming from
   // |template_urls_|, lest we detect a "conflict" between the
   // |initial_default_search_provider_| and the web data version of itself.
-  if (template_url->GetType() != TemplateURL::OMNIBOX_API_EXTENSION &&
+  if (template_url->type() != TemplateURL::OMNIBOX_API_EXTENSION &&
       existing_keyword_turl &&
-      existing_keyword_turl->GetType() != TemplateURL::OMNIBOX_API_EXTENSION &&
+      existing_keyword_turl->type() != TemplateURL::OMNIBOX_API_EXTENSION &&
       Contains(&template_urls_, existing_keyword_turl)) {
     DCHECK_NE(existing_keyword_turl, template_url.get());
     // Only replace one of the TemplateURLs if they are either both extensions,
     // or both not extensions.
-    bool are_same_type = existing_keyword_turl->GetType() ==
-        template_url->GetType();
+    bool are_same_type = IsCreatedByExtension(existing_keyword_turl) ==
+                         IsCreatedByExtension(template_url.get());
     if (CanReplace(existing_keyword_turl) && are_same_type) {
       RemoveNoNotify(existing_keyword_turl);
     } else if (CanReplace(template_url.get()) && are_same_type) {
@@ -2039,7 +2046,7 @@ TemplateURL* TemplateURLService::AddNoNotify(
   template_urls_.push_back(std::move(template_url));
   AddToMaps(template_url_ptr);
 
-  if (newly_adding && (template_url_ptr->GetType() == TemplateURL::NORMAL)) {
+  if (newly_adding && (template_url_ptr->type() == TemplateURL::NORMAL)) {
     if (web_data_service_.get())
       web_data_service_->AddKeyword(template_url_ptr->data());
 
@@ -2065,7 +2072,7 @@ void TemplateURLService::RemoveNoNotify(TemplateURL* template_url) {
   std::unique_ptr<TemplateURL> scoped_turl = std::move(*i);
   template_urls_.erase(i);
 
-  if (template_url->GetType() == TemplateURL::NORMAL) {
+  if (template_url->type() == TemplateURL::NORMAL) {
     if (web_data_service_.get())
       web_data_service_->RemoveKeyword(template_url->id());
 
@@ -2185,7 +2192,7 @@ base::string16 TemplateURLService::UniquifyKeyword(const TemplateURL& turl,
     // for extensions, as their keywords are not associated with their URLs).
     GURL gurl(turl.url());
     if (gurl.is_valid() &&
-        (turl.GetType() != TemplateURL::OMNIBOX_API_EXTENSION)) {
+        (turl.type() != TemplateURL::OMNIBOX_API_EXTENSION)) {
       base::string16 keyword_candidate = TemplateURL::GenerateKeyword(gurl);
       if (!GetTemplateURLForKeyword(keyword_candidate))
         return keyword_candidate;
@@ -2221,7 +2228,7 @@ void TemplateURLService::ResolveSyncKeywordConflict(
   DCHECK(applied_sync_turl);
   DCHECK(change_list);
   DCHECK_EQ(applied_sync_turl->keyword(), unapplied_sync_turl->keyword());
-  DCHECK_EQ(TemplateURL::NORMAL, applied_sync_turl->GetType());
+  DCHECK_EQ(TemplateURL::NORMAL, applied_sync_turl->type());
 
   // Both |unapplied_sync_turl| and |applied_sync_turl| are known to Sync, so
   // don't delete either of them. Instead, determine which is "better" and
@@ -2366,7 +2373,7 @@ void TemplateURLService::PatchMissingSyncGUIDs(
   for (auto& template_url : *template_urls) {
     DCHECK(template_url);
     if (template_url->sync_guid().empty() &&
-        (template_url->GetType() == TemplateURL::NORMAL)) {
+        (template_url->type() == TemplateURL::NORMAL)) {
       template_url->data_.sync_guid = base::GenerateGUID();
       if (web_data_service_.get())
         web_data_service_->UpdateKeyword(template_url->data());
@@ -2433,7 +2440,7 @@ TemplateURL* TemplateURLService::FindTemplateURLForExtension(
     TemplateURL::Type type) {
   DCHECK_NE(TemplateURL::NORMAL, type);
   for (const auto& turl : template_urls_) {
-    if (turl->GetType() == type && turl->GetExtensionId() == extension_id)
+    if (turl->type() == type && turl->GetExtensionId() == extension_id)
       return turl.get();
   }
   return nullptr;
@@ -2444,7 +2451,7 @@ TemplateURL* TemplateURLService::FindMatchingExtensionTemplateURL(
     TemplateURL::Type type) {
   DCHECK_NE(TemplateURL::NORMAL, type);
   for (const auto& turl : template_urls_) {
-    if (turl->GetType() == type &&
+    if (turl->type() == type &&
         TemplateURL::MatchesData(turl.get(), &data, search_terms_data()))
       return turl.get();
   }
@@ -2454,7 +2461,7 @@ TemplateURL* TemplateURLService::FindMatchingExtensionTemplateURL(
 void TemplateURLService::UpdateExtensionDefaultSearchEngine() {
   TemplateURL* most_recently_intalled_default = nullptr;
   for (const auto& turl : template_urls_) {
-    if ((turl->GetType() == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION) &&
+    if ((turl->type() == TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION) &&
         turl->extension_info_->wants_to_be_default_engine &&
         turl->SupportsReplacement(search_terms_data()) &&
         (!most_recently_intalled_default ||

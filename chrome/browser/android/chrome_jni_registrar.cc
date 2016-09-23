@@ -55,6 +55,7 @@
 #include "chrome/browser/android/instantapps/instant_apps_infobar_delegate.h"
 #include "chrome/browser/android/java_exception_reporter.h"
 #include "chrome/browser/android/large_icon_bridge.h"
+#include "chrome/browser/android/locale/special_locale_handler.h"
 #include "chrome/browser/android/logo_bridge.h"
 #include "chrome/browser/android/metrics/launch_metrics.h"
 #include "chrome/browser/android/metrics/uma_session_stats.h"
@@ -286,6 +287,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"LargeIconBridge", LargeIconBridge::RegisterLargeIconBridge},
     {"LaunchMetrics", metrics::RegisterLaunchMetrics},
     {"LayerTitleCache", chrome::android::RegisterLayerTitleCache},
+    {"SpecialLocaleHandler", RegisterSpecialLocaleHandler},
     {"LogoBridge", RegisterLogoBridge},
     {"ManifestUpgradeDetectorFetcher",
      ManifestUpgradeDetectorFetcher::Register},

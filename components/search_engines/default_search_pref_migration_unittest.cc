@@ -79,7 +79,7 @@ void DefaultSearchPrefMigrationTest::SaveDefaultSearchProviderToLegacyPrefs(
   base::ListValue alternate_urls;
   std::string search_terms_replacement_key;
   if (t_url) {
-    DCHECK_EQ(TemplateURL::NORMAL, t_url->GetType());
+    DCHECK_EQ(TemplateURL::NORMAL, t_url->type());
     enabled = true;
     search_url = t_url->url();
     suggest_url = t_url->suggestions_url();

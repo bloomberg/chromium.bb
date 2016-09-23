@@ -73,7 +73,8 @@ std::unique_ptr<TemplateURL> CreateKeywordWithDate(
     bool show_in_default_list,
     const std::string& encodings,
     Time date_created,
-    Time last_modified) {
+    Time last_modified,
+    TemplateURL::Type type = TemplateURL::NORMAL) {
   TemplateURLData data;
   data.SetShortName(base::UTF8ToUTF16(short_name));
   data.SetKeyword(base::UTF8ToUTF16(keyword));
@@ -88,7 +89,7 @@ std::unique_ptr<TemplateURL> CreateKeywordWithDate(
       encodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.date_created = date_created;
   data.last_modified = last_modified;
-  return base::MakeUnique<TemplateURL>(data);
+  return base::MakeUnique<TemplateURL>(data, type);
 }
 
 TemplateURL* AddKeywordWithDate(
@@ -834,7 +835,7 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
   // Bing was repaired.
   bing = model()->GetTemplateURLForKeyword(ASCIIToUTF16("bing.com"));
   ASSERT_TRUE(bing);
-  EXPECT_EQ(TemplateURL::NORMAL, bing->GetType());
+  EXPECT_EQ(TemplateURL::NORMAL, bing->type());
 
   // User search engine is preserved.
   EXPECT_EQ(user_dse, model()->GetTemplateURLForHost("www.goo.com"));
@@ -1415,10 +1416,9 @@ TEST_F(TemplateURLServiceTest, DefaultExtensionEngine) {
   std::unique_ptr<TemplateURL> ext_dse = CreateKeywordWithDate(
       model(), "ext", "ext", "http://www.search.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(), true, true, "UTF-8", Time(),
-      Time());
+      Time(), TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
   std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
-      new TemplateURL::AssociatedExtensionInfo(
-          TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext"));
+      new TemplateURL::AssociatedExtensionInfo("ext"));
   extension_info->wants_to_be_default_engine = true;
   TemplateURL* ext_dse_ptr = model()->AddExtensionControlledTURL(
       std::move(ext_dse), std::move(extension_info));
@@ -1442,21 +1442,19 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
   std::unique_ptr<TemplateURL> ext_dse = CreateKeywordWithDate(
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(), true, false, "UTF-8", Time(),
-      Time());
+      Time(), TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
   std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
-      new TemplateURL::AssociatedExtensionInfo(
-          TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext1"));
+      new TemplateURL::AssociatedExtensionInfo("ext1"));
   extension_info->wants_to_be_default_engine = false;
   model()->AddExtensionControlledTURL(std::move(ext_dse),
                                       std::move(extension_info));
   EXPECT_EQ(user_dse, model()->GetDefaultSearchProvider());
 
-  ext_dse = CreateKeywordWithDate(model(), "ext2", "ext2",
-                                  "http://www.ext2.com/s?q={searchTerms}",
-                                  std::string(), std::string(), std::string(),
-                                  true, true, "UTF-8", Time(), Time());
-  extension_info.reset(new TemplateURL::AssociatedExtensionInfo(
-      TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext2"));
+  ext_dse = CreateKeywordWithDate(
+      model(), "ext2", "ext2", "http://www.ext2.com/s?q={searchTerms}",
+      std::string(), std::string(), std::string(), true, true, "UTF-8", Time(),
+      Time(), TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
+  extension_info.reset(new TemplateURL::AssociatedExtensionInfo("ext2"));
   extension_info->wants_to_be_default_engine = true;
   TemplateURL* ext_dse_ptr = model()->AddExtensionControlledTURL(
       std::move(ext_dse), std::move(extension_info));
@@ -1502,10 +1500,9 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
   std::unique_ptr<TemplateURL> ext_dse = CreateKeywordWithDate(
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(), true, true, "UTF-8", Time(),
-      Time());
+      Time(), TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
   std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
-      new TemplateURL::AssociatedExtensionInfo(
-          TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, "ext1"));
+      new TemplateURL::AssociatedExtensionInfo("ext1"));
   extension_info->wants_to_be_default_engine = true;
   TemplateURL* ext_dse_ptr = model()->AddExtensionControlledTURL(
       std::move(ext_dse), std::move(extension_info));

@@ -1182,27 +1182,21 @@ std::string TemplateURLRef::HandleReplacements(
 // TemplateURL ----------------------------------------------------------------
 
 TemplateURL::AssociatedExtensionInfo::AssociatedExtensionInfo(
-    Type type,
     const std::string& extension_id)
-    : type(type),
-      extension_id(extension_id),
-      wants_to_be_default_engine(false) {
-  DCHECK_NE(NORMAL, type);
-}
+    : extension_id(extension_id), wants_to_be_default_engine(false) {}
 
 TemplateURL::AssociatedExtensionInfo::~AssociatedExtensionInfo() {
 }
 
-TemplateURL::TemplateURL(const TemplateURLData& data)
+TemplateURL::TemplateURL(const TemplateURLData& data, Type type)
     : data_(data),
       url_ref_(nullptr),
-      suggestions_url_ref_(this,
-                           TemplateURLRef::SUGGEST),
-      instant_url_ref_(this,
-                       TemplateURLRef::INSTANT),
+      suggestions_url_ref_(this, TemplateURLRef::SUGGEST),
+      instant_url_ref_(this, TemplateURLRef::INSTANT),
       image_url_ref_(this, TemplateURLRef::IMAGE),
       new_tab_url_ref_(this, TemplateURLRef::NEW_TAB),
       contextual_search_url_ref_(this, TemplateURLRef::CONTEXTUAL_SEARCH),
+      type_(type),
       engine_type_(SEARCH_ENGINE_UNKNOWN) {
   ResizeURLRefVector();
   SetPrepopulateId(data_.prepopulate_id);
@@ -1307,7 +1301,7 @@ bool TemplateURL::HasGoogleBaseURLs(
 
 bool TemplateURL::IsGoogleSearchURLWithReplaceableKeyword(
     const SearchTermsData& search_terms_data) const {
-  return (GetType() == NORMAL) &&
+  return (type_ == NORMAL) &&
       url_ref_->HasGoogleBaseURLs(search_terms_data) &&
       google_util::IsGoogleHostname(base::UTF16ToUTF8(data_.keyword()),
                                     google_util::DISALLOW_SUBDOMAIN);
@@ -1320,10 +1314,6 @@ bool TemplateURL::HasSameKeywordAs(
       (IsGoogleSearchURLWithReplaceableKeyword(search_terms_data) &&
        TemplateURL(other).IsGoogleSearchURLWithReplaceableKeyword(
            search_terms_data));
-}
-
-TemplateURL::Type TemplateURL::GetType() const {
-  return extension_info_ ? extension_info_->type : NORMAL;
 }
 
 std::string TemplateURL::GetExtensionId() const {
@@ -1499,7 +1489,7 @@ void TemplateURL::ResetKeywordIfNecessary(
     const SearchTermsData& search_terms_data,
     bool force) {
   if (IsGoogleSearchURLWithReplaceableKeyword(search_terms_data) || force) {
-    DCHECK(GetType() != OMNIBOX_API_EXTENSION);
+    DCHECK_NE(OMNIBOX_API_EXTENSION, type_);
     GURL url(GenerateSearchURL(search_terms_data));
     if (url.is_valid())
       data_.SetKeyword(GenerateKeyword(url));

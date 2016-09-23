@@ -149,7 +149,7 @@ void TemplateURLTableModel::Reload() {
     // the lists while editing.
     if (template_url->show_in_default_list())
       default_entries.push_back(new ModelEntry(this, template_url));
-    else if (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION)
+    else if (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)
       extension_entries.push_back(new ModelEntry(this, template_url));
     else
       other_entries.push_back(new ModelEntry(this, template_url));

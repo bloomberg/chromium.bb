@@ -188,7 +188,7 @@ base::string16 KeywordProvider::GetKeywordForText(
     return base::string16();
 
   // Don't provide a keyword for inactive/disabled extension keywords.
-  if ((template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION) &&
+  if ((template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION) &&
       extensions_delegate_ &&
       !extensions_delegate_->IsEnabledExtension(template_url->GetExtensionId()))
     return base::string16();
@@ -265,7 +265,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
     // Prune any extension keywords that are disallowed in incognito mode (if
     // we're incognito), or disabled.
-    if (template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION &&
+    if (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION &&
         extensions_delegate_ &&
         !extensions_delegate_->IsEnabledExtension(
             template_url->GetExtensionId())) {
@@ -296,7 +296,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     const TemplateURL* template_url = matches.front().first;
     const size_t meaningful_keyword_length = matches.front().second;
     const bool is_extension_keyword =
-        template_url->GetType() == TemplateURL::OMNIBOX_API_EXTENSION;
+        template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION;
 
     // Only create an exact match if |remaining_input| is empty or if
     // this is an extension keyword.  If |remaining_input| is a
@@ -456,7 +456,7 @@ void KeywordProvider::FillInURLAndContents(
     // entered.
     if (element_ref.SupportsReplacement(
             GetTemplateURLService()->search_terms_data()) &&
-        (element->GetType() != TemplateURL::OMNIBOX_API_EXTENSION)) {
+        (element->type() != TemplateURL::OMNIBOX_API_EXTENSION)) {
       // No query input; return a generic, no-destination placeholder.
       match->contents.assign(
           l10n_util::GetStringUTF16(IDS_EMPTY_KEYWORD_VALUE));

@@ -615,14 +615,12 @@ int GetCountryIDFromPrefs(PrefService* prefs) {
   return prefs->GetInteger(prefs::kCountryIDAtInstall);
 }
 
-void GetPrepopulationSetFromCountryID(PrefService* prefs,
-                                      const PrepopulatedEngine*** engines,
-                                      size_t* num_engines) {
-  // NOTE: This function should ALWAYS set its outparams.
-
+std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulationSetFromCountryID(
+    int country_id) {
+  const PrepopulatedEngine** engines;
+  size_t num_engines;
   // If you add a new country make sure to update the unit test for coverage.
-  switch (GetCountryIDFromPrefs(prefs)) {
-
+  switch (country_id) {
 #define CHAR_A 'A'
 #define CHAR_B 'B'
 #define CHAR_C 'C'
@@ -656,9 +654,9 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
 #define UNHANDLED_COUNTRY(code1, code2)\
     case CODE_TO_ID(code1, code2):
 #define END_UNHANDLED_COUNTRIES(code1, code2)\
-      *engines = engines_##code1##code2;\
-      *num_engines = arraysize(engines_##code1##code2);\
-      return;
+      engines = engines_##code1##code2;\
+      num_engines = arraysize(engines_##code1##code2);\
+      break;
 #define DECLARE_COUNTRY(code1, code2)\
     UNHANDLED_COUNTRY(code1, code2)\
     END_UNHANDLED_COUNTRIES(code1, code2)
@@ -971,6 +969,11 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     default:                // Unhandled location
     END_UNHANDLED_COUNTRIES(def, ault)
   }
+
+  std::vector<std::unique_ptr<TemplateURLData>> t_urls;
+  for (size_t i = 0; i < num_engines; ++i)
+    t_urls.push_back(MakeTemplateURLDataFromPrepopulatedEngine(*engines[i]));
+  return t_urls;
 }
 
 std::unique_ptr<TemplateURLData> MakePrepopulatedTemplateURLData(
@@ -1121,14 +1124,22 @@ std::vector<std::unique_ptr<TemplateURLData>> GetPrepopulatedEngines(
   if (!t_urls.empty())
     return t_urls;
 
-  const PrepopulatedEngine** engines;
-  size_t num_engines;
-  GetPrepopulationSetFromCountryID(prefs, &engines, &num_engines);
-  for (size_t i = 0; i != num_engines; ++i) {
-    t_urls.push_back(MakeTemplateURLDataFromPrepopulatedEngine(*engines[i]));
-  }
-  return t_urls;
+  return GetPrepopulationSetFromCountryID(GetCountryIDFromPrefs(prefs));
 }
+
+#if defined(OS_ANDROID)
+std::vector<std::unique_ptr<TemplateURLData>> GetLocalPrepopulatedEngines(
+    const std::string& locale,
+    PrefService* prefs) {
+  int country_id = CountryStringToCountryID(locale);
+  if (country_id == kCountryIDUnknown ||
+      country_id == GetCountryIDFromPrefs(prefs)) {
+    return std::vector<std::unique_ptr<TemplateURLData>>();
+  }
+
+  return GetPrepopulationSetFromCountryID(country_id);
+}
+#endif
 
 std::vector<const PrepopulatedEngine*> GetAllPrepopulatedEngines() {
   return std::vector<const PrepopulatedEngine*>(std::begin(kAllEngines),
