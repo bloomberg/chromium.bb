@@ -1696,10 +1696,6 @@ void SpdySession::LogAbandonedActiveStream(ActiveStreamMap::const_iterator it,
   DCHECK_GT(it->first, 0u);
   LogAbandonedStream(it->second.stream, status);
   ++streams_abandoned_count_;
-  if (it->second.stream->type() == SPDY_PUSH_STREAM &&
-      unclaimed_pushed_streams_.find(it->second.stream->url()) !=
-          unclaimed_pushed_streams_.end()) {
-  }
 }
 
 SpdyStreamId SpdySession::GetNewStreamId() {
@@ -1890,6 +1886,14 @@ void SpdySession::DeleteStream(std::unique_ptr<SpdyStream> stream, int status) {
   if (availability_state_ == STATE_AVAILABLE) {
     ProcessPendingStreamRequests();
   }
+}
+
+SpdyStreamId SpdySession::GetStreamIdForPush(const GURL& url) {
+  UnclaimedPushedStreamContainer::const_iterator unclaimed_it =
+      unclaimed_pushed_streams_.find(url);
+  if (unclaimed_it == unclaimed_pushed_streams_.end())
+    return 0;
+  return unclaimed_it->second.stream_id;
 }
 
 base::WeakPtr<SpdyStream> SpdySession::GetActivePushStream(const GURL& url) {
