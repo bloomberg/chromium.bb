@@ -2574,15 +2574,14 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     }
   }
 
-  // Falling back to the root scroll layer ensures generation of root overscroll
-  // notifications. The inner viewport layer represents the viewport during
-  // scrolling.
-  if (!potentially_scrolling_layer_impl)
-    potentially_scrolling_layer_impl = InnerViewportScrollLayer();
+  // The outer viewport layer represents the viewport.
+  if (potentially_scrolling_layer_impl == InnerViewportScrollLayer())
+    potentially_scrolling_layer_impl = OuterViewportScrollLayer();
 
-  // The inner viewport layer represents the viewport.
-  if (potentially_scrolling_layer_impl == OuterViewportScrollLayer())
-    potentially_scrolling_layer_impl = InnerViewportScrollLayer();
+  // Falling back to the root scroll layer ensures generation of root overscroll
+  // notifications.
+  if (!potentially_scrolling_layer_impl)
+    potentially_scrolling_layer_impl = OuterViewportScrollLayer();
 
   if (potentially_scrolling_layer_impl) {
     // Ensure that final layer scrolls on impl thread (crbug.com/625100)
@@ -2855,19 +2854,18 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     if (scroll_node) {
       for (; scroll_tree.parent(scroll_node);
            scroll_node = scroll_tree.parent(scroll_node)) {
-        if (!scroll_node->scrollable ||
-            scroll_node->is_outer_viewport_scroll_layer)
+        if (!scroll_node->scrollable)
           continue;
 
-        if (scroll_node->is_inner_viewport_scroll_layer) {
+        if (scroll_node->is_outer_viewport_scroll_layer ||
+            scroll_node->is_inner_viewport_scroll_layer) {
           gfx::Vector2dF scrolled =
               viewport()->ScrollAnimated(pending_delta, delayed_by);
           // Viewport::ScrollAnimated returns pending_delta as long as it
           // starts an animation.
           if (scrolled == pending_delta)
             return scroll_status;
-          pending_delta -= scrolled;
-          continue;
+          break;
         }
 
         gfx::Vector2dF scroll_delta =
@@ -3010,7 +3008,7 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   // details.
   const float kEpsilon = 0.1f;
 
-  if (scroll_node->is_inner_viewport_scroll_layer) {
+  if (scroll_node->is_outer_viewport_scroll_layer) {
     bool affect_top_controls = !wheel_scrolling_;
     Viewport::ScrollResult result = viewport()->ScrollBy(
         delta, viewport_point, scroll_state->is_direct_manipulation(),
@@ -3031,7 +3029,7 @@ void LayerTreeHostImpl::ApplyScroll(ScrollNode* scroll_node,
   bool scrolled = std::abs(applied_delta.x()) > kEpsilon;
   scrolled = scrolled || std::abs(applied_delta.y()) > kEpsilon;
 
-  if (scrolled && !scroll_node->is_inner_viewport_scroll_layer) {
+  if (scrolled && !scroll_node->is_outer_viewport_scroll_layer) {
     // If the applied delta is within 45 degrees of the input
     // delta, bail out to make it easier to scroll just one layer
     // in one direction without affecting any of its parents.
@@ -3068,11 +3066,9 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
          scroll_node = scroll_tree.parent(scroll_node)) {
       if (scroll_node->is_outer_viewport_scroll_layer) {
         // Don't chain scrolls past the outer viewport scroll layer. Once we
-        // reach that, we should scroll the viewport, which is represented by
-        // the inner viewport scroll layer.
-        ScrollNode* inner_viewport_scroll_node =
-            scroll_tree.Node(InnerViewportScrollLayer()->scroll_tree_index());
-        current_scroll_chain.push_front(inner_viewport_scroll_node);
+        // reach that, we're viewport scrolling which is special and handled by
+        // cc's Viewport class.
+        current_scroll_chain.push_front(scroll_node);
         break;
       }
 
@@ -3246,8 +3242,6 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
   LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, InputHandler::TOUCHSCREEN, layer_impl,
       &scroll_on_main_thread, &main_thread_scrolling_reasons);
-  if (scroll_layer_impl == InnerViewportScrollLayer())
-    scroll_layer_impl = OuterViewportScrollLayer();
   if (scroll_on_main_thread || !scroll_layer_impl)
     return;
 
@@ -3295,7 +3289,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
   client_->RenewTreePriority();
   pinch_gesture_end_should_clear_scrolling_layer_ = !CurrentlyScrollingLayer();
   active_tree_->SetCurrentlyScrollingLayer(
-      active_tree_->InnerViewportScrollLayer());
+      active_tree_->OuterViewportScrollLayer());
   top_controls_manager_->PinchBegin();
 }
 

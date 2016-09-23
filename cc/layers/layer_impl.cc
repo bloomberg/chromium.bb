@@ -125,14 +125,7 @@ void LayerImpl::SetDebugInfo(
 void LayerImpl::DistributeScroll(ScrollState* scroll_state) {
   ScrollTree& scroll_tree = layer_tree_impl()->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.Node(scroll_tree_index());
-  return scroll_tree.DistributeScroll(scroll_node, scroll_state);
-}
-
-void LayerImpl::ApplyScroll(ScrollState* scroll_state) {
-  DCHECK(scroll_state);
-  ScrollNode* node = layer_tree_impl()->property_trees()->scroll_tree.Node(
-      scroll_tree_index());
-  layer_tree_impl()->ApplyScroll(node, scroll_state);
+  scroll_tree.DistributeScroll(scroll_node, scroll_state);
 }
 
 void LayerImpl::SetTransformTreeIndex(int index) {
