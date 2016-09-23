@@ -24,6 +24,9 @@ declare_args() {
   chrome_public_apk_load_library_from_apk =
       chromium_linker_supported &&
       (current_cpu == "arm64" || current_cpu == "x64")
+
+  # Enables ProGuard obfuscation of Chromium packages.
+  enable_proguard_obfuscation = false
 }
 
 default_chrome_public_jinja_variables = [
@@ -51,6 +54,12 @@ template("chrome_public_apk_tmpl") {
         "//base/android/proguard/chromium_apk.flags",
         "//base/android/proguard/chromium_code.flags",
       ]
+      if (enable_proguard_obfuscation) {
+        proguard_configs += [ "//chrome/android/java/proguard-obfuscate.flags" ]
+      } else {
+        proguard_configs +=
+            [ "//chrome/android/java/proguard-dont-obfuscate.flags" ]
+      }
     }
 
     if (!defined(use_chromium_linker)) {

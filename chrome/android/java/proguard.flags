@@ -1,17 +1,6 @@
-# As of August 11, 2016, obfuscation was tested and passed on the trybots,
-# saving us 660kb on our .dex size and 53kb memory/process. Enable obfuscation
-# as soon as Crash supports ReTrace's deobfuscation of stack traces.
-#
-# To enable obfuscation, remove the -keepnames rule for
-# com.google.android.apps.chrome.** and org.chromium.**, and uncomment the
-# following two lines:
-# -renamesourcefileattribute PG
-# -repackageclasses ""
-
-# Disable obfuscation for the following two packages.
--keepnames,allowoptimization class com.google.android.apps.chrome.**,org.chromium.** {
-  *;
-}
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 # Fragments are loaded using reflection via Fragment.instantiate(Context,String)
 # This can be improved upon - see crbug.com/622023.
