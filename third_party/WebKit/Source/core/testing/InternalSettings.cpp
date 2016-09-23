@@ -142,6 +142,12 @@ void InternalSettings::setMockScrollbarsEnabled(bool enabled, ExceptionState& ex
     settings()->setMockScrollbarsEnabled(enabled);
 }
 
+void InternalSettings::setHideScrollbars(bool enabled, ExceptionState& exceptionState)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setHideScrollbars(enabled);
+}
+
 void InternalSettings::setMockGestureTapHighlightsEnabled(bool enabled, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();

@@ -428,3 +428,5 @@ browserSideNavigationEnabled initial=false
 # Some platforms have media subsystems which are too buggy to allow preloading
 # of content by default. See http://crbug.com/612909 for details.
 forcePreloadNoneForMediaElements initial=false
+
+hideScrollbars initial=false

@@ -1051,6 +1051,10 @@ void PaintLayerScrollableArea::setHasHorizontalScrollbar(bool hasScrollbar)
     if (FreezeScrollbarsScope::scrollbarsAreFrozen())
         return;
 
+    DCHECK(box().frame()->settings());
+    if (box().frame()->settings()->hideScrollbars())
+        hasScrollbar = false;
+
     if (hasScrollbar == hasHorizontalScrollbar())
         return;
 
@@ -1077,6 +1081,10 @@ void PaintLayerScrollableArea::setHasVerticalScrollbar(bool hasScrollbar)
 {
     if (FreezeScrollbarsScope::scrollbarsAreFrozen())
         return;
+
+    DCHECK(box().frame()->settings());
+    if (box().frame()->settings()->hideScrollbars())
+        hasScrollbar = false;
 
     if (hasScrollbar == hasVerticalScrollbar())
         return;

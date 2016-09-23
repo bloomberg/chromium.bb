@@ -537,6 +537,11 @@ void WebSettingsImpl::setMockScrollbarsEnabled(bool enabled)
     m_settings->setMockScrollbarsEnabled(enabled);
 }
 
+void WebSettingsImpl::setHideScrollbars(bool enabled)
+{
+    m_settings->setHideScrollbars(enabled);
+}
+
 void WebSettingsImpl::setMockGestureTapHighlightsEnabled(bool enabled)
 {
     m_settings->setMockGestureTapHighlightsEnabled(enabled);

@@ -115,7 +115,6 @@ source_set("browser") {
     "//ui/compositor",
     "//ui/display",
     "//ui/gl",
-    "//ui/native_theme:native_theme",
   ]
 
   if (is_linux) {

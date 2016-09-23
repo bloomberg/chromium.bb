@@ -295,10 +295,6 @@ void ScrollbarTheme::splitTrack(const ScrollbarThemeClient& scrollbar, const Int
 
 ScrollbarTheme& ScrollbarTheme::theme()
 {
-    if (RuntimeEnabledFeatures::hideScrollbarsEnabled()) {
-        DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, hiddenMockTheme, (ScrollbarThemeOverlayMock::HideScrollbars));
-        return hiddenMockTheme;
-    }
     if (ScrollbarTheme::mockScrollbarsEnabled()) {
         if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
             DEFINE_STATIC_LOCAL(ScrollbarThemeOverlayMock, overlayMockTheme, ());

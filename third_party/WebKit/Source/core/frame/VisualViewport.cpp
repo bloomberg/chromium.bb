@@ -425,7 +425,7 @@ void VisualViewport::initializeScrollbars()
     if (!m_innerViewportContainerLayer)
         return;
 
-    if (visualViewportSuppliesScrollbars()) {
+    if (visualViewportSuppliesScrollbars() && !frameHost().settings().hideScrollbars()) {
         if (!m_overlayScrollbarHorizontal->parent())
             m_innerViewportContainerLayer->addChild(m_overlayScrollbarHorizontal.get());
         if (!m_overlayScrollbarVertical->parent())

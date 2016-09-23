@@ -37,14 +37,7 @@ namespace blink {
 
 class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
 public:
-    enum VisibilityOverride { DefaultVisibility, HideScrollbars };
-
-    ScrollbarThemeOverlayMock(VisibilityOverride visibility = DefaultVisibility)
-        : ScrollbarThemeOverlay(
-            (visibility == HideScrollbars) ? 0 : 3,
-            (visibility == HideScrollbars) ? 0 : 4,
-            DisallowHitTest,
-            (visibility == HideScrollbars) ? Color() : Color(128, 128, 128)) { }
+    ScrollbarThemeOverlayMock() : ScrollbarThemeOverlay(3, 4, DisallowHitTest, Color(128, 128, 128)) { }
 
 private:
     bool isMockTheme() const final { return true; }

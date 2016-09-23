@@ -98,6 +98,7 @@ public:
     void setMediaTypeOverride(const String& mediaType, ExceptionState&);
     void setDisplayModeOverride(const String& displayMode, ExceptionState&);
     void setMockScrollbarsEnabled(bool, ExceptionState&);
+    void setHideScrollbars(bool, ExceptionState&);
     void setMockGestureTapHighlightsEnabled(bool, ExceptionState&);
     void setTextAutosizingEnabled(bool, ExceptionState&);
     void setTextTrackKindUserPreference(const String& preference, ExceptionState&);

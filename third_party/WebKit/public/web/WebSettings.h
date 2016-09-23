@@ -201,6 +201,7 @@ public:
     virtual void setMinimumFontSize(int) = 0;
     virtual void setMinimumLogicalFontSize(int) = 0;
     virtual void setMockScrollbarsEnabled(bool) = 0;
+    virtual void setHideScrollbars(bool) = 0;
     virtual void setOfflineWebApplicationCacheEnabled(bool) = 0;
     virtual void setPassiveEventListenerDefault(PassiveEventListenerDefault) = 0;
     virtual void setPasswordEchoDurationInSeconds(double) = 0;

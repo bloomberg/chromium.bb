@@ -3399,6 +3399,12 @@ void FrameView::setScrollbarModes(ScrollbarMode horizontalMode, ScrollbarMode ve
             verticalMode = ScrollbarAlwaysOff;
     }
 
+    DCHECK(m_frame->settings());
+    if (m_frame->settings()->hideScrollbars()) {
+        horizontalMode = ScrollbarAlwaysOff;
+        verticalMode = ScrollbarAlwaysOff;
+    }
+
     if (horizontalMode != horizontalScrollbarMode() && !m_horizontalScrollbarLock) {
         m_horizontalScrollbarMode = horizontalMode;
         needsUpdate = true;

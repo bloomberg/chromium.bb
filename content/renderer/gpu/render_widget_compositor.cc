@@ -384,8 +384,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   if (base::SysInfo::IsLowEndDevice())
     settings.gpu_rasterization_enabled = false;
   settings.using_synchronous_renderer_compositor = using_synchronous_compositor;
-  // Also hide scrollbars for Android WebView, since it uses system scrollbars.
-  if (ui::ShouldHideScrollbars() || using_synchronous_compositor) {
+  if (using_synchronous_compositor) {
+    // Android WebView uses system scrollbars, so make ours invisible.
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
   } else {
@@ -426,10 +426,7 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   settings.create_low_res_tiling = true;
 #else  // defined(OS_ANDROID)
 #if !defined(OS_MACOSX)
-  if (ui::ShouldHideScrollbars()) {
-    settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
-    settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
-  } else if (ui::IsOverlayScrollbarEnabled()) {
+  if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::THINNING;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   } else {

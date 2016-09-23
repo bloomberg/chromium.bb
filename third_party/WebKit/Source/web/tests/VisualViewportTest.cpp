@@ -1463,6 +1463,38 @@ TEST_F(VisualViewportTest, TestTopControlHidingResizeDoesntClampMainFrame)
     EXPECT_EQ(500, frameView.scrollPositionDouble().y());
 }
 
+static void configureHiddenScrollbarsSettings(WebSettings* settings)
+{
+    VisualViewportTest::configureAndroidSettings(settings);
+    settings->setHideScrollbars(true);
+}
+
+// Tests that scrollbar layers are not attached to the inner viewport container
+// layer when hideScrollbars WebSetting is true.
+TEST_F(VisualViewportTest, TestScrollbarsNotAttachedWhenHideScrollbarsSettingIsTrue)
+{
+    initializeWithAndroidSettings(configureHiddenScrollbarsSettings);
+    webViewImpl()->resize(IntSize(100, 150));
+    navigateTo("about:blank");
+
+    VisualViewport& visualViewport = frame()->page()->frameHost().visualViewport();
+    EXPECT_FALSE(visualViewport.layerForHorizontalScrollbar()->parent());
+    EXPECT_FALSE(visualViewport.layerForVerticalScrollbar()->parent());
+}
+
+// Tests that scrollbar layers are attached to the inner viewport container
+// layer when hideScrollbars WebSetting is false.
+TEST_F(VisualViewportTest, TestScrollbarsAttachedWhenHideScrollbarsSettingIsFalse)
+{
+    initializeWithAndroidSettings();
+    webViewImpl()->resize(IntSize(100, 150));
+    navigateTo("about:blank");
+
+    VisualViewport& visualViewport = frame()->page()->frameHost().visualViewport();
+    EXPECT_TRUE(visualViewport.layerForHorizontalScrollbar()->parent());
+    EXPECT_TRUE(visualViewport.layerForVerticalScrollbar()->parent());
+}
+
 // Tests that the layout viewport's scroll layer bounds are updated in a compositing
 // change update. crbug.com/423188.
 TEST_P(ParameterizedVisualViewportTest, TestChangingContentSizeAffectsScrollBounds)

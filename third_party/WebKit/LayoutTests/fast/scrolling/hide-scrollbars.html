@@ -20,16 +20,13 @@ html, body {
 <script>
 if (window.internals) {
     testRunner.dumpAsTextWithPixelResults();
-    internals.settings.setOverlayScrollbarsEnabled(true);
-    internals.settings.setMockScrollbarsEnabled(true);
-    internals.runtimeFlags.hideScrollbarsEnabled = true;
+    internals.settings.setHideScrollbars(true);
 }
 </script>
 </head>
 <body>
 <p>You should see 4 green boxes that do not show scrollbars.
-The first two boxes would show overlay scrollbars if they weren't
-hidden (second one with a scrollbar on the left).</p>
+They would show scrollbars if they weren't hidden (2nd and 4th with scrollbars on the left).</p>
 
 <div class="container"><div class="box"></div></div>
 <div dir="rtl" class="container"><div class="box"></div></div>

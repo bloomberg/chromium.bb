@@ -999,6 +999,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   // Uses the mock theme engine for scrollbars.
   settings->setMockScrollbarsEnabled(prefs.mock_scrollbars_enabled);
 
+  settings->setHideScrollbars(prefs.hide_scrollbars);
+
   // Enable gpu-accelerated 2d canvas if requested on the command line.
   WebRuntimeFeatures::enableAccelerated2dCanvas(
       prefs.accelerated_2d_canvas_enabled);

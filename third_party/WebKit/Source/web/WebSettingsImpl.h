@@ -125,6 +125,7 @@ public:
     void setMinimumFontSize(int) override;
     void setMinimumLogicalFontSize(int) override;
     void setMockScrollbarsEnabled(bool) override;
+    void setHideScrollbars(bool) override;
     void setOfflineWebApplicationCacheEnabled(bool) override;
     void setPassiveEventListenerDefault(PassiveEventListenerDefault) override;
     void setPasswordEchoDurationInSeconds(double) override;

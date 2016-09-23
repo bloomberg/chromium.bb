@@ -13,14 +13,12 @@ namespace switches {
 
 NATIVE_THEME_EXPORT extern const char kDisableOverlayScrollbar[];
 NATIVE_THEME_EXPORT extern const char kEnableOverlayScrollbar[];
-NATIVE_THEME_EXPORT extern const char kHideScrollbars[];
 
 }  // namespace switches
 
 namespace ui {
 
 NATIVE_THEME_EXPORT bool IsOverlayScrollbarEnabled();
-NATIVE_THEME_EXPORT bool ShouldHideScrollbars();
 
 }  // namespace ui
 

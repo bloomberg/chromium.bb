@@ -156,7 +156,6 @@ OriginTrialsSampleAPI origin_trial_feature_name=Frobulate
 // For simulating Android's overlay fullscreen video in layout tests on Linux.
 ForceOverlayFullscreenVideo
 OverlayScrollbars
-HideScrollbars settable_from_internals=True
 PagePopup status=stable
 PaintUnderInvalidationChecking settable_from_internals=True
 PassiveDocumentEventListeners status=experimental
