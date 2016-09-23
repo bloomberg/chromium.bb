@@ -88,6 +88,8 @@ UINetworkQualityEstimatorService::~UINetworkQualityEstimatorService() {
 void UINetworkQualityEstimatorService::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   weak_factory_.InvalidateWeakPtrs();
+  DCHECK(content::BrowserThread::DeleteSoon(content::BrowserThread::IO,
+                                            FROM_HERE, io_observer_));
 }
 
 void UINetworkQualityEstimatorService::EffectiveConnectionTypeChanged(
