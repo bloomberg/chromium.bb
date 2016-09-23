@@ -19419,6 +19419,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="HttpCache.Pattern" enum="HttpCachePattern">
   <owner>gavinp@chromium.org</owner>
+  <owner>jkarlin@chromium.org</owner>
   <summary>For each http cache transaction, the recorded pattern.</summary>
 </histogram>
 
@@ -100683,6 +100684,10 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Showing cache patterns only for image resources with
              content-length &gt;= 100 bytes."/>
   <suffix name="Font" label="Showing cache patterns only for font resources."/>
+  <suffix name="Audio"
+      label="Showing cache patterns only for audio resources."/>
+  <suffix name="Video"
+      label="Showing cache patterns only for video resources."/>
   <affected-histogram name="HttpCache.Pattern"/>
   <affected-histogram
       name="HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed"/>
