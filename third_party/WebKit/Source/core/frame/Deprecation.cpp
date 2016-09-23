@@ -121,9 +121,18 @@ void Deprecation::warnOnDeprecatedProperties(const LocalFrame* frame, CSSPropert
 
 String Deprecation::deprecationMessage(CSSPropertyID unresolvedProperty)
 {
-    // TODO: Add a switch here when there are properties that we intend to deprecate.
-    // Returning an empty string for now.
-    return emptyString();
+    switch (unresolvedProperty) {
+    case CSSPropertyAliasMotionOffset:
+        return willBeRemoved("motion-offset", M58, "6390764217040896");
+    case CSSPropertyAliasMotionRotation:
+        return willBeRemoved("motion-rotation", M58, "6390764217040896");
+    case CSSPropertyAliasMotionPath:
+    case CSSPropertyMotion:
+        return willBeRemoved("motion-path", M58, "6390764217040896");
+
+    default:
+        return emptyString();
+    }
 }
 
 void Deprecation::countDeprecation(const LocalFrame* frame, UseCounter::Feature feature)
