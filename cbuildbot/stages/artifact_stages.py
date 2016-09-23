@@ -482,6 +482,14 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
   def _HandleStageException(self, exc_info):
     """Tell other stages to not wait on us if we die for some reason."""
     self._SymbolsNotGenerated()
+
+    # TODO(dgarrett): Get failures tracked in metrics (crbug.com/652463).
+    exc_type, e, _ = exc_info
+    if (issubclass(exc_type, DebugSymbolsUploadException) or
+        (isinstance(e, failures_lib.CompoundFailure) and
+         e.MatchesFailureType(DebugSymbolsUploadException))):
+      return self._HandleExceptionAsWarning(exc_info)
+
     return super(DebugSymbolsStage, self)._HandleStageException(exc_info)
 
 
