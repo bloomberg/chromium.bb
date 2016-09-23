@@ -485,6 +485,7 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @SmallTest
     @Feature("Omnibox")
+    @RetryOnFailure
     public void testAutocompleteCorrectlyPerservedOnBatchMode() throws InterruptedException {
         startMainActivityOnBlankPage();
         stubLocationBarAutocomplete();

@@ -266,6 +266,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
+    @RetryOnFailure
     public void testFailNoProvider() throws InterruptedException, TimeoutException {
         MockMediaRouteProvider.Builder.sProvider.setIsSupportsSource(false);
         loadUrl(mTestServer.getURL(TEST_PAGE));
@@ -346,6 +347,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
+    @RetryOnFailure
     public void testFailStartCancelled() throws InterruptedException, TimeoutException {
         loadUrl(mTestServer.getURL(TEST_PAGE));
         WebContents webContents = getActivity().getActivityTab().getWebContents();

@@ -1447,6 +1447,7 @@ public class ImeTest extends ContentShellTestBase {
     // https://crbug.com/604675
     @MediumTest
     @Feature({"TextInput"})
+    @RetryOnFailure
     public void testAlertInKeyUpListenerDoesNotCrash() throws Exception {
         // Call 'alert()' when 'keyup' event occurs. Since we are in contentshell,
         // this does not actually pops up the alert window.

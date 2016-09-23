@@ -384,6 +384,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
+    @RetryOnFailure
     public void testGetUrlSorts() throws Exception {
         addEmptyPwsResult();
         addEmptyPwsResult();

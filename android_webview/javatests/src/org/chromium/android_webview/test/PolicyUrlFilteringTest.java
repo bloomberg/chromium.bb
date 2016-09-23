@@ -13,6 +13,7 @@ import org.chromium.android_webview.ErrorCodeConversionHelper;
 import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
@@ -63,6 +64,7 @@ public class PolicyUrlFilteringTest extends AwTestBase {
     @Feature({"AndroidWebView", "Policy"})
     // Run in single process only. crbug.com/615484
     @ParameterizedTest.Set
+    @RetryOnFailure
     public void testBlacklistedUrl() throws Throwable {
         final AwPolicyProvider testProvider =
                 new AwPolicyProvider(getActivity().getApplicationContext());

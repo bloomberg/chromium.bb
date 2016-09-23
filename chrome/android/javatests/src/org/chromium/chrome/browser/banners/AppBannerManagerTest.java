@@ -480,6 +480,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @Feature({"AppBanners"})
+    @RetryOnFailure
     public void testWebAppSplashscreenIsDownloaded() throws Exception {
         // Sets the overriden factory to observer splash screen update.
         final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
