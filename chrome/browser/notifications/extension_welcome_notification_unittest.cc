@@ -24,6 +24,7 @@
 #include "components/sync/api/fake_sync_change_processor.h"
 #include "components/sync/api/sync_error_factory_mock.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
@@ -136,8 +137,7 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
 
   void SetUp() override {
     task_runner_ = new base::TestSimpleTaskRunner();
-    thread_task_runner_handle_.reset(
-        new base::ThreadTaskRunnerHandle(task_runner_));
+    base::MessageLoop::current()->SetTaskRunner(task_runner_);
     profile_.reset(new TestingProfile());
     delegate_ = new WelcomeNotificationDelegate();
     welcome_notification_.reset(
@@ -149,7 +149,6 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     welcome_notification_.reset();
     profile_.reset();
     TestingBrowserProcess::DeleteInstance();
-    thread_task_runner_handle_.reset();
     task_runner_ = NULL;
   }
 
@@ -234,10 +233,10 @@ class ExtensionWelcomeNotificationTest : public testing::Test {
     welcome_notification_->ShowWelcomeNotificationIfNecessary(notification);
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   extensions::QuotaService::ScopedDisablePurgeForTesting
       disable_purge_for_testing_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  std::unique_ptr<base::ThreadTaskRunnerHandle> thread_task_runner_handle_;
   std::unique_ptr<TestingProfile> profile_;
   // Weak Ref owned by welcome_notification_
   WelcomeNotificationDelegate* delegate_;

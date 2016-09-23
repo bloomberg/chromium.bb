@@ -17,6 +17,7 @@
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/platform_test.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/chromeos/network/network_connect.h"
@@ -135,11 +136,11 @@ class DataPromoNotificationTest : public testing::Test {
                                      base::FundamentalValue(true));
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<DataPromoNotification> data_promo_notification_;
   std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;
   std::unique_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
-  base::MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataPromoNotificationTest);

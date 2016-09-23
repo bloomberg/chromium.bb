@@ -503,7 +503,7 @@ class ChromeContentBrowserClientClearSiteDataTest : public testing::Test {
     return base::WrapUnique(new MockBrowsingDataRemover(context));
   }
 
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   bool finished_;
 };

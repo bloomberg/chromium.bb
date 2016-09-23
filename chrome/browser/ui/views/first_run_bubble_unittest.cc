@@ -8,6 +8,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -66,12 +67,16 @@ class FirstRunBubbleTest : public views::ViewsTestBase,
   TestingProfile* profile() { return &profile_; }
 
  private:
+  // TestBrowserThreadBundle cannot be used here because the ViewsTestBase
+  // superclass creates its own MessageLoop.
+  content::TestBrowserThread ui_thread_;
   TestingProfile profile_;
 
   DISALLOW_COPY_AND_ASSIGN(FirstRunBubbleTest);
 };
 
-FirstRunBubbleTest::FirstRunBubbleTest() {}
+FirstRunBubbleTest::FirstRunBubbleTest()
+    : ui_thread_(content::BrowserThread::UI, base::MessageLoop::current()) {}
 
 FirstRunBubbleTest::~FirstRunBubbleTest() {}
 

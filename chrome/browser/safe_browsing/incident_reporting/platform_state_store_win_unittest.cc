@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -20,6 +19,7 @@
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/testing_pref_store.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace safe_browsing {
@@ -37,11 +37,11 @@ class PlatformStateStoreWinTest : public ::testing::Test {
   PlatformStateStoreWinTest()
       : profile_(nullptr),
         task_runner_(new base::TestSimpleTaskRunner()),
-        thread_task_runner_handle_(task_runner_),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
   void SetUp() override {
     ::testing::Test::SetUp();
+    base::MessageLoop::current()->SetTaskRunner(task_runner_);
     registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER);
     ASSERT_TRUE(profile_manager_.SetUp());
   }
@@ -113,9 +113,9 @@ class PlatformStateStoreWinTest : public ::testing::Test {
   TestingProfile* profile_;
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   registry_util::RegistryOverrideManager registry_override_manager_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle thread_task_runner_handle_;
   TestingProfileManager profile_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformStateStoreWinTest);

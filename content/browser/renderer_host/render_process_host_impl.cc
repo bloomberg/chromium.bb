@@ -675,6 +675,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       child_token_(mojo::edk::GenerateRandomToken()),
       service_worker_ref_count_(0),
       shared_worker_ref_count_(0),
+      is_worker_ref_count_disabled_(false),
       route_provider_binding_(this),
       associated_interface_provider_bindings_(
           mojo::BindingSetDispatchMode::WITH_CONTEXT),
@@ -1357,6 +1358,7 @@ bool RenderProcessHostImpl::IsProcessBackgrounded() const {
 
 void RenderProcessHostImpl::IncrementServiceWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!is_worker_ref_count_disabled_);
   ++service_worker_ref_count_;
   if (worker_ref_count() > max_worker_count_)
     max_worker_count_ = worker_ref_count();
@@ -1364,7 +1366,8 @@ void RenderProcessHostImpl::IncrementServiceWorkerRefCount() {
 
 void RenderProcessHostImpl::DecrementServiceWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_GT(worker_ref_count(), 0UL);
+  DCHECK(!is_worker_ref_count_disabled_);
+  DCHECK_GT(worker_ref_count(), 0U);
   --service_worker_ref_count_;
   if (worker_ref_count() == 0)
     Cleanup();
@@ -1372,6 +1375,7 @@ void RenderProcessHostImpl::DecrementServiceWorkerRefCount() {
 
 void RenderProcessHostImpl::IncrementSharedWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!is_worker_ref_count_disabled_);
   ++shared_worker_ref_count_;
   if (worker_ref_count() > max_worker_count_)
     max_worker_count_ = worker_ref_count();
@@ -1379,10 +1383,27 @@ void RenderProcessHostImpl::IncrementSharedWorkerRefCount() {
 
 void RenderProcessHostImpl::DecrementSharedWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK_GT(worker_ref_count(), 0UL);
+  DCHECK(!is_worker_ref_count_disabled_);
+  DCHECK_GT(worker_ref_count(), 0U);
   --shared_worker_ref_count_;
   if (worker_ref_count() == 0)
     Cleanup();
+}
+
+void RenderProcessHostImpl::ForceReleaseWorkerRefCounts() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!is_worker_ref_count_disabled_);
+  is_worker_ref_count_disabled_ = true;
+  if (!worker_ref_count())
+    return;
+  service_worker_ref_count_ = 0;
+  shared_worker_ref_count_ = 0;
+  Cleanup();
+}
+
+bool RenderProcessHostImpl::IsWorkerRefCountDisabled() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return is_worker_ref_count_disabled_;
 }
 
 void RenderProcessHostImpl::PurgeAndSuspend() {

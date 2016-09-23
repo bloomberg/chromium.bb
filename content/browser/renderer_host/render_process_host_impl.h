@@ -181,6 +181,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void DecrementServiceWorkerRefCount() override;
   void IncrementSharedWorkerRefCount() override;
   void DecrementSharedWorkerRefCount() override;
+  void ForceReleaseWorkerRefCounts() override;
+  bool IsWorkerRefCountDisabled() override;
   void PurgeAndSuspend() override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();
@@ -437,6 +439,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   size_t service_worker_ref_count_;
   size_t shared_worker_ref_count_;
+
+  // Set in ForceReleaseWorkerRefCounts. When true, worker ref counts must no
+  // longer be modified.
+  bool is_worker_ref_count_disabled_;
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.

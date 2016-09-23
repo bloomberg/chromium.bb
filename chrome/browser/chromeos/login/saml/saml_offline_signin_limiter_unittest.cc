@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "chrome/browser/chromeos/login/saml/saml_offline_signin_limiter_factory.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -20,6 +19,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,11 +53,11 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
 
   TestingPrefServiceSimple* GetTestingLocalState();
 
+  content::TestBrowserThreadBundle thread_bundle_;
   extensions::QuotaService::ScopedDisablePurgeForTesting
       disable_purge_for_testing_;
 
   scoped_refptr<base::TestSimpleTaskRunner> runner_;
-  base::ThreadTaskRunnerHandle runner_handle_;
 
   MockUserManager* user_manager_;  // Not owned.
   ScopedUserManagerEnabler user_manager_enabler_;
@@ -74,7 +74,6 @@ class SAMLOfflineSigninLimiterTest : public testing::Test {
 
 SAMLOfflineSigninLimiterTest::SAMLOfflineSigninLimiterTest()
     : runner_(new base::TestSimpleTaskRunner),
-      runner_handle_(runner_),
       user_manager_(new MockUserManager),
       user_manager_enabler_(user_manager_),
       limiter_(NULL) {}
@@ -107,6 +106,7 @@ void SAMLOfflineSigninLimiterTest::SetUpUserManager() {
 }
 
 void SAMLOfflineSigninLimiterTest::SetUp() {
+  base::MessageLoop::current()->SetTaskRunner(runner_);
   profile_.reset(new TestingProfile);
 
   SAMLOfflineSigninLimiterFactory::SetClockForTesting(&clock_);

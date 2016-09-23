@@ -8,6 +8,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -20,6 +21,7 @@ class PinStorageUnitTest : public testing::Test {
   // testing::Test:
   void SetUp() override { chromeos::EnableQuickUnlockForTesting(); }
 
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(PinStorageUnitTest);

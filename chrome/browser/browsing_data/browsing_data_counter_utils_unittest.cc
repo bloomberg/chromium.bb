@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(ENABLE_EXTENSIONS)
@@ -27,7 +28,7 @@ class BrowsingDataCounterUtilsTest : public testing::Test {
   TestingProfile* GetProfile() { return &profile_; }
 
  private:
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
 };
 

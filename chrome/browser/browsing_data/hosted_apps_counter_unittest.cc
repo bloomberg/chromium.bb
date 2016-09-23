@@ -17,6 +17,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
@@ -138,7 +139,7 @@ class HostedAppsCounterTest : public testing::Test {
   }
 
  private:
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestingProfile> profile_;
   extensions::ExtensionRegistry* extension_registry_;
 

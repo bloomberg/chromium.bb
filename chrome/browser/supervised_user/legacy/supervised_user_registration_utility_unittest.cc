@@ -28,6 +28,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,7 +127,7 @@ class SupervisedUserRegistrationUtilityTest : public ::testing::Test {
   void OnSupervisedUserRegistered(const GoogleServiceAuthError& error,
                                   const std::string& token);
 
-  base::MessageLoop message_loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   base::RunLoop run_loop_;
   TestingProfile profile_;
   SupervisedUserSyncService* service_;

@@ -106,6 +106,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   void DecrementServiceWorkerRefCount() override;
   void IncrementSharedWorkerRefCount() override;
   void DecrementSharedWorkerRefCount() override;
+  void ForceReleaseWorkerRefCounts() override;
+  bool IsWorkerRefCountDisabled() override;
   void PurgeAndSuspend() override;
 
   // IPC::Sender via RenderProcessHost.

@@ -31,6 +31,11 @@ WorkerService* WorkerService::GetInstance() {
   return SharedWorkerServiceImpl::GetInstance();
 }
 
+bool IsHostAlive(RenderProcessHostImpl* host) {
+  return host && !host->FastShutdownStarted() &&
+         !host->IsWorkerRefCountDisabled();
+}
+
 namespace {
 
 class ScopedWorkerDependencyChecker {
@@ -57,14 +62,14 @@ void UpdateWorkerDependencyOnUI(const std::vector<int>& added_ids,
   for (int id : added_ids) {
     RenderProcessHostImpl* render_process_host_impl =
         static_cast<RenderProcessHostImpl*>(RenderProcessHost::FromID(id));
-    if (!render_process_host_impl)
+    if (!IsHostAlive(render_process_host_impl))
       continue;
     render_process_host_impl->IncrementSharedWorkerRefCount();
   }
   for (int id : removed_ids) {
     RenderProcessHostImpl* render_process_host_impl =
         static_cast<RenderProcessHostImpl*>(RenderProcessHost::FromID(id));
-    if (!render_process_host_impl)
+    if (!IsHostAlive(render_process_host_impl))
       continue;
     render_process_host_impl->DecrementSharedWorkerRefCount();
   }
@@ -88,14 +93,14 @@ void DecrementWorkerRefCount(int process_id) {
   RenderProcessHostImpl* render_process_host_impl =
       static_cast<RenderProcessHostImpl*>(
           RenderProcessHost::FromID(process_id));
-  if (render_process_host_impl)
+  if (IsHostAlive(render_process_host_impl))
     render_process_host_impl->DecrementSharedWorkerRefCount();
 }
 
 bool TryIncrementWorkerRefCount(int worker_process_id) {
   RenderProcessHostImpl* render_process = static_cast<RenderProcessHostImpl*>(
       RenderProcessHost::FromID(worker_process_id));
-  if (!render_process || render_process->FastShutdownStarted())
+  if (!IsHostAlive(render_process))
     return false;
   render_process->IncrementSharedWorkerRefCount();
   return true;

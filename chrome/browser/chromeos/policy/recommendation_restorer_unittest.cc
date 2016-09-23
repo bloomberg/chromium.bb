@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -70,6 +71,7 @@ class RecommendationRestorerTest : public testing::Test {
   void VerifyTimerIsStopped() const;
   void VerifyTimerIsRunning() const;
 
+  content::TestBrowserThreadBundle thread_bundle_;
   extensions::QuotaService::ScopedDisablePurgeForTesting
       disable_purge_for_testing_;
 
@@ -78,7 +80,6 @@ class RecommendationRestorerTest : public testing::Test {
   RecommendationRestorer* restorer_;     // Not owned.
 
   scoped_refptr<base::TestSimpleTaskRunner> runner_;
-  base::ThreadTaskRunnerHandle runner_handler_;
 
  private:
   std::unique_ptr<syncable_prefs::PrefServiceSyncable> prefs_owner_;
@@ -98,12 +99,12 @@ RecommendationRestorerTest::RecommendationRestorerTest()
           new PrefNotifierImpl)),
       restorer_(NULL),
       runner_(new base::TestSimpleTaskRunner),
-      runner_handler_(runner_),
       prefs_owner_(prefs_),
       profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
 void RecommendationRestorerTest::SetUp() {
   testing::Test::SetUp();
+  base::MessageLoop::current()->SetTaskRunner(runner_);
   ASSERT_TRUE(profile_manager_.SetUp());
 }
 

@@ -304,6 +304,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void IncrementSharedWorkerRefCount() = 0;
   virtual void DecrementSharedWorkerRefCount() = 0;
 
+  // Sets worker ref counts to zero. Called when the browser context will be
+  // destroyed so this RenderProcessHost can immediately die.
+  //
+  // After this is called, the Increment/DecrementWorkerRefCount functions must
+  // not be called.
+  virtual void ForceReleaseWorkerRefCounts() = 0;
+
+  // Returns true if ForceReleaseWorkerRefCounts was called.
+  virtual bool IsWorkerRefCountDisabled() = 0;
+
   // Purges and suspends the renderer process.
   virtual void PurgeAndSuspend() = 0;
 

@@ -29,6 +29,7 @@
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_shell_connection.h"
@@ -332,6 +333,18 @@ void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
   // render process hosts die before their profile (browser context) dies.
   ForEachStoragePartition(browser_context,
                           base::Bind(ShutdownServiceWorkerContext));
+
+  // Shared workers also keep render process hosts alive, and are expected to
+  // return ref counts to 0 after documents close. However, shared worker
+  // bookkeeping is done on the IO thread and we want to ensure the hosts are
+  // destructed now, so forcibly release their ref counts here.
+  for (RenderProcessHost::iterator host_iterator =
+           RenderProcessHost::AllHostsIterator();
+       !host_iterator.IsAtEnd(); host_iterator.Advance()) {
+    RenderProcessHost* host = host_iterator.GetCurrentValue();
+    if (host->GetBrowserContext() == browser_context)
+      host->ForceReleaseWorkerRefCounts();
+  }
 }
 
 void BrowserContext::EnsureResourceContextInitialized(BrowserContext* context) {

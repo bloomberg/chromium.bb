@@ -15,6 +15,7 @@
 #include "chrome/browser/predictors/predictor_database_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "sql/statement.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,10 +56,9 @@ class AutocompleteActionPredictorTableTest : public testing::Test {
   AutocompleteActionPredictorTable::Rows test_db_;
 
  private:
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<PredictorDatabase> db_;
-  content::TestBrowserThread db_thread_;
 };
 
 class AutocompleteActionPredictorTableReopenTest
@@ -73,9 +73,7 @@ class AutocompleteActionPredictorTableReopenTest
   }
 };
 
-AutocompleteActionPredictorTableTest::AutocompleteActionPredictorTableTest()
-    : db_thread_(BrowserThread::DB, &loop_) {
-}
+AutocompleteActionPredictorTableTest::AutocompleteActionPredictorTableTest() {}
 
 AutocompleteActionPredictorTableTest::~AutocompleteActionPredictorTableTest() {
 }

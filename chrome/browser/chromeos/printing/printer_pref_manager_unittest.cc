@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/printing/printer_pref_manager_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -22,6 +23,7 @@ const char kUri[] = "ipps://printer.chromium.org/ipp/print";
 }  // namespace
 
 TEST(PrinterPrefManagerTest, AddPrinter) {
+  content::TestBrowserThreadBundle thread_bundle;
   std::unique_ptr<Profile> profile = base::MakeUnique<TestingProfile>();
   PrinterPrefManager* manager =
       PrinterPrefManagerFactory::GetForBrowserContext(profile.get());
@@ -34,6 +36,7 @@ TEST(PrinterPrefManagerTest, AddPrinter) {
 }
 
 TEST(PrinterPrefManagerTest, UpdatePrinterAssignsId) {
+  content::TestBrowserThreadBundle thread_bundle;
   std::unique_ptr<Profile> profile = base::MakeUnique<TestingProfile>();
   PrinterPrefManager* manager =
       PrinterPrefManagerFactory::GetForBrowserContext(profile.get());
@@ -46,6 +49,7 @@ TEST(PrinterPrefManagerTest, UpdatePrinterAssignsId) {
 }
 
 TEST(PrinterPrefManagerTest, UpdatePrinter) {
+  content::TestBrowserThreadBundle thread_bundle;
   std::unique_ptr<Profile> profile = base::MakeUnique<TestingProfile>();
   PrinterPrefManager* manager =
       PrinterPrefManagerFactory::GetForBrowserContext(profile.get());
@@ -62,6 +66,7 @@ TEST(PrinterPrefManagerTest, UpdatePrinter) {
 }
 
 TEST(PrinterPrefManagerTest, RemovePrinter) {
+  content::TestBrowserThreadBundle thread_bundle;
   std::unique_ptr<Profile> profile = base::MakeUnique<TestingProfile>();
   PrinterPrefManager* manager =
       PrinterPrefManagerFactory::GetForBrowserContext(profile.get());

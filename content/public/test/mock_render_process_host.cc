@@ -302,6 +302,14 @@ void MockRenderProcessHost::DecrementSharedWorkerRefCount() {
   --worker_ref_count_;
 }
 
+void MockRenderProcessHost::ForceReleaseWorkerRefCounts() {
+  worker_ref_count_ = 0;
+}
+
+bool MockRenderProcessHost::IsWorkerRefCountDisabled() {
+  return false;
+}
+
 void MockRenderProcessHost::PurgeAndSuspend() {}
 
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {

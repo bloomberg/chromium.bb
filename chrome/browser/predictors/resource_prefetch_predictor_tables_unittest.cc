@@ -12,7 +12,7 @@
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/request_priority.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,8 +34,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   void TestDeleteSingleDataPoint();
   void TestDeleteAllData();
 
-  base::MessageLoop loop_;
-  content::TestBrowserThread db_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
   std::unique_ptr<PredictorDatabase> db_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
@@ -92,9 +91,7 @@ class ResourcePrefetchPredictorTablesReopenTest
 };
 
 ResourcePrefetchPredictorTablesTest::ResourcePrefetchPredictorTablesTest()
-    : loop_(base::MessageLoop::TYPE_DEFAULT),
-      db_thread_(content::BrowserThread::DB, &loop_),
-      db_(new PredictorDatabase(&profile_)),
+    : db_(new PredictorDatabase(&profile_)),
       tables_(db_->resource_prefetch_tables()) {
   base::RunLoop().RunUntilIdle();
 }
