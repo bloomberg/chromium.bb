@@ -903,6 +903,27 @@ def CompressionStrToType(s):
     return COMP_NONE
 
 
+def CompressionExtToType(file_name):
+  """Retrieve a compression type constant from a compression file's name.
+
+  Args:
+    file_name: Name of a compression file.
+
+  Returns:
+    A constant, return COMP_NONE if the extension is unknown.
+  """
+  ext = os.path.splitext(file_name)[-1]
+  _COMP_EXT = {
+      '.tgz': COMP_GZIP,
+      '.gz': COMP_GZIP,
+      '.tbz2': COMP_BZIP2,
+      '.bz2': COMP_BZIP2,
+      '.txz': COMP_XZ,
+      '.xz': COMP_XZ,
+  }
+  return _COMP_EXT.get(ext, COMP_NONE)
+
+
 def CompressFile(infile, outfile):
   """Compress a file using compressor specified by |outfile| suffix.
 
@@ -911,8 +932,7 @@ def CompressFile(infile, outfile):
     outfile: Name of output file. Compression used is based on the
              type of suffix of the name specified (e.g.: .bz2).
   """
-  comp_str = outfile.rsplit('.', 1)[-1]
-  comp_type = CompressionStrToType(comp_str)
+  comp_type = CompressionExtToType(outfile)
   assert comp_type and comp_type != COMP_NONE
   comp = FindCompressor(comp_type)
   cmd = [comp, '-c', infile]
@@ -927,8 +947,7 @@ def UncompressFile(infile, outfile):
             type of suffix of the name specified (e.g.: .bz2).
     outfile: Name of output file.
   """
-  comp_str = infile.rsplit('.', 1)[-1]
-  comp_type = CompressionStrToType(comp_str)
+  comp_type = CompressionExtToType(infile)
   assert comp_type and comp_type != COMP_NONE
   comp = FindCompressor(comp_type)
   cmd = [comp, '-dc', infile]

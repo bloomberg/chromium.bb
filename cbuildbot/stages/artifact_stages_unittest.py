@@ -298,7 +298,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     self.assertEqual(self.gen_mock.call_count, 1)
     self.assertEqual(self.upload_mock.call_count, 1)
-    self.assertEqual(self.tar_mock.call_count, 1)
+    self.assertEqual(self.tar_mock.call_count, 2)
 
     self.assertBoardAttrEqual('breakpad_symbols_generated', True)
     self.assertBoardAttrEqual('debug_tarball_generated', True)
@@ -315,7 +315,7 @@ class DebugSymbolsStageTest(generic_stages_unittest.AbstractStageTestCase,
 
     self.assertEqual(self.gen_mock.call_count, 1)
     self.assertEqual(self.upload_mock.call_count, 0)
-    self.assertEqual(self.tar_mock.call_count, 1)
+    self.assertEqual(self.tar_mock.call_count, 2)
 
     self.assertBoardAttrEqual('breakpad_symbols_generated', True)
     self.assertBoardAttrEqual('debug_tarball_generated', True)

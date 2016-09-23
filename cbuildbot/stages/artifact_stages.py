@@ -384,7 +384,7 @@ class CPEExportStage(generic_stages.BoardSpecificBuilderStage,
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
-    """Generate debug symbols and upload debug.tgz."""
+    """Generate and upload CPE files."""
     buildroot = self._build_root
     board = self._current_board
     useflags = self._run.config.useflags
@@ -425,6 +425,9 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     # Upload them.
     self.UploadDebugTarball()
 
+    # Upload debug/breakpad tarball.
+    self.UploadDebugBreakpadTarball()
+
     # Upload them to crash server.
     if self._run.config.upload_symbols:
       self.UploadSymbols(buildroot, board)
@@ -437,6 +440,13 @@ class DebugSymbolsStage(generic_stages.BoardSpecificBuilderStage,
     self.UploadArtifact(filename, archive=False)
     logging.info('Announcing availability of debug tarball now.')
     self.board_runattrs.SetParallel('debug_tarball_generated', True)
+
+  def UploadDebugBreakpadTarball(self):
+    """Generate and upload the debug tarball with only breakpad files."""
+    filename = commands.GenerateDebugTarball(
+        self._build_root, self._current_board, self.archive_path, False,
+        archive_name='debug_breakpad.tar.xz')
+    self.UploadArtifact(filename, archive=False)
 
   def UploadSymbols(self, buildroot, board):
     """Upload generated debug symbols."""

@@ -1585,7 +1585,8 @@ def GenerateBreakpadSymbols(buildroot, board, debug):
   RunBuildScript(buildroot, cmd, enter_chroot=True, chromite_cmd=True)
 
 
-def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
+def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols,
+                         archive_name='debug.tgz'):
   """Generates a debug tarball in the archive_dir.
 
   Args:
@@ -1593,6 +1594,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
     board: Board type that was built on this machine
     archive_path: Directory where tarball should be stored.
     gdb_symbols: Include *.debug files for debugging core files with gdb.
+    archive_name: Name of the tarball to generate.
 
   Returns:
     The filename of the created debug tarball.
@@ -1601,7 +1603,7 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   # symbols are only readable by root.
   chroot = os.path.join(buildroot, 'chroot')
   board_dir = os.path.join(chroot, 'build', board, 'usr', 'lib')
-  debug_tgz = os.path.join(archive_path, 'debug.tgz')
+  debug_tarball = os.path.join(archive_path, archive_name)
   extra_args = None
   inputs = None
 
@@ -1613,15 +1615,16 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   else:
     inputs = ['debug/breakpad']
 
+  compression = cros_build_lib.CompressionExtToType(debug_tarball)
   cros_build_lib.CreateTarball(
-      debug_tgz, board_dir, sudo=True, compression=cros_build_lib.COMP_GZIP,
-      chroot=chroot, inputs=inputs, extra_args=extra_args)
+      debug_tarball, board_dir, sudo=True, compression=compression,
+      inputs=inputs, extra_args=extra_args)
 
   # Fix permissions and ownership on debug tarball.
-  cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tgz])
-  os.chmod(debug_tgz, 0o644)
+  cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tarball])
+  os.chmod(debug_tarball, 0o644)
 
-  return os.path.basename(debug_tgz)
+  return os.path.basename(debug_tarball)
 
 
 def GenerateHtmlIndex(index, files, title='Index', url_base=None):
