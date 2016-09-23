@@ -49,6 +49,19 @@ ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->RegisterFieldTrialOverride(kSafeBrowsingSubresourceFilter.name,
                                            feature_state, field_trial);
+
+  // Since we are adding a scoped feature list after browser start, copy over
+  // the existing feature list to prevent inconsistency.
+  base::FeatureList* existing_feature_list = base::FeatureList::GetInstance();
+  if (existing_feature_list) {
+    std::string enabled_features;
+    std::string disabled_features;
+    base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
+                                                          &disabled_features);
+    feature_list->InitializeFromCommandLine(enabled_features,
+                                            disabled_features);
+  }
+
   scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 }
 
