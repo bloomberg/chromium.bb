@@ -1363,12 +1363,6 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
                                               1);
 }
 
-nqe::internal::NetworkQualityStore*
-NetworkQualityEstimator::NetworkQualityStoreForTesting() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return network_quality_store_.get();
-}
-
 void NetworkQualityEstimator::AddEffectiveConnectionTypeObserver(
     EffectiveConnectionTypeObserver* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -1715,6 +1709,20 @@ void NetworkQualityEstimator::
             tick_clock_->NowTicks(), estimated_quality_at_last_main_frame_,
             effective_connection_type_));
   }
+}
+
+void NetworkQualityEstimator::AddNetworkQualitiesCacheObserver(
+    nqe::internal::NetworkQualityStore::NetworkQualitiesCacheObserver*
+        observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  network_quality_store_->AddNetworkQualitiesCacheObserver(observer);
+}
+
+void NetworkQualityEstimator::RemoveNetworkQualitiesCacheObserver(
+    nqe::internal::NetworkQualityStore::NetworkQualitiesCacheObserver*
+        observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  network_quality_store_->RemoveNetworkQualitiesCacheObserver(observer);
 }
 
 }  // namespace net

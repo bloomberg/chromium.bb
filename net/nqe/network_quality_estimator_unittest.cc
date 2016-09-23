@@ -2003,8 +2003,7 @@ TEST(NetworkQualityEstimatorTest, CacheObserver) {
   TestNetworkQualityEstimator estimator(variation_params);
 
   // Add |observer| as a persistent caching observer.
-  estimator.NetworkQualityStoreForTesting()->AddNetworkQualitiesCacheObserver(
-      &observer);
+  estimator.AddNetworkQualitiesCacheObserver(&observer);
 
   estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
   estimator.SimulateNetworkChange(
@@ -2037,8 +2036,7 @@ TEST(NetworkQualityEstimatorTest, CacheObserver) {
   EXPECT_EQ(1u, observer.get_notification_received_and_reset());
 
   // Remove |observer|, and it should not receive any notifications.
-  estimator.NetworkQualityStoreForTesting()
-      ->RemoveNetworkQualitiesCacheObserver(&observer);
+  estimator.RemoveNetworkQualitiesCacheObserver(&observer);
   estimator.set_recent_effective_connection_type(EFFECTIVE_CONNECTION_TYPE_3G);
   estimator.SimulateNetworkChange(
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test2g");
