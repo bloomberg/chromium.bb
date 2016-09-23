@@ -49,6 +49,10 @@ namespace {
 // the bubble arbitrarily wide.
 const int kMaxContentsWidth = 500;
 
+// The new default width for the content settings bubble. The review process to
+// the width on per-bubble basis is tracked with https://crbug.com/649650.
+const int kMaxDefaultContentsWidth = 320;
+
 // When we have multiline labels, we should set a minimum width lest we get very
 // narrow bubbles with lots of line-wrapping.
 const int kMinMultiLineContentsWidth = 250;
@@ -182,7 +186,12 @@ gfx::Size ContentSettingBubbleContents::GetPreferredSize() const {
        (kMinMultiLineContentsWidth > preferred_size.width()))
           ? kMinMultiLineContentsWidth
           : preferred_size.width();
-  preferred_size.set_width(std::min(preferred_width, kMaxContentsWidth));
+  if (content_setting_bubble_model_->AsSubresourceFilterBubbleModel()) {
+    preferred_size.set_width(std::min(preferred_width,
+                                      kMaxDefaultContentsWidth));
+  } else {
+    preferred_size.set_width(std::min(preferred_width, kMaxContentsWidth));
+  }
   return preferred_size;
 }
 
