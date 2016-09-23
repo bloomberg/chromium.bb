@@ -2046,6 +2046,10 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(Element* overrideTa
     VisualViewport& visualViewport = frameHost()->visualViewport();
 
     if (!overrideTargetElement && start.anchorNode() && (selection.rootEditableElement() || selection.isRange())) {
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited.  See http://crbug.com/590369 for more details.
+        doc->updateStyleAndLayoutIgnorePendingStylesheets();
+
         IntRect firstRect = m_frame->editor().firstRectForRange(selection.selection().toNormalizedEphemeralRange());
 
         int x = rightAligned ? firstRect.maxX() : firstRect.x();

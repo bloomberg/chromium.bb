@@ -2642,16 +2642,18 @@ bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
     if (!localFrame)
         return false;
     FrameSelection& selection = localFrame->selection();
-    if (!selection.isAvailable()) {
+    if (!selection.isAvailable() || selection.isNone()) {
         // plugins/mouse-capture-inside-shadow.html reaches here.
         return false;
     }
 
-    if (selection.isCaret()) {
-        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-        // needs to be audited.  See http://crbug.com/590369 for more details.
-        localFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    localFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(localFrame->document()->lifecycle());
+
+    if (selection.isCaret()) {
         anchor = focus = selection.absoluteCaretBounds();
     } else {
         const EphemeralRange selectedRange = selection.selection().toNormalizedEphemeralRange();

@@ -1163,14 +1163,17 @@ void Editor::changeSelectionAfterCommand(const VisibleSelection& newSelection,  
 
 IntRect Editor::firstRectForRange(const EphemeralRange& range) const
 {
+    DCHECK(!frame().document()->needsLayoutTreeUpdate());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(frame().document()->lifecycle());
+
     LayoutUnit extraWidthToEndOfLine;
     DCHECK(range.isNotNull());
 
-    IntRect startCaretRect = RenderedPosition(createVisiblePositionDeprecated(range.startPosition()).deepEquivalent(), TextAffinity::Downstream).absoluteRect(&extraWidthToEndOfLine);
+    IntRect startCaretRect = RenderedPosition(createVisiblePosition(range.startPosition()).deepEquivalent(), TextAffinity::Downstream).absoluteRect(&extraWidthToEndOfLine);
     if (startCaretRect.isEmpty())
         return IntRect();
 
-    IntRect endCaretRect = RenderedPosition(createVisiblePositionDeprecated(range.endPosition()).deepEquivalent(), TextAffinity::Upstream).absoluteRect();
+    IntRect endCaretRect = RenderedPosition(createVisiblePosition(range.endPosition()).deepEquivalent(), TextAffinity::Upstream).absoluteRect();
     if (endCaretRect.isEmpty())
         return IntRect();
 
@@ -1187,12 +1190,6 @@ IntRect Editor::firstRectForRange(const EphemeralRange& range) const
         startCaretRect.y(),
         (startCaretRect.width() + extraWidthToEndOfLine).toInt(),
         startCaretRect.height());
-}
-
-IntRect Editor::firstRectForRange(const Range* range) const
-{
-    DCHECK(range);
-    return firstRectForRange(EphemeralRange(range));
 }
 
 void Editor::computeAndSetTypingStyle(StylePropertySet* style, InputEvent::InputType inputType)

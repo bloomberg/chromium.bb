@@ -751,12 +751,16 @@ bool WebFrameWidgetImpl::selectionBounds(WebRect& anchor, WebRect& focus) const
         return false;
 
     FrameSelection& selection = localFrame->selection();
+    if (selection.isNone())
+        return false;
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    localFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(localFrame->document()->lifecycle());
 
     if (selection.isCaret()) {
-        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-        // needs to be audited.  See http://crbug.com/590369 for more details.
-        localFrame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
         anchor = focus = selection.absoluteCaretBounds();
     } else {
         const EphemeralRange selectedRange = selection.selection().toNormalizedEphemeralRange();

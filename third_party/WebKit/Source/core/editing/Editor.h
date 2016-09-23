@@ -217,8 +217,8 @@ public:
 
     void computeAndSetTypingStyle(StylePropertySet*, InputEvent::InputType);
 
+    // |firstRectForRange| requires up-to-date layout.
     IntRect firstRectForRange(const EphemeralRange&) const;
-    IntRect firstRectForRange(const Range*) const;
 
     void respondToChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
 
