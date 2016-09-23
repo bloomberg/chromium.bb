@@ -4,12 +4,17 @@
 
 static_library("core") {
   sources = [
+    "previews_black_list.cc",
+    "previews_black_list.h",
+    "previews_black_list_item.cc",
+    "previews_black_list_item.h",
     "previews_data_savings.cc",
     "previews_data_savings.h",
     "previews_experiments.cc",
     "previews_experiments.h",
     "previews_io_data.cc",
     "previews_io_data.h",
+    "previews_opt_out_store.h",
     "previews_ui_service.cc",
     "previews_ui_service.h",
   ]
@@ -18,12 +23,15 @@ static_library("core") {
     "//base",
     "//components/data_reduction_proxy/core/common",
     "//components/variations",
+    "//url:url",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "previews_black_list_item_unittest.cc",
+    "previews_black_list_unittest.cc",
     "previews_data_savings_unittest.cc",
     "previews_experiments_unittest.cc",
     "previews_io_data_unittest.cc",
@@ -37,5 +45,6 @@ source_set("unit_tests") {
     "//components/data_reduction_proxy/core/common",
     "//components/variations",
     "//testing/gtest",
+    "//url:url",
   ]
 }

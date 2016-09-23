@@ -212,7 +212,7 @@ void ProfileImplIOData::Handle::Init(
   PreviewsServiceFactory::GetForProfile(profile_)->set_previews_ui_service(
       base::MakeUnique<previews::PreviewsUIService>(
           io_data_->previews_io_data(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO), nullptr));
 }
 
 content::ResourceContext*

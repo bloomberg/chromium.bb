@@ -4,15 +4,19 @@
 
 #include "components/previews/core/previews_ui_service.h"
 
+#include "base/bind.h"
+#include "base/single_thread_task_runner.h"
 #include "components/previews/core/previews_io_data.h"
 
 namespace previews {
 
 PreviewsUIService::PreviewsUIService(
     PreviewsIOData* previews_io_data,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+    std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store)
     : io_task_runner_(io_task_runner), weak_factory_(this) {
-  previews_io_data->Initialize(weak_factory_.GetWeakPtr());
+  previews_io_data->Initialize(weak_factory_.GetWeakPtr(),
+                               std::move(previews_opt_out_store));
 }
 
 PreviewsUIService::~PreviewsUIService() {

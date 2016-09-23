@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/previews/core/previews_io_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,8 +21,11 @@ class TestPreviewsUIService : public PreviewsUIService {
  public:
   TestPreviewsUIService(
       PreviewsIOData* previews_io_data,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
-      : PreviewsUIService(previews_io_data, io_task_runner),
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store)
+      : PreviewsUIService(previews_io_data,
+                          io_task_runner,
+                          std::move(previews_opt_out_store)),
         io_data_set_(false) {}
   ~TestPreviewsUIService() override {}
 
@@ -74,8 +76,8 @@ TEST_F(PreviewsUIServiceTest, TestInitialization) {
   set_io_data(base::WrapUnique(
       new PreviewsIOData(loop_.task_runner(), loop_.task_runner())));
   set_ui_service(base::WrapUnique(
-      new TestPreviewsUIService(io_data(), loop_.task_runner())));
-  base::RunLoop().RunUntilIdle();
+      new TestPreviewsUIService(io_data(), loop_.task_runner(), nullptr)));
+  loop_.RunUntilIdle();
   // After the outstanding posted tasks have run, SetIOData should have been
   // called for |ui_service_|.
   EXPECT_TRUE(ui_service()->io_data_set());

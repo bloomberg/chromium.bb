@@ -1,0 +1,262 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/previews/core/previews_black_list.h"
+
+#include <memory>
+#include <string>
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/test/simple_test_clock.h"
+#include "base/time/time.h"
+#include "components/previews/core/previews_black_list_item.h"
+#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_opt_out_store.h"
+#include "components/variations/variations_associated_data.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
+
+namespace {
+
+using PreviewsBlackListTest = testing::Test;
+
+}  // namespace
+
+namespace previews {
+
+namespace {
+
+void RunLoadCallback(LoadBlackListCallback callback,
+                     std::unique_ptr<BlackListItemMap> black_list_item_map) {
+  callback.Run(std::move(black_list_item_map));
+}
+
+class TestPreviewsOptOutStore : public PreviewsOptOutStore {
+ public:
+  TestPreviewsOptOutStore() {}
+  ~TestPreviewsOptOutStore() override {}
+
+ private:
+  // PreviewsOptOutStore implementation:
+  void AddPreviewNavigation(bool opt_out,
+                            const std::string& host_name,
+                            PreviewsType type,
+                            base::Time now) override {}
+
+  void LoadBlackList(LoadBlackListCallback callback) override {
+    std::unique_ptr<BlackListItemMap> black_list_item_map(
+        new BlackListItemMap());
+    base::MessageLoop::current()->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&RunLoadCallback, callback,
+                              base::Passed(&black_list_item_map)));
+  }
+};
+
+}  // namespace
+
+TEST_F(PreviewsBlackListTest, BlackListNoStore) {
+  // Tests the black list behavior when a null OptOutSture is passed in.
+  const GURL url_a("http://www.url_a.com");
+  const GURL url_b("http://www.url_b.com");
+  const size_t history = 4;
+  const int threshold = 2;
+  const int duration_in_days = 365;
+  base::FieldTrialList field_trial_list(nullptr);
+  std::map<std::string, std::string> params;
+  params["stored_history_length"] = base::SizeTToString(history);
+  params["opt_out_threshold"] = base::IntToString(threshold);
+  params["black_list_duration_in_days"] = base::IntToString(duration_in_days);
+  ASSERT_TRUE(
+      variations::AssociateVariationParams("ClientSidePreviews", "Enabled",
+                                           params) &&
+      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+
+  base::Clock* test_clock = new base::SimpleTestClock();
+
+  std::unique_ptr<PreviewsBlackList> black_list(
+      new PreviewsBlackList(nullptr, base::WrapUnique(test_clock)));
+
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+
+  black_list->AddPreviewNavigation(url_a, true, PreviewsType::OFFLINE);
+  black_list->AddPreviewNavigation(url_a, true, PreviewsType::OFFLINE);
+
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+
+  black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
+  black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
+
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+
+  black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
+  black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
+  black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
+
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+
+  variations::testing::ClearAllVariationParams();
+}
+
+TEST_F(PreviewsBlackListTest, BlackListWithStore) {
+  // Tests the black list behavior when a non-null OptOutSture is passed in.
+  const GURL url_a1("http://www.url_a.com/a1");
+  const GURL url_a2("http://www.url_a.com/a2");
+  const GURL url_b("http://www.url_b.com");
+  const size_t history = 4;
+  const int threshold = 2;
+  const int duration_in_days = 365;
+  base::FieldTrialList field_trial_list(nullptr);
+  std::map<std::string, std::string> params;
+  params["stored_history_length"] = base::SizeTToString(history);
+  params["opt_out_threshold"] = base::IntToString(threshold);
+  params["black_list_duration_in_days"] = base::IntToString(duration_in_days);
+  ASSERT_TRUE(
+      variations::AssociateVariationParams("ClientSidePreviews", "Enabled",
+                                           params) &&
+      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+
+  base::MessageLoop loop;
+
+  base::Clock* test_clock = new base::SimpleTestClock();
+
+  std::unique_ptr<PreviewsBlackList> black_list(
+      new PreviewsBlackList(base::MakeUnique<TestPreviewsOptOutStore>(),
+                            base::WrapUnique(test_clock)));
+
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+
+  black_list->AddPreviewNavigation(url_a1, true, PreviewsType::OFFLINE);
+  black_list->AddPreviewNavigation(url_a1, true, PreviewsType::OFFLINE);
+
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+
+  black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
+  black_list->AddPreviewNavigation(url_b, true, PreviewsType::OFFLINE);
+
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+
+  black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
+  black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
+  black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
+
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a1, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a2, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+
+  variations::testing::ClearAllVariationParams();
+}
+
+TEST_F(PreviewsBlackListTest, QueueBehavior) {
+  // Tests the black list asynchronous queue behavior. Methods called while
+  // loading are queued and should run in the order they were queued.
+  const GURL url("http://www.url.com");
+  const int duration_in_days = 365;
+  base::FieldTrialList field_trial_list(nullptr);
+  std::map<std::string, std::string> params;
+  params["black_list_duration_in_days"] = base::IntToString(duration_in_days);
+  ASSERT_TRUE(
+      variations::AssociateVariationParams("ClientSidePreviews", "Enabled",
+                                           params) &&
+      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+
+  base::MessageLoop loop;
+
+  std::vector<bool> test_opt_out{true, false};
+
+  for (auto opt_out : test_opt_out) {
+    base::Clock* test_clock = new base::SimpleTestClock();
+
+    std::unique_ptr<PreviewsBlackList> black_list(
+        new PreviewsBlackList(base::MakeUnique<TestPreviewsOptOutStore>(),
+                              base::WrapUnique(test_clock)));
+
+    EXPECT_FALSE(black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
+    black_list->AddPreviewNavigation(url, opt_out, PreviewsType::OFFLINE);
+    black_list->AddPreviewNavigation(url, opt_out, PreviewsType::OFFLINE);
+    EXPECT_FALSE(black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(!opt_out,
+              black_list->IsLoadedAndAllowed(url, PreviewsType::OFFLINE));
+  }
+
+  variations::testing::ClearAllVariationParams();
+}
+
+TEST_F(PreviewsBlackListTest, MaxHosts) {
+  // Test that the black list only stores n hosts, and it stores the correct n
+  // hosts.
+  const GURL url_a("http://www.url_a.com");
+  const GURL url_b("http://www.url_b.com");
+  const GURL url_c("http://www.url_c.com");
+  const GURL url_d("http://www.url_d.com");
+  const GURL url_e("http://www.url_e.com");
+  const size_t stored_history_length = 1;
+  const int opt_out_threshold = 1;
+  const int black_list_duration_in_days = 365;
+  const size_t max_hosts_in_blacklist = 2;
+  base::FieldTrialList field_trial_list(nullptr);
+  std::map<std::string, std::string> params;
+  params["stored_history_length"] = base::SizeTToString(stored_history_length);
+  params["opt_out_threshold"] = base::IntToString(opt_out_threshold);
+  params["black_list_duration_in_days"] =
+      base::IntToString(black_list_duration_in_days);
+  params["max_hosts_in_blacklist"] =
+      base::SizeTToString(max_hosts_in_blacklist);
+  ASSERT_TRUE(
+      variations::AssociateVariationParams("ClientSidePreviews", "Enabled",
+                                           params) &&
+      base::FieldTrialList::CreateFieldTrial("ClientSidePreviews", "Enabled"));
+
+  base::MessageLoop loop;
+
+  base::SimpleTestClock* test_clock = new base::SimpleTestClock();
+
+  std::unique_ptr<PreviewsBlackList> black_list(
+      new PreviewsBlackList(nullptr, base::WrapUnique(test_clock)));
+
+  black_list->AddPreviewNavigation(url_a, true, PreviewsType::OFFLINE);
+  test_clock->Advance(base::TimeDelta::FromSeconds(1));
+  black_list->AddPreviewNavigation(url_b, false, PreviewsType::OFFLINE);
+  test_clock->Advance(base::TimeDelta::FromSeconds(1));
+  black_list->AddPreviewNavigation(url_c, false, PreviewsType::OFFLINE);
+  // url_a should stay in the map, since it has an opt out time.
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_b, PreviewsType::OFFLINE));
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_c, PreviewsType::OFFLINE));
+
+  test_clock->Advance(base::TimeDelta::FromSeconds(1));
+  black_list->AddPreviewNavigation(url_d, true, PreviewsType::OFFLINE);
+  test_clock->Advance(base::TimeDelta::FromSeconds(1));
+  black_list->AddPreviewNavigation(url_e, true, PreviewsType::OFFLINE);
+  // url_d and url_e should remain in the map, but url_a should be evicted.
+  EXPECT_TRUE(black_list->IsLoadedAndAllowed(url_a, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_d, PreviewsType::OFFLINE));
+  EXPECT_FALSE(black_list->IsLoadedAndAllowed(url_e, PreviewsType::OFFLINE));
+
+  variations::testing::ClearAllVariationParams();
+}
+
+}  // namespace previews

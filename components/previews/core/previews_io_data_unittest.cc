@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -31,9 +30,10 @@ class TestPreviewsIOData : public PreviewsIOData {
 
  private:
   // Set |initialized_| to true and use base class functionality.
-  void InitializeOnIOThread() override {
+  void InitializeOnIOThread(
+      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store) override {
     initialized_ = true;
-    PreviewsIOData::InitializeOnIOThread();
+    PreviewsIOData::InitializeOnIOThread(std::move(previews_opt_out_store));
   }
 
   // Whether Initialize was called.
@@ -70,9 +70,9 @@ class PreviewsIODataTest : public testing::Test {
 TEST_F(PreviewsIODataTest, TestInitialization) {
   set_io_data(base::WrapUnique(
       new TestPreviewsIOData(loop_.task_runner(), loop_.task_runner())));
-  set_ui_service(
-      base::WrapUnique(new PreviewsUIService(io_data(), loop_.task_runner())));
-  base::RunLoop().RunUntilIdle();
+  set_ui_service(base::WrapUnique(
+      new PreviewsUIService(io_data(), loop_.task_runner(), nullptr)));
+  loop_.RunUntilIdle();
   // After the outstanding posted tasks have run, |io_data_| should be fully
   // initialized.
   EXPECT_TRUE(io_data()->initialized());

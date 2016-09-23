@@ -10,8 +10,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
+#include "components/previews/core/previews_opt_out_store.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace previews {
 class PreviewsIOData;
@@ -22,7 +27,8 @@ class PreviewsUIService {
  public:
   PreviewsUIService(
       PreviewsIOData* previews_io_data,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
+      std::unique_ptr<PreviewsOptOutStore> previews_opt_out_store);
   virtual ~PreviewsUIService();
 
   // Sets |io_data_| to |io_data| to allow calls from the UI thread to the IO
