@@ -1513,13 +1513,11 @@ public class ImeTest extends ContentShellTestBase {
             @Override
             public void run() {
                 assertTrue(connection.commitText("a", 1));
-                assertTrue(connection.beginBatchEdit());
                 assertTrue(connection.setComposingText("b", 1));
                 // Note that the result of this function may not be up-to-date.
                 connection.getTextBeforeCursor(10, 0);
 
                 assertTrue(connection.setComposingText("bc", 1));
-                assertFalse(connection.endBatchEdit());  // returns false if no more batch edit.
                 assertTrue(connection.finishComposingText());
             }
         });
