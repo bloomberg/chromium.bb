@@ -116,15 +116,24 @@ class GFX_EXPORT ColorSpace {
     LAST = UNKNOWN,
   };
 
-  // The h264 spec declares this as bool, so only the the first two values
-  // correspond to the h264 spec. Chrome-specific values can start at 2.
-  // We use an enum instead of a bool becuase different bit depths may have
-  // different definitions of what "limited" means.
+  // This corresponds to the WebM Range enum which is part of WebM color data
+  // (see http://www.webmproject.org/docs/container/#Range).
+  // H.264 only uses a bool, which corresponds to the LIMITED/FULL values.
+  // Chrome-specific values start at 1000.
   enum class RangeID : int8_t {
-    FULL = 0,
+    // Range is not explicitly specified / unknown.
+    UNSPECIFIED = 0,
+
+    // Limited Rec. 709 color range with RGB values ranging from 16 to 235.
     LIMITED = 1,
 
-    LAST = LIMITED
+    // Full RGB color range with RGB valees from 0 to 255.
+    FULL = 2,
+
+    // Range is defined by TransferID/MatrixID.
+    DERIVED = 3,
+
+    LAST = DERIVED
   };
 
   ColorSpace();

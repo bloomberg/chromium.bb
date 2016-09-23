@@ -131,6 +131,8 @@ target(link_target_type, "base") {
     "encryption_scheme.cc",
     "encryption_scheme.h",
     "feedback_signal_accumulator.h",
+    "hdr_metadata.cc",
+    "hdr_metadata.h",
     "key_system_names.cc",
     "key_system_names.h",
     "key_system_properties.cc",

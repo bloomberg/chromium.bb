@@ -555,8 +555,10 @@ Transform GetRangeAdjustMatrix(ColorSpace::RangeID range,
                                ColorSpace::MatrixID matrix) {
   switch (range) {
     case ColorSpace::RangeID::FULL:
+    case ColorSpace::RangeID::UNSPECIFIED:
       return Transform();
 
+    case ColorSpace::RangeID::DERIVED:
     case ColorSpace::RangeID::LIMITED:
       break;
   }

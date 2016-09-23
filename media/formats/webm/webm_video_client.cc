@@ -28,6 +28,7 @@ void WebMVideoClient::Reset() {
   display_height_ = -1;
   display_unit_ = -1;
   alpha_mode_ = -1;
+  colour_parsed_ = false;
 }
 
 bool WebMVideoClient::InitializeConfig(
@@ -96,7 +97,27 @@ bool WebMVideoClient::InitializeConfig(
   config->Initialize(video_codec, profile, format, COLOR_SPACE_HD_REC709,
                      coded_size, visible_rect, natural_size, codec_private,
                      encryption_scheme);
+  if (colour_parsed_) {
+    WebMColorMetadata color_metadata = colour_parser_.GetWebMColorMetadata();
+    config->set_color_space_info(color_metadata.color_space);
+    config->set_hdr_metadata(color_metadata.hdr_metadata);
+  }
   return config->IsValidConfig();
+}
+
+WebMParserClient* WebMVideoClient::OnListStart(int id) {
+  if (id == kWebMIdColour) {
+    colour_parsed_ = false;
+    return &colour_parser_;
+  }
+
+  return this;
+}
+
+bool WebMVideoClient::OnListEnd(int id) {
+  if (id == kWebMIdColour)
+    colour_parsed_ = true;
+  return true;
 }
 
 bool WebMVideoClient::OnUInt(int id, int64_t val) {

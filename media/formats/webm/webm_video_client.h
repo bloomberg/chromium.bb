@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "media/base/media_log.h"
+#include "media/formats/webm/webm_colour_parser.h"
 #include "media/formats/webm/webm_parser.h"
 
 namespace media {
@@ -41,6 +42,8 @@ class WebMVideoClient : public WebMParserClient {
 
  private:
   // WebMParserClient implementation.
+  WebMParserClient* OnListStart(int id) override;
+  bool OnListEnd(int id) override;
   bool OnUInt(int id, int64_t val) override;
   bool OnBinary(int id, const uint8_t* data, int size) override;
   bool OnFloat(int id, double val) override;
@@ -56,6 +59,9 @@ class WebMVideoClient : public WebMParserClient {
   int64_t display_height_;
   int64_t display_unit_;
   int64_t alpha_mode_;
+
+  WebMColourParser colour_parser_;
+  bool colour_parsed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebMVideoClient);
 };

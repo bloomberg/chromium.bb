@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_types.h"
 
 namespace media {
 
@@ -67,6 +68,23 @@ VideoDecoderConfig::VideoDecoderConfig(const VideoDecoderConfig& other) =
 
 VideoDecoderConfig::~VideoDecoderConfig() {}
 
+void VideoDecoderConfig::set_color_space_info(
+    const gfx::ColorSpace& color_space_info) {
+  color_space_info_ = color_space_info;
+}
+
+gfx::ColorSpace VideoDecoderConfig::color_space_info() const {
+  return color_space_info_;
+}
+
+void VideoDecoderConfig::set_hdr_metadata(const HDRMetadata& hdr_metadata) {
+  hdr_metadata_ = hdr_metadata;
+}
+
+base::Optional<HDRMetadata> VideoDecoderConfig::hdr_metadata() const {
+  return hdr_metadata_;
+}
+
 void VideoDecoderConfig::Initialize(VideoCodec codec,
                                     VideoCodecProfile profile,
                                     VideoPixelFormat format,
@@ -85,6 +103,21 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
   natural_size_ = natural_size;
   extra_data_ = extra_data;
   encryption_scheme_ = encryption_scheme;
+
+  switch (color_space) {
+    case ColorSpace::COLOR_SPACE_JPEG:
+      color_space_info_ = gfx::ColorSpace::CreateJpeg();
+      break;
+    case ColorSpace::COLOR_SPACE_HD_REC709:
+      color_space_info_ = gfx::ColorSpace::CreateREC709();
+      break;
+    case ColorSpace::COLOR_SPACE_SD_REC601:
+      color_space_info_ = gfx::ColorSpace::CreateREC601();
+      break;
+    case ColorSpace::COLOR_SPACE_UNSPECIFIED:
+    default:
+      break;
+  }
 }
 
 bool VideoDecoderConfig::IsValidConfig() const {

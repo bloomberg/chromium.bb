@@ -53,8 +53,10 @@ ColorSpace::MatrixID all_matrices[] = {
     ColorSpace::MatrixID::YDZDX,
 };
 
-ColorSpace::RangeID all_ranges[] = {ColorSpace::RangeID::FULL,
-                                    ColorSpace::RangeID::LIMITED};
+ColorSpace::RangeID all_ranges[] = {ColorSpace::RangeID::UNSPECIFIED,
+                                    ColorSpace::RangeID::FULL,
+                                    ColorSpace::RangeID::LIMITED,
+                                    ColorSpace::RangeID::DERIVED};
 
 TEST(SimpleColorSpace, BT709toSRGB) {
   ColorSpace bt709 = ColorSpace::CreateREC709();

@@ -201,6 +201,8 @@ component("media") {
     "formats/webm/webm_audio_client.h",
     "formats/webm/webm_cluster_parser.cc",
     "formats/webm/webm_cluster_parser.h",
+    "formats/webm/webm_colour_parser.cc",
+    "formats/webm/webm_colour_parser.h",
     "formats/webm/webm_constants.cc",
     "formats/webm/webm_constants.h",
     "formats/webm/webm_content_encodings.cc",
