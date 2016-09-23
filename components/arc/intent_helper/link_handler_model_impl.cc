@@ -90,7 +90,7 @@ void LinkHandlerModelImpl::OpenLinkWithHandler(const GURL& url,
 }
 
 void LinkHandlerModelImpl::OnUrlHandlerList(
-    mojo::Array<mojom::UrlHandlerInfoPtr> handlers) {
+    mojo::Array<mojom::IntentHandlerInfoPtr> handlers) {
   handlers_ = ArcIntentHelperBridge::FilterOutIntentHelper(std::move(handlers));
 
   bool icon_info_notified = false;

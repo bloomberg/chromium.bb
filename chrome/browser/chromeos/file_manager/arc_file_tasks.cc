@@ -157,12 +157,12 @@ bool ConvertToArcUrl(const base::FilePath& path, GURL* arc_url) {
 void OnArcHandlerList(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
-    mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers);
+    mojo::Array<arc::mojom::IntentHandlerInfoPtr> handlers);
 
 void OnArcIconLoaded(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
-    mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers,
+    mojo::Array<arc::mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons);
 
 typedef std::map<arc::ActivityIconLoader::ActivityName, GURL> IconUrlMap;
@@ -173,14 +173,14 @@ std::unique_ptr<IconUrlMap> EncodeIconsToDataURLs(
 void OnArcIconEncoded(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
-    mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers,
+    mojo::Array<arc::mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<IconUrlMap> icons);
 
 // Called after the handlers from ARC is obtained. Proceeds to OnArcIconLoaded.
 void OnArcHandlerList(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
-    mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers) {
+    mojo::Array<arc::mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   scoped_refptr<arc::ActivityIconLoader> icon_loader =
@@ -190,10 +190,10 @@ void OnArcHandlerList(
     return;
   }
 
-  mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers_filtered =
+  mojo::Array<arc::mojom::IntentHandlerInfoPtr> handlers_filtered =
       arc::ArcIntentHelperBridge::FilterOutIntentHelper(std::move(handlers));
   std::vector<arc::ActivityIconLoader::ActivityName> activity_names;
-  for (const arc::mojom::UrlHandlerInfoPtr& handler : handlers_filtered)
+  for (const arc::mojom::IntentHandlerInfoPtr& handler : handlers_filtered)
     activity_names.emplace_back(handler->package_name, handler->activity_name);
 
   icon_loader->GetActivityIcons(
@@ -205,7 +205,7 @@ void OnArcHandlerList(
 void OnArcIconLoaded(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
-    mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers,
+    mojo::Array<arc::mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -241,12 +241,12 @@ std::unique_ptr<IconUrlMap> EncodeIconsToDataURLs(
 void OnArcIconEncoded(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
-    mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers,
+    mojo::Array<arc::mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<IconUrlMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   using extensions::api::file_manager_private::Verb;
-  for (const arc::mojom::UrlHandlerInfoPtr& handler : handlers) {
+  for (const arc::mojom::IntentHandlerInfoPtr& handler : handlers) {
     std::string name(handler->name);
     Verb handler_verb = Verb::VERB_NONE;
     if (handler->action == arc::mojom::ActionType::SEND ||

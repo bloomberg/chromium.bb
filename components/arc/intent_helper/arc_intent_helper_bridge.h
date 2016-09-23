@@ -73,8 +73,8 @@ class ArcIntentHelperBridge
 
   // Filters out handlers that belong to the intent_helper apk and returns
   // a new array.
-  static mojo::Array<mojom::UrlHandlerInfoPtr> FilterOutIntentHelper(
-      mojo::Array<mojom::UrlHandlerInfoPtr> handlers);
+  static mojo::Array<mojom::IntentHandlerInfoPtr> FilterOutIntentHelper(
+      mojo::Array<mojom::IntentHandlerInfoPtr> handlers);
 
   // Gets the mojo instance if it's available. On failure, returns nullptr and
   // updates |out_error_code| if it's not nullptr.

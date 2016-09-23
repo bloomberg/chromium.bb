@@ -65,11 +65,12 @@ class ArcNavigationThrottle : public content::NavigationThrottle {
   NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override;
 
   NavigationThrottle::ThrottleCheckResult HandleRequest();
-  void OnAppCandidatesReceived(mojo::Array<mojom::UrlHandlerInfoPtr> handlers);
+  void OnAppCandidatesReceived(
+      mojo::Array<mojom::IntentHandlerInfoPtr> handlers);
   void OnAppIconsReceived(
-      mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
+      mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
       std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons);
-  void OnIntentPickerClosed(mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
+  void OnIntentPickerClosed(mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
                             size_t selected_app_index,
                             CloseReason close_reason);
   // A callback object that allow us to display an IntentPicker when Run() is

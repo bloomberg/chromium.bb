@@ -64,7 +64,7 @@ void CloseTabIfNeeded(int render_process_host_id, int routing_id) {
 void OnIntentPickerClosed(int render_process_host_id,
                           int routing_id,
                           const GURL& url,
-                          mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
+                          mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
                           size_t selected_app_index,
                           ArcNavigationThrottle::CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -110,7 +110,7 @@ void OnAppIconsReceived(
     int render_process_host_id,
     int routing_id,
     const GURL& url,
-    mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
+    mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -137,7 +137,7 @@ void OnAppIconsReceived(
 void OnUrlHandlerList(int render_process_host_id,
                       int routing_id,
                       const GURL& url,
-                      mojo::Array<mojom::UrlHandlerInfoPtr> handlers) {
+                      mojo::Array<mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   mojom::IntentHelperInstance* intent_helper = GetIntentHelper();

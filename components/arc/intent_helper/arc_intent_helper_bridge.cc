@@ -106,10 +106,10 @@ bool ArcIntentHelperBridge::IsIntentHelperPackage(
 }
 
 // static
-mojo::Array<mojom::UrlHandlerInfoPtr>
+mojo::Array<mojom::IntentHandlerInfoPtr>
 ArcIntentHelperBridge::FilterOutIntentHelper(
-    mojo::Array<mojom::UrlHandlerInfoPtr> handlers) {
-  mojo::Array<mojom::UrlHandlerInfoPtr> handlers_filtered;
+    mojo::Array<mojom::IntentHandlerInfoPtr> handlers) {
+  mojo::Array<mojom::IntentHandlerInfoPtr> handlers_filtered;
   for (auto& handler : handlers) {
     if (IsIntentHelperPackage(handler->package_name.get()))
       continue;

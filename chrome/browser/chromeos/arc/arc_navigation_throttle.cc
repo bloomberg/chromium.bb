@@ -134,7 +134,7 @@ ArcNavigationThrottle::HandleRequest() {
 // We received the array of app candidates to handle this URL (even the Chrome
 // app is included).
 void ArcNavigationThrottle::OnAppCandidatesReceived(
-    mojo::Array<mojom::UrlHandlerInfoPtr> handlers) {
+    mojo::Array<mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (handlers.empty() ||
       (handlers.size() == 1 && ArcIntentHelperBridge::IsIntentHelperPackage(
@@ -196,7 +196,7 @@ void ArcNavigationThrottle::OnAppCandidatesReceived(
 }
 
 void ArcNavigationThrottle::OnAppIconsReceived(
-    mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
+    mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
     std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::vector<NameAndIcon> app_info;
@@ -218,7 +218,7 @@ void ArcNavigationThrottle::OnAppIconsReceived(
 }
 
 void ArcNavigationThrottle::OnIntentPickerClosed(
-    mojo::Array<mojom::UrlHandlerInfoPtr> handlers,
+    mojo::Array<mojom::IntentHandlerInfoPtr> handlers,
     size_t selected_app_index,
     CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

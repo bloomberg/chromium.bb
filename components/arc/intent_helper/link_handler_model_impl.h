@@ -35,7 +35,7 @@ class LinkHandlerModelImpl : public ash::LinkHandlerModel {
 
  private:
   mojom::IntentHelperInstance* GetIntentHelper();
-  void OnUrlHandlerList(mojo::Array<mojom::UrlHandlerInfoPtr> handlers);
+  void OnUrlHandlerList(mojo::Array<mojom::IntentHandlerInfoPtr> handlers);
   void NotifyObserver(
       std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons);
 
@@ -48,7 +48,7 @@ class LinkHandlerModelImpl : public ash::LinkHandlerModel {
   base::ObserverList<Observer> observer_list_;
 
   // Url handler info passed from ARC.
-  mojo::Array<mojom::UrlHandlerInfoPtr> handlers_;
+  mojo::Array<mojom::IntentHandlerInfoPtr> handlers_;
   // Activity icon info passed from ARC.
   ActivityIconLoader::ActivityToIconsMap icons_;
 

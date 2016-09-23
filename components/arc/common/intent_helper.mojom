@@ -41,8 +41,8 @@ struct IntentFilter {
   [MinVersion=10] array<PatternMatcher>? deprecated_data_scheme_specific_parts;
 };
 
-// Describes a package that can handle a URL.
-struct UrlHandlerInfo {
+// Describes a package that can handle an intent.
+struct IntentHandlerInfo {
   string name;
   string package_name;
   string activity_name;  // A hint for retrieving the package's icon.
@@ -130,11 +130,11 @@ interface IntentHelperInstance {
 
   // Requests a list of packages that can handle the URL.
   [MinVersion=2] RequestUrlHandlerList@3(string url)
-      => (array<UrlHandlerInfo> handlers);
+      => (array<IntentHandlerInfo> handlers);
 
   // Requests a list of packages that can handle the list of files.
   [MinVersion=4] RequestUrlListHandlerList@6(array<UrlWithMimeType> urls)
-      => (array<UrlHandlerInfo> handlers);
+      => (array<IntentHandlerInfo> handlers);
 
   // Send an Android broadcast message to the Android package and class
   // specified.  Data can be sent as extras by including a JSON map string which
