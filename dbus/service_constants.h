@@ -612,6 +612,7 @@ const char kBluetoothAdvertisingManagerInterface[] =
 // Bluetooth LE Advertising Manager methods.
 const char kRegisterAdvertisement[] = "RegisterAdvertisement";
 const char kUnregisterAdvertisement[] = "UnregisterAdvertisement";
+const char kSetAdvertisingIntervals[] = "SetAdvertisingIntervals";
 
 // Bluetooth LE Advertising Manager errors.
 const char kErrorAlreadyExists[] = "org.bluez.Error.AlreadyExists";
