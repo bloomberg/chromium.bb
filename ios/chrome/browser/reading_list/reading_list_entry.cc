@@ -37,7 +37,10 @@ ReadingListEntry::ReadingListEntry(const GURL& url, const std::string& title)
 ReadingListEntry::ReadingListEntry(const GURL& url,
                                    const std::string& title,
                                    std::unique_ptr<net::BackoffEntry> backoff)
-    : url_(url), title_(title), distilled_state_(WAITING) {
+    : url_(url),
+      title_(title),
+      distilled_state_(WAITING),
+      failed_download_counter_(0) {
   if (backoff) {
     backoff_ = std::move(backoff);
   } else {
@@ -52,7 +55,8 @@ ReadingListEntry::ReadingListEntry(ReadingListEntry&& entry)
       title_(std::move(entry.title_)),
       distilled_url_(std::move(entry.distilled_url_)),
       distilled_state_(std::move(entry.distilled_state_)),
-      backoff_(std::move(entry.backoff_)) {}
+      backoff_(std::move(entry.backoff_)),
+      failed_download_counter_(std::move(entry.failed_download_counter_)) {}
 
 ReadingListEntry::~ReadingListEntry() {}
 
@@ -76,12 +80,17 @@ base::TimeDelta ReadingListEntry::TimeUntilNextTry() const {
   return backoff_->GetTimeUntilRelease();
 }
 
+int ReadingListEntry::FailedDownloadCounter() const {
+  return failed_download_counter_;
+}
+
 ReadingListEntry& ReadingListEntry::operator=(ReadingListEntry&& other) {
   url_ = std::move(other.url_);
   title_ = std::move(other.title_);
   distilled_url_ = std::move(other.distilled_url_);
   distilled_state_ = std::move(other.distilled_state_);
   backoff_ = std::move(other.backoff_);
+  failed_download_counter_ = std::move(other.failed_download_counter_);
   return *this;
 }
 
@@ -98,6 +107,7 @@ void ReadingListEntry::SetDistilledURL(const GURL& url) {
   distilled_url_ = url;
   distilled_state_ = PROCESSED;
   backoff_->Reset();
+  failed_download_counter_ = 0;
 }
 
 void ReadingListEntry::SetDistilledState(DistillationState distilled_state) {
@@ -108,6 +118,7 @@ void ReadingListEntry::SetDistilledState(DistillationState distilled_state) {
   if ((distilled_state == WILL_RETRY || distilled_state == ERROR) &&
       distilled_state_ != WILL_RETRY && distilled_state_ != ERROR) {
     backoff_->InformOfRequest(false);
+    failed_download_counter_++;
   }
 
   distilled_state_ = distilled_state;

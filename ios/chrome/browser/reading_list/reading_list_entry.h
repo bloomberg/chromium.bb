@@ -43,6 +43,10 @@ class ReadingListEntry {
   // The time before the next try. This is automatically increased when the
   // state is set to WILL_RETRY or ERROR from a non-error state.
   base::TimeDelta TimeUntilNextTry() const;
+  // The number of time chrome failed to download this entry. This is
+  // automatically increased when the state is set to WILL_RETRY or ERROR from a
+  // non-error state.
+  int FailedDownloadCounter() const;
 
   ReadingListEntry& operator=(ReadingListEntry&& other);
   bool operator==(const ReadingListEntry& other) const;
@@ -61,6 +65,7 @@ class ReadingListEntry {
   GURL distilled_url_;
   DistillationState distilled_state_;
   std::unique_ptr<net::BackoffEntry> backoff_;
+  int failed_download_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListEntry);
 };

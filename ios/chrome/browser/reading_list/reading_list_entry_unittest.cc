@@ -130,3 +130,24 @@ TEST(ReadingListEntry, ResetTimeUntilNextTry) {
   e.SetDistilledState(ReadingListEntry::ERROR);
   EXPECT_EQ(1, e.TimeUntilNextTry().InSeconds());
 }
+
+// Tests that the failed download counter is incremented when the state change
+// from non-error to error.
+TEST(ReadingListEntry, FailedDownloadCounter) {
+  ReadingListEntry e(GURL("http://example.com"), "bar");
+
+  ASSERT_EQ(0, e.FailedDownloadCounter());
+
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  EXPECT_EQ(1, e.FailedDownloadCounter());
+  e.SetDistilledState(ReadingListEntry::WILL_RETRY);
+  EXPECT_EQ(1, e.FailedDownloadCounter());
+
+  e.SetDistilledState(ReadingListEntry::PROCESSING);
+  EXPECT_EQ(1, e.FailedDownloadCounter());
+
+  e.SetDistilledState(ReadingListEntry::WILL_RETRY);
+  EXPECT_EQ(2, e.FailedDownloadCounter());
+  e.SetDistilledState(ReadingListEntry::ERROR);
+  EXPECT_EQ(2, e.FailedDownloadCounter());
+}
