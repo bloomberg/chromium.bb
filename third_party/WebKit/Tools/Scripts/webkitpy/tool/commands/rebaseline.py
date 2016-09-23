@@ -84,9 +84,7 @@ class ChangeSet(object):
     Each subprocess can communicate some set of changes by outputting JSON lines,
     and another process can aggregate the changes.
 
-    TODO(qyearsley): Refactor this so that:
-     - lines to remove are only tracked in one format.
-     - files to add and delete are always disjoint sets.
+    TODO(qyearsley): Refactor this so that lines to remove are only tracked in one format.
     """
     def __init__(self, files_to_add=None, files_to_delete=None, lines_to_remove=None):
         self._files_to_add = set(files_to_add or [])
@@ -415,26 +413,21 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return copy_baseline_commands, rebaseline_commands, lines_to_remove
 
     @staticmethod
-    def _serial_commands(command_results):
-        """Parses the JSON lines from command output to extract SCM changes.
-
-        TODO(qyearsley): Refactor and rename this function.
-        """
+    def _extract_scm_changes(command_results):
+        """Parses the JSON lines from sub-command output and returns the result as a ChangeSet."""
         change_set = ChangeSet()
-        for output in [result[1].split('\n') for result in command_results]:
-            file_added = False
-            for line in output:
+        for _, stdout, _ in command_results:
+            updated = False
+            for line in filter(None, stdout.splitlines()):
                 try:
-                    if line:
-                        parsed_line = json.loads(line)
-                        change_set.update(ChangeSet.from_dict(parsed_line))
-                        file_added = True
+                    parsed_line = json.loads(line)
+                    change_set.update(ChangeSet.from_dict(parsed_line))
+                    updated = True
                 except ValueError:
                     _log.debug('"%s" is not a JSON object, ignoring', line)
-
-            if not file_added:
-                _log.debug('Could not add file based off output "%s"', output)
-
+            if not updated:
+                # TODO(qyearsley): This probably should be an error. See http://crbug.com/649412.
+                _log.debug('Could not add file based off output "%s"', stdout)
         return change_set
 
     def _optimize_baselines(self, test_prefix_list, verbose=False):
@@ -510,14 +503,12 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         if not commands:
             return ChangeSet()
 
-        # TODO(qyearsley): Refactor this block.
         command_results = self._tool.executive.run_in_parallel(commands)
-        log_output = '\n'.join(result[2] for result in command_results).replace('\n\n', '\n')
-        for line in log_output.split('\n'):
-            if line:
-                _log.error(line)
+        for _, _, stderr in command_results:
+            if stderr:
+                _log.error(stderr)
 
-        return self._serial_commands(command_results)
+        return self._extract_scm_changes(command_results)
 
     def _rebaseline(self, options, test_prefix_list):
         """Downloads new baselines in parallel, then updates expectations files
