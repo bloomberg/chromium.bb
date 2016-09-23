@@ -34,7 +34,6 @@ function rootWindow() {
 // - INPUT color with DATALIST
 // - INPUT date/datetime-local/month/week
 function openPicker(element, callback, errorCallback) {
-    rootWindow().moveTo(window.screenX, window.screenY);
     element.offsetTop; // Force to lay out
     element.focus();
     if (element.tagName === "SELECT") {
@@ -54,7 +53,6 @@ function openPicker(element, callback, errorCallback) {
 }
 
 function clickToOpenPicker(x, y, callback, errorCallback) {
-    rootWindow().moveTo(window.screenX, window.screenY);
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
     eventSender.mouseUp();
@@ -67,13 +65,7 @@ function clickToOpenPicker(x, y, callback, errorCallback) {
 
 function setPopupOpenCallback(callback) {
     console.assert(popupWindow);
-    popupOpenCallback = (function(callback) {
-        // We need to move the window to the top left of available space
-        // because the window will move back to (0, 0) when the
-        // ShellViewMsg_SetTestConfiguration IPC arrives.
-        rootWindow().moveTo(window.screenX, window.screenY);
-        callback();
-    }).bind(this, callback);
+    popupOpenCallback = callback;
     try {
         popupWindow.addEventListener("didOpenPicker", popupOpenCallbackWrapper, false);
     } catch(e) {
