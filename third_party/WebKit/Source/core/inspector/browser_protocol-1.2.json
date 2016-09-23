@@ -757,6 +757,7 @@
             {
                 "name": "setVisibleSize",
                 "description": "Resizes the frame/viewport of the page. Note that this does not affect the frame's container (e.g. browser window). Can be used to produce screenshots of the specified size. Not supported on Android.",
+                "experimental": true,
                 "parameters": [
                     { "name": "width", "type": "integer", "description": "Frame width (DIP)." },
                     { "name": "height", "type": "integer", "description": "Frame height (DIP)." }
