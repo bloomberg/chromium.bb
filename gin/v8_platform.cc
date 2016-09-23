@@ -97,11 +97,22 @@ uint64_t V8Platform::AddTraceEvent(char phase,
                                    const uint8_t* arg_types,
                                    const uint64_t* arg_values,
                                    unsigned int flags) {
+  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> convertables[2];
+  if (num_args > 0 && arg_types[0] == TRACE_VALUE_TYPE_CONVERTABLE) {
+    convertables[0].reset(
+        reinterpret_cast<base::trace_event::ConvertableToTraceFormat*>(
+            arg_values[0]));
+  }
+  if (num_args > 1 && arg_types[1] == TRACE_VALUE_TYPE_CONVERTABLE) {
+    convertables[1].reset(
+        reinterpret_cast<base::trace_event::ConvertableToTraceFormat*>(
+            arg_values[1]));
+  }
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_BIND_ID(
           phase, category_enabled_flag, name, scope, id, bind_id, num_args,
-          arg_names, arg_types, (const long long unsigned int*)arg_values, NULL,
-          flags);
+          arg_names, arg_types, (const long long unsigned int*)arg_values,
+          convertables, flags);
   uint64_t result;
   memcpy(&result, &handle, sizeof(result));
   return result;
