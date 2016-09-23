@@ -340,7 +340,6 @@ crbug.com/490511 imported/wpt/html/rendering/non-replaced-elements/the-hr-elemen
 crbug.com/490511 imported/wpt/html/rendering/non-replaced-elements/the-hr-element-0/width.html [ Failure Pass ]
 crbug.com/490511 imported/wpt/html/rendering/replaced-elements/embedded-content-rendering-rules/canvas-fallback.html [ Failure ]
 crbug.com/490511 imported/wpt/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
-crbug.com/490511 imported/wpt/html/semantics/embedded-content/media-elements/interfaces/HTMLElement/HTMLTrackElement/src.html [ Failure ]
 crbug.com/627706 imported/wpt/html/semantics/embedded-content/the-img-element/invalid-src.html [ Skip ]
 crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html [ Failure ]
 crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html [ Failure ]
@@ -785,8 +784,6 @@ crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure 
 
 crbug.com/649158 imported/wpt/custom-elements/HTMLElement-constructor.html [ Failure ]
 crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
-
-crbug.com/649258 [ Win ] imported/wpt/html/semantics/forms/constraints/form-validation-reportValidity.html [ Failure ]
 
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 imported/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
