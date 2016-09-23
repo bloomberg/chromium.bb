@@ -497,8 +497,10 @@ void CollectedCookiesViews::EnableControls() {
 }
 
 void CollectedCookiesViews::ShowCookieInfo() {
-  ui::TreeModelNode* node = allowed_cookies_tree_->GetSelectedNode();
-  if (!node)
+  ui::TreeModelNode* node = allowed_cookies_tree_->IsDrawn() ?
+                            allowed_cookies_tree_->GetSelectedNode() : nullptr;
+
+  if (!node && blocked_cookies_tree_->IsDrawn())
     node = blocked_cookies_tree_->GetSelectedNode();
 
   if (node) {
