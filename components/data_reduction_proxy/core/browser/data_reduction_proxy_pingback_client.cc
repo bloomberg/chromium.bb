@@ -145,9 +145,9 @@ void DataReductionProxyPingbackClient::CreateFetcherForDataAndStart() {
   current_fetcher_->SetLoadFlags(net::LOAD_BYPASS_PROXY);
   current_fetcher_->SetUploadData("application/x-protobuf", serialized_request);
   current_fetcher_->SetRequestContext(url_request_context_);
-  // Configure max retries to be at most kMaxRetries times for 5xx errors.
+  // |current_fetcher_| should not retry on 5xx errors since the server may
+  // already be overloaded.
   static const int kMaxRetries = 5;
-  current_fetcher_->SetMaxRetriesOn5xx(kMaxRetries);
   current_fetcher_->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
   current_fetcher_->Start();
 }

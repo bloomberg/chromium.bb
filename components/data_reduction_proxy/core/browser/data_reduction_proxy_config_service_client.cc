@@ -69,13 +69,13 @@ const uint32_t kMaxBackgroundFetchIntervalSeconds = 6 * 60 * 60;  // 6 hours.
 // This is the default backoff policy used to communicate with the Data
 // Reduction Proxy configuration service.
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
-    0,               // num_errors_to_ignore
-    1 * 1000,        // initial_delay_ms
-    4,               // multiply_factor
-    0.10,            // jitter_factor,
-    30 * 60 * 1000,  // maximum_backoff_ms
-    -1,              // entry_lifetime_ms
-    true,            // always_use_initial_delay
+    0,                // num_errors_to_ignore
+    30 * 1000,        // initial_delay_ms
+    4,                // multiply_factor
+    0.25,             // jitter_factor,
+    128 * 60 * 1000,  // maximum_backoff_ms
+    -1,               // entry_lifetime_ms
+    true,             // always_use_initial_delay
 };
 
 // Extracts the list of Data Reduction Proxy servers to use for HTTP requests.
@@ -397,9 +397,9 @@ DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
   fetcher->SetUploadData("application/x-protobuf", request_body);
   DCHECK(url_request_context_getter_);
   fetcher->SetRequestContext(url_request_context_getter_);
-  // Configure max retries to be at most kMaxRetries times for 5xx errors.
+  // |fetcher| should not retry on 5xx errors since the server may already be
+  // overloaded. Spurious 5xx errors are still retried on exponential backoff.
   static const int kMaxRetries = 5;
-  fetcher->SetMaxRetriesOn5xx(kMaxRetries);
   fetcher->SetAutomaticallyRetryOnNetworkChanges(kMaxRetries);
   return fetcher;
 }
