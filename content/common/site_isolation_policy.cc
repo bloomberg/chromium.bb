@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
@@ -18,7 +17,8 @@ bool SiteIsolationPolicy::AreCrossProcessFramesPossible() {
   return UseDedicatedProcessesForAllSites() ||
          IsTopDocumentIsolationEnabled() ||
          GetContentClient()->IsSupplementarySiteIsolationModeEnabled() ||
-         BrowserPluginGuestMode::UseCrossProcessFramesForGuests();
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kUseCrossProcessFramesForGuests);
 }
 
 // static

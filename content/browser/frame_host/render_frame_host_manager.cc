@@ -40,11 +40,11 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
@@ -1825,7 +1825,8 @@ void RenderFrameHostManager::EnsureRenderViewInitialized(
 void RenderFrameHostManager::CreateOuterDelegateProxy(
     SiteInstance* outer_contents_site_instance,
     RenderFrameHostImpl* render_frame_host) {
-  CHECK(BrowserPluginGuestMode::UseCrossProcessFramesForGuests());
+  // We only get here when Delegate for this manager is an inner delegate and is
+  // based on cross process frames.
   RenderFrameProxyHost* proxy =
       CreateRenderFrameProxyHost(outer_contents_site_instance, nullptr);
 

@@ -71,6 +71,7 @@
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/google/core/browser/google_util.h"
+#include "components/guest_view/browser/guest_view_base.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -92,6 +93,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -103,11 +105,11 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/menu_item.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension.h"
@@ -502,9 +504,12 @@ gfx::Vector2d RenderViewContextMenu::GetOffset(
 #if defined(ENABLE_EXTENSIONS)
   // When --use-cross-process-frames-for-guests is enabled, the position is
   // transformed in the browser process hittesting code.
-  if (!content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
-    WebContents* web_contents =
-        WebContents::FromRenderFrameHost(render_frame_host);
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  // TODO(ekaramad): For now, MimeHandlerView is based on BrowserPlugin even
+  // when guests use OOPIF. Remove the check below when MimeHandlerView is also
+  // based on OOPIF (https://crbug.com/642826).
+  if (!content::GuestMode::IsCrossProcessFrameGuest(web_contents)) {
     WebContents* top_level_web_contents =
         guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
     if (web_contents && top_level_web_contents &&

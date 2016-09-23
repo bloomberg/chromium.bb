@@ -42,11 +42,11 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/guest_host.h"
+#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/drop_data.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -106,6 +106,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
       seen_embedder_drag_source_ended_at_(false),
       ignore_dragged_url_(true),
       delegate_(delegate),
+      can_use_cross_process_frames_(delegate->CanUseCrossProcessFrames()),
       weak_ptr_factory_(this) {
   DCHECK(web_contents);
   DCHECK(delegate);
@@ -115,7 +116,7 @@ BrowserPluginGuest::BrowserPluginGuest(bool has_render_view,
 }
 
 int BrowserPluginGuest::GetGuestProxyRoutingID() {
-  if (BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+  if (GuestMode::IsCrossProcessFrameGuest(GetWebContents())) {
     // We don't use the proxy to send postMessage in --site-per-process, since
     // we use the contentWindow directly from the frame element instead.
     return MSG_ROUTING_NONE;
@@ -294,7 +295,7 @@ void BrowserPluginGuest::InitInternal(
 
   if (owner_web_contents_ != owner_web_contents) {
     WebContentsViewGuest* new_view = nullptr;
-    if (!BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+    if (!GuestMode::IsCrossProcessFrameGuest(GetWebContents())) {
       new_view =
           static_cast<WebContentsViewGuest*>(GetWebContents()->GetView());
     }
@@ -684,9 +685,8 @@ bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
   // TODO(lazyboy): Fix this as part of http://crbug.com/330264. The required
   // parts of code from this class should be extracted to a separate class for
   // --site-per-process.
-  if (BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+  if (GuestMode::IsCrossProcessFrameGuest(GetWebContents()))
     return false;
-  }
 
   IPC_BEGIN_MESSAGE_MAP(BrowserPluginGuest, message)
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCancelComposition,
@@ -936,7 +936,7 @@ void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
 void BrowserPluginGuest::OnSetVisibility(int browser_plugin_instance_id,
                                          bool visible) {
   // For OOPIF-<webivew>, the remote frame will handle visibility state.
-  if (BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+  if (GuestMode::IsCrossProcessFrameGuest(GetWebContents()))
     return;
 
   guest_visible_ = visible;

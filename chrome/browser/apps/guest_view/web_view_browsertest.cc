@@ -55,7 +55,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -216,6 +215,11 @@ class EmbedderWebContentsObserver : public content::WebContentsObserver {
 
   DISALLOW_COPY_AND_ASSIGN(EmbedderWebContentsObserver);
 };
+
+bool UseCrossProcessFramesForGuests() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseCrossProcessFramesForGuests);
+}
 
 void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
                                const char* script,
@@ -1093,7 +1097,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, AcceptTouchEvents) {
   // UseCrossProcessFramesForGuests() events are routed directly to the
   // guest, so the embedder does not need to know about the installation of
   // touch handlers.
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+  if (UseCrossProcessFramesForGuests())
     return;
 
   LoadAppWithGuest("web_view/accept_touch_events");
@@ -1304,8 +1308,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDisplayNoneWebviewLoad) {
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDisplayNoneWebviewRemoveChild) {
   // http://crbug.com/585652
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
-     return;
+  if (UseCrossProcessFramesForGuests())
+    return;
   TestHelper("testDisplayNoneWebviewRemoveChild",
              "web_view/shim", NO_TEST_SERVER);
 }
@@ -3198,7 +3202,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestFocusWhileFocused) {
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, NestedGuestContainerBounds) {
   // TODO(lfg): https://crbug.com/581898
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+  if (UseCrossProcessFramesForGuests())
     return;
 
   TestHelper("testPDFInWebview", "web_view/shim", NO_TEST_SERVER);
@@ -3532,7 +3536,7 @@ class FocusChangeWaiter {
 IN_PROC_BROWSER_TEST_F(WebViewGuestTouchFocusTest,
                        TouchFocusesBrowserPluginInEmbedder) {
   // This test is only relevant for non-OOPIF WebView.
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+  if (UseCrossProcessFramesForGuests())
     return;
 
   LoadAppWithGuest("web_view/guest_focus_test");

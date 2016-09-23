@@ -82,6 +82,10 @@ MimeHandlerViewGuest::MimeHandlerViewGuest(WebContents* owner_web_contents)
 MimeHandlerViewGuest::~MimeHandlerViewGuest() {
 }
 
+bool MimeHandlerViewGuest::CanUseCrossProcessFrames() {
+  return false;
+}
+
 const char* MimeHandlerViewGuest::GetAPINamespace() const {
   return "mimeHandlerViewGuestInternal";
 }

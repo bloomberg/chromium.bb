@@ -28,9 +28,9 @@
 #include "build/build_config.h"
 #include "content/grit/content_resources.h"
 #include "content/public/child/v8_value_converter.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/renderer/guest_mode.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "extensions/common/api/messaging/message.h"
@@ -710,7 +710,7 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   resources.push_back(std::make_pair("guestViewEvents",
                                      IDR_GUEST_VIEW_EVENTS_JS));
 
-  if (content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+  if (content::GuestMode::UseCrossProcessFramesForGuests()) {
     resources.push_back(std::make_pair("guestViewIframe",
                                        IDR_GUEST_VIEW_IFRAME_JS));
     resources.push_back(std::make_pair("guestViewIframeContainer",
@@ -1664,7 +1664,7 @@ void Dispatcher::RequireGuestViewModules(ScriptContext* context) {
   }
 
   if (requires_guest_view_module &&
-      content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+      content::GuestMode::UseCrossProcessFramesForGuests()) {
     module_system->Require("guestViewIframe");
     module_system->Require("guestViewIframeContainer");
   }

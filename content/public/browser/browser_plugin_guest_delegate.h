@@ -92,6 +92,11 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
   // fromt he guest renderer is incorrect in situations where BrowserPlugin is
   // subject to CSS transforms.
   virtual void SetContextMenuPosition(const gfx::Point& position) {}
+
+  // TODO(ekaramad): A short workaround to force some types of guests to use
+  // a BrowserPlugin even when we are using cross process frames for guests. It
+  // should be removed after resolving https://crbug.com/642826).
+  virtual bool CanUseCrossProcessFrames();
 };
 
 }  // namespace content

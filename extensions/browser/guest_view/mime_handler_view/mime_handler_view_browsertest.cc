@@ -13,6 +13,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extension_registry.h"
@@ -117,7 +118,8 @@ class URLRequestCounter {
   DISALLOW_COPY_AND_ASSIGN(URLRequestCounter);
 };
 
-class MimeHandlerViewTest : public ExtensionApiTest {
+class MimeHandlerViewTest : public ExtensionApiTest,
+                            public testing::WithParamInterface<bool> {
  public:
   MimeHandlerViewTest() {
     GuestViewManager::set_factory_for_testing(&factory_);
@@ -131,6 +133,19 @@ class MimeHandlerViewTest : public ExtensionApiTest {
     ASSERT_TRUE(StartEmbeddedTestServer());
     embedded_test_server()->ServeFilesFromDirectory(
         test_data_dir_.AppendASCII("mime_handler_view"));
+  }
+
+  // TODO(ekaramad): These tests run for OOPIF guests too, except that they
+  // still use BrowserPlugin code path. They are activated to make sure we can
+  // still show PDF when the rest of the guests migrate to OOPIF. Eventually,
+  // MimeHandlerViewGuest will be based on OOPIF and we can remove this comment
+  // (https://crbug.com/642826).
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+
+    bool use_cross_process_frames_for_guests = GetParam();
+    if (use_cross_process_frames_for_guests)
+      command_line->AppendSwitch(switches::kUseCrossProcessFramesForGuests);
   }
 
   // TODO(paulmeyer): This function is implemented over and over by the
@@ -188,48 +203,52 @@ class MimeHandlerViewTest : public ExtensionApiTest {
   TestGuestViewManagerFactory factory_;
 };
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, PostMessage) {
+INSTANTIATE_TEST_CASE_P(MimeHandlerViewTests,
+                        MimeHandlerViewTest,
+                        testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, PostMessage) {
   RunTest("test_postmessage.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Basic) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Basic) {
   RunTest("testBasic.csv");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Embedded) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Embedded) {
   RunTest("test_embedded.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Iframe) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Iframe) {
   RunTest("test_iframe.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, Abort) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Abort) {
   RunTest("testAbort.csv");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, NonAsciiHeaders) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, NonAsciiHeaders) {
   RunTest("testNonAsciiHeaders.csv");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, DataUrl) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, DataUrl) {
   const char* kDataUrlCsv = "data:text/csv;base64,Y29udGVudCB0byByZWFkCg==";
   RunTestWithUrl(GURL(kDataUrlCsv));
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlObject) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, EmbeddedDataUrlObject) {
   RunTest("test_embedded_data_url_object.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlEmbed) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, EmbeddedDataUrlEmbed) {
   RunTest("test_embedded_data_url_embed.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, EmbeddedDataUrlLong) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, EmbeddedDataUrlLong) {
   RunTest("test_embedded_data_url_long.html");
 }
 
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, ResizeBeforeAttach) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, ResizeBeforeAttach) {
   // Delay the creation of the guest's WebContents in order to delay the guest's
   // attachment to the embedder. This will allow us to resize the <object> tag
   // after the guest is created, but before it is attached in
@@ -251,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, ResizeBeforeAttach) {
 }
 
 // Regression test for crbug.com/587709.
-IN_PROC_BROWSER_TEST_F(MimeHandlerViewTest, SingleRequest) {
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, SingleRequest) {
   GURL url(embedded_test_server()->GetURL("/testBasic.csv"));
   URLRequestCounter request_counter(url);
   RunTest("testBasic.csv");

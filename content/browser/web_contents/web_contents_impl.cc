@@ -92,6 +92,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/load_notification_details.h"
@@ -108,7 +109,6 @@
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_constants.h"
@@ -1426,7 +1426,7 @@ void WebContentsImpl::DispatchBeforeUnload() {
 void WebContentsImpl::AttachToOuterWebContentsFrame(
     WebContents* outer_web_contents,
     RenderFrameHost* outer_contents_frame) {
-  CHECK(BrowserPluginGuestMode::UseCrossProcessFramesForGuests());
+  CHECK(GuestMode::IsCrossProcessFrameGuest(this));
   RenderFrameHostManager* render_manager = GetRenderManager();
 
   // When the WebContents being initialized has an opener, the  browser side
@@ -1582,8 +1582,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
 #endif
 
   if (!view_) {
-    if (browser_plugin_guest_ &&
-        BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+    if (GuestMode::IsCrossProcessFrameGuest(this)) {
       view_.reset(new WebContentsViewChildFrame(
           this, delegate, &render_view_host_delegate_view_));
     } else {
@@ -1592,8 +1591,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
     }
   }
 
-  if (browser_plugin_guest_ &&
-      !BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+  if (browser_plugin_guest_ && !GuestMode::IsCrossProcessFrameGuest(this)) {
     view_.reset(new WebContentsViewGuest(this, browser_plugin_guest_.get(),
                                          std::move(view_),
                                          &render_view_host_delegate_view_));
@@ -4227,13 +4225,12 @@ void WebContentsImpl::RemoveBrowserPluginEmbedder() {
 }
 
 WebContentsImpl* WebContentsImpl::GetOuterWebContents() {
-  if (BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
-    if (node_)
-      return node_->outer_web_contents();
-  } else {
-    if (GetBrowserPluginGuest())
-      return GetBrowserPluginGuest()->embedder_web_contents();
-  }
+  if (GuestMode::IsCrossProcessFrameGuest(this) && node_)
+    return node_->outer_web_contents();
+
+  if (browser_plugin_guest_)
+    return browser_plugin_guest_->embedder_web_contents();
+
   return nullptr;
 }
 
@@ -4663,7 +4660,7 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
     // then we should not create a RenderView. AttachToOuterWebContentsFrame()
     // already created a RenderFrameProxyHost for that purpose.
     if (GetBrowserPluginEmbedder() &&
-        BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+        GuestMode::IsCrossProcessFrameGuest(source_web_contents)) {
       return;
     }
 
@@ -4684,7 +4681,7 @@ void WebContentsImpl::EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) {
 
 void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
                                       SiteInstance* source) {
-  if (!BrowserPluginGuestMode::UseCrossProcessFramesForGuests()) {
+  if (!GuestMode::IsCrossProcessFrameGuest(this) && browser_plugin_guest_) {
     frame_tree_.SetFocusedFrame(node, source);
     return;
   }
@@ -4703,8 +4700,7 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
 
   // TODO(avallee): Remove this once page focus is fixed.
   RenderWidgetHostImpl* rwh = node->current_frame_host()->GetRenderWidgetHost();
-  if (rwh && old_focused_contents != this &&
-      BrowserPluginGuestMode::UseCrossProcessFramesForGuests())
+  if (rwh && old_focused_contents != this)
     rwh->Focus();
 }
 

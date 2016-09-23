@@ -5,7 +5,7 @@
 #include "components/guest_view/renderer/iframe_guest_view_container.h"
 
 #include "components/guest_view/common/guest_view_messages.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
+#include "content/public/renderer/guest_mode.h"
 #include "content/public/renderer/render_frame.h"
 
 namespace guest_view {
@@ -13,7 +13,7 @@ namespace guest_view {
 IframeGuestViewContainer::IframeGuestViewContainer(
     content::RenderFrame* render_frame)
     : GuestViewContainer(render_frame) {
-  CHECK(content::BrowserPluginGuestMode::UseCrossProcessFramesForGuests());
+  CHECK(content::GuestMode::UseCrossProcessFramesForGuests());
   // There is no BrowserPluginDelegate to wait for.
   ready_ = true;
 }

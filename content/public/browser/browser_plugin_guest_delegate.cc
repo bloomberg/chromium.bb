@@ -32,4 +32,8 @@ bool BrowserPluginGuestDelegate::HandleStopFindingForEmbedder(
   return false;
 }
 
+bool BrowserPluginGuestDelegate::CanUseCrossProcessFrames() {
+  return true;
+}
+
 }  // namespace content

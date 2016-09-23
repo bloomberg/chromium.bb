@@ -118,6 +118,8 @@ source_set("browser_sources") {
     "gpu_service_registry.h",
     "gpu_utils.cc",
     "gpu_utils.h",
+    "guest_mode.cc",
+    "guest_mode.h",
     "histogram_fetcher.h",
     "host_zoom_map.h",
     "indexed_db_context.h",

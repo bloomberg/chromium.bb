@@ -30,8 +30,8 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
+#include "content/public/browser/guest_mode.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/browser_plugin_guest_mode.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -199,7 +199,12 @@ gfx::Vector2dF RenderWidgetHostViewChildFrame::GetLastScrollOffset() const {
 }
 
 gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() const {
-  NOTREACHED();
+  // TODO(ekaramad): To accomodate MimeHandlerViewGuest while embedded inside
+  // OOPIF-webview, we need to return the native view to be used by
+  // RenderWidgetHostViewGuest. Remove this once https://crbug.com/642826 is
+  // fixed.
+  if (frame_connector_)
+    return frame_connector_->GetParentRenderWidgetHostView()->GetNativeView();
   return nullptr;
 }
 
@@ -248,11 +253,9 @@ void RenderWidgetHostViewChildFrame::SetIsLoading(bool is_loading) {
   // is a RenderWidgetHostViewChildFrame. In contrast, when there is no
   // inner/outer WebContents, only subframe's RenderWidgetHostView can be a
   // RenderWidgetHostViewChildFrame which do not get a SetIsLoading() call.
-  if (BrowserPluginGuestMode::UseCrossProcessFramesForGuests() &&
-      BrowserPluginGuest::IsGuest(
-          static_cast<RenderViewHostImpl*>(RenderViewHost::From(host_)))) {
+  if (GuestMode::IsCrossProcessFrameGuest(
+          WebContents::FromRenderViewHost(RenderViewHost::From(host_))))
     return;
-  }
 
   NOTREACHED();
 }

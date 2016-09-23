@@ -482,7 +482,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // RenderFrameProxyHost in its outer WebContents's SiteInstance,
   // |outer_contents_site_instance|. The frame in outer WebContents that is
   // hosting the inner WebContents is |render_frame_host|, and the frame will
-  // be swapped out with the proxy.
+  // be swapped out with the proxy.Note that this method must only be called
+  // for an OOPIF-based inner WebContents.
   void CreateOuterDelegateProxy(SiteInstance* outer_contents_site_instance,
                                 RenderFrameHostImpl* render_frame_host);
 

@@ -58,6 +58,8 @@ class MimeHandlerViewGuest :
 
   static const char Type[];
 
+  bool CanUseCrossProcessFrames() override;
+
  protected:
   explicit MimeHandlerViewGuest(content::WebContents* owner_web_contents);
   ~MimeHandlerViewGuest() override;
