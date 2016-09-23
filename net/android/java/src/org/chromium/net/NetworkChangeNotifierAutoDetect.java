@@ -31,6 +31,7 @@ import android.util.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.net.ConnectionType.ConnectionTypeEnum;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -85,7 +86,11 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * default network.
          */
         NetworkState getNetworkState() {
-            return getNetworkState(mConnectivityManager.getActiveNetworkInfo());
+            final NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
+            if (networkInfo == null || !networkInfo.isConnected()) {
+                return new NetworkState(false, -1, -1);
+            }
+            return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype());
         }
 
         // Fetches NetworkInfo and records UMA for NullPointerExceptions.
@@ -110,29 +115,23 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         }
 
         /**
-         * Returns connection type and status information about |network|.
+         * Returns connection type for |network|.
          * Only callable on Lollipop and newer releases.
          */
         @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        NetworkState getNetworkState(Network network) {
-            final NetworkInfo networkInfo = getNetworkInfo(network);
+        @ConnectionTypeEnum
+        int getConnectionType(Network network) {
+            NetworkInfo networkInfo = getNetworkInfo(network);
             if (networkInfo != null && networkInfo.getType() == TYPE_VPN) {
                 // When a VPN is in place the underlying network type can be queried via
                 // getActiveNeworkInfo() thanks to
                 // https://android.googlesource.com/platform/frameworks/base/+/d6a7980d
-                return getNetworkState();
+                networkInfo = mConnectivityManager.getActiveNetworkInfo();
             }
-            return getNetworkState(networkInfo);
-        }
-
-        /**
-         * Returns connection type and status information gleaned from networkInfo.
-         */
-        NetworkState getNetworkState(NetworkInfo networkInfo) {
-            if (networkInfo == null || !networkInfo.isConnected()) {
-                return new NetworkState(false, -1, -1);
+            if (networkInfo != null && networkInfo.isConnected()) {
+                return convertToConnectionType(networkInfo.getType(), networkInfo.getSubtype());
             }
-            return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype());
+            return ConnectionType.CONNECTION_NONE;
         }
 
         /**
@@ -382,8 +381,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 mVpnInPlace = network;
             }
             final long netId = networkToNetId(network);
-            final int connectionType =
-                    getCurrentConnectionType(mConnectivityManagerDelegate.getNetworkState(network));
+            @ConnectionTypeEnum
+            final int connectionType = mConnectivityManagerDelegate.getConnectionType(network);
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -407,8 +406,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             // A capabilities change may indicate the ConnectionType has changed,
             // so forward the new ConnectionType along to observer.
             final long netId = networkToNetId(network);
-            final int connectionType =
-                    getCurrentConnectionType(mConnectivityManagerDelegate.getNetworkState(network));
+            final int connectionType = mConnectivityManagerDelegate.getConnectionType(network);
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -452,8 +450,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                         getAllNetworksFiltered(mConnectivityManagerDelegate, network)) {
                     onAvailable(newNetwork);
                 }
-                final int newConnectionType =
-                        getCurrentConnectionType(mConnectivityManagerDelegate.getNetworkState());
+                @ConnectionTypeEnum
+                final int newConnectionType = convertToConnectionType(getCurrentNetworkState());
                 ThreadUtils.postOnUiThread(new Runnable() {
                     @Override
                     public void run() {
@@ -513,6 +511,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     private final MyNetworkCallback mNetworkCallback;
     private final NetworkRequest mNetworkRequest;
     private boolean mRegistered;
+    @ConnectionTypeEnum
     private int mConnectionType;
     private String mWifiSSID;
     private double mMaxBandwidthMbps;
@@ -525,7 +524,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         /**
          * Called when default network changes.
          */
-        public void onConnectionTypeChanged(int newConnectionType);
+        public void onConnectionTypeChanged(@ConnectionTypeEnum int newConnectionType);
         /**
          * Called when maximum bandwidth of default network changes.
          */
@@ -588,8 +587,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
             mNetworkCallback = null;
             mNetworkRequest = null;
         }
-        final NetworkState networkState = mConnectivityManagerDelegate.getNetworkState();
-        mConnectionType = getCurrentConnectionType(networkState);
+        final NetworkState networkState = getCurrentNetworkState();
+        mConnectionType = convertToConnectionType(networkState);
         mWifiSSID = getCurrentWifiSSID(networkState);
         mMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
         mMaxBandwidthConnectionType = mConnectionType;
@@ -730,8 +729,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         int index = 0;
         for (Network network : networks) {
             networksAndTypes[index++] = networkToNetId(network);
-            networksAndTypes[index++] =
-                    getCurrentConnectionType(mConnectivityManagerDelegate.getNetworkState(network));
+            networksAndTypes[index++] = mConnectivityManagerDelegate.getConnectionType(network);
         }
         return networksAndTypes;
     }
@@ -752,12 +750,21 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     /**
      * Returns the connection type for the given NetworkState.
      */
-    public int getCurrentConnectionType(NetworkState networkState) {
+    @ConnectionTypeEnum
+    public static int convertToConnectionType(NetworkState networkState) {
         if (!networkState.isConnected()) {
             return ConnectionType.CONNECTION_NONE;
         }
+        return convertToConnectionType(
+                networkState.getNetworkType(), networkState.getNetworkSubType());
+    }
 
-        switch (networkState.getNetworkType()) {
+    /**
+     * Returns the connection type for the given ConnectivityManager type and subtype.
+     */
+    @ConnectionTypeEnum
+    private static int convertToConnectionType(int type, int subtype) {
+        switch (type) {
             case ConnectivityManager.TYPE_ETHERNET:
                 return ConnectionType.CONNECTION_ETHERNET;
             case ConnectivityManager.TYPE_WIFI:
@@ -768,7 +775,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 return ConnectionType.CONNECTION_BLUETOOTH;
             case ConnectivityManager.TYPE_MOBILE:
                 // Use information from TelephonyManager to classify the connection.
-                switch (networkState.getNetworkSubType()) {
+                switch (subtype) {
                     case TelephonyManager.NETWORK_TYPE_GPRS:
                     case TelephonyManager.NETWORK_TYPE_EDGE:
                     case TelephonyManager.NETWORK_TYPE_CDMA:
@@ -798,7 +805,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     /**
      * Returns the connection subtype for the given NetworkState.
      */
-    public int getCurrentConnectionSubtype(NetworkState networkState) {
+    public static int convertToConnectionSubtype(NetworkState networkState) {
         if (!networkState.isConnected()) {
             return ConnectionSubtype.SUBTYPE_NONE;
         }
@@ -857,7 +864,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
      * that is used instead. For more on NetInfo, see http://w3c.github.io/netinfo/.
      */
     public double getCurrentMaxBandwidthInMbps(NetworkState networkState) {
-        if (getCurrentConnectionType(networkState) == ConnectionType.CONNECTION_WIFI) {
+        if (convertToConnectionType(networkState) == ConnectionType.CONNECTION_WIFI) {
             final int link_speed = mWifiManagerDelegate.getLinkSpeedInMbps();
             if (link_speed != UNKNOWN_LINK_SPEED) {
                 return link_speed;
@@ -865,11 +872,11 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         }
 
         return NetworkChangeNotifier.getMaxBandwidthForConnectionSubtype(
-                getCurrentConnectionSubtype(networkState));
+                convertToConnectionSubtype(networkState));
     }
 
     private String getCurrentWifiSSID(NetworkState networkState) {
-        if (getCurrentConnectionType(networkState) != ConnectionType.CONNECTION_WIFI) return "";
+        if (convertToConnectionType(networkState) != ConnectionType.CONNECTION_WIFI) return "";
         return mWifiManagerDelegate.getWifiSSID();
     }
 
@@ -886,7 +893,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     private void connectionTypeChanged(NetworkState networkState) {
-        int newConnectionType = getCurrentConnectionType(networkState);
+        @ConnectionTypeEnum
+        int newConnectionType = convertToConnectionType(networkState);
         String newWifiSSID = getCurrentWifiSSID(networkState);
         if (newConnectionType == mConnectionType && newWifiSSID.equals(mWifiSSID)) return;
 

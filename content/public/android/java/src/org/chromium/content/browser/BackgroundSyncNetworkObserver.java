@@ -85,7 +85,8 @@ class BackgroundSyncNetworkObserver implements NetworkChangeNotifierAutoDetect.O
         mNativePtrs.add(nativePtr);
 
         nativeNotifyConnectionTypeChanged(
-                nativePtr, mNotifier.getCurrentConnectionType(mNotifier.getCurrentNetworkState()));
+                nativePtr, NetworkChangeNotifierAutoDetect.convertToConnectionType(
+                                   mNotifier.getCurrentNetworkState()));
     }
 
     @CalledByNative

@@ -196,8 +196,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         }
 
         @Override
-        public NetworkState getNetworkState(Network network) {
-            return new NetworkState(false, -1, -1);
+        public int getConnectionType(Network network) {
+            return ConnectionType.CONNECTION_NONE;
         }
 
         @Override
@@ -409,7 +409,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     private int getCurrentConnectionType() {
         final NetworkChangeNotifierAutoDetect.NetworkState networkState =
                 mReceiver.getCurrentNetworkState();
-        return mReceiver.getCurrentConnectionType(networkState);
+        return NetworkChangeNotifierAutoDetect.convertToConnectionType(networkState);
     }
 
     // Create Network object given a NetID.
@@ -712,16 +712,14 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
                 new ConnectivityManagerDelegate(getInstrumentation().getTargetContext());
         delegate.getNetworkState();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // getNetworkState(Network) doesn't crash upon invalid Network argument.
+            // getConnectionType(Network) doesn't crash upon invalid Network argument.
             Network invalidNetwork = netIdToNetwork(NetId.INVALID);
-            NetworkState invalidNetworkState = delegate.getNetworkState(invalidNetwork);
-            assertFalse(invalidNetworkState.isConnected());
-            assertEquals(-1, invalidNetworkState.getNetworkType());
-            assertEquals(-1, invalidNetworkState.getNetworkSubType());
+            assertEquals(
+                    ConnectionType.CONNECTION_NONE, delegate.getConnectionType(invalidNetwork));
 
             Network[] networks = delegate.getAllNetworksUnfiltered();
             if (networks.length >= 1) {
-                delegate.getNetworkState(networks[0]);
+                delegate.getConnectionType(networks[0]);
             }
             delegate.getDefaultNetId();
             NetworkCallback networkCallback = new NetworkCallback();
@@ -796,8 +794,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
             }
 
             @Override
-            public NetworkState getNetworkState(Network network) {
-                return new NetworkState(false, -1, -1);
+            public int getConnectionType(Network network) {
+                return ConnectionType.CONNECTION_NONE;
             }
         });
 
