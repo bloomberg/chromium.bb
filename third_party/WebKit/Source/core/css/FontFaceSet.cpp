@@ -348,11 +348,13 @@ void FontFaceSet::fireDoneEventIfPossible()
         return;
     if (!shouldSignalReady())
         return;
+    Document* d = document();
+    if (!d)
+        return;
 
     // If the layout was invalidated in between when we thought layout
     // was updated and when we're ready to fire the event, just wait
     // until after the next layout before firing events.
-    Document* d = document();
     if (!d->view() || d->view()->needsLayout())
         return;
 
