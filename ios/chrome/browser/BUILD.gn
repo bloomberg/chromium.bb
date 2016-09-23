@@ -95,6 +95,8 @@ source_set("browser") {
     "browsing_data/browsing_data_counter_wrapper.h",
     "browsing_data/browsing_data_remover_helper.cc",
     "browsing_data/browsing_data_remover_helper.h",
+    "browsing_data/cache_counter.cc",
+    "browsing_data/cache_counter.h",
     "browsing_data/ios_browsing_data_counter_factory.cc",
     "browsing_data/ios_browsing_data_counter_factory.h",
     "browsing_data/ios_chrome_browsing_data_remover.h",

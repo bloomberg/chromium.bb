@@ -15,6 +15,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browsing_data/cache_counter.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
@@ -38,6 +39,9 @@ IOSBrowsingDataCounterFactory::GetForBrowserStateAndPref(
                    base::Unretained(browser_state)),
         IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state));
   }
+
+  if (pref_name == browsing_data::prefs::kDeleteCache)
+    return base::MakeUnique<CacheCounter>(browser_state);
 
   if (pref_name == browsing_data::prefs::kDeletePasswords) {
     return base::MakeUnique<browsing_data::PasswordsCounter>(

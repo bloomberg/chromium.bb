@@ -33,6 +33,7 @@ test("ios_chrome_unittests") {
   sources = [
     "app/application_delegate/memory_warning_helper_unittest.mm",
     "app/safe_mode_util_unittest.cc",
+    "browser/browsing_data/cache_counter_unittest.cc",
     "browser/chrome_url_util_unittest.mm",
     "browser/crash_loop_detection_util_unittest.mm",
     "browser/favicon/large_icon_cache_unittest.cc",
@@ -95,6 +96,7 @@ test("ios_chrome_unittests") {
     "//components/autofill/core/common:common",
     "//components/autofill/ios/browser:browser",
     "//components/bookmarks/test",
+    "//components/browsing_data/core",
     "//components/favicon_base",
     "//components/metrics",
     "//components/metrics:test_support",
@@ -117,6 +119,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/common",
     "//ios/chrome/test",
     "//ios/chrome/test:run_all_unittests",
+    "//ios/net",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/testing:ocmock_support",
