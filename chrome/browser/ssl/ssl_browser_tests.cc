@@ -3261,6 +3261,18 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, PushStateSSLState) {
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
+// Regression test for http://crbug.com/635833 (crash when a window with no
+// NavigationEntry commits).
+IN_PROC_BROWSER_TEST_F(SSLUITestIgnoreLocalhostCertErrors,
+                       NoCrashOnLoadWithNoNavigationEntry) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/ssl/google.html"));
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::ExecuteScript(tab, "window.open()"));
+}
+
 // TODO(jcampan): more tests to do below.
 
 // Visit a page over https that contains a frame with a redirect.
