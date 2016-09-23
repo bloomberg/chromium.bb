@@ -212,6 +212,7 @@ void WebAuthFlow::DidFinishNavigation(
                                  "DidFinishNavigationFailure", "error_code",
                                  navigation_handle->GetNetErrorCode());
   } else if (navigation_handle->IsInMainFrame() &&
+             navigation_handle->GetResponseHeaders() &&
              navigation_handle->GetResponseHeaders()->response_code() >= 400) {
     failed = true;
     TRACE_EVENT_ASYNC_STEP_PAST1(
