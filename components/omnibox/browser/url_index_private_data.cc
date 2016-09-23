@@ -153,125 +153,130 @@ URLIndexPrivateData::URLIndexPrivateData()
 }
 
 ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
-    base::string16 search_string,
+    base::string16 original_search_string,
     size_t cursor_position,
     size_t max_matches,
     bookmarks::BookmarkModel* bookmark_model,
     TemplateURLService* template_url_service) {
-  // If cursor position is set and useful (not at either end of the
-  // string), allow the search string to be broken at cursor position.
-  // We do this by pretending there's a space where the cursor is.
-  if ((cursor_position != base::string16::npos) &&
-      (cursor_position < search_string.length()) &&
-      (cursor_position > 0)) {
-    search_string.insert(cursor_position, base::ASCIIToUTF16(" "));
-  }
   pre_filter_item_count_ = 0;
   post_filter_item_count_ = 0;
   post_scoring_item_count_ = 0;
-  // The search string we receive may contain escaped characters. For reducing
-  // the index we need individual, lower-cased words, ignoring escapings. For
-  // the final filtering we need whitespace separated substrings possibly
-  // containing escaped characters.
-  base::string16 lower_raw_string(base::i18n::ToLower(search_string));
-  base::string16 lower_unescaped_string =
-      net::UnescapeURLComponent(lower_raw_string,
-          net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-  // Extract individual 'words' (as opposed to 'terms'; see below) from the
-  // search string. When the user types "colspec=ID%20Mstone Release" we get
-  // four 'words': "colspec", "id", "mstone" and "release".
-  String16Vector lower_words(
-      String16VectorFromString16(lower_unescaped_string, false, nullptr));
-  ScoredHistoryMatches scored_items;
 
-  // Do nothing if we have indexed no words (probably because we've not been
-  // initialized yet) or the search string has no words.
-  if (word_list_.empty() || lower_words.empty()) {
-    search_term_cache_.clear();  // Invalidate the term cache.
-    return scored_items;
+  // This list will contain the original search string and any other string
+  // transformations.
+  String16Vector search_strings;
+  search_strings.push_back(original_search_string);
+  if ((cursor_position != base::string16::npos) &&
+      (cursor_position < original_search_string.length()) &&
+      (cursor_position > 0)) {
+    // The original search_string broken at cursor position. This is one type of
+    // transformation.
+    base::string16 transformed_search_string(original_search_string);
+    transformed_search_string.insert(cursor_position, base::ASCIIToUTF16(" "));
+    search_strings.push_back(transformed_search_string);
   }
 
+  ScoredHistoryMatches scored_items;
+  // Invalidate the term cache and return if we have indexed no words (probably
+  // because we've not been initialized yet).
+  if (word_list_.empty()) {
+    search_term_cache_.clear();
+    return scored_items;
+  }
   // Reset used_ flags for search_term_cache_. We use a basic mark-and-sweep
   // approach.
   ResetSearchTermCache();
 
-  HistoryIDSet history_id_set = HistoryIDSetFromWords(lower_words);
+  for (const base::string16& search_string : search_strings) {
+    // The search string we receive may contain escaped characters. For reducing
+    // the index we need individual, lower-cased words, ignoring escapings. For
+    // the final filtering we need whitespace separated substrings possibly
+    // containing escaped characters.
+    base::string16 lower_raw_string(base::i18n::ToLower(search_string));
+    base::string16 lower_unescaped_string = net::UnescapeURLComponent(
+        lower_raw_string,
+        net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+            net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
-  // Trim the candidate pool if it is large. Note that we do not filter out
-  // items that do not contain the search terms as proper substrings -- doing
-  // so is the performance-costly operation we are trying to avoid in order
-  // to maintain omnibox responsiveness.
-  const size_t kItemsToScoreLimit = 500;
-  pre_filter_item_count_ = history_id_set.size();
-  // If we trim the results set we do not want to cache the results for next
-  // time as the user's ultimately desired result could easily be eliminated
-  // in this early rough filter.
-  bool was_trimmed = (pre_filter_item_count_ > kItemsToScoreLimit);
-  if (was_trimmed) {
-    HistoryIDVector history_ids;
-    std::copy(history_id_set.begin(), history_id_set.end(),
-              std::back_inserter(history_ids));
-    // Trim down the set by sorting by typed-count, visit-count, and last
-    // visit.
-    HistoryItemFactorGreater
-        item_factor_functor(history_info_map_);
-    std::partial_sort(history_ids.begin(),
-                      history_ids.begin() + kItemsToScoreLimit,
-                      history_ids.end(),
-                      item_factor_functor);
-    history_id_set.clear();
-    std::copy(history_ids.begin(), history_ids.begin() + kItemsToScoreLimit,
-              std::inserter(history_id_set, history_id_set.end()));
-    post_filter_item_count_ = history_id_set.size();
-  }
+    // Extract individual 'words' (as opposed to 'terms'; see below) from the
+    // search string. When the user types "colspec=ID%20Mstone Release" we get
+    // four 'words': "colspec", "id", "mstone" and "release".
+    String16Vector lower_words(
+        String16VectorFromString16(lower_unescaped_string, false, nullptr));
+    if (lower_words.empty())
+      continue;
+    HistoryIDSet history_id_set = HistoryIDSetFromWords(lower_words);
+    // Trim the candidate pool if it is large. Note that we do not filter out
+    // items that do not contain the search terms as proper substrings --
+    // doing so is the performance-costly operation we are trying to avoid in
+    // order to maintain omnibox responsiveness.
+    const size_t kItemsToScoreLimit = 500;
+    pre_filter_item_count_ += history_id_set.size();
+    // If we trim the results set we do not want to cache the results for next
+    // time as the user's ultimately desired result could easily be eliminated
+    // in this early rough filter.
+    if (pre_filter_item_count_ > kItemsToScoreLimit) {
+      HistoryIDVector history_ids;
+      std::copy(history_id_set.begin(), history_id_set.end(),
+                std::back_inserter(history_ids));
+      // Trim down the set by sorting by typed-count, visit-count, and last
+      // visit.
+      HistoryItemFactorGreater item_factor_functor(history_info_map_);
+      std::partial_sort(history_ids.begin(),
+                        history_ids.begin() + kItemsToScoreLimit,
+                        history_ids.end(), item_factor_functor);
+      history_id_set.clear();
+      std::copy(history_ids.begin(), history_ids.begin() + kItemsToScoreLimit,
+                std::inserter(history_id_set, history_id_set.end()));
+      post_filter_item_count_ += history_id_set.size();
+    } else {
+      post_filter_item_count_ += pre_filter_item_count_;
+    }
+    // Pass over all of the candidates filtering out any without a proper
+    // substring match, inserting those which pass in order by score. Note that
+    // in this step we are using the raw search string complete with escaped
+    // URL elements. When the user has specifically typed something akin to
+    // "sort=pri&colspec=ID%20Mstone%20Release" we want to make sure that that
+    // specific substring appears in the URL or page title.
 
-  // Pass over all of the candidates filtering out any without a proper
-  // substring match, inserting those which pass in order by score. Note that
-  // in this step we are using the raw search string complete with escaped
-  // URL elements. When the user has specifically typed something akin to
-  // "sort=pri&colspec=ID%20Mstone%20Release" we want to make sure that that
-  // specific substring appears in the URL or page title.
+    // We call these 'terms' (as opposed to 'words'; see above) as in this case
+    // we only want to break up the search string on 'true' whitespace rather
+    // than escaped whitespace. When the user types "colspec=ID%20Mstone
+    // Release" we get two 'terms': "colspec=id%20mstone" and "release".
+    String16Vector lower_raw_terms =
+        base::SplitString(lower_raw_string, base::kWhitespaceUTF16,
+                          base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
-  // We call these 'terms' (as opposed to 'words'; see above) as in this case
-  // we only want to break up the search string on 'true' whitespace rather than
-  // escaped whitespace. When the user types "colspec=ID%20Mstone Release" we
-  // get two 'terms': "colspec=id%20mstone" and "release".
-  String16Vector lower_raw_terms = base::SplitString(
-      lower_raw_string, base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
-      base::SPLIT_WANT_NONEMPTY);
-  if (lower_raw_terms.empty()) {
     // Don't score matches when there are no terms to score against.  (It's
     // possible that the word break iterater that extracts words to search
     // for in the database allows some whitespace "words" whereas SplitString
-    // excludes a long list of whitespace.)  One could write a scoring
-    // function that gives a reasonable order to matches when there
-    // are no terms (i.e., all the words are some form of whitespace),
-    // but this is such a rare edge case that it's not worth the time.
-    return scored_items;
+    // excludes a long list of whitespace.)  One could write a scoring function
+    // that gives a reasonable order to matches when there are no terms (i.e.,
+    // all the words are some form of whitespace), but this is such a rare edge
+    // case that it's not worth the time.
+    if (lower_raw_terms.empty())
+      continue;
+    ScoredHistoryMatches temp_scored_items =
+        std::for_each(history_id_set.begin(), history_id_set.end(),
+                      AddHistoryMatch(bookmark_model, template_url_service,
+                                      *this, lower_raw_string, lower_raw_terms,
+                                      base::Time::Now()))
+            .ScoredMatches();
+    scored_items.insert(scored_items.end(), temp_scored_items.begin(),
+                        temp_scored_items.end());
   }
-  scored_items =
-      std::for_each(
-          history_id_set.begin(), history_id_set.end(),
-          AddHistoryMatch(bookmark_model, template_url_service, *this,
-                          lower_raw_string, lower_raw_terms,
-                          base::Time::Now())).ScoredMatches();
-
   // Select and sort only the top |max_matches| results.
   if (scored_items.size() > max_matches) {
-    std::partial_sort(scored_items.begin(),
-                      scored_items.begin() +
-                          max_matches,
+    std::partial_sort(scored_items.begin(), scored_items.begin() + max_matches,
                       scored_items.end(),
                       ScoredHistoryMatch::MatchScoreGreater);
-      scored_items.resize(max_matches);
+    scored_items.resize(max_matches);
   } else {
     std::sort(scored_items.begin(), scored_items.end(),
               ScoredHistoryMatch::MatchScoreGreater);
   }
   post_scoring_item_count_ = scored_items.size();
-
-  if (was_trimmed) {
+  if (pre_filter_item_count_ > post_filter_item_count_) {
     search_term_cache_.clear();  // Invalidate the term cache.
   } else {
     // Remove any stale SearchTermCacheItems.
