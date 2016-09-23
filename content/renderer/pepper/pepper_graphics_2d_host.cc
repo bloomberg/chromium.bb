@@ -354,14 +354,6 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
     canvas->drawRect(sk_invalidate_rect, paint);
   }
 
-  SkBitmap image;
-  // Copy to device independent bitmap when target canvas doesn't support
-  // platform paint.
-  if (!skia::SupportsPlatformPaint(canvas))
-    backing_bitmap.copyTo(&image, kN32_SkColorType);
-  else
-    image = backing_bitmap;
-
   SkPaint paint;
   if (is_always_opaque_) {
     // When we know the device is opaque, we can disable blending for slightly
@@ -374,7 +366,8 @@ void PepperGraphics2DHost::Paint(blink::WebCanvas* canvas,
     canvas->scale(scale_, scale_);
     pixel_origin.scale(1.0f / scale_);
   }
-  canvas->drawBitmap(image, pixel_origin.x(), pixel_origin.y(), &paint);
+  canvas->drawBitmap(backing_bitmap, pixel_origin.x(), pixel_origin.y(),
+                     &paint);
 }
 
 void PepperGraphics2DHost::ViewInitiatedPaint() {
