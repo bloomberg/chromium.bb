@@ -36,8 +36,6 @@ const char* AlternateProtocolToString(AlternateProtocol protocol) {
       return "quic";
     case NPN_HTTP_2:
       return "h2";
-    case NPN_SPDY_3_1:
-      return "npn-spdy/3.1";
     case UNINITIALIZED_ALTERNATE_PROTOCOL:
       return "Uninitialized";
   }
@@ -50,12 +48,13 @@ AlternateProtocol AlternateProtocolFromString(const std::string& str) {
     return QUIC;
   if (str == "h2")
     return NPN_HTTP_2;
-  // "npn-h2" is accepted here so that persisted settings with the old string
-  // can be loaded from disk.  TODO(bnc):  Remove around 2016 December.
+  // "npn-h2" and "npn-spdy/3.1" are accepted here so that persisted settings
+  // with the old string can be loaded from disk.  TODO(bnc):  Remove around
+  // 2016 December.
   if (str == "npn-h2")
     return NPN_HTTP_2;
   if (str == "npn-spdy/3.1")
-    return NPN_SPDY_3_1;
+    return NPN_HTTP_2;
 
   return UNINITIALIZED_ALTERNATE_PROTOCOL;
 }

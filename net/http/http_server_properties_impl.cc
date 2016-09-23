@@ -336,8 +336,7 @@ AlternativeServiceVector HttpServerPropertiesImpl::GetAlternativeServices(
       // If the alternative service is equivalent to the origin (same host, same
       // port, and both TCP), skip it.
       if (host_port_pair.Equals(alternative_service.host_port_pair()) &&
-          NPN_SPDY_MINIMUM_VERSION <= alternative_service.protocol &&
-          alternative_service.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
+          alternative_service.protocol == NPN_HTTP_2) {
         ++it;
         continue;
       }

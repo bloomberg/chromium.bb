@@ -1315,8 +1315,7 @@ bool HttpStreamFactoryImpl::Job::IsHttpsProxyAndHttpUrl() const {
 }
 
 bool HttpStreamFactoryImpl::Job::IsSpdyAlternative() const {
-  return alternative_service_.protocol >= NPN_SPDY_MINIMUM_VERSION &&
-         alternative_service_.protocol <= NPN_SPDY_MAXIMUM_VERSION;
+  return alternative_service_.protocol == NPN_HTTP_2;
 }
 
 bool HttpStreamFactoryImpl::Job::IsQuicAlternative() const {

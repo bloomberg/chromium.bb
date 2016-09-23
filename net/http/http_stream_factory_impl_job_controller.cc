@@ -918,8 +918,7 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
          origin.port() < kUnrestrictedPort))
       continue;
 
-    if (alternative_service.protocol >= NPN_SPDY_MINIMUM_VERSION &&
-        alternative_service.protocol <= NPN_SPDY_MAXIMUM_VERSION) {
+    if (alternative_service.protocol == NPN_HTTP_2) {
       if (origin.host() != alternative_service.host &&
           !session_->params()
                .enable_http2_alternative_service_with_different_host) {
