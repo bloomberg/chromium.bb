@@ -1166,10 +1166,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onSingleTapEventAck(boolean consumed, int x, int y) {
+    private void onSingleTapEventAck(boolean consumed) {
         for (mGestureStateListenersIterator.rewind();
                 mGestureStateListenersIterator.hasNext();) {
-            mGestureStateListenersIterator.next().onSingleTap(consumed, x, y);
+            mGestureStateListenersIterator.next().onSingleTap(consumed);
         }
         hidePastePopup();
     }

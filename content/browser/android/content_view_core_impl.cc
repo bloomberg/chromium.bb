@@ -582,8 +582,7 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
       break;
     case WebInputEvent::GestureTap:
       Java_ContentViewCore_onSingleTapEventAck(
-          env, j_obj, ack_result == INPUT_EVENT_ACK_STATE_CONSUMED,
-          event.x * dpi_scale(), event.y * dpi_scale());
+          env, j_obj, ack_result == INPUT_EVENT_ACK_STATE_CONSUMED);
       break;
     case WebInputEvent::GestureLongPress:
       if (ack_result == INPUT_EVENT_ACK_STATE_CONSUMED)

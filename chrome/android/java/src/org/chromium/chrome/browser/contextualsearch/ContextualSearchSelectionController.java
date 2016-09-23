@@ -106,7 +106,7 @@ public class ContextualSearchSelectionController {
         // notification in this case.
         // See crbug.com/444114.
         @Override
-        public void onSingleTap(boolean consumed, int x, int y) {
+        public void onSingleTap(boolean consumed) {
             // We may be notified that a tap has happened even when the system consumed the event.
             // This is being used to support tapping on an existing selection to show the selection
             // handles.  We should process this tap unless we have already shown the selection

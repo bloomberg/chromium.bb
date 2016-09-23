@@ -56,7 +56,7 @@ public class GestureStateListener {
      * Called after a single-tap gesture event was dispatched to the renderer,
      * indicating whether or not the gesture was consumed.
      */
-    public void onSingleTap(boolean consumed, int x, int y) {}
+    public void onSingleTap(boolean consumed) {}
 
     /*
      * Called after a single-tap gesture event was processed by the renderer,
