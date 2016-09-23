@@ -4,6 +4,12 @@
 
 // https://w3c.github.io/browser-payment-api/#paymentoptions-dictionary
 
+enum PaymentShippingType {
+    "shipping",
+    "delivery",
+    "pickup"
+};
+
 [
     RuntimeEnabled=PaymentRequest
 ] dictionary PaymentOptions {
@@ -11,4 +17,5 @@
     boolean requestPayerEmail = false;
     boolean requestPayerPhone = false;
     boolean requestShipping = false;
+    DOMString shippingType = "shipping";
 };

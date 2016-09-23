@@ -4367,6 +4367,7 @@ interface PaymentRequest : EventTarget
     getter onshippingoptionchange
     getter shippingAddress
     getter shippingOption
+    getter shippingType
     method abort
     method constructor
     method show

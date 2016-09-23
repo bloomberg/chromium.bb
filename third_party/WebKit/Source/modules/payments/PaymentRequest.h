@@ -56,6 +56,7 @@ public:
 
     PaymentAddress* getShippingAddress() const { return m_shippingAddress.get(); }
     const String& shippingOption() const { return m_shippingOption; }
+    const String& shippingType() const { return m_shippingType; }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingaddresschange);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(shippingoptionchange);
@@ -100,6 +101,7 @@ private:
     PaymentOptions m_options;
     Member<PaymentAddress> m_shippingAddress;
     String m_shippingOption;
+    String m_shippingType;
     Member<ScriptPromiseResolver> m_showResolver;
     Member<ScriptPromiseResolver> m_completeResolver;
     Member<ScriptPromiseResolver> m_abortResolver;

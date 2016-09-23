@@ -85,6 +85,7 @@ test(function() {
     var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails());
     assert_readonly(request, 'shippingAddress', 'PaymentRequest should have a readonly shippingAddress property.');
     assert_readonly(request, 'shippingOption', 'PaymentRequest should have a readonly shippingOption property.');
+    assert_readonly(request, 'shippingType', 'PaymentRequest should have a readonly shippingType property.');
 }, 'PaymentRequest should have readonly shippingAddress and shippingOption properties.');
 
 test(function() {
@@ -153,6 +154,66 @@ test(function() {
     var request = new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'displayItems': [buildItem()], 'shippingOptions': shippingOptions}, {'requestShipping': true});
     assert_equals('express', request.shippingOption);
 }, 'Shipping option identifier should default to the last selected shipping option, if multiple are selected.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': false});
+    assert_equals(null, request.shippingType);
+}, 'Shipping type should be null if shipping is explicitly not requested.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true});
+    assert_equals('shipping', request.shippingType);
+}, 'Shipping type should be \'shipping\' by default if shipping type isn\'t specified.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': false, 'shippingType': 'shipping'});
+    assert_equals(null, request.shippingType);
+}, 'Shipping type should be null if shipping type is specified but requestShipping is false.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': 'shipping'});
+    assert_equals('shipping', request.shippingType);
+}, 'Shipping type should be \'shipping\' if shipping type is specified as \'shipping\'.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': 'delivery'});
+    assert_equals('delivery', request.shippingType);
+}, 'Shipping type should be \'delivery\' if shipping type is specified as \'delivery\'.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': 'pickup'});
+    assert_equals('pickup', request.shippingType);
+}, 'Shipping type should be \'pickup\' if shipping type is specified as \'pickup\'.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': 'invalid'});
+    assert_equals('shipping', request.shippingType);
+}, 'Shipping type should be \'shipping\' if shipping type is specified as invalid string.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': null});
+    assert_equals('shipping', request.shippingType);
+}, 'Shipping type should be \'shipping\' if shipping type is specified as null.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': undefined});
+    assert_equals('shipping', request.shippingType);
+}, 'Shipping type should be \'shipping\' if shipping type is specified as undefined.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': []});
+    assert_equals('shipping', request.shippingType);
+}, 'Shipping type should be \'shipping\' if shipping type is specified as [].');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': {}});
+    assert_equals('shipping', request.shippingType);
+}, 'Shipping type should be \'shipping\' if shipping type is specified as {}.');
+
+test(function() {
+    var request = new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(), {'requestShipping': true, 'shippingType': 0});
+    assert_equals('shipping', request.shippingType);
+}, 'Shipping type should be \'shipping\' if shipping type is specified as a number.');
 
 test(function() {
     new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'displayItems': undefined});

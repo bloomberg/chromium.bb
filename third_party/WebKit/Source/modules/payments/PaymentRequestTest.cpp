@@ -184,6 +184,79 @@ TEST(PaymentRequestTest, SelectLastSelectedShippingOptionWhenShippingRequested)
     EXPECT_EQ("express", request->shippingOption());
 }
 
+TEST(PaymentRequestTest, NullShippingTypeWhenRequestShippingIsFalse)
+{
+    V8TestingScope scope;
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentDetails details;
+    details.setTotal(buildPaymentItemForTest());
+    PaymentOptions options;
+    options.setRequestShipping(false);
+
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), details, options, scope.getExceptionState());
+
+    EXPECT_TRUE(request->shippingType().isNull());
+}
+
+TEST(PaymentRequestTest, DefaultShippingTypeWhenRequestShippingIsTrueWithNoSpecificType)
+{
+    V8TestingScope scope;
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentDetails details;
+    details.setTotal(buildPaymentItemForTest());
+    PaymentOptions options;
+    options.setRequestShipping(true);
+
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), details, options, scope.getExceptionState());
+
+    EXPECT_EQ("shipping", request->shippingType());
+}
+
+TEST(PaymentRequestTest, DeliveryShippingTypeWhenShippingTypeIsDelivery)
+{
+    V8TestingScope scope;
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentDetails details;
+    details.setTotal(buildPaymentItemForTest());
+    PaymentOptions options;
+    options.setRequestShipping(true);
+    options.setShippingType("delivery");
+
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), details, options, scope.getExceptionState());
+
+    EXPECT_EQ("delivery", request->shippingType());
+}
+
+TEST(PaymentRequestTest, PickupShippingTypeWhenShippingTypeIsPickup)
+{
+    V8TestingScope scope;
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentDetails details;
+    details.setTotal(buildPaymentItemForTest());
+    PaymentOptions options;
+    options.setRequestShipping(true);
+    options.setShippingType("pickup");
+
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), details, options, scope.getExceptionState());
+
+    EXPECT_EQ("pickup", request->shippingType());
+}
+
+TEST(PaymentRequestTest, DefaultShippingTypeWhenShippingTypeIsInvalid)
+{
+    V8TestingScope scope;
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentDetails details;
+    details.setTotal(buildPaymentItemForTest());
+    PaymentOptions options;
+    options.setRequestShipping(true);
+    options.setShippingType("invalid");
+
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), details, options, scope.getExceptionState());
+
+    EXPECT_EQ("shipping", request->shippingType());
+}
+
 TEST(PaymentRequestTest, RejectShowPromiseOnInvalidShippingAddress)
 {
     V8TestingScope scope;

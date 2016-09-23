@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/browser-payment-api/specs/paymentrequest.html#paymentrequest-interface
+// https://w3c.github.io/browser-payment-api/#paymentrequest-interface
 // http://crbug.com/587995
 
 [
@@ -18,6 +18,7 @@
 
     [ImplementedAs=getShippingAddress] readonly attribute PaymentAddress? shippingAddress;
     readonly attribute DOMString? shippingOption;
+    readonly attribute PaymentShippingType? shippingType;
 
     attribute EventHandler onshippingaddresschange;
     attribute EventHandler onshippingoptionchange;

@@ -362,6 +362,20 @@ String getSelectedShippingOption(const PaymentDetails& details)
     return result;
 }
 
+String getValidShippingType(const String& shippingType)
+{
+    static const char* const validValues[] = {
+        "shipping",
+        "delivery",
+        "pickup",
+    };
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(validValues); i++) {
+        if (shippingType == validValues[i])
+            return shippingType;
+    }
+    return validValues[0];
+}
+
 } // namespace
 
 PaymentRequest* PaymentRequest::create(ScriptState* scriptState, const HeapVector<PaymentMethodData>& methodData, const PaymentDetails& details, ExceptionState& exceptionState)
@@ -520,8 +534,10 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const HeapVector<Paymen
     if (exceptionState.hadException())
         return;
 
-    if (m_options.requestShipping())
+    if (m_options.requestShipping()) {
         m_shippingOption = getSelectedShippingOption(details);
+        m_shippingType = getValidShippingType(m_options.shippingType());
+    }
 
     scriptState->domWindow()->frame()->interfaceProvider()->getInterface(mojo::GetProxy(&m_paymentProvider));
     m_paymentProvider.set_connection_error_handler(convertToBaseCallback(WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this), mojom::blink::PaymentErrorReason::UNKNOWN)));
