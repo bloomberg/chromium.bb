@@ -8,6 +8,7 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_more.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
@@ -40,6 +41,10 @@ class RotationLockDefaultView : public TrayItemMore, public ShellObserver {
   void OnMaximizeModeStarted() override;
   void OnMaximizeModeEnded() override;
 
+ protected:
+  // TrayItemMore:
+  void UpdateStyle() override;
+
  private:
   void UpdateImage();
 
@@ -48,7 +53,6 @@ class RotationLockDefaultView : public TrayItemMore, public ShellObserver {
 
 RotationLockDefaultView::RotationLockDefaultView(SystemTrayItem* owner)
     : TrayItemMore(owner, false) {
-  UpdateImage();
   SetVisible(WmShell::Get()
                  ->maximize_mode_controller()
                  ->IsMaximizeModeWindowManagerEnabled());
@@ -77,14 +81,20 @@ void RotationLockDefaultView::OnMaximizeModeEnded() {
   SetVisible(false);
 }
 
+void RotationLockDefaultView::UpdateStyle() {
+  TrayItemMore::UpdateStyle();
+  UpdateImage();
+}
+
 void RotationLockDefaultView::UpdateImage() {
   const bool rotation_locked =
       Shell::GetInstance()->screen_orientation_controller()->rotation_locked();
   if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
+    std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
     SetImage(gfx::CreateVectorIcon(rotation_locked
                                        ? kSystemMenuRotationLockLockedIcon
                                        : kSystemMenuRotationLockAutoIcon,
-                                   kMenuIconSize, kMenuIconColor));
+                                   kMenuIconSize, style->GetForegroundColor()));
   } else {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     const int resource_id = rotation_locked

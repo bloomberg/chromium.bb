@@ -10,6 +10,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "base/memory/ptr_util.h"
 #include "grit/ash_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -41,10 +42,8 @@ TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
   if (show_more) {
     more_ = new views::ImageView;
     more_->EnableCanvasFlippingForRTLUI(true);
-    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      more_->SetImage(
-          gfx::CreateVectorIcon(kSystemMenuArrowRightIcon, kMenuIconColor));
-    } else {
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      // The icon doesn't change in non-md.
       more_->SetImage(ui::ResourceBundle::GetSharedInstance()
                           .GetImageNamed(IDR_AURA_UBER_TRAY_MORE)
                           .ToImageSkia());
@@ -70,13 +69,21 @@ void TrayItemMore::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
 
+std::unique_ptr<TrayPopupItemStyle> TrayItemMore::CreateStyle() const {
+  return base::MakeUnique<TrayPopupItemStyle>(
+      GetNativeTheme(), TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
+}
+
 void TrayItemMore::UpdateStyle() {
   if (!MaterialDesignController::IsSystemTrayMenuMaterial())
     return;
+  std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
+  style->SetupLabel(label_);
 
-  TrayPopupItemStyle style(GetNativeTheme(),
-                           TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
-  style.SetupLabel(label_);
+  if (more_) {
+    more_->SetImage(gfx::CreateVectorIcon(kSystemMenuArrowRightIcon,
+                                          style->GetForegroundColor()));
+  }
 }
 
 bool TrayItemMore::PerformAction(const ui::Event& event) {

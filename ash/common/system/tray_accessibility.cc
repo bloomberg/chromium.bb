@@ -15,6 +15,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_item_more.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -77,10 +78,8 @@ class DefaultAccessibilityView : public TrayItemMore {
   explicit DefaultAccessibilityView(SystemTrayItem* owner)
       : TrayItemMore(owner, true) {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      SetImage(
-          gfx::CreateVectorIcon(kSystemMenuAccessibilityIcon, kMenuIconColor));
-    } else {
+    if (!MaterialDesignController::UseMaterialDesignSystemIcons()) {
+      // The icon doesn't change in non-md.
       SetImage(*bundle.GetImageNamed(IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK)
                     .ToImageSkia());
     }
@@ -92,6 +91,19 @@ class DefaultAccessibilityView : public TrayItemMore {
   }
 
   ~DefaultAccessibilityView() override {}
+
+ protected:
+  // TrayItemMore:
+  void UpdateStyle() override {
+    TrayItemMore::UpdateStyle();
+
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+      return;
+
+    std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
+    SetImage(gfx::CreateVectorIcon(kSystemMenuAccessibilityIcon,
+                                   style->GetForegroundColor()));
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultAccessibilityView);

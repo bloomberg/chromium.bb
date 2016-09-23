@@ -16,6 +16,7 @@
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
@@ -71,11 +72,11 @@ class BluetoothDefaultView : public TrayItemMore {
   BluetoothDefaultView(SystemTrayItem* owner, bool show_more)
       : TrayItemMore(owner, show_more) {
     if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      // The icon doesn't change in non-md.
       ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
       SetImage(
           *bundle.GetImageNamed(IDR_AURA_UBER_TRAY_BLUETOOTH).ToImageSkia());
     }
-    Update();
   }
 
   ~BluetoothDefaultView() override {}
@@ -83,12 +84,6 @@ class BluetoothDefaultView : public TrayItemMore {
   void Update() {
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     const bool enabled = delegate->GetBluetoothEnabled();
-    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-      SetImage(gfx::CreateVectorIcon(
-          enabled ? kSystemMenuBluetoothIcon : kSystemMenuBluetoothDisabledIcon,
-          kMenuIconColor));
-    }
-
     if (delegate->GetBluetoothAvailable()) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       const base::string16 label = rb.GetLocalizedString(
@@ -100,6 +95,37 @@ class BluetoothDefaultView : public TrayItemMore {
     } else {
       SetVisible(false);
     }
+    UpdateStyle();
+  }
+
+ protected:
+  // TrayItemMore:
+  std::unique_ptr<TrayPopupItemStyle> CreateStyle() const override {
+    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+    std::unique_ptr<TrayPopupItemStyle> style = TrayItemMore::CreateStyle();
+    style->set_color_style(
+        delegate->GetBluetoothEnabled()
+            ? TrayPopupItemStyle::ColorStyle::ACTIVE
+            : delegate->GetBluetoothAvailable()
+                  ? TrayPopupItemStyle::ColorStyle::INACTIVE
+                  : TrayPopupItemStyle::ColorStyle::DISABLED);
+
+    return style;
+  }
+
+  void UpdateStyle() override {
+    TrayItemMore::UpdateStyle();
+
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+      return;
+
+    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+    std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
+
+    SetImage(gfx::CreateVectorIcon(delegate->GetBluetoothEnabled()
+                                       ? kSystemMenuBluetoothIcon
+                                       : kSystemMenuBluetoothDisabledIcon,
+                                   style->GetForegroundColor()));
   }
 
  private:
@@ -450,6 +476,7 @@ views::View* TrayBluetooth::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
   default_ =
       new tray::BluetoothDefaultView(this, status != LoginStatus::LOCKED);
+  default_->Update();
   return default_;
 }
 

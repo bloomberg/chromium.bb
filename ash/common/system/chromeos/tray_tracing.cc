@@ -12,6 +12,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/wm_shell.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
@@ -36,12 +37,8 @@ class DefaultTracingView : public ActionableView {
     ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     image_ =
         new FixedSizedImageView(0, GetTrayConstant(TRAY_POPUP_ITEM_HEIGHT));
-    if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-      // TODO(tdanderson): Update the icon used for tracing or remove it from
-      // the system menu. See crbug.com/625691.
-      image_->SetImage(CreateVectorIcon(gfx::VectorIconId::CODE, kMenuIconSize,
-                                        kMenuIconColor));
-    } else {
+    if (!MaterialDesignController::UseMaterialDesignSystemIcons()) {
+      // The icon doesn't change in non-md.
       image_->SetImage(
           bundle.GetImageNamed(IDR_AURA_UBER_TRAY_TRACING).ToImageSkia());
     }
@@ -57,7 +54,23 @@ class DefaultTracingView : public ActionableView {
   ~DefaultTracingView() override {}
 
  private:
-  // Overridden from ActionableView.
+  // ActionableView:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+    ActionableView::OnNativeThemeChanged(theme);
+
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+      return;
+
+    TrayPopupItemStyle style(GetNativeTheme(),
+                             TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
+    style.SetupLabel(label_);
+
+    // TODO(tdanderson): Update the icon used for tracing or remove it from
+    // the system menu. See crbug.com/625691.
+    image_->SetImage(CreateVectorIcon(gfx::VectorIconId::CODE, kMenuIconSize,
+                                      style.GetForegroundColor()));
+  }
+
   bool PerformAction(const ui::Event& event) override {
     WmShell::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_TRACING_DEFAULT_SELECTED);

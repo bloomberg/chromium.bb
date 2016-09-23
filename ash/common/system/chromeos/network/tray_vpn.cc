@@ -11,6 +11,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_more.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
 #include "chromeos/network/network_state.h"
@@ -35,9 +36,7 @@ class VpnDefaultView : public TrayItemMore,
                        public ui::network_icon::AnimationObserver {
  public:
   VpnDefaultView(SystemTrayItem* owner, bool show_more)
-      : TrayItemMore(owner, show_more) {
-    Update();
-  }
+      : TrayItemMore(owner, show_more) {}
 
   ~VpnDefaultView() override {
     ui::network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
@@ -79,16 +78,50 @@ class VpnDefaultView : public TrayItemMore,
   // ui::network_icon::AnimationObserver
   void NetworkIconChanged() override { Update(); }
 
+ protected:
+  // TrayItemMore:
+  std::unique_ptr<TrayPopupItemStyle> CreateStyle() const override {
+    std::unique_ptr<TrayPopupItemStyle> style = TrayItemMore::CreateStyle();
+    style->set_color_style(
+        !IsVpnEnabled()
+            ? TrayPopupItemStyle::ColorStyle::DISABLED
+            : IsVpnConnected() ? TrayPopupItemStyle::ColorStyle::ACTIVE
+                               : TrayPopupItemStyle::ColorStyle::INACTIVE);
+    return style;
+  }
+
+  void UpdateStyle() override {
+    TrayItemMore::UpdateStyle();
+    Update();
+  }
+
  private:
+  bool IsVpnEnabled() const {
+    NetworkStateHandler* handler =
+        NetworkHandler::Get()->network_state_handler();
+    return handler->FirstNetworkByType(NetworkTypePattern::VPN());
+  }
+
+  bool IsVpnConnected() const {
+    NetworkStateHandler* handler =
+        NetworkHandler::Get()->network_state_handler();
+    const NetworkState* vpn =
+        handler->FirstNetworkByType(NetworkTypePattern::VPN());
+    return IsVpnEnabled() &&
+           (vpn->IsConnectedState() || vpn->IsConnectingState());
+  }
+
   void GetNetworkStateHandlerImageAndLabel(gfx::ImageSkia* image,
                                            base::string16* label,
                                            bool* animating) {
+    // TODO(bruthig): Update the image to use the proper color. See
+    // https://crbug.com/632147.
     NetworkStateHandler* handler =
         NetworkHandler::Get()->network_state_handler();
     const NetworkState* vpn =
         handler->FirstNetworkByType(NetworkTypePattern::VPN());
     *image = ui::network_icon::GetVpnImage();
-    if (!vpn || (!vpn->IsConnectedState() && !vpn->IsConnectingState())) {
+    if (!IsVpnConnected()) {
       if (label) {
         *label =
             l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED);

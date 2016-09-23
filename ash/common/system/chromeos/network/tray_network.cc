@@ -13,6 +13,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
 #include "base/command_line.h"
@@ -97,13 +98,13 @@ class NetworkTrayView : public TrayItemView,
     Layout();
   }
 
-  // views::View override.
+  // views::View:
   void GetAccessibleState(ui::AXViewState* state) override {
     state->name = connection_status_string_;
     state->role = ui::AX_ROLE_BUTTON;
   }
 
-  // ui::network_icon::AnimationObserver
+  // ui::network_icon::AnimationObserver:
   void NetworkIconChanged() override { UpdateNetworkStateHandlerIcon(); }
 
  private:
@@ -150,6 +151,8 @@ class NetworkDefaultView : public TrayItemMore,
     gfx::ImageSkia image;
     base::string16 label;
     bool animating = false;
+    // TODO(bruthig): Update the image to use the proper color. See
+    // https://crbug.com/632027.
     ui::network_icon::GetDefaultNetworkImageAndLabel(
         ui::network_icon::ICON_TYPE_DEFAULT_VIEW, &image, &label, &animating);
     if (animating)
@@ -164,6 +167,14 @@ class NetworkDefaultView : public TrayItemMore,
 
   // ui::network_icon::AnimationObserver
   void NetworkIconChanged() override { Update(); }
+
+ protected:
+  // TrayItemMore:
+  std::unique_ptr<TrayPopupItemStyle> CreateStyle() const override {
+    // TODO(bruthig): Apply different ColorStyles based on network state. See
+    // https://crbug.com/632027.
+    return TrayItemMore::CreateStyle();
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkDefaultView);

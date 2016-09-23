@@ -17,6 +17,7 @@
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/tray_accessibility.h"
 #include "ash/common/wm_shell.h"
@@ -86,6 +87,19 @@ class IMEDefaultView : public TrayItemMore {
   void UpdateLabel(const base::string16& label) {
     SetLabel(label);
     SetAccessibleName(label);
+  }
+
+ protected:
+  // TrayItemMore:
+  void UpdateStyle() override {
+    TrayItemMore::UpdateStyle();
+
+    if (!MaterialDesignController::IsSystemTrayMenuMaterial())
+      return;
+
+    std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
+    SetImage(gfx::CreateVectorIcon(kSystemMenuKeyboardIcon,
+                                   style->GetForegroundColor()));
   }
 
  private:

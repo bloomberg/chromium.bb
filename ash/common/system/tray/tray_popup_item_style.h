@@ -6,7 +6,6 @@
 #define ASH_COMMON_SYSTEM_TRAY_TRAY_POPUP_ITEM_STYLE_H_
 
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace ui {
@@ -18,11 +17,29 @@ class Label;
 }  // namespace views
 
 namespace ash {
-class TrayPopupItemStyleObserver;
 
 // Central style provider for the system tray menu. Makes it easier to ensure
 // all visuals are consistent and easily updated in one spot instead of being
 // defined in multiple places throughout the code.
+//
+// Since the TrayPopupItemStyle is based on a NativeTheme you should ensure that
+// when a View's theme changes that a style is re-applied using the new theme.
+// Typically this is done by overriding View::OnNativeThemeChanged() as shown
+// below.
+//
+// It is also important to note that Views call through the virtual function
+// View::GetWidget() when obtaining the NativeTheme. Therefore, Views should not
+// be getting the theme in their own constructors. See https://crbug.com/647376.
+//
+// Example:
+//   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+//     UpdateStyle();
+//   }
+//
+//   void UpdateStyle() {
+//     TrayPopupItemStyle style(GetNativeTheme());
+//     style.SetupLabel(label_);
+//   }
 class TrayPopupItemStyle {
  public:
   // The different visual styles that a row can have.
@@ -55,23 +72,17 @@ class TrayPopupItemStyle {
   TrayPopupItemStyle(const ui::NativeTheme* theme, FontStyle font_style);
   ~TrayPopupItemStyle();
 
-  void AddObserver(TrayPopupItemStyleObserver* observer);
-  void RemoveObserver(TrayPopupItemStyleObserver* observer);
-
   const ui::NativeTheme* theme() const { return theme_; }
 
-  // Sets the |theme_| and notifies observers.
-  void SetTheme(const ui::NativeTheme* theme);
+  void set_theme(const ui::NativeTheme* theme) { theme_ = theme; }
 
   ColorStyle color_style() const { return color_style_; }
 
-  // Sets the |color_style_| and notifies observers if |color_style_| changed.
-  void SetColorStyle(ColorStyle color_style);
+  void set_color_style(ColorStyle color_style) { color_style_ = color_style; }
 
   FontStyle font_style() const { return font_style_; }
 
-  // Sets the |font_style_| notifies observers if |font_style_| changed.
-  void SetFontStyle(FontStyle font_style);
+  void set_font_style(FontStyle font_style) { font_style_ = font_style; }
 
   SkColor GetForegroundColor() const;
 
@@ -79,16 +90,12 @@ class TrayPopupItemStyle {
   void SetupLabel(views::Label* label) const;
 
  private:
-  void NotifyObserversStyleUpdated();
-
   // The theme that the styles are dervied from.
   const ui::NativeTheme* theme_;
 
   FontStyle font_style_;
 
   ColorStyle color_style_;
-
-  base::ObserverList<TrayPopupItemStyleObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPopupItemStyle);
 };

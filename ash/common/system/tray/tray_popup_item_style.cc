@@ -4,7 +4,6 @@
 
 #include "ash/common/system/tray/tray_popup_item_style.h"
 
-#include "ash/common/system/tray/tray_popup_item_style_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
@@ -27,30 +26,6 @@ TrayPopupItemStyle::TrayPopupItemStyle(const ui::NativeTheme* theme,
       color_style_(ColorStyle::ACTIVE) {}
 
 TrayPopupItemStyle::~TrayPopupItemStyle() {}
-
-void TrayPopupItemStyle::AddObserver(TrayPopupItemStyleObserver* observer) {
-  if (!observers_.HasObserver(observer))
-    observers_.AddObserver(observer);
-}
-
-void TrayPopupItemStyle::RemoveObserver(TrayPopupItemStyleObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
-void TrayPopupItemStyle::SetTheme(const ui::NativeTheme* theme) {
-  theme_ = theme;
-  NotifyObserversStyleUpdated();
-}
-
-void TrayPopupItemStyle::SetColorStyle(ColorStyle color_style) {
-  color_style_ = color_style;
-  NotifyObserversStyleUpdated();
-}
-
-void TrayPopupItemStyle::SetFontStyle(FontStyle font_style) {
-  font_style_ = font_style;
-  NotifyObserversStyleUpdated();
-}
 
 SkColor TrayPopupItemStyle::GetForegroundColor() const {
   switch (color_style_) {
@@ -95,11 +70,6 @@ void TrayPopupItemStyle::SetupLabel(views::Label* label) const {
                                                gfx::Font::Weight::MEDIUM));
       break;
   }
-}
-
-void TrayPopupItemStyle::NotifyObserversStyleUpdated() {
-  FOR_EACH_OBSERVER(TrayPopupItemStyleObserver, observers_,
-                    OnTrayPopupItemStyleUpdated());
 }
 
 }  // namespace ash
