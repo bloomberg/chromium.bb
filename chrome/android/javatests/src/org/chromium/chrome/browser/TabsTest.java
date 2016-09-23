@@ -1694,8 +1694,8 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         File incognitoTabFile = new File(tabStateDir,
                 TabState.getTabStateFilename(incognitoModel.getTabAt(0).getId(), true));
 
-        assertTrue(normalTabFile.getAbsolutePath(), normalTabFile.exists());
-        assertTrue(incognitoTabFile.getAbsolutePath(), incognitoTabFile.exists());
+        assertFileExists(normalTabFile, true);
+        assertFileExists(incognitoTabFile, true);
 
         // Although we're destroying the activity, the Application will still live on since its in
         // the same process as this test.
@@ -1703,8 +1703,8 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
 
         // Activity will be started without a savedInstanceState.
         startMainActivityOnBlankPage();
-        assertTrue(normalTabFile.exists());
-        assertFalse(incognitoTabFile.exists());
+        assertFileExists(normalTabFile, true);
+        assertFileExists(incognitoTabFile, false);
     }
 
     @Override
@@ -1721,5 +1721,16 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
             return;
         }
         startMainActivityFromLauncher();
+    }
+
+    private void assertFileExists(final File fileToCheck, final boolean expected)
+            throws InterruptedException {
+        CriteriaHelper.pollInstrumentationThread(
+                    Criteria.equals(expected, new Callable<Boolean>() {
+                        @Override
+                        public Boolean call() {
+                            return fileToCheck.exists();
+                        }
+                    }));
     }
 }
