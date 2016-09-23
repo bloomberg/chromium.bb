@@ -237,6 +237,7 @@ const size_t kDeprecatedAcceleratorsDataLength =
 
 const AcceleratorData kDebugAcceleratorData[] = {
 #if defined(OS_CHROMEOS)
+    {true, ui::VKEY_N, kDebugModifier, TOGGLE_WIFI},
     {true, ui::VKEY_O, kDebugModifier, DEBUG_SHOW_TOAST},
     {true, ui::VKEY_P, ui::EF_COMMAND_DOWN | ui::EF_SHIFT_DOWN,
      DEBUG_TOGGLE_TOUCH_PAD},
