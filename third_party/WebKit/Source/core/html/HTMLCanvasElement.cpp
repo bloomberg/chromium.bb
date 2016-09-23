@@ -626,7 +626,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer, Snap
 
         m_context->paintRenderingResultsToCanvas(sourceBuffer);
         imageData = ImageData::create(m_size);
-        if (hasImageBuffer()) {
+        if (imageData && hasImageBuffer()) {
             sk_sp<SkImage> snapshot = buffer()->newSkImageSnapshot(PreferNoAcceleration, reason);
             if (snapshot) {
                 SkImageInfo imageInfo = SkImageInfo::Make(width(), height(), kRGBA_8888_SkColorType, kUnpremul_SkAlphaType);
@@ -638,7 +638,7 @@ ImageData* HTMLCanvasElement::toImageData(SourceDrawingBuffer sourceBuffer, Snap
 
     imageData = ImageData::create(m_size);
 
-    if (!m_context)
+    if (!m_context || !imageData)
         return imageData;
 
     DCHECK(m_context->is2d());
@@ -661,6 +661,9 @@ String HTMLCanvasElement::toDataURLInternal(const String& mimeType, const double
     String encodingMimeType = toEncodingMimeType(mimeType, EncodeReasonToDataURL);
 
     ImageData* imageData = toImageData(sourceBuffer, SnapshotReasonToDataURL);
+
+    if (!imageData) // allocation failure
+        return String("data:,");
 
     return ImageDataBuffer(imageData->size(), imageData->data()->data()).toDataURL(encodingMimeType, quality);
 }
@@ -745,6 +748,12 @@ void HTMLCanvasElement::toBlob(BlobCallback* callback, const String& mimeType, c
     String encodingMimeType = toEncodingMimeType(mimeType, EncodeReasonToBlobCallback);
 
     ImageData* imageData = toImageData(BackBuffer, SnapshotReasonToBlob);
+
+    if (!imageData) {
+        // ImageData allocation faillure
+        TaskRunnerHelper::get(TaskType::CanvasBlobSerialization, &document())->postTask(BLINK_FROM_HERE, WTF::bind(&BlobCallback::handleEvent, wrapPersistent(callback), nullptr));
+        return;
+    }
 
     CanvasAsyncBlobCreator* asyncCreator = CanvasAsyncBlobCreator::create(imageData->data(), encodingMimeType, imageData->size(), callback, startTime, document());
 
