@@ -8,6 +8,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/compiler/compiler.gni")
+import("//build/config/features.gni")
 
 # Please keep features in alphabetical order.
 declare_args() {
@@ -58,5 +59,6 @@ chrome_grit_defines = [
   "enable_google_now=$enable_google_now",
   "enable_hotwording=$enable_hotwording",
   "enable_vr_shell=$enable_vr_shell",
+  "safe_browsing_mode=$safe_browsing_mode",
   "use_vulcanize=$use_vulcanize",
 ]
