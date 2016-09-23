@@ -457,8 +457,6 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   static Time NowFromSystemTime();
 
   // Converts to/from time_t in UTC and a Time class.
-  // TODO(brettw) this should be removed once everybody starts using the |Time|
-  // class.
   static Time FromTimeT(time_t tt);
   time_t ToTimeT() const;
 
