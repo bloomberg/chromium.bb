@@ -83,7 +83,7 @@ class MockWarningReporter: public DwarfCUToModule::WarningReporter {
   MOCK_METHOD1(UncoveredFunction, void(const Module::Function &function));
   MOCK_METHOD1(UncoveredLine, void(const Module::Line &line));
   MOCK_METHOD1(UnnamedFunction, void(uint64 offset));
-  MOCK_METHOD2(DemangleError, void(const string &input, int error));
+  MOCK_METHOD1(DemangleError, void(const string &input));
   MOCK_METHOD2(UnhandledInterCUReference, void(uint64 offset, uint64 target));
 };
 
