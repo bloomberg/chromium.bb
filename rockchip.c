@@ -26,17 +26,24 @@ static int rockchip_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	struct drm_rockchip_gem_create gem_create;
 
 	if (format == DRV_FORMAT_NV12) {
-		width = ALIGN(width, 4);
-		height = ALIGN(height, 4);
-	}
+		uint32_t w_mbs = DIV_ROUND_UP(ALIGN(width, 16), 16);
+		uint32_t h_mbs = DIV_ROUND_UP(ALIGN(width, 16), 16);
 
-	drv_bo_from_format(bo, width, height, format);
+		uint32_t aligned_width = w_mbs * 16;
+		uint32_t aligned_height = DIV_ROUND_UP(h_mbs * 16 * 3, 2);
+
+		drv_bo_from_format(bo, aligned_width, height, format);
+		bo->total_size = bo->strides[0] * aligned_height
+				 + w_mbs * h_mbs * 128;
+	} else {
+		drv_bo_from_format(bo, width, height, format);
+	}
 
 	memset(&gem_create, 0, sizeof(gem_create));
 	gem_create.size = bo->total_size;
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_ROCKCHIP_GEM_CREATE,
-			   &gem_create);
+		       &gem_create);
 
 	if (ret) {
 		fprintf(stderr, "drv: DRM_IOCTL_ROCKCHIP_GEM_CREATE failed "
