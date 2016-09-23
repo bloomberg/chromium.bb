@@ -161,6 +161,133 @@ inline EncryptionScheme AesCtrEncryptionScheme() {
                           EncryptionScheme::Pattern());
 }
 
+// ---- Begin copy/paste from ui/gfx/color_space.h ----
+enum class PrimaryID : uint16_t {
+  // The first 0-255 values should match the H264 specification.
+  RESERVED0 = 0,
+  BT709 = 1,
+  UNSPECIFIED = 2,
+  RESERVED = 3,
+  BT470M = 4,
+  BT470BG = 5,
+  SMPTE170M = 6,
+  SMPTE240M = 7,
+  FILM = 8,
+  BT2020 = 9,
+  SMPTEST428_1 = 10,
+  SMPTEST431_2 = 11,
+  SMPTEST432_1 = 12,
+
+  // Chrome-specific values start at 1000.
+  XYZ_D50 = 1000,
+  // TODO(hubbe): We need to store the primaries.
+  CUSTOM = 1001,
+  LAST = CUSTOM
+};
+
+enum class TransferID : uint16_t {
+  // The first 0-255 values should match the H264 specification.
+  RESERVED0 = 0,
+  BT709 = 1,
+  UNSPECIFIED = 2,
+  RESERVED = 3,
+  GAMMA22 = 4,
+  GAMMA28 = 5,
+  SMPTE170M = 6,
+  SMPTE240M = 7,
+  LINEAR = 8,
+  LOG = 9,
+  LOG_SQRT = 10,
+  IEC61966_2_4 = 11,
+  BT1361_ECG = 12,
+  IEC61966_2_1 = 13,
+  BT2020_10 = 14,
+  BT2020_12 = 15,
+  SMPTEST2084 = 16,
+  SMPTEST428_1 = 17,
+  ARIB_STD_B67 = 18,  // AKA hybrid-log gamma, HLG
+
+  // Chrome-specific values start at 1000.
+  GAMMA24 = 1000,
+
+  // This is an ad-hoc transfer function that decodes SMPTE 2084 content
+  // into a 0-1 range more or less suitable for viewing on a non-hdr
+  // display.
+  SMPTEST2084_NON_HDR,
+
+  // TODO(hubbe): Need to store an approximation of the gamma function(s).
+  CUSTOM,
+  LAST = CUSTOM,
+};
+
+enum class MatrixID : int16_t {
+  // The first 0-255 values should match the H264 specification.
+  RGB = 0,
+  BT709 = 1,
+  UNSPECIFIED = 2,
+  RESERVED = 3,
+  FCC = 4,
+  BT470BG = 5,
+  SMPTE170M = 6,
+  SMPTE240M = 7,
+  YCOCG = 8,
+  BT2020_NCL = 9,
+  BT2020_CL = 10,
+  YDZDX = 11,
+
+  // Chrome-specific values start at 1000
+  LAST = YDZDX,
+};
+
+// This corresponds to the WebM Range enum which is part of WebM color data
+// (see http://www.webmproject.org/docs/container/#Range).
+// H.264 only uses a bool, which corresponds to the LIMITED/FULL values.
+// Chrome-specific values start at 1000.
+enum class RangeID : int8_t {
+  // Range is not explicitly specified / unknown.
+  UNSPECIFIED = 0,
+
+  // Limited Rec. 709 color range with RGB values ranging from 16 to 235.
+  LIMITED = 1,
+
+  // Full RGB color range with RGB valees from 0 to 255.
+  FULL = 2,
+
+  // Range is defined by TransferID/MatrixID.
+  DERIVED = 3,
+
+  LAST = DERIVED
+};
+// ---- End copy/pasted from ui/gfx/color_space.h ----
+
+// ---- Begin copy/paste from media/base/hdr_metadata.h ----
+// SMPTE ST 2086 mastering metadata.
+struct MasteringMetadata {
+  float primary_r_chromaticity_x = 0;
+  float primary_r_chromaticity_y = 0;
+  float primary_g_chromaticity_x = 0;
+  float primary_g_chromaticity_y = 0;
+  float primary_b_chromaticity_x = 0;
+  float primary_b_chromaticity_y = 0;
+  float white_point_chromaticity_x = 0;
+  float white_point_chromaticity_y = 0;
+  float luminance_max = 0;
+  float luminance_min = 0;
+
+  MasteringMetadata();
+  MasteringMetadata(const MasteringMetadata& rhs);
+};
+
+// HDR metadata common for HDR10 and WebM/VP9-based HDR formats.
+struct HDRMetadata {
+  MasteringMetadata mastering_metadata;
+  unsigned max_cll = 0;
+  unsigned max_fall = 0;
+
+  HDRMetadata();
+  HDRMetadata(const HDRMetadata& rhs);
+};
+// ---- End copy/paste from media/base/hdr_metadata.h ----
 
 // TODO(erickung): Remove constructor once CMA backend implementation doesn't
 // create a new object to reset the configuration and use IsValidConfig() to
@@ -226,6 +353,15 @@ struct VideoConfig {
   std::vector<uint8_t> extra_data;
   // Encryption scheme (if any) used for the content.
   EncryptionScheme encryption_scheme;
+
+  // ColorSpace info
+  PrimaryID primaries = PrimaryID::UNSPECIFIED;
+  TransferID transfer = TransferID::UNSPECIFIED;
+  MatrixID matrix = MatrixID::UNSPECIFIED;
+  RangeID range = RangeID::UNSPECIFIED;
+
+  bool have_hdr_metadata = false;
+  HDRMetadata hdr_metadata;
 };
 
 inline VideoConfig::VideoConfig()
