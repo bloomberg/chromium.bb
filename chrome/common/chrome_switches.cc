@@ -153,6 +153,9 @@ const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";
 // apps.
 const char kDebugPackedApps[]               = "debug-packed-apps";
 
+// Passes command line parameters to the DevTools front-end.
+const char kDevToolsFlags[]                 = "devtools-flags";
+
 // Triggers a plethora of diagnostic modes.
 const char kDiagnostics[]                   = "diagnostics";
 

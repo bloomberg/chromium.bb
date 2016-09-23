@@ -60,6 +60,7 @@ extern const char kCrashOnHangThreads[];
 extern const char kCreateBrowserOnStartupForTests[];
 extern const char kDebugEnableFrameToggle[];
 extern const char kDebugPackedApps[];
+extern const char kDevToolsFlags[];
 extern const char kDiagnostics[];
 extern const char kDiagnosticsFormat[];
 extern const char kDiagnosticsRecovery[];
