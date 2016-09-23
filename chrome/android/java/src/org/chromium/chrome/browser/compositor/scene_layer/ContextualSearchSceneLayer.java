@@ -9,6 +9,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchIconSpriteControl;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPeekPromoControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPromoControl;
@@ -31,7 +32,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
 
     private final float mDpToPx;
 
-    private ContextualSearchPanel mPanel;
+    private ContextualSearchImageControl mImageControl;
 
     public ContextualSearchSceneLayer(float dpToPx) {
         mDpToPx = dpToPx;
@@ -43,14 +44,14 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
      * @param panel The OverlayPanel to render.
      * @param searchBarControl The Search Bar control.
      * @param peekPromoControl The peeking promotion for Contextual Search.
-     * @param spriteControl The object controlling the "G" animation for Contextual Search.
+     * @param imageControl The object controlling the image displayed in the Bar.
      */
     public void update(ResourceManager resourceManager,
             ContextualSearchPanel panel,
             ContextualSearchBarControl searchBarControl,
             ContextualSearchPeekPromoControl peekPromoControl,
             ContextualSearchPromoControl promoControl,
-            ContextualSearchIconSpriteControl spriteControl) {
+            ContextualSearchImageControl imageControl) {
         // Don't try to update the layer if not initialized or showing.
         if (resourceManager == null || !panel.isShowing()) return;
 
@@ -58,7 +59,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
             nativeCreateContextualSearchLayer(mNativePtr, resourceManager);
             mIsInitialized = true;
         }
-        mPanel = panel;
+        mImageControl = imageControl;
 
         int searchContextViewId = searchBarControl.getSearchContextViewId();
         int searchTermViewId = searchBarControl.getSearchTermViewId();
@@ -77,11 +78,13 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
         float searchPeekPromoRippleOpacity = peekPromoControl.getRippleOpacity();
         float searchPeekPromoTextOpacity = peekPromoControl.getTextOpacity();
 
-        boolean thumbnailVisible = panel.getThumbnailVisible();
-        String thumbnailUrl = panel.getThumbnailUrl();
-        int thumbnailSize = panel.getThumbnailSize();
+        boolean thumbnailVisible = imageControl.getThumbnailVisible();
+        String thumbnailUrl = imageControl.getThumbnailUrl();
+        float thumbnailVisibilityPercentage = imageControl.getThumbnailVisibilityPercentage();
+        int thumbnailSize = imageControl.getThumbnailSize();
 
-        boolean searchProviderIconSpriteVisible = spriteControl.isVisible() && !thumbnailVisible;
+        ContextualSearchIconSpriteControl spriteControl = imageControl.getIconSpriteControl();
+        boolean searchProviderIconSpriteVisible = spriteControl.isVisible();
         float searchProviderIconCompletionPercentage = spriteControl.getCompletionPercentage();
 
         float searchPanelX = panel.getOffsetX();
@@ -163,6 +166,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
                 searchProviderIconSpriteVisible,
                 searchProviderIconCompletionPercentage,
                 thumbnailVisible,
+                thumbnailVisibilityPercentage,
                 thumbnailSize,
                 thumbnailUrl,
                 arrowIconOpacity,
@@ -177,7 +181,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
 
     @CalledByNative
     public void onThumbnailFetched(boolean success) {
-        if (mPanel != null) mPanel.onThumbnailFetched(success);
+        if (mImageControl != null) mImageControl.onThumbnailFetched(success);
     }
 
     @Override
@@ -266,6 +270,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
             boolean searchProviderIconSpriteVisible,
             float searchProviderIconCompletionPercentage,
             boolean thumbnailVisible,
+            float thumbnailVisibilityPercentage,
             int thumbnailSize,
             String thumbnailUrl,
             float arrowIconOpacity,

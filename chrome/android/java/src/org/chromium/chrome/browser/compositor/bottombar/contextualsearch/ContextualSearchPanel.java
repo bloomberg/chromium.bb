@@ -144,7 +144,7 @@ public class ContextualSearchPanel extends OverlayPanel {
                 getSearchBarControl(),
                 getPeekPromoControl(),
                 getPromoControl(),
-                getIconSpriteControl());
+                getImageControl());
 
         return mSceneLayer;
     }
@@ -192,9 +192,9 @@ public class ContextualSearchPanel extends OverlayPanel {
             if (getPeekPromoControl().isVisible()) {
                 getPeekPromoControl().animateAppearance();
             }
-            if (getIconSpriteControl().shouldAnimateAppearance()) {
+            if (getImageControl().getIconSpriteControl().shouldAnimateAppearance()) {
                 mPanelMetrics.setWasIconSpriteAnimated(true);
-                getIconSpriteControl().animateApperance();
+                getImageControl().getIconSpriteControl().animateApperance();
             } else {
                 mPanelMetrics.setWasIconSpriteAnimated(false);
             }
@@ -252,6 +252,7 @@ public class ContextualSearchPanel extends OverlayPanel {
 
         setProgressBarCompletion(0);
         setProgressBarVisible(false);
+        getImageControl().hideThumbnail(false);
 
         super.onClosed(reason);
 
@@ -487,9 +488,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param searchTerm The string that represents the search term.
      */
     public void setSearchTerm(String searchTerm) {
-        mThumbnailUrl = "";
-        mThumbnailVisible = false;
-
+        getImageControl().hideThumbnail(true);
         getSearchBarControl().setSearchTerm(searchTerm);
         mPanelMetrics.onSearchRequestStarted();
     }
@@ -500,9 +499,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param end The portion of the context from the selection to its end.
      */
     public void setSearchContext(String selection, String end) {
-        mThumbnailUrl = "";
-        mThumbnailVisible = false;
-
+        getImageControl().hideThumbnail(true);
         getSearchBarControl().setSearchContext(selection, end);
         mPanelMetrics.onSearchRequestStarted();
     }
@@ -525,7 +522,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         mPanelMetrics.onSearchTermResolved();
         getSearchBarControl().setSearchTerm(searchTerm);
         getSearchBarControl().animateSearchTermResolution();
-        mThumbnailUrl = thumbnailUrl;
+        getImageControl().setThumbnailUrl(thumbnailUrl);
     }
 
     // ============================================================================================
@@ -665,92 +662,19 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     // ============================================================================================
-    // Search Provider Icon Sprite
+    // Image Control
     // ============================================================================================
 
-    private ContextualSearchIconSpriteControl mIconSpriteControl;
+    private ContextualSearchImageControl mImageControl;
 
     /**
-     * @return The {@link ContextualSearchIconSpriteControl} for the panel.
+     * @return The {@link ContextualSearchImageControl} for the panel.
      */
-    public ContextualSearchIconSpriteControl getIconSpriteControl() {
-        if (mIconSpriteControl == null) {
-            mIconSpriteControl = new ContextualSearchIconSpriteControl(this, mContext);
+    public ContextualSearchImageControl getImageControl() {
+        if (mImageControl == null) {
+            mImageControl = new ContextualSearchImageControl(this, mContext);
         }
-        return mIconSpriteControl;
-    }
-
-    /**
-     * @param shouldAnimateIconSprite Whether the search provider icon sprite should be animated.
-     */
-    public void setShouldAnimateIconSprite(boolean shouldAnimateIconSprite) {
-        getIconSpriteControl().setShouldAnimateAppearance(shouldAnimateIconSprite);
-    }
-
-    // ============================================================================================
-    // Thumbnail
-    // ============================================================================================
-
-    // TODO(twellington): The thumbnail and icon sprite should probably be moved to
-    //                    ContextualSearchBarControl since they are displayed in the bar. This
-    //                    would also help facilitate showing the thumbnail and a caption at the
-    //                    same time.
-
-    /**
-     * The URL of the thumbnail to display.
-     */
-    private String mThumbnailUrl;
-
-    /**
-     * The height and width of the thumbnail.
-     */
-    private int mThumbnailSize;
-
-    /**
-     * Whether the thumbnail is visible.
-     */
-    private boolean mThumbnailVisible;
-
-    /**
-     * @return The URL used to fetch a thumbnail to display in the SearchBar. Will return an empty
-     *         string if no thumbnail is available.
-     */
-    public String getThumbnailUrl() {
-        return mThumbnailUrl != null ? mThumbnailUrl : "";
-    }
-
-    /**
-     * @return The height and width of the thumbnail in px.
-     */
-    public int getThumbnailSize() {
-        if (mThumbnailSize == 0) {
-            mThumbnailSize = mContext.getResources().getDimensionPixelSize(
-                    R.dimen.contextual_search_thumbnail_size);
-        }
-        return mThumbnailSize;
-    }
-
-    /**
-     * @return Whether the thumbnail is visible.
-     */
-    public boolean getThumbnailVisible() {
-        // TODO(twellington): The thumbnail and caption should become visible at the same time,
-        //                    possibly by using an observer that is notified when the caption
-        //                    snapshot is captured.
-        //                    Once the thumbnail has been captured, an animation for both
-        //                    the thumbnail and caption should be started.
-        return mThumbnailVisible;
-    }
-
-
-    /**
-     * Called when the thumbnail has finished being fetched.
-     * @param success Whether fetching the thumbnail was successful.
-     */
-    public void onThumbnailFetched(boolean success) {
-        mThumbnailVisible = success;
-        if (mThumbnailVisible) mIconSpriteControl.setIsVisible(false);
-        if (success) requestUpdate();
+        return mImageControl;
     }
 
     // ============================================================================================

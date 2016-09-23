@@ -76,6 +76,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      bool search_provider_icon_sprite_visible,
                      float search_provider_icon_sprite_completion_percentage,
                      bool thumbnail_visible,
+                     float thumbnail_visibility_percentage,
                      int thumbnail_size,
                      float arrow_icon_opacity,
                      float arrow_icon_rotation,
@@ -93,13 +94,20 @@ class ContextualSearchLayer : public OverlayPanelLayer {
   scoped_refptr<cc::Layer> GetIconLayer() override;
 
  private:
-  bool search_provider_icon_sprite_visible_;
-  int search_provider_icon_sprite_metadata_resource_id_;
-  float search_provider_icon_sprite_completion_percentage_;
-  bool thumbnail_visible_;
+  // Sets up |icon_layer_|, which displays an icon or thumbnail at the start
+  // of the Bar.
+  void SetupIconLayer(bool search_provider_icon_sprite_visible,
+                      int search_provider_icon_sprite_metadata_resource_id,
+                      float search_provider_icon_sprite_completion_percentage,
+                      bool thumbnail_visible,
+                      float thumbnail_visibility_percentage);
+
   int thumbnail_size_;
+  float thumbnail_side_margin_;
+  float thumbnail_top_margin_;
 
   scoped_refptr<cc::UIResourceLayer> search_context_;
+  scoped_refptr<cc::Layer> icon_layer_;
   scoped_refptr<CrushedSpriteLayer> search_provider_icon_sprite_;
   scoped_refptr<cc::UIResourceLayer> thumbnail_layer_;
   scoped_refptr<cc::UIResourceLayer> arrow_icon_;

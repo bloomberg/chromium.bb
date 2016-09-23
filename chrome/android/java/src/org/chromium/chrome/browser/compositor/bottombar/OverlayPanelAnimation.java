@@ -457,7 +457,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * @param setStartValueAfterDelay See {@link Animation#setStartValueAfterStartDelay(boolean)}
      * @param interpolator            The interpolator to use for the animation
      */
-    protected <T extends Enum<?>> void addToAnimation(Animatable<T> object, T prop, float start,
+    public <T extends Enum<?>> void addToAnimation(Animatable<T> object, T prop, float start,
             float end, long duration, long startTime, boolean setStartValueAfterDelay,
             Interpolator interpolator) {
         ChromeAnimation.Animation<Animatable<?>> component = createAnimation(object, prop, start,
