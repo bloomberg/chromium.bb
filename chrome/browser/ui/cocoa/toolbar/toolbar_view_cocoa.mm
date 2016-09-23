@@ -21,15 +21,6 @@
   [self drawBackground:dirtyRect];
 }
 
-// Override of |-[BackgroundGradientView strokeColor]|; make it respect opacity.
-- (NSColor*)strokeColor {
-  // Only return a transparent color if not Material Design.
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [[super strokeColor] colorWithAlphaComponent:[self dividerOpacity]];
-  }
-  return [super strokeColor];
-}
-
 - (BOOL)accessibilityIsIgnored {
   return NO;
 }

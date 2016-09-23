@@ -153,10 +153,6 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 @synthesize handleMiddleClick = handleMiddleClick_;
 
 + (NSSize)toolbarButtonSize {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return NSMakeSize(29, 29);
-  }
-
   return kMDButtonBounds.size;
 }
 
@@ -235,11 +231,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
       [[BrowserToolsImageRep alloc]
           initWithDrawSelector:@selector(drawBrowserToolsIcon:)
                       delegate:[BrowserToolsImageRep class]]);
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    [imageRep setFillColor:skia::SkColorToCalibratedNSColor(fillColor)];
-  } else {
-    [imageRep setFillColor:skia::SkColorToSRGBNSColor(fillColor)];
-  }
+  [imageRep setFillColor:skia::SkColorToSRGBNSColor(fillColor)];
 
   // Create the image from the image rep.
   NSImage* browserToolsIcon =
@@ -271,19 +263,11 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 }
 
 - (NSImage*)image {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [super image];
-  }
   // setImage: stores the image in an ivar.
   return image_.get();
 }
 
 - (void)setImage:(NSImage*)anImage {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    [super setImage:anImage];
-    return;
-  }
-
   // We want to set the default image as the image for kDefaultState. Setting it
   // as the default image (via setImage:) can cause ghosting from the two
   // default images being drawn over each other. However we also need to keep
@@ -294,8 +278,6 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 }
 
 - (void)resetButtonStateImages {
-  DCHECK(ui::MaterialDesignController::IsModeMaterial());
-
   NSImage* normalIcon = nil;
   NSImage* disabledIcon = nil;
   BOOL isDarkTheme = NO;
@@ -383,7 +365,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
   // In Material Design we want to catch when the button is attached to its
   // window so that we can configure its appearance based on the window's
   // theme.
-  if ([self window] && ui::MaterialDesignController::IsModeMaterial()) {
+  if ([self window]) {
     [self resetButtonStateImages];
   }
 }
@@ -392,9 +374,7 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 
 - (void)windowDidChangeTheme {
   // Update the hover and pressed image backgrounds to match the current theme.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    [self resetButtonStateImages];
-  }
+  [self resetButtonStateImages];
 }
 
 - (void)windowDidChangeActive {

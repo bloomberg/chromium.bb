@@ -52,7 +52,6 @@ class AppMenuButtonIconPainterDelegateMac :
 }
 
 - (gfx::VectorIconId)vectorIconId {
-  CHECK(ui::MaterialDesignController::IsModeMaterial());
   switch (type_) {
     case AppMenuIconController::IconType::NONE:
       DCHECK_EQ(severity_, AppMenuIconPainter::SEVERITY_NONE);
