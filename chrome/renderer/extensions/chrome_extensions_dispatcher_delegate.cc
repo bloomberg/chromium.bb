@@ -19,7 +19,6 @@
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
 #include "chrome/renderer/extensions/notifications_native_handler.h"
 #include "chrome/renderer/extensions/page_capture_custom_bindings.h"
-#include "chrome/renderer/extensions/platform_keys_natives.h"
 #include "chrome/renderer/extensions/sync_file_system_custom_bindings.h"
 #include "chrome/renderer/extensions/webstore_bindings.h"
 #include "components/version_info/version_info.h"
@@ -51,6 +50,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
+#include "chrome/renderer/extensions/platform_keys_natives.h"
 #endif
 
 using extensions::NativeHandler;
@@ -112,6 +112,10 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "file_manager_private",
       std::unique_ptr<NativeHandler>(
           new extensions::FileManagerPrivateCustomBindings(context)));
+  module_system->RegisterNativeHandler(
+      "platform_keys_natives",
+      std::unique_ptr<NativeHandler>(
+          new extensions::PlatformKeysNatives(context)));
 #endif  // defined(OS_CHROMEOS)
   module_system->RegisterNativeHandler(
       "notifications_private",
@@ -124,10 +128,6 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
   module_system->RegisterNativeHandler(
       "page_capture", std::unique_ptr<NativeHandler>(
                           new extensions::PageCaptureCustomBindings(context)));
-  module_system->RegisterNativeHandler(
-      "platform_keys_natives",
-      std::unique_ptr<NativeHandler>(
-          new extensions::PlatformKeysNatives(context)));
   module_system->RegisterNativeHandler(
       "webstore", std::unique_ptr<NativeHandler>(
                       new extensions::WebstoreBindings(context)));
@@ -168,8 +168,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("automationNode", IDR_AUTOMATION_NODE_JS);
   source_map->RegisterSource("browserAction",
                              IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("certificateProvider",
-                             IDR_CERTIFICATE_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("declarativeContent",
                              IDR_DECLARATIVE_CONTENT_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("desktopCapture",
@@ -177,27 +175,9 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("developerPrivate",
                              IDR_DEVELOPER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("downloads", IDR_DOWNLOADS_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("enterprise.platformKeys",
-                             IDR_ENTERPRISE_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("enterprise.platformKeys.internalAPI",
-                             IDR_ENTERPRISE_PLATFORM_KEYS_INTERNAL_API_JS);
-  source_map->RegisterSource("enterprise.platformKeys.KeyPair",
-                             IDR_ENTERPRISE_PLATFORM_KEYS_KEY_PAIR_JS);
-  source_map->RegisterSource("enterprise.platformKeys.SubtleCrypto",
-                             IDR_ENTERPRISE_PLATFORM_KEYS_SUBTLE_CRYPTO_JS);
-  source_map->RegisterSource("enterprise.platformKeys.Token",
-                             IDR_ENTERPRISE_PLATFORM_KEYS_TOKEN_JS);
   source_map->RegisterSource("feedbackPrivate",
                              IDR_FEEDBACK_PRIVATE_CUSTOM_BINDINGS_JS);
-#if defined(OS_CHROMEOS)
-  source_map->RegisterSource("fileBrowserHandler",
-                             IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("fileManagerPrivate",
-                             IDR_FILE_MANAGER_PRIVATE_CUSTOM_BINDINGS_JS);
-#endif  // defined(OS_CHROMEOS)
   source_map->RegisterSource("fileSystem", IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("fileSystemProvider",
-                             IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("gcm", IDR_GCM_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("identity", IDR_IDENTITY_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("imageWriterPrivate",
@@ -212,6 +192,34 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("pageAction", IDR_PAGE_ACTION_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("pageCapture",
                              IDR_PAGE_CAPTURE_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("syncFileSystem",
+                             IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("systemIndicator",
+                             IDR_SYSTEM_INDICATOR_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("tabCapture", IDR_TAB_CAPTURE_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);
+
+#if defined(OS_CHROMEOS)
+  source_map->RegisterSource("certificateProvider",
+                             IDR_CERTIFICATE_PROVIDER_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("enterprise.platformKeys",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("enterprise.platformKeys.internalAPI",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_INTERNAL_API_JS);
+  source_map->RegisterSource("enterprise.platformKeys.KeyPair",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_KEY_PAIR_JS);
+  source_map->RegisterSource("enterprise.platformKeys.SubtleCrypto",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_SUBTLE_CRYPTO_JS);
+  source_map->RegisterSource("enterprise.platformKeys.Token",
+                             IDR_ENTERPRISE_PLATFORM_KEYS_TOKEN_JS);
+  source_map->RegisterSource("fileBrowserHandler",
+                             IDR_FILE_BROWSER_HANDLER_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("fileManagerPrivate",
+                             IDR_FILE_MANAGER_PRIVATE_CUSTOM_BINDINGS_JS);
+  source_map->RegisterSource("fileSystemProvider",
+                             IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("platformKeys",
                              IDR_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("platformKeys.getPublicKey",
@@ -222,16 +230,10 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("platformKeys.SubtleCrypto",
                              IDR_PLATFORM_KEYS_SUBTLE_CRYPTO_JS);
   source_map->RegisterSource("platformKeys.utils", IDR_PLATFORM_KEYS_UTILS_JS);
-  source_map->RegisterSource("syncFileSystem",
-                             IDR_SYNC_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("systemIndicator",
-                             IDR_SYSTEM_INDICATOR_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("tabCapture", IDR_TAB_CAPTURE_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("tabs", IDR_TABS_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("terminalPrivate",
                              IDR_TERMINAL_PRIVATE_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("tts", IDR_TTS_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("ttsEngine", IDR_TTS_ENGINE_CUSTOM_BINDINGS_JS);
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(ENABLE_WEBRTC)
   source_map->RegisterSource("cast.streaming.rtpStream",
                              IDR_CAST_STREAMING_RTP_STREAM_CUSTOM_BINDINGS_JS);
