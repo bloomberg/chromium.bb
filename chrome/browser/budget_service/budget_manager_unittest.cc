@@ -37,16 +37,18 @@ class BudgetManagerTest : public testing::Test {
 
   void SetSiteEngagementScore(double score) {
     SiteEngagementService* service = SiteEngagementService::Get(&profile_);
-    service->ResetScoreForURL(GURL(kTestOrigin), score);
+    service->ResetScoreForURL(GURL(origin().Serialize()), score);
   }
 
   Profile* profile() { return &profile_; }
   const url::Origin origin() const { return origin_; }
+  void SetOrigin(const url::Origin& origin) { origin_ = origin; }
 
   void ReserveCallback(base::Closure run_loop_closure,
                        blink::mojom::BudgetServiceErrorType error,
                        bool success) {
     success_ = (error == blink::mojom::BudgetServiceErrorType::NONE) && success;
+    error_ = error;
     run_loop_closure.Run();
   }
 
@@ -77,11 +79,12 @@ class BudgetManagerTest : public testing::Test {
 
   // Members for callbacks to set.
   bool success_;
+  blink::mojom::BudgetServiceErrorType error_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
-  const url::Origin origin_;
+  url::Origin origin_;
 };
 
 TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
@@ -105,5 +108,28 @@ TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
 
   // The next consume should fail, since there is no reservation or budget
   // available.
+  ASSERT_FALSE(ConsumeBudget(type));
+}
+
+TEST_F(BudgetManagerTest, TestInsecureOrigin) {
+  const blink::mojom::BudgetOperationType type =
+      blink::mojom::BudgetOperationType::SILENT_PUSH;
+  SetOrigin(url::Origin(GURL("http://example.com")));
+  SetSiteEngagementScore(kTestSES);
+
+  // Methods on the BudgetManager should only be allowed for secure origins.
+  ASSERT_FALSE(ReserveBudget(type));
+  ASSERT_EQ(blink::mojom::BudgetServiceErrorType::NOT_SUPPORTED, error_);
+  ASSERT_FALSE(ConsumeBudget(type));
+}
+
+TEST_F(BudgetManagerTest, TestUniqueOrigin) {
+  const blink::mojom::BudgetOperationType type =
+      blink::mojom::BudgetOperationType::SILENT_PUSH;
+  SetOrigin(url::Origin(GURL("file://example.com:443/etc/passwd")));
+
+  // Methods on the BudgetManager should not be allowed for unique origins.
+  ASSERT_FALSE(ReserveBudget(type));
+  ASSERT_EQ(blink::mojom::BudgetServiceErrorType::NOT_SUPPORTED, error_);
   ASSERT_FALSE(ConsumeBudget(type));
 }

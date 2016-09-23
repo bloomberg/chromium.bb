@@ -59,6 +59,10 @@ ScriptPromise BudgetService::getCost(ScriptState* scriptState, const AtomicStrin
 {
     DCHECK(m_service);
 
+    String errorMessage;
+    if (!scriptState->getExecutionContext()->isSecureContext(errorMessage))
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, errorMessage));
+
     mojom::blink::BudgetOperationType type = stringToOperationType(operation);
     if (type == mojom::blink::BudgetOperationType::INVALID_OPERATION)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "Invalid operation type specified"));
@@ -80,12 +84,15 @@ ScriptPromise BudgetService::getBudget(ScriptState* scriptState)
 {
     DCHECK(m_service);
 
+    String errorMessage;
+    if (!scriptState->getExecutionContext()->isSecureContext(errorMessage))
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, errorMessage));
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // Get the budget from the browser BudgetService.
     RefPtr<SecurityOrigin> origin(scriptState->getExecutionContext()->getSecurityOrigin());
-    // TODO(harkness): Check that this is a valid secure origin.
     m_service->GetBudget(origin, convertToBaseCallback(WTF::bind(&BudgetService::gotBudget, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
 }
@@ -113,12 +120,15 @@ ScriptPromise BudgetService::reserve(ScriptState* scriptState, const AtomicStrin
     if (type == mojom::blink::BudgetOperationType::INVALID_OPERATION)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "Invalid operation type specified"));
 
+    String errorMessage;
+    if (!scriptState->getExecutionContext()->isSecureContext(errorMessage))
+        return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SecurityError, errorMessage));
+
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // Call to the BudgetService to place the reservation.
     RefPtr<SecurityOrigin> origin(scriptState->getExecutionContext()->getSecurityOrigin());
-    // TODO(harkness): Check that this is a valid secure origin.
     m_service->Reserve(origin, type, convertToBaseCallback(WTF::bind(&BudgetService::gotReservation, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
 }
