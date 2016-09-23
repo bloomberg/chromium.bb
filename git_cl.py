@@ -1375,8 +1375,8 @@ class Changelist(object):
           ('\nFailed to diff against upstream branch %s\n\n'
            'This branch probably doesn\'t exist anymore. To reset the\n'
            'tracking branch, please run\n'
-           '    git branch --set-upstream %s trunk\n'
-           'replacing trunk with origin/master or the relevant branch') %
+           '    git branch --set-upstream-to origin/master %s\n'
+           'or replace origin/master with the relevant branch') %
           (upstream_branch, self.GetBranch()))
 
     issue = self.GetIssue()
@@ -4869,7 +4869,7 @@ def CMDupstream(parser, args):
   if args:
     # One arg means set upstream branch.
     branch = cl.GetBranch()
-    RunGit(['branch', '--set-upstream', branch, args[0]])
+    RunGit(['branch', '--set-upstream-to', args[0], branch])
     cl = Changelist()
     print('Upstream branch set to %s' % (cl.GetUpstreamBranch(),))
 
