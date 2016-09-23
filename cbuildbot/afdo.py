@@ -45,8 +45,15 @@ AFDO_GENERATE_LLVM_PROF = '/usr/bin/create_llvm_prof'
 # and corresponding replacement string.
 CHROME_EBUILD_AFDO_REPL = r'\g<bef>%s\g<aft>'
 
+# An AFDO data is considered stale when BOTH of the following two metrics don't
+# meet. For example, if an AFDO data is generated 20 days ago but only 5 builds
+# away, it is considered valid.
+
 # How old can the AFDO data be? (in days).
-AFDO_ALLOWED_STALE = 14
+AFDO_ALLOWED_STALE_DAYS = 14
+
+# How old can the AFDO data be? (in difference of builds).
+AFDO_ALLOWED_STALE_BUILDS = 7
 
 # Set of boards that can generate the AFDO profile (can generate 'perf'
 # data with LBR events). Currently, it needs to be a device that has
@@ -348,22 +355,27 @@ def VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context):
     logging.info('Could not find latest AFDO info file %s' % latest_afdo_url)
     return None
 
-  # Verify the AFDO profile file is not too stale.
-  mod_date = latest_detail[0].creation_time
-  curr_date = datetime.datetime.now()
-  allowed_stale_days = datetime.timedelta(days=AFDO_ALLOWED_STALE)
-  if (curr_date - mod_date) > allowed_stale_days:
-    logging.info('Found latest AFDO info file %s but it is too old' %
-                 latest_afdo_url)
-    return None
-
   # Then get the name of the latest valid AFDO profile file.
   local_dir = AFDO_BUILDROOT_LOCAL % {'build_root': buildroot}
   latest_afdo_file = LATEST_CHROME_AFDO_FILE % afdo_release_spec
   latest_afdo_path = os.path.join(local_dir, latest_afdo_file)
   gs_context.Copy(latest_afdo_url, latest_afdo_path)
 
-  return osutils.ReadFile(latest_afdo_path).strip()
+  cand = osutils.ReadFile(latest_afdo_path).strip()
+  cand_build = int(cand.split('.')[2])
+  curr_build = int(afdo_release_spec['build'])
+
+  # Verify the AFDO profile file is not too stale.
+  mod_date = latest_detail[0].creation_time
+  curr_date = datetime.datetime.now()
+  allowed_stale_days = datetime.timedelta(days=AFDO_ALLOWED_STALE_DAYS)
+  if ((curr_date - mod_date) > allowed_stale_days and
+      (curr_build - cand_build) > AFDO_ALLOWED_STALE_BUILDS):
+    logging.info('Found latest AFDO info file %s but it is too old' %
+                 latest_afdo_url)
+    return None
+
+  return cand
 
 
 def GetLatestAFDOFile(cpv, arch, buildroot, gs_context):
@@ -384,11 +396,13 @@ def GetLatestAFDOFile(cpv, arch, buildroot, gs_context):
     None otherwise.
   """
   generator_arch = AFDO_ARCH_GENERATORS[arch]
-  version_number = cpv.version
-  current_release = version_number.split('.')[0]
+  version_numbers = cpv.version.split('.')
+  current_release = version_numbers[0]
+  current_build = version_numbers[2]
   afdo_release_spec = {'package': cpv.package,
                        'arch': generator_arch,
-                       'release': current_release}
+                       'release': current_release,
+                       'build': current_build}
   afdo_file = VerifyLatestAFDOFile(afdo_release_spec, buildroot, gs_context)
   if afdo_file:
     return afdo_file
