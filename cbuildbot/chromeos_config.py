@@ -665,6 +665,7 @@ _waterfall_config_map = {
         'reef-paladin',
         'gale-paladin',
         'gru-paladin',
+        'guado_moblab-paladin',
         'lakitu_next-paladin',
 
         # Incremental Builders.
@@ -2092,7 +2093,6 @@ def _GetConfig(site_config, ge_build_config):
       'nyan_freon',
       'falco',
       'glados',
-      'guado_moblab',
       'lakitu',
       'leon',
       'link',
