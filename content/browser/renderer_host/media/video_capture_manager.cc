@@ -622,6 +622,11 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
   if (desktop_id.type == DesktopMediaID::TYPE_WEB_CONTENTS) {
     video_capture_device.reset(WebContentsVideoCaptureDevice::Create(id));
     IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED);
+    if (desktop_id.audio_share) {
+      IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED_WITH_AUDIO);
+    } else {
+      IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED_WITHOUT_AUDIO);
+    }
   } else {
 #if defined(OS_ANDROID)
     video_capture_device = base::MakeUnique<ScreenCaptureDeviceAndroid>();

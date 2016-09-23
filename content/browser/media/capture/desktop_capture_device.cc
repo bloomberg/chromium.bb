@@ -380,6 +380,13 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
                 webrtc::MouseCursorMonitor::CreateForScreen(options,
                                                             source.id)));
             IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED);
+            if (source.audio_share) {
+              IncrementDesktopCaptureCounter(
+                  SCREEN_CAPTURER_CREATED_WITH_AUDIO);
+            } else {
+              IncrementDesktopCaptureCounter(
+                  SCREEN_CAPTURER_CREATED_WITHOUT_AUDIO);
+            }
           }
           break;
         }

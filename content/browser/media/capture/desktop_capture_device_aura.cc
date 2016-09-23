@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/timer/timer.h"
 #include "content/browser/media/capture/aura_window_capture_machine.h"
+#include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 
@@ -22,8 +23,15 @@ void SetCaptureSource(AuraWindowCaptureMachine* machine,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   aura::Window* window = DesktopMediaID::GetAuraWindowById(source);
-  if (window)
+  if (window) {
     machine->SetWindow(window);
+    if (source.type == DesktopMediaID::TYPE_SCREEN) {
+      if (source.audio_share)
+        IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED_WITH_AUDIO);
+      else
+        IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED_WITHOUT_AUDIO);
+    }
+  }
 }
 
 }  // namespace
