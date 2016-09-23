@@ -40,8 +40,8 @@ static constexpr float kDesktopScreenTiltDefault = 0;
 static constexpr float kScreenHeightRatio = 1.0f;
 static constexpr float kScreenWidthRatio = 16.0f / 9.0f;
 
-static constexpr float kReticleWidth = 0.05f;
-static constexpr float kReticleHeight = 0.05f;
+static constexpr float kReticleWidth = 0.025f;
+static constexpr float kReticleHeight = 0.025f;
 
 static constexpr float kLaserWidth = 0.01f;
 
@@ -51,11 +51,15 @@ static constexpr float kLaserWidth = 0.01f;
 // where the main screen is placed.
 static constexpr gvr::Vec3f kNeutralPose = {0.0f, 0.0f, -1.0f};
 
+static constexpr gvr::Vec3f kOrigin = {0.0f, 0.0f, 0.0f};
+
 // In lieu of an elbow model, we assume a position for the user's hand.
 // TODO(mthiesse): Handedness options.
 static constexpr gvr::Vec3f kHandPosition = {0.2f, -0.5f, -0.2f};
 
-static constexpr float kReticleZOffset = 0.01f;
+// Fraction of the z-distance to the object the cursor is drawn at to avoid
+// rounding errors drawing the cursor behind the object.
+static constexpr float kReticleZOffset = 0.99f;
 
 // UI element 0 is the browser content rectangle.
 static constexpr int kBrowserUiElementId = 0;
@@ -72,6 +76,7 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
     : desktop_screen_tilt_(kDesktopScreenTiltDefault),
       desktop_height_(kDesktopHeightDefault),
       desktop_position_(kDesktopPositionDefault),
+      cursor_distance_(-kDesktopPositionDefault.z),
       content_cvc_(content_core),
       delegate_(nullptr),
       weak_ptr_factory_(this) {
@@ -99,8 +104,6 @@ void VrShell::UpdateCompositorLayers(JNIEnv* env,
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
-  g_instance = nullptr;
-  gl::init::ClearGLBindings();
 }
 
 bool RegisterVrShell(JNIEnv* env) {
@@ -108,6 +111,8 @@ bool RegisterVrShell(JNIEnv* env) {
 }
 
 VrShell::~VrShell() {
+  g_instance = nullptr;
+  gl::init::ClearGLBindings();
 }
 
 void VrShell::SetDelegate(JNIEnv* env,
@@ -182,10 +187,40 @@ void VrShell::UpdateController() {
     translation.z += kHandPosition.z;
   }
 
-  // We can only be intersecting the desktop plane at the moment.
-  float distance_to_plane = desktop_plane_->GetRayDistance(translation,
-                                                           forward);
-  look_at_vector_ = GetRayPoint(translation, forward, distance_to_plane);
+  float desktop_dist = scene_.GetUiElementById(kBrowserUiElementId)
+      ->GetRayDistance(translation, forward);
+  gvr::Vec3f cursor_position = GetRayPoint(translation, forward, desktop_dist);
+  look_at_vector_ = cursor_position;
+  cursor_distance_ = desktop_dist;
+
+  // Determine which UI element (if any) the cursor is pointing to.
+  float closest_element = std::numeric_limits<float>::infinity();
+  int closest_element_index = -1;
+  int pixel_x = 0;
+  int pixel_y = 0;
+
+  for (std::size_t i = 0; i < scene_.GetUiElements().size(); ++i) {
+    const ContentRectangle& plane = *scene_.GetUiElements()[i].get();
+    float distance_to_plane = plane.GetRayDistance(kOrigin, cursor_position);
+    gvr::Vec3f plane_intersection_point =
+        GetRayPoint(kOrigin, cursor_position, distance_to_plane);
+    gvr::Vec3f rect_2d_point =
+        MatrixVectorMul(plane.transform.from_world, plane_intersection_point);
+    float x = rect_2d_point.x + 0.5f;
+    float y = 0.5f - rect_2d_point.y;
+    if (distance_to_plane > 0 && distance_to_plane < closest_element) {
+      bool is_inside = x >= 0.0f && x < 1.0f && y >= 0.0f && y < 1.0f;
+      if (is_inside) {
+        closest_element = distance_to_plane;
+        cursor_distance_ = desktop_dist * distance_to_plane;
+        closest_element_index = i;
+        pixel_x = int((plane.copy_rect.width * x) + plane.copy_rect.x);
+        pixel_y = int((plane.copy_rect.height * y) + plane.copy_rect.y);
+        look_at_vector_ = plane_intersection_point;
+      }
+    }
+  }
+  // TODO(mthiesse): Create input events for CVC using pixel_x/y.
 }
 
 void ApplyNeckModel(gvr::Mat4f& mat_forward) {
@@ -237,8 +272,6 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void VrShell::DrawVrShell(int64_t time) {
   float screen_tilt = desktop_screen_tilt_ * M_PI / 180.0f;
 
-  forward_vector_ = getForwardVector(head_pose_);
-
   gvr::Vec3f headPos = getTranslation(head_pose_);
   if (headPos.x == 0.0f && headPos.y == 0.0f && headPos.z == 0.0f) {
     // This appears to be a 3DOF pose without a neck model. Add one.
@@ -249,9 +282,9 @@ void VrShell::DrawVrShell(int64_t time) {
     ApplyNeckModel(head_pose_);
   }
 
-  desktop_plane_->translation.x = desktop_position_.x;
-  desktop_plane_->translation.y = desktop_position_.y;
-  desktop_plane_->translation.z = desktop_position_.z;
+  forward_vector_ = getForwardVector(head_pose_);
+
+  desktop_plane_->translation = desktop_position_;
 
   // Update the render position of all UI elements (including desktop).
   scene_.UpdateTransforms(screen_tilt, time);
@@ -332,11 +365,15 @@ void VrShell::DrawUI() {
 void VrShell::DrawCursor() {
   gvr::Mat4f mat;
   SetIdentityM(mat);
-  // Scale the pointer.
-  ScaleM(mat, mat, kReticleWidth, kReticleHeight, 1.0f);
+
+  // Scale the pointer to have a fixed FOV size at any distance.
+  ScaleM(mat, mat, kReticleWidth * cursor_distance_,
+         kReticleHeight * cursor_distance_, 1.0f);
+
   // Place the pointer at the screen plane intersection point.
-  TranslateM(mat, mat, look_at_vector_.x, look_at_vector_.y,
-             look_at_vector_.z + kReticleZOffset);
+  TranslateM(mat, mat, look_at_vector_.x * kReticleZOffset,
+             look_at_vector_.y * kReticleZOffset,
+             look_at_vector_.z * kReticleZOffset);
   gvr::Mat4f mv = MatrixMul(view_matrix_, mat);
   gvr::Mat4f mvp = MatrixMul(projection_matrix_, mv);
   vr_shell_renderer_->GetReticleRenderer()->Draw(mvp);

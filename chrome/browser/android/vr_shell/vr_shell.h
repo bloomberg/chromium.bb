@@ -113,6 +113,7 @@ class VrShell : public device::GvrDelegate {
   gvr::Vec3f forward_vector_;
 
   gvr::Sizei render_size_;
+  float cursor_distance_;
 
   std::unique_ptr<VrCompositor> content_compositor_view_;
   content::ContentViewCore* content_cvc_;
