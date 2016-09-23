@@ -129,6 +129,9 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   // prevent log spam.
   int num_top_level_box_skipped_;
 
+  // Tracks the number of MEDIA_LOGS for skipping empty trun samples.
+  int num_emtpy_samples_skipped_;
+
   DISALLOW_COPY_AND_ASSIGN(MP4StreamParser);
 };
 
