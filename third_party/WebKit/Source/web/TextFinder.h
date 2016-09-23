@@ -167,7 +167,7 @@ private:
     // It is not necessary if the frame is invisible, for example, or if this
     // is a repeat search that already returned nothing last time the same prefix
     // was searched.
-    bool shouldScopeMatches(const WTF::String& searchText);
+    bool shouldScopeMatches(const WTF::String& searchText, const WebFindOptions&);
 
     // Removes the current frame from the global scoping effort and triggers any
     // updates if appropriate. This method does not mark the scoping operation
