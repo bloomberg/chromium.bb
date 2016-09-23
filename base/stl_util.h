@@ -47,20 +47,6 @@ void STLDeleteContainerPointers(ForwardIterator begin, ForwardIterator end) {
   }
 }
 
-// For a range within a container of pairs, calls delete.
-// NOTE: Like STLDeleteContainerPointers, deleting behind the iterator.
-// Deleting the value does not always invalidate the iterator, but it may
-// do so if the key is a pointer into the value object.
-template <class ForwardIterator>
-void STLDeleteContainerPairSecondPointers(ForwardIterator begin,
-                                          ForwardIterator end) {
-  while (begin != end) {
-    ForwardIterator temp = begin;
-    ++begin;
-    delete temp->second;
-  }
-}
-
 // Counts the number of instances of val in a container.
 template <typename Container, typename T>
 typename std::iterator_traits<
