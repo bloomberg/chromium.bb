@@ -296,6 +296,7 @@ html[dir=rtl] .main-pane {
   background-repeat: no-repeat;
   flex: none;
   height: 27px;
+  margin: 8px 0;
   width: 27px;
 }
 
@@ -413,9 +414,8 @@ html[dir=rtl] .main-pane {
   display: flex;
   flex: none;
   flex-direction: column;
-  height: 40px;
-  justify-content: center;
-  width: 40px;
+  height: 43px;
+  width: 27px;
 }
 
 .launch-app-button-container {
