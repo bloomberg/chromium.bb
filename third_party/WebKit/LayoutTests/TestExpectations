@@ -1116,7 +1116,8 @@ crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ P
 crbug.com/587779 [ Linux Mac10.9 Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
 
 crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
-
+crbug.com/649320 fast/forms/select/menulist-appearance-basic.html [ NeedsRebaseline ]
+crbug.com/649320 http/tests/webfont/popup-menu-load-webfont-after-open.html [ NeedsRebaseline ]
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]

@@ -163,16 +163,12 @@ void LayoutMenuList::updateOptionsWidth() const
         String text = option->textIndentedToRespectGroupLabel();
         const ComputedStyle* itemStyle = option->computedStyle() ? option->computedStyle() : style();
         applyTextTransform(itemStyle, text, ' ');
-        TextRun textRun = constructTextRun(itemStyle->font(), text, *itemStyle);
-
-        maxOptionWidth = std::max(maxOptionWidth, computeTextWidth(textRun, *itemStyle));
+        // We apply SELECT's style, not OPTION's style because m_optionsWidth is
+        // used to determine intrinsic width of the menulist box.
+        TextRun textRun = constructTextRun(style()->font(), text, *style());
+        maxOptionWidth = std::max(maxOptionWidth, style()->font().width(textRun));
     }
     m_optionsWidth = static_cast<int>(ceilf(maxOptionWidth));
-}
-
-float LayoutMenuList::computeTextWidth(const TextRun& textRun, const ComputedStyle& computedStyle) const
-{
-    return computedStyle.font().width(textRun);
 }
 
 void LayoutMenuList::updateFromElement()

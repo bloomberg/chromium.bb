@@ -81,7 +81,6 @@ private:
     void setText(const String&);
     void updateInnerBlockHeight();
     void updateOptionsWidth() const;
-    float computeTextWidth(const TextRun&, const ComputedStyle&) const;
     void setIndexToSelectOnCancel(int listIndex);
 
     void didUpdateActiveOption(HTMLOptionElement*);
