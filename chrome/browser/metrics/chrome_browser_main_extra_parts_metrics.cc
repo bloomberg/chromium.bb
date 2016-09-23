@@ -32,6 +32,10 @@
 #include <cpu-features.h>
 #endif  // defined(OS_ANDROID) && defined(__arm__)
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/metrics/tab_usage_recorder.h"
+#endif  // !defined(OS_ANDROID)
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
 
@@ -362,6 +366,10 @@ void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {
   UMA_HISTOGRAM_COUNTS_100("Hardware.Display.Count.OnStartup", display_count_);
   display::Screen::GetScreen()->AddObserver(this);
   is_screen_observer_ = true;
+
+#if !defined(OS_ANDROID)
+  metrics::TabUsageRecorder::Initialize();
+#endif  // !defined(OS_ANDROID)
 }
 
 void ChromeBrowserMainExtraPartsMetrics::OnDisplayAdded(
