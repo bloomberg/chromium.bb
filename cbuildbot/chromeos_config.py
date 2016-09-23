@@ -711,21 +711,6 @@ _waterfall_config_map = {
 
         # Firmware Builders.
         'link-depthcharge-full-firmware',
-
-        # Toolchain Builders: 4 architectures {amd64,arm,x86,arm64}
-        #                   x 3 toolchains {gcc,llvm,llvm-next}
-        'amd64-gcc-toolchain',
-        'amd64-llvm-toolchain',
-        'amd64-llvm-next-toolchain',
-        'arm-gcc-toolchain',
-        'arm-llvm-toolchain',
-        'arm-llvm-next-toolchain',
-        'x86-gcc-toolchain',
-        'x86-llvm-toolchain',
-        'x86-llvm-next-toolchain',
-        'arm64-gcc-toolchain',
-        'arm64-llvm-toolchain',
-        'arm64-llvm-next-toolchain',
     ]),
 
     constants.WATERFALL_RELEASE: frozenset([
@@ -1609,12 +1594,13 @@ def CreateBoardConfigs(site_config, ge_build_config):
   return result
 
 
-def ToolchainBuilders(site_config, hw_test_list):
+def ToolchainBuilders(site_config, board_configs, hw_test_list):
   """Define templates used for toolchain builders.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
+    board_configs: Dictionary mapping board names to per-board configurations.
     hw_test_list: Object to help create lists of standard HW Tests.
   """
   site_config.AddTemplate(
@@ -1636,9 +1622,36 @@ def ToolchainBuilders(site_config, hw_test_list):
       trybot_list=False,
       description="Toolchain Builds (internal)",
   )
+  site_config.AddTemplate(
+      'gcc_toolchain',
+      site_config.templates.toolchain,
+      description='Full release build with next minor GCC toolchain revision',
+      gcc_githash='svn-mirror/google/gcc-4_9',
+      latest_toolchain=True,
+      hw_tests=hw_test_list.ToolchainTestFull(),
+      hw_tests_override=hw_test_list.ToolchainTestFull(),
+  )
+  site_config.AddTemplate(
+      'llvm_toolchain',
+      site_config.templates.toolchain,
+      description='Full release build with LLVM toolchain',
+      profile='llvm',
+      hw_tests=hw_test_list.ToolchainTestMedium(),
+      hw_tests_override=hw_test_list.ToolchainTestMedium(),
+  )
+  site_config.AddTemplate(
+      'llvm_next_toolchain',
+      site_config.templates.llvm_toolchain,
+      description='Full release build with LLVM (next) toolchain',
+      useflags=['clang', 'llvm-next'],
+  )
+
+  ### Toolchain waterfall entries.
+  ### Toolchain builder configs: 4 architectures {amd64,arm,x86,arm64}
+  ###                          x 3 toolchains {gcc,llvm,llvm-next}
+  ### All of these builders should be slaves of 'master-toolchain'.
 
   ### Master toolchain config.
-
   site_config.Add(
       'master-toolchain',
       site_config.templates.toolchain,
@@ -1649,129 +1662,81 @@ def ToolchainBuilders(site_config, hw_test_list):
       health_alert_recipients=['c-compiler-chrome@google.com'],
       health_threshold=1,
       afdo_use=False,
+      important=True,
+      active_waterfall=constants.WATERFALL_INTERNAL,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
   )
 
-  # Toolchain-specific mixins.
+  def toolchainSlaveHelper(name, board, *args, **kwargs):
+    site_config.Add(
+        name + '-gcc-toolchain',
+        site_config.templates.gcc_toolchain,
+        *args,
+        boards=[board],
+        important=True,
+        active_waterfall=constants.WATERFALL_INTERNAL,
+        **kwargs
+    )
+    site_config.Add(
+        name + '-llvm-toolchain',
+        site_config.templates.llvm_toolchain,
+        *args,
+        boards=[board],
+        important=True,
+        active_waterfall=constants.WATERFALL_INTERNAL,
+        **kwargs
+    )
+    site_config.Add(
+        name + '-llvm-next-toolchain',
+        site_config.templates.llvm_next_toolchain,
+        *args,
+        boards=[board],
+        important=True,
+        active_waterfall=constants.WATERFALL_INTERNAL,
+        **kwargs
+    )
 
-  site_config.AddTemplate(
-      'gcc_builder',
-      description='Full release build with next minor GCC toolchain revision',
-      gcc_githash='svn-mirror/google/gcc-4_9',
-      latest_toolchain=True,
-      hw_tests=hw_test_list.ToolchainTestFull(),
-      hw_tests_override=hw_test_list.ToolchainTestFull(),
-  )
-  site_config.AddTemplate(
-      'llvm_builder',
-      description='Full release build with LLVM toolchain',
-      profile='llvm',
-      hw_tests=hw_test_list.ToolchainTestMedium(),
-      hw_tests_override=hw_test_list.ToolchainTestMedium(),
-  )
-  site_config.AddTemplate(
-      'llvm_next_builder',
-      site_config.templates.llvm_builder,
-      description='Full release build with LLVM (next) toolchain',
-      useflags=append_useflags(['llvm-next', 'clang']),
-  )
-  site_config.AddTemplate(
-      'test_light',
-      hw_tests=hw_test_list.ToolchainTestLight(),
-      hw_tests_override=hw_test_list.ToolchainTestLight(),
-  )
+  # Create all waterfall slave builders.
+  toolchainSlaveHelper('amd64', 'falco')
+  toolchainSlaveHelper('x86', 'x86-alex',
+                       hw_tests=hw_test_list.ToolchainTestLight(),
+                       hw_tests_override=hw_test_list.ToolchainTestLight())
+  toolchainSlaveHelper('arm', 'veyron_jaq')
+  toolchainSlaveHelper('arm64', 'elm')
 
-  ### Toolchain builder configs: 4 architectures {amd64,arm,x86,arm64}
-  ###                          x 3 toolchains {gcc,llvm,llvm-next}
-  ### All of these builders should be slaves of 'master-toolchain'.
-
-  site_config.Add(
-      'amd64-gcc-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.gcc_builder,
-      boards=['peppy'],
+  #
+  # Create toolchain tryjob builders.
+  #
+  toolchain_tryjob_boards = frozenset([
+      'chell',
+      'daisy',
+      'link',
+      'lulu',
+      'nyan_big',
+      'peach_pit',
+      'peppy',
+      'sentry',
+      'squawks',
+      'terra',
+  ])
+  site_config.AddForBoards(
+      'gcc-toolchain',
+      toolchain_tryjob_boards,
+      board_configs,
+      site_config.templates.gcc_toolchain,
   )
-
-  site_config.Add(
-      'amd64-llvm-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.llvm_builder,
-      boards=['falco'],
+  site_config.AddForBoards(
+      'llvm-toolchain',
+      toolchain_tryjob_boards,
+      board_configs,
+      site_config.templates.llvm_toolchain,
   )
-
-  site_config.Add(
-      'amd64-llvm-next-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.llvm_next_builder,
-      boards=['peppy'],
+  site_config.AddForBoards(
+      'llvm-next-toolchain',
+      toolchain_tryjob_boards,
+      board_configs,
+      site_config.templates.llvm_next_toolchain,
   )
-
-  site_config.Add(
-      'arm-gcc-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.gcc_builder,
-      boards=['veyron_jaq'],
-  )
-
-  site_config.Add(
-      'arm-llvm-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.llvm_builder,
-      boards=['veyron_jaq'],
-  )
-
-  site_config.Add(
-      'arm-llvm-next-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.llvm_next_builder,
-      boards=['veyron_jaq'],
-  )
-
-  site_config.Add(
-      'x86-gcc-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.gcc_builder,
-      site_config.templates.test_light,
-      boards=['x86-alex'],
-  )
-
-  site_config.Add(
-      'x86-llvm-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.llvm_builder,
-      site_config.templates.test_light,
-      boards=['x86-alex'],
-  )
-
-  site_config.Add(
-      'x86-llvm-next-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.llvm_next_builder,
-      site_config.templates.test_light,
-      boards=['x86-alex'],
-  )
-
-  site_config.Add(
-      'arm64-gcc-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.gcc_builder,
-      boards=['elm'],
-  )
-
-  site_config.Add(
-      'arm64-llvm-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.llvm_builder,
-      boards=['elm'],
-  )
-
-  site_config.Add(
-      'arm64-llvm-next-toolchain',
-      site_config.templates.toolchain,
-      site_config.templates.llvm_next_builder,
-      boards=['elm'],
-  )
-
 
 def _GetConfig(site_config, ge_build_config, board_configs,
                hw_test_list, is_release_branch):
@@ -3296,7 +3261,7 @@ def GetConfig():
 
   board_configs = CreateBoardConfigs(site_config, ge_build_config)
 
-  ToolchainBuilders(site_config, hw_test_list)
+  ToolchainBuilders(site_config, board_configs, hw_test_list)
 
   # Fill in templates and build configurations.
   _GetConfig(site_config, ge_build_config, board_configs,
