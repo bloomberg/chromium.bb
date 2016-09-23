@@ -30,7 +30,6 @@ function toDictionary(addr) {  // eslint-disable-line no-unused-vars
     dict.languageCode = addr.languageCode;
     dict.organization = addr.organization;
     dict.recipient = addr.recipient;
-    dict.careOf = addr.careOf;
     dict.phone = addr.phone;
   }
   return dict;

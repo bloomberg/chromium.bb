@@ -89,7 +89,6 @@ public class AutofillAddress extends PaymentOption {
         result.recipient = mProfile.getFullName();
         result.languageCode = "";
         result.scriptCode = "";
-        result.careOf = "";
         result.phone = mProfile.getPhoneNumber();
 
         if (mProfile.getLanguageCode() == null) return result;

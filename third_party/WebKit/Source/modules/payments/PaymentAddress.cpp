@@ -20,7 +20,6 @@ PaymentAddress::PaymentAddress(mojom::blink::PaymentAddressPtr address)
     , m_languageCode(address->language_code)
     , m_organization(address->organization)
     , m_recipient(address->recipient)
-    , m_careOf(address->careOf)
     , m_phone(address->phone)
 {
     if (!m_languageCode.isEmpty() && !address->script_code.isEmpty()) {

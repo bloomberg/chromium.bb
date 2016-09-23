@@ -395,6 +395,11 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::ScriptInvalidTypeOrLanguage:
         return willBeRemoved("Fetching scripts with an invalid type/language attributes", M56, "5760718284521472");
 
+    // The PaymentAddress.careOf was deprecated and then will be removed in M56.
+    // Please see: https://www.chromestatus.com/features/5728579069411328
+    case UseCounter::PaymentAddressCareOf:
+        return willBeRemoved("PaymentAddress.careOf", M56, "5728579069411328");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

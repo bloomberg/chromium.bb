@@ -27,7 +27,6 @@ TEST(PaymentAddressTest, ValuesAreCopiedOver)
     input->script_code = "Latn";
     input->organization = "Google";
     input->recipient = "Jon Doe";
-    input->careOf = "";
     input->phone = "Phone Number";
 
     PaymentAddress output(std::move(input));
@@ -45,7 +44,6 @@ TEST(PaymentAddressTest, ValuesAreCopiedOver)
     EXPECT_EQ("en-Latn", output.languageCode());
     EXPECT_EQ("Google", output.organization());
     EXPECT_EQ("Jon Doe", output.recipient());
-    EXPECT_EQ("", output.careOf());
     EXPECT_EQ("Phone Number", output.phone());
 }
 

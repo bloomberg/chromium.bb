@@ -100,7 +100,6 @@ public class AutofillPaymentInstrument
             json.name("languageCode").value(ensureNotNull(mBillingAddress.getLanguageCode()));
             json.name("organization").value(ensureNotNull(mBillingAddress.getCompanyName()));
             json.name("recipient").value(ensureNotNull(mBillingAddress.getFullName()));
-            json.name("careOf").value("");
             json.name("phone").value(ensureNotNull(mBillingAddress.getPhoneNumber()));
 
             json.endObject();

@@ -28,7 +28,6 @@ struct PaymentAddress {
 
   string organization;
   string recipient;
-  string careOf;
   string phone;
 };
 

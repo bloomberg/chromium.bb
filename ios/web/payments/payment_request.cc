@@ -21,7 +21,6 @@ static const char kAddressSortingCode[] = "sortingCode";
 static const char kAddressLanguageCode[] = "languageCode";
 static const char kAddressOrganization[] = "organization";
 static const char kAddressRecipient[] = "recipient";
-static const char kAddressCareOf[] = "careOf";
 static const char kAddressPhone[] = "phone";
 static const char kMethodData[] = "methodData";
 static const char kSupportedMethods[] = "supportedMethods";
@@ -95,8 +94,6 @@ std::unique_ptr<base::DictionaryValue> PaymentAddress::ToDictionaryValue()
     result->SetString(kAddressOrganization, this->organization);
   if (!this->recipient.empty())
     result->SetString(kAddressRecipient, this->recipient);
-  if (!this->care_of.empty())
-    result->SetString(kAddressCareOf, this->care_of);
   if (!this->phone.empty())
     result->SetString(kAddressPhone, this->phone);
 

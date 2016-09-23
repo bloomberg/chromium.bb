@@ -51,7 +51,6 @@ public class AutofillAddressTest {
         Assert.assertEquals("full name", output.recipient);
         Assert.assertEquals("en", output.languageCode);
         Assert.assertEquals("Latn", output.scriptCode);
-        Assert.assertEquals("", output.careOf);
         Assert.assertEquals("phone number", output.phone);
     }
 
