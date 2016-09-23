@@ -7,10 +7,12 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "mojo/common/common_type_converters.h"
@@ -48,14 +50,14 @@ void FakeAppInstance::RefreshAppList() {
 void FakeAppInstance::LaunchApp(const mojo::String& package_name,
                                 const mojo::String& activity,
                                 const base::Optional<gfx::Rect>& dimension) {
-  launch_requests_.push_back(new Request(package_name, activity));
+  launch_requests_.push_back(base::MakeUnique<Request>(package_name, activity));
 }
 
 void FakeAppInstance::RequestAppIcon(const mojo::String& package_name,
                                      const mojo::String& activity,
                                      mojom::ScaleFactor scale_factor) {
   icon_requests_.push_back(
-      new IconRequest(package_name, activity, scale_factor));
+      base::MakeUnique<IconRequest>(package_name, activity, scale_factor));
 }
 
 void FakeAppInstance::SendRefreshAppList(
@@ -225,14 +227,14 @@ void FakeAppInstance::InstallPackage(mojom::ArcPackageInfoPtr arcPackageInfo) {
 void FakeAppInstance::LaunchIntent(
     const mojo::String& intent_uri,
     const base::Optional<gfx::Rect>& dimension_on_screen) {
-  launch_intents_.push_back(new mojo::String(intent_uri));
+  launch_intents_.push_back(base::MakeUnique<mojo::String>(intent_uri));
 }
 
 void FakeAppInstance::RequestIcon(const mojo::String& icon_resource_id,
                                   arc::mojom::ScaleFactor scale_factor,
                                   const RequestIconCallback& callback) {
   shortcut_icon_requests_.push_back(
-      new ShortcutIconRequest(icon_resource_id, scale_factor));
+      base::MakeUnique<ShortcutIconRequest>(icon_resource_id, scale_factor));
 
   std::string png_data_as_string;
   if (GetFakeIcon(scale_factor, &png_data_as_string)) {

@@ -1839,9 +1839,9 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
   ASSERT_EQ(2U, arc_test_.app_instance()->launch_requests().size());
 
   const arc::FakeAppInstance::Request* request1 =
-      arc_test_.app_instance()->launch_requests()[0];
+      arc_test_.app_instance()->launch_requests()[0].get();
   const arc::FakeAppInstance::Request* request2 =
-      arc_test_.app_instance()->launch_requests()[1];
+      arc_test_.app_instance()->launch_requests()[1].get();
 
   EXPECT_TRUE((request1->IsForApp(app2) && request2->IsForApp(app3)) ||
               (request1->IsForApp(app3) && request2->IsForApp(app2)));

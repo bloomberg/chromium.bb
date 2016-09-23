@@ -7,13 +7,13 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
@@ -603,8 +603,8 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
   item_last->Activate(0);
   item_first->Activate(0);
 
-  const ScopedVector<arc::FakeAppInstance::Request>& launch_requests =
-      app_instance()->launch_requests();
+  const std::vector<std::unique_ptr<arc::FakeAppInstance::Request>>&
+      launch_requests = app_instance()->launch_requests();
   ASSERT_EQ(3u, launch_requests.size());
   EXPECT_TRUE(launch_requests[0]->IsForApp(app_first));
   EXPECT_TRUE(launch_requests[1]->IsForApp(app_last));
@@ -639,7 +639,7 @@ TEST_F(ArcAppModelBuilderTest, LaunchShortcuts) {
   item_last->Activate(0);
   item_first->Activate(0);
 
-  const ScopedVector<mojo::String>& launch_intents =
+  const std::vector<std::unique_ptr<mojo::String>>& launch_intents =
       app_instance()->launch_intents();
   ASSERT_EQ(3u, launch_intents.size());
   EXPECT_EQ(app_first.intent_uri, *launch_intents[0]);
@@ -687,12 +687,13 @@ TEST_F(ArcAppModelBuilderTest, RequestIcons) {
   const size_t expected_size = scale_factors.size() * fake_apps().size();
 
   // At this moment we should receive all requests for icon loading.
-  const ScopedVector<arc::FakeAppInstance::IconRequest>& icon_requests =
-      app_instance()->icon_requests();
+  const std::vector<std::unique_ptr<arc::FakeAppInstance::IconRequest>>&
+      icon_requests = app_instance()->icon_requests();
   EXPECT_EQ(expected_size, icon_requests.size());
   std::map<std::string, uint32_t> app_masks;
   for (size_t i = 0; i < icon_requests.size(); ++i) {
-    const arc::FakeAppInstance::IconRequest* icon_request = icon_requests[i];
+    const arc::FakeAppInstance::IconRequest* icon_request =
+        icon_requests[i].get();
     const std::string id = ArcAppListPrefs::GetAppId(
         icon_request->package_name(), icon_request->activity());
     // Make sure no double requests.
@@ -741,13 +742,13 @@ TEST_F(ArcAppModelBuilderTest, RequestShortcutIcons) {
 
   // At this moment we should receive all requests for icon loading.
   const size_t expected_size = scale_factors.size();
-  const ScopedVector<arc::FakeAppInstance::ShortcutIconRequest>& icon_requests =
-      app_instance()->shortcut_icon_requests();
+  const std::vector<std::unique_ptr<arc::FakeAppInstance::ShortcutIconRequest>>&
+      icon_requests = app_instance()->shortcut_icon_requests();
   EXPECT_EQ(expected_size, icon_requests.size());
   uint32_t app_mask = 0;
   for (size_t i = 0; i < icon_requests.size(); ++i) {
     const arc::FakeAppInstance::ShortcutIconRequest* icon_request =
-        icon_requests[i];
+        icon_requests[i].get();
     EXPECT_EQ(shortcut.icon_resource_id, icon_request->icon_resource_id());
 
     // Make sure no double requests.

@@ -8,11 +8,9 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/arc/common/app.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -137,19 +135,20 @@ class FakeAppInstance : public mojom::AppInstance {
 
   int refresh_app_list_count() const { return refresh_app_list_count_; }
 
-  const ScopedVector<Request>& launch_requests() const {
+  const std::vector<std::unique_ptr<Request>>& launch_requests() const {
     return launch_requests_;
   }
 
-  const ScopedVector<mojo::String>& launch_intents() const {
+  const std::vector<std::unique_ptr<mojo::String>>& launch_intents() const {
     return launch_intents_;
   }
 
-  const ScopedVector<IconRequest>& icon_requests() const {
+  const std::vector<std::unique_ptr<IconRequest>>& icon_requests() const {
     return icon_requests_;
   }
 
-  const ScopedVector<ShortcutIconRequest>& shortcut_icon_requests() const {
+  const std::vector<std::unique_ptr<ShortcutIconRequest>>&
+  shortcut_icon_requests() const {
     return shortcut_icon_requests_;
   }
 
@@ -160,13 +159,13 @@ class FakeAppInstance : public mojom::AppInstance {
   // Number of RefreshAppList calls.
   int refresh_app_list_count_ = 0;
   // Keeps information about launch requests.
-  ScopedVector<Request> launch_requests_;
+  std::vector<std::unique_ptr<Request>> launch_requests_;
   // Keeps information about launch intents.
-  ScopedVector<mojo::String> launch_intents_;
+  std::vector<std::unique_ptr<mojo::String>> launch_intents_;
   // Keeps information about icon load requests.
-  ScopedVector<IconRequest> icon_requests_;
+  std::vector<std::unique_ptr<IconRequest>> icon_requests_;
   // Keeps information about shortcut icon load requests.
-  ScopedVector<ShortcutIconRequest> shortcut_icon_requests_;
+  std::vector<std::unique_ptr<ShortcutIconRequest>> shortcut_icon_requests_;
   // Keeps information for running tasks.
   TaskIdToInfo task_id_to_info_;
 
