@@ -716,7 +716,7 @@ TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(const LayoutObject*
     if (const ComputedStyle* style = layoutObject->style()) {
         data.m_packedStyleProperties = style->direction();
         data.m_packedStyleProperties |= (style->position() << 1);
-        data.m_packedStyleProperties |= (style->floating() << 4);
+        data.m_packedStyleProperties |= (static_cast<unsigned>(style->floating()) << 4);
         data.m_packedStyleProperties |= (style->display() << 6);
         data.m_packedStyleProperties |= (style->width().type() << 11);
         // packedStyleProperties effectively using 15 bits now.

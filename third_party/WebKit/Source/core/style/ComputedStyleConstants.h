@@ -124,7 +124,7 @@ enum EPosition {
     FixedPosition = 6
 };
 
-enum EFloat {
+enum class EFloat : unsigned {
     NoFloat, LeftFloat, RightFloat
 };
 

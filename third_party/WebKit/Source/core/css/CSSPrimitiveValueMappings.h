@@ -1369,13 +1369,13 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EFloat e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case NoFloat:
+    case EFloat::NoFloat:
         m_value.valueID = CSSValueNone;
         break;
-    case LeftFloat:
+    case EFloat::LeftFloat:
         m_value.valueID = CSSValueLeft;
         break;
-    case RightFloat:
+    case EFloat::RightFloat:
         m_value.valueID = CSSValueRight;
         break;
     }
@@ -1386,17 +1386,17 @@ template<> inline EFloat CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueLeft:
-        return LeftFloat;
+        return EFloat::LeftFloat;
     case CSSValueRight:
-        return RightFloat;
+        return EFloat::RightFloat;
     case CSSValueNone:
-        return NoFloat;
+        return EFloat::NoFloat;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return NoFloat;
+    return EFloat::NoFloat;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(Hyphens e)

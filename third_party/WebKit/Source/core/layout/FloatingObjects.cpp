@@ -58,10 +58,10 @@ FloatingObject::FloatingObject(LayoutBox* layoutObject)
 #endif
 {
     EFloat type = layoutObject->style()->floating();
-    ASSERT(type != NoFloat);
-    if (type == LeftFloat)
+    DCHECK_NE(type, EFloat::NoFloat);
+    if (type == EFloat::LeftFloat)
         m_type = FloatLeft;
-    else if (type == RightFloat)
+    else if (type == EFloat::RightFloat)
         m_type = FloatRight;
 }
 

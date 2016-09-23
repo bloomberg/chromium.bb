@@ -368,7 +368,7 @@ protected:
         m_nonInheritedData.m_verticalAlign = initialVerticalAlign();
         m_nonInheritedData.m_clear = initialClear();
         m_nonInheritedData.m_position = initialPosition();
-        m_nonInheritedData.m_floating = initialFloating();
+        m_nonInheritedData.m_floating = static_cast<unsigned>(initialFloating());
         m_nonInheritedData.m_tableLayout = initialTableLayout();
         m_nonInheritedData.m_unicodeBidi = initialUnicodeBidi();
         m_nonInheritedData.m_breakBefore = initialBreakBefore();
@@ -830,9 +830,9 @@ public:
     }
 
     // float
-    static EFloat initialFloating() { return NoFloat; }
+    static EFloat initialFloating() { return EFloat::NoFloat; }
     EFloat floating() const { return static_cast<EFloat>(m_nonInheritedData.m_floating); }
-    void setFloating(EFloat v) { m_nonInheritedData.m_floating = v; }
+    void setFloating(EFloat v) { m_nonInheritedData.m_floating = static_cast<unsigned>(v); }
 
     // Grid properties.
     static Vector<GridTrackSize> initialGridAutoRepeatTracks() { return Vector<GridTrackSize>(); /* none */ }
@@ -2143,7 +2143,7 @@ public:
         const LayoutRectOutsets insets, bool includeLogicalLeftEdge, bool includeLogicalRightEdge) const;
 
     // Float utility functions.
-    bool isFloating() const { return m_nonInheritedData.m_floating != NoFloat; }
+    bool isFloating() const { return floating() != EFloat::NoFloat; }
 
     // Mix-blend-mode utility functions.
     bool hasBlendMode() const { return blendMode() != WebBlendModeNormal; }
