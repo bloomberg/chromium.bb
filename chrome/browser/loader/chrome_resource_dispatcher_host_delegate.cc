@@ -56,6 +56,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
@@ -174,15 +175,22 @@ void UpdatePrerenderNetworkBytesCallback(content::WebContents* web_contents,
 void SendExecuteMimeTypeHandlerEvent(
     std::unique_ptr<content::StreamInfo> stream,
     int64_t expected_content_size,
-    int render_process_id,
-    int render_frame_id,
     const std::string& extension_id,
     const std::string& view_id,
-    bool embedded) {
+    bool embedded,
+    int frame_tree_node_id,
+    int render_process_id,
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByFrameID(render_process_id, render_frame_id);
+  content::WebContents* web_contents = nullptr;
+  if (frame_tree_node_id != -1) {
+    web_contents =
+        content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  } else {
+    web_contents = content::WebContents::FromRenderFrameHost(
+        content::RenderFrameHost::FromID(render_process_id, render_frame_id));
+  }
   if (!web_contents)
     return;
 
@@ -202,8 +210,8 @@ void SendExecuteMimeTypeHandlerEvent(
   if (!streams_private)
     return;
   streams_private->ExecuteMimeTypeHandler(
-      extension_id, web_contents, std::move(stream), view_id,
-      expected_content_size, embedded, render_process_id, render_frame_id);
+      extension_id, std::move(stream), view_id, expected_content_size, embedded,
+      frame_tree_node_id, render_process_id, render_frame_id);
 }
 #endif  // !defined(ENABLE_EXTENSIONS)
 
@@ -709,9 +717,9 @@ void ChromeResourceDispatcherHostDelegate::OnStreamCreated(
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&SendExecuteMimeTypeHandlerEvent, base::Passed(&stream),
-                 request->GetExpectedContentSize(), info->GetChildID(),
-                 info->GetRenderFrameID(), ix->second.extension_id,
-                 ix->second.view_id, embedded));
+                 request->GetExpectedContentSize(), ix->second.extension_id,
+                 ix->second.view_id, embedded, info->GetFrameTreeNodeId(),
+                 info->GetChildID(), info->GetRenderFrameID()));
   stream_target_info_.erase(request);
 #endif
 }

@@ -241,6 +241,10 @@ int ResourceRequestInfoImpl::GetRenderFrameID() const {
   return render_frame_id_;
 }
 
+int ResourceRequestInfoImpl::GetFrameTreeNodeId() const {
+  return frame_tree_node_id_;
+}
+
 bool ResourceRequestInfoImpl::IsMainFrame() const {
   return is_main_frame_;
 }

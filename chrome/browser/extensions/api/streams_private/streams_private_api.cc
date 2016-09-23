@@ -11,8 +11,10 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/common/extensions/api/streams_private.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/browser/stream_info.h"
+#include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
@@ -65,17 +67,28 @@ StreamsPrivateAPI::~StreamsPrivateAPI() {
 
 void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     const std::string& extension_id,
-    content::WebContents* web_contents,
     std::unique_ptr<content::StreamInfo> stream,
     const std::string& view_id,
     int64_t expected_content_size,
     bool embedded,
+    int frame_tree_node_id,
     int render_process_id,
     int render_frame_id) {
   const Extension* extension = ExtensionRegistry::Get(browser_context_)
                                    ->enabled_extensions()
                                    .GetByID(extension_id);
   if (!extension)
+    return;
+
+  content::WebContents* web_contents = nullptr;
+  if (frame_tree_node_id != -1) {
+    web_contents =
+        content::WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  } else {
+    web_contents = content::WebContents::FromRenderFrameHost(
+        content::RenderFrameHost::FromID(render_process_id, render_frame_id));
+  }
+  if (!web_contents)
     return;
 
   MimeTypesHandler* handler = MimeTypesHandler::GetHandler(extension);
@@ -89,8 +102,8 @@ void StreamsPrivateAPI::ExecuteMimeTypeHandler(
     std::unique_ptr<StreamContainer> stream_container(new StreamContainer(
         std::move(stream), tab_id, embedded, handler_url, extension_id));
     MimeHandlerStreamManager::Get(browser_context_)
-        ->AddStream(view_id, std::move(stream_container), render_process_id,
-                    render_frame_id);
+        ->AddStream(view_id, std::move(stream_container), frame_tree_node_id,
+                    render_process_id, render_frame_id);
     return;
   }
   // Create the event's arguments value.

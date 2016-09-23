@@ -130,6 +130,7 @@ class CONTENT_EXPORT WebContentsImpl
   static WebContentsImpl* FromFrameTreeNode(FrameTreeNode* frame_tree_node);
   static WebContents* FromRenderFrameHostID(int render_process_host_id,
                                             int render_frame_host_id);
+  static WebContents* FromFrameTreeNodeId(int frame_tree_node_id);
 
   // Complex initialization here. Specifically needed to avoid having
   // members call back into our virtual functions in the constructor.

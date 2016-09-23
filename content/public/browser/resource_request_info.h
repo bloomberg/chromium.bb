@@ -95,6 +95,10 @@ class ResourceRequestInfo {
   // another process.  Otherwise it is 0.
   virtual int GetOriginPID() const = 0;
 
+  // Returns the FrameTreeNode ID for this frame. This ID is browser-global and
+  // uniquely identifies a frame that hosts content.
+  virtual int GetFrameTreeNodeId() const = 0;
+
   // The IPC route identifier of the RenderFrame.
   // To get a WebContents, use GetWebContentsGetterForRequest instead.
   // TODO(jam): once all navigation and resource requests are sent between

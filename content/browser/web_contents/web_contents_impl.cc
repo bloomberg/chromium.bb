@@ -44,6 +44,7 @@
 #include "content/browser/download/save_package.h"
 #include "content/browser/find_request_manager.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -300,6 +301,12 @@ WebContents* WebContents::FromRenderFrameHost(RenderFrameHost* rfh) {
   if (!rfh)
     return nullptr;
   return static_cast<RenderFrameHostImpl*>(rfh)->delegate()->GetAsWebContents();
+}
+
+WebContents* WebContents::FromFrameTreeNodeId(int frame_tree_node_id) {
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
+  return FromRenderFrameHost(frame_tree_node->current_frame_host());
 }
 
 // WebContentsImpl::DestructionObserver ----------------------------------------

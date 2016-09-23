@@ -39,12 +39,17 @@ class StreamsPrivateAPI : public BrowserContextKeyedAPI,
   // should be |expected_content_size| bytes long. If the viewer is being opened
   // in a BrowserPlugin, specify a non-empty |view_id| of the plugin. |embedded|
   // should be set to whether the document is embedded within another document.
+  // The |frame_tree_node_id| parameter is used for PlzNavigate for the top
+  // level plugins case. (PDF, etc). If this parameter has a valid value then
+  // it overrides the |render_process_id| and |render_frame_id| parameters.
+  // The |render_process_id| is the id of the renderer process.
+  // The |render_frame_id| is the routing id of the RenderFrameHost.
   void ExecuteMimeTypeHandler(const std::string& extension_id,
-                              content::WebContents* web_contents,
                               std::unique_ptr<content::StreamInfo> stream,
                               const std::string& view_id,
                               int64_t expected_content_size,
                               bool embedded,
+                              int frame_tree_node_id,
                               int render_process_id,
                               int render_frame_id);
 

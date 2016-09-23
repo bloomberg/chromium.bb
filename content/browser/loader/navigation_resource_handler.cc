@@ -103,7 +103,7 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
   // TODO(davidben): Move the dispatch out of MimeTypeResourceHandler. Perhaps
   // all the way to the UI thread. Downloads, user certificates, etc., should be
   // dispatched at the navigation layer.
-  if (info->IsDownload() || info->is_stream())
+  if (info->IsDownload())
     return true;
 
   StreamContext* stream_context =
@@ -132,8 +132,14 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle(),
                                ssl_status, std::move(cloned_data));
-  *defer = true;
-
+  // Don't defer stream based requests. This includes requests initiated via
+  // mime type sniffing, etc.
+  // TODO(ananta)
+  // Make sure that the requests go through the throttle checks. Currently this
+  // does not work as the InterceptingResourceHandler is above us and hence it
+  // does not expect the old handler to defer the request.
+  if (!info->is_stream())
+    *defer = true;
   return true;
 }
 

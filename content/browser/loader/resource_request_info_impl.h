@@ -79,6 +79,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   int GetRouteID() const override;
   int GetOriginPID() const override;
   int GetRenderFrameID() const override;
+  int GetFrameTreeNodeId() const override;
   bool IsMainFrame() const override;
   bool ParentIsMainFrame() const override;
   ResourceType GetResourceType() const override;
