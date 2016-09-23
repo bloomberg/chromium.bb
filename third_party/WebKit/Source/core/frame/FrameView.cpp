@@ -1143,8 +1143,8 @@ void FrameView::invalidateTreeIfNeeded(const PaintInvalidationState& paintInvali
 
     TRACE_EVENT1("blink", "FrameView::invalidateTree", "root", rootForPaintInvalidation.debugName().ascii());
 
-    rootForPaintInvalidation.invalidateTreeIfNeeded(paintInvalidationState);
     invalidatePaintIfNeeded(paintInvalidationState);
+    rootForPaintInvalidation.invalidateTreeIfNeeded(paintInvalidationState);
 
 #if ENABLE(ASSERT)
     layoutView()->assertSubtreeClearedPaintInvalidationFlags();
