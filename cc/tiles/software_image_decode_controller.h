@@ -288,6 +288,7 @@ class CC_EXPORT SoftwareImageDecodeController
   MemoryBudget locked_images_budget_;
 
   ResourceFormat format_;
+  size_t max_items_in_cache_;
 
   // Used to uniquely identify DecodedImages for memory traces.
   base::AtomicSequenceNumber next_tracing_id_;
