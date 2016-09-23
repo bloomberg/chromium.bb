@@ -98,6 +98,14 @@ Polymer({
   validate_: function(event) {
     var inputElement = Polymer.dom(event).localTarget;
 
+    // If element is empty, disable the action button, but don't show the red
+    // invalid message.
+    if (inputElement.value == '') {
+      inputElement.invalid = false;
+      this.updateActionButtonState_();
+      return;
+    }
+
     this.browserProxy_.validateSearchEngineInput(
         inputElement.id, inputElement.value).then(function(isValid) {
       inputElement.invalid = !isValid;
@@ -110,7 +118,7 @@ Polymer({
     var allValid = [
       this.$.searchEngine, this.$.keyword, this.$.queryUrl
     ].every(function(inputElement) {
-      return !inputElement.invalid && inputElement.value.length != 0;
+      return !inputElement.invalid && inputElement.value.length > 0;
     });
     this.$.actionButton.disabled = !allValid;
   },

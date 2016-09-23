@@ -88,22 +88,24 @@ cr.define('settings_search_engines_page', function() {
       // Tests the dialog to add a new search engine. Specifically
       //  - paper-input elements are empty initially.
       //  - action button initially disabled.
-      //  - validation is triggered on 'focus'. 'change' is not teted because
-      //    MockInteractions does not currently provide a way to trigger such
-      //    events.
+      //  - validation is triggered on 'input' event.
       //  - action button is enabled when all fields are valid.
       //  - action button triggers appropriate browser signal when tapped.
       test('DialogAddSearchEngine', function() {
         /**
-         * Focuses the given paper-input element and checks that validation is
-         * triggered.
+         * Triggers an 'input' event on the paper-input element and checks that
+         * validation is triggered.
          * @param {string} inputId
          * @return {!Promise}
          */
-        var focusAndValidate = function(inputId) {
+        var inputAndValidate = function(inputId) {
+          var inputElement = dialog.$[inputId];
           browserProxy.resetResolver('validateSearchEngineInput');
-          MockInteractions.focus(dialog.$[inputId]);
-          return browserProxy.whenCalled('validateSearchEngineInput');
+          inputElement.fire('input');
+          return inputElement.value != '' ?
+              // Expeting validation only on non-empty values.
+              browserProxy.whenCalled('validateSearchEngineInput') :
+              Promise.resolve();
         };
 
         assertEquals('', dialog.$.searchEngine.value);
@@ -112,20 +114,17 @@ cr.define('settings_search_engines_page', function() {
         var actionButton = dialog.$.actionButton;
         assertTrue(actionButton.disabled);
 
-        return focusAndValidate('searchEngine').then(function() {
-          return focusAndValidate('keyword');
+        return inputAndValidate('searchEngine').then(function() {
+          return inputAndValidate('keyword');
         }).then(function() {
-          return focusAndValidate('queryUrl');
+          return inputAndValidate('queryUrl');
         }).then(function() {
           // Manually set the text to a non-empty string for all fields.
           dialog.$.searchEngine.value = 'foo';
           dialog.$.keyword.value = 'bar';
           dialog.$.queryUrl.value = 'baz';
 
-          // MockInteractions does not provide a way to trigger a 'change' event
-          // yet. Triggering the 'focus' event instead, to update the state of
-          // the action button.
-          return focusAndValidate('searchEngine');
+          return inputAndValidate('searchEngine');
         }).then(function() {
           // Assert that the action button has been enabled now that all input
           // is valid and non-empty.
