@@ -84,6 +84,7 @@ public:
     ImageResource* image() const { return m_image.get(); }
     void setImage(ImageResource*); // Cancels pending load events, and doesn't dispatch new ones.
 
+    bool isLoadingImageDocument() { return m_loadingImageDocument; }
     void setLoadingImageDocument() { m_loadingImageDocument = true; }
 
     bool hasPendingActivity() const
