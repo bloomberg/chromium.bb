@@ -21,7 +21,8 @@ namespace ui {
 // to the browser process in https://crbug.com/604052.
 class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
  public:
-  explicit CALayerTreeCoordinator(bool allow_remote_layers);
+  explicit CALayerTreeCoordinator(bool allow_remote_layers,
+                                  bool allow_av_sample_buffer_display_layer);
   ~CALayerTreeCoordinator();
 
   // Set the composited frame's size.
@@ -56,7 +57,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
   IOSurfaceRef GetIOSurfaceForDisplay();
 
  private:
-  bool allow_remote_layers_ = true;
+  const bool allow_remote_layers_ = true;
+  const bool allow_av_sample_buffer_display_layer_ = true;
   gfx::Size pixel_size_;
   float scale_factor_ = 1;
 

@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.99",
+  "version": "9.00",
   "entries": [
     {
       "id": 1,
@@ -2002,6 +2002,21 @@ LONG_STRING_CONST(
       },
       "features": [
         "rewrite_do_while_loops"
+      ]
+    },
+    {
+      "id": 188,
+      "description": "AVSampleBufferDisplayLayer leaks IOSurfaces on 10.9.",
+      "cr_bugs": [632178],
+      "os": {
+        "type": "macosx",
+        "version": {
+          "op": "<=",
+          "value": "10.10"
+        }
+      },
+      "features": [
+        "disable_av_sample_buffer_display_layer"
       ]
     }
   ]

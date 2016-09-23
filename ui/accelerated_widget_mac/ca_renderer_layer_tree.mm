@@ -129,7 +129,10 @@ bool AVSampleBufferDisplayLayerEnqueueIOSurface(
 
 }  // namespace
 
-CARendererLayerTree::CARendererLayerTree() {}
+CARendererLayerTree::CARendererLayerTree(
+    bool allow_av_sample_buffer_display_layer)
+    : allow_av_sample_buffer_display_layer_(
+          allow_av_sample_buffer_display_layer) {}
 CARendererLayerTree::~CARendererLayerTree() {}
 
 bool CARendererLayerTree::ScheduleCALayer(const CARendererLayerParams& params) {
@@ -139,7 +142,7 @@ bool CARendererLayerTree::ScheduleCALayer(const CARendererLayerParams& params) {
     LOG(ERROR) << "ScheduleCALayer called after CommitScheduledCALayers.";
     return false;
   }
-  return root_layer_.AddContentLayer(params);
+  return root_layer_.AddContentLayer(this, params);
 }
 
 void CARendererLayerTree::CommitScheduledCALayers(
@@ -267,6 +270,7 @@ CARendererLayerTree::TransformLayer::~TransformLayer() {
 }
 
 CARendererLayerTree::ContentLayer::ContentLayer(
+    CARendererLayerTree* tree,
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
     const gfx::RectF& contents_rect,
@@ -311,7 +315,8 @@ CARendererLayerTree::ContentLayer::ContentLayer(
 
   // Only allow 4:2:0 frames which fill the layer's contents to be promoted to
   // AV layers.
-  if (IOSurfaceGetPixelFormat(io_surface) ==
+  if (tree->allow_av_sample_buffer_display_layer_ &&
+      IOSurfaceGetPixelFormat(io_surface) ==
           kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange &&
       contents_rect == gfx::RectF(0, 0, 1, 1)) {
     use_av_layer = true;
@@ -339,6 +344,7 @@ CARendererLayerTree::ContentLayer::~ContentLayer() {
 }
 
 bool CARendererLayerTree::RootLayer::AddContentLayer(
+    CARendererLayerTree* tree,
     const CARendererLayerParams& params) {
   bool needs_new_clip_and_sorting_layer = true;
 
@@ -375,11 +381,12 @@ bool CARendererLayerTree::RootLayer::AddContentLayer(
         params.is_clipped, params.clip_rect, params.sorting_context_id,
         is_singleton_sorting_context));
   }
-  clip_and_sorting_layers.back().AddContentLayer(params);
+  clip_and_sorting_layers.back().AddContentLayer(tree, params);
   return true;
 }
 
 void CARendererLayerTree::ClipAndSortingLayer::AddContentLayer(
+    CARendererLayerTree* tree,
     const CARendererLayerParams& params) {
   bool needs_new_transform_layer = true;
   if (!transform_layers.empty()) {
@@ -389,10 +396,11 @@ void CARendererLayerTree::ClipAndSortingLayer::AddContentLayer(
   }
   if (needs_new_transform_layer)
     transform_layers.push_back(TransformLayer(params.transform));
-  transform_layers.back().AddContentLayer(params);
+  transform_layers.back().AddContentLayer(tree, params);
 }
 
 void CARendererLayerTree::TransformLayer::AddContentLayer(
+    CARendererLayerTree* tree,
     const CARendererLayerParams& params) {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
@@ -405,7 +413,7 @@ void CARendererLayerTree::TransformLayer::AddContentLayer(
   }
 
   content_layers.push_back(
-      ContentLayer(io_surface, cv_pixel_buffer, params.contents_rect,
+      ContentLayer(tree, io_surface, cv_pixel_buffer, params.contents_rect,
                    params.rect, params.background_color, params.edge_aa_mask,
                    params.opacity, params.filter));
 }

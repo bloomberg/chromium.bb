@@ -75,8 +75,14 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
       scale_factor_(1),
       gl_renderer_id_(0) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
-  ca_layer_tree_coordinator_.reset(
-      new ui::CALayerTreeCoordinator(use_remote_layer_api_));
+
+  bool disable_av_sample_buffer_display_layer =
+      stub_->GetFeatureInfo()
+          ->workarounds()
+          .disable_av_sample_buffer_display_layer;
+
+  ca_layer_tree_coordinator_.reset(new ui::CALayerTreeCoordinator(
+      use_remote_layer_api_, !disable_av_sample_buffer_display_layer));
 }
 
 ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {

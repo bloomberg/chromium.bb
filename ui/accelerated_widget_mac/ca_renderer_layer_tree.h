@@ -32,7 +32,7 @@ struct CARendererLayerParams;
 // https://docs.google.com/document/d/1DtSN9zzvCF44_FQPM7ie01UxGHagQ66zfF5L9HnigQY/edit?usp=sharing
 class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
  public:
-  CARendererLayerTree();
+  CARendererLayerTree(bool allow_av_sample_buffer_display_layer);
 
   // This will remove all CALayers from this tree from their superlayer.
   ~CARendererLayerTree();
@@ -63,6 +63,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   struct ClipAndSortingLayer;
   struct TransformLayer;
   struct ContentLayer;
+  friend struct ContentLayer;
 
   struct RootLayer {
     RootLayer();
@@ -73,7 +74,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
 
     // Append a new content layer, without modifying the actual CALayer
     // structure.
-    bool AddContentLayer(const CARendererLayerParams& params);
+    bool AddContentLayer(CARendererLayerTree* tree,
+                         const CARendererLayerParams& params);
 
     // Allocate CALayers for this layer and its children, and set their
     // properties appropriately. Re-use the CALayers from |old_layer| if
@@ -99,7 +101,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     // See the behavior of RootLayer for the effects of these functions on the
     // |ca_layer| member and |old_layer| argument.
     ~ClipAndSortingLayer();
-    void AddContentLayer(const CARendererLayerParams& params);
+    void AddContentLayer(CARendererLayerTree* tree,
+                         const CARendererLayerParams& params);
     void CommitToCA(CALayer* superlayer,
                     ClipAndSortingLayer* old_layer,
                     float scale_factor);
@@ -121,7 +124,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     // See the behavior of RootLayer for the effects of these functions on the
     // |ca_layer| member and |old_layer| argument.
     ~TransformLayer();
-    void AddContentLayer(const CARendererLayerParams& params);
+    void AddContentLayer(CARendererLayerTree* tree,
+                         const CARendererLayerParams& params);
     void CommitToCA(CALayer* superlayer,
                     TransformLayer* old_layer,
                     float scale_factor);
@@ -134,7 +138,8 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     DISALLOW_COPY_AND_ASSIGN(TransformLayer);
   };
   struct ContentLayer {
-    ContentLayer(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
+    ContentLayer(CARendererLayerTree* tree,
+                 base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer,
                  const gfx::RectF& contents_rect,
                  const gfx::Rect& rect,
@@ -178,6 +183,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   RootLayer root_layer_;
   float scale_factor_ = 1;
   bool has_committed_ = false;
+  const bool allow_av_sample_buffer_display_layer_ = true;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CARendererLayerTree);

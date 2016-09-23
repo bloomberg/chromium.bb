@@ -33,6 +33,8 @@
          disable_angle_instanced_arrays)                     \
   GPU_OP(DISABLE_ASYNC_READPIXELS,                           \
          disable_async_readpixels)                           \
+  GPU_OP(DISABLE_AV_SAMPLE_BUFFER_DISPLAY_LAYER,             \
+         disable_av_sample_buffer_display_layer)             \
   GPU_OP(DISABLE_BLEND_EQUATION_ADVANCED,                    \
          disable_blend_equation_advanced)                    \
   GPU_OP(DISABLE_CHROMIUM_FRAMEBUFFER_MULTISAMPLE,           \

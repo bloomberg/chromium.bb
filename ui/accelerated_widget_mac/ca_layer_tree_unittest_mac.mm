@@ -74,7 +74,20 @@ void UpdateCALayerTree(std::unique_ptr<ui::CARendererLayerTree>& ca_layer_tree,
                        CALayerProperties* properties,
                        CALayer* superlayer) {
   std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-      new ui::CARendererLayerTree);
+      new ui::CARendererLayerTree(true));
+  bool result = ScheduleCALayer(new_ca_layer_tree.get(), properties);
+  EXPECT_TRUE(result);
+  new_ca_layer_tree->CommitScheduledCALayers(
+      superlayer, std::move(ca_layer_tree), properties->scale_factor);
+  std::swap(new_ca_layer_tree, ca_layer_tree);
+}
+
+void UpdateCALayerTreeWithAVDisabled(
+    std::unique_ptr<ui::CARendererLayerTree>& ca_layer_tree,
+    CALayerProperties* properties,
+    CALayer* superlayer) {
+  std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
+      new ui::CARendererLayerTree(false));
   bool result = ScheduleCALayer(new_ca_layer_tree.get(), properties);
   EXPECT_TRUE(result);
   new_ca_layer_tree->CommitScheduledCALayers(
@@ -118,7 +131,7 @@ TEST_F(CALayerTreeTest, PropertyUpdates) {
   // Validate the initial values.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
+        new ui::CARendererLayerTree(true));
 
     UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
 
@@ -472,7 +485,7 @@ TEST_F(CALayerTreeTest, SplitSortingContextZero) {
 
   // Schedule and commit the layers.
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
-      new ui::CARendererLayerTree);
+      new ui::CARendererLayerTree(true));
   for (size_t i = 0; i < 5; ++i) {
     properties.gl_image = gl_images[i];
     properties.transform = transforms[i];
@@ -555,7 +568,7 @@ TEST_F(CALayerTreeTest, SortingContexts) {
 
   // Schedule and commit the layers.
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
-      new ui::CARendererLayerTree);
+      new ui::CARendererLayerTree(true));
   for (size_t i = 0; i < 3; ++i) {
     properties.sorting_context_id = sorting_context_ids[i];
     properties.gl_image = gl_images[i];
@@ -619,7 +632,7 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
   };
 
   std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree(
-      new ui::CARendererLayerTree);
+      new ui::CARendererLayerTree(true));
   // First send the various clip parameters to sorting context zero. This is
   // legitimate.
   for (size_t i = 0; i < 3; ++i) {
@@ -762,6 +775,57 @@ TEST_F(CALayerTreeTest, AVLayer) {
   }
 }
 
+// Ensure that blacklisting AVSampleBufferDisplayLayer works.
+TEST_F(CALayerTreeTest, AVLayerBlacklist) {
+  CALayerProperties properties;
+  properties.gl_image = CreateGLImage(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR, false);
+
+  std::unique_ptr<ui::CARendererLayerTree> ca_layer_tree;
+  CALayer* root_layer = nil;
+  CALayer* clip_and_sorting_layer = nil;
+  CALayer* transform_layer = nil;
+  CALayer* content_layer1 = nil;
+  CALayer* content_layer2 = nil;
+
+  {
+    UpdateCALayerTree(ca_layer_tree, &properties, superlayer_);
+
+    // Validate the tree structure.
+    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+    root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[root_layer sublayers] count]);
+    clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+    transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+    content_layer1 = [[transform_layer sublayers] objectAtIndex:0];
+
+    // Validate the content layer.
+    EXPECT_TRUE([content_layer1
+        isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
+  }
+
+  {
+    UpdateCALayerTreeWithAVDisabled(ca_layer_tree, &properties, superlayer_);
+
+    // Validate the tree structure.
+    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+    root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[root_layer sublayers] count]);
+    clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+    transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+    content_layer2 = [[transform_layer sublayers] objectAtIndex:0];
+
+    // Validate the content layer.
+    EXPECT_FALSE([content_layer2
+        isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
+    EXPECT_NE(content_layer1, content_layer2);
+  }
+}
+
 // Test fullscreen low power detection.
 TEST_F(CALayerTreeTest, FullscreenLowPower) {
   CALayerProperties properties;
@@ -781,7 +845,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   // Test a configuration with no background.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
+        new ui::CARendererLayerTree(true));
     bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     new_ca_layer_tree->CommitScheduledCALayers(
@@ -811,7 +875,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   // Test a configuration with a black background.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
+        new ui::CARendererLayerTree(true));
     bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_black);
     EXPECT_TRUE(result);
     result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
@@ -843,7 +907,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   // Test a configuration with a white background. It will fail.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
+        new ui::CARendererLayerTree(true));
     bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_white);
     EXPECT_TRUE(result);
     result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
@@ -875,7 +939,7 @@ TEST_F(CALayerTreeTest, FullscreenLowPower) {
   // Test a configuration with a black foreground. It too will fail.
   {
     std::unique_ptr<ui::CARendererLayerTree> new_ca_layer_tree(
-        new ui::CARendererLayerTree);
+        new ui::CARendererLayerTree(true));
     bool result = ScheduleCALayer(new_ca_layer_tree.get(), &properties);
     EXPECT_TRUE(result);
     result = ScheduleCALayer(new_ca_layer_tree.get(), &properties_black);
