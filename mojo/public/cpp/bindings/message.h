@@ -14,7 +14,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/message_buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/system/message.h"
@@ -27,7 +29,7 @@ using ReportBadMessageCallback = base::Callback<void(const std::string& error)>;
 // Message owns its data and handles, but a consumer of Message is free to
 // mutate the data and handles. The message's data is comprised of a header
 // followed by payload.
-class Message {
+class MOJO_CPP_BINDINGS_EXPORT Message {
  public:
   static const uint32_t kFlagExpectsResponse = 1 << 0;
   static const uint32_t kFlagIsResponse = 1 << 1;
@@ -200,7 +202,8 @@ class MessageReceiverWithResponderStatus : public MessageReceiver {
       WARN_UNUSED_RESULT = 0;
 };
 
-class PassThroughFilter : public MessageReceiver {
+class MOJO_CPP_BINDINGS_EXPORT PassThroughFilter
+    : NON_EXPORTED_BASE(public MessageReceiver) {
  public:
   PassThroughFilter();
   ~PassThroughFilter() override;
@@ -229,7 +232,7 @@ class SyncMessageResponseSetup;
 //     if (response_value.IsBad())
 //       response_context.ReportBadMessage("Bad response_value!");
 //
-class SyncMessageResponseContext {
+class MOJO_CPP_BINDINGS_EXPORT SyncMessageResponseContext {
  public:
   SyncMessageResponseContext();
   ~SyncMessageResponseContext();
@@ -264,6 +267,7 @@ MojoResult ReadMessage(MessagePipeHandle handle, Message* message);
 // you need to do asynchronous work before you can determine the legitimacy of
 // a message, use TakeBadMessageCallback() and retain its result until you're
 // ready to invoke or discard it.
+MOJO_CPP_BINDINGS_EXPORT
 void ReportBadMessage(const std::string& error);
 
 // Acquires a callback which may be run to report the currently dispatching
@@ -271,6 +275,7 @@ void ReportBadMessage(const std::string& error);
 // stack frame of a message dispatch, but the returned callback may be called
 // exactly once any time thereafter to report the message as bad. This may only
 // be called once per message.
+MOJO_CPP_BINDINGS_EXPORT
 ReportBadMessageCallback GetBadMessageCallback();
 
 }  // namespace mojo

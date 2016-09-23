@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/system/handle.h"
 
@@ -16,7 +17,7 @@ namespace internal {
 class Buffer;
 class ValidationContext;
 
-class NativeStruct_Data {
+class MOJO_CPP_BINDINGS_EXPORT NativeStruct_Data {
  public:
   static bool Validate(const void* data, ValidationContext* validation_context);
 

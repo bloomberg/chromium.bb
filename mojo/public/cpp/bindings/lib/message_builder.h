@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/bindings/message.h"
 
@@ -16,7 +17,7 @@ class Message;
 
 namespace internal {
 
-class MessageBuilder {
+class MOJO_CPP_BINDINGS_EXPORT MessageBuilder {
  public:
   MessageBuilder(uint32_t name, size_t payload_size);
   ~MessageBuilder();
@@ -33,7 +34,8 @@ class MessageBuilder {
   DISALLOW_COPY_AND_ASSIGN(MessageBuilder);
 };
 
-class MessageWithRequestIDBuilder : public MessageBuilder {
+class MOJO_CPP_BINDINGS_EXPORT MessageWithRequestIDBuilder
+    : public MessageBuilder {
  public:
   MessageWithRequestIDBuilder(uint32_t name,
                               size_t payload_size,

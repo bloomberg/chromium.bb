@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 
 namespace mojo {
@@ -15,7 +16,7 @@ class AssociatedGroupController;
 
 // ScopedInterfaceEndpointHandle refers to one end of an interface, either the
 // implementation side or the client side.
-class ScopedInterfaceEndpointHandle {
+class MOJO_CPP_BINDINGS_EXPORT ScopedInterfaceEndpointHandle {
  public:
   // Creates an invalid endpoint handle.
   ScopedInterfaceEndpointHandle();

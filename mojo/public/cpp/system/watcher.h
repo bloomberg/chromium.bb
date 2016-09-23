@@ -16,13 +16,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/system_export.h"
 
 namespace mojo {
 
 // A Watcher watches a single Mojo handle for signal state changes.
 //
 // NOTE: Watchers may only be used on threads which have a running MessageLoop.
-class Watcher {
+class MOJO_CPP_SYSTEM_EXPORT Watcher {
  public:
   // A callback to be called any time a watched handle changes state in some
   // interesting way. The |result| argument indicates one of the following

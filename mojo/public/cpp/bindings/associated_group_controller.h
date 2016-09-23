@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
@@ -20,8 +21,8 @@ class InterfaceEndpointClient;
 class InterfaceEndpointController;
 
 // An internal interface used to manage endpoints within an associated group.
-class AssociatedGroupController :
-    public base::RefCountedThreadSafe<AssociatedGroupController> {
+class MOJO_CPP_BINDINGS_EXPORT AssociatedGroupController
+    : public base::RefCountedThreadSafe<AssociatedGroupController> {
  public:
   // Creates a pair of interface endpoint handles. The method generates a new
   // interface ID and assigns it to the two handles. |local_endpoint| is used

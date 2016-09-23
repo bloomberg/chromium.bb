@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_restrictions.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 
 #if (!defined(NDEBUG) || defined(DCHECK_ALWAYS_ON))
 #define ENABLE_SYNC_CALL_RESTRICTIONS 1
@@ -36,7 +37,7 @@ namespace mojo {
 // a very compelling reason to disregard that (which should be very very rare),
 // you can override it by constructing a ScopedAllowSyncCall object, which
 // allows making sync calls on the current thread during its lifetime.
-class SyncCallRestrictions {
+class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
  public:
 #if ENABLE_SYNC_CALL_RESTRICTIONS
   // Checks whether the current thread is allowed to make sync calls, and causes

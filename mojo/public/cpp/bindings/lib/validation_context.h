@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 
 static const int kMaxRecursionDepth = 100;
@@ -23,7 +24,7 @@ namespace internal {
 
 // ValidationContext is used when validating object sizes, pointers and handle
 // indices in the payload of incoming messages.
-class ValidationContext {
+class MOJO_CPP_BINDINGS_EXPORT ValidationContext {
  public:
   // [data, data + data_num_bytes) specifies the initial valid memory range.
   // [0, num_handles) specifies the initial valid range of handle indices.

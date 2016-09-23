@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/serialization_context.h"
 #include "mojo/public/cpp/bindings/message.h"
 
@@ -19,7 +20,7 @@ namespace mojo {
 namespace internal {
 
 // Proxy for request messages defined in interface_control_messages.mojom.
-class ControlMessageProxy {
+class MOJO_CPP_BINDINGS_EXPORT ControlMessageProxy {
  public:
   // Doesn't take ownership of |receiver|. It must outlive this object.
   explicit ControlMessageProxy(MessageReceiverWithResponder* receiver);

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 
 namespace mojo {
@@ -44,7 +45,7 @@ static_assert(sizeof(MessageHeaderWithRequestID) == 32,
 
 #pragma pack(pop)
 
-class MessageDispatchContext {
+class MOJO_CPP_BINDINGS_EXPORT MessageDispatchContext {
  public:
   explicit MessageDispatchContext(Message* message);
   ~MessageDispatchContext();
@@ -61,7 +62,7 @@ class MessageDispatchContext {
   DISALLOW_COPY_AND_ASSIGN(MessageDispatchContext);
 };
 
-class SyncMessageResponseSetup {
+class MOJO_CPP_BINDINGS_EXPORT SyncMessageResponseSetup {
  public:
   static void SetCurrentSyncResponseMessage(Message* message);
 };

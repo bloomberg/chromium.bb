@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
@@ -35,7 +36,7 @@ namespace internal {
 
 // Base class used for templated binding primitives which bind a pipe
 // exclusively to a single interface.
-class SimpleBindingState {
+class MOJO_CPP_BINDINGS_EXPORT SimpleBindingState {
  public:
   SimpleBindingState();
   ~SimpleBindingState();
@@ -134,7 +135,7 @@ class BindingState<Interface, false> : public SimpleBindingState {
 
 // Base class used for templated binding primitives which may bind a pipe to
 // multiple interfaces.
-class MultiplexedBindingState {
+class MOJO_CPP_BINDINGS_EXPORT MultiplexedBindingState {
  public:
   MultiplexedBindingState();
   ~MultiplexedBindingState();

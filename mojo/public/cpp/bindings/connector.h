@@ -8,10 +8,12 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 #include "mojo/public/cpp/system/core.h"
@@ -33,7 +35,8 @@ namespace mojo {
 //   - Sending messages can be configured to be thread safe (please see comments
 //     of the constructor). Other than that, the object should only be accessed
 //     on the creating thread.
-class Connector : public MessageReceiver {
+class MOJO_CPP_BINDINGS_EXPORT Connector
+    : NON_EXPORTED_BASE(public MessageReceiver) {
  public:
   enum ConnectorConfig {
     // Connector::Accept() is only called from a single thread.

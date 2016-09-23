@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 
 namespace mojo {
@@ -20,7 +21,7 @@ class AssociatedGroupController;
 // message pipe. It is used to create associated interfaces for that message
 // pipe.
 // It is thread safe and cheap to make copies.
-class AssociatedGroup {
+class MOJO_CPP_BINDINGS_EXPORT AssociatedGroup {
  public:
   // Configuration used by CreateAssociatedInterface(). Please see the comments
   // of that method for more details.

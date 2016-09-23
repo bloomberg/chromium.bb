@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("system") {
+component("system") {
   sources = [
     "buffer.cc",
     "buffer.h",
@@ -14,6 +14,7 @@ source_set("system") {
     "message_pipe.h",
     "platform_handle.cc",
     "platform_handle.h",
+    "system_export.h",
     "watcher.cc",
     "watcher.h",
   ]
@@ -22,4 +23,6 @@ source_set("system") {
     "//base",
     "//mojo/public/c/system",
   ]
+
+  defines = [ "MOJO_CPP_SYSTEM_IMPLEMENTATION" ]
 }

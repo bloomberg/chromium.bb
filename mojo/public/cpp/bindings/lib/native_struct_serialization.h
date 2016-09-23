@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "ipc/ipc_param_traits.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/array_internal.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/native_struct_data.h"
@@ -103,7 +104,7 @@ struct NativeStructSerializerImpl {
   }
 };
 
-struct UnmappedNativeStructSerializerImpl {
+struct MOJO_CPP_BINDINGS_EXPORT UnmappedNativeStructSerializerImpl {
   static size_t PrepareToSerialize(const NativeStructPtr& input,
                                    SerializationContext* context);
   static void Serialize(const NativeStructPtr& input,

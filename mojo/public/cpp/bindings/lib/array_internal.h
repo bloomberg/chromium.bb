@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "mojo/public/c/system/macros.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 #include "mojo/public/cpp/bindings/lib/serialization_util.h"
@@ -28,13 +29,13 @@ namespace internal {
 template <typename K, typename V>
 class Map_Data;
 
-std::string MakeMessageWithArrayIndex(const char* message,
-                                      size_t size,
-                                      size_t index);
+MOJO_CPP_BINDINGS_EXPORT std::string
+MakeMessageWithArrayIndex(const char* message, size_t size, size_t index);
 
-std::string MakeMessageWithExpectedArraySize(const char* message,
-                                             size_t size,
-                                             size_t expected_size);
+MOJO_CPP_BINDINGS_EXPORT std::string MakeMessageWithExpectedArraySize(
+    const char* message,
+    size_t size,
+    size_t expected_size);
 
 template <typename T>
 struct ArrayDataTraits {
@@ -67,7 +68,7 @@ template <>
 struct ArrayDataTraits<bool> {
   // Helper class to emulate a reference to a bool, used for direct element
   // access.
-  class BitRef {
+  class MOJO_CPP_BINDINGS_EXPORT BitRef {
    public:
     ~BitRef();
     BitRef& operator=(bool value);

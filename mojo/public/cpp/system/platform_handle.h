@@ -22,6 +22,7 @@
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/system_export.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -50,9 +51,11 @@ const MojoPlatformHandleType kPlatformSharedBufferHandleType =
 #endif  // defined(OS_POSIX)
 
 // Wraps a PlatformFile as a Mojo handle. Takes ownership of the file object.
+MOJO_CPP_SYSTEM_EXPORT
 ScopedHandle WrapPlatformFile(base::PlatformFile platform_file);
 
 // Unwraps a PlatformFile from a Mojo handle.
+MOJO_CPP_SYSTEM_EXPORT
 MojoResult UnwrapPlatformFile(ScopedHandle handle, base::PlatformFile* file);
 
 // Wraps a base::SharedMemoryHandle as a Mojo handle. Takes ownership of the
@@ -66,10 +69,11 @@ ScopedSharedBufferHandle WrapSharedMemoryHandle(
 
 // Unwraps a base::SharedMemoryHandle from a Mojo handle. The caller assumes
 // responsibility for the lifetime of the SharedMemoryHandle.
-MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
-                                    base::SharedMemoryHandle* memory_handle,
-                                    size_t* size,
-                                    bool* read_only);
+MOJO_CPP_SYSTEM_EXPORT MojoResult
+UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
+                         base::SharedMemoryHandle* memory_handle,
+                         size_t* size,
+                         bool* read_only);
 
 }  // namespace mojo
 

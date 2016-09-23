@@ -5,11 +5,14 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_HEADER_VALIDATOR_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_MESSAGE_HEADER_VALIDATOR_H_
 
+#include "base/compiler_specific.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/message.h"
 
 namespace mojo {
 
-class MessageHeaderValidator : public MessageReceiver {
+class MOJO_CPP_BINDINGS_EXPORT MessageHeaderValidator
+    : NON_EXPORTED_BASE(public MessageReceiver) {
  public:
   MessageHeaderValidator();
   explicit MessageHeaderValidator(const std::string& description);

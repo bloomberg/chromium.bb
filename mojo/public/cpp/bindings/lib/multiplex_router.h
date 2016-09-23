@@ -12,6 +12,7 @@
 #include <memory>
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,6 +21,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
@@ -51,10 +53,10 @@ namespace internal {
 //
 // NOTE: CloseMessagePipe() or PassMessagePipe() MUST be called on |runner|'s
 // thread before this object is destroyed.
-class MultiplexRouter
-    : public MessageReceiver,
+class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
+    : NON_EXPORTED_BASE(public MessageReceiver),
       public AssociatedGroupController,
-      public PipeControlMessageHandlerDelegate {
+      NON_EXPORTED_BASE(public PipeControlMessageHandlerDelegate) {
  public:
   enum Config {
     // There is only the master interface running on this router. Please note

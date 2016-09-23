@@ -12,11 +12,13 @@
 #include <queue>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/connector.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
@@ -29,7 +31,8 @@ namespace internal {
 
 // TODO(yzshen): Consider removing this class and use MultiplexRouter in all
 // cases. crbug.com/594244
-class Router : public MessageReceiverWithResponder {
+class MOJO_CPP_BINDINGS_EXPORT Router
+    : NON_EXPORTED_BASE(public MessageReceiverWithResponder) {
  public:
   Router(ScopedMessagePipeHandle message_pipe,
          FilterChain filters,

@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/system_export.h"
 
 namespace mojo {
 namespace internal {
@@ -41,7 +42,8 @@ typedef ScopedHandleBase<SharedBufferHandle> ScopedSharedBufferHandle;
 
 // A strongly-typed representation of a |MojoHandle| referring to a shared
 // buffer.
-class SharedBufferHandle : public Handle {
+class MOJO_CPP_SYSTEM_EXPORT SharedBufferHandle
+    : NON_EXPORTED_BASE(public Handle) {
  public:
   enum class AccessMode {
     READ_WRITE,

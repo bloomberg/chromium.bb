@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -18,6 +19,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/lib/control_message_handler.h"
@@ -34,8 +36,9 @@ class InterfaceEndpointController;
 // InterfaceEndpointClient handles message sending and receiving of an interface
 // endpoint, either the implementation side or the client side.
 // It should only be accessed and destructed on the creating thread.
-class InterfaceEndpointClient : public MessageReceiverWithResponder,
-                                public base::MessageLoop::DestructionObserver {
+class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
+    : NON_EXPORTED_BASE(public MessageReceiverWithResponder),
+      public base::MessageLoop::DestructionObserver {
  public:
   // |receiver| is okay to be null. If it is not null, it must outlive this
   // object.

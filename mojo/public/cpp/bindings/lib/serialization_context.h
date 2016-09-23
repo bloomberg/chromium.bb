@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/system/handle.h"
 
@@ -23,7 +24,7 @@ class AssociatedGroupController;
 namespace internal {
 
 // A container for handles during serialization/deserialization.
-class SerializedHandleVector {
+class MOJO_CPP_BINDINGS_EXPORT SerializedHandleVector {
  public:
   SerializedHandleVector();
   ~SerializedHandleVector();
@@ -54,7 +55,7 @@ class SerializedHandleVector {
 };
 
 // Context information for serialization/deserialization routines.
-struct SerializationContext {
+struct MOJO_CPP_BINDINGS_EXPORT SerializationContext {
   SerializationContext();
   explicit SerializationContext(
       scoped_refptr<AssociatedGroupController> in_group_controller);
