@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/user_manager.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -66,7 +67,7 @@ ReauthDelegate::ReauthDelegate(UserManagerView* parent,
   AddChildView(web_view_);
   SetLayoutManager(new views::FillLayout());
 
-  web_view->GetWebContents()->SetDelegate(this);
+  web_view_->GetWebContents()->SetDelegate(this);
 
   // Load the re-auth URL, prepopulated with the user's email address.
   // Add the index of the profile to the URL so that the inline login page
@@ -85,6 +86,10 @@ gfx::Size ReauthDelegate::GetPreferredSize() const {
                 UserManager::kReauthDialogHeight) :
       gfx::Size(UserManager::kPasswordCombinedReauthDialogWidth,
                 UserManager::kPasswordCombinedReauthDialogHeight);
+}
+
+void ReauthDelegate::DisplayErrorMessage() {
+  web_view_->LoadInitialURL(GURL(chrome::kChromeUISigninErrorURL));
 }
 
 bool ReauthDelegate::CanResize() const {
@@ -210,17 +215,14 @@ void UserManager::ShowReauthDialog(content::BrowserContext* browser_context,
   // This method should only be called if the user manager is already showing.
   if (!IsShowing())
     return;
-
   instance_->ShowReauthDialog(browser_context, email, reason);
 }
 
 // static
 void UserManager::HideReauthDialog() {
   // This method should only be called if the user manager is already showing.
-  if (!IsShowing())
-    return;
-
-  instance_->HideReauthDialog();
+  if (instance_ && instance_->GetWidget()->IsVisible())
+    instance_->HideReauthDialog();
 }
 
 // static
@@ -228,6 +230,28 @@ void UserManager::AddOnUserManagerShownCallbackForTesting(
     const base::Closure& callback) {
   DCHECK(!user_manager_shown_callback_for_testing_);
   user_manager_shown_callback_for_testing_ = new base::Closure(callback);
+}
+
+// static
+void UserManager::ShowSigninDialog(content::BrowserContext* browser_context,
+                                   const base::FilePath& profile_path) {
+  if (!IsShowing())
+    return;
+  instance_->SetSigninProfilePath(profile_path);
+  ShowReauthDialog(browser_context, std::string(),
+                   signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
+}
+
+// static
+void UserManager::DisplayErrorMessage() {
+  // This method should only be called if the user manager is already showing.
+  DCHECK(instance_);
+  instance_->DisplayErrorMessage();
+}
+
+// static
+base::FilePath UserManager::GetSigninProfilePath() {
+  return instance_->GetSigninProfilePath();
 }
 
 // UserManagerView -------------------------------------------------------------
@@ -407,4 +431,17 @@ void UserManagerView::WindowClosing() {
 
 bool UserManagerView::ShouldUseCustomFrame() const {
   return false;
+}
+
+void UserManagerView::DisplayErrorMessage() {
+  if (delegate_)
+    delegate_->DisplayErrorMessage();
+}
+
+void UserManagerView::SetSigninProfilePath(const base::FilePath& profile_path) {
+  signin_profile_path_ = profile_path;
+}
+
+base::FilePath UserManagerView::GetSigninProfilePath() {
+  return signin_profile_path_;
 }

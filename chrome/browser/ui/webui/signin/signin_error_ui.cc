@@ -4,12 +4,15 @@
 
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
 
+#include <vector>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_error_handler.h"
@@ -23,22 +26,43 @@
 #include "ui/gfx/text_elider.h"
 
 SigninErrorUI::SigninErrorUI(content::WebUI* web_ui)
-    : SigninErrorUI(web_ui, new SigninErrorHandler) {}
+    : SigninErrorUI(web_ui,
+                    new SigninErrorHandler(Profile::FromWebUI(web_ui)
+                                               ->GetOriginalProfile()
+                                               ->IsSystemProfile())) {}
 
 SigninErrorUI::SigninErrorUI(content::WebUI* web_ui,
                              SigninErrorHandler* handler)
     : WebDialogUI(web_ui) {
-  Profile* profile = Profile::FromWebUI(web_ui);
+  Profile* webui_profile = Profile::FromWebUI(web_ui);
+  Profile* signin_profile;
+  bool is_system_profile =
+      webui_profile->GetOriginalProfile()->IsSystemProfile();
+
+// TODO(zmin): Remove the condition for MACOSX once user_manager_mac.cc is
+// updated.
+#if !defined(OS_MACOSX)
+  if (is_system_profile) {
+    signin_profile = g_browser_process->profile_manager()->GetProfileByPath(
+        UserManager::GetSigninProfilePath());
+  } else {
+    signin_profile = webui_profile;
+  }
+#else
+  signin_profile = webui_profile;
+#endif
+
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISigninErrorHost);
   source->SetJsonPath("strings.js");
   source->SetDefaultResource(IDR_SIGNIN_ERROR_HTML);
   source->AddResourcePath("signin_error.js", IDR_SIGNIN_ERROR_JS);
   source->AddResourcePath("signin_shared_css.html", IDR_SIGNIN_SHARED_CSS_HTML);
+  source->AddBoolean("isSystemProfile", is_system_profile);
 
   // Retrieve the last signin error message and email used.
   LoginUIService* login_ui_service =
-      LoginUIServiceFactory::GetForProfile(profile);
+      LoginUIServiceFactory::GetForProfile(signin_profile);
   const base::string16 last_login_result(
       login_ui_service->GetLastLoginResult());
   const base::string16 email = login_ui_service->GetLastLoginErrorEmail();
@@ -51,9 +75,10 @@ SigninErrorUI::SigninErrorUI(content::WebUI* web_ui,
   }
 
   // Tweak the dialog UI depending on whether the signin error is
-  // username-in-use error.
+  // username-in-use error and the error UI is shown with a browser window.
   base::string16 existing_name;
-  if (last_login_result.compare(
+  if (!is_system_profile &&
+      last_login_result.compare(
           l10n_util::GetStringUTF16(IDS_SYNC_USER_NAME_IN_USE_ERROR)) == 0) {
     ProfileManager* profile_manager = g_browser_process->profile_manager();
     if (profile_manager) {
@@ -99,6 +124,6 @@ SigninErrorUI::SigninErrorUI(content::WebUI* web_ui,
                                  &strings);
   source->AddLocalizedStrings(strings);
 
-  content::WebUIDataSource::Add(profile, source);
+  content::WebUIDataSource::Add(webui_profile, source);
   web_ui->AddMessageHandler(handler);
 }

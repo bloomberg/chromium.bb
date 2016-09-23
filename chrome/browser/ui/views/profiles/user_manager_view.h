@@ -31,6 +31,9 @@ class ReauthDelegate : public views::DialogDelegateView,
   // UserManager::BaseReauthDialogDelegate:
   void CloseReauthDialog() override;
 
+  // Display the local error message inside login window.
+  void DisplayErrorMessage();
+
  private:
   ReauthDelegate();
 
@@ -50,7 +53,7 @@ class ReauthDelegate : public views::DialogDelegateView,
   int GetDialogButtons() const override;
   views::View* GetInitiallyFocusedView() override;
 
-  UserManagerView* parent_; // Not owned.
+  UserManagerView* parent_;  // Not owned.
   views::WebView* web_view_;
   const std::string email_address_;
 
@@ -97,6 +100,15 @@ class UserManagerView : public views::DialogDelegateView {
   // Hides the reauth dialog if it is showing.
   void HideReauthDialog();
 
+  // Display sign in error message that is created by Chrome but not GAIA
+  // without browser window.
+  void DisplayErrorMessage();
+
+  // Setter and getter of the path of profile which is selected in user manager
+  // for first time signin.
+  void SetSigninProfilePath(const base::FilePath& profile_path);
+  base::FilePath GetSigninProfilePath();
+
  private:
   friend class ReauthDelegate;
   friend std::default_delete<UserManagerView>;
@@ -128,6 +140,8 @@ class UserManagerView : public views::DialogDelegateView {
 
   std::unique_ptr<ScopedKeepAlive> keep_alive_;
   base::Time user_manager_started_showing_;
+
+  base::FilePath signin_profile_path_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerView);
 };

@@ -11,6 +11,9 @@ cr.define('signin.error', function() {
     $('closeButton').addEventListener('click', onConfirm);
     $('switchButton').addEventListener('click', onSwitchToExistingProfile);
     $('learnMoreLink').addEventListener('click', onLearnMore);
+    if (loadTimeData.getBoolean('isSystemProfile')) {
+      $('learnMoreLink').hidden = true;
+    }
     chrome.send('initializedWithSize', [document.body.scrollHeight]);
   }
 

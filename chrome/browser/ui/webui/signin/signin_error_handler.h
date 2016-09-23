@@ -19,7 +19,8 @@ class ListValue;
 
 class SigninErrorHandler : public content::WebUIMessageHandler {
  public:
-  SigninErrorHandler() {}
+  explicit SigninErrorHandler(bool is_system_profile);
+
   ~SigninErrorHandler() override {}
 
   // content::WebUIMessageHandler:
@@ -57,6 +58,8 @@ class SigninErrorHandler : public content::WebUIMessageHandler {
 
  private:
   const ProfileAttributesEntry* duplicate_profile_entry_ = nullptr;
+
+  bool is_system_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(SigninErrorHandler);
 };

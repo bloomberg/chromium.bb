@@ -10,9 +10,13 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
+
+SigninErrorHandler::SigninErrorHandler(bool is_system_profile)
+    : is_system_profile_(is_system_profile) {}
 
 void SigninErrorHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
@@ -70,7 +74,13 @@ void SigninErrorHandler::HandleInitializedWithSize(
 }
 
 void SigninErrorHandler::CloseDialog() {
-  Browser* browser = signin::GetDesktopBrowser(web_ui());
-  DCHECK(browser);
-  browser->CloseModalSigninWindow();
+  if (is_system_profile_) {
+    // Avoid closing the user manager window when the error message is displayed
+    // without browser window.
+    UserManager::HideReauthDialog();
+  } else {
+    Browser* browser = signin::GetDesktopBrowser(web_ui());
+    DCHECK(browser);
+    browser->CloseModalSigninWindow();
+  }
 }
