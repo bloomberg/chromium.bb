@@ -6,8 +6,6 @@ from page_sets.login_helpers import google_login
 from page_sets.system_health import platforms
 from page_sets.system_health import system_health_story
 
-from telemetry import decorators
-
 
 IDLE_TIME_IN_SECONDS = 100
 SAMPLING_INTERVAL_IN_SECONDS = 1
@@ -86,8 +84,6 @@ class LongRunningGmailDesktopForegroundStory(_LongRunningGmailDesktopBase):
   NAME = 'long_running:tools:gmail-foreground'
 
 
-# crbug.com/643110
-@decorators.Disabled('android')
 class LongRunningGmailMobileBackgroundStory(_LongRunningGmailMobileBase):
   BACKGROUND = True
   NAME = 'long_running:tools:gmail-background'
