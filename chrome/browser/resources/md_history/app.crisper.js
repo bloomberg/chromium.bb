@@ -507,569 +507,6 @@ cr.define('cr.ui', function() {
   };
 });
 
-(function() {
-  'use strict';
-  Polymer({
-    is: 'iron-location',
-    properties: {
-      path: {
-        type: String,
-        notify: true,
-        value: function() {
-          return window.decodeURIComponent(window.location.pathname);
-        }
-      },
-      query: {
-        type: String,
-        notify: true,
-        value: function() {
-          return window.decodeURIComponent(window.location.search.slice(1));
-        }
-      },
-      hash: {
-        type: String,
-        notify: true,
-        value: function() {
-          return window.decodeURIComponent(window.location.hash.slice(1));
-        }
-      },
-      dwellTime: {
-        type: Number,
-        value: 2e3
-      },
-      urlSpaceRegex: {
-        type: String,
-        value: ''
-      },
-      _urlSpaceRegExp: {
-        computed: '_makeRegExp(urlSpaceRegex)'
-      },
-      _lastChangedAt: {
-        type: Number
-      },
-      _initialized: {
-        type: Boolean,
-        value: false
-      }
-    },
-    hostAttributes: {
-      hidden: true
-    },
-    observers: [ '_updateUrl(path, query, hash)' ],
-    attached: function() {
-      this.listen(window, 'hashchange', '_hashChanged');
-      this.listen(window, 'location-changed', '_urlChanged');
-      this.listen(window, 'popstate', '_urlChanged');
-      this.listen(document.body, 'click', '_globalOnClick');
-      this._lastChangedAt = window.performance.now() - (this.dwellTime - 200);
-      this._initialized = true;
-      this._urlChanged();
-    },
-    detached: function() {
-      this.unlisten(window, 'hashchange', '_hashChanged');
-      this.unlisten(window, 'location-changed', '_urlChanged');
-      this.unlisten(window, 'popstate', '_urlChanged');
-      this.unlisten(document.body, 'click', '_globalOnClick');
-      this._initialized = false;
-    },
-    _hashChanged: function() {
-      this.hash = window.decodeURIComponent(window.location.hash.substring(1));
-    },
-    _urlChanged: function() {
-      this._dontUpdateUrl = true;
-      this._hashChanged();
-      this.path = window.decodeURIComponent(window.location.pathname);
-      this.query = window.decodeURIComponent(window.location.search.substring(1));
-      this._dontUpdateUrl = false;
-      this._updateUrl();
-    },
-    _getUrl: function() {
-      var partiallyEncodedPath = window.encodeURI(this.path).replace(/\#/g, '%23').replace(/\?/g, '%3F');
-      var partiallyEncodedQuery = '';
-      if (this.query) {
-        partiallyEncodedQuery = '?' + window.encodeURI(this.query).replace(/\#/g, '%23');
-      }
-      var partiallyEncodedHash = '';
-      if (this.hash) {
-        partiallyEncodedHash = '#' + window.encodeURI(this.hash);
-      }
-      return partiallyEncodedPath + partiallyEncodedQuery + partiallyEncodedHash;
-    },
-    _updateUrl: function() {
-      if (this._dontUpdateUrl || !this._initialized) {
-        return;
-      }
-      if (this.path === window.decodeURIComponent(window.location.pathname) && this.query === window.decodeURIComponent(window.location.search.substring(1)) && this.hash === window.decodeURIComponent(window.location.hash.substring(1))) {
-        return;
-      }
-      var newUrl = this._getUrl();
-      var fullNewUrl = new URL(newUrl, window.location.protocol + '//' + window.location.host).href;
-      var now = window.performance.now();
-      var shouldReplace = this._lastChangedAt + this.dwellTime > now;
-      this._lastChangedAt = now;
-      if (shouldReplace) {
-        window.history.replaceState({}, '', fullNewUrl);
-      } else {
-        window.history.pushState({}, '', fullNewUrl);
-      }
-      this.fire('location-changed', {}, {
-        node: window
-      });
-    },
-    _globalOnClick: function(event) {
-      if (event.defaultPrevented) {
-        return;
-      }
-      var href = this._getSameOriginLinkHref(event);
-      if (!href) {
-        return;
-      }
-      event.preventDefault();
-      if (href === window.location.href) {
-        return;
-      }
-      window.history.pushState({}, '', href);
-      this.fire('location-changed', {}, {
-        node: window
-      });
-    },
-    _getSameOriginLinkHref: function(event) {
-      if (event.button !== 0) {
-        return null;
-      }
-      if (event.metaKey || event.ctrlKey) {
-        return null;
-      }
-      var eventPath = Polymer.dom(event).path;
-      var anchor = null;
-      for (var i = 0; i < eventPath.length; i++) {
-        var element = eventPath[i];
-        if (element.tagName === 'A' && element.href) {
-          anchor = element;
-          break;
-        }
-      }
-      if (!anchor) {
-        return null;
-      }
-      if (anchor.target === '_blank') {
-        return null;
-      }
-      if ((anchor.target === '_top' || anchor.target === '_parent') && window.top !== window) {
-        return null;
-      }
-      var href = anchor.href;
-      var url;
-      if (document.baseURI != null) {
-        url = new URL(href, document.baseURI);
-      } else {
-        url = new URL(href);
-      }
-      var origin;
-      if (window.location.origin) {
-        origin = window.location.origin;
-      } else {
-        origin = window.location.protocol + '//' + window.location.hostname;
-        if (window.location.port) {
-          origin += ':' + window.location.port;
-        }
-      }
-      if (url.origin !== origin) {
-        return null;
-      }
-      var normalizedHref = url.pathname + url.search + url.hash;
-      if (this._urlSpaceRegExp && !this._urlSpaceRegExp.test(normalizedHref)) {
-        return null;
-      }
-      var fullNormalizedHref = new URL(normalizedHref, window.location.href).href;
-      return fullNormalizedHref;
-    },
-    _makeRegExp: function(urlSpaceRegex) {
-      return RegExp(urlSpaceRegex);
-    }
-  });
-})();
-
-'use strict';
-
-Polymer({
-  is: 'iron-query-params',
-  properties: {
-    paramsString: {
-      type: String,
-      notify: true,
-      observer: 'paramsStringChanged'
-    },
-    paramsObject: {
-      type: Object,
-      notify: true,
-      value: function() {
-        return {};
-      }
-    },
-    _dontReact: {
-      type: Boolean,
-      value: false
-    }
-  },
-  hostAttributes: {
-    hidden: true
-  },
-  observers: [ 'paramsObjectChanged(paramsObject.*)' ],
-  paramsStringChanged: function() {
-    this._dontReact = true;
-    this.paramsObject = this._decodeParams(this.paramsString);
-    this._dontReact = false;
-  },
-  paramsObjectChanged: function() {
-    if (this._dontReact) {
-      return;
-    }
-    this.paramsString = this._encodeParams(this.paramsObject);
-  },
-  _encodeParams: function(params) {
-    var encodedParams = [];
-    for (var key in params) {
-      var value = params[key];
-      if (value === '') {
-        encodedParams.push(encodeURIComponent(key));
-      } else if (value) {
-        encodedParams.push(encodeURIComponent(key) + '=' + encodeURIComponent(value.toString()));
-      }
-    }
-    return encodedParams.join('&');
-  },
-  _decodeParams: function(paramString) {
-    var params = {};
-    paramString = (paramString || '').replace(/\+/g, '%20');
-    var paramList = paramString.split('&');
-    for (var i = 0; i < paramList.length; i++) {
-      var param = paramList[i].split('=');
-      if (param[0]) {
-        params[decodeURIComponent(param[0])] = decodeURIComponent(param[1] || '');
-      }
-    }
-    return params;
-  }
-});
-
-'use strict';
-
-Polymer.AppRouteConverterBehavior = {
-  properties: {
-    route: {
-      type: Object,
-      notify: true
-    },
-    queryParams: {
-      type: Object,
-      notify: true
-    },
-    path: {
-      type: String,
-      notify: true
-    }
-  },
-  observers: [ '_locationChanged(path, queryParams)', '_routeChanged(route.prefix, route.path)', '_routeQueryParamsChanged(route.__queryParams)' ],
-  created: function() {
-    this.linkPaths('route.__queryParams', 'queryParams');
-    this.linkPaths('queryParams', 'route.__queryParams');
-  },
-  _locationChanged: function() {
-    if (this.route && this.route.path === this.path && this.queryParams === this.route.__queryParams) {
-      return;
-    }
-    this.route = {
-      prefix: '',
-      path: this.path,
-      __queryParams: this.queryParams
-    };
-  },
-  _routeChanged: function() {
-    if (!this.route) {
-      return;
-    }
-    this.path = this.route.prefix + this.route.path;
-  },
-  _routeQueryParamsChanged: function(queryParams) {
-    if (!this.route) {
-      return;
-    }
-    this.queryParams = queryParams;
-  }
-};
-
-'use strict';
-
-Polymer({
-  is: 'app-location',
-  properties: {
-    route: {
-      type: Object,
-      notify: true
-    },
-    useHashAsPath: {
-      type: Boolean,
-      value: false
-    },
-    urlSpaceRegex: {
-      type: String,
-      notify: true
-    },
-    __queryParams: {
-      type: Object
-    },
-    __path: {
-      type: String
-    },
-    __query: {
-      type: String
-    },
-    __hash: {
-      type: String
-    },
-    path: {
-      type: String,
-      observer: '__onPathChanged'
-    }
-  },
-  behaviors: [ Polymer.AppRouteConverterBehavior ],
-  observers: [ '__computeRoutePath(useHashAsPath, __hash, __path)' ],
-  __computeRoutePath: function() {
-    this.path = this.useHashAsPath ? this.__hash : this.__path;
-  },
-  __onPathChanged: function() {
-    if (!this._readied) {
-      return;
-    }
-    if (this.useHashAsPath) {
-      this.__hash = this.path;
-    } else {
-      this.__path = this.path;
-    }
-  }
-});
-
-'use strict';
-
-Polymer({
-  is: 'app-route',
-  properties: {
-    route: {
-      type: Object,
-      notify: true
-    },
-    pattern: {
-      type: String
-    },
-    data: {
-      type: Object,
-      value: function() {
-        return {};
-      },
-      notify: true
-    },
-    queryParams: {
-      type: Object,
-      value: function() {
-        return {};
-      },
-      notify: true
-    },
-    tail: {
-      type: Object,
-      value: function() {
-        return {
-          path: null,
-          prefix: null,
-          __queryParams: null
-        };
-      },
-      notify: true
-    },
-    active: {
-      type: Boolean,
-      notify: true,
-      readOnly: true
-    },
-    _queryParamsUpdating: {
-      type: Boolean,
-      value: false
-    },
-    _matched: {
-      type: String,
-      value: ''
-    }
-  },
-  observers: [ '__tryToMatch(route.path, pattern)', '__updatePathOnDataChange(data.*)', '__tailPathChanged(tail.path)', '__routeQueryParamsChanged(route.__queryParams)', '__tailQueryParamsChanged(tail.__queryParams)', '__queryParamsChanged(queryParams.*)' ],
-  created: function() {
-    this.linkPaths('route.__queryParams', 'tail.__queryParams');
-    this.linkPaths('tail.__queryParams', 'route.__queryParams');
-  },
-  __routeQueryParamsChanged: function(queryParams) {
-    if (queryParams && this.tail) {
-      this.set('tail.__queryParams', queryParams);
-      if (!this.active || this._queryParamsUpdating) {
-        return;
-      }
-      var copyOfQueryParams = {};
-      var anythingChanged = false;
-      for (var key in queryParams) {
-        copyOfQueryParams[key] = queryParams[key];
-        if (anythingChanged || !this.queryParams || queryParams[key] !== this.queryParams[key]) {
-          anythingChanged = true;
-        }
-      }
-      for (var key in this.queryParams) {
-        if (anythingChanged || !(key in queryParams)) {
-          anythingChanged = true;
-          break;
-        }
-      }
-      if (!anythingChanged) {
-        return;
-      }
-      this._queryParamsUpdating = true;
-      this.set('queryParams', copyOfQueryParams);
-      this._queryParamsUpdating = false;
-    }
-  },
-  __tailQueryParamsChanged: function(queryParams) {
-    if (queryParams && this.route) {
-      this.set('route.__queryParams', queryParams);
-    }
-  },
-  __queryParamsChanged: function(changes) {
-    if (!this.active || this._queryParamsUpdating) {
-      return;
-    }
-    this.set('route.__' + changes.path, changes.value);
-  },
-  __resetProperties: function() {
-    this._setActive(false);
-    this._matched = null;
-  },
-  __tryToMatch: function() {
-    if (!this.route) {
-      return;
-    }
-    var path = this.route.path;
-    var pattern = this.pattern;
-    if (!pattern) {
-      return;
-    }
-    if (!path) {
-      this.__resetProperties();
-      return;
-    }
-    var remainingPieces = path.split('/');
-    var patternPieces = pattern.split('/');
-    var matched = [];
-    var namedMatches = {};
-    for (var i = 0; i < patternPieces.length; i++) {
-      var patternPiece = patternPieces[i];
-      if (!patternPiece && patternPiece !== '') {
-        break;
-      }
-      var pathPiece = remainingPieces.shift();
-      if (!pathPiece && pathPiece !== '') {
-        this.__resetProperties();
-        return;
-      }
-      matched.push(pathPiece);
-      if (patternPiece.charAt(0) == ':') {
-        namedMatches[patternPiece.slice(1)] = pathPiece;
-      } else if (patternPiece !== pathPiece) {
-        this.__resetProperties();
-        return;
-      }
-    }
-    this._matched = matched.join('/');
-    var propertyUpdates = {};
-    if (!this.active) {
-      propertyUpdates.active = true;
-    }
-    var tailPrefix = this.route.prefix + this._matched;
-    var tailPath = remainingPieces.join('/');
-    if (remainingPieces.length > 0) {
-      tailPath = '/' + tailPath;
-    }
-    if (!this.tail || this.tail.prefix !== tailPrefix || this.tail.path !== tailPath) {
-      propertyUpdates.tail = {
-        prefix: tailPrefix,
-        path: tailPath,
-        __queryParams: this.route.__queryParams
-      };
-    }
-    propertyUpdates.data = namedMatches;
-    this._dataInUrl = {};
-    for (var key in namedMatches) {
-      this._dataInUrl[key] = namedMatches[key];
-    }
-    this.__setMulti(propertyUpdates);
-  },
-  __tailPathChanged: function() {
-    if (!this.active) {
-      return;
-    }
-    var tailPath = this.tail.path;
-    var newPath = this._matched;
-    if (tailPath) {
-      if (tailPath.charAt(0) !== '/') {
-        tailPath = '/' + tailPath;
-      }
-      newPath += tailPath;
-    }
-    this.set('route.path', newPath);
-  },
-  __updatePathOnDataChange: function() {
-    if (!this.route || !this.active) {
-      return;
-    }
-    var newPath = this.__getLink({});
-    var oldPath = this.__getLink(this._dataInUrl);
-    if (newPath === oldPath) {
-      return;
-    }
-    this.set('route.path', newPath);
-  },
-  __getLink: function(overrideValues) {
-    var values = {
-      tail: null
-    };
-    for (var key in this.data) {
-      values[key] = this.data[key];
-    }
-    for (var key in overrideValues) {
-      values[key] = overrideValues[key];
-    }
-    var patternPieces = this.pattern.split('/');
-    var interp = patternPieces.map(function(value) {
-      if (value[0] == ':') {
-        value = values[value.slice(1)];
-      }
-      return value;
-    }, this);
-    if (values.tail && values.tail.path) {
-      if (interp.length > 0 && values.tail.path.charAt(0) === '/') {
-        interp.push(values.tail.path.slice(1));
-      } else {
-        interp.push(values.tail.path);
-      }
-    }
-    return interp.join('/');
-  },
-  __setMulti: function(setObj) {
-    for (var property in setObj) {
-      this._propertySetter(property, setObj[property]);
-    }
-    for (var property in setObj) {
-      this._pathEffector(property, this[property]);
-      this._notifyPathUp(property, this[property]);
-    }
-  }
-});
-
 Polymer({
   is: 'iron-media-query',
   properties: {
@@ -3660,6 +3097,7 @@ Polymer({
     },
     searchTerm: {
       type: String,
+      observer: 'searchTermChanged_',
       notify: true
     },
     spinnerActive: {
@@ -3691,15 +3129,20 @@ Polymer({
       }
     }
   },
+  get searchField() {
+    return this.$['main-toolbar'].getSearchField();
+  },
+  showSearchField: function() {
+    this.searchField.showAndFocus();
+  },
   changeToolbarView_: function() {
     this.itemsSelected_ = this.count > 0;
   },
-  setSearchTerm: function(search) {
-    if (this.searchTerm == search) return;
-    this.searchTerm = search;
-    var searchField = this.$['main-toolbar'].getSearchField();
-    searchField.showAndFocus();
-    searchField.setValue(search);
+  searchTermChanged_: function() {
+    if (this.searchField.getValue() != this.searchTerm) {
+      this.searchField.showAndFocus();
+      this.searchField.setValue(this.searchTerm);
+    }
   },
   onMenuPromoShown_: function() {
     md_history.BrowserService.getInstance().menuPromoShown();
@@ -3717,12 +3160,6 @@ Polymer({
   },
   onDeleteTap_: function() {
     this.fire('delete-selected');
-  },
-  get searchBar() {
-    return this.$['main-toolbar'].getSearchField();
-  },
-  showSearchField: function() {
-    this.$['main-toolbar'].getSearchField().showAndFocus();
   },
   deletingAllowed_: function() {
     return loadTimeData.getBoolean('allowDeletingHistory');
@@ -5316,6 +4753,7 @@ Polymer({
     queryState: Object,
     queryResult: Object
   },
+  observers: [ 'searchTermChanged_(queryState.searchTerm)' ],
   listeners: {
     'history-list-scrolled': 'closeMenu_',
     'load-more-history': 'loadMoreHistory_',
@@ -5377,6 +4815,10 @@ Polymer({
     this.queryHistory(false);
     this.fire('history-view-changed');
   },
+  searchTermChanged_: function() {
+    this.queryHistory(false);
+    if (this.queryState.searchTerm) md_history.BrowserService.getInstance().recordAction('Search');
+  },
   loadMoreHistory_: function() {
     this.queryHistory(true);
   },
@@ -5414,9 +4856,7 @@ Polymer({
   onMoreFromSiteTap_: function() {
     md_history.BrowserService.getInstance().recordAction('EntryMenuShowMoreFromSite');
     var menu = assert(this.$.sharedMenu.getIfExists());
-    this.fire('search-domain', {
-      domain: menu.itemData.item.domain
-    });
+    this.set('queryState.searchTerm', menu.itemData.item.domain);
     menu.closeMenu();
   },
   onRemoveFromHistoryTap_: function() {
@@ -5439,6 +4879,295 @@ Polymer({
   },
   getSelectedList_: function() {
     return this.$.content.selectedItem;
+  }
+});
+
+(function() {
+  'use strict';
+  Polymer({
+    is: 'iron-location',
+    properties: {
+      path: {
+        type: String,
+        notify: true,
+        value: function() {
+          return window.decodeURIComponent(window.location.pathname);
+        }
+      },
+      query: {
+        type: String,
+        notify: true,
+        value: function() {
+          return window.decodeURIComponent(window.location.search.slice(1));
+        }
+      },
+      hash: {
+        type: String,
+        notify: true,
+        value: function() {
+          return window.decodeURIComponent(window.location.hash.slice(1));
+        }
+      },
+      dwellTime: {
+        type: Number,
+        value: 2e3
+      },
+      urlSpaceRegex: {
+        type: String,
+        value: ''
+      },
+      _urlSpaceRegExp: {
+        computed: '_makeRegExp(urlSpaceRegex)'
+      },
+      _lastChangedAt: {
+        type: Number
+      },
+      _initialized: {
+        type: Boolean,
+        value: false
+      }
+    },
+    hostAttributes: {
+      hidden: true
+    },
+    observers: [ '_updateUrl(path, query, hash)' ],
+    attached: function() {
+      this.listen(window, 'hashchange', '_hashChanged');
+      this.listen(window, 'location-changed', '_urlChanged');
+      this.listen(window, 'popstate', '_urlChanged');
+      this.listen(document.body, 'click', '_globalOnClick');
+      this._lastChangedAt = window.performance.now() - (this.dwellTime - 200);
+      this._initialized = true;
+      this._urlChanged();
+    },
+    detached: function() {
+      this.unlisten(window, 'hashchange', '_hashChanged');
+      this.unlisten(window, 'location-changed', '_urlChanged');
+      this.unlisten(window, 'popstate', '_urlChanged');
+      this.unlisten(document.body, 'click', '_globalOnClick');
+      this._initialized = false;
+    },
+    _hashChanged: function() {
+      this.hash = window.decodeURIComponent(window.location.hash.substring(1));
+    },
+    _urlChanged: function() {
+      this._dontUpdateUrl = true;
+      this._hashChanged();
+      this.path = window.decodeURIComponent(window.location.pathname);
+      this.query = window.decodeURIComponent(window.location.search.substring(1));
+      this._dontUpdateUrl = false;
+      this._updateUrl();
+    },
+    _getUrl: function() {
+      var partiallyEncodedPath = window.encodeURI(this.path).replace(/\#/g, '%23').replace(/\?/g, '%3F');
+      var partiallyEncodedQuery = '';
+      if (this.query) {
+        partiallyEncodedQuery = '?' + window.encodeURI(this.query).replace(/\#/g, '%23');
+      }
+      var partiallyEncodedHash = '';
+      if (this.hash) {
+        partiallyEncodedHash = '#' + window.encodeURI(this.hash);
+      }
+      return partiallyEncodedPath + partiallyEncodedQuery + partiallyEncodedHash;
+    },
+    _updateUrl: function() {
+      if (this._dontUpdateUrl || !this._initialized) {
+        return;
+      }
+      if (this.path === window.decodeURIComponent(window.location.pathname) && this.query === window.decodeURIComponent(window.location.search.substring(1)) && this.hash === window.decodeURIComponent(window.location.hash.substring(1))) {
+        return;
+      }
+      var newUrl = this._getUrl();
+      var fullNewUrl = new URL(newUrl, window.location.protocol + '//' + window.location.host).href;
+      var now = window.performance.now();
+      var shouldReplace = this._lastChangedAt + this.dwellTime > now;
+      this._lastChangedAt = now;
+      if (shouldReplace) {
+        window.history.replaceState({}, '', fullNewUrl);
+      } else {
+        window.history.pushState({}, '', fullNewUrl);
+      }
+      this.fire('location-changed', {}, {
+        node: window
+      });
+    },
+    _globalOnClick: function(event) {
+      if (event.defaultPrevented) {
+        return;
+      }
+      var href = this._getSameOriginLinkHref(event);
+      if (!href) {
+        return;
+      }
+      event.preventDefault();
+      if (href === window.location.href) {
+        return;
+      }
+      window.history.pushState({}, '', href);
+      this.fire('location-changed', {}, {
+        node: window
+      });
+    },
+    _getSameOriginLinkHref: function(event) {
+      if (event.button !== 0) {
+        return null;
+      }
+      if (event.metaKey || event.ctrlKey) {
+        return null;
+      }
+      var eventPath = Polymer.dom(event).path;
+      var anchor = null;
+      for (var i = 0; i < eventPath.length; i++) {
+        var element = eventPath[i];
+        if (element.tagName === 'A' && element.href) {
+          anchor = element;
+          break;
+        }
+      }
+      if (!anchor) {
+        return null;
+      }
+      if (anchor.target === '_blank') {
+        return null;
+      }
+      if ((anchor.target === '_top' || anchor.target === '_parent') && window.top !== window) {
+        return null;
+      }
+      var href = anchor.href;
+      var url;
+      if (document.baseURI != null) {
+        url = new URL(href, document.baseURI);
+      } else {
+        url = new URL(href);
+      }
+      var origin;
+      if (window.location.origin) {
+        origin = window.location.origin;
+      } else {
+        origin = window.location.protocol + '//' + window.location.hostname;
+        if (window.location.port) {
+          origin += ':' + window.location.port;
+        }
+      }
+      if (url.origin !== origin) {
+        return null;
+      }
+      var normalizedHref = url.pathname + url.search + url.hash;
+      if (this._urlSpaceRegExp && !this._urlSpaceRegExp.test(normalizedHref)) {
+        return null;
+      }
+      var fullNormalizedHref = new URL(normalizedHref, window.location.href).href;
+      return fullNormalizedHref;
+    },
+    _makeRegExp: function(urlSpaceRegex) {
+      return RegExp(urlSpaceRegex);
+    }
+  });
+})();
+
+'use strict';
+
+Polymer({
+  is: 'iron-query-params',
+  properties: {
+    paramsString: {
+      type: String,
+      notify: true,
+      observer: 'paramsStringChanged'
+    },
+    paramsObject: {
+      type: Object,
+      notify: true,
+      value: function() {
+        return {};
+      }
+    },
+    _dontReact: {
+      type: Boolean,
+      value: false
+    }
+  },
+  hostAttributes: {
+    hidden: true
+  },
+  observers: [ 'paramsObjectChanged(paramsObject.*)' ],
+  paramsStringChanged: function() {
+    this._dontReact = true;
+    this.paramsObject = this._decodeParams(this.paramsString);
+    this._dontReact = false;
+  },
+  paramsObjectChanged: function() {
+    if (this._dontReact) {
+      return;
+    }
+    this.paramsString = this._encodeParams(this.paramsObject);
+  },
+  _encodeParams: function(params) {
+    var encodedParams = [];
+    for (var key in params) {
+      var value = params[key];
+      if (value === '') {
+        encodedParams.push(encodeURIComponent(key));
+      } else if (value) {
+        encodedParams.push(encodeURIComponent(key) + '=' + encodeURIComponent(value.toString()));
+      }
+    }
+    return encodedParams.join('&');
+  },
+  _decodeParams: function(paramString) {
+    var params = {};
+    paramString = (paramString || '').replace(/\+/g, '%20');
+    var paramList = paramString.split('&');
+    for (var i = 0; i < paramList.length; i++) {
+      var param = paramList[i].split('=');
+      if (param[0]) {
+        params[decodeURIComponent(param[0])] = decodeURIComponent(param[1] || '');
+      }
+    }
+    return params;
+  }
+});
+
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+Polymer({
+  is: 'history-router',
+  properties: {
+    selectedPage: {
+      type: String,
+      observer: 'serializePath_',
+      notify: true
+    },
+    queryState: {
+      type: Object,
+      notify: true
+    },
+    path_: {
+      type: String,
+      observer: 'pathChanged_'
+    },
+    queryParams_: Object
+  },
+  observers: [ 'queryParamsChanged_(queryParams_.*)', 'searchTermChanged_(queryState.searchTerm)' ],
+  attached: function() {
+    if (window.location.hash) {
+      window.location.href = window.location.href.split('#')[0] + '?' + window.location.hash.substr(1);
+    }
+  },
+  serializePath_: function() {
+    var page = this.selectedPage == 'history' ? '' : this.selectedPage;
+    this.path_ = '/' + page;
+  },
+  pathChanged_: function() {
+    var sections = this.path_.substr(1).split('/');
+    this.selectedPage = sections[0] || 'history';
+  },
+  queryParamsChanged_: function() {
+    this.set('queryState.searchTerm', this.queryParams_.q || '');
+  },
+  searchTermChanged_: function() {
+    this.set('queryParams_.q', this.queryState.searchTerm || null);
   }
 });
 
@@ -5555,7 +5284,6 @@ Polymer({
       type: String,
       notify: true
     },
-    route: Object,
     showFooter: Boolean,
     drawer: {
       type: Boolean,
@@ -5578,8 +5306,8 @@ Polymer({
     this.$['cbd-ripple'].upAction();
     e.preventDefault();
   },
-  getQueryString_: function(route) {
-    return window.location.search;
+  onItemClick_: function(e) {
+    e.preventDefault();
   }
 });
 
@@ -5609,7 +5337,7 @@ Polymer({
     hasSyncedResults: Boolean,
     selectedPage_: {
       type: String,
-      observer: 'unselectAll'
+      observer: 'selectedPageChanged_'
     },
     grouped_: {
       type: Boolean,
@@ -5644,8 +5372,6 @@ Polymer({
         };
       }
     },
-    routeData_: Object,
-    queryParams_: Object,
     hasDrawer_: Boolean,
     isUserSignedIn_: {
       type: Boolean,
@@ -5657,13 +5383,11 @@ Polymer({
       notify: true
     }
   },
-  observers: [ 'routeDataChanged_(routeData_.page)', 'selectedPageChanged_(selectedPage_)', 'searchTermChanged_(queryState_.searchTerm)', 'searchQueryParamChanged_(queryParams_.q)' ],
   listeners: {
     'cr-menu-tap': 'onMenuTap_',
     'history-checkbox-select': 'checkboxSelected',
     'unselect-all': 'unselectAll',
     'delete-selected': 'deleteSelected',
-    'search-domain': 'searchDomain_',
     'history-close-drawer': 'closeDrawer_',
     'history-view-changed': 'historyViewChanged_'
   },
@@ -5672,9 +5396,6 @@ Polymer({
     cr.ui.decorate('command', cr.ui.Command);
     document.addEventListener('canExecute', this.onCanExecute_.bind(this));
     document.addEventListener('command', this.onCommand_.bind(this));
-    if (window.location.hash) {
-      window.location.href = window.location.href.split('#')[0] + '?' + window.location.hash.substr(1);
-    }
   },
   onFirstRender: function() {
     setTimeout(function() {
@@ -5686,7 +5407,7 @@ Polymer({
     md_history.ensureLazyLoaded();
   },
   _scrollHandler: function() {
-    this.toolbarShadow_ = this.scrollTarget.scrollTop != 0;
+    if (this.scrollTarget) this.toolbarShadow_ = this.scrollTarget.scrollTop != 0;
   },
   onMenuTap_: function() {
     var drawer = this.$$('#drawer');
@@ -5715,9 +5436,6 @@ Polymer({
   focusToolbarSearchField: function() {
     this.$.toolbar.showSearchField();
   },
-  searchDomain_: function(e) {
-    this.$.toolbar.setSearchTerm(e.detail.domain);
-  },
   onCanExecute_: function(e) {
     e = e;
     switch (e.command.id) {
@@ -5726,21 +5444,13 @@ Polymer({
       break;
 
      case 'slash-command':
-      e.canExecute = !this.$.toolbar.searchBar.isSearchFocused();
+      e.canExecute = !this.$.toolbar.searchField.isSearchFocused();
       break;
 
      case 'delete-command':
       e.canExecute = this.$.toolbar.count > 0;
       break;
     }
-  },
-  searchTermChanged_: function(searchTerm) {
-    this.set('queryParams_.q', searchTerm || null);
-    this.$['history'].queryHistory(false);
-    if (this.queryState_.searchTerm) md_history.BrowserService.getInstance().recordAction('Search');
-  },
-  searchQueryParamChanged_: function(searchQuery) {
-    this.$.toolbar.setSearchTerm(searchQuery || '');
   },
   onCommand_: function(e) {
     if (e.command.id == 'find-command' || e.command.id == 'slash-command') this.focusToolbarSearchField();
@@ -5769,15 +5479,13 @@ Polymer({
   showSyncNotice_: function(hasSyncedResults, selectedPage) {
     return hasSyncedResults && selectedPage != 'syncedTabs';
   },
-  routeDataChanged_: function(page) {
-    this.selectedPage_ = page;
-  },
-  selectedPageChanged_: function(selectedPage) {
-    this.set('routeData_.page', selectedPage);
+  selectedPageChanged_: function() {
+    this.unselectAll();
     this.historyViewChanged_();
   },
   historyViewChanged_: function() {
     requestAnimationFrame(function() {
+      if (!this.$.content.selectedItem) return;
       this.scrollTarget = this.$.content.selectedItem.getContentScrollTarget();
       this._scrollHandler();
     }.bind(this));

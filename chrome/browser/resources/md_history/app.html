@@ -1,15 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/cr/ui.html">
 <link rel="import" href="chrome://resources/html/cr/ui/command.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/app-route/app-location.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/app-route/app-route.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-media-query/iron-media-query.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-scroll-target-behavior/iron-scroll-target-behavior.html">
 <link rel="import" href="chrome://history/history_toolbar.html">
 <link rel="import" href="chrome://history/list_container.html">
-<link rel="import" href="chrome://history/side_bar.html">
+<link rel="import" href="chrome://history/router.html">
 <link rel="import" href="chrome://history/shared_style.html">
+<link rel="import" href="chrome://history/side_bar.html">
 <link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 
 <!-- Lazy loaded: history-synced-device-manager, app-drawer. -->
@@ -87,10 +86,9 @@
         opacity: 1;
       }
     </style>
-    <app-location route="{{route_}}"></app-location>
-    <app-route route="{{route_}}" pattern="/:page" data="{{routeData_}}"
-        query-params="{{queryParams_}}">
-    </app-route>
+    <history-router selected-page="{{selectedPage_}}"
+        query-state="{{queryState_}}">
+    </history-router>
     <history-toolbar id="toolbar"
         spinner-active="[[shouldShowSpinner_(queryState_.querying,
                                              queryState_.incremental,
@@ -105,8 +103,8 @@
     </history-toolbar>
 
     <div id="main-container">
-      <history-side-bar id="content-side-bar" selected-page="[[selectedPage_]]"
-          route="[[route_]]" show-footer="[[showSidebarFooter]]"
+      <history-side-bar id="content-side-bar" selected-page="{{selectedPage_}}"
+          show-footer="[[showSidebarFooter]]"
           hidden$="[[hasDrawer_]]">
       </history-side-bar>
       <iron-pages id="content" attr-for-selected="path"
@@ -134,8 +132,8 @@
         <div id="drawer-header">
           <h1>$i18n{title}</h1>
         </div>
-        <history-side-bar id="drawer-side-bar" selected-page="[[selectedPage_]]"
-            route="[[route_]]" show-footer="[[showSidebarFooter]]" drawer>
+        <history-side-bar id="drawer-side-bar" selected-page="{{selectedPage_}}"
+            show-footer="[[showSidebarFooter]]" drawer>
         </history-side-bar>
       </app-drawer>
     </template>

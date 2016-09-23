@@ -41,15 +41,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 
-</head><body><div hidden="" by-vulcanize=""><dom-module id="app-location" assetpath="chrome://resources/polymer/v1_0/app-route/" css-build="shadow">
-  <template>
-    <iron-location path="{{__path}}" query="{{__query}}" hash="{{__hash}}" url-space-regex="{{urlSpaceRegex}}">
-    </iron-location>
-    <iron-query-params params-string="{{__query}}" params-object="{{queryParams}}">
-    </iron-query-params>
-  </template>
-  </dom-module>
-<dom-module id="iron-pages" assetpath="chrome://resources/polymer/v1_0/iron-pages/" css-build="shadow">
+</head><body><div hidden="" by-vulcanize=""><dom-module id="iron-pages" assetpath="chrome://resources/polymer/v1_0/iron-pages/" css-build="shadow">
 
   <template>
     <style scope="iron-pages">:host {
@@ -3573,6 +3565,14 @@ dialog .body {
     </template>
   </template>
   </dom-module>
+
+<dom-module id="history-router" assetpath="chrome://history/" css-build="shadow">
+  <template>
+    <iron-location path="{{path_}}" query="{{query_}}"></iron-location>
+    <iron-query-params params-string="{{query_}}" params-object="{{queryParams_}}">
+    </iron-query-params>
+  </template>
+  </dom-module>
 <dom-module id="history-side-bar" assetpath="chrome://history/" css-build="shadow">
   <template>
     <style scope="history-side-bar">[hidden] {
@@ -3725,12 +3725,12 @@ iron-selector > a.iron-selected {
 
 </style>
 
-    <iron-selector id="menu" selected="[[selectedPage]]" selectable=".page-item" attr-for-selected="path" fallback-selection="history" on-iron-activate="onSelectorActivate_">
-      <a href="/[[getQueryString_(route)]]" class="page-item" path="history">
+    <iron-selector id="menu" selected="{{selectedPage}}" selectable=".page-item" attr-for-selected="path" fallback-selection="history" on-iron-activate="onSelectorActivate_">
+      <a href="/" class="page-item" path="history" on-click="onItemClick_">
         $i18n{historyMenuItem}
         <paper-ripple></paper-ripple>
       </a>
-      <a href="/syncedTabs[[getQueryString_(route)]]" class="page-item" path="syncedTabs">
+      <a href="/syncedTabs" class="page-item" path="syncedTabs" on-click="onItemClick_">
         $i18n{openTabsMenuItem}
         <paper-ripple></paper-ripple>
       </a>
@@ -3898,16 +3898,15 @@ h1 {
 }
 
 </style>
-    <app-location route="{{route_}}"></app-location>
-    <app-route route="{{route_}}" pattern="/:page" data="{{routeData_}}" query-params="{{queryParams_}}">
-    </app-route>
+    <history-router selected-page="{{selectedPage_}}" query-state="{{queryState_}}">
+    </history-router>
     <history-toolbar id="toolbar" spinner-active="[[shouldShowSpinner_(queryState_.querying,
                                              queryState_.incremental,
                                              queryState_.searchTerm)]]" is-grouped-mode="{{grouped_}}" grouped-range="{{queryState_.range}}" search-term="{{queryState_.searchTerm}}" query-start-time="[[queryResult_.info.queryStartTime]]" query-end-time="[[queryResult_.info.queryEndTime]]" has-drawer="[[hasDrawer_]]" show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]">
     </history-toolbar>
 
     <div id="main-container">
-      <history-side-bar id="content-side-bar" selected-page="[[selectedPage_]]" route="[[route_]]" show-footer="[[showSidebarFooter]]" hidden$="[[hasDrawer_]]">
+      <history-side-bar id="content-side-bar" selected-page="{{selectedPage_}}" show-footer="[[showSidebarFooter]]" hidden$="[[hasDrawer_]]">
       </history-side-bar>
       <iron-pages id="content" attr-for-selected="path" fallback-selection="history" selected="[[getSelectedPage_(selectedPage_, items)]]" items="{{items}}">
         <history-list-container id="history" query-state="{{queryState_}}" query-result="[[queryResult_]]" grouped="[[grouped_]]" grouped-range="{{queryState_.range}}" path="history">
@@ -3925,7 +3924,7 @@ h1 {
         <div id="drawer-header">
           <h1>$i18n{title}</h1>
         </div>
-        <history-side-bar id="drawer-side-bar" selected-page="[[selectedPage_]]" route="[[route_]]" show-footer="[[showSidebarFooter]]" drawer="">
+        <history-side-bar id="drawer-side-bar" selected-page="{{selectedPage_}}" show-footer="[[showSidebarFooter]]" drawer="">
         </history-side-bar>
       </app-drawer>
     </template>

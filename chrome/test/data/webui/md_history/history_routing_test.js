@@ -9,15 +9,21 @@ cr.define('md_history.history_routing_test', function() {
       var list;
       var toolbar;
 
-      suiteSetup(function() {
-        app = $('history-app');
+      function navigateTo(route) {
+        window.history.replaceState({}, '', route);
+        window.dispatchEvent(new CustomEvent('location-changed'));
+      }
+
+      setup(function() {
+        assertEquals('chrome://history/', window.location.href);
+        app = replaceApp();
         sidebar = app.$['content-side-bar']
         toolbar = app.$['toolbar'];
       });
 
       test('changing route changes active view', function() {
         assertEquals('history', app.$.content.selected);
-        app.set('routeData_.page', 'syncedTabs');
+        navigateTo('/syncedTabs');
         return flush().then(function() {
           assertEquals('syncedTabs', app.$.content.selected);
           assertEquals('chrome://history/syncedTabs', window.location.href);
@@ -26,53 +32,55 @@ cr.define('md_history.history_routing_test', function() {
 
       test('route updates from sidebar', function() {
         var menu = sidebar.$.menu;
-        assertEquals('', app.routeData_.page);
+        assertEquals('history', app.selectedPage_);
         assertEquals('chrome://history/', window.location.href);
 
         MockInteractions.tap(menu.children[1]);
-        assertEquals('syncedTabs', app.routeData_.page);
+        assertEquals('syncedTabs', app.selectedPage_);
         assertEquals('chrome://history/syncedTabs', window.location.href);
 
         MockInteractions.keyDownOn(menu.children[0], 32, '', "Space");
-        assertEquals('', app.routeData_.page);
+        assertEquals('history', app.selectedPage_);
         assertEquals('chrome://history/', window.location.href);
+      });
+
+      test('search updates from route', function() {
+        assertEquals('chrome://history/', window.location.href);
+        var searchTerm = 'Mei';
+        assertEquals('history', app.$.content.selected);
+        navigateTo('/?q=' + searchTerm);
+        assertEquals(searchTerm, toolbar.searchTerm);
       });
 
       test('route updates from search', function() {
         var searchTerm = 'McCree';
-        assertEquals('', app.routeData_.page);
-        toolbar.setSearchTerm(searchTerm);
-        assertEquals(searchTerm, app.queryParams_.q);
-      });
-
-      test('search updates from route', function() {
-        var searchTerm = 'Mei';
         assertEquals('history', app.$.content.selected);
-        app.set('queryParams_.q', searchTerm);
-        assertEquals(searchTerm, toolbar.searchTerm);
+        app.set('queryState_.searchTerm', searchTerm);
+        assertEquals('chrome://history/?q=' + searchTerm, window.location.href);
       });
 
       test('search preserved across menu items', function() {
-        var searchTerm = 'Soldier 76';
+        var searchTerm = 'Soldier76';
         var menu = sidebar.$.menu;
-        assertEquals('', app.routeData_.page);
-        assertEquals('history', app.$.content.selected);
-        app.set('queryParams_.q', searchTerm);
+        assertEquals('history', app.selectedPage_);
+        navigateTo('/?q=' + searchTerm);
 
         MockInteractions.tap(menu.children[1]);
-        assertEquals('syncedTabs', app.routeData_.page);
-        assertEquals(searchTerm, app.queryParams_.q);
+        assertEquals('syncedTabs', app.selectedPage_);
         assertEquals(searchTerm, toolbar.searchTerm);
+        assertEquals(
+            'chrome://history/syncedTabs?q=' + searchTerm,
+            window.location.href);
 
         MockInteractions.tap(menu.children[0]);
-        assertEquals('', app.routeData_.page);
-        assertEquals(searchTerm, app.queryParams_.q);
+        assertEquals('history', app.selectedPage_);
         assertEquals(searchTerm, toolbar.searchTerm);
+        assertEquals('chrome://history/?q=' + searchTerm, window.location.href);
       });
 
       teardown(function() {
-        app.set('routeData_.page', '');
-        app.set('queryParams_.q', null);
+        // Reset back to initial navigation state.
+        navigateTo('/');
       });
     });
   }

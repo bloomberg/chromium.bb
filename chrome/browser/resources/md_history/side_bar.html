@@ -79,16 +79,16 @@
       }
     </style>
 
-    <iron-selector id="menu" selected="[[selectedPage]]"
+    <iron-selector id="menu" selected="{{selectedPage}}"
         selectable=".page-item" attr-for-selected="path"
         fallback-selection="history"
         on-iron-activate="onSelectorActivate_">
-      <a href="/[[getQueryString_(route)]]" class="page-item" path="history">
+      <a href="/" class="page-item" path="history" on-click="onItemClick_">
         $i18n{historyMenuItem}
         <paper-ripple></paper-ripple>
       </a>
-      <a href="/syncedTabs[[getQueryString_(route)]]" class="page-item"
-          path="syncedTabs">
+      <a href="/syncedTabs" class="page-item" path="syncedTabs"
+          on-click="onItemClick_">
         $i18n{openTabsMenuItem}
         <paper-ripple></paper-ripple>
       </a>

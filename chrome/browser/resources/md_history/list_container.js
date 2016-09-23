@@ -22,6 +22,10 @@ Polymer({
     queryResult: Object,
   },
 
+  observers: [
+    'searchTermChanged_(queryState.searchTerm)',
+  ],
+
   listeners: {
     'history-list-scrolled': 'closeMenu_',
     'load-more-history': 'loadMoreHistory_',
@@ -142,6 +146,14 @@ Polymer({
   },
 
   /** @private */
+  searchTermChanged_: function() {
+    this.queryHistory(false);
+    // TODO(tsergeant): Ignore incremental searches in this metric.
+    if (this.queryState.searchTerm)
+      md_history.BrowserService.getInstance().recordAction('Search');
+  },
+
+  /** @private */
   loadMoreHistory_: function() { this.queryHistory(true); },
 
   /**
@@ -214,7 +226,7 @@ Polymer({
         'EntryMenuShowMoreFromSite');
 
     var menu = assert(this.$.sharedMenu.getIfExists());
-    this.fire('search-domain', {domain: menu.itemData.item.domain});
+    this.set('queryState.searchTerm', menu.itemData.item.domain);
     menu.closeMenu();
   },
 

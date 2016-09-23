@@ -26,6 +26,7 @@ Polymer({
     // as the user types.
     searchTerm: {
       type: String,
+      observer: 'searchTermChanged_',
       notify: true,
     },
 
@@ -74,6 +75,16 @@ Polymer({
     },
   },
 
+  /** @return {CrToolbarSearchFieldElement} */
+  get searchField() {
+    return /** @type {CrToolbarElement} */ (this.$['main-toolbar'])
+        .getSearchField();
+  },
+
+  showSearchField: function() {
+    this.searchField.showAndFocus();
+  },
+
   /**
    * Changes the toolbar background color depending on whether any history items
    * are currently selected.
@@ -86,17 +97,12 @@ Polymer({
   /**
    * When changing the search term externally, update the search field to
    * reflect the new search term.
-   * @param {string} search
    */
-  setSearchTerm: function(search) {
-    if (this.searchTerm == search)
-      return;
-
-    this.searchTerm = search;
-    var searchField = /** @type {!CrToolbarElement} */(this.$['main-toolbar'])
-                          .getSearchField();
-    searchField.showAndFocus();
-    searchField.setValue(search);
+  searchTermChanged_: function() {
+    if (this.searchField.getValue() != this.searchTerm) {
+      this.searchField.showAndFocus();
+      this.searchField.setValue(this.searchTerm);
+    }
   },
 
   /** @private */
@@ -128,16 +134,6 @@ Polymer({
 
   onDeleteTap_: function() {
     this.fire('delete-selected');
-  },
-
-  get searchBar() {
-    return this.$['main-toolbar'].getSearchField();
-  },
-
-  showSearchField: function() {
-    /** @type {!CrToolbarElement} */(this.$['main-toolbar'])
-        .getSearchField()
-        .showAndFocus();
   },
 
   /**

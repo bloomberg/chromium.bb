@@ -175,6 +175,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                           IDR_MD_HISTORY_LIST_CONTAINER_HTML);
   source->AddResourcePath("list_container.js",
                           IDR_MD_HISTORY_LIST_CONTAINER_JS);
+  source->AddResourcePath("router.html",
+                          IDR_MD_HISTORY_ROUTER_HTML);
+  source->AddResourcePath("router.js",
+                          IDR_MD_HISTORY_ROUTER_JS);
   source->AddResourcePath("searched_label.html",
                           IDR_MD_HISTORY_SEARCHED_LABEL_HTML);
   source->AddResourcePath("searched_label.js",

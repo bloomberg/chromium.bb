@@ -10,8 +10,6 @@ Polymer({
   properties: {
     selectedPage: {type: String, notify: true},
 
-    route: Object,
-
     showFooter: Boolean,
 
     // If true, the sidebar is contained within an app-drawer.
@@ -49,8 +47,11 @@ Polymer({
   },
 
   /**
-   * @param {Object} route
+   * Prevent clicks on sidebar items from navigating. These are only links for
+   * accessibility purposes, taps are handled separately by <iron-selector>.
    * @private
    */
-  getQueryString_: function(route) { return window.location.search; }
+  onItemClick_: function(e) {
+    e.preventDefault();
+  },
 });
