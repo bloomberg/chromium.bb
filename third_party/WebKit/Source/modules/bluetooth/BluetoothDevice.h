@@ -6,7 +6,7 @@
 #define BluetoothDevice_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/bluetooth/BluetoothRemoteGATTServer.h"
 #include "platform/heap/Heap.h"
@@ -29,7 +29,7 @@ class ScriptPromiseResolver;
 // CallbackPromiseAdapter class comments.
 class BluetoothDevice final
     : public EventTargetWithInlineData
-    , public ActiveDOMObject
+    , public ContextLifecycleObserver
     , public WebBluetoothDevice {
     USING_PRE_FINALIZER(BluetoothDevice, dispose);
     DEFINE_WRAPPERTYPEINFO();
@@ -54,8 +54,8 @@ public:
     // Called before the object gets garbage collected.
     void dispose();
 
-    // ActiveDOMObject interface.
-    void stop() override;
+    // ContextLifecycleObserver interface.
+    void contextDestroyed() override;
 
     // If gatt is connected then disconnects and sets gatt.connected to false.
     // Returns true if gatt was disconnected.

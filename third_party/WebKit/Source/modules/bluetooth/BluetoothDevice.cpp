@@ -18,7 +18,7 @@
 namespace blink {
 
 BluetoothDevice::BluetoothDevice(ExecutionContext* context, std::unique_ptr<WebBluetoothDeviceInit> webDevice)
-    : ActiveDOMObject(context)
+    : ContextLifecycleObserver(context)
     , m_webDevice(std::move(webDevice))
     , m_gatt(BluetoothRemoteGATTServer::create(this))
 {
@@ -29,9 +29,7 @@ BluetoothDevice::BluetoothDevice(ExecutionContext* context, std::unique_ptr<WebB
 BluetoothDevice* BluetoothDevice::take(ScriptPromiseResolver* resolver, std::unique_ptr<WebBluetoothDeviceInit> webDevice)
 {
     ASSERT(webDevice);
-    BluetoothDevice* device = new BluetoothDevice(resolver->getExecutionContext(), std::move(webDevice));
-    device->suspendIfNeeded();
-    return device;
+    return new BluetoothDevice(resolver->getExecutionContext(), std::move(webDevice));
 }
 
 void BluetoothDevice::dispose()
@@ -39,7 +37,7 @@ void BluetoothDevice::dispose()
     disconnectGATTIfConnected();
 }
 
-void BluetoothDevice::stop()
+void BluetoothDevice::contextDestroyed()
 {
     disconnectGATTIfConnected();
 }
@@ -62,7 +60,7 @@ const WTF::AtomicString& BluetoothDevice::interfaceName() const
 
 ExecutionContext* BluetoothDevice::getExecutionContext() const
 {
-    return ActiveDOMObject::getExecutionContext();
+    return ContextLifecycleObserver::getExecutionContext();
 }
 
 void BluetoothDevice::dispatchGattServerDisconnected()
@@ -77,7 +75,7 @@ void BluetoothDevice::dispatchGattServerDisconnected()
 DEFINE_TRACE(BluetoothDevice)
 {
     EventTargetWithInlineData::trace(visitor);
-    ActiveDOMObject::trace(visitor);
+    ContextLifecycleObserver::trace(visitor);
     visitor->trace(m_gatt);
 }
 

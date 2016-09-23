@@ -2270,13 +2270,6 @@ void Document::shutdown()
     m_timers.setTimerTaskRunner(
         Platform::current()->currentThread()->scheduler()->timerTaskRunner()->clone());
 
-    // This is required, as our LocalFrame might delete itself as soon as it detaches
-    // us. However, this violates Node::detachLayoutTree() semantics, as it's never
-    // possible to re-attach. Eventually Document::detachLayoutTree() should be renamed,
-    // or this setting of the frame to 0 could be made explicit in each of the
-    // callers of Document::detachLayoutTree().
-    m_frame = nullptr;
-
     if (m_mediaQueryMatcher)
         m_mediaQueryMatcher->documentDetached();
 
@@ -2289,6 +2282,13 @@ void Document::shutdown()
     // a contextDestroyed() notification. This can happen for a document
     // created by DOMImplementation::createDocument().
     ExecutionContext::notifyContextDestroyed();
+
+    // This is required, as our LocalFrame might delete itself as soon as it detaches
+    // us. However, this violates Node::detachLayoutTree() semantics, as it's never
+    // possible to re-attach. Eventually Document::detachLayoutTree() should be renamed,
+    // or this setting of the frame to 0 could be made explicit in each of the
+    // callers of Document::detachLayoutTree().
+    m_frame = nullptr;
 }
 
 void Document::removeAllEventListeners()
