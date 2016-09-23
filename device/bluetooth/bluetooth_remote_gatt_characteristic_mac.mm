@@ -80,7 +80,18 @@ BluetoothRemoteGattCharacteristicMac::BluetoothRemoteGattCharacteristicMac(
                                  (void*)cb_characteristic_]);
 }
 
-BluetoothRemoteGattCharacteristicMac::~BluetoothRemoteGattCharacteristicMac() {}
+BluetoothRemoteGattCharacteristicMac::~BluetoothRemoteGattCharacteristicMac() {
+  if (!read_characteristic_value_callbacks_.first.is_null()) {
+    std::pair<ValueCallback, ErrorCallback> callbacks;
+    callbacks.swap(read_characteristic_value_callbacks_);
+    callbacks.second.Run(BluetoothGattService::GATT_ERROR_FAILED);
+  }
+  if (!write_characteristic_value_callbacks_.first.is_null()) {
+    std::pair<base::Closure, ErrorCallback> callbacks;
+    callbacks.swap(write_characteristic_value_callbacks_);
+    callbacks.second.Run(BluetoothGattService::GATT_ERROR_FAILED);
+  }
+}
 
 std::string BluetoothRemoteGattCharacteristicMac::GetIdentifier() const {
   return identifier_;
@@ -249,6 +260,7 @@ void BluetoothRemoteGattCharacteristicMac::UnsubscribeFromNotifications(
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidUpdateValue(NSError* error) {
+  CHECK_EQ(gatt_service_->GetCBPeripheral().state, CBPeripheralStateConnected);
   // This method is called when the characteristic is read and when a
   // notification is received.
   if (characteristic_value_read_or_write_in_progress_) {
@@ -285,6 +297,7 @@ void BluetoothRemoteGattCharacteristicMac::UpdateValueAndNotify() {
 }
 
 void BluetoothRemoteGattCharacteristicMac::DidWriteValue(NSError* error) {
+  CHECK_EQ(gatt_service_->GetCBPeripheral().state, CBPeripheralStateConnected);
   if (!characteristic_value_read_or_write_in_progress_) {
     // In case of buggy device, nothing should be done if receiving extra
     // write confirmation.
