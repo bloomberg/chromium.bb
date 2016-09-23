@@ -255,7 +255,6 @@ Textfield::Textfield()
       text_input_flags_(0),
       performing_user_action_(false),
       skip_input_method_cancel_composition_(false),
-      cursor_visible_(false),
       drop_cursor_visible_(false),
       initiating_drag_(false),
       aggregated_clicks_(0),
@@ -855,6 +854,8 @@ int Textfield::OnDragUpdated(const ui::DropTargetEvent& event) {
   OnCaretBoundsChanged();
   SchedulePaint();
 
+  StopBlinkingCursor();
+
   if (initiating_drag_) {
     if (in_selection)
       return ui::DragDropTypes::DRAG_NONE;
@@ -866,6 +867,8 @@ int Textfield::OnDragUpdated(const ui::DropTargetEvent& event) {
 
 void Textfield::OnDragExited() {
   drop_cursor_visible_ = false;
+  if (ShouldBlinkCursor())
+    StartBlinkingCursor();
   SchedulePaint();
 }
 
@@ -977,30 +980,26 @@ void Textfield::OnPaint(gfx::Canvas* canvas) {
 
 void Textfield::OnFocus() {
   GetRenderText()->set_focused(true);
-  cursor_visible_ = true;
+  if (ShouldShowCursor())
+    GetRenderText()->set_cursor_visible(true);
   SchedulePaint();
   if (GetInputMethod())
     GetInputMethod()->SetFocusedTextInputClient(this);
   OnCaretBoundsChanged();
-
-  const size_t caret_blink_ms = Textfield::GetCaretBlinkMs();
-  if (caret_blink_ms != 0) {
-    cursor_repaint_timer_.Start(FROM_HERE,
-        base::TimeDelta::FromMilliseconds(caret_blink_ms), this,
-        &Textfield::UpdateCursor);
-  }
-
+  if (ShouldBlinkCursor())
+    StartBlinkingCursor();
   View::OnFocus();
   SchedulePaint();
 }
 
 void Textfield::OnBlur() {
-  GetRenderText()->set_focused(false);
+  gfx::RenderText* render_text = GetRenderText();
+  render_text->set_focused(false);
   if (GetInputMethod())
     GetInputMethod()->DetachTextInputClient(this);
-  cursor_repaint_timer_.Stop();
-  if (cursor_visible_) {
-    cursor_visible_ = false;
+  StopBlinkingCursor();
+  if (render_text->cursor_visible()) {
+    render_text->set_cursor_visible(false);
     RepaintCursor();
   }
 
@@ -1801,10 +1800,12 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
     NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
   }
   if (cursor_changed) {
-    cursor_visible_ = true;
+    GetRenderText()->set_cursor_visible(ShouldShowCursor());
     RepaintCursor();
-    if (cursor_repaint_timer_.IsRunning())
-      cursor_repaint_timer_.Reset();
+    if (ShouldBlinkCursor())
+      StartBlinkingCursor();
+    else
+      StopBlinkingCursor();
     if (!text_changed) {
       // TEXT_CHANGED implies TEXT_SELECTION_CHANGED, so we only need to fire
       // this if only the selection changed.
@@ -1815,12 +1816,6 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
     OnCaretBoundsChanged();
     SchedulePaint();
   }
-}
-
-void Textfield::UpdateCursor() {
-  const size_t caret_blink_ms = Textfield::GetCaretBlinkMs();
-  cursor_visible_ = !cursor_visible_ || (caret_blink_ms == 0);
-  RepaintCursor();
 }
 
 void Textfield::RepaintCursor() {
@@ -1843,9 +1838,6 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
                            render_text->display_rect());
   }
 
-  // Draw the text, cursor, and selection.
-  render_text->set_cursor_visible(cursor_visible_ && !drop_cursor_visible_ &&
-                                  !HasSelection());
   render_text->Draw(canvas);
 
   // Draw the detached drop cursor that marks where the text will be dropped.
@@ -2044,6 +2036,33 @@ void Textfield::PasteSelectionClipboard(const ui::MouseEvent& event) {
 
 void Textfield::OnKeypressUnhandled() {
   PlatformStyle::OnTextfieldKeypressUnhandled();
+}
+
+bool Textfield::ShouldShowCursor() const {
+  return HasFocus() && !HasSelection() && enabled() && !read_only() &&
+         !drop_cursor_visible_;
+}
+
+bool Textfield::ShouldBlinkCursor() const {
+  return ShouldShowCursor() && Textfield::GetCaretBlinkMs() != 0;
+}
+
+void Textfield::StartBlinkingCursor() {
+  DCHECK(ShouldBlinkCursor());
+  cursor_blink_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
+                                           Textfield::GetCaretBlinkMs()),
+                            this, &Textfield::OnCursorBlinkTimerFired);
+}
+
+void Textfield::StopBlinkingCursor() {
+  cursor_blink_timer_.Stop();
+}
+
+void Textfield::OnCursorBlinkTimerFired() {
+  DCHECK(ShouldBlinkCursor());
+  gfx::RenderText* render_text = GetRenderText();
+  render_text->set_cursor_visible(!render_text->cursor_visible());
+  RepaintCursor();
 }
 
 }  // namespace views

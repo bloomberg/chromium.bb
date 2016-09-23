@@ -399,6 +399,22 @@ class VIEWS_EXPORT Textfield : public View,
   // to insert text into a readonly text field.
   void OnKeypressUnhandled();
 
+  // Returns true if an insertion cursor should be visible (a vertical bar,
+  // placed at the point new text will be inserted).
+  bool ShouldShowCursor() const;
+
+  // Returns true if an insertion cursor should be visible and blinking.
+  bool ShouldBlinkCursor() const;
+
+  // Starts and stops blinking the cursor, respectively. These are both
+  // idempotent if the cursor is already blinking/not blinking.
+  void StartBlinkingCursor();
+  void StopBlinkingCursor();
+
+  // Callback for the cursor blink timer. Called every
+  // Textfield::GetCaretBlinkMs().
+  void OnCursorBlinkTimerFired();
+
   // The text model.
   std::unique_ptr<TextfieldModel> model_;
 
@@ -456,9 +472,8 @@ class VIEWS_EXPORT Textfield : public View,
   // True if InputMethod::CancelComposition() should not be called.
   bool skip_input_method_cancel_composition_;
 
-  // The text editing cursor repaint timer and visibility.
-  base::RepeatingTimer cursor_repaint_timer_;
-  bool cursor_visible_;
+  // Insertion cursor repaint timer and visibility.
+  base::RepeatingTimer cursor_blink_timer_;
 
   // The drop cursor is a visual cue for where dragged text will be dropped.
   bool drop_cursor_visible_;
