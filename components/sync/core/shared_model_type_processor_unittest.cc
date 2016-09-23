@@ -170,25 +170,6 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     worker_ = nullptr;
   }
 
-  // Simulates an initial GetUpdates response from the worker with |updates|.
-  void OnInitialSyncDone(UpdateResponseDataList updates) {
-    DataTypeState data_type_state(db_.data_type_state());
-    data_type_state.set_initial_sync_done(true);
-    type_processor()->OnUpdateReceived(data_type_state, updates);
-  }
-
-  // Overloaded form with no updates.
-  void OnInitialSyncDone() { OnInitialSyncDone(UpdateResponseDataList()); }
-
-  // Overloaded form that constructs an update for a single entity.
-  void OnInitialSyncDone(const std::string& key, const std::string& value) {
-    UpdateResponseDataList updates;
-    UpdateResponseData update;
-    update.entity = GenerateEntityData(key, value)->PassToPtr();
-    updates.push_back(update);
-    OnInitialSyncDone(updates);
-  }
-
   // Return the number of entities the processor has metadata for.
   size_t ProcessorEntityCount() const {
     DCHECK(type_processor());
@@ -219,6 +200,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return error_handler_;
   }
 
+  int merge_call_count() const { return merge_call_count_; }
+
  private:
   void CheckPostConditions() override {
     FakeModelTypeService::CheckPostConditions();
@@ -247,6 +230,12 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
   }
 
   // FakeModelTypeService overrides.
+
+  syncer::SyncError MergeSyncData(std::unique_ptr<MetadataChangeList> mcl,
+                                  EntityDataMap entity_data_map) override {
+    merge_call_count_++;
+    return FakeModelTypeService::MergeSyncData(std::move(mcl), entity_data_map);
+  }
 
   void CaptureDataCallback(DataCallback callback,
                            syncer::SyncError error,
@@ -284,6 +273,9 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
   // The error to expect in OnReadyToConnect().
   syncer::SyncError::ErrorType expected_start_error_ = syncer::SyncError::UNSET;
+
+  // The number of times MergeSyncData has been called.
+  int merge_call_count_ = 0;
 };
 
 // Test that an initial sync handles local and remote items properly.
@@ -301,8 +293,10 @@ TEST_F(SharedModelTypeProcessorTest, InitialSync) {
   EXPECT_EQ(0U, ProcessorEntityCount());
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 
+  EXPECT_EQ(0, merge_call_count());
   // Initial sync with one server item.
-  OnInitialSyncDone(kKey2, kValue2);
+  worker()->UpdateFromServer(kHash2, GenerateSpecifics(kKey2, kValue2));
+  EXPECT_EQ(1, merge_call_count());
 
   // Now have data and metadata for both items, as well as a commit request for
   // the local item.
@@ -314,6 +308,24 @@ TEST_F(SharedModelTypeProcessorTest, InitialSync) {
   worker()->ExpectPendingCommits({kHash1});
 }
 
+// Test that subsequent starts don't call MergeSyncData.
+TEST_F(SharedModelTypeProcessorTest, NonInitialSync) {
+  // This sets initial_sync_done to true.
+  InitializeToMetadataLoaded();
+
+  // Write an item before sync connects.
+  WriteItem(kKey1, kValue1);
+  EXPECT_EQ(1U, db().data_count());
+  EXPECT_EQ(1U, db().metadata_count());
+
+  // Check that data coming from sync is treated as a normal GetUpdates.
+  OnSyncStarting();
+  worker()->UpdateFromServer(kHash2, GenerateSpecifics(kKey2, kValue2));
+  EXPECT_EQ(0, merge_call_count());
+  EXPECT_EQ(2U, db().data_count());
+  EXPECT_EQ(2U, db().metadata_count());
+}
+
 // Test that an error during the merge is propagated to the error handler.
 TEST_F(SharedModelTypeProcessorTest, InitialSyncError) {
   CreateChangeProcessor();
@@ -322,7 +334,7 @@ TEST_F(SharedModelTypeProcessorTest, InitialSyncError) {
 
   SetServiceError(syncer::SyncError::DATATYPE_ERROR);
   error_handler()->ExpectError(syncer::SyncError::DATATYPE_ERROR);
-  OnInitialSyncDone();
+  worker()->UpdateFromServer();
 }
 
 // Test that errors before it's called are passed to |start_callback| correctly.
@@ -1078,7 +1090,7 @@ TEST_F(SharedModelTypeProcessorTest, Disable) {
   CreateChangeProcessor();
   OnMetadataLoaded();
   OnSyncStarting();
-  OnInitialSyncDone();
+  worker()->UpdateFromServer();
 
   // Once we're ready to commit, all three local items should consider
   // themselves uncommitted and pending for commit.

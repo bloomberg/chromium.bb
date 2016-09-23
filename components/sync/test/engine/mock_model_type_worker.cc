@@ -21,7 +21,9 @@ namespace {
 MockModelTypeWorker::MockModelTypeWorker(
     const sync_pb::DataTypeState& data_type_state,
     ModelTypeProcessor* processor)
-    : data_type_state_(data_type_state), processor_(processor) {}
+    : data_type_state_(data_type_state), processor_(processor) {
+  data_type_state_.set_initial_sync_done(true);
+}
 
 MockModelTypeWorker::~MockModelTypeWorker() {}
 
@@ -88,6 +90,10 @@ void MockModelTypeWorker::ExpectPendingCommits(
   }
 }
 
+void MockModelTypeWorker::UpdateFromServer() {
+  processor_->OnUpdateReceived(data_type_state_, UpdateResponseDataList());
+}
+
 void MockModelTypeWorker::UpdateFromServer(
     const std::string& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
@@ -107,10 +113,10 @@ void MockModelTypeWorker::UpdateFromServer(
     const sync_pb::EntitySpecifics& specifics,
     int64_t version_offset,
     const std::string& ekn) {
-  UpdateResponseDataList update;
-  update.push_back(
+  UpdateResponseDataList updates;
+  updates.push_back(
       GenerateUpdateData(tag_hash, specifics, version_offset, ekn));
-  processor_->OnUpdateReceived(data_type_state_, update);
+  processor_->OnUpdateReceived(data_type_state_, updates);
 }
 
 UpdateResponseData MockModelTypeWorker::GenerateUpdateData(

@@ -53,9 +53,10 @@ class MockModelTypeWorker : public CommitQueue {
   // length one.
   void ExpectPendingCommits(const std::vector<std::string>& tag_hashes);
 
-  // Trigger an update from the server containing a single entity. See
-  // GenerateUpdateData for parameter descriptions. |version_offset| defaults to
-  // 1 and |ekn| defaults to the current encryption key name the worker has.
+  // Trigger an update from the server. See GenerateUpdateData for parameter
+  // descriptions. |version_offset| defaults to 1 and |ekn| defaults to the
+  // current encryption key name the worker has.
+  void UpdateFromServer();
   void UpdateFromServer(const std::string& tag_hash,
                         const sync_pb::EntitySpecifics& specifics);
   void UpdateFromServer(const std::string& tag_hash,
