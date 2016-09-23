@@ -4,6 +4,10 @@
 
 #include "net/http/http_stream_factory_impl_job_controller.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -15,6 +19,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/proxy/proxy_server.h"
 #include "net/spdy/spdy_session.h"
+#include "url/url_constants.h"
 
 namespace net {
 
@@ -642,7 +647,7 @@ void HttpStreamFactoryImpl::JobController::CreateJobs(
              << alternative_service.host_port_pair().host()
              << " port: " << alternative_service.host_port_pair().port() << ")";
 
-    DCHECK(!request_info.url.SchemeIs("ftp"));
+    DCHECK(!request_info.url.SchemeIs(url::kFtpScheme));
     HostPortPair alternative_destination(alternative_service.host_port_pair());
     ignore_result(
         ApplyHostMappingRules(request_info.url, &alternative_destination));
@@ -877,7 +882,7 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
     HttpStreamRequest::StreamType stream_type) {
   GURL original_url = request_info.url;
 
-  if (!original_url.SchemeIs("https"))
+  if (!original_url.SchemeIs(url::kHttpsScheme))
     return AlternativeService();
 
   url::SchemeHostPort origin(original_url);
@@ -954,7 +959,7 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
     if (session_->quic_stream_factory()->IsQuicDisabled())
       continue;
 
-    if (!original_url.SchemeIs("https"))
+    if (!original_url.SchemeIs(url::kHttpsScheme))
       continue;
 
     // Check whether there is an existing QUIC session to use for this origin.

@@ -21,6 +21,7 @@
 #include "net/spdy/bidirectional_stream_spdy_impl.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace net {
 
@@ -218,7 +219,8 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
           used_ssl_config, used_proxy_info,
           new BidirectionalStreamSpdyImpl(spdy_session));
     } else {
-      bool use_relative_url = direct || request->url().SchemeIs("https");
+      bool use_relative_url =
+          direct || request->url().SchemeIs(url::kHttpsScheme);
       request->OnStreamReady(
           used_ssl_config, used_proxy_info,
           new SpdyHttpStream(spdy_session, use_relative_url));
