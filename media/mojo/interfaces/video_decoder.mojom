@@ -14,7 +14,7 @@ interface VideoDecoder {
   //
   // TODO(sandersd): Rename to Initialize() if/when
   // media::VideoDecoder::Initialize() is renamed to Configure().
-  Construct(VideoDecoderClient client,
+  Construct(associated VideoDecoderClient client,
             handle<data_pipe_consumer> decoder_buffer_pipe);
 
   // Configure (or reconfigure) the decoder. This must be called before decoding

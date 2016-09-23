@@ -25,7 +25,7 @@ MojoVideoDecoder::MojoVideoDecoder(
     : task_runner_(task_runner),
       gpu_factories_(gpu_factories),
       remote_decoder_info_(remote_decoder.PassInterface()),
-      binding_(this) {
+      client_binding_(this) {
   (void)gpu_factories_;
   DVLOG(1) << __FUNCTION__;
 }
@@ -154,12 +154,15 @@ void MojoVideoDecoder::BindRemoteDecoder() {
   remote_decoder_.set_connection_error_handler(
       base::Bind(&MojoVideoDecoder::OnConnectionError, base::Unretained(this)));
 
+  mojom::VideoDecoderClientAssociatedPtrInfo client_ptr_info;
+  client_binding_.Bind(&client_ptr_info, remote_decoder_.associated_group());
+
   // TODO(sandersd): Better buffer sizing.
   mojo::ScopedDataPipeConsumerHandle remote_consumer_handle;
   mojo_decoder_buffer_writer_ = MojoDecoderBufferWriter::Create(
       DemuxerStream::VIDEO, &remote_consumer_handle);
 
-  remote_decoder_->Construct(binding_.CreateInterfacePtrAndBind(),
+  remote_decoder_->Construct(std::move(client_ptr_info),
                              std::move(remote_consumer_handle));
 }
 

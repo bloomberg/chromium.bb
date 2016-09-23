@@ -27,7 +27,7 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
   ~MojoVideoDecoderService() final;
 
   // mojom::VideoDecoder implementation
-  void Construct(mojom::VideoDecoderClientPtr client,
+  void Construct(mojom::VideoDecoderClientAssociatedPtrInfo client,
                  mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe) final;
   void Initialize(mojom::VideoDecoderConfigPtr config,
                   bool low_delay,
@@ -42,7 +42,7 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
   void OnDecoderOutput(const scoped_refptr<VideoFrame>& frame);
   void OnDecoderReset(const ResetCallback& callback);
 
-  mojom::VideoDecoderClientPtr client_;
+  mojom::VideoDecoderClientAssociatedPtr client_;
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
   MojoMediaClient* mojo_media_client_;

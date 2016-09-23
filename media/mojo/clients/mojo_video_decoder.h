@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/video_decoder.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -73,7 +73,7 @@ class MojoVideoDecoder final : public VideoDecoder,
   std::unique_ptr<MojoDecoderBufferWriter> mojo_decoder_buffer_writer_;
   bool remote_decoder_bound_ = false;
   bool has_connection_error_ = false;
-  mojo::Binding<VideoDecoderClient> binding_;
+  mojo::AssociatedBinding<VideoDecoderClient> client_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoVideoDecoder);
 };
