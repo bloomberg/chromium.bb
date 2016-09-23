@@ -6,6 +6,10 @@
 
 #include "base/strings/stringprintf.h"
 #include "net/cert/internal/cert_errors.h"
+// TODO(eroman): These tests should be moved into
+//               parsed_certificate_unittest.cc; this include dependency should
+//               go.
+#include "net/cert/internal/parsed_certificate.h"
 #include "net/cert/internal/test_helpers.h"
 #include "net/der/input.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,6 +77,37 @@ void RunCertificateTest(const std::string& file_name) {
               signature_algorithm_tlv);
     EXPECT_EQ(der::Input(&expected_tbs_certificate), tbs_certificate_tlv);
   }
+}
+
+// Reads and parses a certificate from the PEM file |file_name|.
+//
+// Returns nullptr if the certificate parsing failed, and verifies that any
+// errors match the ERRORS block in the .pem file.
+scoped_refptr<ParsedCertificate> ParseCertificateFromFile(
+    const std::string& file_name) {
+  std::string data;
+  std::string expected_errors;
+
+  // Read the certificate data and error expectations from a single PEM file.
+  const PemBlockMapping mappings[] = {
+      {"CERTIFICATE", &data}, {"ERRORS", &expected_errors, true /*optional*/},
+  };
+  std::string test_file_path = GetFilePath(file_name);
+  EXPECT_TRUE(ReadTestDataFromPemFile(test_file_path, mappings));
+
+  CertErrors errors;
+  scoped_refptr<ParsedCertificate> cert =
+      ParsedCertificate::Create(data, {}, &errors);
+
+  EXPECT_EQ(expected_errors, errors.ToDebugString()) << "Test file: "
+                                                     << test_file_path;
+
+  // TODO(crbug.com/634443): Every parse failure being tested should emit error
+  // information.
+  // if (!cert)
+  //   EXPECT_FALSE(errors.empty());
+
+  return cert;
 }
 
 // Tests parsing a Certificate.
@@ -582,107 +617,100 @@ TEST(ParseExtensionsTest, Real) {
   // TODO(eroman): Verify the other 4 extensions' values.
 }
 
-// Reads a PEM file containing a block "BASIC CONSTRAINTS". This input will
-// be passed to ParseExtension, and the results filled in |out|.
-bool ParseBasicConstraintsFromFile(const std::string& file_name,
-                                   ParsedBasicConstraints* out) {
-  std::string data;
-  const PemBlockMapping mappings[] = {
-      {"BASIC CONSTRAINTS", &data},
-  };
-
-  EXPECT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
-  return ParseBasicConstraints(der::Input(&data), out);
-}
-
 // Parses a BasicConstraints with no CA or pathlen.
-TEST(ParseBasicConstraintsTest, NotCa) {
-  ParsedBasicConstraints constraints;
-  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_not_ca.pem",
-                                            &constraints));
-  EXPECT_FALSE(constraints.is_ca);
-  EXPECT_FALSE(constraints.has_path_len);
+TEST(ParseCertificateTest, BasicConstraintsNotCa) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("basic_constraints_not_ca.pem");
+  ASSERT_TRUE(cert);
+
+  EXPECT_TRUE(cert->has_basic_constraints());
+  EXPECT_FALSE(cert->basic_constraints().is_ca);
+  EXPECT_FALSE(cert->basic_constraints().has_path_len);
 }
 
 // Parses a BasicConstraints with CA but no pathlen.
-TEST(ParseBasicConstraintsTest, CaNoPath) {
-  ParsedBasicConstraints constraints;
-  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_ca_no_path.pem",
-                                            &constraints));
-  EXPECT_TRUE(constraints.is_ca);
-  EXPECT_FALSE(constraints.has_path_len);
+TEST(ParseCertificateTest, BasicConstraintsCaNoPath) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("basic_constraints_ca_no_path.pem");
+  ASSERT_TRUE(cert);
+
+  EXPECT_TRUE(cert->has_basic_constraints());
+  EXPECT_TRUE(cert->basic_constraints().is_ca);
+  EXPECT_FALSE(cert->basic_constraints().has_path_len);
 }
 
 // Parses a BasicConstraints with CA and pathlen of 9.
-TEST(ParseBasicConstraintsTest, CaPath9) {
-  ParsedBasicConstraints constraints;
-  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_ca_path_9.pem",
-                                            &constraints));
-  EXPECT_TRUE(constraints.is_ca);
-  EXPECT_TRUE(constraints.has_path_len);
-  EXPECT_EQ(9u, constraints.path_len);
+TEST(ParseCertificateTest, BasicConstraintsCaPath9) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("basic_constraints_ca_path_9.pem");
+  ASSERT_TRUE(cert);
+
+  EXPECT_TRUE(cert->has_basic_constraints());
+  EXPECT_TRUE(cert->basic_constraints().is_ca);
+  EXPECT_TRUE(cert->basic_constraints().has_path_len);
+  EXPECT_EQ(9u, cert->basic_constraints().path_len);
 }
 
 // Parses a BasicConstraints with CA and pathlen of 255 (largest allowed size).
-TEST(ParseBasicConstraintsTest, Pathlen255) {
-  ParsedBasicConstraints constraints;
-  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_pathlen_255.pem",
-                                            &constraints));
-  EXPECT_TRUE(constraints.is_ca);
-  EXPECT_TRUE(constraints.has_path_len);
-  EXPECT_EQ(255, constraints.path_len);
+TEST(ParseCertificateTest, BasicConstraintsPathlen255) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("basic_constraints_pathlen_255.pem");
+  ASSERT_TRUE(cert);
+
+  EXPECT_TRUE(cert->has_basic_constraints());
+  EXPECT_TRUE(cert->basic_constraints().is_ca);
+  EXPECT_TRUE(cert->basic_constraints().has_path_len);
+  EXPECT_EQ(255, cert->basic_constraints().path_len);
 }
 
 // Parses a BasicConstraints with CA and pathlen of 256 (too large).
-TEST(ParseBasicConstraintsTest, Pathlen256) {
-  ParsedBasicConstraints constraints;
-  ASSERT_FALSE(ParseBasicConstraintsFromFile(
-      "basic_constraints_pathlen_256.pem", &constraints));
+TEST(ParseCertificateTest, BasicConstraintsPathlen256) {
+  ASSERT_FALSE(ParseCertificateFromFile("basic_constraints_pathlen_256.pem"));
 }
 
 // Parses a BasicConstraints with CA and a negative pathlen.
-TEST(ParseBasicConstraintsTest, NegativePath) {
-  ParsedBasicConstraints constraints;
-  ASSERT_FALSE(ParseBasicConstraintsFromFile(
-      "basic_constraints_negative_path.pem", &constraints));
+TEST(ParseCertificateTest, BasicConstraintsNegativePath) {
+  ASSERT_FALSE(ParseCertificateFromFile("basic_constraints_negative_path.pem"));
 }
 
 // Parses a BasicConstraints with CA and pathlen that is very large (and
 // couldn't fit in a 64-bit integer).
-TEST(ParseBasicConstraintsTest, PathTooLarge) {
-  ParsedBasicConstraints constraints;
-  ASSERT_FALSE(ParseBasicConstraintsFromFile(
-      "basic_constraints_path_too_large.pem", &constraints));
+TEST(ParseCertificateTest, BasicConstraintsPathTooLarge) {
+  ASSERT_FALSE(
+      ParseCertificateFromFile("basic_constraints_path_too_large.pem"));
 }
 
 // Parses a BasicConstraints with CA explicitly set to false. This violates
 // DER-encoding rules, however is commonly used, so it is accepted.
-TEST(ParseBasicConstraintsTest, CaFalse) {
-  ParsedBasicConstraints constraints;
-  ASSERT_TRUE(ParseBasicConstraintsFromFile("basic_constraints_ca_false.pem",
-                                            &constraints));
-  EXPECT_FALSE(constraints.is_ca);
-  EXPECT_FALSE(constraints.has_path_len);
+TEST(ParseCertificateTest, BasicConstraintsCaFalse) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("basic_constraints_ca_false.pem");
+  ASSERT_TRUE(cert);
+
+  EXPECT_TRUE(cert->has_basic_constraints());
+  EXPECT_FALSE(cert->basic_constraints().is_ca);
+  EXPECT_FALSE(cert->basic_constraints().has_path_len);
 }
 
 // Parses a BasicConstraints with CA set to true and an unexpected NULL at
 // the end.
-TEST(ParseBasicConstraintsTest, UnconsumedData) {
-  ParsedBasicConstraints constraints;
-  ASSERT_FALSE(ParseBasicConstraintsFromFile(
-      "basic_constraints_unconsumed_data.pem", &constraints));
+TEST(ParseCertificateTest, BasicConstraintsUnconsumedData) {
+  ASSERT_FALSE(
+      ParseCertificateFromFile("basic_constraints_unconsumed_data.pem"));
 }
 
 // Parses a BasicConstraints with CA omitted (false), but with a pathlen of 1.
 // This is valid DER for the ASN.1, however is not valid when interpreting the
 // BasicConstraints at a higher level.
-TEST(ParseBasicConstraintsTest, PathLenButNotCa) {
-  ParsedBasicConstraints constraints;
-  ASSERT_TRUE(ParseBasicConstraintsFromFile(
-      "basic_constraints_pathlen_not_ca.pem", &constraints));
-  EXPECT_FALSE(constraints.is_ca);
-  EXPECT_TRUE(constraints.has_path_len);
-  EXPECT_EQ(1u, constraints.path_len);
+TEST(ParseCertificateTest, BasicConstraintsPathLenButNotCa) {
+  scoped_refptr<ParsedCertificate> cert =
+      ParseCertificateFromFile("basic_constraints_pathlen_not_ca.pem");
+  ASSERT_TRUE(cert);
+
+  EXPECT_TRUE(cert->has_basic_constraints());
+  EXPECT_FALSE(cert->basic_constraints().is_ca);
+  EXPECT_TRUE(cert->basic_constraints().has_path_len);
+  EXPECT_EQ(1u, cert->basic_constraints().path_len);
 }
 
 // Parses a KeyUsage with a single 0 bit.
