@@ -10,6 +10,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/ImageData.h"
+#include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/CheckedNumeric.h"
 
@@ -148,6 +149,21 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(SerializationTag tag)
             || index >= m_transferredMessagePorts->size())
             return nullptr;
         return (*m_transferredMessagePorts)[index].get();
+    }
+    case OffscreenCanvasTransferTag: {
+        uint32_t width = 0, height = 0, canvasId = 0, clientId = 0, localId = 0;
+        uint64_t nonce = 0;
+        if (!readUint32(&width)
+            || !readUint32(&height)
+            || !readUint32(&canvasId)
+            || !readUint32(&clientId)
+            || !readUint32(&localId)
+            || !readUint64(&nonce))
+            return nullptr;
+        OffscreenCanvas* canvas = OffscreenCanvas::create(width, height);
+        canvas->setAssociatedCanvasId(canvasId);
+        canvas->setSurfaceId(clientId, localId, nonce);
+        return canvas;
     }
     default:
         break;

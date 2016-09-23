@@ -8,6 +8,7 @@
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8OffscreenCanvas.h"
 #include "core/dom/DOMArrayBufferBase.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -103,6 +104,10 @@ void V8ScriptValueSerializer::finalizeTransfer(ExceptionState& exceptionState)
     m_serializedScriptValue->transferImageBitmaps(isolate, m_transferables->imageBitmaps, exceptionState);
     if (exceptionState.hadException())
         return;
+
+    m_serializedScriptValue->transferOffscreenCanvas(isolate, m_transferables->offscreenCanvases, exceptionState);
+    if (exceptionState.hadException())
+        return;
 }
 
 void V8ScriptValueSerializer::writeUTF8String(const String& string)
@@ -174,6 +179,32 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable, Excepti
         DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
         writeTag(MessagePortTag);
         writeUint32(static_cast<uint32_t>(index));
+        return true;
+    }
+    if (wrapperTypeInfo == &V8OffscreenCanvas::wrapperTypeInfo) {
+        OffscreenCanvas* canvas = wrappable->toImpl<OffscreenCanvas>();
+        size_t index = kNotFound;
+        if (m_transferables)
+            index = m_transferables->offscreenCanvases.find(canvas);
+        if (index == kNotFound) {
+            exceptionState.throwDOMException(DataCloneError, "An OffscreenCanvas could not be cloned because it was not transferred.");
+            return false;
+        }
+        if (canvas->isNeutered()) {
+            exceptionState.throwDOMException(DataCloneError, "An OffscreenCanvas could not be cloned because it was detached.");
+            return false;
+        }
+        if (canvas->renderingContext()) {
+            exceptionState.throwDOMException(DataCloneError, "An OffscreenCanvas could not be cloned because it had a rendering context.");
+            return false;
+        }
+        writeTag(OffscreenCanvasTransferTag);
+        writeUint32(canvas->width());
+        writeUint32(canvas->height());
+        writeUint32(canvas->getAssociatedCanvasId());
+        writeUint32(canvas->clientId());
+        writeUint32(canvas->localId());
+        writeUint64(canvas->nonce());
         return true;
     }
     return false;

@@ -12,11 +12,13 @@
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8OffscreenCanvas.h"
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/ImageData.h"
+#include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "public/platform/WebMessagePortChannel.h"
@@ -461,6 +463,25 @@ TEST(V8ScriptValueSerializerTest, TransferImageBitmap)
     // Check also that the underlying image contents were transferred.
     EXPECT_EQ(image, newImage);
     EXPECT_TRUE(imageBitmap->isNeutered());
+}
+
+TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas)
+{
+    // More exhaustive tests in LayoutTests/. This is a sanity check.
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    OffscreenCanvas* canvas = OffscreenCanvas::create(10, 7);
+    canvas->setAssociatedCanvasId(519);
+    v8::Local<v8::Value> wrapper = toV8(canvas, scope.getScriptState());
+    Transferables transferables;
+    transferables.offscreenCanvases.append(canvas);
+    v8::Local<v8::Value> result = roundTrip(wrapper, scope, nullptr, &transferables);
+    ASSERT_TRUE(V8OffscreenCanvas::hasInstance(result, scope.isolate()));
+    OffscreenCanvas* newCanvas = V8OffscreenCanvas::toImpl(result.As<v8::Object>());
+    EXPECT_EQ(IntSize(10, 7), newCanvas->size());
+    EXPECT_EQ(519, newCanvas->getAssociatedCanvasId());
+    EXPECT_TRUE(canvas->isNeutered());
+    EXPECT_FALSE(newCanvas->isNeutered());
 }
 
 } // namespace
