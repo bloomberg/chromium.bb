@@ -59,11 +59,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   void Register(MediaStreamProviderListener* listener,
                 const scoped_refptr<base::SingleThreadTaskRunner>&
                     device_task_runner) override;
-
-  void EnumerateDevices(MediaStreamType stream_type) override;
-
   int Open(const StreamDeviceInfo& device) override;
-
   void Close(int capture_session_id) override;
 
   // Called by VideoCaptureHost to locate a capture device for |capture_params|,
@@ -173,6 +169,10 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   void OnApplicationStateChange(base::android::ApplicationState state);
 #endif
 
+  using EnumerationCallback =
+      base::Callback<void(const media::VideoCaptureDeviceDescriptors&)>;
+  void EnumerateDevices(const EnumerationCallback& client_callback);
+
  private:
   class CaptureDeviceStartRequest;
   class DeviceEntry;
@@ -192,8 +192,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                 media::VideoCaptureSessionId capture_session_id);
   void OnClosed(MediaStreamType type,
                 media::VideoCaptureSessionId capture_session_id);
-  void OnDevicesInfoEnumerated(MediaStreamType stream_type,
-                               base::ElapsedTimer* timer,
+  void OnDevicesInfoEnumerated(base::ElapsedTimer* timer,
+                               const EnumerationCallback& client_callback,
                                const DeviceInfos& new_devices_info_cache);
 
   bool IsOnDeviceThread() const;
@@ -203,7 +203,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // the new devices and sends the new cache to OnDevicesInfoEnumerated().
   void ConsolidateDevicesInfoOnDeviceThread(
       base::Callback<void(const DeviceInfos&)> on_devices_enumerated_callback,
-      MediaStreamType stream_type,
       const DeviceInfos& old_device_info_cache,
       std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors_snapshot);
 

@@ -294,16 +294,15 @@ void VideoCaptureManager::Unregister() {
   listener_ = nullptr;
 }
 
-void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
+void VideoCaptureManager::EnumerateDevices(
+    const EnumerationCallback& client_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DVLOG(1) << "VideoCaptureManager::EnumerateDevices, type " << stream_type;
-  DCHECK(listener_);
-  DCHECK_EQ(stream_type, MEDIA_DEVICE_VIDEO_CAPTURE);
+  DVLOG(1) << "VideoCaptureManager::EnumerateDevices";
 
 #if defined(OS_MACOSX)
-  if (NeedToInitializeCaptureDeviceApi(stream_type)) {
-    InitializeCaptureDeviceApiOnUIThread(
-        base::Bind(&VideoCaptureManager::EnumerateDevices, this, stream_type));
+  if (NeedToInitializeCaptureDeviceApi(MEDIA_DEVICE_VIDEO_CAPTURE)) {
+    InitializeCaptureDeviceApiOnUIThread(base::Bind(
+        &VideoCaptureManager::EnumerateDevices, this, client_callback));
     return;
   }
 #endif
@@ -314,10 +313,10 @@ void VideoCaptureManager::EnumerateDevices(MediaStreamType stream_type) {
   base::Callback<void(std::unique_ptr<VideoCaptureDeviceDescriptors>)>
       devices_enumerated_callback = base::Bind(
           &VideoCaptureManager::ConsolidateDevicesInfoOnDeviceThread, this,
-          media::BindToCurrentLoop(
-              base::Bind(&VideoCaptureManager::OnDevicesInfoEnumerated, this,
-                         stream_type, base::Owned(new base::ElapsedTimer()))),
-          stream_type, devices_info_cache_);
+          media::BindToCurrentLoop(base::Bind(
+              &VideoCaptureManager::OnDevicesInfoEnumerated, this,
+              base::Owned(new base::ElapsedTimer()), client_callback)),
+          devices_info_cache_);
   // OK to use base::Unretained() since we own the VCDFactory and |this| is
   // bound in |devices_enumerated_callback|.
   device_task_runner_->PostTask(
@@ -963,35 +962,29 @@ void VideoCaptureManager::OnClosed(
 }
 
 void VideoCaptureManager::OnDevicesInfoEnumerated(
-    MediaStreamType stream_type,
     base::ElapsedTimer* timer,
+    const EnumerationCallback& client_callback,
     const VideoCaptureManager::DeviceInfos& new_devices_info_cache) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_TIMES(
       "Media.VideoCaptureManager.GetAvailableDevicesInfoOnDeviceThreadTime",
       timer->Elapsed());
-  if (!listener_) {
-    // Listener has been removed.
-    return;
-  }
   devices_info_cache_ = new_devices_info_cache;
 
-  // Walk the |devices_info_cache_| and transform from
-  // VideoCaptureDeviceDescriptor to StreamDeviceInfo for return purposes.
-  StreamDeviceInfoArray devices;
+  // Walk the |devices_info_cache_| and produce a
+  // media::VideoCaptureDeviceDescriptors for return purposes.
+  media::VideoCaptureDeviceDescriptors devices;
   std::vector<std::tuple<media::VideoCaptureDeviceDescriptor,
                          media::VideoCaptureFormats>>
       descriptors_and_formats;
   for (const auto& it : devices_info_cache_) {
-    // TODO(guidou): Implement group IDs for video capture devices.
-    // http://crbug.com/627793
-    devices.emplace_back(stream_type, it.descriptor.GetNameAndModel(),
-                         it.descriptor.device_id);
+    devices.emplace_back(it.descriptor);
     descriptors_and_formats.emplace_back(it.descriptor, it.supported_formats);
     MediaInternals::GetInstance()->UpdateVideoCaptureDeviceCapabilities(
         descriptors_and_formats);
   }
-  listener_->DevicesEnumerated(stream_type, devices);
+
+  client_callback.Run(devices);
 }
 
 bool VideoCaptureManager::IsOnDeviceThread() const {
@@ -1001,7 +994,6 @@ bool VideoCaptureManager::IsOnDeviceThread() const {
 void VideoCaptureManager::ConsolidateDevicesInfoOnDeviceThread(
     base::Callback<void(const VideoCaptureManager::DeviceInfos&)>
         on_devices_enumerated_callback,
-    MediaStreamType stream_type,
     const VideoCaptureManager::DeviceInfos& old_device_info_cache,
     std::unique_ptr<VideoCaptureDeviceDescriptors> descriptors_snapshot) {
   DCHECK(IsOnDeviceThread());

@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 
 #include <stddef.h>
+#include <memory>
 #include <queue>
 #include <string>
 #include <utility>
@@ -33,6 +34,7 @@
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
@@ -58,6 +60,19 @@ const int kRenderId = 6;
 const int kPageRequestId = 7;
 
 namespace content {
+
+namespace {
+
+void AudioInputDevicesEnumerated(base::Closure quit_closure,
+                                 media::AudioDeviceNames* out,
+                                 const MediaDeviceEnumeration& enumeration) {
+  for (const auto& info : enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
+    out->emplace_back(info.label, info.device_id);
+  }
+  quit_closure.Run();
+}
+
+}  // namespace
 
 class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                                       public TestContentBrowserClient {
@@ -299,8 +314,13 @@ class MediaStreamDispatcherHostTest : public testing::Test {
         &physical_video_devices_);
     ASSERT_GT(physical_video_devices_.size(), 0u);
 
-    media_stream_manager_->audio_input_device_manager()->GetFakeDeviceNames(
-        &physical_audio_devices_);
+    base::RunLoop run_loop;
+    media_stream_manager_->media_devices_manager()->EnumerateDevices(
+        {{true, false, false}},
+        base::Bind(&AudioInputDevicesEnumerated, run_loop.QuitClosure(),
+                   &physical_audio_devices_));
+    run_loop.Run();
+
     ASSERT_GT(physical_audio_devices_.size(), 0u);
   }
 
@@ -385,7 +405,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                                                   run_loop.QuitClosure());
     // Simulate a change in the set of devices.
     video_capture_device_factory_->set_number_of_devices(5);
-    media_stream_manager_->OnDevicesChanged(
+    media_stream_manager_->media_devices_manager()->OnDevicesChanged(
         base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
     run_loop.Run();
   }
@@ -395,6 +415,14 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       media::AudioDeviceNames::const_iterator audio_it =
           physical_audio_devices_.begin();
       for (; audio_it != physical_audio_devices_.end(); ++audio_it) {
+        // Skip default and communications audio devices, whose IDs are not
+        // translated.
+        if (devices[i].device.id ==
+                media::AudioDeviceDescription::kDefaultDeviceId ||
+            devices[i].device.id ==
+                media::AudioDeviceDescription::kCommunicationsDeviceId) {
+          continue;
+        }
         if (audio_it->unique_id == devices[i].device.id)
           return true;
       }
@@ -913,7 +941,7 @@ TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
   base::RunLoop run_loop;
   EXPECT_CALL(*host_.get(), OnDeviceStopped(kRenderId))
       .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  media_stream_manager_->OnDevicesChanged(
+  media_stream_manager_->media_devices_manager()->OnDevicesChanged(
       base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
 
   run_loop.Run();

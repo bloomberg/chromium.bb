@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -20,13 +21,11 @@
 #include "content/public/common/media_stream_request.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
 using testing::InSequence;
-using testing::SaveArg;
-using testing::Return;
 
 namespace content {
 
@@ -63,23 +62,23 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
 
  protected:
   void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kUseFakeDeviceForMediaStream);
     audio_manager_ = media::AudioManager::CreateForTesting(
         base::ThreadTaskRunnerHandle::Get());
     // Flush the message loop to ensure proper initialization of AudioManager.
     base::RunLoop().RunUntilIdle();
 
     manager_ = new AudioInputDeviceManager(audio_manager_.get());
-    manager_->UseFakeDevice();
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get(),
                        audio_manager_->GetTaskRunner());
 
-    // Gets the enumerated device list from the AudioInputDeviceManager.
-    manager_->EnumerateDevices(MEDIA_DEVICE_AUDIO_CAPTURE);
-    EXPECT_CALL(*audio_input_listener_,
-                DevicesEnumerated(MEDIA_DEVICE_AUDIO_CAPTURE, _))
-        .Times(1)
-        .WillOnce(SaveArg<1>(&devices_));
+    // Use fake devices.
+    devices_.emplace_back(MEDIA_DEVICE_AUDIO_CAPTURE, "Fake Device 1",
+                          "fake_device_1");
+    devices_.emplace_back(MEDIA_DEVICE_AUDIO_CAPTURE, "Fake Device 2",
+                          "fake_device_2");
 
     // Wait until we get the list.
     base::RunLoop().RunUntilIdle();
@@ -101,7 +100,6 @@ class MAYBE_AudioInputDeviceManagerTest : public testing::Test {
 
 // Opens and closes the devices.
 TEST_F(MAYBE_AudioInputDeviceManagerTest, OpenAndCloseDevice) {
-
   ASSERT_FALSE(devices_.empty());
 
   InSequence s;

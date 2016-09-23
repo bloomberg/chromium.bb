@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
@@ -15,6 +16,7 @@
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
+#include "media/base/media_switches.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
@@ -33,7 +35,6 @@ AudioInputDeviceManager::AudioInputDeviceManager(
     media::AudioManager* audio_manager)
     : listener_(NULL),
       next_capture_session_id_(kFirstSessionId),
-      use_fake_device_(false),
 #if defined(OS_CHROMEOS)
       keyboard_mic_streams_count_(0),
 #endif
@@ -68,16 +69,6 @@ void AudioInputDeviceManager::Unregister() {
   listener_ = NULL;
 }
 
-void AudioInputDeviceManager::EnumerateDevices(MediaStreamType stream_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(listener_);
-
-  device_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&AudioInputDeviceManager::EnumerateOnDeviceThread,
-                 this, stream_type));
-}
-
 int AudioInputDeviceManager::Open(const StreamDeviceInfo& device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Generate a new id for this device.
@@ -106,16 +97,6 @@ void AudioInputDeviceManager::Close(int session_id) {
                           FROM_HERE,
                           base::Bind(&AudioInputDeviceManager::ClosedOnIOThread,
                                      this, stream_type, session_id));
-}
-
-void AudioInputDeviceManager::UseFakeDevice() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  use_fake_device_ = true;
-}
-
-bool AudioInputDeviceManager::ShouldUseFakeDevice() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return use_fake_device_;
 }
 
 #if defined(OS_CHROMEOS)
@@ -155,41 +136,6 @@ void AudioInputDeviceManager::UnregisterKeyboardMicStream() {
 }
 #endif
 
-void AudioInputDeviceManager::EnumerateOnDeviceThread(
-    MediaStreamType stream_type) {
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Media.AudioInputDeviceManager.EnumerateOnDeviceThreadTime");
-  DCHECK(IsOnDeviceThread());
-  DCHECK_EQ(MEDIA_DEVICE_AUDIO_CAPTURE, stream_type);
-
-  media::AudioDeviceNames device_names;
-  if (use_fake_device_) {
-    // Use the fake devices.
-    GetFakeDeviceNames(&device_names);
-  } else {
-    // Enumerate the devices on the OS.
-    // AudioManager is guaranteed to outlive MediaStreamManager in
-    // BrowserMainloop.
-    audio_manager_->GetAudioInputDeviceNames(&device_names);
-  }
-
-  std::unique_ptr<StreamDeviceInfoArray> devices(new StreamDeviceInfoArray());
-  for (media::AudioDeviceNames::iterator it = device_names.begin();
-       it != device_names.end(); ++it) {
-    // Add device information to device vector.
-    devices->emplace_back(stream_type, it->device_name, it->unique_id,
-                          audio_manager_->GetGroupIDInput(it->unique_id));
-  }
-
-  // Return the device list through the listener by posting a task on
-  // IO thread since MediaStreamManager handles the callback asynchronously.
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&AudioInputDeviceManager::DevicesEnumeratedOnIOThread,
-                 this, stream_type, base::Passed(&devices)));
-}
-
 void AudioInputDeviceManager::OpenOnDeviceThread(
     int session_id, const StreamDeviceInfo& info) {
   SCOPED_UMA_HISTOGRAM_TIMER(
@@ -202,7 +148,8 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
 
   MediaStreamDevice::AudioDeviceParameters& input_params = out.device.input;
 
-  if (use_fake_device_) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeDeviceForMediaStream)) {
     // Don't need to query the hardware information if using fake device.
     input_params.sample_rate = 44100;
     input_params.channel_layout = media::CHANNEL_LAYOUT_STEREO;
@@ -240,15 +187,6 @@ void AudioInputDeviceManager::OpenOnDeviceThread(
                                      this, session_id, out));
 }
 
-void AudioInputDeviceManager::DevicesEnumeratedOnIOThread(
-    MediaStreamType stream_type,
-    std::unique_ptr<StreamDeviceInfoArray> devices) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Ensure that |devices| gets deleted on exit.
-  if (listener_)
-    listener_->DevicesEnumerated(stream_type, *devices);
-}
-
 void AudioInputDeviceManager::OpenedOnIOThread(int session_id,
                                                const StreamDeviceInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -281,20 +219,6 @@ AudioInputDeviceManager::GetDevice(int session_id) {
   }
 
   return devices_.end();
-}
-
-void AudioInputDeviceManager::GetFakeDeviceNames(
-    media::AudioDeviceNames* device_names) {
-  static const char kFakeDeviceName1[] = "Fake Audio 1";
-  static const char kFakeDeviceId1[] = "fake_audio_1";
-  static const char kFakeDeviceName2[] = "Fake Audio 2";
-  static const char kFakeDeviceId2[] = "fake_audio_2";
-  DCHECK(device_names->empty());
-  DCHECK(use_fake_device_);
-  device_names->push_back(media::AudioDeviceName(kFakeDeviceName1,
-                                                 kFakeDeviceId1));
-  device_names->push_back(media::AudioDeviceName(kFakeDeviceName2,
-                                                 kFakeDeviceId2));
 }
 
 #if defined(OS_CHROMEOS)

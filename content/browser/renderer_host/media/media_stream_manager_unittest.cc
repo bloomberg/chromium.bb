@@ -389,7 +389,8 @@ TEST_F(MediaStreamManagerTest, NotifyDeviceChanges) {
     // Simulate device change
     EXPECT_CALL(requester, MockDevicesChanged(_));
     audio_manager_->SetNumAudioInputDevices(3);
-    media_stream_manager_->OnDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
+    media_stream_manager_->media_devices_manager()->OnDevicesChanged(
+        base::SystemMonitor::DEVTYPE_AUDIO);
     run_loop_device_change.Run();
   }
 
@@ -404,7 +405,8 @@ TEST_F(MediaStreamManagerTest, NotifyDeviceChanges) {
     // Bogus OnDeviceChange, as devices have not changed. Should not trigger
     // notification.
     EXPECT_CALL(requester, MockDevicesChanged(_)).Times(0);
-    media_stream_manager_->OnDevicesChanged(base::SystemMonitor::DEVTYPE_AUDIO);
+    media_stream_manager_->media_devices_manager()->OnDevicesChanged(
+        base::SystemMonitor::DEVTYPE_AUDIO);
 
     // Do enumeration to be able to quit the RunLoop.
     EXPECT_CALL(requester,

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
@@ -27,6 +28,7 @@
 #include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
+#include "media/base/media_switches.h"
 
 namespace content {
 
@@ -367,9 +369,10 @@ void AudioInputRendererHost::DoCreateStream(
   }
 
   media::AudioParameters audio_params(config.params);
-  if (media_stream_manager_->audio_input_device_manager()
-          ->ShouldUseFakeDevice())
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseFakeDeviceForMediaStream)) {
     audio_params.set_format(media::AudioParameters::AUDIO_FAKE);
+  }
 
   // Check if we have the permission to open the device and which device to use.
   MediaStreamType type = MEDIA_NO_SERVICE;

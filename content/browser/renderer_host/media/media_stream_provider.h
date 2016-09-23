@@ -46,10 +46,6 @@ class CONTENT_EXPORT MediaStreamProviderListener {
   // Called by a MediaStreamProvider when a stream has been closed.
   virtual void Closed(MediaStreamType stream_type, int capture_session_id) = 0;
 
-  // Called by a MediaStreamProvider when available devices has been enumerated.
-  virtual void DevicesEnumerated(MediaStreamType stream_type,
-                                 const StreamDeviceInfoArray& devices) = 0;
-
   // Called by a MediaStreamProvider when the device has been aborted due to
   // device error.
   virtual void Aborted(MediaStreamType stream_type, int capture_session_id) = 0;
@@ -66,9 +62,6 @@ class CONTENT_EXPORT MediaStreamProvider
   virtual void Register(MediaStreamProviderListener* listener,
                         const scoped_refptr<base::SingleThreadTaskRunner>&
                             device_task_runner) = 0;
-
-  // Enumerates existing capture devices and calls |DevicesEnumerated|.
-  virtual void EnumerateDevices(MediaStreamType stream_type) = 0;
 
   // Opens the specified device. The device is not started and it is still
   // possible for other applications to open the device before the device is

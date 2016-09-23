@@ -38,9 +38,9 @@ enum MediaStreamType {
   // Capture system audio (post-mix loopback stream).
   MEDIA_DESKTOP_AUDIO_CAPTURE,
 
-  // This is used for enumerating audio output devices.
-  // TODO(grunell): Output isn't really a part of media streams. Device
-  // enumeration should be decoupled from media streams and related code.
+  // TODO(guidou): This is used for device enumerations, but it is not a
+  // media stream type. Remove when handling of renderer-generated enumeration
+  // requests is removed from MediaStreamManager. See http://crbug.com/648183.
   MEDIA_DEVICE_AUDIO_OUTPUT,
 
   NUM_MEDIA_TYPES
