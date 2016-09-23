@@ -10,6 +10,7 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "platform/LengthFunctions.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -122,7 +123,12 @@ void CSSLengthInterpolationType::apply(const InterpolableValue& interpolableValu
         DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, before));
         StyleBuilder::applyProperty(cssProperty(), state, *CSSPrimitiveValue::create(length, zoom));
         DCHECK(LengthPropertyFunctions::getLength(cssProperty(), style, after));
-        DCHECK(before == after);
+        DCHECK_EQ(before.type(), after.type());
+        if (before.isSpecified()) {
+            const float kSlack = 0.1;
+            float delta = floatValueForLength(after, 100) - floatValueForLength(before, 100);
+            DCHECK_LT(std::abs(delta), kSlack);
+        }
 #endif
         return;
     }
