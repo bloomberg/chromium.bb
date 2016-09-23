@@ -34,3 +34,6 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(xidachen) check / generate reference images
     self.Fail('Pixel.OffscreenCanvasWebGLRedBoxWorker', bug=563852)
     self.Fail('Pixel.OffscreenCanvasWebGLRedBoxWorkerES3', ['mac'], bug=563852)
+
+    # TODO(kbr): flakily timing out on this configuration.
+    self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)

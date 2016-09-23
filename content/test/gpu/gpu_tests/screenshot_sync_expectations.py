@@ -19,3 +19,5 @@ class ScreenshotSyncExpectations(GpuTestExpectations):
                bug=599776)
     self.Fail('ScreenshotSync.GPURasterWithDivs', ['win', ('amd', 0x6613)],
                bug=639489)
+    # TODO(kbr): flakily timing out on this configuration.
+    self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
