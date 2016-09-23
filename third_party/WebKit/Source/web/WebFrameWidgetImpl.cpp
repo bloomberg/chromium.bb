@@ -1392,6 +1392,14 @@ void WebFrameWidgetImpl::detachCompositorAnimationTimeline(CompositorAnimationTi
         m_layerTreeView->detachCompositorAnimationTimeline(compositorTimeline->animationTimeline());
 }
 
+HitTestResult WebFrameWidgetImpl::coreHitTestResultAt(const WebPoint& pointInViewport)
+{
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(m_localRoot->frame()->document()->lifecycle());
+    FrameView* view = m_localRoot->frameView();
+    IntPoint pointInRootFrame = view->contentsToFrame(view->viewportToContents(pointInViewport));
+    return hitTestResultForRootFramePos(pointInRootFrame);
+}
+
 void WebFrameWidgetImpl::setVisibilityState(WebPageVisibilityState visibilityState)
 {
     if (m_layerTreeView)

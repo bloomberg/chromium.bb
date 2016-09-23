@@ -104,6 +104,7 @@ public:
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
     WebWidgetClient* client() const override { return m_client; }
+    HitTestResult coreHitTestResultAt(const WebPoint&) override;
 
 private:
     WebWidgetClient* m_client;

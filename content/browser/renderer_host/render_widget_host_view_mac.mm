@@ -60,6 +60,7 @@
 #include "content/public/browser/browser_plugin_guest_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #import "content/public/browser/render_widget_host_view_mac_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -2351,15 +2352,43 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 }
 
 - (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point {
+  gfx::Point rootPoint(point.x, NSHeight([self frame]) - point.y);
+  gfx::Point transformedPoint;
+  if (!renderWidgetHostView_->render_widget_host_ ||
+      !renderWidgetHostView_->render_widget_host_->delegate() ||
+      !renderWidgetHostView_->render_widget_host_->delegate()
+           ->GetInputEventRouter())
+    return;
+
+  RenderWidgetHostImpl* widgetHost =
+      renderWidgetHostView_->render_widget_host_->delegate()
+          ->GetInputEventRouter()
+          ->GetRenderWidgetHostAtPoint(renderWidgetHostView_.get(), rootPoint,
+                                       &transformedPoint);
+  if (!widgetHost)
+    return;
+
+  // TODO(ekaramad): The position reported by the renderer is with respect to
+  // |widgetHost|'s coordinate space with y-axis inverted to conform to AppKit
+  // coordinate system. The point will need to be transformed into root view's
+  // coordinate system (RenderWidgetHostViewMac in this case). However, since
+  // the callback is invoked on IO thread it will require some thread hopping to
+  // do so. For this reason, for now, we accept this non-ideal way of fixing the
+  // point offset manually from the view bounds. This should be revisited when
+  // fixing issues in TextInputClientMac (https://crbug.com/643233).
+  gfx::Rect root_box = renderWidgetHostView_->GetViewBounds();
+  gfx::Rect view_box = widgetHost->GetView()->GetViewBounds();
+
   TextInputClientMac::GetInstance()->GetStringAtPoint(
-      renderWidgetHostView_->render_widget_host_,
-      gfx::Point(point.x, NSHeight([self frame]) - point.y),
+      widgetHost, transformedPoint,
       ^(NSAttributedString* string, NSPoint baselinePoint) {
+        baselinePoint.x += view_box.origin().x() - root_box.origin().x();
+        baselinePoint.y +=
+            root_box.bottom_left().y() - view_box.bottom_left().y();
         [self showLookUpDictionaryOverlayInternal:string
                                     baselinePoint:baselinePoint
                                        targetView:self];
-      }
-  );
+      });
 }
 
 // This is invoked only on 10.8 or newer when the user taps a word using
@@ -2876,10 +2905,25 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   thePoint = [self convertPoint:thePoint fromView:nil];
   thePoint.y = NSHeight([self frame]) - thePoint.y;
 
+  if (!renderWidgetHostView_->render_widget_host_ ||
+      !renderWidgetHostView_->render_widget_host_->delegate() ||
+      !renderWidgetHostView_->render_widget_host_->delegate()
+           ->GetInputEventRouter())
+    return NSNotFound;
+
+  gfx::Point rootPoint(thePoint.x, thePoint.y);
+  gfx::Point transformedPoint;
+  RenderWidgetHostImpl* widgetHost =
+      renderWidgetHostView_->render_widget_host_->delegate()
+          ->GetInputEventRouter()
+          ->GetRenderWidgetHostAtPoint(renderWidgetHostView_.get(), rootPoint,
+                                       &transformedPoint);
+  if (!widgetHost)
+    return NSNotFound;
+
   NSUInteger index =
       TextInputClientMac::GetInstance()->GetCharacterIndexAtPoint(
-          renderWidgetHostView_->render_widget_host_,
-          gfx::Point(thePoint.x, thePoint.y));
+          widgetHost, transformedPoint);
   return index;
 }
 

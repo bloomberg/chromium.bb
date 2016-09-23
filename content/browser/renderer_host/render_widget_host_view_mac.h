@@ -40,6 +40,7 @@
 #include "ui/display/display_observer.h"
 
 namespace content {
+class RenderWidgetHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;

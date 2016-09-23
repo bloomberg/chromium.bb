@@ -602,6 +602,16 @@ void RenderWidgetHostInputEventRouter::OnHittestData(
   hittest_data_[params.surface_id] = data;
 }
 
+RenderWidgetHostImpl*
+RenderWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint(
+    RenderWidgetHostViewBase* root_view,
+    const gfx::Point& point,
+    gfx::Point* transformed_point) {
+  return RenderWidgetHostImpl::From(
+      FindEventTarget(root_view, point, transformed_point)
+          ->GetRenderWidgetHost());
+}
+
 void RenderWidgetHostInputEventRouter::RouteTouchscreenGestureEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebGestureEvent* event,

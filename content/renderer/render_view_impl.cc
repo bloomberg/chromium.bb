@@ -95,7 +95,6 @@
 #include "content/renderer/resizing_mode_selector.h"
 #include "content/renderer/savable_resources.h"
 #include "content/renderer/speech_recognition_dispatcher.h"
-#include "content/renderer/text_input_client_observer.h"
 #include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/websharedworker_proxy.h"
 #include "media/audio/audio_output_device.h"
@@ -836,10 +835,6 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
   } else {
     OnEnableAutoResize(params.min_size, params.max_size);
   }
-
-#if defined(OS_MACOSX)
-  new TextInputClientObserver(this);
-#endif  // defined(OS_MACOSX)
 
   // We don't use HistoryController in OOPIF-enabled modes.
   if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
@@ -3021,22 +3016,5 @@ void RenderViewImpl::UpdateWebViewWithDeviceScaleFactor() {
   webview()->settings()->setPreferCompositingToLCDTextEnabled(
       PreferCompositingToLCDText(compositor_deps_, device_scale_factor_));
 }
-
-#if defined(ENABLE_PLUGINS)
-PepperPluginInstanceImpl* RenderViewImpl::GetFocusedPepperPlugin() {
-  blink::WebFrame* frame = GetWebView()->mainFrame();
-
-  while (frame) {
-    if (frame->isWebLocalFrame()) {
-      RenderFrameImpl* render_frame = RenderFrameImpl::FromWebFrame(frame);
-      if (render_frame->focused_pepper_plugin())
-        return render_frame->focused_pepper_plugin();
-    }
-    frame = frame->traverseNext(false);
-  }
-
-  return nullptr;
-}
-#endif
 
 }  // namespace content

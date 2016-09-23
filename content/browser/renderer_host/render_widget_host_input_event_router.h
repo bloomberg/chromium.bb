@@ -38,6 +38,7 @@ class LatencyInfo;
 
 namespace content {
 
+class RenderWidgetHostImpl;
 class RenderWidgetHostViewBase;
 
 // Class owned by WebContentsImpl for the purpose of directing input events
@@ -80,6 +81,15 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   }
 
   void OnHittestData(const FrameHostMsg_HittestData_Params& params);
+
+  // Returns the RenderWidgetHostImpl inside the |root_view| at |point| where
+  // |point| is with respect to |root_view|'s coordinates. If a RWHI is found,
+  // the value of |transformed_point| is the coordinate of the point with
+  // respect to the RWHI's coordinates.
+  RenderWidgetHostImpl* GetRenderWidgetHostAtPoint(
+      RenderWidgetHostViewBase* root_view,
+      const gfx::Point& point,
+      gfx::Point* transformed_point);
 
  private:
   struct HittestData {

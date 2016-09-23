@@ -297,4 +297,9 @@ void WebViewFrameWidget::detachCompositorAnimationTimeline(CompositorAnimationTi
     m_webView->detachCompositorAnimationTimeline(compositorTimeline);
 }
 
+HitTestResult WebViewFrameWidget::coreHitTestResultAt(const WebPoint& point)
+{
+    return m_webView->coreHitTestResultAt(point);
+}
+
 } // namespace blink

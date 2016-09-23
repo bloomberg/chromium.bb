@@ -98,6 +98,7 @@ class RenderWidgetCompositor;
 class RenderWidgetOwnerDelegate;
 class RenderWidgetScreenMetricsEmulator;
 class ResizingModeSelector;
+class TextInputClientObserver;
 struct ContextMenuParams;
 struct ResizeParams;
 
@@ -394,6 +395,9 @@ class CONTENT_EXPORT RenderWidget
     return mouse_lock_dispatcher_.get();
   }
 
+  // TODO(ekaramad): The reference to the focused pepper plugin will be removed
+  // from RenderWidget. The purpose of having the reference here was to make IME
+  // work for OOPIF (https://crbug.com/643727).
   void set_focused_pepper_plugin(PepperPluginInstanceImpl* plugin) {
     focused_pepper_plugin_ = plugin;
   }
@@ -814,6 +818,12 @@ class CONTENT_EXPORT RenderWidget
  private:
   // Indicates whether this widget has focus.
   bool has_focus_;
+
+#if defined(OS_MACOSX)
+  // Responds to IPCs from TextInputClientMac regarding getting string at given
+  // position or range as well as finding character index at a given position.
+  std::unique_ptr<TextInputClientObserver> text_input_client_observer_;
+#endif
 
   // This reference is set by the RenderFrame and is used to query the IME-
   // related state from the plugin to later send to the browser.

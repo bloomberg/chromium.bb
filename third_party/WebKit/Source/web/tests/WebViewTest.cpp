@@ -3489,7 +3489,7 @@ TEST_F(WebViewTest, WebSubstringUtil)
     ASSERT_TRUE(!!result);
 
     WebPoint point(baselinePoint.x, frameView->height() - baselinePoint.y);
-    result = WebSubstringUtil::attributedWordAtPoint(webView, point, baselinePoint);
+    result = WebSubstringUtil::attributedWordAtPoint(frame->frameWidget(), point, baselinePoint);
     ASSERT_TRUE(!!result);
 
     webView->setZoomLevel(3);
@@ -3498,7 +3498,7 @@ TEST_F(WebViewTest, WebSubstringUtil)
     ASSERT_TRUE(!!result);
 
     point = WebPoint(baselinePoint.x, frameView->height() - baselinePoint.y);
-    result = WebSubstringUtil::attributedWordAtPoint(webView, point, baselinePoint);
+    result = WebSubstringUtil::attributedWordAtPoint(frame->frameWidget(), point, baselinePoint);
     ASSERT_TRUE(!!result);
 }
 
@@ -3518,7 +3518,7 @@ TEST_F(WebViewTest, WebSubstringUtilIframe)
     ASSERT_NE(result, nullptr);
 
     WebPoint point(baselinePoint.x, mainFrame->frameView()->height() - baselinePoint.y);
-    result = WebSubstringUtil::attributedWordAtPoint(webView, point, baselinePoint);
+    result = WebSubstringUtil::attributedWordAtPoint(mainFrame->frameWidget(), point, baselinePoint);
     ASSERT_NE(result, nullptr);
 
     int yBeforeChange = baselinePoint.y;
@@ -3528,7 +3528,7 @@ TEST_F(WebViewTest, WebSubstringUtilIframe)
         "document.querySelector('iframe').style.marginTop = '100px';"));
 
     point = WebPoint(point.x, point.y + 100);
-    result = WebSubstringUtil::attributedWordAtPoint(webView, point, baselinePoint);
+    result = WebSubstringUtil::attributedWordAtPoint(mainFrame->frameWidget(), point, baselinePoint);
     ASSERT_NE(result, nullptr);
 
     EXPECT_EQ(yBeforeChange, baselinePoint.y + 100);

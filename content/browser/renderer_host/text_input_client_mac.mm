@@ -37,6 +37,10 @@ void TextInputClientMac::GetStringAtPoint(
     RenderWidgetHost* rwh,
     gfx::Point point,
     void (^reply_handler)(NSAttributedString*, NSPoint)) {
+  // TODO(ekaramad): In principle, we are using the same handler regardless of
+  // the |rwh| which requested this. We should track the callbacks for each
+  // |rwh| individually so that one slow RWH will not end up clearing the
+  // callback for another (https://crbug.com/643233).
   DCHECK(replyForPointHandler_.get() == nil);
   replyForPointHandler_.reset(reply_handler, base::scoped_policy::RETAIN);
   RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(rwh);

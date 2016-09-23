@@ -52,6 +52,7 @@
 #include "content/renderer/render_widget_owner_delegate.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
+#include "ipc/ipc_message_start.h"
 #include "ipc/ipc_sync_message.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
@@ -93,6 +94,10 @@
 #if defined(USE_AURA)
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "content/renderer/text_input_client_observer.h"
 #endif
 
 using blink::WebCompositionUnderline;
@@ -256,6 +261,9 @@ RenderWidget::RenderWidget(CompositorDependencies* compositor_deps,
       resizing_mode_selector_(new ResizingModeSelector()),
       has_host_context_menu_location_(false),
       has_focus_(false),
+#if defined(OS_MACOSX)
+      text_input_client_observer_(new TextInputClientObserver(this)),
+#endif
       focused_pepper_plugin_(nullptr) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
@@ -476,6 +484,10 @@ void RenderWidget::OnShowHostContextMenu(ContextMenuParams* params) {
 }
 
 bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
+#if defined(OS_MACOSX)
+  if (IPC_MESSAGE_CLASS(message) == TextInputClientMsgStart)
+    return text_input_client_observer_->OnMessageReceived(message);
+#endif
   if (mouse_lock_dispatcher_ &&
       mouse_lock_dispatcher_->OnMessageReceived(message))
     return true;

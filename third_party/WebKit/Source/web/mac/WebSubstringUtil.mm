@@ -50,11 +50,12 @@
 #include "platform/fonts/Font.h"
 #include "platform/mac/ColorMac.h"
 #include "public/platform/WebRect.h"
+#include "public/web/WebFrameWidget.h"
 #include "public/web/WebHitTestResult.h"
+#include "public/web/WebLocalFrame.h"
 #include "public/web/WebRange.h"
-#include "public/web/WebView.h"
+#include "web/WebFrameWidgetBase.h"
 #include "web/WebLocalFrameImpl.h"
-#include "web/WebViewImpl.h"
 
 using namespace blink;
 
@@ -136,9 +137,10 @@ WebPoint getBaselinePoint(FrameView* frameView, const EphemeralRange& range, NSA
 
 namespace blink {
 
-NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebView* view, WebPoint point, WebPoint& baselinePoint)
+NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebFrameWidget* frameWidget, WebPoint point, WebPoint& baselinePoint)
 {
-    HitTestResult result = static_cast<WebViewImpl*>(view)->coreHitTestResultAt(point);
+    HitTestResult result = static_cast<WebFrameWidgetBase*>(frameWidget)->coreHitTestResultAt(point);
+
     if (!result.innerNode())
         return nil;
     LocalFrame* frame = result.innerNode()->document().frame();

@@ -14,6 +14,8 @@ class CompositorAnimationTimeline;
 class CompositorProxyClient;
 class GraphicsLayer;
 class WebLayer;
+class HitTestResult;
+struct WebPoint;
 
 class WebFrameWidgetBase : public WebFrameWidget {
 public:
@@ -32,6 +34,8 @@ public:
     // Attaches/detaches a CompositorAnimationTimeline to the layer tree.
     virtual void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) = 0;
     virtual void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) = 0;
+
+    virtual HitTestResult coreHitTestResultAt(const WebPoint&) = 0;
 };
 
 DEFINE_TYPE_CASTS(WebFrameWidgetBase, WebFrameWidget, widget, true, true);

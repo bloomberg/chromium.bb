@@ -238,16 +238,6 @@ class CONTENT_EXPORT RenderViewImpl
 
   void AttachWebFrameWidget(blink::WebFrameWidget* frame_widget);
 
-  // Plugin-related functions --------------------------------------------------
-
-#if defined(ENABLE_PLUGINS)
-  // TODO(ekaramad): This method is only used by TextInputClientObserver.
-  // Ideally, TextInputClientObserver should use RenderFrame/RenderWidget to
-  // obtain the plugin. Come back to this later when implementing IME for Mac
-  // to see if we can remove this API (https://crbug.com/578168).
-  PepperPluginInstanceImpl* GetFocusedPepperPlugin();
-#endif  // ENABLE_PLUGINS
-
   void TransferActiveWheelFlingAnimation(
       const blink::WebActiveWheelFlingParameters& params);
 

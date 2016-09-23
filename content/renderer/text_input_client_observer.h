@@ -12,30 +12,41 @@
 #include "ui/gfx/range/range.h"
 
 namespace blink {
-class WebView;
+class WebFrameWidget;
+class WebLocalFrame;
 }
 
 namespace content {
 
-class RenderViewImpl;
+class PepperPluginInstanceImpl;
+class RenderWidget;
 
 // This is the renderer-side message filter that generates the replies for the
 // messages sent by the TextInputClientMac. See
 // content/browser/renderer_host/text_input_client_mac.h for more information.
-class TextInputClientObserver : public RenderViewObserver {
+class TextInputClientObserver : public IPC::Listener, public IPC::Sender {
  public:
-  explicit TextInputClientObserver(RenderViewImpl* render_view);
+  explicit TextInputClientObserver(RenderWidget* render_widget);
   ~TextInputClientObserver() override;
 
-  // RenderViewObserver overrides:
+  // IPC::Listener override.
   bool OnMessageReceived(const IPC::Message& message) override;
 
- private:
-  // RenderViewObserver implementation.
-  void OnDestruct() override;
+  // IPC::Sender override.
+  bool Send(IPC::Message* message) override;
 
-  // Returns the WebView of the RenderView.
-  blink::WebView* webview();
+ private:
+  // The render widget corresponding to this TextInputClientObserver.
+  blink::WebFrameWidget* GetWebFrameWidget() const;
+
+  blink::WebLocalFrame* GetFocusedFrame() const;
+
+#if defined(ENABLE_PLUGINS)
+  // Returns the currently focused pepper plugin on the page. The expectation is
+  // that the focused pepper plugin is inside a frame whose local root is equal
+  // to GetWebFrameWidget()->localRoot().
+  PepperPluginInstanceImpl* GetFocusedPepperPlugin() const;
+#endif
 
   // IPC Message handlers:
   void OnStringAtPoint(gfx::Point point);
@@ -43,9 +54,8 @@ class TextInputClientObserver : public RenderViewObserver {
   void OnFirstRectForCharacterRange(gfx::Range range);
   void OnStringForRange(gfx::Range range);
 
-#if defined(ENABLE_PLUGINS)
-  RenderViewImpl* const render_view_impl_;
-#endif
+  // The RenderWidget owning this instance of the observer.
+  RenderWidget* render_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientObserver);
 };

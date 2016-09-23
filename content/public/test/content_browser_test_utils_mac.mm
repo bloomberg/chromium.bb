@@ -7,7 +7,11 @@
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
+#include "content/browser/renderer_host/text_input_client_mac.h"
+#include "content/public/browser/render_widget_host.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/range/range.h"
 
 namespace content {
 
@@ -20,6 +24,31 @@ void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds) {
   }
 
   [window setFrame:new_bounds display:NO];
+}
+
+void GetStringAtPointForRenderWidget(
+    RenderWidgetHost* rwh,
+    const gfx::Point& point,
+    base::Callback<void(const std::string&, const gfx::Point&)>
+        result_callback) {
+  TextInputClientMac::GetInstance()->GetStringAtPoint(
+      rwh, point, ^(NSAttributedString* string, NSPoint baselinePoint) {
+        result_callback.Run([[string string] UTF8String],
+                            gfx::Point(baselinePoint.x, baselinePoint.y));
+      });
+}
+
+void GetStringFromRangeForRenderWidget(
+    RenderWidgetHost* rwh,
+    const gfx::Range& range,
+    base::Callback<void(const std::string&, const gfx::Point&)>
+        result_callback) {
+  TextInputClientMac::GetInstance()->GetStringFromRange(
+      rwh, range.ToNSRange(),
+      ^(NSAttributedString* string, NSPoint baselinePoint) {
+        result_callback.Run([[string string] UTF8String],
+                            gfx::Point(baselinePoint.x, baselinePoint.y));
+      });
 }
 
 }  // namespace content

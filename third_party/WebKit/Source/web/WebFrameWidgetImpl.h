@@ -141,6 +141,7 @@ public:
     void setRootLayer(WebLayer*) override;
     void attachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
     void detachCompositorAnimationTimeline(CompositorAnimationTimeline*) override;
+    HitTestResult coreHitTestResultAt(const WebPoint&) override;
 
     // Exposed for the purpose of overriding device metrics.
     void sendResizeEventAndRepaint();

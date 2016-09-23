@@ -18,6 +18,8 @@ class FilePath;
 }
 
 namespace gfx {
+class Point;
+class Range;
 class Rect;
 }
 
@@ -143,6 +145,27 @@ class ConsoleObserverDelegate : public WebContentsDelegate {
 
 #if defined OS_MACOSX
 void SetWindowBounds(gfx::NativeWindow window, const gfx::Rect& bounds);
+
+// This method will request the string (word) at |point| inside the |rwh| where
+// |point| is with respect to the |rwh| coordinates. |result_callback| is called
+// with the word as well as |baselinePoint| when the result comes back from the
+// renderer. The baseline point is the position of the pop-up in AppKit
+// coordinate system (inverted y-axis).
+void GetStringAtPointForRenderWidget(
+    RenderWidgetHost* rwh,
+    const gfx::Point& point,
+    base::Callback<void(const std::string&, const gfx::Point&)>
+        result_callback);
+
+// This method will request the string identified by |range| inside the |rwh|.
+// When the result comes back, |result_callback| is invoked with the given text
+// and its position in AppKit coordinates (inverted-y axis).
+void GetStringFromRangeForRenderWidget(
+    RenderWidgetHost* rwh,
+    const gfx::Range& range,
+    base::Callback<void(const std::string&, const gfx::Point&)>
+        result_callback);
+
 #endif
 
 }  // namespace content
