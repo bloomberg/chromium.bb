@@ -4,13 +4,9 @@ Set timer for test function.
 Captured call stacks in no particular order:
 Call stack:
     0) doTestChainedPromises (async-callstack-async-await2.html:67)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-async-await2.html:21)
-    1) timeoutPromise (async-callstack-async-await2.html:9)
-    2) doTestChainedPromises (async-callstack-async-await2.html:66)
-    3) testFunctionTimeout (async-callstack-async-await2.html:50)
+    [async function]
+    0) doTestChainedPromises (async-callstack-async-await2.html:63)
+    1) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await2.html:43)
     [setTimeout]
@@ -19,86 +15,59 @@ Call stack:
 
 Call stack:
     0) doTestChainedPromises (async-callstack-async-await2.html:69)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-async-await2.html:21)
-    1) timeoutPromise (async-callstack-async-await2.html:9)
-    2) doTestChainedPromises (async-callstack-async-await2.html:68)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-async-await2.html:21)
-    1) timeoutPromise (async-callstack-async-await2.html:9)
-    2) doTestChainedPromises (async-callstack-async-await2.html:66)
-    3) testFunctionTimeout (async-callstack-async-await2.html:50)
+    [async function]
+    0) doTestChainedPromises (async-callstack-async-await2.html:63)
+    1) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await2.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) doTestChainedPromises (async-callstack-async-await2.html:71)
-    [Promise.resolve]
-    0) doTestChainedPromises (async-callstack-async-await2.html:70)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
+    [async function]
+    0) doTestChainedPromises (async-callstack-async-await2.html:63)
+    1) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
-    0) promiseCallback (async-callstack-async-await2.html:21)
-    1) timeoutPromise (async-callstack-async-await2.html:9)
-    2) doTestChainedPromises (async-callstack-async-await2.html:68)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
+    0) testFunction (async-callstack-async-await2.html:43)
     [setTimeout]
-    0) promiseCallback (async-callstack-async-await2.html:21)
-    1) timeoutPromise (async-callstack-async-await2.html:9)
-    2) doTestChainedPromises (async-callstack-async-await2.html:66)
-    3) testFunctionTimeout (async-callstack-async-await2.html:50)
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) doTestChainedPromises (async-callstack-async-await2.html:73)
-    [Promise.resolve]
-    0) doTestChainedPromises (async-callstack-async-await2.html:72)
-    [Promise.resolve]
-    0) doTestChainedPromises (async-callstack-async-await2.html:70)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
+    [async function]
+    0) doTestChainedPromises (async-callstack-async-await2.html:63)
+    1) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
-    0) promiseCallback (async-callstack-async-await2.html:21)
-    1) timeoutPromise (async-callstack-async-await2.html:9)
-    2) doTestChainedPromises (async-callstack-async-await2.html:68)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
+    0) testFunction (async-callstack-async-await2.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) thenCallback (async-callstack-async-await2.html:55)
     1) doTestChainedPromises (async-callstack-async-await2.html:74)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
+    [async function]
+    0) doTestChainedPromises (async-callstack-async-await2.html:63)
+    1) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
-    0) promiseCallback (async-callstack-async-await2.html:21)
-    1) timeoutPromise (async-callstack-async-await2.html:9)
-    2) doTestChainedPromises (async-callstack-async-await2.html:74)
-    [Promise.resolve]
-    0) doTestChainedPromises (async-callstack-async-await2.html:72)
-    [Promise.resolve]
-    0) doTestChainedPromises (async-callstack-async-await2.html:70)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
+    0) testFunction (async-callstack-async-await2.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) thenCallback (async-callstack-async-await2.html:55)
     1) doTestChainedPromisesJSON (async-callstack-async-await2.html:86)
-    [Promise.resolve]
-    0) doTestChainedPromisesJSON (async-callstack-async-await2.html:85)
-    [Promise.resolve]
-    0) doTestChainedPromisesJSON (async-callstack-async-await2.html:84)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await2.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-async-await2.html:21)
-    1) timeoutPromise (async-callstack-async-await2.html:9)
-    2) doTestChainedPromisesJSON (async-callstack-async-await2.html:83)
-    3) testFunctionTimeout (async-callstack-async-await2.html:50)
+    [async function]
+    0) doTestChainedPromisesJSON (async-callstack-async-await2.html:80)
+    1) testFunctionTimeout (async-callstack-async-await2.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await2.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 

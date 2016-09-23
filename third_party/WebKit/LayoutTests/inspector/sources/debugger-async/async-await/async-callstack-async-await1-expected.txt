@@ -5,8 +5,8 @@ Captured call stacks in no particular order:
 Call stack:
     0) errorCallback (async-callstack-async-await1.html:60)
     1) doTestSettledPromisesRejected (async-callstack-async-await1.html:92)
-    [Promise.reject]
-    0) doTestSettledPromisesRejected (async-callstack-async-await1.html:89)
+    [async function]
+    0) doTestSettledPromisesRejected (async-callstack-async-await1.html:86)
     1) testFunctionTimeout (async-callstack-async-await1.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await1.html:43)
@@ -27,8 +27,8 @@ Call stack:
 Call stack:
     0) thenCallback (async-callstack-async-await1.html:55)
     1) doTestPromiseConstructor (async-callstack-async-await1.html:70)
-    [Promise.resolve]
-    0) doTestPromiseConstructor (async-callstack-async-await1.html:66)
+    [async function]
+    0) doTestPromiseConstructor (async-callstack-async-await1.html:63)
     1) testFunctionTimeout (async-callstack-async-await1.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await1.html:43)
@@ -39,8 +39,8 @@ Call stack:
 Call stack:
     0) thenCallback (async-callstack-async-await1.html:55)
     1) doTestSettledPromisesResolved (async-callstack-async-await1.html:80)
-    [Promise.resolve]
-    0) doTestSettledPromisesResolved (async-callstack-async-await1.html:79)
+    [async function]
+    0) doTestSettledPromisesResolved (async-callstack-async-await1.html:76)
     1) testFunctionTimeout (async-callstack-async-await1.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await1.html:43)

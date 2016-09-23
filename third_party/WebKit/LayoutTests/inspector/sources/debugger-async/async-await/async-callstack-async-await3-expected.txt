@@ -5,8 +5,8 @@ Captured call stacks in no particular order:
 Call stack:
     0) errorCallback (async-callstack-async-await3.html:60)
     1) doTestPromiseReject (async-callstack-async-await3.html:129)
-    [Promise.reject]
-    0) doTestPromiseReject (async-callstack-async-await3.html:126)
+    [async function]
+    0) doTestPromiseReject (async-callstack-async-await3.html:123)
     1) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await3.html:43)
@@ -17,51 +17,33 @@ Call stack:
 Call stack:
     0) errorCallback (async-callstack-async-await3.html:60)
     1) doTestRejectFromChain (async-callstack-async-await3.html:109)
-    [Promise.reject]
-    0) rejectPromise (async-callstack-async-await3.html:16)
+    [async function]
+    0) doTestRejectFromChain (async-callstack-async-await3.html:103)
+    1) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
-    0) promiseCallback (async-callstack-async-await3.html:19)
-    1) timeoutPromise (async-callstack-async-await3.html:9)
-    2) rejectFromChain (async-callstack-async-await3.html:98)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await3.html:12)
+    0) testFunction (async-callstack-async-await3.html:43)
     [setTimeout]
-    0) promiseCallback (async-callstack-async-await3.html:21)
-    1) timeoutPromise (async-callstack-async-await3.html:9)
-    2) rejectFromChain (async-callstack-async-await3.html:97)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await3.html:12)
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) errorCallback (async-callstack-async-await3.html:60)
     1) doTestThrowFromChain (async-callstack-async-await3.html:89)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await3.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-async-await3.html:21)
-    1) timeoutPromise (async-callstack-async-await3.html:9)
-    2) throwFromChain (async-callstack-async-await3.html:76)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await3.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-async-await3.html:21)
-    1) timeoutPromise (async-callstack-async-await3.html:9)
-    2) throwFromChain (async-callstack-async-await3.html:75)
-    3) doTestThrowFromChain (async-callstack-async-await3.html:86)
-    4) testFunctionTimeout (async-callstack-async-await3.html:50)
+    [async function]
+    0) doTestThrowFromChain (async-callstack-async-await3.html:83)
+    1) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await3.html:43)
+    [setTimeout]
+    0) scheduleTestFunction (debugger-test.js:3)
+    <... skipped remaining frames ...>
 
 Call stack:
     0) thenCallback (async-callstack-async-await3.html:55)
     1) doTestPromiseAll (async-callstack-async-await3.html:67)
-    [Promise.resolve]
-    0) resolvePromise (async-callstack-async-await3.html:12)
-    [setTimeout]
-    0) promiseCallback (async-callstack-async-await3.html:21)
-    1) timeoutPromise (async-callstack-async-await3.html:9)
-    2) doTestPromiseAll (async-callstack-async-await3.html:66)
-    3) testFunctionTimeout (async-callstack-async-await3.html:50)
+    [async function]
+    0) doTestPromiseAll (async-callstack-async-await3.html:63)
+    1) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await3.html:43)
     [setTimeout]
@@ -71,8 +53,8 @@ Call stack:
 Call stack:
     0) thenCallback (async-callstack-async-await3.html:55)
     1) doTestPromiseResolve (async-callstack-async-await3.html:117)
-    [Promise.resolve]
-    0) doTestPromiseResolve (async-callstack-async-await3.html:116)
+    [async function]
+    0) doTestPromiseResolve (async-callstack-async-await3.html:113)
     1) testFunctionTimeout (async-callstack-async-await3.html:50)
     [setTimeout]
     0) testFunction (async-callstack-async-await3.html:43)
