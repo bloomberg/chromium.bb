@@ -6,6 +6,7 @@
 #define COMPONENTS_NTP_SNIPPETS_CATEGORY_FACTORY_H_
 
 #include <map>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
@@ -42,6 +43,23 @@ class CategoryFactory {
   // categories follow in the order in which they were first created through
   // |FromRemoteCategory|.
   bool CompareCategories(const Category& left, const Category& right) const;
+
+  // TODO(treib): Remove the following 3 functions from here once we move to a
+  // more structured identification than the unique_id string and thus once we
+  // eliminate these functions. See crbug.com/649048.
+
+  // Creates a unique ID. The given |within_category_id| must be unique among
+  // all suggestion IDs from this provider for the given |category|. This method
+  // combines it with the |category| to form an ID that is unique
+  // application-wide, because this provider is the only one that provides
+  // suggestions for that category.
+  std::string MakeUniqueID(Category category,
+                           const std::string& within_category_id) const;
+
+  // Reverse functions for MakeUniqueID()
+  Category GetCategoryFromUniqueID(const std::string& unique_id);
+  std::string GetWithinCategoryIDFromUniqueID(
+      const std::string& unique_id) const;
 
  private:
   bool CategoryExists(int id);

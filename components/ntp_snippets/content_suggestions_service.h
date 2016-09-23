@@ -212,9 +212,8 @@ class ContentSuggestionsService : public KeyedService,
   bool RegisterCategoryIfRequired(ContentSuggestionsProvider* provider,
                                   Category category);
 
-  // Removes a suggestion from the local stores |id_category_map_| and
-  // |suggestions_by_category_|, if it exists. Returns true if a suggestion was
-  // removed.
+  // Removes a suggestion from the local store |suggestions_by_category_|, if it
+  // exists. Returns true if a suggestion was removed.
   bool RemoveSuggestionByID(Category category,
                             const std::string& suggestion_id);
 
@@ -250,11 +249,6 @@ class ContentSuggestionsService : public KeyedService,
   // loading).
   std::map<Category, std::vector<ContentSuggestion>, Category::CompareByID>
       suggestions_by_category_;
-
-  // Map used to determine the category of a suggestion (of which only the ID
-  // is available). This also determines the provider that delivered the
-  // suggestion.
-  std::map<std::string, Category> id_category_map_;
 
   // Observer for the HistoryService. All providers are notified when history is
   // deleted.

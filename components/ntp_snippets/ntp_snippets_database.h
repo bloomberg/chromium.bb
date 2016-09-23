@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback.h"
@@ -56,9 +57,9 @@ class NTPSnippetsDatabase {
   // Adds or updates all the given snippets.
   void SaveSnippets(const NTPSnippet::PtrVector& snippets);
 
-  // Deletes the snippet with the given ID, and its image.
+  // Deletes the snippet with the given ID.
   void DeleteSnippet(const std::string& snippet_id);
-  // Deletes all the given snippets (identified by their IDs) and their images.
+  // Deletes all the given snippets (identified by their IDs).
   void DeleteSnippets(const NTPSnippet::PtrVector& snippets);
 
   // Loads the image data for the snippet with the given ID and passes it to
@@ -71,6 +72,8 @@ class NTPSnippetsDatabase {
 
   // Deletes the image data for the given snippet ID.
   void DeleteImage(const std::string& snippet_id);
+  // Deletes the image data for the given snippets (identified by their IDs).
+  void DeleteImages(const NTPSnippet::PtrVector& snippets);
 
  private:
   friend class NTPSnippetsDatabaseTest;

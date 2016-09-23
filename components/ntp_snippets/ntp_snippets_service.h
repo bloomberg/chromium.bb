@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -15,7 +16,6 @@
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_factory.h"
@@ -91,7 +91,7 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   // calls may trigger DCHECKs.
   bool initialized() const { return ready() || state_ == State::DISABLED; }
 
-  // Fetches snippets from the server and adds them to the current ones.
+  // Fetches snippets from the server and replaces old snippets by the new ones.
   // Requests can be marked more important by setting |interactive_request| to
   // true (such request might circumvent the daily quota for requests, etc.)
   // Useful for requests triggered by the user.
@@ -138,6 +138,12 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
     return categories_.find(category)->second.snippets;
   }
 
+  // Available snippets, only for unit tests.
+  const NTPSnippet::PtrVector& GetArchivedSnippetsForTesting(
+      Category category) const {
+    return categories_.find(category)->second.archived;
+  }
+
   // Dismissed snippets, only for unit tests.
   const NTPSnippet::PtrVector& GetDismissedSnippetsForTesting(
       Category category) const {
@@ -146,6 +152,8 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
 
  private:
   friend class NTPSnippetsServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest,
+                           RemoveExpiredDismissedContent);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, RescheduleOnStateChange);
   FRIEND_TEST_ALL_PREFIXES(NTPSnippetsServiceTest, StatusChanges);
 
@@ -186,6 +194,11 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
     ERROR_OCCURRED
   };
 
+  // Returns the URL of the image of a snippet if it is among the current or
+  // among the archived snippets in |category|. Returns an empty URL, otherwise.
+  GURL FindSnippetImageUrl(Category category,
+                           const std::string& snippet_id) const;
+
   // image_fetcher::ImageFetcherDelegate implementation.
   void OnImageDataFetched(const std::string& snippet_id,
                           const std::string& image_data) override;
@@ -200,15 +213,23 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   // Callback for the NTPSnippetsFetcher.
   void OnFetchFinished(NTPSnippetsFetcher::OptionalSnippets snippets);
 
-  // Merges newly available snippets with the previously available list.
-  void MergeSnippets(Category category, NTPSnippet::PtrVector new_snippets);
+  // Moves all snippets from |to_archive| into the archive of the |category|.
+  // It also deletes the snippets from the DB and keeps the archive reasonably
+  // short.
+  void ArchiveSnippets(Category category, NTPSnippet::PtrVector* to_archive);
+
+  // Replace old snippets in |category| by newly available snippets.
+  void ReplaceSnippets(Category category, NTPSnippet::PtrVector new_snippets);
 
   std::set<std::string> GetSnippetHostsFromPrefs() const;
   void StoreSnippetHostsToPrefs(const std::set<std::string>& hosts);
 
-  // Removes the expired snippets (including dismissed) from the service and the
-  // database, and schedules another pass for the next expiration.
-  void ClearExpiredSnippets();
+  // Removes expired dismissed snippets from the service and the database.
+  void ClearExpiredDismissedSnippets();
+
+  // Removes images from the DB that do not have any corresponding snippet
+  // (neither in the current set, nor in the archived set).
+  void ClearOrphanedImages();
 
   // Clears all stored snippets and updates the observer.
   void NukeAllSnippets();
@@ -283,11 +304,16 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
     // while we still have non-expired snippets in it.
     bool provided_by_server = true;
 
-    // All current suggestions (i.e. not dismissed ones).
+    // All currently active suggestions (excl. the dismissed ones).
     NTPSnippet::PtrVector snippets;
 
+    // All previous suggestions that we keep around in memory because they can
+    // be on some open NTP. We do not persist this list so that on a new start
+    // of Chrome, this is empty.
+    NTPSnippet::PtrVector archived;
+
     // Suggestions that the user dismissed. We keep these around until they
-    // expire so we won't re-add them on the next fetch.
+    // expire so we won't re-add them to |snippets| on the next fetch.
     NTPSnippet::PtrVector dismissed;
 
     CategoryContent();
@@ -312,9 +338,6 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
 
   // The snippets fetcher.
   std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;
-
-  // Timer that calls us back when the next snippet expires.
-  base::OneShotTimer expiry_timer_;
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
   std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;

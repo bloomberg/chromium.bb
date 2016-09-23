@@ -22,7 +22,7 @@ const char kImageDatabaseUMAClientName[] = "NTPSnippetImages";
 
 const char kSnippetDatabaseFolder[] = "snippets";
 const char kImageDatabaseFolder[] = "images";
-}
+}  // namespace
 
 namespace ntp_snippets {
 
@@ -123,6 +123,14 @@ void NTPSnippetsDatabase::SaveImage(const std::string& snippet_id,
 
 void NTPSnippetsDatabase::DeleteImage(const std::string& snippet_id) {
   DeleteImagesImpl(base::MakeUnique<std::vector<std::string>>(1, snippet_id));
+}
+
+void NTPSnippetsDatabase::DeleteImages(const NTPSnippet::PtrVector& snippets) {
+  std::unique_ptr<std::vector<std::string>> keys_to_remove(
+      new std::vector<std::string>());
+  for (const std::unique_ptr<NTPSnippet>& snippet : snippets)
+    keys_to_remove->emplace_back(snippet->id());
+  DeleteImagesImpl(std::move(keys_to_remove));
 }
 
 void NTPSnippetsDatabase::OnDatabaseInited(bool success) {
@@ -255,8 +263,6 @@ void NTPSnippetsDatabase::SaveSnippetsImpl(
 void NTPSnippetsDatabase::DeleteSnippetsImpl(
     std::unique_ptr<std::vector<std::string>> keys_to_remove) {
   DCHECK(IsInitialized());
-
-  DeleteImagesImpl(base::MakeUnique<std::vector<std::string>>(*keys_to_remove));
 
   std::unique_ptr<KeyEntryVector> entries_to_save(new KeyEntryVector());
   database_->UpdateEntries(std::move(entries_to_save),

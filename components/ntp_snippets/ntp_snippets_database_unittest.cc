@@ -249,7 +249,7 @@ TEST_F(NTPSnippetsDatabaseTest, Delete) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(NTPSnippetsDatabaseTest, DeleteSnippetAlsoDeletesImage) {
+TEST_F(NTPSnippetsDatabaseTest, DeleteSnippetDoesNotDeleteImage) {
   CreateDatabase();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(db()->IsInitialized());
@@ -277,6 +277,38 @@ TEST_F(NTPSnippetsDatabaseTest, DeleteSnippetAlsoDeletesImage) {
 
   // Delete the snippet.
   db()->DeleteSnippet(snippet->id());
+
+  // Make sure the image is still there.
+  EXPECT_CALL(*this, OnImageLoaded(image_data));
+  db()->LoadImage(snippet->id(),
+                  base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
+                             base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(NTPSnippetsDatabaseTest, DeleteImage) {
+  CreateDatabase();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_TRUE(db()->IsInitialized());
+
+  std::unique_ptr<NTPSnippet> snippet = CreateTestSnippet();
+  std::string image_data("pretty image");
+
+  // Store the image.
+  db()->SaveImage(snippet->id(), image_data);
+  base::RunLoop().RunUntilIdle();
+
+  // Make sure the image is there.
+  EXPECT_CALL(*this, OnImageLoaded(image_data));
+  db()->LoadImage(snippet->id(),
+                  base::Bind(&NTPSnippetsDatabaseTest::OnImageLoaded,
+                             base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  Mock::VerifyAndClearExpectations(this);
+
+  // Delete the snippet.
+  db()->DeleteImage(snippet->id());
 
   // Make sure the image is gone.
   EXPECT_CALL(*this, OnImageLoaded(std::string()));

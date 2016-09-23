@@ -4,18 +4,9 @@
 
 #include "components/ntp_snippets/content_suggestions_provider.h"
 
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "components/ntp_snippets/category_factory.h"
 
 namespace ntp_snippets {
-
-namespace {
-
-const char kCombinedIDFormat[] = "%d|%s";
-const char kSeparator = '|';
-
-}  // namespace
 
 ContentSuggestionsProvider::ContentSuggestionsProvider(
     Observer* observer,
@@ -27,27 +18,17 @@ ContentSuggestionsProvider::~ContentSuggestionsProvider() {}
 std::string ContentSuggestionsProvider::MakeUniqueID(
     Category category,
     const std::string& within_category_id) const {
-  return base::StringPrintf(kCombinedIDFormat, category.id(),
-                            within_category_id.c_str());
+  return category_factory()->MakeUniqueID(category, within_category_id);
 }
 
 Category ContentSuggestionsProvider::GetCategoryFromUniqueID(
     const std::string& unique_id) const {
-  size_t colon_index = unique_id.find(kSeparator);
-  DCHECK_NE(std::string::npos, colon_index) << "Not a valid unique_id: "
-                                            << unique_id;
-  int category = -1;
-  bool ret = base::StringToInt(unique_id.substr(0, colon_index), &category);
-  DCHECK(ret) << "Non-numeric category part in unique_id: " << unique_id;
-  return category_factory_->FromIDValue(category);
+  return category_factory()->GetCategoryFromUniqueID(unique_id);
 }
 
 std::string ContentSuggestionsProvider::GetWithinCategoryIDFromUniqueID(
     const std::string& unique_id) const {
-  size_t colon_index = unique_id.find(kSeparator);
-  DCHECK_NE(std::string::npos, colon_index) << "Not a valid unique_id: "
-                                            << unique_id;
-  return unique_id.substr(colon_index + 1);
+  return category_factory()->GetWithinCategoryIDFromUniqueID(unique_id);
 }
 
 }  // namespace ntp_snippets

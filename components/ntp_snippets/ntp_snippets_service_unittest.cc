@@ -640,7 +640,7 @@ TEST_F(NTPSnippetsServiceTest, Clear) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
+TEST_F(NTPSnippetsServiceTest, ReplaceSnippets) {
   auto service = MakeSnippetsService();
 
   std::string first("http://first");
@@ -650,33 +650,9 @@ TEST_F(NTPSnippetsServiceTest, InsertAtFront) {
 
   std::string second("http://second");
   LoadFromJSONString(service.get(), GetTestJson({GetSnippetWithUrl(second)}));
-  // The snippet loaded last should be at the first position in the list now.
+  // The snippets loaded last replace all that was loaded previously.
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
-              ElementsAre(IdEq(second), IdEq(first)));
-}
-
-TEST_F(NTPSnippetsServiceTest, LimitNumSnippets) {
-  auto service = MakeSnippetsService();
-
-  int max_snippet_count = NTPSnippetsService::GetMaxSnippetCountForTesting();
-  int snippets_per_load = max_snippet_count / 2 + 1;
-  char url_format[] = "http://localhost/%i";
-
-  std::vector<std::string> snippets1;
-  std::vector<std::string> snippets2;
-  for (int i = 0; i < snippets_per_load; i++) {
-    snippets1.push_back(GetSnippetWithUrl(base::StringPrintf(url_format, i)));
-    snippets2.push_back(GetSnippetWithUrl(
-        base::StringPrintf(url_format, snippets_per_load + i)));
-  }
-
-  LoadFromJSONString(service.get(), GetTestJson(snippets1));
-  ASSERT_THAT(service->GetSnippetsForTesting(articles_category()),
-              SizeIs(snippets1.size()));
-
-  LoadFromJSONString(service.get(), GetTestJson(snippets2));
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()),
-              SizeIs(max_snippet_count));
+              ElementsAre(IdEq(second)));
 }
 
 TEST_F(NTPSnippetsServiceTest, LoadInvalidJson) {
@@ -805,13 +781,31 @@ TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 }
 
-TEST_F(NTPSnippetsServiceTest, RemoveExpiredContent) {
+TEST_F(NTPSnippetsServiceTest, RemoveExpiredDismissedContent) {
+  auto service = MakeSnippetsService();
+
+  std::string json_str1(GetTestJson({GetExpiredSnippet()}));
+  // Load it.
+  LoadFromJSONString(service.get(), json_str1);
+  // Dismiss the suggestion
+  service->DismissSuggestion(
+      service->MakeUniqueID(service->articles_category_, kSnippetUrl));
+
+  // Load a different snippet - this will clear the expired dismissed ones.
+  std::string json_str2(GetTestJson({GetSnippetWithUrl(kSnippetUrl2)}));
+  LoadFromJSONString(service.get(), json_str2);
+
+  EXPECT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
+              IsEmpty());
+}
+
+TEST_F(NTPSnippetsServiceTest, ExpiredContentNotRemoved) {
   auto service = MakeSnippetsService();
 
   std::string json_str(GetTestJson({GetExpiredSnippet()}));
 
   LoadFromJSONString(service.get(), json_str);
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 }
 
 TEST_F(NTPSnippetsServiceTest, TestSingleSource) {
