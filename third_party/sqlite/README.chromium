@@ -1,6 +1,6 @@
 Name: sqlite
 URL: http://sqlite.org/
-Version: 3.8.7.4
+Version: 3.10.2
 Included In Release: Yes
 Security Critical: Yes
 License: Public domain
@@ -55,6 +55,7 @@ BASE=3080704
 #### Create a reference branch.
 git checkout -b sqlite_${BASE} master
 git rm -rf src
+rm -rf src  # In case there are things git doesn't know in there.
 cp -a sqlite-src-${BASE} src
 # -f includes ignored files, of which there are a couple.
 git add -f src/

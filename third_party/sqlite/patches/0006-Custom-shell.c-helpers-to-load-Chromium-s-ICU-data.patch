@@ -1,7 +1,7 @@
-From a00fdd7ed25829eb5489907fc1e4a43429e0b621 Mon Sep 17 00:00:00 2001
+From 5628b1aa2f0207924e6c39f46266b396a7fe374c Mon Sep 17 00:00:00 2001
 From: "tc@google.com" <tc@google.com>
 Date: Tue, 6 Jan 2009 22:39:41 +0000
-Subject: [PATCH 06/10] Custom shell.c helpers to load Chromium's ICU data.
+Subject: [PATCH 06/13] Custom shell.c helpers to load Chromium's ICU data.
 
 History uses fts3 with an icu-based segmenter.  These changes allow building a
 sqlite3 binary for Linux or Windows which can read those files.
@@ -18,12 +18,12 @@ Original review URL: https://codereview.chromium.org/42250
  create mode 100644 third_party/sqlite/src/src/shell_icu_win.c
 
 diff --git a/third_party/sqlite/src/Makefile.linux-gcc b/third_party/sqlite/src/Makefile.linux-gcc
-index f6291c0..17c9e00 100644
+index 952e8d1..30ac8bb 100644
 --- a/third_party/sqlite/src/Makefile.linux-gcc
 +++ b/third_party/sqlite/src/Makefile.linux-gcc
-@@ -85,6 +85,13 @@ OPTS += -DOS_UNIX=1
- # purposes.
- OPTS += -DDEFAULT_ENABLE_RECOVER=1
+@@ -81,6 +81,13 @@ OPTS += -DSQLITE_MEMDEBUG=1
+ # TODO(shess) I can't see why I need this setting.
+ OPTS += -DOS_UNIX=1
  
 +# Support for loading Chromium ICU data in sqlite3.
 +ifeq ($(shell uname -s),Darwin)
@@ -36,7 +36,7 @@ index f6291c0..17c9e00 100644
  #    Nothing for unix.
  #
 diff --git a/third_party/sqlite/src/main.mk b/third_party/sqlite/src/main.mk
-index a8629aa..4a6d5d6 100644
+index 26f9f15..3ff3647 100644
 --- a/third_party/sqlite/src/main.mk
 +++ b/third_party/sqlite/src/main.mk
 @@ -476,7 +476,7 @@ libsqlite3.a:	$(LIBOBJ)
@@ -141,5 +141,5 @@ index 0000000..67ebbf4
 +  return 1;
 +}
 -- 
-2.7.0
+2.5.0
 
