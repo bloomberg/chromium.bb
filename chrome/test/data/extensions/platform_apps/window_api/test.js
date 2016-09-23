@@ -218,14 +218,6 @@ function testCreate() {
       }))
     },
 
-    function badWindow() {
-      chrome.app.window.create('404.html', callbackPass(function(win) {
-        chrome.test.assertTrue(typeof win === 'undefined');
-        // TODO(mlamouri): because |win| is not defined, we can not close that
-        // window...
-      }));
-    },
-
     function loadEvent() {
       chrome.app.window.create('test.html', callbackPass(function(win) {
         win.contentWindow.onload = callbackPass(function() {
