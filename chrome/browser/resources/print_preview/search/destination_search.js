@@ -98,7 +98,8 @@ cr.define('print_preview', function() {
     this.localList_ = new print_preview.DestinationList(
         this,
         loadTimeData.getString('localDestinationsTitle'),
-        cr.isChromeOS ? null : loadTimeData.getString('manage'));
+        loadTimeData.getBoolean('showLocalManageButton') ?
+            loadTimeData.getString('manage') : null);
     this.addChild(this.localList_);
 
     /**

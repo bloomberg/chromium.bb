@@ -42,6 +42,13 @@
 #include "ui/web_dialogs/web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
+#if defined(OS_CHROMEOS)
+#include "base/command_line.h"
+#include "base/feature_list.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_switches.h"
+#endif
+
 using content::WebContents;
 using printing::PageSizeMargins;
 
@@ -393,6 +400,15 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
   source->AddLocalizedString("moreOptionsLabel", IDS_MORE_OPTIONS_LABEL);
   source->AddLocalizedString("lessOptionsLabel", IDS_LESS_OPTIONS_LABEL);
+#if defined(OS_CHROMEOS)
+  bool cups_and_md_settings_enabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ::switches::kEnableNativeCups) &&
+      base::FeatureList::IsEnabled(features::kMaterialDesignSettings);
+  source->AddBoolean("showLocalManageButton", cups_and_md_settings_enabled);
+#else
+  source->AddBoolean("showLocalManageButton", true);
+#endif
   return source;
 }
 

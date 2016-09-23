@@ -86,6 +86,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/common/url_constants.h"
 #endif
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
@@ -1168,7 +1169,15 @@ void PrintPreviewHandler::HandleShowSystemDialog(
 void PrintPreviewHandler::HandleManagePrinters(
     const base::ListValue* /*args*/) {
   ++manage_printers_dialog_request_count_;
+#if defined(OS_CHROMEOS)
+  GURL local_printers_manage_url(chrome::kChromeUIMdCupsSettingsURL);
+  preview_web_contents()->OpenURL(
+      content::OpenURLParams(local_printers_manage_url, content::Referrer(),
+                             WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                             ui::PAGE_TRANSITION_LINK, false));
+#else
   printing::PrinterManagerDialog::ShowPrinterManagerDialog();
+#endif
 }
 
 void PrintPreviewHandler::HandleClosePreviewDialog(
