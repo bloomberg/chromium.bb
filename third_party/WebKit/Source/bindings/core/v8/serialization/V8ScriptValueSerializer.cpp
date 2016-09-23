@@ -239,7 +239,7 @@ v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(v8::Isolate* isolate, v
         return v8::Just(true);
     }
     if (!exceptionState.hadException()) {
-        String interface = wrappable->wrapperTypeInfo()->interfaceName;
+        StringView interface = wrappable->wrapperTypeInfo()->interfaceName;
         exceptionState.throwDOMException(DataCloneError, interface + " object could not be cloned.");
     }
     return v8::Nothing<bool>();

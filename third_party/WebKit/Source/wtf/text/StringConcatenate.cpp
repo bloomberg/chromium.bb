@@ -118,32 +118,18 @@ void WTF::StringTypeAdapter<Vector<LChar>>::writeTo(UChar* destination)
         destination[i] = m_buffer[i];
 }
 
-void WTF::StringTypeAdapter<String>::writeTo(LChar* destination)
+void WTF::StringTypeAdapter<StringView>::writeTo(LChar* destination)
 {
-    unsigned length = m_buffer.length();
-
-    ASSERT(is8Bit());
-    const LChar* data = m_buffer.characters8();
-    for (unsigned i = 0; i < length; ++i)
-        destination[i] = data[i];
-
+    DCHECK(is8Bit());
+    StringImpl::copyChars(destination, m_view.characters8(), m_view.length());
     WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING();
 }
 
-void WTF::StringTypeAdapter<String>::writeTo(UChar* destination)
+void WTF::StringTypeAdapter<StringView>::writeTo(UChar* destination)
 {
-    unsigned length = m_buffer.length();
-
-    if (is8Bit()) {
-        const LChar* data = m_buffer.characters8();
-        for (unsigned i = 0; i < length; ++i)
-            destination[i] = data[i];
-    } else {
-        const UChar* data = m_buffer.characters16();
-        for (unsigned i = 0; i < length; ++i)
-            destination[i] = data[i];
-    }
-
+    if (is8Bit())
+        StringImpl::copyChars(destination, m_view.characters8(), m_view.length());
+    else
+        StringImpl::copyChars(destination, m_view.characters16(), m_view.length());
     WTF_STRINGTYPEADAPTER_COPIED_WTF_STRING();
 }
-

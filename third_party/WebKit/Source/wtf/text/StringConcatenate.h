@@ -264,44 +264,33 @@ private:
 };
 
 template<>
-class WTF_EXPORT StringTypeAdapter<String> {
+class WTF_EXPORT StringTypeAdapter<StringView> {
     DISALLOW_NEW();
 public:
-    StringTypeAdapter<String>(const String& string)
-        : m_buffer(string)
-    {
-    }
+    StringTypeAdapter(const StringView& view)
+        : m_view(view) {}
 
-    unsigned length() { return m_buffer.length(); }
-
-    bool is8Bit() { return m_buffer.isNull() || m_buffer.is8Bit(); }
-
+    unsigned length() { return m_view.length(); }
+    bool is8Bit() { return m_view.is8Bit(); }
     void writeTo(LChar* destination);
-
     void writeTo(UChar* destination);
 
 private:
-    const String& m_buffer;
+    const StringView m_view;
 };
 
 template<>
-class StringTypeAdapter<AtomicString> {
-    DISALLOW_NEW();
+class StringTypeAdapter<String> : public StringTypeAdapter<StringView> {
 public:
-    StringTypeAdapter<AtomicString>(const AtomicString& string)
-        : m_adapter(string.getString())
-    {
-    }
+    StringTypeAdapter(const String& string)
+        : StringTypeAdapter<StringView>(string) {}
+};
 
-    unsigned length() { return m_adapter.length(); }
-
-    bool is8Bit() { return m_adapter.is8Bit(); }
-
-    void writeTo(LChar* destination) { m_adapter.writeTo(destination); }
-    void writeTo(UChar* destination) { m_adapter.writeTo(destination); }
-
-private:
-    StringTypeAdapter<String> m_adapter;
+template<>
+class StringTypeAdapter<AtomicString> : public StringTypeAdapter<StringView> {
+public:
+    StringTypeAdapter(const AtomicString& string)
+        : StringTypeAdapter<StringView>(string) {}
 };
 
 inline void sumWithOverflow(unsigned& total, unsigned addend, bool& overflow)

@@ -134,6 +134,11 @@ inline StringAppend<const char*, AtomicString> operator+(const char* string1, co
     return StringAppend<const char*, AtomicString>(string1, string2);
 }
 
+inline StringAppend<const char*, StringView> operator+(const char* string1, const StringView& string2)
+{
+    return StringAppend<const char*, StringView>(string1, string2);
+}
+
 template<typename U, typename V>
 inline StringAppend<const char*, StringAppend<U, V>> operator+(const char* string1, const StringAppend<U, V>& string2)
 {
@@ -150,6 +155,11 @@ inline StringAppend<const UChar*, AtomicString> operator+(const UChar* string1, 
     return StringAppend<const UChar*, AtomicString>(string1, string2);
 }
 
+inline StringAppend<const UChar*, StringView> operator+(const UChar* string1, const StringView& string2)
+{
+    return StringAppend<const UChar*, StringView>(string1, string2);
+}
+
 template<typename U, typename V>
 inline StringAppend<const UChar*, StringAppend<U, V>> operator+(const UChar* string1, const StringAppend<U, V>& string2)
 {
@@ -160,6 +170,18 @@ template<typename T>
 StringAppend<String, T> operator+(const String& string1, T string2)
 {
     return StringAppend<String, T>(string1, string2);
+}
+
+template<typename T>
+StringAppend<AtomicString, T> operator+(const AtomicString& string1, T string2)
+{
+    return StringAppend<AtomicString, T>(string1, string2);
+}
+
+template<typename T>
+StringAppend<StringView, T> operator+(const StringView& string1, T string2)
+{
+    return StringAppend<StringView, T>(string1, string2);
 }
 
 template<typename U, typename V, typename W>
