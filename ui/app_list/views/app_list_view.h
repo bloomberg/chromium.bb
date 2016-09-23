@@ -99,7 +99,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
       const gfx::Point& location) override;
 
   // Overridden from AppListViewDelegateObserver:
-  void OnProfilesChanged() override;
   void OnShutdown() override;
 
   void SetProfileByPath(const base::FilePath& profile_path);

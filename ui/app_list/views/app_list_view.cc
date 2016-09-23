@@ -348,10 +348,6 @@ bool AppListView::ShouldDescendIntoChildForEventHandling(
       ShouldDescendIntoChildForEventHandling(child, location);
 }
 
-void AppListView::OnProfilesChanged() {
-  app_list_main_view_->search_box_view()->InvalidateMenu();
-}
-
 void AppListView::OnShutdown() {
   // Nothing to do on views - the widget will soon be closed, which will tear
   // everything down.
@@ -420,8 +416,6 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
     speech_view_->layer()->SetOpacity(0.0f);
     AddChildView(speech_view_);
   }
-
-  OnProfilesChanged();
 }
 
 void AppListView::InitChildWidgets() {

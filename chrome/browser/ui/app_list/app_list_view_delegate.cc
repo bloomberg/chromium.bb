@@ -306,9 +306,6 @@ void AppListViewDelegate::SetUpProfileSwitcher() {
 
   // Populate the app list users.
   PopulateUsers(profile_->GetPath(), &users_);
-
-  FOR_EACH_OBSERVER(
-      app_list::AppListViewDelegateObserver, observers_, OnProfilesChanged());
 }
 
 void AppListViewDelegate::SetUpCustomLauncherPages() {

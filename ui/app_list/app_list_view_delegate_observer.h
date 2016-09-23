@@ -9,12 +9,9 @@
 
 namespace app_list {
 
+// TODO(mgiuca): Remove this class; it isn't used any more.
 class APP_LIST_EXPORT AppListViewDelegateObserver {
  public:
-  // Invoked when the Profiles shown on the app list change, or the active
-  // profile changes its signin status.
-  virtual void OnProfilesChanged() = 0;
-
   // Invoked on Chrome shutdown. This is only needed on Mac, since reference-
   // counting in Objective-C means that simply closing the window isn't enough
   // to guarantee references to Chrome objects are gone.
