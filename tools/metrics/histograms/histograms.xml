@@ -486,6 +486,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.MultiInstanceMigration.FailedToRenameMetadataFile"
+    enum="Boolean">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Renaming the old tab metadata file failed during multi-instance migration.
+    Only true is recorded.
+  </summary>
+</histogram>
+
+<histogram name="Android.MultiInstanceMigration.NewMetadataFileExists"
+    enum="Boolean">
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    The new tab metadata file already existed when multi-instance migration was
+    attempted. Only true is recorded.
+  </summary>
+</histogram>
+
 <histogram name="Android.MultiWindowMode.Active" enum="BooleanEnabled">
   <owner>twellington@chromium.org</owner>
   <summary>

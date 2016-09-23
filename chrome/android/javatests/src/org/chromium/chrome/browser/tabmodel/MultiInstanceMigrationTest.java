@@ -268,6 +268,44 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
     }
 
     /**
+     * Tests that tab_state0 is not overwritten if it already exists when migration is attempted.
+     */
+    @MediumTest
+    @Feature({"TabPersistentStore"})
+    public void testNewMetataFileExists() throws IOException {
+        // Set up two old metadata files.
+        File[] stateDirs = createOldStateDirs(TabWindowManager.MAX_SIMULTANEOUS_SELECTORS, true);
+        File stateFile0 = new File(
+                stateDirs[0], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
+        File stateFile1 = new File(
+                stateDirs[1], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
+
+        assertTrue("Could not create state file 0", stateFile0.createNewFile());
+        assertTrue("Could not create state file 1", stateFile1.createNewFile());
+
+        // Create a new metadata file.
+        File newStateFile0 = new File(
+                stateDirs[0], TabbedModeTabPersistencePolicy.getStateFileName(0));
+        assertTrue("Could not create new state file 0", newStateFile0.createNewFile());
+        long expectedLastModifiedTime = newStateFile0.lastModified() - 1000000;
+        if (!newStateFile0.setLastModified(expectedLastModifiedTime)) {
+            fail("Failed to set last modified time.");
+        }
+
+        // Build the TabPersistentStore which will try to move the files.
+        buildPersistentStoreAndWaitForMigration();
+
+        // Check that new metadata file was not overwritten during migration.
+        assertEquals("State file 0 unexpectedly overwritten", expectedLastModifiedTime,
+                newStateFile0.lastModified());
+
+        // Check that migration of other files still occurred.
+        File newStateFile1 = new File(
+                stateDirs[0], TabbedModeTabPersistencePolicy.getStateFileName(1));
+        assertTrue("Could not find new state file 1", newStateFile1.exists());
+    }
+
+    /**
      * Creates tab state directories using the old pre-multi-instance migration file paths where
      * each tab model had its own state directory.
      *

@@ -19,6 +19,8 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 
@@ -216,12 +218,27 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
      */
     @WorkerThread
     private void performMultiInstanceMigration() {
-        // 1. Rename tab metadata file for tab directory "0".
+        // 0. Do not rename the old metadata file if the new metadata file already exists. This
+        //    should not happen, but if it does and the metadata file is overwritten then users
+        //    may lose tabs. See crbug.com/649384.
         File stateDir = getOrCreateStateDirectory();
-        File metadataFile = new File(stateDir, LEGACY_SAVED_STATE_FILE);
-        if (metadataFile.exists()) {
-            if (!metadataFile.renameTo(new File(stateDir, getStateFileName()))) {
-                Log.e(TAG, "Failed to rename file: " + metadataFile);
+        File newMetadataFile = new File(stateDir, getStateFileName());
+        File oldMetadataFile = new File(stateDir, LEGACY_SAVED_STATE_FILE);
+        if (newMetadataFile.exists()) {
+            Log.e(TAG, "New metadata file already exists");
+            if (LibraryLoader.isInitialized()) {
+                RecordHistogram.recordBooleanHistogram(
+                        "Android.MultiInstanceMigration.NewMetadataFileExists", true);
+            }
+        } else if (oldMetadataFile.exists()) {
+            // 1. Rename tab metadata file for tab directory "0".
+            if (!oldMetadataFile.renameTo(newMetadataFile)) {
+                Log.e(TAG, "Failed to rename file: " + oldMetadataFile);
+
+                if (LibraryLoader.isInitialized()) {
+                    RecordHistogram.recordBooleanHistogram(
+                            "Android.MultiInstanceMigration.FailedToRenameMetadataFile", true);
+                }
             }
         }
 
@@ -236,10 +253,10 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
             if (otherStateDir == null || !otherStateDir.exists()) continue;
 
             // Rename tab state file.
-            metadataFile = new File(otherStateDir, LEGACY_SAVED_STATE_FILE);
-            if (metadataFile.exists()) {
-                if (!metadataFile.renameTo(new File(stateDir, getStateFileName(i)))) {
-                    Log.e(TAG, "Failed to rename file: " + metadataFile);
+            oldMetadataFile = new File(otherStateDir, LEGACY_SAVED_STATE_FILE);
+            if (oldMetadataFile.exists()) {
+                if (!oldMetadataFile.renameTo(new File(stateDir, getStateFileName(i)))) {
+                    Log.e(TAG, "Failed to rename file: " + oldMetadataFile);
                 }
             }
 
