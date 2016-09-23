@@ -76,10 +76,10 @@ bool SettingsAllowSigninCookies(
     const content_settings::CookieSettings* cookie_settings);
 
 // Checks if the url has the required properties to have an
-// X-CHROME-CONNECTED header.
+// X-Chrome-Connected header.
 bool IsUrlEligibleForXChromeConnectedHeader(const GURL& url);
 
-// Returns the X-CHROME-CONNECTED cookie, or an empty string if it should not be
+// Returns the CHROME_CONNECTED cookie, or an empty string if it should not be
 // added to the request to |url|.
 std::string BuildMirrorRequestCookieIfPossible(
     const GURL& url,

@@ -18,6 +18,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -49,7 +50,7 @@ bool IsDriveOrigin(const GURL& url) {
 bool IsUrlEligibleToIncludeGaiaId(const GURL& url, bool is_header_request) {
   if (is_header_request) {
     // GAIA Id is only necessary for Drive. Don't set it otherwise.
-    return IsDriveOrigin(url);
+    return IsDriveOrigin(url.GetOrigin());
   }
 
   // Cookie requests don't have the granularity to only include the GAIA Id for
@@ -57,8 +58,10 @@ bool IsUrlEligibleToIncludeGaiaId(const GURL& url, bool is_header_request) {
   if (!url.SchemeIsCryptographic())
     return false;
 
-  const GURL kGoogleDotComURL("https://google.com");
-  return url == kGoogleDotComURL;
+  const std::string kGoogleDomain = "google.com";
+  std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+      url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  return domain == kGoogleDomain;
 }
 
 // Determines the service type that has been passed from GAIA in the header.
@@ -121,7 +124,7 @@ std::string BuildMirrorRequestIfPossible(
 
   std::vector<std::string> parts;
   if (IsUrlEligibleToIncludeGaiaId(url, is_header_request)) {
-    // Only google.com requires the GAIA ID, don't send it to other domains.
+    // Only set the GAIA Id on domains that actually requires it.
     parts.push_back(
         base::StringPrintf("%s=%s", kGaiaIdAttrName, account_id.c_str()));
   }
@@ -249,7 +252,7 @@ ManageAccountsParams BuildManageAccountsParamsIfExists(net::URLRequest* request,
 }
 
 // Checks if the url has the required properties to have an
-// X-CHROME-CONNECTED header.
+// X-Chrome-Connected header.
 bool IsUrlEligibleForXChromeConnectedHeader(const GURL& url) {
   // Only set the header for Drive and Gaia always, and other Google properties
   // if account consistency is enabled.
