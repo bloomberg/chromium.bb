@@ -9,10 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/mock_entropy_provider.h"
 #include "base/timer/mock_timer.h"
 #include "base/timer/timer.h"
 #include "content/browser/browser_thread_impl.h"
@@ -20,7 +18,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_view_host_factory.h"
@@ -129,8 +126,7 @@ class ResourceSchedulerTest : public testing::Test {
  protected:
   ResourceSchedulerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_),
-        field_trial_list_(base::MakeUnique<base::MockEntropyProvider>()) {
+        io_thread_(BrowserThread::IO, &message_loop_) {
     InitializeScheduler();
     context_.set_http_server_properties(&http_server_properties_);
   }
@@ -158,13 +154,6 @@ class ResourceSchedulerTest : public testing::Test {
       scheduler_->OnClientDeleted(kChildId, kRouteId);
       scheduler_->OnClientDeleted(kBackgroundChildId, kBackgroundRouteId);
     }
-  }
-
-  // Create field trials based on the argument, which has the same format
-  // as the argument to kForceFieldTrials.
-  bool InitializeFieldTrials(const std::string& force_field_trial_argument) {
-    return base::FieldTrialList::CreateTrialsFromString(
-        force_field_trial_argument, std::set<std::string>());
   }
 
   std::unique_ptr<net::URLRequest> NewURLRequestWithChildAndRoute(
@@ -258,7 +247,6 @@ class ResourceSchedulerTest : public testing::Test {
   BrowserThreadImpl io_thread_;
   ResourceDispatcherHostImpl rdh_;
   std::unique_ptr<ResourceScheduler> scheduler_;
-  base::FieldTrialList field_trial_list_;
   base::MockTimer* mock_timer_;
   net::HttpServerPropertiesImpl http_server_properties_;
   net::TestURLRequestContext context_;
@@ -694,78 +682,7 @@ TEST_F(ResourceSchedulerTest, NewSpdyHostInDelayableRequests) {
   EXPECT_TRUE(low2->started());
 }
 
-TEST_F(ResourceSchedulerTest, OustandingRequestLimitEnforced) {
-    const int kRequestLimit = 3;
-    ASSERT_TRUE(InitializeFieldTrials(
-        base::StringPrintf("OutstandingRequestLimiting/Limit=%d/",
-                           kRequestLimit)));
-    InitializeScheduler();
-
-    // Throw in requests up to the above limit; make sure they are started.
-    ScopedVector<TestRequest> requests;
-    for (int i = 0; i < kRequestLimit; ++i) {
-      string url = "http://host/medium";
-      requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
-      EXPECT_TRUE(requests[i]->started());
-    }
-
-    // Confirm that another request will indeed fail.
-    string url = "http://host/medium";
-    requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
-    EXPECT_FALSE(requests[kRequestLimit]->started());
-  }
-
-  // Confirm that outstanding requests limits apply to requests to hosts
-  // that support request priority.
-  TEST_F(ResourceSchedulerTest,
-         OutstandingRequestsLimitsEnforcedForRequestPriority) {
-    const int kRequestLimit = 3;
-    ASSERT_TRUE(InitializeFieldTrials(
-        base::StringPrintf("OutstandingRequestLimiting/Limit=%d/",
-                           kRequestLimit)));
-    InitializeScheduler();
-
-    http_server_properties_.SetSupportsSpdy(
-        url::SchemeHostPort("https", "spdyhost", 443), true);
-
-    // Throw in requests up to the above limit; make sure they are started.
-    ScopedVector<TestRequest> requests;
-    for (int i = 0; i < kRequestLimit; ++i) {
-      string url = "http://spdyhost/medium";
-      requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
-      EXPECT_TRUE(requests[i]->started());
-    }
-
-    // Confirm that another request will indeed fail.
-    string url = "http://spdyhost/medium";
-    requests.push_back(NewRequest(url.c_str(), net::MEDIUM));
-    EXPECT_FALSE(requests[kRequestLimit]->started());
-  }
-
-  TEST_F(ResourceSchedulerTest, OutstandingRequestLimitDelays) {
-    const int kRequestLimit = 3;
-    ASSERT_TRUE(InitializeFieldTrials(
-        base::StringPrintf("OutstandingRequestLimiting/Limit=%d/",
-                           kRequestLimit)));
-
-    InitializeScheduler();
-    std::unique_ptr<TestRequest> high(
-        NewRequest("http://host/high", net::HIGHEST));
-    std::unique_ptr<TestRequest> low(NewRequest("http://host/low",
-                                                net::LOWEST));
-    std::unique_ptr<TestRequest> low2(NewRequest("http://host/low",
-                                                 net::LOWEST));
-    EXPECT_TRUE(high->started());
-    EXPECT_FALSE(low->started());
-    EXPECT_FALSE(low2->started());
-
-    high.reset();
-    base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(low->started());
-    EXPECT_FALSE(low2->started());
-  }
-
-  // Async revalidations which are not started when the tab is closed must be
+// Async revalidations which are not started when the tab is closed must be
 // started at some point, or they will hang around forever and prevent other
 // async revalidations to the same URL from being issued.
 TEST_F(ResourceSchedulerTest, RequestStartedAfterClientDeleted) {

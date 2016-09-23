@@ -14,8 +14,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/supports_user_data.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/resource_controller.h"
@@ -37,10 +35,6 @@ enum StartMode {
   START_SYNC,
   START_ASYNC
 };
-
-// Field trial constants
-const char kRequestLimitFieldTrial[] = "OutstandingRequestLimiting";
-const char kRequestLimitFieldTrialGroupPrefix[] = "Limit";
 
 // Flags identifying various attributes of the request that are used
 // when making scheduling decisions.
@@ -314,7 +308,6 @@ class ResourceScheduler::Client {
       : is_loaded_(false),
         has_html_body_(false),
         using_spdy_proxy_(false),
-        scheduler_(scheduler),
         in_flight_delayable_count_(0),
         total_layout_blocking_count_(0) {}
 
@@ -577,16 +570,13 @@ class ResourceScheduler::Client {
   //  The following rules are followed:
   //
   //  All types of requests:
-  //   * If an outstanding request limit is in place, only that number
-  //     of requests may be in flight for a single client at the same time.
   //   * Non-delayable, High-priority and request-priority capable requests are
   //     issued immediately.
   //   * Low priority requests are delayable.
   //   * While kInFlightNonDelayableRequestCountPerClientThreshold
   //     layout-blocking requests are loading or the body tag has not yet been
   //     parsed, limit the number of delayable requests that may be in flight
-  //     (to kMaxNumDelayableWhileLayoutBlockingPerClient by default, or to zero
-  //     if there's an outstanding request limit in place).
+  //     to kMaxNumDelayableWhileLayoutBlockingPerClient.
   //   * If no high priority or layout-blocking requests are in flight, start
   //     loading delayable requests.
   //   * Never exceed 10 delayable requests in flight per client.
@@ -607,12 +597,6 @@ class ResourceScheduler::Client {
 
     if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
       return START_REQUEST;
-
-    // Implementation of the kRequestLimitFieldTrial.
-    if (scheduler_->limit_outstanding_requests() &&
-        in_flight_requests_.size() >= scheduler_->outstanding_request_limit()) {
-      return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
-    }
 
     net::HostPortPair host_port_pair =
         net::HostPortPair::FromURL(url_request.url());
@@ -654,8 +638,7 @@ class ResourceScheduler::Client {
         return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
       }
       if (in_flight_requests_.size() > 0 &&
-          (scheduler_->limit_outstanding_requests() ||
-           in_flight_delayable_count_ >=
+          (in_flight_delayable_count_ >=
            kMaxNumDelayableWhileLayoutBlockingPerClient)) {
         // Block the request if at least one request is in flight and the
         // number of in-flight delayable requests has hit the configured
@@ -711,30 +694,13 @@ class ResourceScheduler::Client {
   bool using_spdy_proxy_;
   RequestQueue pending_requests_;
   RequestSet in_flight_requests_;
-  ResourceScheduler* scheduler_;
   // The number of delayable in-flight requests.
   size_t in_flight_delayable_count_;
   // The number of layout-blocking in-flight requests.
   size_t total_layout_blocking_count_;
 };
 
-ResourceScheduler::ResourceScheduler()
-    : limit_outstanding_requests_(false),
-      outstanding_request_limit_(0) {
-  std::string outstanding_limit_trial_group =
-      base::FieldTrialList::FindFullName(kRequestLimitFieldTrial);
-  std::vector<std::string> split_group(
-      base::SplitString(outstanding_limit_trial_group, "=",
-                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL));
-  int outstanding_limit = 0;
-  if (split_group.size() == 2 &&
-      split_group[0] == kRequestLimitFieldTrialGroupPrefix &&
-      base::StringToInt(split_group[1], &outstanding_limit) &&
-      outstanding_limit > 0) {
-    limit_outstanding_requests_ = true;
-    outstanding_request_limit_ = outstanding_limit;
-  }
-}
+ResourceScheduler::ResourceScheduler() {}
 
 ResourceScheduler::~ResourceScheduler() {
   DCHECK(unowned_requests_.empty());
