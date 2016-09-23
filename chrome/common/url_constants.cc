@@ -432,7 +432,7 @@ const char kChromeHelpViaWebUIURL[] =
 
 #if defined(OS_CHROMEOS)
 const char kChromeAccessibilityHelpURL[] =
-    "https://support.google.com/chromebook/?p=accessibility_menu";
+    "https://support.google.com/chromebook/topic/6323347";
 const char kChromeAccessibilitySettingsURL[] =
     "/chromevox/background/options.html";
 const char kChromePaletteHelpURL[] =
