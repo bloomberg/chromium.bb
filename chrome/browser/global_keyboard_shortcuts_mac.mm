@@ -46,36 +46,37 @@ NSMenuItem* FindMenuItem(NSEvent* key, NSMenu* menu) {
 const KeyboardShortcutData* GetWindowKeyboardShortcutTable(
     size_t* num_entries) {
   static const KeyboardShortcutData keyboard_shortcuts[] = {
-    //cmd   shift  cntrl  option
-    //---   -----  -----  ------
-    // '{' / '}' characters should be matched earlier than virtual key code
-    // (therefore we can match alt-8 as '{' on german keyboards).
-    {true,  false, false, false, 0,             '}', IDC_SELECT_NEXT_TAB},
-    {true,  false, false, false, 0,             '{', IDC_SELECT_PREVIOUS_TAB},
-    {false, false, true,  false, kVK_PageDown,  0,   IDC_SELECT_NEXT_TAB},
-    {false, false, true,  false, kVK_Tab,       0,   IDC_SELECT_NEXT_TAB},
-    {false, false, true,  false, kVK_PageUp,    0,   IDC_SELECT_PREVIOUS_TAB},
-    {false, true,  true,  false, kVK_Tab,       0,   IDC_SELECT_PREVIOUS_TAB},
-    // Cmd-0..8 select the Nth tab, with cmd-9 being "last tab".
-    {true,  false, false, false, kVK_ANSI_1,          0, IDC_SELECT_TAB_0},
-    {true,  false, false, false, kVK_ANSI_Keypad1,    0, IDC_SELECT_TAB_0},
-    {true,  false, false, false, kVK_ANSI_2,          0, IDC_SELECT_TAB_1},
-    {true,  false, false, false, kVK_ANSI_Keypad2,    0, IDC_SELECT_TAB_1},
-    {true,  false, false, false, kVK_ANSI_3,          0, IDC_SELECT_TAB_2},
-    {true,  false, false, false, kVK_ANSI_Keypad3,    0, IDC_SELECT_TAB_2},
-    {true,  false, false, false, kVK_ANSI_4,          0, IDC_SELECT_TAB_3},
-    {true,  false, false, false, kVK_ANSI_Keypad4,    0, IDC_SELECT_TAB_3},
-    {true,  false, false, false, kVK_ANSI_5,          0, IDC_SELECT_TAB_4},
-    {true,  false, false, false, kVK_ANSI_Keypad5,    0, IDC_SELECT_TAB_4},
-    {true,  false, false, false, kVK_ANSI_6,          0, IDC_SELECT_TAB_5},
-    {true,  false, false, false, kVK_ANSI_Keypad6,    0, IDC_SELECT_TAB_5},
-    {true,  false, false, false, kVK_ANSI_7,          0, IDC_SELECT_TAB_6},
-    {true,  false, false, false, kVK_ANSI_Keypad7,    0, IDC_SELECT_TAB_6},
-    {true,  false, false, false, kVK_ANSI_8,          0, IDC_SELECT_TAB_7},
-    {true,  false, false, false, kVK_ANSI_Keypad8,    0, IDC_SELECT_TAB_7},
-    {true,  false, false, false, kVK_ANSI_9,          0, IDC_SELECT_LAST_TAB},
-    {true,  false, false, false, kVK_ANSI_Keypad9,    0, IDC_SELECT_LAST_TAB},
-    {true,  true,  false, false, kVK_ANSI_M,          0, IDC_SHOW_AVATAR_MENU},
+      // cmd   shift  cntrl  option
+      // ---   -----  -----  ------
+      // '{' / '}' characters should be matched earlier than virtual key code
+      // (therefore we can match alt-8 as '{' on german keyboards).
+      {true, false, false, false, 0, '}', IDC_SELECT_NEXT_TAB},
+      {true, false, false, false, 0, '{', IDC_SELECT_PREVIOUS_TAB},
+      {false, false, true, false, kVK_PageDown, 0, IDC_SELECT_NEXT_TAB},
+      {false, false, true, false, kVK_Tab, 0, IDC_SELECT_NEXT_TAB},
+      {false, false, true, false, kVK_PageUp, 0, IDC_SELECT_PREVIOUS_TAB},
+      {false, true, true, false, kVK_Tab, 0, IDC_SELECT_PREVIOUS_TAB},
+      // Cmd-0..8 select the Nth tab, with cmd-9 being "last tab".
+      {true, false, false, false, kVK_ANSI_1, 0, IDC_SELECT_TAB_0},
+      {true, false, false, false, kVK_ANSI_Keypad1, 0, IDC_SELECT_TAB_0},
+      {true, false, false, false, kVK_ANSI_2, 0, IDC_SELECT_TAB_1},
+      {true, false, false, false, kVK_ANSI_Keypad2, 0, IDC_SELECT_TAB_1},
+      {true, false, false, false, kVK_ANSI_3, 0, IDC_SELECT_TAB_2},
+      {true, false, false, false, kVK_ANSI_Keypad3, 0, IDC_SELECT_TAB_2},
+      {true, false, false, false, kVK_ANSI_4, 0, IDC_SELECT_TAB_3},
+      {true, false, false, false, kVK_ANSI_Keypad4, 0, IDC_SELECT_TAB_3},
+      {true, false, false, false, kVK_ANSI_5, 0, IDC_SELECT_TAB_4},
+      {true, false, false, false, kVK_ANSI_Keypad5, 0, IDC_SELECT_TAB_4},
+      {true, false, false, false, kVK_ANSI_6, 0, IDC_SELECT_TAB_5},
+      {true, false, false, false, kVK_ANSI_Keypad6, 0, IDC_SELECT_TAB_5},
+      {true, false, false, false, kVK_ANSI_7, 0, IDC_SELECT_TAB_6},
+      {true, false, false, false, kVK_ANSI_Keypad7, 0, IDC_SELECT_TAB_6},
+      {true, false, false, false, kVK_ANSI_8, 0, IDC_SELECT_TAB_7},
+      {true, false, false, false, kVK_ANSI_Keypad8, 0, IDC_SELECT_TAB_7},
+      {true, false, false, false, kVK_ANSI_9, 0, IDC_SELECT_LAST_TAB},
+      {true, false, false, false, kVK_ANSI_Keypad9, 0, IDC_SELECT_LAST_TAB},
+      {true, true, false, false, kVK_ANSI_M, 0, IDC_SHOW_AVATAR_MENU},
+      {true, false, false, true, 0, 'l', IDC_SHOW_DOWNLOADS},
   };
 
   *num_entries = arraysize(keyboard_shortcuts);
