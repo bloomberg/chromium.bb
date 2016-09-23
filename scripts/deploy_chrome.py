@@ -345,9 +345,9 @@ class DeployChrome(object):
     self._Deploy()
 
 
-def ValidateGypDefines(value):
-  """Convert GYP_DEFINES-formatted string to dictionary."""
-  return chrome_util.ProcessGypDefines(value)
+def ValidateStagingFlags(value):
+  """Convert formatted string to dictionary."""
+  return chrome_util.ProcessShellFlags(value)
 
 
 def ValidateGnArgs(value):
@@ -374,7 +374,7 @@ def _CreateParser():
                       help='The directory with Chrome build artifacts to '
                            'deploy from. Typically of format '
                            '<chrome_root>/out/Debug. When this option is used, '
-                           'the GYP_DEFINES environment variable must be set.')
+                           'the GN_ARGS environment variable must be set.')
   parser.add_argument('--target-dir', type='path',
                       default=None,
                       help='Target directory on device to deploy Chrome into.')
@@ -409,7 +409,7 @@ def _CreateParser():
                      help='Path to local chrome prebuilt package to deploy.')
   group.add_argument('--sloppy', action='store_true', default=False,
                      help='Ignore when mandatory artifacts are missing.')
-  group.add_argument('--staging-flags', default=None, type=ValidateGypDefines,
+  group.add_argument('--staging-flags', default=None, type=ValidateStagingFlags,
                      help=('Extra flags to control staging.  Valid flags are - '
                            '%s' % ', '.join(chrome_util.STAGING_FLAGS)))
   # TODO(stevenjb): Remove --strict entirely once removed from the ebuild.
@@ -437,10 +437,9 @@ def _CreateParser():
                      help='Override toolchain url format pattern, e.g. '
                           '2014/04/%%(target)s-2014.04.23.220740.tar.xz')
 
-  # GYP_DEFINES that Chrome was built with.  Influences which files are staged
-  # when --build-dir is set.  Defaults to reading from the GYP_DEFINES
-  # enviroment variable. WILL BE DEPRECATED.
-  parser.add_argument('--gyp-defines', default=None, type=ValidateGypDefines,
+  # DEPRECATED: --gyp-defines is ignored, but retained for backwards
+  # compatibility. TODO(stevenjb): Remove once eliminated from the ebuild.
+  parser.add_argument('--gyp-defines', default=None, type=ValidateStagingFlags,
                       help=argparse.SUPPRESS)
 
   # GN_ARGS (args.gn) used to build Chrome. Influences which files are staged
@@ -483,8 +482,11 @@ def _ParseCommandLine(argv):
     parser.error('Need to specify --to')
   if options.staging_flags and not options.build_dir:
     parser.error('--staging-flags require --build-dir to be set.')
+
   if options.strict:
     logging.warning('--strict is deprecated.')
+  if options.gyp_defines:
+    logging.warning('--gyp-defines is deprecated.')
 
   if options.mount or options.mount_dir:
     if not options.target_dir:
@@ -507,13 +509,6 @@ def _PostParseCheck(options):
   """
   if options.local_pkg_path and not os.path.isfile(options.local_pkg_path):
     cros_build_lib.Die('%s is not a file.', options.local_pkg_path)
-
-  if not options.gyp_defines:
-    gyp_env = os.getenv('GYP_DEFINES')
-    if gyp_env is not None:
-      options.gyp_defines = chrome_util.ProcessGypDefines(gyp_env)
-      logging.info('GYP_DEFINES taken from environment: %s',
-                   options.gyp_defines)
 
   if not options.gn_args:
     gn_env = os.getenv('GN_ARGS')
@@ -597,7 +592,7 @@ def _PrepareStagingDir(options, tempdir, staging_dir, copy_paths=None,
                      shlex.split(options.strip_flags))
       chrome_util.StageChromeFromBuildDir(
           staging_dir, options.build_dir, strip_bin,
-          sloppy=options.sloppy, gyp_defines=options.gyp_defines,
+          sloppy=options.sloppy, gn_args=options.gn_args,
           staging_flags=options.staging_flags,
           strip_flags=strip_flags, copy_paths=copy_paths)
   else:

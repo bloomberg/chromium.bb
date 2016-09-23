@@ -15,7 +15,6 @@ from chromite.cbuildbot import constants
 from chromite.cli import command_unittest
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import cache
-from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
@@ -171,7 +170,6 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
                  constants.CHROME_SYSROOT_TAR)
 
   FAKE_ENV = {
-      'GYP_DEFINES': "sysroot='/path/to/sysroot'",
       'GN_ARGS': 'target_sysroot="/path/to/sysroot"',
       'CXX': 'x86_64-cros-linux-gnu-g++ -B /path/to/gold',
       'CC': 'x86_64-cros-linux-gnu-gcc -B /path/to/gold',
@@ -284,10 +282,8 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
     self.cmd_mock.inst.Run()
 
     assert_fn = self.assertNotIn if inverted else self.assertIn
-    gyp_defines_str = self.cmd_mock.env['GYP_DEFINES']
-    gyp_defines = chrome_util.ProcessGypDefines(gyp_defines_str)
-    assert_fn('gomadir', gyp_defines)
-    assert_fn('use_goma', gyp_defines)
+    gn_args_str = self.cmd_mock.env['GN_ARGS']
+    assert_fn('use_goma', gn_args_str)
 
   def testNoGoma(self):
     """Verify that we do not add Goma to the PATH."""

@@ -16,7 +16,6 @@ import distutils.version
 
 from chromite.cli import command
 from chromite.lib import cache
-from chromite.lib import chrome_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -429,7 +428,6 @@ class ChromeSDKCommand(command.CliCommand):
       # Misc settings.
       'GN_ARGS',
       'GOLD_SET',
-      'GYP_DEFINES',
       'USE',
   )
 
@@ -497,11 +495,11 @@ class ChromeSDKCommand(command.CliCommand):
     parser.add_argument(
         '--component', action='store_true', default=False,
         help='Sets up SDK for building a componentized build of Chrome '
-             '(component=shared_library in GYP).')
+             '(is_component_build=true in GN).')
     parser.add_argument(
         '--fastbuild', action='store_true', default=False,
         help='Turn off debugging information for a faster build '
-             '(fastbuild=1 in GYP).')
+             '(symbol_level=1 in GN).')
     parser.add_argument(
         '--use-external-config', action='store_true', default=False,
         help='Use the external configuration for the specified board, even if '
@@ -630,13 +628,6 @@ class ChromeSDKCommand(command.CliCommand):
     binutils_path = os.path.join(options.chrome_src, self._HOST_BINUTILS_DIR)
     env['AR_host'] = os.path.join(binutils_path, 'ar')
 
-    if not options.fastbuild:
-      # Enable debug fission for GYP. linux_use_debug_fission cannot be used
-      # because it doesn't have effect on Release builds.
-      # TODO: Get rid of this once we remove support for GYP.
-      env['CFLAGS'] = env.get('CFLAGS', '') +  ' -gsplit-dwarf'
-      env['CXXFLAGS'] = env.get('CXXFLAGS', '') + ' -gsplit-dwarf'
-
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
                         goma_port=None):
     """Sets environment variables to export to the SDK shell."""
@@ -703,33 +694,21 @@ class ChromeSDKCommand(command.CliCommand):
 
     # SYSROOT is necessary for Goma and the sysroot wrapper.
     env['SYSROOT'] = sysroot
-    gyp_dict = chrome_util.ProcessGypDefines(env['GYP_DEFINES'])
     gn_args = gn_helpers.FromGNArgs(env['GN_ARGS'])
-    gyp_dict['sysroot'] = sysroot
     gn_args['target_sysroot'] = sysroot
-    gyp_dict.pop('pkg-config', None)
     gn_args.pop('pkg_config', None)
     if options.clang:
-      gyp_dict['clang'] = 1
       gn_args['is_clang'] = True
     if options.internal:
-      gyp_dict['branding'] = 'Chrome'
       gn_args['is_chrome_branded'] = True
-      gyp_dict['buildtype'] = 'Official'
       gn_args['is_official_build'] = True
     else:
-      gyp_dict.pop('branding', None)
       gn_args.pop('is_chrome_branded', None)
-      gyp_dict.pop('buildtype', None)
       gn_args.pop('is_official_build', None)
-      gyp_dict.pop('internal_gles2_conform_tests', None)
       gn_args.pop('internal_gles2_conform_tests', None)
     if options.component:
-      gyp_dict['component'] = 'shared_library'
       gn_args['is_component_build'] = True
     if options.fastbuild:
-      gyp_dict['fastbuild'] = 1
-      gyp_dict.pop('release_extra_cflags', None)
       # symbol_level corresponds to GYP's fastbuild (https://goo.gl/ZC4fUO).
       gn_args['symbol_level'] = 1
     else:
@@ -740,7 +719,6 @@ class ChromeSDKCommand(command.CliCommand):
     # We should not use the binutils from the host system.
     gn_args['linux_use_bundled_binutils'] = True
 
-    gyp_dict['host_clang'] = 1
     # Need to reset these after the env vars have been fixed by
     # _SetupTCEnvironment.
     gn_args['cros_host_is_clang'] = True
@@ -751,13 +729,8 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['cros_target_cc'] = env['CC']
     gn_args['cros_target_cxx'] = env['CXX']
     gn_args['cros_target_ld'] = env['LD']
-    # We need to reset extra C/CXX flags to remove references to
-    # EBUILD_CFLAGS, EBUILD_CXXFLAGS. We also need to remove redundant
-    # -gsplit-dwarf (only needed while we still support GYP).
-    gn_args['cros_target_extra_cflags'] = env['CFLAGS'].replace(
-        '-gsplit-dwarf', '')
-    gn_args['cros_target_extra_cxxflags'] = env['CXXFLAGS'].replace(
-        '-gsplit-dwarf', '')
+    gn_args['cros_target_extra_cflags'] = env.get('CFLAGS', '')
+    gn_args['cros_target_extra_cxxflags'] = env.get('CXXFLAGS', '')
     gn_args['cros_host_cc'] = env['CC_host']
     gn_args['cros_host_cxx'] = env['CXX_host']
     gn_args['cros_host_ld'] = env['LD_host']
@@ -772,14 +745,11 @@ class ChromeSDKCommand(command.CliCommand):
 
     # Enable goma if requested.
     if goma_dir:
-      gyp_dict['use_goma'] = 1
       gn_args['use_goma'] = True
-      gyp_dict['gomadir'] = goma_dir
       gn_args['goma_dir'] = goma_dir
 
     gn_args.pop('internal_khronos_glcts_tests', None)  # crbug.com/588080
 
-    env['GYP_DEFINES'] = chrome_util.DictToGypDefines(gyp_dict)
     env['GN_ARGS'] = gn_helpers.ToGNString(gn_args)
 
     # PS1 sets the command line prompt and xterm window caption.
@@ -791,8 +761,6 @@ class ChromeSDKCommand(command.CliCommand):
 
     out_dir = 'out_%s' % self.board
     env['builddir_name'] = out_dir
-    env['GYP_GENERATOR_FLAGS'] = 'output_dir=%s' % out_dir
-    env['GYP_CROSSCOMPILE'] = '1'
 
     return env
 

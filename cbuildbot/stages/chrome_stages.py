@@ -221,16 +221,12 @@ class SimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
 
   def _BuildChrome(self, sdk_cmd):
     """Use the generated SDK to build Chrome."""
+
     # Validate fetching of the SDK and setting everything up.
     sdk_cmd.Run(['true'])
-    # Wipe the output directory if switching from GYP to GN.
-    args_path = os.path.join(self.out_board_dir, 'args.gn')
-    if not os.path.exists(args_path):
-      sdk_cmd.Run(['rm', '-rf', self.out_board_dir])
-    # Set GYP_CHROMIUM_NO_ACTION=1 and run hooks.
-    # TODO(stevenjb): Remove GYP_CHROMIUM_NO_ACTION=1 once no longer necessary.
-    sdk_cmd.Run(['bash', '-c',
-                 'GYP_CHROMIUM_NO_ACTION=1 gclient runhooks'])
+
+    sdk_cmd.Run(['gclient', 'runhooks'])
+
     # Generate args.gn and ninja files.
     gn_cmd = os.path.join(self.chrome_src, 'buildtools', 'linux64', 'gn')
     gn_gen_cmd = '%s gen "%s" --args="$GN_ARGS"' % (gn_cmd, self.out_board_dir)
