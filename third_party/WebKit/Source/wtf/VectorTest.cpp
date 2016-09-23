@@ -698,6 +698,25 @@ TEST(VectorTest, Optional)
     EXPECT_EQ(3u, vector->size());
 }
 
+TEST(VectorTest, emplaceAppend)
+{
+    struct Item {
+        Item(int value1, int value2) : value1(value1), value2(value2) {}
+        int value1;
+        int value2;
+    };
+
+    Vector<Item> vector;
+    vector.emplaceAppend(1, 2);
+    vector.emplaceAppend(3, 4);
+
+    EXPECT_EQ(2u, vector.size());
+    EXPECT_EQ(1, vector[0].value1);
+    EXPECT_EQ(2, vector[0].value2);
+    EXPECT_EQ(3, vector[1].value1);
+    EXPECT_EQ(4, vector[1].value2);
+}
+
 static_assert(VectorTraits<int>::canCopyWithMemcpy, "int should be copied with memcopy.");
 static_assert(VectorTraits<char>::canCopyWithMemcpy, "char should be copied with memcpy.");
 static_assert(VectorTraits<LChar>::canCopyWithMemcpy, "LChar should be copied with memcpy.");
