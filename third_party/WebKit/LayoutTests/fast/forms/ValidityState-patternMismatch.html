@@ -153,6 +153,8 @@ shouldBeFalse('patternMismatchFor("invalid-06")');
 shouldBeFalse('patternMismatchFor("disabled")');
 
 shouldBeFalse('patternMismatchFor("unicode-invalid-01")');
+// Intentionally check twice.  crbug.com/639324.
+shouldBeFalse('patternMismatchFor("unicode-invalid-02")');
 shouldBeFalse('patternMismatchFor("unicode-invalid-02")');
 shouldBeFalse('patternMismatchFor("unicode-match-01")');
 shouldBeFalse('patternMismatchFor("unicode-match-02")');

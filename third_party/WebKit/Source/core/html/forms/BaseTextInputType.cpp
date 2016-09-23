@@ -101,6 +101,8 @@ bool BaseTextInputType::patternMismatch(const String& value) const
         String pattern = "^(?:" + rawPattern + ")$";
         m_regexp.reset(new ScriptRegexp(pattern, TextCaseSensitive, MultilineDisabled, ScriptRegexp::UTF16));
         m_patternForRegexp = rawPattern;
+    } else if (!m_regexp->isValid()) {
+        return false;
     }
 
     int matchLength = 0;
