@@ -115,6 +115,10 @@ class PrecacheDatabase {
   // Deletes unfinished work from the database.
   void DeleteUnfinishedWork();
 
+  // Precache quota.
+  void SaveQuota(const PrecacheQuota& quota);
+  PrecacheQuota GetQuota();
+
   base::WeakPtr<PrecacheDatabase> GetWeakPtr();
 
  private:

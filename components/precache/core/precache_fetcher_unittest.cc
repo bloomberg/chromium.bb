@@ -1386,4 +1386,88 @@ TEST_F(PrecacheFetcherTest, CancelPrecachingAfterAllManifestFetch) {
   EXPECT_TRUE(precache_delegate_.was_on_done_called());
 }
 
+TEST_F(PrecacheFetcherTest, DailyQuota) {
+  SetDefaultFlags();
+
+  const size_t kNumTopHosts = 3;
+
+  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
+      new PrecacheUnfinishedWork());
+  unfinished_work->set_start_time(base::Time::UnixEpoch().ToInternalValue());
+
+  PrecacheConfigurationSettings config;
+  config.set_top_sites_count(kNumTopHosts);
+  config.set_daily_quota_total(10000);
+  factory_.SetFakeResponse(GURL(kConfigURL), config.SerializeAsString(),
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+  std::multiset<GURL> expected_requested_urls;
+  expected_requested_urls.insert(GURL(kConfigURL));
+
+  for (size_t i = 0; i < kNumTopHosts; ++i) {
+    const std::string top_host_url = base::StringPrintf("top-host-%zu.com", i);
+    const std::string resource_url =
+        base::StringPrintf("http://top-host-%zu.com/resource.html", i);
+    PrecacheManifest manifest;
+    manifest.add_resource()->set_url(resource_url);
+
+    unfinished_work->add_top_host()->set_hostname(top_host_url);
+    factory_.SetFakeResponse(
+        GURL(std::string(kManifestURLPrefix) + top_host_url),
+        manifest.SerializeAsString(), net::HTTP_OK,
+        net::URLRequestStatus::SUCCESS);
+    // Set a 5000 byte resource.
+    factory_.SetFakeResponse(GURL(resource_url), std::string(5000, 'a'),
+                             net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+    expected_requested_urls.insert(
+        GURL((std::string(kManifestURLPrefix) + top_host_url)));
+    expected_requested_urls.insert(GURL(resource_url));
+  }
+
+  base::HistogramTester histogram;
+
+  {
+    PrecacheFetcher precache_fetcher(
+        request_context_.get(), GURL(), std::string(),
+        std::move(unfinished_work), kExperimentID,
+        precache_database_.GetWeakPtr(), task_runner(), &precache_delegate_);
+    precache_fetcher.Start();
+
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(0U, precache_fetcher.quota_.remaining());
+    unfinished_work = precache_fetcher.CancelPrecaching();
+  }
+
+  EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
+
+  EXPECT_TRUE(precache_delegate_.was_on_done_called());
+
+  histogram.ExpectTotalCount("Precache.Fetch.PercentCompleted", 1);
+  histogram.ExpectTotalCount("Precache.Fetch.ResponseBytes.Total", 1);
+  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 1);
+
+  // Continuing with the precache when quota limit is reached, will not fetch
+  // any resources.
+  expected_requested_urls.clear();
+  url_callback_.clear_requested_urls();
+  {
+    PrecacheFetcher precache_fetcher(
+        request_context_.get(), GURL(), std::string(),
+        std::move(unfinished_work), kExperimentID,
+        precache_database_.GetWeakPtr(), task_runner(), &precache_delegate_);
+    precache_fetcher.Start();
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(0U, precache_fetcher.quota_.remaining());
+  }
+  EXPECT_EQ(expected_requested_urls, url_callback_.requested_urls());
+
+  EXPECT_TRUE(precache_delegate_.was_on_done_called());
+
+  histogram.ExpectTotalCount("Precache.Fetch.PercentCompleted", 2);
+  histogram.ExpectTotalCount("Precache.Fetch.ResponseBytes.Total", 2);
+  histogram.ExpectTotalCount("Precache.Fetch.TimeToComplete", 2);
+}
+
 }  // namespace precache

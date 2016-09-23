@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/precache/core/fetcher_pool.h"
+#include "components/precache/core/proto/quota.pb.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -154,6 +155,7 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
   FRIEND_TEST_ALL_PREFIXES(PrecacheFetcherTest, FetcherPoolMaxLimitReached);
   FRIEND_TEST_ALL_PREFIXES(PrecacheFetcherTest,
                            CancelPrecachingAfterAllManifestFetch);
+  FRIEND_TEST_ALL_PREFIXES(PrecacheFetcherTest, DailyQuota);
 
   // Notifies the precache delete that precaching is done, and report
   // completion statistics.
@@ -192,6 +194,9 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
   // Callback invoked when the manifest info for all the top hosts is retrieved.
   void OnManifestInfoRetrieved(std::deque<ManifestHostInfo> manifests_info);
 
+  // Callback invoked when the quota is retrieved.
+  void OnQuotaInfoRetrieved(const PrecacheQuota& quota);
+
   // The request context used when fetching URLs.
   const scoped_refptr<net::URLRequestContextGetter> request_context_;
 
@@ -216,6 +221,9 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
   FetcherPool<Fetcher> pool_;
 
   std::unique_ptr<PrecacheUnfinishedWork> unfinished_work_;
+
+  // Daily quota.
+  PrecacheQuota quota_;
 
   // The fieldtrial experiment ID.
   uint32_t experiment_id_;

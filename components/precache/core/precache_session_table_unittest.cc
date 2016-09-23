@@ -7,6 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "components/precache/core/precache_session_table.h"
+#include "components/precache/core/proto/quota.pb.h"
 #include "components/precache/core/proto/unfinished_work.pb.h"
 #include "sql/connection.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -151,6 +152,24 @@ TEST_F(PrecacheSessionTableTest, SaveDeleteGet) {
       precache_session_table_->GetUnfinishedWork();
 
   EXPECT_EQ(0, unfinished_work2->top_host_size());
+}
+
+TEST_F(PrecacheSessionTableTest, SaveAndGetQuota) {
+  // Initial quota, should have expired.
+  EXPECT_LT(base::Time::FromInternalValue(
+                precache_session_table_->GetQuota().start_time()),
+            base::Time::Now());
+
+  PrecacheQuota quota;
+  quota.set_start_time(base::Time::Now().ToInternalValue());
+  quota.set_remaining(1000U);
+
+  PrecacheQuota expected_quota = quota;
+  precache_session_table_->SaveQuota(quota);
+  EXPECT_EQ(expected_quota.start_time(),
+            precache_session_table_->GetQuota().start_time());
+  EXPECT_EQ(expected_quota.remaining(),
+            precache_session_table_->GetQuota().remaining());
 }
 
 }  // namespace

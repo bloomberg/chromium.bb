@@ -5,17 +5,11 @@
 #ifndef COMPONENTS_PRECACHE_CORE_PRECACHE_SESSION_TABLE_H_
 #define COMPONENTS_PRECACHE_CORE_PRECACHE_SESSION_TABLE_H_
 
-#include <list>
-#include <map>
 #include <memory>
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "url/gurl.h"
-
-namespace base {
-class TimeTicks;
-}
+#include "components/precache/core/proto/quota.pb.h"
 
 namespace sql {
 class Connection;
@@ -26,11 +20,15 @@ namespace precache {
 class PrecacheUnfinishedWork;
 
 // Denotes the type of session information being stored.
-enum SessionDataType {
+enum class SessionDataType {
   // Unfinished work to do sometime later.
   UNFINISHED_WORK = 0,
+
   // Timestamp of the last precache.
   LAST_PRECACHE_TIMESTAMP = 1,
+
+  // Remaining quota limits.
+  QUOTA = 2,
 };
 
 class PrecacheSessionTable {
@@ -53,6 +51,10 @@ class PrecacheSessionTable {
 
   void DeleteLastPrecacheTimestamp();
 
+  // Precache quota.
+  void SaveQuota(const PrecacheQuota& quota);
+  PrecacheQuota GetQuota();
+
   // -- Unfinished work --
 
   // Stores unfinished work.
@@ -67,6 +69,9 @@ class PrecacheSessionTable {
 
  private:
   bool CreateTableIfNonExistent();
+
+  void SetSessionDataType(SessionDataType id, const std::string& data);
+  std::string GetSessionDataType(SessionDataType id);
 
   // Non-owned pointer.
   sql::Connection* db_;

@@ -27,6 +27,7 @@
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
+#include "components/precache/core/proto/quota.pb.h"
 #include "components/precache/core/proto/unfinished_work.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/escape.h"
@@ -202,6 +203,24 @@ std::deque<ManifestHostInfo> RetrieveManifestInfo(
     }
   }
   return hosts_info;
+}
+
+PrecacheQuota RetrieveQuotaInfo(
+    const base::WeakPtr<PrecacheDatabase>& precache_database) {
+  PrecacheQuota quota;
+  if (precache_database) {
+    quota = precache_database->GetQuota();
+  }
+  return quota;
+}
+
+// Returns true if the |quota| time has expired.
+bool IsQuotaTimeExpired(const PrecacheQuota& quota,
+                        const base::Time& time_now) {
+  // Quota expires one day after the start time.
+  base::Time start_time = base::Time::FromInternalValue(quota.start_time());
+  return start_time > time_now ||
+         start_time + base::TimeDelta::FromDays(1) < time_now;
 }
 
 }  // namespace
@@ -470,10 +489,11 @@ void PrecacheFetcher::StartNextResourceFetch() {
   DCHECK(unfinished_work_->has_config_settings());
   while (!resources_to_fetch_.empty() && pool_.IsAvailable()) {
     const auto& resource = resources_to_fetch_.front();
-    const size_t max_bytes =
+    const size_t max_bytes = std::min(
+        quota_.remaining(),
         std::min(unfinished_work_->config_settings().max_bytes_per_resource(),
                  unfinished_work_->config_settings().max_bytes_total() -
-                     unfinished_work_->total_bytes());
+                     unfinished_work_->total_bytes()));
     VLOG(3) << "Fetching " << resource.first << " " << resource.second;
     pool_.Add(base::MakeUnique<Fetcher>(
         request_context_.get(), resource.first, resource.second,
@@ -510,9 +530,11 @@ void PrecacheFetcher::NotifyDone(
 
 void PrecacheFetcher::StartNextFetch() {
   DCHECK(unfinished_work_->has_config_settings());
-  // If over the precache total size cap, then stop prefetching.
-  if (unfinished_work_->total_bytes() >
-      unfinished_work_->config_settings().max_bytes_total()) {
+
+  // If over the precache total size cap or daily quota, then stop prefetching.
+  if ((unfinished_work_->total_bytes() >
+       unfinished_work_->config_settings().max_bytes_total()) ||
+      quota_.remaining() == 0) {
     size_t pending_manifests_in_pool = 0;
     size_t pending_resources_in_pool = 0;
     for (const auto& element_pair : pool_.elements()) {
@@ -626,6 +648,26 @@ void PrecacheFetcher::OnManifestInfoRetrieved(
     }
   }
   unfinished_work_->set_num_manifest_urls(top_hosts_to_fetch_.size());
+
+  PostTaskAndReplyWithResult(
+      db_task_runner_.get(), FROM_HERE,
+      base::Bind(&RetrieveQuotaInfo, precache_database_),
+      base::Bind(&PrecacheFetcher::OnQuotaInfoRetrieved, AsWeakPtr()));
+}
+
+void PrecacheFetcher::OnQuotaInfoRetrieved(const PrecacheQuota& quota) {
+  quota_ = quota;
+  base::Time time_now = base::Time::Now();
+  if (IsQuotaTimeExpired(quota_, time_now)) {
+    // This is a new day. Update daily quota, that starts today and expires by
+    // end of today.
+    quota_.set_start_time(time_now.LocalMidnight().ToInternalValue());
+    quota_.set_remaining(
+        unfinished_work_->config_settings().daily_quota_total());
+    db_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&PrecacheDatabase::SaveQuota, precache_database_, quota_));
+  }
   StartNextFetch();
 }
 
@@ -696,10 +738,26 @@ void PrecacheFetcher::OnResourceFetchComplete(const Fetcher& source) {
 
 void PrecacheFetcher::UpdateStats(int64_t response_bytes,
                                   int64_t network_response_bytes) {
+  DCHECK_LE(0, response_bytes);
+  DCHECK_LE(0, network_response_bytes);
+
   unfinished_work_->set_total_bytes(
       unfinished_work_->total_bytes() + response_bytes);
   unfinished_work_->set_network_bytes(
       unfinished_work_->network_bytes() + network_response_bytes);
+
+  if (!IsQuotaTimeExpired(quota_, base::Time::Now())) {
+    uint64_t used_bytes = static_cast<uint64_t>(network_response_bytes);
+    int64_t remaining =
+        static_cast<int64_t>(quota_.remaining()) - network_response_bytes;
+    if (remaining < 0)
+      remaining = 0;
+    quota_.set_remaining(
+        used_bytes > quota_.remaining() ? 0U : quota_.remaining() - used_bytes);
+    db_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&PrecacheDatabase::SaveQuota, precache_database_, quota_));
+  }
 }
 
 }  // namespace precache

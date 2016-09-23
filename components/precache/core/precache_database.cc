@@ -430,6 +430,14 @@ void PrecacheDatabase::DeleteUnfinishedWork() {
   precache_session_table_.DeleteUnfinishedWork();
 }
 
+void PrecacheDatabase::SaveQuota(const PrecacheQuota& quota) {
+  precache_session_table_.SaveQuota(quota);
+}
+
+PrecacheQuota PrecacheDatabase::GetQuota() {
+  return precache_session_table_.GetQuota();
+}
+
 base::WeakPtr<PrecacheDatabase> PrecacheDatabase::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
