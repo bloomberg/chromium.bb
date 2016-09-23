@@ -200,6 +200,7 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
         reportFindInPageSelection(selectionRect, m_activeMatchIndex + 1, identifier);
     }
 
+    m_lastFindRequestCompletedWithNoMatches = false;
     return true;
 }
 
@@ -207,7 +208,6 @@ void TextFinder::clearActiveFindMatch()
 {
     m_currentActiveMatchFrame = false;
     setMarkerActive(m_activeMatch.get(), false);
-    resetActiveMatch();
 }
 
 void TextFinder::stopFindingAndClearSelection()
@@ -285,7 +285,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
         return;
     }
 
-    if (!shouldScopeMatches(searchText, options)) {
+    if (!shouldScopeMatches(searchText)) {
         finishCurrentScopingEffort(identifier);
         return;
     }
@@ -673,22 +673,16 @@ void TextFinder::unmarkAllTextMatches()
         frame->document()->markers().removeMarkers(DocumentMarker::TextMatch);
 }
 
-bool TextFinder::shouldScopeMatches(const String& searchText, const WebFindOptions& options)
+bool TextFinder::shouldScopeMatches(const String& searchText)
 {
     // Don't scope if we can't find a frame or a view.
     // The user may have closed the tab/application, so abort.
     LocalFrame* frame = ownerFrame().frame();
-    if (!frame || !frame->view() || !frame->page())
+    if (!frame || !frame->view() || !frame->page() || !ownerFrame().hasVisibleContent())
         return false;
 
     DCHECK(frame->document());
     DCHECK(frame->view());
-
-    if (options.force)
-        return true;
-
-    if (!ownerFrame().hasVisibleContent())
-        return false;
 
     // If the frame completed the scoping operation and found 0 matches the last
     // time it was searched, then we don't have to search it again if the user is

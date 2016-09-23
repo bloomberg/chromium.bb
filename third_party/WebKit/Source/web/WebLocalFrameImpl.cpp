@@ -1974,7 +1974,7 @@ void WebLocalFrameImpl::didCallIsSearchProviderInstalled()
 void WebLocalFrameImpl::requestFind(int identifier, const WebString& searchText, const WebFindOptions& options)
 {
     // Send "no results" if this frame has no visible content.
-    if (!hasVisibleContent() && !options.force) {
+    if (!hasVisibleContent()) {
         client()->reportFindInPageMatchCount(identifier, 0 /* count */, true /* finalUpdate */);
         return;
     }
