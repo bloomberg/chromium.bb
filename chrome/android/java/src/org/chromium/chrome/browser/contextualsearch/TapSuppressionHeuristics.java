@@ -29,7 +29,7 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
                 new NearTopTapSuppression(selectionController, y);
         mHeuristics.add(tapNearTopSuppression);
         BarOverlapTapSuppression barOverlapTapSuppression =
-                new BarOverlapTapSuppression(selectionController, x, y);
+                new BarOverlapTapSuppression(selectionController, y);
         mHeuristics.add(barOverlapTapSuppression);
         // General Tap Suppression and Tap Twice.
         TapSuppression tapSuppression =
@@ -66,7 +66,7 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
      */
     boolean shouldSuppressTap() {
         for (ContextualSearchHeuristic heuristic : mHeuristics) {
-            if (heuristic.isConditionSatisfied()) return true;
+            if (heuristic.isConditionSatisfiedAndEnabled()) return true;
         }
         return false;
     }

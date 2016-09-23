@@ -31,7 +31,7 @@ class TapFarFromPreviousSuppression extends ContextualSearchHeuristic {
     }
 
     @Override
-    protected boolean isConditionSatisfied() {
+    protected boolean isConditionSatisfiedAndEnabled() {
         return !mShouldHandleTap;
     }
 

@@ -44,7 +44,7 @@ class QuickAnswersHeuristic extends ContextualSearchHeuristic {
     }
 
     @Override
-    protected boolean isConditionSatisfied() {
+    protected boolean isConditionSatisfiedAndEnabled() {
         return mIsConditionSatisfied;
     }
 

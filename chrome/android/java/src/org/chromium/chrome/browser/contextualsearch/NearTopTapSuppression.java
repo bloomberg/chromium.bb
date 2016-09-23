@@ -27,7 +27,7 @@ public class NearTopTapSuppression extends ContextualSearchHeuristic {
     }
 
     @Override
-    protected boolean isConditionSatisfied() {
+    protected boolean isConditionSatisfiedAndEnabled() {
         return mIsConditionSatisfied;
     }
 
