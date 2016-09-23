@@ -43,7 +43,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, CustomTheme) {
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(GetProfile(0)));
   ASSERT_EQ(GetCustomTheme(0), GetThemeID(verifier()));
@@ -62,14 +62,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, NativeTheme) {
   ASSERT_FALSE(UsingSystemTheme(GetProfile(0)));
   ASSERT_FALSE(UsingSystemTheme(verifier()));
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   UseSystemTheme(GetProfile(0));
   UseSystemTheme(verifier());
   ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
   ASSERT_TRUE(UsingSystemTheme(verifier()));
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   ASSERT_TRUE(UsingSystemTheme(GetProfile(0)));
   ASSERT_TRUE(UsingSystemTheme(verifier()));
@@ -83,14 +83,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientThemesSyncTest, DefaultTheme) {
   ASSERT_FALSE(UsingDefaultTheme(GetProfile(0)));
   ASSERT_FALSE(UsingDefaultTheme(verifier()));
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   UseDefaultTheme(GetProfile(0));
   UseDefaultTheme(verifier());
   ASSERT_TRUE(UsingDefaultTheme(GetProfile(0)));
   ASSERT_TRUE(UsingDefaultTheme(verifier()));
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   ASSERT_TRUE(UsingDefaultTheme(GetProfile(0)));
   ASSERT_TRUE(UsingDefaultTheme(verifier()));

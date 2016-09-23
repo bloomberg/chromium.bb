@@ -56,7 +56,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientArcPackageSyncTest, ArcPackageEmpty) {
   ASSERT_TRUE(SetupSync());
 
   ASSERT_TRUE(AllProfilesHaveSameArcPackageDetails());
-
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientArcPackageSyncTest,
@@ -69,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientArcPackageSyncTest,
     sync_helper()->InstallPackageWithIndex(verifier(), i);
   }
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(AllProfilesHaveSameArcPackageDetails());
 }
 

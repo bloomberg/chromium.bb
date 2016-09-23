@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(Add)) {
       "http://www.add-history.google.com/%s", base::GenerateGUID().c_str()));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  unsigned long initial_count = GetTypedUrlsFromClient(0).size();
+  size_t initial_count = GetTypedUrlsFromClient(0).size();
 
   // Populate one client with a URL, wait for it to sync to the other.
   GURL new_url(kHistoryUrl);
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest, E2E_ENABLED(AddThenDelete)) {
       "http://www.add-history.google.com/%s", base::GenerateGUID().c_str()));
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  unsigned long initial_count = GetTypedUrlsFromClient(0).size();
+  size_t initial_count = GetTypedUrlsFromClient(0).size();
 
   // Populate one client with a URL, wait for it to sync to the other.
   GURL new_url(kHistoryUrl);
@@ -209,7 +209,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   GURL url2(kUrl2);
   AddUrlToHistory(0, url1);
   AddUrlToHistory(1, url2);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((1))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(1)));
 
   // Make sure that no data was exchanged.
   history::URLRows post_sync_urls = GetTypedUrlsFromClient(0);
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   // before syncing client 0, so we have both of client 1's URLs in the sync DB
   // at the time that client 0 does model association.
   ASSERT_TRUE(GetClient(1)->SetupSync()) << "SetupSync() failed";
-  AwaitCommitActivityCompletion(GetSyncService((1)));
+  AwaitCommitActivityCompletion(GetSyncService(1));
   ASSERT_TRUE(GetClient(0)->SetupSync()) << "SetupSync() failed";
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
 
@@ -476,7 +476,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
 
 IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
                        SkipImportedVisits) {
-
   GURL imported_url("http://imported_url.com");
   GURL browsed_url("http://browsed_url.com");
   GURL browsed_and_imported_url("http://browsed_and_imported_url.com");

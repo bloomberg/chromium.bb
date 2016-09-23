@@ -109,8 +109,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
 
   // Setup sync, wait for its completion, and make sure changes were synced.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitCommitActivityCompletion(
-      GetSyncService((kSingleProfileIndex))));
+  ASSERT_TRUE(
+      AwaitCommitActivityCompletion(GetSyncService(kSingleProfileIndex)));
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   //  Ultimately we want to end up with the following model; but this test is
@@ -141,8 +141,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   Move(kSingleProfileIndex, tier1_a, bar, 1);
 
   // Wait for the bookmark position change to sync.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(
-      GetSyncService((kSingleProfileIndex))));
+  ASSERT_TRUE(
+      AwaitCommitActivityCompletion(GetSyncService(kSingleProfileIndex)));
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   const BookmarkNode* porsche = AddURL(
@@ -154,8 +154,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   Move(kSingleProfileIndex, tier1_a_url1, tier1_a, 2);
 
   // Wait for the rearranged hierarchy to sync.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(
-      GetSyncService((kSingleProfileIndex))));
+  ASSERT_TRUE(
+      AwaitCommitActivityCompletion(GetSyncService(kSingleProfileIndex)));
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   ASSERT_EQ(1, tier1_a_url0->parent()->GetIndexOf(tier1_a_url0));
@@ -179,8 +179,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   SetTitle(kSingleProfileIndex, porsche, "ICanHazPorsche?");
 
   // Wait for the title change to sync.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(
-      GetSyncService((kSingleProfileIndex))));
+  ASSERT_TRUE(
+      AwaitCommitActivityCompletion(GetSyncService(kSingleProfileIndex)));
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   ASSERT_EQ(tier1_a_url0->id(), top->GetChild(top->child_count() - 1)->id());
@@ -199,8 +199,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
   Move(kSingleProfileIndex, leafs, tier3_b, 0);
 
   // Wait for newly added bookmarks to sync.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(
-      GetSyncService((kSingleProfileIndex))));
+  ASSERT_TRUE(
+      AwaitCommitActivityCompletion(GetSyncService(kSingleProfileIndex)));
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   // Only verify FakeServer data if FakeServer is being used.
@@ -255,8 +255,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
   SetFavicon(kSingleProfileIndex, bookmark, icon_url, original_favicon,
              bookmarks_helper::FROM_SYNC);
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(
-      GetSyncService((kSingleProfileIndex))));
+  ASSERT_TRUE(
+      AwaitCommitActivityCompletion(GetSyncService(kSingleProfileIndex)));
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   scoped_refptr<base::RefCountedMemory> original_favicon_bytes =
@@ -291,42 +291,40 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
 
   const BookmarkNode* folder0 = AddFolder(
       kSingleProfileIndex, GetOtherNode(kSingleProfileIndex), 0, "folder0");
-  const BookmarkNode* tier1_a = AddFolder(
-      kSingleProfileIndex, folder0, 0, "tier1_a");
-  ASSERT_TRUE(AddURL(
-      kSingleProfileIndex, folder0, 1, "News", GURL("http://news.google.com")));
-  ASSERT_TRUE(AddURL(
-      kSingleProfileIndex, folder0, 2, "Yahoo", GURL("http://www.yahoo.com")));
-  ASSERT_TRUE(AddURL(
-      kSingleProfileIndex, tier1_a, 0, "Gmai", GURL("http://mail.google.com")));
-  ASSERT_TRUE(AddURL(
-      kSingleProfileIndex, tier1_a, 1, "Google", GURL("http://www.google.com")));
-  ASSERT_TRUE(AddURL(
-      kSingleProfileIndex, GetOtherNode(kSingleProfileIndex), 1, "CNN",
-      GURL("http://www.cnn.com")));
+  const BookmarkNode* tier1_a =
+      AddFolder(kSingleProfileIndex, folder0, 0, "tier1_a");
+  ASSERT_TRUE(AddURL(kSingleProfileIndex, folder0, 1, "News",
+                     GURL("http://news.google.com")));
+  ASSERT_TRUE(AddURL(kSingleProfileIndex, folder0, 2, "Yahoo",
+                     GURL("http://www.yahoo.com")));
+  ASSERT_TRUE(AddURL(kSingleProfileIndex, tier1_a, 0, "Gmai",
+                     GURL("http://mail.google.com")));
+  ASSERT_TRUE(AddURL(kSingleProfileIndex, tier1_a, 1, "Google",
+                     GURL("http://www.google.com")));
+  ASSERT_TRUE(AddURL(kSingleProfileIndex, GetOtherNode(kSingleProfileIndex), 1,
+                     "CNN", GURL("http://www.cnn.com")));
 
-  ASSERT_TRUE(AddFolder(
-      kSingleProfileIndex, GetBookmarkBarNode(kSingleProfileIndex), 0,
-      "empty_folder"));
-  const BookmarkNode* folder1 = AddFolder(
-      kSingleProfileIndex, GetBookmarkBarNode(kSingleProfileIndex), 1,
-      "folder1");
-  ASSERT_TRUE(AddURL(
-      kSingleProfileIndex, folder1, 0, "Yahoo", GURL("http://www.yahoo.com")));
-  ASSERT_TRUE(AddURL(
-      kSingleProfileIndex, GetBookmarkBarNode(0), 2, "Gmai",
-      GURL("http://gmail.com")));
+  ASSERT_TRUE(AddFolder(kSingleProfileIndex,
+                        GetBookmarkBarNode(kSingleProfileIndex), 0,
+                        "empty_folder"));
+  const BookmarkNode* folder1 =
+      AddFolder(kSingleProfileIndex, GetBookmarkBarNode(kSingleProfileIndex), 1,
+                "folder1");
+  ASSERT_TRUE(AddURL(kSingleProfileIndex, folder1, 0, "Yahoo",
+                     GURL("http://www.yahoo.com")));
+  ASSERT_TRUE(AddURL(kSingleProfileIndex, GetBookmarkBarNode(0), 2, "Gmai",
+                     GURL("http://gmail.com")));
 
   // Set up sync, wait for its completion and verify that changes propagated.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitCommitActivityCompletion(
-      GetSyncService((kSingleProfileIndex))));
+  ASSERT_TRUE(
+      AwaitCommitActivityCompletion(GetSyncService(kSingleProfileIndex)));
   ASSERT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
 
   // Remove all bookmarks and wait for sync completion.
   RemoveAll(kSingleProfileIndex);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(
-      GetSyncService((kSingleProfileIndex))));
+  ASSERT_TRUE(
+      AwaitCommitActivityCompletion(GetSyncService(kSingleProfileIndex)));
   // Verify other node has no children now.
   EXPECT_EQ(0, GetOtherNode(kSingleProfileIndex)->child_count());
   EXPECT_EQ(0, GetBookmarkBarNode(kSingleProfileIndex)->child_count());

@@ -17,7 +17,7 @@ using typed_urls_helper::CheckAllProfilesHaveSameURLs;
 using typed_urls_helper::DeleteUrlFromHistory;
 using typed_urls_helper::GetTypedUrlsFromClient;
 
-const std::string kSanityHistoryUrl = "http://www.sanity-history.google.com";
+const char kSanityHistoryUrl[] = "http://www.sanity-history.google.com";
 
 class SingleClientTypedUrlsSyncTest : public SyncTest {
  public:
@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, Sanity) {
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
 
   // Wait for sync and verify client did not change.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
 }
 
@@ -62,7 +62,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, TwoVisits) {
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
 
   // Wait for sync and verify client did not change.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
 }
 
@@ -82,12 +82,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteTyped) {
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
 
   // Wait for sync and verify client did not change.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
 
   // Now delete the URL we just added, wait for sync, and verify the deletion.
   DeleteUrlFromHistory(0, new_url);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
@@ -108,12 +108,12 @@ IN_PROC_BROWSER_TEST_F(SingleClientTypedUrlsSyncTest, DeleteNonTyped) {
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
 
   // Wait for sync and verify client did not change.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());
 
   // Now delete the URL we just added, wait for sync and verify the deletion.
   DeleteUrlFromHistory(0, new_url);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   urls = GetTypedUrlsFromClient(0);
   ASSERT_EQ(0U, urls.size());
   ASSERT_TRUE(CheckAllProfilesHaveSameURLs());

@@ -97,18 +97,18 @@ class SyncTest : public InProcessBrowserTest {
   // The type of server we're running against.
   enum ServerType {
     SERVER_TYPE_UNDECIDED,
-    LOCAL_PYTHON_SERVER,    // The mock python server that runs locally and is
-                            // part of the Chromium checkout.
-    LOCAL_LIVE_SERVER,      // Some other server (maybe the real binary used by
-                            // Google's sync service) that can be started on
-                            // a per-test basis by running a command
-    EXTERNAL_LIVE_SERVER,   // A remote server that the test code has no control
-                            // over whatsoever; cross your fingers that the
-                            // account state is initially clean.
-    IN_PROCESS_FAKE_SERVER, // The fake Sync server (FakeServer) running
-                            // in-process (bypassing HTTP calls). This
-                            // ServerType will eventually replace
-                            // LOCAL_PYTHON_SERVER.
+    LOCAL_PYTHON_SERVER,   // The mock python server that runs locally and is
+                           // part of the Chromium checkout.
+    LOCAL_LIVE_SERVER,     // Some other server (maybe the real binary used by
+                           // Google's sync service) that can be started on
+                           // a per-test basis by running a command
+    EXTERNAL_LIVE_SERVER,  // A remote server that the test code has no control
+                           // over whatsoever; cross your fingers that the
+                           // account state is initially clean.
+    IN_PROCESS_FAKE_SERVER,  // The fake Sync server (FakeServer) running
+                             // in-process (bypassing HTTP calls). This
+                             // ServerType will eventually replace
+                             // LOCAL_PYTHON_SERVER.
   };
 
   // A SyncTest must be associated with a particular test type.

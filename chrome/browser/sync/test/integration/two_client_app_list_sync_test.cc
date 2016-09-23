@@ -366,7 +366,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableApps) {
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForDatatype(syncer::APP_LIST));
   InstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_FALSE(AllProfilesHaveSameAppList());
 
   ASSERT_TRUE(GetClient(1)->EnableSyncForDatatype(syncer::APP_LIST));
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, DisableSync) {
 
   ASSERT_TRUE(GetClient(1)->DisableSyncForAllDatatypes());
   InstallApp(GetProfile(0), 0);
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_FALSE(AllProfilesHaveSameAppList());
 
   ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());

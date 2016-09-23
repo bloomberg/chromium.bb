@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, Sanity) {
   ScopedWindowMap old_windows;
   GURL url = GURL("http://127.0.0.1/bubba");
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   // Get foreign session data from client 0.
   SyncedSessionVector sessions;
@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   GURL url = GURL("http://127.0.0.1/bubba");
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
   TriggerSyncForModelTypes(0, syncer::ModelTypeSet(syncer::SESSIONS));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   // The cookie jar mismatch value will be true by default due to
   // the way integration tests trigger signin (which does not involve a normal
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   url = GURL("http://127.0.0.1/bubba2");
   ASSERT_TRUE(OpenTabAndGetLocalWindows(0, url, &old_windows));
   TriggerSyncForModelTypes(0, syncer::ModelTypeSet(syncer::SESSIONS));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   // Verify the cookie jar mismatch bool is set to false.
   ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));

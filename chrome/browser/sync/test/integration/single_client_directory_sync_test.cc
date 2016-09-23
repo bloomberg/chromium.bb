@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   // Sync and wait for syncing to complete.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(bookmarks_helper::ModelMatchesVerifier(0));
 
   // Flush the directory to the backing store and wait until the flush

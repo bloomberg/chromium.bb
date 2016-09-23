@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
 
 #include <sstream>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -121,19 +122,6 @@ void RemoveLogins(PasswordStore* store) {
   for (const auto& form : forms) {
     RemoveLogin(store, *form);
   }
-}
-
-void SetEncryptionPassphrase(
-    int index,
-    const std::string& passphrase,
-    browser_sync::ProfileSyncService::PassphraseType type) {
-  ProfileSyncServiceFactory::GetForProfile(
-      test()->GetProfile(index))->SetEncryptionPassphrase(passphrase, type);
-}
-
-bool SetDecryptionPassphrase(int index, const std::string& passphrase) {
-  return ProfileSyncServiceFactory::GetForProfile(
-      test()->GetProfile(index))->SetDecryptionPassphrase(passphrase);
 }
 
 PasswordStore* GetPasswordStore(int index) {

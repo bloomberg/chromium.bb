@@ -31,8 +31,6 @@ using passwords_helper::GetVerifierPasswordCount;
 using passwords_helper::GetVerifierPasswordStore;
 using passwords_helper::RemoveLogin;
 using passwords_helper::RemoveLogins;
-using passwords_helper::SetDecryptionPassphrase;
-using passwords_helper::SetEncryptionPassphrase;
 using passwords_helper::UpdateLogin;
 using sync_integration_test_util::AwaitPassphraseAccepted;
 using sync_integration_test_util::AwaitPassphraseRequired;
@@ -83,13 +81,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
                        E2E_ENABLED(SetPassphraseAndAddPassword)) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
-  SetEncryptionPassphrase(0, kValidPassphrase,
-                          browser_sync::ProfileSyncService::EXPLICIT);
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((0))));
+  GetSyncService(0)->SetEncryptionPassphrase(
+      kValidPassphrase, browser_sync::ProfileSyncService::EXPLICIT);
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(0)));
 
-  ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService((1))));
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
-  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService((1))));
+  ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService(1)));
+  ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kValidPassphrase));
+  ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(1)));
 
   PasswordForm form = CreateTestPasswordForm(0);
   AddLogin(GetPasswordStore(0), form);
@@ -149,8 +147,8 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(SetupClients());
 
   ASSERT_TRUE(GetClient(0)->SetupSync());
-  SetEncryptionPassphrase(0, kValidPassphrase,
-                          browser_sync::ProfileSyncService::EXPLICIT);
+  GetSyncService(0)->SetEncryptionPassphrase(
+      kValidPassphrase, browser_sync::ProfileSyncService::EXPLICIT);
   ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(0)));
 
   // When client 1 hits a passphrase required state, we can infer that
@@ -159,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(AwaitPassphraseRequired(GetSyncService(1)));
 
   // Get client 1 out of the passphrase required state.
-  ASSERT_TRUE(SetDecryptionPassphrase(1, kValidPassphrase));
+  ASSERT_TRUE(GetSyncService(1)->SetDecryptionPassphrase(kValidPassphrase));
   ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(1)));
 
   // We must mark the setup complete now, since we just entered the passphrase

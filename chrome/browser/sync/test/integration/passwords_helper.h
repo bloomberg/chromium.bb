@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_PASSWORDS_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_PASSWORDS_HELPER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
@@ -42,18 +43,6 @@ void RemoveLogin(password_manager::PasswordStore* store,
 
 // Removes all password forms from the password store |store|.
 void RemoveLogins(password_manager::PasswordStore* store);
-
-// Sets the cryptographer's encryption passphrase for the profile at index
-// |index| to |passphrase|, and passphrase type |type|.
-void SetEncryptionPassphrase(
-    int index,
-    const std::string& passphrase,
-    browser_sync::ProfileSyncService::PassphraseType type);
-
-// Sets the cryptographer's decryption passphrase for the profile at index
-// |index| to |passphrase|. Returns false if the operation failed, and true
-// otherwise.
-bool SetDecryptionPassphrase(int index, const std::string& passphrase);
 
 // Gets the password store of the profile with index |index|.
 password_manager::PasswordStore* GetPasswordStore(int index);

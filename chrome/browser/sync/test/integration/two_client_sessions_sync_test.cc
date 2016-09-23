@@ -15,8 +15,6 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
-using passwords_helper::SetDecryptionPassphrase;
-using passwords_helper::SetEncryptionPassphrase;
 using sessions_helper::AwaitCheckForeignSessionsAgainst;
 using sessions_helper::CheckInitialState;
 using sessions_helper::DeleteForeignSession;

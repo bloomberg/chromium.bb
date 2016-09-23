@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
 
   // Add an item and ensure that sync is successful.
   ASSERT_TRUE(AddFolder(0, 0, "folder1"));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   GetFakeServer()->DisableNetwork();
 
@@ -77,8 +77,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
 
   // Verify that the client goes into exponential backoff while it is unable to
   // reach the sync server.
-  ExponentialBackoffChecker exponential_backoff_checker(
-      GetSyncService((0)));
+  ExponentialBackoffChecker exponential_backoff_checker(GetSyncService(0));
   exponential_backoff_checker.Wait();
   ASSERT_FALSE(exponential_backoff_checker.TimedOut());
 
@@ -91,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, OfflineToOnline) {
   base::Time network_notification_time = base::Time::Now();
 
   // Verify that sync was able to recover.
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(ModelMatchesVerifier(0));
 
   // Verify that recovery time is short. Without canary job recovery time would
@@ -107,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
 
   // Add an item and ensure that sync is successful.
   ASSERT_TRUE(AddFolder(0, 0, "folder1"));
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
 
   GetFakeServer()->TriggerError(sync_pb::SyncEnums::TRANSIENT_ERROR);
 
@@ -116,8 +115,7 @@ IN_PROC_BROWSER_TEST_F(SyncExponentialBackoffTest, TransientErrorTest) {
 
   // Verify that the client goes into exponential backoff while it is unable to
   // reach the sync server.
-  ExponentialBackoffChecker exponential_backoff_checker(
-      GetSyncService((0)));
+  ExponentialBackoffChecker exponential_backoff_checker(GetSyncService(0));
   exponential_backoff_checker.Wait();
   ASSERT_FALSE(exponential_backoff_checker.TimedOut());
 }

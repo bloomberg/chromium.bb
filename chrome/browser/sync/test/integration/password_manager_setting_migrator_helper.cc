@@ -33,7 +33,7 @@ namespace password_manager_setting_migrater_helper {
 
 bool EnsureFieldTrialSetup() {
   if (base::FieldTrialList::TrialExists(kFieldTrialName)) {
-    DCHECK((password_manager::IsSettingsMigrationActive()));
+    DCHECK(password_manager::IsSettingsMigrationActive());
     return false;
   }
   base::FieldTrialList::CreateFieldTrial(kFieldTrialName, kEnabledGroupName);

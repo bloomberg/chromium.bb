@@ -31,6 +31,8 @@ using preferences_helper::AwaitBooleanPrefMatches;
 using preferences_helper::BooleanPrefMatches;
 using preferences_helper::ChangeBooleanPref;
 using preferences_helper::GetPrefs;
+using password_manager::prefs::kCredentialsEnableService;
+using password_manager::prefs::kPasswordManagerSavingEnabled;
 
 namespace {
 
@@ -42,9 +44,9 @@ void InjectPreferenceValueToFakeServer(fake_server::FakeServer* fake_server,
   base::JSONWriter::Write(bool_value, &serialized);
   sync_pb::EntitySpecifics specifics;
   sync_pb::PreferenceSpecifics* pref = nullptr;
-  if (name == password_manager::prefs::kPasswordManagerSavingEnabled) {
+  if (name == kPasswordManagerSavingEnabled) {
     pref = specifics.mutable_preference();
-  } else if (name == password_manager::prefs::kCredentialsEnableService) {
+  } else if (name == kCredentialsEnableService) {
     pref = specifics.mutable_priority_preference()->mutable_preference();
   } else {
     NOTREACHED() << "Wrong preference name: " << name;
@@ -75,8 +77,6 @@ class SingleClientPasswordManagerSettingMigratorServiceSyncTest
 
   void SetLocalPrefValues(bool new_pref_local_value,
                           bool old_pref_local_value) {
-    using password_manager::prefs::kCredentialsEnableService;
-    using password_manager::prefs::kPasswordManagerSavingEnabled;
     PrefService* prefs = GetPrefs(0);
     prefs->SetBoolean(kCredentialsEnableService, new_pref_local_value);
     prefs->SetBoolean(kPasswordManagerSavingEnabled, old_pref_local_value);
@@ -84,7 +84,6 @@ class SingleClientPasswordManagerSettingMigratorServiceSyncTest
   }
 
   void InjectNewValues(bool new_pref_sync_value, bool old_pref_sync_value) {
-    using namespace password_manager::prefs;
     InjectPreferenceValueToFakeServer(
         GetFakeServer(), kCredentialsEnableService, new_pref_sync_value);
     InjectPreferenceValueToFakeServer(
@@ -121,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(
                   false /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(false /* kCredentialsEnableService */,
                    false /* kPasswordManagerSavingEnabled */);
 }
@@ -134,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(
                   false /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(false /* kCredentialsEnableService */,
                    false /* kPasswordManagerSavingEnabled */);
 }
@@ -149,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(
                   true /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(false /* kCredentialsEnableService */,
                    false /* kPasswordManagerSavingEnabled */);
 }
@@ -164,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(
                   true /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(true /* kCredentialsEnableService */,
                    true /* kPasswordManagerSavingEnabled */);
 }
@@ -179,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(
                   false /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(false /* kCredentialsEnableService */,
                    false /* kPasswordManagerSavingEnabled */);
 }
@@ -194,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(
                   true /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(false /* kCredentialsEnableService */,
                    false /* kPasswordManagerSavingEnabled */);
 }
@@ -209,7 +208,7 @@ IN_PROC_BROWSER_TEST_F(
                   true /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(true /* kCredentialsEnableService */,
                    true /* kPasswordManagerSavingEnabled */);
 }
@@ -224,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(
                   false /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(true /* kCredentialsEnableService */,
                    true /* kPasswordManagerSavingEnabled */);
 }
@@ -239,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(
                   true /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(false /* kCredentialsEnableService */,
                    false /* kPasswordManagerSavingEnabled */);
 }
@@ -254,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(
                   false /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(false /* kCredentialsEnableService */,
                    false /* kPasswordManagerSavingEnabled */);
 }
@@ -269,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(
                   true /* kPasswordManagerSavingEnabled */);
   InitMigrationServiceAndSync();
   ASSERT_TRUE(sync_integration_test_util::AwaitCommitActivityCompletion(
-      GetSyncService((0))));
+      GetSyncService(0)));
   AssertPrefValues(true /* kCredentialsEnableService */,
                    true /* kPasswordManagerSavingEnabled */);
 }

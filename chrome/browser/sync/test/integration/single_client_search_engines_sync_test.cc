@@ -26,6 +26,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSearchEnginesSyncTest, Sanity) {
 
   search_engines_helper::AddSearchEngine(0, 0);
 
-  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService((0))));
+  ASSERT_TRUE(AwaitCommitActivityCompletion(GetSyncService(0)));
   ASSERT_TRUE(search_engines_helper::ServiceMatchesVerifier(0));
 }
