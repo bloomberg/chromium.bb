@@ -23,11 +23,13 @@
     var u = new SpeechSynthesisUtterance(" ");
 
     u.onstart = function(event) {
-       shouldBeTrue("event.elapsedTime > 0");
+       shouldBeTrue("event.elapsedTime >= 0");
+       shouldBeTrue("event.elapsedTime < 1000");
        shouldBeTrue("speechSynthesis.speaking");
     }
     u.onend = function(event) {
        shouldBeTrue("event.elapsedTime > 0");
+       shouldBeTrue("event.elapsedTime < 10000");
        shouldBeFalse("speechSynthesis.speaking");
        finishJSTest();
     }

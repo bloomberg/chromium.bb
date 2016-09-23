@@ -139,8 +139,10 @@ void SpeechSynthesis::resume()
 
 void SpeechSynthesis::fireEvent(const AtomicString& type, SpeechSynthesisUtterance* utterance, unsigned long charIndex, const String& name)
 {
-    if (getExecutionContext() && !getExecutionContext()->activeDOMObjectsAreStopped())
-        utterance->dispatchEvent(SpeechSynthesisEvent::create(type, utterance, charIndex, (currentTime() - utterance->startTime()), name));
+    if (getExecutionContext() && !getExecutionContext()->activeDOMObjectsAreStopped()) {
+        double elapsedTimeMillis = (monotonicallyIncreasingTime() - utterance->startTime()) * 1000.0;
+        utterance->dispatchEvent(SpeechSynthesisEvent::create(type, utterance, charIndex, elapsedTimeMillis, name));
+    }
 }
 
 void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utterance, bool errorOccurred)
