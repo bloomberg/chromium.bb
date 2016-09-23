@@ -173,6 +173,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/*', ['win', 'nvidia', 'opengl'], bug=582083)
 
     # Win / OpenGL / AMD failures
+    self.Fail('conformance/attribs/gl-bindAttribLocation-aliasing.html',
+        ['win', ('amd', 0x6779), 'opengl'], bug=649824)
+    self.Flaky('conformance/attribs/gl-bindAttribLocation-matrix.html',
+        ['win', ('amd', 0x6779), 'opengl'], bug=649824)
+    self.Flaky('conformance/attribs/gl-bindAttribLocation-repeated.html',
+        ['win', ('amd', 0x6779), 'opengl'], bug=649824)
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['win', ('amd', 0x6779), 'opengl'], bug=649824)
     self.Skip('conformance/glsl/misc/shader-struct-scope.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Skip('conformance/glsl/misc/shaders-with-invariance.html',
