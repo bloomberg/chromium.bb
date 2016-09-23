@@ -61,7 +61,7 @@ void ParseCertificateForFuzzer(const der::Input& in) {
     if (FindExtension(KeyUsageOid(), &extensions, &extension))
       ignore_result(ParseKeyUsage(extension.value, &key_usage));
     if (FindExtension(SubjectAltNameOid(), &extensions, &extension))
-      GeneralNames::CreateFromDer(extension.value);
+      GeneralNames::Create(extension.value);
     if (FindExtension(CertificatePoliciesOid(), &extensions, &extension))
       ParseCertificatePoliciesExtension(extension.value, &policies);
     if (FindExtension(ExtKeyUsageOid(), &extensions, &extension))
