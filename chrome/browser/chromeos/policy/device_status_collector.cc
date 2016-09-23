@@ -159,12 +159,16 @@ std::string ReadCPUStatistics() {
   return std::string();
 }
 
-// Reads the CPU temperature info from
-// /sys/class/hwmon/hwmon*/device/temp*_input and
-// /sys/class/hwmon/hwmon*/device/temp*_label files.
+// Read system temperature sensors from
 //
-// temp*_input contains CPU temperature in millidegree Celsius
-// temp*_label contains appropriate temperature channel label.
+// /sys/class/hwmon/hwmon*/(device/)?temp*_input
+//
+// which contains millidegree Celsius temperature and
+//
+// /sys/class/hwmon/hwmon*/(device/)?temp*_label or
+// /sys/class/hwmon/hwmon*/name
+//
+// which contains an appropriate label name for the given sensor.
 std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
   std::vector<em::CPUTempInfo> contents;
   // Get directories /sys/class/hwmon/hwmon*
@@ -174,11 +178,12 @@ std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
 
   for (base::FilePath hwmon_path = hwmon_enumerator.Next(); !hwmon_path.empty();
        hwmon_path = hwmon_enumerator.Next()) {
-    // Get files /sys/class/hwmon/hwmon*/device/temp*_input
-    const base::FilePath hwmon_device_dir = hwmon_path.Append(kDeviceDir);
-    base::FileEnumerator enumerator(hwmon_device_dir, false,
-                                    base::FileEnumerator::FILES,
-                                    kCPUTempFilePattern);
+    // Get temp*_input files in hwmon*/ and hwmon*/device/
+    if (base::PathExists(hwmon_path.Append(kDeviceDir))) {
+      hwmon_path = hwmon_path.Append(kDeviceDir);
+    }
+    base::FileEnumerator enumerator(
+        hwmon_path, false, base::FileEnumerator::FILES, kCPUTempFilePattern);
     for (base::FilePath temperature_path = enumerator.Next();
          !temperature_path.empty(); temperature_path = enumerator.Next()) {
       // Get appropriate temp*_label file.
@@ -188,11 +193,16 @@ std::vector<em::CPUTempInfo> ReadCPUTempInfo() {
         continue;
       }
       base::ReplaceSubstringsAfterOffset(&label_path, 0, "input", "label");
+      base::FilePath name_path = hwmon_path.Append("name");
 
-      // Read label.
+      // Get the label describing this temperature. Use temp*_label
+      // if present, fall back on name file or blank.
       std::string label;
-      if (!base::PathExists(base::FilePath(label_path)) ||
-          !base::ReadFileToString(base::FilePath(label_path), &label)) {
+      if (base::PathExists(base::FilePath(label_path))) {
+        base::ReadFileToString(base::FilePath(label_path), &label);
+      } else if (base::PathExists(base::FilePath(name_path))) {
+        base::ReadFileToString(name_path, &label);
+      } else {
         label = std::string();
       }
 
