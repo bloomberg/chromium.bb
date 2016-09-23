@@ -39,6 +39,9 @@
 #if defined(USE_AURA)
 #include "content/browser/media/capture/desktop_capture_device_aura.h"
 #endif
+#if defined(OS_ANDROID)
+#include "content/browser/media/capture/screen_capture_device_android.h"
+#endif
 #endif
 
 #if defined(OS_MACOSX)
@@ -621,7 +624,9 @@ VideoCaptureManager::DoStartDesktopCaptureOnDeviceThread(
     video_capture_device.reset(WebContentsVideoCaptureDevice::Create(id));
     IncrementDesktopCaptureCounter(TAB_VIDEO_CAPTURER_CREATED);
   } else {
-#if defined(USE_AURA)
+#if defined(OS_ANDROID)
+    video_capture_device = base::MakeUnique<ScreenCaptureDeviceAndroid>();
+#elif defined(USE_AURA)
     video_capture_device = DesktopCaptureDeviceAura::Create(desktop_id);
 #endif
     if (!video_capture_device)
@@ -1142,7 +1147,7 @@ void VideoCaptureManager::SetDesktopCaptureWindowIdOnDeviceThread(
     media::VideoCaptureDevice* device,
     gfx::NativeViewId window_id) {
   DCHECK(IsOnDeviceThread());
-#if defined(ENABLE_SCREEN_CAPTURE)
+#if !defined(OS_ANDROID)
   DesktopCaptureDevice* desktop_device =
       static_cast<DesktopCaptureDevice*>(device);
   desktop_device->SetNotificationWindowId(window_id);

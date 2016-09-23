@@ -24,7 +24,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/media/webrtc/media_stream_infobar_delegate_android.h"
+#include "chrome/browser/media/webrtc/screen_capture_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #else
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -77,8 +79,14 @@ PermissionBubbleMediaAccessHandler::~PermissionBubbleMediaAccessHandler() {
 bool PermissionBubbleMediaAccessHandler::SupportsStreamType(
     const content::MediaStreamType type,
     const extensions::Extension* extension) {
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  return type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
+         type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+         type == content::MEDIA_DESKTOP_VIDEO_CAPTURE;
+#else
   return type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
          type == content::MEDIA_DEVICE_AUDIO_CAPTURE;
+#endif
 }
 
 bool PermissionBubbleMediaAccessHandler::CheckMediaAccessPermission(
@@ -106,6 +114,18 @@ void PermissionBubbleMediaAccessHandler::HandleRequest(
     const extensions::Extension* extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE &&
+      !base::FeatureList::IsEnabled(
+          chrome::android::kUserMediaScreenCapturing)) {
+    // If screen capturing isn't enabled on Android, we'll use "invalid state"
+    // as result, same as on desktop.
+    callback.Run(content::MediaStreamDevices(),
+                 content::MEDIA_DEVICE_INVALID_STATE, nullptr);
+    return;
+  }
+#endif  // BUILDFLAG(ANDROID_JAVA_UI)
+
   RequestsQueue& queue = pending_requests_[web_contents];
   queue.push_back(PendingAccessRequest(request, callback));
 
@@ -128,9 +148,20 @@ void PermissionBubbleMediaAccessHandler::ProcessQueuedAccessRequest(
 
   DCHECK(!it->second.empty());
 
+  const content::MediaStreamRequest request = it->second.front().request;
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
+    ScreenCaptureInfoBarDelegateAndroid::Create(
+        web_contents, request,
+        base::Bind(&PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
+                   base::Unretained(this), web_contents));
+    return;
+  }
+#endif
+
   std::unique_ptr<MediaStreamDevicesController> controller(
       new MediaStreamDevicesController(
-          web_contents, it->second.front().request,
+          web_contents, request,
           base::Bind(
               &PermissionBubbleMediaAccessHandler::OnAccessRequestResponse,
               base::Unretained(this), web_contents)));

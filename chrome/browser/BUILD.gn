@@ -3247,6 +3247,8 @@ split_static_library("browser") {
       "media/protected_media_identifier_infobar_delegate_android.h",
       "media/webrtc/media_stream_infobar_delegate_android.cc",
       "media/webrtc/media_stream_infobar_delegate_android.h",
+      "media/webrtc/screen_capture_infobar_delegate_android.cc",
+      "media/webrtc/screen_capture_infobar_delegate_android.h",
       "metrics/android_metrics_provider.cc",
       "metrics/android_metrics_provider.h",
       "metrics/page_load_metrics_provider.cc",

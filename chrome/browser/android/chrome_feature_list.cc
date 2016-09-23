@@ -64,6 +64,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
 const base::Feature kAllBookmarksFeature{"AllBookmarks",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kDownloadsUiFeature{"DownloadsUi",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -78,9 +81,6 @@ const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
 
 const base::Feature kNTPFakeOmniboxTextFeature{
     "NTPFakeOmniboxText", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPhysicalWebFeature{"PhysicalWeb",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -100,9 +100,11 @@ const base::Feature kSpecialLocaleFeature{"SpecialLocale",
 const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kTabReparenting {
-  "TabReparenting", base::FEATURE_ENABLED_BY_DEFAULT
-};
+const base::Feature kTabReparenting{"TabReparenting",
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kUserMediaScreenCapturing{
+    "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
 
 static jboolean IsEnabled(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,

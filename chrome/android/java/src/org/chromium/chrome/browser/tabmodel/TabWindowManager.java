@@ -158,19 +158,27 @@ public class TabWindowManager implements ActivityStateListener {
      * @return Whether the given tab exists in any currently loaded selector.
      */
     public boolean tabExistsInAnySelector(int tabId) {
+        return getTabById(tabId) != null;
+    }
+
+    /**
+     * @param tabId The ID of the tab in question.
+     * @return Specified {@link Tab} or {@code null} if the {@link Tab} is not found.
+     */
+    public Tab getTabById(int tabId) {
         for (int i = 0; i < mSelectors.size(); i++) {
             TabModelSelector selector = mSelectors.get(i);
             if (selector != null) {
-                if (TabModelUtils.getTabById(selector.getModel(false), tabId) != null
-                        || TabModelUtils.getTabById(selector.getModel(true), tabId) != null) {
-                    return true;
-                }
+                final Tab tab = selector.getTabById(tabId);
+                if (tab != null) return tab;
             }
         }
 
-        // Account for tabs that were recently reparented and haven't been attached to new
-        // activities yet.
-        return AsyncTabParamsManager.hasParamsForTabId(tabId);
+        if (AsyncTabParamsManager.hasParamsForTabId(tabId)) {
+            return AsyncTabParamsManager.getAsyncTabParams().get(tabId).getTabToReparent();
+        }
+
+        return null;
     }
 
     @Override

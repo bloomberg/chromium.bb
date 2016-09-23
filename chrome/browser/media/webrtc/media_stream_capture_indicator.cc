@@ -114,10 +114,14 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
       const content::MediaStreamDevices& devices);
 
   // Increment ref-counts up based on the type of each device provided.
-  void AddDevices(const content::MediaStreamDevices& devices);
+  void AddDevices(const content::MediaStreamDevices& devices,
+                  const base::Closure& close_callback);
 
   // Decrement ref-counts up based on the type of each device provided.
   void RemoveDevices(const content::MediaStreamDevices& devices);
+
+  // Helper to call |stop_callback_|.
+  void NotifyStopped();
 
  private:
   // content::WebContentsObserver overrides.
@@ -130,6 +134,7 @@ class MediaStreamCaptureIndicator::WebContentsDeviceUsage
   int video_ref_count_;
   int mirroring_ref_count_;
 
+  base::Closure stop_callback_;
   base::WeakPtrFactory<WebContentsDeviceUsage> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsDeviceUsage);
@@ -161,7 +166,7 @@ class MediaStreamCaptureIndicator::UIDelegate : public content::MediaStreamUI {
     DCHECK(!started_);
     started_ = true;
     if (device_usage_.get())
-      device_usage_->AddDevices(devices_);
+      device_usage_->AddDevices(devices_, close_callback);
     return 0;
   }
 
@@ -179,11 +184,11 @@ MediaStreamCaptureIndicator::WebContentsDeviceUsage::RegisterMediaStream(
 }
 
 void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
-    const content::MediaStreamDevices& devices) {
+    const content::MediaStreamDevices& devices,
+    const base::Closure& close_callback) {
   for (content::MediaStreamDevices::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
-    if (it->type == content::MEDIA_TAB_AUDIO_CAPTURE ||
-        it->type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+    if (content::IsScreenCaptureMediaType(it->type)) {
       ++mirroring_ref_count_;
     } else if (content::IsAudioInputMediaType(it->type)) {
       ++audio_ref_count_;
@@ -194,8 +199,10 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
     }
   }
 
-  if (web_contents())
+  if (web_contents()) {
+    stop_callback_ = close_callback;
     web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  }
 
   indicator_->UpdateNotificationUserInterface();
 }
@@ -204,8 +211,7 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::RemoveDevices(
     const content::MediaStreamDevices& devices) {
   for (content::MediaStreamDevices::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
-    if (it->type == content::MEDIA_TAB_AUDIO_CAPTURE ||
-        it->type == content::MEDIA_TAB_VIDEO_CAPTURE) {
+    if (IsScreenCaptureMediaType(it->type)) {
       --mirroring_ref_count_;
     } else if (content::IsAudioInputMediaType(it->type)) {
       --audio_ref_count_;
@@ -222,6 +228,14 @@ void MediaStreamCaptureIndicator::WebContentsDeviceUsage::RemoveDevices(
 
   web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
   indicator_->UpdateNotificationUserInterface();
+}
+
+void MediaStreamCaptureIndicator::WebContentsDeviceUsage::NotifyStopped() {
+  if (!stop_callback_.is_null()) {
+    base::Closure callback = stop_callback_;
+    stop_callback_.Reset();
+    callback.Run();
+  }
 }
 
 MediaStreamCaptureIndicator::MediaStreamCaptureIndicator()
@@ -295,6 +309,15 @@ bool MediaStreamCaptureIndicator::IsBeingMirrored(
 
   WebContentsDeviceUsage* usage = usage_map_.get(web_contents);
   return usage && usage->IsMirroring();
+}
+
+void MediaStreamCaptureIndicator::NotifyStopped(
+    content::WebContents* web_contents) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  WebContentsDeviceUsage* usage = usage_map_.get(web_contents);
+  DCHECK(usage);
+  usage->NotifyStopped();
 }
 
 void MediaStreamCaptureIndicator::UnregisterWebContents(

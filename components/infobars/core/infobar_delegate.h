@@ -136,6 +136,7 @@ class InfoBarDelegate {
     SUBRESOURCE_FILTER_INFOBAR_DELEGATE_ANDROID = 66,
     INSTANT_APPS_INFOBAR_DELEGATE_ANDROID = 67,
     DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE = 68,
+    SCREEN_CAPTURE_INFOBAR_DELEGATE_ANDROID = 69,
   };
 
   // Describes navigation events, used to decide whether infobars should be

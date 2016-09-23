@@ -109,17 +109,13 @@ class MediaStreamDevicesControllerTest : public WebRtcTestBase {
 
   // Checks whether the devices returned in OnMediaStreamResponse contains a
   // microphone and/or camera device.
-  bool DevicesContains(bool needs_mic, bool needs_cam) {
-    bool has_mic = false;
-    bool has_cam = false;
+  bool CheckDevicesListContains(content::MediaStreamType type) {
     for (const auto& device : media_stream_devices_) {
-      if (device.type == content::MEDIA_DEVICE_AUDIO_CAPTURE)
-        has_mic = true;
-      if (device.type == content::MEDIA_DEVICE_VIDEO_CAPTURE)
-        has_cam = true;
+      if (device.type == type) {
+        return true;
+      }
     }
-
-    return needs_mic == has_mic && needs_cam == has_cam;
+    return false;
   }
 
   content::WebContents* GetWebContents() {
@@ -637,8 +633,10 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
     // Check the media stream result is expected and the devices returned are
     // expected;
     ASSERT_EQ(test.ExpectedMediaStreamResult(), media_stream_result());
-    ASSERT_TRUE(
-        DevicesContains(test.ExpectMicAllowed(), test.ExpectCamAllowed()));
+    ASSERT_EQ(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE),
+              test.ExpectMicAllowed());
+    ASSERT_EQ(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE),
+              test.ExpectCamAllowed());
   }
 }
 
@@ -655,7 +653,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   ASSERT_FALSE(controller.IsAskingForVideo());
 
   ASSERT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
-  ASSERT_TRUE(DevicesContains(false, true));
+  ASSERT_FALSE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
+  ASSERT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
@@ -672,7 +671,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   // Accept the prompt.
   controller.PermissionGranted();
   ASSERT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
-  ASSERT_TRUE(DevicesContains(true, true));
+  ASSERT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
+  ASSERT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
 
   // Check that re-requesting allows without prompting.
   MediaStreamDevicesController controller2(
@@ -683,7 +683,8 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   ASSERT_FALSE(controller2.IsAskingForVideo());
 
   ASSERT_EQ(content::MEDIA_DEVICE_OK, media_stream_result());
-  ASSERT_TRUE(DevicesContains(true, true));
+  ASSERT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_AUDIO_CAPTURE));
+  ASSERT_TRUE(CheckDevicesListContains(content::MEDIA_DEVICE_VIDEO_CAPTURE));
 }
 
 // For Pepper request from insecure origin, even if it's ALLOW, it won't be

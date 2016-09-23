@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
@@ -73,6 +74,7 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     private int mDisplayMode = WebDisplayMode.Browser;
 
     protected Handler mHandler;
+
     private final Runnable mCloseContentsRunnable = new Runnable() {
         @Override
         public void run() {
@@ -221,9 +223,10 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     @Override
     public void navigationStateChanged(int flags) {
         if ((flags & InvalidateTypes.TAB) != 0) {
+            int mediaType = MediaCaptureNotificationService.getMediaType(
+                    isCapturingAudio(), isCapturingVideo(), isCapturingScreen());
             MediaCaptureNotificationService.updateMediaNotificationForTab(
-                    mTab.getApplicationContext(), mTab.getId(), isCapturingAudio(),
-                    isCapturingVideo(), mTab.getUrl());
+                    mTab.getApplicationContext(), mTab.getId(), mediaType, mTab.getUrl());
         }
         if ((flags & InvalidateTypes.TITLE) != 0) {
             // Update cached title then notify observers.
@@ -470,8 +473,26 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         return !mTab.isClosing() && nativeIsCapturingVideo(mTab.getWebContents());
     }
 
+    /**
+     * @return Whether screen is being captured.
+     */
+    private boolean isCapturingScreen() {
+        return !mTab.isClosing() && nativeIsCapturingScreen(mTab.getWebContents());
+    }
+
+    /**
+     * When STOP button in the media capture notification is clicked, pass the event to native
+     * to stop the media capture.
+     */
+    public static void notifyStopped(int tabId) {
+        final Tab tab = TabWindowManager.getInstance().getTabById(tabId);
+        if (tab != null) nativeNotifyStopped(tab.getWebContents());
+    }
+
     private static native void nativeOnRendererUnresponsive(WebContents webContents);
     private static native void nativeOnRendererResponsive(WebContents webContents);
     private static native boolean nativeIsCapturingAudio(WebContents webContents);
     private static native boolean nativeIsCapturingVideo(WebContents webContents);
+    private static native boolean nativeIsCapturingScreen(WebContents webContents);
+    private static native void nativeNotifyStopped(WebContents webContents);
 }

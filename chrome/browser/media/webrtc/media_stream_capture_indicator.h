@@ -55,6 +55,9 @@ class MediaStreamCaptureIndicator
   // of media for remote broadcast).
   bool IsBeingMirrored(content::WebContents* web_contents) const;
 
+  // Called when STOP button in media capture notification is clicked.
+  void NotifyStopped(content::WebContents* web_contents) const;
+
  private:
   class UIDelegate;
   class WebContentsDeviceUsage;

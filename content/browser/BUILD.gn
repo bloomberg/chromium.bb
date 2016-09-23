@@ -1476,6 +1476,9 @@ source_set("browser") {
       "//third_party/webrtc/media:rtc_media",
       "//third_party/webrtc/modules/desktop_capture:primitives",
     ]
+    if (!is_ios) {
+      defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
+    }
     if (is_linux || is_mac || is_win) {
       sources += [
         "media/capture/desktop_capture_device.cc",
@@ -1489,7 +1492,6 @@ source_set("browser") {
           "media/capture/desktop_capture_device_aura.h",
         ]
       }
-      defines += [ "ENABLE_SCREEN_CAPTURE=1" ]
       deps += [ "//third_party/webrtc/modules/desktop_capture" ]
     }
   }

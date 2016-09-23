@@ -255,11 +255,46 @@ public class TabWindowManagerTest extends InstrumentationTestCase {
 
         AsyncTabParamsManager.getAsyncTabParams().clear();
         final int asyncTabId = 123;
-        final TabReparentingParams dummyParams = new TabReparentingParams(null, null, null, false);
+        final TabReparentingParams dummyParams =
+                new TabReparentingParams(new Tab(0, false, null), null, null, false);
         assertFalse(manager.tabExistsInAnySelector(asyncTabId));
         AsyncTabParamsManager.add(asyncTabId, dummyParams);
         try {
             assertTrue(manager.tabExistsInAnySelector(asyncTabId));
+        } finally {
+            AsyncTabParamsManager.getAsyncTabParams().clear();
+        }
+    }
+
+    /**
+     * Tests that getTabById() functions properly.
+     */
+    @SmallTest
+    @Feature({"Multiwindow"})
+    @UiThreadTest
+    public void testGetTabById() {
+        final TabWindowManager manager = TabWindowManager.getInstance();
+
+        ChromeActivity activity0 = buildActivity();
+        ChromeActivity activity1 = buildActivity();
+        MockTabModelSelector selector0 = requestSelector(activity0, 0);
+        MockTabModelSelector selector1 = requestSelector(activity1, 1);
+        Tab tab1 = selector0.addMockTab();
+        Tab tab2 = selector1.addMockIncognitoTab();
+
+        assertNull(manager.getTabById(tab1.getId() - 1));
+        assertNotNull(manager.getTabById(tab1.getId()));
+        assertNotNull(manager.getTabById(tab2.getId()));
+        assertNull(manager.getTabById(tab2.getId() + 1));
+
+        AsyncTabParamsManager.getAsyncTabParams().clear();
+        final int asyncTabId = 123;
+        final TabReparentingParams dummyParams =
+                new TabReparentingParams(new Tab(0, false, null), null, null, false);
+        assertNull(manager.getTabById(asyncTabId));
+        AsyncTabParamsManager.add(asyncTabId, dummyParams);
+        try {
+            assertNotNull(manager.getTabById(asyncTabId));
         } finally {
             AsyncTabParamsManager.getAsyncTabParams().clear();
         }

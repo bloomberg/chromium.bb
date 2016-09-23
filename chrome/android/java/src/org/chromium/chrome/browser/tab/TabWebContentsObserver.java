@@ -315,7 +315,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
     @Override
     public void destroy() {
         MediaCaptureNotificationService.updateMediaNotificationForTab(
-                mTab.getApplicationContext(), mTab.getId(), false, false, mTab.getUrl());
+                mTab.getApplicationContext(), mTab.getId(), 0, mTab.getUrl());
         super.destroy();
     }
 }

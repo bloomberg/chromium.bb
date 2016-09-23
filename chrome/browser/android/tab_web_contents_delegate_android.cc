@@ -449,8 +449,8 @@ jboolean IsCapturingAudio(JNIEnv* env,
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()->
-          GetMediaStreamCaptureIndicator();
+      MediaCaptureDevicesDispatcher::GetInstance()
+          ->GetMediaStreamCaptureIndicator();
   return indicator->IsCapturingAudio(web_contents);
 }
 
@@ -460,7 +460,29 @@ jboolean IsCapturingVideo(JNIEnv* env,
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(java_web_contents);
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
-      MediaCaptureDevicesDispatcher::GetInstance()->
-          GetMediaStreamCaptureIndicator();
+      MediaCaptureDevicesDispatcher::GetInstance()
+          ->GetMediaStreamCaptureIndicator();
   return indicator->IsCapturingVideo(web_contents);
+}
+
+jboolean IsCapturingScreen(JNIEnv* env,
+                           const JavaParamRef<jclass>& clazz,
+                           const JavaParamRef<jobject>& java_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(java_web_contents);
+  scoped_refptr<MediaStreamCaptureIndicator> indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()
+          ->GetMediaStreamCaptureIndicator();
+  return indicator->IsBeingMirrored(web_contents);
+}
+
+void NotifyStopped(JNIEnv* env,
+                   const JavaParamRef<jclass>& clazz,
+                   const JavaParamRef<jobject>& java_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(java_web_contents);
+  scoped_refptr<MediaStreamCaptureIndicator> indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()
+          ->GetMediaStreamCaptureIndicator();
+  indicator->NotifyStopped(web_contents);
 }
