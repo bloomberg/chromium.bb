@@ -1,8 +1,7 @@
-recursion = 1
 use_relative_paths = True
 
 vars = {
-  "git_url": "https://chromium.googlesource.com",
+  "chromium_url": "https://chromium.googlesource.com",
 
   "clang_format_rev": "0ed791d1387a3c9146ea6c453c646f3c0fc97784",   # r282136
   "libcxx_revision": "b1ece9c037d879843b0b0f5a2802e1e9d443b75a",    # r256621
@@ -11,12 +10,12 @@ vars = {
 
 deps = {
   "clang_format/script":
-      Var("git_url") + "/chromium/llvm-project/cfe/tools/clang-format.git@" +
-      Var("clang_format_rev"),
+    Var("chromium_url") + "/chromium/llvm-project/cfe/tools/clang-format.git@" +
+    Var("clang_format_rev"),
   "third_party/libc++/trunk":
-      Var("git_url") + "/chromium/llvm-project/libcxx.git" + "@" +
-      Var("libcxx_revision"),
+    Var("chromium_url") + "/chromium/llvm-project/libcxx.git" + "@" +
+    Var("libcxx_revision"),
   "third_party/libc++abi/trunk":
-      Var("git_url") + "/chromium/llvm-project/libcxxabi.git" + "@" +
-      Var("libcxxabi_revision"),
+    Var("chromium_url") + "/chromium/llvm-project/libcxxabi.git" + "@" +
+    Var("libcxxabi_revision"),
 }
