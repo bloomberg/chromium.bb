@@ -240,6 +240,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       id_(id),
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
+      has_valid_compositor_frame_sink_(false),
       mutator_(nullptr) {
   DCHECK(animation_host_);
   animation_host_->SetMutatorHostClient(this);
@@ -1925,6 +1926,7 @@ void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
 void LayerTreeHostImpl::DidLoseCompositorFrameSink() {
   if (resource_provider_)
     resource_provider_->DidLoseContextProvider();
+  has_valid_compositor_frame_sink_ = false;
   client_->DidLoseCompositorFrameSinkOnImplThread();
 }
 
@@ -2270,8 +2272,12 @@ void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
 void LayerTreeHostImpl::ReleaseCompositorFrameSink() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ReleaseCompositorFrameSink");
 
-  if (!compositor_frame_sink_)
+  if (!compositor_frame_sink_) {
+    DCHECK(!has_valid_compositor_frame_sink_);
     return;
+  }
+
+  has_valid_compositor_frame_sink_ = false;
 
   // Since we will create a new resource provider, we cannot continue to use
   // the old resources (i.e. render_surfaces and texture IDs). Clear them
@@ -2322,6 +2328,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
     SetMemoryPolicy(settings_.software_memory_policy);
 
   compositor_frame_sink_ = compositor_frame_sink;
+  has_valid_compositor_frame_sink_ = true;
   resource_provider_ = base::MakeUnique<ResourceProvider>(
       compositor_frame_sink_->context_provider(), shared_bitmap_manager_,
       gpu_memory_buffer_manager_,
@@ -3664,6 +3671,11 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   if (id)
     DeleteUIResource(uid);
 
+  if (!has_valid_compositor_frame_sink_) {
+    evicted_ui_resources_.insert(uid);
+    return;
+  }
+
   ResourceFormat format = resource_provider_->best_texture_format();
   switch (bitmap.GetFormat()) {
     case UIResourceBitmap::RGBA8:
@@ -3749,7 +3761,8 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
 void LayerTreeHostImpl::DeleteUIResource(UIResourceId uid) {
   ResourceId id = ResourceIdForUIResource(uid);
   if (id) {
-    resource_provider_->DeleteResource(id);
+    if (has_valid_compositor_frame_sink_)
+      resource_provider_->DeleteResource(id);
     ui_resource_map_.erase(uid);
   }
   MarkUIResourceNotEvicted(uid);

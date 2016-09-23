@@ -835,6 +835,10 @@ class CC_EXPORT LayerTreeHostImpl
   bool requires_high_res_to_draw_;
   bool is_likely_to_require_a_draw_;
 
+  // TODO(danakj): Delete the compositor frame sink and all resources when
+  // it's lost instead of having this bool.
+  bool has_valid_compositor_frame_sink_;
+
   std::unique_ptr<Viewport> viewport_;
 
   std::unique_ptr<LayerTreeMutator> mutator_;

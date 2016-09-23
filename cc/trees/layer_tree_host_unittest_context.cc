@@ -1445,12 +1445,19 @@ class UIResourceLostBeforeActivateTree : public UIResourceLostTest {
     LayerTreeHostContextTest::DidActivateTreeOnThread(impl);
     switch (time_step_) {
       case 1:
-        // The pending requests on the impl-side should have been processed.
-        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        // The pending requests on the impl-side should not have been processed
+        // since the context was lost. But we should have marked the resource as
+        // evicted instead.
+        EXPECT_EQ(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_TRUE(impl->EvictedUIResourcesExist());
         break;
       case 2:
-        // The "lost resource" callback should have been called once.
+        // The "lost resource" callback should have been called once and it
+        // should have gotten recreated now and shouldn't be marked as evicted
+        // anymore.
         EXPECT_EQ(1, ui_resource_->lost_resource_count);
+        EXPECT_NE(0u, impl->ResourceIdForUIResource(ui_resource_->id()));
+        EXPECT_FALSE(impl->EvictedUIResourcesExist());
         break;
       case 4:
         // The resource is deleted and should not be in the manager.  Use
