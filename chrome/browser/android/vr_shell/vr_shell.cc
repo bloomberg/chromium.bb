@@ -13,12 +13,15 @@
 #include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 #include "jni/VrShell_jni.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -66,23 +69,30 @@ static constexpr int kBrowserUiElementId = 0;
 
 vr_shell::VrShell* g_instance;
 
+static const char kVrShellUIURL[] = "chrome://vr-shell-ui";
+
 }  // namespace
 
 namespace vr_shell {
 
-VrShell::VrShell(JNIEnv* env, jobject obj,
-                 content::ContentViewCore* content_core,
-                 ui::WindowAndroid* content_window)
+VrShell::VrShell(JNIEnv* env,
+                 jobject obj,
+                 content::ContentViewCore* content_cvc,
+                 ui::WindowAndroid* content_window,
+                 content::ContentViewCore* ui_cvc,
+                 ui::WindowAndroid* ui_window)
     : desktop_screen_tilt_(kDesktopScreenTiltDefault),
       desktop_height_(kDesktopHeightDefault),
       desktop_position_(kDesktopPositionDefault),
       cursor_distance_(-kDesktopPositionDefault.z),
-      content_cvc_(content_core),
+      content_cvc_(content_cvc),
+      ui_cvc_(ui_cvc),
       delegate_(nullptr),
       weak_ptr_factory_(this) {
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
-  content_compositor_view_.reset(new VrCompositor(content_window));
+  content_compositor_.reset(new VrCompositor(content_window));
+  ui_compositor_.reset(new VrCompositor(ui_window));
 
   float screen_width = kScreenWidthRatio * desktop_height_;
   float screen_height = kScreenHeightRatio * desktop_height_;
@@ -93,17 +103,24 @@ VrShell::VrShell(JNIEnv* env, jobject obj,
 
   desktop_plane_ = scene_.GetUiElementById(kBrowserUiElementId);
 
-  content_cvc_->GetWebContents()->GetRenderWidgetHostView()
-      ->GetRenderWidgetHost()->WasResized();
+  LoadUIContent();
 }
 
 void VrShell::UpdateCompositorLayers(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
-  content_compositor_view_->SetLayer(content_cvc_);
+  content_compositor_->SetLayer(content_cvc_);
+  ui_compositor_->SetLayer(ui_cvc_);
 }
 
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
+}
+
+void VrShell::LoadUIContent() {
+  GURL url(kVrShellUIURL);
+  ui_cvc_->GetWebContents()->GetController().LoadURL(
+      url, content::Referrer(),
+      ui::PageTransition::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string(""));
 }
 
 bool RegisterVrShell(JNIEnv* env) {
@@ -133,11 +150,14 @@ void VrShell::GvrInit(JNIEnv* env,
 
 void VrShell::InitializeGl(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
-                           jint texture_data_handle) {
+                           jint content_texture_handle,
+                           jint ui_texture_handle) {
   CHECK(gl::GetGLImplementation() != gl::kGLImplementationNone ||
         gl::init::InitializeGLOneOff());
 
-  content_texture_id_ = texture_data_handle;
+  content_texture_id_ = content_texture_handle;
+  ui_texture_id_ = ui_texture_handle;
+
   gvr_api_->InitializeGl();
   std::vector<gvr::BufferSpec> specs;
   specs.push_back(gvr_api_->CreateBufferSpec());
@@ -445,17 +465,20 @@ gvr::GvrApi* VrShell::gvr_api() {
   return gvr_api_.get();
 }
 
-void VrShell::ContentSurfaceDestroyed(JNIEnv* env,
-                                      const JavaParamRef<jobject>& object) {
-  content_compositor_view_->SurfaceDestroyed();
-}
-
 void VrShell::ContentSurfaceChanged(JNIEnv* env,
                                     const JavaParamRef<jobject>& object,
                                     jint width,
                                     jint height,
                                     const JavaParamRef<jobject>& surface) {
-  content_compositor_view_->SurfaceChanged((int)width, (int)height, surface);
+  content_compositor_->SurfaceChanged((int)width, (int)height, surface);
+}
+
+void VrShell::UiSurfaceChanged(JNIEnv* env,
+                               const JavaParamRef<jobject>& object,
+                               jint width,
+                               jint height,
+                               const JavaParamRef<jobject>& surface) {
+  ui_compositor_->SurfaceChanged((int)width, (int)height, surface);
 }
 
 // ----------------------------------------------------------------------------
@@ -465,12 +488,17 @@ void VrShell::ContentSurfaceChanged(JNIEnv* env,
 jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
            const JavaParamRef<jobject>& content_web_contents,
-           jlong content_window_android) {
+           jlong content_window_android,
+           const JavaParamRef<jobject>& ui_web_contents,
+           jlong ui_window_android) {
   content::ContentViewCore* c_core = content::ContentViewCore::FromWebContents(
       content::WebContents::FromJavaWebContents(content_web_contents));
+  content::ContentViewCore* ui_core = content::ContentViewCore::FromWebContents(
+      content::WebContents::FromJavaWebContents(ui_web_contents));
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, c_core,
-      reinterpret_cast<ui::WindowAndroid*>(content_window_android)));
+      reinterpret_cast<ui::WindowAndroid*>(content_window_android), ui_core,
+      reinterpret_cast<ui::WindowAndroid*>(ui_window_android)));
 }
 
 }  // namespace vr_shell

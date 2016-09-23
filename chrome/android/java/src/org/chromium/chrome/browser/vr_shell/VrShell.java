@@ -20,6 +20,7 @@ import android.opengl.GLSurfaceView;
 import android.os.StrictMode;
 import android.view.MotionEvent;
 import android.view.Surface;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -28,9 +29,12 @@ import com.google.vr.ndk.base.GvrLayout;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -52,7 +56,9 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     private long mNativeVrShell = 0;
 
     private int mContentTextureHandle;
+    private int mUiTextureHandle;
     private FrameListener mContentFrameListener;
+    private FrameListener mUiFrameListener;
 
     private ContentViewCoreContainer mContentViewCoreContainer;
 
@@ -60,9 +66,9 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     private Tab mTab;
 
     // The ContentViewCore for the main content rect in VR.
-    private ContentViewCore mCVC;
+    private ContentViewCore mContentCVC;
 
-    // The non-VR container view for mCVC.
+    // The non-VR container view for mContentCVC.
     private ViewGroup mOriginalContentViewParent;
 
     // TODO(mthiesse): Instead of caching these values, make tab reparenting work for this case.
@@ -70,7 +76,11 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     private ViewGroup.LayoutParams mOriginalLayoutParams;
     private WindowAndroid mOriginalWindowAndroid;
 
-    private VrWindowAndroid mVRWindowAndroid;
+    private VrWindowAndroid mContentVrWindowAndroid;
+
+    private WebContents mUiContents;
+    private ContentViewCore mUiCVC;
+    private VrWindowAndroid mUiVrWindowAndroid;
 
     private static class ContentViewCoreContainer extends FrameLayout {
         public ContentViewCoreContainer(Context context) {
@@ -106,11 +116,28 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     public void initializeNative(Tab currentTab, VrShellDelegate delegate) {
         assert currentTab.getContentViewCore() != null;
         mTab = currentTab;
-        mCVC = mTab.getContentViewCore();
-        mVRWindowAndroid = new VrWindowAndroid(mActivity);
+        mContentCVC = mTab.getContentViewCore();
+        mContentVrWindowAndroid = new VrWindowAndroid(mActivity);
 
-        mNativeVrShell = nativeInit(mCVC.getWebContents(),
-                mVRWindowAndroid.getNativePointer());
+        mUiVrWindowAndroid = new VrWindowAndroid(mActivity);
+        mUiContents = WebContentsFactory.createWebContents(true, false);
+        mUiCVC = new ContentViewCore(mActivity);
+        ContentView uiContentView = ContentView.createContentView(mActivity, mUiCVC);
+        mUiCVC.initialize(ViewAndroidDelegate.createBasicDelegate(uiContentView),
+                uiContentView, mUiContents, mUiVrWindowAndroid);
+
+        mNativeVrShell = nativeInit(mContentCVC.getWebContents(),
+                mContentVrWindowAndroid.getNativePointer(),
+                mUiContents, mUiVrWindowAndroid.getNativePointer());
+
+        uiContentView.setVisibility(View.VISIBLE);
+        mUiCVC.onShow();
+        mContentViewCoreContainer.addView(uiContentView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+        mUiCVC.setBottomControlsHeight(0);
+        mUiCVC.setTopControlsHeight(0, false);
+        mUiVrWindowAndroid.onVisibilityChanged(true);
 
         nativeSetDelegate(mNativeVrShell, delegate);
 
@@ -120,13 +147,13 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     }
 
     private void reparentContentWindow() {
-        mOriginalWindowAndroid = mCVC.getWindowAndroid();
+        mOriginalWindowAndroid = mContentCVC.getWindowAndroid();
 
         // TODO(mthiesse): Update the WindowAndroid in ChromeActivity too?
         mTab.updateWindowAndroid(null);
-        mTab.updateWindowAndroid(mVRWindowAndroid);
+        mTab.updateWindowAndroid(mContentVrWindowAndroid);
 
-        ViewGroup contentContentView = mCVC.getContainerView();
+        ViewGroup contentContentView = mContentCVC.getContainerView();
         mOriginalContentViewParent = ((ViewGroup) contentContentView.getParent());
         mOriginalContentViewIndex = mOriginalContentViewParent.indexOfChild(contentContentView);
         mOriginalLayoutParams = contentContentView.getLayoutParams();
@@ -138,7 +165,7 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
     }
 
     private void restoreContentWindow() {
-        ViewGroup contentContentView = mCVC.getContainerView();
+        ViewGroup contentContentView = mContentCVC.getContainerView();
         mTab.updateWindowAndroid(null);
         mTab.updateWindowAndroid(mOriginalWindowAndroid);
         mContentViewCoreContainer.removeView(contentContentView);
@@ -161,8 +188,8 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
             }
         };
 
-        public FrameListener(SurfaceTexture texture, GLSurfaceView glSurfaceView) {
-            mSurfaceTexture = texture;
+        public FrameListener(int textureId, GLSurfaceView glSurfaceView) {
+            mSurfaceTexture = new SurfaceTexture(textureId);
             mSurfaceTexture.setOnFrameAvailableListener(this);
             mGlSurfaceView = glSurfaceView;
         }
@@ -176,24 +203,31 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        final int width = mCVC.getContainerView().getWidth();
-        final int height = mCVC.getContainerView().getHeight();
+        final int width = mContentCVC.getContainerView().getWidth();
+        final int height = mContentCVC.getContainerView().getHeight();
         mContentTextureHandle = createExternalTextureHandle();
-        mContentFrameListener = new FrameListener(new SurfaceTexture(mContentTextureHandle),
-                mGlSurfaceView);
+        mUiTextureHandle = createExternalTextureHandle();
+
+        mContentFrameListener = new FrameListener(mContentTextureHandle, mGlSurfaceView);
+        mUiFrameListener = new FrameListener(mUiTextureHandle, mGlSurfaceView);
+
         mContentFrameListener.mSurfaceTexture.setDefaultBufferSize(width, height);
+        mUiFrameListener.mSurfaceTexture.setDefaultBufferSize(width, height);
 
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
                 nativeContentSurfaceChanged(mNativeVrShell, width, height,
                         new Surface(mContentFrameListener.mSurfaceTexture));
-                mCVC.onPhysicalBackingSizeChanged(width, height);
+                mContentCVC.onPhysicalBackingSizeChanged(width, height);
+                nativeUiSurfaceChanged(mNativeVrShell, width, height,
+                        new Surface(mUiFrameListener.mSurfaceTexture));
+                mUiCVC.onPhysicalBackingSizeChanged(width, height);
             }
         });
 
         nativeGvrInit(mNativeVrShell, getGvrApi().getNativeGvrContext());
-        nativeInitializeGl(mNativeVrShell, mContentTextureHandle);
+        nativeInitializeGl(mNativeVrShell, mContentTextureHandle, mUiTextureHandle);
     }
 
     @Override
@@ -205,10 +239,15 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
         // isn't guaranteed to have fired after transitioning to VR. It only fires when the texture
         // is updated either through scrolling, resizing, etc. - none of which we're guaranteed to
         // have done on transition.
+        if (mUiFrameListener.mFirstTex) {
+            mUiFrameListener.mSurfaceTexture.updateTexImage();
+            mUiFrameListener.mFirstTex = false;
+        }
         if (mContentFrameListener.mFirstTex) {
             mContentFrameListener.mSurfaceTexture.updateTexImage();
             mContentFrameListener.mFirstTex = false;
         }
+
         nativeDrawFrame(mNativeVrShell);
     }
 
@@ -243,6 +282,9 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
         }
         if (mContentFrameListener != null && mContentFrameListener.mSurfaceTexture != null) {
             mContentFrameListener.mSurfaceTexture.release();
+        }
+        if (mUiFrameListener != null && mUiFrameListener.mSurfaceTexture != null) {
+            mUiFrameListener.mSurfaceTexture.release();
         }
         restoreContentWindow();
     }
@@ -299,18 +341,19 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
         }
     }
 
-    private native long nativeInit(WebContents contentWebContents,
-            long nativeContentWindowAndroid);
+    private native long nativeInit(WebContents contentWebContents, long nativeContentWindowAndroid,
+            WebContents uiWebContents, long nativeUiWindowAndroid);
     private native void nativeSetDelegate(long nativeVrShell, VrShellDelegate delegate);
     private native void nativeGvrInit(long nativeVrShell, long nativeGvrApi);
     private native void nativeDestroy(long nativeVrShell);
     private native void nativeInitializeGl(
-            long nativeVrShell, int contentDataHandle);
+            long nativeVrShell, int contentTextureHandle, int uiTextureHandle);
     private native void nativeDrawFrame(long nativeVrShell);
     private native void nativeOnPause(long nativeVrShell);
     private native void nativeOnResume(long nativeVrShell);
-    private native void nativeContentSurfaceDestroyed(long nativeVrShell);
     private native void nativeContentSurfaceChanged(
+            long nativeVrShell, int width, int height, Surface surface);
+    private native void nativeUiSurfaceChanged(
             long nativeVrShell, int width, int height, Surface surface);
     private native void nativeUpdateCompositorLayers(long nativeVrShell);
     private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled);

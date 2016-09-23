@@ -35,8 +35,10 @@ class VrShellRenderer;
 class VrShell : public device::GvrDelegate {
  public:
   VrShell(JNIEnv* env, jobject obj,
-          content::ContentViewCore* content_view_core,
-          ui::WindowAndroid* content_window);
+          content::ContentViewCore* content_cvc,
+          ui::WindowAndroid* content_window,
+          content::ContentViewCore* ui_cvc,
+          ui::WindowAndroid* ui_window);
 
   void UpdateCompositorLayers(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
@@ -49,7 +51,8 @@ class VrShell : public device::GvrDelegate {
                jlong native_gvr_api);
   void InitializeGl(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
-                    jint texture_data_handle);
+                    jint content_texture_handle,
+                    jint ui_texture_handle);
   void DrawFrame(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -68,10 +71,13 @@ class VrShell : public device::GvrDelegate {
       int eye, float left, float top, float width, float height) override;
   gvr::GvrApi* gvr_api() override;
 
-  void ContentSurfaceDestroyed(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& object);
   void ContentSurfaceChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      jint width,
+      jint height,
+      const base::android::JavaParamRef<jobject>& surface);
+  void UiSurfaceChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
       jint width,
@@ -80,6 +86,7 @@ class VrShell : public device::GvrDelegate {
 
  private:
   virtual ~VrShell();
+  void LoadUIContent();
   void DrawVrShell(int64_t time);
   void DrawEye(const gvr::Mat4f& view_matrix,
                const gvr::BufferViewport& params);
@@ -90,7 +97,9 @@ class VrShell : public device::GvrDelegate {
 
   void UpdateController();
 
-  // samplerExternalOES texture data for content area image.
+  // samplerExternalOES texture data for UI content image.
+  jint ui_texture_id_ = 0;
+  // samplerExternalOES texture data for main content image.
   jint content_texture_id_ = 0;
 
   float desktop_screen_tilt_;
@@ -115,8 +124,10 @@ class VrShell : public device::GvrDelegate {
   gvr::Sizei render_size_;
   float cursor_distance_;
 
-  std::unique_ptr<VrCompositor> content_compositor_view_;
+  std::unique_ptr<VrCompositor> content_compositor_;
   content::ContentViewCore* content_cvc_;
+  std::unique_ptr<VrCompositor> ui_compositor_;
+  content::ContentViewCore* ui_cvc_;
 
   VrShellDelegate* delegate_;
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
