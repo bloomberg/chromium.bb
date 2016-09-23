@@ -156,6 +156,9 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'mini_installer',
   'next_version_mini_installer',
 
+  # this is used at least on iOS
+  'gn_all',
+
   # These are listed in Builders that are skipped for other reasons.
   'chrome_junit_tests',
   'components_invalidation_impl_junit_tests',

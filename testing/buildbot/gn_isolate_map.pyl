@@ -462,6 +462,10 @@
     "type": "raw",
     "args": [],
   },
+  "gn_all": {
+    "label": "//:gn_all",
+    "type": "additional_compile_target",
+  },
   "gn_unittests": {
     "label": "//tools/gn:gn_unittests",
     "type": "raw",
