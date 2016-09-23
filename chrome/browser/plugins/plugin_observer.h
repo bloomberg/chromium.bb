@@ -65,6 +65,7 @@ class PluginObserver : public content::WebContentsObserver,
 #endif
   void RemoveComponentObserver(int placeholder_id);
   void OnOpenAboutPlugins();
+  void OnShowFlashPermissionBubble();
   void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)

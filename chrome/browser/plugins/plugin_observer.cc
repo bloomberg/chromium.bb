@@ -379,6 +379,8 @@ bool PluginObserver::OnMessageReceived(
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_OpenAboutPlugins,
                         OnOpenAboutPlugins)
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ShowFlashPermissionBubble,
+                        OnShowFlashPermissionBubble)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
                         OnCouldNotLoadPlugin)
 
@@ -449,6 +451,10 @@ void PluginObserver::OnOpenAboutPlugins() {
                                           blink::WebReferrerPolicyDefault)),
                     WindowOpenDisposition::NEW_FOREGROUND_TAB,
                     ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+}
+
+void PluginObserver::OnShowFlashPermissionBubble() {
+  // TODO(tommycli): Show a permission bubble for the associated tab.
 }
 
 void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {

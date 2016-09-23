@@ -225,7 +225,8 @@ void ChromePluginPlaceholder::OpenAboutPluginsCallback() {
 }
 
 void ChromePluginPlaceholder::ShowPermissionBubbleCallback() {
-  // TODO(tommycli): Show a permission bubble in the browser process.
+  RenderThread::Get()->Send(
+      new ChromeViewHostMsg_ShowFlashPermissionBubble(routing_id()));
 }
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
