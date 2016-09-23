@@ -175,27 +175,6 @@ class BuildConfig(AttrDict):
 
   See _settings for details on known configurations, and their documentation.
   """
-
-  _delete_key_sentinel = object()
-
-  @classmethod
-  def delete_key(cls):
-    """Used to remove the given key from inherited config.
-
-    Usage:
-      new_config = base_config.derive(foo=delete_key())
-    """
-    return cls._delete_key_sentinel
-
-  @classmethod
-  def delete_keys(cls, keys):
-    """Used to remove a set of keys from inherited config.
-
-    Usage:
-      new_config = base_config.derive(delete_keys(set_of_keys))
-    """
-    return {k: cls._delete_key_sentinel for k in keys}
-
   def GetBotId(self, remote_trybot=False):
     """Get the 'bot id' of a particular bot.
 
@@ -250,10 +229,7 @@ class BuildConfig(AttrDict):
     inherits.append(kwargs)
 
     for update_config in inherits:
-      keys_to_delete = []
-
       for name, value in update_config.iteritems():
-
         if callable(value):
           # If we are applying to a fixed value, we resolve to a fixed value.
           # Otherwise, we save off a callable to apply later, perhaps with
@@ -280,16 +256,9 @@ class BuildConfig(AttrDict):
             # If we had no value to apply it to, save it for later.
             self[name] = value
 
-        elif value is self._delete_key_sentinel:
-          # Delete keys are saved off for later.
-          keys_to_delete.append(name)
-
         else:
           # Simple values overwrite whatever we do or don't have.
           self[name] = value
-
-      for name in keys_to_delete:
-        self.pop(name)
 
     return self
 

@@ -151,23 +151,6 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
     self.assertEqual(config, dict())
     self.assertEqual(result, dict(name='bar', foo=1, bar=3, a=1, b=2))
 
-  def testDeleteKey(self):
-    base = config_lib.BuildConfig(foo='bar')
-
-    # We should be able to add to the override as an argument value.
-    override = config_lib.BuildConfig(foo=config_lib.BuildConfig.delete_key())
-    self.assertIn('foo', override)
-
-    # But remove it from base as a config value.
-    base.apply(override)
-    self.assertFalse('foo' in base)
-
-  def testDeleteKeys(self):
-    base_config = config_lib.BuildConfig(foo='bar', baz='bak')
-    test_config = base_config.derive(qzr='flp')
-    test_config.apply(config_lib.BuildConfig.delete_keys(base_config))
-    self.assertEqual(test_config, {'qzr': 'flp'})
-
   def testApplyCallable(self):
     # Callable that adds a configurable amount.
     append = lambda x: lambda base: base + ' ' + x
