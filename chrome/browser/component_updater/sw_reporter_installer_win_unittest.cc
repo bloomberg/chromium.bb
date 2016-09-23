@@ -81,11 +81,11 @@ class SwReporterInstallerTest : public ::testing::Test {
     EXPECT_TRUE(invocation.command_line.GetSwitches().empty());
     EXPECT_TRUE(invocation.command_line.GetArgs().empty());
     EXPECT_TRUE(invocation.suffix.empty());
-    EXPECT_EQ(SwReporterInvocation::FLAG_LOG_TO_RAPPOR |
-                  SwReporterInvocation::FLAG_LOG_EXIT_CODE_TO_PREFS |
-                  SwReporterInvocation::FLAG_TRIGGER_PROMPT |
-                  SwReporterInvocation::FLAG_SEND_REPORTER_LOGS,
-              invocation.flags);
+    EXPECT_EQ(SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR |
+                  SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS |
+                  SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT |
+                  SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS,
+              invocation.supported_behaviours);
   }
 
   // |ComponentReady| asserts that it is run on the UI thread, so we must
@@ -188,7 +188,7 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
                 invocation.command_line.GetArgs()[0]);
     }
 
-    EXPECT_EQ(0U, invocation.flags);
+    EXPECT_EQ(0U, invocation.supported_behaviours);
     histograms_.ExpectTotalCount(kErrorHistogramName, 0);
   }
 
@@ -301,7 +301,7 @@ TEST_F(ExperimentalSwReporterInstallerTest, SingleInvocation) {
   ASSERT_EQ(1U, invocation.command_line.GetArgs().size());
   EXPECT_EQ(L"random argument", invocation.command_line.GetArgs()[0]);
   EXPECT_EQ("TestSuffix", invocation.suffix);
-  EXPECT_EQ(0U, invocation.flags);
+  EXPECT_EQ(0U, invocation.supported_behaviours);
   histograms_.ExpectTotalCount(kErrorHistogramName, 0);
 }
 
@@ -348,7 +348,7 @@ TEST_F(ExperimentalSwReporterInstallerTest, MultipleInvocations) {
     ASSERT_EQ(1U, invocation.command_line.GetArgs().size());
     EXPECT_EQ(L"random argument", invocation.command_line.GetArgs()[0]);
     EXPECT_EQ("TestSuffix", invocation.suffix);
-    EXPECT_EQ(0U, invocation.flags);
+    EXPECT_EQ(0U, invocation.supported_behaviours);
   }
 
   {
@@ -362,7 +362,8 @@ TEST_F(ExperimentalSwReporterInstallerTest, MultipleInvocations) {
                                   kRegistrySuffixSwitch));
     ASSERT_TRUE(invocation.command_line.GetArgs().empty());
     EXPECT_EQ("SecondSuffix", invocation.suffix);
-    EXPECT_EQ(SwReporterInvocation::FLAG_TRIGGER_PROMPT, invocation.flags);
+    EXPECT_EQ(SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT,
+              invocation.supported_behaviours);
   }
 
   {
@@ -377,7 +378,7 @@ TEST_F(ExperimentalSwReporterInstallerTest, MultipleInvocations) {
     ASSERT_TRUE(invocation.command_line.GetArgs().empty());
     EXPECT_EQ("ThirdSuffix", invocation.suffix);
     // A missing "prompt" key means "false".
-    EXPECT_EQ(0U, invocation.flags);
+    EXPECT_EQ(0U, invocation.supported_behaviours);
   }
 
   histograms_.ExpectTotalCount(kErrorHistogramName, 0);

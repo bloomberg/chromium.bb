@@ -54,10 +54,11 @@ class SRTFetcherTest : public InProcessBrowserTest,
 
   void RunReporter(const base::FilePath& exe_path = base::FilePath()) {
     auto invocation = SwReporterInvocation::FromFilePath(exe_path);
-    invocation.flags = SwReporterInvocation::FLAG_LOG_TO_RAPPOR |
-                       SwReporterInvocation::FLAG_LOG_EXIT_CODE_TO_PREFS |
-                       SwReporterInvocation::FLAG_TRIGGER_PROMPT |
-                       SwReporterInvocation::FLAG_SEND_REPORTER_LOGS;
+    invocation.supported_behaviours =
+        SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR |
+        SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS |
+        SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT |
+        SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS;
 
     SwReporterQueue invocations;
     invocations.push(invocation);

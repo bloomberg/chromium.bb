@@ -56,6 +56,8 @@ using content::BrowserThread;
 
 namespace safe_browsing {
 
+// TODO(b/647763) Change the registry key to properly handle cases when the user
+// runs Google Chrome stable alongside Google Chrome SxS.
 const wchar_t kSoftwareRemovalToolRegistryKey[] =
     L"Software\\Google\\Software Removal Tool";
 
@@ -112,6 +114,27 @@ enum SwReporterUmaValue {
   SW_REPORTER_MAX,
 };
 
+// Used to send UMA information showing whether uploading of Software Reporter
+// logs is enabled, or the reason why not.
+// Replicated in the histograms.xml file, so the order MUST NOT CHANGE.
+enum SwReporterLogsUploadsEnabled {
+  REPORTER_LOGS_UPLOADS_ENABLED = 0,
+  REPORTER_LOGS_UPLOADS_SBER_DISABLED = 1,
+  REPORTER_LOGS_UPLOADS_RECENTLY_SENT_LOGS = 2,
+  REPORTER_LOGS_UPLOADS_MAX,
+};
+
+// Used to send UMA information about missing logs upload result in the registry
+// for the reporter. Replicated in the histograms.xml file, so the order
+// MUST NOT CHANGE.
+enum SwReporterLogsUploadResultRegistryError {
+  REPORTER_LOGS_UPLOAD_RESULT_ERROR_NO_ERROR = 0,
+  REPORTER_LOGS_UPLOAD_RESULT_ERROR_REGISTRY_KEY_INVALID = 1,
+  REPORTER_LOGS_UPLOAD_RESULT_ERROR_VALUE_NOT_FOUND = 2,
+  REPORTER_LOGS_UPLOAD_RESULT_ERROR_VALUE_OUT_OF_BOUNDS = 3,
+  REPORTER_LOGS_UPLOAD_RESULT_ERROR_MAX,
+};
+
 const char kRunningTimeErrorMetricName[] =
     "SoftwareReporter.RunningTimeRegistryError";
 
@@ -120,12 +143,25 @@ SwReporterTestingDelegate* g_testing_delegate_ = nullptr;
 const wchar_t kScanTimesSubKey[] = L"ScanTimes";
 const wchar_t kFoundUwsValueName[] = L"FoundUws";
 const wchar_t kMemoryUsedValueName[] = L"MemoryUsed";
+const wchar_t kLogsUploadResultValueName[] = L"LogsUploadResult";
 
 const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
 const char kFoundUwsReadErrorMetricName[] =
     "SoftwareReporter.FoundUwSReadError";
 const char kScanTimesMetricName[] = "SoftwareReporter.UwSScanTimes";
 const char kMemoryUsedMetricName[] = "SoftwareReporter.MemoryUsed";
+const char kStepMetricName[] = "SoftwareReporter.Step";
+const char kLogsUploadEnabledMetricName[] =
+    "SoftwareReporter.LogsUploadEnabled";
+const char kLogsUploadResultMetricName[] = "SoftwareReporter.LogsUploadResult";
+const char kLogsUploadResultRegistryErrorMetricName[] =
+    "SoftwareReporter.LogsUploadResultRegistryError";
+
+// The max value for histogram SoftwareReporter.LogsUploadResult, which is used
+// to send UMA information about the result of Software Reporter's attempt to
+// upload logs, when logs are enabled. This value must be consistent with the
+// SoftwareReporterLogsUploadResult enum defined in the histograms.xml file.
+const int kSwReporterLogsUploadResultMax = 30;
 
 // Reports metrics about the software reporter via UMA (and sometimes Rappor).
 class UMAHistogramReporter {
@@ -175,30 +211,32 @@ class UMAHistogramReporter {
 
   // Reports UwS found by the software reporter tool via UMA and RAPPOR.
   void ReportFoundUwS(bool use_rappor) const {
-    base::win::RegKey reporter_key(HKEY_CURRENT_USER, registry_key_.c_str(),
-                                   KEY_QUERY_VALUE | KEY_SET_VALUE);
+    base::win::RegKey reporter_key;
     std::vector<base::string16> found_uws_strings;
-    if (reporter_key.Valid() &&
-        reporter_key.ReadValues(kFoundUwsValueName, &found_uws_strings) ==
+    if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
+                          KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS ||
+        reporter_key.ReadValues(kFoundUwsValueName, &found_uws_strings) !=
             ERROR_SUCCESS) {
-      rappor::RapporService* rappor_service = nullptr;
-      if (use_rappor)
-        rappor_service = g_browser_process->rappor_service();
+      return;
+    }
 
-      bool parse_error = false;
-      for (const base::string16& uws_string : found_uws_strings) {
-        // All UwS ids are expected to be integers.
-        uint32_t uws_id = 0;
-        if (base::StringToUint(uws_string, &uws_id)) {
-          RecordSparseHistogram(kFoundUwsMetricName, uws_id);
-          if (rappor_service) {
-            rappor_service->RecordSample(kFoundUwsMetricName,
-                                         rappor::COARSE_RAPPOR_TYPE,
-                                         base::UTF16ToUTF8(uws_string));
-          }
-        } else {
-          parse_error = true;
+    rappor::RapporService* rappor_service = nullptr;
+    if (use_rappor)
+      rappor_service = g_browser_process->rappor_service();
+
+    bool parse_error = false;
+    for (const base::string16& uws_string : found_uws_strings) {
+      // All UwS ids are expected to be integers.
+      uint32_t uws_id = 0;
+      if (base::StringToUint(uws_string, &uws_id)) {
+        RecordSparseHistogram(kFoundUwsMetricName, uws_id);
+        if (rappor_service) {
+          rappor_service->RecordSample(kFoundUwsMetricName,
+                                       rappor::COARSE_RAPPOR_TYPE,
+                                       base::UTF16ToUTF8(uws_string));
         }
+      } else {
+        parse_error = true;
       }
 
       // Clean up the old value.
@@ -211,15 +249,16 @@ class UMAHistogramReporter {
   // Reports to UMA the memory usage of the software reporter tool as reported
   // by the tool itself in the Windows registry.
   void ReportMemoryUsage() const {
-    base::win::RegKey reporter_key(HKEY_CURRENT_USER, registry_key_.c_str(),
-                                   KEY_QUERY_VALUE | KEY_SET_VALUE);
+    base::win::RegKey reporter_key;
     DWORD memory_used = 0;
-    if (reporter_key.Valid() &&
-        reporter_key.ReadValueDW(kMemoryUsedValueName, &memory_used) ==
+    if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
+                          KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS ||
+        reporter_key.ReadValueDW(kMemoryUsedValueName, &memory_used) !=
             ERROR_SUCCESS) {
-      RecordMemoryKBHistogram(kMemoryUsedMetricName, memory_used);
-      reporter_key.DeleteValue(kMemoryUsedValueName);
+      return;
     }
+    RecordMemoryKBHistogram(kMemoryUsedMetricName, memory_used);
+    reporter_key.DeleteValue(kMemoryUsedValueName);
   }
 
   // Reports the SwReporter run time with UMA both as reported by the tool via
@@ -228,11 +267,10 @@ class UMAHistogramReporter {
     RecordLongTimesHistogram("SoftwareReporter.RunningTimeAccordingToChrome",
                              reporter_running_time);
 
-    // TODO(b/641081): This should only have KEY_QUERY_VALUE and KEY_SET_VALUE,
-    // and use Open to avoid creating the key if it doesn't already exist.
-    base::win::RegKey reporter_key(HKEY_CURRENT_USER, registry_key_.c_str(),
-                                   KEY_ALL_ACCESS);
-    if (!reporter_key.Valid()) {
+    // TODO(b/641081): This should only have KEY_QUERY_VALUE and KEY_SET_VALUE.
+    base::win::RegKey reporter_key;
+    if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
+                          KEY_ALL_ACCESS) != ERROR_SUCCESS) {
       RecordEnumerationHistogram(
           kRunningTimeErrorMetricName,
           REPORTER_RUNNING_TIME_ERROR_REGISTRY_KEY_INVALID,
@@ -287,12 +325,12 @@ class UMAHistogramReporter {
   void ReportScanTimes() const {
     base::string16 scan_times_key_path = base::StringPrintf(
         L"%ls\\%ls", registry_key_.c_str(), kScanTimesSubKey);
-    // TODO(b/641081): This should only have KEY_QUERY_VALUE and KEY_SET_VALUE,
-    // and use Open to avoid creating the key if it doesn't already exist.
-    base::win::RegKey scan_times_key(
-        HKEY_CURRENT_USER, scan_times_key_path.c_str(), KEY_ALL_ACCESS);
-    if (!scan_times_key.Valid())
+    // TODO(b/641081): This should only have KEY_QUERY_VALUE and KEY_SET_VALUE.
+    base::win::RegKey scan_times_key;
+    if (scan_times_key.Open(HKEY_CURRENT_USER, scan_times_key_path.c_str(),
+                            KEY_ALL_ACCESS) != ERROR_SUCCESS) {
       return;
+    }
 
     base::string16 value_name;
     int uws_id = 0;
@@ -315,14 +353,58 @@ class UMAHistogramReporter {
     // Clean up by deleting the scan times key, which is a subkey of the main
     // reporter key.
     scan_times_key.Close();
-    base::win::RegKey reporter_key(HKEY_CURRENT_USER, registry_key_.c_str(),
-                                   KEY_ENUMERATE_SUB_KEYS);
-    if (reporter_key.Valid())
+    base::win::RegKey reporter_key;
+    if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
+                          KEY_ENUMERATE_SUB_KEYS) == ERROR_SUCCESS) {
       reporter_key.DeleteKey(kScanTimesSubKey);
+    }
   }
 
   void RecordReporterStep(SwReporterUmaValue value) {
-    RecordEnumerationHistogram("SoftwareReporter.Step", value, SW_REPORTER_MAX);
+    RecordEnumerationHistogram(kStepMetricName, value, SW_REPORTER_MAX);
+  }
+
+  void RecordLogsUploadEnabled(SwReporterLogsUploadsEnabled value) {
+    RecordEnumerationHistogram(kLogsUploadEnabledMetricName, value,
+                               REPORTER_LOGS_UPLOADS_MAX);
+  }
+
+  void RecordLogsUploadResult() {
+    base::win::RegKey reporter_key;
+    DWORD logs_upload_result = 0;
+    if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
+                          KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS) {
+      RecordEnumerationHistogram(
+          kLogsUploadResultRegistryErrorMetricName,
+          REPORTER_LOGS_UPLOAD_RESULT_ERROR_REGISTRY_KEY_INVALID,
+          REPORTER_LOGS_UPLOAD_RESULT_ERROR_MAX);
+      return;
+    }
+
+    if (reporter_key.ReadValueDW(kLogsUploadResultValueName,
+                                 &logs_upload_result) != ERROR_SUCCESS) {
+      RecordEnumerationHistogram(
+          kLogsUploadResultRegistryErrorMetricName,
+          REPORTER_LOGS_UPLOAD_RESULT_ERROR_VALUE_NOT_FOUND,
+          REPORTER_LOGS_UPLOAD_RESULT_ERROR_MAX);
+      return;
+    }
+
+    if (logs_upload_result >= kSwReporterLogsUploadResultMax) {
+      RecordEnumerationHistogram(
+          kLogsUploadResultRegistryErrorMetricName,
+          REPORTER_LOGS_UPLOAD_RESULT_ERROR_VALUE_OUT_OF_BOUNDS,
+          REPORTER_LOGS_UPLOAD_RESULT_ERROR_MAX);
+      return;
+    }
+
+    RecordEnumerationHistogram(kLogsUploadResultMetricName,
+                               static_cast<Sample>(logs_upload_result),
+                               kSwReporterLogsUploadResultMax);
+    reporter_key.DeleteValue(kLogsUploadResultValueName);
+    RecordEnumerationHistogram(kLogsUploadResultRegistryErrorMetricName,
+                               REPORTER_LOGS_UPLOAD_RESULT_ERROR_NO_ERROR,
+                               REPORTER_LOGS_UPLOAD_RESULT_ERROR_MAX);
   }
 
  private:
@@ -681,8 +763,10 @@ class ReporterRunner : public chrome::BrowserListObserver {
     // schedules the next run for a few days later, and the user might have
     // changed settings in the meantime.
     PrefService* local_state = g_browser_process->local_state();
-    if (next_invocation.flags & SwReporterInvocation::FLAG_SEND_REPORTER_LOGS &&
+    if (next_invocation.BehaviourIsSupported(
+            SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS) &&
         local_state && ShouldSendReporterLogs(*local_state)) {
+      next_invocation.logs_upload_enabled = true;
       AddSwitchesForExtendedReporterUser(&next_invocation);
       // Set the local state value before the first attempt to run the
       // reporter, because we only want to upload logs once in the window
@@ -745,24 +829,28 @@ class ReporterRunner : public chrome::BrowserListObserver {
     UMAHistogramReporter uma(finished_invocation.suffix);
     uma.ReportVersion(version);
     uma.ReportExitCode(exit_code);
-    uma.ReportFoundUwS(finished_invocation.flags &
-                       SwReporterInvocation::FLAG_LOG_TO_RAPPOR);
+    uma.ReportFoundUwS(finished_invocation.BehaviourIsSupported(
+        SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR));
 
     PrefService* local_state = g_browser_process->local_state();
     if (local_state) {
-      if (finished_invocation.flags &
-          SwReporterInvocation::FLAG_LOG_EXIT_CODE_TO_PREFS)
+      if (finished_invocation.BehaviourIsSupported(
+              SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS)) {
         local_state->SetInteger(prefs::kSwReporterLastExitCode, exit_code);
+      }
       local_state->SetInt64(prefs::kSwReporterLastTimeTriggered,
                             base::Time::Now().ToInternalValue());
     }
     uma.ReportRuntime(reporter_running_time);
     uma.ReportScanTimes();
     uma.ReportMemoryUsage();
+    if (finished_invocation.logs_upload_enabled)
+      uma.RecordLogsUploadResult();
 
-    if (!(finished_invocation.flags &
-          SwReporterInvocation::FLAG_TRIGGER_PROMPT))
+    if (!finished_invocation.BehaviourIsSupported(
+            SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT)) {
       return;
+    }
 
     if (!IsInSRTPromptFieldTrialGroups()) {
       // Knowing about disabled field trial is more important than reporter not
@@ -840,23 +928,30 @@ class ReporterRunner : public chrome::BrowserListObserver {
   // opted into Safe Browsing extended reporting, and logs have been sent at
   // least |kSwReporterLastTimeSentReport| days ago.
   bool ShouldSendReporterLogs(const PrefService& local_state) {
-    if (!base::FeatureList::IsEnabled(kSwReporterExtendedSafeBrowsingFeature) ||
-        !SafeBrowsingExtendedReportingEnabled()) {
+    if (!base::FeatureList::IsEnabled(kSwReporterExtendedSafeBrowsingFeature))
+      return false;
+
+    UMAHistogramReporter uma;
+    if (!SafeBrowsingExtendedReportingEnabled()) {
+      uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_SBER_DISABLED);
       return false;
     }
 
     const base::Time now = base::Time::Now();
     const base::Time last_time_sent_logs = base::Time::FromInternalValue(
         local_state.GetInt64(prefs::kSwReporterLastTimeSentReport));
-    // Send the logs if the last send was in the future. This is intended as a
-    // measure for failure recovery, in case the time in local state is
-    // incorrectly set to the future.
-    if (last_time_sent_logs > now)
+    const base::Time next_time_send_logs =
+        last_time_sent_logs +
+        base::TimeDelta::FromDays(kDaysBetweenReporterLogsSent);
+    // Send the logs if the last send is the future or if the interval has
+    // passed. The former is intended as a measure for failure recovery, in
+    // case the time in local state is incorrectly set to the future.
+    if (last_time_sent_logs > now || next_time_send_logs <= now) {
+      uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_ENABLED);
       return true;
-    // Otherwise, send them if the interval has passed.
-    return last_time_sent_logs +
-               base::TimeDelta::FromDays(kDaysBetweenReporterLogsSent) <=
-           now;
+    }
+    uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_RECENTLY_SENT_LOGS);
+    return false;
   }
 
   void AddSwitchesForExtendedReporterUser(SwReporterInvocation* invocation) {
@@ -914,7 +1009,14 @@ SwReporterInvocation SwReporterInvocation::FromCommandLine(
 
 bool SwReporterInvocation::operator==(const SwReporterInvocation& other) const {
   return command_line.argv() == other.command_line.argv() &&
-         suffix == other.suffix && flags == other.flags;
+         suffix == other.suffix &&
+         supported_behaviours == other.supported_behaviours &&
+         logs_upload_enabled == other.logs_upload_enabled;
+}
+
+bool SwReporterInvocation::BehaviourIsSupported(
+    SwReporterInvocation::Behaviours intended_behaviour) const {
+  return (supported_behaviours & intended_behaviour) != 0;
 }
 
 void RunSwReporters(const SwReporterQueue& invocations,
@@ -940,10 +1042,10 @@ bool UserHasRunCleaner() {
   base::string16 cleaner_key_path(kSoftwareRemovalToolRegistryKey);
   cleaner_key_path.append(L"\\").append(kCleanerSubKey);
 
-  base::win::RegKey srt_cleaner_key(HKEY_CURRENT_USER, cleaner_key_path.c_str(),
-                                    KEY_QUERY_VALUE);
-
-  return srt_cleaner_key.Valid() && srt_cleaner_key.GetValueCount() > 0;
+  base::win::RegKey srt_cleaner_key;
+  return srt_cleaner_key.Open(HKEY_CURRENT_USER, cleaner_key_path.c_str(),
+                              KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+         srt_cleaner_key.GetValueCount() > 0;
 }
 
 void SetSwReporterTestingDelegate(SwReporterTestingDelegate* delegate) {

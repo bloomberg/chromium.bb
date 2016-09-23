@@ -59,17 +59,21 @@ struct SwReporterInvocation {
   // ending in |suffix|. For the canonical version, |suffix| will be empty.
   std::string suffix;
 
-  // Flags to control optional behaviours. By default all are enabled;
-  // experimental versions of the reporter will turn off the behaviours that
-  // are not yet supported.
-  using Flags = uint32_t;
-  enum : Flags {
-    FLAG_LOG_TO_RAPPOR = 0x1,
-    FLAG_LOG_EXIT_CODE_TO_PREFS = 0x2,
-    FLAG_TRIGGER_PROMPT = 0x4,
-    FLAG_SEND_REPORTER_LOGS = 0x8,
+  // Flags to control behaviours the Software Reporter should support by
+  // default. These flags are set in the Reporter installer, and experimental
+  // versions of the reporter will turn on the behaviours that are not yet
+  // supported.
+  using Behaviours = uint32_t;
+  enum : Behaviours {
+    BEHAVIOUR_LOG_TO_RAPPOR = 0x1,
+    BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS = 0x2,
+    BEHAVIOUR_TRIGGER_PROMPT = 0x4,
+    BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS = 0x8,
   };
-  Flags flags = 0;
+  Behaviours supported_behaviours = 0;
+
+  // Whether logs upload was enabled in this invocation.
+  bool logs_upload_enabled = false;
 
   SwReporterInvocation();
 
@@ -78,6 +82,8 @@ struct SwReporterInvocation {
       const base::CommandLine& command_line);
 
   bool operator==(const SwReporterInvocation& other) const;
+
+  bool BehaviourIsSupported(Behaviours intended_behaviour) const;
 };
 
 using SwReporterQueue = std::queue<SwReporterInvocation>;

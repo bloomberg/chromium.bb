@@ -57876,6 +57876,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The result of the most recent SRT log upload.</summary>
 </histogram>
 
+<histogram name="SoftwareReporter.LogsUploadEnabled"
+    enum="SoftwareReporterLogsUploadEnabled">
+  <owner>ftirelo@chromium.org</owner>
+  <summary>
+    If logs uploads are enabled in the Software Reporter or the reason why it is
+    disabled. Recorded before each run of the Software Reporter.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.LogsUploadResult"
+    enum="SoftwareReporterLogsUploadResult">
+  <owner>ftirelo@chromium.org</owner>
+  <summary>
+    The result of the most recent Software Reporter logs upload. Written by the
+    Software Reporter in the registry and sent by Chrome after the reporter
+    finishes.
+  </summary>
+</histogram>
+
+<histogram name="SoftwareReporter.LogsUploadResultRegistryError"
+    enum="SoftwareReporterLogsUploadResultRegistryError">
+  <owner>ftirelo@chromium.org</owner>
+  <summary>
+    Error encountered when reading the software reporter logs upload result from
+    the registry.
+  </summary>
+</histogram>
+
 <histogram name="SoftwareReporter.MajorVersion">
   <owner>mad@chromium.org</owner>
   <summary>
@@ -96200,6 +96228,29 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="SoftwareReporterExperimentError" type="int">
   <int value="1" label="Bad tag"/>
   <int value="2" label="Bad parameters"/>
+</enum>
+
+<enum name="SoftwareReporterLogsUploadEnabled" type="int">
+  <int value="0" label="Enabled"/>
+  <int value="1" label="SBER Disabled"/>
+  <int value="2" label="Recently sent logs"/>
+</enum>
+
+<enum name="SoftwareReporterLogsUploadResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Request failed"/>
+  <int value="2" label="Invalid response"/>
+  <int value="3" label="Timed out"/>
+  <int value="4" label="Internal error"/>
+  <int value="5" label="Report too large"/>
+  <int value="6" label="No network"/>
+</enum>
+
+<enum name="SoftwareReporterLogsUploadResultRegistryError" type="int">
+  <int value="0" label="No error"/>
+  <int value="1" label="Invalid registry key"/>
+  <int value="2" label="Value not found"/>
+  <int value="3" label="Value out of bounds"/>
 </enum>
 
 <enum name="SpdyFrameFlowControlState" type="int">

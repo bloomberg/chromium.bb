@@ -119,10 +119,10 @@ void ReportExperimentError(SwReporterExperimentError error) {
                             SW_REPORTER_EXPERIMENT_ERROR_MAX);
 }
 
-// Run the software reporter on the next Chrome startup after it's downloaded.
-// (This is the default |reporter_runner| function passed to the
-// |SwReporterInstallerTraits| constructor in |RegisterSwReporterComponent|
-// below.)
+// Once the Software Reporter is downloaded, schedules it to run sometime after
+// the current browser startup is complete. (This is the default
+// |reporter_runner| function passed to the |SwReporterInstallerTraits|
+// constructor in |RegisterSwReporterComponent| below.)
 void RunSwReportersAfterStartup(
     const safe_browsing::SwReporterQueue& invocations,
     const base::Version& version) {
@@ -216,7 +216,7 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
       command_line.AppendSwitchASCII("registry-suffix", suffix);
 
     // "prompt" is optional, but if present must be a boolean.
-    SwReporterInvocation::Flags flags = 0;
+    SwReporterInvocation::Behaviours supported_behaviours = 0;
     const base::Value* prompt_value = nullptr;
     if (invocation_params->Get("prompt", &prompt_value)) {
       bool prompt = false;
@@ -225,12 +225,12 @@ void RunExperimentalSwReporter(const base::FilePath& exe_path,
         return;
       }
       if (prompt)
-        flags |= SwReporterInvocation::FLAG_TRIGGER_PROMPT;
+        supported_behaviours |= SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT;
     }
 
     auto invocation = SwReporterInvocation::FromCommandLine(command_line);
     invocation.suffix = suffix;
-    invocation.flags = flags;
+    invocation.supported_behaviours = supported_behaviours;
     invocations.push(invocation);
   }
 
@@ -280,10 +280,11 @@ void SwReporterInstallerTraits::ComponentReady(
                               reporter_runner_);
   } else {
     auto invocation = SwReporterInvocation::FromFilePath(exe_path);
-    invocation.flags = SwReporterInvocation::FLAG_LOG_TO_RAPPOR |
-                       SwReporterInvocation::FLAG_LOG_EXIT_CODE_TO_PREFS |
-                       SwReporterInvocation::FLAG_TRIGGER_PROMPT |
-                       SwReporterInvocation::FLAG_SEND_REPORTER_LOGS;
+    invocation.supported_behaviours =
+        SwReporterInvocation::BEHAVIOUR_LOG_TO_RAPPOR |
+        SwReporterInvocation::BEHAVIOUR_LOG_EXIT_CODE_TO_PREFS |
+        SwReporterInvocation::BEHAVIOUR_TRIGGER_PROMPT |
+        SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS;
 
     safe_browsing::SwReporterQueue invocations;
     invocations.push(invocation);
