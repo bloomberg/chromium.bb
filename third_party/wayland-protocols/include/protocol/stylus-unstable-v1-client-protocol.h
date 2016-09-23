@@ -16,8 +16,6 @@ extern "C" {
  * @section page_ifaces_stylus_unstable_v1 Interfaces
  * - @subpage page_iface_zcr_stylus_v1 - extends wl_pointer with events for on-screen stylus
  * - @subpage page_iface_zcr_pointer_stylus_v1 - stylus extension for pointer
- * - @subpage page_iface_zwp_stylus_v1 - DEPRECATED
- * - @subpage page_iface_zwp_pointer_stylus_v1 - DEPRECATED
  * @section page_copyright_stylus_unstable_v1 Copyright
  * <pre>
  *
@@ -46,8 +44,6 @@ extern "C" {
 struct wl_pointer;
 struct zcr_pointer_stylus_v1;
 struct zcr_stylus_v1;
-struct zwp_pointer_stylus_v1;
-struct zwp_stylus_v1;
 
 /**
  * @page page_iface_zcr_stylus_v1 zcr_stylus_v1
@@ -109,66 +105,6 @@ extern const struct wl_interface zcr_stylus_v1_interface;
  * events to describe details about a stylus acting as a pointer.
  */
 extern const struct wl_interface zcr_pointer_stylus_v1_interface;
-/**
- * @page page_iface_zwp_stylus_v1 zwp_stylus_v1
- * @section page_iface_zwp_stylus_v1_desc Description
- *
- * Allows a wl_pointer to represent an on-screen stylus. The client can
- * interpret the on-screen stylus like any other mouse device, and use
- * this protocol to obtain detail information about the type of stylus,
- * as well as the force and tilt of the tool.
- *
- * These events are to be fired by the server within the same frame as other
- * wl_pointer events.
- *
- * Warning! The protocol described in this file is experimental and
- * backward incompatible changes may be made. Backward compatible changes
- * may be added together with the corresponding uinterface version bump.
- * Backward incompatible changes are done by bumping the version number in
- * the protocol and uinterface names and resetting the interface version.
- * Once the protocol is to be declared stable, the 'z' prefix and the
- * version number in the protocol and interface names are removed and the
- * interface version number is reset.
- * @section page_iface_zwp_stylus_v1_api API
- * See @ref iface_zwp_stylus_v1.
- */
-/**
- * @defgroup iface_zwp_stylus_v1 The zwp_stylus_v1 interface
- *
- * Allows a wl_pointer to represent an on-screen stylus. The client can
- * interpret the on-screen stylus like any other mouse device, and use
- * this protocol to obtain detail information about the type of stylus,
- * as well as the force and tilt of the tool.
- *
- * These events are to be fired by the server within the same frame as other
- * wl_pointer events.
- *
- * Warning! The protocol described in this file is experimental and
- * backward incompatible changes may be made. Backward compatible changes
- * may be added together with the corresponding uinterface version bump.
- * Backward incompatible changes are done by bumping the version number in
- * the protocol and uinterface names and resetting the interface version.
- * Once the protocol is to be declared stable, the 'z' prefix and the
- * version number in the protocol and interface names are removed and the
- * interface version number is reset.
- */
-extern const struct wl_interface zwp_stylus_v1_interface;
-/**
- * @page page_iface_zwp_pointer_stylus_v1 zwp_pointer_stylus_v1
- * @section page_iface_zwp_pointer_stylus_v1_desc Description
- *
- * The zwp_pointer_stylus_v1 interface extends the wl_pointer interface with
- * events to describe details about a stylus acting as a pointer.
- * @section page_iface_zwp_pointer_stylus_v1_api API
- * See @ref iface_zwp_pointer_stylus_v1.
- */
-/**
- * @defgroup iface_zwp_pointer_stylus_v1 The zwp_pointer_stylus_v1 interface
- *
- * The zwp_pointer_stylus_v1 interface extends the wl_pointer interface with
- * events to describe details about a stylus acting as a pointer.
- */
-extern const struct wl_interface zwp_pointer_stylus_v1_interface;
 
 #define ZCR_STYLUS_V1_GET_POINTER_STYLUS	0
 
@@ -356,194 +292,6 @@ zcr_pointer_stylus_v1_destroy(struct zcr_pointer_stylus_v1 *zcr_pointer_stylus_v
 			 ZCR_POINTER_STYLUS_V1_DESTROY);
 
 	wl_proxy_destroy((struct wl_proxy *) zcr_pointer_stylus_v1);
-}
-
-#define ZWP_STYLUS_V1_GET_POINTER_STYLUS	0
-
-/**
- * @ingroup iface_zwp_stylus_v1
- */
-#define ZWP_STYLUS_V1_GET_POINTER_STYLUS_SINCE_VERSION	1
-
-/** @ingroup iface_zwp_stylus_v1 */
-static inline void
-zwp_stylus_v1_set_user_data(struct zwp_stylus_v1 *zwp_stylus_v1, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) zwp_stylus_v1, user_data);
-}
-
-/** @ingroup iface_zwp_stylus_v1 */
-static inline void *
-zwp_stylus_v1_get_user_data(struct zwp_stylus_v1 *zwp_stylus_v1)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) zwp_stylus_v1);
-}
-
-static inline uint32_t
-zwp_stylus_v1_get_version(struct zwp_stylus_v1 *zwp_stylus_v1)
-{
-	return wl_proxy_get_version((struct wl_proxy *) zwp_stylus_v1);
-}
-
-/** @ingroup iface_zwp_stylus_v1 */
-static inline void
-zwp_stylus_v1_destroy(struct zwp_stylus_v1 *zwp_stylus_v1)
-{
-	wl_proxy_destroy((struct wl_proxy *) zwp_stylus_v1);
-}
-
-/**
- * @ingroup iface_zwp_stylus_v1
- *
- * Create pointer_stylus object. See zwp_pointer_stylus_v1 interface for
- * details.
- */
-static inline struct zwp_pointer_stylus_v1 *
-zwp_stylus_v1_get_pointer_stylus(struct zwp_stylus_v1 *zwp_stylus_v1, struct wl_pointer *pointer)
-{
-	struct wl_proxy *id;
-
-	id = wl_proxy_marshal_constructor((struct wl_proxy *) zwp_stylus_v1,
-			 ZWP_STYLUS_V1_GET_POINTER_STYLUS, &zwp_pointer_stylus_v1_interface, NULL, pointer);
-
-	return (struct zwp_pointer_stylus_v1 *) id;
-}
-
-#ifndef ZWP_POINTER_STYLUS_V1_TOOL_TYPE_ENUM
-#define ZWP_POINTER_STYLUS_V1_TOOL_TYPE_ENUM
-/**
- * @ingroup iface_zwp_pointer_stylus_v1
- * tool type of device.
- */
-enum zwp_pointer_stylus_v1_tool_type {
-	/**
-	 * Mouse or touchpad, not a stylus.
-	 */
-	ZWP_POINTER_STYLUS_V1_TOOL_TYPE_MOUSE = 0,
-	/**
-	 * Pen
-	 */
-	ZWP_POINTER_STYLUS_V1_TOOL_TYPE_PEN = 1,
-	/**
-	 * Touch
-	 */
-	ZWP_POINTER_STYLUS_V1_TOOL_TYPE_TOUCH = 2,
-	/**
-	 * Eraser
-	 */
-	ZWP_POINTER_STYLUS_V1_TOOL_TYPE_ERASER = 3,
-};
-#endif /* ZWP_POINTER_STYLUS_V1_TOOL_TYPE_ENUM */
-
-/**
- * @ingroup iface_zwp_pointer_stylus_v1
- * @struct zwp_pointer_stylus_v1_listener
- */
-struct zwp_pointer_stylus_v1_listener {
-	/**
-	 * pointing device tool type changed
-	 *
-	 * Notification that the user is using a new tool type. There can
-	 * only be one tool in use at a time. If the pointer enters a
-	 * client surface, with a tool type other than mouse, this event
-	 * will also be generated.
-	 *
-	 * If this event is not received, the client has to assume a mouse
-	 * is in use. The remaining events of this protocol are only being
-	 * generated after this event has been fired with a tool type other
-	 * than mouse.
-	 * @param type new device type
-	 */
-	void (*tool_change)(void *data,
-			    struct zwp_pointer_stylus_v1 *zwp_pointer_stylus_v1,
-			    uint32_t type);
-	/**
-	 * force change event
-	 *
-	 * Notification of a change in physical force on the surface of
-	 * the screen.
-	 *
-	 * If the pointer enters a client surface, with a tool type other
-	 * than mouse, this event will also be generated.
-	 *
-	 * The force is calibrated and normalized to the 0 to 1 range.
-	 * @param time timestamp with millisecond granularity
-	 * @param force new value of force
-	 */
-	void (*force)(void *data,
-		      struct zwp_pointer_stylus_v1 *zwp_pointer_stylus_v1,
-		      uint32_t time,
-		      wl_fixed_t force);
-	/**
-	 * force change event
-	 *
-	 * Notification of a change in tilt of the pointing tool.
-	 *
-	 * If the pointer enters a client surface, with a tool type other
-	 * than mouse, this event will also be generated.
-	 *
-	 * Measured from surface normal as plane angle in degrees, values
-	 * lie in [-90,90]. A positive x is to the right and a positive y
-	 * is towards the user.
-	 * @param time timestamp with millisecond granularity
-	 * @param tilt_x tilt in x direction
-	 * @param tilt_y tilt in y direction
-	 */
-	void (*tilt)(void *data,
-		     struct zwp_pointer_stylus_v1 *zwp_pointer_stylus_v1,
-		     uint32_t time,
-		     wl_fixed_t tilt_x,
-		     wl_fixed_t tilt_y);
-};
-
-/**
- * @ingroup zwp_pointer_stylus_v1_iface
- */
-static inline int
-zwp_pointer_stylus_v1_add_listener(struct zwp_pointer_stylus_v1 *zwp_pointer_stylus_v1,
-				   const struct zwp_pointer_stylus_v1_listener *listener, void *data)
-{
-	return wl_proxy_add_listener((struct wl_proxy *) zwp_pointer_stylus_v1,
-				     (void (**)(void)) listener, data);
-}
-
-#define ZWP_POINTER_STYLUS_V1_DESTROY	0
-
-/**
- * @ingroup iface_zwp_pointer_stylus_v1
- */
-#define ZWP_POINTER_STYLUS_V1_DESTROY_SINCE_VERSION	1
-
-/** @ingroup iface_zwp_pointer_stylus_v1 */
-static inline void
-zwp_pointer_stylus_v1_set_user_data(struct zwp_pointer_stylus_v1 *zwp_pointer_stylus_v1, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) zwp_pointer_stylus_v1, user_data);
-}
-
-/** @ingroup iface_zwp_pointer_stylus_v1 */
-static inline void *
-zwp_pointer_stylus_v1_get_user_data(struct zwp_pointer_stylus_v1 *zwp_pointer_stylus_v1)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) zwp_pointer_stylus_v1);
-}
-
-static inline uint32_t
-zwp_pointer_stylus_v1_get_version(struct zwp_pointer_stylus_v1 *zwp_pointer_stylus_v1)
-{
-	return wl_proxy_get_version((struct wl_proxy *) zwp_pointer_stylus_v1);
-}
-
-/**
- * @ingroup iface_zwp_pointer_stylus_v1
- */
-static inline void
-zwp_pointer_stylus_v1_destroy(struct zwp_pointer_stylus_v1 *zwp_pointer_stylus_v1)
-{
-	wl_proxy_marshal((struct wl_proxy *) zwp_pointer_stylus_v1,
-			 ZWP_POINTER_STYLUS_V1_DESTROY);
-
-	wl_proxy_destroy((struct wl_proxy *) zwp_pointer_stylus_v1);
 }
 
 #ifdef  __cplusplus

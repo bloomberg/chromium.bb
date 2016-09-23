@@ -30,8 +30,6 @@
 extern const struct wl_interface wl_surface_interface;
 extern const struct wl_interface zcr_notification_surface_v1_interface;
 extern const struct wl_interface zcr_remote_surface_v1_interface;
-extern const struct wl_interface zwp_notification_surface_v1_interface;
-extern const struct wl_interface zwp_remote_surface_v1_interface;
 
 static const struct wl_interface *types[] = {
 	NULL,
@@ -47,14 +45,6 @@ static const struct wl_interface *types[] = {
 	&wl_surface_interface,
 	NULL,
 	&zcr_notification_surface_v1_interface,
-	&wl_surface_interface,
-	NULL,
-	&wl_surface_interface,
-	&wl_surface_interface,
-	&zwp_remote_surface_v1_interface,
-	&wl_surface_interface,
-	NULL,
-	&zwp_notification_surface_v1_interface,
 	&wl_surface_interface,
 	NULL,
 	&wl_surface_interface,
@@ -117,76 +107,6 @@ static const struct wl_message zcr_notification_surface_v1_requests[] = {
 WL_EXPORT const struct wl_interface zcr_notification_surface_v1_interface = {
 	"zcr_notification_surface_v1", 1,
 	1, zcr_notification_surface_v1_requests,
-	0, NULL,
-};
-
-static const struct wl_message zwp_remote_shell_v1_requests[] = {
-	{ "destroy", "", types + 0 },
-	{ "get_remote_surface", "nou", types + 17 },
-	{ "get_notification_surface", "6nos", types + 20 },
-};
-
-static const struct wl_message zwp_remote_shell_v1_events[] = {
-	{ "configure", "iiiiii", types + 0 },
-	{ "activated", "?o?o", types + 23 },
-	{ "layout_mode_changed", "8u", types + 0 },
-	{ "configuration_changed", "9iiifiiiiu", types + 0 },
-};
-
-WL_EXPORT const struct wl_interface zwp_remote_shell_v1_interface = {
-	"zwp_remote_shell_v1", 11,
-	3, zwp_remote_shell_v1_requests,
-	4, zwp_remote_shell_v1_events,
-};
-
-static const struct wl_message zwp_remote_surface_v1_requests[] = {
-	{ "destroy", "", types + 0 },
-	{ "set_app_id", "s", types + 0 },
-	{ "set_window_geometry", "iiii", types + 0 },
-	{ "set_scale", "f", types + 0 },
-	{ "fullscreen", "2", types + 0 },
-	{ "maximize", "2", types + 0 },
-	{ "minimize", "2", types + 0 },
-	{ "restore", "2", types + 0 },
-	{ "pin", "3", types + 0 },
-	{ "unpin", "3", types + 0 },
-	{ "unfullscreen", "3", types + 0 },
-	{ "set_rectangular_shadow", "4iiii", types + 0 },
-	{ "set_title", "5s", types + 0 },
-	{ "set_top_inset", "5i", types + 0 },
-	{ "set_system_modal", "8", types + 0 },
-	{ "unset_system_modal", "8", types + 0 },
-	{ "set_rectangular_shadow_background_opacity", "9f", types + 0 },
-	{ "activate", "10u", types + 0 },
-	{ "pin_with_trusted_flag", "11i", types + 0 },
-};
-
-static const struct wl_message zwp_remote_surface_v1_events[] = {
-	{ "set_fullscreen", "", types + 0 },
-	{ "unset_fullscreen", "", types + 0 },
-	{ "close", "", types + 0 },
-	{ "set_maximized", "2", types + 0 },
-	{ "unset_maximized", "2", types + 0 },
-	{ "set_minimized", "2", types + 0 },
-	{ "unset_minimized", "2", types + 0 },
-	{ "set_pinned", "3", types + 0 },
-	{ "unset_pinned", "3", types + 0 },
-	{ "state_type_changed", "7u", types + 0 },
-};
-
-WL_EXPORT const struct wl_interface zwp_remote_surface_v1_interface = {
-	"zwp_remote_surface_v1", 11,
-	19, zwp_remote_surface_v1_requests,
-	10, zwp_remote_surface_v1_events,
-};
-
-static const struct wl_message zwp_notification_surface_v1_requests[] = {
-	{ "destroy", "", types + 0 },
-};
-
-WL_EXPORT const struct wl_interface zwp_notification_surface_v1_interface = {
-	"zwp_notification_surface_v1", 6,
-	1, zwp_notification_surface_v1_requests,
 	0, NULL,
 };
 

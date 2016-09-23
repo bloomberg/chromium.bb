@@ -19,8 +19,6 @@ struct wl_resource;
  * @section page_ifaces_gaming_input_unstable_v1 Interfaces
  * - @subpage page_iface_zcr_gaming_input_v1 - extends wl_seat with gaming input devices
  * - @subpage page_iface_zcr_gamepad_v1 - gamepad input device
- * - @subpage page_iface_zwp_gaming_input_v1 - DEPRECATED
- * - @subpage page_iface_zwp_gamepad_v1 - DEPRECATED
  * @section page_copyright_gaming_input_unstable_v1 Copyright
  * <pre>
  *
@@ -49,8 +47,6 @@ struct wl_resource;
 struct wl_seat;
 struct zcr_gamepad_v1;
 struct zcr_gaming_input_v1;
-struct zwp_gamepad_v1;
-struct zwp_gaming_input_v1;
 
 /**
  * @page page_iface_zcr_gaming_input_v1 zcr_gaming_input_v1
@@ -106,60 +102,6 @@ extern const struct wl_interface zcr_gaming_input_v1_interface;
  * by the W3C Gamepad API at: https://w3c.github.io/gamepad/#remapping
  */
 extern const struct wl_interface zcr_gamepad_v1_interface;
-/**
- * @page page_iface_zwp_gaming_input_v1 zwp_gaming_input_v1
- * @section page_iface_zwp_gaming_input_v1_desc Description
- *
- * A global interface to provide gaming input devices for a given seat.
- *
- * Currently only gamepad devices are supported.
- *
- * Warning! The protocol described in this file is experimental and
- * backward incompatible changes may be made. Backward compatible changes
- * may be added together with the corresponding uinterface version bump.
- * Backward incompatible changes are done by bumping the version number in
- * the protocol and uinterface names and resetting the interface version.
- * Once the protocol is to be declared stable, the 'z' prefix and the
- * version number in the protocol and interface names are removed and the
- * interface version number is reset.
- * @section page_iface_zwp_gaming_input_v1_api API
- * See @ref iface_zwp_gaming_input_v1.
- */
-/**
- * @defgroup iface_zwp_gaming_input_v1 The zwp_gaming_input_v1 interface
- *
- * A global interface to provide gaming input devices for a given seat.
- *
- * Currently only gamepad devices are supported.
- *
- * Warning! The protocol described in this file is experimental and
- * backward incompatible changes may be made. Backward compatible changes
- * may be added together with the corresponding uinterface version bump.
- * Backward incompatible changes are done by bumping the version number in
- * the protocol and uinterface names and resetting the interface version.
- * Once the protocol is to be declared stable, the 'z' prefix and the
- * version number in the protocol and interface names are removed and the
- * interface version number is reset.
- */
-extern const struct wl_interface zwp_gaming_input_v1_interface;
-/**
- * @page page_iface_zwp_gamepad_v1 zwp_gamepad_v1
- * @section page_iface_zwp_gamepad_v1_desc Description
- *
- * The zwp_gamepad_v1 interface represents one or more gamepad input devices,
- * which are reported as a normalized 'Standard Gamepad' as it is specified
- * by the W3C Gamepad API at: https://w3c.github.io/gamepad/#remapping
- * @section page_iface_zwp_gamepad_v1_api API
- * See @ref iface_zwp_gamepad_v1.
- */
-/**
- * @defgroup iface_zwp_gamepad_v1 The zwp_gamepad_v1 interface
- *
- * The zwp_gamepad_v1 interface represents one or more gamepad input devices,
- * which are reported as a normalized 'Standard Gamepad' as it is specified
- * by the W3C Gamepad API at: https://w3c.github.io/gamepad/#remapping
- */
-extern const struct wl_interface zwp_gamepad_v1_interface;
 
 /**
  * @ingroup iface_zcr_gaming_input_v1
@@ -305,152 +247,6 @@ static inline void
 zcr_gamepad_v1_send_frame(struct wl_resource *resource_, uint32_t time)
 {
 	wl_resource_post_event(resource_, ZCR_GAMEPAD_V1_FRAME, time);
-}
-
-/**
- * @ingroup iface_zwp_gaming_input_v1
- * @struct zwp_gaming_input_v1_interface
- */
-struct zwp_gaming_input_v1_interface {
-	/**
-	 * get gamepad device assigned to seat
-	 *
-	 * Create gamepad object. See zwp_gamepad_v1 interface for
-	 * details.
-	 */
-	void (*get_gamepad)(struct wl_client *client,
-			    struct wl_resource *resource,
-			    uint32_t id,
-			    struct wl_resource *seat);
-};
-
-
-#ifndef ZWP_GAMEPAD_V1_GAMEPAD_STATE_ENUM
-#define ZWP_GAMEPAD_V1_GAMEPAD_STATE_ENUM
-/**
- * @ingroup iface_zwp_gamepad_v1
- * connection state
- */
-enum zwp_gamepad_v1_gamepad_state {
-	/**
-	 * no gamepads are connected or on.
-	 */
-	ZWP_GAMEPAD_V1_GAMEPAD_STATE_OFF = 0,
-	/**
-	 * at least one gamepad is connected.
-	 */
-	ZWP_GAMEPAD_V1_GAMEPAD_STATE_ON = 1,
-};
-#endif /* ZWP_GAMEPAD_V1_GAMEPAD_STATE_ENUM */
-
-#ifndef ZWP_GAMEPAD_V1_BUTTON_STATE_ENUM
-#define ZWP_GAMEPAD_V1_BUTTON_STATE_ENUM
-/**
- * @ingroup iface_zwp_gamepad_v1
- * physical button state
- *
- * Describes the physical state of a button that produced the button
- * event.
- */
-enum zwp_gamepad_v1_button_state {
-	/**
-	 * the button is not pressed
-	 */
-	ZWP_GAMEPAD_V1_BUTTON_STATE_RELEASED = 0,
-	/**
-	 * the button is pressed
-	 */
-	ZWP_GAMEPAD_V1_BUTTON_STATE_PRESSED = 1,
-};
-#endif /* ZWP_GAMEPAD_V1_BUTTON_STATE_ENUM */
-
-/**
- * @ingroup iface_zwp_gamepad_v1
- * @struct zwp_gamepad_v1_interface
- */
-struct zwp_gamepad_v1_interface {
-	/**
-	 * destroy gamepad object
-	 *
-	 * 
-	 */
-	void (*destroy)(struct wl_client *client,
-			struct wl_resource *resource);
-};
-
-#define ZWP_GAMEPAD_V1_STATE_CHANGE	0
-#define ZWP_GAMEPAD_V1_AXIS	1
-#define ZWP_GAMEPAD_V1_BUTTON	2
-#define ZWP_GAMEPAD_V1_FRAME	3
-
-/**
- * @ingroup iface_zwp_gamepad_v1
- */
-#define ZWP_GAMEPAD_V1_STATE_CHANGE_SINCE_VERSION	1
-/**
- * @ingroup iface_zwp_gamepad_v1
- */
-#define ZWP_GAMEPAD_V1_AXIS_SINCE_VERSION	1
-/**
- * @ingroup iface_zwp_gamepad_v1
- */
-#define ZWP_GAMEPAD_V1_BUTTON_SINCE_VERSION	1
-/**
- * @ingroup iface_zwp_gamepad_v1
- */
-#define ZWP_GAMEPAD_V1_FRAME_SINCE_VERSION	1
-
-/**
- * @ingroup iface_zwp_gamepad_v1
- * Sends an state_change event to the client owning the resource.
- * @param resource_ The client's resource
- * @param state new state
- */
-static inline void
-zwp_gamepad_v1_send_state_change(struct wl_resource *resource_, uint32_t state)
-{
-	wl_resource_post_event(resource_, ZWP_GAMEPAD_V1_STATE_CHANGE, state);
-}
-
-/**
- * @ingroup iface_zwp_gamepad_v1
- * Sends an axis event to the client owning the resource.
- * @param resource_ The client's resource
- * @param time timestamp with millisecond granularity
- * @param axis axis that produced this event
- * @param value new value of axis
- */
-static inline void
-zwp_gamepad_v1_send_axis(struct wl_resource *resource_, uint32_t time, uint32_t axis, wl_fixed_t value)
-{
-	wl_resource_post_event(resource_, ZWP_GAMEPAD_V1_AXIS, time, axis, value);
-}
-
-/**
- * @ingroup iface_zwp_gamepad_v1
- * Sends an button event to the client owning the resource.
- * @param resource_ The client's resource
- * @param time timestamp with millisecond granularity
- * @param button id of button
- * @param state digital state of the button
- * @param analog analog value of the button
- */
-static inline void
-zwp_gamepad_v1_send_button(struct wl_resource *resource_, uint32_t time, uint32_t button, uint32_t state, wl_fixed_t analog)
-{
-	wl_resource_post_event(resource_, ZWP_GAMEPAD_V1_BUTTON, time, button, state, analog);
-}
-
-/**
- * @ingroup iface_zwp_gamepad_v1
- * Sends an frame event to the client owning the resource.
- * @param resource_ The client's resource
- * @param time timestamp with millisecond granularity
- */
-static inline void
-zwp_gamepad_v1_send_frame(struct wl_resource *resource_, uint32_t time)
-{
-	wl_resource_post_event(resource_, ZWP_GAMEPAD_V1_FRAME, time);
 }
 
 #ifdef  __cplusplus

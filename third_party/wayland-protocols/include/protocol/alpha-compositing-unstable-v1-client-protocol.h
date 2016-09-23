@@ -32,8 +32,6 @@ extern "C" {
  * @section page_ifaces_alpha_compositing_unstable_v1 Interfaces
  * - @subpage page_iface_zcr_alpha_compositing_v1 - alpha_compositing
  * - @subpage page_iface_zcr_blending_v1 - blending interface to a wl_surface
- * - @subpage page_iface_zwp_alpha_compositing_v1 - DEPRECATED
- * - @subpage page_iface_zwp_blending_v1 - DEPRECATED
  * @section page_copyright_alpha_compositing_unstable_v1 Copyright
  * <pre>
  *
@@ -62,8 +60,6 @@ extern "C" {
 struct wl_surface;
 struct zcr_alpha_compositing_v1;
 struct zcr_blending_v1;
-struct zwp_alpha_compositing_v1;
-struct zwp_blending_v1;
 
 /**
  * @page page_iface_zcr_alpha_compositing_v1 zcr_alpha_compositing_v1
@@ -117,58 +113,6 @@ extern const struct wl_interface zcr_alpha_compositing_v1_interface;
  * wl_surface.commit.
  */
 extern const struct wl_interface zcr_blending_v1_interface;
-/**
- * @page page_iface_zwp_alpha_compositing_v1 zwp_alpha_compositing_v1
- * @section page_iface_zwp_alpha_compositing_v1_desc Description
- *
- * The global interface exposing compositing and blending capabilities is
- * used to instantiate an interface extension for a wl_surface object.
- * This extended interface will then allow the client to specify the
- * blending equation and alpha value used for compositing the wl_surface.
- * @section page_iface_zwp_alpha_compositing_v1_api API
- * See @ref iface_zwp_alpha_compositing_v1.
- */
-/**
- * @defgroup iface_zwp_alpha_compositing_v1 The zwp_alpha_compositing_v1 interface
- *
- * The global interface exposing compositing and blending capabilities is
- * used to instantiate an interface extension for a wl_surface object.
- * This extended interface will then allow the client to specify the
- * blending equation and alpha value used for compositing the wl_surface.
- */
-extern const struct wl_interface zwp_alpha_compositing_v1_interface;
-/**
- * @page page_iface_zwp_blending_v1 zwp_blending_v1
- * @section page_iface_zwp_blending_v1_desc Description
- *
- * An additional interface to a wl_surface object, which allows the
- * client to specify the blending equation used for compositing and
- * an alpha value applied to the whole surface.
- *
- * If the wl_surface associated with the bledning object is destroyed,
- * the blending object becomes inert.
- *
- * If the blending object is destroyed, the blending state is removed
- * from the wl_surface. The change will be applied on the next
- * wl_surface.commit.
- * @section page_iface_zwp_blending_v1_api API
- * See @ref iface_zwp_blending_v1.
- */
-/**
- * @defgroup iface_zwp_blending_v1 The zwp_blending_v1 interface
- *
- * An additional interface to a wl_surface object, which allows the
- * client to specify the blending equation used for compositing and
- * an alpha value applied to the whole surface.
- *
- * If the wl_surface associated with the bledning object is destroyed,
- * the blending object becomes inert.
- *
- * If the blending object is destroyed, the blending state is removed
- * from the wl_surface. The change will be applied on the next
- * wl_surface.commit.
- */
-extern const struct wl_interface zwp_blending_v1_interface;
 
 #ifndef ZCR_ALPHA_COMPOSITING_V1_ERROR_ENUM
 #define ZCR_ALPHA_COMPOSITING_V1_ERROR_ENUM
@@ -353,191 +297,6 @@ zcr_blending_v1_set_alpha(struct zcr_blending_v1 *zcr_blending_v1, wl_fixed_t va
 {
 	wl_proxy_marshal((struct wl_proxy *) zcr_blending_v1,
 			 ZCR_BLENDING_V1_SET_ALPHA, value);
-}
-
-#ifndef ZWP_ALPHA_COMPOSITING_V1_ERROR_ENUM
-#define ZWP_ALPHA_COMPOSITING_V1_ERROR_ENUM
-enum zwp_alpha_compositing_v1_error {
-	/**
-	 * the surface already has a blending object associated
-	 */
-	ZWP_ALPHA_COMPOSITING_V1_ERROR_BLENDING_EXISTS = 0,
-};
-#endif /* ZWP_ALPHA_COMPOSITING_V1_ERROR_ENUM */
-
-#define ZWP_ALPHA_COMPOSITING_V1_DESTROY	0
-#define ZWP_ALPHA_COMPOSITING_V1_GET_BLENDING	1
-
-/**
- * @ingroup iface_zwp_alpha_compositing_v1
- */
-#define ZWP_ALPHA_COMPOSITING_V1_DESTROY_SINCE_VERSION	1
-/**
- * @ingroup iface_zwp_alpha_compositing_v1
- */
-#define ZWP_ALPHA_COMPOSITING_V1_GET_BLENDING_SINCE_VERSION	1
-
-/** @ingroup iface_zwp_alpha_compositing_v1 */
-static inline void
-zwp_alpha_compositing_v1_set_user_data(struct zwp_alpha_compositing_v1 *zwp_alpha_compositing_v1, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) zwp_alpha_compositing_v1, user_data);
-}
-
-/** @ingroup iface_zwp_alpha_compositing_v1 */
-static inline void *
-zwp_alpha_compositing_v1_get_user_data(struct zwp_alpha_compositing_v1 *zwp_alpha_compositing_v1)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) zwp_alpha_compositing_v1);
-}
-
-static inline uint32_t
-zwp_alpha_compositing_v1_get_version(struct zwp_alpha_compositing_v1 *zwp_alpha_compositing_v1)
-{
-	return wl_proxy_get_version((struct wl_proxy *) zwp_alpha_compositing_v1);
-}
-
-/**
- * @ingroup iface_zwp_alpha_compositing_v1
- *
- * Informs the server that the client will not be using this
- * protocol object anymore. This does not affect any other objects,
- * blending objects included.
- */
-static inline void
-zwp_alpha_compositing_v1_destroy(struct zwp_alpha_compositing_v1 *zwp_alpha_compositing_v1)
-{
-	wl_proxy_marshal((struct wl_proxy *) zwp_alpha_compositing_v1,
-			 ZWP_ALPHA_COMPOSITING_V1_DESTROY);
-
-	wl_proxy_destroy((struct wl_proxy *) zwp_alpha_compositing_v1);
-}
-
-/**
- * @ingroup iface_zwp_alpha_compositing_v1
- *
- * Instantiate an interface extension for the given wl_surface to
- * provide surface blending. If the given wl_surface already has
- * a blending object associated, the blending_exists protocol error
- * is raised.
- */
-static inline struct zwp_blending_v1 *
-zwp_alpha_compositing_v1_get_blending(struct zwp_alpha_compositing_v1 *zwp_alpha_compositing_v1, struct wl_surface *surface)
-{
-	struct wl_proxy *id;
-
-	id = wl_proxy_marshal_constructor((struct wl_proxy *) zwp_alpha_compositing_v1,
-			 ZWP_ALPHA_COMPOSITING_V1_GET_BLENDING, &zwp_blending_v1_interface, NULL, surface);
-
-	return (struct zwp_blending_v1 *) id;
-}
-
-#ifndef ZWP_BLENDING_V1_BLENDING_EQUATION_ENUM
-#define ZWP_BLENDING_V1_BLENDING_EQUATION_ENUM
-/**
- * @ingroup iface_zwp_blending_v1
- * different blending equations for compositing
- *
- * Blending equations that can be used when compositing a surface.
- */
-enum zwp_blending_v1_blending_equation {
-	/**
-	 * no blending
-	 */
-	ZWP_BLENDING_V1_BLENDING_EQUATION_NONE = 0,
-	/**
-	 * one / one_minus_src_alpha
-	 */
-	ZWP_BLENDING_V1_BLENDING_EQUATION_PREMULT = 1,
-	/**
-	 * src_alpha / one_minus_src_alpha
-	 */
-	ZWP_BLENDING_V1_BLENDING_EQUATION_COVERAGE = 2,
-};
-#endif /* ZWP_BLENDING_V1_BLENDING_EQUATION_ENUM */
-
-#define ZWP_BLENDING_V1_DESTROY	0
-#define ZWP_BLENDING_V1_SET_BLENDING	1
-#define ZWP_BLENDING_V1_SET_ALPHA	2
-
-/**
- * @ingroup iface_zwp_blending_v1
- */
-#define ZWP_BLENDING_V1_DESTROY_SINCE_VERSION	1
-/**
- * @ingroup iface_zwp_blending_v1
- */
-#define ZWP_BLENDING_V1_SET_BLENDING_SINCE_VERSION	1
-/**
- * @ingroup iface_zwp_blending_v1
- */
-#define ZWP_BLENDING_V1_SET_ALPHA_SINCE_VERSION	1
-
-/** @ingroup iface_zwp_blending_v1 */
-static inline void
-zwp_blending_v1_set_user_data(struct zwp_blending_v1 *zwp_blending_v1, void *user_data)
-{
-	wl_proxy_set_user_data((struct wl_proxy *) zwp_blending_v1, user_data);
-}
-
-/** @ingroup iface_zwp_blending_v1 */
-static inline void *
-zwp_blending_v1_get_user_data(struct zwp_blending_v1 *zwp_blending_v1)
-{
-	return wl_proxy_get_user_data((struct wl_proxy *) zwp_blending_v1);
-}
-
-static inline uint32_t
-zwp_blending_v1_get_version(struct zwp_blending_v1 *zwp_blending_v1)
-{
-	return wl_proxy_get_version((struct wl_proxy *) zwp_blending_v1);
-}
-
-/**
- * @ingroup iface_zwp_blending_v1
- *
- * The associated wl_surface's blending state is removed.
- * The change is applied on the next wl_surface.commit.
- */
-static inline void
-zwp_blending_v1_destroy(struct zwp_blending_v1 *zwp_blending_v1)
-{
-	wl_proxy_marshal((struct wl_proxy *) zwp_blending_v1,
-			 ZWP_BLENDING_V1_DESTROY);
-
-	wl_proxy_destroy((struct wl_proxy *) zwp_blending_v1);
-}
-
-/**
- * @ingroup iface_zwp_blending_v1
- *
- * Set the blending equation for compositing the wl_surface.
- * See wp_alpha_compositing for the description.
- *
- * The blending equation state is double-buffered state,
- * and will be applied on the next wl_surface.commit.
- */
-static inline void
-zwp_blending_v1_set_blending(struct zwp_blending_v1 *zwp_blending_v1, uint32_t equation)
-{
-	wl_proxy_marshal((struct wl_proxy *) zwp_blending_v1,
-			 ZWP_BLENDING_V1_SET_BLENDING, equation);
-}
-
-/**
- * @ingroup iface_zwp_blending_v1
- *
- * Set the alpha value applied to the whole surface for compositing.
- * See wp_alpha_compositing for the description.
- *
- * The alpha value state is double-buffered state,
- * and will be applied on the next wl_surface.commit.
- */
-static inline void
-zwp_blending_v1_set_alpha(struct zwp_blending_v1 *zwp_blending_v1, wl_fixed_t value)
-{
-	wl_proxy_marshal((struct wl_proxy *) zwp_blending_v1,
-			 ZWP_BLENDING_V1_SET_ALPHA, value);
 }
 
 #ifdef  __cplusplus

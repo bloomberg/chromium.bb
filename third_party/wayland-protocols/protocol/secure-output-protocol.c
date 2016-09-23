@@ -29,12 +29,9 @@
 
 extern const struct wl_interface wl_surface_interface;
 extern const struct wl_interface zcr_security_v1_interface;
-extern const struct wl_interface zwp_security_v1_interface;
 
 static const struct wl_interface *types[] = {
 	&zcr_security_v1_interface,
-	&wl_surface_interface,
-	&zwp_security_v1_interface,
 	&wl_surface_interface,
 };
 
@@ -57,28 +54,6 @@ static const struct wl_message zcr_security_v1_requests[] = {
 WL_EXPORT const struct wl_interface zcr_security_v1_interface = {
 	"zcr_security_v1", 1,
 	2, zcr_security_v1_requests,
-	0, NULL,
-};
-
-static const struct wl_message zwp_secure_output_v1_requests[] = {
-	{ "destroy", "", types + 0 },
-	{ "get_security", "no", types + 2 },
-};
-
-WL_EXPORT const struct wl_interface zwp_secure_output_v1_interface = {
-	"zwp_secure_output_v1", 1,
-	2, zwp_secure_output_v1_requests,
-	0, NULL,
-};
-
-static const struct wl_message zwp_security_v1_requests[] = {
-	{ "destroy", "", types + 0 },
-	{ "only_visible_on_secure_output", "", types + 0 },
-};
-
-WL_EXPORT const struct wl_interface zwp_security_v1_interface = {
-	"zwp_security_v1", 1,
-	2, zwp_security_v1_requests,
 	0, NULL,
 };
 
