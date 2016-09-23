@@ -29,6 +29,7 @@
 #include "core/svg/SVGPointList.h"
 #include "core/svg/SVGString.h"
 #include "core/svg/SVGTransformList.h"
+#include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace blink {
 

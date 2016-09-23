@@ -24,12 +24,11 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/parser/CSSParser.h"
 #include "core/dom/Document.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
-#include "core/svg/SVGDocumentExtensions.h"
+#include "core/svg/properties/SVGProperty.h"
 
 namespace blink {
 

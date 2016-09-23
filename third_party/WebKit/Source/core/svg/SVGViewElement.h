@@ -21,15 +21,15 @@
 #ifndef SVGViewElement_h
 #define SVGViewElement_h
 
-#include "core/SVGNames.h"
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGStaticStringList.h"
 #include "core/svg/SVGZoomAndPan.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
+
+class SVGStaticStringList;
+class SVGStringListTearOff;
 
 class SVGViewElement final : public SVGElement,
                              public SVGFitToViewBox,
@@ -39,7 +39,7 @@ class SVGViewElement final : public SVGElement,
 public:
     DECLARE_NODE_FACTORY(SVGViewElement);
 
-    SVGStringListTearOff* viewTarget() { return m_viewTarget->tearOff(); }
+    SVGStringListTearOff* viewTarget();
 
     DECLARE_VIRTUAL_TRACE();
 

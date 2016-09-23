@@ -31,6 +31,7 @@
 #include "core/svg/SVGStaticStringList.h"
 
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGStringListTearOff.h"
 
 namespace blink {
 

@@ -22,6 +22,7 @@
 
 #include "core/SVGNames.h"
 #include "core/svg/SVGElement.h"
+#include "core/svg/SVGStaticStringList.h"
 #include "platform/Language.h"
 
 namespace blink {
@@ -43,6 +44,21 @@ DEFINE_TRACE(SVGTests)
     visitor->trace(m_requiredFeatures);
     visitor->trace(m_requiredExtensions);
     visitor->trace(m_systemLanguage);
+}
+
+SVGStringListTearOff* SVGTests::requiredFeatures()
+{
+    return m_requiredFeatures->tearOff();
+}
+
+SVGStringListTearOff* SVGTests::requiredExtensions()
+{
+    return m_requiredExtensions->tearOff();
+}
+
+SVGStringListTearOff* SVGTests::systemLanguage()
+{
+    return m_systemLanguage->tearOff();
 }
 
 bool SVGTests::isValid() const

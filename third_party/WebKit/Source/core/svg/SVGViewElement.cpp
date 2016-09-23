@@ -20,7 +20,9 @@
 
 #include "core/svg/SVGViewElement.h"
 
+#include "core/SVGNames.h"
 #include "core/frame/UseCounter.h"
+#include "core/svg/SVGStaticStringList.h"
 
 namespace blink {
 
@@ -40,6 +42,11 @@ DEFINE_TRACE(SVGViewElement)
     visitor->trace(m_viewTarget);
     SVGElement::trace(visitor);
     SVGFitToViewBox::trace(visitor);
+}
+
+SVGStringListTearOff* SVGViewElement::viewTarget()
+{
+    return m_viewTarget->tearOff();
 }
 
 void SVGViewElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
