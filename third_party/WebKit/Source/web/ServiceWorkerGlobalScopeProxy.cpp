@@ -254,12 +254,6 @@ void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& mes
     document().postInspectorTask(BLINK_FROM_HERE, createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector, crossThreadUnretained(m_embeddedWorker), message));
 }
 
-void ServiceWorkerGlobalScopeProxy::didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize)
-{
-    DCHECK(m_workerGlobalScope);
-    m_workerGlobalScope->didLoadWorkerScript(scriptSize, cachedMetadataSize);
-}
-
 void ServiceWorkerGlobalScopeProxy::didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope* workerGlobalScope)
 {
     DCHECK(!m_workerGlobalScope);
@@ -271,6 +265,18 @@ void ServiceWorkerGlobalScopeProxy::didInitializeWorkerContext()
 {
     ScriptState::Scope scope(workerGlobalScope()->scriptController()->getScriptState());
     client().didInitializeWorkerContext(workerGlobalScope()->scriptController()->context());
+}
+
+void ServiceWorkerGlobalScopeProxy::willEvaluateWorkerScript(size_t scriptSize, size_t cachedMetadataSize)
+{
+    DCHECK(m_workerGlobalScope);
+    m_workerGlobalScope->countScript(scriptSize, cachedMetadataSize);
+}
+
+void ServiceWorkerGlobalScopeProxy::willEvaluateImportedScript(size_t scriptSize, size_t cachedMetadataSize)
+{
+    DCHECK(m_workerGlobalScope);
+    m_workerGlobalScope->countScript(scriptSize, cachedMetadataSize);
 }
 
 void ServiceWorkerGlobalScopeProxy::didEvaluateWorkerScript(bool success)

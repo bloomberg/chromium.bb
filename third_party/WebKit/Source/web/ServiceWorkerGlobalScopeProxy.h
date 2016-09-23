@@ -87,9 +87,10 @@ public:
     void reportException(const String& errorMessage, std::unique_ptr<SourceLocation>, int exceptionId) override;
     void reportConsoleMessage(MessageSource, MessageLevel, const String& message, SourceLocation*) override;
     void postMessageToPageInspector(const String&) override;
-    void didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize) override;
     void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
     void didInitializeWorkerContext() override;
+    void willEvaluateWorkerScript(size_t scriptSize, size_t cachedMetadataSize) override;
+    void willEvaluateImportedScript(size_t scriptSize, size_t cachedMetadataSize) override;
     void didEvaluateWorkerScript(bool success) override;
     void didCloseWorkerGlobalScope() override;
     void willDestroyWorkerGlobalScope() override;

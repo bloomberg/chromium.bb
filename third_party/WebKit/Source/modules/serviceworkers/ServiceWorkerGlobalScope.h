@@ -61,7 +61,11 @@ public:
     ~ServiceWorkerGlobalScope() override;
     bool isServiceWorkerGlobalScope() const override { return true; }
 
-    void didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize);
+    // Counts an evaluated script and its size. Called for each of the main
+    // worker script and imported scripts.
+    void countScript(size_t scriptSize, size_t cachedMetadataSize);
+
+    // Called when the main worker script is evaluated.
     void didEvaluateWorkerScript();
 
     // ServiceWorkerGlobalScope.idl

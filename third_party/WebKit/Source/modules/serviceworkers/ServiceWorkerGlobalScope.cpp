@@ -99,7 +99,7 @@ ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope()
 {
 }
 
-void ServiceWorkerGlobalScope::didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize)
+void ServiceWorkerGlobalScope::countScript(size_t scriptSize, size_t cachedMetadataSize)
 {
     ++m_scriptCount;
     m_scriptTotalSize += scriptSize;

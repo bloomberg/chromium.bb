@@ -74,9 +74,9 @@ public:
 protected:
     void expectReportingCalls()
     {
-        EXPECT_CALL(*m_reportingProxy, didLoadWorkerScriptMock(_, _)).Times(1);
         EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
         EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(1);
+        EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _)).Times(1);
         EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(true)).Times(1);
         EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
         EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
@@ -85,9 +85,9 @@ protected:
 
     void expectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization()
     {
-        EXPECT_CALL(*m_reportingProxy, didLoadWorkerScriptMock(_, _)).Times(AtMost(1));
         EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(AtMost(1));
         EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(AtMost(1));
+        EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _)).Times(AtMost(1));
         EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(_)).Times(AtMost(1));
         EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(AtMost(1));
         EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
@@ -96,9 +96,9 @@ protected:
 
     void expectReportingCallsForWorkerForciblyTerminated()
     {
-        EXPECT_CALL(*m_reportingProxy, didLoadWorkerScriptMock(_, _)).Times(1);
         EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
         EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(1);
+        EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _)).Times(1);
         EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(false)).Times(1);
         EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
         EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
@@ -208,7 +208,7 @@ TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning)
 
     expectReportingCallsForWorkerForciblyTerminated();
     startWithSourceCodeNotToFinish();
-    m_reportingProxy->waitUntilScriptLoaded();
+    m_reportingProxy->waitUntilScriptEvaluation();
 
     // terminate() schedules a force termination task.
     m_workerThread->terminate();
@@ -230,7 +230,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_WhileTaskIsRunning)
 {
     expectReportingCallsForWorkerForciblyTerminated();
     startWithSourceCodeNotToFinish();
-    m_reportingProxy->waitUntilScriptLoaded();
+    m_reportingProxy->waitUntilScriptEvaluation();
 
     // terminateAndWait() synchronously terminates the worker execution.
     m_workerThread->terminateAndWait();
@@ -244,7 +244,7 @@ TEST_F(WorkerThreadTest, AsyncTerminateAndThenSyncTerminate_WhileTaskIsRunning)
 
     expectReportingCallsForWorkerForciblyTerminated();
     startWithSourceCodeNotToFinish();
-    m_reportingProxy->waitUntilScriptLoaded();
+    m_reportingProxy->waitUntilScriptEvaluation();
 
     // terminate() schedules a force termination task.
     m_workerThread->terminate();
@@ -259,7 +259,6 @@ TEST_F(WorkerThreadTest, AsyncTerminateAndThenSyncTerminate_WhileTaskIsRunning)
 
 TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization)
 {
-    EXPECT_CALL(*m_reportingProxy, didLoadWorkerScriptMock(_, _)).Times(1);
     EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);

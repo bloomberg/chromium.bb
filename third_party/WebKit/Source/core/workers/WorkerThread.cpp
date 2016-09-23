@@ -520,9 +520,6 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         m_workerReportingProxy.didCreateWorkerGlobalScope(globalScope());
         m_workerInspectorController = WorkerInspectorController::create(this);
 
-        if (globalScope()->isWorkerGlobalScope())
-            m_workerReportingProxy.didLoadWorkerScript(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
-
         globalScope()->scriptController()->initializeContextIfNeeded();
 
         // If Origin Trials have been registered before the V8 context was ready,
@@ -553,6 +550,7 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
     if (globalScope()->isWorkerGlobalScope()) {
         WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(globalScope());
         CachedMetadataHandler* handler = workerGlobalScope->createWorkerScriptCachedMetadataHandler(scriptURL, cachedMetaData.get());
+        m_workerReportingProxy.willEvaluateWorkerScript(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
         bool success = workerGlobalScope->scriptController()->evaluate(ScriptSourceCode(sourceCode, scriptURL), nullptr, handler, v8CacheOptions);
         m_workerReportingProxy.didEvaluateWorkerScript(success);
     }

@@ -58,9 +58,9 @@ public:
     MOCK_METHOD4(reportConsoleMessage, void(MessageSource, MessageLevel, const String& message, SourceLocation*));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
 
-    MOCK_METHOD2(didLoadWorkerScriptMock, void(size_t scriptSize, size_t cachedMetadataSize));
     MOCK_METHOD1(didCreateWorkerGlobalScope, void(WorkerOrWorkletGlobalScope*));
     MOCK_METHOD0(didInitializeWorkerContext, void());
+    MOCK_METHOD2(willEvaluateWorkerScriptMock, void(size_t scriptSize, size_t cachedMetadataSize));
     MOCK_METHOD1(didEvaluateWorkerScript, void(bool success));
     MOCK_METHOD0(didCloseWorkerGlobalScope, void());
     MOCK_METHOD0(willDestroyWorkerGlobalScope, void());
@@ -71,19 +71,19 @@ public:
         reportExceptionMock(errorMessage, location.get(), exceptionId);
     }
 
-    void didLoadWorkerScript(size_t scriptSize, size_t cachedMetadataSize) override
+    void willEvaluateWorkerScript(size_t scriptSize, size_t cachedMetadataSize) override
     {
-        m_scriptLoadedEvent.signal();
-        didLoadWorkerScriptMock(scriptSize, cachedMetadataSize);
+        m_scriptEvaluationEvent.signal();
+        willEvaluateWorkerScriptMock(scriptSize, cachedMetadataSize);
     }
 
-    void waitUntilScriptLoaded()
+    void waitUntilScriptEvaluation()
     {
-        m_scriptLoadedEvent.wait();
+        m_scriptEvaluationEvent.wait();
     }
 
 private:
-    WaitableEvent m_scriptLoadedEvent;
+    WaitableEvent m_scriptEvaluationEvent;
 };
 
 class MockWorkerThreadLifecycleObserver final : public GarbageCollectedFinalized<MockWorkerThreadLifecycleObserver>, public WorkerThreadLifecycleObserver {
