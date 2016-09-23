@@ -450,6 +450,8 @@
       'cert/nss_cert_database_chromeos.h',
       'cert/nss_profile_filter_chromeos.cc',
       'cert/nss_profile_filter_chromeos.h',
+      'cert/test_keychain_search_list_mac.cc',
+      'cert/test_keychain_search_list_mac.h',
       'cert/test_root_certs.cc',
       'cert/test_root_certs.h',
       'cert/test_root_certs_android.cc',

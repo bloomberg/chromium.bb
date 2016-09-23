@@ -63,16 +63,18 @@ OSStatus CreateSSLClientPolicy(SecPolicyRef* policy) {
 
 OSStatus CreateSSLServerPolicy(const std::string& hostname,
                                SecPolicyRef* policy) {
-  CSSM_APPLE_TP_SSL_OPTIONS tp_ssl_options;
-  memset(&tp_ssl_options, 0, sizeof(tp_ssl_options));
-  tp_ssl_options.Version = CSSM_APPLE_TP_SSL_OPTS_VERSION;
   if (!hostname.empty()) {
+    CSSM_APPLE_TP_SSL_OPTIONS tp_ssl_options;
+    memset(&tp_ssl_options, 0, sizeof(tp_ssl_options));
+    tp_ssl_options.Version = CSSM_APPLE_TP_SSL_OPTS_VERSION;
     tp_ssl_options.ServerName = hostname.data();
     tp_ssl_options.ServerNameLen = hostname.size();
+
+    return CreatePolicy(&CSSMOID_APPLE_TP_SSL, &tp_ssl_options,
+                        sizeof(tp_ssl_options), policy);
   }
 
-  return CreatePolicy(&CSSMOID_APPLE_TP_SSL, &tp_ssl_options,
-                      sizeof(tp_ssl_options), policy);
+  return CreatePolicy(&CSSMOID_APPLE_TP_SSL, nullptr, 0U, policy);
 }
 
 OSStatus CreateBasicX509Policy(SecPolicyRef* policy) {
