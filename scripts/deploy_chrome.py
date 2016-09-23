@@ -41,6 +41,7 @@ from chromite.lib import parallel
 from chromite.lib import remote_access as remote
 from chromite.lib import stats
 from chromite.lib import timeout_util
+from gn_helpers import gn_helpers
 
 
 KERNEL_A_PARTITION = 2
@@ -349,6 +350,11 @@ def ValidateGypDefines(value):
   return chrome_util.ProcessGypDefines(value)
 
 
+def ValidateGnArgs(value):
+  """Convert GN_ARGS-formatted string to dictionary."""
+  return gn_helpers.FromGNArgs(value)
+
+
 def _CreateParser():
   """Create our custom parser."""
   parser = commandline.ArgumentParser(description=__doc__, caching=True)
@@ -433,9 +439,16 @@ def _CreateParser():
 
   # GYP_DEFINES that Chrome was built with.  Influences which files are staged
   # when --build-dir is set.  Defaults to reading from the GYP_DEFINES
-  # enviroment variable.
+  # enviroment variable. WILL BE DEPRECATED.
   parser.add_argument('--gyp-defines', default=None, type=ValidateGypDefines,
                       help=argparse.SUPPRESS)
+
+  # GN_ARGS (args.gn) used to build Chrome. Influences which files are staged
+  # when --build-dir is set. Defaults to reading from the GN_ARGS env variable.
+  # CURRENLY IGNORED, ADDED FOR FORWARD COMPATABILITY.
+  parser.add_argument('--gn-args', default=None, type=ValidateGnArgs,
+                      help=argparse.SUPPRESS)
+
   # Path of an empty directory to stage chrome artifacts to.  Defaults to a
   # temporary directory that is removed when the script finishes. If the path
   # is specified, then it will not be removed.
@@ -499,8 +512,14 @@ def _PostParseCheck(options):
     gyp_env = os.getenv('GYP_DEFINES')
     if gyp_env is not None:
       options.gyp_defines = chrome_util.ProcessGypDefines(gyp_env)
-      logging.debug('GYP_DEFINES taken from environment: %s',
-                    options.gyp_defines)
+      logging.info('GYP_DEFINES taken from environment: %s',
+                   options.gyp_defines)
+
+  if not options.gn_args:
+    gn_env = os.getenv('GN_ARGS')
+    if gn_env is not None:
+      options.gn_args = gn_helpers.FromGNArgs(gn_env)
+      logging.info('GN_ARGS taken from environment: %s', options.gn_args)
 
   if not options.staging_flags:
     use_env = os.getenv('USE')
