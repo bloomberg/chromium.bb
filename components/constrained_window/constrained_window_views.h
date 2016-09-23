@@ -42,6 +42,10 @@ void UpdateWidgetModalDialogPosition(
     views::Widget* widget,
     web_modal::ModalDialogHost* dialog_host);
 
+// Returns the top level WebContents of |initiator_web_contents|.
+content::WebContents* GetTopLevelWebContents(
+    content::WebContents* initiator_web_contents);
+
 // Shows the dialog with a new SingleWebContentsDialogManager. The dialog will
 // notify via WillClose() when it is being destroyed.
 void ShowModalDialog(gfx::NativeWindow dialog,

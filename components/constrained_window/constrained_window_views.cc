@@ -145,6 +145,12 @@ void UpdateWidgetModalDialogPosition(views::Widget* widget,
                             widget->GetRootView()->GetPreferredSize());
 }
 
+content::WebContents* GetTopLevelWebContents(
+    content::WebContents* initiator_web_contents) {
+  return guest_view::GuestViewBase::GetTopLevelWebContents(
+      initiator_web_contents);
+}
+
 views::Widget* ShowWebModalDialogViews(
     views::WidgetDelegate* dialog,
     content::WebContents* initiator_web_contents) {
@@ -152,7 +158,7 @@ views::Widget* ShowWebModalDialogViews(
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
   content::WebContents* web_contents =
-      guest_view::GuestViewBase::GetTopLevelWebContents(initiator_web_contents);
+      GetTopLevelWebContents(initiator_web_contents);
   views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
   ShowModalDialog(widget->GetNativeWindow(), web_contents);
   return widget;
@@ -166,7 +172,7 @@ views::Widget* ShowWebModalDialogWithOverlayViews(
   // For embedded WebContents, use the embedder's WebContents for constrained
   // window.
   content::WebContents* web_contents =
-      guest_view::GuestViewBase::GetTopLevelWebContents(initiator_web_contents);
+      GetTopLevelWebContents(initiator_web_contents);
   views::Widget* widget = CreateWebModalDialogViews(dialog, web_contents);
   web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents);

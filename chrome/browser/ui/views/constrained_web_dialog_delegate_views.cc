@@ -80,11 +80,17 @@ class WebDialogWebContentsDelegateViews
     // Sets WebView's preferred size based on auto-resized contents.
     web_view_->SetPreferredSize(preferred_size);
 
-    constrained_window::UpdateWebContentsModalDialogPosition(
-        web_view_->GetWidget(),
-        web_modal::WebContentsModalDialogManager::FromWebContents(
-            initiator_observer_->web_contents())->delegate()->
-                GetWebContentsModalDialogHost());
+    content::WebContents* top_level_web_contents =
+        constrained_window::GetTopLevelWebContents(
+            initiator_observer_->web_contents());
+    if (top_level_web_contents) {
+      constrained_window::UpdateWebContentsModalDialogPosition(
+          web_view_->GetWidget(),
+          web_modal::WebContentsModalDialogManager::FromWebContents(
+              top_level_web_contents)
+              ->delegate()
+              ->GetWebContentsModalDialogHost());
+    }
   }
 
  private:
@@ -238,8 +244,13 @@ class ConstrainedWebDialogDelegateViewViews
   }
   void DocumentOnLoadCompletedInMainFrame() override {
     if (!max_size_.IsEmpty() && initiator_observer_.web_contents()) {
-      constrained_window::ShowModalDialog(GetWidget()->GetNativeWindow(),
-                                          initiator_observer_.web_contents());
+      content::WebContents* top_level_web_contents =
+          constrained_window::GetTopLevelWebContents(
+              initiator_observer_.web_contents());
+      if (top_level_web_contents) {
+        constrained_window::ShowModalDialog(GetWidget()->GetNativeWindow(),
+                                            top_level_web_contents);
+      }
     }
   }
 
@@ -287,6 +298,12 @@ ConstrainedWebDialogDelegate* ShowConstrainedWebDialogWithAutoResize(
       new ConstrainedWebDialogDelegateViewViews(
           browser_context, delegate, web_contents,
           min_size, max_size);
-  constrained_window::CreateWebModalDialogViews(dialog, web_contents);
+
+  // For embedded WebContents, use the embedder's WebContents for constrained
+  // window.
+  content::WebContents* top_level_web_contents =
+      constrained_window::GetTopLevelWebContents(web_contents);
+  DCHECK(top_level_web_contents);
+  constrained_window::CreateWebModalDialogViews(dialog, top_level_web_contents);
   return dialog;
 }
