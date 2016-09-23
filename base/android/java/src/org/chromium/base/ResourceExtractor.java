@@ -36,7 +36,22 @@ public class ResourceExtractor {
     private static final String V8_SNAPSHOT_DATA_FILENAME = "snapshot_blob.bin";
     private static final String APP_VERSION_PREF = "org.chromium.base.ResourceExtractor.Version";
 
-    private static String[] sResourcesToExtract = new String[0];
+    private static ResourceEntry[] sResourcesToExtract = new ResourceEntry[0];
+
+    /**
+     * Holds information about a res/raw file (e.g. locale .pak files).
+     */
+    public static final class ResourceEntry {
+        public final int resourceId;
+        public final String pathWithinApk;
+        public final String extractedFileName;
+
+        public ResourceEntry(int resourceId, String pathWithinApk, String extractedFileName) {
+            this.resourceId = resourceId;
+            this.pathWithinApk = pathWithinApk;
+            this.extractedFileName = extractedFileName;
+        }
+    }
 
     private class ExtractTask extends AsyncTask<Void, Void, Void> {
         private static final int BUFFER_SIZE = 16 * 1024;
@@ -92,15 +107,16 @@ public class ResourceExtractor {
             TraceEvent.begin("WalkAssets");
             byte[] buffer = new byte[BUFFER_SIZE];
             try {
-                for (String resource : sResourcesToExtract) {
-                    File output = new File(outputDir, resource);
+                for (ResourceEntry entry : sResourcesToExtract) {
+                    File output = new File(outputDir, entry.extractedFileName);
                     // TODO(agrieve): It would be better to check that .length == expectedLength.
                     //     http://crbug.com/606413
                     if (output.length() != 0) {
                         continue;
                     }
                     TraceEvent.begin("ExtractResource");
-                    InputStream inputStream = mContext.getAssets().open(resource);
+                    InputStream inputStream = mContext.getResources().openRawResource(
+                            entry.resourceId);
                     try {
                         extractResourceHelper(inputStream, output, buffer);
                     } finally {
@@ -178,10 +194,10 @@ public class ResourceExtractor {
      * and moved to {@link #getOutputDir()}.
      */
     @SuppressFBWarnings("EI_EXPOSE_STATIC_REP2")
-    public static void setResourcesToExtract(String[] resources) {
+    public static void setResourcesToExtract(ResourceEntry[] entries) {
         assert (sInstance == null || sInstance.mExtractTask == null)
                 : "Must be called before startExtractingResources is called";
-        sResourcesToExtract = resources;
+        sResourcesToExtract = entries;
     }
 
     private ResourceExtractor(Context context) {

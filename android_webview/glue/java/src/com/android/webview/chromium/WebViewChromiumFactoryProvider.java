@@ -48,6 +48,7 @@ import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwServiceWorkerController;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.HttpAuthDatabase;
+import org.chromium.android_webview.R;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.CommandLine;
@@ -63,7 +64,6 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.ContentViewStatics;
 import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.ui.LocalePakFiles;
 import org.chromium.ui.base.ResourceBundle;
 
 import java.io.File;
@@ -393,7 +393,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         // Make sure that ResourceProvider is initialized before starting the browser process.
         final String webViewPackageName = WebViewFactory.getLoadedPackageInfo().packageName;
         setUpResources(webViewPackageName, context);
-        ResourceBundle.initializeLocalePaks(LocalePakFiles.getFiles());
+        ResourceBundle.initializeLocalePaks(context, R.array.locale_paks);
         initPlatSupportLibrary();
         initNetworkChangeNotifier(context);
         final int extraBindFlags = Context.BIND_EXTERNAL_SERVICE;

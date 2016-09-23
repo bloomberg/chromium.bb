@@ -24,7 +24,7 @@ public class BlimpApplication extends BaseChromiumApplication {
     public void onCreate() {
         super.onCreate();
         ContextUtils.initApplicationContext(this);
-        ResourceExtractor.setResourcesToExtract(new String[0]);
+        ResourceExtractor.setResourcesToExtract(new ResourceExtractor.ResourceEntry[0]);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
         initCommandLine();
     }

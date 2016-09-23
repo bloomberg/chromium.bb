@@ -14,8 +14,6 @@ template("system_webview_apk_tmpl") {
       "//base:base_java",
     ]
 
-    srcjar_deps = [ "//android_webview:locale_pak_srcjar" ]
-
     if (!defined(alternative_android_sdk_jar)) {
       alternative_android_sdk_jar = webview_framework_jar
     }

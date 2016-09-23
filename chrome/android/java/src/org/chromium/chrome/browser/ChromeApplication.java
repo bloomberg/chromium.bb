@@ -24,6 +24,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.datausage.ExternalDataUseObserver;
@@ -72,7 +73,6 @@ import org.chromium.policy.AppRestrictionsProvider;
 import org.chromium.policy.CombinedPolicyProvider;
 import org.chromium.policy.CombinedPolicyProvider.PolicyChangeListener;
 import org.chromium.printing.PrintingController;
-import org.chromium.ui.LocalePakFiles;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ResourceBundle;
 
@@ -175,7 +175,9 @@ public class ChromeApplication extends ContentApplication {
 
     @Override
     protected void initializeLibraryDependencies() {
-        ResourceBundle.initializeLocalePaks(LocalePakFiles.getFiles());
+        // The ResourceExtractor is only needed by the browser process, but this will have no
+        // impact on the renderer process construction.
+        ResourceBundle.initializeLocalePaks(this, R.array.locale_paks);
         ResourceExtractor.setResourcesToExtract(ResourceBundle.getActiveLocaleResources());
     }
 
