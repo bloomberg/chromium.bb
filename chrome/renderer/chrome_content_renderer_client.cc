@@ -116,7 +116,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
@@ -133,6 +132,7 @@
 #endif
 
 #if defined(ENABLE_PLUGINS)
+#include "chrome/common/plugin_utils.h"
 #include "chrome/renderer/plugins/chrome_plugin_placeholder.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
 #endif
@@ -235,30 +235,6 @@ void AppendParams(const std::vector<base::string16>& additional_names,
 
   existing_names->swap(names);
   existing_values->swap(values);
-}
-
-// For certain sandboxed Pepper plugins, use the JavaScript Content Settings.
-bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
-  if (plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS &&
-      plugin.type != WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS) {
-    return false;
-  }
-
-#if !defined(DISABLE_NACL)
-  // Treat Native Client invocations like JavaScript.
-  if (plugin.name == ASCIIToUTF16(nacl::kNaClPluginName))
-    return true;
-#endif
-
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
-  // Treat CDM invocations like JavaScript.
-  if (plugin.name == ASCIIToUTF16(kWidevineCdmDisplayName)) {
-    DCHECK(plugin.type == WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS);
-    return true;
-  }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(ENABLE_PEPPER_CDMS)
-
-  return false;
 }
 #endif  // defined(ENABLE_PLUGINS)
 

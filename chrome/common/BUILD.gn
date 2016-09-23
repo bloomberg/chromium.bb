@@ -458,6 +458,8 @@ static_library("common") {
     sources += [
       "pepper_flash.cc",
       "pepper_flash.h",
+      "plugin_utils.cc",
+      "plugin_utils.h",
       "ppapi_utils.cc",
       "ppapi_utils.h",
     ]
