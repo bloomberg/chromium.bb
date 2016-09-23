@@ -187,7 +187,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
       url='file://../../data/gpu/pixel_offscreenCanvas_webgl_commit_worker.html',
       name=base_name + '.OffscreenCanvasWebGLRedBoxWorker' + es3_suffix,
       test_rect=[0, 0, 300, 300],
-      revision=1,
+      revision=2,
       story_set=self,
       shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
       expectations=expectations))

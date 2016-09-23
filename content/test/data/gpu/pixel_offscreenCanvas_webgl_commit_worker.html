@@ -21,6 +21,7 @@ self.onmessage = function(e) {
   gl.clearColor(1.0, 0.0, 0.0, 1.0);
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.commit();
+  self.postMessage("");
 };
 </script>
 <script>
@@ -34,7 +35,6 @@ function makeWorker(script) {
 function main()
 {
   draw();
-  waitForFinish();
 }
 
 function draw()
@@ -43,6 +43,9 @@ function draw()
   var offscreenCanvas = canvas.transferControlToOffscreen();
   var worker = makeWorker(document.getElementById("myWorker").textContent);
   worker.postMessage(offscreenCanvas, [offscreenCanvas]);
+  worker.onmessage = function (e) {
+    waitForFinish();
+  }
 }
 
 function waitForFinish()
