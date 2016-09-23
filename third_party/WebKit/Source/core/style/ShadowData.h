@@ -28,6 +28,7 @@
 #include "core/css/StyleColor.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRectOutsets.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 
 namespace blink {
 
@@ -63,7 +64,9 @@ public:
     // shadow.
     FloatRectOutsets rectOutsets() const
     {
-        float blurAndSpread = blur() + spread();
+        // 3 * skBlurRadiusToSigma(blur()) is how Skia implements the radius of a blur. See also
+        // https://crbug.com/624175.
+        float blurAndSpread = ceil(3 * skBlurRadiusToSigma(blur())) + spread();
         return FloatRectOutsets(
             blurAndSpread - y() /* top */,
             blurAndSpread + x() /* right */,
