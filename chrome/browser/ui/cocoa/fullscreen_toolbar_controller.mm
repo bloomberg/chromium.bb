@@ -240,6 +240,13 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
          selector:@selector(windowDidResignMain:)
              name:NSWindowDidResignMainNotification
            object:window];
+
+  // Register for Active Space change notifications.
+  [[[NSWorkspace sharedWorkspace] notificationCenter]
+      addObserver:self
+         selector:@selector(activeSpaceDidChange:)
+             name:NSWorkspaceActiveSpaceDidChangeNotification
+           object:nil];
 }
 
 - (void)exitFullscreenMode {
@@ -263,6 +270,12 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 - (void)windowDidResignMain:(NSNotification*)notification {
   [self updateMenuBarAndDockVisibility];
+}
+
+- (void)activeSpaceDidChange:(NSNotification*)notification {
+  menubarFraction_ = kHideFraction;
+  menubarState_ = FullscreenMenubarState::HIDDEN;
+  [browserController_ layoutSubviews];
 }
 
 - (CGFloat)floatingBarVerticalOffset {
@@ -477,6 +490,10 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   if (![self isMouseOnScreen] && progress > menubarFraction_)
     return;
 
+  // Ignore the menubarFraction changes if the Space is inactive.
+  if (![[browserController_ window] isOnActiveSpace])
+    return;
+
   if (IsCGFloatEqual(progress, kShowFraction))
     menubarState_ = FullscreenMenubarState::SHOWN;
   else if (IsCGFloatEqual(progress, kHideFraction))
@@ -635,6 +652,7 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 - (void)cleanup {
   [self cancelAnimationAndTimer];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [[[NSWorkspace sharedWorkspace] notificationCenter] removeObserver:self];
 
   [self removeTrackingAreaIfNecessary];
 
