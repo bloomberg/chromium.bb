@@ -175,7 +175,6 @@ json_schema_api("api") {
     "browser_action.json",
     "commands.json",
     "declarative_content.json",
-    "file_browser_handler.json",
     "page_action.json",
     "privacy.json",
     "proxy.json",
@@ -184,7 +183,9 @@ json_schema_api("api") {
     "types_private.json",
     "webstore.json",
   ]
-  if (!is_chromeos) {
+  if (is_chromeos) {
+    uncompiled_bundle_schema_sources += [ "file_browser_handler.json" ]
+  } else {
     # On ChromeOS, input_method_private is fully compiled (as part of
     # schema_files), and so gets added to the bundle already. On other
     # platforms, we still need it added to the bundle.
