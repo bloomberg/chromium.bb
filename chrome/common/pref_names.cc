@@ -1305,9 +1305,9 @@ const char kProfileCreatedByVersion[] = "profile.created_by_version";
 // them.
 const char kProfileInfoCache[] = "profile.info_cache";
 
-// Boolean that specifies whether or not crash reports are sent
-// over the network for analysis.
-#if defined(OS_ANDROID)
+// Deprecated preference for metric / crash reporting on Android. Use
+// kMetricsReportingEnabled instead.
+#if BUILDFLAG(ANDROID_JAVA_UI)
 const char kCrashReportingEnabled[] =
     "user_experience_metrics_crash.reporting_enabled";
 #endif

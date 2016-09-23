@@ -40,6 +40,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/installer/util/util_constants.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
@@ -115,20 +116,6 @@ const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 // Needs to be kept in sync with the writer in
 // third_party/crashpad/crashpad/handler/handler_main.cc.
 const char kCrashpadHistogramAllocatorName[] = "CrashpadMetrics";
-
-// Checks whether it is the first time that cellular uploads logic should be
-// enabled based on whether the the preference for that logic is initialized.
-// This should happen only once as the used preference will be initialized
-// afterwards in |UmaSessionStats.java|.
-bool ShouldClearSavedMetrics() {
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  PrefService* local_state = g_browser_process->local_state();
-  return !local_state->HasPrefPath(metrics::prefs::kMetricsReportingEnabled) &&
-         metrics::IsCellularLogicEnabled();
-#else
-  return false;
-#endif
-}
 
 void RegisterFileMetricsPreferences(PrefRegistrySimple* registry) {
   metrics::FileMetricsProvider::RegisterPrefs(
@@ -417,17 +404,17 @@ ChromeMetricsServiceClient::GetMetricsReportingDefaultState() {
 }
 
 void ChromeMetricsServiceClient::Initialize() {
-  // Clear metrics reports if it is the first time cellular upload logic should
-  // apply to avoid sudden bulk uploads. It needs to be done before initializing
-  // metrics service so that metrics log manager is initialized correctly.
-  if (ShouldClearSavedMetrics()) {
-    PrefService* local_state = g_browser_process->local_state();
-    local_state->ClearPref(metrics::prefs::kMetricsInitialLogs);
-    local_state->ClearPref(metrics::prefs::kMetricsOngoingLogs);
-  }
+  PrefService* local_state = g_browser_process->local_state();
 
-  metrics_service_.reset(new metrics::MetricsService(
-      metrics_state_manager_, this, g_browser_process->local_state()));
+  // Clear deprecated metrics preference for Android.
+  // TODO(gayane): Cleanup this code after M60 when the pref would be cleared
+  // from clients.
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  local_state->ClearPref(prefs::kCrashReportingEnabled);
+#endif
+
+  metrics_service_.reset(
+      new metrics::MetricsService(metrics_state_manager_, this, local_state));
 
   // Gets access to persistent metrics shared by sub-processes.
   metrics_service_->RegisterMetricsProvider(
@@ -453,8 +440,7 @@ void ChromeMetricsServiceClient::Initialize() {
           base::Bind(&chrome::IsIncognitoSessionActive))));
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
-          new ChromeStabilityMetricsProvider(
-              g_browser_process->local_state())));
+          new ChromeStabilityMetricsProvider(local_state)));
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new metrics::GPUMetricsProvider));
@@ -472,8 +458,7 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(drive_metrics_provider_));
 
-  profiler_metrics_provider_ = new metrics::ProfilerMetricsProvider(
-      base::Bind(&metrics::IsCellularLogicEnabled));
+  profiler_metrics_provider_ = new metrics::ProfilerMetricsProvider();
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(profiler_metrics_provider_));
 
@@ -492,7 +477,7 @@ void ChromeMetricsServiceClient::Initialize() {
 #if BUILDFLAG(ANDROID_JAVA_UI)
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
-          new AndroidMetricsProvider(g_browser_process->local_state())));
+          new AndroidMetricsProvider(local_state)));
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(new PageLoadMetricsProvider()));
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
@@ -519,8 +504,7 @@ void ChromeMetricsServiceClient::Initialize() {
 #endif  // defined(OS_WIN)
 
 #if defined(ENABLE_PLUGINS)
-  plugin_metrics_provider_ =
-      new PluginMetricsProvider(g_browser_process->local_state());
+  plugin_metrics_provider_ = new PluginMetricsProvider(local_state);
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(plugin_metrics_provider_));
 #endif  // defined(ENABLE_PLUGINS)
@@ -539,7 +523,6 @@ void ChromeMetricsServiceClient::Initialize() {
 
   // Record default UMA state as opt-out for all Chrome OS users, if not
   // recorded yet.
-  PrefService* local_state = g_browser_process->local_state();
   if (metrics::GetMetricsReportingDefaultState(local_state) ==
       metrics::EnableMetricsDefault::DEFAULT_UNKNOWN) {
     metrics::RecordMetricsReportingDefaultState(
@@ -562,12 +545,6 @@ void ChromeMetricsServiceClient::Initialize() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(
           new HttpsEngagementMetricsProvider()));
-
-  // Clear stability metrics if it is the first time cellular upload logic
-  // should apply to avoid sudden bulk uploads. It needs to be done after all
-  // providers are registered.
-  if (ShouldClearSavedMetrics())
-    metrics_service_->ClearSavedStabilityMetrics();
 }
 
 void ChromeMetricsServiceClient::OnInitTaskGotHardwareClass() {

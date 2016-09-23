@@ -891,22 +891,12 @@ bool ProfileIOData::IsOffTheRecord() const {
 
 void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if BUILDFLAG(ANDROID_JAVA_UI)
-  // TODO(dwkang): rename or unify the pref for UMA once we have conclusion
-  // in crbugs.com/246495.
-  // Android has it's own preferences for metrics / crash uploading.
-  enable_metrics_.Init(prefs::kCrashReportingEnabled,
-                       g_browser_process->local_state());
-  enable_metrics_.MoveToThread(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-#else
   // Prep the PrefMember and send it to the IO thread, since this value will be
   // read from there.
   enable_metrics_.Init(metrics::prefs::kMetricsReportingEnabled,
                        g_browser_process->local_state());
   enable_metrics_.MoveToThread(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-#endif  // BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 bool ProfileIOData::GetMetricsEnabledStateOnIOThread() const {

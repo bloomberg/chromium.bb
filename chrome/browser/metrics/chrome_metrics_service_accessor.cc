@@ -49,20 +49,7 @@ bool ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() {
     return false;
   }
 
-#if !BUILDFLAG(ANDROID_JAVA_UI)
   return IsMetricsReportingEnabled(g_browser_process->local_state());
-#else
-  // Android currently obtain the value for whether the user has
-  // obtain metrics reporting in non-standard ways.
-  // TODO(gayane): Consolidate metric prefs on all platforms and eliminate this
-  // special-case code, instead having all platforms go through the above flow.
-  // http://crbug.com/362192, http://crbug.com/532084
-  bool pref_value = false;
-
-  pref_value = g_browser_process->local_state()->GetBoolean(
-      prefs::kCrashReportingEnabled);
-  return IsMetricsReportingEnabledWithPrefValue(pref_value);
-#endif  // !BUILDFLAG(ANDROID_JAVA_UI)
 }
 
 // static

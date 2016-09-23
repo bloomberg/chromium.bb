@@ -34,12 +34,7 @@ class ChromeMetricsServiceAccessorTest : public testing::Test {
 
 TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
 #if defined(GOOGLE_CHROME_BUILD)
-#if !defined(OS_CHROMEOS)
-#if defined(OS_ANDROID)
-  const char* pref = prefs::kCrashReportingEnabled;
-#else
   const char* pref = metrics::prefs::kMetricsReportingEnabled;
-#endif  // defined(OS_ANDROID)
   GetLocalState()->SetDefaultPrefValue(pref, new base::FundamentalValue(false));
 
   GetLocalState()->SetBoolean(pref, false);
@@ -61,7 +56,6 @@ TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
   GetLocalState()->SetBoolean(pref, true);
   EXPECT_FALSE(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled());
-#endif  // !defined(OS_CHROMEOS)
 #else
   // Metrics Reporting is never enabled when GOOGLE_CHROME_BUILD is undefined.
   EXPECT_FALSE(

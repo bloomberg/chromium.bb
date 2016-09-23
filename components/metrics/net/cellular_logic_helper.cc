@@ -4,7 +4,6 @@
 
 #include "components/metrics/net/cellular_logic_helper.h"
 
-#include "components/variations/variations_associated_data.h"
 #include "net/base/network_change_notifier.h"
 
 namespace metrics {
@@ -21,10 +20,8 @@ const int kStandardUploadIntervalSeconds = 30 * 60;  // Thirty minutes.
 
 #if defined(OS_ANDROID)
 const bool kDefaultCellularLogicEnabled = true;
-const bool kDefaultCellularLogicOptimization = true;
 #else
 const bool kDefaultCellularLogicEnabled = false;
-const bool kDefaultCellularLogicOptimization = false;
 #endif
 
 }  // namespace
@@ -37,22 +34,10 @@ base::TimeDelta GetUploadInterval() {
   return base::TimeDelta::FromSeconds(kStandardUploadIntervalSeconds);
 }
 
-// Returns true if current connection type is cellular and user is assigned to
-// experimental group for enabled cellular uploads.
+// Returns true if current connection type is cellular and cellular logic is
+// enabled.
 bool IsCellularLogicEnabled() {
-  std::string enabled = variations::GetVariationParamValue(
-      "UMA_EnableCellularLogUpload", "Enabled");
-  std::string optimized = variations::GetVariationParamValue(
-      "UMA_EnableCellularLogUpload", "Optimize");
-  bool is_enabled = kDefaultCellularLogicEnabled;
-  if (!enabled.empty())
-    is_enabled = (enabled == "true");
-
-  bool is_optimized = kDefaultCellularLogicOptimization;
-  if (!optimized.empty())
-    is_optimized = (optimized == "true");
-
-  if (!is_enabled || !is_optimized)
+  if (!kDefaultCellularLogicEnabled)
     return false;
 
   return net::NetworkChangeNotifier::IsConnectionCellular(

@@ -449,9 +449,8 @@ extern const char kGpuDriverInfoShaderVersion[];
 extern const char kGpuDriverInfoBuildFingerPrint[];
 #endif
 
-// Android has it's own metric / crash reporting implemented in Android
-// Java code so kMetricsReportingEnabled doesn't make sense. We use this
-// to inform crashes_ui that we have enabled crash reporting.
+// Deprecated preference for metric / crash reporting on Android. Use
+// kMetricsReportingEnabled instead.
 #if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kCrashReportingEnabled[];
 #endif
