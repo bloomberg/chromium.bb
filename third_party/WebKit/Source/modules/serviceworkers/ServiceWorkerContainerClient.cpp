@@ -35,6 +35,8 @@ const char* ServiceWorkerContainerClient::supplementName()
 
 ServiceWorkerContainerClient* ServiceWorkerContainerClient::from(ExecutionContext* context)
 {
+    if (!context)
+        return nullptr;
     if (context->isWorkerGlobalScope()) {
         WorkerClients* clients = toWorkerGlobalScope(context)->clients();
         ASSERT(clients);

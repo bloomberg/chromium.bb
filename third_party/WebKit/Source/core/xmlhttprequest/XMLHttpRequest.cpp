@@ -295,6 +295,7 @@ void XMLHttpRequest::initResponseDocument()
     bool isHTML = responseIsHTML();
     if ((m_response.isHTTP() && !responseIsXML() && !isHTML)
         || (isHTML && m_responseTypeCode == ResponseTypeDefault)
+        || !getExecutionContext()
         || getExecutionContext()->isWorkerGlobalScope()) {
         m_responseDocument = nullptr;
         return;
@@ -410,7 +411,7 @@ void XMLHttpRequest::setTimeout(unsigned timeout, ExceptionState& exceptionState
 {
     // FIXME: Need to trigger or update the timeout Timer here, if needed. http://webkit.org/b/98156
     // XHR2 spec, 4.7.3. "This implies that the timeout attribute can be set while fetching is in progress. If that occurs it will still be measured relative to the start of fetching."
-    if (getExecutionContext()->isDocument() && !m_async) {
+    if (getExecutionContext() && getExecutionContext()->isDocument() && !m_async) {
         exceptionState.throwDOMException(InvalidAccessError, "Timeouts cannot be set for synchronous requests made from a document.");
         return;
     }
@@ -435,7 +436,7 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
 
     // Newer functionality is not available to synchronous requests in window contexts, as a spec-mandated
     // attempt to discourage synchronous XHR use. responseType is one such piece of functionality.
-    if (!m_async && getExecutionContext()->isDocument()) {
+    if (getExecutionContext() && getExecutionContext()->isDocument() && !m_async) {
         exceptionState.throwDOMException(InvalidAccessError, "The response type cannot be changed for synchronous requests made from a document.");
         return;
     }
@@ -556,6 +557,9 @@ void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionSta
 
 void XMLHttpRequest::open(const AtomicString& method, const String& urlString, ExceptionState& exceptionState)
 {
+    if (!getExecutionContext())
+        return;
+
     KURL url(getExecutionContext()->completeURL(urlString));
     if (!validateOpenArguments(method, url, exceptionState))
         return;
@@ -565,6 +569,9 @@ void XMLHttpRequest::open(const AtomicString& method, const String& urlString, E
 
 void XMLHttpRequest::open(const AtomicString& method, const String& urlString, bool async, const String& username, const String& password, ExceptionState& exceptionState)
 {
+    if (!getExecutionContext())
+        return;
+
     KURL url(getExecutionContext()->completeURL(urlString));
     if (!validateOpenArguments(method, url, exceptionState))
         return;
@@ -642,8 +649,11 @@ void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool asyn
 
 bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
 {
-    if (!getExecutionContext())
+    if (!getExecutionContext()) {
+        handleNetworkError();
+        throwForLoadFailureIfNeeded(exceptionState, "Document is already detached.");
         return false;
+    }
 
     if (m_state != kOpened || m_loader) {
         exceptionState.throwDOMException(InvalidStateError, "The object's state must be OPENED.");
@@ -876,7 +886,7 @@ void XMLHttpRequest::createRequest(PassRefPtr<EncodedFormData> httpBody, Excepti
     }
 
     DCHECK(getExecutionContext());
-    ExecutionContext& executionContext = *this->getExecutionContext();
+    ExecutionContext& executionContext = *getExecutionContext();
 
     // The presence of upload event listeners forces us to use preflighting because POSTing to an URL that does not
     // permit cross origin requests should look exactly like POSTing to an URL that does not respond at all.
@@ -1504,7 +1514,7 @@ void XMLHttpRequest::endLoading()
 
     changeState(kDone);
 
-    if (!getExecutionContext()->isDocument() || !document() || !document()->frame() || !document()->frame()->page())
+    if (!getExecutionContext() || !getExecutionContext()->isDocument() || !document() || !document()->frame() || !document()->frame()->page())
         return;
 
     if (status() >= 200 && status() < 300) {
