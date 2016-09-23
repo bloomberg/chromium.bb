@@ -168,13 +168,6 @@ class OfflinePageModel : public base::SupportsUserData {
   virtual const OfflinePageItem* MaybeGetBestPageForOnlineURL(
       const GURL& online_url) const = 0;
 
-  // Checks that all of the offline pages have corresponding offline copies,
-  // and all archived files have offline pages pointing to them.
-  // If a page is discovered to be missing an offline copy, its offline page
-  // metadata will be expired. If an archive file is discovered missing its
-  // offline page, it will be deleted.
-  virtual void CheckMetadataConsistency() = 0;
-
   // Marks pages with |offline_ids| as expired and deletes the associated
   // archive files.
   virtual void ExpirePages(const std::vector<int64_t>& offline_ids,

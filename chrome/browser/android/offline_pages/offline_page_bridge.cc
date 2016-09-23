@@ -451,12 +451,6 @@ void OfflinePageBridge::DeletePages(
       offline_ids, base::Bind(&DeletePageCallback, j_callback_ref));
 }
 
-void OfflinePageBridge::CheckMetadataConsistency(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  offline_page_model_->CheckMetadataConsistency();
-}
-
 ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflinePageHeaderForReload(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

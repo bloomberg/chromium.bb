@@ -770,9 +770,12 @@ TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissing) {
 
   const OfflinePageItem* page = GetPageByOfflineId(offline_id);
 
-  // Delete the offline copy of the page and check the metadata.
+  // Delete the offline copy of the page.
   base::DeleteFile(page->file_path, false);
-  model()->CheckMetadataConsistency();
+
+  // Resetting the model will cause a consistency check.
+  ResetModel();
+
   PumpLoop();
 
   // Check if the page has been expired.

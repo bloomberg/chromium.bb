@@ -105,7 +105,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const MultipleOfflinePageItemCallback& callback) override;
   const OfflinePageItem* MaybeGetBestPageForOnlineURL(
       const GURL& online_url) const override;
-  void CheckMetadataConsistency() override;
   void ExpirePages(const std::vector<int64_t>& offline_ids,
                    const base::Time& expiration_time,
                    const base::Callback<void(bool)>& callback) override;
@@ -158,7 +157,8 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const GURL& offline_url,
       const SingleOfflinePageItemCallback& callback) const;
   void MarkPageAccessedWhenLoadDone(int64_t offline_id);
-  void CheckMetadataConsistencyWhenLoadDone();
+
+  void CheckMetadataConsistency();
 
   // Callback for loading pages from the offline page metadata store.
   void OnLoadDone(const base::TimeTicks& start_time,

@@ -100,10 +100,6 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const base::android::JavaParamRef<jobject>& j_callback_obj,
       const base::android::JavaParamRef<jlongArray>& j_offline_ids_array);
 
-  void CheckMetadataConsistency(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   base::android::ScopedJavaLocalRef<jstring> GetOfflinePageHeaderForReload(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

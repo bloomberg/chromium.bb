@@ -655,12 +655,7 @@ const OfflinePageItem* OfflinePageModelImpl::MaybeGetBestPageForOnlineURL(
 }
 
 void OfflinePageModelImpl::CheckMetadataConsistency() {
-  RunWhenLoaded(
-      base::Bind(&OfflinePageModelImpl::CheckMetadataConsistencyWhenLoadDone,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void OfflinePageModelImpl::CheckMetadataConsistencyWhenLoadDone() {
+  DCHECK(is_loaded_);
   archive_manager_->GetAllArchives(
       base::Bind(&OfflinePageModelImpl::CheckMetadataConsistencyForArchivePaths,
                  weak_ptr_factory_.GetWeakPtr()));

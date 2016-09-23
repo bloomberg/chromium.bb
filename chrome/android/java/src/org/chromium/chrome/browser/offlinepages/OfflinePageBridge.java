@@ -444,13 +444,6 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Starts a check of offline page metadata, e.g. are all offline copies present.
-     */
-    public void checkOfflinePageMetadata() {
-        nativeCheckMetadataConsistency(mNativeOfflinePageBridge);
-    }
-
-    /**
      * Retrieves the extra request header to reload the offline page.
      * @param webContents Contents of the page to reload.
      * @return The extra request header string.
@@ -612,7 +605,6 @@ public class OfflinePageBridge {
             String clientNamespace, String clientId, boolean userRequested);
     private native void nativeDeletePages(
             long nativeOfflinePageBridge, Callback<Integer> callback, long[] offlineIds);
-    private native void nativeCheckMetadataConsistency(long nativeOfflinePageBridge);
     private native String nativeGetOfflinePageHeaderForReload(
             long nativeOfflinePageBridge, WebContents webContents);
 }
