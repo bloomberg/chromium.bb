@@ -91,7 +91,6 @@ const CGFloat kLastPinnedTabSpacing = 2.0;
 
 // The amount by which the new tab button is offset (from the tabs).
 const CGFloat kNewTabButtonOffset = 10.0;
-const CGFloat kNewTabButtonOffsetNonMD = 8.0;
 
 // Time (in seconds) in which tabs animate to their final position.
 const NSTimeInterval kAnimationDuration = 0.125;
@@ -570,11 +569,6 @@ CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
   // will also invalidate parts of the tab to the left, and two tabs's
   // backgrounds need to be painted on each throbber frame instead of one.
   const CGFloat kTabOverlap = 18.0;
-  const CGFloat kTabOverlapNonMD = 19.0;
-
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return kTabOverlapNonMD;
-  }
   return kTabOverlap;
 }
 
@@ -931,14 +925,8 @@ CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
     availableSpace = NSWidth([tabStripView_ frame]);
 
     // Account for the width of the new tab button.
-    if (!ui::MaterialDesignController::IsModeMaterial()) {
-      availableSpace -=
-          NSWidth([newTabButton_ frame]) + kNewTabButtonOffsetNonMD -
-              kTabOverlap;
-    } else {
-      availableSpace -=
-          NSWidth([newTabButton_ frame]) + kNewTabButtonOffset - kTabOverlap;
-    }
+    availableSpace -=
+        NSWidth([newTabButton_ frame]) + kNewTabButtonOffset - kTabOverlap;
     // Account for the right-side controls if not in rapid closure mode.
     // (In rapid closure mode, the available width is set based on the
     // position of the rightmost tab, not based on the width of the tab strip,
@@ -1566,16 +1554,14 @@ CGFloat FlipXInView(NSView* view, CGFloat width, CGFloat x) {
     newHasIcon = true;
   } else if (contents->IsWaitingForResponse()) {
     newState = kTabWaiting;
-    if (ui::MaterialDesignController::IsModeMaterial() &&
-        [[[tabController view] window] hasDarkTheme]) {
+    if ([[[tabController view] window] hasDarkTheme]) {
       throbberImage = throbberWaitingIncognitoImage;
     } else {
       throbberImage = throbberWaitingImage;
     }
   } else if (contents->IsLoadingToDifferentDocument()) {
     newState = kTabLoading;
-    if (ui::MaterialDesignController::IsModeMaterial() &&
-        [[[tabController view] window] hasDarkTheme]) {
+    if ([[[tabController view] window] hasDarkTheme]) {
       throbberImage = throbberLoadingIncognitoImage;
     } else {
       throbberImage = throbberLoadingImage;

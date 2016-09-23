@@ -359,8 +359,7 @@
   // In Material Design on 10.10 and higher, the top portion of the window is
   // blurred using an NSVisualEffectView.
   Class nsVisualEffectViewClass = NSClassFromString(@"NSVisualEffectView");
-  if (!ui::MaterialDesignController::IsModeMaterial() ||
-      !nsVisualEffectViewClass) {
+  if (!nsVisualEffectViewClass) {
     [rootView addSubview:tabStripBackgroundView_
               positioned:NSWindowBelow
               relativeTo:nil];

@@ -61,9 +61,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 }  // TabControllerInternal namespace
 
 + (CGFloat)defaultTabHeight {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return 26;
-  }
   return 29;
 }
 
@@ -73,12 +70,7 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 // pixels on the side.  The selected tab width includes the close button width.
 + (CGFloat)minTabWidth { return 36; }
 + (CGFloat)minActiveTabWidth { return 52; }
-+ (CGFloat)maxTabWidth {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return 214;
-  }
-  return 246;
-}
++ (CGFloat)maxTabWidth { return 246; }
 
 + (CGFloat)pinnedTabWidth { return 58; }
 
@@ -89,14 +81,10 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 - (id)init {
   if ((self = [super init])) {
-    bool isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
     // Icon.
     // Remember the icon's frame, so that if the icon is ever removed, a new
     // one can later replace it in the proper location.
     originalIconFrame_ = NSMakeRect(18, 6, 16, 16);
-    if (!isModeMaterial) {
-      originalIconFrame_ = NSMakeRect(19, 5, 16, 16);
-    }
     iconView_.reset([[SpriteView alloc] initWithFrame:originalIconFrame_]);
     [iconView_ setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
 
@@ -110,9 +98,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
     // Close button.
     NSRect closeButtonFrame = NSMakeRect(129, 6, 16, 16);
-    if (!isModeMaterial) {
-      closeButtonFrame = NSMakeRect(127, 4, 18, 18);
-    }
     closeButton_.reset([[HoverCloseButton alloc] initWithFrame:
         closeButtonFrame]);
     [closeButton_ setAutoresizingMask:NSViewMinXMargin];
@@ -416,10 +401,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
   if (newShowIcon) {
     newTitleFrame.origin.x = NSMaxX([iconView_ frame]) + 4;
-
-    if (!ui::MaterialDesignController::IsModeMaterial()) {
-      newTitleFrame.origin.x -= 4;
-    }
   } else {
     newTitleFrame.origin.x = originalIconFrame_.origin.x;
   }

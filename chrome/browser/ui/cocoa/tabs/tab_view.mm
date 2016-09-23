@@ -82,11 +82,6 @@ enum StrokeType {
 };
 
 NSImage* imageForResourceID(int resource_id, StrokeType stroke_type) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    return [rb.GetNativeImageNamed(resource_id).CopyNSImage() autorelease];
-  }
-
   CGFloat imageWidth = resource_id == IDR_TAB_ACTIVE_CENTER ? 1 : 18;
   SEL theSelector = 0;
   switch (resource_id) {
@@ -136,14 +131,6 @@ ui::ThreePartImage& GetMaskImage() {
 }
 
 ui::ThreePartImage& GetStrokeImage(bool active, StrokeType stroke_type) {
-  if (!ui::MaterialDesignController::IsModeMaterial() && !active) {
-    CR_DEFINE_STATIC_LOCAL(
-        ui::ThreePartImage, inactiveStroke,
-        (imageForResourceID(IDR_TAB_INACTIVE_LEFT, STROKE_NORMAL),
-         imageForResourceID(IDR_TAB_INACTIVE_CENTER, STROKE_NORMAL),
-         imageForResourceID(IDR_TAB_INACTIVE_RIGHT, STROKE_NORMAL)));
-    return inactiveStroke;
-  }
   CR_DEFINE_STATIC_LOCAL(
       ui::ThreePartImage, stroke,
       (imageForResourceID(IDR_TAB_ACTIVE_LEFT, STROKE_NORMAL),
@@ -202,11 +189,6 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     base::scoped_nsobject<GTMFadeTruncatingTextFieldCell> labelCell(
         [[GTMFadeTruncatingTextFieldCell alloc] initTextCell:@"Label"]);
     [labelCell setControlSize:NSSmallControlSize];
-    // Font size is 12, per Material Design spec.
-    CGFloat fontSize = 12;
-    if (!ui::MaterialDesignController::IsModeMaterial()) {
-      fontSize = [NSFont systemFontSizeForControlSize:NSSmallControlSize];
-    }
     [titleView_ setCell:labelCell];
     titleViewCell_ = labelCell;
 
@@ -428,9 +410,6 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     // Background tabs should not paint over the tab strip separator, which is
     // two pixels high in both lodpi and hidpi, and one pixel high in MD.
     CGFloat tabStripSeparatorLineWidth = [self cr_lineWidth];
-    if (!ui::MaterialDesignController::IsModeMaterial()) {
-      tabStripSeparatorLineWidth *= 2;
-    }
     clippingRect.origin.y = tabStripSeparatorLineWidth;
     clippingRect.size.height -= tabStripSeparatorLineWidth;
   }
@@ -486,9 +465,8 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     if (hoverAlpha > 0) {
       if (themeProvider && !hasCustomTheme) {
         CGFloat whiteValue = 1;
-        // In MD Incognito mode, give the glow a darker value.
-        if (ui::MaterialDesignController::IsModeMaterial() && themeProvider
-            && themeProvider->InIncognitoMode()) {
+        // In Incognito mode, give the glow a darker value.
+        if (themeProvider && themeProvider->InIncognitoMode()) {
           whiteValue = 0.5;
         }
         base::scoped_nsobject<NSGradient> glow([NSGradient alloc]);
@@ -513,17 +491,14 @@ CGFloat LineWidthFromContext(CGContextRef context) {
 
 // Draws the tab outline.
 - (void)drawStroke:(NSRect)dirtyRect {
-  CGFloat alpha = [[self window] isMainWindow] ? 1.0 : tabs::kImageNoFocusAlpha;
+  // In MD, the tab stroke is always opaque.
+  CGFloat alpha = 1;
   NSRect bounds = [self bounds];
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    // In Material Design the tab strip separator is always 1 pixel high -
-    // add a clip rect to avoid drawing the tab edge over it.
-    NSRect clipRect = bounds;
-    clipRect.origin.y += [self cr_lineWidth];
-    NSRectClip(clipRect);
-    // In MD, the tab stroke is always opaque.
-    alpha = 1;
-  }
+  // In Material Design the tab strip separator is always 1 pixel high -
+  // add a clip rect to avoid drawing the tab edge over it.
+  NSRect clipRect = bounds;
+  clipRect.origin.y += [self cr_lineWidth];
+  NSRectClip(clipRect);
   const ui::ThemeProvider* provider = [[self window] themeProvider];
   GetStrokeImage(state_ == NSOnState,
                  provider && provider->ShouldIncreaseContrast()
