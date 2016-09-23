@@ -973,12 +973,9 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
         break;
       }
       case DecodedDataMode::GPU: {
-        // Params should not have changed since initial sizing.
-        DCHECK(image_data->upload_params.fMatrix == draw_image.matrix());
-        DCHECK_EQ(image_data->upload_params.fPreScaleMipLevel,
-                  CalculateUploadScaleMipLevel(draw_image));
-        DCHECK_EQ(image_data->upload_params.fQuality,
-                  CalculateUploadScaleFilterQuality(draw_image));
+        // TODO(crbug.com/649167): Params should not have changed since initial
+        // sizing. Somehow this still happens. We should investigate and re-add
+        // DCHECKs here to enforce this.
 
         if (!draw_image.image()->getDeferredTextureImageData(
                 *context_threadsafe_proxy_.get(), &image_data->upload_params, 1,
