@@ -61,7 +61,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/launcher_page_info.h"
 #include "ui/app_list/app_list_switches.h"
-#include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_controller.h"
 #include "ui/app_list/speech_ui_model.h"
@@ -687,16 +686,6 @@ AppListViewDelegate::GetUsers() const {
   return users_;
 }
 
-void AppListViewDelegate::AddObserver(
-    app_list::AppListViewDelegateObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void AppListViewDelegate::RemoveObserver(
-    app_list::AppListViewDelegateObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 void AppListViewDelegate::OnTemplateURLServiceChanged() {
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
@@ -719,9 +708,6 @@ void AppListViewDelegate::Observe(int type,
                                   const content::NotificationSource& source,
                                   const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_APP_TERMINATING, type);
-
-  FOR_EACH_OBSERVER(app_list::AppListViewDelegateObserver, observers_,
-                    OnShutdown());
 
   SetProfile(nullptr);  // Ensures launcher page web contents are torn down.
 

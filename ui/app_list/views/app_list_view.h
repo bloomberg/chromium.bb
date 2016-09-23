@@ -12,7 +12,6 @@
 #include "base/observer_list.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -43,7 +42,6 @@ class AppListViewTestApi;
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
-                                    public AppListViewDelegateObserver,
                                     public SpeechUIModelObserver {
  public:
   // Does not take ownership of |delegate|.
@@ -97,9 +95,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   bool ShouldDescendIntoChildForEventHandling(
       gfx::NativeView child,
       const gfx::Point& location) override;
-
-  // Overridden from AppListViewDelegateObserver:
-  void OnShutdown() override;
 
   void SetProfileByPath(const base::FilePath& profile_path);
 

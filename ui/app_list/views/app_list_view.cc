@@ -202,13 +202,11 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       animation_observer_(new HideViewAnimationObserver()) {
   CHECK(delegate);
 
-  delegate_->AddObserver(this);
   delegate_->GetSpeechUI()->AddObserver(this);
 }
 
 AppListView::~AppListView() {
   delegate_->GetSpeechUI()->RemoveObserver(this);
-  delegate_->RemoveObserver(this);
   animation_observer_.reset();
   // Remove child views first to ensure no remaining dependencies on delegate_.
   RemoveAllChildViews(true);
@@ -346,11 +344,6 @@ bool AppListView::ShouldDescendIntoChildForEventHandling(
 
   return views::BubbleDialogDelegateView::
       ShouldDescendIntoChildForEventHandling(child, location);
-}
-
-void AppListView::OnShutdown() {
-  // Nothing to do on views - the widget will soon be closed, which will tear
-  // everything down.
 }
 
 void AppListView::SetProfileByPath(const base::FilePath& profile_path) {

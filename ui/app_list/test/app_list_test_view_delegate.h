@@ -15,7 +15,6 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
 
@@ -83,8 +82,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
 #endif
   bool IsSpeechRecognitionEnabled() override;
   const Users& GetUsers() const override;
-  void AddObserver(AppListViewDelegateObserver* observer) override;
-  void RemoveObserver(AppListViewDelegateObserver* observer) override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);
@@ -100,7 +97,6 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   std::map<size_t, int> open_search_result_counts_;
   Users users_;
   std::unique_ptr<AppListTestModel> model_;
-  base::ObserverList<AppListViewDelegateObserver> observers_;
   SpeechUIModel speech_ui_;
   base::TimeDelta auto_launch_timeout_;
 
