@@ -34,40 +34,11 @@ namespace {
 // How far to offset text.
 const CGFloat kVerticalTextPadding = 3.0;
 
-const CGFloat kVerticalImagePadding = 3.0;
 const CGFloat kMaterialVerticalImagePadding = 5.0;
 
-const CGFloat kTextStartOffset = 28.0;
 const CGFloat kMaterialTextStartOffset = 27.0;
 
-// Rounding radius of selection and hover background on popup items.
-const CGFloat kCellRoundingRadius = 2.0;
-
-// How far to offset the image.
-CGFloat VerticalImagePadding() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return kVerticalImagePadding;
-  }
-  return kMaterialVerticalImagePadding;
-}
-
-// How far to offset the image column from the left.
-CGFloat ImageXOffset() {
-  const CGFloat kImageXOffset = 5.0;
-  const CGFloat kMaterialImageXOffset = 6.0;
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return kImageXOffset;
-  }
-  return kMaterialImageXOffset;
-}
-
-// How far to offset the text column from the left.
-CGFloat TextStartOffset() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return kTextStartOffset;
-  }
-  return kMaterialTextStartOffset;
-}
+const CGFloat kMaterialImageXOffset = 6.0;
 
 // Flips the given |rect| in context of the given |frame|.
 NSRect FlipIfRTL(NSRect rect, NSRect frame) {
@@ -82,52 +53,32 @@ NSRect FlipIfRTL(NSRect rect, NSRect frame) {
 }
 
 NSColor* SelectedBackgroundColor(BOOL is_dark_theme) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [NSColor selectedControlColor];
-  }
   return is_dark_theme
              ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x14))
              : skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorBLACK, 0x14));
 }
 
 NSColor* HoveredBackgroundColor(BOOL is_dark_theme) {
-  if (is_dark_theme) {
-    return skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x0D));
-  }
-  return [NSColor controlHighlightColor];
+  return is_dark_theme
+             ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x0D))
+             : [NSColor controlHighlightColor];
 }
 
 NSColor* ContentTextColor(BOOL is_dark_theme) {
-  if (ui::MaterialDesignController::IsModeMaterial() && is_dark_theme) {
-    return [NSColor whiteColor];
-  }
-  return [NSColor blackColor];
+  return is_dark_theme ? [NSColor whiteColor] : [NSColor blackColor];
 }
 NSColor* DimTextColor(BOOL is_dark_theme) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [NSColor darkGrayColor];
-  }
-  if (is_dark_theme) {
-    return skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x7F));
-  }
-  return skia::SkColorToSRGBNSColor(SkColorSetRGB(0x64, 0x64, 0x64));
+  return is_dark_theme
+             ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x7F))
+             : skia::SkColorToSRGBNSColor(SkColorSetRGB(0x64, 0x64, 0x64));
 }
 NSColor* PositiveTextColor() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return skia::SkColorToCalibratedNSColor(SkColorSetRGB(0x3d, 0x94, 0x00));
-  }
   return skia::SkColorToSRGBNSColor(SkColorSetRGB(0x3d, 0x94, 0x00));
 }
 NSColor* NegativeTextColor() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return skia::SkColorToCalibratedNSColor(SkColorSetRGB(0xdd, 0x4b, 0x39));
-  }
   return skia::SkColorToSRGBNSColor(SkColorSetRGB(0xdd, 0x4b, 0x39));
 }
 NSColor* URLTextColor(BOOL is_dark_theme) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [NSColor colorWithCalibratedRed:0.0 green:0.55 blue:0.0 alpha:1.0];
-  }
   return is_dark_theme ? skia::SkColorToSRGBNSColor(gfx::kGoogleBlue300)
                        : skia::SkColorToSRGBNSColor(gfx::kGoogleBlue700);
 }
@@ -172,7 +123,6 @@ NSAttributedString* CreateAnswerStringHelper(const base::string16& text,
                                              BOOL is_dark_theme) {
   NSDictionary* answer_style = nil;
   NSFont* answer_font = nil;
-  bool is_mode_material = ui::MaterialDesignController::IsModeMaterial();
   switch (style_type) {
     case SuggestionAnswer::TOP_ALIGNED:
       answer_style = @{
@@ -212,14 +162,14 @@ NSAttributedString* CreateAnswerStringHelper(const base::string16& text,
       };
       break;
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
-      answer_font = is_mode_material ? FieldFont() : SmallFont();
+      answer_font = FieldFont();
       answer_style = @{
         NSForegroundColorAttributeName : DimTextColor(is_dark_theme),
         NSFontAttributeName : answer_font
       };
       break;
     case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
-      answer_font = is_mode_material ? LargeSuperscriptFont() : FieldFont();
+      answer_font = LargeSuperscriptFont();
       answer_style = @{
         NSForegroundColorAttributeName : DimTextColor(is_dark_theme),
         NSFontAttributeName : answer_font
@@ -500,15 +450,7 @@ NSAttributedString* CreateClassifiedAttributedString(
     } else {
       [HoveredBackgroundColor(isDarkTheme) set];
     }
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      NSRectFillUsingOperation(cellFrame, NSCompositeSourceOver);
-    } else {
-      NSBezierPath* path =
-          [NSBezierPath bezierPathWithRoundedRect:cellFrame
-                                          xRadius:kCellRoundingRadius
-                                          yRadius:kCellRoundingRadius];
-      [path fill];
-    }
+    NSRectFillUsingOperation(cellFrame, NSCompositeSourceOver);
   }
 
   [self drawMatchWithFrame:cellFrame inView:controlView];
@@ -540,8 +482,8 @@ NSAttributedString* CreateClassifiedAttributedString(
   NSImage* theImage =
       isDarkTheme ? [cellData incognitoImage] : [cellData image];
   imageRect.size = [theImage size];
-  imageRect.origin.x += ImageXOffset() + [tableView contentLeftPadding];
-  imageRect.origin.y += VerticalImagePadding();
+  imageRect.origin.x += kMaterialImageXOffset + [tableView contentLeftPadding];
+  imageRect.origin.y += kMaterialVerticalImagePadding;
   [theImage drawInRect:FlipIfRTL(imageRect, cellFrame)
               fromRect:NSZeroRect
              operation:NSCompositeSourceOver
@@ -549,8 +491,9 @@ NSAttributedString* CreateClassifiedAttributedString(
         respectFlipped:YES
                  hints:nil];
 
-  NSPoint origin = NSMakePoint(
-      TextStartOffset() + [tableView contentLeftPadding], kVerticalTextPadding);
+  NSPoint origin =
+      NSMakePoint(kMaterialTextStartOffset + [tableView contentLeftPadding],
+                  kVerticalTextPadding);
   if ([cellData matchType] == AutocompleteMatchType::SEARCH_SUGGEST_TAIL) {
     // Infinite suggestions are rendered with a prefix (usually ellipsis), which
     // appear vertically stacked.
@@ -567,8 +510,9 @@ NSAttributedString* CreateClassifiedAttributedString(
 
   if (descriptionMaxWidth > 0) {
     if ([cellData isAnswer]) {
-      origin = NSMakePoint(TextStartOffset() + [tableView contentLeftPadding],
-                           kContentLineHeight - kVerticalTextPadding);
+      origin =
+          NSMakePoint(kMaterialTextStartOffset + [tableView contentLeftPadding],
+                      kContentLineHeight - kVerticalTextPadding);
       CGFloat imageSize = [tableView answerLineHeight];
       NSRect imageRect =
           NSMakeRect(NSMinX(cellFrame) + origin.x, NSMinY(cellFrame) + origin.y,
@@ -580,13 +524,11 @@ NSAttributedString* CreateClassifiedAttributedString(
                           respectFlipped:YES
                                    hints:nil];
       if ([cellData answerImage]) {
-        origin.x += imageSize + VerticalImagePadding();
+        origin.x += imageSize + kMaterialVerticalImagePadding;
 
         // Have to nudge the baseline down 1pt in Material Design for the text
         // that follows, so that it's the same as the bottom of the image.
-        if (ui::MaterialDesignController::IsModeMaterial()) {
-          origin.y += 1;
-        }
+        origin.y += 1;
       }
     } else {
       origin.x += [self drawMatchPart:[tableView separator]
@@ -641,7 +583,8 @@ NSAttributedString* CreateClassifiedAttributedString(
   *contentsMaxWidth = std::min((int)ceilf(remainingWidth - prefixWidth),
                                *contentsMaxWidth);
   NSPoint origin = NSMakePoint(
-      prefixOffset + TextStartOffset() + [tableView contentLeftPadding], 0);
+      prefixOffset + kMaterialTextStartOffset + [tableView contentLeftPadding],
+      0);
   [self drawMatchPart:[cellData prefix]
             withFrame:cellFrame
                origin:origin
@@ -742,7 +685,7 @@ NSAttributedString* CreateClassifiedAttributedString(
 }
 
 + (CGFloat)getContentAreaWidth:(NSRect)cellFrame {
-  return NSWidth(cellFrame) - TextStartOffset();
+  return NSWidth(cellFrame) - kMaterialTextStartOffset;
 }
 
 @end

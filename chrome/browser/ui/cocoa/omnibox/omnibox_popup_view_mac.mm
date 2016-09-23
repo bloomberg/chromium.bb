@@ -36,14 +36,10 @@
 
 namespace {
 
-const int kPopupPaddingVertical = 5;
 const int kMaterialPopupPaddingVertical = 4;
 
 // Padding between matrix and the top and bottom of the popup window.
 CGFloat PopupPaddingVertical() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return kPopupPaddingVertical;
-  }
   return kMaterialPopupPaddingVertical;
 }
 
@@ -185,8 +181,7 @@ void OmniboxPopupViewMac::CreatePopupIfNeeded() {
         [[FlippedView alloc] initWithFrame:NSZeroRect]);
     [popup_ setContentView:contentView];
 
-    BOOL is_dark_theme = ui::MaterialDesignController::IsModeMaterial() &&
-                         [[field_ window] hasDarkTheme];
+    BOOL is_dark_theme = [[field_ window] hasDarkTheme];
 
     // View to draw a background beneath the matrix.
     background_view_.reset([[NSBox alloc] initWithFrame:NSZeroRect]);
@@ -261,10 +256,6 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   // calculate the width of the table based on backing out the popup's border
   // from the width of the field.
   CGFloat table_width = NSWidth([[[field_ window] contentView] bounds]);
-  bool is_mode_material = ui::MaterialDesignController::IsModeMaterial();
-  if (!is_mode_material) {
-    table_width = NSWidth([field_ bounds]);
-  }
   DCHECK_GT(table_width, 0.0);
 
   // Matrix.
@@ -272,11 +263,7 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
       [field_ convertPoint:[field_ bounds].origin toView:nil];
   NSRect matrix_frame = NSZeroRect;
   matrix_frame.origin.x = 0;
-  if (!is_mode_material) {
-    matrix_frame.origin.x = field_origin_base.x - NSMinX(anchor_rect_base);
-  } else {
-    [matrix_ setContentLeftPadding:field_origin_base.x];
-  }
+  [matrix_ setContentLeftPadding:field_origin_base.x];
   matrix_frame.origin.y = PopupPaddingVertical();
   matrix_frame.size.width = table_width;
   matrix_frame.size.height = matrixHeight;
@@ -342,12 +329,6 @@ NSImage* OmniboxPopupViewMac::ImageForMatch(
   if (!image.IsEmpty())
     return image.AsNSImage();
 
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    const int resource_id = model_->IsStarredMatch(match)
-                                ? IDR_OMNIBOX_STAR
-                                : AutocompleteMatch::TypeToIcon(match.type);
-    return OmniboxViewMac::ImageForResource(resource_id);
-  }
   bool is_dark_mode = [matrix_ hasDarkTheme];
   const SkColor icon_color =
       is_dark_mode ? SkColorSetA(SK_ColorWHITE, 0xCC) : gfx::kChromeIconGrey;

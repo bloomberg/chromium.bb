@@ -80,7 +80,6 @@ using content::WebContents;
 namespace {
 const int kOmniboxLargeFontSizeDelta = 9;
 const int kOmniboxNormalFontSizeDelta = 1;
-const int kOmniboxSmallFontSizeDelta = 0;
 const int kOmniboxSmallMaterialFontSizeDelta = -1;
 
 // TODO(shess): This is ugly, find a better way.  Using it right now
@@ -97,15 +96,9 @@ NSColor* ColorWithRGBBytes(int rr, int gg, int bb) {
 }
 
 NSColor* HostTextColor(bool in_dark_mode) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [NSColor blackColor];
-  }
   return in_dark_mode ? [NSColor whiteColor] : [NSColor blackColor];
 }
 NSColor* SecureSchemeColor(bool in_dark_mode) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return ColorWithRGBBytes(0x07, 0x95, 0x00);
-  }
   return in_dark_mode ? skia::SkColorToSRGBNSColor(SK_ColorWHITE)
                       : skia::SkColorToSRGBNSColor(gfx::kGoogleGreen700);
 }
@@ -115,9 +108,6 @@ NSColor* SecurityWarningSchemeColor(bool in_dark_mode) {
       : skia::SkColorToSRGBNSColor(gfx::kGoogleYellow700);
 }
 NSColor* SecurityErrorSchemeColor(bool in_dark_mode) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return ColorWithRGBBytes(0xa2, 0x00, 0x00);
-  }
   return in_dark_mode
       ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x7F))
       : skia::SkColorToSRGBNSColor(gfx::kGoogleRed700);
@@ -180,9 +170,6 @@ SkColor OmniboxViewMac::BaseTextColorSkia(bool in_dark_mode) {
 
 // static
 NSColor* OmniboxViewMac::BaseTextColor(bool in_dark_mode) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return [NSColor darkGrayColor];
-  }
   return skia::SkColorToSRGBNSColor(BaseTextColorSkia(in_dark_mode));
 }
 
@@ -585,11 +572,9 @@ void OmniboxViewMac::ApplyTextAttributes(
                            value:@"en_US_POSIX"
                            range:as_entire_string];
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    [attributedString addAttribute:NSForegroundColorAttributeName
-                             value:HostTextColor(in_dark_mode)
-                             range:as_entire_string];
-  }
+  [attributedString addAttribute:NSForegroundColorAttributeName
+                           value:HostTextColor(in_dark_mode)
+                           range:as_entire_string];
 
   url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
@@ -1100,15 +1085,7 @@ NSFont* OmniboxViewMac::GetLargeFont() {
 }
 
 NSFont* OmniboxViewMac::GetSmallFont() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return rb
-        .GetFontWithDelta(kOmniboxSmallFontSizeDelta, gfx::Font::NORMAL,
-                          gfx::Font::Weight::NORMAL)
-        .GetNativeFont();
-  }
-
-  return rb
+  return ui::ResourceBundle::GetSharedInstance()
       .GetFontWithDelta(kOmniboxSmallMaterialFontSizeDelta, gfx::Font::NORMAL,
                         gfx::Font::Weight::NORMAL)
       .GetNativeFont();
