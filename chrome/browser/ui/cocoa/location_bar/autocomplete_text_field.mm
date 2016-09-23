@@ -513,12 +513,21 @@ const CGFloat kAnimationDuration = 0.2;
   // TODO(viettrungluu): crbug.com/30809 -- this is a hack since it steals focus
   // and doesn't return it.
   [[self window] makeFirstResponder:self];
-  return [dropHandler_ draggingEntered:sender];
+
+  bool canDropAtLocation =
+      [[self cell] canDropAtLocationInWindow:[sender draggingLocation]
+                                      ofView:self];
+  return canDropAtLocation ? [dropHandler_ draggingEntered:sender]
+                           : NSDragOperationNone;
 }
 
 // (URLDropTarget protocol)
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
-  return [dropHandler_ draggingUpdated:sender];
+  bool canDropAtLocation =
+      [[self cell] canDropAtLocationInWindow:[sender draggingLocation]
+                                      ofView:self];
+  return canDropAtLocation ? [dropHandler_ draggingUpdated:sender]
+                           : NSDragOperationNone;
 }
 
 // (URLDropTarget protocol)

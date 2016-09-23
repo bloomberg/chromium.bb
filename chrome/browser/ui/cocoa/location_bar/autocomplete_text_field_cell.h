@@ -64,6 +64,18 @@ class LocationBarDecoration;
 - (NSRect)frameForDecoration:(const LocationBarDecoration*)aDecoration
                      inFrame:(NSRect)cellFrame;
 
+// Returns true if it's okay to drop dragged data into the view at the
+// given location.
+- (BOOL)canDropAtLocationInWindow:(NSPoint)location
+                           ofView:(AutocompleteTextField*)controlView;
+
+// Find the decoration under the location in the window. Return |NULL| if
+// there's nothing in the location.
+- (LocationBarDecoration*)decorationForLocationInWindow:(NSPoint)location
+                                                 inRect:(NSRect)cellFrame
+                                                 ofView:(AutocompleteTextField*)
+                                                            field;
+
 // Find the decoration under the event.  |NULL| if |theEvent| is not
 // over anything.
 - (LocationBarDecoration*)decorationForEvent:(NSEvent*)theEvent

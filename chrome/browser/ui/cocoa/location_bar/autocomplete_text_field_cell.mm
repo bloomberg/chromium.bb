@@ -424,13 +424,44 @@ size_t CalculatePositionsInFrame(
   [super drawInteriorWithFrame:cellFrame inView:controlView];
 }
 
+- (BOOL)canDropAtLocationInWindow:(NSPoint)location
+                           ofView:(AutocompleteTextField*)controlView {
+  NSRect cellFrame = [controlView bounds];
+  const NSPoint locationInView =
+      [controlView convertPoint:location fromView:nil];
+
+  // If we have decorations, the drop can't occur at their horizontal padding.
+  if (!leftDecorations_.empty() && locationInView.x < LeftDecorationXOffset())
+    return false;
+
+  if (!rightDecorations_.empty() &&
+      locationInView.x > NSWidth(cellFrame) - kRightDecorationXOffset) {
+    return false;
+  }
+
+  LocationBarDecoration* decoration =
+      [self decorationForLocationInWindow:location
+                                   inRect:cellFrame
+                                   ofView:controlView];
+  return !decoration;
+}
+
 - (LocationBarDecoration*)decorationForEvent:(NSEvent*)theEvent
                                       inRect:(NSRect)cellFrame
                                       ofView:(AutocompleteTextField*)controlView
 {
+  return [self decorationForLocationInWindow:[theEvent locationInWindow]
+                                      inRect:cellFrame
+                                      ofView:controlView];
+}
+
+- (LocationBarDecoration*)decorationForLocationInWindow:(NSPoint)location
+                                                 inRect:(NSRect)cellFrame
+                                                 ofView:(AutocompleteTextField*)
+                                                            controlView {
   const BOOL flipped = [controlView isFlipped];
-  const NSPoint location =
-      [controlView convertPoint:[theEvent locationInWindow] fromView:nil];
+  const NSPoint locationInView =
+      [controlView convertPoint:location fromView:nil];
 
   std::vector<LocationBarDecoration*> decorations;
   std::vector<NSRect> decorationFrames;
@@ -439,7 +470,7 @@ size_t CalculatePositionsInFrame(
                             &decorations, &decorationFrames, &textFrame);
 
   for (size_t i = 0; i < decorations.size(); ++i) {
-    if (NSMouseInRect(location, decorationFrames[i], flipped))
+    if (NSMouseInRect(locationInView, decorationFrames[i], flipped))
       return decorations[i];
   }
 
