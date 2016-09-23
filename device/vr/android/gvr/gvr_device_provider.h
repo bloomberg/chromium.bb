@@ -44,7 +44,6 @@ class DEVICE_VR_EXPORT GvrDeviceProvider : public VRDeviceProvider {
 
   std::unique_ptr<VRClientDispatcher> client_;
   std::unique_ptr<GvrDevice> vr_device_;
-  std::unique_ptr<GvrNonPresentingDelegate> non_presenting_delegate_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 

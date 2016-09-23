@@ -488,7 +488,7 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/GoogleChrome/custom-tabs-client.git' + '@' + 'c51efbddc4f976c88d15c730a79feba65ca857af',
 
     'src/third_party/gvr-android-sdk/src':
-      Var('chromium_git') + '/external/github.com/googlevr/gvr-android-sdk.git' + '@' + 'cff15311c7c1abbe77b3c714135dccc2009ee473',
+      Var('chromium_git') + '/external/github.com/googlevr/gvr-android-sdk.git' + '@' + '25e7e14413229d4644a66be77e8f8ddeb3f91fe7',
   },
 }
 

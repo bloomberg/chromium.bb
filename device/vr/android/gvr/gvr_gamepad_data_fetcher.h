@@ -8,8 +8,8 @@
 #include <string>
 
 #include "device/gamepad/gamepad_data_fetcher.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_controller.h"
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_controller.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
 namespace device {
 
@@ -40,6 +40,7 @@ class GvrGamepadDataFetcher : public GamepadDataFetcher {
 
  private:
   std::unique_ptr<gvr::ControllerApi> controller_api_;
+  std::unique_ptr<gvr::UserPrefs> user_prefs_;
   gvr::ControllerState controller_state_;
   unsigned int display_id_;
 

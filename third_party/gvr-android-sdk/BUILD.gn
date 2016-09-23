@@ -10,13 +10,12 @@ if (gvr_arch == "x64") {
 }
 
 android_aar_prebuilt("gvr_common_java") {
-  aar_path = "src/ndk-beta/lib/common_library.aar"
-  jar_excluded_patterns = [ "*/protobuf/*" ]
+  aar_path = "src/ndk/lib/common_library.aar"
 }
 
 android_aar_prebuilt("gvr_base_java") {
   aar_path = "src/libraries/base/base.aar"
-  proguard_configs = [ "proguard/base.flags" ]
+  proguard_configs = [ "src/proguard-gvr.txt" ]
   ignore_manifest = true  # Ignored because manifest merging is not supported (http://crbug.com/643967)
   ignore_native_libraries = true
 }
@@ -37,7 +36,7 @@ source_set("libgvr") {
 if (gvr_arch != "mipsel") {
   copy("libgvr_copy") {
     sources = [
-      "src/ndk-beta/lib/android_${gvr_arch}/libgvr.so",
+      "src/ndk/lib/android_${gvr_arch}/libgvr.so",
     ]
     outputs = [
       "${root_out_dir}/libgvr.so",
@@ -46,5 +45,5 @@ if (gvr_arch != "mipsel") {
 }
 
 config("libgvr_config") {
-  include_dirs = [ "src/ndk-beta/include/" ]
+  include_dirs = [ "src/ndk/include/" ]
 }

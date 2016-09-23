@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "third_party/gvr-android-sdk/src/ndk-beta/include/vr/gvr/capi/include/gvr_types.h"
+#include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
 namespace vr_shell {
 
