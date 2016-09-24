@@ -671,6 +671,26 @@ TEST(SpiralIteratorTest, EdgeCases) {
   expected.push_back(std::make_pair(2, 0));
 
   TestSpiralIterate(__LINE__, tiling_data, consider, ignore, center, expected);
+
+  // Tiling is smaller than tile size and center rect is not intersecting to
+  // tiling rect.
+  TilingData smaller_tiling(gfx::Size(10, 10), gfx::Size(1, 1), false);
+  consider = gfx::Rect(10, 10);
+  ignore = gfx::Rect();
+  center = gfx::Rect(2, 2, 10, 10);
+
+  // Layout of the tiling data, and expected return order:
+  //    x   0
+  //  y ┌───────┐
+  //    │  1    │
+  //  0 │       │
+  //    │     * │
+  //    └───────┘
+  expected.clear();
+  expected.push_back(std::make_pair(0, 0));
+
+  TestSpiralIterate(__LINE__, smaller_tiling, consider, ignore, center,
+                    expected);
 }
 
 }  // namespace
