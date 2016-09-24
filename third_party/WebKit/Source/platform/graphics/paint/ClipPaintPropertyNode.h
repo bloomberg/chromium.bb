@@ -18,7 +18,10 @@ namespace blink {
 
 // A clip rect created by a css property such as "overflow" or "clip".
 // Along with a reference to the transform space the clip rect is based on,
-// and an (optional) parent ClipPaintPropertyNode for inherited clips.
+// and a parent ClipPaintPropertyNode for inherited clips.
+//
+// The clip tree is rooted at a node with no parent. This root node should
+// not be modified.
 class PLATFORM_EXPORT ClipPaintPropertyNode : public RefCounted<ClipPaintPropertyNode> {
 public:
     static PassRefPtr<ClipPaintPropertyNode> create(
@@ -31,6 +34,7 @@ public:
 
     void update(PassRefPtr<const ClipPaintPropertyNode> parent, PassRefPtr<const TransformPaintPropertyNode> localTransformSpace, const FloatRoundedRect& clipRect)
     {
+        DCHECK(!isRoot());
         DCHECK(parent != this);
         m_parent = parent;
         m_localTransformSpace = localTransformSpace;

@@ -50,13 +50,14 @@ PaintPropertyTreeBuilderContext PaintPropertyTreeBuilder::setupInitialContext()
 {
     PaintPropertyTreeBuilderContext context;
 
-    // TODO(pdr): Update the root layer scrolling paths to use the static root nodes.
+    context.current.clip = context.absolutePosition.clip = context.fixedPosition.clip = rootClipNode();
+
+    // TODO(pdr): Update the root layer scrolling paths to use the static root nodes for transform, effect, and scroll.
     if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         return context;
 
     context.current.transform = context.absolutePosition.transform = context.fixedPosition.transform = rootTransformNode();
     context.current.scroll = context.absolutePosition.scroll = context.fixedPosition.scroll = rootScrollNode();
-    context.current.clip = context.absolutePosition.clip = context.fixedPosition.clip = rootClipNode();
     context.currentEffect = rootEffectNode();
 
     // Ensure scroll tree properties are reset. They will be rebuilt during the tree walk.
@@ -325,14 +326,6 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(const LayoutObject& o
     borderBoxContext->paintOffset = context.current.paintOffset;
     borderBoxContext->geometryPropertyTreeState = GeometryPropertyTreeState(context.current.transform, context.current.clip, context.currentEffect);
     borderBoxContext->scroll = context.current.scroll;
-
-    if (!context.current.clip) {
-        DCHECK(object.isLayoutView());
-        DCHECK(toLayoutView(object).frameView()->frame().isMainFrame());
-        DCHECK(RuntimeEnabledFeatures::rootLayerScrollingEnabled());
-        borderBoxContext->geometryPropertyTreeState.clip = ClipPaintPropertyNode::create(nullptr, context.current.transform, FloatRoundedRect(LayoutRect::infiniteIntRect()));
-        context.current.clip = borderBoxContext->geometryPropertyTreeState.clip.get();
-    }
 
     object.getMutableForPainting().ensureObjectPaintProperties().setLocalBorderBoxProperties(std::move(borderBoxContext));
 
