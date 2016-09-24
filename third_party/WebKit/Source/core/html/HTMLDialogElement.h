@@ -69,6 +69,8 @@ private:
 
     void forceLayoutForCentering();
 
+    void scheduleCloseEvent();
+
     CenteringMode m_centeringMode;
     LayoutUnit m_centeredPosition;
     String m_returnValue;

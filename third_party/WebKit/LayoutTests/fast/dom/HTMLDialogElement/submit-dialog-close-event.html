@@ -13,6 +13,7 @@
 <script>
 description('Tests submitting a dialog on a close event triggered by a previous submission.');
 
+window.jsTestIsAsync = true;
 function testGoodbye()
 {
     dialog = document.querySelector('dialog');
@@ -33,14 +34,11 @@ function testHello()
     dialog.addEventListener('close', function() {
         shouldBeFalse('dialog.open');
         shouldBeEqualToString('dialog.returnValue', 'Hello');
-        if (window.testRunner)
-            testRunner.notifyDone();
+        finishJSTest();
     });
     document.querySelector('#hello').click();
 }
 
-if (window.testRunner)
-    testRunner.waitUntilDone();
 testGoodbye();
 </script>
 </body>

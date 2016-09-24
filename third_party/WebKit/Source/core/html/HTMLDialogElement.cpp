@@ -122,7 +122,7 @@ void HTMLDialogElement::closeDialog(const String& returnValue)
     if (!returnValue.isNull())
         m_returnValue = returnValue;
 
-    dispatchScopedEvent(Event::create(EventTypeNames::close));
+    scheduleCloseEvent();
 }
 
 void HTMLDialogElement::forceLayoutForCentering()
@@ -131,6 +131,13 @@ void HTMLDialogElement::forceLayoutForCentering()
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     if (m_centeringMode == NeedsCentering)
         setNotCentered();
+}
+
+void HTMLDialogElement::scheduleCloseEvent()
+{
+    Event* event = Event::create(EventTypeNames::close);
+    event->setTarget(this);
+    document().enqueueAnimationFrameEvent(event);
 }
 
 void HTMLDialogElement::show()
