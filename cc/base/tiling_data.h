@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/index_rect.h"
+#include "cc/base/reverse_spiral_iterator.h"
+#include "cc/base/spiral_iterator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -52,6 +54,8 @@ class CC_EXPORT TilingData {
   // Return the highest tile index whose border texels include src_position.
   int LastBorderTileXIndexFromSrcCoord(int src_position) const;
   int LastBorderTileYIndexFromSrcCoord(int src_position) const;
+  // Return the tile indices around the given rect.
+  IndexRect TileAroundIndexRect(const gfx::Rect& center_rect) const;
 
   gfx::Rect ExpandRectIgnoringBordersToTileBounds(const gfx::Rect& rect) const;
   gfx::Rect ExpandRectToTileBounds(const gfx::Rect& rect) const;
@@ -139,22 +143,7 @@ class CC_EXPORT TilingData {
     SpiralDifferenceIterator& operator++();
 
    private:
-    int current_step_count() const {
-      return (direction_ == UP || direction_ == DOWN) ? vertical_step_count_
-                                                      : horizontal_step_count_;
-    }
-
-    bool needs_direction_switch() const;
-    void switch_direction();
-
-    enum Direction { UP, LEFT, DOWN, RIGHT };
-
-    Direction direction_;
-    int delta_x_;
-    int delta_y_;
-    int current_step_;
-    int horizontal_step_count_;
-    int vertical_step_count_;
+    SpiralIterator spiral_iterator_;
   };
 
   class CC_EXPORT ReverseSpiralDifferenceIterator
@@ -168,24 +157,7 @@ class CC_EXPORT TilingData {
     ReverseSpiralDifferenceIterator& operator++();
 
    private:
-    int current_step_count() const {
-      return (direction_ == UP || direction_ == DOWN) ? vertical_step_count_
-                                                      : horizontal_step_count_;
-    }
-
-    bool needs_direction_switch() const;
-    void switch_direction();
-
-    IndexRect around_index_rect_;
-
-    enum Direction { LEFT, UP, RIGHT, DOWN };
-
-    Direction direction_;
-    int delta_x_;
-    int delta_y_;
-    int current_step_;
-    int horizontal_step_count_;
-    int vertical_step_count_;
+    ReverseSpiralIterator reverse_spiral_iterator_;
   };
 
  private:
