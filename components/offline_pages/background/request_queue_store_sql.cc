@@ -440,8 +440,7 @@ bool RequestQueueStoreSQL::CheckDb(const base::Closure& callback) {
   if (!db_.get()) {
     // Nothing to do, but post a callback instead of calling directly
     // to preserve the async style behavior to prevent bugs.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
     return false;
   }
   return true;

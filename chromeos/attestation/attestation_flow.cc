@@ -264,7 +264,7 @@ void AttestationFlow::SendCertificateResponseToDaemon(
   // Forward the response to the attestation service to complete the operation.
   async_caller_->AsyncTpmAttestationFinishCertRequest(
       data, key_type, cryptohome::Identification(account_id), key_name,
-      base::Bind(callback));
+      callback);
 }
 
 void AttestationFlow::GetExistingCertificate(

@@ -138,7 +138,7 @@ class ShillProfileTestClient {
     result->SetStringWithoutPathExpansion(shill::kUserHashProperty, userhash);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(base::Bind(&DereferenceAndCall, callback),
+        FROM_HERE, base::Bind(&DereferenceAndCall, callback,
                               base::Owned(result.release())));
   }
 
@@ -155,7 +155,7 @@ class ShillProfileTestClient {
     entries->GetDictionaryWithoutPathExpansion(entry_path, &entry);
     ASSERT_TRUE(entry);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(base::Bind(&DereferenceAndCall, callback),
+        FROM_HERE, base::Bind(&DereferenceAndCall, callback,
                               base::Owned(entry->DeepCopy())));
   }
 

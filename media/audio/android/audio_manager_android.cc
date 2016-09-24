@@ -82,9 +82,9 @@ AudioManagerAndroid::~AudioManagerAndroid() {
 
 void AudioManagerAndroid::InitializeIfNeeded() {
   GetTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(base::Bind(base::IgnoreResult(
-                                &AudioManagerAndroid::GetJavaAudioManager)),
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&AudioManagerAndroid::GetJavaAudioManager),
+                 base::Unretained(this)));
 }
 
 bool AudioManagerAndroid::HasAudioOutputDevices() {

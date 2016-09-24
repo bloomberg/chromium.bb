@@ -307,7 +307,7 @@ void CacheStorageManager::GetOrigins(
 
   PostTaskAndReplyWithResult(cache_task_runner_.get(), FROM_HERE,
                              base::Bind(&ListOriginsOnTaskRunner, root_path_),
-                             base::Bind(callback));
+                             callback);
 }
 
 void CacheStorageManager::GetOriginsForHost(

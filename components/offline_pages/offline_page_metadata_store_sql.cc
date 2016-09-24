@@ -578,8 +578,7 @@ void OfflinePageMetadataStoreSQL::OnResetDone(const ResetCallback& callback,
 
 bool OfflinePageMetadataStoreSQL::CheckDb(const base::Closure& callback) {
   if (!db_.get() || state_ != StoreState::LOADED) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
     return false;
   }
   return true;

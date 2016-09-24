@@ -65,11 +65,10 @@ void DomDistillerHandler::HandleAddArticle(const base::ListValue* args) {
   GURL gurl(url);
   if (gurl.is_valid()) {
     service_->AddToList(
-        gurl,
-        service_->CreateDefaultDistillerPage(
-            web_ui()->GetWebContents()->GetContainerBounds().size()),
-        base::Bind(base::Bind(&DomDistillerHandler::OnArticleAdded,
-                              base::Unretained(this))));
+        gurl, service_->CreateDefaultDistillerPage(
+                  web_ui()->GetWebContents()->GetContainerBounds().size()),
+        base::Bind(&DomDistillerHandler::OnArticleAdded,
+                   base::Unretained(this)));
   } else {
     web_ui()->CallJavascriptFunctionUnsafe("domDistiller.onArticleAddFailed");
   }

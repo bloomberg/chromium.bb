@@ -57,6 +57,14 @@ base::internal::PassedWrapper<ScopedVector<T>> TrampolineForward(
 template <typename Sig>
 struct BindToTaskRunnerTrampoline;
 
+template <>
+struct BindToTaskRunnerTrampoline<void()> {
+  static void Run(const scoped_refptr<base::TaskRunner>& task_runner,
+                  const base::Closure& cb) {
+    task_runner->PostTask(FROM_HERE, cb);
+  }
+};
+
 template <typename... Args>
 struct BindToTaskRunnerTrampoline<void(Args...)> {
   static void Run(const scoped_refptr<base::TaskRunner>& task_runner,

@@ -65,10 +65,8 @@ class BackgroundTracingManagerUploadConfigWrapper {
     EXPECT_EQ(Z_STREAM_END, result);
 
     last_file_contents_.assign(output_str.data(), bytes_written);
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(done_callback));
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback_));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done_callback);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback_);
   }
 
   bool TraceHasMatchingString(const char* str) {

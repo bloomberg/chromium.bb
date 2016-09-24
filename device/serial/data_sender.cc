@@ -122,8 +122,7 @@ void DataSender::RunCancelCallback() {
   if (pending_cancel_.is_null())
     return;
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(pending_cancel_));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, pending_cancel_);
   pending_cancel_.Reset();
 }
 

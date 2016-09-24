@@ -449,8 +449,8 @@ void DialServiceImpl::StartDiscovery() {
 #else
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE, base::Bind(&GetNetworkListOnFileThread),
-      base::Bind(base::Bind(&DialServiceImpl::SendNetworkList,
-                            weak_factory_.GetWeakPtr())));
+      base::Bind(&DialServiceImpl::SendNetworkList,
+                 weak_factory_.GetWeakPtr()));
 #endif
 }
 

@@ -440,7 +440,7 @@ void ConsentProviderDelegate::ShowDialog(
   }
 
   RequestFileSystemDialogView::ShowDialog(web_contents, extension, volume,
-                                          writable, base::Bind(callback));
+                                          writable, callback);
 }
 
 void ConsentProviderDelegate::ShowNotification(

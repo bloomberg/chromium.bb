@@ -386,7 +386,7 @@ void MTPDeviceTaskHelper::OnDeleteObject(
   }
 
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                   base::Bind(success_callback));
+                                   success_callback);
 }
 
 void MTPDeviceTaskHelper::HandleDeviceError(

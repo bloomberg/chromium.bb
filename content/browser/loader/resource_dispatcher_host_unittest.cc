@@ -854,7 +854,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
 
   ResourceDispatcherHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
-        host_(base::Bind(base::Bind(&DownloadResourceHandler::Create))),
+        host_(base::Bind(&DownloadResourceHandler::Create)),
         use_test_ssl_certificate_(false),
         send_data_received_acks_(false),
         auto_advance_(false) {

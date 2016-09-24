@@ -49,6 +49,15 @@ base::internal::PassedWrapper<ScopedVector<T> > TrampolineForward(
 // returning void and taking zero or more arguments.
 template <typename Sig> struct TrampolineHelper;
 
+template <>
+struct TrampolineHelper<void()> {
+  static void Run(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      const base::Closure& cb) {
+    task_runner->PostTask(FROM_HERE, cb);
+  }
+};
+
 template <typename... Args>
 struct TrampolineHelper<void(Args...)> {
   static void Run(

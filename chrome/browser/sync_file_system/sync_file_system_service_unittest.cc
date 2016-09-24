@@ -123,8 +123,7 @@ ACTION_P2(MockSyncFileCallback, status, url) {
 }
 
 ACTION(InvokeCompletionClosure) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg0));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, arg0);
 }
 
 class SyncFileSystemServiceTest : public testing::Test {
