@@ -551,11 +551,11 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       << "Event of type " << static_cast<int>(event_type)
       << " can only be dispatched to an active worker: " << status();
 
-  PendingRequest* request = new PendingRequest(
-      error_callback, base::Time::Now(), base::TimeTicks::Now(), event_type);
-  int request_id = pending_requests_.Add(request);
+  int request_id = pending_requests_.Add(base::MakeUnique<PendingRequest>(
+      error_callback, base::Time::Now(), base::TimeTicks::Now(), event_type));
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
-                           request, "Request id", request_id, "Event type",
+                           pending_requests_.Lookup(request_id), "Request id",
+                           request_id, "Event type",
                            ServiceWorkerMetrics::EventTypeToString(event_type));
   base::TimeTicks expiration_time = base::TimeTicks::Now() + timeout;
   timeout_queue_.push(

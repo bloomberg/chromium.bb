@@ -233,13 +233,13 @@ bool ServiceWorkerDispatcherHost::Send(IPC::Message* message) {
 void ServiceWorkerDispatcherHost::RegisterServiceWorkerHandle(
     std::unique_ptr<ServiceWorkerHandle> handle) {
   int handle_id = handle->handle_id();
-  handles_.AddWithID(handle.release(), handle_id);
+  handles_.AddWithID(std::move(handle), handle_id);
 }
 
 void ServiceWorkerDispatcherHost::RegisterServiceWorkerRegistrationHandle(
     std::unique_ptr<ServiceWorkerRegistrationHandle> handle) {
   int handle_id = handle->handle_id();
-  registration_handles_.AddWithID(handle.release(), handle_id);
+  registration_handles_.AddWithID(std::move(handle), handle_id);
 }
 
 ServiceWorkerHandle* ServiceWorkerDispatcherHost::FindServiceWorkerHandle(

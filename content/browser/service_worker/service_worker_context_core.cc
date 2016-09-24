@@ -278,13 +278,14 @@ ServiceWorkerProviderHost* ServiceWorkerContextCore::GetProviderHost(
 
 void ServiceWorkerContextCore::AddProviderHost(
     std::unique_ptr<ServiceWorkerProviderHost> host) {
-  ServiceWorkerProviderHost* host_ptr = host.release();   // we take ownership
-  ProviderMap* map = GetProviderMapForProcess(host_ptr->process_id());
+  int process_id = host->process_id();
+  int provider_id = host->provider_id();
+  ProviderMap* map = GetProviderMapForProcess(process_id);
   if (!map) {
-    map = new ProviderMap;
-    providers_->AddWithID(map, host_ptr->process_id());
+    providers_->AddWithID(base::MakeUnique<ProviderMap>(), process_id);
+    map = GetProviderMapForProcess(process_id);
   }
-  map->AddWithID(host_ptr, host_ptr->provider_id());
+  map->AddWithID(std::move(host), provider_id);
 }
 
 void ServiceWorkerContextCore::RemoveProviderHost(
@@ -634,16 +635,16 @@ ServiceWorkerContextCore::TransferProviderHostOut(int process_id,
                                                   int provider_id) {
   ProviderMap* map = GetProviderMapForProcess(process_id);
   ServiceWorkerProviderHost* transferee = map->Lookup(provider_id);
-  ServiceWorkerProviderHost* replacement = new ServiceWorkerProviderHost(
-      process_id, transferee->frame_id(), provider_id,
-      transferee->provider_type(),
-      transferee->is_parent_frame_secure()
-          ? ServiceWorkerProviderHost::FrameSecurityLevel::SECURE
-          : ServiceWorkerProviderHost::FrameSecurityLevel::INSECURE,
-      AsWeakPtr(), transferee->dispatcher_host());
-  map->Replace(provider_id, replacement);
+  std::unique_ptr<ServiceWorkerProviderHost> replacement =
+      base::MakeUnique<ServiceWorkerProviderHost>(
+          process_id, transferee->frame_id(), provider_id,
+          transferee->provider_type(),
+          transferee->is_parent_frame_secure()
+              ? ServiceWorkerProviderHost::FrameSecurityLevel::SECURE
+              : ServiceWorkerProviderHost::FrameSecurityLevel::INSECURE,
+          AsWeakPtr(), transferee->dispatcher_host());
   transferee->PrepareForCrossSiteTransfer();
-  return base::WrapUnique(transferee);
+  return map->Replace(provider_id, std::move(replacement));
 }
 
 void ServiceWorkerContextCore::TransferProviderHostIn(
@@ -661,8 +662,7 @@ void ServiceWorkerContextCore::TransferProviderHostIn(
                                         new_provider_id,
                                         temp->provider_type(),
                                         temp->dispatcher_host());
-  map->Replace(new_provider_id, transferee.release());
-  delete temp;
+  map->Replace(new_provider_id, std::move(transferee));
 }
 
 void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(
