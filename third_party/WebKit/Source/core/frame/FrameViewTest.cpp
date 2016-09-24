@@ -39,16 +39,19 @@ public:
 };
 
 typedef bool TestParamRootLayerScrolling;
-class FrameViewTestBase
+class FrameViewTest
     : public testing::WithParamInterface<TestParamRootLayerScrolling>
     , private ScopedRootLayerScrollingForTest
     , public testing::Test {
 protected:
-    FrameViewTestBase()
+    FrameViewTest()
         : ScopedRootLayerScrollingForTest(GetParam())
-        , m_chromeClient(new MockChromeClient) { }
+        , m_chromeClient(new MockChromeClient)
+    {
+        EXPECT_CALL(chromeClient(), attachRootGraphicsLayer(_, _)).Times(AnyNumber());
+    }
 
-    ~FrameViewTestBase()
+    ~FrameViewTest()
     {
         testing::Mock::VerifyAndClearExpectations(&chromeClient());
     }
@@ -70,42 +73,7 @@ private:
     std::unique_ptr<DummyPageHolder> m_pageHolder;
 };
 
-class FrameViewTest : public FrameViewTestBase {
-protected:
-    FrameViewTest()
-    {
-        EXPECT_CALL(chromeClient(), attachRootGraphicsLayer(_, _)).Times(AnyNumber());
-    }
-};
-
-class FrameViewSlimmingPaintV2Test : public FrameViewTestBase {
-protected:
-    FrameViewSlimmingPaintV2Test()
-    {
-        // We shouldn't attach a root graphics layer. In this mode, that's not
-        // our responsibility.
-        EXPECT_CALL(chromeClient(), attachRootGraphicsLayer(_, _)).Times(0);
-    }
-
-    void SetUp() override
-    {
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-        FrameViewTestBase::SetUp();
-        document().view()->setParentVisible(true);
-        document().view()->setSelfVisible(true);
-    }
-
-    void TearDown() override
-    {
-        m_featuresBackup.restore();
-    }
-
-private:
-    RuntimeEnabledFeatures::Backup m_featuresBackup;
-};
-
 INSTANTIATE_TEST_CASE_P(All, FrameViewTest, ::testing::Bool());
-INSTANTIATE_TEST_CASE_P(All, FrameViewSlimmingPaintV2Test, ::testing::Bool());
 
 TEST_P(FrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases)
 {
