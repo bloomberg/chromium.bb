@@ -697,11 +697,6 @@ bool WebSettingsImpl::mockGestureTapHighlightsEnabled() const
     return m_settings->mockGestureTapHighlightsEnabled();
 }
 
-bool WebSettingsImpl::mainFrameResizesAreOrientationChanges() const
-{
-    return m_devToolsEmulator->mainFrameResizesAreOrientationChanges();
-}
-
 bool WebSettingsImpl::shrinksViewportContentToFit() const
 {
     return m_shrinksViewportContentToFit;

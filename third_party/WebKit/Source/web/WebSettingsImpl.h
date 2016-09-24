@@ -48,7 +48,6 @@ public:
 
     void setFromStrings(const WebString& name, const WebString& value) override;
 
-    bool mainFrameResizesAreOrientationChanges() const override;
     bool shrinksViewportContentToFit() const override;
     bool viewportEnabled() const override;
     void setAccelerated2dCanvasMSAASampleCount(int) override;

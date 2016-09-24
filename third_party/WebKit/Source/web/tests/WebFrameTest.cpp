@@ -7957,6 +7957,53 @@ TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
     popupWebViewHelper.reset();
 }
 
+TEST_P(ParameterizedWebFrameTest, ResizeInvalidatesDeviceMediaQueries)
+{
+    registerMockedHttpURLLoad("device_media_queries.html");
+    FixedLayoutTestWebViewClient client;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(m_baseURL + "device_media_queries.html", true, nullptr, &client, nullptr, configureAndroid);
+    LocalFrame* frame = toLocalFrame(webViewHelper.webView()->page()->mainFrame());
+    Element* element = frame->document()->getElementById("test");
+    ASSERT_TRUE(element);
+
+    client.m_screenInfo.rect = WebRect(0, 0, 700, 500);
+    client.m_screenInfo.availableRect = client.m_screenInfo.rect;
+    webViewHelper.resize(WebSize(700, 500));
+    EXPECT_EQ(300, element->offsetWidth());
+    EXPECT_EQ(300, element->offsetHeight());
+
+    client.m_screenInfo.rect = WebRect(0, 0, 710, 500);
+    client.m_screenInfo.availableRect = client.m_screenInfo.rect;
+    webViewHelper.resize(WebSize(710, 500));
+    EXPECT_EQ(400, element->offsetWidth());
+    EXPECT_EQ(300, element->offsetHeight());
+
+    client.m_screenInfo.rect = WebRect(0, 0, 690, 500);
+    client.m_screenInfo.availableRect = client.m_screenInfo.rect;
+    webViewHelper.resize(WebSize(690, 500));
+    EXPECT_EQ(200, element->offsetWidth());
+    EXPECT_EQ(300, element->offsetHeight());
+
+    client.m_screenInfo.rect = WebRect(0, 0, 700, 510);
+    client.m_screenInfo.availableRect = client.m_screenInfo.rect;
+    webViewHelper.resize(WebSize(700, 510));
+    EXPECT_EQ(300, element->offsetWidth());
+    EXPECT_EQ(400, element->offsetHeight());
+
+    client.m_screenInfo.rect = WebRect(0, 0, 700, 490);
+    client.m_screenInfo.availableRect = client.m_screenInfo.rect;
+    webViewHelper.resize(WebSize(700, 490));
+    EXPECT_EQ(300, element->offsetWidth());
+    EXPECT_EQ(200, element->offsetHeight());
+
+    client.m_screenInfo.rect = WebRect(0, 0, 690, 510);
+    client.m_screenInfo.availableRect = client.m_screenInfo.rect;
+    webViewHelper.resize(WebSize(690, 510));
+    EXPECT_EQ(200, element->offsetWidth());
+    EXPECT_EQ(400, element->offsetHeight());
+}
+
 class DeviceEmulationTest : public ParameterizedWebFrameTest {
 protected:
     DeviceEmulationTest()

@@ -827,9 +827,10 @@ void FrameView::performPreLayoutTasks()
         document->notifyResizeForViewportUnits();
 
     // Viewport-dependent or device-dependent media queries may cause us to need completely different style information.
+    bool mainFrameRotation = m_frame->isMainFrame() && m_frame->settings() && m_frame->settings()->mainFrameResizesAreOrientationChanges();
     if (!document->styleResolver()
         || (wasResized && document->styleResolver()->mediaQueryAffectedByViewportChange())
-        || (wasResized && m_frame->settings() && m_frame->settings()->resizeIsDeviceSizeChange() && document->styleResolver()->mediaQueryAffectedByDeviceChange())) {
+        || (wasResized && mainFrameRotation && document->styleResolver()->mediaQueryAffectedByDeviceChange())) {
         document->mediaQueryAffectingValueChanged();
     } else if (wasResized) {
         document->evaluateMediaQueryList();

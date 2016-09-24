@@ -115,7 +115,6 @@ public:
     // string representation of the integer value of the enum.
     virtual void setFromStrings(const WebString& name, const WebString& value) = 0;
 
-    virtual bool mainFrameResizesAreOrientationChanges() const = 0;
     virtual bool shrinksViewportContentToFit() const = 0;
     virtual bool viewportEnabled() const = 0;
     virtual void setAccelerated2dCanvasMSAASampleCount(int) = 0;

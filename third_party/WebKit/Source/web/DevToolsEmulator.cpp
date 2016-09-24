@@ -71,9 +71,9 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
     , m_embedderPrimaryPointerType(webViewImpl->page()->settings().primaryPointerType())
     , m_embedderAvailableHoverTypes(webViewImpl->page()->settings().availableHoverTypes())
     , m_embedderPrimaryHoverType(webViewImpl->page()->settings().primaryHoverType())
+    , m_embedderMainFrameResizesAreOrientationChanges(webViewImpl->page()->settings().mainFrameResizesAreOrientationChanges())
     , m_touchEventEmulationEnabled(false)
     , m_doubleTapToZoomEnabled(false)
-    , m_mainFrameResizesAreOrientationChanges(false)
     , m_originalTouchEnabled(false)
     , m_originalDeviceSupportsMouse(false)
     , m_originalDeviceSupportsTouch(false)
@@ -153,15 +153,12 @@ bool DevToolsEmulator::doubleTapToZoomEnabled() const
     return m_touchEventEmulationEnabled ? true : m_doubleTapToZoomEnabled;
 }
 
-void DevToolsEmulator::setMainFrameResizesAreOrientationChanges(bool enabled)
+void DevToolsEmulator::setMainFrameResizesAreOrientationChanges(bool value)
 {
-    m_mainFrameResizesAreOrientationChanges = enabled;
-}
-
-bool DevToolsEmulator::mainFrameResizesAreOrientationChanges() const
-{
+    m_embedderMainFrameResizesAreOrientationChanges = value;
     bool emulateMobileEnabled = m_deviceMetricsEnabled && m_emulateMobileEnabled;
-    return emulateMobileEnabled ? true : m_mainFrameResizesAreOrientationChanges;
+    if (!emulateMobileEnabled)
+        m_webViewImpl->page()->settings().setMainFrameResizesAreOrientationChanges(value);
 }
 
 void DevToolsEmulator::setAvailablePointerTypes(int types)
@@ -251,11 +248,6 @@ void DevToolsEmulator::disableDeviceEmulation()
     }
 }
 
-bool DevToolsEmulator::resizeIsDeviceSizeChange()
-{
-    return m_deviceMetricsEnabled && m_emulateMobileEnabled;
-}
-
 void DevToolsEmulator::enableMobileEmulation()
 {
     if (m_emulateMobileEnabled)
@@ -280,7 +272,7 @@ void DevToolsEmulator::enableMobileEmulation()
     m_webViewImpl->page()->settings().setPrimaryPointerType(PointerTypeCoarse);
     m_webViewImpl->page()->settings().setAvailableHoverTypes(HoverTypeOnDemand);
     m_webViewImpl->page()->settings().setPrimaryHoverType(HoverTypeOnDemand);
-    m_webViewImpl->page()->settings().setResizeIsDeviceSizeChange(true);
+    m_webViewImpl->page()->settings().setMainFrameResizesAreOrientationChanges(true);
     m_webViewImpl->setZoomFactorOverride(1);
 
     m_originalDefaultMinimumPageScaleFactor = m_webViewImpl->defaultMinimumPageScaleFactor();
@@ -312,7 +304,7 @@ void DevToolsEmulator::disableMobileEmulation()
     m_webViewImpl->page()->settings().setPrimaryPointerType(m_embedderPrimaryPointerType);
     m_webViewImpl->page()->settings().setAvailableHoverTypes(m_embedderAvailableHoverTypes);
     m_webViewImpl->page()->settings().setPrimaryHoverType(m_embedderPrimaryHoverType);
-    m_webViewImpl->page()->settings().setResizeIsDeviceSizeChange(false);
+    m_webViewImpl->page()->settings().setMainFrameResizesAreOrientationChanges(m_embedderMainFrameResizesAreOrientationChanges);
     m_webViewImpl->setZoomFactorOverride(0);
     m_emulateMobileEnabled = false;
     m_webViewImpl->setDefaultPageScaleLimits(

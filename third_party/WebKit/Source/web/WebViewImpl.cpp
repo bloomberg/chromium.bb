@@ -1930,7 +1930,7 @@ void WebViewImpl::resizeWithTopControls(const WebSize& newSize, float topControl
 
     VisualViewport& visualViewport = page()->frameHost().visualViewport();
 
-    bool isRotation = settings()->mainFrameResizesAreOrientationChanges()
+    bool isRotation = page()->settings().mainFrameResizesAreOrientationChanges()
         && m_size.width && contentsSize().width() && newSize.width != m_size.width && !m_fullscreenController->isFullscreen();
     m_size = newSize;
 
