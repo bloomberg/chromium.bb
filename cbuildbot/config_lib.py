@@ -1311,10 +1311,9 @@ class SiteConfig(dict):
     """
     assert name not in self._templates, ('Template %s already exists.' % name)
 
-    kwargs.setdefault('_template', name)
-
     cfg = BuildConfig()
     cfg.apply(*args, **kwargs)
+    cfg['_template'] = name
     self._templates[name] = cfg
 
     return cfg

@@ -1233,7 +1233,6 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
       site_config.templates.paladin,
       site_config.templates.internal,
       site_config.templates.official_chrome,
-      _template='paladin',
       manifest=constants.OFFICIAL_MANIFEST,
       overlays=constants.BOTH_OVERLAYS,
       prebuilts=constants.PRIVATE,
@@ -1245,7 +1244,6 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
   site_config.AddTemplate(
       'internal_nowithdebug_paladin',
       site_config.templates.internal_paladin,
-      _template='paladin',
       useflags=append_useflags(['-cros-debug']),
       description=(site_config.templates.paladin.description +
                    ' (internal, nowithdebug)'),
@@ -1306,7 +1304,6 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
       'internal_incremental',
       site_config.templates.internal,
       site_config.templates.incremental,
-      _template='incremental',
       overlays=constants.BOTH_OVERLAYS,
       description='Incremental Builds (internal)',
   )
@@ -1437,7 +1434,6 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
                                   warn_only=True, num=1),
           config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                   warn_only=True, num=1)],
-      _template='release',
   )
 
   site_config.AddTemplate(
@@ -1448,7 +1444,6 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
           config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE, num=1),
           config_lib.HWTestConfig(constants.HWTEST_AU_SUITE,
                                   warn_only=True, num=1)],
-      _template='release',
   )
 
   site_config.AddTemplate(
@@ -2048,12 +2043,14 @@ def _GetConfig(site_config, ge_build_config, board_configs,
       'nowithdebug-paladin',
       ['x86-generic', 'amd64-generic'],
       board_configs,
+      site_config.templates.paladin,
       site_config.templates.internal_nowithdebug_paladin,
       important=False,
   )
 
   site_config.Add(
       'x86-mario-nowithdebug-paladin',
+      site_config.templates.paladin,
       site_config.templates.internal_nowithdebug_paladin,
       boards=['x86-mario'])
 
@@ -2138,6 +2135,7 @@ def _GetConfig(site_config, ge_build_config, board_configs,
 
   site_config.Add(
       'master-paladin',
+      site_config.templates.paladin,
       site_config.templates.internal_paladin,
       boards=[],
       buildslave_type=constants.BAREMETAL_BUILD_SLAVE_TYPE,
@@ -2172,6 +2170,7 @@ def _GetConfig(site_config, ge_build_config, board_configs,
   # under test.
   site_config.Add(
       'wolf-tot-paladin',
+      site_config.templates.paladin,
       site_config.templates.internal_paladin,
       boards=['wolf'],
       do_not_apply_cq_patches=True,
@@ -2391,6 +2390,7 @@ def _GetConfig(site_config, ge_build_config, board_configs,
 
   site_config.Add(
       'lumpy-incremental-paladin',
+      site_config.templates.paladin,
       site_config.templates.internal_paladin,
       boards=['lumpy'],
       build_before_patching=True,
@@ -2533,12 +2533,14 @@ def _GetConfig(site_config, ge_build_config, board_configs,
 
   site_config.Add(
       'mario-incremental',
+      site_config.templates.incremental,
       site_config.templates.internal_incremental,
       boards=['x86-mario'],
   )
 
   site_config.Add(
       'lakitu-incremental',
+      site_config.templates.incremental,
       site_config.templates.internal_incremental,
       _base_configs['lakitu'],
       site_config.templates.lakitu_test_customizations,
@@ -2546,6 +2548,7 @@ def _GetConfig(site_config, ge_build_config, board_configs,
 
   site_config.Add(
       'lakitu_next-incremental',
+      site_config.templates.incremental,
       site_config.templates.internal_incremental,
       _base_configs['lakitu_next'],
       site_config.templates.lakitu_test_customizations,
