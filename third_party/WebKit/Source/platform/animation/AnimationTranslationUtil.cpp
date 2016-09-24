@@ -25,9 +25,6 @@
 #include "platform/animation/AnimationTranslationUtil.h"
 
 #include "platform/animation/CompositorTransformOperations.h"
-#include "platform/graphics/CompositorFilterOperations.h"
-#include "platform/graphics/filters/FilterOperations.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/transforms/InterpolatedTransformOperation.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/MatrixTransformOperation.h"
@@ -111,11 +108,6 @@ void toCompositorTransformOperations(const TransformOperations& transformOperati
             break;
         } // switch
     } // for each operation
-}
-
-CompositorFilterOperations toCompositorFilterOperations(const FilterOperations& inOperations)
-{
-    return SkiaImageFilterBuilder::buildFilterOperations(inOperations);
 }
 
 } // namespace blink

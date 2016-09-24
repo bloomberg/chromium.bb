@@ -35,13 +35,10 @@
 
 namespace blink {
 
-class CompositorFilterOperations;
 class CompositorTransformOperations;
-class FilterOperations;
 class TransformOperations;
 
 PLATFORM_EXPORT void toCompositorTransformOperations(const TransformOperations& inOperations, CompositorTransformOperations* outOperations);
-PLATFORM_EXPORT CompositorFilterOperations toCompositorFilterOperations(const FilterOperations&);
 
 } // namespace blink
 

@@ -41,6 +41,7 @@
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
+#include "core/paint/FilterEffectBuilder.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/animation/AnimationTranslationUtil.h"
 #include "platform/animation/CompositorAnimation.h"
@@ -53,7 +54,6 @@
 #include "platform/animation/CompositorTransformKeyframe.h"
 #include "platform/geometry/FloatBox.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebCompositorSupport.h"
 #include "wtf/PtrUtil.h"
 #include <algorithm>
 #include <cmath>
@@ -419,9 +419,10 @@ namespace {
 void addKeyframeToCurve(CompositorFilterAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
     const AnimatableValue* value, const TimingFunction& keyframeTimingFunction)
 {
+    FilterEffectBuilder builder(nullptr, FloatRect(), 1);
     CompositorFilterKeyframe filterKeyframe(
         keyframe->offset(),
-        toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations()),
+        builder.buildFilterOperations(toAnimatableFilterOperations(value)->operations()),
         keyframeTimingFunction);
     curve.addKeyframe(filterKeyframe);
 }

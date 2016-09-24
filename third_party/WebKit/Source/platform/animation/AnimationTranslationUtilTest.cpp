@@ -25,15 +25,12 @@
 #include "platform/animation/AnimationTranslationUtil.h"
 
 #include "platform/animation/CompositorTransformOperations.h"
-#include "platform/graphics/CompositorFilterOperations.h"
-#include "platform/graphics/filters/FilterOperations.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/RotateTransformOperation.h"
 #include "platform/transforms/ScaleTransformOperation.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
 #include <memory>
 
 namespace blink {
@@ -69,36 +66,6 @@ TEST(AnimationTranslationUtilTest, transformsWork)
     EXPECT_NEAR(op2.scale.x, 50.2f, err);
     EXPECT_NEAR(op2.scale.y, 100.0f, err);
     EXPECT_NEAR(op2.scale.z, -4.0f, err);
-}
-
-TEST(AnimationTranslationUtilTest, filtersWork)
-{
-    FilterOperations ops;
-    ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
-    ops.operations().append(BasicColorMatrixFilterOperation::create(0.2, FilterOperation::GRAYSCALE));
-    ops.operations().append(BasicColorMatrixFilterOperation::create(0.8, FilterOperation::SEPIA));
-    ops.operations().append(BasicComponentTransferFilterOperation::create(0.1, FilterOperation::OPACITY));
-
-    CompositorFilterOperations outOps = toCompositorFilterOperations(ops);
-
-    EXPECT_EQ(4UL, outOps.asCcFilterOperations().size());
-    const float err = 0.0001;
-
-    auto& op0 = outOps.asCcFilterOperations().at(0);
-    EXPECT_EQ(cc::FilterOperation::SATURATE, op0.type());
-    EXPECT_NEAR(op0.amount(), 0.5f, err);
-
-    auto& op1 = outOps.asCcFilterOperations().at(1);
-    EXPECT_EQ(cc::FilterOperation::GRAYSCALE, op1.type());
-    EXPECT_NEAR(op1.amount(), 0.2f, err);
-
-    auto& op2 = outOps.asCcFilterOperations().at(2);
-    EXPECT_EQ(cc::FilterOperation::SEPIA, op2.type());
-    EXPECT_NEAR(op2.amount(), 0.8f, err);
-
-    auto& op3 = outOps.asCcFilterOperations().at(3);
-    EXPECT_EQ(cc::FilterOperation::OPACITY, op3.type());
-    EXPECT_NEAR(op3.amount(), 0.1f, err);
 }
 
 } // namespace blink

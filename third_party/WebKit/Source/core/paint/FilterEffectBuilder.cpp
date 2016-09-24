@@ -32,6 +32,7 @@
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/ColorSpace.h"
+#include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/filters/FEBoxReflect.h"
 #include "platform/graphics/filters/FEColorMatrix.h"
 #include "platform/graphics/filters/FEComponentTransfer.h"
@@ -40,7 +41,9 @@
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
 #include "platform/graphics/filters/FilterOperations.h"
+#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
+#include "public/platform/WebPoint.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 
@@ -122,7 +125,7 @@ Vector<float> sepiaMatrix(double amount)
 } // namespace
 
 FilterEffectBuilder::FilterEffectBuilder(
-    Element* target,
+    Node* target,
     const FloatRect& zoomedReferenceBox, float zoom,
     const SkPaint* fillPaint, const SkPaint* strokePaint)
     : m_targetContext(target)
@@ -140,14 +143,19 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(const FilterOperations& ope
     // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.
     Filter* parentFilter = Filter::create(1.0f);
     FilterEffect* previousEffect = parentFilter->getSourceGraphic();
-    for (size_t i = 0; i < operations.operations().size(); ++i) {
+    for (FilterOperation* filterOperation : operations.operations()) {
         FilterEffect* effect = nullptr;
-        FilterOperation* filterOperation = operations.operations().at(i).get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
-            Filter* referenceFilter = buildReferenceFilter(toReferenceFilterOperation(*filterOperation), previousEffect);
-            if (referenceFilter)
+            ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*filterOperation);
+            if (Filter* referenceFilter = buildReferenceFilter(referenceOperation, previousEffect)) {
+                // TODO(fs): This is essentially only needed for the
+                // side-effects (mapRect). The filter differs from the one
+                // computed just above in what the SourceGraphic is, and how
+                // it's connected to the filter-chain.
+                referenceOperation.setFilter(buildReferenceFilter(referenceOperation, nullptr));
                 effect = referenceFilter->lastEffect();
+            }
             break;
         }
         case FilterOperation::GRAYSCALE: {
@@ -255,12 +263,107 @@ FilterEffect* FilterEffectBuilder::buildFilterEffect(const FilterOperations& ope
     return previousEffect;
 }
 
+CompositorFilterOperations FilterEffectBuilder::buildFilterOperations(const FilterOperations& operations) const
+{
+    ColorSpace currentColorSpace = ColorSpaceDeviceRGB;
+
+    CompositorFilterOperations filters;
+    for (FilterOperation* op : operations.operations()) {
+        switch (op->type()) {
+        case FilterOperation::REFERENCE: {
+            ReferenceFilterOperation& referenceOperation = toReferenceFilterOperation(*op);
+            Filter* referenceFilter = buildReferenceFilter(referenceOperation, nullptr);
+            if (referenceFilter && referenceFilter->lastEffect()) {
+                referenceOperation.setFilter(referenceFilter);
+                SkiaImageFilterBuilder::populateSourceGraphicImageFilters(referenceFilter->getSourceGraphic(), nullptr, currentColorSpace);
+
+                FilterEffect* filterEffect = referenceFilter->lastEffect();
+                currentColorSpace = filterEffect->operatingColorSpace();
+                filters.appendReferenceFilter(SkiaImageFilterBuilder::build(filterEffect, currentColorSpace));
+            }
+            break;
+        }
+        case FilterOperation::GRAYSCALE:
+        case FilterOperation::SEPIA:
+        case FilterOperation::SATURATE:
+        case FilterOperation::HUE_ROTATE: {
+            float amount = toBasicColorMatrixFilterOperation(*op).amount();
+            switch (op->type()) {
+            case FilterOperation::GRAYSCALE:
+                filters.appendGrayscaleFilter(amount);
+                break;
+            case FilterOperation::SEPIA:
+                filters.appendSepiaFilter(amount);
+                break;
+            case FilterOperation::SATURATE:
+                filters.appendSaturateFilter(amount);
+                break;
+            case FilterOperation::HUE_ROTATE:
+                filters.appendHueRotateFilter(amount);
+                break;
+            default:
+                NOTREACHED();
+            }
+            break;
+        }
+        case FilterOperation::INVERT:
+        case FilterOperation::OPACITY:
+        case FilterOperation::BRIGHTNESS:
+        case FilterOperation::CONTRAST: {
+            float amount = toBasicComponentTransferFilterOperation(*op).amount();
+            switch (op->type()) {
+            case FilterOperation::INVERT:
+                filters.appendInvertFilter(amount);
+                break;
+            case FilterOperation::OPACITY:
+                filters.appendOpacityFilter(amount);
+                break;
+            case FilterOperation::BRIGHTNESS:
+                filters.appendBrightnessFilter(amount);
+                break;
+            case FilterOperation::CONTRAST:
+                filters.appendContrastFilter(amount);
+                break;
+            default:
+                NOTREACHED();
+            }
+            break;
+        }
+        case FilterOperation::BLUR: {
+            float pixelRadius = toBlurFilterOperation(*op).stdDeviation().getFloatValue();
+            filters.appendBlurFilter(pixelRadius);
+            break;
+        }
+        case FilterOperation::DROP_SHADOW: {
+            const DropShadowFilterOperation& drop = toDropShadowFilterOperation(*op);
+            filters.appendDropShadowFilter(WebPoint(drop.x(), drop.y()), drop.stdDeviation(), drop.getColor().rgb());
+            break;
+        }
+        case FilterOperation::BOX_REFLECT: {
+            // TODO(jbroman): Consider explaining box reflect to the compositor,
+            // instead of calling this a "reference filter".
+            const auto& reflection = toBoxReflectFilterOperation(*op).reflection();
+            filters.appendReferenceFilter(SkiaImageFilterBuilder::buildBoxReflectFilter(reflection, nullptr));
+            break;
+        }
+        case FilterOperation::NONE:
+            break;
+        }
+    }
+    if (currentColorSpace != ColorSpaceDeviceRGB) {
+        // Transform to device color space at the end of processing, if required.
+        sk_sp<SkImageFilter> filter = SkiaImageFilterBuilder::transformColorSpace(nullptr, currentColorSpace, ColorSpaceDeviceRGB);
+        filters.appendReferenceFilter(std::move(filter));
+    }
+    return filters;
+}
+
 Filter* FilterEffectBuilder::buildReferenceFilter(
     const ReferenceFilterOperation& referenceOperation,
     FilterEffect* previousEffect) const
 {
-    DCHECK(m_targetContext);
-    SVGFilterElement* filterElement = ReferenceFilterBuilder::resolveFilterReference(referenceOperation, *m_targetContext);
+    DCHECK(m_targetContext && m_targetContext->isElementNode());
+    SVGFilterElement* filterElement = ReferenceFilterBuilder::resolveFilterReference(referenceOperation, toElement(*m_targetContext));
     if (!filterElement)
         return nullptr;
     return buildReferenceFilter(*filterElement, previousEffect);

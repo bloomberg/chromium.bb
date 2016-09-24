@@ -29,12 +29,8 @@
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
 #include "SkTableColorFilter.h"
-#include "platform/geometry/IntPoint.h"
 #include "platform/graphics/BoxReflection.h"
-#include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/filters/FilterEffect.h"
-#include "platform/graphics/filters/FilterOperations.h"
-#include "platform/graphics/filters/SourceGraphic.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkXfermode.h"
@@ -43,8 +39,6 @@
 
 namespace blink {
 namespace SkiaImageFilterBuilder {
-
-namespace {
 
 void populateSourceGraphicImageFilters(FilterEffect* sourceGraphic, sk_sp<SkImageFilter> input, ColorSpace inputColorSpace)
 {
@@ -61,8 +55,6 @@ void populateSourceGraphicImageFilters(FilterEffect* sourceGraphic, sk_sp<SkImag
     sourceGraphic->setImageFilter(ColorSpaceDeviceRGB, true, deviceFilter);
     sourceGraphic->setImageFilter(ColorSpaceLinearRGB, true, linearFilter);
 }
-
-} // namespace
 
 sk_sp<SkImageFilter> build(FilterEffect* effect, ColorSpace colorSpace, bool destinationRequiresValidPreMultipliedPixels)
 {
@@ -98,100 +90,6 @@ void buildSourceGraphic(FilterEffect* sourceGraphic, sk_sp<SkPicture> picture)
     SkRect cullRect = picture->cullRect();
     sk_sp<SkImageFilter> filter = SkPictureImageFilter::Make(std::move(picture), cullRect);
     populateSourceGraphicImageFilters(sourceGraphic, std::move(filter), sourceGraphic->operatingColorSpace());
-}
-
-CompositorFilterOperations buildFilterOperations(const FilterOperations& operations)
-{
-    ColorSpace currentColorSpace = ColorSpaceDeviceRGB;
-
-    CompositorFilterOperations filters;
-    for (size_t i = 0; i < operations.size(); ++i) {
-        const FilterOperation& op = *operations.at(i);
-        switch (op.type()) {
-        case FilterOperation::REFERENCE: {
-            Filter* referenceFilter = toReferenceFilterOperation(op).getFilter();
-            if (referenceFilter && referenceFilter->lastEffect()) {
-                populateSourceGraphicImageFilters(referenceFilter->getSourceGraphic(), nullptr, currentColorSpace);
-
-                FilterEffect* filterEffect = referenceFilter->lastEffect();
-                currentColorSpace = filterEffect->operatingColorSpace();
-                filters.appendReferenceFilter(SkiaImageFilterBuilder::build(filterEffect, currentColorSpace));
-            }
-            break;
-        }
-        case FilterOperation::GRAYSCALE:
-        case FilterOperation::SEPIA:
-        case FilterOperation::SATURATE:
-        case FilterOperation::HUE_ROTATE: {
-            float amount = toBasicColorMatrixFilterOperation(op).amount();
-            switch (op.type()) {
-            case FilterOperation::GRAYSCALE:
-                filters.appendGrayscaleFilter(amount);
-                break;
-            case FilterOperation::SEPIA:
-                filters.appendSepiaFilter(amount);
-                break;
-            case FilterOperation::SATURATE:
-                filters.appendSaturateFilter(amount);
-                break;
-            case FilterOperation::HUE_ROTATE:
-                filters.appendHueRotateFilter(amount);
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
-            break;
-        }
-        case FilterOperation::INVERT:
-        case FilterOperation::OPACITY:
-        case FilterOperation::BRIGHTNESS:
-        case FilterOperation::CONTRAST: {
-            float amount = toBasicComponentTransferFilterOperation(op).amount();
-            switch (op.type()) {
-            case FilterOperation::INVERT:
-                filters.appendInvertFilter(amount);
-                break;
-            case FilterOperation::OPACITY:
-                filters.appendOpacityFilter(amount);
-                break;
-            case FilterOperation::BRIGHTNESS:
-                filters.appendBrightnessFilter(amount);
-                break;
-            case FilterOperation::CONTRAST:
-                filters.appendContrastFilter(amount);
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
-            break;
-        }
-        case FilterOperation::BLUR: {
-            float pixelRadius = toBlurFilterOperation(op).stdDeviation().getFloatValue();
-            filters.appendBlurFilter(pixelRadius);
-            break;
-        }
-        case FilterOperation::DROP_SHADOW: {
-            const DropShadowFilterOperation& drop = toDropShadowFilterOperation(op);
-            filters.appendDropShadowFilter(drop.location(), drop.stdDeviation(), drop.getColor());
-            break;
-        }
-        case FilterOperation::BOX_REFLECT: {
-            // TODO(jbroman): Consider explaining box reflect to the compositor,
-            // instead of calling this a "reference filter".
-            const auto& reflection = toBoxReflectFilterOperation(op).reflection();
-            filters.appendReferenceFilter(buildBoxReflectFilter(reflection, nullptr));
-            break;
-        }
-        case FilterOperation::NONE:
-            break;
-        }
-    }
-    if (currentColorSpace != ColorSpaceDeviceRGB) {
-        // Transform to device color space at the end of processing, if required
-        sk_sp<SkImageFilter> filter = transformColorSpace(nullptr, currentColorSpace, ColorSpaceDeviceRGB);
-        filters.appendReferenceFilter(std::move(filter));
-    }
-    return filters;
 }
 
 sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection, sk_sp<SkImageFilter> input)

@@ -35,11 +35,12 @@ class SkPaint;
 
 namespace blink {
 
-class Element;
+class CompositorFilterOperations;
 class Filter;
 class FilterEffect;
 class FilterOperations;
 class FloatRect;
+class Node;
 class ReferenceFilterOperation;
 class SVGFilterElement;
 class SVGFilterGraphNodeMap;
@@ -48,19 +49,21 @@ class CORE_EXPORT FilterEffectBuilder final {
     STACK_ALLOCATED();
 public:
     FilterEffectBuilder(
-        Element*,
+        Node*,
         const FloatRect& zoomedReferenceBox,
         float zoom,
         const SkPaint* fillPaint = nullptr,
         const SkPaint* strokePaint = nullptr);
 
     Filter* buildReferenceFilter(SVGFilterElement&, FilterEffect* previousEffect, SVGFilterGraphNodeMap* = nullptr) const;
-    Filter* buildReferenceFilter(const ReferenceFilterOperation&, FilterEffect* previousEffect = nullptr) const;
 
     FilterEffect* buildFilterEffect(const FilterOperations&) const;
+    CompositorFilterOperations buildFilterOperations(const FilterOperations&) const;
 
 private:
-    Member<Element> m_targetContext;
+    Filter* buildReferenceFilter(const ReferenceFilterOperation&, FilterEffect* previousEffect) const;
+
+    Member<Node> m_targetContext;
     FloatRect m_referenceBox;
     float m_zoom;
     const SkPaint* m_fillPaint;
