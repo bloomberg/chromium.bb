@@ -248,7 +248,8 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
 // TrayBackgroundView
 
 TrayBackgroundView::TrayBackgroundView(WmShelf* wm_shelf)
-    : wm_shelf_(wm_shelf),
+    : ActionableView(nullptr),
+      wm_shelf_(wm_shelf),
       tray_container_(NULL),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),

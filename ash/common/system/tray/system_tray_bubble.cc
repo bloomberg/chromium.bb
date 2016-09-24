@@ -213,8 +213,14 @@ void SystemTrayBubble::FocusDefaultIfNeeded() {
 
   views::View* view =
       manager->GetNextFocusableView(nullptr, nullptr, false, false);
-  if (view)
+  // TODO(oshima): RequestFocus calls View::OnFocus even if the widget
+  // is not active (crbug.com/621791). Remove this check once the bug
+  // is fixed.
+  if (bubble_view_->GetWidget()->IsActive()) {
     view->RequestFocus();
+  } else {
+    manager->SetStoredFocusView(view);
+  }
 }
 
 void SystemTrayBubble::DestroyItemViews() {
@@ -347,8 +353,10 @@ void SystemTrayBubble::CreateItemViews(LoginStatus login_status) {
     }
   }
 
-  if (focus_view)
+  if (focus_view) {
+    tray_->ActivateBubble();
     focus_view->RequestFocus();
+  }
 }
 
 }  // namespace ash

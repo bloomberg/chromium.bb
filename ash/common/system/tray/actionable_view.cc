@@ -5,6 +5,8 @@
 #include "ash/common/system/tray/actionable_view.h"
 
 #include "ash/common/ash_constants.h"
+#include "ash/common/system/tray/system_tray.h"
+#include "ash/common/system/tray/system_tray_item.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/gfx/canvas.h"
 
@@ -13,7 +15,8 @@ namespace ash {
 // static
 const char ActionableView::kViewClassName[] = "tray/ActionableView";
 
-ActionableView::ActionableView() : has_capture_(false) {
+ActionableView::ActionableView(SystemTrayItem* owner)
+    : owner_(owner), has_capture_(false) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
@@ -86,6 +89,11 @@ void ActionableView::OnBlur() {
 void ActionableView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP && PerformAction(*event))
     event->SetHandled();
+}
+
+void ActionableView::CloseSystemBubble() {
+  DCHECK(owner_);
+  owner_->system_tray()->CloseSystemBubble();
 }
 
 }  // namespace ash

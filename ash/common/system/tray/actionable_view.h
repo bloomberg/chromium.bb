@@ -10,6 +10,7 @@
 #include "ui/views/view.h"
 
 namespace ash {
+class SystemTrayItem;
 
 // A focusable view that performs an action when user clicks on it, or presses
 // enter or space when focused. Note that the action is triggered on mouse-up,
@@ -21,14 +22,21 @@ class ASH_EXPORT ActionableView : public views::View {
  public:
   static const char kViewClassName[];
 
-  ActionableView();
+  // The owner is used to close the system tray bubble. Can be null if
+  // the action will not close the bubble.
+  explicit ActionableView(SystemTrayItem* owner);
 
   ~ActionableView() override;
 
   void SetAccessibleName(const base::string16& name);
   const base::string16& accessible_name() const { return accessible_name_; }
 
+  // Closes the system tray bubble. The |owner_| must not be nullptr.
+  void CloseSystemBubble();
+
  protected:
+  SystemTrayItem* owner() { return owner_; }
+
   void OnPaintFocus(gfx::Canvas* canvas);
 
   // Returns the bounds to paint the focus rectangle in.
@@ -54,6 +62,8 @@ class ASH_EXPORT ActionableView : public views::View {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
+  SystemTrayItem* owner_;
+
   base::string16 accessible_name_;
   bool has_capture_;
 

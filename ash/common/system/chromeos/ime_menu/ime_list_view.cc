@@ -112,12 +112,13 @@ class ImeInfoView : public views::View {
 // for IME property item, which has no name but label and a gray checked icon.
 class ImeListItemView : public ActionableView {
  public:
-  ImeListItemView(ImeListView* list_view,
+  ImeListItemView(SystemTrayItem* owner,
+                  ImeListView* list_view,
                   const base::string16& id,
                   const base::string16& label,
                   bool selected,
                   const SkColor button_color)
-      : ime_list_view_(list_view) {
+      : ActionableView(owner), ime_list_view_(list_view) {
     views::BoxLayout* box_layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     SetLayoutManager(box_layout);
@@ -227,7 +228,7 @@ void ImeListView::AppendImeListAndProperties(
   DCHECK(ime_map_.empty());
   for (size_t i = 0; i < list.size(); i++) {
     views::View* ime_view =
-        new ImeListItemView(this, list[i].short_name, list[i].name,
+        new ImeListItemView(owner(), this, list[i].short_name, list[i].name,
                             list[i].selected, gfx::kGoogleGreen700);
     scroll_content()->AddChildView(ime_view);
     ime_map_[ime_view] = list[i].id;
@@ -240,9 +241,9 @@ void ImeListView::AppendImeListAndProperties(
 
       // Adds the property items.
       for (size_t i = 0; i < property_list.size(); i++) {
-        ImeListItemView* property_view =
-            new ImeListItemView(this, base::string16(), property_list[i].name,
-                                property_list[i].selected, kMenuIconColor);
+        ImeListItemView* property_view = new ImeListItemView(
+            owner(), this, base::string16(), property_list[i].name,
+            property_list[i].selected, kMenuIconColor);
         scroll_content()->AddChildView(property_view);
         property_map_[property_view] = property_list[i].key;
       }

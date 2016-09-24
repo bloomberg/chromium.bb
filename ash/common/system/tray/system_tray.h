@@ -19,6 +19,7 @@
 
 namespace ash {
 
+class KeyEventWatcher;
 enum class LoginStatus;
 class ScreenTrayItem;
 class SystemBubbleWrapper;
@@ -49,7 +50,7 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   void InitializeTrayItems(SystemTrayDelegate* delegate,
                            WebNotificationTray* web_notification_tray);
 
-  // Resets internal pointers.
+  // Resets internal pointers. This has to be called before deletion.
   void Shutdown();
 
   // Adds a new item in the tray. Takes ownership.
@@ -167,7 +168,22 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   TrayDate* GetTrayDateForTesting() const;
   TrayUpdate* GetTrayUpdateForTesting() const;
 
+  // Activates the system tray bubble.
+  void ActivateBubble();
+
  private:
+  class ActivationObserver;
+
+  // Closes the bubble. Used to bind as a KeyEventWatcher::KeyEventCallback.
+  void CloseBubble(const ui::KeyEvent& key_event);
+
+  // Activates the bubble and starts key navigation with the |key_event|.
+  void ActivateAndStartNavigation(const ui::KeyEvent& key_event);
+
+  // Creates the key event watcher. See |ShowItems()| for why key events are
+  // observed.
+  void CreateKeyEventWatcher();
+
   // Creates the default set of items for the sytem tray.
   void CreateItems(SystemTrayDelegate* delegate);
 
@@ -192,10 +208,14 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
 
   // Constructs or re-constructs |system_bubble_| and populates it with |items|.
   // Specify |change_tray_status| to true if want to change the tray background
-  // status.
+  // status. The bubble will be opened in inactive state. If |can_activate| is
+  // true, the bubble will be activated by one of following means.
+  // * When alt/alt-tab acclerator is used to start navigation.
+  // * When the bubble is opened by accelerator.
+  // * When the tray item is set to be focused.
   void ShowItems(const std::vector<SystemTrayItem*>& items,
                  bool details,
-                 bool activate,
+                 bool can_activate,
                  BubbleCreationType creation_type,
                  int x_offset,
                  bool persistent);
@@ -262,6 +282,10 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // A reference to the Screen share and capture item.
   ScreenTrayItem* screen_capture_tray_item_;  // not owned
   ScreenTrayItem* screen_share_tray_item_;    // not owned
+
+  std::unique_ptr<KeyEventWatcher> key_event_watcher_;
+
+  std::unique_ptr<ActivationObserver> activation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };

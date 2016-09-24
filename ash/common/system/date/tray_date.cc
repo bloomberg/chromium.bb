@@ -64,7 +64,7 @@ views::View* TrayDate::CreateTrayView(LoginStatus status) {
 }
 
 views::View* TrayDate::CreateDefaultView(LoginStatus status) {
-  default_view_ = new DateDefaultView(status);
+  default_view_ = new DateDefaultView(this, status);
 
 #if defined(OS_CHROMEOS)
   // Save the login status we created the view with.

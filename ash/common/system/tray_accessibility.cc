@@ -329,6 +329,9 @@ void AccessibilityDetailedView::HandleButtonPressed(views::Button* sender,
     tray_delegate->ShowAccessibilityHelp();
   else if (sender == settings_view_)
     tray_delegate->ShowAccessibilitySettings();
+  else
+    return;
+  owner()->system_tray()->CloseSystemBubble();
 }
 
 }  // namespace tray

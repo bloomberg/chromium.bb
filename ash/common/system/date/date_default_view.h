@@ -18,6 +18,7 @@ namespace tray {
 class DateView;
 }  // namespace tray
 
+class SystemTrayItem;
 class TrayPopupHeaderButton;
 
 // The system tray bubble view with the date and buttons for help, lock and
@@ -26,7 +27,7 @@ class ASH_EXPORT DateDefaultView : public views::View,
                                    public views::ButtonListener,
                                    public ShutdownPolicyObserver {
  public:
-  explicit DateDefaultView(LoginStatus login);
+  DateDefaultView(SystemTrayItem* owner, LoginStatus login);
 
   ~DateDefaultView() override;
 

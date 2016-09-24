@@ -39,7 +39,7 @@ class ASH_EXPORT BaseDateTimeView : public ActionableView {
   void GetAccessibleState(ui::AXViewState* state) override;
 
  protected:
-  BaseDateTimeView();
+  explicit BaseDateTimeView(SystemTrayItem* owner);
 
   // Updates labels to display the current time.
   virtual void UpdateTextInternal(const base::Time& now);
@@ -64,7 +64,7 @@ class ASH_EXPORT BaseDateTimeView : public ActionableView {
 // Popup view used to display the date and day of week.
 class ASH_EXPORT DateView : public BaseDateTimeView {
  public:
-  DateView();
+  explicit DateView(SystemTrayItem* owner);
   ~DateView() override;
 
   // Sets the action the view should take. An actionable date view gives visual

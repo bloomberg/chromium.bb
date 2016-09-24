@@ -190,6 +190,7 @@ class ASH_EXPORT ShelfLayoutManager
   class UpdateShelfObserver;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTest;
+  friend class WebNotificationTrayTest;
 
   struct TargetBounds {
     TargetBounds();

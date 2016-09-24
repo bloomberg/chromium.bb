@@ -358,6 +358,7 @@ class BluetoothDetailedView : public TrayDetailsView {
     SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
     if (view == manage_devices_) {
       delegate->ManageBluetoothDevices();
+      owner()->system_tray()->CloseSystemBubble();
       return;
     }
 

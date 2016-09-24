@@ -89,8 +89,9 @@ void BaseDateTimeView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_TIME;
 }
 
-BaseDateTimeView::BaseDateTimeView()
-    : hour_type_(WmShell::Get()->system_tray_delegate()->GetHourClockType()) {
+BaseDateTimeView::BaseDateTimeView(SystemTrayItem* owner)
+    : ActionableView(owner),
+      hour_type_(WmShell::Get()->system_tray_delegate()->GetHourClockType()) {
   SetTimer(base::Time::Now());
   SetFocusBehavior(FocusBehavior::NEVER);
 }
@@ -136,7 +137,8 @@ void BaseDateTimeView::OnLocaleChanged() {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-DateView::DateView() : action_(TrayDate::NONE) {
+DateView::DateView(SystemTrayItem* owner)
+    : BaseDateTimeView(owner), action_(TrayDate::NONE) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
   date_label_ = new views::Label();
   date_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -189,6 +191,9 @@ bool DateView::PerformAction(const ui::Event& event) {
     WmShell::Get()->system_tray_delegate()->ShowDateSettings();
   else if (action_ == TrayDate::SET_SYSTEM_TIME)
     WmShell::Get()->system_tray_delegate()->ShowSetTimeDialog();
+  else
+    return false;
+  CloseSystemBubble();
   return true;
 }
 
@@ -216,7 +221,8 @@ void DateView::OnGestureEvent(ui::GestureEvent* event) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TimeView::TimeView(TrayDate::ClockLayout clock_layout) {
+TimeView::TimeView(TrayDate::ClockLayout clock_layout)
+    : BaseDateTimeView(nullptr) {
   SetupLabels();
   UpdateTextInternal(base::Time::Now());
   UpdateClockLayout(clock_layout);

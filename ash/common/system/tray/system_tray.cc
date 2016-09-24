@@ -4,6 +4,7 @@
 
 #include "ash/common/system/tray/system_tray.h"
 
+#include "ash/common/key_event_watcher.h"
 #include "ash/common/login_status.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
@@ -21,6 +22,8 @@
 #include "ash/common/system/user/tray_user.h"
 #include "ash/common/system/user/tray_user_separator.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
+#include "ash/common/wm/container_finder.h"
+#include "ash/common/wm_activation_observer.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -30,6 +33,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "grit/ash_strings.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -119,6 +123,46 @@ class SystemBubbleWrapper {
   DISALLOW_COPY_AND_ASSIGN(SystemBubbleWrapper);
 };
 
+// An activation observer to close the bubble if the window other
+// than system bubble nor popup notification is activated.
+class SystemTray::ActivationObserver : public WmActivationObserver {
+ public:
+  explicit ActivationObserver(SystemTray* tray) : tray_(tray) {
+    DCHECK(tray_);
+    WmShell::Get()->AddActivationObserver(this);
+  }
+
+  ~ActivationObserver() override {
+    WmShell::Get()->RemoveActivationObserver(this);
+  }
+
+  // WmActivationObserver:
+  void OnWindowActivated(WmWindow* gained_active,
+                         WmWindow* lost_active) override {
+    if (!tray_->HasSystemBubble() || !gained_active)
+      return;
+
+    int container_id =
+        wm::GetContainerForWindow(gained_active)->GetShellWindowId();
+
+    // Don't close the bubble if a popup notification is activated.
+    if (container_id == kShellWindowId_StatusContainer)
+      return;
+
+    if (tray_->GetSystemBubble()->bubble_view()->GetWidget() !=
+        gained_active->GetInternalWidget()) {
+      tray_->CloseSystemBubble();
+    }
+  }
+  void OnAttemptToReactivateWindow(WmWindow* request_active,
+                                   WmWindow* actual_active) override {}
+
+ private:
+  SystemTray* tray_;
+
+  DISALLOW_COPY_AND_ASSIGN(ActivationObserver);
+};
+
 // SystemTray
 
 SystemTray::SystemTray(WmShelf* wm_shelf)
@@ -140,6 +184,8 @@ SystemTray::SystemTray(WmShelf* wm_shelf)
 
 SystemTray::~SystemTray() {
   // Destroy any child views that might have back pointers before ~View().
+  activation_observer_.reset();
+  key_event_watcher_.reset();
   system_bubble_.reset();
   notification_bubble_.reset();
   for (std::vector<SystemTrayItem*>::iterator it = items_.begin();
@@ -498,7 +544,8 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     TrayBubbleView::InitParams init_params(TrayBubbleView::ANCHOR_TYPE_TRAY,
                                            GetAnchorAlignment(), menu_width,
                                            kTrayPopupMaxWidth);
-    init_params.can_activate = can_activate;
+    // TODO(oshima): Change TrayBubbleView itself.
+    init_params.can_activate = false;
     init_params.first_item_has_no_margin = true;
     if (detailed) {
       // This is the case where a volume control or brightness control bubble
@@ -521,6 +568,9 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     system_bubble_.reset(new SystemBubbleWrapper(bubble));
     system_bubble_->InitView(this, tray_container(), &init_params, persistent);
 
+    activation_observer_.reset(persistent ? nullptr
+                                          : new ActivationObserver(this));
+
     // Record metrics for the system menu when the default view is invoked.
     if (!detailed)
       RecordSystemMenuMetrics();
@@ -528,6 +578,10 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   // Save height of default view for creating detailed views directly.
   if (!detailed)
     default_bubble_height_ = system_bubble_->bubble_view()->height();
+
+  key_event_watcher_.reset();
+  if (can_activate)
+    CreateKeyEventWatcher();
 
   if (detailed && items.size() > 0)
     detailed_item_ = items[0];
@@ -731,6 +785,39 @@ TrayUpdate* SystemTray::GetTrayUpdateForTesting() const {
   return tray_update_;
 }
 
+void SystemTray::CloseBubble(const ui::KeyEvent& key_event) {
+  CloseSystemBubble();
+}
+
+void SystemTray::ActivateAndStartNavigation(const ui::KeyEvent& key_event) {
+  if (!system_bubble_)
+    return;
+  ActivateBubble();
+  views::Widget* widget = GetSystemBubble()->bubble_view()->GetWidget();
+  widget->GetFocusManager()->OnKeyEvent(key_event);
+}
+
+void SystemTray::CreateKeyEventWatcher() {
+  key_event_watcher_ = WmShell::Get()->CreateKeyEventWatcher();
+  key_event_watcher_->AddKeyEventCallback(
+      ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE),
+      base::Bind(&SystemTray::CloseBubble, base::Unretained(this)));
+  key_event_watcher_->AddKeyEventCallback(
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_NONE),
+      base::Bind(&SystemTray::ActivateAndStartNavigation,
+                 base::Unretained(this)));
+  key_event_watcher_->AddKeyEventCallback(
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_SHIFT_DOWN),
+      base::Bind(&SystemTray::ActivateAndStartNavigation,
+                 base::Unretained(this)));
+}
+
+void SystemTray::ActivateBubble() {
+  TrayBubbleView* bubble_view = GetSystemBubble()->bubble_view();
+  bubble_view->set_can_activate(true);
+  bubble_view->GetWidget()->Activate();
+}
+
 bool SystemTray::PerformAction(const ui::Event& event) {
   // If we're already showing the default view, hide it; otherwise, show it
   // (and hide any popup that's currently shown).
@@ -748,11 +835,15 @@ bool SystemTray::PerformAction(const ui::Event& event) {
       }
     }
     ShowDefaultViewWithOffset(BUBBLE_CREATE_NEW, arrow_offset, false);
+    if (event.IsKeyEvent())
+      ActivateBubble();
   }
   return true;
 }
 
 void SystemTray::CloseSystemBubbleAndDeactivateSystemTray() {
+  activation_observer_.reset();
+  key_event_watcher_.reset();
   system_bubble_.reset();
   // When closing a system bubble with the alternate shelf layout, we need to
   // turn off the active tinting of the shelf.

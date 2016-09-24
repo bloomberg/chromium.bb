@@ -328,6 +328,7 @@ TrayBubbleView::TrayBubbleView(View* anchor,
       owned_bubble_border_(bubble_border_),
       is_gesture_dragging_(false),
       mouse_actively_entered_(false) {
+  set_can_activate(params_.can_activate);
   DCHECK(anchor_widget());  // Computed by BubbleDialogDelegateView().
   set_notify_enter_exit_on_child(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
@@ -415,10 +416,6 @@ void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
     delegate_->OnBeforeBubbleWidgetInit(anchor_widget(), bubble_widget, params);
 }
 
-bool TrayBubbleView::CanActivate() const {
-  return params_.can_activate;
-}
-
 NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {
   BubbleFrameView* frame = static_cast<BubbleFrameView*>(
       BubbleDialogDelegateView::CreateNonClientFrameView(widget));
@@ -493,7 +490,7 @@ void TrayBubbleView::OnMouseExited(const ui::MouseEvent& event) {
 }
 
 void TrayBubbleView::GetAccessibleState(ui::AXViewState* state) {
-  if (delegate_ && params_.can_activate) {
+  if (delegate_ && CanActivate()) {
     state->role = ui::AX_ROLE_WINDOW;
     state->name = delegate_->GetAccessibleNameForBubble();
   }

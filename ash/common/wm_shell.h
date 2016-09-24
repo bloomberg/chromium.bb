@@ -47,6 +47,7 @@ class BrightnessControlDelegate;
 class FocusCycler;
 class ImmersiveContextAsh;
 class ImmersiveFullscreenController;
+class KeyEventWatcher;
 class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
 class MaximizeModeController;
@@ -307,6 +308,8 @@ class ASH_EXPORT WmShell {
 
   virtual std::unique_ptr<ImmersiveFullscreenController>
   CreateImmersiveFullscreenController() = 0;
+
+  virtual std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() = 0;
 
   void CreateShelfDelegate();
 

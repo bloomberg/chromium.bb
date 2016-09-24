@@ -123,7 +123,7 @@ class VolumeButton : public views::ToggleImageButton {
 VolumeView::VolumeView(SystemTrayItem* owner,
                        system::TrayAudioDelegate* audio_delegate,
                        bool is_default_view)
-    : owner_(owner),
+    : ActionableView(owner),
       audio_delegate_(audio_delegate),
       icon_(NULL),
       slider_(NULL),
@@ -301,7 +301,7 @@ void VolumeView::SliderValueChanged(views::Slider* sender,
 bool VolumeView::PerformAction(const ui::Event& event) {
   if (!more_region_->visible())
     return false;
-  owner_->TransitionDetailedView();
+  owner()->TransitionDetailedView();
   return true;
 }
 

@@ -154,7 +154,6 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   bool is_gesture_dragging() const { return is_gesture_dragging_; }
 
   // Overridden from views::WidgetDelegate.
-  bool CanActivate() const override;
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override;
   bool WidgetHasHitTestMask() const override;

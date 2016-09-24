@@ -53,12 +53,16 @@ void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
     // the right-click menu in a popup notification.
     if (container_id == kShellWindowId_MenuContainer)
       return;
-    // Don't process events that occurred inside the status area widget and
-    // a popup notification from message center.
-    if (container_id == kShellWindowId_StatusContainer)
+    // Don't process events that occurred inside a popup notification
+    // from message center.
+    if (container_id == kShellWindowId_StatusContainer &&
+        window->GetType() == ui::wm::WINDOW_TYPE_POPUP &&
+        target->IsAlwaysOnTop()) {
       return;
+    }
   }
 
+  std::set<TrayBackgroundView*> trays;
   // Check the boundary for all wrappers, and do not handle the event if it
   // happens inside of any of those wrappers.
   for (std::set<TrayBubbleWrapper*>::const_iterator iter = wrappers_.begin();
@@ -71,24 +75,19 @@ void TrayEventFilter::ProcessPressedEvent(const gfx::Point& location_in_screen,
     gfx::Rect bounds = bubble_widget->GetWindowBoundsInScreen();
     bounds.Inset(wrapper->bubble_view()->GetBorderInsets());
     if (bounds.Contains(location_in_screen))
-      return;
+      continue;
     if (wrapper->tray()) {
       // If the user clicks on the parent tray, don't process the event here,
       // let the tray logic handle the event and determine show/hide behavior.
       bounds = wrapper->tray()->GetBoundsInScreen();
       if (bounds.Contains(location_in_screen))
-        return;
+        continue;
     }
-  }
-
-  // Handle clicking outside the bubble and tray.
-  // Cannot iterate |wrappers_| directly, because clicking outside will remove
-  // the wrapper, which shrinks |wrappers_| unsafely.
-  std::set<TrayBackgroundView*> trays;
-  for (std::set<TrayBubbleWrapper*>::iterator iter = wrappers_.begin();
-       iter != wrappers_.end(); ++iter) {
     trays.insert((*iter)->tray());
   }
+
+  // Close all bubbles other than the one a user clicked on the tray
+  // or its bubble.
   for (std::set<TrayBackgroundView*>::iterator iter = trays.begin();
        iter != trays.end(); ++iter) {
     (*iter)->ClickedOutsideBubble();

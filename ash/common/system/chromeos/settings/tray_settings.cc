@@ -34,8 +34,11 @@ namespace tray {
 class SettingsDefaultView : public ActionableView,
                             public PowerStatus::Observer {
  public:
-  explicit SettingsDefaultView(LoginStatus status)
-      : login_status_(status), label_(NULL), power_status_view_(NULL) {
+  SettingsDefaultView(SystemTrayItem* owner, LoginStatus status)
+      : ActionableView(owner),
+        login_status_(status),
+        label_(nullptr),
+        power_status_view_(nullptr) {
     PowerStatus::Get()->AddObserver(this);
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                           ash::kTrayPopupPaddingHorizontal, 0,
@@ -86,6 +89,7 @@ class SettingsDefaultView : public ActionableView,
     }
 
     WmShell::Get()->system_tray_delegate()->ShowSettings();
+    CloseSystemBubble();
     return true;
   }
 
@@ -139,29 +143,29 @@ TraySettings::TraySettings(SystemTray* system_tray)
 TraySettings::~TraySettings() {}
 
 views::View* TraySettings::CreateTrayView(LoginStatus status) {
-  return NULL;
+  return nullptr;
 }
 
 views::View* TraySettings::CreateDefaultView(LoginStatus status) {
   if ((status == LoginStatus::NOT_LOGGED_IN || status == LoginStatus::LOCKED) &&
       !PowerStatus::Get()->IsBatteryPresent())
-    return NULL;
+    return nullptr;
   if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
-    return NULL;
-  CHECK(default_view_ == NULL);
-  default_view_ = new tray::SettingsDefaultView(status);
+    return nullptr;
+  CHECK(default_view_ == nullptr);
+  default_view_ = new tray::SettingsDefaultView(this, status);
   return default_view_;
 }
 
 views::View* TraySettings::CreateDetailedView(LoginStatus status) {
   NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 void TraySettings::DestroyTrayView() {}
 
 void TraySettings::DestroyDefaultView() {
-  default_view_ = NULL;
+  default_view_ = nullptr;
 }
 
 void TraySettings::DestroyDetailedView() {}

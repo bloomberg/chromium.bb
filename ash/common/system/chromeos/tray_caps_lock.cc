@@ -40,7 +40,9 @@ bool CapsLockIsEnabled() {
 class CapsLockDefaultView : public ActionableView {
  public:
   CapsLockDefaultView()
-      : text_label_(new views::Label), shortcut_label_(new views::Label) {
+      : ActionableView(nullptr),
+        text_label_(new views::Label),
+        shortcut_label_(new views::Label) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                           kTrayPopupPaddingHorizontal, 0,
                                           kTrayPopupPaddingBetweenItems));

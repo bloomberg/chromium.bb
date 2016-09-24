@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
@@ -201,6 +202,33 @@ TEST_F(SystemTrayTest, SystemTrayDefaultView) {
   ASSERT_TRUE(tray->CloseSystemBubble());
   RunAllPendingInMessageLoop();
   ASSERT_FALSE(tray->CloseSystemBubble());
+}
+
+// Make sure the opening system tray bubble will not deactivate the
+// other window. crbug.com/120680.
+TEST_F(SystemTrayTest, Activation) {
+  SystemTray* tray = GetPrimarySystemTray();
+  std::unique_ptr<views::Widget> widget(CreateTestWidget(
+      nullptr, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(widget->IsActive());
+
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  ASSERT_TRUE(tray->GetWidget());
+  EXPECT_FALSE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+  EXPECT_TRUE(widget->IsActive());
+
+  tray->ActivateBubble();
+  EXPECT_TRUE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+  EXPECT_FALSE(widget->IsActive());
+
+  // Accelerator will activate the bubble.
+  tray->CloseSystemBubble();
+
+  EXPECT_TRUE(widget->IsActive());
+  WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      SHOW_SYSTEM_TRAY_BUBBLE);
+  EXPECT_TRUE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());
+  EXPECT_FALSE(widget->IsActive());
 }
 
 // Opening and closing the bubble should change the coloring of the tray.
@@ -445,6 +473,7 @@ TEST_F(SystemTrayTest, PersistentBubble) {
 
   // Tests for usual default view while activating a window.
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  tray->ActivateBubble();
   ASSERT_TRUE(tray->HasSystemBubble());
   widget->Activate();
   base::RunLoop().RunUntilIdle();
@@ -472,6 +501,18 @@ TEST_F(SystemTrayTest, PersistentBubble) {
     generator.ClickLeftButton();
     ASSERT_TRUE(tray->HasSystemBubble());
   }
+
+  // Same tests for persistent default view with activation.
+  tray->ShowPersistentDefaultView();
+  EXPECT_TRUE(tray->HasSystemBubble());
+  widget->Activate();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(tray->HasSystemBubble());
+
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.set_current_location(gfx::Point(5, 5));
+  generator.ClickLeftButton();
+  EXPECT_TRUE(tray->HasSystemBubble());
 }
 
 #if defined(OS_CHROMEOS)

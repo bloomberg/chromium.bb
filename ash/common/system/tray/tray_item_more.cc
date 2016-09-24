@@ -23,7 +23,7 @@
 namespace ash {
 
 TrayItemMore::TrayItemMore(SystemTrayItem* owner, bool show_more)
-    : owner_(owner),
+    : ActionableView(owner),
       show_more_(show_more),
       icon_(nullptr),
       label_(nullptr),

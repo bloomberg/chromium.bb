@@ -33,7 +33,9 @@ const gfx::FontList& GetFontList(bool highlight) {
 namespace ash {
 
 HoverHighlightView::HoverHighlightView(ViewClickListener* listener)
-    : listener_(listener), highlight_color_(kHoverBackgroundColor) {
+    : ActionableView(nullptr),
+      listener_(listener),
+      highlight_color_(kHoverBackgroundColor) {
   set_notify_enter_exit_on_child(true);
 }
 

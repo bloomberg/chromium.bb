@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/key_event_watcher.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
@@ -362,6 +363,12 @@ std::unique_ptr<WorkspaceEventHandler> WmShellMus::CreateWorkspaceEventHandler(
 std::unique_ptr<ImmersiveFullscreenController>
 WmShellMus::CreateImmersiveFullscreenController() {
   return base::MakeUnique<ImmersiveFullscreenController>();
+}
+
+std::unique_ptr<KeyEventWatcher> WmShellMus::CreateKeyEventWatcher() {
+  // TODO: needs implementation for mus, http://crbug.com/649600.
+  NOTIMPLEMENTED();
+  return std::unique_ptr<KeyEventWatcher>();
 }
 
 void WmShellMus::OnOverviewModeStarting() {

@@ -29,7 +29,7 @@ namespace tray {
 
 class DefaultTracingView : public ActionableView {
  public:
-  DefaultTracingView() {
+  explicit DefaultTracingView(SystemTrayItem* owner) : ActionableView(owner) {
     SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
                                           kTrayPopupPaddingHorizontal, 0,
                                           kTrayPopupPaddingBetweenItems));
@@ -75,6 +75,7 @@ class DefaultTracingView : public ActionableView {
     WmShell::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_TRACING_DEFAULT_SELECTED);
     WmShell::Get()->system_tray_delegate()->ShowChromeSlow();
+    CloseSystemBubble();
     return true;
   }
 
@@ -112,7 +113,7 @@ bool TrayTracing::GetInitialVisibility() {
 views::View* TrayTracing::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == NULL);
   if (tray_view() && tray_view()->visible())
-    default_ = new tray::DefaultTracingView();
+    default_ = new tray::DefaultTracingView(this);
   return default_;
 }
 
