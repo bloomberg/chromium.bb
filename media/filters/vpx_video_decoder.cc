@@ -725,6 +725,48 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
       codec_format = PIXEL_FORMAT_YV24;
       break;
 
+    case VPX_IMG_FMT_I42016:
+      switch (vpx_image->bit_depth) {
+        case 9:
+          codec_format = PIXEL_FORMAT_YUV420P9;
+          break;
+        case 10:
+          codec_format = PIXEL_FORMAT_YUV420P10;
+          break;
+        default:
+          DLOG(ERROR) << "Unsupported bit depth: " << vpx_image->bit_depth;
+          return false;
+      }
+      break;
+
+    case VPX_IMG_FMT_I42216:
+      switch (vpx_image->bit_depth) {
+        case 9:
+          codec_format = PIXEL_FORMAT_YUV422P9;
+          break;
+        case 10:
+          codec_format = PIXEL_FORMAT_YUV422P10;
+          break;
+        default:
+          DLOG(ERROR) << "Unsupported bit depth: " << vpx_image->bit_depth;
+          return false;
+      }
+      break;
+
+    case VPX_IMG_FMT_I44416:
+      switch (vpx_image->bit_depth) {
+        case 9:
+          codec_format = PIXEL_FORMAT_YUV444P9;
+          break;
+        case 10:
+          codec_format = PIXEL_FORMAT_YUV444P10;
+          break;
+        default:
+          DLOG(ERROR) << "Unsupported bit depth: " << vpx_image->bit_depth;
+          return false;
+      }
+      break;
+
     default:
       DLOG(ERROR) << "Unsupported pixel format: " << vpx_image->fmt;
       return false;

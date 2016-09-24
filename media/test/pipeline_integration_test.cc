@@ -1442,6 +1442,16 @@ TEST_F(PipelineIntegrationTest,
   source.Shutdown();
 }
 
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_ANDROID)
+TEST_F(PipelineIntegrationTest, BasicPlaybackHi10PVP9) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi10p-vp9.webm", kClockless));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+#endif
+
 #if defined(USE_PROPRIETARY_CODECS)
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackHi10P) {

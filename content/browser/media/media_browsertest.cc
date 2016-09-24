@@ -128,6 +128,13 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentWebm) {
   PlayVideo("bear_silent.webm", GetParam());
 }
 
+// We don't expect android devices to support highbit yet.
+#if defined(ARCH_CPU_X86_FAMILY) && !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthVP9) {
+  PlayVideo("bear-320x180-hi10p-vp9.webm", GetParam());
+}
+#endif
+
 #if defined(USE_PROPRIETARY_CODECS)
 // Crashes on Mac only.  http://crbug.com/621857
 #if defined(OS_MACOSX)
