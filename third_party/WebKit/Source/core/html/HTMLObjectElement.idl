@@ -53,10 +53,9 @@
     [CEReactions, Reflect] attribute DOMString archive;
     [CEReactions, Reflect] attribute DOMString code;
     [CEReactions, Reflect] attribute boolean declare;
-    // TODO(foolip): hspace and vspace should be unsigned long.
-    [CEReactions, Reflect] attribute long hspace;
+    [CEReactions, Reflect] attribute unsigned long hspace;
     [CEReactions, Reflect] attribute DOMString standby;
-    [CEReactions, Reflect] attribute long vspace;
+    [CEReactions, Reflect] attribute unsigned long vspace;
     [CEReactions, Reflect, URL] attribute DOMString codeBase;
     [CEReactions, Reflect] attribute DOMString codeType;
 
