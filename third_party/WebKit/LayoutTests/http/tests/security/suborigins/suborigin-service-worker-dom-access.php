@@ -4,7 +4,7 @@ header("Suborigin: foobar");
 <!DOCTYPE html>
 <html>
 <head>
-<title>Service Worker access fails from a suborigin</title>
+<title>Service worker JavaScript API fails from a suborigin</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 </head>

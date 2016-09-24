@@ -60,6 +60,8 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(LocalFrame* frame,
     if (frame && !frame->securityContext()->getSecurityOrigin()->canAccessServiceWorkers()) {
         if (frame->securityContext()->isSandboxed(SandboxOrigin))
             exceptionState.throwSecurityError("Service worker is disabled because the context is sandboxed and lacks the 'allow-same-origin' flag.");
+        else if (frame->securityContext()->getSecurityOrigin()->hasSuborigin())
+            exceptionState.throwSecurityError("Service worker is disabled because the context is in a suborigin.");
         else
             exceptionState.throwSecurityError("Access to service workers is denied in this document origin.");
         return nullptr;
