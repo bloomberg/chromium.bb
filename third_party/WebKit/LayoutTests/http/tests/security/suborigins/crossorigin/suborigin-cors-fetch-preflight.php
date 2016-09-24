@@ -49,13 +49,13 @@ var xorigin_preflight_script = "http://127.0.0.1:8000/security/resources/cors-sc
 new SuboriginFetchTest(
     false,
     "Complex anonymous Fetch preflight, no AC for custom header",
-    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000",
+    xorigin_preflight_script + "?cors=http-so://foobar.127.0.0.1:8000",
     "anonymous").execute();
 
 new SuboriginFetchTest(
     true,
     "Complex anonymous Fetch preflight, has AC for custom header",
-    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000&custom=x-custom-header",
+    xorigin_preflight_script + "?cors=http-so://foobar.127.0.0.1:8000&custom=x-custom-header",
     "anonymous").execute();
 
 new SuboriginFetchTest(
@@ -73,13 +73,13 @@ new SuboriginFetchTest(
 new SuboriginFetchTest(
     false,
     "Complex Fetch with credentials preflight, no AC for custom header",
-    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000&credentials=true",
+    xorigin_preflight_script + "?cors=http-so://foobar.127.0.0.1:8000&credentials=true",
     "use-credentials").execute();
 
 new SuboriginFetchTest(
     true,
     "Complex Fetch with credentials preflight, has AC for custom header",
-    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000&credentials=true&custom=x-custom-header",
+    xorigin_preflight_script + "?cors=http-so://foobar.127.0.0.1:8000&credentials=true&custom=x-custom-header",
     "use-credentials").execute();
 
 new SuboriginFetchTest(

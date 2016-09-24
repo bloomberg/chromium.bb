@@ -36,6 +36,7 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/weborigin/Suborigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_util.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
 
@@ -43,7 +44,14 @@ namespace blink {
 
 const int MaxAllowedPort = 65535;
 
-class SecurityOriginTest : public ::testing::Test { };
+class SecurityOriginTest : public ::testing::Test {
+public:
+    void SetUp() override
+    {
+        url::AddStandardScheme("http-so", url::SCHEME_WITH_PORT);
+        url::AddStandardScheme("https-so", url::SCHEME_WITH_PORT);
+    }
+};
 
 TEST_F(SecurityOriginTest, InvalidPortsCreateUniqueOrigins)
 {
@@ -228,25 +236,35 @@ TEST_F(SecurityOriginTest, Suborigins)
     EXPECT_TRUE(origin->hasSuborigin());
     EXPECT_EQ("foobar", origin->suborigin()->name());
 
-    origin = SecurityOrigin::createFromString("https://foobar_test.com");
+    origin = SecurityOrigin::createFromString("https-so://foobar.test.com");
     EXPECT_EQ("https", origin->protocol());
     EXPECT_EQ("test.com", origin->host());
     EXPECT_EQ("foobar", origin->suborigin()->name());
 
-    origin = SecurityOrigin::createFromString("https://foobar_test.com");
+    origin = SecurityOrigin::createFromString("https-so://foobar.test.com");
     EXPECT_TRUE(origin->hasSuborigin());
     EXPECT_EQ("foobar", origin->suborigin()->name());
 
     origin = SecurityOrigin::createFromString("https://foobar+test.com");
     EXPECT_FALSE(origin->hasSuborigin());
 
+    origin = SecurityOrigin::createFromString("https.so://foobar+test.com");
+    EXPECT_FALSE(origin->hasSuborigin());
+
     origin = SecurityOrigin::createFromString("https://_test.com");
+    EXPECT_FALSE(origin->hasSuborigin());
+
+    origin = SecurityOrigin::createFromString("https-so://_test.com");
+    EXPECT_TRUE(origin->hasSuborigin());
+    EXPECT_EQ("_test", origin->suborigin()->name());
+
+    origin = SecurityOrigin::createFromString("https-so-so://foobar.test.com");
     EXPECT_FALSE(origin->hasSuborigin());
 
     origin = adoptRef<SecurityOrigin>(new SecurityOrigin);
     EXPECT_FALSE(origin->hasSuborigin());
 
-    origin = SecurityOrigin::createFromString("https://foobar_test.com");
+    origin = SecurityOrigin::createFromString("https-so://foobar.test.com");
     Suborigin emptySuborigin;
     EXPECT_DEATH(origin->addSuborigin(emptySuborigin), "");
 }
@@ -254,22 +272,25 @@ TEST_F(SecurityOriginTest, Suborigins)
 TEST_F(SecurityOriginTest, SuboriginsParsing)
 {
     RuntimeEnabledFeatures::setSuboriginsEnabled(true);
-    String host, realHost, suborigin;
+    String protocol, realProtocol, host, realHost, suborigin;
+    protocol = "https";
     host = "test.com";
-    EXPECT_FALSE(SecurityOrigin::deserializeSuboriginAndHost(host, suborigin, realHost));
+    EXPECT_FALSE(SecurityOrigin::deserializeSuboriginAndProtocolAndHost(protocol, host, suborigin, realProtocol, realHost));
 
-    host = "foobar_test.com";
-    EXPECT_TRUE(SecurityOrigin::deserializeSuboriginAndHost(host, suborigin, realHost));
+    protocol = "https-so";
+    host = "foobar.test.com";
+    EXPECT_TRUE(SecurityOrigin::deserializeSuboriginAndProtocolAndHost(protocol, host, suborigin, realProtocol, realHost));
+    EXPECT_EQ("https", realProtocol);
     EXPECT_EQ("test.com", realHost);
     EXPECT_EQ("foobar", suborigin);
 
     RefPtr<SecurityOrigin> origin;
     StringBuilder builder;
 
-    origin = SecurityOrigin::createFromString("https://foobar_test.com");
+    origin = SecurityOrigin::createFromString("https-so://foobar.test.com");
     origin->buildRawString(builder, true);
-    EXPECT_EQ("https://foobar_test.com", builder.toString());
-    EXPECT_EQ("https://foobar_test.com", origin->toString());
+    EXPECT_EQ("https-so://foobar.test.com", builder.toString());
+    EXPECT_EQ("https-so://foobar.test.com", origin->toString());
     builder.clear();
     origin->buildRawString(builder, false);
     EXPECT_EQ("https://test.com", builder.toString());
@@ -281,8 +302,8 @@ TEST_F(SecurityOriginTest, SuboriginsParsing)
     origin = SecurityOrigin::createFromString("https://test.com");
     origin->addSuborigin(suboriginObj);
     origin->buildRawString(builder, true);
-    EXPECT_EQ("https://foobar_test.com", builder.toString());
-    EXPECT_EQ("https://foobar_test.com", origin->toString());
+    EXPECT_EQ("https-so://foobar.test.com", builder.toString());
+    EXPECT_EQ("https-so://foobar.test.com", origin->toString());
     builder.clear();
     origin->buildRawString(builder, false);
     EXPECT_EQ("https://test.com", builder.toString());
@@ -292,10 +313,10 @@ TEST_F(SecurityOriginTest, SuboriginsParsing)
 TEST_F(SecurityOriginTest, SuboriginsIsSameSchemeHostPortAndSuborigin)
 {
     blink::RuntimeEnabledFeatures::setSuboriginsEnabled(true);
-    RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString("https://foobar_test.com");
-    RefPtr<SecurityOrigin> other1 = SecurityOrigin::createFromString("https://bazbar_test.com");
-    RefPtr<SecurityOrigin> other2 = SecurityOrigin::createFromString("http://foobar_test.com");
-    RefPtr<SecurityOrigin> other3 = SecurityOrigin::createFromString("https://foobar_test.com:1234");
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::createFromString("https-so://foobar.test.com");
+    RefPtr<SecurityOrigin> other1 = SecurityOrigin::createFromString("https-so://bazbar.test.com");
+    RefPtr<SecurityOrigin> other2 = SecurityOrigin::createFromString("http-so://foobar.test.com");
+    RefPtr<SecurityOrigin> other3 = SecurityOrigin::createFromString("https-so://foobar.test.com:1234");
     RefPtr<SecurityOrigin> other4 = SecurityOrigin::createFromString("https://test.com");
 
     EXPECT_TRUE(origin->isSameSchemeHostPortAndSuborigin(origin.get()));
@@ -319,9 +340,9 @@ TEST_F(SecurityOriginTest, CanAccess)
     TestCase tests[] = {
         { true, true, "https://foobar.com", "https://foobar.com" },
         { false, false, "https://foobar.com", "https://bazbar.com" },
-        { true, false, "https://foobar.com", "https://name_foobar.com" },
-        { true, false, "https://name_foobar.com", "https://foobar.com" },
-        { true, true, "https://name_foobar.com", "https://name_foobar.com" },
+        { true, false, "https://foobar.com", "https-so://name.foobar.com" },
+        { true, false, "https-so://name.foobar.com", "https://foobar.com" },
+        { true, true, "https-so://name.foobar.com", "https-so://name.foobar.com" },
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {
@@ -346,8 +367,8 @@ TEST_F(SecurityOriginTest, CanRequest)
     TestCase tests[] = {
         { true, true, "https://foobar.com", "https://foobar.com" },
         { false, false, "https://foobar.com", "https://bazbar.com" },
-        { true, false, "https://name_foobar.com", "https://foobar.com" },
-        { false, false, "https://name_foobar.com", "https://bazbar.com" },
+        { true, false, "https-so://name.foobar.com", "https://foobar.com" },
+        { false, false, "https-so://name.foobar.com", "https://bazbar.com" },
     };
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(tests); ++i) {

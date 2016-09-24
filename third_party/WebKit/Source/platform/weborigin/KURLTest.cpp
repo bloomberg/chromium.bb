@@ -34,6 +34,7 @@
 #include "platform/weborigin/KURL.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/url_util.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
@@ -371,13 +372,29 @@ TEST(KURLTest, ReplaceInvalid)
 
 TEST(KURLTest, Valid_HTTP_FTP_URLsHaveHosts)
 {
+    // Since the suborigin schemes are added at the content layer, its
+    // necessary it explicitly add them as standard schemes for this test. If
+    // this is needed in the future across mulitple KURLTests, then KURLTest
+    // should probably be converted to a test fixture with a proper SetUp()
+    // method.
+    url::AddStandardScheme("http-so", url::SCHEME_WITH_PORT);
+    url::AddStandardScheme("https-so", url::SCHEME_WITH_PORT);
+
     KURL kurl;
     EXPECT_TRUE(kurl.setProtocol("http"));
     EXPECT_TRUE(kurl.protocolIs("http"));
     EXPECT_FALSE(kurl.isValid());
 
+    EXPECT_TRUE(kurl.setProtocol("http-so"));
+    EXPECT_TRUE(kurl.protocolIs("http-so"));
+    EXPECT_FALSE(kurl.isValid());
+
     EXPECT_TRUE(kurl.setProtocol("https"));
     EXPECT_TRUE(kurl.protocolIs("https"));
+    EXPECT_FALSE(kurl.isValid());
+
+    EXPECT_TRUE(kurl.setProtocol("https-so"));
+    EXPECT_TRUE(kurl.protocolIs("https-so"));
     EXPECT_FALSE(kurl.isValid());
 
     EXPECT_TRUE(kurl.setProtocol("ftp"));
@@ -388,8 +405,16 @@ TEST(KURLTest, Valid_HTTP_FTP_URLsHaveHosts)
     EXPECT_TRUE(kurl.protocolIs("http"));
     EXPECT_FALSE(kurl.isValid());
 
+    kurl = KURL(KURL(), "http-so://");
+    EXPECT_TRUE(kurl.protocolIs("http-so"));
+    EXPECT_FALSE(kurl.isValid());
+
     kurl = KURL(KURL(), "https://");
     EXPECT_TRUE(kurl.protocolIs("https"));
+    EXPECT_FALSE(kurl.isValid());
+
+    kurl = KURL(KURL(), "https-so://");
+    EXPECT_TRUE(kurl.protocolIs("https-so"));
     EXPECT_FALSE(kurl.isValid());
 
     kurl = KURL(KURL(), "ftp://");
@@ -401,7 +426,17 @@ TEST(KURLTest, Valid_HTTP_FTP_URLsHaveHosts)
     kurl.setHost("");
     EXPECT_FALSE(kurl.isValid());
 
+    kurl = KURL(KURL(), "http-so://host/");
+    EXPECT_TRUE(kurl.isValid());
+    kurl.setHost("");
+    EXPECT_FALSE(kurl.isValid());
+
     kurl = KURL(KURL(), "https://host/");
+    EXPECT_TRUE(kurl.isValid());
+    kurl.setHost("");
+    EXPECT_FALSE(kurl.isValid());
+
+    kurl = KURL(KURL(), "https-so://host/");
     EXPECT_TRUE(kurl.isValid());
     kurl.setHost("");
     EXPECT_FALSE(kurl.isValid());

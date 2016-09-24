@@ -12,14 +12,14 @@ var window_test = async_test("Validate serialization of event.origin and event.s
 window.onmessage = function(event) {
     if (event.data.type === 'iframe') {
         iframe_test.step(function() {
-            assert_equals(event.origin, "http://foobar1_127.0.0.1:8000");
+            assert_equals(event.origin, "http-so://foobar1.127.0.0.1:8000");
             assert_equals(event.suborigin, "foobar1");
             assert_equals(event.data.suborigin,  "foobar1");
             iframe_test.done();
         });
     } else if (event.data.type === 'window') {
         window_test.step(function() {
-            assert_equals(event.origin, "http://foobar2_127.0.0.1:8000");
+            assert_equals(event.origin, "http-so://foobar2.127.0.0.1:8000");
             assert_equals(event.suborigin, "foobar2");
             assert_equals(event.data.suborigin, "foobar2");;
             window_test.done();

@@ -17,13 +17,13 @@
             window.column = column;
             window.errorObject = error;
             shouldBeTrue("/SomeError/.test(msg)");
-            shouldBeEqualToString("url", "http://127.0.0.1:8000/security/resources/cors-script.php?fail=true&cors=http://foobar_127.0.0.1:8000");
+            shouldBeEqualToString("url", "http://127.0.0.1:8000/security/resources/cors-script.php?fail=true&cors=http-so://foobar.127.0.0.1:8000");
             shouldBe("line", "1");
             shouldBe("column", "1");
             shouldNotBe("window.errorObject", "null");
             finishJSTest();
         }
     </script>
-    <script crossorigin src="/security/resources/cors-script.php?fail=true&cors=http://foobar_127.0.0.1:8000"></script>
+    <script crossorigin src="/security/resources/cors-script.php?fail=true&cors=http-so://foobar.127.0.0.1:8000"></script>
 </body>
 </html>

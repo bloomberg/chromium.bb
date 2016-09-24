@@ -129,7 +129,7 @@ SecurityOrigin::SecurityOrigin(const KURL& url)
 {
     // Suborigins are serialized into the host, so extract it if necessary.
     String suboriginName;
-    if (deserializeSuboriginAndHost(m_host, suboriginName, m_host))
+    if (deserializeSuboriginAndProtocolAndHost(m_protocol, m_host, suboriginName, m_protocol, m_host))
         m_suborigin.setName(suboriginName);
 
     // document.domain starts as m_host, but can be set by the DOM.
@@ -473,15 +473,25 @@ String SecurityOrigin::toRawStringIgnoreSuborigin() const
 
 // Returns true if and only if a suborigin component was found. If false, no
 // guarantees about the return value |suboriginName| are made.
-bool SecurityOrigin::deserializeSuboriginAndHost(const String& oldHost, String& suboriginName, String& newHost)
+bool SecurityOrigin::deserializeSuboriginAndProtocolAndHost(const String& oldProtocol, const String& oldHost, String& suboriginName, String& newProtocol, String& newHost)
 {
     if (!RuntimeEnabledFeatures::suboriginsEnabled())
         return false;
 
-    size_t suboriginEnd = oldHost.find('_');
-    // Suborigins cannot be empty
-    if (suboriginEnd == 0 || suboriginEnd == WTF::kNotFound)
+    String originalProtocol = oldProtocol;
+    if (oldProtocol != "http-so" && oldProtocol != "https-so")
         return false;
+
+    size_t protocolEnd = oldProtocol.reverseFind("-so");
+    DCHECK_NE(protocolEnd, WTF::kNotFound);
+    newProtocol = oldProtocol.substring(0, protocolEnd);
+
+    size_t suboriginEnd = oldHost.find('.');
+    // Suborigins cannot be empty.
+    if (suboriginEnd == 0 || suboriginEnd == WTF::kNotFound) {
+        newProtocol = originalProtocol;
+        return false;
+    }
 
     suboriginName = oldHost.substring(0, suboriginEnd);
     newHost = oldHost.substring(suboriginEnd + 1);
@@ -503,10 +513,12 @@ AtomicString SecurityOrigin::toRawAtomicString() const
 void SecurityOrigin::buildRawString(StringBuilder& builder, bool includeSuborigin) const
 {
     builder.append(m_protocol);
-    builder.append("://");
     if (includeSuborigin && hasSuborigin()) {
+        builder.append("-so://");
         builder.append(m_suborigin.name());
-        builder.append('_');
+        builder.append('.');
+    } else {
+        builder.append("://");
     }
     builder.append(m_host);
 

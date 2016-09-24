@@ -14,8 +14,8 @@ header("Suborigin: foobar");
 
         var frame = document.querySelector('iframe');
         window.onload = function () {
-            shouldThrow("frame.contentWindow.event", '"SecurityError: Blocked a frame with origin \\"http://foobar_127.0.0.1:8000\\" from accessing a cross-origin frame."');
-            shouldThrow("frame.contentWindow.event = 1;", '"SecurityError: Blocked a frame with origin \\"http://foobar_127.0.0.1:8000\\" from accessing a cross-origin frame."');
+            shouldThrow("frame.contentWindow.event", '"SecurityError: Blocked a frame with origin \\"http-so://foobar.127.0.0.1:8000\\" from accessing a cross-origin frame."');
+            shouldThrow("frame.contentWindow.event = 1;", '"SecurityError: Blocked a frame with origin \\"http-so://foobar.127.0.0.1:8000\\" from accessing a cross-origin frame."');
             finishJSTest();
         };
     </script>

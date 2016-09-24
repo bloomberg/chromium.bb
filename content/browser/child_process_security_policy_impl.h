@@ -138,6 +138,10 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // handlers.
   bool CanCommitURL(int child_id, const GURL& url);
 
+  // Whether the given origin is valid for an origin header. Valid origin
+  // headers are commitable URLs plus suborigin URLs.
+  bool CanSetAsOriginHeader(int child_id, const GURL& url);
+
   // Explicit permissions checks for FileSystemURL specified files.
   bool CanReadFileSystemFile(int child_id, const storage::FileSystemURL& url);
   bool CanWriteFileSystemFile(int child_id, const storage::FileSystemURL& url);

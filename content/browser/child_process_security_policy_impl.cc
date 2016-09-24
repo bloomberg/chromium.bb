@@ -333,6 +333,8 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   RegisterPseudoScheme(url::kAboutScheme);
   RegisterPseudoScheme(url::kJavaScriptScheme);
   RegisterPseudoScheme(kViewSourceScheme);
+  RegisterPseudoScheme(kHttpSuboriginScheme);
+  RegisterPseudoScheme(kHttpsSuboriginScheme);
 }
 
 ChildProcessSecurityPolicyImpl::~ChildProcessSecurityPolicyImpl() {
@@ -646,6 +648,21 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     // allowed to commit the URL.
     return state->second->CanCommitURL(url);
   }
+}
+
+bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
+                                                          const GURL& url) {
+  if (!url.is_valid())
+    return false;  // Can't set invalid URLs as origin headers.
+
+  // Suborigin URLs are a special case and are allowed to be an origin header.
+  if (url.scheme() == kHttpSuboriginScheme ||
+      url.scheme() == kHttpsSuboriginScheme) {
+    DCHECK(IsPseudoScheme(url.scheme()));
+    return true;
+  }
+
+  return CanCommitURL(child_id, url);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadFile(int child_id,

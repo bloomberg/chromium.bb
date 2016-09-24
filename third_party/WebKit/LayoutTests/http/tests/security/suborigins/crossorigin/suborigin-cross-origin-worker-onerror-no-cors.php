@@ -15,7 +15,7 @@ header("Suborigin: foobar");
         description("Ensure that scripts imported into a Worker from cross-origin hosts trigger sanitized onerror messages.");
 
         var worker;
-        shouldThrow('worker = new Worker("/workers/resources/worker-importscripts-onerror-sameorigin.js")', '"SecurityError: Failed to construct \'Worker\': Script at \'http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-sameorigin.js\' cannot be accessed from origin \'http://foobar_127.0.0.1:8000\'."');
+        shouldThrow('worker = new Worker("/workers/resources/worker-importscripts-onerror-sameorigin.js")', '"SecurityError: Failed to construct \'Worker\': Script at \'http://127.0.0.1:8000/workers/resources/worker-importscripts-onerror-sameorigin.js\' cannot be accessed from origin \'http-so://foobar.127.0.0.1:8000\'."');
         finishJSTest();
     </script>
 </body>

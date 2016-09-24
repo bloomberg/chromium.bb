@@ -55,13 +55,13 @@ var xorigin_preflight_script = "http://127.0.0.1:8000/security/resources/cors-sc
 new SuboriginXHRTest(
     false,
     "Complex anonymous XHR preflight, no AC for custom header",
-    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000",
+    xorigin_preflight_script + "?cors=http-so://foobar.127.0.0.1:8000",
     "anonymous").execute();
 
 new SuboriginXHRTest(
     true,
     "Complex anonymous XHR preflight, has AC for custom header",
-    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000&custom=x-custom-header",
+    xorigin_preflight_script + "?cors=http-so://foobar.127.0.0.1:8000&custom=x-custom-header",
     "anonymous").execute();
 
 new SuboriginXHRTest(
@@ -79,13 +79,13 @@ new SuboriginXHRTest(
 new SuboriginXHRTest(
     false,
     "Complex XHR with credentials preflight, no AC for custom header",
-    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000&credentials=true",
+    xorigin_preflight_script + "?cors=http-so://foobar.127.0.0.1:8000&credentials=true",
     "use-credentials").execute();
 
 new SuboriginXHRTest(
     true,
     "Complex XHR with credentials preflight, has AC for custom header",
-    xorigin_preflight_script + "?cors=http://foobar_127.0.0.1:8000&credentials=true&custom=x-custom-header",
+    xorigin_preflight_script + "?cors=http-so://foobar.127.0.0.1:8000&credentials=true&custom=x-custom-header",
     "use-credentials").execute();
 
 new SuboriginXHRTest(

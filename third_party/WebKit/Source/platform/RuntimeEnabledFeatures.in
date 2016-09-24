@@ -220,7 +220,7 @@ StyleMatchedPropertiesCache status=stable
 ExperimentalStream status=experimental
 SpeculativeLaunchServiceWorker
 StorageEstimate status=experimental
-Suborigins status=test
+Suborigins status=experimental
 TimerThrottlingForBackgroundTabs status=stable
 TimerThrottlingForHiddenFrames status=stable
 // Many websites disable mouse support when touch APIs are available.  We'd

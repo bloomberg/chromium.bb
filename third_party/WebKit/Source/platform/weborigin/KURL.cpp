@@ -827,6 +827,10 @@ bool checkIfProtocolIsInHTTPFamily(const url::Component& scheme, const CHAR* spe
         return internalProtocolIs(scheme, spec, "http");
     if (scheme.len == 5)
         return internalProtocolIs(scheme, spec, "https");
+    if (scheme.len == 7)
+        return internalProtocolIs(scheme, spec, "http-so");
+    if (scheme.len == 8)
+        return internalProtocolIs(scheme, spec, "https-so");
     return false;
 }
 

@@ -71,6 +71,8 @@ async_test(t => {
     document.body.appendChild(iframe);
 }, "Cookies set in an about:blank frame do not modify the suborigin's document.cookie and also have an empty document.cookie");
 
+// TODO(jww): Re-enabled this test after https://crbug.com/649893 is addressed.
+/*
 async_test(t => {
     window.addEventListener('message', function(event) {
         if (event.data.test_name != "blob:test")
@@ -86,6 +88,7 @@ async_test(t => {
     iframe.src = URL.createObjectURL(blob);
     document.body.appendChild(iframe);
 }, "Cookies set in a blob: frame do not modify the suborigin's document.cookie and also have an empty document.cookie");
+ */
 
 async_test(t => {
     window.addEventListener('message', function(event) {

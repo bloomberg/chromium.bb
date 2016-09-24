@@ -272,7 +272,7 @@ private:
     void buildRawString(StringBuilder&, bool includeSuborigin) const;
 
     String toRawStringIgnoreSuborigin() const;
-    static bool deserializeSuboriginAndHost(const String&, String&, String&);
+    static bool deserializeSuboriginAndProtocolAndHost(const String&, const String&, String&, String&, String&);
 
     String m_protocol;
     String m_host;
