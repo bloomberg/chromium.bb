@@ -1035,6 +1035,24 @@
         },
         "test": "unit_tests"
       }
+    ],
+    "scripts": [
+      {
+        "args": [
+          "browser_tests",
+          "../../testing/buildbot/filters/browser-side-navigation.linux.browser_tests.filter"
+        ],
+        "name": "count_filtered_tests_browser_tests",
+        "script": "count_filtered_tests.py"
+      },
+      {
+        "args": [
+          "content_browsertests",
+          "../../testing/buildbot/filters/browser-side-navigation.linux.content_browsertests.filter"
+        ],
+        "name": "count_filtered_tests_content_browsertests",
+        "script": "count_filtered_tests.py"
+      }
     ]
   },
   "CFI Linux": {
