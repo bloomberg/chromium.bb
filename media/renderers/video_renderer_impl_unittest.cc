@@ -909,6 +909,53 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionBeforeEOS) {
   Destroy();
 }
 
+// Tests the case where underflow evicts all frames in the HAVE_ENOUGH state.
+TEST_F(VideoRendererImplTest, UnderflowEvictionWhileHaveEnough) {
+  Initialize();
+  QueueFrames("0 30 60 90 100");
+
+  {
+    SCOPED_TRACE("Waiting for BUFFERING_HAVE_ENOUGH");
+    WaitableMessageLoopEvent event;
+    EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH))
+        .WillOnce(RunClosure(event.GetClosure()));
+    EXPECT_CALL(mock_cb_, FrameReceived(_)).Times(AnyNumber());
+    EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(_)).Times(1);
+    EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
+    EXPECT_CALL(mock_cb_, OnStatisticsUpdate(_)).Times(AnyNumber());
+    StartPlayingFrom(0);
+    event.RunAndWait();
+  }
+
+  null_video_sink_->set_background_render(true);
+  time_source_.StartTicking();
+  renderer_->OnTimeStateChanged(true);
+  WaitForPendingDecode();
+  renderer_->OnTimeStateChanged(false);
+
+  // Jump time far enough forward that no frames are valid.
+  AdvanceTimeInMs(1000);
+
+  {
+    SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
+    WaitableMessageLoopEvent event;
+    EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
+        .WillOnce(RunClosure(event.GetClosure()));
+    QueueFrames("120");
+    SatisfyPendingDecode();
+    event.RunAndWait();
+  }
+
+  // This should do nothing.
+  renderer_->OnTimeStateChanged(true);
+
+  // Providing the end of stream packet should remove all frames and exit.
+  SatisfyPendingDecodeWithEndOfStream();
+  EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
+  WaitForEnded();
+  Destroy();
+}
+
 TEST_F(VideoRendererImplTest, StartPlayingFromThenFlushThenEOS) {
   Initialize();
   QueueFrames("0 30 60 90");

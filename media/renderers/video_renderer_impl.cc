@@ -316,8 +316,10 @@ void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
     // otherwise playback may hang indefinitely.  Note: There are no effective
     // frames queued at this point, otherwise FrameReady() would have canceled
     // the underflow state before reaching this point.
-    if (buffering_state_ == BUFFERING_HAVE_NOTHING)
+    if (buffering_state_ == BUFFERING_HAVE_NOTHING) {
+      base::AutoLock al(lock_);
       RemoveFramesForUnderflowOrBackgroundRendering();
+    }
   }
 }
 
@@ -456,6 +458,14 @@ void VideoRendererImpl::TransitionToHaveNothing() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
+  TransitionToHaveNothing_Locked();
+}
+
+void VideoRendererImpl::TransitionToHaveNothing_Locked() {
+  DVLOG(3) << __func__;
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  lock_.AssertAcquired();
+
   if (buffering_state_ != BUFFERING_HAVE_ENOUGH || HaveEnoughData_Locked())
     return;
 
@@ -657,6 +667,12 @@ void VideoRendererImpl::RemoveFramesForUnderflowOrBackgroundRendering() {
     frames_dropped_ += algorithm_->frames_queued();
     algorithm_->Reset(
         VideoRendererAlgorithm::ResetFlag::kPreserveNextFrameEstimates);
+
+    // It's possible in the background rendering case for us to expire enough
+    // frames that we need to transition from HAVE_ENOUGH => HAVE_NOTHING. Just
+    // calling this function will check if we need to transition or not.
+    if (buffering_state_ == BUFFERING_HAVE_ENOUGH)
+      TransitionToHaveNothing_Locked();
   }
 }
 

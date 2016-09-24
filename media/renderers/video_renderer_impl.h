@@ -124,6 +124,7 @@ class MEDIA_EXPORT VideoRendererImpl
   bool HaveEnoughData_Locked();
   void TransitionToHaveEnough_Locked();
   void TransitionToHaveNothing();
+  void TransitionToHaveNothing_Locked();
 
   // Runs |statistics_cb_| with |frames_decoded_| and |frames_dropped_|, resets
   // them to 0.
