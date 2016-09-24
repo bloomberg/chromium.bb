@@ -511,8 +511,11 @@ void FeatureInfo::InitializeFeatures() {
       (extensions.Contains("GL_ARB_depth_texture") ||
        extensions.Contains("GL_OES_depth_texture") ||
        extensions.Contains("GL_ANGLE_depth_texture") ||
-       gl_version_info_->is_es3 ||
        gl_version_info_->is_desktop_core_profile)) {
+    // Note that we don't expose depth_texture extenion on top of ES3 if
+    // the depth_texture extension isn't exposed by the ES3 driver.
+    // This is because depth textures are filterable under linear mode in
+    // ES2 + extension, but not in core ES3.
     enable_depth_texture = true;
     feature_flags_.angle_depth_texture =
         extensions.Contains("GL_ANGLE_depth_texture");

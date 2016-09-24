@@ -581,11 +581,17 @@ bool Texture::CanRenderWithSampler(const FeatureInfo* feature_info,
     const Texture::LevelInfo& first_level =
         face_infos_[0].level_infos[base_level_];
     if ((GLES2Util::GetChannelsForFormat(first_level.internal_format) &
-         (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 ||
-        feature_info->validators()->compressed_texture_format.IsValid(
-            first_level.internal_format)) {
-      // TODO(zmo): The assumption that depth/stencil textures and compressed
-      // textures are all filterable may not be true in the future.
+         (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
+      if (sampler_state.compare_mode == GL_NONE) {
+        // In ES2 with OES_depth_texture, such limitation isn't specified.
+        if (feature_info->IsES3Enabled()) {
+          return false;
+        }
+      }
+    } else if (feature_info->validators()->compressed_texture_format.IsValid(
+        first_level.internal_format)) {
+      // TODO(zmo): The assumption that compressed textures are all filterable
+      // may not be true in the future.
     } else {
       if (!Texture::TextureFilterable(feature_info,
                                       first_level.internal_format,

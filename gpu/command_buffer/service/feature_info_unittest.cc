@@ -1435,6 +1435,39 @@ TEST_P(FeatureInfoTest, InitializeWithES3) {
   EXPECT_TRUE(info_->feature_flags().use_async_readpixels);
   EXPECT_TRUE(info_->feature_flags().oes_standard_derivatives);
   EXPECT_TRUE(info_->feature_flags().oes_depth24);
+  EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_GOOGLE_depth_texture")));
+  EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_CHROMIUM_depth_texture")));
+  EXPECT_FALSE(
+      info_->validators()->texture_internal_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(
+      info_->validators()->texture_internal_format.IsValid(GL_DEPTH_STENCIL));
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_DEPTH_STENCIL));
+  EXPECT_FALSE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_SHORT));
+  EXPECT_FALSE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
+  EXPECT_FALSE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_INT_24_8));
+  EXPECT_TRUE(info_->feature_flags().packed_depth24_stencil8);
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_OES_depth24"));
+  EXPECT_TRUE(
+      info_->validators()->render_buffer_format.IsValid(GL_DEPTH_COMPONENT24));
+  EXPECT_TRUE(
+      info_->validators()->render_buffer_format.IsValid(GL_DEPTH24_STENCIL8));
+  EXPECT_FALSE(
+      info_->validators()->texture_internal_format.IsValid(GL_DEPTH_STENCIL));
+  EXPECT_FALSE(info_->validators()->texture_format.IsValid(GL_DEPTH_STENCIL));
+  EXPECT_TRUE(info_->feature_flags().npot_ok);
+  EXPECT_TRUE(info_->feature_flags().native_vertex_array_object);
+  EXPECT_TRUE(info_->feature_flags().enable_samplers);
+  EXPECT_TRUE(info_->feature_flags().map_buffer_range);
+  EXPECT_TRUE(info_->feature_flags().ext_discard_framebuffer);
+  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_discard_framebuffer"));
+  EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
+  EXPECT_TRUE(gl::GLFence::IsSupported());
+}
+
+TEST_P(FeatureInfoTest, InitializeWithES3AndDepthTexture) {
+  SetupInitExpectationsWithGLVersion(
+      "GL_ANGLE_depth_texture", "", "OpenGL ES 3.0");
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_GOOGLE_depth_texture"));
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_depth_texture"));
   EXPECT_TRUE(
@@ -1447,22 +1480,9 @@ TEST_P(FeatureInfoTest, InitializeWithES3) {
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_INT));
   EXPECT_TRUE(info_->validators()->pixel_type.IsValid(GL_UNSIGNED_INT_24_8));
   EXPECT_TRUE(info_->feature_flags().packed_depth24_stencil8);
-  EXPECT_THAT(info_->extensions(), HasSubstr("GL_OES_depth24"));
-  EXPECT_TRUE(
-      info_->validators()->render_buffer_format.IsValid(GL_DEPTH_COMPONENT24));
-  EXPECT_TRUE(
-      info_->validators()->render_buffer_format.IsValid(GL_DEPTH24_STENCIL8));
   EXPECT_TRUE(
       info_->validators()->texture_internal_format.IsValid(GL_DEPTH_STENCIL));
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_DEPTH_STENCIL));
-  EXPECT_TRUE(info_->feature_flags().npot_ok);
-  EXPECT_TRUE(info_->feature_flags().native_vertex_array_object);
-  EXPECT_TRUE(info_->feature_flags().enable_samplers);
-  EXPECT_TRUE(info_->feature_flags().map_buffer_range);
-  EXPECT_TRUE(info_->feature_flags().ext_discard_framebuffer);
-  EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_discard_framebuffer"));
-  EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
-  EXPECT_TRUE(gl::GLFence::IsSupported());
 }
 
 TEST_P(FeatureInfoTest, InitializeWithoutSamplers) {

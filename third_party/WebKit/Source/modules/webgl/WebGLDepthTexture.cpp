@@ -55,9 +55,7 @@ bool WebGLDepthTexture::supported(WebGLRenderingContextBase* context)
     // textures unless a packed depth/stencil format is available.
     if (!extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"))
         return false;
-    return extensionsUtil->supportsExtension("GL_CHROMIUM_depth_texture")
-        || extensionsUtil->supportsExtension("GL_OES_depth_texture")
-        || extensionsUtil->supportsExtension("GL_ARB_depth_texture");
+    return extensionsUtil->supportsExtension("GL_CHROMIUM_depth_texture");
 }
 
 const char* WebGLDepthTexture::extensionName()
