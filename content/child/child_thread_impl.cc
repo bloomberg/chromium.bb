@@ -10,6 +10,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/debug/leak_annotations.h"
 #include "base/debug/profiler.h"
 #include "base/lazy_instance.h"
@@ -894,8 +895,12 @@ void ChildThreadImpl::GetAssociatedInterface(
     mojom::AssociatedInterfaceAssociatedRequest request) {
   int32_t routing_id = static_cast<int32_t>(reinterpret_cast<uintptr_t>(
       associated_interface_provider_bindings_.dispatch_context()));
-  router_.GetRoute(routing_id)->OnAssociatedInterfaceRequest(
-      name, request.PassHandle());
+  Listener* route = router_.GetRoute(routing_id);
+  base::debug::Alias(&name);
+  base::debug::Alias(&request);
+  base::debug::Alias(&routing_id);
+  base::debug::Alias(&route);
+  route->OnAssociatedInterfaceRequest(name, request.PassHandle());
 }
 
 bool ChildThreadImpl::IsInBrowserProcess() const {
