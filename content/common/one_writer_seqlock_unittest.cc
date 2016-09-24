@@ -28,7 +28,7 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
   void Init(
       content::OneWriterSeqLock* seqlock,
       TestData* data,
-      base::subtle::Atomic32* ready) {
+      base::AtomicRefCount* ready) {
     seqlock_ = seqlock;
     data_ = data;
     ready_ = ready;
