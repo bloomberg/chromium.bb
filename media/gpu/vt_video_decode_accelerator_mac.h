@@ -95,24 +95,19 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
     explicit Frame(int32_t bitstream_id);
     ~Frame();
 
-    // ID of the bitstream buffer this Frame will be decoded from.
+    // Associated bitstream buffer.
     int32_t bitstream_id;
 
-    // Relative presentation order of this frame (see AVC spec).
-    int32_t pic_order_cnt;
+    // Slice header information.
+    bool has_slice = false;
+    bool is_idr = false;
+    int32_t pic_order_cnt = 0;
+    int32_t reorder_window = 0;
 
-    // Whether this frame is an IDR.
-    bool is_idr;
+    // Clean aperture size, as computed by CoreMedia.
+    gfx::Size image_size;
 
-    // Number of frames after this one in decode order that can appear before
-    // before it in presentation order.
-    int32_t reorder_window;
-
-    // Size of the decoded frame.
-    // TODO(sandersd): visible_rect.
-    gfx::Size coded_size;
-
-    // VideoToolbox decoded image, if decoding was successful.
+    // Decoded image, if decoding was successful.
     base::ScopedCFTypeRef<CVImageBufferRef> image;
   };
 
@@ -143,6 +138,11 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
 
    private:
     DISALLOW_COPY_AND_ASSIGN(PictureInfo);
+  };
+
+  struct FrameOrder {
+    bool operator()(const linked_ptr<Frame>& lhs,
+                    const linked_ptr<Frame>& rhs) const;
   };
 
   //
@@ -195,8 +195,8 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
   MakeGLContextCurrentCallback make_context_current_cb_;
   BindGLImageCallback bind_image_cb_;
 
-  VideoDecodeAccelerator::Client* client_;
-  State state_;
+  VideoDecodeAccelerator::Client* client_ = nullptr;
+  State state_ = STATE_DECODING;
 
   // Queue of pending flush tasks. This is used to drop frames when a reset
   // is pending.
@@ -204,12 +204,6 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
 
   // Queue of tasks to complete in the GPU thread.
   std::queue<Task> task_queue_;
-
-  // Utility class to define the order of frames in the reorder queue.
-  struct FrameOrder {
-    bool operator()(const linked_ptr<Frame>& lhs,
-                    const linked_ptr<Frame>& rhs) const;
-  };
 
   // Queue of decoded frames in presentation order.
   std::priority_queue<linked_ptr<Frame>,
@@ -245,23 +239,37 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator {
   base::ScopedCFTypeRef<CMFormatDescriptionRef> format_;
   base::ScopedCFTypeRef<VTDecompressionSessionRef> session_;
   H264Parser parser_;
-  gfx::Size coded_size_;
 
-  int last_sps_id_;
+  // Last SPS and PPS seen in the bitstream.
+  //
+  // TODO(sandersd): Keep a map from ID to last SPS/PPS, for streams that
+  // maintain multiple active configurations. (I've never seen such a stream.)
+  int last_sps_id_ = -1;
+  int last_pps_id_ = -1;
   std::vector<uint8_t> last_sps_;
   std::vector<uint8_t> last_spsext_;
-  int last_pps_id_;
   std::vector<uint8_t> last_pps_;
-  bool config_changed_;
-  bool waiting_for_idr_;
-  bool missing_idr_logged_;
+
+  // Last SPS and PPS referenced by a slice. In practice these will be the same
+  // as the last seen values, unless the bitstream is malformatted.
+  std::vector<uint8_t> active_sps_;
+  std::vector<uint8_t> active_spsext_;
+  std::vector<uint8_t> active_pps_;
+
+  // Last SPS and PPS the decoder was confgured with.
+  std::vector<uint8_t> configured_sps_;
+  std::vector<uint8_t> configured_spsext_;
+  std::vector<uint8_t> configured_pps_;
+  gfx::Size configured_size_;
+
+  bool waiting_for_idr_ = true;
+  bool missing_idr_logged_ = false;
   H264POC poc_;
 
   //
   // Shared state (set up and torn down on GPU thread).
   //
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
-  base::ThreadChecker gpu_thread_checker_;
   base::WeakPtr<VTVideoDecodeAccelerator> weak_this_;
   base::Thread decoder_thread_;
 

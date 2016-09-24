@@ -24,6 +24,7 @@
 #include "base/version.h"
 #include "media/base/limits.h"
 #include "media/gpu/shared_memory_region.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"
 #include "ui/gl/gl_implementation.h"
@@ -46,15 +47,18 @@ namespace {
 
 // Only H.264 with 4:2:0 chroma sampling is supported.
 const VideoCodecProfile kSupportedProfiles[] = {
-    H264PROFILE_BASELINE, H264PROFILE_MAIN, H264PROFILE_EXTENDED,
+    H264PROFILE_BASELINE, H264PROFILE_EXTENDED, H264PROFILE_MAIN,
     H264PROFILE_HIGH,
-    // TODO(hubbe): Try to re-enable this again somehow. Currently it seems
-    // that some codecs fail to check the profile during initialization and
-    // then fail on the first frame decode, which currently results in a
-    // pipeline failure.
+
+    // TODO(hubbe): Re-enable this once software fallback is working.
+    // http://crbug.com/605790
     // H264PROFILE_HIGH10PROFILE,
-    H264PROFILE_SCALABLEBASELINE, H264PROFILE_SCALABLEHIGH,
-    H264PROFILE_STEREOHIGH, H264PROFILE_MULTIVIEWHIGH,
+
+    // TODO(sandersd): Find and test media with these profiles before enabling.
+    // H264PROFILE_SCALABLEBASELINE,
+    // H264PROFILE_SCALABLEHIGH,
+    // H264PROFILE_STEREOHIGH,
+    // H264PROFILE_MULTIVIEWHIGH,
 };
 
 // Size to use for NALU length headers in AVC format (can be 1, 2, or 4).
@@ -148,8 +152,11 @@ bool CreateVideoToolboxSession(const uint8_t* sps,
         CFSTR("RequireHardwareAcceleratedVideoDecoder"), kCFBooleanTrue);
   }
 
+  CGRect visible_rect = CMVideoFormatDescriptionGetCleanAperture(format, true);
+  CMVideoDimensions visible_dimensions = {visible_rect.size.width,
+                                          visible_rect.size.height};
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
-      BuildImageConfig(CMVideoFormatDescriptionGetDimensions(format)));
+      BuildImageConfig(visible_dimensions));
   if (!image_config.get())
     return false;
 
@@ -267,10 +274,7 @@ VTVideoDecodeAccelerator::Task::Task(const Task& other) = default;
 VTVideoDecodeAccelerator::Task::~Task() {}
 
 VTVideoDecodeAccelerator::Frame::Frame(int32_t bitstream_id)
-    : bitstream_id(bitstream_id),
-      pic_order_cnt(0),
-      is_idr(false),
-      reorder_window(0) {}
+    : bitstream_id(bitstream_id) {}
 
 VTVideoDecodeAccelerator::Frame::~Frame() {}
 
@@ -287,12 +291,11 @@ VTVideoDecodeAccelerator::PictureInfo::~PictureInfo() {
 bool VTVideoDecodeAccelerator::FrameOrder::operator()(
     const linked_ptr<Frame>& lhs,
     const linked_ptr<Frame>& rhs) const {
+  // TODO(sandersd): When it is provided, use the bitstream timestamp.
   if (lhs->pic_order_cnt != rhs->pic_order_cnt)
     return lhs->pic_order_cnt > rhs->pic_order_cnt;
+
   // If |pic_order_cnt| is the same, fall back on using the bitstream order.
-  // TODO(sandersd): Assign a sequence number in Decode() and use that instead.
-  // TODO(sandersd): Using the sequence number, ensure that frames older than
-  // |kMaxReorderQueueSize| are ordered first, regardless of |pic_order_cnt|.
   return lhs->bitstream_id > rhs->bitstream_id;
 }
 
@@ -301,15 +304,6 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
     const BindGLImageCallback& bind_image_cb)
     : make_context_current_cb_(make_context_current_cb),
       bind_image_cb_(bind_image_cb),
-      client_(nullptr),
-      state_(STATE_DECODING),
-      format_(nullptr),
-      session_(nullptr),
-      last_sps_id_(-1),
-      last_pps_id_(-1),
-      config_changed_(false),
-      waiting_for_idr_(true),
-      missing_idr_logged_(false),
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VTDecoderThread"),
       weak_this_factory_(this) {
@@ -320,13 +314,13 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
 
 VTVideoDecodeAccelerator::~VTVideoDecodeAccelerator() {
   DVLOG(1) << __func__;
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 }
 
 bool VTVideoDecodeAccelerator::Initialize(const Config& config,
                                           Client* client) {
   DVLOG(1) << __func__;
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
   if (make_context_current_cb_.is_null() || bind_image_cb_.is_null()) {
     NOTREACHED() << "GL callbacks are required for this VDA";
@@ -385,22 +379,22 @@ bool VTVideoDecodeAccelerator::FinishDelayedFrames() {
 bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   DVLOG(2) << __func__;
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
-  DCHECK(!last_sps_.empty());
-  DCHECK(!last_pps_.empty());
+  DCHECK(!active_sps_.empty());
+  DCHECK(!active_pps_.empty());
 
   // Build the configuration records.
   std::vector<const uint8_t*> nalu_data_ptrs;
   std::vector<size_t> nalu_data_sizes;
   nalu_data_ptrs.reserve(3);
   nalu_data_sizes.reserve(3);
-  nalu_data_ptrs.push_back(&last_sps_.front());
-  nalu_data_sizes.push_back(last_sps_.size());
+  nalu_data_ptrs.push_back(&active_sps_.front());
+  nalu_data_sizes.push_back(active_sps_.size());
   if (!last_spsext_.empty()) {
-    nalu_data_ptrs.push_back(&last_spsext_.front());
-    nalu_data_sizes.push_back(last_spsext_.size());
+    nalu_data_ptrs.push_back(&active_spsext_.front());
+    nalu_data_sizes.push_back(active_spsext_.size());
   }
-  nalu_data_ptrs.push_back(&last_pps_.front());
-  nalu_data_sizes.push_back(last_pps_.size());
+  nalu_data_ptrs.push_back(&active_pps_.front());
+  nalu_data_sizes.push_back(active_pps_.size());
 
   // Construct a new format description from the parameter sets.
   format_.reset();
@@ -416,14 +410,6 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
                   status, SFT_PLATFORM_ERROR);
     return false;
   }
-
-  // Store the new configuration data.
-  // TODO(sandersd): Despite the documentation, this seems to return the visible
-  // size. However, the output always appears to be top-left aligned, so it
-  // makes no difference. Re-verify this and update the variable name.
-  CMVideoDimensions coded_dimensions =
-      CMVideoFormatDescriptionGetDimensions(format_);
-  coded_size_.SetSize(coded_dimensions.width, coded_dimensions.height);
 
   // Prepare VideoToolbox configuration dictionaries.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> decoder_config(
@@ -442,8 +428,14 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
       // kVTVideoDecoderSpecification_EnableHardwareAcceleratedVideoDecoder
       CFSTR("EnableHardwareAcceleratedVideoDecoder"), kCFBooleanTrue);
 
+  // VideoToolbox scales the visible rect to the output size, so we set the
+  // output size for a 1:1 ratio. (Note though that VideoToolbox does not handle
+  // top or left crops correctly.) We expect the visible rect to be integral.
+  CGRect visible_rect = CMVideoFormatDescriptionGetCleanAperture(format_, true);
+  CMVideoDimensions visible_dimensions = {visible_rect.size.width,
+                                          visible_rect.size.height};
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(
-      BuildImageConfig(coded_dimensions));
+      BuildImageConfig(visible_dimensions));
   if (!image_config.get()) {
     DLOG(ERROR) << "Failed to create decoder image configuration";
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
@@ -481,6 +473,12 @@ bool VTVideoDecodeAccelerator::ConfigureDecoder() {
   }
   UMA_HISTOGRAM_BOOLEAN("Media.VTVDA.HardwareAccelerated", using_hardware);
 
+  // Record that the configuration change is complete.
+  configured_sps_ = active_sps_;
+  configured_spsext_ = active_spsext_;
+  configured_pps_ = active_pps_;
+  configured_size_.SetSize(visible_rect.size.width, visible_rect.size.height);
+
   return true;
 }
 
@@ -503,11 +501,7 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
   // the data.
   //
   // Locate relevant NALUs and compute the size of the rewritten data. Also
-  // record any parameter sets for VideoToolbox initialization.
-  std::vector<uint8_t> sps;
-  std::vector<uint8_t> spsext;
-  std::vector<uint8_t> pps;
-  bool has_slice = false;
+  // record parameter sets for VideoToolbox initialization.
   size_t data_size = 0;
   std::vector<H264NALU> nalus;
   parser_.SetStream(buf, memory.size());
@@ -539,13 +533,12 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
           NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
           return;
         }
-        sps.assign(nalu.data, nalu.data + nalu.size);
-        spsext.clear();
+        last_sps_.assign(nalu.data, nalu.data + nalu.size);
+        last_spsext_.clear();
         break;
 
       case H264NALU::kSPSExt:
-        // TODO(sandersd): Check that the previous NALU was an SPS.
-        spsext.assign(nalu.data, nalu.data + nalu.size);
+        last_spsext_.assign(nalu.data, nalu.data + nalu.size);
         break;
 
       case H264NALU::kPPS:
@@ -560,7 +553,7 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
           NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
           return;
         }
-        pps.assign(nalu.data, nalu.data + nalu.size);
+        last_pps_.assign(nalu.data, nalu.data + nalu.size);
         break;
 
       case H264NALU::kSliceDataA:
@@ -568,19 +561,10 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
       case H264NALU::kSliceDataC:
       case H264NALU::kNonIDRSlice:
       case H264NALU::kIDRSlice:
-        // Compute the |pic_order_cnt| for the picture from the first slice.
-        if (!has_slice) {
-          // Verify that we are not trying to decode a slice without an IDR.
-          if (waiting_for_idr_) {
-            if (nalu.nal_unit_type == H264NALU::kIDRSlice) {
-              waiting_for_idr_ = false;
-            } else {
-              // We can't compute anything yet, bail on this frame.
-              has_slice = true;
-              break;
-            }
-          }
-
+        // Only the first slice is examined. Other slices are at least one of:
+        // the same frame, not decoded, invalid.
+        if (!frame->has_slice) {
+          // Parse slice header.
           H264SliceHeader slice_hdr;
           result = parser_.ParseSliceHeader(nalu, &slice_hdr);
           if (result == H264Parser::kUnsupportedStream) {
@@ -594,8 +578,7 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
             return;
           }
 
-          // TODO(sandersd): Maintain a cache of configurations and reconfigure
-          // when a slice references a new config.
+          // Lookup SPS and PPS.
           DCHECK_EQ(slice_hdr.pic_parameter_set_id, last_pps_id_);
           const H264PPS* pps = parser_.GetPPS(slice_hdr.pic_parameter_set_id);
           if (!pps) {
@@ -612,18 +595,29 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
             return;
           }
 
-          if (!poc_.ComputePicOrderCnt(sps, slice_hdr, &frame->pic_order_cnt)) {
+          // Record the configuration.
+          // TODO(sandersd): Ideally this would be skipped if we know there
+          // have not been any parameter sets since the last frame.
+          active_sps_ = last_sps_;
+          active_spsext_ = last_spsext_;
+          active_pps_ = last_pps_;
+
+          // Compute and store frame properties. |image_size| gets filled in
+          // later, since it comes from the decoder configuration.
+          int32_t pic_order_cnt;
+          if (!poc_.ComputePicOrderCnt(sps, slice_hdr, &pic_order_cnt)) {
             DLOG(ERROR) << "Unable to compute POC";
             NotifyError(UNREADABLE_INPUT, SFT_INVALID_STREAM);
             return;
           }
 
-          if (nalu.nal_unit_type == H264NALU::kIDRSlice)
-            frame->is_idr = true;
-
+          frame->has_slice = true;
+          frame->is_idr = nalu.nal_unit_type == media::H264NALU::kIDRSlice;
+          frame->pic_order_cnt = pic_order_cnt;
           frame->reorder_window = ComputeReorderWindow(sps);
         }
-        has_slice = true;
+
+      // Intentional fallthrough.
       default:
         nalus.push_back(nalu);
         data_size += kNALUHeaderLength + nalu.size;
@@ -631,58 +625,50 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
     }
   }
 
-  // Initialize VideoToolbox.
-  if (!sps.empty() && sps != last_sps_) {
-    last_sps_.swap(sps);
-    last_spsext_.swap(spsext);
-    config_changed_ = true;
-  }
-  if (!pps.empty() && pps != last_pps_) {
-    last_pps_.swap(pps);
-    config_changed_ = true;
-  }
-  if (config_changed_) {
-    // Only reconfigure at IDRs to avoid corruption.
-    if (frame->is_idr) {
-      config_changed_ = false;
-
-      if (last_sps_.empty()) {
-        DLOG(ERROR) << "Invalid configuration; no SPS";
-        NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
-        return;
-      }
-      if (last_pps_.empty()) {
-        DLOG(ERROR) << "Invalid configuration; no PPS";
-        NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
-        return;
-      }
-
-      // ConfigureDecoder() calls NotifyError() on failure.
-      if (!ConfigureDecoder())
-        return;
-    }
+  if (frame->is_idr) {
+    waiting_for_idr_ = false;
   }
 
-  // If no IDR has been seen yet, skip decoding.
-  if (has_slice && waiting_for_idr_) {
+  // If no IDR has been seen yet, skip decoding. Note that Flash sends
+  // configuration changes as a bitstream with only SPS/PPS; we don't print
+  // error messages for those.
+  if (frame->has_slice && waiting_for_idr_) {
     if (!missing_idr_logged_) {
       LOG(ERROR) << "Illegal attempt to decode without IDR. "
                  << "Discarding decode requests until next IDR.";
       missing_idr_logged_ = true;
     }
-    has_slice = false;
+    frame->has_slice = false;
   }
 
-  // If there is nothing to decode, drop the bitstream buffer by returning an
-  // empty frame.
-  if (!has_slice) {
-    // Keep everything in order by flushing first.
-    if (!FinishDelayedFrames())
-      return;
+  // If there is nothing to decode, drop the request by returning a frame with
+  // no image.
+  if (!frame->has_slice) {
     gpu_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VTVideoDecodeAccelerator::DecodeDone, weak_this_, frame));
     return;
+  }
+
+  // Apply any configuration change, but only at an IDR. If there is no IDR, we
+  // just hope for the best from the decoder.
+  if (frame->is_idr &&
+      (configured_sps_ != active_sps_ || configured_spsext_ != active_spsext_ ||
+       configured_pps_ != active_pps_)) {
+    if (active_sps_.empty()) {
+      DLOG(ERROR) << "Invalid configuration; no SPS";
+      NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
+      return;
+    }
+    if (active_pps_.empty()) {
+      DLOG(ERROR) << "Invalid configuration; no PPS";
+      NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
+      return;
+    }
+
+    // ConfigureDecoder() calls NotifyError() on failure.
+    if (!ConfigureDecoder())
+      return;
   }
 
   // If the session is not configured by this point, fail.
@@ -692,8 +678,8 @@ void VTVideoDecodeAccelerator::DecodeTask(const BitstreamBuffer& bitstream,
     return;
   }
 
-  // Update the frame metadata with configuration data.
-  frame->coded_size = coded_size_;
+  // Now that the configuration is up to date, copy it into the frame.
+  frame->image_size = configured_size_;
 
   // Create a memory-backed CMBlockBuffer for the translated data.
   // TODO(sandersd): Pool of memory blocks.
@@ -817,9 +803,19 @@ void VTVideoDecodeAccelerator::Output(void* source_frame_refcon,
 
 void VTVideoDecodeAccelerator::DecodeDone(Frame* frame) {
   DVLOG(3) << __func__ << "(" << frame->bitstream_id << ")";
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
   DCHECK_EQ(1u, pending_frames_.count(frame->bitstream_id));
+
+  if (!frame->image.get()) {
+    // pending_frames_.erase() will delete |frame|.
+    int32_t bitstream_id = frame->bitstream_id;
+    pending_frames_.erase(bitstream_id);
+    assigned_bitstream_ids_.erase(bitstream_id);
+    client_->NotifyEndOfBitstreamBuffer(bitstream_id);
+    return;
+  }
+
   Task task(TASK_FRAME);
   task.frame = pending_frames_[frame->bitstream_id];
   pending_frames_.erase(frame->bitstream_id);
@@ -842,14 +838,14 @@ void VTVideoDecodeAccelerator::FlushTask(TaskType type) {
 
 void VTVideoDecodeAccelerator::FlushDone(TaskType type) {
   DVLOG(3) << __func__;
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   task_queue_.push(Task(type));
   ProcessWorkQueues();
 }
 
 void VTVideoDecodeAccelerator::Decode(const BitstreamBuffer& bitstream) {
   DVLOG(2) << __func__ << "(" << bitstream.id() << ")";
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
   if (bitstream.id() < 0) {
     DLOG(ERROR) << "Invalid bitstream, id: " << bitstream.id();
@@ -872,9 +868,10 @@ void VTVideoDecodeAccelerator::Decode(const BitstreamBuffer& bitstream) {
 void VTVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<PictureBuffer>& pictures) {
   DVLOG(1) << __func__;
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
   for (const PictureBuffer& picture : pictures) {
+    DVLOG(3) << "AssignPictureBuffer(" << picture.id() << ")";
     DCHECK(!picture_info_map_.count(picture.id()));
     assigned_picture_ids_.insert(picture.id());
     available_picture_ids_.push_back(picture.id());
@@ -896,7 +893,7 @@ void VTVideoDecodeAccelerator::AssignPictureBuffers(
 
 void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   DVLOG(2) << __func__ << "(" << picture_id << ")";
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
   auto it = picture_info_map_.find(picture_id);
   if (it != picture_info_map_.end()) {
@@ -906,17 +903,18 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
     picture_info->gl_image = nullptr;
   }
 
+  // It's possible there was a ReusePictureBuffer() request in flight when we
+  // called DismissPictureBuffer(), in which case we won't find it. In that case
+  // we should just drop the ReusePictureBuffer() request.
   if (assigned_picture_ids_.count(picture_id)) {
     available_picture_ids_.push_back(picture_id);
     ProcessWorkQueues();
-  } else {
-    client_->DismissPictureBuffer(picture_id);
   }
 }
 
 void VTVideoDecodeAccelerator::ProcessWorkQueues() {
   DVLOG(3) << __func__;
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   switch (state_) {
     case STATE_DECODING:
       // TODO(sandersd): Batch where possible.
@@ -945,7 +943,7 @@ void VTVideoDecodeAccelerator::ProcessWorkQueues() {
 
 bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
   DVLOG(3) << __func__ << " size=" << task_queue_.size();
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_DECODING);
 
   if (task_queue_.empty())
@@ -996,7 +994,7 @@ bool VTVideoDecodeAccelerator::ProcessTaskQueue() {
 }
 
 bool VTVideoDecodeAccelerator::ProcessReorderQueue() {
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_DECODING);
 
   if (reorder_queue_.empty())
@@ -1024,7 +1022,7 @@ bool VTVideoDecodeAccelerator::ProcessReorderQueue() {
 
 bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
   DVLOG(3) << __func__ << "(" << frame.bitstream_id << ")";
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_DECODING);
 
   // If the next pending flush is for a reset, then the frame will be dropped.
@@ -1032,23 +1030,27 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
                    pending_flush_tasks_.front() == TASK_RESET;
 
   if (!resetting && frame.image.get()) {
-    // If the |coded_size| has changed, request new picture buffers and then
+    // If the |image_size| has changed, request new picture buffers and then
     // wait for them.
-    // TODO(sandersd): If GpuVideoDecoder didn't specifically check the size of
-    // textures, this would be unnecessary, as the size is actually a property
-    // of the texture binding, not the texture. We rebind every frame, so the
-    // size passed to ProvidePictureBuffers() is meaningless.
-    if (picture_size_ != frame.coded_size) {
+    //
+    // TODO(sandersd): When used by GpuVideoDecoder, we don't need to bother
+    // with this. We can tell that is the case when we also have a timestamp.
+    if (picture_size_ != frame.image_size) {
       // Dismiss current pictures.
-      for (int32_t picture_id : assigned_picture_ids_)
+      for (int32_t picture_id : assigned_picture_ids_) {
+        DVLOG(3) << "DismissPictureBuffer(" << picture_id << ")";
         client_->DismissPictureBuffer(picture_id);
+      }
       assigned_picture_ids_.clear();
       available_picture_ids_.clear();
 
       // Request new pictures.
-      picture_size_ = frame.coded_size;
+      picture_size_ = frame.image_size;
+      DVLOG(3) << "ProvidePictureBuffers(" << kNumPictureBuffers
+               << frame.image_size.ToString() << ")";
       client_->ProvidePictureBuffers(kNumPictureBuffers, PIXEL_FORMAT_UNKNOWN,
-                                     1, coded_size_, GL_TEXTURE_RECTANGLE_ARB);
+                                     1, frame.image_size,
+                                     GL_TEXTURE_RECTANGLE_ARB);
       return false;
     }
     if (!SendFrame(frame))
@@ -1060,8 +1062,9 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
 
 bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   DVLOG(2) << __func__ << "(" << frame.bitstream_id << ")";
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_DECODING);
+  DCHECK(frame.image.get());
 
   if (available_picture_ids_.empty())
     return false;
@@ -1080,7 +1083,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   }
 
   scoped_refptr<gl::GLImageIOSurface> gl_image(
-      new gl::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
+      new gl::GLImageIOSurface(frame.image_size, GL_BGRA_EXT));
   if (!gl_image->InitializeWithCVPixelBuffer(
           frame.image.get(), gfx::GenericSharedMemoryId(),
           gfx::BufferFormat::YUV_420_BIPLANAR)) {
@@ -1100,13 +1103,10 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   picture_info->cv_image = frame.image;
   available_picture_ids_.pop_back();
 
-  // TODO(sandersd): Currently, the size got from
-  // CMVideoFormatDescriptionGetDimensions is visible size. We pass it to
-  // GpuVideoDecoder so that GpuVideoDecoder can use correct visible size in
-  // resolution changed. We should find the correct API to get the real
-  // coded size and fix it.
+  DVLOG(3) << "PictureReady(picture_id=" << picture_id << ", "
+           << "bitstream_id=" << frame.bitstream_id << ")";
   client_->PictureReady(Picture(picture_id, frame.bitstream_id,
-                                gfx::Rect(frame.coded_size), true));
+                                gfx::Rect(frame.image_size), true));
   return true;
 }
 
@@ -1114,7 +1114,7 @@ void VTVideoDecodeAccelerator::NotifyError(
     Error vda_error_type,
     VTVDASessionFailureType session_failure_type) {
   DCHECK_LT(session_failure_type, SFT_MAX + 1);
-  if (!gpu_thread_checker_.CalledOnValidThread()) {
+  if (!gpu_task_runner_->BelongsToCurrentThread()) {
     gpu_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VTVideoDecodeAccelerator::NotifyError, weak_this_,
@@ -1128,7 +1128,7 @@ void VTVideoDecodeAccelerator::NotifyError(
 }
 
 void VTVideoDecodeAccelerator::QueueFlush(TaskType type) {
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   pending_flush_tasks_.push(type);
   decoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&VTVideoDecodeAccelerator::FlushTask,
@@ -1141,19 +1141,19 @@ void VTVideoDecodeAccelerator::QueueFlush(TaskType type) {
 
 void VTVideoDecodeAccelerator::Flush() {
   DVLOG(1) << __func__;
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   QueueFlush(TASK_FLUSH);
 }
 
 void VTVideoDecodeAccelerator::Reset() {
   DVLOG(1) << __func__;
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   QueueFlush(TASK_RESET);
 }
 
 void VTVideoDecodeAccelerator::Destroy() {
   DVLOG(1) << __func__;
-  DCHECK(gpu_thread_checker_.CalledOnValidThread());
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
   // In a forceful shutdown, the decoder thread may be dead already.
   if (!decoder_thread_.IsRunning()) {

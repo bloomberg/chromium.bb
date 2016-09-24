@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <CoreFoundation/CoreFoundation.h>
+#include <CoreGraphics/CGGeometry.h>
 #include <stddef.h>
 #include <stdint.h>
 
