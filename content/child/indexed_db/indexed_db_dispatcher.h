@@ -140,7 +140,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
   void RequestIDBDatabaseCreateTransaction(
       int32_t ipc_database_id,
       int64_t transaction_id,
-      blink::WebIDBDatabaseCallbacks* database_callbacks_ptr,
       blink::WebVector<long long> object_store_ids,
       blink::WebIDBTransactionMode mode);
 

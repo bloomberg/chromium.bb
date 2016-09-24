@@ -44,7 +44,6 @@ class WebIDBDatabaseImpl : public blink::WebIDBDatabase {
                          long long object_store_id,
                          const blink::WebString& new_name) override;
   void createTransaction(long long transaction_id,
-                         blink::WebIDBDatabaseCallbacks* callbacks,
                          const blink::WebVector<long long>& scope,
                          blink::WebIDBTransactionMode mode) override;
 

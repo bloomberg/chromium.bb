@@ -329,7 +329,7 @@ IDBTransaction* IDBDatabase::transaction(ScriptState* scriptState, const StringO
     }
 
     int64_t transactionId = nextTransactionId();
-    m_backend->createTransaction(transactionId, WebIDBDatabaseCallbacksImpl::create(m_databaseCallbacks).release(), objectStoreIds, mode);
+    m_backend->createTransaction(transactionId, objectStoreIds, mode);
 
     return IDBTransaction::createNonVersionChange(scriptState, transactionId, scope, mode, this);
 }

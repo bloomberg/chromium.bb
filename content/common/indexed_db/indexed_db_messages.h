@@ -98,8 +98,6 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateTransaction_Params)
   IPC_STRUCT_MEMBER(int32_t, ipc_database_id)
   // The transaction id as minted by the frontend.
   IPC_STRUCT_MEMBER(int64_t, transaction_id)
-  // To get to WebIDBDatabaseCallbacks.
-  IPC_STRUCT_MEMBER(int32_t, ipc_database_callbacks_id)
   // The scope of the transaction.
   IPC_STRUCT_MEMBER(std::vector<int64_t>, object_store_ids)
   // The transaction mode.
@@ -445,9 +443,6 @@ IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksError,
                      int32_t /* ipc_callbacks_id */,
                      int /* code */,
                      base::string16 /* message */)
-IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksBlocked,
-                     int32_t /* ipc_thread_id */,
-                     int32_t /* ipc_callbacks_id */)
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksIntBlocked,
                      int32_t /* ipc_thread_id */,
                      int32_t /* ipc_callbacks_id */,

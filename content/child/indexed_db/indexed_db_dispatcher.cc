@@ -339,17 +339,12 @@ void IndexedDBDispatcher::NotifyIDBDatabaseVersionChangeIgnored(
 void IndexedDBDispatcher::RequestIDBDatabaseCreateTransaction(
     int32_t ipc_database_id,
     int64_t transaction_id,
-    WebIDBDatabaseCallbacks* database_callbacks_ptr,
     WebVector<long long> object_store_ids,
     blink::WebIDBTransactionMode mode) {
-  std::unique_ptr<WebIDBDatabaseCallbacks> database_callbacks(
-      database_callbacks_ptr);
   IndexedDBHostMsg_DatabaseCreateTransaction_Params params;
   params.ipc_thread_id = CurrentWorkerId();
   params.ipc_database_id = ipc_database_id;
   params.transaction_id = transaction_id;
-  params.ipc_database_callbacks_id =
-      pending_database_callbacks_.Add(database_callbacks.release());
   params.object_store_ids
       .assign(object_store_ids.data(),
               object_store_ids.data() + object_store_ids.size());

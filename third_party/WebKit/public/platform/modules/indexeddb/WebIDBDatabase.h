@@ -50,7 +50,7 @@ public:
     virtual void createObjectStore(long long transactionId, long long objectStoreId, const WebString& name, const WebIDBKeyPath&, bool autoIncrement) = 0;
     virtual void deleteObjectStore(long long transactionId, long long objectStoreId) = 0;
     virtual void renameObjectStore(long long transactionId, long long objectStoreId, const WebString& name) = 0;
-    virtual void createTransaction(long long id, WebIDBDatabaseCallbacks*, const WebVector<long long>& scope, WebIDBTransactionMode) = 0;
+    virtual void createTransaction(long long id, const WebVector<long long>& scope, WebIDBTransactionMode) = 0;
     virtual void close() = 0;
     virtual void versionChangeIgnored() = 0;
 

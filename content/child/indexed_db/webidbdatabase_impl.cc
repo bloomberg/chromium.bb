@@ -87,13 +87,12 @@ void WebIDBDatabaseImpl::renameObjectStore(long long transaction_id,
 
 void WebIDBDatabaseImpl::createTransaction(
     long long transaction_id,
-    WebIDBDatabaseCallbacks* callbacks,
     const WebVector<long long>& object_store_ids,
     blink::WebIDBTransactionMode mode) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBDatabaseCreateTransaction(
-      ipc_database_id_, transaction_id, callbacks, object_store_ids, mode);
+      ipc_database_id_, transaction_id, object_store_ids, mode);
 }
 
 void WebIDBDatabaseImpl::close() {

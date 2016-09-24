@@ -24,7 +24,7 @@ public:
     MOCK_METHOD5(createObjectStore, void(long long transactionId, long long objectStoreId, const WebString& name, const WebIDBKeyPath&, bool autoIncrement));
     MOCK_METHOD2(deleteObjectStore, void(long long transactionId, long long objectStoreId));
     MOCK_METHOD3(renameObjectStore, void(long long transactionId, long long objectStoreId, const WebString& newName));
-    MOCK_METHOD4(createTransaction, void(long long id, WebIDBDatabaseCallbacks*, const WebVector<long long>& scope, WebIDBTransactionMode));
+    MOCK_METHOD3(createTransaction, void(long long id, const WebVector<long long>& scope, WebIDBTransactionMode));
     MOCK_METHOD0(close, void());
     MOCK_METHOD0(versionChangeIgnored, void());
     MOCK_METHOD1(abort, void(long long transactionId));
