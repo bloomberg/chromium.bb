@@ -4,4 +4,5 @@ include_rules = [
   "+media/base",
   "+media/cast",
   "+media/media_features.h",
+  "+media/mojo/interfaces",
 ]

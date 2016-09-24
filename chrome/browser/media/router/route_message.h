@@ -24,6 +24,8 @@ struct RouteMessage {
   RouteMessage();
   RouteMessage(const RouteMessage& other);
   ~RouteMessage();
+
+  std::string ToHumanReadableString() const;
 };
 
 }  // namespace media_router

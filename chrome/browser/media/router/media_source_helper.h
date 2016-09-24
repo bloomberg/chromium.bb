@@ -9,11 +9,16 @@
 
 #include "chrome/browser/media/router/media_source.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace media_router {
 
 // Helper library for protocol-specific media source object creation.
 // Returns MediaSource URI depending on the type of source.
 MediaSource MediaSourceForTab(int tab_id);
+MediaSource MediaSourceForTabContentRemoting(content::WebContents* contents);
 MediaSource MediaSourceForDesktop();
 MediaSource MediaSourceForCastApp(const std::string& app_id);
 MediaSource MediaSourceForPresentationUrl(const std::string& presentation_url);
@@ -22,6 +27,10 @@ MediaSource MediaSourceForPresentationUrl(const std::string& presentation_url);
 bool IsDesktopMirroringMediaSource(const MediaSource& source);
 bool IsTabMirroringMediaSource(const MediaSource& source);
 bool IsMirroringMediaSource(const MediaSource& source);
+
+// Parses the |source| and returns the SessionTabHelper tab ID referencing a
+// source tab. Returns a non-positive value on error.
+int TabIdFromMediaSource(const MediaSource& source);
 
 // Checks that |source| is a parseable URN and is of a known type.
 // Does not deeper protocol-level syntax checks.

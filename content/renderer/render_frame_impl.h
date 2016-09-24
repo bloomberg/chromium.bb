@@ -38,6 +38,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
+#include "media/mojo/interfaces/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
@@ -1019,6 +1020,7 @@ class CONTENT_EXPORT RenderFrameImpl
   shell::mojom::InterfaceProvider* GetMediaInterfaceProvider();
 #endif
 
+  media::mojom::RemoterFactory* GetRemoterFactory();
   media::CdmFactory* GetCdmFactory();
   media::DecoderFactory* GetDecoderFactory();
 
@@ -1183,6 +1185,10 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   media::SurfaceManager* media_surface_manager_;
+
+  // Lazy-bound pointer to the RemoterFactory service in the browser
+  // process. Always use the GetRemoterFactory() accessor instead of this.
+  media::mojom::RemoterFactoryPtr remoter_factory_;
 
 #if defined(ENABLE_BROWSER_CDMS)
   // Manage all CDMs in this render frame for communicating with the real CDM in

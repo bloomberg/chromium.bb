@@ -322,6 +322,7 @@
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)
+#include "chrome/browser/media/cast_remoting_connector.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
 #endif
@@ -2954,6 +2955,12 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
 #if BUILDFLAG(ANDROID_JAVA_UI)
   ChromeInterfaceRegistrarAndroid::ExposeInterfacesToFrame(
       registry, render_frame_host);
+#endif
+
+#if defined(ENABLE_MEDIA_ROUTER)
+  registry->AddInterface(
+      base::Bind(&CastRemotingConnector::CreateRemoterFactory,
+                 render_frame_host));
 #endif
 }
 

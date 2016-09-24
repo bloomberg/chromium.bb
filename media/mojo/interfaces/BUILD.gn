@@ -43,3 +43,9 @@ mojom("image_capture") {
     "image_capture.mojom",
   ]
 }
+
+mojom("remoting") {
+  sources = [
+    "remoting.mojom",
+  ]
+}

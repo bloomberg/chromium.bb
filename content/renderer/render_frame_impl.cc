@@ -2700,6 +2700,11 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   if (!url_index_.get() || url_index_->frame() != frame_)
     url_index_.reset(new media::UrlIndex(frame_));
 
+  // TODO(miu): In a soon-upcoming change, call GetRemoterFactory()->Create() to
+  // allow the local media pipeline to receive notifications about when Media
+  // Remoting can take place. Control logic in/around WebMediaPlayerImpl will
+  // implement media.mojom.RemotingSource. http://crbug.com/643964
+
   media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
       frame_, client, encrypted_client,
       GetWebMediaPlayerDelegate()->AsWeakPtr(),
@@ -6208,6 +6213,12 @@ bool RenderFrameImpl::AreSecureCodecsSupported() {
 #else
   return false;
 #endif  // defined(OS_ANDROID)
+}
+
+media::mojom::RemoterFactory* RenderFrameImpl::GetRemoterFactory() {
+  if (!remoter_factory_)
+    GetRemoteInterfaces()->GetInterface(&remoter_factory_);
+  return remoter_factory_.get();
 }
 
 media::CdmFactory* RenderFrameImpl::GetCdmFactory() {

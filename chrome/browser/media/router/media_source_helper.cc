@@ -4,21 +4,36 @@
 
 #include "chrome/browser/media/router/media_source_helper.h"
 
+#include <stdio.h>
+
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "url/gurl.h"
 
 namespace media_router {
 
+namespace {
+
 // Prefixes used to format and detect various protocols' media source URNs.
 // See: https://www.ietf.org/rfc/rfc3406.txt
-const char kTabMediaUrnPrefix[] = "urn:x-org.chromium.media:source:tab";
-const char kDesktopMediaUrn[] = "urn:x-org.chromium.media:source:desktop";
-const char kCastUrnPrefix[] = "urn:x-com.google.cast:application:";
+constexpr char kTabMediaUrnFormat[] = "urn:x-org.chromium.media:source:tab:%d";
+constexpr char kDesktopMediaUrn[] = "urn:x-org.chromium.media:source:desktop";
+constexpr char kCastUrnPrefix[] = "urn:x-com.google.cast:application:";
+constexpr char kTabRemotingUrnFormat[] =
+    "urn:x-org.chromium.media:source:tab_content_remoting:%d";
+
+}  // namespace
 
 MediaSource MediaSourceForTab(int tab_id) {
-  return MediaSource(base::StringPrintf("%s:%d", kTabMediaUrnPrefix, tab_id));
+  return MediaSource(base::StringPrintf(kTabMediaUrnFormat, tab_id));
+}
+
+MediaSource MediaSourceForTabContentRemoting(content::WebContents* contents) {
+  DCHECK(contents);
+  return MediaSource(base::StringPrintf(kTabRemotingUrnFormat,
+                                        SessionTabHelper::IdForTab(contents)));
 }
 
 MediaSource MediaSourceForDesktop() {
@@ -39,8 +54,9 @@ bool IsDesktopMirroringMediaSource(const MediaSource& source) {
 }
 
 bool IsTabMirroringMediaSource(const MediaSource& source) {
-  return base::StartsWith(source.id(), kTabMediaUrnPrefix,
-                          base::CompareCase::SENSITIVE);
+  int tab_id;
+  return sscanf(source.id().c_str(), kTabMediaUrnFormat, &tab_id) == 1 &&
+      tab_id > 0;
 }
 
 bool IsMirroringMediaSource(const MediaSource& source) {
@@ -48,14 +64,22 @@ bool IsMirroringMediaSource(const MediaSource& source) {
          IsTabMirroringMediaSource(source);
 }
 
+int TabIdFromMediaSource(const MediaSource& source) {
+  int tab_id;
+  if (sscanf(source.id().c_str(), kTabMediaUrnFormat, &tab_id) == 1)
+    return tab_id;
+  else if (sscanf(source.id().c_str(), kTabRemotingUrnFormat, &tab_id) == 1)
+    return tab_id;
+  else
+    return -1;
+}
+
 bool IsValidMediaSource(const MediaSource& source) {
-  if (IsMirroringMediaSource(source) ||
-      base::StartsWith(source.id(), kCastUrnPrefix,
-                       base::CompareCase::SENSITIVE)) {
-    return true;
-  }
-  GURL url(source.id());
-  return url.is_valid() && url.SchemeIsHTTPOrHTTPS();
+  return (TabIdFromMediaSource(source) > 0 ||
+          IsDesktopMirroringMediaSource(source) ||
+          base::StartsWith(source.id(), kCastUrnPrefix,
+                           base::CompareCase::SENSITIVE) ||
+          IsValidPresentationUrl(source.id()));
 }
 
 std::string PresentationUrlFromMediaSource(const MediaSource& source) {

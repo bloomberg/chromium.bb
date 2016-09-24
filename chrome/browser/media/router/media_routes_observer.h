@@ -38,6 +38,7 @@ class MediaRoutesObserver {
       const std::vector<MediaRoute>& routes,
       const std::vector<MediaRoute::Id>& joinable_route_ids) {}
 
+  MediaRouter* router() const { return router_; }
   const MediaSource::Id source_id() const { return source_id_; }
 
  private:

@@ -3667,8 +3667,11 @@ split_static_library("browser") {
     deps += [
       "//chrome/browser/media/router",
       "//media/cast:net",
+      "//media/mojo/interfaces:remoting",
     ]
     sources += [
+      "media/cast_remoting_connector.cc",
+      "media/cast_remoting_connector.h",
       "media/cast_remoting_sender.cc",
       "media/cast_remoting_sender.h",
     ]

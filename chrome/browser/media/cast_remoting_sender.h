@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_CAST_REMOTING_SENDER_H_
 #define CHROME_BROWSER_MEDIA_CAST_REMOTING_SENDER_H_
 
+#include <queue>
+
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -12,28 +14,50 @@
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
+#include "media/mojo/interfaces/remoting.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/watcher.h"
 
 namespace cast {
 
 // RTP sender for a single Cast Remoting RTP stream. The client calls Send() to
-// instruct the sender to transmit the data using a CastTransport.
+// instruct the sender to read from a Mojo data pipe and transmit the data using
+// a CastTransport. This entire class executes on the IO BrowserThread.
 //
 // This class is instantiated and owned by CastTransportHostFilter in response
 // to IPC messages from an extension process to create RTP streams for the media
 // remoting use case. CastTransportHostFilter is also responsible for destroying
 // the instance in response to later IPCs.
 //
-// TODO(miu): Mojo service bindings/implementation to read from data pipes will
-// be added in a soon-upcoming change.
-
-class CastRemotingSender {
+// The Media Router provider extension controls the entire set-up process:
+// First, it uses the cast.streaming APIs to create remoting API streams (which
+// instantiates one or more CastRemotingSenders). Then, it sends a message via
+// Media Router to a CastRemotingConnector to indicate the bitstream transport
+// is ready. Finally, CastRemotingConnector calls FindAndBind() to look-up the
+// CastRemotingSender instances and establish the Mojo bindings and data flows.
+class CastRemotingSender : public media::mojom::RemotingDataStreamSender {
  public:
   // |transport| is expected to outlive this class.
-  explicit CastRemotingSender(
+  CastRemotingSender(
       scoped_refptr<media::cast::CastEnvironment> cast_environment,
       media::cast::CastTransport* transport,
       const media::cast::CastTransportRtpConfig& config);
-  ~CastRemotingSender();
+  ~CastRemotingSender() final;
+
+  // Look-up a CastRemotingSender instance by its |rtp_stream_id| and then bind
+  // to the given |request|. The client of the RemotingDataStreamSender will
+  // then instruct this CastRemotingSender when to read from the data |pipe| and
+  // send the data to the Cast Receiver. If the bind fails, or an error occurs
+  // reading from the data pipe during later operation, the |error_callback| is
+  // run.
+  //
+  // Threading note: This function is thread-safe, but its internal
+  // implementation runs on the IO BrowserThread. If |error_callback| is run, it
+  // will execute on the thread that called this function.
+  static void FindAndBind(int32_t rtp_stream_id,
+                          mojo::ScopedDataPipeConsumerHandle pipe,
+                          media::mojom::RemotingDataStreamSenderRequest request,
+                          const base::Closure& error_callback);
 
  private:
   // Friend class for unit tests.
@@ -41,19 +65,38 @@ class CastRemotingSender {
 
   class RemotingRtcpClient;
 
-  // Called to send the serialized frame data.
-  void SendFrame();
+  // media::mojom::RemotingDataStreamSender implementation. ConsumeDataChunk()
+  // and SendFrame() will push callbacks onto the back of the input queue, and
+  // these may or may not be processed at a later time. It depends on whether
+  // the data pipe has data available or the CastTransport can accept more
+  // frames. CancelInFlightData() is processed immediately, and will cause all
+  // pending operations to discard data when they are processed later.
+  void ConsumeDataChunk(uint32_t offset, uint32_t size,
+                        uint32_t total_payload_size) final;
+  void SendFrame() final;
+  void CancelInFlightData() final;
 
-  // Called to cancel all the in flight frames when seeking happens.
-  void CancelFramesInFlight();
+  // Attempt to run each pending input operation, popping the head of the input
+  // queue as each operation succeeds. |result| is the result code provided by
+  // the |pipe_watcher_|.
+  void ProcessInputQueue(MojoResult result);
+
+  // These are called via callbacks run from the input queue. They return false
+  // to indicate a retry attempt should be made later, either after the data
+  // pipe has more data or the CastTransport can accept another frame.
+  bool TryConsumeDataChunk(uint32_t offset, uint32_t size,
+                           uint32_t total_payload_size, bool discard_data);
+  bool TrySendFrame(bool discard_data);
 
   // These are called to deliver RTCP feedback from the receiver.
   void OnReceivedCastMessage(const media::cast::RtcpCastMessage& cast_feedback);
   void OnReceivedRtt(base::TimeDelta round_trip_time);
 
-  // Returns the number of frames that were sent but not yet acknowledged. This
-  // does not account for frames acknowledged out-of-order, and is always a high
-  // watermark estimate.
+  // Returns the number of frames that were sent to the CastTransport, but not
+  // yet acknowledged. This is always a high watermark estimate, as frames may
+  // have been acknowledged out-of-order. Also, this does not account for any
+  // frames queued-up in input pipeline (i.e., in the Mojo data pipe, nor in
+  // |next_frame_data_|).
   int NumberOfFramesInFlight() const;
 
   // Schedule and execute periodic checks for re-sending packets.  If no
@@ -71,7 +114,7 @@ class CastRemotingSender {
       media::cast::FrameId frame_id) const;
 
   // Unique identifier for the RTP stream and this CastRemotingSender.
-  const int32_t remoting_stream_id_;
+  const int32_t rtp_stream_id_;
 
   const scoped_refptr<media::cast::CastEnvironment> cast_environment_;
 
@@ -82,6 +125,17 @@ class CastRemotingSender {
   const uint32_t ssrc_;
 
   const bool is_audio_;
+
+  // Callback that is run to notify when a fatal error occurs.
+  base::Closure error_callback_;
+
+  // Mojo data pipe from which to consume data.
+  mojo::ScopedDataPipeConsumerHandle pipe_;
+
+  // Mojo binding for this instance. Implementation at the other end of the
+  // message pipe uses the RemotingDataStreamSender interface to control when
+  // this CastRemotingSender consumes from |pipe_|.
+  mojo::Binding<RemotingDataStreamSender> binding_;
 
   // This is the maximum delay that the sender should get ack from receiver.
   // Otherwise, sender will call ResendForKickstart().
@@ -110,7 +164,6 @@ class CastRemotingSender {
 
   // The next frame's payload data. Populated by one or more calls to
   // ConsumeDataChunk().
-  // TODO(miu): To be implemented in soon upcoming change.
   std::string next_frame_data_;
 
   // Ring buffer to keep track of recent frame RTP timestamps. This should
@@ -118,8 +171,20 @@ class CastRemotingSender {
   // ring buffer is the lower 8 bits of the FrameId.
   media::cast::RtpTimeTicks frame_rtp_timestamps_[256];
 
-  // This flag indicates whether CancelFramesInFlight() was called.
-  bool last_frame_was_canceled_;
+  // Queue of pending input operations. |input_queue_discards_remaining_|
+  // indicates the number of operations where data should be discarded (due to
+  // CancelInFlightData()).
+  std::queue<base::Callback<bool(bool)>> input_queue_;
+  size_t input_queue_discards_remaining_;
+
+  // Watches |pipe_| for more data to become available, and then calls
+  // ProcessInputQueue().
+  mojo::Watcher pipe_watcher_;
+
+  // Set to true if the first frame has not yet been sent, or if a
+  // CancelInFlightData() operation just completed. This causes TrySendFrame()
+  // to mark the next frame as the start of a new sequence.
+  bool flow_restart_pending_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<CastRemotingSender> weak_factory_;
