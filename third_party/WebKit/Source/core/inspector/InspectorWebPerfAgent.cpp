@@ -85,7 +85,10 @@ void InspectorWebPerfAgent::didProcessTask()
 {
 }
 
-void InspectorWebPerfAgent::ReportTaskTime(double startTime, double endTime)
+void InspectorWebPerfAgent::ReportTaskTime(
+    scheduler::TaskQueue*,
+    double startTime,
+    double endTime)
 {
     if (((endTime - startTime) * 1000) <= kLongTaskThresholdMillis)
         return;

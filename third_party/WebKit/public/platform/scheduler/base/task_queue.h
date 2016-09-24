@@ -7,7 +7,9 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "public/platform/WebCommon.h"
 
 namespace base {
@@ -101,9 +103,14 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // Returns true if the queue is completely empty.
   virtual bool IsEmpty() const = 0;
 
-  // Returns true if the queue has work that's ready to execute now. NOTE this
-  // must be called on the thread this TaskQueue was created by.
+  // Returns true if the queue has work that's ready to execute now.
+  // NOTE: this must be called on the thread this TaskQueue was created by.
   virtual bool HasPendingImmediateWork() const = 0;
+
+  // Returns requested run time of next delayed task, which is not ready
+  // to run. If there are no such tasks, returns base::nullopt.
+  // NOTE: this must be called on the thread this TaskQueue was created by.
+  virtual base::Optional<base::TimeTicks> GetNextScheduledWakeUp() = 0;
 
   // Can be called on any thread.
   virtual const char* GetName() const = 0;

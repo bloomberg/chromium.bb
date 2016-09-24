@@ -99,7 +99,7 @@ void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
   }
 
   if (observer_)
-    observer_->OnTimeDomainHasDelayedWork();
+    observer_->OnTimeDomainHasDelayedWork(queue);
 }
 
 void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {
@@ -108,7 +108,7 @@ void TimeDomain::RegisterAsUpdatableTaskQueue(internal::TaskQueueImpl* queue) {
     newly_updatable_.push_back(queue);
   }
   if (observer_)
-    observer_->OnTimeDomainHasImmediateWork();
+    observer_->OnTimeDomainHasImmediateWork(queue);
 }
 
 bool TimeDomain::UnregisterAsUpdatableTaskQueue(

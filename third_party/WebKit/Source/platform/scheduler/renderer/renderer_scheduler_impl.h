@@ -17,7 +17,6 @@
 #include "platform/scheduler/renderer/idle_time_estimator.h"
 #include "platform/scheduler/renderer/render_widget_signals.h"
 #include "platform/scheduler/renderer/task_cost_estimator.h"
-#include "platform/scheduler/renderer/throttling_helper.h"
 #include "platform/scheduler/renderer/user_model.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
@@ -34,7 +33,7 @@ namespace scheduler {
 class AutoAdvancingVirtualTimeDomain;
 class RenderWidgetSchedulingState;
 class WebViewSchedulerImpl;
-class ThrottlingHelper;
+class TaskQueueThrottler;
 
 class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     : public RendererScheduler,
@@ -131,7 +130,9 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
                                    const base::PendingTask& task) override;
 
   // TaskTimeObserver implementation:
-  void ReportTaskTime(double start_time, double end_time) override;
+  void ReportTaskTime(TaskQueue* task_queue,
+                      double start_time,
+                      double end_time) override;
 
   // QueueingTimeEstimator::Client implementation:
   void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time) override;
@@ -150,6 +151,9 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
 
   void AddTaskTimeObserver(TaskTimeObserver* task_time_observer);
   void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer);
+
+  // Snapshots this RendererScheduler for tracing.
+  void CreateTraceEventObjectSnapshot() const;
 
   // Test helpers.
   SchedulerHelper* GetSchedulerHelperForTesting();
@@ -170,7 +174,9 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
 
   AutoAdvancingVirtualTimeDomain* GetVirtualTimeDomain();
 
-  ThrottlingHelper* throttling_helper() { return throttling_helper_.get(); }
+  TaskQueueThrottler* task_queue_throttler() const {
+    return task_queue_throttler_.get();
+  }
 
  private:
   friend class RendererSchedulerImplTest;
@@ -250,6 +256,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
       base::TimeTicks optional_now) const;
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValueLocked(
       base::TimeTicks optional_now) const;
+  void CreateTraceEventObjectSnapshotLocked() const;
 
   static bool ShouldPrioritizeInputEvent(const WebInputEvent& web_input_event);
 
@@ -338,7 +345,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
 
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
-  std::unique_ptr<ThrottlingHelper> throttling_helper_;
+  std::unique_ptr<TaskQueueThrottler> task_queue_throttler_;
   RenderWidgetSignals render_widget_scheduler_signals_;
 
   const scoped_refptr<TaskQueue> control_task_runner_;

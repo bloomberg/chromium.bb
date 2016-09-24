@@ -89,7 +89,7 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
         renderer_scheduler_->NewTimerTaskRunner("frame_timer_tq");
     timer_task_queue_->SetBlameContext(blame_context_);
     if (ShouldThrottleTimers()) {
-      renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
+      renderer_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
           timer_task_queue_.get());
     }
     timer_web_task_runner_.reset(new WebTaskRunnerImpl(timer_task_queue_));
@@ -152,10 +152,10 @@ void WebFrameSchedulerImpl::UpdateTimerThrottling(bool was_throttled) {
   if (was_throttled == should_throttle || !timer_web_task_runner_)
     return;
   if (should_throttle) {
-    renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
+    renderer_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
         timer_task_queue_.get());
   } else {
-    renderer_scheduler_->throttling_helper()->DecreaseThrottleRefCount(
+    renderer_scheduler_->task_queue_throttler()->DecreaseThrottleRefCount(
         timer_task_queue_.get());
   }
 }

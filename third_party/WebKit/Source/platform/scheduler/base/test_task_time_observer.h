@@ -13,7 +13,9 @@ namespace scheduler {
 
 class TestTaskTimeObserver : public TaskTimeObserver {
  public:
-  void ReportTaskTime(double startTime, double endTime) override {}
+  void ReportTaskTime(TaskQueue* task_queue,
+                      double start_time,
+                      double end_time) override {}
 };
 
 }  // namespace scheduler

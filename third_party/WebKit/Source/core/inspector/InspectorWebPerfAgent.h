@@ -41,7 +41,10 @@ public:
     void didProcessTask() override;
 
     // scheduler::TaskTimeObserver implementation
-    void ReportTaskTime(double startTime, double endTime) override;
+    void ReportTaskTime(
+        scheduler::TaskQueue*,
+        double startTime,
+        double endTime) override;
 
 private:
     bool m_enabled;

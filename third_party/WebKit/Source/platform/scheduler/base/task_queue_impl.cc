@@ -341,6 +341,13 @@ bool TaskQueueImpl::HasPendingImmediateWork() const {
   return !any_thread().immediate_incoming_queue.empty();
 }
 
+base::Optional<base::TimeTicks> TaskQueueImpl::GetNextScheduledWakeUp() {
+  if (main_thread_only().delayed_incoming_queue.empty())
+    return base::nullopt;
+
+  return main_thread_only().delayed_incoming_queue.top().delayed_run_time;
+}
+
 void TaskQueueImpl::WakeUpForDelayedWork(LazyNow* lazy_now) {
   // Enqueue all delayed tasks that should be running now, skipping any that
   // have been canceled.
@@ -516,22 +523,26 @@ void TaskQueueImpl::NotifyDidProcessTask(
 }
 
 void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
-  base::AutoLock lock(any_thread_lock_);
-  DCHECK(time_domain);
-  // NOTE this is similar to checking |any_thread().task_queue_manager| but the
-  // TaskQueueSelectorTests constructs TaskQueueImpl directly with a null
-  // task_queue_manager.  Instead we check |any_thread().time_domain| which is
-  // another way of asserting that UnregisterTaskQueue has not been called.
-  DCHECK(any_thread().time_domain);
-  if (!any_thread().time_domain)
-    return;
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (time_domain == main_thread_only().time_domain)
-    return;
+  {
+    base::AutoLock lock(any_thread_lock_);
+    DCHECK(time_domain);
+    // NOTE this is similar to checking |any_thread().task_queue_manager| but
+    // the TaskQueueSelectorTests constructs TaskQueueImpl directly with a null
+    // task_queue_manager.  Instead we check |any_thread().time_domain| which is
+    // another way of asserting that UnregisterTaskQueue has not been called.
+    DCHECK(any_thread().time_domain);
+    if (!any_thread().time_domain)
+      return;
+    DCHECK(main_thread_checker_.CalledOnValidThread());
+    if (time_domain == main_thread_only().time_domain)
+      return;
 
+    any_thread().time_domain = time_domain;
+  }
+  // We rely here on TimeDomain::MigrateQueue being thread-safe to use with
+  // TimeDomain::Register/UnregisterAsUpdatableTaskQueue.
   main_thread_only().time_domain->MigrateQueue(this, time_domain);
   main_thread_only().time_domain = time_domain;
-  any_thread().time_domain = time_domain;
 }
 
 TimeDomain* TaskQueueImpl::GetTimeDomain() const {

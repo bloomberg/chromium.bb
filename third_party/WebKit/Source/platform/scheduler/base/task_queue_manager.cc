@@ -233,6 +233,10 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
     if (!SelectWorkQueueToService(&work_queue))
       break;
 
+    // TaskQueueManager guarantees that task queue will not be deleted
+    // when we are in DoWork (but WorkQueue may be deleted).
+    internal::TaskQueueImpl* task_queue = work_queue->task_queue();
+
     switch (ProcessTaskFromWorkQueue(work_queue)) {
       case ProcessTaskResult::DEFERRED:
         // If a task was deferred, try again with another task.
@@ -247,9 +251,10 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
     if (!delegate_->IsNested() && task_start_time != base::TimeTicks()) {
       // Only report top level task durations.
       base::TimeTicks task_end_time = lazy_now.Now();
-      FOR_EACH_OBSERVER(TaskTimeObserver, task_time_observers_,
-                        ReportTaskTime(MonotonicTimeInSeconds(task_start_time),
-                                       MonotonicTimeInSeconds(task_end_time)));
+      FOR_EACH_OBSERVER(
+          TaskTimeObserver, task_time_observers_,
+          ReportTaskTime(task_queue, MonotonicTimeInSeconds(task_start_time),
+                         MonotonicTimeInSeconds(task_end_time)));
       task_start_time = task_end_time;
     }
 

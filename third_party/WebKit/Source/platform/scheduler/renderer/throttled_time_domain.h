@@ -12,7 +12,7 @@ namespace blink {
 namespace scheduler {
 
 // A time domain for throttled tasks. behaves like an RealTimeDomain except it
-// relies on the owner (ThrottlingHelper) to schedule wakeups.
+// relies on the owner (TaskQueueThrottler) to schedule wakeups.
 class BLINK_PLATFORM_EXPORT ThrottledTimeDomain : public RealTimeDomain {
  public:
   ThrottledTimeDomain(TimeDomain::Observer* observer,

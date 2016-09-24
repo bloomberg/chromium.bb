@@ -68,7 +68,7 @@ TEST_F(InspectorWebPerfAgentTest, SingleScriptInTask)
     EXPECT_EQ(1, numUniqueFrameContextsSeen());
     m_agent->didExecuteScript();
     m_agent->didProcessTask();
-    m_agent->ReportTaskTime(3719349.445172, 3719349.5561923); // Long task
+    m_agent->ReportTaskTime(nullptr, 3719349.445172, 3719349.5561923); // Long task
     EXPECT_EQ(1, numUniqueFrameContextsSeen());
     EXPECT_EQ("https://example.com/foo", frameContextURL());
 }
@@ -86,7 +86,7 @@ TEST_F(InspectorWebPerfAgentTest, MultipleScriptsInTask_SingleContext)
     EXPECT_EQ(1, numUniqueFrameContextsSeen());
     m_agent->didExecuteScript();
     m_agent->didProcessTask();
-    m_agent->ReportTaskTime(3719349.445172, 3719349.5561923); // Long task
+    m_agent->ReportTaskTime(nullptr, 3719349.445172, 3719349.5561923); // Long task
     EXPECT_EQ(1, numUniqueFrameContextsSeen());
     EXPECT_EQ("https://example.com/foo", frameContextURL());
 }
@@ -104,7 +104,7 @@ TEST_F(InspectorWebPerfAgentTest, MultipleScriptsInTask_MultipleContexts)
     EXPECT_EQ(2, numUniqueFrameContextsSeen());
     m_agent->didExecuteScript();
     m_agent->didProcessTask();
-    m_agent->ReportTaskTime(3719349.445172, 3719349.5561923); // Long task
+    m_agent->ReportTaskTime(nullptr, 3719349.445172, 3719349.5561923); // Long task
     EXPECT_EQ(2, numUniqueFrameContextsSeen());
     EXPECT_EQ("", frameContextURL());
 }
@@ -115,10 +115,10 @@ TEST_F(InspectorWebPerfAgentTest, NoScriptInLongTask)
     m_agent->willExecuteScript(executionContext());
     m_agent->didExecuteScript();
     m_agent->didProcessTask();
-    m_agent->ReportTaskTime(3719349.445172, 3719349.445182);
+    m_agent->ReportTaskTime(nullptr, 3719349.445172, 3719349.445182);
     m_agent->willProcessTask();
     m_agent->didProcessTask();
-    m_agent->ReportTaskTime(3719349.445172, 3719349.5561923); // Long task
+    m_agent->ReportTaskTime(nullptr, 3719349.445172, 3719349.5561923); // Long task
     // Without presence of Script, FrameContext URL is not available
     EXPECT_EQ(0, numUniqueFrameContextsSeen());
 }

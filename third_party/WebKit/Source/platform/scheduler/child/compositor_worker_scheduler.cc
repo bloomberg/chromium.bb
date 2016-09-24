@@ -63,6 +63,11 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     return false;
   };
 
+  base::Optional<base::TimeTicks> GetNextScheduledWakeUp() override {
+    NOTREACHED();
+    return base::nullopt;
+  }
+
   const char* GetName() const override {
     NOTREACHED();
     return nullptr;

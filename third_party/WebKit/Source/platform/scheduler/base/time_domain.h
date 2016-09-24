@@ -42,11 +42,13 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
 
     // Called when an empty TaskQueue registered with this TimeDomain has a task
     // enqueued.
-    virtual void OnTimeDomainHasImmediateWork() = 0;
+    // |task_queue| - task queue which has immediate work scheduled.
+    virtual void OnTimeDomainHasImmediateWork(TaskQueue* task_queue) = 0;
 
     // Called when a TaskQueue registered with this TimeDomain has a delayed
     // task enqueued.
-    virtual void OnTimeDomainHasDelayedWork() = 0;
+    // |task_queue| - task queue which has delayed work scheduled.
+    virtual void OnTimeDomainHasDelayedWork(TaskQueue* task_queue) = 0;
   };
 
   explicit TimeDomain(Observer* observer);
@@ -78,6 +80,7 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
   // Migrates |queue| from this time domain to |destination_time_domain|.
+  // Main-thread only.
   void MigrateQueue(internal::TaskQueueImpl* queue,
                     TimeDomain* destination_time_domain);
 

@@ -64,7 +64,7 @@ class BLINK_PLATFORM_EXPORT SchedulerHelper
   // Returns true if Shutdown() has been called. Otherwise returns false.
   bool IsShutdown() const { return !task_queue_manager_.get(); }
 
-  void CheckOnValidThread() const {
+  inline void CheckOnValidThread() const {
     DCHECK(thread_checker_.CalledOnValidThread());
   }
 

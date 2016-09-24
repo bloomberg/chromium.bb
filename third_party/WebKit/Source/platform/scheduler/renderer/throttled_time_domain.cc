@@ -19,7 +19,7 @@ const char* ThrottledTimeDomain::GetName() const {
 
 void ThrottledTimeDomain::RequestWakeup(base::TimeTicks now,
                                         base::TimeDelta delay) {
-  // We assume the owner (i.e. ThrottlingHelper) will manage wakeups on our
+  // We assume the owner (i.e. TaskQueueThrottler) will manage wakeups on our
   // behalf.
 }
 
@@ -33,7 +33,8 @@ bool ThrottledTimeDomain::MaybeAdvanceTime() {
     return true;  // Causes DoWork to post a continuation.
 
   // Unlike RealTimeDomain::MaybeAdvanceTime we don't request a wake up here, we
-  // assume the owner (i.e. ThrottlingHelper) will manage wakeups on our behalf.
+  // assume the owner (i.e. TaskQueueThrottler) will manage wakeups on our
+  // behalf.
   return false;
 }
 

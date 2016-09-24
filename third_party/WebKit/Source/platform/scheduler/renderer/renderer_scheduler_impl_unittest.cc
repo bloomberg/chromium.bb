@@ -2127,7 +2127,7 @@ TEST_F(RendererSchedulerImplTest, SuspendAndThrottleTimerQueue) {
 
   scheduler_->SuspendTimerQueue();
   RunUntilIdle();
-  scheduler_->throttling_helper()->IncreaseThrottleRefCount(
+  scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
       static_cast<TaskQueue*>(timer_task_runner_.get()));
   RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
@@ -2137,7 +2137,7 @@ TEST_F(RendererSchedulerImplTest, ThrottleAndSuspendTimerQueue) {
   std::vector<std::string> run_order;
   PostTestTasks(&run_order, "T1 T2");
 
-  scheduler_->throttling_helper()->IncreaseThrottleRefCount(
+  scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
       static_cast<TaskQueue*>(timer_task_runner_.get()));
   RunUntilIdle();
   scheduler_->SuspendTimerQueue();
@@ -2911,7 +2911,7 @@ TEST_F(RendererSchedulerImplTest,
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
 
   base::TimeTicks first_throttled_run_time =
-      ThrottlingHelper::ThrottledRunTime(clock_->NowTicks());
+      TaskQueueThrottler::AlignedThrottledRunTime(clock_->NowTicks());
 
   size_t count = 0;
   // With the compositor task taking 10ms, there is not enough time to run this
@@ -2946,7 +2946,7 @@ TEST_F(RendererSchedulerImplTest,
     // when the system realizes the task is expensive.
     bool expect_queue_throttled = (i > 0);
     EXPECT_EQ(expect_queue_throttled,
-              scheduler_->throttling_helper()->IsThrottled(
+              scheduler_->task_queue_throttler()->IsThrottled(
                   scheduler_->TimerTaskRunner().get()))
         << "i = " << i;
 
@@ -2973,7 +2973,7 @@ TEST_F(RendererSchedulerImplTest,
   SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
 
   base::TimeTicks first_throttled_run_time =
-      ThrottlingHelper::ThrottledRunTime(clock_->NowTicks());
+      TaskQueueThrottler::AlignedThrottledRunTime(clock_->NowTicks());
 
   size_t count = 0;
   // With the compositor task taking 10ms, there is not enough time to run this

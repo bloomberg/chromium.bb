@@ -213,8 +213,8 @@ class MockObserver : public TimeDomain::Observer {
  public:
   ~MockObserver() override {}
 
-  MOCK_METHOD0(OnTimeDomainHasImmediateWork, void());
-  MOCK_METHOD0(OnTimeDomainHasDelayedWork, void());
+  MOCK_METHOD1(OnTimeDomainHasImmediateWork, void(TaskQueue*));
+  MOCK_METHOD1(OnTimeDomainHasDelayedWork, void(TaskQueue*));
 };
 }  // namespace
 
@@ -229,12 +229,12 @@ class TimeDomainWithObserverTest : public TimeDomainTest {
 };
 
 TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasImmediateWork) {
-  EXPECT_CALL(*observer_, OnTimeDomainHasImmediateWork());
+  EXPECT_CALL(*observer_, OnTimeDomainHasImmediateWork(task_queue_.get()));
   time_domain_->RegisterAsUpdatableTaskQueue(task_queue_.get());
 }
 
 TEST_F(TimeDomainWithObserverTest, OnTimeDomainHasDelayedWork) {
-  EXPECT_CALL(*observer_, OnTimeDomainHasDelayedWork());
+  EXPECT_CALL(*observer_, OnTimeDomainHasDelayedWork(task_queue_.get()));
   EXPECT_CALL(*time_domain_.get(), RequestWakeup(_, _));
   base::TimeTicks now = time_domain_->Now();
   time_domain_->ScheduleDelayedWork(

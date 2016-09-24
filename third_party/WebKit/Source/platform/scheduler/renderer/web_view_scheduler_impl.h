@@ -14,6 +14,7 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebViewScheduler.h"
+#include "platform/scheduler/renderer/task_queue_throttler.h"
 
 namespace base {
 namespace trace_event {
