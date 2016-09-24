@@ -26,6 +26,16 @@ class SEATBELT_EXPORT Seatbelt {
 
   static void FreeError(char* errorbuf);
 
+  static const char* kProfileNoInternet;
+
+  static const char* kProfileNoNetwork;
+
+  static const char* kProfileNoWrite;
+
+  static const char* kProfileNoWriteExceptTemporary;
+
+  static const char* kProfilePureComputation;
+
  private:
   Seatbelt();
   DISALLOW_COPY_AND_ASSIGN(Seatbelt);

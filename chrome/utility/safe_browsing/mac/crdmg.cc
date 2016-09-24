@@ -24,6 +24,7 @@
 #include "chrome/utility/safe_browsing/mac/hfs.h"
 #include "chrome/utility/safe_browsing/mac/read_stream.h"
 #include "chrome/utility/safe_browsing/mac/udif.h"
+#include "sandbox/mac/seatbelt.h"
 
 // This executable only works on 10.10+, so unconditionally use these functions
 // to make sandboxing easier.
@@ -156,14 +157,11 @@ bool SafeDMG::EnableSandbox() {
   }
 
   char* sbox_error;
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-  if (sandbox_init(sbox_profile.c_str(), 0, &sbox_error) != 0) {
+  if (sandbox::Seatbelt::Init(sbox_profile.c_str(), 0, &sbox_error) != 0) {
     LOG(ERROR) << "Failed to initialize sandbox: " << sbox_error;
-    sandbox_free_error(sbox_error);
+    sandbox::Seatbelt::FreeError(sbox_error);
     return false;
   }
-#pragma clang diagnostic pop
 
   return true;
 }

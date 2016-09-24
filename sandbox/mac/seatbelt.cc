@@ -15,6 +15,17 @@ int sandbox_init_with_parameters(const char* profile,
 
 namespace sandbox {
 
+// Initialize the static member variables.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+const char* Seatbelt::kProfileNoInternet = kSBXProfileNoInternet;
+const char* Seatbelt::kProfileNoNetwork = kSBXProfileNoNetwork;
+const char* Seatbelt::kProfileNoWrite = kSBXProfileNoWrite;
+const char* Seatbelt::kProfileNoWriteExceptTemporary =
+    kSBXProfileNoWriteExceptTemporary;
+const char* Seatbelt::kProfilePureComputation = kSBXProfilePureComputation;
+#pragma clang diagnostic pop
+
 // static
 int Seatbelt::Init(const char* profile, uint64_t flags, char** errorbuf) {
 // OS X deprecated these functions, but did not provide a suitable replacement,

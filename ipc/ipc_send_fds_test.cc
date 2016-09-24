@@ -196,8 +196,8 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendFdsSandboxedClient) {
 
   // Enable the sandbox.
   char* error_buff = NULL;
-  int error = sandbox::Seatbelt::Init(kSBXProfilePureComputation, SANDBOX_NAMED,
-                                      &error_buff);
+  int error = sandbox::Seatbelt::Init(
+      sandbox::Seatbelt::kProfilePureComputation, SANDBOX_NAMED, &error_buff);
   bool success = (error == 0 && error_buff == NULL);
   if (!success)
     return -1;
