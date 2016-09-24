@@ -125,12 +125,8 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   bool has_sbr_;
   std::map<uint32_t, bool> is_track_encrypted_;
 
-  // Tracks the number of MEDIA_LOGs for skipping top level boxes. Useful to
-  // prevent log spam.
-  int num_top_level_box_skipped_;
-
   // Tracks the number of MEDIA_LOGS for skipping empty trun samples.
-  int num_emtpy_samples_skipped_;
+  int num_empty_samples_skipped_;
 
   DISALLOW_COPY_AND_ASSIGN(MP4StreamParser);
 };

@@ -35,7 +35,7 @@ namespace mp4 {
 
 namespace {
 const int kMaxEmptySampleLogs = 20;
-}
+}  // namespace
 
 MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
                                  bool has_sbr)
@@ -47,8 +47,7 @@ MP4StreamParser::MP4StreamParser(const std::set<int>& audio_object_types,
       has_video_(false),
       audio_object_types_(audio_object_types),
       has_sbr_(has_sbr),
-      num_top_level_box_skipped_(0),
-      num_emtpy_samples_skipped_(0) {}
+      num_empty_samples_skipped_(0) {}
 
 MP4StreamParser::~MP4StreamParser() {}
 
@@ -564,7 +563,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueueMap* buffers, bool* err) {
   if (runs_->sample_size() == 0) {
     // Generally not expected, but spec allows it. Code below this block assumes
     // the current sample is not empty.
-    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_emtpy_samples_skipped_,
+    LIMITED_MEDIA_LOG(DEBUG, media_log_, num_empty_samples_skipped_,
                       kMaxEmptySampleLogs)
         << " Skipping 'trun' sample with size of 0.";
     runs_->AdvanceSample();
