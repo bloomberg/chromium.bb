@@ -391,6 +391,13 @@ void MockWebRTCPeerConnectionHandler::getStats(
                  base::Owned(new WebRTCStatsRequest(request)), response));
 }
 
+void MockWebRTCPeerConnectionHandler::getStats(
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+  // TODO(hbos): When blink::RTCPeerConnection starts using the new |getStats|
+  // this needs to be implemented. crbug.com/627816.
+  NOTREACHED();
+}
+
 void MockWebRTCPeerConnectionHandler::ReportCreationOfDataChannel() {
   WebRTCDataChannelInit init;
   WebRTCDataChannelHandler* remote_data_channel =

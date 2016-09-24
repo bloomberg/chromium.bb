@@ -66,6 +66,7 @@ public:
 
     virtual WebString name() const = 0;
     virtual WebRTCStatsMemberType type() const = 0;
+    virtual bool isDefined() const = 0;
 
     // Value getters. No conversion is performed; the function must match the member's |type|.
     virtual int32_t valueInt32() const = 0;
@@ -80,6 +81,13 @@ public:
     virtual WebVector<uint64_t> valueSequenceUint64() const = 0;
     virtual WebVector<double> valueSequenceDouble() const = 0;
     virtual WebVector<WebString> valueSequenceString() const = 0;
+};
+
+class WebRTCStatsReportCallback {
+public:
+    virtual ~WebRTCStatsReportCallback() {}
+
+    virtual void OnStatsDelivered(std::unique_ptr<WebRTCStatsReport>) = 0;
 };
 
 } // namespace blink

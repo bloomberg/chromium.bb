@@ -209,6 +209,17 @@ bool MockPeerConnectionImpl::GetStats(
   return true;
 }
 
+void MockPeerConnectionImpl::GetStats(
+    webrtc::RTCStatsCollectorCallback* callback) {
+  DCHECK(callback);
+  DCHECK(stats_report_);
+  callback->OnStatsDelivered(stats_report_);
+}
+
+void MockPeerConnectionImpl::SetGetStatsReport(webrtc::RTCStatsReport* report) {
+  stats_report_ = report;
+}
+
 const webrtc::SessionDescriptionInterface*
 MockPeerConnectionImpl::local_description() const {
   return local_desc_.get();

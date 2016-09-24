@@ -128,57 +128,73 @@ blink::WebRTCStatsMemberType RTCStatsMember::type() const {
   }
 }
 
+bool RTCStatsMember::isDefined() const {
+  return member_->is_defined();
+}
+
 int32_t RTCStatsMember::valueInt32() const {
+  DCHECK(isDefined());
   return *member_->cast_to<webrtc::RTCStatsMember<int32_t>>();
 }
 
 uint32_t RTCStatsMember::valueUint32() const {
+  DCHECK(isDefined());
   return *member_->cast_to<webrtc::RTCStatsMember<uint32_t>>();
 }
 
 int64_t RTCStatsMember::valueInt64() const {
+  DCHECK(isDefined());
   return *member_->cast_to<webrtc::RTCStatsMember<int64_t>>();
 }
 
 uint64_t RTCStatsMember::valueUint64() const {
+  DCHECK(isDefined());
   return *member_->cast_to<webrtc::RTCStatsMember<uint64_t>>();
 }
 
 double RTCStatsMember::valueDouble() const {
+  DCHECK(isDefined());
   return *member_->cast_to<webrtc::RTCStatsMember<double>>();
 }
 
 blink::WebString RTCStatsMember::valueString() const {
+  DCHECK(isDefined());
   return blink::WebString::fromUTF8(
       *member_->cast_to<webrtc::RTCStatsMember<std::string>>());
 }
 
 blink::WebVector<int32_t> RTCStatsMember::valueSequenceInt32() const {
+  DCHECK(isDefined());
   return blink::WebVector<int32_t>(
       *member_->cast_to<webrtc::RTCStatsMember<std::vector<int32_t>>>());
 }
 
 blink::WebVector<uint32_t> RTCStatsMember::valueSequenceUint32() const {
+  DCHECK(isDefined());
   return blink::WebVector<uint32_t>(
       *member_->cast_to<webrtc::RTCStatsMember<std::vector<uint32_t>>>());
 }
 
 blink::WebVector<int64_t> RTCStatsMember::valueSequenceInt64() const {
+  DCHECK(isDefined());
   return blink::WebVector<int64_t>(
       *member_->cast_to<webrtc::RTCStatsMember<std::vector<int64_t>>>());
 }
 
 blink::WebVector<uint64_t> RTCStatsMember::valueSequenceUint64() const {
+  DCHECK(isDefined());
   return blink::WebVector<uint64_t>(
       *member_->cast_to<webrtc::RTCStatsMember<std::vector<uint64_t>>>());
 }
 
 blink::WebVector<double> RTCStatsMember::valueSequenceDouble() const {
+  DCHECK(isDefined());
   return blink::WebVector<double>(
       *member_->cast_to<webrtc::RTCStatsMember<std::vector<double>>>());
 }
 
 blink::WebVector<blink::WebString> RTCStatsMember::valueSequenceString() const {
+  DCHECK(isDefined());
   const std::vector<std::string>& sequence =
       *member_->cast_to<webrtc::RTCStatsMember<std::vector<std::string>>>();
   blink::WebVector<blink::WebString> web_sequence(sequence.size());

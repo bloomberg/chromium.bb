@@ -30,6 +30,7 @@
 #include "content/renderer/media/rtc_data_channel_handler.h"
 #include "content/renderer/media/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/rtc_stats.h"
 #include "content/renderer/media/webrtc/webrtc_media_stream_adapter.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
@@ -671,6 +672,57 @@ void GetStatsOnSignalingThread(
     DVLOG(1) << "GetStats failed.";
     observer->OnComplete(StatsReports());
   }
+}
+
+// A stats collector callback.
+// It is invoked on the WebRTC signaling thread and will post a task to invoke
+// |callback| on the thread given in the |main_thread| argument.
+// The argument to the callback will be a |blink::WebRTCStatsReport|.
+class GetRTCStatsCallback : public webrtc::RTCStatsCollectorCallback {
+ public:
+  static rtc::scoped_refptr<GetRTCStatsCallback> Create(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+      std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+    return rtc::scoped_refptr<GetRTCStatsCallback>(
+        new rtc::RefCountedObject<GetRTCStatsCallback>(
+            main_thread, callback.release()));
+  }
+
+  void OnStatsDelivered(
+      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override {
+    main_thread_->PostTask(FROM_HERE,
+        base::Bind(&GetRTCStatsCallback::OnStatsDeliveredOnMainThread,
+            this, report));
+  }
+
+  void OnStatsDeliveredOnMainThread(
+      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+    DCHECK(main_thread_->BelongsToCurrentThread());
+    DCHECK(report);
+    callback_->OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport>(
+        new RTCStatsReport(make_scoped_refptr(report.get()))));
+  }
+
+ protected:
+  GetRTCStatsCallback(
+      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+      blink::WebRTCStatsReportCallback* callback)
+      : main_thread_(main_thread),
+        callback_(callback) {
+  }
+
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  std::unique_ptr<blink::WebRTCStatsReportCallback> callback_;
+};
+
+void GetRTCStatsOnSignalingThread(
+    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+    scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+  TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
+
+  native_peer_connection->GetStats(
+      GetRTCStatsCallback::Create(main_thread, std::move(callback)));
 }
 
 class PeerConnectionUMAObserver : public webrtc::UMAObserver {
@@ -1503,7 +1555,10 @@ void RTCPeerConnectionHandler::getStats(
            track_id, track_type);
 }
 
-// TODO(tommi): It's weird to have three {g|G}etStats methods.  Clean this up.
+// TODO(tommi,hbos): It's weird to have three {g|G}etStats methods for the
+// legacy stats collector API and even more for the new stats API. Clean it up.
+// TODO(hbos): Rename old |getStats| and related functions to "getLegacyStats",
+// rename new |getStats|'s helper functions from "GetRTCStats*" to "GetStats*".
 void RTCPeerConnectionHandler::GetStats(
     webrtc::StatsObserver* observer,
     webrtc::PeerConnectionInterface::StatsOutputLevel level,
@@ -1513,6 +1568,15 @@ void RTCPeerConnectionHandler::GetStats(
   signaling_thread()->PostTask(FROM_HERE,
       base::Bind(&GetStatsOnSignalingThread, native_peer_connection_, level,
                  make_scoped_refptr(observer), track_id, track_type));
+}
+
+void RTCPeerConnectionHandler::getStats(
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  signaling_thread()->PostTask(FROM_HERE,
+      base::Bind(&GetRTCStatsOnSignalingThread,
+          base::ThreadTaskRunnerHandle::Get(), native_peer_connection_,
+          base::Passed(&callback)));
 }
 
 void RTCPeerConnectionHandler::CloseClientPeerConnection() {

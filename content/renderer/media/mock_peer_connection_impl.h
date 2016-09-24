@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/stats/rtcstatsreport.h"
 
 namespace content {
 
@@ -41,9 +42,12 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   bool GetStats(webrtc::StatsObserver* observer,
                 webrtc::MediaStreamTrackInterface* track,
                 StatsOutputLevel level) override;
+  void GetStats(webrtc::RTCStatsCollectorCallback* callback) override;
 
-  // Set Call this function to make sure next call to GetStats fail.
+  // Call this function to make sure next call to legacy GetStats fail.
   void SetGetStatsResult(bool result) { getstats_result_ = result; }
+  // Set the report that |GetStats(RTCStatsCollectorCallback*)| returns.
+  void SetGetStatsReport(webrtc::RTCStatsReport* report);
 
   SignalingState signaling_state() override {
     NOTIMPLEMENTED();
@@ -132,6 +136,7 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
   int sdp_mline_index_;
   std::string ice_sdp_;
   webrtc::PeerConnectionObserver* observer_;
+  rtc::scoped_refptr<webrtc::RTCStatsReport> stats_report_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);
 };

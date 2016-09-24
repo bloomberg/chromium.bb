@@ -59,6 +59,7 @@ class MockWebRTCPeerConnectionHandler
                  const blink::WebMediaConstraints& constraints) override;
   void removeStream(const blink::WebMediaStream& stream) override;
   void getStats(const blink::WebRTCStatsRequest& request) override;
+  void getStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override;
   blink::WebRTCDataChannelHandler* createDataChannel(
       const blink::WebString& label,
       const blink::WebRTCDataChannelInit& init) override;

@@ -146,6 +146,8 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
                  const blink::WebMediaConstraints& options) override;
   void removeStream(const blink::WebMediaStream& stream) override;
   void getStats(const blink::WebRTCStatsRequest& request) override;
+  void getStats(
+      std::unique_ptr<blink::WebRTCStatsReportCallback> callback) override;
   blink::WebRTCDataChannelHandler* createDataChannel(
       const blink::WebString& label,
       const blink::WebRTCDataChannelInit& init) override;
