@@ -7722,13 +7722,8 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       state_.EnableDisableFramebufferSRGB(enable_srgb);
     }
 
-    // TODO(yunchao) Need to revisit here. In GLES spec, blitFramebuffer
-    // should do scissor test per fragment operation.
-    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, false);
     BlitFramebufferHelper(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-    state_.SetDeviceCapabilityState(GL_SCISSOR_TEST,
-                                  state_.enable_flags.scissor_test);
     return;
   }
 
@@ -7749,7 +7744,8 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
                         GetBoundReadFramebufferServiceId(),
                         src_internal_format, src_format, src_type,
                         GetBoundDrawFramebufferServiceId(),
-                        read_buffer_has_srgb, draw_buffers_has_srgb);
+                        read_buffer_has_srgb, draw_buffers_has_srgb,
+                        state_.enable_flags.scissor_test);
 }
 
 bool GLES2DecoderImpl::InitializeSRGBConverter(

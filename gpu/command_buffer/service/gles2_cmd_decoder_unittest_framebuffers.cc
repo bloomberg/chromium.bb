@@ -3684,12 +3684,10 @@ TEST_P(GLES3DecoderTest, BlitFramebufferDisabledReadBuffer) {
                                             1.0f,                 // depth
                                             false,  // scissor test
                                             0, 0, 128, 64);
-    SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, false);
     EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1,
                                       GL_COLOR_BUFFER_BIT, GL_LINEAR))
         .Times(1)
         .RetiresOnSaturation();
-    SetupExpectationsForEnableDisable(GL_SCISSOR_TEST, false);
     BlitFramebufferCHROMIUM cmd;
     cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));

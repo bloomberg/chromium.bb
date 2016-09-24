@@ -48,7 +48,8 @@ class GPU_EXPORT SRGBConverter {
       GLenum src_framebuffer_type,
       GLuint dst_framebuffer,
       bool decode,
-      bool encode);
+      bool encode,
+      bool enable_scissor_test);
 
  private:
   void InitializeSRGBConverterProgram();

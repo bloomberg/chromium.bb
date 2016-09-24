@@ -185,7 +185,8 @@ void SRGBConverter::Blit(
     GLenum src_framebuffer_type,
     GLuint dst_framebuffer,
     bool decode,
-    bool encode) {
+    bool encode,
+    bool enable_scissor_test) {
   // This function blits srgb image in src fb to srgb image in dst fb.
   // The steps are:
   // 1) Copy and crop pixels from source srgb image to the 1st texture(srgb).
@@ -283,6 +284,10 @@ void SRGBConverter::Blit(
   } else {
     // Set approriate draw framebuffer if encoding is skipped.
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, dst_framebuffer);
+
+    if (enable_scissor_test) {
+      glEnable(GL_SCISSOR_TEST);
+    }
   }
 
   glBlitFramebuffer(
@@ -308,6 +313,10 @@ void SRGBConverter::Blit(
 
     glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[0]);
     glBindVertexArrayOES(srgb_converter_vao_);
+
+    if (enable_scissor_test) {
+      glEnable(GL_SCISSOR_TEST);
+    }
 
     glDrawArrays(GL_TRIANGLES, 0, 6);
   }
