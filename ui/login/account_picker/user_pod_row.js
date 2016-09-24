@@ -771,7 +771,9 @@ cr.define('login', function() {
       this.userClickAuthAllowed_ = false;
 
       // Lazy load the assets needed for the polymer submit button.
-      if (cr.isChromeOS && !cr.ui.login.ResourceLoader.alreadyLoadedAssets(
+      var isLockScreen = (Oobe.getInstance().displayType == DISPLAY_TYPE.LOCK);
+      if (cr.isChromeOS && isLockScreen &&
+          !cr.ui.login.ResourceLoader.alreadyLoadedAssets(
               'custom-elements-user-pod')) {
         cr.ui.login.ResourceLoader.registerAssets({
             id: 'custom-elements-user-pod',
@@ -3247,7 +3249,6 @@ cr.define('login', function() {
       if (!this.isFocused(podToFocus))
         Oobe.clearErrors();
 
-      var hadFocus = !!this.focusedPod_;
       this.focusedPod_ = podToFocus;
       if (podToFocus) {
         // Only show the keyboard if it is fully loaded.
