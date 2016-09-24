@@ -49,8 +49,8 @@
          disable_discard_framebuffer)                        \
   GPU_OP(DISABLE_DXGI_ZERO_COPY_VIDEO,                       \
          disable_dxgi_zero_copy_video)                       \
-  GPU_OP(DISABLE_NV12_DXGI_VIDEO,                            \
-         disable_nv12_dxgi_video)                            \
+  GPU_OP(DISABLE_ES3_GL_CONTEXT,                             \
+         disable_es3_gl_context)                             \
   GPU_OP(DISABLE_EXT_DRAW_BUFFERS,                           \
          disable_ext_draw_buffers)                           \
   GPU_OP(DISABLE_FRAMEBUFFER_CMAA,                           \
@@ -59,6 +59,8 @@
          disable_gl_rgb_format)                              \
   GPU_OP(DISABLE_MULTIMONITOR_MULTISAMPLING,                 \
          disable_multimonitor_multisampling)                 \
+  GPU_OP(DISABLE_NV12_DXGI_VIDEO,                            \
+         disable_nv12_dxgi_video)                            \
   GPU_OP(DISABLE_OVERLAY_CA_LAYERS,                          \
          disable_overlay_ca_layers)                          \
   GPU_OP(DISABLE_POST_SUB_BUFFERS_FOR_ONSCREEN_SURFACES,     \

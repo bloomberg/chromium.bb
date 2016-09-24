@@ -52,9 +52,9 @@ bool GLContextEGL::Initialize(
   }
 
   EGLint context_client_version = 2;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnsafeES3APIs) &&
-      (config_renderable_type & EGL_OPENGL_ES3_BIT) != 0) {
+  if ((config_renderable_type & EGL_OPENGL_ES3_BIT) != 0 &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableES3GLContext)) {
     context_client_version = 3;
   }
 
@@ -85,7 +85,6 @@ bool GLContextEGL::Initialize(
                << GetLastEGLErrorString();
     return false;
   }
-
 
   context_ = eglCreateContext(
       display_,
