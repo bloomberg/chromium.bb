@@ -114,7 +114,13 @@ bool IsGpuMemoryBufferFormatSupported(gfx::BufferFormat format,
     case gfx::BufferFormat::YVU_420:
       return true;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
+      // TODO(dcastagna): Determine ycbcr_420v_image on CrOS at runtime
+      // querying minigbm. crbug.com/646148
+      return true;
+#else
       return capabilities.image_ycbcr_420v;
+#endif
   }
 
   NOTREACHED();

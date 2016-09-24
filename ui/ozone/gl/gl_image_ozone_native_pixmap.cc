@@ -20,6 +20,7 @@
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
 #define DRM_FORMAT_YV12 FOURCC('Y', 'V', '1', '2')
+#define DRM_FORMAT_NV12 FOURCC('N', 'V', '1', '2')
 
 namespace ui {
 namespace {
@@ -32,6 +33,8 @@ bool ValidInternalFormat(unsigned internalformat, gfx::BufferFormat format) {
              format == gfx::BufferFormat::BGRX_8888;
     case GL_RGB_YCRCB_420_CHROMIUM:
       return format == gfx::BufferFormat::YVU_420;
+    case GL_RGB_YCBCR_420V_CHROMIUM:
+      return format == gfx::BufferFormat::YUV_420_BIPLANAR;
     case GL_RGBA:
       return format == gfx::BufferFormat::RGBA_8888;
     case GL_BGRA_EXT:
@@ -52,6 +55,7 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::YVU_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
       return true;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
@@ -59,7 +63,6 @@ bool ValidFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       return false;
   }
@@ -84,13 +87,14 @@ EGLint FourCC(gfx::BufferFormat format) {
       return DRM_FORMAT_XRGB8888;
     case gfx::BufferFormat::YVU_420:
       return DRM_FORMAT_YV12;
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+      return DRM_FORMAT_NV12;
     case gfx::BufferFormat::ATC:
     case gfx::BufferFormat::ATCIA:
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
     case gfx::BufferFormat::RGBA_4444:
-    case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
       return 0;

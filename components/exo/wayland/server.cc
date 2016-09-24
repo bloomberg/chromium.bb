@@ -473,6 +473,7 @@ const struct drm_supported_format {
     {WL_DRM_FORMAT_ABGR8888, gfx::BufferFormat::RGBA_8888},
     {WL_DRM_FORMAT_XRGB8888, gfx::BufferFormat::BGRX_8888},
     {WL_DRM_FORMAT_ARGB8888, gfx::BufferFormat::BGRA_8888},
+    {WL_DRM_FORMAT_NV12, gfx::BufferFormat::YUV_420_BIPLANAR},
     {WL_DRM_FORMAT_YVU420, gfx::BufferFormat::YVU_420}};
 
 void drm_authenticate(wl_client* client, wl_resource* resource, uint32_t id) {
