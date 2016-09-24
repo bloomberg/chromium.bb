@@ -61,10 +61,10 @@ IDBCursor::IDBCursor(std::unique_ptr<WebIDBCursor> backend, WebIDBCursorDirectio
     , m_source(source)
     , m_transaction(transaction)
 {
-    ASSERT(m_backend);
-    ASSERT(m_request);
-    ASSERT(m_source->getType() == IDBAny::IDBObjectStoreType || m_source->getType() == IDBAny::IDBIndexType);
-    ASSERT(m_transaction);
+    DCHECK(m_backend);
+    DCHECK(m_request);
+    DCHECK(m_source->getType() == IDBAny::IDBObjectStoreType || m_source->getType() == IDBAny::IDBIndexType);
+    DCHECK(m_transaction);
 }
 
 IDBCursor::~IDBCursor()
@@ -299,7 +299,7 @@ IDBRequest* IDBCursor::deleteFunction(ScriptState* scriptState, ExceptionState& 
     }
 
     IDBKeyRange* keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);
-    ASSERT(!exceptionState.hadException());
+    DCHECK(!exceptionState.hadException());
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange, WebIDBCallbacksImpl::create(request).release());
@@ -333,18 +333,17 @@ ScriptValue IDBCursor::primaryKey(ScriptState* scriptState)
 
 ScriptValue IDBCursor::value(ScriptState* scriptState)
 {
-    ASSERT(isCursorWithValue());
+    DCHECK(isCursorWithValue());
 
     IDBObjectStore* objectStore = effectiveObjectStore();
-    const IDBObjectStoreMetadata& metadata = objectStore->metadata();
     IDBAny* value;
     if (!m_value) {
         value = IDBAny::createUndefined();
-    } else if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
-        RefPtr<IDBValue> idbValue = IDBValue::create(m_value.get(), m_primaryKey, metadata.keyPath);
-#if ENABLE(ASSERT)
+    } else if (objectStore->autoIncrement() && !objectStore->idbKeyPath().isNull()) {
+        RefPtr<IDBValue> idbValue = IDBValue::create(m_value.get(), m_primaryKey, objectStore->idbKeyPath());
+#if DCHECK_IS_ON()
         assertPrimaryKeyValidOrInjectable(scriptState, idbValue.get());
-#endif
+#endif // DCHECK_IS_ON()
         value = IDBAny::create(idbValue.release());
     } else {
         value = IDBAny::create(m_value);
@@ -401,7 +400,7 @@ WebIDBCursorDirection IDBCursor::stringToDirection(const String& directionString
     if (directionString == IndexedDBNames::prevunique)
         return WebIDBCursorDirectionPrevNoDuplicate;
 
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return WebIDBCursorDirectionNext;
 }
 
@@ -421,7 +420,7 @@ const String& IDBCursor::direction() const
         return IndexedDBNames::prevunique;
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return IndexedDBNames::next;
     }
 }

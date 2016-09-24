@@ -52,7 +52,7 @@ IDBOpenDBRequest::IDBOpenDBRequest(ScriptState* scriptState, IDBDatabaseCallback
     , m_transactionId(transactionId)
     , m_version(version)
 {
-    ASSERT(!resultAsAny());
+    DCHECK(!resultAsAny());
 }
 
 IDBOpenDBRequest::~IDBOpenDBRequest()
@@ -91,7 +91,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, std::unique_ptr<WebID
     if (!shouldEnqueueEvent())
         return;
 
-    ASSERT(m_databaseCallbacks);
+    DCHECK(m_databaseCallbacks);
 
     IDBDatabase* idbDatabase = IDBDatabase::create(getExecutionContext(), std::move(backend), m_databaseCallbacks.release());
     idbDatabase->setMetadata(metadata);
@@ -103,7 +103,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, std::unique_ptr<WebID
     IDBDatabaseMetadata oldMetadata(metadata);
     oldMetadata.version = oldVersion;
 
-    m_transaction = IDBTransaction::create(getScriptState(), m_transactionId, idbDatabase, this, oldMetadata);
+    m_transaction = IDBTransaction::createVersionChange(getScriptState(), m_transactionId, idbDatabase, this, oldMetadata);
     setResult(IDBAny::create(idbDatabase));
 
     if (m_version == IDBDatabaseMetadata::NoVersion)
@@ -126,13 +126,13 @@ void IDBOpenDBRequest::onSuccess(std::unique_ptr<WebIDBDatabase> backend, const 
     IDBDatabase* idbDatabase = nullptr;
     if (resultAsAny()) {
         // Previous onUpgradeNeeded call delivered the backend.
-        ASSERT(!backend.get());
+        DCHECK(!backend.get());
         idbDatabase = resultAsAny()->idbDatabase();
-        ASSERT(idbDatabase);
-        ASSERT(!m_databaseCallbacks);
+        DCHECK(idbDatabase);
+        DCHECK(!m_databaseCallbacks);
     } else {
-        ASSERT(backend.get());
-        ASSERT(m_databaseCallbacks);
+        DCHECK(backend.get());
+        DCHECK(m_databaseCallbacks);
         idbDatabase = IDBDatabase::create(getExecutionContext(), std::move(backend), m_databaseCallbacks.release());
         setResult(IDBAny::create(idbDatabase));
     }
@@ -157,7 +157,7 @@ bool IDBOpenDBRequest::shouldEnqueueEvent() const
 {
     if (m_contextStopped || !getExecutionContext())
         return false;
-    ASSERT(m_readyState == PENDING || m_readyState == DONE);
+    DCHECK(m_readyState == PENDING || m_readyState == DONE);
     if (m_requestAborted)
         return false;
     return true;

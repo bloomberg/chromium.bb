@@ -8,6 +8,10 @@
 
 namespace blink {
 
+constexpr int64_t IDBIndexMetadata::InvalidId;
+
+constexpr int64_t IDBObjectStoreMetadata::InvalidId;
+
 IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& webMetadata)
     : name(webMetadata.name)
     , id(webMetadata.id)

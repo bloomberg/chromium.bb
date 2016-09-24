@@ -50,9 +50,9 @@ IDBIndex::IDBIndex(const IDBIndexMetadata& metadata, IDBObjectStore* objectStore
     , m_objectStore(objectStore)
     , m_transaction(transaction)
 {
-    ASSERT(m_objectStore);
-    ASSERT(m_transaction);
-    ASSERT(m_metadata.id != IDBIndexMetadata::InvalidId);
+    DCHECK(m_objectStore);
+    DCHECK(m_transaction);
+    DCHECK_NE(id(), IDBIndexMetadata::InvalidId);
 }
 
 IDBIndex::~IDBIndex()
@@ -88,7 +88,7 @@ void IDBIndex::setName(const String& name, ExceptionState& exceptionState)
         return;
     }
 
-    if (m_metadata.name == name)
+    if (this->name() == name)
         return;
     if (m_objectStore->containsIndex(name)) {
         exceptionState.throwDOMException(ConstraintError, IDBDatabase::indexNameTakenErrorMessage);
@@ -107,7 +107,7 @@ void IDBIndex::setName(const String& name, ExceptionState& exceptionState)
 
 ScriptValue IDBIndex::keyPath(ScriptState* scriptState) const
 {
-    return ScriptValue::from(scriptState, m_metadata.keyPath);
+    return ScriptValue::from(scriptState, metadata().keyPath);
 }
 
 IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
@@ -142,7 +142,7 @@ IDBRequest* IDBIndex::openCursor(ScriptState* scriptState, IDBKeyRange* keyRange
 {
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
-    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, direction, false, WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).release());
+    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), id(), keyRange, direction, false, WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).release());
     return request;
 }
 
@@ -172,7 +172,7 @@ IDBRequest* IDBIndex::count(ScriptState* scriptState, const ScriptValue& range, 
     }
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
-    backendDB()->count(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, WebIDBCallbacksImpl::create(request).release());
+    backendDB()->count(m_transaction->id(), m_objectStore->id(), id(), keyRange, WebIDBCallbacksImpl::create(request).release());
     return request;
 }
 
@@ -202,7 +202,7 @@ IDBRequest* IDBIndex::openKeyCursor(ScriptState* scriptState, const ScriptValue&
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
-    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, direction, true, WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).release());
+    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), id(), keyRange, direction, true, WebIDBTaskTypeNormal, WebIDBCallbacksImpl::create(request).release());
     return request;
 }
 
@@ -268,7 +268,7 @@ IDBRequest* IDBIndex::getInternal(ScriptState* scriptState, const ScriptValue& k
     }
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
-    backendDB()->get(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, keyOnly, WebIDBCallbacksImpl::create(request).release());
+    backendDB()->get(m_transaction->id(), m_objectStore->id(), id(), keyRange, keyOnly, WebIDBCallbacksImpl::create(request).release());
     return request;
 }
 
@@ -299,7 +299,7 @@ IDBRequest* IDBIndex::getAllInternal(ScriptState* scriptState, const ScriptValue
     }
 
     IDBRequest* request = IDBRequest::create(scriptState, IDBAny::create(this), m_transaction.get());
-    backendDB()->getAll(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, maxCount, keyOnly, WebIDBCallbacksImpl::create(request).release());
+    backendDB()->getAll(m_transaction->id(), m_objectStore->id(), id(), keyRange, maxCount, keyOnly, WebIDBCallbacksImpl::create(request).release());
     return request;
 }
 

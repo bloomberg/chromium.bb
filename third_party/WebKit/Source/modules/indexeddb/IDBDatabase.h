@@ -78,7 +78,7 @@ public:
     DOMStringList* objectStoreNames() const;
 
     IDBObjectStore* createObjectStore(const String& name, const IDBObjectStoreParameters& options, ExceptionState& exceptionState) { return createObjectStore(name, IDBKeyPath(options.keyPath()), options.autoIncrement(), exceptionState); }
-    IDBTransaction* transaction(ScriptState*, const StringOrStringSequenceOrDOMStringList&, const String& mode, ExceptionState&);
+    IDBTransaction* transaction(ScriptState*, const StringOrStringSequenceOrDOMStringList& storeNames, const String& mode, ExceptionState&);
     void deleteObjectStore(const String& name, ExceptionState&);
     void close();
 

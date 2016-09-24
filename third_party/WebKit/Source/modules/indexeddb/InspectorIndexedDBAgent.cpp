@@ -336,8 +336,8 @@ public:
             objectStores->addItem(std::move(objectStore));
         }
         std::unique_ptr<DatabaseWithObjectStores> result = DatabaseWithObjectStores::create()
-            .setName(databaseMetadata.name)
-            .setVersion(databaseMetadata.version)
+            .setName(idbDatabase->name())
+            .setVersion(idbDatabase->version())
             .setObjectStores(std::move(objectStores)).build();
 
         m_requestCallback->sendSuccess(std::move(result));

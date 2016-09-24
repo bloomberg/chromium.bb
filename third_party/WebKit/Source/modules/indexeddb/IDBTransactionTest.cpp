@@ -70,8 +70,9 @@ TEST(IDBTransactionTest, EnsureLifetime)
     Persistent<IDBDatabase> db = IDBDatabase::create(scope.getExecutionContext(), std::move(backend), FakeIDBDatabaseCallbacks::create());
 
     const int64_t transactionId = 1234;
-    const HashSet<String> transactionScope = HashSet<String>();
-    Persistent<IDBTransaction> transaction = IDBTransaction::create(scope.getScriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
+    HashSet<String> transactionScope = HashSet<String>();
+    transactionScope.add("test-store-name");
+    Persistent<IDBTransaction> transaction = IDBTransaction::createNonVersionChange(scope.getScriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
     PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
     set.add(transaction);
 
@@ -106,8 +107,9 @@ TEST(IDBTransactionTest, TransactionFinish)
         .Times(1);
     Persistent<IDBDatabase> db = IDBDatabase::create(scope.getExecutionContext(), std::move(backend), FakeIDBDatabaseCallbacks::create());
 
-    const HashSet<String> transactionScope = HashSet<String>();
-    Persistent<IDBTransaction> transaction = IDBTransaction::create(scope.getScriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
+    HashSet<String> transactionScope = HashSet<String>();
+    transactionScope.add("test-store-name");
+    Persistent<IDBTransaction> transaction = IDBTransaction::createNonVersionChange(scope.getScriptState(), transactionId, transactionScope, WebIDBTransactionModeReadOnly, db.get());
     PersistentHeapHashSet<WeakMember<IDBTransaction>> set;
     set.add(transaction);
 

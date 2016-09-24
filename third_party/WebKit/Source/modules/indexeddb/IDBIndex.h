@@ -54,12 +54,12 @@ public:
     DECLARE_TRACE();
 
     // Implement the IDL
-    const String& name() const { return m_metadata.name; }
+    const String& name() const { return metadata().name; }
     void setName(const String& name, ExceptionState&);
     IDBObjectStore* objectStore() const { return m_objectStore.get(); }
     ScriptValue keyPath(ScriptState*) const;
-    bool unique() const { return m_metadata.unique; }
-    bool multiEntry() const { return m_metadata.multiEntry; }
+    bool unique() const { return metadata().unique; }
+    bool multiEntry() const { return metadata().multiEntry; }
 
     IDBRequest* openCursor(ScriptState*, const ScriptValue& key, const String& direction, ExceptionState&);
     IDBRequest* openKeyCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
@@ -73,7 +73,7 @@ public:
 
     void markDeleted() { m_deleted = true; }
     bool isDeleted() const;
-    int64_t id() const { return m_metadata.id; }
+    int64_t id() const { return metadata().id; }
 
     // Used internally and by InspectorIndexedDBAgent:
     IDBRequest* openCursor(ScriptState*, IDBKeyRange*, WebIDBCursorDirection);
@@ -82,6 +82,8 @@ public:
 
 private:
     IDBIndex(const IDBIndexMetadata&, IDBObjectStore*, IDBTransaction*);
+
+    const IDBIndexMetadata& metadata() const { return m_metadata; }
 
     IDBRequest* getInternal(ScriptState*, const ScriptValue& key, ExceptionState&, bool keyOnly);
     IDBRequest* getAllInternal(ScriptState*, const ScriptValue& range, unsigned long maxCount, ExceptionState&, bool keyOnly);

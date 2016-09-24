@@ -53,7 +53,7 @@ struct IDBIndexMetadata {
     bool unique;
     bool multiEntry;
 
-    static const int64_t InvalidId = -1;
+    static constexpr int64_t InvalidId = -1;
 };
 
 struct IDBObjectStoreMetadata {
@@ -73,7 +73,7 @@ struct IDBObjectStoreMetadata {
     bool autoIncrement;
     int64_t maxIndexId;
 
-    static const int64_t InvalidId = -1;
+    static constexpr int64_t InvalidId = -1;
 
     typedef HashMap<int64_t, IDBIndexMetadata> IndexMap;
     IndexMap indexes;

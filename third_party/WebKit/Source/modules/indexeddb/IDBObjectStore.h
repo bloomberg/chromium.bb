@@ -59,14 +59,17 @@ public:
     ~IDBObjectStore() { }
     DECLARE_TRACE();
 
+    const IDBObjectStoreMetadata& metadata() const { return m_metadata; }
+    const IDBKeyPath& idbKeyPath() const { return metadata().keyPath; }
+
     // Implement the IDBObjectStore IDL
-    int64_t id() const { return m_metadata.id; }
-    const String& name() const { return m_metadata.name; }
+    int64_t id() const { return metadata().id; }
+    const String& name() const { return metadata().name; }
     void setName(const String& name, ExceptionState&);
     ScriptValue keyPath(ScriptState*) const;
     DOMStringList* indexNames() const;
     IDBTransaction* transaction() const { return m_transaction.get(); }
-    bool autoIncrement() const { return m_metadata.autoIncrement; }
+    bool autoIncrement() const { return metadata().autoIncrement; }
 
     IDBRequest* openCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
     IDBRequest* openKeyCursor(ScriptState*, const ScriptValue& range, const String& direction, ExceptionState&);
@@ -96,15 +99,12 @@ public:
     // Used internally and by InspectorIndexedDBAgent:
     IDBRequest* openCursor(ScriptState*, IDBKeyRange*, WebIDBCursorDirection, WebIDBTaskType = WebIDBTaskTypeNormal);
 
-    void markDeleted() { m_deleted = true; }
+    void markDeleted();
     bool isDeleted() const { return m_deleted; }
     void abort();
     void transactionFinished();
 
-    const IDBObjectStoreMetadata& metadata() const { return m_metadata; }
     void setMetadata(const IDBObjectStoreMetadata& metadata) { m_metadata = metadata; }
-
-    typedef HeapVector<Member<IDBKey>> IndexKeys;
 
     // Used by IDBIndex::setName:
     bool containsIndex(const String& name) const
@@ -127,7 +127,14 @@ private:
     Member<IDBTransaction> m_transaction;
     bool m_deleted = false;
 
-    typedef HeapHashMap<String, Member<IDBIndex>> IDBIndexMap;
+    // Caches the IDBIndex instances returned by the index() method.
+    // The spec requires that an object store's index() returns the same
+    // IDBIndex instance for a specific index, so this cache is necessary
+    // for correctness.
+    //
+    // index() throws for completed/aborted transactions, so this is not used
+    // after a transaction is finished, and can be cleared.
+    using IDBIndexMap = HeapHashMap<String, Member<IDBIndex>>;
     IDBIndexMap m_indexMap;
 
     // Used to mark indexes created in an aborted upgrade transaction as

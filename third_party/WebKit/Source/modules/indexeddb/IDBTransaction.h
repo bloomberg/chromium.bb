@@ -48,7 +48,6 @@ class ExceptionState;
 class IDBDatabase;
 class IDBObjectStore;
 class IDBOpenDBRequest;
-struct IDBObjectStoreMetadata;
 
 class MODULES_EXPORT IDBTransaction final
     : public EventTargetWithInlineData
@@ -57,8 +56,8 @@ class MODULES_EXPORT IDBTransaction final
     USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static IDBTransaction* create(ScriptState*, int64_t, const HashSet<String>& objectStoreNames, WebIDBTransactionMode, IDBDatabase*);
-    static IDBTransaction* create(ScriptState*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& previousMetadata);
+    static IDBTransaction* createNonVersionChange(ScriptState*, int64_t, const HashSet<String>& scope, WebIDBTransactionMode, IDBDatabase*);
+    static IDBTransaction* createVersionChange(ScriptState*, int64_t, IDBDatabase*, IDBOpenDBRequest*, const IDBDatabaseMetadata& oldMetadata);
     ~IDBTransaction() override;
     DECLARE_VIRTUAL_TRACE();
 
@@ -116,6 +115,13 @@ private:
 
     void enqueueEvent(Event*);
 
+    // Called when a transaction is aborted.
+    void abortOutstandingRequests();
+    void revertDatabaseMetadata();
+
+    // Called when a transaction is completed (committed or aborted).
+    void finished();
+
     enum State {
         Inactive, // Created or started, but not in an event callback
         Active, // Created or started, in creation scope or an event callback
@@ -125,9 +131,22 @@ private:
 
     const int64_t m_id;
     Member<IDBDatabase> m_database;
-    const HashSet<String> m_objectStoreNames;
     Member<IDBOpenDBRequest> m_openDBRequest;
     const WebIDBTransactionMode m_mode;
+
+    // The names of the object stores that make up this transaction's scope.
+    //
+    // Transactions may not access object stores outside their scope.
+    //
+    // The scope of versionchange transactions is the entire database. We
+    // represent this case with an empty m_scope, because copying all the store
+    // names would waste both time and memory.
+    //
+    // Using object store names to represent a transaction's scope is safe
+    // because object stores cannot be renamed in non-versionchange
+    // transactions.
+    const HashSet<String> m_scope;
+
     State m_state = Active;
     bool m_hasPendingActivity = true;
     bool m_contextStopped = false;
@@ -135,7 +154,19 @@ private:
 
     HeapListHashSet<Member<IDBRequest>> m_requestList;
 
-    typedef HeapHashMap<String, Member<IDBObjectStore>> IDBObjectStoreMap;
+#if DCHECK_IS_ON()
+    bool m_finishCalled = false;
+#endif // DCHECK_IS_ON()
+
+    // Caches the IDBObjectStore instances returned by the objectStore() method.
+    //
+    // The spec requires that a transaction's objectStore() returns the same
+    // IDBObjectStore instance for a specific store, so this cache is necessary
+    // for correctness.
+    //
+    // objectStore() throws for completed/aborted transactions, so this is not
+    // used after a transaction is finished, and can be cleared.
+    using IDBObjectStoreMap = HeapHashMap<String, Member<IDBObjectStore>>;
     IDBObjectStoreMap m_objectStoreMap;
 
     // Used to mark stores created in an aborted upgrade transaction as
@@ -149,7 +180,8 @@ private:
     // Holds stores created, deleted, or used during upgrade transactions to
     // reset metadata in case of abort.
     HeapHashMap<Member<IDBObjectStore>, IDBObjectStoreMetadata> m_objectStoreCleanupMap;
-    IDBDatabaseMetadata m_previousMetadata;
+
+    IDBDatabaseMetadata m_oldDatabaseMetadata;
 };
 
 } // namespace blink
