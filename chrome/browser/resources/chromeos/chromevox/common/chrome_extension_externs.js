@@ -612,7 +612,7 @@ chrome.automation.AutomationNode.prototype.focusObject;
 /**
  * @type {(Array<number>|undefined)}
  */
-chrome.automation.AutomationNode.prototype.lineBreaks;
+chrome.automation.AutomationNode.prototype.lineStartOffsets;
 
 /**
  * @type {(number|undefined)}

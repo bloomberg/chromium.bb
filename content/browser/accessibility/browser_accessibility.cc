@@ -229,7 +229,7 @@ bool BrowserAccessibility::IsNextSiblingOnSameLine() const {
     const BrowserAccessibility* next_on_line =
         manager()->GetFromID(next_on_line_id);
     // In the case of a static text sibling, the object designated to be the
-    // next object on this line might be one of its children, i.e. the last
+    // next object on this line might be one of its children, i.e. the first
     // inline text box.
     return next_on_line && next_on_line->IsDescendantOf(next_sibling);
   }
@@ -533,9 +533,7 @@ int BrowserAccessibility::GetLineStartBoundary(
   DCHECK_LE(start, static_cast<int>(GetText().length()));
 
   if (IsSimpleTextControl()) {
-    const std::vector<int32_t>& line_breaks =
-        GetIntListAttribute(ui::AX_ATTR_LINE_BREAKS);
-    return ui::FindAccessibleTextBoundary(GetText(), line_breaks,
+    return ui::FindAccessibleTextBoundary(GetText(), GetLineStartOffsets(),
                                           ui::LINE_BOUNDARY, start, direction,
                                           affinity);
   }
@@ -1140,6 +1138,12 @@ std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() {
   }
 
   return name;
+}
+
+std::vector<int> BrowserAccessibility::GetLineStartOffsets() const {
+  if (!instance_active())
+    return std::vector<int>();
+  return node()->GetOrComputeLineStartOffsets();
 }
 
 base::string16 BrowserAccessibility::GetInnerText() const {

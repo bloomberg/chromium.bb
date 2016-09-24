@@ -4720,10 +4720,8 @@ LONG BrowserAccessibilityWin::FindBoundary(
   }
 
   ui::TextBoundaryType boundary = IA2TextBoundaryToTextBoundary(ia2_boundary);
-  const std::vector<int32_t>& line_breaks =
-      GetIntListAttribute(ui::AX_ATTR_LINE_BREAKS);
-  return ui::FindAccessibleTextBoundary(
-      text, line_breaks, boundary, start_offset, direction, affinity);
+  return ui::FindAccessibleTextBoundary(text, GetLineStartOffsets(), boundary,
+                                        start_offset, direction, affinity);
 }
 
 LONG BrowserAccessibilityWin::FindStartOfStyle(

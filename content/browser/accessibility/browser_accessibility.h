@@ -344,6 +344,9 @@ class CONTENT_EXPORT BrowserAccessibility {
   // to compute a name from its descendants.
   std::string ComputeAccessibleNameFromDescendants();
 
+  // Gets the text offsets where new lines start.
+  std::vector<int> GetLineStartOffsets() const;
+
  protected:
   BrowserAccessibility();
 

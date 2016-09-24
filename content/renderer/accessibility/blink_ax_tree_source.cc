@@ -543,16 +543,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     if (src.isEditable()) {
       dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, src.selectionStart());
       dst->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, src.selectionEnd());
-
-      WebVector<int> src_line_breaks;
-      src.lineBreaks(src_line_breaks);
-      if (src_line_breaks.size()) {
-        std::vector<int32_t> line_breaks;
-        line_breaks.reserve(src_line_breaks.size());
-        for (size_t i = 0; i < src_line_breaks.size(); ++i)
-          line_breaks.push_back(src_line_breaks[i]);
-        dst->AddIntListAttribute(ui::AX_ATTR_LINE_BREAKS, line_breaks);
-      }
     }
 
     // ARIA role.

@@ -1013,8 +1013,8 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (selStart > selEnd)
     std::swap(selStart, selEnd);
 
-  const std::vector<int32_t>& line_breaks =
-      browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LINE_BREAKS);
+  const std::vector<int> line_breaks =
+      browserAccessibility_->GetLineStartOffsets();
   for (int i = 0; i < static_cast<int>(line_breaks.size()); ++i) {
     if (line_breaks[i] > selStart)
       return [NSNumber numberWithInt:i];
@@ -1992,8 +1992,8 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  const std::vector<int32_t>& line_breaks =
-      browserAccessibility_->GetIntListAttribute(ui::AX_ATTR_LINE_BREAKS);
+  const std::vector<int> line_breaks =
+      browserAccessibility_->GetLineStartOffsets();
   base::string16 value = browserAccessibility_->GetValue();
   int len = static_cast<int>(value.size());
 

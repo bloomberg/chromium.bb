@@ -133,7 +133,7 @@ AutomationEditableText.prototype = {
   getLineIndex: function(charIndex) {
     if (!this.multiline)
       return 0;
-    var breaks = this.node_.lineBreaks || [];
+    var breaks = this.node_.lineStartOffsets || [];
     var index = 0;
     while (index < breaks.length && breaks[index] <= charIndex)
       ++index;
@@ -166,9 +166,9 @@ AutomationEditableText.prototype = {
    * @private
    */
   getLineBreaks_: function() {
-    // node.lineBreaks is undefined when the multiline field has no line
+    // node.lineStartOffsets is undefined when the multiline field has no line
     // breaks.
-    return this.node_.lineBreaks || [];
+    return this.node_.lineStartOffsets || [];
   },
 
   /** @private */

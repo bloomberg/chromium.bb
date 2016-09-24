@@ -69,7 +69,16 @@ class AX_EXPORT AXNode {
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(AXNode* ancestor);
 
+  // Gets the text offsets where new lines start either from the node's data or
+  // by computing them and caching the result.
+  std::vector<int> GetOrComputeLineStartOffsets();
+
  private:
+  // Computes the text offset where each line starts by traversing all child
+  // leaf nodes.
+  void ComputeLineStartOffsets(std::vector<int>* line_offsets,
+                               int* end_offset) const;
+
   int index_in_parent_;
   AXNode* parent_;
   std::vector<AXNode*> children_;

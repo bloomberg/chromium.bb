@@ -150,6 +150,16 @@ var GetBoundsForRange = requireNative('automationInternal').GetBoundsForRange;
 /**
  * @param {number} axTreeID The id of the accessibility tree.
  * @param {number} nodeID The id of a node.
+ * @return {!Array.<number>} The text offset where each line starts, or an empty
+ *     array if this node has no text content, or undefined if the tree or node
+ *     was not found.
+ */
+var GetLineStartOffsets = requireNative(
+    'automationInternal').GetLineStartOffsets;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
  * @param {string} attr The name of a string attribute.
  * @return {?string} The value of this attribute, or undefined if the tree,
  *     node, or attribute wasn't found.
@@ -265,6 +275,10 @@ AutomationNodeImpl.prototype = {
 
   get indexInParent() {
     return GetIndexInParent(this.treeID, this.id);
+  },
+
+  get lineStartOffsets() {
+    return GetLineStartOffsets(this.treeID, this.id);
   },
 
   get childTree() {
@@ -687,7 +701,6 @@ var nodeRefAttributes = [
 
 var intListAttributes = [
     'characterOffsets',
-    'lineBreaks',
     'markerEnds',
     'markerStarts',
     'markerTypes',
@@ -1037,6 +1050,7 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
       'state',
       'location',
       'indexInParent',
+      'lineStartOffsets',
       'root',
       'htmlAttributes',
   ]),

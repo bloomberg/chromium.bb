@@ -692,9 +692,6 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_LABELLEDBY_IDS:
         result += " labelledby_ids=" + IntVectorToString(values);
         break;
-      case AX_ATTR_LINE_BREAKS:
-        result += " line_breaks=" + IntVectorToString(values);
-        break;
       case AX_ATTR_MARKER_TYPES: {
         std::string types_str;
         for (size_t i = 0; i < values.size(); ++i) {
@@ -734,6 +731,9 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_CHARACTER_OFFSETS:
         result += " character_offsets=" + IntVectorToString(values);
+        break;
+      case AX_ATTR_CACHED_LINE_STARTS:
+        result += " cached_line_start_offsets=" + IntVectorToString(values);
         break;
       case AX_ATTR_WORD_STARTS:
         result += " word_starts=" + IntVectorToString(values);

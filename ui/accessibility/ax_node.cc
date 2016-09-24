@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/ax_node.h"
+
+#include <algorithm>
+
+#include "base/strings/string16.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -49,6 +53,35 @@ bool AXNode::IsDescendantOf(AXNode* ancestor) {
     return parent()->IsDescendantOf(ancestor);
 
   return false;
+}
+
+std::vector<int> AXNode::GetOrComputeLineStartOffsets() {
+  std::vector<int> line_offsets;
+  if (data().GetIntListAttribute(AX_ATTR_CACHED_LINE_STARTS, &line_offsets))
+    return line_offsets;
+
+  int end_offset = 0;
+  ComputeLineStartOffsets(&line_offsets, &end_offset);
+  data_.AddIntListAttribute(AX_ATTR_CACHED_LINE_STARTS, line_offsets);
+  return line_offsets;
+}
+
+void AXNode::ComputeLineStartOffsets(std::vector<int>* line_offsets,
+                                     int* end_offset) const {
+  DCHECK(line_offsets);
+  DCHECK(end_offset);
+  for (const AXNode* child : children()) {
+    DCHECK(child);
+    if (child->child_count()) {
+      child->ComputeLineStartOffsets(line_offsets, end_offset);
+      continue;
+    }
+
+    base::string16 text = child->data().GetString16Attribute(ui::AX_ATTR_NAME);
+    *end_offset += static_cast<int>(text.length());
+    if (!child->data().HasIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID))
+      line_offsets->push_back(*end_offset);
+  }
 }
 
 }  // namespace ui
