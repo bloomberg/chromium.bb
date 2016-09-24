@@ -25,12 +25,12 @@ namespace net {
 typedef base::Callback<int(const AddressList&, const NetLogWithSource& net_log)>
     OnHostResolutionCallback;
 
-class NetLogWithSource;
 class ClientSocketHandle;
 class HostPortPair;
 class HttpNetworkSession;
 class HttpProxyClientSocketPool;
 class HttpRequestHeaders;
+class NetLogWithSource;
 class ProxyInfo;
 class TransportClientSocketPool;
 class SOCKSClientSocketPool;

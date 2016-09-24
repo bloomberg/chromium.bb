@@ -19,9 +19,9 @@
 
 namespace net {
 
-class NetLogWithSource;
 class ClientSocketFactory;
 class IPEndPoint;
+class NetLogWithSource;
 class StreamSocket;
 
 // Attempts to connect to a subset of the addresses required by a

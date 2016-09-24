@@ -20,8 +20,8 @@
 
 namespace net {
 
-class NetLogWithSource;
 class NetLog;
+class NetLogWithSource;
 
 // Class that registers URL request throttler entries for URLs being accessed
 // in order to supervise traffic. URL requests for HTTP contents should

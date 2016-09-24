@@ -16,9 +16,9 @@
 
 namespace net {
 
-class NetLogWithSource;
 class DnsResponse;
 class DnsSession;
+class NetLogWithSource;
 
 // DnsTransaction implements a stub DNS resolver as defined in RFC 1034.
 // The DnsTransaction takes care of retransmissions, name server fallback (or

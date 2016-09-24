@@ -19,12 +19,12 @@ class GURL;
 
 namespace net {
 
-class NetLogWithSource;
-class HttpAuthPreferences;
 class HostResolver;
 class HttpAuthChallengeTokenizer;
 class HttpAuthHandler;
 class HttpAuthHandlerRegistryFactory;
+class HttpAuthPreferences;
+class NetLogWithSource;
 
 // An HttpAuthHandlerFactory is used to create HttpAuthHandler objects.
 // The HttpAuthHandlerFactory object _must_ outlive any of the HttpAuthHandler

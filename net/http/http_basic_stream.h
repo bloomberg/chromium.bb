@@ -21,13 +21,13 @@
 
 namespace net {
 
-class NetLogWithSource;
 class ClientSocketHandle;
 class HttpResponseInfo;
 struct HttpRequestInfo;
 class HttpRequestHeaders;
 class HttpStreamParser;
 class IOBuffer;
+class NetLogWithSource;
 
 class NET_EXPORT_PRIVATE HttpBasicStream : public HttpStream {
  public:

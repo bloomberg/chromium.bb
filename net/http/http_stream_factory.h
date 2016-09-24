@@ -31,7 +31,6 @@ class Value;
 namespace net {
 
 class AuthCredentials;
-class NetLogWithSource;
 class BidirectionalStreamImpl;
 class HostMappingRules;
 class HostPortPair;
@@ -41,6 +40,7 @@ class HttpResponseHeaders;
 class HttpResponseInfo;
 class HttpServerProperties;
 class HttpStream;
+class NetLogWithSource;
 class ProxyInfo;
 class SSLCertRequestInfo;
 class SSLInfo;

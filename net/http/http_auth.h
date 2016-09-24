@@ -17,10 +17,10 @@ template <class T> class scoped_refptr;
 
 namespace net {
 
-class NetLogWithSource;
 class HttpAuthHandler;
 class HttpAuthHandlerFactory;
 class HttpResponseHeaders;
+class NetLogWithSource;
 class SSLInfo;
 
 // Utility class for http authentication.

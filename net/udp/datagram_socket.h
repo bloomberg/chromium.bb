@@ -9,8 +9,8 @@
 
 namespace net {
 
-class NetLogWithSource;
 class IPEndPoint;
+class NetLogWithSource;
 
 // A datagram socket is an interface to a protocol which exchanges
 // datagrams, like UDP.

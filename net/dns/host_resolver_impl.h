@@ -26,10 +26,10 @@
 namespace net {
 
 class AddressList;
-class NetLogWithSource;
 class DnsClient;
 class IPAddress;
 class NetLog;
+class NetLogWithSource;
 
 // For each hostname that is requested, HostResolver creates a
 // HostResolverImpl::Job. When this job gets dispatched it creates a ProcTask

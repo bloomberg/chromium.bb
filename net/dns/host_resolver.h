@@ -27,10 +27,10 @@ class Value;
 namespace net {
 
 class AddressList;
-class NetLogWithSource;
 class HostResolverImpl;
 class HostResolverProc;
 class NetLog;
+class NetLogWithSource;
 
 // This class represents the task of resolving hostnames (or IP address
 // literal) to an AddressList object.

@@ -19,11 +19,11 @@
 
 namespace net {
 
-class NetLogWithSource;
 class ClientSocketHandle;
 class GrowableIOBuffer;
 class HttpStreamParser;
 struct HttpRequestInfo;
+class NetLogWithSource;
 
 class NET_EXPORT_PRIVATE HttpBasicState {
  public:

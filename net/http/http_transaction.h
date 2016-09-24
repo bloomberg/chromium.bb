@@ -19,12 +19,12 @@
 namespace net {
 
 class AuthCredentials;
-class NetLogWithSource;
 class HttpRequestHeaders;
 struct HttpRequestInfo;
 class HttpResponseInfo;
 class IOBuffer;
 struct LoadTimingInfo;
+class NetLogWithSource;
 class ProxyInfo;
 class QuicServerInfo;
 class SSLPrivateKey;

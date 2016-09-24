@@ -29,10 +29,10 @@
 namespace net {
 
 class AddressList;
-class NetLogWithSource;
 class ClientSocketHandle;
 class HostResolver;
 class HttpServerProperties;
+class NetLogWithSource;
 class ProxyDelegate;
 class SpdySession;
 class TransportSecurityState;

@@ -30,7 +30,6 @@ class ECPrivateKey;
 
 namespace net {
 
-class NetLogWithSource;
 class HttpNetworkSession;
 class HttpRequestHeaders;
 struct HttpRequestInfo;
@@ -38,6 +37,7 @@ class HttpResponseInfo;
 class IOBuffer;
 class IPEndPoint;
 struct LoadTimingInfo;
+class NetLogWithSource;
 class SSLCertRequestInfo;
 class SSLInfo;
 

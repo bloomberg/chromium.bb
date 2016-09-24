@@ -16,8 +16,8 @@ struct CTVerifyResult;
 struct SignedCertificateTimestamp;
 }  // namespace ct
 
-class NetLogWithSource;
 class CTLogVerifier;
+class NetLogWithSource;
 class X509Certificate;
 
 // Interface for verifying Signed Certificate Timestamps over a certificate.

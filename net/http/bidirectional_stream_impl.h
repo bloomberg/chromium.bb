@@ -22,8 +22,8 @@ class Timer;
 
 namespace net {
 
-class NetLogWithSource;
 class IOBuffer;
+class NetLogWithSource;
 class SpdyHeaderBlock;
 struct BidirectionalStreamRequestInfo;
 

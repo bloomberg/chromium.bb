@@ -63,8 +63,8 @@ class GURL;
 
 namespace net {
 
-class NetLogWithSource;
 class IOBuffer;
+class NetLogWithSource;
 class URLRequestContext;
 
 //------------------------------------------------------------------------------

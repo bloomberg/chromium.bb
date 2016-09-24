@@ -27,8 +27,8 @@ class Timer;
 
 namespace net {
 
-class NetLogWithSource;
 class IOBuffer;
+class NetLogWithSource;
 class SpdyHeaderBlock;
 
 class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl

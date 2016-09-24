@@ -83,8 +83,8 @@ const int kYieldAfterDurationMilliseconds = 20;
 const SpdyStreamId kFirstStreamId = 1;
 const SpdyStreamId kLastStreamId = 0x7fffffff;
 
-class NetLogWithSource;
 struct LoadTimingInfo;
+class NetLogWithSource;
 class ProxyDelegate;
 class SpdyStream;
 class SSLInfo;

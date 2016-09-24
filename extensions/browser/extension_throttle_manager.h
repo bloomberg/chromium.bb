@@ -24,8 +24,8 @@ class ResourceThrottle;
 }
 
 namespace net {
-class NetLogWithSource;
 class NetLog;
+class NetLogWithSource;
 }
 
 namespace extensions {

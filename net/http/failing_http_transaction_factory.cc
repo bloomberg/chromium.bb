@@ -20,9 +20,9 @@
 namespace net {
 
 class AuthCredentials;
-class NetLogWithSource;
 class HttpRequestHeaders;
 class IOBuffer;
+class NetLogWithSource;
 class SSLPrivateKey;
 class X509Certificate;
 

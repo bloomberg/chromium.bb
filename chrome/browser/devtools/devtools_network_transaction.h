@@ -25,13 +25,13 @@ class GURL;
 
 namespace net {
 class AuthCredentials;
-class NetLogWithSource;
 class HttpRequestHeaders;
 struct HttpRequestInfo;
 class HttpResponseInfo;
 class HttpNetworkSession;
 class IOBuffer;
 struct LoadTimingInfo;
+class NetLogWithSource;
 class X509Certificate;
 }  // namespace net
 

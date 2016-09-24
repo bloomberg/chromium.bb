@@ -40,10 +40,10 @@ class GURL;
 
 namespace net {
 
-class NetLogWithSource;
 class CTVerifier;
 class CTPolicyEnforcer;
 class HostPortPair;
+class NetLogWithSource;
 class SpdySession;
 class SpdySessionKey;
 class SpdySessionPool;

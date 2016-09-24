@@ -18,9 +18,9 @@
 
 namespace net {
 
-class NetLogWithSource;
 class CertVerifyResult;
 class CRLSet;
+class NetLogWithSource;
 
 // CertVerifier represents a service for verifying certificates.
 //
