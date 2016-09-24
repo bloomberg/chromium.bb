@@ -256,6 +256,10 @@ class BuildConfig(AttrDict):
             # If we had no value to apply it to, save it for later.
             self[name] = value
 
+        elif name == '_template':
+          # We never apply _template. You have to set it through Add.
+          pass
+
         else:
           # Simple values overwrite whatever we do or don't have.
           self[name] = value
@@ -1234,7 +1238,7 @@ class SiteConfig(dict):
     Returns:
       A new BuildConfig instance.
     """
-    child_configs = [self.GetDefault().derive(x, grouped=True) for x in args]
+    child_configs = [x.deepcopy().apply(grouped=True) for x in args]
     return self.Add(name, args[0], child_configs=child_configs, **kwargs)
 
   def AddForBoards(self, suffix, boards, per_board,
@@ -1339,6 +1343,8 @@ class SiteConfig(dict):
     for name in used:
       # Expand any special values (callables, etc)
       expanded = defaults.derive(self._templates[name])
+      # Recover the '_template' value which is filtered out by derive.
+      expanded['_template'] = name
       # Hide anything that matches the default.
       save = {k: v for k, v in expanded.iteritems() if defaults.get(k) != v}
       result[name] = save
@@ -1604,10 +1610,11 @@ def _CreateBuildConfig(name, default, build_dict, templates):
   # Use the name passed in as the default build name.
   build_dict.setdefault('name', name)
 
-  my_default = default
+  result = default.deepcopy()
+  # Use update to explicitly avoid apply's special handing.
   if template:
-    my_default = default.derive(templates[template])
-  result = my_default.derive(**build_dict)
+    result.update(templates[template])
+  result.update(build_dict)
 
   _UpdateConfig(result)
 
