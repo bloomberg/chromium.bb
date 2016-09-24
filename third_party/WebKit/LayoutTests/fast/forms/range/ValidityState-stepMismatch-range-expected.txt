@@ -15,6 +15,12 @@ Invalid step values
 PASS stepMismatchFor("-3", "-2", "-4") is false
 PASS stepMismatchFor("-3", null, "-4") is false
 PASS stepMismatchFor("-3", undefined, "-4") is false
+Updating step attribute
+PASS input.value is "50"
+PASS input.step = "15"; input.value is "45"
+PASS input.step = "20"; input.value is "40"
+PASS input.value = "5", input.value is "10"
+PASS input.step = "6"; input.value is "12"
 Huge numbers and small step; uncomparable
 PASS stepMismatchFor("3.40282347e+38", "3", "") is false
 PASS stepMismatchFor("3.40282346e+38", "3", "") is false

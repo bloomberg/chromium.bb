@@ -35,6 +35,16 @@ input.max = '';
 shouldBe('stepMismatchFor("-3", "-2", "-4")', 'false');
 shouldBe('stepMismatchFor("-3", null, "-4")', 'false');
 shouldBe('stepMismatchFor("-3", undefined, "-4")', 'false');
+
+debug('Updating step attribute');
+stepMismatchFor('50', '10', '0');
+shouldBeEqualToString('input.value', '50');
+shouldBeEqualToString('input.step = "15"; input.value', '45');
+shouldBeEqualToString('input.step = "20"; input.value', '40');
+stepMismatchFor('50', '10', '0');
+shouldBeEqualToString('input.value = "5", input.value', '10');
+shouldBeEqualToString('input.step = "6"; input.value', '12');
+
 debug('Huge numbers and small step; uncomparable');
 shouldBe('stepMismatchFor("3.40282347e+38", "3", "")', 'false');
 shouldBe('stepMismatchFor("3.40282346e+38", "3", "")', 'false');

@@ -273,6 +273,13 @@ void RangeInputType::sanitizeValueInResponseToMinOrMaxAttributeChange()
     element().updateView();
 }
 
+void RangeInputType::stepAttributeChanged()
+{
+    if (element().hasDirtyValue())
+        element().setValue(element().value());
+    element().updateView();
+}
+
 void RangeInputType::setValue(const String& value, bool valueChanged, TextFieldEventBehavior eventBehavior)
 {
     InputType::setValue(value, valueChanged, eventBehavior);

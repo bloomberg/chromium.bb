@@ -66,6 +66,7 @@ private:
     String serialize(const Decimal&) const override;
     void accessKeyAction(bool sendMouseEvents) override;
     void sanitizeValueInResponseToMinOrMaxAttributeChange() override;
+    void stepAttributeChanged() override;
     void warnIfValueIsInvalid(const String&) const override;
     void setValue(const String&, bool valueChanged, TextFieldEventBehavior) override;
     String fallbackValue() const override;
