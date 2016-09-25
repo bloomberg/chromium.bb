@@ -336,7 +336,8 @@
       'filepath': 'content/.*bluetooth'
     },
     'content_loader': {
-      'filepath': 'content/browser/loader|'\
+      'filepath': 'chrome/browser/loader|' \
+                  'content/browser/loader|' \
                   'content/child/*loader',
     },
     'content_renderer': {
