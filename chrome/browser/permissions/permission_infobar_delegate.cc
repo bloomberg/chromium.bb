@@ -37,8 +37,14 @@ PermissionInfoBarDelegate::PermissionInfoBarDelegate(
       user_gesture_(user_gesture),
       persist_(true) {}
 
+std::vector<int> PermissionInfoBarDelegate::content_settings() const {
+  return std::vector<int>{content_settings_type_};
+}
+
 bool PermissionInfoBarDelegate::ShouldShowPersistenceToggle() const {
-  return (permission_type_ == content::PermissionType::GEOLOCATION) &&
+  return (permission_type_ == content::PermissionType::GEOLOCATION ||
+          permission_type_ == content::PermissionType::AUDIO_CAPTURE ||
+          permission_type_ == content::PermissionType::VIDEO_CAPTURE) &&
          PermissionUtil::ShouldShowPersistenceToggle();
 }
 

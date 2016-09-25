@@ -55,7 +55,7 @@ ScopedJavaLocalRef<jobject> PermissionInfoBar::CreateRenderInfoBar(
     java_bitmap = gfx::ConvertToJavaBitmap(delegate->GetIcon().ToSkBitmap());
   }
 
-  std::vector<int> content_settings{delegate->content_setting()};
+  std::vector<int> content_settings{delegate->content_settings()};
 
   return Java_PermissionInfoBar_create(
       env, GetWindowAndroid().obj(), GetEnumeratedIconId(), java_bitmap.obj(),

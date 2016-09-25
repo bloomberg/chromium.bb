@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_INFOBAR_DELEGATE_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -26,7 +27,7 @@ class PermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   using PermissionSetCallback = base::Callback<void(bool, PermissionAction)>;
 
   ~PermissionInfoBarDelegate() override;
-  ContentSettingsType content_setting() const { return content_settings_type_; }
+  virtual std::vector<int> content_settings() const;
 
   // Returns true if the infobar should display a toggle to allow users to
   // opt-out of persisting their accept/deny decision.
@@ -35,6 +36,7 @@ class PermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   // Sets whether or not a decided permission should be persisted to content
   // settings.
   void set_persist(bool persist) { persist_ = persist; }
+  bool persist() const { return persist_; }
 
   // ConfirmInfoBarDelegate:
   base::string16 GetMessageText() const override;

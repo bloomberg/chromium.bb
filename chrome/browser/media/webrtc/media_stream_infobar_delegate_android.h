@@ -10,18 +10,15 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
-#include "chrome/browser/permissions/grouped_permission_infobar_delegate.h"
+#include "chrome/browser/permissions/permission_infobar_delegate.h"
 
 // This class configures an infobar shown when a page requests access to a
 // user's microphone and/or video camera.  The user is shown a message asking
 // which audio and/or video devices he wishes to use with the current page, and
 // buttons to give access to the selected devices to the page, or to deny access
 // to them.
-class MediaStreamInfoBarDelegateAndroid
-    : public GroupedPermissionInfoBarDelegate {
+class MediaStreamInfoBarDelegateAndroid : public PermissionInfoBarDelegate {
  public:
-  ~MediaStreamInfoBarDelegateAndroid() override;
-
   // Prompts the user by creating a media stream infobar and delegate,
   // then checks for an existing infobar for |web_contents| and replaces it if
   // found, or just adds the new infobar otherwise.  Returns whether an infobar
@@ -32,19 +29,26 @@ class MediaStreamInfoBarDelegateAndroid
  private:
   friend class WebRtcTestBase;
 
-  explicit MediaStreamInfoBarDelegateAndroid(
+  MediaStreamInfoBarDelegateAndroid(
+      Profile* profile,
       std::unique_ptr<MediaStreamDevicesController> controller);
+  ~MediaStreamInfoBarDelegateAndroid() override;
 
-  void RecordPermissionAcceptedUma(int position, bool persist);
-  void RecordPermissionDeniedUma(int position, bool persist);
-
-  // ConfirmInfoBarDelegate:
+  // PermissionInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  Type GetInfoBarType() const override;
+  int GetIconId() const override;
   void InfoBarDismissed() override;
   MediaStreamInfoBarDelegateAndroid* AsMediaStreamInfoBarDelegateAndroid()
       override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
+  base::string16 GetLinkText() const override;
+  GURL GetLinkURL() const override;
+  int GetMessageResourceId() const override;
+  std::vector<int> content_settings() const override;
 
   std::unique_ptr<MediaStreamDevicesController> controller_;
 

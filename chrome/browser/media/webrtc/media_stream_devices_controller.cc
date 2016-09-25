@@ -315,28 +315,6 @@ void MediaStreamDevicesController::PermissionDenied() {
               content::MEDIA_DEVICE_PERMISSION_DENIED);
 }
 
-void MediaStreamDevicesController::GroupedRequestFinished(bool audio_accepted,
-                                                          bool video_accepted) {
-  RecordSinglePermissionAction(
-      request_, content::PermissionType::AUDIO_CAPTURE, profile_,
-      base::Bind(audio_accepted ? PermissionUmaUtil::PermissionGranted
-                                : PermissionUmaUtil::PermissionDenied));
-  RecordSinglePermissionAction(
-      request_, content::PermissionType::VIDEO_CAPTURE, profile_,
-      base::Bind(video_accepted ? PermissionUmaUtil::PermissionGranted
-                                : PermissionUmaUtil::PermissionDenied));
-
-  ContentSetting audio_setting =
-      audio_accepted ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-  ContentSetting video_setting =
-      video_accepted ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-  RunCallback(GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-                            old_audio_setting_, audio_setting),
-              GetNewSetting(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-                            old_video_setting_, video_setting),
-              content::MEDIA_DEVICE_PERMISSION_DENIED);
-}
-
 bool MediaStreamDevicesController::ShouldShowPersistenceToggle() const {
   return PermissionUtil::ShouldShowPersistenceToggle();
 }
