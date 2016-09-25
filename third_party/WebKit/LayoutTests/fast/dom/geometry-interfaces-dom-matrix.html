@@ -64,71 +64,27 @@ test(() => {
 test(() => {
   var float32Array = new Float32Array([1, 2, 3, 4, 5, 6]);
   var matrix2d = DOMMatrix.fromFloat32Array(float32Array);
-  assert_true(matrix2d.is2D);
-  assert_equals(matrix2d.a, 1);
-  assert_equals(matrix2d.b, 2);
-  assert_equals(matrix2d.c, 3);
-  assert_equals(matrix2d.d, 4);
-  assert_equals(matrix2d.e, 5);
-  assert_equals(matrix2d.f, 6);
+  assert_2d_matrix_equals(matrix2d, [1, 2, 3, 4, 5, 6])
 }, "DOMMatrix fromFloat32Array - 2D matrix");
 
 test(() => {
   // 3.1 is not representable as a 32-bit float
   var float64Array = new Float64Array([1, 2, 3, 3.1, 4, 5]);
   var matrix2d = DOMMatrix.fromFloat64Array(float64Array);
-  assert_true(matrix2d.is2D);
-  assert_equals(matrix2d.a, 1);
-  assert_equals(matrix2d.b, 2);
-  assert_equals(matrix2d.c, 3);
-  assert_equals(matrix2d.d, 3.1);
-  assert_equals(matrix2d.e, 4);
-  assert_equals(matrix2d.f, 5);
+  assert_2d_matrix_equals(matrix2d, [1, 2, 3, 3.1, 4, 5])
 }, "DOMMatrix fromFloat64Array - 2D matrix");
 
 test(() => {
   var float32Array = new Float32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
   var matrix3d = DOMMatrix.fromFloat32Array(float32Array);
-  assert_false(matrix3d.is2D);
-  assert_equals(matrix3d.m11, 1);
-  assert_equals(matrix3d.m12, 2);
-  assert_equals(matrix3d.m13, 3);
-  assert_equals(matrix3d.m14, 4);
-  assert_equals(matrix3d.m21, 5);
-  assert_equals(matrix3d.m22, 6);
-  assert_equals(matrix3d.m23, 7);
-  assert_equals(matrix3d.m24, 8);
-  assert_equals(matrix3d.m31, 9);
-  assert_equals(matrix3d.m32, 10);
-  assert_equals(matrix3d.m33, 11);
-  assert_equals(matrix3d.m34, 12);
-  assert_equals(matrix3d.m41, 13);
-  assert_equals(matrix3d.m42, 14);
-  assert_equals(matrix3d.m43, 15);
-  assert_equals(matrix3d.m44, 16);
+  assert_3d_matrix_equals(matrix3d, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])
 }, "DOMMatrix fromFloat32Array - 3D matrix");
 
 test(() => {
   // 10.1 and 16.6 are not representable as a 32-bit float
   var float64Array = new Float64Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]);
   var matrix3d = DOMMatrix.fromFloat64Array(float64Array);
-  assert_false(matrix3d.is2D);
-  assert_equals(matrix3d.m11, 1);
-  assert_equals(matrix3d.m12, 2);
-  assert_equals(matrix3d.m13, 3);
-  assert_equals(matrix3d.m14, 4);
-  assert_equals(matrix3d.m21, 5);
-  assert_equals(matrix3d.m22, 6);
-  assert_equals(matrix3d.m23, 7);
-  assert_equals(matrix3d.m24, 8);
-  assert_equals(matrix3d.m31, 9);
-  assert_equals(matrix3d.m32, 10.1);
-  assert_equals(matrix3d.m33, 11);
-  assert_equals(matrix3d.m34, 12);
-  assert_equals(matrix3d.m41, 13);
-  assert_equals(matrix3d.m42, 14);
-  assert_equals(matrix3d.m43, 15);
-  assert_equals(matrix3d.m44, 16.6);
+  assert_3d_matrix_equals(matrix3d, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6])
 }, "DOMMatrix fromFloat64Array - 3D matrix");
 
 test(() => {
@@ -237,8 +193,7 @@ test(() => {
   assert_2d_matrix_equals(matrix, {
       m11: 1, m12: 2,
       m21: 3, m22: 4,
-      m41: 5, m42: 6,
-      isIdentity: false
+      m41: 5, m42: 6
   });
 }, "DOMMatrix.fromMatrix({a: 1, b: 2, c: 3, d: 4, e: 5, f: 6}) should create a 2D DOMMatrix.");
 
@@ -248,8 +203,7 @@ test(() => {
       m11: 1, m12: 0, m13: 0, m14: 0,
       m21: 0, m22: 2, m23: 5, m24: 0,
       m31: 0, m32: 0, m33: 3, m34: 0,
-      m41: 0, m42: 0, m43: 6, m44: 4,
-      isIdentity: false
+      m41: 0, m42: 0, m43: 6, m44: 4
   });
 }, "DOMMatrix.fromMatrix({m11: 1, m22: 2, m33: 3, m44: 4, m23: 5, m43: 6}) should create a 3D DOMMatrix.");
 
@@ -258,8 +212,7 @@ test(() => {
   assert_2d_matrix_equals(matrix, {
       m11: 7, m12: 0,
       m21: 9, m22: 1,
-      m41: 0, m42: 0,
-      isIdentity: false
+      m41: 0, m42: 0
   });
 }, "If 2d related properties don't be set, should set to fallback.");
 
@@ -281,8 +234,7 @@ test(() => {
       m11: NaN, m12: NaN, m13: NaN, m14: NaN,
       m21: NaN, m22: NaN, m23: NaN, m24: NaN,
       m31: NaN, m32: NaN, m33: NaN, m34: NaN,
-      m41: NaN, m42: NaN, m43: NaN, m44: NaN,
-      isIdentity: false, is2D: false
+      m41: NaN, m42: NaN, m43: NaN, m44: NaN
   });
 }, "DOMMatrix.fromMatrix(): NaN test");
 
