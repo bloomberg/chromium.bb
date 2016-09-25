@@ -91,6 +91,7 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
           webrtc::DesktopCaptureOptions::CreateDefault())),
       supports_touch_events_(supports_touch_events) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  desktop_capture_options_->set_detect_updated_region(true);
 #if defined(USE_X11)
   IgnoreXServerGrabs(desktop_capture_options_->x_display()->display(), true);
 #endif
