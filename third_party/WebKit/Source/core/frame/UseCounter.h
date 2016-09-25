@@ -193,7 +193,8 @@ public:
         InputTypePassword = 192,
         InputTypePasswordMaxLength = 193,
         PrefixedPageVisibility = 196,
-        CSSStyleSheetInsertRuleOptionalArg = 198, // Inconsistent with the specification and other browsers.
+        // Inconsistent with the specification and other browsers.
+        CSSStyleSheetInsertRuleOptionalArg = 198,
         DocumentBeforeUnloadRegistered = 200,
         DocumentBeforeUnloadFired = 201,
         DocumentUnloadRegistered = 202,
@@ -219,7 +220,8 @@ public:
         PrefixedTransform3dMediaFeature = 237,
         PrefixedStorageQuota = 240,
         ResetReferrerPolicy = 243,
-        CaseInsensitiveAttrSelectorMatch = 244, // Case-insensitivity dropped from specification.
+        // Case-insensitivity dropped from specification.
+        CaseInsensitiveAttrSelectorMatch = 244,
         FormNameAccessForImageElement = 246,
         FormNameAccessForPastNamesMap = 247,
         FormAssociationByParser = 248,
