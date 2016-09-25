@@ -5,6 +5,7 @@
 #include "bindings/core/v8/serialization/V8ScriptValueSerializer.h"
 
 #include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
@@ -12,6 +13,7 @@
 #include "core/dom/DOMArrayBufferBase.h"
 #include "core/html/ImageData.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/WebBlobInfo.h"
 #include "wtf/AutoReset.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 
@@ -123,6 +125,28 @@ void V8ScriptValueSerializer::writeUTF8String(const String& string)
 bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable, ExceptionState& exceptionState)
 {
     const WrapperTypeInfo* wrapperTypeInfo = wrappable->wrapperTypeInfo();
+    if (wrapperTypeInfo == &V8Blob::wrapperTypeInfo) {
+        Blob* blob = wrappable->toImpl<Blob>();
+        if (blob->isClosed()) {
+            exceptionState.throwDOMException(DataCloneError,
+                "A Blob object has been closed, and could therefore not be cloned.");
+            return false;
+        }
+        m_serializedScriptValue->blobDataHandles().set(blob->uuid(), blob->blobDataHandle());
+        if (m_blobInfoArray) {
+            size_t index = m_blobInfoArray->size();
+            DCHECK_LE(index, std::numeric_limits<uint32_t>::max());
+            m_blobInfoArray->emplaceAppend(blob->uuid(), blob->type(), blob->size());
+            writeTag(BlobIndexTag);
+            writeUint32(static_cast<uint32_t>(index));
+        } else {
+            writeTag(BlobTag);
+            writeUTF8String(blob->uuid());
+            writeUTF8String(blob->type());
+            writeUint64(blob->size());
+        }
+        return true;
+    }
     if (wrapperTypeInfo == &V8ImageBitmap::wrapperTypeInfo) {
         ImageBitmap* imageBitmap = wrappable->toImpl<ImageBitmap>();
         if (imageBitmap->isNeutered()) {

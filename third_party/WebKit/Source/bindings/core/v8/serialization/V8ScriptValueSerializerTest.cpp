@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "bindings/core/v8/V8Blob.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
@@ -16,11 +17,13 @@
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
 #include "core/dom/MessagePort.h"
+#include "core/fileapi/Blob.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/StaticBitmapImage.h"
+#include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebMessagePortChannelClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -55,7 +58,11 @@ RefPtr<SerializedScriptValue> serializedValue(const Vector<uint8_t>& bytes)
     return SerializedScriptValue::create(String(reinterpret_cast<const UChar*>(&bytes[0]), bytes.size() / 2));
 }
 
-v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value, V8TestingScope& scope, ExceptionState* overrideExceptionState = nullptr, Transferables* transferables = nullptr)
+v8::Local<v8::Value> roundTrip(
+    v8::Local<v8::Value> value, V8TestingScope& scope,
+    ExceptionState* overrideExceptionState = nullptr,
+    Transferables* transferables = nullptr,
+    WebBlobInfoArray* blobInfo = nullptr)
 {
     RefPtr<ScriptState> scriptState = scope.getScriptState();
     ExceptionState& exceptionState = overrideExceptionState ? *overrideExceptionState : scope.getExceptionState();
@@ -68,8 +75,9 @@ v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value, V8TestingScope& scope
             return v8::Local<v8::Value>();
     }
 
-    RefPtr<SerializedScriptValue> serializedScriptValue =
-        V8ScriptValueSerializer(scriptState).serialize(value, transferables, exceptionState);
+    V8ScriptValueSerializer serializer(scriptState);
+    serializer.setBlobInfoArray(blobInfo);
+    RefPtr<SerializedScriptValue> serializedScriptValue = serializer.serialize(value, transferables, exceptionState);
     DCHECK_EQ(!serializedScriptValue, exceptionState.hadException());
     if (!serializedScriptValue)
         return v8::Local<v8::Value>();
@@ -79,6 +87,7 @@ v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value, V8TestingScope& scope
 
     V8ScriptValueDeserializer deserializer(scriptState, serializedScriptValue);
     deserializer.setTransferredMessagePorts(transferredMessagePorts);
+    deserializer.setBlobInfoArray(blobInfo);
     return deserializer.deserialize();
 }
 
@@ -482,6 +491,111 @@ TEST(V8ScriptValueSerializerTest, TransferOffscreenCanvas)
     EXPECT_EQ(519, newCanvas->getAssociatedCanvasId());
     EXPECT_TRUE(canvas->isNeutered());
     EXPECT_FALSE(newCanvas->isNeutered());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripBlob)
+{
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    const char kHelloWorld[] = "Hello world!";
+    Blob* blob = Blob::create(
+        reinterpret_cast<const unsigned char*>(&kHelloWorld),
+        sizeof(kHelloWorld), "text/plain");
+    String uuid = blob->uuid();
+    EXPECT_FALSE(uuid.isEmpty());
+    v8::Local<v8::Value> wrapper = toV8(blob, scope.getScriptState());
+    v8::Local<v8::Value> result = roundTrip(wrapper, scope);
+    ASSERT_TRUE(V8Blob::hasInstance(result, scope.isolate()));
+    Blob* newBlob = V8Blob::toImpl(result.As<v8::Object>());
+    EXPECT_EQ("text/plain", newBlob->type());
+    EXPECT_EQ(sizeof(kHelloWorld), newBlob->size());
+    EXPECT_EQ(uuid, newBlob->uuid());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeBlob)
+{
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    RefPtr<SerializedScriptValue> input = serializedValue({
+        0xff, 0x09, 0x3f, 0x00, 0x62, 0x24, 0x64, 0x38, 0x37, 0x35, 0x64, 0x66,
+        0x63, 0x32, 0x2d, 0x34, 0x35, 0x30, 0x35, 0x2d, 0x34, 0x36, 0x31, 0x62,
+        0x2d, 0x39, 0x38, 0x66, 0x65, 0x2d, 0x30, 0x63, 0x66, 0x36, 0x63, 0x63,
+        0x35, 0x65, 0x61, 0x66, 0x34, 0x34, 0x0a, 0x74, 0x65, 0x78, 0x74, 0x2f,
+        0x70, 0x6c, 0x61, 0x69, 0x6e, 0x0c});
+    v8::Local<v8::Value> result = V8ScriptValueDeserializer(scope.getScriptState(), input).deserialize();
+    ASSERT_TRUE(V8Blob::hasInstance(result, scope.isolate()));
+    Blob* newBlob = V8Blob::toImpl(result.As<v8::Object>());
+    EXPECT_EQ("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", newBlob->uuid());
+    EXPECT_EQ("text/plain", newBlob->type());
+    EXPECT_EQ(12u, newBlob->size());
+}
+
+TEST(V8ScriptValueSerializerTest, RoundTripBlobIndex)
+{
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    const char kHelloWorld[] = "Hello world!";
+    Blob* blob = Blob::create(
+        reinterpret_cast<const unsigned char*>(&kHelloWorld),
+        sizeof(kHelloWorld), "text/plain");
+    String uuid = blob->uuid();
+    EXPECT_FALSE(uuid.isEmpty());
+    v8::Local<v8::Value> wrapper = toV8(blob, scope.getScriptState());
+    WebBlobInfoArray blobInfoArray;
+    v8::Local<v8::Value> result = roundTrip(wrapper, scope, nullptr, nullptr, &blobInfoArray);
+
+    // As before, the resulting blob should be correct.
+    ASSERT_TRUE(V8Blob::hasInstance(result, scope.isolate()));
+    Blob* newBlob = V8Blob::toImpl(result.As<v8::Object>());
+    EXPECT_EQ("text/plain", newBlob->type());
+    EXPECT_EQ(sizeof(kHelloWorld), newBlob->size());
+    EXPECT_EQ(uuid, newBlob->uuid());
+
+    // The blob info array should also contain the blob details since it was
+    // serialized by index into this array.
+    ASSERT_EQ(1u, blobInfoArray.size());
+    const WebBlobInfo& info = blobInfoArray[0];
+    EXPECT_FALSE(info.isFile());
+    EXPECT_EQ(uuid, String(info.uuid()));
+    EXPECT_EQ("text/plain", info.type());
+    EXPECT_EQ(sizeof(kHelloWorld), static_cast<size_t>(info.size()));
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeBlobIndex)
+{
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    RefPtr<SerializedScriptValue> input = serializedValue({
+        0xff, 0x09, 0x3f, 0x00, 0x69, 0x00});
+    WebBlobInfoArray blobInfoArray;
+    blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", "text/plain", 12);
+    V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
+    deserializer.setBlobInfoArray(&blobInfoArray);
+    v8::Local<v8::Value> result = deserializer.deserialize();
+    ASSERT_TRUE(V8Blob::hasInstance(result, scope.isolate()));
+    Blob* newBlob = V8Blob::toImpl(result.As<v8::Object>());
+    EXPECT_EQ("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", newBlob->uuid());
+    EXPECT_EQ("text/plain", newBlob->type());
+    EXPECT_EQ(12u, newBlob->size());
+}
+
+TEST(V8ScriptValueSerializerTest, DecodeBlobIndexOutOfRange)
+{
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    RefPtr<SerializedScriptValue> input = serializedValue({
+        0xff, 0x09, 0x3f, 0x00, 0x69, 0x01});
+    {
+        V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
+        ASSERT_TRUE(deserializer.deserialize()->IsNull());
+    }
+    {
+        WebBlobInfoArray blobInfoArray;
+        blobInfoArray.emplaceAppend("d875dfc2-4505-461b-98fe-0cf6cc5eaf44", "text/plain", 12);
+        V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
+        deserializer.setBlobInfoArray(&blobInfoArray);
+        ASSERT_TRUE(deserializer.deserialize()->IsNull());
+    }
 }
 
 } // namespace

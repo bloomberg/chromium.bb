@@ -23,6 +23,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isola
 {
     if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
         V8ScriptValueSerializer serializer(ScriptState::current(isolate));
+        serializer.setBlobInfoArray(blobInfo);
         return serializer.serialize(value, transferables, exceptionState);
     }
     SerializedScriptValueWriter writer;
@@ -35,6 +36,7 @@ v8::Local<v8::Value> SerializedScriptValueFactory::deserialize(SerializedScriptV
     if (RuntimeEnabledFeatures::v8BasedStructuredCloneEnabled()) {
         V8ScriptValueDeserializer deserializer(ScriptState::current(isolate), value);
         deserializer.setTransferredMessagePorts(messagePorts);
+        deserializer.setBlobInfoArray(blobInfo);
         return deserializer.deserialize();
     }
     // deserialize() can run arbitrary script (e.g., setters), which could result in |this| being destroyed.

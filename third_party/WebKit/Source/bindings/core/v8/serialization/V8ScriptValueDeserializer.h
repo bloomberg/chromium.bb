@@ -31,6 +31,7 @@ public:
     V8ScriptValueDeserializer(RefPtr<ScriptState>, RefPtr<SerializedScriptValue>);
 
     void setTransferredMessagePorts(const MessagePortArray* ports) { m_transferredMessagePorts = ports; }
+    void setBlobInfoArray(const WebBlobInfoArray* blobInfoArray) { m_blobInfoArray = blobInfoArray; }
 
     v8::Local<v8::Value> deserialize();
 
@@ -54,6 +55,8 @@ protected:
 private:
     void transfer();
 
+    RefPtr<BlobDataHandle> getOrCreateBlobDataHandle(const String& uuid, const String& type, uint64_t size);
+
     // v8::ValueDeserializer::Delegate
     v8::MaybeLocal<v8::Object> ReadHostObject(v8::Isolate*) override;
 
@@ -66,6 +69,9 @@ private:
 
     // ImageBitmaps which were transferred in.
     HeapVector<Member<ImageBitmap>> m_transferredImageBitmaps;
+
+    // Blob info for blobs stored by index.
+    const WebBlobInfoArray* m_blobInfoArray = nullptr;
 
     // Set during deserialize after the header is read.
     uint32_t m_version = 0;

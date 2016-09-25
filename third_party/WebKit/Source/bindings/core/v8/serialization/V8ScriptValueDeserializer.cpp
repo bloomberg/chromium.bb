@@ -8,10 +8,12 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/dom/MessagePort.h"
+#include "core/fileapi/Blob.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/WebBlobInfo.h"
 #include "wtf/CheckedNumeric.h"
 
 namespace blink {
@@ -104,6 +106,24 @@ bool V8ScriptValueDeserializer::readUTF8String(String* string)
 ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(SerializationTag tag)
 {
     switch (tag) {
+    case BlobTag: {
+        if (version() < 3)
+            return nullptr;
+        String uuid, type;
+        uint64_t size;
+        if (!readUTF8String(&uuid) || !readUTF8String(&type) || !readUint64(&size))
+            return nullptr;
+        return Blob::create(getOrCreateBlobDataHandle(uuid, type, size));
+    }
+    case BlobIndexTag: {
+        if (version() < 6 || !m_blobInfoArray)
+            return nullptr;
+        uint32_t index = 0;
+        if (!readUint32(&index) || index >= m_blobInfoArray->size())
+            return nullptr;
+        const WebBlobInfo& info = (*m_blobInfoArray)[index];
+        return Blob::create(getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
+    }
     case ImageBitmapTag: {
         uint32_t originClean = 0, isPremultiplied = 0, width = 0, height = 0, pixelLength = 0;
         const void* pixels = nullptr;
@@ -169,6 +189,29 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(SerializationTag tag)
         break;
     }
     return nullptr;
+}
+
+RefPtr<BlobDataHandle> V8ScriptValueDeserializer::getOrCreateBlobDataHandle(const String& uuid, const String& type, uint64_t size)
+{
+    // The containing ssv may have a BDH for this uuid if this ssv is just being
+    // passed from main to worker thread (for example). We use those values when creating
+    // the new blob instead of cons'ing up a new BDH.
+    //
+    // FIXME: Maybe we should require that it work that way where the ssv must have a BDH for any
+    // blobs it comes across during deserialization. Would require callers to explicitly populate
+    // the collection of BDH's for blobs to work, which would encourage lifetimes to be considered
+    // when passing ssv's around cross process. At present, we get 'lucky' in some cases because
+    // the blob in the src process happens to still exist at the time the dest process is deserializing.
+    // For example in sharedWorker.postMessage(...).
+    BlobDataHandleMap& handles = m_serializedScriptValue->blobDataHandles();
+    BlobDataHandleMap::const_iterator it = handles.find(uuid);
+    if (it != handles.end()) {
+        RefPtr<BlobDataHandle> handle = it->value;
+        DCHECK_EQ(handle->type(), type);
+        DCHECK_EQ(handle->size(), size);
+        return handle;
+    }
+    return BlobDataHandle::create(uuid, type, size);
 }
 
 v8::MaybeLocal<v8::Object> V8ScriptValueDeserializer::ReadHostObject(v8::Isolate* isolate)

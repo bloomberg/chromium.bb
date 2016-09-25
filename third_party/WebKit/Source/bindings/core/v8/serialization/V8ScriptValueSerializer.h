@@ -32,6 +32,11 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT V8ScriptValueSeri
     WTF_MAKE_NONCOPYABLE(V8ScriptValueSerializer);
 public:
     explicit V8ScriptValueSerializer(RefPtr<ScriptState>);
+
+    // If not null, blobs will have info written into this array and be
+    // serialized by index.
+    void setBlobInfoArray(WebBlobInfoArray* blobInfoArray) { m_blobInfoArray = blobInfoArray; }
+
     RefPtr<SerializedScriptValue> serialize(v8::Local<v8::Value>, Transferables*, ExceptionState&);
 
 protected:
@@ -68,6 +73,8 @@ private:
     v8::ValueSerializer m_serializer;
     const Transferables* m_transferables = nullptr;
     const ExceptionState* m_exceptionState = nullptr;
+    WebBlobInfoArray* m_blobInfoArray = nullptr;
+
 #if DCHECK_IS_ON()
     bool m_serializeInvoked = false;
 #endif
