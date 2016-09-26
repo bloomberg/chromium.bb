@@ -68,7 +68,8 @@ private:
         if (!ruleSet)
             return false;
 
-        SharedStyleFinder finder(ElementResolveContext(element),
+        ElementResolveContext context(element);
+        SharedStyleFinder finder(context,
             m_ruleSet->features(),
             m_siblingRuleSet,
             m_uncommonAttributeRuleSet,
