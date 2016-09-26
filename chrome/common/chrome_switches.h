@@ -297,7 +297,7 @@ extern const char kDisableVrShell[];
 extern const char kEnableAccessibilityTabSwitcher[];
 extern const char kEnableAppLink[];
 extern const char kEnableContextualSearch[];
-extern const char kEnableContextualSearchNowOnTapBarIntegration[];
+extern const char kEnableContextualSearchContextualCardsBarIntegration[];
 extern const char kEnableHostedMode[];
 extern const char kEnableHungRendererInfoBar[];
 extern const char kEnableVrShell[];

@@ -94,7 +94,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsBarOverlapCollectionEnabled;
     private static Boolean sIsBarOverlapSuppressionEnabled;
     private static Integer sSuppressionTaps;
-    private static Boolean sIsNowOnTapBarIntegrationEnabled;
+    private static Boolean sIsContextualCardsBarIntegrationEnabled;
 
     /**
      * Don't instantiate.
@@ -367,12 +367,12 @@ public class ContextualSearchFieldTrial {
     }
 
     // TODO(donnd): Remove once bar-integration is fully landed if still unused (native only).
-    static boolean isNowOnTapBarIntegrationEnabled() {
-        if (sIsNowOnTapBarIntegrationEnabled == null) {
-            sIsNowOnTapBarIntegrationEnabled = getBooleanParam(
-                    ChromeSwitches.CONTEXTUAL_SEARCH_NOW_ON_TAP_BAR_INTEGRATION);
+    static boolean isContextualCardsBarIntegrationEnabled() {
+        if (sIsContextualCardsBarIntegrationEnabled == null) {
+            sIsContextualCardsBarIntegrationEnabled = getBooleanParam(
+                    ChromeSwitches.CONTEXTUAL_SEARCH_CONTEXTUAL_CARDS_BAR_INTEGRATION);
         }
-        return sIsNowOnTapBarIntegrationEnabled;
+        return sIsContextualCardsBarIntegrationEnabled;
     }
 
     // --------------------------------------------------------------------------------------------

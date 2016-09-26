@@ -42,8 +42,8 @@ ContextualSearchFieldTrial::ContextualSearchFieldTrial()
       is_send_base_page_url_disabled_(false),
       is_decode_mentions_disabled_cached_(false),
       is_decode_mentions_disabled_(false),
-      is_now_on_tap_bar_integration_enabled_cached_(false),
-      is_now_on_tap_bar_integration_enabled_(false) {}
+      is_contextual_cards_bar_integration_enabled_cached_(false),
+      is_contextual_cards_bar_integration_enabled_(false) {}
 
 ContextualSearchFieldTrial::~ContextualSearchFieldTrial() {}
 
@@ -83,11 +83,11 @@ bool ContextualSearchFieldTrial::IsDecodeMentionsDisabled() {
                          &is_decode_mentions_disabled_);
 }
 
-bool ContextualSearchFieldTrial::IsNowOnTapBarIntegrationEnabled() {
+bool ContextualSearchFieldTrial::IsContextualCardsBarIntegrationEnabled() {
   return GetBooleanParam(
-      switches::kEnableContextualSearchNowOnTapBarIntegration,
-      &is_now_on_tap_bar_integration_enabled_cached_,
-      &is_now_on_tap_bar_integration_enabled_);
+      switches::kEnableContextualSearchContextualCardsBarIntegration,
+      &is_contextual_cards_bar_integration_enabled_cached_,
+      &is_contextual_cards_bar_integration_enabled_);
 }
 
 bool ContextualSearchFieldTrial::GetBooleanParam(const std::string& name,

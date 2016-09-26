@@ -188,19 +188,19 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
     : version(-1),
       start(base::string16::npos),
       end(base::string16::npos),
-      now_on_tap_version(0) {}
+      contextual_cards_version(0) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     int version,
     const std::string& selection,
     const std::string& base_page_url,
-    int now_on_tap_version)
+    int contextual_cards_version)
     : version(version),
       start(base::string16::npos),
       end(base::string16::npos),
       selection(selection),
       base_page_url(base_page_url),
-      now_on_tap_version(now_on_tap_version) {}
+      contextual_cards_version(contextual_cards_version) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     int version,
@@ -210,7 +210,7 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     const std::string& content,
     const std::string& base_page_url,
     const std::string& encoding,
-    int now_on_tap_version)
+    int contextual_cards_version)
     : version(version),
       start(start),
       end(end),
@@ -218,7 +218,7 @@ TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
       content(content),
       base_page_url(base_page_url),
       encoding(encoding),
-      now_on_tap_version(now_on_tap_version) {}
+      contextual_cards_version(contextual_cards_version) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     const ContextualSearchParams& other) = default;
@@ -1018,7 +1018,8 @@ std::string TemplateURLRef::HandleReplacements(
         // The above parameters all add a trailing "&" so there must be one last
         // parameter that's always added at the end.
         context_data.append("ctxsl_coca=" +
-                            base::IntToString(params.now_on_tap_version));
+                            base::IntToString(
+                                params.contextual_cards_version));
 
         HandleReplacement(std::string(), context_data, *i, &url);
         break;

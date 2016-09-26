@@ -57,8 +57,8 @@ const char kDoPreventPreloadValue[] = "1";
 // The number of characters that should be shown after the selected expression.
 const int kSurroundingSizeForUI = 60;
 
-// The version of the Now on Tap API that we want to invoke.
-const int kNowOnTapVersion = 1;
+// The version of the Contextual Cards API that we want to invoke.
+const int kContextualCardsVersion = 1;
 
 } // namespace
 
@@ -212,12 +212,13 @@ std::string ContextualSearchDelegate::BuildRequestUrl(std::string selection) {
   TemplateURLRef::SearchTermsArgs search_terms_args =
       TemplateURLRef::SearchTermsArgs(base::string16());
 
-  int now_on_tap_version =
-      field_trial_->IsNowOnTapBarIntegrationEnabled() ? kNowOnTapVersion : 0;
+  int contextual_cards_version =
+      field_trial_->IsContextualCardsBarIntegrationEnabled()
+      ? kContextualCardsVersion : 0;
 
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
       kContextualSearchRequestVersion, selected_text, std::string(),
-      now_on_tap_version);
+      contextual_cards_version);
 
   search_terms_args.contextual_search_params = params;
 
@@ -497,8 +498,9 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     }
   }
 
-  if (field_trial_->IsNowOnTapBarIntegrationEnabled()) {
-    // Get the basic Bar data for Now on Tap integration directly from the root.
+  if (field_trial_->IsContextualCardsBarIntegrationEnabled()) {
+    // Get the basic Bar data for Contextual Cards integration directly
+    // from the root.
     dict->GetString(kContextualSearchCaption, caption);
     dict->GetString(kContextualSearchThumbnail, thumbnail_url);
   }

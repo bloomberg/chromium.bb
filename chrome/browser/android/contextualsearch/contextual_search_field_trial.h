@@ -35,8 +35,8 @@ class ContextualSearchFieldTrial {
   // Gets whether decoding the mentions fields in the Resolve is disabled.
   bool IsDecodeMentionsDisabled();
 
-  // Gets whether Bar integration with Now on Tap data is enabled.
-  bool IsNowOnTapBarIntegrationEnabled();
+  // Gets whether Bar integration with Contextual Cards data is enabled.
+  bool IsContextualCardsBarIntegrationEnabled();
 
   // Disables the cache.
   void DisableCache();
@@ -82,8 +82,8 @@ class ContextualSearchFieldTrial {
   bool is_send_base_page_url_disabled_;
   bool is_decode_mentions_disabled_cached_;
   bool is_decode_mentions_disabled_;
-  bool is_now_on_tap_bar_integration_enabled_cached_;
-  bool is_now_on_tap_bar_integration_enabled_;
+  bool is_contextual_cards_bar_integration_enabled_cached_;
+  bool is_contextual_cards_bar_integration_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchFieldTrial);
 };

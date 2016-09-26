@@ -86,7 +86,7 @@ class TemplateURLRef {
       ContextualSearchParams(int version,
                              const std::string& selection,
                              const std::string& base_page_url,
-                             int now_on_tap_version);
+                             int contextual_cards_version);
       // TODO(donnd): Delete constructor once Clank, iOS, and tests no
       // longer depend on it.
       ContextualSearchParams(int version,
@@ -96,7 +96,7 @@ class TemplateURLRef {
                              const std::string& content,
                              const std::string& base_page_url,
                              const std::string& encoding,
-                             int now_on_tap_version);
+                             int contextual_cards_version);
       ContextualSearchParams(const ContextualSearchParams& other);
       ~ContextualSearchParams();
 
@@ -121,9 +121,9 @@ class TemplateURLRef {
       // The encoding of content.
       std::string encoding;
 
-      // The version of Now on Tap data to request.
+      // The version of Contextual Cards data to request.
       // A value of 0 indicates no data needed.
-      int now_on_tap_version;
+      int contextual_cards_version;
     };
 
     // The search terms (query).
