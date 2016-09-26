@@ -90,10 +90,14 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
       service_ = base::MakeUnique<mash::MashPackagedService>();
       service_->set_context(base::MakeUnique<shell::ServiceContext>(
           service_.get(), mojo_test_connector_->Init()));
-      ConnectToDefaultApps(service_->connector());
     }
-    return mojo_test_connector_->PrepareForTest(command_line,
-                                                test_launch_options);
+    std::unique_ptr<content::TestState> test_state =
+        mojo_test_connector_->PrepareForTest(command_line, test_launch_options);
+    // Start default apps after chrome, as they may try to connect to chrome on
+    // startup. Attempt to connect once per test in case a previous test crashed
+    // mash_session.
+    ConnectToDefaultApps(service_->connector());
+    return test_state;
   }
   void OnDoneRunningTests() override {
     // We have to shutdown this state here, while an AtExitManager is still

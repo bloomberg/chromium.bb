@@ -48,7 +48,6 @@ class BackgroundTestState {
   // Must be paired with a call to ChildProcessLaunched().
   void Connect(base::CommandLine* command_line,
                shell::ServiceManager* service_manager,
-               const std::string& instance,
                base::TestLauncher::LaunchOptions* test_launch_options) {
     command_line->AppendSwitch(MojoTestConnector::kTestSwitch);
     command_line->AppendSwitch(switches::kChildProcess);
@@ -71,8 +70,10 @@ class BackgroundTestState {
 
     std::unique_ptr<shell::ConnectParams> params(new shell::ConnectParams);
     params->set_source(shell::CreateServiceManagerIdentity());
-    params->set_target(
-        shell::Identity(kTestName, shell::mojom::kRootUserID, instance));
+    // Use the default instance name (which should be "browser"). Otherwise a
+    // service (e.g. ash) that connects to the default "exe:chrome" will spawn
+    // a new instance.
+    params->set_target(shell::Identity(kTestName, shell::mojom::kRootUserID));
 
     shell::mojom::ClientProcessConnectionPtr client_process_connection =
         shell::mojom::ClientProcessConnection::New();
@@ -169,11 +170,8 @@ class MojoTestState : public content::TestState {
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options,
       shell::ServiceManager* service_manager) {
-    static int instance_id = 0;
-    const std::string instance_name =
-        "instance-" + base::IntToString(instance_id++);
     background_state_.reset(new BackgroundTestState);
-    background_state_->Connect(command_line, service_manager, instance_name,
+    background_state_->Connect(command_line, service_manager,
                                test_launch_options);
     signal->Signal();
   }
