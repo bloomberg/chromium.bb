@@ -580,6 +580,15 @@ GpuControlList::GpuControlListEntry::GetEntryFromValue(
     dictionary_entry_count++;
   }
 
+  std::string gl_version_string_value;
+  if (value->GetString("gl_version_string", &gl_version_string_value)) {
+    if (!entry->SetGLVersionStringInfo(gl_version_string_value)) {
+      LOG(WARNING) << "Malformed gl_version_string entry " << entry->id();
+      return NULL;
+    }
+    dictionary_entry_count++;
+  }
+
   std::string gl_vendor_value;
   if (value->GetString("gl_vendor", &gl_vendor_value)) {
     if (!entry->SetGLVendorInfo(gl_vendor_value)) {
@@ -930,6 +939,12 @@ bool GpuControlList::GpuControlListEntry::SetGLVersionInfo(
   return gl_version_info_->IsValid();
 }
 
+bool GpuControlList::GpuControlListEntry::SetGLVersionStringInfo(
+    const std::string& version_string_value) {
+  gl_version_string_info_ = version_string_value;
+  return !gl_version_string_info_.empty();
+}
+
 bool GpuControlList::GpuControlListEntry::SetGLVendorInfo(
     const std::string& vendor_value) {
   gl_vendor_info_ = vendor_value;
@@ -1257,6 +1272,8 @@ bool GpuControlList::GpuControlListEntry::Contains(
   }
   if (GLVersionInfoMismatch(gpu_info.gl_version))
     return false;
+  if (StringMismatch(gpu_info.gl_version, gl_version_string_info_))
+    return false;
   if (StringMismatch(gpu_info.gl_vendor, gl_vendor_info_))
     return false;
   if (StringMismatch(gpu_info.gl_renderer, gl_renderer_info_))
@@ -1318,6 +1335,8 @@ bool GpuControlList::GpuControlListEntry::NeedsMoreInfo(
   if (!driver_vendor_info_.empty() && gpu_info.driver_vendor.empty())
     return true;
   if (driver_version_info_.get() && gpu_info.driver_version.empty())
+    return true;
+  if (!gl_version_string_info_.empty() && gpu_info.gl_version.empty())
     return true;
   if (!gl_vendor_info_.empty() && gpu_info.gl_vendor.empty())
     return true;

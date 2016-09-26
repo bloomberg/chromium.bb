@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.02",
+  "version": "9.03",
   "entries": [
     {
       "id": 1,
@@ -507,7 +507,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
     },
     {
       "id": 68,
-      "description": "Disable partial swaps on linux drivers",
+      "description": "Disable partial swaps on Mesa drivers (detected with GL_RENDERER)",
       "cr_bugs": [339493],
       "os": {
         "type": "linux"
@@ -2029,6 +2029,19 @@ LONG_STRING_CONST(
       "vendor_id": "0x8086",
       "features": [
         "do_teximage_before_copyteximage_to_cube_map"
+      ]
+    },
+    {
+      "id": 190,
+      "description": "Disable partial swaps on Mesa drivers (detected with GL_VERSION)",
+      "cr_bugs": [339493],
+      "os": {
+        "type": "linux"
+      },
+      "gl_type": "gl",
+      "gl_version_string": ".*Mesa.*",
+      "features": [
+        "disable_post_sub_buffers_for_onscreen_surfaces"
       ]
     }
   ]

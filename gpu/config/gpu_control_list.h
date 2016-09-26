@@ -366,6 +366,8 @@ class GPU_EXPORT GpuControlList {
                           const std::string& version_string,
                           const std::string& version_string2);
 
+    bool SetGLVersionStringInfo(const std::string& version_string_value);
+
     bool SetGLVendorInfo(const std::string& vendor_value);
 
     bool SetGLRendererInfo(const std::string& renderer_value);
@@ -447,6 +449,7 @@ class GPU_EXPORT GpuControlList {
     std::unique_ptr<VersionInfo> driver_version_info_;
     std::unique_ptr<VersionInfo> driver_date_info_;
     std::unique_ptr<VersionInfo> gl_version_info_;
+    std::string gl_version_string_info_;
     std::string gl_vendor_info_;
     std::string gl_renderer_info_;
     std::string gl_extensions_info_;
