@@ -799,6 +799,9 @@ void SystemTray::ActivateAndStartNavigation(const ui::KeyEvent& key_event) {
 
 void SystemTray::CreateKeyEventWatcher() {
   key_event_watcher_ = WmShell::Get()->CreateKeyEventWatcher();
+  // mustash does not yet support KeyEventWatcher. http://crbug.com/649600.
+  if (!key_event_watcher_)
+    return;
   key_event_watcher_->AddKeyEventCallback(
       ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE),
       base::Bind(&SystemTray::CloseBubble, base::Unretained(this)));
