@@ -222,10 +222,10 @@ TEST_F(DocumentLoadingRenderingTest, ShouldScheduleFrameAfterSheetsLoaded)
     auto* element = document().getElementById("link");
     EXPECT_NE(nullptr, element);
     element->setAttribute(hrefAttr, "second.css");
-    EXPECT_FALSE(compositor().needsAnimate());
+    EXPECT_FALSE(compositor().needsBeginFrame());
 
     secondCssResource.complete("body { color: red; }");
-    EXPECT_TRUE(compositor().needsAnimate());
+    EXPECT_TRUE(compositor().needsBeginFrame());
 }
 
 TEST_F(DocumentLoadingRenderingTest, ShouldNotPaintIframeContentWithPendingSheets)

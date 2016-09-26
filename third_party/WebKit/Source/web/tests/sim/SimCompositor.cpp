@@ -45,7 +45,7 @@ static void paintFrames(LocalFrame& root, SimDisplayItemList& displayList)
 }
 
 SimCompositor::SimCompositor()
-    : m_needsAnimate(false)
+    : m_needsBeginFrame(false)
     , m_deferCommits(true)
     , m_hasSelection(false)
     , m_webViewImpl(0)
@@ -64,9 +64,14 @@ void SimCompositor::setWebViewImpl(WebViewImpl& webViewImpl)
     m_webViewImpl = &webViewImpl;
 }
 
-void SimCompositor::setNeedsAnimate()
+void SimCompositor::setNeedsBeginFrame()
 {
-    m_needsAnimate = true;
+    m_needsBeginFrame = true;
+}
+
+void SimCompositor::setNeedsCompositorUpdate()
+{
+    m_needsBeginFrame = true;
 }
 
 void SimCompositor::setDeferCommits(bool deferCommits)
@@ -88,8 +93,8 @@ SimDisplayItemList SimCompositor::beginFrame()
 {
     DCHECK(m_webViewImpl);
     DCHECK(!m_deferCommits);
-    DCHECK(m_needsAnimate);
-    m_needsAnimate = false;
+    DCHECK(m_needsBeginFrame);
+    m_needsBeginFrame = false;
 
     // Always advance the time as if the compositor was running at 60fps.
     m_lastFrameTimeMonotonic = monotonicallyIncreasingTime() + 0.016;

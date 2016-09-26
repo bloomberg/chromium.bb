@@ -87,7 +87,7 @@ TEST_F(WebMeaningfulLayoutsTest, VisuallyNonEmptyMissingPump)
     EXPECT_TRUE(document().lifecycle().state() >= DocumentLifecycle::LayoutClean);
 
     // We should still generate a request for another (possibly last) frame.
-    EXPECT_TRUE(compositor().needsAnimate());
+    EXPECT_TRUE(compositor().needsBeginFrame());
 
     // ... which we (the scheduler) happily provide.
     compositor().beginFrame();

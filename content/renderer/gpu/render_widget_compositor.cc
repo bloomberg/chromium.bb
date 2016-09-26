@@ -594,7 +594,7 @@ void RenderWidgetCompositor::SetNeedsRedrawRect(gfx::Rect damage_rect) {
 
 void RenderWidgetCompositor::SetNeedsForcedRedraw() {
   layer_tree_host_->SetNextCommitForcesRedraw();
-  setNeedsAnimate();
+  layer_tree_host_->SetNeedsUpdateLayers();
 }
 
 std::unique_ptr<cc::SwapPromiseMonitor>
@@ -726,11 +726,6 @@ bool RenderWidgetCompositor::hasPendingPageScaleAnimation() const {
 void RenderWidgetCompositor::heuristicsForGpuRasterizationUpdated(
     bool matches_heuristics) {
   layer_tree_host_->SetHasGpuRasterizationTrigger(matches_heuristics);
-}
-
-void RenderWidgetCompositor::setNeedsAnimate() {
-  layer_tree_host_->SetNeedsAnimate();
-  layer_tree_host_->SetNeedsUpdateLayers();
 }
 
 void RenderWidgetCompositor::setNeedsBeginFrame() {

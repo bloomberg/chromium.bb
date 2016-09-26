@@ -32,18 +32,19 @@ public:
     // cc::ThreadProxy::BeginMainFrame would do.
     SimDisplayItemList beginFrame();
 
-    bool needsAnimate() const { return m_needsAnimate; }
+    bool needsBeginFrame() const { return m_needsBeginFrame; }
     bool deferCommits() const { return m_deferCommits; }
 
     bool hasSelection() const { return m_hasSelection; }
 
 private:
-    void setNeedsAnimate() override;
+    void setNeedsBeginFrame() override;
+    void setNeedsCompositorUpdate() override;
     void setDeferCommits(bool) override;
     void registerSelection(const WebSelection&) override;
     void clearSelection() override;
 
-    bool m_needsAnimate;
+    bool m_needsBeginFrame;
     bool m_deferCommits;
     bool m_hasSelection;
     WebViewImpl* m_webViewImpl;

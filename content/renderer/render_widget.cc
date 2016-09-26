@@ -1191,7 +1191,7 @@ void RenderWidget::didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
 void RenderWidget::ScheduleComposite() {
   if (compositor_ &&
       compositor_deps_->GetCompositorImplThreadTaskRunner().get()) {
-    compositor_->setNeedsAnimate();
+    compositor_->setNeedsCompositorUpdate();
   }
 }
 

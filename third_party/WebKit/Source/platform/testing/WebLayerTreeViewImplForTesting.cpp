@@ -129,9 +129,14 @@ void WebLayerTreeViewImplForTesting::startPageScaleAnimation(
     float newPageScale,
     double durationSec) {}
 
-void WebLayerTreeViewImplForTesting::setNeedsAnimate()
+void WebLayerTreeViewImplForTesting::setNeedsBeginFrame()
 {
     m_layerTreeHost->SetNeedsAnimate();
+}
+
+void WebLayerTreeViewImplForTesting::setNeedsCompositorUpdate()
+{
+    m_layerTreeHost->SetNeedsUpdateLayers();
 }
 
 void WebLayerTreeViewImplForTesting::didStopFlinging() {}

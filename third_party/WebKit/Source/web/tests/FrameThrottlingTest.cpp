@@ -231,12 +231,12 @@ TEST_F(FrameThrottlingTest, UnthrottlingFrameSchedulesAnimation)
     frameElement->setAttribute(styleAttr, "transform: translateY(480px)");
     compositeFrame();
     EXPECT_TRUE(frameElement->contentDocument()->view()->canThrottleRendering());
-    EXPECT_FALSE(compositor().needsAnimate());
+    EXPECT_FALSE(compositor().needsBeginFrame());
 
     // Then bring it back on-screen. This should schedule an animation update.
     frameElement->setAttribute(styleAttr, "");
     compositeFrame();
-    EXPECT_TRUE(compositor().needsAnimate());
+    EXPECT_TRUE(compositor().needsBeginFrame());
 }
 
 TEST_F(FrameThrottlingTest, MutatingThrottledFrameDoesNotCauseAnimation)
@@ -261,11 +261,11 @@ TEST_F(FrameThrottlingTest, MutatingThrottledFrameDoesNotCauseAnimation)
 
     // Mutating the throttled frame should not cause an animation to be scheduled.
     frameElement->contentDocument()->documentElement()->setAttribute(styleAttr, "background: green");
-    EXPECT_FALSE(compositor().needsAnimate());
+    EXPECT_FALSE(compositor().needsBeginFrame());
 
     // Move the frame back on screen to unthrottle it.
     frameElement->setAttribute(styleAttr, "");
-    EXPECT_TRUE(compositor().needsAnimate());
+    EXPECT_TRUE(compositor().needsBeginFrame());
 
     // The first frame we composite after unthrottling won't contain the
     // frame's new contents because unthrottling happens at the end of the
@@ -273,7 +273,7 @@ TEST_F(FrameThrottlingTest, MutatingThrottledFrameDoesNotCauseAnimation)
     // contents.
     auto displayItems2 = compositeFrame();
     EXPECT_FALSE(displayItems2.contains(SimCanvas::Rect, "green"));
-    EXPECT_TRUE(compositor().needsAnimate());
+    EXPECT_TRUE(compositor().needsBeginFrame());
 
     auto displayItems3 = compositeFrame();
     EXPECT_TRUE(displayItems3.contains(SimCanvas::Rect, "green"));
@@ -668,7 +668,7 @@ TEST_F(FrameThrottlingTest, DumpThrottledFrame)
 
     LocalFrame* localFrame = toLocalFrame(frameElement->contentFrame());
     localFrame->script().executeScriptInMainWorld("document.body.innerHTML = 'throttled'");
-    EXPECT_FALSE(compositor().needsAnimate());
+    EXPECT_FALSE(compositor().needsBeginFrame());
 
     // The dumped contents should not include the throttled frame.
     DocumentLifecycle::AllowThrottlingScope throttlingScope(document().lifecycle());

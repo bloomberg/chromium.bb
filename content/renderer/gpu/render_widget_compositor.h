@@ -130,7 +130,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
                                double duration_sec) override;
   bool hasPendingPageScaleAnimation() const override;
   void heuristicsForGpuRasterizationUpdated(bool matches_heuristics) override;
-  void setNeedsAnimate() override;
   void setNeedsBeginFrame() override;
   void setNeedsCompositorUpdate() override;
   void didStopFlinging() override;

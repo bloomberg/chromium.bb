@@ -52,14 +52,14 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame)
     ASSERT_FALSE(exceptionState.hadException());
 
     compositor().beginFrame();
-    ASSERT_FALSE(compositor().needsAnimate());
+    ASSERT_FALSE(compositor().needsBeginFrame());
     EXPECT_TRUE(observer->takeRecords(exceptionState).isEmpty());
     EXPECT_EQ(observerCallback->callCount(), 0);
 
     Element* target = document().getElementById("target");
     ASSERT_TRUE(target);
     observer->observe(target, exceptionState);
-    EXPECT_TRUE(compositor().needsAnimate());
+    EXPECT_TRUE(compositor().needsBeginFrame());
 }
 
 } // namespace blink
