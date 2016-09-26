@@ -324,12 +324,12 @@ gen_config_files linux/arm-neon-cpu-detect "--target=armv7-linux-gcc --enable-ru
 gen_config_files linux/arm64 "--target=armv8-linux-gcc ${all_platforms}"
 gen_config_files linux/mipsel "--target=mips32-linux-gcc ${all_platforms}"
 gen_config_files linux/mips64el "--target=mips64-linux-gcc ${all_platforms}"
-gen_config_files linux/generic "--target=generic-gnu ${all_platforms}"
+gen_config_files linux/generic "--target=generic-gnu $HIGHBD ${all_platforms}"
 gen_config_files win/ia32 "--target=x86-win32-vs12 ${all_platforms} ${x86_platforms}"
 gen_config_files win/x64 "--target=x86_64-win64-vs12 ${all_platforms} ${x86_platforms}"
 gen_config_files mac/ia32 "--target=x86-darwin9-gcc ${all_platforms} ${x86_platforms}"
 gen_config_files mac/x64 "--target=x86_64-darwin9-gcc ${all_platforms} ${x86_platforms}"
-gen_config_files nacl "--target=generic-gnu ${all_platforms}"
+gen_config_files nacl "--target=generic-gnu $HIGHBD ${all_platforms}"
 
 echo "Remove temporary directory."
 cd $BASE_DIR
