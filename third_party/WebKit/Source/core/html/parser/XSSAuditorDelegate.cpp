@@ -104,6 +104,8 @@ void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo)
 {
     ASSERT(isMainThread());
 
+    UseCounter::count(m_document, xssInfo.m_didBlockEntirePage ? UseCounter::XSSAuditorBlockedEntirePage : UseCounter::XSSAuditorBlockedScript);
+
     m_document->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, xssInfo.buildConsoleError()));
 
     FrameLoader& frameLoader = m_document->frame()->loader();

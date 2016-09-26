@@ -345,6 +345,17 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
 
         // Process the X-XSS-Protection header, then mix in the CSP header's value.
         ReflectedXSSDisposition xssProtectionHeader = parseXSSProtectionHeader(headerValue, errorDetails, errorPosition, reportURL);
+
+        if (xssProtectionHeader == AllowReflectedXSS)
+            UseCounter::count(*document, UseCounter::XSSAuditorDisabled);
+        else if (xssProtectionHeader == FilterReflectedXSS)
+            UseCounter::count(*document, UseCounter::XSSAuditorEnabledFilter);
+        else if (xssProtectionHeader == BlockReflectedXSS)
+            UseCounter::count(*document, UseCounter::XSSAuditorEnabledBlock);
+        else if (xssProtectionHeader == ReflectedXSSInvalid)
+            UseCounter::count(*document, UseCounter::XSSAuditorInvalid);
+
+
         m_didSendValidXSSProtectionHeader = xssProtectionHeader != ReflectedXSSUnset && xssProtectionHeader != ReflectedXSSInvalid;
         if ((xssProtectionHeader == FilterReflectedXSS || xssProtectionHeader == BlockReflectedXSS) && !reportURL.isEmpty()) {
             xssProtectionReportURL = document->completeURL(reportURL);
