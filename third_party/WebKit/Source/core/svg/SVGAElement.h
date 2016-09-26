@@ -23,7 +23,6 @@
 #define SVGAElement_h
 
 #include "core/CoreExport.h"
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGURIReference.h"
 

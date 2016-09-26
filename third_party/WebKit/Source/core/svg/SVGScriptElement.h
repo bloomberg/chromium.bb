@@ -23,8 +23,6 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/ScriptLoaderClient.h"
-#include "core/svg/SVGAnimatedBoolean.h"
-#include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/heap/Handle.h"

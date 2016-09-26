@@ -21,10 +21,8 @@
 #define SVGForeignObjectElement_h
 
 #include "core/SVGNames.h"
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGraphicsElement.h"
-#include "core/svg/SVGURIReference.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

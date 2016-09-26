@@ -21,7 +21,6 @@
 #ifndef SVGSymbolElement_h
 #define SVGSymbolElement_h
 
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFitToViewBox.h"
 

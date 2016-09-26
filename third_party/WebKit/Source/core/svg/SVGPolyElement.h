@@ -22,7 +22,6 @@
 #define SVGPolyElement_h
 
 #include "core/SVGNames.h"
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedPointList.h"
 #include "core/svg/SVGGeometryElement.h"
 #include "platform/heap/Handle.h"

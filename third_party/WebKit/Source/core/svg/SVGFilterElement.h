@@ -25,10 +25,7 @@
 
 #include "core/CoreExport.h"
 #include "core/SVGNames.h"
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
-#include "core/svg/SVGAnimatedInteger.h"
-#include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"

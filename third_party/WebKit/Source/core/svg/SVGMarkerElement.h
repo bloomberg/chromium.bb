@@ -22,7 +22,6 @@
 #define SVGMarkerElement_h
 
 #include "core/svg/SVGAnimatedAngle.h"
-#include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGElement.h"

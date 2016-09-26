@@ -21,8 +21,6 @@
 #define SVGMPathElement_h
 
 #include "core/SVGNames.h"
-#include "core/svg/SVGAnimatedBoolean.h"
-#include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 
@@ -57,7 +55,6 @@ private:
 
     bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
     void notifyParentOfPathChange(ContainerNode*);
-
 };
 
 } // namespace blink
