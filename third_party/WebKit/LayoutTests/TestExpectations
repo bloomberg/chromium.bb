@@ -581,11 +581,6 @@ crbug.com/621515 inspector/sources/debugger-async/async-await/async-callstack-as
 crbug.com/621515 inspector/sources/debugger-async/async-await/async-callstack-async-await2.html [ Skip ]
 crbug.com/621515 inspector/sources/debugger-async/async-await/async-callstack-async-await3.html [ Skip ]
 
-# Stack traces for async functions are improving as the desugaring changes
-crbug.com/646199 virtual/asyncawait/inspector/sources/debugger-async/async-await/async-callstack-async-await1.html [ NeedsManualRebaseline ]
-crbug.com/646199 virtual/asyncawait/inspector/sources/debugger-async/async-await/async-callstack-async-await2.html [ NeedsManualRebaseline ]
-crbug.com/646199 virtual/asyncawait/inspector/sources/debugger-async/async-await/async-callstack-async-await3.html [ NeedsManualRebaseline ]
-
 # These tests pass but images do not match because of position: absolute in vertical flow bug
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/block-flow-direction-vrl-009.xht [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/clip-rect-vlr-003.xht [ Failure ]
