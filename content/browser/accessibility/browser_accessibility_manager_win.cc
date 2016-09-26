@@ -182,9 +182,11 @@ BrowserAccessibilityEvent::Result
   if (target->GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX)
     return BrowserAccessibilityEvent::NotNeededOnThisPlatform;
 
-  if (event_type == ui::AX_EVENT_LIVE_REGION_CHANGED &&
-      target->GetBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY))
+  if ((event_type == ui::AX_EVENT_LIVE_REGION_CREATED ||
+       event_type == ui::AX_EVENT_LIVE_REGION_CHANGED) &&
+      target->GetBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY)) {
     return BrowserAccessibilityEvent::DiscardedBecauseLiveRegionBusy;
+  }
 
   if (!target)
     return BrowserAccessibilityEvent::FailedBecauseNoFocus;

@@ -3924,15 +3924,6 @@ void BrowserAccessibilityWin::UpdateStep2ComputeHypertext() {
 }
 
 void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
-  // Fire an event when an alert first appears.
-  if (ia_role() == ROLE_SYSTEM_ALERT &&
-      old_win_attributes_->ia_role != ROLE_SYSTEM_ALERT) {
-    BrowserAccessibilityEvent::Create(
-        BrowserAccessibilityEvent::FromTreeChange,
-        ui::AX_EVENT_ALERT,
-        this)->Fire();
-  }
-
   // Fire an event when a new subtree is created.
   if (is_subtree_creation)
     FireNativeEvent(EVENT_OBJECT_SHOW);

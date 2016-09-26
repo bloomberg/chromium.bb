@@ -50,10 +50,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
   void OnNodeDataWillChange(ui::AXTree* tree,
                             const ui::AXNodeData& old_node_data,
                             const ui::AXNodeData& new_node_data) override;
-  void OnAtomicUpdateFinished(
-      ui::AXTree* tree,
-      bool root_changed,
-      const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
   // Returns an autoreleased object.
   NSDictionary* GetUserInfoForSelectedTextChangedNotification();

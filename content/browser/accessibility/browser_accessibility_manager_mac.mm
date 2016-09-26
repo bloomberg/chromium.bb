@@ -4,16 +4,24 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 
+#include "base/bind.h"
 #import "base/mac/mac_util.h"
+#import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
+
+// Use same value as in Safari's WebKit.
+const int kLiveRegionChangeIntervalMS = 20;
 
 // Declare undocumented accessibility constants and enums only present in
 // WebKit.
@@ -270,12 +278,36 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         return;
       }
       break;
-    case ui::AX_EVENT_ALERT:
+    case ui::AX_EVENT_LIVE_REGION_CREATED:
       mac_notification = NSAccessibilityLiveRegionCreatedNotification;
       break;
-    case ui::AX_EVENT_LIVE_REGION_CHANGED:
-      mac_notification = NSAccessibilityLiveRegionChangedNotification;
-      break;
+    case ui::AX_EVENT_ALERT:
+      NSAccessibilityPostNotification(
+          native_node, NSAccessibilityLiveRegionCreatedNotification);
+      // Voiceover requires a live region changed notification to actually
+      // announce the live region.
+      NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
+                               ui::AX_EVENT_LIVE_REGION_CHANGED, node);
+      return;
+    case ui::AX_EVENT_LIVE_REGION_CHANGED: {
+      // Voiceover seems to drop live region changed notifications if they come
+      // too soon after a live region created notification.
+      // TODO(nektar): Limit the number of changed notifications as well.
+      base::scoped_nsobject<BrowserAccessibilityCocoa> retained_node(
+          [native_node retain]);
+      BrowserThread::PostDelayedTask(
+          BrowserThread::UI, FROM_HERE,
+          base::Bind(
+              [](base::scoped_nsobject<BrowserAccessibilityCocoa> node) {
+                if (node && [node instanceActive]) {
+                  NSAccessibilityPostNotification(
+                      node, NSAccessibilityLiveRegionChangedNotification);
+                }
+              },
+              std::move(retained_node)),
+          base::TimeDelta::FromMilliseconds(kLiveRegionChangeIntervalMS));
+    }
+      return;
     case ui::AX_EVENT_ROW_COUNT_CHANGED:
       mac_notification = NSAccessibilityRowCountChangedNotification;
       break;
@@ -373,27 +405,6 @@ void BrowserAccessibilityManagerMac::OnNodeDataWillChange(
     size_t length = (old_text.length() - i) - (new_text.length() - i);
     base::string16 deleted_text = old_text.substr(i, length);
     text_edits_[new_node_data.id] = deleted_text;
-  }
-}
-
-void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
-    ui::AXTree* tree,
-    bool root_changed,
-    const std::vector<ui::AXTreeDelegate::Change>& changes) {
-  BrowserAccessibilityManager::OnAtomicUpdateFinished(
-      tree, root_changed, changes);
-
-  for (size_t i = 0; i < changes.size(); ++i) {
-    if (changes[i].type != NODE_CREATED && changes[i].type != SUBTREE_CREATED)
-      continue;
-
-    const ui::AXNode* changed_node = changes[i].node;
-    DCHECK(changed_node);
-    BrowserAccessibility* obj = GetFromAXNode(changed_node);
-    if (obj && obj->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
-      NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
-                               ui::AX_EVENT_ALERT, obj);
-    }
   }
 }
 

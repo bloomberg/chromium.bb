@@ -40,6 +40,7 @@
     hover,
     invalid_status_changed,    // Implicit
     layout_complete,           // Web
+    live_region_created,       // Implicit
     live_region_changed,       // Web
     load_complete,             // Web
     location_changed,          // Web

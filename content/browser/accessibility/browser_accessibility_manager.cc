@@ -1041,6 +1041,25 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
     last_focused_node_ = nullptr;
     last_focused_manager_ = nullptr;
   }
+
+  // Notify ATs if any live regions have been created.
+  for (auto& change : changes) {
+    if (change.type != NODE_CREATED && change.type != SUBTREE_CREATED)
+      continue;
+
+    const ui::AXNode* created_node = change.node;
+    DCHECK(created_node);
+    BrowserAccessibility* object = GetFromAXNode(created_node);
+    if (object && object->HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
+      if (object->GetRole() == ui::AX_ROLE_ALERT) {
+        NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
+                                 ui::AX_EVENT_ALERT, object);
+      } else {
+        NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
+                                 ui::AX_EVENT_LIVE_REGION_CREATED, object);
+      }
+    }
+  }
 }
 
 BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager() {
