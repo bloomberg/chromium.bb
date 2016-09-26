@@ -7,6 +7,7 @@
   fast/loader/form-state-restore-with-frames.html [ Failure ]
   http/tests/history/back-to-post.html [ Timeout ]
   http/tests/navigation/post-goback-same-url.html [ Failure ]
+  virtual/stable/http/tests/navigation/post-goback-same-url.html [ Failure ]
 
 # https://crbug.com/608375: PlzNavigate: Appcache support
   http/tests/appcache/fallback.html [ Timeout ]
@@ -55,10 +56,12 @@
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_with_timing_allow_origin.html [ Timeout ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect.html [ Timeout ]
   http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_same_origin_redirect.html [ Timeout ]
+  http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
 
 # https://crbug.com/625765: Need to solve duplicate output from
 # WebFrameTestClient::willSendRequest() that causes text failures.
   http/tests/history/post-replace-state-reload.html [ Failure ]
+  http/tests/loading/redirect-methods.html [ Crash Failure ]
   http/tests/navigation/location-reload-after-post.php [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-allowall.html [ Failure ]
   http/tests/security/XFrameOptions/x-frame-options-deny.html [ Failure ]
@@ -70,6 +73,7 @@
   fast/loader/main-document-url-for-non-http-loads.html [ Failure ]
   http/tests/cache/iframe-304-crash.html [ Failure ]
   imported/wpt/shadow-dom/untriaged/html-elements-in-shadow-trees/html-forms/test-003.html [ Failure ]
+  virtual/stable/http/tests/navigation/location-reload-after-post.php [ Failure ]
 
 # https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
 # checks up out of the renderer.
@@ -78,6 +82,7 @@
   http/tests/security/contentSecurityPolicy/1.1/form-action-src-default-ignored.html [ Failure ]
   http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
   http/tests/security/contentSecurityPolicy/redirect-does-not-match-paths.html [ Timeout ]
+  http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
 
 # https://crbug.com/576270: Move mixed-content checks that happen during
 # navigation to the browser
@@ -89,11 +94,19 @@
 # WebFrameClient::didStartProvisionalLoad() and
 # WebFrameClient::didFinishDocumentLoad().
   fast/loader/subframe-removes-itself.html [ Failure ]
+  http/tests/loading/css-no-cache-revalidation.html [ Failure ]
+  http/tests/loading/image-picture-download-after-shrink.html [ Failure ]
+  http/tests/loading/image-picture-no-download-after-picture-removal.html [ Failure ]
+  http/tests/loading/image-picture-no-download-after-removal.html [ Failure ]
+  http/tests/loading/image-picture-no-download-after-source-removal.html [ Failure ]
   http/tests/loading/redirect-with-no-location-crash.html [ Failure ]
   http/tests/loading/simple-subframe.html [ Failure ]
   http/tests/loading/slow-parsing-subframe.html [ Failure ]
   http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
   http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
+  virtual/stable/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
+  virtual/stable/http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
+  http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
 
 # https://crbug.com/640631: Failing due to difference in WebFrameClient
 # callback sequence on renderer-initiated failed navigations.
@@ -101,54 +114,51 @@
   http/tests/loading/bad-server-subframe.html [ Failure ]
   http/tests/loading/text-content-type-with-binary-extension.html [ Timeout Failure ]
 
+# https://crbug.com/647698: Failing due to absence of call to
+# WebFrameClient::didReceiveServerRedirectForProvisionalLoad.
+  http/tests/loading/307-after-303-after-post.html [ Failure ]
+
+# https://crbug.com/648588: Properly set origin and referrer header
+  http/tests/navigation/post-frames-goback1.html [ Failure ]
+  http/tests/navigation/post-goback1.html [ Failure ]
+  virtual/stable/http/tests/navigation/post-frames-goback1.html [ Failure ]
+  virtual/stable/http/tests/navigation/post-goback1.html [ Failure ]
+
+# https://crbug.com/576271: Support insecure requets upgrade
+  http/tests/security/upgrade-insecure-requests/https-header-top-level.html [ Skip ]
+  http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Skip ]
+
+# Properly set ZoomLevel (see IFrameZoomBrowsertests*)
+  fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
+
+# https://crbug.com/648600: Don't output 2 blank spaces at the end of some layout tests
+  fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]
+  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]
+
+# https://crbug.com/648608: Send the right cookies when loading a popup
+  http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
+  http/tests/cookies/same-site/popup-same-site.html [ Failure ]
 
 # Untriaged navigation
   fast/dom/Document/open-with-pending-load.html [ Failure ]
   fast/dom/HTMLAnchorElement/anchor-no-multiple-windows.html [ Failure ]
-  http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
-  http/tests/cookies/same-site/popup-same-site.html [ Failure ]
-  http/tests/loading/307-after-303-after-post.html [ Failure ]
-  http/tests/loading/doc-write-sync-third-party-script-reload.html [ Failure ]
-  http/tests/loading/image-picture-download-after-shrink.html [ Failure ]
-  http/tests/loading/image-picture-no-download-after-picture-removal.html [ Failure ]
-  http/tests/loading/image-picture-no-download-after-removal.html [ Failure ]
-  http/tests/loading/image-picture-no-download-after-source-removal.html [ Failure ]
   http/tests/loading/pdf-commit-load-callbacks.html [ Crash ]
-  http/tests/loading/promote-img-in-viewport-priority.html [ Failure ]
-  http/tests/loading/redirect-methods.html [ Crash Failure ]
-  http/tests/misc/resource-timing-sizes-tags.html [ Failure ]
   http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
-  http/tests/navigation/post-frames-goback1.html [ Failure ]
-  http/tests/navigation/post-goback1.html [ Failure ]
   http/tests/navigation/response204.html [ Timeout ]
   http/tests/security/cross-frame-access-parent-isolated-world.html [ Timeout ]
   http/tests/security/cross-frame-access-parent-explicit-domain-isolated-world.html [ Timeout ]
-  virtual/stable/http/tests/navigation/cross-origin-fragment-navigation-is-async.html [ Failure ]
   virtual/stable/http/tests/navigation/forward-to-fragment-fires-onload.html [ Timeout ]
-  virtual/stable/http/tests/navigation/location-reload-after-post.php [ Failure ]
-  virtual/stable/http/tests/navigation/post-frames-goback1.html [ Failure ]
-  virtual/stable/http/tests/navigation/post-goback-same-url.html [ Failure ]
-  virtual/stable/http/tests/navigation/post-goback1.html [ Failure ]
   virtual/stable/http/tests/navigation/response204.html [ Timeout ]
-  virtual/stable/http/tests/navigation/same-origin-fragment-navigation-is-sync.html [ Failure ]
-
-# Untriaged security
-  http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
-  http/tests/security/frame-loading-via-document-write.html [ Crash Pass ]
 
 # Untriaged other
-  css3/fonts/font-style-matching-7.html [ Failure ]
   fast/css/acid2-pixel.html [ Crash Timeout Failure ]
   fast/css/acid2.html [ Crash Timeout Failure ]
-  fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
-  fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]
-  fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
   fast/table/giantCellspacing.html [ Failure ]
+  fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
   http/tests/misc/policy-delegate-called-twice.html [ Failure ]
   http/tests/misc/window-open-then-write.html [ Timeout ]
   imported/wpt/html/semantics/embedded-content/the-object-element/object-attributes.html [ Failure ]
   plugins/object-onfocus-mutation-crash.html [ Timeout ]
-  virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash.html [ Failure ]
   virtual/spv2/fast/overflow/overflow-height-float-not-removed-crash3.html [ Failure ]
 
 # https://crbug.com/440463: Make ServiceWorker and PlzNavigate play well
