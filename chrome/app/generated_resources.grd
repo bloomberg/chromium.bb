@@ -6429,7 +6429,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION" desc="Description in about::flags to use the Data Reduction Proxy configuration service" translateable="false">
          Uses the Data Reduction Proxy configuration service for authentication and proxy configuration.
       </message>
-      
+
       <!-- Preview InfoBar -->
       <message name="IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE" desc="The text of the infobar notifying the user that a preview page has been shown to save data.">
          Saved data.
@@ -6440,7 +6440,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PREVIEWS_INFOBAR_LINK" desc="The text of the link to load the original page from the infobar notifying the user that a preview page has been shown.">
          Show original
       </message>
-      
+
       <message name="IDS_FLAGS_LCD_TEXT_NAME" desc="Name of about:flags option for LCD text.">
         LCD text antialiasing
       </message>
@@ -15276,6 +15276,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
       <message name="IDS_FLAGS_ENABLE_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable physical web page suggestions on the New Tab page." translateable="false">
         If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain pages that are available through Physical Web (see #enable-physical-web)
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_FOREIGN_SESSIONS_SUGGESTIONS_NAME" desc="Name for the flag to enable foreign sessions suggestions on the New Tab page." translateable="false">
+        Show recent foreign tabs on the New Tab page
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NTP_FOREIGN_SESSIONS_SUGGESTIONS_DESCRIPTION" desc="Description for the flag to enable foreign sessions suggestions on the New Tab page." translateable="false">
+        If enabled, the list of content suggestions on the New Tab page (see #enable-ntp-snippets) will contain recent foreign tabs.
       </message>
     </if>
 
