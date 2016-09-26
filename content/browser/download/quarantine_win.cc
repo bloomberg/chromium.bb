@@ -11,6 +11,7 @@
 #include <shellapi.h>
 #include <shlobj.h>
 #include <shobjidl.h>
+#include <wininet.h>
 
 #include "base/files/file_util.h"
 #include "base/guid.h"
@@ -171,13 +172,16 @@ QuarantineFileResult SetInternetZoneIdentifierDirectly(
 // |full_path| : is the path to the downloaded file. This should be the final
 //               path of the download. Must be present.
 // |source_url|: the source URL for the download. If empty, the source will
-//               not be set.
+//               be set to 'about:internet'.
+// |referrer_url|: the referrer URL for the download. If empty, the referrer
+//               will not be set.
 // |client_guid|: the GUID to be set in the IAttachmentExecute client slot.
 //                Used to identify the app to the system AV function.
 //                If GUID_NULL is passed, no client GUID is set.
 // |save_result|: Receives the result of invoking IAttachmentExecute::Save().
 bool InvokeAttachmentServices(const base::FilePath& full_path,
                               const std::string& source_url,
+                              const std::string& referrer_url,
                               const GUID& client_guid,
                               HRESULT* save_result) {
   base::win::ScopedComPtr<IAttachmentExecute> attachment_services;
@@ -191,6 +195,10 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
         AttachmentServicesResult::NO_ATTACHMENT_SERVICES);
     return false;
   }
+
+  // Note that it is mandatory to check the return values from here on out. If
+  // setting one of the parameters fails, it could leave the object in a state
+  // where the final Save() call will also fail.
 
   hr = attachment_services->SetClientGuid(client_guid);
   if (FAILED(hr)) {
@@ -206,14 +214,35 @@ bool InvokeAttachmentServices(const base::FilePath& full_path,
     return false;
   }
 
-  // Note: SetSource looks like it needs to be called, even if empty.
-  // Docs say it is optional, but it appears not calling it at all sets
-  // a zone that is too restrictive.
-  hr = attachment_services->SetSource(base::UTF8ToWide(source_url).c_str());
+  // The source URL could be empty if it was not a valid URL or was not HTTP/S.
+  // If so, user "about:internet" as a fallback URL. The latter is known to
+  // reliably map to the Internet zone.
+  //
+  // In addition, URLs that are longer than INTERNET_MAX_URL_LENGTH are also
+  // known to cause problems for URLMon. Hence also use "about:internet" in
+  // these cases. See http://crbug.com/601538.
+  hr = attachment_services->SetSource(
+      source_url.empty() || source_url.size() > INTERNET_MAX_URL_LENGTH
+          ? L"about:internet"
+          : base::UTF8ToWide(source_url).c_str());
   if (FAILED(hr)) {
     RecordAttachmentServicesResult(
         AttachmentServicesResult::FAILED_TO_SET_PARAMETER);
     return false;
+  }
+
+  // Only set referrer if one is present and shorter than
+  // INTERNET_MAX_URL_LENGTH. Also, the source_url is authoritative for
+  // determining the relative danger of |full_path| so we don't consider it an
+  // error if we have to skip the |referrer_url|.
+  if (!referrer_url.empty() && referrer_url.size() < INTERNET_MAX_URL_LENGTH) {
+    hr = attachment_services->SetReferrer(
+        base::UTF8ToWide(referrer_url).c_str());
+    if (FAILED(hr)) {
+      RecordAttachmentServicesResult(
+          AttachmentServicesResult::FAILED_TO_SET_PARAMETER);
+      return false;
+    }
   }
 
   {
@@ -280,8 +309,8 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
   }
 
   HRESULT save_result = S_OK;
-  bool attachment_services_available =
-      InvokeAttachmentServices(file, source_url.spec(), guid, &save_result);
+  bool attachment_services_available = InvokeAttachmentServices(
+      file, source_url.spec(), referrer_url.spec(), guid, &save_result);
   if (!attachment_services_available)
     return SetInternetZoneIdentifierDirectly(file);
 

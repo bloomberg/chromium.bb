@@ -374,6 +374,40 @@ DownloadInterruptReason BaseFile::LogInterruptReason(
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+
+namespace {
+
+// Given a source and a referrer, determines the "safest" URL that can be used
+// to determine the authority of the download source. Returns an empty URL if no
+// HTTP/S URL can be determined for the <|source_url|, |referrer_url|> pair.
+GURL GetEffectiveAuthorityURL(const GURL& source_url,
+                              const GURL& referrer_url) {
+  if (source_url.is_valid()) {
+    // http{,s} has an authority and are supported.
+    if (source_url.SchemeIsHTTPOrHTTPS())
+      return source_url;
+
+    // If the download source is file:// ideally we should copy the MOTW from
+    // the original file, but given that Chrome/Chromium places strict
+    // restrictions on which schemes can reference file:// URLs, this code is
+    // going to assume that at this point it's okay to treat this download as
+    // being from the local system.
+    if (source_url.SchemeIsFile())
+      return source_url;
+
+    // ftp:// has an authority.
+    if (source_url.SchemeIs(url::kFtpScheme))
+      return source_url;
+  }
+
+  if (referrer_url.is_valid() && referrer_url.SchemeIsHTTPOrHTTPS())
+    return referrer_url;
+
+  return GURL();
+}
+
+}  // namespace
+
 DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
     const std::string& client_guid,
     const GURL& source_url,
@@ -383,8 +417,9 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation(
   DCHECK(!full_path_.empty());
 
   net_log_.BeginEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
-  QuarantineFileResult result =
-      QuarantineFile(full_path_, source_url, referrer_url, client_guid);
+  QuarantineFileResult result = QuarantineFile(
+      full_path_, GetEffectiveAuthorityURL(source_url, referrer_url),
+      referrer_url, client_guid);
   net_log_.EndEvent(net::NetLogEventType::DOWNLOAD_FILE_ANNOTATED);
   switch (result) {
     case QuarantineFileResult::OK:

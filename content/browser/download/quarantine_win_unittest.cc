@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <windows.h>
+
+#include <wininet.h>
+
 #include "content/browser/download/quarantine.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -23,6 +27,16 @@ const char kMotwForInternetZone[] = "[ZoneTransfer]\r\nZoneId=3\r\n";
 const base::FilePath::CharType kMotwStreamSuffix[] =
     FILE_PATH_LITERAL(":Zone.Identifier");
 
+const char* const kUntrustedURLs[] = {
+    "http://example.com/foo",
+    "https://example.com/foo",
+    "ftp://example.com/foo",
+    "ftp://example.com:2121/foo",
+    "data:text/plain,Hello%20world",
+    "blob://example.com/126278b3-58f3-4b4a-a914-1d1185d634f6",
+    "about:internet",
+    ""};
+
 }  // namespace
 
 // If the file is missing, the QuarantineFile() call should return FILE_MISSING.
@@ -41,23 +55,44 @@ TEST(QuarantineWinTest, MissingFile) {
 // verifies this behavior since the other tests in this suite would pass with a
 // false positive if local files are being annotated with the MOTW for the
 // internet zone.
-TEST(QuarantineWinTest, LocalFileZoneAssumption_DependsOnLocalConfig) {
+TEST(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
   base::HistogramTester histogram_tester;
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
-  ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
 
-  EXPECT_EQ(QuarantineFileResult::OK,
-            QuarantineFile(test_file, net::FilePathToFileURL(test_file), GURL(),
-                           kDummyClientGuid));
-  std::string contents;
-  EXPECT_FALSE(base::ReadFileToString(
-      base::FilePath(test_file.value() + kMotwStreamSuffix), &contents));
+  const char* const kLocalSourceURLs[] = {
+    "http://localhost/foo",
+    "file:///C:/some-local-dir/foo.exe"
+  };
+
+  for (const auto source_url : kLocalSourceURLs) {
+    SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);
+    ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+
+    EXPECT_EQ(
+        QuarantineFileResult::OK,
+        QuarantineFile(test_file, GURL(source_url), GURL(), kDummyClientGuid));
+
+    std::string motw_contents;
+    base::ReadFileToString(
+        base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents);
+
+    // These warnings aren't displayed on successful test runs. They are there
+    // so that we can check for deviations in behavior during manual testing.
+    if (!motw_contents.empty()) {
+      LOG(WARNING) << "Unexpected zone marker for file " << test_file.value()
+                   << " Source URL:" << source_url;
+      if (motw_contents != kMotwForInternetZone)
+        LOG(WARNING) << "Zone marker contents: " << motw_contents;
+    }
+
+    base::DeleteFile(test_file, false);
+  }
 
   // Bucket 1 is SUCCESS_WITHOUT_MOTW.
   histogram_tester.ExpectUniqueSample("Download.AttachmentServices.Result", 1,
-                                      1);
+                                      arraysize(kLocalSourceURLs));
 }
 
 // A file downloaded from the internet should be annotated with .. something.
@@ -69,17 +104,87 @@ TEST(QuarantineWinTest, DownloadedFile_DependsOnLocalConfig) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+
+  for (const auto source_url : kUntrustedURLs) {
+    SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);
+    ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+    EXPECT_EQ(
+        QuarantineFileResult::OK,
+        QuarantineFile(test_file, GURL(source_url), GURL(), kDummyClientGuid));
+    std::string motw_contents;
+    ASSERT_TRUE(base::ReadFileToString(
+        base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+    // The actual assigned zone could be anything. So only testing that there is
+    // a zone annotation.
+    EXPECT_FALSE(motw_contents.empty());
+
+    // These warnings aren't displayed on successful test runs. They are there
+    // so that we can check for deviations in behavior during manual testing.
+    if (motw_contents != kMotwForInternetZone)
+      LOG(WARNING) << "Unexpected zone marker: " << motw_contents;
+    base::DeleteFile(test_file, false);
+  }
+
+  // Bucket 0 is SUCCESS_WITH_MOTW.
+  histogram_tester.ExpectUniqueSample("Download.AttachmentServices.Result", 0,
+                                      arraysize(kUntrustedURLs));
+}
+
+TEST(QuarantineWinTest, UnsafeReferrer_DependsOnLocalConfig) {
+  base::HistogramTester histogram_tester;
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+
+  std::vector<std::string> unsafe_referrers(std::begin(kUntrustedURLs),
+                                            std::end(kUntrustedURLs));
+
+  std::string huge_referrer = "http://example.com/";
+  huge_referrer.append(INTERNET_MAX_URL_LENGTH * 2, 'a');
+  unsafe_referrers.push_back(huge_referrer);
+
+  for (const auto referrer_url : unsafe_referrers) {
+    SCOPED_TRACE(::testing::Message() << "Trying URL " << referrer_url);
+    ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+    EXPECT_EQ(QuarantineFileResult::OK,
+              QuarantineFile(test_file, GURL("http://example.com/good"),
+                             GURL(referrer_url), kDummyClientGuid));
+    std::string motw_contents;
+    ASSERT_TRUE(base::ReadFileToString(
+        base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+    // The actual assigned zone could be anything. So only testing that there is
+    // a zone annotation.
+    EXPECT_FALSE(motw_contents.empty());
+
+    // These warnings aren't displayed on successful test runs. They are there
+    // so that we can check for deviations in behavior during manual testing.
+    if (motw_contents != kMotwForInternetZone)
+      LOG(WARNING) << "Unexpected zone marker: " << motw_contents;
+    base::DeleteFile(test_file, false);
+  }
+
+  // Bucket 0 is SUCCESS_WITH_MOTW.
+  histogram_tester.ExpectUniqueSample("Download.AttachmentServices.Result", 0,
+                                      unsafe_referrers.size());
+}
+
+// An empty source URL should result in a file that's treated the same as one
+// downloaded from the internet.
+TEST(QuarantineWinTest, EmptySource_DependsOnLocalConfig) {
+  base::HistogramTester histogram_tester;
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
   ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
 
   EXPECT_EQ(QuarantineFileResult::OK,
-            QuarantineFile(test_file, GURL(kDummySourceUrl),
-                           GURL(kDummyReferrerUrl), kDummyClientGuid));
-  std::string contents;
+            QuarantineFile(test_file, GURL(), GURL(), kDummyClientGuid));
+  std::string motw_contents;
   ASSERT_TRUE(base::ReadFileToString(
-      base::FilePath(test_file.value() + kMotwStreamSuffix), &contents));
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
   // The actual assigned zone could be anything. So only testing that there is a
   // zone annotation.
-  EXPECT_FALSE(contents.empty());
+  EXPECT_FALSE(motw_contents.empty());
 
   // Bucket 0 is SUCCESS_WITH_MOTW.
   histogram_tester.ExpectUniqueSample("Download.AttachmentServices.Result", 0,
@@ -98,10 +203,10 @@ TEST(QuarantineWinTest, EmptyFile) {
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, net::FilePathToFileURL(test_file), GURL(),
                            kDummyClientGuid));
-  std::string contents;
+  std::string motw_contents;
   ASSERT_TRUE(base::ReadFileToString(
-      base::FilePath(test_file.value() + kMotwStreamSuffix), &contents));
-  EXPECT_STREQ(kMotwForInternetZone, contents.c_str());
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+  EXPECT_STREQ(kMotwForInternetZone, motw_contents.c_str());
 }
 
 // If there is no client GUID supplied to the QuarantineFile() call, then rather
@@ -117,10 +222,30 @@ TEST(QuarantineWinTest, NoClientGuid) {
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, net::FilePathToFileURL(test_file), GURL(),
                            std::string()));
-  std::string contents;
+  std::string motw_contents;
   ASSERT_TRUE(base::ReadFileToString(
-      base::FilePath(test_file.value() + kMotwStreamSuffix), &contents));
-  EXPECT_STREQ(kMotwForInternetZone, contents.c_str());
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+  EXPECT_STREQ(kMotwForInternetZone, motw_contents.c_str());
+}
+
+// URLs longer than INTERNET_MAX_URL_LENGTH are known to break URLMon. Such a
+// URL, when used as a source URL shouldn't break QuarantineFile() which should
+// mark the file as being from the internet zone as a safe fallback.
+TEST(QuarantineWinTest, SuperLongURL) {
+  base::ScopedTempDir test_dir;
+  ASSERT_TRUE(test_dir.CreateUniqueTempDir());
+  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+  ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+
+  std::string source_url("http://example.com/");
+  source_url.append(INTERNET_MAX_URL_LENGTH * 2, 'a');
+  EXPECT_EQ(QuarantineFileResult::OK,
+            QuarantineFile(test_file, GURL(source_url), GURL(), std::string()));
+
+  std::string motw_contents;
+  ASSERT_TRUE(base::ReadFileToString(
+      base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
+  EXPECT_STREQ(kMotwForInternetZone, motw_contents.c_str());
 }
 
 }  // content
