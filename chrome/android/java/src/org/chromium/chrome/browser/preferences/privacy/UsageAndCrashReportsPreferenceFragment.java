@@ -48,7 +48,7 @@ public class UsageAndCrashReportsPreferenceFragment extends PreferenceFragment {
         usageAndCrashReportsSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return PrefServiceBridge.getInstance().isCrashReportManaged();
+                return PrefServiceBridge.getInstance().isMetricsReportingManaged();
             }
         });
     }

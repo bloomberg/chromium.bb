@@ -119,7 +119,7 @@ public abstract class FirstRunFlowSequencer  {
 
     @VisibleForTesting
     protected void setDefaultMetricsAndCrashReporting() {
-        PrivacyPreferencesManager.getInstance().initCrashUploadPreference(
+        PrivacyPreferencesManager.getInstance().setUsageAndCrashReporting(
                 FirstRunActivity.DEFAULT_METRICS_AND_CRASH_REPORTING);
     }
 

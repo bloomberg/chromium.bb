@@ -24,7 +24,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferences;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.components.sync.signin.ChromeSigninController;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,10 +54,10 @@ public class ChromeBackupAgent extends BackupAgent {
     // Lists of preferences that should be restored unchanged.
 
     private static final String[] RESTORED_ANDROID_PREFS = {
-            PrivacyPreferences.PREF_CRASH_DUMP_UPLOAD,
             FirstRunStatus.FIRST_RUN_FLOW_COMPLETE,
             FirstRunStatus.LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE,
             FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_SETUP,
+            PrivacyPreferencesManager.PREF_METRICS_REPORTING,
     };
 
     // Sync preferences, all in C++ sync_driver::prefs namespace.

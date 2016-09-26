@@ -7,26 +7,22 @@ package org.chromium.chrome.browser.metrics;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
-import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.privacy.CrashReportingPermissionManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.net.NetworkChangeNotifier;
 
 /**
  * Mainly sets up session stats for chrome. A session is defined as the duration when the
  * application is in the foreground.  Also used to communicate information between Chrome
  * and the framework's MetricService.
  */
-public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObserver {
+public class UmaSessionStats {
     public static final String LAST_USED_TIME_PREF = "umasessionstats.lastusedtime";
 
     private static final String SAMSUNG_MULTWINDOW_PACKAGE = "com.sec.feature.multiwindow";
@@ -107,7 +103,6 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
         }
 
         nativeUmaResumeSession(sNativeUmaSessionStats);
-        NetworkChangeNotifier.addConnectionTypeObserver(this);
         updatePreferences();
         updateMetricsServiceState();
     }
@@ -143,7 +138,6 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
         }
 
         nativeUmaEndSession(sNativeUmaSessionStats);
-        NetworkChangeNotifier.removeConnectionTypeObserver(this);
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putLong(LAST_USED_TIME_PREF, System.currentTimeMillis())
@@ -160,12 +154,8 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
      */
     public static void changeMetricsReportingConsent(boolean consent) {
         PrivacyPreferencesManager privacyManager = PrivacyPreferencesManager.getInstance();
-        // Update the new two-choice Android preference.
+        // Update the metrics reporting preference.
         privacyManager.setUsageAndCrashReporting(consent);
-        // Update the old three-choice Android preference, and synchronize with Chrome local state
-        // preferences. Note, this forces the three-choice preferences to be either never upload,
-        // or only upload on WiFi.
-        privacyManager.initCrashUploadPreference(consent);
 
         // Perform native changes needed to reflect the new consent value.
         nativeChangeMetricsReportingConsent(consent);
@@ -189,32 +179,11 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
     }
 
     /**
-     * Updating Android preferences according to equivalent native preferences so that the values
-     * can be retrieved while native preferences are not accessible.
+     * Updates relevant Android and native preferences.
      */
     private void updatePreferences() {
         PrivacyPreferencesManager prefManager = PrivacyPreferencesManager.getInstance();
-
-        // Update cellular experiment preference. Cellular experiment is ON by default.
-        boolean cellularExperiment = true;
-        if (TextUtils.equals("false", VariationsAssociatedData.getVariationParamValue(
-                                            "UMA_EnableCellularLogUpload", "Enabled"))) {
-            cellularExperiment = false;
-        }
-        prefManager.setCellularExperiment(cellularExperiment);
-
-        // Migrate to new preferences for cellular experiment.
-        if (cellularExperiment) {
-            PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
-            // If the native preference metrics reporting has not been set, then initialize it
-            // based on the older android preference.
-            if (!prefBridge.hasSetMetricsReporting()) {
-                prefBridge.setMetricsReportingEnabled(prefManager.isUploadCrashDumpEnabled());
-            }
-
-            // Set new Android preference for usage and crash reporting.
-            prefManager.setUsageAndCrashReporting(prefBridge.isMetricsReportingEnabled());
-        }
+        prefManager.migrateUsageAndCrashPreferences();
 
         // Update the metrics sampling state so it's available before the native feature list is
         // available.
@@ -222,11 +191,6 @@ public class UmaSessionStats implements NetworkChangeNotifier.ConnectionTypeObse
 
         // Make sure preferences are in sync.
         prefManager.syncUsageAndCrashReportingPrefs();
-    }
-
-    @Override
-    public void onConnectionTypeChanged(int connectionType) {
-        updateMetricsServiceState();
     }
 
     public static void registerExternalExperiment(String studyName, int[] experimentIds) {

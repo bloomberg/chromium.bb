@@ -13,7 +13,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
@@ -30,129 +29,38 @@ public class PrivacyPreferencesManagerNativeTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Android-AppBase"})
     @UiThreadTest
-    public void testSyncUsageAndCrashReportingPrefsMobile() {
-        testSyncUsageAndCrashReportingPrefs(true);
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    @UiThreadTest
-    public void testSyncUsageAndCrashReportingPrefsTablet() {
-        testSyncUsageAndCrashReportingPrefs(false);
-    }
-
-    void testSyncUsageAndCrashReportingPrefs(boolean isMobile) {
+    public void testSyncUsageAndCrashReporting {
         CommandLine.init(null);
         PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
         PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
         SharedPreferences pref = ContextUtils.getAppSharedPreferences();
+        PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);
 
-        // Not a cellular experiment and prefs are out of sync for mobile devices.
-        PrivacyPreferencesManager preferenceManager =
-                new MockPrivacyPreferencesManager(context, isMobile);
-        preferenceManager.setCellularExperiment(false);
-        prefBridge.setCrashReportingEnabled(false);
-        SharedPreferences.Editor ed;
-        if (isMobile) {
-            ed = pref.edit().putString(PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD,
-                    context.getString(R.string.crash_dump_always_upload_value));
-        } else {
-            ed = pref.edit().putBoolean(
-                    PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, true);
-        }
-
-        ed.apply();
+        // Setup prefs to be out of sync.
+        prefBridge.setMetricsReportingEnabled(false);
+        pref.edit().putBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, true).apply();
 
         preferenceManager.syncUsageAndCrashReportingPrefs();
-        assertTrue("Native preference should be True ", prefBridge.isCrashReportingEnabled());
+        assertTrue("Native preference should be True ", prefBridge.isMetricsReportingEnabled());
     }
 
     @SmallTest
     @Feature({"Android-AppBase"})
     @UiThreadTest
-    public void testInitCrashUploadPreference_Mobile_CellularExperiment() {
+    public void testSetUsageAndCrashReporting() {
+        CommandLine.init(null);
         PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
-        ContextUtils.initApplicationContextForTests(context.getApplicationContext());
-        PrivacyPreferencesManager preferenceManager =
-                new MockPrivacyPreferencesManager(context, true);
-        preferenceManager.setCellularExperiment(true);
+        PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
         SharedPreferences pref = ContextUtils.getAppSharedPreferences();
+        PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);
 
-        preferenceManager.initCrashUploadPreference(true);
-        assertEquals(UPLOAD_WIFI_ONLY,
-                pref.getBoolean(PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD, false));
+        preferenceManager.setUsageAndCrashReporting(true);
         assertTrue(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
+        assertTrue("Native preference should be True ", prefBridge.isMetricsReportingEnabled());
 
-        preferenceManager.initCrashUploadPreference(false);
-        assertEquals(UPLOAD_NEVER,
-                pref.getBoolean(PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD, false));
+        preferenceManager.setUsageAndCrashReporting(false);
         assertFalse(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    @UiThreadTest
-    public void testInitCrashUploadPreference_NotMobile_CellularExperiment() {
-        PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
-        ContextUtils.initApplicationContextForTests(context.getApplicationContext());
-        PrivacyPreferencesManager preferenceManager =
-                new MockPrivacyPreferencesManager(context, false);
-        preferenceManager.setCellularExperiment(true);
-        SharedPreferences pref = ContextUtils.getAppSharedPreferences();
-
-        preferenceManager.initCrashUploadPreference(true);
-        assertTrue(pref.getBoolean(
-                PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false));
-        assertTrue(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
-
-        preferenceManager.initCrashUploadPreference(false);
-        assertFalse(pref.getBoolean(
-                PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false));
-        assertFalse(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    @UiThreadTest
-    public void testInitCrashUploadPreference_Mobile_NotCellularExperiment() {
-        PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
-        ContextUtils.initApplicationContextForTests(context.getApplicationContext());
-        PrivacyPreferencesManager preferenceManager =
-                new MockPrivacyPreferencesManager(context, true);
-        preferenceManager.setCellularExperiment(false);
-        SharedPreferences pref = ContextUtils.getAppSharedPreferences();
-
-        preferenceManager.initCrashUploadPreference(true);
-        assertEquals(UPLOAD_WIFI_ONLY,
-                pref.getBoolean(PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD, false));
-        assertFalse(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
-
-        preferenceManager.initCrashUploadPreference(false);
-        assertEquals(UPLOAD_NEVER,
-                pref.getBoolean(PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD, false));
-        assertFalse(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
-    @UiThreadTest
-    public void testInitCrashUploadPreference_NotMobile_NotCellularExperiment() {
-        PermissionContext context = new PermissionContext(getInstrumentation().getTargetContext());
-        ContextUtils.initApplicationContextForTests(context.getApplicationContext());
-        PrivacyPreferencesManager preferenceManager =
-                new MockPrivacyPreferencesManager(context, false);
-        preferenceManager.setCellularExperiment(false);
-        SharedPreferences pref = ContextUtils.getAppSharedPreferences();
-
-        preferenceManager.initCrashUploadPreference(true);
-        assertTrue(pref.getBoolean(
-                PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false));
-        assertFalse(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
-
-        preferenceManager.initCrashUploadPreference(false);
-        assertFalse(pref.getBoolean(
-                PrivacyPreferencesManager.PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR, false));
-        assertFalse(pref.getBoolean(PrivacyPreferencesManager.PREF_METRICS_REPORTING, false));
+        assertFalse("Native preference should be False ", prefBridge.isMetricsReportingEnabled());
     }
 
     private static class PermissionContext extends AdvancedMockContext {
@@ -167,19 +75,6 @@ public class PrivacyPreferencesManagerNativeTest extends NativeLibraryTestBase {
             }
             fail("Should not ask for any other service than the ConnectionManager.");
             return super.getSystemService(name);
-        }
-    }
-
-    private static class MockPrivacyPreferencesManager extends PrivacyPreferencesManager {
-        private final boolean mIsMobileCapable;
-        MockPrivacyPreferencesManager(Context context, boolean isMobileCapable) {
-            super(context);
-            mIsMobileCapable = isMobileCapable;
-        }
-
-        @Override
-        public boolean isMobileNetworkCapable() {
-            return mIsMobileCapable;
         }
     }
 }

@@ -406,12 +406,6 @@ static jboolean GetResolveNavigationErrorManaged(
       prefs::kAlternateErrorPagesEnabled);
 }
 
-static jboolean GetCrashReportManaged(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->IsManagedPreference(
-      prefs::kCrashReportingEnabled);
-}
-
 static jboolean GetSupervisedUserSafeSitesEnabled(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   return GetPrefService()->GetBoolean(prefs::kSupervisedUserSafeSites);
@@ -460,7 +454,7 @@ static jboolean GetFullscreenAllowed(JNIEnv* env,
       CONTENT_SETTINGS_TYPE_FULLSCREEN, NULL) == CONTENT_SETTING_ALLOW;
 }
 
-static jboolean GetMetricsReportingEnabled(JNIEnv* env,
+static jboolean IsMetricsReportingEnabled(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj) {
   PrefService* local_state = g_browser_process->local_state();
   return local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled);
@@ -473,10 +467,10 @@ static void SetMetricsReportingEnabled(JNIEnv* env,
   local_state->SetBoolean(metrics::prefs::kMetricsReportingEnabled, enabled);
 }
 
-static jboolean HasSetMetricsReporting(JNIEnv* env,
-                                       const JavaParamRef<jobject>& obj) {
-  PrefService* local_state = g_browser_process->local_state();
-  return local_state->HasPrefPath(metrics::prefs::kMetricsReportingEnabled);
+static jboolean IsMetricsReportingManaged(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj) {
+  return GetPrefService()->IsManagedPreference(
+      metrics::prefs::kMetricsReportingEnabled);
 }
 
 static void SetClickedUpdateMenuItem(JNIEnv* env,
@@ -909,19 +903,6 @@ static void SetNotificationsVibrateEnabled(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj,
                                            jboolean enabled) {
   GetPrefService()->SetBoolean(prefs::kNotificationsVibrateEnabled, enabled);
-}
-
-static void SetCrashReportingEnabled(JNIEnv* env,
-                                     const JavaParamRef<jobject>& obj,
-                                     jboolean reporting) {
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetBoolean(prefs::kCrashReportingEnabled, reporting);
-}
-
-static jboolean IsCrashReportingEnabled(JNIEnv* env,
-                                  const JavaParamRef<jobject>& obj) {
-  PrefService* local_state = g_browser_process->local_state();
-  return local_state->GetBoolean(prefs::kCrashReportingEnabled);
 }
 
 static jboolean CanPrefetchAndPrerender(JNIEnv* env,

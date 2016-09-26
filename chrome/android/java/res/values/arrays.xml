@@ -11,16 +11,4 @@
     <item>@string/monospace</item>
   </string-array>
 
-  <!-- Privacy preferences -->
-  <string-array name="crash_upload_entries">
-    <item>@string/crash_dump_always_upload</item>
-    <item>@string/crash_dump_only_with_wifi</item>
-    <item>@string/crash_dump_never_upload</item>
-  </string-array>
-  <string-array name="crash_upload_values">
-    <item>@string/crash_dump_always_upload_value</item>
-    <item>@string/crash_dump_only_with_wifi_value</item>
-    <item>@string/crash_dump_never_upload_value</item>
-  </string-array>
-
 </resources>

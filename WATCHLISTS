@@ -72,7 +72,6 @@
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/UsageAndCrashReportsPreferenceFragment.java|'\
                   'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferencesManager.java|'\
                   'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/PrivacyPreferences.java|'\
-                  'chrome/android/java/src/org/chromium/chrome/browser/preferences/privacy/CrashDumpUploadPreference.java|'\
                   'chrome/android/java/src/org/chromium/chrome/browser/metrics/UmaSessionStats.java',
     },
     'android_webview': {

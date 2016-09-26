@@ -91,7 +91,7 @@ public class ChromeBackupAgentTest {
     public void testOnRestoreFinished() throws UnsupportedEncodingException {
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putBoolean("crash_dump_upload", false);
+        editor.putBoolean("metrics_reporting", false);
         editor.putString("google.services.username", "user1");
         editor.putString("junk", "junk");
         editor.apply();
@@ -115,7 +115,7 @@ public class ChromeBackupAgentTest {
 
 
         // Check that we have only restored the correct Android preferences
-        assertThat(sharedPrefs.getBoolean("crash_dump_upload", true), equalTo(false));
+        assertThat(sharedPrefs.getBoolean("metrics_reporting", true), equalTo(false));
         assertThat(sharedPrefs.getString("google.services.username", null), nullValue());
         assertThat(sharedPrefs.getString("junk", null), nullValue());
 
@@ -127,7 +127,7 @@ public class ChromeBackupAgentTest {
     public void testOnRestoreFinishedNoUser() throws UnsupportedEncodingException {
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putBoolean("crash_dump_upload", false);
+        editor.putBoolean("metrics_reporting", false);
         editor.putString("junk", "junk");
         editor.apply();
 
@@ -146,7 +146,7 @@ public class ChromeBackupAgentTest {
         assertThat(chromeOutputPrefs, equalTo(""));
 
         // Check that we haven't restored any Android preferences
-        assertThat(sharedPrefs.getBoolean("crash_dump_upload", true), equalTo(true));
+        assertThat(sharedPrefs.getBoolean("metrics_reporting", true), equalTo(true));
         assertThat(sharedPrefs.getString("google.services.username", null), nullValue());
         assertThat(sharedPrefs.getString("junk", null), nullValue());
         assertThat(sharedPrefs.getString("first_run_signin_account_name", null), nullValue());
@@ -156,7 +156,7 @@ public class ChromeBackupAgentTest {
     public void testOnRestoreFinishedWrongUser() throws UnsupportedEncodingException {
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putBoolean("crash_dump_upload", false);
+        editor.putBoolean("metrics_reporting", false);
         editor.putString("google.services.username", "wrong_user");
         editor.putString("junk", "junk");
         editor.apply();
@@ -176,7 +176,7 @@ public class ChromeBackupAgentTest {
         assertThat(chromeOutputPrefs, equalTo(""));
 
         // Check that we haven't restored any Android preferences
-        assertThat(sharedPrefs.getBoolean("crash_dump_upload", true), equalTo(true));
+        assertThat(sharedPrefs.getBoolean("metrics_reporting", true), equalTo(true));
         assertThat(sharedPrefs.getString("google.services.username", null), nullValue());
         assertThat(sharedPrefs.getString("junk", null), nullValue());
         assertThat(sharedPrefs.getString("first_run_signin_account_name", null), nullValue());

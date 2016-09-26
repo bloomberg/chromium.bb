@@ -451,34 +451,6 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return whether usage and crash report pref is managed. This is Android specific native
-     * pref which should be in sync with Android prefs. This pref will be replaced by platform
-     * independent native pref returned by isMetricsReportingEnabled in future.
-     */
-    public boolean isCrashReportManaged() {
-        return nativeGetCrashReportManaged();
-    }
-
-    /**
-     * Enable or disable usage and crash reporting pref. This is Android specific native
-     * pref which should be in sync with Android prefs. This pref will be replaced by platform
-     * independent native pref returned by isMetricsReportingEnabled in future.
-     */
-    public void setCrashReportingEnabled(boolean reporting) {
-        nativeSetCrashReportingEnabled(reporting);
-    }
-
-    /**
-     * @return whether usage and crash reporting pref is enabled. This is Android specific native
-     * pref which should be in sync with Android prefs. This pref will be replaced by platform
-     * independent native pref returned by isMetricsReportingEnabled in future.
-     */
-    @VisibleForTesting
-    public boolean isCrashReportingEnabled() {
-        return nativeIsCrashReportingEnabled();
-    }
-
-    /**
      * Allow fullscreen without asking user for permission.
      *
      * @param allowed Whether to allow fullscreen without user permission.
@@ -1035,30 +1007,24 @@ public final class PrefServiceBridge {
             int contentSettingType, String pattern, int setting);
 
     /**
-      * @return whether usage and crash reporting pref is enabled. This is platform independent
-      * native pref which will replace the Android specific native pref returned by
-      * isCrashReportManaged().
+      * @return whether usage and crash reporting pref is enabled.
       */
     public boolean isMetricsReportingEnabled() {
-        return nativeGetMetricsReportingEnabled();
+        return nativeIsMetricsReportingEnabled();
     }
 
     /**
-     * Sets whether the usage and crash reporting pref should be enabled. This is platform
-     * independent native pref which will replace the Android specific native pref returned by
-     * isCrashReportManaged().
+     * Sets whether the usage and crash reporting pref should be enabled.
      */
     public void setMetricsReportingEnabled(boolean enabled) {
         nativeSetMetricsReportingEnabled(enabled);
     }
 
     /**
-     * @return whether the usage and crash reporting pref has been set by user. This is platform
-     * independent native pref which will replace the Android specific native pref returned by
-     * isCrashReportManaged().
+     * @return whether usage and crash report pref is managed.
      */
-    public boolean hasSetMetricsReporting() {
-        return nativeHasSetMetricsReporting();
+    public boolean isMetricsReportingManaged() {
+        return nativeIsMetricsReportingManaged();
     }
 
     /**
@@ -1127,7 +1093,6 @@ public final class PrefServiceBridge {
     private native boolean nativeGetResolveNavigationErrorEnabled();
     private native boolean nativeGetResolveNavigationErrorManaged();
     private native boolean nativeGetProtectedMediaIdentifierEnabled();
-    private native boolean nativeGetCrashReportManaged();
     private native boolean nativeGetIncognitoModeEnabled();
     private native boolean nativeGetIncognitoModeManaged();
     private native boolean nativeGetPrintingEnabled();
@@ -1165,8 +1130,6 @@ public final class PrefServiceBridge {
     private native void nativeSetNotificationsEnabled(boolean allow);
     private native void nativeSetNotificationsVibrateEnabled(boolean enabled);
     private native void nativeSetPasswordEchoEnabled(boolean enabled);
-    private native void nativeSetCrashReportingEnabled(boolean reporting);
-    private native boolean nativeIsCrashReportingEnabled();
     private native boolean nativeCanPrefetchAndPrerender();
     private native AboutVersionStrings nativeGetAboutVersionStrings();
     private native void nativeSetContextualSearchPreference(String preference);
@@ -1197,9 +1160,9 @@ public final class PrefServiceBridge {
     private native String nativeGetSupervisedUserSecondCustodianName();
     private native String nativeGetSupervisedUserSecondCustodianEmail();
     private native String nativeGetSupervisedUserSecondCustodianProfileImageURL();
-    private native boolean nativeGetMetricsReportingEnabled();
+    private native boolean nativeIsMetricsReportingEnabled();
     private native void nativeSetMetricsReportingEnabled(boolean enabled);
-    private native boolean nativeHasSetMetricsReporting();
+    private native boolean nativeIsMetricsReportingManaged();
     private native void nativeSetClickedUpdateMenuItem(boolean clicked);
     private native boolean nativeGetClickedUpdateMenuItem();
     private native void nativeSetLatestVersionWhenClickedUpdateMenuItem(String version);

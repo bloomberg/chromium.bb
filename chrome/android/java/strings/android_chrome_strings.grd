@@ -443,27 +443,6 @@ To adjust your search term, long press to select. To refine your search, slide t
       <message name="IDS_CONTEXTUAL_SEARCH_PEEK_PROMO_NEW" desc="A word that gets placed next to the promotional message to highlight the new Touch To Search feature">
         New
       </message>
-      <message name="IDS_CRASH_DUMP_UPLOAD_TITLE" desc="Title for crash upload upload preference">
-        Usage and crash reports
-      </message>
-      <message name="IDS_CRASH_DUMP_NEVER_UPLOAD" desc="Settings option never to upload crash reports [CHAR-LIMIT=32]">
-        Never send
-      </message>
-      <message name="IDS_CRASH_DUMP_ALWAYS_UPLOAD" desc="Settings option to upload crash reports only anytime (when on Wi-Fi or mobile data) [CHAR-LIMIT=32]">
-        Always send
-      </message>
-      <message name="IDS_CRASH_DUMP_ONLY_WITH_WIFI" desc="Settings option to upload crash reports only over Wi-Fi [CHAR-LIMIT=32]">
-        Only send on Wi-Fi
-      </message>
-      <message name="IDS_CRASH_DUMP_NEVER_UPLOAD_VALUE" desc="Internal value for crash uploading preference." translateable="false">
-        crash_dump_never_upload
-      </message>
-      <message name="IDS_CRASH_DUMP_ALWAYS_UPLOAD_VALUE" desc="Internal value for crash uploading preference." translateable="false">
-        crash_dump_always_upload
-      </message>
-      <message name="IDS_CRASH_DUMP_ONLY_WITH_WIFI_VALUE" desc="Internal value for crash uploading preference." translateable="false">
-        crash_dump_only_with_wifi
-      </message>
       <message name="IDS_DO_NOT_TRACK_TITLE" desc="Title for 'Do Not Track' preference">
         “Do Not Track”
       </message>
@@ -1581,7 +1560,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_FAIL_TO_INSTALL_WEBAPK" desc="The installation of a WebAPK fails. [CHAR-LIMIT=27]">
         Unable to add
-      </message> 
+      </message>
 
       <!-- WebsiteSettingsPopup (PageInfo dialog) -->
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">

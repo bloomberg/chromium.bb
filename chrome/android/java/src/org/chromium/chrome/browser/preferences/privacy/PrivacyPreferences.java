@@ -36,16 +36,11 @@ public class PrivacyPreferences extends PreferenceFragment
     private static final String PREF_SAFE_BROWSING = "safe_browsing";
     private static final String PREF_CONTEXTUAL_SEARCH = "contextual_search";
     private static final String PREF_NETWORK_PREDICTIONS = "network_predictions";
-    private static final String PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR =
-            "crash_dump_upload_no_cellular";
     private static final String PREF_DO_NOT_TRACK = "do_not_track";
     private static final String PREF_USAGE_AND_CRASH_REPORTING = "usage_and_crash_reports";
     private static final String PREF_PHYSICAL_WEB = "physical_web";
 
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
-
-    // Needed for ChromeBackupAgent
-    public static final String PREF_CRASH_DUMP_UPLOAD = "crash_dump_upload";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,31 +60,6 @@ public class PrivacyPreferences extends PreferenceFragment
         networkPredictionPref.setOnPreferenceChangeListener(this);
         networkPredictionPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        // Display the correct settings fragment according to the user experiment group and to type
-        // of the device, by removing not applicable preference fragments.
-        CrashDumpUploadPreference uploadCrashDumpPref =
-                (CrashDumpUploadPreference) findPreference(PREF_CRASH_DUMP_UPLOAD);
-        ChromeBaseCheckBoxPreference uploadCrashDumpNoCellularPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR);
-
-        PreferenceScreen preferenceScreen = getPreferenceScreen();
-        if (privacyPrefManager.isCellularExperimentEnabled()) {
-            preferenceScreen.removePreference(uploadCrashDumpNoCellularPref);
-            preferenceScreen.removePreference(uploadCrashDumpPref);
-        } else {
-            preferenceScreen.removePreference(findPreference(PREF_USAGE_AND_CRASH_REPORTING));
-            if (privacyPrefManager.isMobileNetworkCapable()) {
-                preferenceScreen.removePreference(uploadCrashDumpNoCellularPref);
-                uploadCrashDumpPref.setOnPreferenceChangeListener(this);
-                uploadCrashDumpPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
-            } else {
-                preferenceScreen.removePreference(uploadCrashDumpPref);
-                uploadCrashDumpNoCellularPref.setOnPreferenceChangeListener(this);
-                uploadCrashDumpNoCellularPref.setManagedPreferenceDelegate(
-                        mManagedPreferenceDelegate);
-            }
-        }
-
         ChromeBaseCheckBoxPreference navigationErrorPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_NAVIGATION_ERROR);
         navigationErrorPref.setOnPreferenceChangeListener(this);
@@ -100,6 +70,7 @@ public class PrivacyPreferences extends PreferenceFragment
         searchSuggestionsPref.setOnPreferenceChangeListener(this);
         searchSuggestionsPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
+        PreferenceScreen preferenceScreen = getPreferenceScreen();
         if (!ContextualSearchFieldTrial.isEnabled()) {
             preferenceScreen.removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
         }
@@ -124,13 +95,6 @@ public class PrivacyPreferences extends PreferenceFragment
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
-        // CrashDumpUploadPreference listens to its own PreferenceChanged to update its text.
-        // We have replaced the listener. If we do run into a CrashDumpUploadPreference change,
-        // we will call onPreferenceChange to change the displayed text.
-        if (preference instanceof CrashDumpUploadPreference) {
-            ((CrashDumpUploadPreference) preference).onPreferenceChange(preference, newValue);
-        }
-
         String key = preference.getKey();
         if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
             PrefServiceBridge.getInstance().setSearchSuggestEnabled((boolean) newValue);
@@ -144,10 +108,6 @@ public class PrivacyPreferences extends PreferenceFragment
             PrecacheLauncher.updatePrecachingEnabled(getActivity());
         } else if (PREF_NAVIGATION_ERROR.equals(key)) {
             PrefServiceBridge.getInstance().setResolveNavigationErrorEnabled((boolean) newValue);
-        } else if (PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR.equals(key)) {
-            PrefServiceBridge.getInstance().setCrashReportingEnabled((boolean) newValue);
-        } else if (PREF_CRASH_DUMP_UPLOAD.equals(key)) {
-            PrivacyPreferencesManager.getInstance().setUploadCrashDump((String) newValue);
         }
 
         return true;
@@ -213,12 +173,10 @@ public class PrivacyPreferences extends PreferenceFragment
                     ? textOn : textOff);
         }
 
-        if (privacyPrefManager.isCellularExperimentEnabled()) {
-            Preference usageAndCrashPref = findPreference(PREF_USAGE_AND_CRASH_REPORTING);
-            if (usageAndCrashPref != null) {
-                usageAndCrashPref.setSummary(privacyPrefManager.isUsageAndCrashReportingEnabled()
-                        ? textOn : textOff);
-            }
+        Preference usageAndCrashPref = findPreference(PREF_USAGE_AND_CRASH_REPORTING);
+        if (usageAndCrashPref != null) {
+            usageAndCrashPref.setSummary(
+                    privacyPrefManager.isUsageAndCrashReportingEnabled() ? textOn : textOff);
         }
     }
 
@@ -242,10 +200,6 @@ public class PrivacyPreferences extends PreferenceFragment
                 }
                 if (PREF_NETWORK_PREDICTIONS.equals(key)) {
                     return prefs.isNetworkPredictionManaged();
-                }
-                if (PREF_CRASH_DUMP_UPLOAD.equals(key)
-                        || PREF_CRASH_DUMP_UPLOAD_NO_CELLULAR.equals(key)) {
-                    return prefs.isCrashReportManaged();
                 }
                 return false;
             }
