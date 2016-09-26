@@ -1301,3 +1301,5 @@ crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseli
 crbug.com/649631 [ Win7 Win10 ] fast/borders/border-styles-split.html [ NeedsRebaseline ]
 crbug.com/649631 [ Win7 Win10 ] fast/backgrounds/border-radius-split-background.html [ NeedsRebaseline ]
 crbug.com/649631 [ Win7 Win10 ] fast/backgrounds/border-radius-split-background-image.html [ NeedsRebaseline ]
+
+crbug.com/649046 fast/backgrounds/size/scaled-sprited-background.html [ NeedsRebaseline ]
