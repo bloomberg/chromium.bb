@@ -4747,8 +4747,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self clearTransientContentView];
 
   _loadPhase = web::LOAD_REQUESTED;
-  [self ensureWebViewCreated];
-  DCHECK(_webView) << "_webView null while trying to load HTML";
+
+  // Web View should not be created for App Specific URLs.
+  if (!web::GetWebClient()->IsAppSpecificURL(URL)) {
+    [self ensureWebViewCreated];
+    DCHECK(_webView) << "_webView null while trying to load HTML";
+  }
   [_webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
 }
 
