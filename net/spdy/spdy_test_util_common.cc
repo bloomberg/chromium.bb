@@ -557,14 +557,14 @@ base::WeakPtr<SpdySession> CreateInsecureSpdySession(
                                  OK, false /* is_secure */);
 }
 
-base::WeakPtr<SpdySession> TryCreateInsecureSpdySessionExpectingFailure(
+base::WeakPtr<SpdySession> TryCreateSpdySessionExpectingFailure(
     HttpNetworkSession* http_session,
     const SpdySessionKey& key,
     Error expected_error,
     const NetLogWithSource& net_log) {
   DCHECK_LT(expected_error, ERR_IO_PENDING);
-  return CreateSpdySessionHelper(http_session, key, net_log,
-                                 expected_error, false /* is_secure */);
+  return CreateSpdySessionHelper(http_session, key, net_log, expected_error,
+                                 true /* is_secure */);
 }
 
 base::WeakPtr<SpdySession> CreateSecureSpdySession(

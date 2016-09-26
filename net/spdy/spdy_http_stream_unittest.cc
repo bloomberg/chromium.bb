@@ -27,7 +27,9 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_test_util_common.h"
 #include "net/ssl/default_channel_id_store.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,8 +62,9 @@ void TestLoadTimingNotReused(const HttpStream& stream) {
   EXPECT_FALSE(load_timing_info.socket_reused);
   EXPECT_NE(NetLog::Source::kInvalidId, load_timing_info.socket_log_id);
 
-  ExpectConnectTimingHasTimes(load_timing_info.connect_timing,
-                              CONNECT_TIMING_HAS_DNS_TIMES);
+  ExpectConnectTimingHasTimes(
+      load_timing_info.connect_timing,
+      CONNECT_TIMING_HAS_DNS_TIMES | CONNECT_TIMING_HAS_SSL_TIMES);
   ExpectLoadTimingHasOnlyConnectionTimes(load_timing_info);
 }
 
@@ -122,7 +125,8 @@ class SpdyHttpStreamTest : public testing::Test {
  public:
   SpdyHttpStreamTest()
       : host_port_pair_(HostPortPair::FromURL(GURL(kDefaultUrl))),
-        key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED) {
+        key_(host_port_pair_, ProxyServer::Direct(), PRIVACY_MODE_DISABLED),
+        ssl_(SYNCHRONOUS, OK) {
     session_deps_.net_log = &net_log_;
     spdy_util_.set_default_url(GURL("http://www.example.org/"));
   }
@@ -145,9 +149,14 @@ class SpdyHttpStreamTest : public testing::Test {
     sequenced_data_.reset(
         new SequencedSocketData(reads, reads_count, writes, writes_count));
     session_deps_.socket_factory->AddSocketDataProvider(sequenced_data_.get());
+
+    ssl_.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    ASSERT_TRUE(ssl_.cert);
+    session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_);
+
     http_session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
-    session_ = CreateInsecureSpdySession(http_session_.get(), key_,
-                                         NetLogWithSource());
+    session_ =
+        CreateSecureSpdySession(http_session_.get(), key_, NetLogWithSource());
   }
 
   void TestSendCredentials(
@@ -166,6 +175,7 @@ class SpdyHttpStreamTest : public testing::Test {
 
  private:
   MockECSignatureCreatorFactory ec_signature_creator_factory_;
+  SSLSocketDataProvider ssl_;
 };
 
 TEST_F(SpdyHttpStreamTest, SendRequest) {

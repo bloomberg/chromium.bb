@@ -29,7 +29,9 @@
 #include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_stream_test_util.h"
 #include "net/spdy/spdy_test_util_common.h"
+#include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
+#include "net/test/test_data_directory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,7 +60,7 @@ class SpdyStreamTest : public ::testing::Test {
   typedef base::Callback<void(const base::WeakPtr<SpdyStream>&, int32_t)>
       UnstallFunction;
 
-  SpdyStreamTest() : offset_(0) {
+  SpdyStreamTest() : offset_(0), ssl_(SYNCHRONOUS, OK) {
     spdy_util_.set_default_url(GURL(kStreamUrl));
     session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   }
@@ -68,7 +70,7 @@ class SpdyStreamTest : public ::testing::Test {
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {
     SpdySessionKey key(HostPortPair("www.example.org", 80),
                        ProxyServer::Direct(), PRIVACY_MODE_DISABLED);
-    return CreateInsecureSpdySession(session_.get(), key, NetLogWithSource());
+    return CreateSecureSpdySession(session_.get(), key, NetLogWithSource());
   }
 
   void TearDown() override { base::RunLoop().RunUntilIdle(); }
@@ -121,6 +123,14 @@ class SpdyStreamTest : public ::testing::Test {
     session->InsertActivatedStream(std::move(activated));
   }
 
+  void AddSSLSocketData() {
+    // Load a cert that is valid for
+    // www.example.org, mail.example.org, and mail.example.com.
+    ssl_.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    ASSERT_TRUE(ssl_.cert);
+    session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_);
+  }
+
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
   std::unique_ptr<HttpNetworkSession> session_;
@@ -130,6 +140,7 @@ class SpdyStreamTest : public ::testing::Test {
   std::vector<MockWrite> writes_;
   std::vector<MockRead> reads_;
   int offset_;
+  SSLSocketDataProvider ssl_;
 };
 
 TEST_F(SpdyStreamTest, SendDataAfterOpen) {
@@ -156,8 +167,9 @@ TEST_F(SpdyStreamTest, SendDataAfterOpen) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -235,8 +247,9 @@ TEST_F(SpdyStreamTest, Trailers) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -274,8 +287,9 @@ TEST_F(SpdyStreamTest, PushedStream) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> spdy_session(CreateDefaultSpdySession());
 
@@ -358,8 +372,9 @@ TEST_F(SpdyStreamTest, StreamError) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -432,8 +447,9 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenRequestResponse) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -487,8 +503,9 @@ TEST_F(SpdyStreamTest, SendLargeDataAfterOpenBidirectional) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -540,8 +557,9 @@ TEST_F(SpdyStreamTest, UpperCaseHeaders) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -591,8 +609,9 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersOnPush) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -658,8 +677,9 @@ TEST_F(SpdyStreamTest, UpperCaseHeadersInHeadersFrame) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -732,8 +752,9 @@ TEST_F(SpdyStreamTest, DuplicateHeaders) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -794,8 +815,9 @@ TEST_F(SpdyStreamTest, IncreaseSendWindowSizeOverflow) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
   GURL url(kStreamUrl);
@@ -882,8 +904,9 @@ void SpdyStreamTest::RunResumeAfterUnstallRequestResponseTest(
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -961,8 +984,9 @@ void SpdyStreamTest::RunResumeAfterUnstallBidirectionalTest(
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 
@@ -1042,8 +1066,9 @@ TEST_F(SpdyStreamTest, ReceivedBytes) {
                            GetNumWrites());
   MockConnect connect_data(SYNCHRONOUS, OK);
   data.set_connect_data(connect_data);
-
   session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
 
   base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
 

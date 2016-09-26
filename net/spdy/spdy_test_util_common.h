@@ -237,7 +237,7 @@ base::WeakPtr<SpdySession> CreateInsecureSpdySession(
 // attempt to fail with the given error. A SPDY session for |key| must
 // not already exist. The session will be created but close in the
 // next event loop iteration.
-base::WeakPtr<SpdySession> TryCreateInsecureSpdySessionExpectingFailure(
+base::WeakPtr<SpdySession> TryCreateSpdySessionExpectingFailure(
     HttpNetworkSession* http_session,
     const SpdySessionKey& key,
     Error expected_error,

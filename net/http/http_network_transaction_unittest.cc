@@ -271,7 +271,8 @@ class HttpNetworkTransactionTest : public PlatformTest {
 
  protected:
   HttpNetworkTransactionTest()
-      : old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
+      : ssl_(ASYNC, OK),
+        old_max_group_sockets_(ClientSocketPoolManager::max_sockets_per_group(
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
             HttpNetworkSession::NORMAL_SOCKET_POOL)) {
@@ -427,6 +428,13 @@ class HttpNetworkTransactionTest : public PlatformTest {
     return out;
   }
 
+  void AddSSLSocketData() {
+    ssl_.next_proto = kProtoHTTP2;
+    ssl_.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
+    ASSERT_TRUE(ssl_.cert);
+    session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_);
+  }
+
   void ConnectStatusHelperWithExpectedStatus(const MockRead& status,
                                              int expected_status);
 
@@ -438,6 +446,7 @@ class HttpNetworkTransactionTest : public PlatformTest {
 
   SpdyTestUtil spdy_util_;
   SpdySessionDependencies session_deps_;
+  SSLSocketDataProvider ssl_;
 
   // Original socket limits.  Some tests set these.  Safest to always restore
   // them once each test has been run.
@@ -10667,12 +10676,7 @@ TEST_F(HttpNetworkTransactionTest, UseAlternateProtocolForNpnSpdy) {
   ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
-  SSLSocketDataProvider ssl_http2(ASYNC, OK);
-  ssl_http2.next_proto = kProtoHTTP2;
-  ssl_http2.cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl_http2.cert.get());
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http2);
+  AddSSLSocketData();
 
   SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet("https://www.example.org/", 1, LOWEST));
@@ -10790,12 +10794,7 @@ TEST_F(HttpNetworkTransactionTest, AlternateProtocolWithSpdyLateBinding) {
                                 arraysize(spdy_writes));
   session_deps_.socket_factory->AddSocketDataProvider(&spdy_data);
 
-  SSLSocketDataProvider ssl_http2(ASYNC, OK);
-  ssl_http2.next_proto = kProtoHTTP2;
-  ssl_http2.cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl_http2.cert);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http2);
+  AddSSLSocketData();
 
   StaticSocketDataProvider hanging_socket3(NULL, 0, NULL, 0);
   hanging_socket3.set_connect_data(never_finishing_connect);
@@ -11015,12 +11014,7 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
   session_deps_.socket_factory->AddSocketDataProvider(
       &hanging_alternate_protocol_socket);
 
-  SSLSocketDataProvider ssl_http2(ASYNC, OK);
-  ssl_http2.next_proto = kProtoHTTP2;
-  ssl_http2.cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl_http2.cert);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http2);
+  AddSSLSocketData();
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -11099,12 +11093,7 @@ TEST_F(HttpNetworkTransactionTest, UseAlternativeServiceForTunneledNpnSpdy) {
   ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
-  SSLSocketDataProvider ssl_http2(ASYNC, OK);
-  ssl_http2.next_proto = kProtoHTTP2;
-  ssl_http2.cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl_http2.cert);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http2);
+  AddSSLSocketData();
 
   SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet("https://www.example.org/", 1, LOWEST));
@@ -11207,12 +11196,7 @@ TEST_F(HttpNetworkTransactionTest,
   ssl_http11.next_proto = kProtoHTTP11;
   session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http11);
 
-  SSLSocketDataProvider ssl_http2(ASYNC, OK);
-  ssl_http2.next_proto = kProtoHTTP2;
-  ssl_http2.cert =
-      ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl_http2.cert);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl_http2);
+  AddSSLSocketData();
 
   SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet("https://www.example.org/", 1, LOWEST));
@@ -12387,7 +12371,7 @@ TEST_F(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
   base::WeakPtr<SpdySession> spdy_session =
-      CreateInsecureSpdySession(session.get(), key, NetLogWithSource());
+      CreateSecureSpdySession(session.get(), key, NetLogWithSource());
 
   HttpRequestInfo request;
   request.method = "GET";
@@ -12769,11 +12753,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPooling) {
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.next_proto = kProtoHTTP2;
-  ssl.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl.cert);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+  AddSSLSocketData();
 
   SpdySerializedFrame host1_req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
@@ -12858,11 +12838,7 @@ TEST_F(HttpNetworkTransactionTest, UseIPConnectionPoolingAfterResolution) {
   session_deps_.host_resolver.reset(new MockCachingHostResolver());
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.next_proto = kProtoHTTP2;
-  ssl.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl.cert);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+  AddSSLSocketData();
 
   SpdySerializedFrame host1_req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
@@ -12977,11 +12953,7 @@ TEST_F(HttpNetworkTransactionTest,
   params.host_resolver = &host_resolver;
   std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
 
-  SSLSocketDataProvider ssl(ASYNC, OK);
-  ssl.next_proto = kProtoHTTP2;
-  ssl.cert = ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
-  ASSERT_TRUE(ssl.cert);
-  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+  AddSSLSocketData();
 
   SpdySerializedFrame host1_req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
