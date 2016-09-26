@@ -7,6 +7,9 @@ cr.define('settings', function() {
   var WRAPPER_CSS_CLASS = 'search-highlight-wrapper';
 
   /** @const {string} */
+  var ORIGINAL_CONTENT_CSS_CLASS = 'search-highlight-original-content';
+
+  /** @const {string} */
   var HIT_CSS_CLASS = 'search-highlight-hit';
 
   /** @const {string} */
@@ -45,8 +48,8 @@ cr.define('settings', function() {
 
   /**
    * Finds all previous highlighted nodes under |node| (both within self and
-   * children's Shadow DOM) and removes the highlights (yellow rectangle and
-   * search bubbles).
+   * children's Shadow DOM) and replaces the highlights (yellow rectangle and
+   * search bubbles) with the original text node.
    * TODO(dpapad): Consider making this a private method of TopLevelSearchTask.
    * @param {!Node} node
    * @private
@@ -55,21 +58,9 @@ cr.define('settings', function() {
     var wrappers = node.querySelectorAll('* /deep/ .' + WRAPPER_CSS_CLASS);
 
     for (var wrapper of wrappers) {
-      var hitElements = wrapper.querySelectorAll('.' + HIT_CSS_CLASS);
-      // For each hit element, remove the highlighting.
-      for (var hitElement of hitElements) {
-        wrapper.replaceChild(hitElement.firstChild, hitElement);
-      }
-
-      // Normalize so that adjacent text nodes will be combined.
-      wrapper.normalize();
-      // Restore the DOM structure as it was before the search occurred.
-      if (wrapper.previousSibling)
-        wrapper.textContent = ' ' + wrapper.textContent;
-      if (wrapper.nextSibling)
-        wrapper.textContent = wrapper.textContent + ' ';
-
-      wrapper.parentElement.replaceChild(wrapper.firstChild, wrapper);
+      var originalNode = wrapper.querySelector(
+          '.' + ORIGINAL_CONTENT_CSS_CLASS);
+      wrapper.parentElement.replaceChild(originalNode.firstChild, wrapper);
     }
 
     var searchBubbles = node.querySelectorAll(
@@ -95,6 +86,15 @@ cr.define('settings', function() {
     // Use existing node as placeholder to determine where to insert the
     // replacement content.
     node.parentNode.replaceChild(wrapper, node);
+
+    // Keep the existing node around for when the highlights are removed. The
+    // existing text node might be involved in data-binding and therefore should
+    // not be discarded.
+    var span = document.createElement('span');
+    span.classList.add(ORIGINAL_CONTENT_CSS_CLASS);
+    span.style.display = 'none';
+    span.appendChild(node);
+    wrapper.appendChild(span);
 
     for (var i = 0; i < tokens.length; ++i) {
       if (i % 2 == 0) {
