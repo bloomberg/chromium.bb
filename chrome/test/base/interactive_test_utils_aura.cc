@@ -26,6 +26,7 @@ void HideNativeWindowAura(gfx::NativeWindow window) {
 
 bool ShowAndFocusNativeWindowAura(gfx::NativeWindow window) {
   window->Show();
+  window->Focus();
   return true;
 }
 
