@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./resources/foo.js"></script>
+<script>
+
+function test()
+{
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    var fsEntry = InspectorTest.addFooJSFile(fs);
+    fs.addFileMapping("http://127.0.0.1:8000", "/");
+    fs.reportCreated(function () { });
+    InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
+    WebInspector.persistence.addEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
+
+    function onBindingCreated(binding)
+    {
+        InspectorTest.addResult("Binding created: " + binding);
+        InspectorTest.addResult("Renaming foo.js -> bar.js");
+        binding.fileSystem.rename("bar.js", function() { });
+    }
+
+    function onBindingRemoved(event)
+    {
+        var binding = event.data;
+        InspectorTest.addResult("Binding successfully removed: " + binding);
+        InspectorTest.completeTest();
+    }
+
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that binding gets removed as the fileSystem file gets renamed.</p>
+</body>
+</html>

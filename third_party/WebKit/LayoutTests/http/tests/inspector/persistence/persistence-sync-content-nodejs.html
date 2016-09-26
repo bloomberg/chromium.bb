@@ -1,0 +1,98 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script>
+
+function test()
+{
+    // Pretend we are running under V8 front-end.
+    Runtime._queryParamsObject["v8only"] = true;
+
+    var content = [
+        '',
+        'var express = require("express");',
+        '//TODO'
+    ].join("\n");
+
+    var fsContent = WebInspector.Persistence._NodeShebang + content;
+    var nodeContent = WebInspector.Persistence._NodePrefix + content + WebInspector.Persistence._NodeSuffix;
+
+    InspectorTest.addResult("Initial fileSystem content:");
+    InspectorTest.addResult(indent(fsContent));
+    InspectorTest.addResult("\n Initial network content:");
+    InspectorTest.addResult(indent(nodeContent));
+
+    // Add network UISourceCode.
+    var networkProject = WebInspector.NetworkProject.forTarget(WebInspector.targetManager.mainTarget());
+    var resourceTreeModel = WebInspector.ResourceTreeModel.fromTarget(WebInspector.targetManager.mainTarget());
+    var mainFrame = resourceTreeModel.mainFrame;
+    var contentProvider = new WebInspector.StaticContentProvider("http://127.0.0.1:8000/nodejs.js", WebInspector.resourceTypes.Script, () => Promise.resolve(nodeContent));
+    networkProject.addFile(contentProvider, mainFrame, false);
+
+    // Add filesystem UISourceCode and mapping.
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    var fsEntry = fs.root.addFile("nodejs.js", fsContent);
+    fs.addFileMapping("http://127.0.0.1:8000", "/");
+    fs.reportCreated(function() { });
+
+    InspectorTest.waitForBinding("nodejs.js").then(onBindingCreated);
+
+    function onBindingCreated(binding)
+    {
+        InspectorTest.addResult("Binding created: " + binding);
+        editNetworkUISourceCode(binding);
+    }
+
+    function editNetworkUISourceCode(binding)
+    {
+        InspectorTest.addResult("\nRunning: Edit network uiSourceCode");
+        nodeContent = nodeContent.replace("//TODO", "network();\n//TODO");
+        InspectorTest.addSniffer(WebInspector.Persistence.prototype, "_contentSyncedForTest", onSynced);
+        binding.network.addRevision(nodeContent);
+
+        function onSynced()
+        {
+            dumpBindingContent(binding);
+            changeFileSystem(binding);
+        }
+    }
+
+    function changeFileSystem(binding)
+    {
+        InspectorTest.addResult("\nRunning: Edit fileSystem uiSourceCode");
+        fsContent = fsContent.replace("//TODO", "filesystem();\n//TODO");
+        InspectorTest.addSniffer(WebInspector.Persistence.prototype, "_contentSyncedForTest", onSynced);
+        fsEntry.setContent(fsContent);
+
+        function onSynced()
+        {
+            dumpBindingContent(binding);
+            InspectorTest.completeTest();
+        }
+    }
+
+    function dumpBindingContent(binding)
+    {
+        InspectorTest.addResult("Network:");
+        InspectorTest.addResult(indent(binding.network.workingCopy()));
+        InspectorTest.addResult("");
+        InspectorTest.addResult("FileSystem:");
+        InspectorTest.addResult(indent(binding.fileSystem.workingCopy()));
+        InspectorTest.addResult("");
+    }
+
+    function indent(content)
+    {
+        return content.split("\n").map(line => "    " + line).join("\n");
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that syncing Node.js contents works fine.</p>
+</body>
+</html>

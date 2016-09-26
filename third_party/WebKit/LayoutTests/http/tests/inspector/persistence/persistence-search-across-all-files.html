@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script src="../search/search-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./resources/foo.js"></script>
+<script>
+
+function test()
+{
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    var fsEntry = InspectorTest.addFooJSFile(fs);
+    var scope = new WebInspector.SourcesSearchScope();
+    fs.reportCreated(function() { });
+
+    InspectorTest.runTestSuite([
+        function waitForUISourceCodes(next)
+        {
+            Promise.all([
+                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network),
+                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+            ]).then(next);
+        },
+
+        dumpSearchResults,
+
+        function addFileMapping(next)
+        {
+            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            InspectorTest.waitForBinding("foo.js").then(next);
+        },
+
+        dumpSearchResults,
+    ]);
+
+    function dumpSearchResults(next)
+    {
+        var searchConfig = new WebInspector.SearchConfig("window.foo f:foo", true, false);
+        InspectorTest.runSearchAndDumpResults(scope, searchConfig, true, next);
+    }
+
+    InspectorFrontendHost.searchInPath = function(requestId, path, query)
+    {
+        setTimeout(reply);
+
+        function reply()
+        {
+            var paths = ["/var/www" + fsEntry.fullPath];
+            WebInspector.isolatedFileSystemManager._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
+        }
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that search across all files omits filesystem uiSourceCodes with binding to network.</p>
+</body>
+</html>

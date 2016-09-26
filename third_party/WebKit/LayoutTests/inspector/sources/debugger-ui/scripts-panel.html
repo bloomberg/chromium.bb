@@ -47,7 +47,7 @@ function test()
     {
         var uiSourceCode = InspectorTest.testDebuggerProject.createUISourceCode(url, WebInspector.resourceTypes.Script);
         InspectorTest.testDebuggerProject.addUISourceCodeWithProvider(uiSourceCode, createContentProvider(url));
-        return InspectorTest.testWorkspace.uiSourceCode("debugger:", uiSourceCode.url());
+        return uiSourceCode;
     }
 
     InspectorTest.runTestSuite([

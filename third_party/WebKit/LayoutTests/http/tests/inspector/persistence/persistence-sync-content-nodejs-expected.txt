@@ -1,0 +1,50 @@
+Verify that syncing Node.js contents works fine.
+
+Initial fileSystem content:
+    #!/usr/bin/env node
+    
+    var express = require("express");
+    //TODO
+
+ Initial network content:
+    (function (exports, require, module, __filename, __dirname) { 
+    var express = require("express");
+    //TODO
+    });
+Binding created: {
+       network: http://127.0.0.1:8000/nodejs.js
+    fileSystem: file:///var/www/nodejs.js
+}
+
+Running: Edit network uiSourceCode
+Network:
+    (function (exports, require, module, __filename, __dirname) { 
+    var express = require("express");
+    network();
+    //TODO
+    });
+
+FileSystem:
+    #!/usr/bin/env node
+    
+    var express = require("express");
+    network();
+    //TODO
+
+
+Running: Edit fileSystem uiSourceCode
+Network:
+    (function (exports, require, module, __filename, __dirname) { 
+    var express = require("express");
+    filesystem();
+    //TODO
+    });
+
+FileSystem:
+    #!/usr/bin/env node
+    
+    var express = require("express");
+    filesystem();
+    //TODO
+
+

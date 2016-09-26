@@ -1,0 +1,10 @@
+Verify that dirty uiSourceCodes are not bound.
+
+
+Running: waitForUISourceCodes
+
+Running: addFileSystemMapping
+
+Running: dumpConsoleMessages
+foo.js can not be persisted to file system due to unsaved changes.
+

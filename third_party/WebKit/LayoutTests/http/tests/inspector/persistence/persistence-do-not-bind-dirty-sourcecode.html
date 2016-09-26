@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script src="../console-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./resources/foo.js"></script>
+<script>
+
+function test()
+{
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    InspectorTest.addFooJSFile(fs);
+    fs.reportCreated(function() { });
+
+    InspectorTest.runTestSuite([
+        function waitForUISourceCodes(next)
+        {
+            Promise.all([
+                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network)
+                    .then(uiSourceCode => uiSourceCode.setWorkingCopy("dirty.")),
+                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+            ]).then(next);
+        },
+
+        function addFileSystemMapping(next)
+        {
+            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            next();
+        },
+
+        function dumpConsoleMessages(next)
+        {
+            InspectorTest.dumpConsoleMessages();
+            next();
+        },
+    ]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that dirty uiSourceCodes are not bound.</p>
+</body>
+</html>

@@ -106,6 +106,13 @@ InspectorTest.TestFileSystem.Entry.prototype = {
         return child;
     },
 
+    setContent: function(content)
+    {
+        this.content = new Blob([content], {type: 'text/plain'});
+        var fullPath = this._fileSystem.fileSystemPath + this.fullPath;
+        InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemFilesChanged, [fullPath]);
+    },
+
     createReader: function()
     {
         return new InspectorTest.TestFileSystem.Reader(this._children);

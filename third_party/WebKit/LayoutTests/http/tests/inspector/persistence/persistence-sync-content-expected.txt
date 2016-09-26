@@ -1,0 +1,19 @@
+Tests that persistence syncs network and filesystem UISourceCodes.
+
+
+Running: addFileSystem
+
+Running: addFileMapping
+Binding created: {
+       network: http://127.0.0.1:8000/inspector/persistence/resources/foo.js
+    fileSystem: file:///var/www/inspector/persistence/resources/foo.js
+}
+
+Running: changeFileSystem
+network code: 'window.foo3 = 3;'
+fileSystem code: 'window.foo3 = 3;'
+
+Running: changeNetworkUISourceCode
+network code: 'window.foo2 = 2;'
+fileSystem code: 'window.foo2 = 2;'
+

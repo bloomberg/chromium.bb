@@ -1,0 +1,78 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./resources/foo.js"></script>
+<script>
+
+function test()
+{
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    var fsEntry = InspectorTest.addFooJSFile(fs);
+
+    InspectorTest.runTestSuite([
+        function addFileSystem(next)
+        {
+            fs.reportCreated(next);
+        },
+
+        function setBreakpointInFileSystemUISourceCode(next)
+        {
+            InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+                .then(code => InspectorTest.showUISourceCodePromise(code))
+                .then(onSourceFrame);
+
+            function onSourceFrame(sourceFrame)
+            {
+                InspectorTest.setBreakpoint(sourceFrame, 0, "", true);
+                dumpBreakpointSidebarPane();
+                next();
+            }
+        },
+
+        function addFileMapping(next)
+        {
+            InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
+            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+
+            function onBindingCreated(binding)
+            {
+                dumpBreakpointSidebarPane();
+                next();
+            }
+        },
+
+        function removeFileMapping(next)
+        {
+            WebInspector.persistence.addEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
+            WebInspector.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+
+            function onBindingRemoved(event)
+            {
+                var binding = event.data;
+                if (binding.network.name() !== "foo.js")
+                    return
+                WebInspector.persistence.removeEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
+                dumpBreakpointSidebarPane();
+                next();
+            }
+        },
+    ]);
+
+    function dumpBreakpointSidebarPane()
+    {
+        var sidebarPane = self.runtime.sharedInstance(WebInspector.JavaScriptBreakpointsSidebarPane)
+        var breakpoints = sidebarPane._items.keysArray();
+        for (var breakpoint of breakpoints)
+            InspectorTest.addResult("    " + breakpoint.uiSourceCode().url() +":" + breakpoint.lineNumber());
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that breakpoints are moved appropriately</p>
+</body>
+</html>

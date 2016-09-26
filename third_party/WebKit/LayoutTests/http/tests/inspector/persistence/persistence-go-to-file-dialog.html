@@ -1,0 +1,59 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./resources/foo.js"></script>
+<script>
+
+function test()
+{
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    InspectorTest.addFooJSFile(fs);
+    fs.reportCreated(function() { });
+
+    InspectorTest.runTestSuite([
+        function waitForUISourceCodes(next)
+        {
+            Promise.all([
+                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network),
+                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+            ]).then(next);
+        },
+
+        function goToSourceDialogBeforeBinding(next)
+        {
+            dumpGoToSourceDialog();
+            next();
+        },
+
+        function addFileSystemMapping(next)
+        {
+            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+            InspectorTest.waitForBinding("foo.js").then(next);
+        },
+
+        function goToSourceAfterBinding(next)
+        {
+            dumpGoToSourceDialog();
+            next();
+        },
+    ]);
+
+    function dumpGoToSourceDialog()
+    {
+        WebInspector.panels.sources._sourcesView.showOpenResourceDialog();
+        var dialog = WebInspector.OpenResourceDialog._instanceForTest;
+        for (var i = 0; i < dialog.itemCount(); ++i)
+            InspectorTest.addResult(dialog.itemKeyAt(i));
+        WebInspector.Dialog._instance.detach();
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that GoTo source dialog filters out mapped uiSourceCodes.</p>
+</body>
+</html>

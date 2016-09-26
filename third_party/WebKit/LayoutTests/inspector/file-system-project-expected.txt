@@ -26,12 +26,6 @@ Dumping uiSourceCode location link texts:
  - foo.js:6
  - bar.js:6
  - baz.js:6
-UISourceCode uri to url mappings:
-    file:///var/www/localhost/foo.js -> http://localhost/foo.js
-    file:///foo/bar/baz.js -> http://www.example.com/baz.js
-UISourceCode url to uri mappings:
-    http://localhost/foo.js -> file:///var/www/localhost/foo.js
-    http://www.example.com/baz.js -> file:///foo/bar/baz.js
 After revision added:
 UISourceCode: file:///var/www/localhost/foo.js
 UISourceCode is content script: false

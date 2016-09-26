@@ -6,11 +6,13 @@
 <script src="../../../http/tests/inspector/isolated-filesystem-test.js"></script>
 <script src="../../../http/tests/inspector/live-edit-test.js"></script>
 <script>
+
 function test()
 {
     var target;
     var resourceScriptMapping;
     var defaultScriptMapping;
+    var persistence;
     var fileSystemProjectId = WebInspector.FileSystemWorkspaceBinding.projectId("file:///var/www");
     WebInspector.networkMapping.dispose();
 
@@ -20,20 +22,19 @@ function test()
         var entry = InspectorTest.testDebuggerWorkspaceBinding._targetToData.get(target);
         resourceScriptMapping = entry._resourceMapping;
         defaultScriptMapping = entry._defaultMapping;
-    }
-
-    function suspendStateChanged()
-    {
-        InspectorTest.addResult("(suspend state changed: " + InspectorTest.testTargetManager.allTargetsSuspended() + ")");
+        if (persistence)
+            persistence.dispose();
+        persistence = new WebInspector.Persistence(InspectorTest.testWorkspace, WebInspector.breakpointManager, WebInspector.fileSystemMapping);
     }
 
     function dumpFileSystemUISourceCodesMappings()
     {
         var uiSourceCodes = InspectorTest.testWorkspace.project(fileSystemProjectId).uiSourceCodes();
         InspectorTest.addResult("UISourceCode uri to url mappings:");
-        for (var i = 0; i < uiSourceCodes.length; ++i) {
-            var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCodes[i]);
-            InspectorTest.addResult("    " + uiSourceCodes[i].url() + " -> " + networkURL);
+        for (var uiSourceCode of uiSourceCodes) {
+            var binding = persistence.binding(uiSourceCode);
+            var networkURL = binding ? binding.network.url() : "";
+            InspectorTest.addResult("    " + uiSourceCode.url() + " -> " + networkURL);
         }
     }
 
@@ -74,6 +75,7 @@ function test()
             {
                 InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/html/foo.js", WebInspector.resourceTypes.Script, "<foo content>", target);
                 InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>", target);
+
                 dumpFileSystemUISourceCodesMappings();
 
                 InspectorTest.addResult("Removing mapping between network and file system resources.");
@@ -94,184 +96,6 @@ function test()
 
                 var networkURL = InspectorTest.testNetworkMapping.networkURL(networkUISourceCode);
                 WebInspector.fileSystemMapping.removeMappingForURL(networkURL);
-                fs.reportRemoved();
-                next();
-            }
-        },
-
-        function testScriptFileOnReloadWithDirtyFile(next)
-        {
-            var originalFileContent = "<foo content>";
-            var scriptURL = "http://localhost/html/foo.js";
-            var scriptContent = originalFileContent + "\n  //# sourceURL=" + scriptURL + "  \n ";
-            function unloadScript()
-            {
-                resourceScriptMapping._debuggerReset();
-                defaultScriptMapping._debuggerReset();
-            }
-
-            function loadScript()
-            {
-                script = InspectorTest.createScriptMock(scriptURL, 0, 0, false, scriptContent, InspectorTest.testTargetManager.targets()[0]);
-                defaultScriptMapping.addScript(script);
-                resourceScriptMapping.addScript(script);
-            }
-
-            var uiSourceCode;
-
-            createWorkspaceWithTarget();
-
-            InspectorTest._originalDebuggerBinding = WebInspector.debuggerWorkspaceBinding;
-            WebInspector.debuggerWorkspaceBinding = InspectorTest.testDebuggerWorkspaceBinding;
-            var target = InspectorTest.testTargetManager.targets()[0];
-            WebInspector._originalTargetManager = WebInspector.targetManager;
-            WebInspector.targetManager = InspectorTest.testTargetManager;
-
-            InspectorTest.addResult("Adding file system.");
-            var fs = new InspectorTest.TestFileSystem("file:///var/www");
-            fs.root.mkdir("html").addFile("foo.js", originalFileContent);
-            fs.root.addFile("bar.js", "<bar content>");
-            InspectorTest.addResult("Adding file system mapping.");
-            fs.addFileMapping("http://localhost/", "/");
-            fs.reportCreated(fileSystemCreated);
-            var sourceFrame;
-
-            function waitForMappingsCheck(callback)
-            {
-                InspectorTest.addSniffer(WebInspector.ResourceScriptFile.prototype, "_mappingCheckedForTest", onMappingChecked);
-
-                function onMappingChecked()
-                {
-                    setImmediate(callback);
-                }
-            }
-
-            function fileSystemCreated()
-            {
-                loadScript();
-
-                uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
-                InspectorTest.showUISourceCode(uiSourceCode, sf => sourceFrame = sf);
-                waitForMappingsCheck(didShowScriptSource);
-            }
-
-            function dumpUISourceCodeAndScriptContents()
-            {
-                InspectorTest.addResult("Dumping uiSourceCode and script content:");
-                InspectorTest.addResult("    uiSourceCode: " + uiSourceCode.workingCopy());
-                InspectorTest.addResult("    script: " + scriptContent);
-            }
-
-            function didShowScriptSource()
-            {
-                dumpUISourceCodeAndScriptContents();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
-                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
-
-                InspectorTest.addResult("Editing uiSourceCode:");
-                waitForMappingsCheck(onMappingChecked1);
-                uiSourceCode.setWorkingCopy("<foo content edited>");
-            }
-
-            function onMappingChecked1()
-            {
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
-                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
-
-                function setScriptSourceOverrideFailure(scriptId, newContent, callback)
-                {
-                    callback("error");
-                }
-                InspectorTest.override(WebInspector.DebuggerModel.prototype, "setScriptSource", setScriptSourceOverrideFailure);
-
-                InspectorTest.addResult("Committing uiSourceCode with live edit failure:");
-                waitForMappingsCheck(onMappingChecked2);
-                uiSourceCode.commitWorkingCopy();
-            }
-
-            function onMappingChecked2()
-            {
-                dumpUISourceCodeAndScriptContents();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
-                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
-
-                InspectorTest.addResult("Reloading with saved but diverged uiSourceCode:");
-                unloadScript();
-                InspectorTest.addResult("UISourceCode should not have script file after unloading scripts: " + !resourceScriptMapping.scriptFile(uiSourceCode));
-                InspectorTest.addResult("Saved but diverged source frame should not be muted: " + !sourceFrame._muted);
-
-                InspectorTest.addResult("Loading script.");
-                waitForMappingsCheck(onMappingChecked3);
-                loadScript();
-            }
-
-            function onMappingChecked3()
-            {
-                dumpUISourceCodeAndScriptContents();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
-                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
-
-                InspectorTest.addResult("Editing uiSourceCode again:");
-                waitForMappingsCheck(onMappingChecked4);
-                uiSourceCode.setWorkingCopy("<foo content edited again>");
-            }
-
-            function onMappingChecked4()
-            {
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
-                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
-
-                function setScriptSourceOverrideSuccess(scriptId, newContent, callback)
-                {
-                    scriptContent = newContent;
-                    callback();
-                }
-                InspectorTest.override(WebInspector.DebuggerModel.prototype, "setScriptSource", setScriptSourceOverrideSuccess);
-
-                InspectorTest.addResult("Committing uiSourceCode again (with live edit success now):");
-                waitForMappingsCheck(onMappingChecked5);
-                uiSourceCode.commitWorkingCopy();
-            }
-
-            function onMappingChecked5()
-            {
-                dumpUISourceCodeAndScriptContents();
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
-                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
-
-                InspectorTest.addResult("Reloading page:");
-                unloadScript();
-                InspectorTest.addResult("UISourceCode should not have script file after unloading scripts: " + !resourceScriptMapping.scriptFile(uiSourceCode));
-                InspectorTest.addResult("Saved and merged source frame should not be muted: " + !sourceFrame._muted);
-                InspectorTest.addResult("Loading script.");
-                waitForMappingsCheck(onMappingChecked6);
-                loadScript();
-            }
-
-            function onMappingChecked6()
-            {
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
-                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
-
-                InspectorTest.addResult("Editing uiSourceCode again and reloading while it is dirty:");
-                uiSourceCode.setWorkingCopy("<foo content edited and dirty>");
-                unloadScript();
-                InspectorTest.addResult("UISourceCode should not have script file after unloading scripts: " + !resourceScriptMapping.scriptFile(uiSourceCode));
-                InspectorTest.addResult("Dirty source frame should be muted: " + sourceFrame._muted);
-                InspectorTest.addResult("Loading script.");
-                waitForMappingsCheck(onMappingChecked7);
-                loadScript();
-            }
-
-            function onMappingChecked7()
-            {
-                InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
-                InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
-
-                unloadScript();
-                loadScript;
-
-                WebInspector.debuggerWorkspaceBinding = InspectorTest._originalDebuggerBinding;
                 fs.reportRemoved();
                 next();
             }
@@ -312,56 +136,9 @@ function test()
             }
         },
 
-        function testURLAfterRenaming(next)
-        {
-            var index = 0;
-            var oldURL;
-
-            createWorkspaceWithTarget();
-
-            InspectorTest.addResult("Adding file system.");
-            var fs = new InspectorTest.TestFileSystem("file:///var/www");
-            fs.root.mkdir("html").addFile("foo.js", "<foo content>");
-            fs.root.addFile("bar.js", "<bar content>");
-            fs.root.mkdir("foo").mkdir("bar").addFile("baz.js", "<baz content>");
-            InspectorTest.addResult("Adding file system mapping.");
-            fs.addFileMapping("http://localhost/", "/");
-            fs.reportCreated(fileSystemCreated);
-            var uiSourceCodes;
-
-            function fileSystemCreated()
-            {
-                InspectorTest.addResult("Renaming files:");
-                uiSourceCodes = InspectorTest.testWorkspace.uiSourceCodes();
-                renameNextFile();
-            }
-
-            function renameNextFile()
-            {
-                var uiSourceCode = uiSourceCodes[index];
-                oldURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-                uiSourceCodes[index].rename("newName.js", fileRenamed);
-            }
-
-            function fileRenamed()
-            {
-                var uiSourceCode = uiSourceCodes[index];
-                var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-                InspectorTest.addResult("    uiSourceCode URL change after renaming: " + oldURL + " -> " + networkURL);
-                ++index;
-                if (index < uiSourceCodes.length)
-                    renameNextFile();
-                else {
-                    fs.reportRemoved();
-                    next();
-                }
-            }
-        },
-
         function testProjectBasedMapping(next)
         {
             createWorkspaceWithTarget();
-            InspectorTest.testTargetManager.addEventListener(WebInspector.TargetManager.Events.SuspendStateChanged, suspendStateChanged);
 
             InspectorTest.addResult("Adding file system.");
             var fs = new InspectorTest.TestFileSystem("file:///var/www");
@@ -376,40 +153,6 @@ function test()
                 InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/h2/bar.js", WebInspector.resourceTypes.Script, "<bar content>", target);
                 dumpFileSystemUISourceCodesMappings();
                 fs.reportRemoved();
-                next();
-            }
-        },
-
-        function testNodeJSWrapper(next)
-        {
-            createWorkspaceWithTarget();
-            InspectorTest.addResult("Adding file system.");
-            var fs = new InspectorTest.TestFileSystem("file:///var/www");
-            var content = "var a = 1;"
-            var folder = fs.root.mkdir("html");
-            folder.addFile("foo.js", "#!/usr/bin/env node;\n" + content);
-            folder.addFile("bar.js", content);
-            fs.root.addFile(".devtools", JSON.stringify({ mappings: [ { folder: "/html/", url: "http://localhost/h1/" } ]}));
-            fs.reportCreated(fileSystemCreated);
-
-            function fileSystemCreated()
-            {
-                debugger;
-                var uiSourceCodeFoo = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
-                var uiSourceCodeBar = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/bar.js");
-
-                var nodePrefix = "(function (exports, require, module, __filename, __dirname) { \n";
-                var nodeSuffix = "\n});";
-
-                var scriptFoo = InspectorTest.createScriptMock("http://localhost/h1/foo.js", 0, 0, false, nodePrefix + content + nodeSuffix, InspectorTest.testTargetManager.targets()[0]);
-                defaultScriptMapping.addScript(scriptFoo);
-                resourceScriptMapping.addScript(scriptFoo);
-                InspectorTest.addResult("Is diverged: " + resourceScriptMapping.scriptFile(uiSourceCodeFoo)._isDiverged());
-
-                var scriptBar = InspectorTest.createScriptMock("http://localhost/h1/bar.js", 0, 0, false, nodePrefix + content + nodeSuffix, InspectorTest.testTargetManager.targets()[0]);
-                defaultScriptMapping.addScript(scriptBar);
-                resourceScriptMapping.addScript(scriptBar);
-                InspectorTest.addResult("Is diverged: " + resourceScriptMapping.scriptFile(uiSourceCodeBar)._isDiverged());
                 next();
             }
         }

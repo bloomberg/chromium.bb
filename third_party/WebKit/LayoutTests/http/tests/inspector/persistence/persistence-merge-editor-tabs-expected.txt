@@ -1,0 +1,19 @@
+Verify that tabs get merged and split when binding is added and removed.
+
+
+Running: addFileSystem
+
+Running: openEditorTabs
+Opened tabs: 
+    file:///var/www/inspector/persistence/resources/foo.js
+    http://127.0.0.1:8000/inspector/persistence/resources/foo.js
+
+Running: addFileMapping
+Opened tabs: 
+    http://127.0.0.1:8000/inspector/persistence/resources/foo.js
+
+Running: removeFileMapping
+Opened tabs: 
+    file:///var/www/inspector/persistence/resources/foo.js
+    http://127.0.0.1:8000/inspector/persistence/resources/foo.js
+

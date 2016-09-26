@@ -1,0 +1,54 @@
+Verify that navigator view removes mapped UISourceCodes.
+
+
+Running: addFileSystem
+
+Running: waitForUISourceCodes
+top
+  127.0.0.1:8000
+    inspector
+      persistence
+        resources
+          foo.js
+        persistence-navigator.html
+        persistence-test.js
+      debugger-test.js
+      inspector-test.js
+      isolated-filesystem-test.js
+      workspace-test.js
+www
+  inspector/persistence/resources
+    foo.js
+
+Running: addFileMapping
+top
+  127.0.0.1:8000
+    inspector
+      persistence
+        persistence-navigator.html
+        persistence-test.js
+      debugger-test.js
+      inspector-test.js
+      isolated-filesystem-test.js
+      workspace-test.js
+www
+  inspector/persistence/resources
+    foo.js
+
+Running: removeFileMapping
+top
+  127.0.0.1:8000
+    inspector
+      persistence
+        resources
+          foo.js
+        persistence-navigator.html
+        persistence-test.js
+      debugger-test.js
+      inspector-test.js
+      isolated-filesystem-test.js
+      workspace-test.js
+www
+  inspector/persistence/resources
+    foo.js
+

@@ -8,6 +8,7 @@ Loaded modules:
     extensions
     host
     main
+    persistence
     platform
     sdk
     ui

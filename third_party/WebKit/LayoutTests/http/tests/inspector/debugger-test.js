@@ -379,6 +379,14 @@ InspectorTest.showUISourceCode = function(uiSourceCode, callback)
         InspectorTest.addSniffer(sourceFrame, "onTextEditorContentSet", callback && callback.bind(null, sourceFrame));
 };
 
+InspectorTest.showUISourceCodePromise = function(uiSourceCode)
+{
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+    InspectorTest.showUISourceCode(uiSourceCode, fulfill);
+    return promise;
+}
+
 InspectorTest.showScriptSource = function(scriptName, callback)
 {
     InspectorTest.waitForScriptSource(scriptName, onScriptSource);

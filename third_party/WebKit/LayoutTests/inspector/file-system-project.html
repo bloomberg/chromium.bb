@@ -89,21 +89,6 @@ function test()
             function uiSourceCodesDumped()
             {
                 dumpUISourceCodeLocations(uiSourceCodes, 5);
-                InspectorTest.addResult("UISourceCode uri to url mappings:");
-                for (var i = 0; i < uiSourceCodes.length; ++i) {
-                    var url = WebInspector.networkMapping.networkURL(uiSourceCodes[i]);
-                    if (!url)
-                        continue;
-                    InspectorTest.addResult("    " + uiSourceCodes[i].url() + " -> " + url);
-                }
-                InspectorTest.addResult("UISourceCode url to uri mappings:");
-                for (var i = 0; i < uiSourceCodes.length; ++i) {
-                    var url = WebInspector.networkMapping.networkURL(uiSourceCodes[i]);
-                    if (!url)
-                        continue;
-                    var uri = WebInspector.networkMapping.uiSourceCodeForURLForAnyTarget(url).url();
-                    InspectorTest.addResult("    " + url + " -> " + uri);
-                }
                 WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.WorkingCopyCommitted, contentCommitted, this);
                 uiSourceCodes[0].addRevision("<Modified UISourceCode content>");
             }

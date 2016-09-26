@@ -10,6 +10,7 @@ Loaded modules:
     extensions
     host
     main
+    persistence
     platform
     sdk
     ui
@@ -25,6 +26,7 @@ Loaded modules:
     extensions
     host
     main
+    persistence
     platform
     sdk
     ui
@@ -44,6 +46,7 @@ Loaded modules:
     host
     main
     network
+    persistence
     platform
     sdk
     snippets
@@ -68,6 +71,7 @@ Loaded modules:
     host
     main
     network
+    persistence
     platform
     sdk
     snippets
@@ -92,6 +96,7 @@ Loaded modules:
     host
     main
     network
+    persistence
     platform
     sdk
     snippets

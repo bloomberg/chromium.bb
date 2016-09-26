@@ -1,0 +1,83 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./resources/foo.js"></script>
+<script>
+
+function test()
+{
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    var fsEntry = InspectorTest.addFooJSFile(fs);
+
+    InspectorTest.runTestSuite([
+        function addFileSystem(next)
+        {
+            fs.reportCreated(next);
+        },
+
+        function openEditorTabs(next)
+        {
+            var promises = [
+                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.Network)
+                    .then(code => InspectorTest.showUISourceCode(code)),
+                InspectorTest.waitForUISourceCode("foo.js", WebInspector.projectTypes.FileSystem)
+                    .then(code => InspectorTest.showUISourceCode(code))
+            ];
+            Promise.all(promises).then(onTabsOpened);
+
+            function onTabsOpened()
+            {
+                dumpEditorTabs();
+                next();
+            }
+        },
+
+        function addFileMapping(next)
+        {
+            InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
+            WebInspector.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+
+            function onBindingCreated(binding)
+            {
+                dumpEditorTabs();
+                next();
+            }
+        },
+
+        function removeFileMapping(next)
+        {
+            WebInspector.persistence.addEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
+            WebInspector.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+
+            function onBindingRemoved(event)
+            {
+                var binding = event.data;
+                if (binding.network.name() !== "foo.js")
+                    return
+                WebInspector.persistence.removeEventListener(WebInspector.Persistence.Events.BindingRemoved, onBindingRemoved);
+                dumpEditorTabs();
+                next();
+            }
+        },
+    ]);
+
+    function dumpEditorTabs()
+    {
+        var editorContainer = WebInspector.panels.sources._sourcesView._editorContainer;
+        var openedUISourceCodes = editorContainer._tabIds.keysArray();
+        openedUISourceCodes.sort((a, b) => a.url().compareTo(b.url()));
+        InspectorTest.addResult("Opened tabs: ");
+        for (code of openedUISourceCodes)
+            InspectorTest.addResult("    " + code.url());
+    }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that tabs get merged and split when binding is added and removed.</p>
+</body>
+</html>
