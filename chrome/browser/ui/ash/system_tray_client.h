@@ -1,0 +1,42 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_CLIENT_H_
+#define CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_CLIENT_H_
+
+#include "ash/public/interfaces/system_tray.mojom.h"
+#include "base/macros.h"
+#include "chrome/browser/chromeos/system/system_clock_observer.h"
+#include "mojo/public/cpp/bindings/binding.h"
+
+// Handles method calls delegated back to chrome from ash. Also notifies ash of
+// relevant state changes in chrome.
+class SystemTrayClient : public ash::mojom::SystemTrayClient,
+                         public chromeos::system::SystemClockObserver {
+ public:
+  SystemTrayClient();
+  ~SystemTrayClient() override;
+
+  static SystemTrayClient* Get();
+
+ private:
+  // Connects or reconnects the |system_tray_| interface.
+  void ConnectToSystemTray();
+
+  // Handles errors on the |system_tray_| interface connection.
+  void OnClientConnectionError();
+
+  // ash::mojom::SystemTrayClient:
+  void ShowDateSettings() override;
+
+  // chromeos::system::SystemClockObserver:
+  void OnSystemClockChanged(chromeos::system::SystemClock* clock) override;
+
+  // System tray mojo service in ash.
+  ash::mojom::SystemTrayPtr system_tray_;
+
+  DISALLOW_COPY_AND_ASSIGN(SystemTrayClient);
+};
+
+#endif  // CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_CLIENT_H_

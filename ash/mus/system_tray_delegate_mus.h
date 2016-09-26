@@ -10,6 +10,10 @@
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
 
+namespace shell {
+class Connector;
+}
+
 namespace ash {
 
 // Handles the settings displayed in the system tray menu. For mus most settings
@@ -20,17 +24,30 @@ namespace ash {
 class SystemTrayDelegateMus : public DefaultSystemTrayDelegate,
                               public mojom::SystemTray {
  public:
-  SystemTrayDelegateMus();
+  explicit SystemTrayDelegateMus(shell::Connector* connector);
   ~SystemTrayDelegateMus() override;
 
   static SystemTrayDelegateMus* Get();
 
  private:
+  // Connects or reconnects the |system_tray_client_| interface.
+  void ConnectToSystemTrayClient();
+
+  // Handles errors on the |system_tray_client_| interface connection.
+  void OnClientConnectionError();
+
   // SystemTrayDelegate:
   base::HourClockType GetHourClockType() const override;
+  void ShowDateSettings() override;
 
   // mojom::SystemTray:
   void SetUse24HourClock(bool use_24_hour) override;
+
+  // May be null in unit tests.
+  shell::Connector* connector_;
+
+  // Client interface in chrome browser.
+  mojom::SystemTrayClientPtr system_tray_client_;
 
   // 12 or 24 hour display.
   base::HourClockType hour_clock_type_;

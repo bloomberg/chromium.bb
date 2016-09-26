@@ -74,6 +74,7 @@
 #include "chrome/browser/ui/ash/cast_config_delegate_media_router.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
+#include "chrome/browser/ui/ash/system_tray_common.h"
 #include "chrome/browser/ui/ash/system_tray_delegate_utils.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/ash/vpn_delegate_chromeos.h"
@@ -429,12 +430,7 @@ bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
 }
 
 void SystemTrayDelegateChromeOS::ShowDateSettings() {
-  content::RecordAction(base::UserMetricsAction("ShowDateOptions"));
-  std::string sub_page =
-      std::string(chrome::kSearchSubPage) + "#" +
-      l10n_util::GetStringUTF8(IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME);
-  // Everybody can change the time zone (even though it is a device setting).
-  ShowSettingsSubPageForActiveUser(sub_page);
+  SystemTrayCommon::ShowDateSettings();
 }
 
 void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {

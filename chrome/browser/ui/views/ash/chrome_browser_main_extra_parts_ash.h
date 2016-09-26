@@ -12,7 +12,7 @@
 
 class ImmersiveContextMus;
 class ImmersiveHandlerFactoryMus;
-class SystemTrayControllerMus;
+class SystemTrayClient;
 
 class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  public:
@@ -27,7 +27,7 @@ class ChromeBrowserMainExtraPartsAsh : public ChromeBrowserMainExtraParts {
  private:
   std::unique_ptr<ImmersiveHandlerFactoryMus> immersive_handler_factory_;
   std::unique_ptr<ImmersiveContextMus> immersive_context_;
-  std::unique_ptr<SystemTrayControllerMus> system_tray_controller_;
+  std::unique_ptr<SystemTrayClient> system_tray_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsAsh);
 };

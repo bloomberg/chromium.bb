@@ -11,4 +11,9 @@ interface SystemTray {
   SetUse24HourClock(bool use_24_hour);
 };
 
-// TODO(jamescook): SystemTrayDelegate to communicate from ash to chrome.
+// Allows ash system tray to control a client (e.g. Chrome browser). Requests
+// often involve preferences or web UI that is not available to ash.
+interface SystemTrayClient {
+  // Shows the settings related to date, timezone etc.
+  ShowDateSettings();
+};

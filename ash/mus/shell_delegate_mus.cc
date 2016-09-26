@@ -170,7 +170,7 @@ ShelfDelegate* ShellDelegateMus::CreateShelfDelegate(ShelfModel* model) {
 }
 
 SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
-  return new SystemTrayDelegateMus;
+  return new SystemTrayDelegateMus(connector_);
 }
 
 std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {

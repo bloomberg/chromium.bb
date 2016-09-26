@@ -23,7 +23,7 @@
 #include "ui/keyboard/keyboard_controller.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/system_tray_controller_mus.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #endif
@@ -41,7 +41,7 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryMus>();
 #if defined(OS_CHROMEOS)
     // Must be available at login screen, so initialize before profile.
-    system_tray_controller_ = base::MakeUnique<SystemTrayControllerMus>();
+    system_tray_client_ = base::MakeUnique<SystemTrayClient>();
 #endif
   }
 
@@ -74,7 +74,7 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
 
 void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
 #if defined(OS_CHROMEOS)
-  system_tray_controller_.reset();
+  system_tray_client_.reset();
 #endif
   chrome::CloseAsh();
 }
