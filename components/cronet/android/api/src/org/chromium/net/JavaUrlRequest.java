@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.net.TrafficStats;
 import android.os.Build;
@@ -287,6 +288,7 @@ final class JavaUrlRequest implements UrlRequest {
         }
 
         @Override
+        @SuppressLint("DefaultLocale")
         public void onReadSucceeded(final boolean finalChunk) {
             if (!mSinkState.compareAndSet(SinkState.AWAITING_READ_RESULT, SinkState.UPLOADING)) {
                 throw new IllegalStateException(

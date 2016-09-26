@@ -4,6 +4,7 @@
 
 package org.chromium.net.impl;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 
 import org.chromium.base.VisibleForTesting;
@@ -201,6 +202,7 @@ public final class CronetUploadDataStream implements UploadDataSink {
     }
 
     @Override
+    @SuppressLint("DefaultLocale")
     public void onReadSucceeded(boolean lastChunk) {
         synchronized (mLock) {
             checkState(UserCallback.READ);

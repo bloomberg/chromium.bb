@@ -5,6 +5,7 @@
 package org.chromium.components.sync.notifier;
 
 import android.accounts.Account;
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
 import android.util.Base64;
 
@@ -39,6 +40,7 @@ public class InvalidationPreferences {
      * Wrapper around a {@link android.content.SharedPreferences.Editor} for the preferences.
      * Used to avoid exposing raw preference objects to users of this class.
      */
+    @SuppressLint("CommitPrefEdits")
     public static class EditContext {
         private final SharedPreferences.Editor mEditor;
 
