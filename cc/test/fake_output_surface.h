@@ -67,28 +67,26 @@ class FakeOutputSurface : public OutputSurface {
   CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
   size_t num_sent_frames() { return num_sent_frames_; }
 
-  void SwapBuffers(CompositorFrame frame) override;
-
   OutputSurfaceClient* client() { return client_; }
+
   bool BindToClient(OutputSurfaceClient* client) override;
-  void DetachFromClient() override;
+  void EnsureBackbuffer() override {}
+  void DiscardBackbuffer() override {}
+  void BindFramebuffer() override;
+  void SwapBuffers(CompositorFrame frame) override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
+  bool HasExternalStencilTest() const override;
+  void ApplyExternalStencil() override {}
+  bool SurfaceIsSuspendForRecycle() const override;
+  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  bool IsDisplayedAsOverlayPlane() const override;
+  unsigned GetOverlayTextureId() const override;
 
   void set_framebuffer(GLint framebuffer, GLenum format) {
     framebuffer_ = framebuffer;
     framebuffer_format_ = format;
   }
-  void BindFramebuffer() override;
-  uint32_t GetFramebufferCopyTextureFormat() override;
 
-  const TransferableResourceArray& resources_held_by_parent() {
-    return resources_held_by_parent_;
-  }
-
-  bool HasExternalStencilTest() const override;
-
-  bool SurfaceIsSuspendForRecycle() const override;
-
-  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   void SetOverlayCandidateValidator(OverlayCandidateValidator* validator) {
     overlay_candidate_validator_ = validator;
   }
@@ -107,6 +105,10 @@ class FakeOutputSurface : public OutputSurface {
   }
 
   void ReturnResourcesHeldByParent();
+
+  const TransferableResourceArray& resources_held_by_parent() {
+    return resources_held_by_parent_;
+  }
 
  protected:
   explicit FakeOutputSurface(scoped_refptr<ContextProvider> context_provider);

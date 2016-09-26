@@ -47,17 +47,31 @@ class DisplayOutputSurface : public cc::OutputSurface {
   ~DisplayOutputSurface() override = default;
 
   // cc::OutputSurface implementation
+  void EnsureBackbuffer() override {}
+  void DiscardBackbuffer() override {
+    context_provider()->ContextGL()->DiscardBackbufferCHROMIUM();
+  }
+  void BindFramebuffer() override {
+    context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
   void SwapBuffers(cc::CompositorFrame frame) override {
     // See cc::OutputSurface::SwapBuffers() comment for details.
     context_provider_->ContextSupport()->Swap();
     cc::OutputSurface::PostSwapBuffersComplete();
   }
-
+  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
+    return nullptr;
+  }
+  bool IsDisplayedAsOverlayPlane() const override { return false; }
+  unsigned GetOverlayTextureId() const override { return 0; }
+  bool SurfaceIsSuspendForRecycle() const override { return false; }
   uint32_t GetFramebufferCopyTextureFormat() override {
     // We assume we have an alpha channel from the BlimpContextProvider, so use
     // GL_RGBA here.
     return GL_RGBA;
   }
+  bool HasExternalStencilTest() const override { return false; }
+  void ApplyExternalStencil() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayOutputSurface);

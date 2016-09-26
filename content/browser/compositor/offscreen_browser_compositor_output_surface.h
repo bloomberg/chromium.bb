@@ -44,8 +44,11 @@ class OffscreenBrowserCompositorOutputSurface
                const gfx::ColorSpace& color_space,
                bool alpha) override;
   void BindFramebuffer() override;
-  uint32_t GetFramebufferCopyTextureFormat() override;
   void SwapBuffers(cc::CompositorFrame frame) override;
+  bool IsDisplayedAsOverlayPlane() const override;
+  unsigned GetOverlayTextureId() const override;
+  bool SurfaceIsSuspendForRecycle() const override;
+  uint32_t GetFramebufferCopyTextureFormat() override;
 
   // BrowserCompositorOutputSurface
   void OnReflectorChanged() override;
@@ -65,6 +68,8 @@ class OffscreenBrowserCompositorOutputSurface
       weak_ptr_factory_;
 
  private:
+  void OnSwapBuffersComplete();
+
   DISALLOW_COPY_AND_ASSIGN(OffscreenBrowserCompositorOutputSurface);
 };
 

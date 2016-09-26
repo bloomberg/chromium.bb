@@ -78,7 +78,9 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
       : cc::OutputSurface(std::move(software_device)) {}
 
   // cc::OutputSurface implementation.
-  uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
+  void EnsureBackbuffer() override {}
+  void DiscardBackbuffer() override {}
+  void BindFramebuffer() override {}
   void SwapBuffers(cc::CompositorFrame frame) override {}
   void Reshape(const gfx::Size& size,
                float scale_factor,
@@ -86,6 +88,15 @@ class SynchronousCompositorFrameSink::SoftwareOutputSurface
                bool has_alpha) override {
     // Intentional no-op. Surface size controlled by embedder.
   }
+  uint32_t GetFramebufferCopyTextureFormat() override { return 0; }
+  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
+    return nullptr;
+  }
+  bool IsDisplayedAsOverlayPlane() const override { return false; }
+  unsigned GetOverlayTextureId() const override { return 0; }
+  bool SurfaceIsSuspendForRecycle() const override { return false; }
+  bool HasExternalStencilTest() const override { return false; }
+  void ApplyExternalStencil() override {}
 
   void SetSurfaceSize(const gfx::Size surface_size) {
     surface_size_ = surface_size;

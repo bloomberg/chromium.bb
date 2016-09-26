@@ -1609,6 +1609,13 @@ class MockOutputSurface : public OutputSurface {
   MOCK_METHOD0(GetFramebufferCopyTextureFormat, GLenum());
   MOCK_METHOD1(SwapBuffers_, void(CompositorFrame& frame));  // NOLINT
   void SwapBuffers(CompositorFrame frame) override { SwapBuffers_(frame); }
+  MOCK_CONST_METHOD0(GetOverlayCandidateValidator,
+                     OverlayCandidateValidator*());
+  MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());
+  MOCK_CONST_METHOD0(GetOverlayTextureId, unsigned());
+  MOCK_CONST_METHOD0(SurfaceIsSuspendForRecycle, bool());
+  MOCK_CONST_METHOD0(HasExternalStencilTest, bool());
+  MOCK_METHOD0(ApplyExternalStencil, void());
 };
 
 class MockOutputSurfaceTest : public GLRendererTest {
@@ -1623,10 +1630,12 @@ class MockOutputSurfaceTest : public GLRendererTest {
 
     renderer_.reset(new FakeRendererGL(&settings_, &output_surface_,
                                        resource_provider_.get()));
+    EXPECT_CALL(output_surface_, GetOverlayCandidateValidator()).Times(1);
     renderer_->Initialize();
 
     EXPECT_CALL(output_surface_, EnsureBackbuffer()).Times(1);
     renderer_->SetVisible(true);
+    Mock::VerifyAndClearExpectations(&output_surface_);
   }
 
   void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
@@ -1676,49 +1685,12 @@ TEST_F(MockOutputSurfaceTest, BackbufferDiscard) {
   // Drop backbuffer on hide.
   EXPECT_CALL(output_surface_, DiscardBackbuffer()).Times(1);
   renderer_->SetVisible(false);
+  Mock::VerifyAndClearExpectations(&output_surface_);
+
   // Restore backbuffer on show.
   EXPECT_CALL(output_surface_, EnsureBackbuffer()).Times(1);
   renderer_->SetVisible(true);
-}
-
-TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
-  gfx::Rect device_viewport_rect(1, 1);
-  DrawFrame(1.f, device_viewport_rect, true);
-
-  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
-  renderer_->SwapBuffers(CompositorFrameMetadata());
-}
-
-TEST_F(MockOutputSurfaceTest, DrawOpaqueFrameAndSwap) {
-  gfx::Rect device_viewport_rect(1, 1);
-  DrawFrame(1.f, device_viewport_rect, false);
-
-  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
-  renderer_->SwapBuffers(CompositorFrameMetadata());
-}
-
-TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
-  gfx::Rect device_viewport_rect(1, 1);
-
-  DrawFrame(1.f, device_viewport_rect, true);
-  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
-  renderer_->SwapBuffers(CompositorFrameMetadata());
-
-  device_viewport_rect = gfx::Rect(2, 2);
-
-  DrawFrame(2.f, device_viewport_rect, true);
-  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
-  renderer_->SwapBuffers(CompositorFrameMetadata());
-
-  DrawFrame(2.f, device_viewport_rect, true);
-  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
-  renderer_->SwapBuffers(CompositorFrameMetadata());
-
-  device_viewport_rect = gfx::Rect(1, 1);
-
-  DrawFrame(1.f, device_viewport_rect, true);
-  EXPECT_CALL(output_surface_, SwapBuffers_(_)).Times(1);
-  renderer_->SwapBuffers(CompositorFrameMetadata());
+  Mock::VerifyAndClearExpectations(&output_surface_);
 }
 
 class TestOverlayProcessor : public OverlayProcessor {

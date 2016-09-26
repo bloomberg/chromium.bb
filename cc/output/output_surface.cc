@@ -122,14 +122,14 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
 OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)
     : context_provider_(std::move(context_provider)), weak_ptr_factory_(this) {
   DCHECK(context_provider_);
-  client_thread_checker_.DetachFromThread();
+  thread_checker_.DetachFromThread();
 }
 
 OutputSurface::OutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device)
     : software_device_(std::move(software_device)), weak_ptr_factory_(this) {
   DCHECK(software_device_);
-  client_thread_checker_.DetachFromThread();
+  thread_checker_.DetachFromThread();
 }
 
 OutputSurface::OutputSurface(
@@ -137,33 +137,41 @@ OutputSurface::OutputSurface(
     : vulkan_context_provider_(vulkan_context_provider),
       weak_ptr_factory_(this) {
   DCHECK(vulkan_context_provider_);
-  client_thread_checker_.DetachFromThread();
+  thread_checker_.DetachFromThread();
 }
 
 OutputSurface::~OutputSurface() {
-  if (client_)
-    DetachFromClientInternal();
-}
+  // Is destroyed on the thread it is bound to.
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-bool OutputSurface::HasExternalStencilTest() const {
-  return false;
-}
+  if (!client_)
+    return;
 
-void OutputSurface::ApplyExternalStencil() {}
+  // Unregister any dump provider. Safe to call (no-op) if we have not yet
+  // registered.
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
+  }
+
+  if (context_provider_) {
+    context_provider_->SetLostContextCallback(
+        ContextProvider::LostContextCallback());
+  }
+}
 
 bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;
-  bool success = true;
 
-  if (context_provider_.get()) {
-    success = context_provider_->BindToCurrentThread();
-    if (success) {
-      context_provider_->SetLostContextCallback(base::Bind(
-          &OutputSurface::DidLoseOutputSurface, base::Unretained(this)));
-    }
+  if (context_provider_) {
+    if (!context_provider_->BindToCurrentThread())
+      return false;
+
+    context_provider_->SetLostContextCallback(base::Bind(
+        &OutputSurface::DidLoseOutputSurface, base::Unretained(this)));
   }
 
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
@@ -176,26 +184,7 @@ bool OutputSurface::BindToClient(OutputSurfaceClient* client) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         this, "OutputSurface", base::ThreadTaskRunnerHandle::Get());
   }
-
-  if (!success)
-    DetachFromClient();
-  return success;
-}
-
-void OutputSurface::DetachFromClient() {
-  DetachFromClientInternal();
-}
-
-void OutputSurface::EnsureBackbuffer() {
-  if (software_device_)
-    software_device_->EnsureBackbuffer();
-}
-
-void OutputSurface::DiscardBackbuffer() {
-  if (context_provider_.get())
-    context_provider_->ContextGL()->DiscardBackbufferCHROMIUM();
-  if (software_device_)
-    software_device_->DiscardBackbuffer();
+  return true;
 }
 
 void OutputSurface::Reshape(const gfx::Size& size,
@@ -218,11 +207,6 @@ void OutputSurface::Reshape(const gfx::Size& size,
     software_device_->Resize(size, scale_factor);
 }
 
-void OutputSurface::BindFramebuffer() {
-  DCHECK(context_provider_.get());
-  context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
 void OutputSurface::PostSwapBuffersComplete() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&OutputSurface::OnSwapBuffersComplete,
@@ -233,27 +217,6 @@ void OutputSurface::PostSwapBuffersComplete() {
 // after the OutputSurface has been destroyed.
 void OutputSurface::OnSwapBuffersComplete() {
   client_->DidSwapBuffersComplete();
-}
-
-void OutputSurface::DidReceiveTextureInUseResponses(
-    const gpu::TextureInUseResponses& responses) {
-  client_->DidReceiveTextureInUseResponses(responses);
-}
-
-OverlayCandidateValidator* OutputSurface::GetOverlayCandidateValidator() const {
-  return nullptr;
-}
-
-bool OutputSurface::IsDisplayedAsOverlayPlane() const {
-  return false;
-}
-
-unsigned OutputSurface::GetOverlayTextureId() const {
-  return 0;
-}
-
-bool OutputSurface::SurfaceIsSuspendForRecycle() const {
-  return false;
 }
 
 bool OutputSurface::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -267,24 +230,6 @@ bool OutputSurface::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     }
   }
   return true;
-}
-
-void OutputSurface::DetachFromClientInternal() {
-  DCHECK(client_thread_checker_.CalledOnValidThread());
-  DCHECK(client_);
-
-  // Unregister any dump provider. Safe to call (no-op) if we have not yet
-  // registered.
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      this);
-
-  if (context_provider_.get()) {
-    context_provider_->SetLostContextCallback(
-        ContextProvider::LostContextCallback());
-  }
-  context_provider_ = nullptr;
-  client_ = nullptr;
-  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void OutputSurface::DidLoseOutputSurface() {

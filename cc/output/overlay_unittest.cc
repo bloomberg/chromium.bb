@@ -156,13 +156,10 @@ class OverlayOutputSurface : public OutputSurface {
     is_displayed_as_overlay_plane_ = true;
   }
 
-  void SetScaleFactor(float scale_factor) {
-    device_scale_factor_ = scale_factor;
-  }
-
-  // OutputSurface implementation
+  // OutputSurface implementation.
+  void EnsureBackbuffer() override {}
+  void DiscardBackbuffer() override {}
   void BindFramebuffer() override {
-    OutputSurface::BindFramebuffer();
     bind_framebuffer_count_ += 1;
   }
   uint32_t GetFramebufferCopyTextureFormat() override {
@@ -171,16 +168,11 @@ class OverlayOutputSurface : public OutputSurface {
   }
   void SwapBuffers(CompositorFrame frame) override {
   }
-  void OnSwapBuffersComplete() override { client_->DidSwapBuffersComplete(); }
-
-  void SetOverlayCandidateValidator(OverlayCandidateValidator* validator) {
-    overlay_candidate_validator_.reset(validator);
-  }
-
+  bool HasExternalStencilTest() const override { return false; }
+  void ApplyExternalStencil() override {}
   OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
     return overlay_candidate_validator_.get();
   }
-
   bool IsDisplayedAsOverlayPlane() const override {
     return is_displayed_as_overlay_plane_;
   }
@@ -188,6 +180,18 @@ class OverlayOutputSurface : public OutputSurface {
   void set_is_displayed_as_overlay_plane(bool value) {
     is_displayed_as_overlay_plane_ = value;
   }
+  bool SurfaceIsSuspendForRecycle() const override { return false; }
+
+  void OnSwapBuffersComplete() { client_->DidSwapBuffersComplete(); }
+
+  void SetScaleFactor(float scale_factor) {
+    device_scale_factor_ = scale_factor;
+  }
+
+  void SetOverlayCandidateValidator(OverlayCandidateValidator* validator) {
+    overlay_candidate_validator_.reset(validator);
+  }
+
   unsigned bind_framebuffer_count() const { return bind_framebuffer_count_; }
 
  private:

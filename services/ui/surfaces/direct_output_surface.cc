@@ -39,13 +39,14 @@ bool DirectOutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
   return true;
 }
 
-void DirectOutputSurface::OnVSyncParametersUpdated(
-    const base::TimeTicks& timebase,
-    const base::TimeDelta& interval) {
-  // TODO(brianderson): We should not be receiving 0 intervals.
-  synthetic_begin_frame_source_->OnUpdateVSyncParameters(
-      timebase,
-      interval.is_zero() ? cc::BeginFrameArgs::DefaultInterval() : interval);
+void DirectOutputSurface::EnsureBackbuffer() {}
+
+void DirectOutputSurface::DiscardBackbuffer() {
+  context_provider()->ContextGL()->DiscardBackbufferCHROMIUM();
+}
+
+void DirectOutputSurface::BindFramebuffer() {
+  context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void DirectOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
@@ -67,7 +68,7 @@ void DirectOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
   gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
   context_provider_->ContextSupport()->SignalSyncToken(
-      sync_token, base::Bind(&OutputSurface::OnSwapBuffersComplete,
+      sync_token, base::Bind(&DirectOutputSurface::OnSwapBuffersComplete,
                              weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -75,6 +76,42 @@ uint32_t DirectOutputSurface::GetFramebufferCopyTextureFormat() {
   // TODO(danakj): What attributes are used for the default framebuffer here?
   // Can it have alpha? SurfacesContextProvider doesn't take any attributes.
   return GL_RGB;
+}
+
+cc::OverlayCandidateValidator*
+DirectOutputSurface::GetOverlayCandidateValidator() const {
+  return nullptr;
+}
+
+bool DirectOutputSurface::IsDisplayedAsOverlayPlane() const {
+  return false;
+}
+
+unsigned DirectOutputSurface::GetOverlayTextureId() const {
+  return 0;
+}
+
+bool DirectOutputSurface::SurfaceIsSuspendForRecycle() const {
+  return false;
+}
+
+bool DirectOutputSurface::HasExternalStencilTest() const {
+  return false;
+}
+
+void DirectOutputSurface::ApplyExternalStencil() {}
+
+void DirectOutputSurface::OnVSyncParametersUpdated(
+    const base::TimeTicks& timebase,
+    const base::TimeDelta& interval) {
+  // TODO(brianderson): We should not be receiving 0 intervals.
+  synthetic_begin_frame_source_->OnUpdateVSyncParameters(
+      timebase,
+      interval.is_zero() ? cc::BeginFrameArgs::DefaultInterval() : interval);
+}
+
+void DirectOutputSurface::OnSwapBuffersComplete() {
+  client_->DidSwapBuffersComplete();
 }
 
 }  // namespace ui

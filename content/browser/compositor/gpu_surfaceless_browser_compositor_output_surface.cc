@@ -75,12 +75,6 @@ void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
   GpuBrowserCompositorOutputSurface::SwapBuffers(std::move(frame));
 }
 
-void GpuSurfacelessBrowserCompositorOutputSurface::OnSwapBuffersComplete() {
-  DCHECK(buffer_queue_);
-  buffer_queue_->PageFlipComplete();
-  GpuBrowserCompositorOutputSurface::OnSwapBuffersComplete();
-}
-
 void GpuSurfacelessBrowserCompositorOutputSurface::BindFramebuffer() {
   DCHECK(buffer_queue_);
   buffer_queue_->BindFramebuffer();
@@ -114,6 +108,7 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     buffer_queue_->RecreateBuffers();
     force_swap = true;
   }
+  buffer_queue_->PageFlipComplete();
   GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
       latency_info, result, params_mac);
   if (force_swap)

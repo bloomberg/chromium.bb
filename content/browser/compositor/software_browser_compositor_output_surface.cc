@@ -33,6 +33,19 @@ SoftwareBrowserCompositorOutputSurface::
     ~SoftwareBrowserCompositorOutputSurface() {
 }
 
+void SoftwareBrowserCompositorOutputSurface::EnsureBackbuffer() {
+  software_device()->EnsureBackbuffer();
+}
+
+void SoftwareBrowserCompositorOutputSurface::DiscardBackbuffer() {
+  software_device()->DiscardBackbuffer();
+}
+
+void SoftwareBrowserCompositorOutputSurface::BindFramebuffer() {
+  // Not used for software surfaces.
+  NOTREACHED();
+}
+
 void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame frame) {
   base::TimeTicks swap_time = base::TimeTicks::Now();
@@ -56,9 +69,17 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffers(
   PostSwapBuffersComplete();
 }
 
-void SoftwareBrowserCompositorOutputSurface::BindFramebuffer() {
-  // Not used for software surfaces.
-  NOTREACHED();
+bool SoftwareBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane() const {
+  return false;
+}
+
+unsigned SoftwareBrowserCompositorOutputSurface::GetOverlayTextureId() const {
+  return 0;
+}
+
+bool SoftwareBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle()
+    const {
+  return false;
 }
 
 GLenum

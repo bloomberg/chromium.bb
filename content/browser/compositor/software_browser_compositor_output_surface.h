@@ -32,8 +32,13 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   ~SoftwareBrowserCompositorOutputSurface() override;
 
   // OutputSurface implementation.
-  void SwapBuffers(cc::CompositorFrame frame) override;
+  void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
   void BindFramebuffer() override;
+  void SwapBuffers(cc::CompositorFrame frame) override;
+  bool IsDisplayedAsOverlayPlane() const override;
+  unsigned GetOverlayTextureId() const override;
+  bool SurfaceIsSuspendForRecycle() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 
  private:

@@ -130,11 +130,6 @@ void OffscreenBrowserCompositorOutputSurface::BindFramebuffer() {
   }
 }
 
-GLenum
-OffscreenBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
-  return GLCopyTextureInternalFormat(kFboTextureFormat);
-}
-
 void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame frame) {
   if (reflector_) {
@@ -155,13 +150,38 @@ void OffscreenBrowserCompositorOutputSurface::SwapBuffers(
   gpu::SyncToken sync_token;
   gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
   context_provider_->ContextSupport()->SignalSyncToken(
-      sync_token, base::Bind(&OutputSurface::OnSwapBuffersComplete,
-                             weak_ptr_factory_.GetWeakPtr()));
+      sync_token,
+      base::Bind(
+          &OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+bool OffscreenBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane()
+    const {
+  return false;
+}
+
+unsigned OffscreenBrowserCompositorOutputSurface::GetOverlayTextureId() const {
+  return 0;
+}
+
+bool OffscreenBrowserCompositorOutputSurface::SurfaceIsSuspendForRecycle()
+    const {
+  return false;
+}
+
+GLenum
+OffscreenBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
+  return GLCopyTextureInternalFormat(kFboTextureFormat);
 }
 
 void OffscreenBrowserCompositorOutputSurface::OnReflectorChanged() {
   if (reflector_)
     EnsureBackbuffer();
+}
+
+void OffscreenBrowserCompositorOutputSurface::OnSwapBuffersComplete() {
+  client_->DidSwapBuffersComplete();
 }
 
 }  // namespace content

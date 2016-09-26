@@ -78,12 +78,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // not be called twice for a given OutputSurface.
   virtual bool BindToClient(OutputSurfaceClient* client);
 
-  // Called by the compositor on the compositor thread. This is a place where
-  // thread-specific data for the output surface can be uninitialized.
-  virtual void DetachFromClient();
-
-  bool HasClient() { return !!client_; }
-
   const Capabilities& capabilities() const { return capabilities_; }
 
   // Obtain the 3d context or the software device associated with this output
@@ -98,30 +92,28 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
     return software_device_.get();
   }
 
-  virtual void EnsureBackbuffer();
-  virtual void DiscardBackbuffer();
+  virtual void EnsureBackbuffer() = 0;
+  virtual void DiscardBackbuffer() = 0;
+
+  // Bind the default framebuffer for drawing to, only valid for GL backed
+  // OutputSurfaces.
+  virtual void BindFramebuffer() = 0;
 
   const gfx::ColorSpace& device_color_space() const {
     return device_color_space_;
   }
 
-  // Called by subclasses after receiving a response from the gpu process to a
-  // query about whether a given set of textures is still in use by the OS
-  // compositor.
-  void DidReceiveTextureInUseResponses(
-      const gpu::TextureInUseResponses& responses);
-
   // Get the class capable of informing cc of hardware overlay capability.
-  virtual OverlayCandidateValidator* GetOverlayCandidateValidator() const;
+  virtual OverlayCandidateValidator* GetOverlayCandidateValidator() const = 0;
 
   // Returns true if a main image overlay plane should be scheduled.
-  virtual bool IsDisplayedAsOverlayPlane() const;
+  virtual bool IsDisplayedAsOverlayPlane() const = 0;
 
   // Get the texture for the main image's overlay.
-  virtual unsigned GetOverlayTextureId() const;
+  virtual unsigned GetOverlayTextureId() const = 0;
 
   // If this returns true, then the surface will not attempt to draw.
-  virtual bool SurfaceIsSuspendForRecycle() const;
+  virtual bool SurfaceIsSuspendForRecycle() const = 0;
 
   virtual void Reshape(const gfx::Size& size,
                        float scale_factor,
@@ -129,10 +121,8 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
                        bool alpha);
   gfx::Size SurfaceSize() const { return surface_size_; }
 
-  virtual void BindFramebuffer();
-
-  virtual bool HasExternalStencilTest() const;
-  virtual void ApplyExternalStencil();
+  virtual bool HasExternalStencilTest() const = 0;
+  virtual void ApplyExternalStencil() = 0;
 
   // Gives the GL internal format that should be used for calling CopyTexImage2D
   // when the framebuffer is bound via BindFramebuffer().
@@ -141,9 +131,8 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   // The implementation may destroy or steal the contents of the CompositorFrame
   // passed in (though it will not take ownership of the CompositorFrame
   // itself). For successful swaps, the implementation must call
-  // DidSwapBuffersComplete() (via OnSwapBuffersComplete()) eventually.
+  // OutputSurfaceClient::DidSwapBuffersComplete() eventually.
   virtual void SwapBuffers(CompositorFrame frame) = 0;
-  virtual void OnSwapBuffersComplete();
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -167,10 +156,10 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   gfx::ColorSpace device_color_space_;
   bool has_alpha_ = true;
   gfx::ColorSpace color_space_;
-  base::ThreadChecker client_thread_checker_;
+  base::ThreadChecker thread_checker_;
 
  private:
-  void DetachFromClientInternal();
+  void OnSwapBuffersComplete();
 
   base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
 

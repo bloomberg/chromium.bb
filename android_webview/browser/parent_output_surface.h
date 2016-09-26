@@ -19,6 +19,9 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
 
   // OutputSurface overrides.
   void DidLoseOutputSurface() override;
+  void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
+  void BindFramebuffer() override;
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
@@ -27,6 +30,10 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
+  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  bool IsDisplayedAsOverlayPlane() const override;
+  unsigned GetOverlayTextureId() const override;
+  bool SurfaceIsSuspendForRecycle() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ParentOutputSurface);

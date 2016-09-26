@@ -60,7 +60,8 @@ BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
 void BrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
-  DCHECK(HasClient());
+  DCHECK(client_);  // BindToClient should have been called already.
+
   if (interval.is_zero()) {
     // TODO(brianderson): We should not be receiving 0 intervals.
     interval = cc::BeginFrameArgs::DefaultInterval();
@@ -87,5 +88,11 @@ cc::OverlayCandidateValidator*
 BrowserCompositorOutputSurface::GetOverlayCandidateValidator() const {
   return overlay_candidate_validator_.get();
 }
+
+bool BrowserCompositorOutputSurface::HasExternalStencilTest() const {
+  return false;
+}
+
+void BrowserCompositorOutputSurface::ApplyExternalStencil() {}
 
 }  // namespace content

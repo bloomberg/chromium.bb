@@ -25,6 +25,16 @@ void ParentOutputSurface::DidLoseOutputSurface() {
   LOG(FATAL) << "Render thread context loss";
 }
 
+void ParentOutputSurface::EnsureBackbuffer() {}
+
+void ParentOutputSurface::DiscardBackbuffer() {
+  context_provider()->ContextGL()->DiscardBackbufferCHROMIUM();
+}
+
+void ParentOutputSurface::BindFramebuffer() {
+  context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void ParentOutputSurface::Reshape(const gfx::Size& size,
                                   float scale_factor,
                                   const gfx::ColorSpace& color_space,
@@ -67,6 +77,23 @@ void ParentOutputSurface::ApplyExternalStencil() {
 uint32_t ParentOutputSurface::GetFramebufferCopyTextureFormat() {
   auto* gl = static_cast<AwRenderThreadContextProvider*>(context_provider());
   return gl->GetCopyTextureInternalFormat();
+}
+
+cc::OverlayCandidateValidator*
+ParentOutputSurface::GetOverlayCandidateValidator() const {
+  return nullptr;
+}
+
+bool ParentOutputSurface::IsDisplayedAsOverlayPlane() const {
+  return false;
+}
+
+unsigned ParentOutputSurface::GetOverlayTextureId() const {
+  return 0;
+}
+
+bool ParentOutputSurface::SurfaceIsSuspendForRecycle() const {
+  return false;
 }
 
 }  // namespace android_webview

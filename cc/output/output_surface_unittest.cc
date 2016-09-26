@@ -29,6 +29,9 @@ class TestOutputSurface : public OutputSurface {
       std::unique_ptr<SoftwareOutputDevice> software_device)
       : OutputSurface(std::move(software_device)) {}
 
+  void EnsureBackbuffer() override {}
+  void DiscardBackbuffer() override {}
+  void BindFramebuffer() override {}
   void SwapBuffers(CompositorFrame frame) override {
     client_->DidSwapBuffersComplete();
   }
@@ -36,6 +39,14 @@ class TestOutputSurface : public OutputSurface {
     // TestContextProvider has no real framebuffer, just use RGB.
     return GL_RGB;
   }
+  OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
+    return nullptr;
+  }
+  bool IsDisplayedAsOverlayPlane() const override { return false; }
+  unsigned GetOverlayTextureId() const override { return 0; }
+  bool SurfaceIsSuspendForRecycle() const override { return false; }
+  bool HasExternalStencilTest() const override { return false; }
+  void ApplyExternalStencil() override {}
 
   void OnSwapBuffersCompleteForTesting() { client_->DidSwapBuffersComplete(); }
 
@@ -77,11 +88,9 @@ void TestSoftwareOutputDevice::EnsureBackbuffer() {
 TEST(OutputSurfaceTest, ContextLossInformsClient) {
   scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
   TestOutputSurface output_surface(provider);
-  EXPECT_FALSE(output_surface.HasClient());
 
   FakeOutputSurfaceClient client;
   EXPECT_TRUE(output_surface.BindToClient(&client));
-  EXPECT_TRUE(output_surface.HasClient());
 
   // Verify DidLoseOutputSurface callback is hooked up correctly.
   EXPECT_FALSE(client.did_lose_output_surface_called());
@@ -101,31 +110,9 @@ TEST(OutputSurfaceTest, ContextLossFailsBind) {
   context_provider->UnboundTestContext3d()->set_context_lost(true);
 
   TestOutputSurface output_surface(context_provider);
-  EXPECT_FALSE(output_surface.HasClient());
 
   FakeOutputSurfaceClient client;
   EXPECT_FALSE(output_surface.BindToClient(&client));
-  EXPECT_FALSE(output_surface.HasClient());
-}
-
-TEST(OutputSurfaceTest, SoftwareOutputDeviceBackbufferManagement) {
-  auto device_owned = base::MakeUnique<TestSoftwareOutputDevice>();
-  TestSoftwareOutputDevice* software_output_device = device_owned.get();
-
-  // TestOutputSurface now owns software_output_device and has responsibility to
-  // free it.
-  TestOutputSurface output_surface(std::move(device_owned));
-
-  EXPECT_EQ(0, software_output_device->ensure_backbuffer_count());
-  EXPECT_EQ(0, software_output_device->discard_backbuffer_count());
-
-  output_surface.EnsureBackbuffer();
-  EXPECT_EQ(1, software_output_device->ensure_backbuffer_count());
-  EXPECT_EQ(0, software_output_device->discard_backbuffer_count());
-  output_surface.DiscardBackbuffer();
-
-  EXPECT_EQ(1, software_output_device->ensure_backbuffer_count());
-  EXPECT_EQ(1, software_output_device->discard_backbuffer_count());
 }
 
 }  // namespace

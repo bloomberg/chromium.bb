@@ -19,12 +19,20 @@ class PixelTestOutputSurface : public OutputSurface {
   ~PixelTestOutputSurface() override;
 
   // OutputSurface implementation.
+  void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
+  void BindFramebuffer() override;
   void Reshape(const gfx::Size& size,
                float scale_factor,
                const gfx::ColorSpace& color_space,
                bool alpha) override;
   bool HasExternalStencilTest() const override;
+  void ApplyExternalStencil() override;
   void SwapBuffers(CompositorFrame frame) override;
+  OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  bool IsDisplayedAsOverlayPlane() const override;
+  unsigned GetOverlayTextureId() const override;
+  bool SurfaceIsSuspendForRecycle() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 
   void set_surface_expansion_size(const gfx::Size& surface_expansion_size) {

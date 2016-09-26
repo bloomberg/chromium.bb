@@ -5,6 +5,7 @@
 #include "content/browser/compositor/gpu_output_surface_mac.h"
 
 #include "cc/output/compositor_frame.h"
+#include "cc/output/output_surface_client.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
@@ -106,7 +107,7 @@ void GpuOutputSurfaceMac::OnGpuSwapBuffersCompleted(
       }
     }
   }
-  DidReceiveTextureInUseResponses(params_mac->responses);
+  client_->DidReceiveTextureInUseResponses(params_mac->responses);
   GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
       latency_info, result, params_mac);
 }

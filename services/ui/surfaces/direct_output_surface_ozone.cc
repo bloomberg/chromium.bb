@@ -61,14 +61,26 @@ DirectOutputSurfaceOzone::~DirectOutputSurfaceOzone() {
   // TODO(rjkroege): Support cleanup.
 }
 
-bool DirectOutputSurfaceOzone::IsDisplayedAsOverlayPlane() const {
-  // TODO(rjkroege): implement remaining overlay functionality.
+bool DirectOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {
+  if (!cc::OutputSurface::BindToClient(client))
+    return false;
+
+  if (capabilities_.uses_default_gl_framebuffer) {
+    capabilities_.flipped_output_surface =
+        context_provider()->ContextCapabilities().flips_vertically;
+  }
   return true;
 }
 
-unsigned DirectOutputSurfaceOzone::GetOverlayTextureId() const {
+void DirectOutputSurfaceOzone::EnsureBackbuffer() {}
+
+void DirectOutputSurfaceOzone::DiscardBackbuffer() {
+  context_provider()->ContextGL()->DiscardBackbufferCHROMIUM();
+}
+
+void DirectOutputSurfaceOzone::BindFramebuffer() {
   DCHECK(buffer_queue_);
-  return buffer_queue_->current_texture_id();
+  buffer_queue_->BindFramebuffer();
 }
 
 void DirectOutputSurfaceOzone::SwapBuffers(cc::CompositorFrame frame) {
@@ -94,48 +106,6 @@ void DirectOutputSurfaceOzone::SwapBuffers(cc::CompositorFrame frame) {
   gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 }
 
-bool DirectOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {
-  if (!cc::OutputSurface::BindToClient(client))
-    return false;
-
-  if (capabilities_.uses_default_gl_framebuffer) {
-    capabilities_.flipped_output_surface =
-        context_provider()->ContextCapabilities().flips_vertically;
-  }
-  return true;
-}
-
-void DirectOutputSurfaceOzone::OnUpdateVSyncParametersFromGpu(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  DCHECK(HasClient());
-  synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
-}
-
-void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
-    gfx::SwapResult result) {
-  DCHECK(buffer_queue_);
-  bool force_swap = false;
-  if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
-    // Even through the swap failed, this is a fixable error so we can pretend
-    // it succeeded to the rest of the system.
-    result = gfx::SwapResult::SWAP_ACK;
-    buffer_queue_->RecreateBuffers();
-    force_swap = true;
-  }
-
-  buffer_queue_->PageFlipComplete();
-  OnSwapBuffersComplete();
-
-  if (force_swap)
-    client_->SetNeedsRedrawRect(gfx::Rect(SurfaceSize()));
-}
-
-void DirectOutputSurfaceOzone::BindFramebuffer() {
-  DCHECK(buffer_queue_);
-  buffer_queue_->BindFramebuffer();
-}
-
 uint32_t DirectOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
   return buffer_queue_->internal_format();
 }
@@ -152,6 +122,57 @@ void DirectOutputSurfaceOzone::Reshape(const gfx::Size& size,
   OutputSurface::Reshape(size, scale_factor, color_space, alpha);
   DCHECK(buffer_queue_);
   buffer_queue_->Reshape(SurfaceSize(), scale_factor, color_space);
+}
+
+cc::OverlayCandidateValidator*
+DirectOutputSurfaceOzone::GetOverlayCandidateValidator() const {
+  return nullptr;
+}
+
+bool DirectOutputSurfaceOzone::IsDisplayedAsOverlayPlane() const {
+  // TODO(rjkroege): implement remaining overlay functionality.
+  return true;
+}
+
+unsigned DirectOutputSurfaceOzone::GetOverlayTextureId() const {
+  DCHECK(buffer_queue_);
+  return buffer_queue_->current_texture_id();
+}
+
+bool DirectOutputSurfaceOzone::SurfaceIsSuspendForRecycle() const {
+  return false;
+}
+
+bool DirectOutputSurfaceOzone::HasExternalStencilTest() const {
+  return false;
+}
+
+void DirectOutputSurfaceOzone::ApplyExternalStencil() {}
+
+void DirectOutputSurfaceOzone::OnUpdateVSyncParametersFromGpu(
+    base::TimeTicks timebase,
+    base::TimeDelta interval) {
+  DCHECK(client_);
+  synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
+}
+
+void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
+    gfx::SwapResult result) {
+  DCHECK(buffer_queue_);
+  bool force_swap = false;
+  if (result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS) {
+    // Even through the swap failed, this is a fixable error so we can pretend
+    // it succeeded to the rest of the system.
+    result = gfx::SwapResult::SWAP_ACK;
+    buffer_queue_->RecreateBuffers();
+    force_swap = true;
+  }
+
+  buffer_queue_->PageFlipComplete();
+  client_->DidSwapBuffersComplete();
+
+  if (force_swap)
+    client_->SetNeedsRedrawRect(gfx::Rect(SurfaceSize()));
 }
 
 }  // namespace ui

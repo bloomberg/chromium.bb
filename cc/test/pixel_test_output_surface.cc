@@ -8,6 +8,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/transform.h"
 
@@ -28,6 +29,14 @@ PixelTestOutputSurface::PixelTestOutputSurface(
 
 PixelTestOutputSurface::~PixelTestOutputSurface() = default;
 
+void PixelTestOutputSurface::EnsureBackbuffer() {}
+
+void PixelTestOutputSurface::DiscardBackbuffer() {}
+
+void PixelTestOutputSurface::BindFramebuffer() {
+  context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void PixelTestOutputSurface::Reshape(const gfx::Size& size,
                                      float scale_factor,
                                      const gfx::ColorSpace& color_space,
@@ -41,8 +50,27 @@ bool PixelTestOutputSurface::HasExternalStencilTest() const {
   return external_stencil_test_;
 }
 
+void PixelTestOutputSurface::ApplyExternalStencil() {}
+
 void PixelTestOutputSurface::SwapBuffers(CompositorFrame frame) {
   PostSwapBuffersComplete();
+}
+
+OverlayCandidateValidator*
+PixelTestOutputSurface::GetOverlayCandidateValidator() const {
+  return nullptr;
+}
+
+bool PixelTestOutputSurface::IsDisplayedAsOverlayPlane() const {
+  return false;
+}
+
+unsigned PixelTestOutputSurface::GetOverlayTextureId() const {
+  return 0;
+}
+
+bool PixelTestOutputSurface::SurfaceIsSuspendForRecycle() const {
+  return false;
 }
 
 uint32_t PixelTestOutputSurface::GetFramebufferCopyTextureFormat() {

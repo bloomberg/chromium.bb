@@ -254,9 +254,25 @@ class AndroidOutputSurface : public cc::OutputSurface {
     return true;
   }
 
+  void EnsureBackbuffer() override {}
+
+  void DiscardBackbuffer() override {
+    context_provider()->ContextGL()->DiscardBackbufferCHROMIUM();
+  }
+
+  void BindFramebuffer() override {
+    context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
+
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
     return overlay_candidate_validator_.get();
   }
+
+  bool IsDisplayedAsOverlayPlane() const override { return false; }
+  unsigned GetOverlayTextureId() const override { return 0; }
+  bool SurfaceIsSuspendForRecycle() const override { return false; }
+  bool HasExternalStencilTest() const override { return false; }
+  void ApplyExternalStencil() override {}
 
   uint32_t GetFramebufferCopyTextureFormat() override {
     auto* gl = static_cast<ContextProviderCommandBuffer*>(context_provider());
@@ -279,7 +295,7 @@ class AndroidOutputSurface : public cc::OutputSurface {
       gfx::SwapResult result,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
     RenderWidgetHostImpl::CompositorFrameDrawn(latency_info);
-    OutputSurface::OnSwapBuffersComplete();
+    client_->DidSwapBuffersComplete();
   }
 
  private:

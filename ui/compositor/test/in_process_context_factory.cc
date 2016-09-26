@@ -56,6 +56,11 @@ class DirectOutputSurface : public cc::OutputSurface {
   ~DirectOutputSurface() override {}
 
   // cc::OutputSurface implementation.
+  void EnsureBackbuffer() override {}
+  void DiscardBackbuffer() override {}
+  void BindFramebuffer() override {
+    context_provider()->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, 0);
+  }
   bool BindToClient(cc::OutputSurfaceClient* client) override {
     if (!OutputSurface::BindToClient(client))
       return false;
@@ -79,15 +84,25 @@ class DirectOutputSurface : public cc::OutputSurface {
     gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
     context_provider_->ContextSupport()->SignalSyncToken(
-        sync_token, base::Bind(&OutputSurface::OnSwapBuffersComplete,
+        sync_token, base::Bind(&DirectOutputSurface::OnSwapBuffersComplete,
                                weak_ptr_factory_.GetWeakPtr()));
   }
   uint32_t GetFramebufferCopyTextureFormat() override {
     auto* gl = static_cast<InProcessContextProvider*>(context_provider());
     return gl->GetCopyTextureInternalFormat();
   }
+  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override {
+    return nullptr;
+  }
+  bool IsDisplayedAsOverlayPlane() const override { return false; }
+  unsigned GetOverlayTextureId() const override { return 0; }
+  bool SurfaceIsSuspendForRecycle() const override { return false; }
+  bool HasExternalStencilTest() const override { return false; }
+  void ApplyExternalStencil() override {}
 
  private:
+  void OnSwapBuffersComplete() { client_->DidSwapBuffersComplete(); }
+
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);

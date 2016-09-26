@@ -90,8 +90,14 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
+  void EnsureBackbuffer() override {}
+  void DiscardBackbuffer() override {}
+  void BindFramebuffer() override {}
   void SwapBuffers(cc::CompositorFrame frame) override {}
   uint32_t GetFramebufferCopyTextureFormat() override { return GL_RGB; }
+  bool IsDisplayedAsOverlayPlane() const override { return false; }
+  unsigned GetOverlayTextureId() const override { return 0; }
+  bool SurfaceIsSuspendForRecycle() const override { return false; }
 
   void OnReflectorChanged() override {
     if (!reflector_) {

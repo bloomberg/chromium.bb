@@ -41,6 +41,8 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
   // cc::OutputSurface implementation.
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  bool HasExternalStencilTest() const override;
+  void ApplyExternalStencil() override;
 
   void OnUpdateVSyncParametersFromGpu(base::TimeTicks timebase,
                                       base::TimeDelta interval);

@@ -55,12 +55,7 @@ void FakeOutputSurface::SwapBuffers(CompositorFrame frame) {
 }
 
 void FakeOutputSurface::BindFramebuffer() {
-  if (framebuffer_) {
-    context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER,
-                                                    framebuffer_);
-  } else {
-    OutputSurface::BindFramebuffer();
-  }
+  context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, framebuffer_);
 }
 
 uint32_t FakeOutputSurface::GetFramebufferCopyTextureFormat() {
@@ -79,11 +74,6 @@ bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
   }
 }
 
-void FakeOutputSurface::DetachFromClient() {
-  ReturnResourcesHeldByParent();
-  OutputSurface::DetachFromClient();
-}
-
 bool FakeOutputSurface::HasExternalStencilTest() const {
   return has_external_stencil_test_;
 }
@@ -95,6 +85,14 @@ bool FakeOutputSurface::SurfaceIsSuspendForRecycle() const {
 OverlayCandidateValidator* FakeOutputSurface::GetOverlayCandidateValidator()
     const {
   return overlay_candidate_validator_;
+}
+
+bool FakeOutputSurface::IsDisplayedAsOverlayPlane() const {
+  return false;
+}
+
+unsigned FakeOutputSurface::GetOverlayTextureId() const {
+  return 0;
 }
 
 void FakeOutputSurface::ReturnResourcesHeldByParent() {

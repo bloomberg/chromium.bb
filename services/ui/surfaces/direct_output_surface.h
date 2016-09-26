@@ -30,14 +30,25 @@ class DirectOutputSurface : public cc::OutputSurface,
 
   // cc::OutputSurface implementation
   bool BindToClient(cc::OutputSurfaceClient* client) override;
+  void EnsureBackbuffer() override;
+  void DiscardBackbuffer() override;
+  void BindFramebuffer() override;
   void SwapBuffers(cc::CompositorFrame frame) override;
   uint32_t GetFramebufferCopyTextureFormat() override;
+  cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
+  bool IsDisplayedAsOverlayPlane() const override;
+  unsigned GetOverlayTextureId() const override;
+  bool SurfaceIsSuspendForRecycle() const override;
+  bool HasExternalStencilTest() const override;
+  void ApplyExternalStencil() override;
 
   // SurfacesContextProviderDelegate implementation
   void OnVSyncParametersUpdated(const base::TimeTicks& timebase,
                                 const base::TimeDelta& interval) override;
 
  private:
+  void OnSwapBuffersComplete();
+
   cc::SyntheticBeginFrameSource* const synthetic_begin_frame_source_;
   base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
 };
