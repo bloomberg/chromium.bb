@@ -533,6 +533,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
         ['linux', 'opengl'], bug=483282)
 
+    # Linux without ANGLE only
+    self.Flaky('conformance2/buffers/getBufferSubData.html',
+               ['linux', 'no_angle'], bug=650123)
+
     # Linux NVIDIA
     # This test is flaky both with and without ANGLE.
     self.Flaky('deqp/functional/gles3/texturespecification/' +
