@@ -96,7 +96,7 @@ public class MainActivity extends Activity {
                     "launch", Context.class, Intent.class, Bundle.class);
             Object hostBrowserLauncherInstance = hostBrowserLauncherClass.newInstance();
             Bundle bundle = new Bundle();
-            bundle.putInt(KEY_APP_ICON_ID, R.drawable.app_icon);
+            bundle.putInt(KEY_APP_ICON_ID, R.mipmap.app_icon);
             launchMethod.invoke(hostBrowserLauncherInstance, this, getIntent(), bundle);
             return true;
         } catch (Exception e) {

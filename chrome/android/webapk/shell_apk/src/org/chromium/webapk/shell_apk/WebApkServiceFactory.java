@@ -52,7 +52,7 @@ public class WebApkServiceFactory extends Service {
                     webApkServiceImplClass.getConstructor(Context.class, Bundle.class);
             int hostBrowserUid = WebApkUtils.getHostBrowserUid(this);
             Bundle bundle = new Bundle();
-            bundle.putInt(KEY_SMALL_ICON_ID, R.drawable.app_icon);
+            bundle.putInt(KEY_SMALL_ICON_ID, R.mipmap.app_icon);
             bundle.putInt(KEY_HOST_BROWSER_UID, hostBrowserUid);
             return (IBinder) webApkServiceImplConstructor.newInstance(new Object[] {this, bundle});
         } catch (Exception e) {

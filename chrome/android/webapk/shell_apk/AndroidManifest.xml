@@ -14,7 +14,7 @@
         android:targetSdkVersion="23" />
 
     <application
-        android:icon="@drawable/app_icon"
+        android:icon="@mipmap/app_icon"
         android:label="{{ short_name }}"
         android:allowBackup="false">
         <activity android:name="org.chromium.webapk.shell_apk.MainActivity"
