@@ -154,6 +154,7 @@ class GPU_EXPORT CopyTextureCHROMIUMResourceManager {
                              const GLfloat transform_matrix[16]);
 
   bool initialized_;
+  bool nv_egl_stream_consumer_external_;
   typedef std::vector<GLuint> ShaderVector;
   GLuint vertex_shader_;
   ShaderVector fragment_shaders_;

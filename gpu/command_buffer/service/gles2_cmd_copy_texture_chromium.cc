@@ -133,6 +133,7 @@ std::string GetVertexShaderSource(const gl::GLVersionInfo& gl_version_info) {
 std::string GetFragmentShaderSource(const gl::GLVersionInfo& gl_version_info,
                                     bool premultiply_alpha,
                                     bool unpremultiply_alpha,
+                                    bool nv_egl_stream_consumer_external,
                                     GLenum target) {
   std::string source;
 
@@ -155,8 +156,12 @@ std::string GetFragmentShaderSource(const gl::GLVersionInfo& gl_version_info,
       case GL_TEXTURE_EXTERNAL_OES:
         source +=
             std::string("#extension GL_OES_EGL_image_external : enable\n");
-        source += std::string(
-            "#extension GL_NV_EGL_stream_consumer_external : enable\n");
+
+        if (nv_egl_stream_consumer_external) {
+          source += std::string(
+              "#extension GL_NV_EGL_stream_consumer_external : enable\n");
+        }
+
         source += std::string("#define TextureLookup texture2D\n");
         break;
       default:
@@ -321,6 +326,7 @@ namespace gles2 {
 
 CopyTextureCHROMIUMResourceManager::CopyTextureCHROMIUMResourceManager()
     : initialized_(false),
+      nv_egl_stream_consumer_external_(false),
       vertex_shader_(0u),
       fragment_shaders_(NUM_FRAGMENT_SHADERS, 0u),
       vertex_array_object_id_(0u),
@@ -343,6 +349,9 @@ void CopyTextureCHROMIUMResourceManager::Initialize(
   DCHECK(!vertex_array_object_id_);
   DCHECK(!framebuffer_);
   DCHECK(programs_.empty());
+
+  nv_egl_stream_consumer_external_ =
+      feature_flags.nv_egl_stream_consumer_external;
 
   if (feature_flags.native_vertex_array_object) {
     glGenVertexArraysOES(1, &vertex_array_object_id_);
@@ -608,9 +617,9 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
     GLuint* fragment_shader = &fragment_shaders_[fragment_shader_id];
     if (!*fragment_shader) {
       *fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-      std::string source =
-          GetFragmentShaderSource(gl_version_info, premultiply_alpha,
-                                  unpremultiply_alpha, source_target);
+      std::string source = GetFragmentShaderSource(
+          gl_version_info, premultiply_alpha, unpremultiply_alpha,
+          nv_egl_stream_consumer_external_, source_target);
       CompileShader(*fragment_shader, source.c_str());
     }
     glAttachShader(info->program, *fragment_shader);
