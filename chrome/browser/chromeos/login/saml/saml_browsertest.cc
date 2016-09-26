@@ -387,6 +387,19 @@ class SamlTest : public OobeBaseTest {
     ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
   }
 
+  void SetManualPasswords(const std::string& password,
+                          const std::string& confirm_password) {
+    std::string js =
+        "$('saml-confirm-password').$.passwordInput.value='$Password';"
+        "$('saml-confirm-password').$$('#confirmPasswordInput').value="
+        "    '$ConfirmPassword';"
+        "$('saml-confirm-password').$.inputForm.submit();";
+    base::ReplaceSubstringsAfterOffset(&js, 0, "$Password", password);
+    base::ReplaceSubstringsAfterOffset(&js, 0, "$ConfirmPassword",
+                                       confirm_password);
+    ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
+  }
+
   std::string WaitForAndGetFatalErrorMessage() {
     OobeScreenWaiter(OobeScreen::SCREEN_FATAL_ERROR).Wait();
     std::string message_element = "$('fatal-error-card')";
@@ -560,10 +573,12 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
 
   // Lands on confirm password screen.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  JsExpect("!$('saml-confirm-password').manualInput");
 
   // Entering an unknown password should go back to the confirm password screen.
   SendConfirmPassword("wrong_password");
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  JsExpect("!$('saml-confirm-password').manualInput");
 
   // Either scraped password should be able to sign-in.
   content::WindowedNotificationObserver session_start_waiter(
@@ -582,8 +597,21 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
   SetSignFormField("Email", "fake_user");
   ExecuteJsInSigninFrame("document.getElementById('Submit').click();");
 
-  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_LOGIN_FATAL_ERROR_NO_PASSWORD),
-            WaitForAndGetFatalErrorMessage());
+  // Lands on confirm password screen with manual input state.
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  JsExpect("$('saml-confirm-password').manualInput");
+  // Entering passwords that don't match will make us land again in the same
+  // page.
+  SetManualPasswords("Test1", "Test2");
+  OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  JsExpect("$('saml-confirm-password').manualInput");
+
+  // Two matching passwords should let the user to sign in.
+  content::WindowedNotificationObserver session_start_waiter(
+      chrome::NOTIFICATION_SESSION_STARTED,
+      content::NotificationService::AllSources());
+  SetManualPasswords("Test1", "Test1");
+  session_start_waiter.Wait();
 }
 
 // Types |bob@example.com| into the GAIA login form but then authenticates as
@@ -642,12 +670,14 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
 
   // Lands on confirm password screen with no error message.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  JsExpect("!$('saml-confirm-password').manualInput");
   JsExpect("!$('saml-confirm-password').$.passwordInput.isInvalid");
 
   // Enter an unknown password for the first time should go back to confirm
   // password screen with error message.
   SendConfirmPassword("wrong_password");
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
+  JsExpect("!$('saml-confirm-password').manualInput");
   JsExpect("$('saml-confirm-password').$.passwordInput.isInvalid");
 
   // Enter an unknown password 2nd time should go back fatal error message.

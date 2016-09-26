@@ -689,6 +689,16 @@ cr.define('cr.login', function() {
   };
 
   /**
+   * Invoked to complete the authentication using the password the user enters
+   * manually for non-principals API SAML IdPs that we couldn't scrape their
+   * password input.
+   */
+  Authenticator.prototype.completeAuthWithManualPassword = function(password) {
+    this.password_ = password;
+    this.onAuthCompleted_();
+  };
+
+  /**
    * Invoked to process authentication completion.
    * @private
    */

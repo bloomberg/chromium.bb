@@ -1847,6 +1847,15 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_TITLE" desc="Title for the confirm password dialog.">
     Please re-enter your password to update your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> profile.
   </message>
+  <message name="IDS_LOGIN_MANUAL_PASSWORD_TITLE" desc="Title for the manual password setting dialog.">
+    Please create a password to protect your local data.
+  </message>
+  <message name="IDS_LOGIN_MANUAL_PASSWORD_INPUT_LABEL" desc="Label for the password input when setting the password manually.">
+    Enter your password
+  </message>
+  <message name="IDS_LOGIN_MANUAL_PASSWORD_MISMATCH" desc="Error shown when passwords don't match when setting the password manually.">
+    Passwords don't match
+  </message>
   <message name="IDS_LOGIN_CONFIRM_PASSWORD_LABEL" desc="Label for the password field on the confirm password dialog.">
     Confirm your password
   </message>

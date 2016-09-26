@@ -51,14 +51,17 @@ login.createScreen('ConfirmPasswordScreen', 'confirm-password', function() {
     /**
      * Shows the confirm password screen.
      * @param {string} email The authenticated user's e-mail.
+     * @param {boolean} manualPasswordInput True if no password has been
+     *     scrapped and the user needs to set one manually for the device.
      * @param {number} attemptCount Number of attempts tried, starting at 0.
      * @param {function(string)} callback The callback to be invoked when the
      *     screen is dismissed.
      */
-    show: function(email, attemptCount, callback) {
+    show: function(email, manualPasswordInput, attemptCount, callback) {
       this.callback_ = callback;
       this.confirmPasswordForm_.reset();
       this.confirmPasswordForm_.email = email;
+      this.confirmPasswordForm_.manualInput = manualPasswordInput;
       if (attemptCount > 0)
         this.confirmPasswordForm_.invalidate();
       Oobe.showScreen({id: SCREEN_CONFIRM_PASSWORD});

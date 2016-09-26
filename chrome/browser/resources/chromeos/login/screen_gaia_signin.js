@@ -776,6 +776,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       if (this.samlPasswordConfirmAttempt_ < 2) {
         login.ConfirmPasswordScreen.show(
             email,
+            false /* manual password entry */,
             this.samlPasswordConfirmAttempt_,
             this.onConfirmPasswordCollected_.bind(this));
       } else {
@@ -802,13 +803,26 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     /**
      * Inovked when the user has successfully authenticated via SAML, the
      * principals API was not used and no passwords could be scraped.
+     * The user will be asked to pick a manual password for the device.
      * @param {string} email The authenticated user's e-mail.
      */
     onAuthNoPassword_: function(email) {
-      this.showFatalAuthError(
-          loadTimeData.getString('fatalErrorMessageNoPassword'),
-          loadTimeData.getString('fatalErrorTryAgainButton'));
       chrome.send('scrapedPasswordCount', [0]);
+      login.ConfirmPasswordScreen.show(
+          email,
+          true /* manual password entry */,
+          this.samlPasswordConfirmAttempt_,
+          this.onManualPasswordCollected_.bind(this));
+    },
+
+    /**
+     * Invoked when the dialog where the user enters a manual password for the
+     * device, when password scraping fails.
+     * @param {string} password The password the user entered. Not necessarily
+     *     the same as his SAML password.
+     */
+    onManualPasswordCollected_: function(password) {
+      this.gaiaAuthHost_.completeAuthWithManualPassword(password);
     },
 
     /**
