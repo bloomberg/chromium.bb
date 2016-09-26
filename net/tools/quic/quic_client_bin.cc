@@ -258,8 +258,8 @@ int main(int argc, char* argv[]) {
       new ProofVerifierChromium(cert_verifier.get(), ct_policy_enforcer.get(),
                                 transport_security_state.get(),
                                 ct_verifier.get()));
-  net::QuicClient client(net::IPEndPoint(ip_addr, FLAGS_port), server_id,
-                         versions, &epoll_server, std::move(proof_verifier));
+  net::QuicClient client(net::IPEndPoint(ip_addr, port), server_id, versions,
+                         &epoll_server, std::move(proof_verifier));
   client.set_initial_max_packet_length(
       FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
   if (!client.Initialize()) {
