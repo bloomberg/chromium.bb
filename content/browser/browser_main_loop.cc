@@ -62,7 +62,6 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_task_runner.h"
-#include "content/browser/time_zone_monitor.h"
 #include "content/browser/utility_process_host_impl.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
@@ -79,6 +78,7 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "device/battery/battery_status_service.h"
+#include "device/time_zone_monitor/time_zone_monitor.h"
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
 #include "media/midi/midi_manager.h"
@@ -1328,7 +1328,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::BrowserThreadsStarted::TimeZoneMonitor");
-    time_zone_monitor_ = TimeZoneMonitor::Create(file_thread_->task_runner());
+    time_zone_monitor_ =
+        device::TimeZoneMonitor::Create(file_thread_->task_runner());
   }
 
   {

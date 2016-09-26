@@ -35,6 +35,10 @@ class TraceEventSystemStatsMonitor;
 }  // namespace trace_event
 }  // namespace base
 
+namespace device {
+class TimeZoneMonitor;
+}
+
 namespace media {
 #if defined(OS_WIN)
 class SystemMessageWindowWin;
@@ -77,7 +81,6 @@ class ResourceDispatcherHostImpl;
 class SaveFileManager;
 class SpeechRecognitionManagerImpl;
 class StartupTaskRunner;
-class TimeZoneMonitor;
 struct MainFunctionParams;
 
 #if defined(OS_ANDROID)
@@ -131,7 +134,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
   }
-  TimeZoneMonitor* time_zone_monitor() const {
+  device::TimeZoneMonitor* time_zone_monitor() const {
     return time_zone_monitor_.get();
   }
   media::midi::MidiManager* midi_manager() const { return midi_manager_.get(); }
@@ -291,7 +294,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
-  std::unique_ptr<TimeZoneMonitor> time_zone_monitor_;
+  std::unique_ptr<device::TimeZoneMonitor> time_zone_monitor_;
   scoped_refptr<SaveFileManager> save_file_manager_;
 
   // DO NOT add members here. Add them to the right categories above.

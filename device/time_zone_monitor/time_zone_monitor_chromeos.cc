@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/time_zone_monitor.h"
+#include "device/time_zone_monitor/time_zone_monitor.h"
 
 #include "base/macros.h"
 #include "chromeos/settings/timezone_settings.h"
 
-namespace content {
+namespace device {
 
 class TimeZoneMonitorChromeOS
     : public TimeZoneMonitor,
@@ -36,4 +36,4 @@ std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
   return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorChromeOS());
 }
 
-}  // namespace content
+}  // namespace device

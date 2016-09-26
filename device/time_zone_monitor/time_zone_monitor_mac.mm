@@ -5,9 +5,9 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#include "content/browser/time_zone_monitor.h"
+#include "device/time_zone_monitor/time_zone_monitor.h"
 
-namespace content {
+namespace device {
 
 class TimeZoneMonitorMac : public TimeZoneMonitor {
  public:
@@ -39,4 +39,4 @@ std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
   return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorMac());
 }
 
-}  // namespace content
+}  // namespace device

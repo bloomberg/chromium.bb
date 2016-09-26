@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "device/time_zone_monitor/public/interfaces/time_zone_monitor.mojom.h"
+#include "device/time_zone_monitor/time_zone_monitor_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
@@ -20,7 +21,7 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace content {
+namespace device {
 
 // TimeZoneMonitor watches the system time zone, and notifies renderers
 // when it changes. Some renderer code caches the system time zone, so
@@ -44,12 +45,13 @@ class TimeZoneMonitor : public device::mojom::TimeZoneMonitor {
   // Returns a new TimeZoneMonitor object (likely a subclass) specific to the
   // platform. Inject |file_task_runner| to enable running blocking file
   // operations on it when necessary.
-  static std::unique_ptr<TimeZoneMonitor> Create(
-      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
+  DEVICE_TIME_ZONE_MONITOR_EXPORT static std::unique_ptr<TimeZoneMonitor>
+  Create(scoped_refptr<base::SequencedTaskRunner> file_task_runner);
 
   ~TimeZoneMonitor() override;
 
-  void Bind(device::mojom::TimeZoneMonitorRequest request);
+  DEVICE_TIME_ZONE_MONITOR_EXPORT void Bind(
+      device::mojom::TimeZoneMonitorRequest request);
 
  protected:
   TimeZoneMonitor();
@@ -68,6 +70,6 @@ class TimeZoneMonitor : public device::mojom::TimeZoneMonitor {
   DISALLOW_COPY_AND_ASSIGN(TimeZoneMonitor);
 };
 
-}  // namespace content
+}  // namespace device
 
 #endif  // CONTENT_BROWSER_TIME_ZONE_MONITOR_H_

@@ -28,7 +28,6 @@
 #include "content/browser/media/session/media_session_delegate_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
-#include "content/browser/time_zone_monitor_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "mojo/android/system/core_impl.h"
 #include "mojo/android/system/watcher_impl.h"
@@ -63,7 +62,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"SensorManagerAndroid", content::SensorManagerAndroid::Register},
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},
-    {"TimeZoneMonitorAndroid", content::TimeZoneMonitorAndroid::Register},
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
     {"WatcherImpl", mojo::android::RegisterWatcherImpl},
     {"WebContentsAndroid", content::WebContentsAndroid::Register},

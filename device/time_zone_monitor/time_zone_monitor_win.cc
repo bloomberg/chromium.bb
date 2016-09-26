@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/time_zone_monitor.h"
+#include "device/time_zone_monitor/time_zone_monitor.h"
 
 #include <windows.h>
 
@@ -13,15 +13,15 @@
 #include "base/macros.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
-namespace content {
+namespace device {
 
 class TimeZoneMonitorWin : public TimeZoneMonitor {
  public:
   TimeZoneMonitorWin()
       : TimeZoneMonitor(),
-        singleton_hwnd_observer_(
-            new gfx::SingletonHwndObserver(base::Bind(
-                &TimeZoneMonitorWin::OnWndProc, base::Unretained(this)))) {}
+        singleton_hwnd_observer_(new gfx::SingletonHwndObserver(
+            base::Bind(&TimeZoneMonitorWin::OnWndProc,
+                       base::Unretained(this)))) {}
 
   ~TimeZoneMonitorWin() override {}
 
@@ -45,4 +45,4 @@ std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
   return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorWin());
 }
 
-}  // namespace content
+}  // namespace device

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.device.time_zone_monitor;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,11 +14,11 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 /**
- * Android implementation details for content::TimeZoneMonitorAndroid.
+ * Android implementation details for device::TimeZoneMonitorAndroid.
  */
-@JNINamespace("content")
+@JNINamespace("device")
 class TimeZoneMonitor {
-    private static final String TAG = "cr.TimeZoneMonitor";
+    private static final String TAG = "cr_TimeZoneMonitor";
 
     private final Context mAppContext;
     private final IntentFilter mFilter = new IntentFilter(Intent.ACTION_TIMEZONE_CHANGED);
@@ -38,7 +38,7 @@ class TimeZoneMonitor {
 
     /**
      * Start listening for intents.
-     * @param nativePtr The native content::TimeZoneMonitorAndroid to notify of time zone changes.
+     * @param nativePtr The native device::TimeZoneMonitorAndroid to notify of time zone changes.
      */
     private TimeZoneMonitor(Context context, long nativePtr) {
         mAppContext = context.getApplicationContext();
@@ -61,8 +61,8 @@ class TimeZoneMonitor {
     }
 
     /**
-     * Native JNI call to content::TimeZoneMonitorAndroid::TimeZoneChanged.
-     * See content/browser/time_zone_monitor_android.cc.
+     * Native JNI call to device::TimeZoneMonitorAndroid::TimeZoneChanged.
+     * See device/time_zone_monitor/time_zone_monitor_android.cc.
      */
     private native void nativeTimeZoneChangedFromJava(long nativeTimeZoneMonitorAndroid);
 }

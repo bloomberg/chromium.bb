@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/time_zone_monitor.h"
+#include "device/time_zone_monitor/time_zone_monitor.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -22,7 +22,7 @@
 
 #if !defined(OS_CHROMEOS)
 
-namespace content {
+namespace device {
 
 namespace {
 class TimeZoneMonitorLinuxImpl;
@@ -92,16 +92,13 @@ class TimeZoneMonitorLinuxImpl
     // false positives are harmless, assuming the false positive rate is
     // reasonable.
     const char* const kFilesToWatch[] = {
-      "/etc/localtime",
-      "/etc/timezone",
-      "/etc/TZ",
+        "/etc/localtime", "/etc/timezone", "/etc/TZ",
     };
 
     for (size_t index = 0; index < arraysize(kFilesToWatch); ++index) {
       file_path_watchers_.push_back(new base::FilePathWatcher());
       file_path_watchers_.back()->Watch(
-          base::FilePath(kFilesToWatch[index]),
-          false,
+          base::FilePath(kFilesToWatch[index]), false,
           base::Bind(&TimeZoneMonitorLinuxImpl::OnTimeZoneFileChanged, this));
     }
   }
@@ -171,6 +168,6 @@ std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
       new TimeZoneMonitorLinux(file_task_runner));
 }
 
-}  // namespace content
+}  // namespace device
 
 #endif  // !OS_CHROMEOS

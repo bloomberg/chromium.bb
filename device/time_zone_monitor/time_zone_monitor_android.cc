@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/time_zone_monitor_android.h"
+#include "device/time_zone_monitor/time_zone_monitor_android.h"
 
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
@@ -10,13 +10,13 @@
 
 using base::android::JavaParamRef;
 
-namespace content {
+namespace device {
 
 TimeZoneMonitorAndroid::TimeZoneMonitorAndroid() : TimeZoneMonitor() {
-  impl_.Reset(Java_TimeZoneMonitor_getInstance(
-      base::android::AttachCurrentThread(),
-      base::android::GetApplicationContext(),
-      reinterpret_cast<intptr_t>(this)));
+  impl_.Reset(
+      Java_TimeZoneMonitor_getInstance(base::android::AttachCurrentThread(),
+                                       base::android::GetApplicationContext(),
+                                       reinterpret_cast<intptr_t>(this)));
 }
 
 TimeZoneMonitorAndroid::~TimeZoneMonitorAndroid() {
@@ -40,4 +40,4 @@ std::unique_ptr<TimeZoneMonitor> TimeZoneMonitor::Create(
   return std::unique_ptr<TimeZoneMonitor>(new TimeZoneMonitorAndroid());
 }
 
-}  // namespace content
+}  // namespace device

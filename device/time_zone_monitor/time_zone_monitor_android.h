@@ -5,14 +5,14 @@
 #ifndef CONTENT_BROWSER_TIME_ZONE_MONITOR_ANDROID_H_
 #define CONTENT_BROWSER_TIME_ZONE_MONITOR_ANDROID_H_
 
-#include "content/browser/time_zone_monitor.h"
+#include "device/time_zone_monitor/time_zone_monitor.h"
 
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 
-namespace content {
+namespace device {
 
 class TimeZoneMonitorAndroid : public TimeZoneMonitor {
  public:
@@ -34,6 +34,6 @@ class TimeZoneMonitorAndroid : public TimeZoneMonitor {
   DISALLOW_COPY_AND_ASSIGN(TimeZoneMonitorAndroid);
 };
 
-}  // namespace content
+}  // namespace device
 
 #endif  // CONTENT_BROWSER_TIME_ZONE_MONITOR_ANDROID_H_

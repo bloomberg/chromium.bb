@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/time_zone_monitor.h"
+#include "device/time_zone_monitor/time_zone_monitor.h"
 
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
-namespace content {
+namespace device {
 
 TimeZoneMonitor::TimeZoneMonitor() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -59,4 +59,4 @@ void TimeZoneMonitor::AddClient(
   clients_.AddPtr(std::move(client));
 }
 
-}  // namespace content
+}  // namespace device

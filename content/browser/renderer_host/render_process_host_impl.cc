@@ -120,7 +120,6 @@
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
-#include "content/browser/time_zone_monitor.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
@@ -162,6 +161,7 @@
 #include "content/public/common/service_names.h"
 #include "content/public/common/url_constants.h"
 #include "device/battery/battery_monitor_impl.h"
+#include "device/time_zone_monitor/time_zone_monitor.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -1275,7 +1275,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   // a raw pointer here is safe.
   AddUIThreadInterface(
       registry.get(),
-      base::Bind(&TimeZoneMonitor::Bind,
+      base::Bind(&device::TimeZoneMonitor::Bind,
                  base::Unretained(
                      BrowserMainLoop::GetInstance()->time_zone_monitor())));
 
