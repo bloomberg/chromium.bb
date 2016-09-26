@@ -168,11 +168,17 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     NSString* readerModeDetectionHeuristics =
         [defaults stringForKey:@"ReaderModeDetectionHeuristics"];
     if (!readerModeDetectionHeuristics) {
-      command_line->AppendSwitch(switches::reader_mode_heuristics::kOGArticle);
+      command_line->AppendSwitchASCII(
+          switches::kReaderModeHeuristics,
+          switches::reader_mode_heuristics::kOGArticle);
     } else if ([readerModeDetectionHeuristics isEqualToString:@"AdaBoost"]) {
-      command_line->AppendSwitch(switches::reader_mode_heuristics::kAdaBoost);
+      command_line->AppendSwitchASCII(
+          switches::kReaderModeHeuristics,
+          switches::reader_mode_heuristics::kAdaBoost);
     } else {
       DCHECK([readerModeDetectionHeuristics isEqualToString:@"Off"]);
+      command_line->AppendSwitchASCII(switches::kReaderModeHeuristics,
+                                      switches::reader_mode_heuristics::kNone);
     }
   }
 
