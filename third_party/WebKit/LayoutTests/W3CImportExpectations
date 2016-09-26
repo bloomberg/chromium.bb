@@ -297,7 +297,9 @@ imported/wpt/service-workers [ Skip ]
 ## Owners: jww@chromium.org
 imported/wpt/streams [ Skip ]
 imported/wpt/subresource-integrity [ Skip ]
-imported/wpt/svg [ Skip ]
+## Owners: foolip@chromium.org
+imported/wpt/svg [ Pass ]
+imported/wpt/svg/import [ Skip ]
 imported/wpt/tools [ Skip ]
 ## Owners: chongz@chromium.org
 # imported/wpt/touch-events [ Pass ]
@@ -358,6 +360,7 @@ imported/wpt/html/dom/reflection-obsolete.html [ Skip ]
 imported/wpt/html/dom/reflection-sections.html [ Skip ]
 imported/wpt/html/dom/reflection-tabular.html [ Skip ]
 imported/wpt/html/dom/reflection-text.html [ Skip ]
+imported/wpt/svg/interfaces.html [ Skip ]
 
 # Depends on unimported directories of web-platform-tests/.
 imported/wpt/html/browsers/browsing-the-web/read-text/load-text-plain.html [ Skip ]
@@ -667,6 +670,8 @@ imported/wpt/html/semantics/scripting-1/the-script-element/async_007.htm [ Skip 
 imported/wpt/html/semantics/scripting-1/the-script-element/async_008.htm [ Skip ]
 imported/wpt/html/semantics/scripting-1/the-script-element/async_009.htm [ Skip ]
 imported/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Skip ]
+imported/wpt/html/semantics/scripting-1/the-script-element/script-crossorigin-network.html [ Skip ]
+imported/wpt/html/semantics/scripting-1/the-script-element/resources/cross-origin.py [ Skip ]
 
 # This test requires manual interventions.
 imported/wpt/pointerevents/pointerevent_pointermove-on-chorded-mouse-button.html [ Skip ]

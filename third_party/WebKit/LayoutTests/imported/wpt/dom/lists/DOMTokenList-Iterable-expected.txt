@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS DOMTokenList has length method. 
+PASS DOMTokenList has values method. 
+PASS DOMTokenList has entries method. 
+PASS DOMTokenList has forEach method. 
+PASS DOMTokenList has Symbol.iterator. 
+FAIL DOMTokenList is iterable via for-of loop. assert_array_equals: lengths differ, expected 2 got 3
+Harness: the test ran to completion.
+

@@ -1,0 +1,38 @@
+This is a testharness.js-based test.
+PASS SVGAnimatedPathData interface must be removed 
+PASS SVGColor interface must be removed 
+PASS SVGDocument interface must be removed 
+PASS SVGElementInstanceList interface must be removed 
+PASS SVGExternalResourcesRequired interface must be removed 
+PASS SVGICCColor interface must be removed 
+PASS SVGLangSpace interface must be removed 
+PASS SVGLocatable interface must be removed 
+PASS SVGPaint interface must be removed 
+PASS SVGPathSeg interface must be removed 
+PASS SVGStylable interface must be removed 
+FAIL SVGViewSpec interface must be removed assert_false: expected false got true
+PASS SVGZoomEvent interface must be removed 
+PASS GetSVGDocument mixin interface must not be exposed 
+PASS SVGAnimatedPoints mixin interface must not be exposed 
+PASS SVGElementInstance mixin interface must not be exposed 
+PASS SVGFilterPrimitiveStandardAttributes mixin interface must not be exposed 
+PASS SVGFitToViewBox mixin interface must not be exposed 
+PASS SVGTests mixin interface must not be exposed 
+PASS SVGURIReference mixin interface must not be exposed 
+FAIL SVGUnitTypes mixin interface must not be exposed assert_false: expected false got true
+PASS SVGZoomAndPan mixin interface must not be exposed 
+PASS SVGElement.prototype.getPresentationAttribute must be removed 
+PASS SVGElement.prototype.xmlbase must be removed 
+PASS SVGElement.prototype.xmllang must be removed 
+PASS SVGElement.prototype.xmlspace must be removed 
+PASS SVGGraphicsElement.prototype.getTransformToElement must be removed 
+PASS SVGGraphicsElement.prototype.hasExtension must be removed 
+FAIL SVGGraphicsElement.prototype.requiredFeatures must be removed assert_false: expected false got true
+FAIL SVGSVGElement.prototype.currentView must be removed assert_false: expected false got true
+FAIL SVGSVGElement.prototype.useCurrentView must be removed assert_false: expected false got true
+PASS SVGSVGElement.prototype.viewport must be removed 
+FAIL SVGPathElement.prototype.getPointAtLength must be moved to SVGGeometryElement.prototype assert_false: expected false got true
+FAIL SVGPathElement.prototype.getTotalLength must be moved to SVGGeometryElement.prototype assert_false: expected false got true
+FAIL SVGPathElement.prototype.pathLength must be moved to SVGGeometryElement.prototype assert_false: expected false got true
+Harness: the test ran to completion.
+
