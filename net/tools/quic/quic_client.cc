@@ -89,9 +89,6 @@ QuicClient::~QuicClient() {
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
   }
 
-  base::STLDeleteElements(&data_to_resend_on_connect_);
-  base::STLDeleteElements(&data_sent_before_handshake_);
-
   CleanUpAllUDPSockets();
 }
 
@@ -190,10 +187,11 @@ bool QuicClient::Connect() {
         !data_to_resend_on_connect_.empty()) {
       // A connection has been established and there was previously queued data
       // to resend.  Resend it and empty the queue.
-      for (QuicDataToResend* data : data_to_resend_on_connect_) {
+      std::vector<std::unique_ptr<QuicDataToResend>> old_data;
+      old_data.swap(data_to_resend_on_connect_);
+      for (const auto& data : old_data) {
         data->Resend();
       }
-      base::STLDeleteElements(&data_to_resend_on_connect_);
     }
     if (session() != nullptr &&
         session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
@@ -219,17 +217,14 @@ void QuicClient::StartConnect() {
   QuicPacketWriter* writer = CreateQuicPacketWriter();
 
   if (connected_or_attempting_connect()) {
+    // If the last error was not a stateless reject, then the queued up data
+    // does not need to be resent.
+    if (session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+      data_to_resend_on_connect_.clear();
+    }
     // Before we destroy the last session and create a new one, gather its stats
     // and update the stats for the overall connection.
     UpdateStats();
-    if (session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-      // If the last error was due to a stateless reject, queue up the data to
-      // be resent on the next successful connection.
-      // TODO(jokulik): I'm a little bit concerned about ordering here.  Maybe
-      // we should just maintain one queue?
-      DCHECK(data_to_resend_on_connect_.empty());
-      data_to_resend_on_connect_.swap(data_sent_before_handshake_);
-    }
   }
 
   CreateQuicClientSession(new QuicConnection(
@@ -252,8 +247,8 @@ void QuicClient::Disconnect() {
         QUIC_PEER_GOING_AWAY, "Client disconnecting",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
   }
-  base::STLDeleteElements(&data_to_resend_on_connect_);
-  base::STLDeleteElements(&data_sent_before_handshake_);
+
+  data_to_resend_on_connect_.clear();
 
   CleanUpAllUDPSockets();
 
@@ -311,23 +306,23 @@ void QuicClient::SendRequest(const BalsaHeaders& headers,
     new_headers->CopyFrom(headers);
     auto* data_to_resend =
         new ClientQuicDataToResend(new_headers, body, fin, this);
-    MaybeAddQuicDataToResend(data_to_resend);
+    MaybeAddQuicDataToResend(std::unique_ptr<QuicDataToResend>(data_to_resend));
   }
 }
 
-void QuicClient::MaybeAddQuicDataToResend(QuicDataToResend* data_to_resend) {
+void QuicClient::MaybeAddQuicDataToResend(
+    std::unique_ptr<QuicDataToResend> data_to_resend) {
   DCHECK(FLAGS_enable_quic_stateless_reject_support);
   if (session()->IsCryptoHandshakeConfirmed()) {
     // The handshake is confirmed.  No need to continue saving requests to
     // resend.
-    base::STLDeleteElements(&data_sent_before_handshake_);
-    delete data_to_resend;
+    data_to_resend_on_connect_.clear();
     return;
   }
 
   // The handshake is not confirmed.  Push the data onto the queue of data to
   // resend if statelessly rejected.
-  data_sent_before_handshake_.push_back(data_to_resend);
+  data_to_resend_on_connect_.push_back(std::move(data_to_resend));
 }
 
 void QuicClient::SendRequestAndWaitForResponse(const BalsaHeaders& headers,
