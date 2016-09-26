@@ -79,6 +79,11 @@ void DragDropClientMac::StartDragAndDrop(
   const ui::OSExchangeDataProviderMac& provider =
       static_cast<const ui::OSExchangeDataProviderMac&>(data.provider());
 
+  // Release capture before beginning the dragging session. Capture may have
+  // been acquired on the mouseDown, but capture is not required during the
+  // dragging session and the mouseUp that would release it will be suppressed.
+  bridge_->ReleaseCapture();
+
   // Synthesize an event for dragging, since we can't be sure that
   // [NSApp currentEvent] will return a valid dragging event.
   NSWindow* window = bridge_->ns_window();

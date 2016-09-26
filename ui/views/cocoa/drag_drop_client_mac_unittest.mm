@@ -6,8 +6,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
@@ -15,6 +17,18 @@
 #include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
+
+@interface NSView (DragSessionTestingDonor)
+@end
+
+@implementation NSView (DragSessionTestingDonor)
+- (NSDraggingSession*)cr_beginDraggingSessionWithItems:(NSArray*)items
+                                                 event:(NSEvent*)event
+                                                source:(id<NSDraggingSource>)
+                                                           source {
+  return nil;
+}
+@end
 
 // Mocks the NSDraggingInfo sent to the DragDropClientMac's DragUpdate() and
 // Drop() methods. Out of the required methods of the protocol, only
@@ -207,6 +221,41 @@ TEST_F(DragDropClientMacTest, BasicDragDrop) {
   // operation.
   EXPECT_EQ(DragUpdate(nil), NSDragOperationCopy);
   EXPECT_EQ(Drop(), NSDragOperationMove);
+}
+
+// Ensure that capture is released before the end of a drag and drop operation.
+TEST_F(DragDropClientMacTest, ReleaseCapture) {
+  // DragDropView doesn't actually capture the mouse, so explicitly acquire it
+  // to test that StartDragAndDrop() actually releases it.
+  // Although this is not an interactive UI test, acquiring capture should be OK
+  // since the runloop will exit before the system has any opportunity to
+  // capture anything.
+  bridge_->AcquireCapture();
+  EXPECT_TRUE(bridge_->HasCapture());
+
+  // Create the drop data
+  OSExchangeData data;
+  const base::string16& text = ASCIIToUTF16("text");
+  data.SetString(text);
+  SetData(data);
+
+  // There's no way to cleanly stop NSDraggingSession inside unit tests, so just
+  // don't start it at all.
+  base::mac::ScopedObjCClassSwizzler swizzle(
+      [NSView class], @selector(beginDraggingSessionWithItems:event:source:),
+      @selector(cr_beginDraggingSessionWithItems:event:source:));
+
+  // Immediately quit drag'n'drop, or we'll hang.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&DragDropClientMac::EndDrag,
+                            base::Unretained(drag_drop_client())));
+
+  // It will call ReleaseCapture().
+  drag_drop_client()->StartDragAndDrop(
+      target_, data, 0, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+
+  // The capture should be released.
+  EXPECT_FALSE(bridge_->HasCapture());
 }
 
 // Tests if the drag and drop target rejects the dropped data with the
