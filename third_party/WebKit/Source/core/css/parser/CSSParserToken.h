@@ -155,12 +155,4 @@ private:
 
 } // namespace blink
 
-namespace WTF {
-template <>
-struct IsTriviallyMoveAssignable<blink::CSSParserToken> {
-    STATIC_ONLY(IsTriviallyMoveAssignable);
-    static const bool value = true;
-};
-}
-
 #endif // CSSSParserToken_h
