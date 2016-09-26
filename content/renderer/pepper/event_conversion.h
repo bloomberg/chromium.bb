@@ -47,7 +47,7 @@ CreateSimulatedWebInputEvents(const ppapi::InputEventData& event,
 
 // Returns the PPAPI event class for the given WebKit event type. The given
 // type should not be "Undefined" since there's no corresponding PPAPI class.
-PP_InputEvent_Class ClassifyInputEvent(blink::WebInputEvent::Type type);
+PP_InputEvent_Class ClassifyInputEvent(const blink::WebInputEvent& event);
 
 }  // namespace content
 
