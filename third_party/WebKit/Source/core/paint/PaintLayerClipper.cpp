@@ -46,6 +46,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {
@@ -68,12 +69,14 @@ static void adjustClipRectsForChildren(const LayoutBoxModelObject& layoutObject,
 
 static void applyClipRects(const ClipRectsContext& context, const LayoutBoxModelObject& layoutObject, LayoutPoint offset, ClipRects& clipRects)
 {
-    ASSERT(layoutObject.hasClipRelatedProperty());
+    DCHECK(layoutObject.hasClipRelatedProperty() || (layoutObject.isSVGRoot() && toLayoutSVGRoot(&layoutObject)->shouldApplyViewportClip()));
     LayoutView* view = layoutObject.view();
-    ASSERT(view);
+    DCHECK(view);
     if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
         offset -= toIntSize(view->frameView()->scrollPosition());
-    if (layoutObject.hasOverflowClip() || (layoutObject.styleRef().containsPaint() && layoutObject.isBox())) {
+    if (layoutObject.hasOverflowClip()
+        || (layoutObject.isSVGRoot() && toLayoutSVGRoot(&layoutObject)->shouldApplyViewportClip())
+        || (layoutObject.styleRef().containsPaint() && layoutObject.isBox())) {
         ClipRect newOverflowClip = toLayoutBox(layoutObject).overflowClipRect(offset, context.overlayScrollbarClipBehavior);
         newOverflowClip.setHasRadius(layoutObject.styleRef().hasBorderRadius());
         clipRects.setOverflowClipRect(intersection(newOverflowClip, clipRects.overflowClipRect()));
@@ -96,7 +99,7 @@ static void applyClipRects(const ClipRectsContext& context, const LayoutBoxModel
 
 ClipRects* PaintLayerClipper::clipRectsIfCached(const ClipRectsContext& context) const
 {
-    ASSERT(context.usesCache());
+    DCHECK(context.usesCache());
     if (!m_layer.clipRectsCache())
         return nullptr;
     ClipRectsCache::Entry& entry = m_layer.clipRectsCache()->get(context.cacheSlot());
@@ -105,14 +108,8 @@ ClipRects* PaintLayerClipper::clipRectsIfCached(const ClipRectsContext& context)
     // http://crbug.com/366118 for an example.
     if (context.rootLayer != entry.root)
         return 0;
-    ASSERT(entry.overlayScrollbarClipBehavior == context.overlayScrollbarClipBehavior);
-#ifdef CHECK_CACHED_CLIP_RECTS
-    // This code is useful to check cached clip rects, but is too expensive to leave enabled in debug builds by default.
-    ClipRectsContext tempContext(context);
-    tempContext.cacheSlot = UncachedClipRects;
-    RefPtr<ClipRects> clipRects = ClipRects::create();
-    calculateClipRects(tempContext, *clipRects);
-    ASSERT(clipRects == *entry.clipRects);
+#if DCHECK_IS_ON()
+    DCHECK(entry.overlayScrollbarClipBehavior == context.overlayScrollbarClipBehavior);
 #endif
     return entry.clipRects.get();
 }
@@ -121,7 +118,7 @@ ClipRects& PaintLayerClipper::storeClipRectsInCache(const ClipRectsContext& cont
 {
     ClipRectsCache::Entry& entry = m_layer.ensureClipRectsCache().get(context.cacheSlot());
     entry.root = context.rootLayer;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     entry.overlayScrollbarClipBehavior = context.overlayScrollbarClipBehavior;
 #endif
     if (parentClipRects) {
@@ -261,7 +258,9 @@ void PaintLayerClipper::calculateClipRects(const ClipRectsContext& context, Clip
 
     adjustClipRectsForChildren(layoutObject, clipRects);
 
-    if ((layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context)) || layoutObject.hasClip() || layoutObject.styleRef().containsPaint()) {
+    if ((layoutObject.hasOverflowClip() && shouldRespectOverflowClip(context))
+        || (layoutObject.isSVGRoot() && toLayoutSVGRoot(&layoutObject)->shouldApplyViewportClip())
+        || layoutObject.hasClip() || layoutObject.styleRef().containsPaint()) {
         // This offset cannot use convertToLayerCoords, because sometimes our rootLayer may be across
         // some transformed layer boundary, for example, in the PaintLayerCompositor overlapMap, where
         // clipRects are needed in view space.
@@ -282,9 +281,9 @@ static ClipRect backgroundClipRectForPosition(const ClipRects& parentRects, EPos
 
 ClipRect PaintLayerClipper::backgroundClipRect(const ClipRectsContext& context) const
 {
-    ASSERT(m_layer.parent());
+    DCHECK(m_layer.parent());
     LayoutView* layoutView = m_layer.layoutObject()->view();
-    ASSERT(layoutView);
+    DCHECK(layoutView);
 
     RefPtr<ClipRects> parentClipRects = ClipRects::create();
     if (&m_layer == context.rootLayer)

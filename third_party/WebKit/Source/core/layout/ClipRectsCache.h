@@ -7,7 +7,7 @@
 
 #include "core/layout/ClipRects.h"
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 #include "core/layout/ScrollEnums.h" // For OverlayScrollbarClipBehavior.
 #endif
 
@@ -37,25 +37,25 @@ public:
     struct Entry {
         Entry()
             : root(nullptr)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
             , overlayScrollbarClipBehavior(IgnoreOverlayScrollbarSize)
 #endif
         {
         }
         const PaintLayer* root;
         RefPtr<ClipRects> clipRects;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
         OverlayScrollbarClipBehavior overlayScrollbarClipBehavior;
 #endif
     };
     Entry& get(ClipRectsCacheSlot slot)
     {
-        ASSERT(slot < NumberOfClipRectsCacheSlots);
+        DCHECK(slot < NumberOfClipRectsCacheSlots);
         return m_entries[slot];
     }
     void clear(ClipRectsCacheSlot slot)
     {
-        ASSERT(slot < NumberOfClipRectsCacheSlots);
+        DCHECK(slot < NumberOfClipRectsCacheSlots);
         m_entries[slot] = Entry();
     }
 private:

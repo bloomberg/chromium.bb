@@ -74,8 +74,8 @@ public:
 
     void setIgnoreOverflowClip()
     {
-        ASSERT(!usesCache() || m_cacheSlot == PaintingClipRects);
-        ASSERT(respectOverflowClip == RespectOverflowClip);
+        DCHECK(!usesCache() || m_cacheSlot == PaintingClipRects);
+        DCHECK(respectOverflowClip == RespectOverflowClip);
         if (usesCache())
             m_cacheSlot = PaintingClipRectsIgnoringOverflowClip;
         respectOverflowClip = IgnoreOverflowClip;
