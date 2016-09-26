@@ -27,6 +27,7 @@ extern "C" {
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_message_attachment_set.h"
 #include "ipc/ipc_message_utils.h"

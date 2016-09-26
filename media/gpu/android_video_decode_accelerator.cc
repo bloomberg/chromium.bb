@@ -20,6 +20,7 @@
 #include "base/metrics/histogram.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"

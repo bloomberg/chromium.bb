@@ -15,8 +15,11 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/thread.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace leveldb {
 

@@ -38,6 +38,7 @@
 #include "base/trace_event/heap_profiler.h"
 #include "base/trace_event/trace_event.h"
 #include "base/tracked_objects.h"
+#include "base/tracking_info.h"
 #include "build/build_config.h"
 
 #if defined(OS_MACOSX)

@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/thread.h"
 #include "content/renderer/media/audio_renderer_sink_cache_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"

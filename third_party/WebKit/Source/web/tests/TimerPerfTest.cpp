@@ -5,6 +5,8 @@
 
 #include "platform/Timer.h"
 
+#include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "testing/gtest/include/gtest/gtest.h"

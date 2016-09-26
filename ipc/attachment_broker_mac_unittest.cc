@@ -23,6 +23,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/spin_wait.h"
+#include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "ipc/attachment_broker_messages.h"
 #include "ipc/attachment_broker_privileged_mac.h"

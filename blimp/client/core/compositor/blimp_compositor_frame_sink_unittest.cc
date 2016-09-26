@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/test/fake_compositor_frame_sink_client.h"

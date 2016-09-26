@@ -5,6 +5,8 @@
 #ifndef CC_TREES_REMOTE_CHANNEL_IMPL_H_
 #define CC_TREES_REMOTE_CHANNEL_IMPL_H_
 
+#include <queue>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "cc/base/cc_export.h"

@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/json/json_reader.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"

@@ -4,6 +4,7 @@
 
 #include "blimp/client/core/compositor/blimp_compositor.h"
 
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/client/core/compositor/blimp_compositor_dependencies.h"
 #include "blimp/client/core/compositor/blob_image_serialization_processor.h"

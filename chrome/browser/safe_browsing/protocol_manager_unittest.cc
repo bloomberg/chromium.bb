@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"

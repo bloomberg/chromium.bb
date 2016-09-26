@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/display_source/display_source_apitestbase.h"
 
+#include <list>
 #include <map>
 #include <utility>
 

@@ -34,6 +34,10 @@
 
 struct GPUCreateCommandBufferConfig;
 
+namespace base {
+class Thread;
+}
+
 namespace IPC {
 struct ChannelHandle;
 }

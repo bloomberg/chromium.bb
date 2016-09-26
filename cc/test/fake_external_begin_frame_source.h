@@ -9,6 +9,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/non_thread_safe.h"
 #include "cc/scheduler/begin_frame_source.h"
 
 namespace cc {

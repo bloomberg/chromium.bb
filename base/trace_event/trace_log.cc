@@ -19,6 +19,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/singleton.h"
+#include "base/message_loop/message_loop.h"
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
