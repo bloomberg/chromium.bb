@@ -364,9 +364,9 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       new_headers = new BalsaHeaders;
       new_headers->CopyFrom(*headers);
     }
-    std::unique_ptr<QuicClient::QuicDataToResend> data_to_resend(
-        new TestClientDataToResend(new_headers, body, fin, this, delegate));
-    client()->MaybeAddQuicDataToResend(std::move(data_to_resend));
+    auto* data_to_resend =
+        new TestClientDataToResend(new_headers, body, fin, this, delegate);
+    client()->MaybeAddQuicDataToResend(data_to_resend);
   }
   return ret;
 }
