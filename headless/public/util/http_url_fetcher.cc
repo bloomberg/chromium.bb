@@ -11,7 +11,7 @@
 
 namespace headless {
 
-class HttpUrlFetcher::Delegate : public net::URLRequest::Delegate {
+class HttpURLFetcher::Delegate : public net::URLRequest::Delegate {
  public:
   Delegate(const GURL& rewritten_url,
            const std::string& method,
@@ -52,7 +52,7 @@ class HttpUrlFetcher::Delegate : public net::URLRequest::Delegate {
   ResultListener* result_listener_;  // NOT OWNED.
 };
 
-HttpUrlFetcher::Delegate::Delegate(
+HttpURLFetcher::Delegate::Delegate(
     const GURL& rewritten_url,
     const std::string& method,
     const net::HttpRequestHeaders& request_headers,
@@ -69,9 +69,9 @@ HttpUrlFetcher::Delegate::Delegate(
   request_->Start();
 }
 
-HttpUrlFetcher::Delegate::~Delegate() {}
+HttpURLFetcher::Delegate::~Delegate() {}
 
-void HttpUrlFetcher::Delegate::OnAuthRequired(
+void HttpURLFetcher::Delegate::OnAuthRequired(
     net::URLRequest* request,
     net::AuthChallengeInfo* auth_info) {
   DCHECK_EQ(request, request_.get());
@@ -80,7 +80,7 @@ void HttpUrlFetcher::Delegate::OnAuthRequired(
   request->CancelAuth();
 }
 
-void HttpUrlFetcher::Delegate::OnSSLCertificateError(
+void HttpURLFetcher::Delegate::OnSSLCertificateError(
     net::URLRequest* request,
     const net::SSLInfo& ssl_info,
     bool fatal) {
@@ -98,7 +98,7 @@ void HttpUrlFetcher::Delegate::OnSSLCertificateError(
   request->Cancel();
 }
 
-void HttpUrlFetcher::Delegate::OnResponseStarted(net::URLRequest* request,
+void HttpURLFetcher::Delegate::OnResponseStarted(net::URLRequest* request,
                                                  int net_error) {
   DCHECK_EQ(request, request_.get());
   DCHECK_NE(net::ERR_IO_PENDING, net_error);
@@ -111,7 +111,7 @@ void HttpUrlFetcher::Delegate::OnResponseStarted(net::URLRequest* request,
   ReadBody(request);
 }
 
-void HttpUrlFetcher::Delegate::OnReadCompleted(net::URLRequest* request,
+void HttpURLFetcher::Delegate::OnReadCompleted(net::URLRequest* request,
                                                int num_bytes) {
   DCHECK_EQ(request, request_.get());
   DCHECK_NE(net::ERR_IO_PENDING, num_bytes);
@@ -122,7 +122,7 @@ void HttpUrlFetcher::Delegate::OnReadCompleted(net::URLRequest* request,
   }
 }
 
-void HttpUrlFetcher::Delegate::ReadBody(net::URLRequest* request) {
+void HttpURLFetcher::Delegate::ReadBody(net::URLRequest* request) {
   // Read as many bytes as are available synchronously.
   while (true) {
     int num_bytes = request->Read(buf_.get(), kBufSize);
@@ -139,7 +139,7 @@ void HttpUrlFetcher::Delegate::ReadBody(net::URLRequest* request) {
   }
 }
 
-bool HttpUrlFetcher::Delegate::ConsumeBytesRead(net::URLRequest* request,
+bool HttpURLFetcher::Delegate::ConsumeBytesRead(net::URLRequest* request,
                                                 int num_bytes) {
   if (num_bytes <= 0) {
     // Error while reading, or EOF.
@@ -151,7 +151,7 @@ bool HttpUrlFetcher::Delegate::ConsumeBytesRead(net::URLRequest* request,
   return true;
 }
 
-void HttpUrlFetcher::Delegate::OnResponseCompleted(net::URLRequest* request,
+void HttpURLFetcher::Delegate::OnResponseCompleted(net::URLRequest* request,
                                                    int net_error) {
   DCHECK_EQ(request, request_.get());
 
@@ -170,17 +170,17 @@ void HttpUrlFetcher::Delegate::OnResponseCompleted(net::URLRequest* request,
       bytes_read_so_far_.size());
 }
 
-HttpUrlFetcher::HttpUrlFetcher(
+HttpURLFetcher::HttpURLFetcher(
     const net::URLRequestContext* url_request_context)
     : url_request_context_(url_request_context) {}
 
-HttpUrlFetcher::~HttpUrlFetcher() {}
+HttpURLFetcher::~HttpURLFetcher() {}
 
-void HttpUrlFetcher::StartFetch(const GURL& rewritten_url,
+void HttpURLFetcher::StartFetch(const GURL& rewritten_url,
                                 const std::string& method,
                                 const net::HttpRequestHeaders& request_headers,
                                 ResultListener* result_listener) {
-  delagate_.reset(new Delegate(rewritten_url, method, request_headers,
+  delegate_.reset(new Delegate(rewritten_url, method, request_headers,
                                url_request_context_, result_listener));
 }
 

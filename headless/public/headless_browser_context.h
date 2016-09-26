@@ -17,6 +17,10 @@
 #include "net/base/host_port_pair.h"
 #include "net/url_request/url_request_job_factory.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace headless {
 class HeadlessBrowserImpl;
 class HeadlessBrowserContextOptions;
