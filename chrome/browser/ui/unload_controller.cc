@@ -18,6 +18,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined (ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
+#endif  // (ENABLE_EXTENSIONS)
+
 namespace chrome {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -51,6 +56,19 @@ bool UnloadController::ShouldRunUnloadEventsHelper(
 }
 
 bool UnloadController::RunUnloadEventsHelper(content::WebContents* contents) {
+#if defined (ENABLE_EXTENSIONS)
+  // Don't run for extensions that are disabled or uninstalled; the tabs will
+  // be killed if they make any network requests, and the extension shouldn't
+  // be doing any work if it's removed.
+  GURL url = contents->GetLastCommittedURL();
+  if (url.SchemeIs(extensions::kExtensionScheme) &&
+      !extensions::ExtensionRegistry::Get(browser_->profile())
+           ->enabled_extensions()
+           .GetExtensionOrAppByURL(url)) {
+    return false;
+  }
+#endif  // (ENABLE_EXTENSIONS)
+
   // Special case for when we quit an application. The devtools window can
   // close if it's beforeunload event has already fired which will happen due
   // to the interception of it's content's beforeunload.
