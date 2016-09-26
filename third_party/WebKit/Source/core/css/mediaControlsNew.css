@@ -433,7 +433,7 @@ video::-internal-overflow-menu-button, audio::-internal-overflow-menu-button {
     color: inherit;
 }
 
-video::-internal-download-button, audio::-internal-download-button {
+video::-internal-media-controls-download-button, audio::-internal-media-controls-download-button {
     -webkit-appearance: -internal-media-download-icon;
     display: flex;
     flex: none;

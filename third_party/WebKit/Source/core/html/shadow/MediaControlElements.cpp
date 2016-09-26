@@ -638,7 +638,7 @@ MediaControlDownloadButtonElement* MediaControlDownloadButtonElement::create(Med
     MediaControlDownloadButtonElement* button = new MediaControlDownloadButtonElement(mediaControls);
     button->ensureUserAgentShadowRoot();
     button->setType(InputTypeNames::button);
-    button->setShadowPseudoId(AtomicString("-internal-download-button"));
+    button->setShadowPseudoId(AtomicString("-internal-media-controls-download-button"));
     button->setIsWanted(false);
     return button;
 }

@@ -2,7 +2,7 @@
 var overflowButtonsCSS = [
     "-webkit-media-controls-play-button",
     "-webkit-media-controls-fullscreen-button",
-    "-internal-download-button",
+    "-internal-media-controls-download-button",
     "-webkit-media-controls-mute-button",
     "-internal-media-controls-cast-button",
     "-webkit-media-controls-toggle-closed-captions-button"];

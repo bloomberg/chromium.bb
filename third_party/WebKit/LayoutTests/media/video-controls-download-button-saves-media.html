@@ -18,7 +18,7 @@ async_test(function(t) {
   // Set up video
   var video = document.querySelector("video");
   video.src = findMediaFile("video", "content/test");
-  var controlID = "-internal-download-button";
+  var controlID = "-internal-media-controls-download-button";
   var downloadButton = mediaControlsElement(internals.shadowRoot(video).firstChild, controlID);
 
   video.onloadeddata = t.step_func(function() {
