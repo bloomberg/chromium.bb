@@ -112,6 +112,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
     private class CrImageReaderListener implements ImageReader.OnImageAvailableListener {
         @Override
         public void onImageAvailable(ImageReader reader) {
+            Log.d(TAG, "CrImageReaderListener.onImageAvailable");
             try (Image image = reader.acquireLatestImage()) {
                 if (image == null) return;
 
@@ -199,7 +200,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         @Override
         public void onImageAvailable(ImageReader reader) {
-            Log.d(TAG, "CrPhotoReaderListener.mCallbackId " + mCallbackId);
+            Log.d(TAG, "CrPhotoReaderListener.onImageAvailable");
             try (Image image = reader.acquireLatestImage()) {
                 if (image == null) {
                     throw new IllegalStateException();
@@ -628,8 +629,8 @@ public class VideoCaptureCamera2 extends VideoCapture {
         try {
             mPreviewSession.abortCaptures();
         } catch (CameraAccessException | IllegalStateException ex) {
-            Log.e(TAG, "abortCaptures: ", ex);
-            return false;
+            // Stopping a device whose CameraCaptureSession is closed is not an error: ignore this.
+            Log.w(TAG, "abortCaptures: ", ex);
         }
         if (mCameraDevice == null) return false;
         mCameraDevice.close();
@@ -847,7 +848,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
     @Override
     public boolean takePhoto(final long callbackId) {
-        Log.d(TAG, "takePhoto " + callbackId);
+        Log.d(TAG, "takePhoto");
         if (mCameraDevice == null || mCameraState != CameraState.STARTED) return false;
 
         final CameraCharacteristics cameraCharacteristics = getCameraCharacteristics(mContext, mId);
