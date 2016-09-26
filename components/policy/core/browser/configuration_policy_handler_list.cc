@@ -39,11 +39,14 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
   policy::PolicyHandlerParameters parameters;
   parameters_callback_.Run(&parameters);
 
-  std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
-  for (handler = handlers_.begin(); handler != handlers_.end(); ++handler) {
-    if ((*handler)->CheckPolicySettings(policies, errors) && prefs)
-      (*handler)
-          ->ApplyPolicySettingsWithParameters(policies, parameters, prefs);
+  if (prefs) {
+    std::vector<ConfigurationPolicyHandler*>::const_iterator handler;
+    for (handler = handlers_.begin(); handler != handlers_.end(); ++handler) {
+      if ((*handler)->CheckPolicySettings(policies, errors)) {
+        (*handler)
+            ->ApplyPolicySettingsWithParameters(policies, parameters, prefs);
+      }
+    }
   }
 
   for (PolicyMap::const_iterator it = policies.begin();
