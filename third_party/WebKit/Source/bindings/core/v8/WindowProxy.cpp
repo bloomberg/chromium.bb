@@ -265,6 +265,11 @@ bool WindowProxy::initialize()
         origin = m_world->isolatedWorldSecurityOrigin();
         setSecurityToken(origin);
     }
+
+    // All interfaces must be registered to V8PerContextData.
+    // So we explicitly call constructorForType for the global object.
+    V8PerContextData::from(context)->constructorForType(&V8Window::wrapperTypeInfo);
+
     if (m_frame->isLocalFrame()) {
         LocalFrame* frame = toLocalFrame(m_frame);
         MainThreadDebugger::instance()->contextCreated(m_scriptState.get(), frame, origin);

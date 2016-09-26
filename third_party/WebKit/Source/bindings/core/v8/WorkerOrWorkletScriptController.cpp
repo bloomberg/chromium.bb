@@ -192,6 +192,10 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
     v8::Local<v8::Object> globalObject = globalProxy->GetPrototype().As<v8::Object>();
     globalObject = V8DOMWrapper::associateObjectWithWrapper(m_isolate, scriptWrappable, wrapperTypeInfo, globalObject);
 
+    // All interfaces must be registered to V8PerContextData.
+    // So we explicitly call constructorForType for the global object.
+    V8PerContextData::from(context)->constructorForType(wrapperTypeInfo);
+
     return true;
 }
 
