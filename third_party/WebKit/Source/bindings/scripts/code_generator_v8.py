@@ -180,20 +180,20 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
 
         # Select appropriate Jinja template and contents function
         if interface.is_callback:
-            header_template_filename = 'callback_interface.h'
-            cpp_template_filename = 'callback_interface.cpp'
+            header_template_filename = 'callback_interface.h.tmpl'
+            cpp_template_filename = 'callback_interface.cpp.tmpl'
             interface_context = v8_callback_interface.callback_interface_context
         elif interface.is_partial:
             interface_context = v8_interface.interface_context
-            header_template_filename = 'partial_interface.h'
-            cpp_template_filename = 'partial_interface.cpp'
+            header_template_filename = 'partial_interface.h.tmpl'
+            cpp_template_filename = 'partial_interface.cpp.tmpl'
             interface_name += 'Partial'
             assert component == 'core'
             component = 'modules'
             include_paths = interface_info.get('dependencies_other_component_include_paths')
         else:
-            header_template_filename = 'interface.h'
-            cpp_template_filename = 'interface.cpp'
+            header_template_filename = 'interface.h.tmpl'
+            cpp_template_filename = 'interface.cpp.tmpl'
             interface_context = v8_interface.interface_context
 
         template_context = interface_context(interface)
@@ -223,8 +223,8 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
                                  dictionary):
         # pylint: disable=unused-argument
         interfaces_info = self.info_provider.interfaces_info
-        header_template = self.jinja_env.get_template('dictionary_v8.h')
-        cpp_template = self.jinja_env.get_template('dictionary_v8.cpp')
+        header_template = self.jinja_env.get_template('dictionary_v8.h.tmpl')
+        cpp_template = self.jinja_env.get_template('dictionary_v8.cpp.tmpl')
         interface_info = interfaces_info[dictionary_name]
         template_context = v8_dictionary.dictionary_context(
             dictionary, interfaces_info)
@@ -261,8 +261,8 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
         interfaces_info = self.info_provider.interfaces_info
         dictionary = definitions.dictionaries[definition_name]
         interface_info = interfaces_info[definition_name]
-        header_template = self.jinja_env.get_template('dictionary_impl.h')
-        cpp_template = self.jinja_env.get_template('dictionary_impl.cpp')
+        header_template = self.jinja_env.get_template('dictionary_impl.h.tmpl')
+        cpp_template = self.jinja_env.get_template('dictionary_impl.cpp.tmpl')
         template_context = v8_dictionary.dictionary_impl_context(
             dictionary, interfaces_info)
         include_paths = interface_info.get('dependencies_include_paths')
@@ -292,8 +292,8 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         self.target_component = target_component
 
     def _generate_container_code(self, union_type):
-        header_template = self.jinja_env.get_template('union_container.h')
-        cpp_template = self.jinja_env.get_template('union_container.cpp')
+        header_template = self.jinja_env.get_template('union_container.h.tmpl')
+        cpp_template = self.jinja_env.get_template('union_container.cpp.tmpl')
         template_context = v8_union.container_context(
             union_type, self.info_provider.interfaces_info)
         template_context['header_includes'].append(
@@ -346,8 +346,8 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
         self.target_component = target_component
 
     def generate_code_internal(self, callback_function, path):
-        header_template = self.jinja_env.get_template('callback_function.h')
-        cpp_template = self.jinja_env.get_template('callback_function.cpp')
+        header_template = self.jinja_env.get_template('callback_function.h.tmpl')
+        cpp_template = self.jinja_env.get_template('callback_function.cpp.tmpl')
         template_context = v8_callback_function.callback_function_context(
             callback_function)
         if not is_testing_target(path):

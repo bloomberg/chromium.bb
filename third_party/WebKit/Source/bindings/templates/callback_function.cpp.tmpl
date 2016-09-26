@@ -1,4 +1,4 @@
-{% from 'utilities.cpp' import v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp.tmpl' import v8_value_to_local_cpp_value %}
 {% filter format_blink_cpp_source_code %}
 
 {% include 'copyright_block.txt' %}

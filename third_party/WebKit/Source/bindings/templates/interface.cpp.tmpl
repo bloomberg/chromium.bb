@@ -1,4 +1,4 @@
-{% extends 'interface_base.cpp' %}
+{% extends 'interface_base.cpp.tmpl' %}
 
 {% set has_prepare_prototype_and_interface_object =
     unscopables or has_conditional_attributes_on_prototype or
@@ -78,7 +78,7 @@ void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInf
 
 {##############################################################################}
 {% block indexed_property_setter %}
-{% from 'utilities.cpp' import v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp.tmpl' import v8_value_to_local_cpp_value %}
 {% if indexed_property_setter and not indexed_property_setter.is_custom %}
 {% set setter = indexed_property_setter %}
 static void indexedPropertySetter(uint32_t index, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -279,7 +279,7 @@ void namedPropertyGetterCallback(v8::Local<v8::Name> name, const v8::PropertyCal
 
 {##############################################################################}
 {% block named_property_setter %}
-{% from 'utilities.cpp' import v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp.tmpl' import v8_value_to_local_cpp_value %}
 {% if named_property_setter and not named_property_setter.is_custom %}
 {% set setter = named_property_setter %}
 static void namedPropertySetter(const AtomicString& name, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -535,7 +535,7 @@ void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::Name> name, v8::L
 
 {##############################################################################}
 {% block named_constructor %}
-{% from 'methods.cpp' import generate_constructor with context %}
+{% from 'methods.cpp.tmpl' import generate_constructor with context %}
 {% if named_constructor %}
 {% set active_scriptwrappable_inheritance =
     'InheritFromActiveScriptWrappable'
@@ -677,7 +677,7 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 
 {##############################################################################}
 {% macro install_do_not_check_security_method(method, world_suffix, instance_template, prototype_template) %}
-{% from 'utilities.cpp' import property_location %}
+{% from 'utilities.cpp.tmpl' import property_location %}
 {# Methods that are [DoNotCheckSecurity] are always readable, but if they are
    changed and then accessed from a different origin, we do not return the
    underlying value, but instead return a new copy of the original function.
@@ -921,7 +921,7 @@ v8::Local<v8::Object> {{v8_class}}::findInstanceInPrototypeChain(v8::Local<v8::V
 
 {##############################################################################}
 {% block prepare_prototype_and_interface_object %}
-{% from 'methods.cpp' import install_conditionally_enabled_methods with context %}
+{% from 'methods.cpp.tmpl' import install_conditionally_enabled_methods with context %}
 {% if has_prepare_prototype_and_interface_object %}
 void {{v8_class}}::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> context, const DOMWrapperWorld& world, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {
@@ -960,7 +960,7 @@ prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).Fro
 
 {##############################################################################}
 {% macro install_conditionally_enabled_attributes_on_prototype() %}
-{% from 'attributes.cpp' import attribute_configuration with context %}
+{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
 ExecutionContext* executionContext = toExecutionContext(context);
 v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
 {% for attribute in attributes if (attribute.exposed_test or attribute.secure_context_test) and attribute.on_prototype %}

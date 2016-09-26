@@ -1,10 +1,10 @@
 {% filter format_blink_cpp_source_code %}
 
-{% from 'utilities.cpp' import declare_enum_validation_variable %}
+{% from 'utilities.cpp.tmpl' import declare_enum_validation_variable %}
 {% include 'copyright_block.txt' %}
 #include "{{this_include_header_name}}.h"
 
-{% from 'utilities.cpp' import v8_value_to_local_cpp_value %}
+{% from 'utilities.cpp.tmpl' import v8_value_to_local_cpp_value %}
 {% macro assign_and_return_if_hasinstance(member) %}
 {% if member.is_array_buffer_or_view_type %}
 if (v8Value->Is{{member.type_name}}()) {

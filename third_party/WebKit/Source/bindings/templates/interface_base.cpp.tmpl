@@ -85,14 +85,14 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {% endif %}
 
 {# Constants #}
-{% from 'constants.cpp' import constant_getter_callback
+{% from 'constants.cpp.tmpl' import constant_getter_callback
        with context %}
 {% for constant in constants | has_special_getter %}
 {{constant_getter_callback(constant)}}
 {% endfor %}
 {# Attributes #}
 {##############################################################################}
-{% from 'attributes.cpp' import constructor_getter_callback,
+{% from 'attributes.cpp.tmpl' import constructor_getter_callback,
        attribute_getter, attribute_getter_callback,
        attribute_setter, attribute_setter_callback,
        attribute_getter_implemented_in_private_script,
@@ -140,7 +140,7 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 {% endblock %}
 {##############################################################################}
 {# Methods #}
-{% from 'methods.cpp' import generate_method, overload_resolution_method,
+{% from 'methods.cpp.tmpl' import generate_method, overload_resolution_method,
        method_callback, origin_safe_method_getter, generate_constructor,
        method_implemented_in_private_script, generate_post_message_impl,
        runtime_determined_length_method, runtime_determined_maxarg_method
@@ -211,7 +211,7 @@ bool securityCheck(v8::Local<v8::Context> accessingContext, v8::Local<v8::Object
 {% block visit_dom_wrapper %}{% endblock %}
 {##############################################################################}
 {% block install_attributes %}
-{% from 'attributes.cpp' import attribute_configuration with context %}
+{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
 {% if attributes | has_attribute_configuration %}
 // Suppress warning: global constructors, because AttributeConfiguration is trivial
 // and does not depend on another global objects.
@@ -232,7 +232,7 @@ const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
 {% endblock %}
 {##############################################################################}
 {% block install_accessors %}
-{% from 'attributes.cpp' import attribute_configuration with context %}
+{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
 {% if attributes | has_accessor_configuration %}
 const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
     {% for attribute in attributes | has_accessor_configuration %}
@@ -244,7 +244,7 @@ const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
 {% endblock %}
 {##############################################################################}
 {% block install_methods %}
-{% from 'methods.cpp' import method_configuration with context %}
+{% from 'methods.cpp.tmpl' import method_configuration with context %}
 {% if methods | has_method_configuration(is_partial) %}
 const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
     {% for method in methods | has_method_configuration(is_partial) %}
@@ -261,10 +261,10 @@ const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
 {##############################################################################}
 {% block install_dom_template %}
 {% if not is_array_buffer_or_view %}
-{% from 'methods.cpp' import install_custom_signature with context %}
-{% from 'attributes.cpp' import attribute_configuration with context %}
-{% from 'constants.cpp' import install_constants with context %}
-{% from 'methods.cpp' import method_configuration with context %}
+{% from 'methods.cpp.tmpl' import install_custom_signature with context %}
+{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
+{% from 'constants.cpp.tmpl' import install_constants with context %}
+{% from 'methods.cpp.tmpl' import method_configuration with context %}
 {% if has_partial_interface or is_partial %}
 void {{v8_class_or_partial}}::install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate)
 {% else %}
@@ -392,9 +392,9 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
 {% endblock %}
 {##############################################################################}
 {% block origin_trials %}
-{% from 'attributes.cpp' import attribute_configuration with context %}
-{% from 'constants.cpp' import constant_configuration with context %}
-{% from 'methods.cpp' import method_configuration with context %}
+{% from 'attributes.cpp.tmpl' import attribute_configuration with context %}
+{% from 'constants.cpp.tmpl' import constant_configuration with context %}
+{% from 'methods.cpp.tmpl' import method_configuration with context %}
 {% for origin_trial_feature in origin_trial_features %}{{newline}}
 void {{v8_class_or_partial}}::install{{origin_trial_feature.name}}(ScriptState* scriptState, v8::Local<v8::Object> instance)
 {
