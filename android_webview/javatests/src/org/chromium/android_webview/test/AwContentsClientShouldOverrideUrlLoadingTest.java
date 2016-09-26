@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.annotation.SuppressLint;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 
@@ -117,6 +118,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest extends AwTestBase {
                 "<div>Meta refresh redirect</div>");
     }
 
+    @SuppressLint("DefaultLocale")
     private String getHtmlForPageWithJsRedirectTo(String url, String method, int timeout) {
         return makeHtmlPageFrom(""
                 + "<script>"
