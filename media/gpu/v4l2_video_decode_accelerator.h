@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <list>
 #include <memory>
 #include <queue>
 #include <vector>
@@ -99,6 +100,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   bool Initialize(const Config& config, Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
+  void ImportBufferForPicture(
+      int32_t picture_buffer_id,
+      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handles) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
@@ -183,10 +187,13 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
     EGLImageKHR egl_image;  // EGLImageKHR for the output buffer.
     EGLSyncKHR egl_sync;    // sync the compositor's use of the EGLImage.
     int32_t picture_id;     // picture buffer id as returned to PictureReady().
+    GLuint texture_id;
     bool cleared;           // Whether the texture is cleared and safe to render
                             // from. See TextureManager for details.
-    // Exported fds for image processor to import.
-    std::vector<base::ScopedFD> fds;
+    // Input fds of the processor. Exported from the decoder.
+    std::vector<base::ScopedFD> processor_input_fds;
+    // Output fds of the processor. Used only when OutputMode is IMPORT.
+    std::vector<base::ScopedFD> processor_output_fds;
   };
 
   //
@@ -222,17 +229,33 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // via AssignPictureBuffers() on decoder thread.
   void AssignPictureBuffersTask(const std::vector<PictureBuffer>& buffers);
 
-  // Create EGLImages bound to textures in |buffers| for given
-  // |output_format_fourcc| and |output_planes_count|.
-  void CreateEGLImages(const std::vector<media::PictureBuffer>& buffers,
-                       uint32_t output_format_fourcc,
-                       size_t output_planes_count);
+  // Use buffer backed by dmabuf file descriptors in |dmabuf_fds| for the
+  // OutputRecord associated with |picture_buffer_id|, taking ownership of the
+  // file descriptors. |stride| is the number of bytes from one row of pixels
+  // to the next row.
+  void ImportBufferForPictureTask(int32_t picture_buffer_id,
+                                  std::vector<base::ScopedFD> dmabuf_fds,
+                                  int32_t stride);
 
-  // Assign |egl_images| to previously-allocated V4L2 buffers in
-  // output_buffer_map_ and picture ids from |buffers| and finish the resolution
-  // change sequence.
-  void AssignEGLImages(const std::vector<media::PictureBuffer>& buffers,
-                       const std::vector<EGLImageKHR>& egl_images);
+  // Create an EGLImage for the buffer associated with V4L2 |buffer_index| and
+  // for |picture_buffer_id|, backed by dmabuf file descriptors in
+  // |passed_dmabuf_fds|, taking ownership of them.
+  // The buffer should be bound to |texture_id| and is of |size| and format
+  // described by |fourcc|.
+  void CreateEGLImageFor(size_t buffer_index,
+                         int32_t picture_buffer_id,
+                         std::vector<base::ScopedFD> dmabuf_fds,
+                         GLuint texture_id,
+                         const gfx::Size& size,
+                         uint32_t fourcc);
+
+  // Take the EGLImage |egl_image|, created for |picture_buffer_id|, and use it
+  // for OutputRecord at |buffer_index|. The buffer is backed by
+  // |passed_dmabuf_fds|, and the OutputRecord takes ownership of them.
+  void AssignEGLImage(size_t buffer_index,
+                      int32_t picture_buffer_id,
+                      EGLImageKHR egl_image,
+                      std::vector<base::ScopedFD> dmabuf_fds);
 
   // Service I/O on the V4L2 devices.  This task should only be scheduled from
   // DevicePollTask().  If |event_pending| is true, one or more events
@@ -347,6 +370,11 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Reset image processor and drop all processing frames.
   bool ResetImageProcessor();
 
+  bool CreateImageProcessor();
+  // Send a frame to the image processor to process. The index of decoder
+  // output buffer is |output_buffer_index| and its id is |bitstream_buffer_id|.
+  bool ProcessFrame(int32_t bitstream_buffer_id, int output_buffer_index);
+
   //
   // Methods run on child thread.
   //
@@ -398,6 +426,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   base::Thread decoder_thread_;
   // Decoder state machine state.
   State decoder_state_;
+
+  Config::OutputMode output_mode_;
+
   // BitstreamBuffer we're presently reading.
   std::unique_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
   // The V4L2Device this class is operating upon.
@@ -454,7 +485,7 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   int output_buffer_queued_count_;
   // Output buffers ready to use, as a FIFO since we want oldest-first to hide
   // synchronization latency with GL.
-  std::queue<int> free_output_buffers_;
+  std::list<int> free_output_buffers_;
   // Mapping of int index to output buffer record.
   std::vector<OutputRecord> output_buffer_map_;
   // Required size of DPB for decoding.

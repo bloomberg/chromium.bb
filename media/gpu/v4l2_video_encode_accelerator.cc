@@ -182,8 +182,8 @@ bool V4L2VideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
     // processor and there will be no callbacks after processor destroys.
     if (!image_processor_->Initialize(
             input_format, device_input_format_, V4L2_MEMORY_USERPTR,
-            visible_size_, visible_size_, visible_size_, input_allocated_size_,
-            kImageProcBufferCount,
+            V4L2_MEMORY_MMAP, visible_size_, visible_size_, visible_size_,
+            input_allocated_size_, kImageProcBufferCount,
             base::Bind(&V4L2VideoEncodeAccelerator::ImageProcessorError,
                        base::Unretained(this)))) {
       LOG(ERROR) << "Failed initializing image processor";
@@ -258,11 +258,13 @@ void V4L2VideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
       free_image_processor_output_buffers_.pop_back();
       // Unretained is safe because |this| owns image processor and there will
       // be no callbacks after processor destroys.
-      image_processor_->Process(
-          frame, output_buffer_index,
-          base::Bind(&V4L2VideoEncodeAccelerator::FrameProcessed,
-                     base::Unretained(this), force_keyframe,
-                     frame->timestamp()));
+      if (!image_processor_->Process(
+              frame, output_buffer_index, std::vector<base::ScopedFD>(),
+              base::Bind(&V4L2VideoEncodeAccelerator::FrameProcessed,
+                         base::Unretained(this), force_keyframe,
+                         frame->timestamp()))) {
+        NOTIFY_ERROR(kPlatformFailureError);
+      }
     } else {
       ImageProcessorInputRecord record;
       record.frame = frame;

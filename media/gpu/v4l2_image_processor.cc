@@ -57,6 +57,7 @@ V4L2ImageProcessor::V4L2ImageProcessor(const scoped_refptr<V4L2Device>& device)
     : input_format_(PIXEL_FORMAT_UNKNOWN),
       output_format_(PIXEL_FORMAT_UNKNOWN),
       input_memory_type_(V4L2_MEMORY_USERPTR),
+      output_memory_type_(V4L2_MEMORY_MMAP),
       input_format_fourcc_(0),
       output_format_fourcc_(0),
       input_planes_count_(0),
@@ -100,6 +101,7 @@ void V4L2ImageProcessor::NotifyErrorOnChildThread(
 bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
                                     VideoPixelFormat output_format,
                                     v4l2_memory input_memory_type,
+                                    v4l2_memory output_memory_type,
                                     gfx::Size input_visible_size,
                                     gfx::Size input_allocated_size,
                                     gfx::Size output_visible_size,
@@ -110,6 +112,8 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   DCHECK_GT(num_buffers, 0);
   DCHECK(input_memory_type == V4L2_MEMORY_USERPTR ||
          input_memory_type == V4L2_MEMORY_DMABUF);
+  DCHECK(output_memory_type == V4L2_MEMORY_MMAP ||
+         output_memory_type == V4L2_MEMORY_DMABUF);
   error_cb_ = error_cb;
 
   input_format_ = input_format;
@@ -125,6 +129,7 @@ bool V4L2ImageProcessor::Initialize(VideoPixelFormat input_format,
   }
 
   input_memory_type_ = input_memory_type;
+  output_memory_type_ = output_memory_type;
   input_visible_size_ = input_visible_size;
   input_allocated_size_ = input_allocated_size;
   output_visible_size_ = output_visible_size;
@@ -217,25 +222,38 @@ bool V4L2ImageProcessor::TryOutputFormat(uint32_t pixelformat,
   return true;
 }
 
-void V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
+bool V4L2ImageProcessor::Process(const scoped_refptr<VideoFrame>& frame,
                                  int output_buffer_index,
+                                 std::vector<base::ScopedFD> output_dmabuf_fds,
                                  const FrameReadyCB& cb) {
   DVLOG(3) << __func__ << ": ts=" << frame->timestamp().InMilliseconds();
+  size_t expected_num_fds =
+      (output_memory_type_ == V4L2_MEMORY_DMABUF ? output_planes_count_ : 0);
+  if (expected_num_fds != output_dmabuf_fds.size()) {
+    LOG(ERROR) << __func__ << ": wrong number of output fds. Expected "
+               << expected_num_fds << ", actual " << output_dmabuf_fds.size();
+    return false;
+  }
 
   std::unique_ptr<JobRecord> job_record(new JobRecord());
   job_record->frame = frame;
   job_record->output_buffer_index = output_buffer_index;
+  job_record->output_dmabuf_fds = std::move(output_dmabuf_fds);
   job_record->ready_cb = cb;
 
   device_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&V4L2ImageProcessor::ProcessTask,
                             base::Unretained(this), base::Passed(&job_record)));
+  return true;
 }
 
 void V4L2ImageProcessor::ProcessTask(std::unique_ptr<JobRecord> job_record) {
   int index = job_record->output_buffer_index;
   DVLOG(3) << __func__ << ": Reusing output buffer, index=" << index;
   DCHECK(device_thread_.task_runner()->BelongsToCurrentThread());
+  DCHECK(output_buffer_map_[index].dmabuf_fds.empty());
+  output_buffer_map_[index].dmabuf_fds =
+      std::move(job_record->output_dmabuf_fds);
 
   EnqueueOutput(index);
   input_queue_.push(make_linked_ptr(job_record.release()));
@@ -389,7 +407,7 @@ bool V4L2ImageProcessor::CreateOutputBuffers() {
   memset(&reqbufs, 0, sizeof(reqbufs));
   reqbufs.count = num_buffers_;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  reqbufs.memory = V4L2_MEMORY_MMAP;
+  reqbufs.memory = output_memory_type_;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_REQBUFS, &reqbufs);
   if (static_cast<int>(reqbufs.count) != num_buffers_) {
     LOG(ERROR) << "Failed to allocate output buffers. reqbufs.count="
@@ -426,7 +444,7 @@ void V4L2ImageProcessor::DestroyOutputBuffers() {
   memset(&reqbufs, 0, sizeof(reqbufs));
   reqbufs.count = 0;
   reqbufs.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  reqbufs.memory = V4L2_MEMORY_MMAP;
+  reqbufs.memory = output_memory_type_;
   IOCTL_OR_LOG_ERROR(VIDIOC_REQBUFS, &reqbufs);
 
   output_buffer_map_.clear();
@@ -567,7 +585,7 @@ void V4L2ImageProcessor::Dequeue() {
     memset(&dqbuf, 0, sizeof(dqbuf));
     memset(&planes, 0, sizeof(planes));
     dqbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-    dqbuf.memory = V4L2_MEMORY_MMAP;
+    dqbuf.memory = output_memory_type_;
     dqbuf.m.planes = planes;
     dqbuf.length = output_planes_count_;
     if (device_->Ioctl(VIDIOC_DQBUF, &dqbuf) != 0) {
@@ -582,6 +600,7 @@ void V4L2ImageProcessor::Dequeue() {
     OutputRecord& output_record = output_buffer_map_[dqbuf.index];
     DCHECK(output_record.at_device);
     output_record.at_device = false;
+    output_record.dmabuf_fds.clear();
     output_buffer_queued_count_--;
 
     // Jobs are always processed in FIFO order.
@@ -654,7 +673,11 @@ bool V4L2ImageProcessor::EnqueueOutputRecord(int index) {
   memset(qbuf_planes, 0, sizeof(qbuf_planes));
   qbuf.index = index;
   qbuf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  qbuf.memory = V4L2_MEMORY_MMAP;
+  qbuf.memory = output_memory_type_;
+  if (output_memory_type_ == V4L2_MEMORY_DMABUF) {
+    for (size_t i = 0; i < output_record.dmabuf_fds.size(); ++i)
+      qbuf_planes[i].m.fd = output_record.dmabuf_fds[i].get();
+  }
   qbuf.m.planes = qbuf_planes;
   qbuf.length = output_planes_count_;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QBUF, &qbuf);
