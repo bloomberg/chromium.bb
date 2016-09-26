@@ -352,7 +352,22 @@ void MessageCenterNotificationManager::AddProfileNotification(
 
 void MessageCenterNotificationManager::RemoveProfileNotification(
     const std::string& notification_id) {
-  profile_notifications_.erase(notification_id);
+  auto it = profile_notifications_.find(notification_id);
+  if (it == profile_notifications_.end())
+    return;
+
+  // Delay destruction of the ProfileNotification until after all the work
+  // removing it from |profile_notifications_| is complete. This must be done
+  // because this ProfileNotification might have the one ScopedKeepAlive object
+  // that was keeping the browser alive, and destroying it would result in a re-
+  // entrant call to this class. Because every method in this class touches
+  // |profile_notifications_|, |profile_notifications_| must always be in a
+  // self-consistent state in moments where re-entrance might happen.
+  // https://crbug.com/649971
+  std::unique_ptr<ProfileNotification> notification = std::move(it->second);
+  profile_notifications_.erase(it);
+  // Now that the map modifications are complete, going out of scope will
+  // destroy the notification.
 }
 
 ProfileNotification* MessageCenterNotificationManager::FindProfileNotification(
