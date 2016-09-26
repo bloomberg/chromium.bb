@@ -139,7 +139,7 @@ class ModuleEnumerator {
  private:
   FRIEND_TEST_ALL_PREFIXES(EnumerateModulesTest, CollapsePath);
 
-  // This function does the actual file scanning work on the FILE thread. It
+  // This function does the actual file scanning work in the blocking pool. It
   // enumerates all loaded modules in the process and other modules of interest,
   // such as the registered Winsock LSP modules and stores them in
   // |enumerated_modules_|. It then normalizes the module info and matches them
@@ -220,7 +220,9 @@ class ModuleEnumerator {
 // ready.
 //
 // The member functions of this class may only be used from the UI thread. The
-// bulk of the work is actually performed on the FILE thread.
+// bulk of the work is actually performed in the blocking pool with
+// CONTINUE_ON_SHUTDOWN semantics, as the WinCrypt functions can effectively
+// block arbitrarily during shutdown.
 //
 // TODO(chrisha): If this logic is ever extended to other platforms, then make
 // this file generic for all platforms, and remove the precompiler logic in
@@ -307,13 +309,13 @@ class EnumerateModulesModel {
   void DoneScanning();
 
   // The vector containing all the modules enumerated. Will be normalized and
-  // any bad modules will be marked. Written to on the FILE thread by the
+  // any bad modules will be marked. Written to from the blocking pool by the
   // |module_enumerator_|, read from on the UI thread by this class.
   ModuleEnumerator::ModulesVector enumerated_modules_;
 
-  // The object responsible for enumerating the modules on the FILE thread.
-  // Only used from the UI thread. This ends up internally doing its work on the
-  // FILE thread.
+  // The object responsible for enumerating the modules in the blocking pool.
+  // Only used from the UI thread. This ends up internally doing its work in the
+  // blocking pool.
   std::unique_ptr<ModuleEnumerator> module_enumerator_;
 
   // Whether the conflict notification has been acknowledged by the user. Only

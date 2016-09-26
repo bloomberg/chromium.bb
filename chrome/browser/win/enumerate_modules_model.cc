@@ -376,10 +376,13 @@ void ModuleEnumerator::ScanNow(ModulesVector* list) {
   enumerated_modules_ = list;
 
   // This object can't be reaped until it has finished scanning, so its safe
-  // to post a raw pointer to another thread.
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&ModuleEnumerator::ScanImpl,
-                                     base::Unretained(this)));
+  // to post a raw pointer to another thread. It will simply be leaked if the
+  // scanning has not been finished before shutdown.
+  BrowserThread::GetBlockingPool()->PostWorkerTaskWithShutdownBehavior(
+      FROM_HERE,
+      base::Bind(&ModuleEnumerator::ScanImpl,
+                 base::Unretained(this)),
+      base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 }
 
 void ModuleEnumerator::ScanImpl() {
