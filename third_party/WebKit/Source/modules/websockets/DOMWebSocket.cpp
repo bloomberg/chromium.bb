@@ -345,6 +345,12 @@ void DOMWebSocket::connect(const String& url, const Vector<String>& protocols, E
         }
     }
 
+    if (getExecutionContext()->getSecurityOrigin()->hasSuborigin()) {
+        m_state = kClosed;
+        exceptionState.throwSecurityError("Connecting to a WebSocket from a suborigin is not allowed.");
+        return;
+    }
+
     String protocolString;
     if (!protocols.isEmpty())
         protocolString = joinStrings(protocols, subprotocolSeperator());
