@@ -4,6 +4,7 @@
 
 #import "ios/web/public/test/web_test_with_web_state.h"
 
+#include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/ios/wait_util.h"
 #import "ios/web/public/web_state/url_verification_constants.h"
@@ -103,7 +104,7 @@ void WebTestWithWebState::WaitForBackgroundTasks() {
     // Yield to the Chromium message queue, e.g. WebThread::PostTask()
     // events.
     processed_a_task_ = false;
-    messageLoop->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
     if (processed_a_task_)  // Set in TaskObserver method.
       activitySeen = true;
 

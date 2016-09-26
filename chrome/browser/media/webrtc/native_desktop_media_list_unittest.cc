@@ -409,7 +409,7 @@ TEST_F(NativeDesktopMediaListTest, AddAuraWindow) {
   AddAuraWindow();
   window_capturer_->SetWindowList(window_list_);
 
-  message_loop()->Run();
+  base::RunLoop().Run();
 
   int native_id = window_list_.back().id;
   EXPECT_EQ(model_->GetSource(index).id.type, DesktopMediaID::TYPE_WINDOW);
@@ -444,7 +444,7 @@ TEST_F(NativeDesktopMediaListTest, RemoveAuraWindow) {
   RemoveAuraWindow(0);
   window_capturer_->SetWindowList(window_list_);
 
-  message_loop()->Run();
+  base::RunLoop().Run();
 }
 #endif  // defined(ENABLE_AURA_WINDOW_TESTS)
 

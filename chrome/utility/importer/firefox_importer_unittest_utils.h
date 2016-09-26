@@ -55,9 +55,7 @@ class FFUnitTestDecryptorProxy {
 #if defined(OS_MACOSX)
   // Blocks until either a timeout is reached, or until the client process
   // responds to an IPC message.
-  // Returns true if a reply was received successfully and false if the
-  // the operation timed out.
-  bool WaitForClientResponse();
+  void WaitForClientResponse();
 
   base::Process child_process_;
   std::unique_ptr<IPC::Channel> channel_;

@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/previews/core/previews_io_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,7 +78,7 @@ TEST_F(PreviewsUIServiceTest, TestInitialization) {
       new PreviewsIOData(loop_.task_runner(), loop_.task_runner())));
   set_ui_service(base::WrapUnique(
       new TestPreviewsUIService(io_data(), loop_.task_runner(), nullptr)));
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   // After the outstanding posted tasks have run, SetIOData should have been
   // called for |ui_service_|.
   EXPECT_TRUE(ui_service()->io_data_set());

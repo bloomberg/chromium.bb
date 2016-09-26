@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
@@ -417,7 +418,7 @@ void OobeLocalizationTest::RunLocalizationTest() {
 
   // Shut down the display host.
   LoginDisplayHost::default_host()->Finalize();
-  base::MessageLoopForUI::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Clear the locale pref so the statistics provider is pinged next time.
   g_browser_process->local_state()->SetString(prefs::kApplicationLocale,

@@ -234,7 +234,7 @@ class RequestTrackerTest : public PlatformTest {
     tracker_->FinishPageLoad(url, false);
     receiver_.get()->value_ = 0.0f;
     receiver_.get()->max_ = 0.0f;
-    loop_.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   net::TestJobInterceptor* AddInterceptorToRequest(size_t i) {
@@ -450,7 +450,7 @@ TEST_F(RequestTrackerTest, CaptureHeaders) {
   tracker_->StartRequest(request);
   tracker_->CaptureHeaders(request);
   tracker_->StopRequest(request);
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE([receiver_ headers]->HasHeaderValue("X-Auto-Login",
                                                   "Hello World"));
   std::string mimeType;

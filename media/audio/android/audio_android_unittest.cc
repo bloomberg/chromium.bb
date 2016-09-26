@@ -421,12 +421,12 @@ class AudioAndroidOutputTest : public testing::Test {
         audio_manager_(AudioManager::CreateForTesting(loop_->task_runner())),
         audio_output_stream_(NULL) {
     // Flush the message loop to ensure that AudioManager is fully initialized.
-    loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
   ~AudioAndroidOutputTest() override {
     audio_manager_.reset();
-    loop_->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:

@@ -179,48 +179,25 @@ FFUnitTestDecryptorProxy::~FFUnitTestDecryptorProxy() {
   }
 }
 
-// A message_loop task that quits the message loop when invoked, setting cancel
-// causes the task to do nothing when invoked.
-class CancellableQuitMsgLoop : public base::RefCounted<CancellableQuitMsgLoop> {
- public:
-  CancellableQuitMsgLoop() : cancelled_(false) {}
-  void QuitNow() {
-    if (!cancelled_)
-      base::MessageLoop::current()->QuitWhenIdle();
-  }
-  bool cancelled_;
-
- private:
-  friend class base::RefCounted<CancellableQuitMsgLoop>;
-  ~CancellableQuitMsgLoop() {}
-};
-
 // Spin until either a client response arrives or a timeout occurs.
-bool FFUnitTestDecryptorProxy::WaitForClientResponse() {
+void FFUnitTestDecryptorProxy::WaitForClientResponse() {
   // What we're trying to do here is to wait for an RPC message to go over the
   // wire and the client to reply.  If the client does not reply by a given
   // timeout we kill the message loop.
-  // The way we do this is to post a CancellableQuitMsgLoop for 3 seconds in
-  // the future and cancel it if an RPC message comes back earlier.
   // This relies on the IPC listener class to quit the message loop itself when
   // a message comes in.
-  scoped_refptr<CancellableQuitMsgLoop> quit_task(
-      new CancellableQuitMsgLoop());
+  base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&CancellableQuitMsgLoop::QuitNow, quit_task.get()),
+      FROM_HERE, run_loop.QuitWhenIdleClosure(),
       TestTimeouts::action_max_timeout());
-
-  message_loop_->Run();
-  bool ret = !quit_task->cancelled_;
-  quit_task->cancelled_ = false;
-  return ret;
+  run_loop.Run();
 }
 
 bool FFUnitTestDecryptorProxy::DecryptorInit(const base::FilePath& dll_path,
                                              const base::FilePath& db_path) {
   channel_->Send(new Msg_Decryptor_Init(dll_path, db_path));
-  bool ok = WaitForClientResponse();
-  if (ok && listener_->got_result) {
+  WaitForClientResponse();
+  if (listener_->got_result) {
     listener_->got_result = false;
     return listener_->result_bool;
   }
@@ -229,8 +206,8 @@ bool FFUnitTestDecryptorProxy::DecryptorInit(const base::FilePath& dll_path,
 
 base::string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
   channel_->Send(new Msg_Decrypt(crypt));
-  bool ok = WaitForClientResponse();
-  if (ok && listener_->got_result) {
+  WaitForClientResponse();
+  if (listener_->got_result) {
     listener_->got_result = false;
     return listener_->result_string;
   }
@@ -240,8 +217,8 @@ base::string16 FFUnitTestDecryptorProxy::Decrypt(const std::string& crypt) {
 std::vector<autofill::PasswordForm> FFUnitTestDecryptorProxy::ParseSignons(
     const base::FilePath& signons_path) {
   channel_->Send(new Msg_ParseSignons(signons_path));
-  bool ok = WaitForClientResponse();
-  if (ok && listener_->got_result) {
+  WaitForClientResponse();
+  if (listener_->got_result) {
     listener_->got_result = false;
     return listener_->result_vector;
   }
