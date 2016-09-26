@@ -1258,6 +1258,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 // Caller must reset the delegate before calling.
 - (void)close {
+  _webStateImpl->CancelActiveAndPendingDialogs();
+
   _SSLStatusUpdater.reset();
 
   self.nativeProvider = nil;
