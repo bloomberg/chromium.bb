@@ -1177,7 +1177,7 @@ void ChromeLauncherControllerImpl::SyncPinPosition(ash::ShelfID shelf_id) {
   DCHECK(!app_id.empty());
 
   std::string app_id_before;
-  std::string app_id_after;
+  std::vector<std::string> app_ids_after;
 
   for (int i = index - 1; i > 0; --i) {
     const ash::ShelfID shelf_id_before = model_->items()[i].id;
@@ -1191,13 +1191,13 @@ void ChromeLauncherControllerImpl::SyncPinPosition(ash::ShelfID shelf_id) {
   for (int i = index + 1; i < max_index; ++i) {
     const ash::ShelfID shelf_id_after = model_->items()[i].id;
     if (IsPinned(shelf_id_after)) {
-      app_id_after = GetAppIDForShelfID(shelf_id_after);
+      const std::string app_id_after = GetAppIDForShelfID(shelf_id_after);
       DCHECK(!app_id_after.empty());
-      break;
+      app_ids_after.push_back(app_id_after);
     }
   }
 
-  ash::launcher::SetPinPosition(profile_, app_id, app_id_before, app_id_after);
+  ash::launcher::SetPinPosition(profile_, app_id, app_id_before, app_ids_after);
 }
 
 void ChromeLauncherControllerImpl::OnSyncModelUpdated() {

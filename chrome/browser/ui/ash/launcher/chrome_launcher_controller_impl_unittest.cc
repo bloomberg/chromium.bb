@@ -3914,3 +3914,53 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(app_id));
   EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
 }
+
+// Checks the case when several app items have the same ordinal position (which
+// is valid case).
+TEST_F(ChromeLauncherControllerImplTest, CheckPositionConflict) {
+  InitLauncherController();
+
+  extension_service_->AddExtension(extension1_.get());
+  extension_service_->AddExtension(extension2_.get());
+  extension_service_->AddExtension(extension3_.get());
+
+  syncer::SyncChangeList sync_list;
+  InsertAddPinChange(&sync_list, 0, extension_misc::kChromeAppId);
+  InsertAddPinChange(&sync_list, 1, extension1_->id());
+  InsertAddPinChange(&sync_list, 1, extension2_->id());
+  InsertAddPinChange(&sync_list, 1, extension3_->id());
+  SendPinChanges(sync_list, true);
+
+  EXPECT_EQ("AppList, Chrome, App1, App2, App3", GetPinnedAppStatus());
+
+  const syncer::StringOrdinal position_chrome =
+      app_service_->GetPinPosition(extension_misc::kChromeAppId);
+  const syncer::StringOrdinal position_1 =
+      app_service_->GetPinPosition(extension1_->id());
+  const syncer::StringOrdinal position_2 =
+      app_service_->GetPinPosition(extension2_->id());
+  const syncer::StringOrdinal position_3 =
+      app_service_->GetPinPosition(extension3_->id());
+  EXPECT_TRUE(position_chrome.LessThan(position_1));
+  EXPECT_TRUE(position_1.Equals(position_2));
+  EXPECT_TRUE(position_2.Equals(position_3));
+
+  // Move Chrome between App1 and App2.
+  // Note, move target_index is in context when moved element is removed from
+  // array first.
+  model_->Move(1, 2);
+  EXPECT_EQ("AppList, App1, Chrome, App2, App3", GetPinnedAppStatus());
+
+  // Expect sync positions for only Chrome is updated and its resolution is
+  // after all duplicated ordinals.
+  EXPECT_TRUE(position_3.LessThan(
+      app_service_->GetPinPosition(extension_misc::kChromeAppId)));
+  EXPECT_TRUE(
+      position_1.Equals(app_service_->GetPinPosition(extension1_->id())));
+  EXPECT_TRUE(
+      position_1.Equals(app_service_->GetPinPosition(extension1_->id())));
+  EXPECT_TRUE(
+      position_2.Equals(app_service_->GetPinPosition(extension2_->id())));
+  EXPECT_TRUE(
+      position_3.Equals(app_service_->GetPinPosition(extension3_->id())));
+}

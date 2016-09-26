@@ -79,12 +79,12 @@ void RemovePinPosition(Profile* profile, const std::string& app_id);
 
 // Updates information about pin position in sync model for the app |app_id|.
 // |app_id_before| optionally specifies an app that exists right before the
-// target app. |app_id_after| optionally specifies an app that exists right
-// after the target app.
+// target app. |app_ids_after| optionally specifies sorted by position apps that
+// exist right after the target app.
 void SetPinPosition(Profile* profile,
                     const std::string& app_id,
                     const std::string& app_id_before,
-                    const std::string& app_id_after);
+                    const std::vector<std::string>& app_ids_after);
 
 // Used to propagate remote preferences to local during the first run.
 class ChromeLauncherPrefsObserver

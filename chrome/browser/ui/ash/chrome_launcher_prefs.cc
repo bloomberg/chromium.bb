@@ -666,12 +666,10 @@ void RemovePinPosition(Profile* profile, const std::string& app_id) {
 void SetPinPosition(Profile* profile,
                     const std::string& app_id,
                     const std::string& app_id_before,
-                    const std::string& app_id_after) {
+                    const std::vector<std::string>& app_ids_after) {
   DCHECK(profile);
   DCHECK(!app_id.empty());
   DCHECK_NE(app_id, app_id_before);
-  DCHECK_NE(app_id, app_id_after);
-  DCHECK(app_id_before.empty() || app_id_before != app_id_after);
 
   app_list::AppListSyncableService* app_service =
       app_list::AppListSyncableServiceFactory::GetForProfile(profile);
@@ -682,9 +680,21 @@ void SetPinPosition(Profile* profile,
   syncer::StringOrdinal position_before =
       app_id_before.empty() ? syncer::StringOrdinal()
                             : app_service->GetPinPosition(app_id_before);
-  syncer::StringOrdinal position_after =
-      app_id_after.empty() ? syncer::StringOrdinal()
-                           : app_service->GetPinPosition(app_id_after);
+  syncer::StringOrdinal position_after;
+  for (const auto& app_id_after : app_ids_after) {
+    DCHECK_NE(app_id_after, app_id);
+    DCHECK_NE(app_id_after, app_id_before);
+    syncer::StringOrdinal position = app_service->GetPinPosition(app_id_after);
+    DCHECK(position.IsValid());
+    if (!position.IsValid()) {
+      LOG(ERROR) << "Sync pin position was not found for " << app_id_after;
+      continue;
+    }
+    if (!position_before.IsValid() || !position.Equals(position_before)) {
+      position_after = position;
+      break;
+    }
+  }
 
   syncer::StringOrdinal pin_position;
   if (position_before.IsValid() && position_after.IsValid())
