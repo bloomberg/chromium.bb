@@ -67,13 +67,20 @@ public:
 
     Path& path() const
     {
-        ASSERT(m_path);
+        DCHECK(m_path);
         return *m_path;
     }
     bool hasPath() const { return m_path.get(); }
     float dashScaleFactor() const;
 
-    virtual bool isShapeEmpty() const { return path().isEmpty(); }
+    // This method is sometimes (rarely) called with a null path and crashes. The code managing
+    // the path enforces the necessary invariants to ensure a valid path but somehow that fails.
+    // The assert and check for hasPath() are intended to detect and prevent crashes.
+    virtual bool isShapeEmpty() const
+    {
+        DCHECK(m_path);
+        return !hasPath() || path().isEmpty();
+    }
 
     bool hasNonScalingStroke() const { return style()->svgStyle().vectorEffect() == VE_NON_SCALING_STROKE; }
     Path* nonScalingStrokePath(const Path*, const AffineTransform&) const;
