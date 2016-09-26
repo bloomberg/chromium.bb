@@ -61,7 +61,7 @@ cd out/Release
 ```
 4.  Run clang-tidy.
 ```
-<PATH_TO_LLVM_SRC>/tools/clang/tools/extra/clang-tidy/tools/run-clang-tidy.py \
+<PATH_TO_LLVM_SRC>/tools/clang/tools/extra/clang-tidy/tool/run-clang-tidy.py \
     -p ../.. \# Set the root project directory, where compile_commands.json is.
     # Set the clang-tidy binary path, if it's not in your $PATH.
     -clang-tidy-binary <PATH_TO_LLVM_BUILD>/bin/clang-tidy \
@@ -76,7 +76,7 @@ cd out/Release
     chrome/browser # The path to the files you want to check.
 
 Copy-Paste Friendly (though you'll still need to stub in the variables):
-<PATH_TO_LLVM_SRC>/tools/clang/tools/extra/clang-tidy/tools/run-clang-tidy.py \
+<PATH_TO_LLVM_SRC>/tools/clang/tools/extra/clang-tidy/tool/run-clang-tidy.py \
     -p ../.. \
     -clang-tidy-binary <PATH_TO_LLVM_BUILD>/bin/clang-tidy \
     -clang-apply-replacements-binary \
