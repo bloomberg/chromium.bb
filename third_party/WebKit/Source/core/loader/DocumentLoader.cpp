@@ -330,7 +330,7 @@ void DocumentLoader::redirectReceived(Resource* resource, ResourceRequest& reque
         m_fetcher->stopFetching();
         return;
     }
-    if (!frameLoader()->shouldContinueForNavigationPolicy(m_request, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem(), isClientRedirect())) {
+    if (!frameLoader()->shouldContinueForNavigationPolicy(m_request, SubstituteData(), this, CheckContentSecurityPolicy, m_navigationType, NavigationPolicyCurrentTab, replacesCurrentHistoryItem(), isClientRedirect(), nullptr)) {
         m_fetcher->stopFetching();
         return;
     }

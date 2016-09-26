@@ -1378,7 +1378,7 @@ bool FrameLoader::shouldClose(bool isReload)
 
 bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& request, const SubstituteData& substituteData,
     DocumentLoader* loader, ContentSecurityPolicyDisposition shouldCheckMainWorldContentSecurityPolicy,
-    NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem, bool isClientRedirect)
+    NavigationType type, NavigationPolicy policy, bool replacesCurrentHistoryItem, bool isClientRedirect, HTMLFormElement* form)
 {
     m_isNavigationHandledByClient = false;
 
@@ -1416,6 +1416,12 @@ bool FrameLoader::shouldContinueForNavigationPolicy(const ResourceRequest& reque
         m_isNavigationHandledByClient = true;
         // Mark the frame as loading since the embedder is handling the navigation.
         m_progressTracker->progressStarted();
+
+        // If this is a form submit, dispatch that a form is being submitted
+        // since the embedder is handling the navigation.
+        if (form)
+            client()->dispatchWillSubmitForm(form);
+
         return false;
     }
     if (!LocalDOMWindow::allowPopUp(*m_frame) && !UserGestureIndicator::utilizeUserGesture())
@@ -1435,7 +1441,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
     upgradeInsecureRequest(request, nullptr);
-    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirectPolicy::ClientRedirect))
+    if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirectPolicy::ClientRedirect, frameLoadRequest.form()))
         return;
 
     m_frame->document()->cancelParsing();
