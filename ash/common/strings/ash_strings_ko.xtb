@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">모두 로그아웃</translation>
 <translation id="2297568595583585744">상태 표시줄</translation>
 <translation id="2303600792989757991">창 전환 개요</translation>
-<translation id="2372145515558759244">앱 동기화...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 허가하기 전에 다음 패스키가 기기에 표시되는지 확인하세요. <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">오류가 발생했습니다.</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">저출력 충전기에 연결되었습니다. 배터리 충전 상태가 불안정합니다.</translation>
 <translation id="2761704814324807722">상태 표시줄, 시간 <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+검색 키</translation>
-<translation id="2805756323405976993">앱</translation>
 <translation id="2819276065543622893">지금 로그아웃됩니다.</translation>
 <translation id="2825619548187458965">임시보관함</translation>
 <translation id="2844169650293029770">USB-C 기기(좌측 전면 포트)</translation>
@@ -110,6 +108,7 @@
 <translation id="3866182280516392520">IPv6 주소</translation>
 <translation id="3891340733213178823">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="3892641579809465218">내부 디스플레이</translation>
+<translation id="3893630138897523026">ChromeVox(음성 피드백)</translation>
 <translation id="3963445509666917109">스피커(내부)</translation>
 <translation id="3967919079500697218">관리자가 스크린샷 캡쳐 기능을 사용 중지했습니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>
@@ -191,7 +190,6 @@
 <translation id="6713285437468012787">블루투스 기기 '<ph name="DEVICE_NAME" />'이(가) 페어링되어 이제 모든 사용자가 사용할 수 있습니다. 설정에서 이 페어링을 삭제할 수 있습니다.</translation>
 <translation id="6785414152754474415">배터리가 <ph name="PERCENTAGE" />% 충전되었으며 충전 중입니다.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox(음성 피드백)</translation>
 <translation id="6911468394164995108">다른 네트워크에 연결</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
@@ -216,6 +214,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="7573962313813535744">고정 모드</translation>
 <translation id="7580671184200851182">모든 스피커에서 동일한 오디오 실행(모노 오디오)</translation>
+<translation id="7581273696622423628">설문조사 참여</translation>
 <translation id="7593891976182323525">검색 또는 Shift 키</translation>
 <translation id="7649070708921625228">도움말</translation>
 <translation id="7692480393933218409">연결된 USB-C 기기 충전 중</translation>

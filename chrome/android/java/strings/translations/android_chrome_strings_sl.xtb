@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Tu bodo prikazani zaznamki, shranjeni v drugih napravah.</translation>
 <translation id="1121094540300013208">Poročila o uporabi in zrušitvah</translation>
 <translation id="1137305377394488060">zadnje ure</translation>
+<translation id="1146678959555564648">V navidezno resničnost</translation>
 <translation id="1178581264944972037">Prekini</translation>
 <translation id="1181037720776840403">Odstrani</translation>
 <translation id="1197267115302279827">Premakni zavihke</translation>
@@ -247,6 +248,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="393697183122708255">Glasovno iskanje ni na voljo</translation>
 <translation id="3946611741043634542">Če nadaljujete, se strinjate s <ph name="BEGIN_LINK1" />pogoji storitve<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />pravilnikom o zasebnosti<ph name="END_LINK2" /> za Chrome.</translation>
 <translation id="3950820424414687140">Prijava</translation>
+<translation id="3967822245660637423">Prenos končan</translation>
 <translation id="397583555483684758">Sinhronizacija je prenehala delovati</translation>
 <translation id="3988213473815854515">Lokacija je dovoljena</translation>
 <translation id="3997476611815694295">Nepomembni shranjeni podatki</translation>
@@ -259,7 +261,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4095146165863963773">Izbris podatkov aplikacije?</translation>
 <translation id="4099578267706723511">Pomagajte izboljšati Chrome s pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu.</translation>
 <translation id="410351446219883937">Samodejno predvajanje</translation>
-<translation id="411254640334432676">Prenos ni uspel.</translation>
 <translation id="4113030288477039509">Upravlja skrbnik</translation>
 <translation id="4165986682804962316">Nastavitve spletnega mesta</translation>
 <translation id="4170011742729630528">Storitev ni na voljo; poskusite znova pozneje.</translation>
@@ -277,7 +278,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4275663329226226506">Predstavnosti</translation>
 <translation id="4278390842282768270">Dovoljeno</translation>
 <translation id="4307992518367153382">Osnove</translation>
-<translation id="4334294535648607276">Prenos končan.</translation>
 <translation id="4351244548802238354">Zapri pogovorno okno</translation>
 <translation id="4376501731284077108">Nenadzorovano</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -335,12 +335,10 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="5063480226653192405">Uporaba</translation>
 <translation id="5100237604440890931">Strnjeno – kliknite, če želite razširiti.</translation>
 <translation id="510275257476243843">Še 1 h</translation>
-<translation id="5107381076085091558">Prenos je zaustavljen.</translation>
 <translation id="5127805178023152808">Sinhroniziranje je izklopljeno</translation>
 <translation id="5131405117025179004">Urejanje shranjenega računa</translation>
 <translation id="5138299137310274655">Jezik te strani je <ph name="SOURCE_LANGUAGE" />. Jo želite prevesti v jezik <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Izbris shranjenih podatkov</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />brez nameščanja<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">To je račun otroka</translation>
 <translation id="5161254044473106830">Naslov je obvezen</translation>
 <translation id="5164482624172255778">Želite, da Google Chrome naslednjič ponudi prevod strani v jeziku <ph name="LANGUAGE" /> s tega spletnega mesta?</translation>
@@ -655,6 +653,7 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8719023831149562936">Trenutnega zavihka ni mogoče prenesti</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
 <translation id="8730621377337864115">Končano</translation>
+<translation id="8748850008226585750">Vsebina je skrita</translation>
 <translation id="8812942424849541387">Delovanje tega lahko nadzirate v <ph name="BEGIN_LINK1" />nastavitvah<ph name="END_LINK1" />.</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
 <translation id="883635517171802338">Spletnim mestom prepreči prikazovanje pojavnih oken (priporočeno)</translation>
@@ -662,7 +661,6 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, zavihek</translation>
 <translation id="885701979325669005">Shramba</translation>
-<translation id="8872506776304248286">Odpri v aplikaciji</translation>
 <translation id="8901170036886848654">Zaznamkov ni bilo mogoče najti</translation>
 <translation id="8909135823018751308">Skupna raba …</translation>
 <translation id="8912362522468806198">Google Račun</translation>

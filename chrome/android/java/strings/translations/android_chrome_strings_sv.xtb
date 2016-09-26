@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Här visas bokmärken som du har sparat på andra enheter.</translation>
 <translation id="1121094540300013208">Användning och felrapporter</translation>
 <translation id="1137305377394488060">den senaste timmen</translation>
+<translation id="1146678959555564648">Kliv in i VR</translation>
 <translation id="1178581264944972037">Paus</translation>
 <translation id="1181037720776840403">Ta bort</translation>
 <translation id="1197267115302279827">Flytta bokmärken</translation>
@@ -247,6 +248,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="393697183122708255">Röstsökning är inte tillgängligt</translation>
 <translation id="3946611741043634542">Genom att fortsätta godkänner du Chromes <ph name="BEGIN_LINK1" />användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />sekretesspolicy<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Logga in</translation>
+<translation id="3967822245660637423">Nedladdning slutförd</translation>
 <translation id="397583555483684758">Synkroniseringen har slutat fungera</translation>
 <translation id="3988213473815854515">Platsen är tillåten</translation>
 <translation id="3997476611815694295">Oviktig lagring</translation>
@@ -259,7 +261,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4095146165863963773">Vill du ta bort appdata?</translation>
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="410351446219883937">Automatisk uppspelning</translation>
-<translation id="411254640334432676">Nedladdningen misslyckades.</translation>
 <translation id="4113030288477039509">Hanteras av administratören</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
 <translation id="4170011742729630528">Tjänsten är inte tillgänglig, försök igen senare.</translation>
@@ -277,7 +278,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Tillåtet</translation>
 <translation id="4307992518367153382">Grunderna</translation>
-<translation id="4334294535648607276">Nedladdningen har slutförts.</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4376501731284077108">Inte styrda</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -335,12 +335,10 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5063480226653192405">Användning</translation>
 <translation id="5100237604440890931">Vyn har komprimerats. Expandera den genom att klicka.</translation>
 <translation id="510275257476243843">1 timme kvar</translation>
-<translation id="5107381076085091558">Nedladdning pausad.</translation>
 <translation id="5127805178023152808">Synkronisering är av</translation>
 <translation id="5131405117025179004">Redigera sparat konto</translation>
 <translation id="5138299137310274655">Den här sidan är skriven på <ph name="SOURCE_LANGUAGE" />. Vill du översätta den till <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Ta bort sparad data</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />Instant<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Det här är ett barnkonto</translation>
 <translation id="5161254044473106830">Titel krävs</translation>
 <translation id="5164482624172255778">Vill du att alternativet att översätta sidor i Google Chrome på <ph name="LANGUAGE" /> från den här webbplatsen ska visas nästa gång?</translation>
@@ -655,6 +653,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8719023831149562936">Den aktuella fliken kan inte överföras</translation>
 <translation id="8725066075913043281">Försök igen</translation>
 <translation id="8730621377337864115">Klart</translation>
+<translation id="8748850008226585750">Innehållet har dolts</translation>
 <translation id="8812942424849541387">Styr hur det fungerar i <ph name="BEGIN_LINK1" />Inställningar<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="883635517171802338">Blockera webbplatser från att visa popup-fönster (rekommenderas)</translation>
@@ -662,7 +661,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flik</translation>
 <translation id="885701979325669005">Lagring</translation>
-<translation id="8872506776304248286">Öppna i appen</translation>
 <translation id="8901170036886848654">Inga bokmärken hittades</translation>
 <translation id="8909135823018751308">Dela …</translation>
 <translation id="8912362522468806198">Google-konto</translation>

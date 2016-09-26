@@ -34,7 +34,6 @@
 <translation id="1773601347087397504">Chrome OS का उपयोग करने के बारे में सहायता प्राप्त करें</translation>
 <translation id="1818142563254268765">Chrome स्वयं को नवीनतम वर्शन में अपडेट नहीं कर सका, इसलिए आप शानदार नई सुविधाओं और सुरक्षा समाधानों का लाभ नहीं ले पा रहे हैं. आपको Chrome को अपडेट करना होगा.</translation>
 <translation id="1877026089748256423">Chrome पुराना हो गया है</translation>
-<translation id="1924381329666691588">Google Chrome इस भाषा में नहीं दिखाया जा सकता है.</translation>
 <translation id="2063848847527508675">अपडेट लागू करने के लिए Chrome OS को फिर से चालू करने की आवश्यकता होती है.</translation>
 <translation id="2077129598763517140">उपलब्ध होने पर हार्डवेयर त्वरण का उपयोग करें</translation>
 <translation id="2084710999043359739">Chrome में जोड़ें</translation>
@@ -116,6 +115,7 @@
 <translation id="437002079035561265">यह कंप्यूटर अब Google Chrome अपडेट प्राप्त नहीं करेगा क्योंकि यह Linux सिस्टम अब समर्थित नहीं है.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">इस परिवर्तन के प्रभावी होने के लिए, कृपया प्रस्थान करें और पुन: प्रवेश करें.</translation>
+<translation id="4458462641685292929">Google Chrome पर कोई और क्रिया चल रही है. कृपया बाद में फिर से कोशिश करें.</translation>
 <translation id="4480040274068703980">प्रवेश करने संबंधी त्रुटि के कारण Chrome OS आपका डेटा सिंक नहीं कर सका.</translation>
 <translation id="4519152997629025674">Google Chrome आपके अनुभव को बेहतर बनाने के लिए <ph name="BEGIN_LINK" />वेब सेवाओं<ph name="END_LINK" /> का उपयोग कर सकता है. आप किसी भी समय इन सेवाओं को वैकल्पिक रूप से अक्षम कर सकते हैं.</translation>
 <translation id="4561051373932531560">Google Chrome आपको वेब पर फ़ोन नंबर क्लिक करने और उसे Skype से कॉल करने की सुविधा देता है!</translation>
@@ -128,6 +128,7 @@
 <translation id="4743926867934016338">स्‍वीकार करें और खोजें</translation>
 <translation id="4751441238232965030">यह कंप्यूटर जल्दी ही 32-बिट Google Chrome के अपडेट प्राप्त करना बंद करेगा. कृपया 64-बिट Google Chrome में अपग्रेड करें.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
+<translation id="4771048833395599659">यह फ़ाइल खतरनाक हो सकती है, इसलिए Chrome ने इसे अवरुद्ध कर दिया है.</translation>
 <translation id="4794050651896644714">Chrome में विवरण सहेजें</translation>
 <translation id="4891791193823137474">Google Chrome को पृष्ठभूमि में चलने दें</translation>
 <translation id="4921569541910214635">कंप्यूटर साझा करते हैं? अब आप Chrome जैसा चाहें वैसा सेट कर सकते हैं.</translation>
@@ -159,7 +160,6 @@
 <translation id="5563479599352954471">एकल स्पर्श से खोजें</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">पृष्ठ को छोड़े बिना वेबसाइटों पर दिए गए विषयों के बारे में जानें.</translation>
-<translation id="5637867606963802593">Chrome OS इस भाषा में नहीं दिखाया जा सकता है.</translation>
 <translation id="568643307450491754">Chrome मेनू में या बुकमार्क बार पर अपने बुकमार्क ढूंढें.</translation>
 <translation id="573759479754913123">Chrome OS के बारे में</translation>
 <translation id="5749068826913805084">फ़ाइलें डाउनलोड करने के लिए Chrome को मेमोरी ऐक्‍सेस की आवश्‍यकता होगी.</translation>
@@ -186,6 +186,7 @@
 <translation id="6400076122676892962">यह कंप्‍यूटर जल्‍दी ही Google Chrome के अपडेट प्राप्‍त करना बंद कर देगा क्‍योंकि अब Mac OS X 10.6, 10.7, और 10.8 समर्थित नहीं रहेंगे.</translation>
 <translation id="6470176598693778404">यह कंप्‍यूटर अब Google Chrome के अपडेट प्राप्‍त नहीं करेगा क्‍योंकि Mac OS X 10.6, 10.7, और 10.8 अब समर्थित नहीं हैं.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{डाउनलोड वर्तमान में चल रहा है. क्या आप डाउनलोड को रोकना और Google Chrome से बाहर निकलना चाहते हैं?}one{# डाउनलोड वर्तमान में चल रहे हैं. क्या आप डाउनलोड को रोकना और Google Chrome से बाहर निकलना चाहते हैं?}other{# डाउनलोड वर्तमान में चल रहे हैं. क्या आप डाउनलोड को रोकना और Google Chrome से बाहर निकलना चाहते हैं?}}</translation>
+<translation id="6566149418543181476">Google Chrome अपडेट हो रहा है (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">आप अपनी Chrome सामग्री को समन्वयित करने के लिए <ph name="PROFILE_EMAIL" /> का उपयोग कर रहे हैं. अपनी समन्वयन प्राथमिकता को अपडेट करने या Google खाते के बिना Chrome का उपयोग करने के लिए, <ph name="SETTINGS_LINK" /> पर जाएं.</translation>
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
 <translation id="6626317981028933585">खेद है, आपकी Mozilla Firefox सेटिंग उपलब्ध नहीं हैं जबकि वह ब्राउजर चल रहा है. उन सेटिंग को Google Chrome पर आयात करने के लिए, अपने कार्य सहेजें और सभी Firefox विंडो बंद करें. इसके बाद जारी रखें पर क्लिक करें.</translation>
@@ -193,6 +194,7 @@
 <translation id="6676384891291319759">इंटरनेट तक पहुंच स्थापित करें</translation>
 <translation id="6757767188268205357">मुझे बग न करें</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>
+<translation id="686561893457936865">Chrome को हर कहीं ले जाएं</translation>
 <translation id="6883876366448858277">Google खोज को कोई शब्‍द या उसके आस-पास का प्रसंग भेजता है, जो परिभाषाएं, चित्र, खोज परिणाम और अन्‍य विवरण लौटाता है.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">आपका डिवाइस अपडेट किया जा रहा है...</translation>
@@ -253,7 +255,9 @@
 <translation id="8255190535488645436">Google Chrome आपके कैमरे और माइक्रोफ़ोन का उपयोग कर रहा है.</translation>
 <translation id="8286862437124483331">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है. इसकी अनुमति देने के लिए अपना Windows पासवर्ड लिखें.</translation>
 <translation id="8290100596633877290">रुकिए! Google Chrome क्रैश हो गया है. अभी पुन: लॉन्च करें?</translation>
+<translation id="8342675569599923794">यह फ़ाइल खतरनाक है, इसलिए Chrome ने इसे अवरुद्ध कर दिया है.</translation>
 <translation id="8406086379114794905">Chrome को बेहतर बनाने में सहायता करें</translation>
+<translation id="8455999171311319804">वैकल्पिक: Google को निदान और उपयोग डेटा अपने आप भेजकर Chrome OS को बेहतर बनाने में सहायता करें.</translation>
 <translation id="853189717709780425">आप प्रबंधित खाते से प्रवेश कर रहे हैं और अपने Google Chrome प्रोफ़ाइल पर उसके व्यवस्थापक नियंत्रण दे रहे हैं. आपके ऐप्स , बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग जैसा Chrome डेटा <ph name="USER_NAME" /> से स्थायी रूप से जुड़ जाएगा. आप इस डेटा को Google खाते डैशबोर्ड के माध्यम से हटा सकेंगे, लेकिन आप इस डेटा को किसी अन्य खाते से संबद्ध नहीं कर सकेंगे.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome में ऐप चलाने का साधन Canary</translation>

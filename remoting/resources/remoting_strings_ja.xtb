@@ -287,6 +287,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="8548209692293300397">以前に <ph name="USER_NAME" />（<ph name="USER_EMAIL" />）としてログインしています。このアカウントでパソコンにアクセスするには、このアカウントで <ph name="LINK_BEGIN" />Google Chrome にログイン<ph name="LINK_END" />し、Chrome リモート デスクトップを再インストールしてください。</translation>
 <translation id="8642984861538780905">中程度</translation>
 <translation id="8712909229180978490">Google ドライブに保存したファイルをオンラインで表示できない。</translation>
+<translation id="8743328882720071828"><ph name="CLIENT_USERNAME" /> にパソコンの閲覧と制御を許可しますか？</translation>
 <translation id="8759753423332885148">詳細</translation>
 <translation id="8791202241915690908">Chromoting ホスト インストーラのダウンロード</translation>
 <translation id="894763922177556086">良い</translation>

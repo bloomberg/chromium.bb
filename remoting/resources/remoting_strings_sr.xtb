@@ -285,6 +285,7 @@
 <translation id="8548209692293300397">Претходно сте се пријавили као <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Да бисте приступили рачунарима преко тог налога, <ph name="LINK_BEGIN" />пријавите се у Google Chrome<ph name="LINK_END" /> помоћу тог налога и поново инсталирајте Chrome удаљени рачунар.</translation>
 <translation id="8642984861538780905">Задовољавајућа</translation>
 <translation id="8712909229180978490">Не могу да видим сачуване датотеке онлајн на Google диску.</translation>
+<translation id="8743328882720071828">Желите ли да дозволите да <ph name="CLIENT_USERNAME" /> види и контролише рачунар?</translation>
 <translation id="8759753423332885148">Сазнајте више.</translation>
 <translation id="8791202241915690908">Преузмите програм за инсталацију хоста за Chromoting</translation>
 <translation id="894763922177556086">Добра</translation>

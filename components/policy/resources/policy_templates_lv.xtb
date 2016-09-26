@@ -807,6 +807,9 @@
 <translation id="3322771899429619102">Ļauj iestatīt URL šablonu sarakstu, kurā ir norādītas vietnes, kam ir atļauts izmantot atslēgu ģenerēšanu. Ja URL šablons ir iestatīts politikā “KeygenBlockedForUrls”, šie izņēmumi tiek ignorēti.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
+<translation id="3322902067538988734">Ja politikai ir iestatīta vērtība Patiesa, lietotājam pirms pārlūkprogrammas <ph name="PRODUCT_NAME" /> lietošanas ir jāpierakstās profilā. Šādā gadījumā politikai BrowserGuestModeEnabled tiek iestatīta noklusējuma vērtība Aplama.
+
+Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lietotājs var lietot pārlūkprogrammu <ph name="PRODUCT_NAME" /> bez pierakstīšanās.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
 <translation id="3417418267404583991">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> iespējo viesu pieteikšanās sesijas. Viesu pieteikšanās sesijas ir anonīmu lietotāju sesijas, un tām nav jāizmanto parole.
 
@@ -968,6 +971,11 @@
 
       Ja šī politika nav iestatīta, SPDY būs pieejams.</translation>
 <translation id="3891357445869647828">Iespējo JavaScript</translation>
+<translation id="3891953007921334498">Atspējo izstrādātāju rīkus un JavaScript konsoli.
+
+      Ja šis iestatījums ir iespējots, nevar piekļūt izstrādātāju rīkiem un vairs nevar pārbaudīt vietņu elementus. Tiks atspējoti visi īsinājumtaustiņi un visi izvēļņu vai kontekstizvēlņu ieraksti, ar kuriem tiek atvērti izstrādātāju rīki vai JavaScript konsole.
+
+      Ja šis iestatījums ir atspējots vai nav iestatīts, lietotājs var lietot izstrādātāju rīkus un JavaScript konsoli.</translation>
 <translation id="3907986150060929099">Ieteikto lokalizāciju iestatīšana publiskai sesijai</translation>
 <translation id="391531815696899618">Tiek atspējota Google diska sinhronizēšana operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili, ja ir iestatīta vērtība Patiesa. Šajā gadījumā Google diskā netiek augšupielādēti dati.
 
@@ -1061,6 +1069,7 @@
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="4250680216510889253">Nē</translation>
+<translation id="4272136423200695428">Iespējo piespiedu pierakstīšanos pārlūkprogrammā <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Norāda parametrus, kas tiek izmantoti, veicot attēlu meklēšanu ar metodi POST. Izmantojot šo metodi, tiek meklēti ar komatu atdalītu vārdu/vērtību pāri. Ja vērtība ir veidnes parametrs, piemēram, {imageThumbnail} (iepriekšējā piemērā), tas tiks aizstāts ar īstiem attēla sīktēla datiem.
 
           Šī politika nav obligāta. Ja tā nav iestatīta, attēla meklēšanas pieprasījums tiks nosūtīts, izmantojot metodi GET.

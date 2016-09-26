@@ -46,7 +46,6 @@
 <translation id="2268813581635650749">خروج همه از سیستم</translation>
 <translation id="2297568595583585744">سینی وضعیت</translation>
 <translation id="2303600792989757991">مروری کلی بر پنجره تغییر حالت</translation>
-<translation id="2372145515558759244">در حال همگام‌سازی برنامه‌ها…</translation>
 <translation id="2391579633712104609">۱۸۰°</translation>
 <translation id="2429753432712299108">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. قبل از پذیرش، لطفاً تأیید کنید که این کلیدواژه در آن دستگاه نشان داده می‌شود: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">یک خطا روی داد</translation>
@@ -60,7 +59,6 @@
 <translation id="2727977024730340865">باتری به شارژر برق ضعیف متصل است. شارژ باتری ممکن است قابل اطمینان نباشد.</translation>
 <translation id="2761704814324807722">سینی وضعیت، زمان <ph name="TIME" />، ‏<ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">‏Alt+جستجو</translation>
-<translation id="2805756323405976993">برنامه‌ها</translation>
 <translation id="2819276065543622893">هم‌اکنون از سیستم خارج خواهید شد.</translation>
 <translation id="2825619548187458965">قفسه</translation>
 <translation id="2844169650293029770">‏دستگاه USB-C (درگاه جلوی سمت چپ)</translation>
@@ -109,6 +107,7 @@
 <translation id="3866182280516392520">‏آدرس IPv6</translation>
 <translation id="3891340733213178823">‏برای خروج از سیستم Ctrl+Shift+Q را دو بار فشار دهید.</translation>
 <translation id="3892641579809465218">صفحه نمایش داخلی</translation>
+<translation id="3893630138897523026">‏ChromeVox (بازخورد گفتاری)</translation>
 <translation id="3963445509666917109">بلندگو (داخلی)</translation>
 <translation id="3967919079500697218">سرپرست شما قابلیت عکس گرفتن از صفحه‌نمایش را غیرفعال کرده است.</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
@@ -189,7 +188,6 @@
 <translation id="6713285437468012787">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» مرتبط شده است و اکنون برای همه کاربران در دسترس است. می‌توانید این مرتبط‌سازی را با استفاده از تنظیمات حذف کنید.</translation>
 <translation id="6785414152754474415">باتری <ph name="PERCENTAGE" /> درصد پر و درحال شارژ است.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">‏ChromeVox (بازخورد گفتاری)</translation>
 <translation id="6911468394164995108">پیوستن به شبکه دیگر…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -214,6 +212,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />،‏ <ph name="SPECIFIED_RESOLUTION" /> را پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> تغییر کرد</translation>
 <translation id="7573962313813535744">حالت اتصال به پایه</translation>
 <translation id="7580671184200851182">یک صدا را از طریق همه بلندگوها پخش کنید (تک صوتی)</translation>
+<translation id="7581273696622423628">در نظرسنجی شرکت کنید</translation>
 <translation id="7593891976182323525">‏جستجو یا Shift</translation>
 <translation id="7649070708921625228">راهنما</translation>
 <translation id="7692480393933218409">‏در حال شارژ کردن دستگاه‌های USB-C متصل</translation>

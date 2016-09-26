@@ -287,6 +287,7 @@
 <translation id="8548209692293300397">您之前曾使用 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) 登录。要访问该帐户名下的计算机，请使用该帐户<ph name="LINK_BEGIN" />登录 Google Chrome<ph name="LINK_END" />，然后重新安装 Chrome 远程桌面。</translation>
 <translation id="8642984861538780905">一般</translation>
 <translation id="8712909229180978490">我无法在 Google 云端硬盘中在线查看自己保存的文件。</translation>
+<translation id="8743328882720071828">您要允许 <ph name="CLIENT_USERNAME" /> 查看和控制您的计算机吗？</translation>
 <translation id="8759753423332885148">了解详情。</translation>
 <translation id="8791202241915690908">下载 Chrome 远程访问主机安装程序</translation>
 <translation id="894763922177556086">良好</translation>

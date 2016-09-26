@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Tutaj wyświetlą się zakładki z innych urządzeń.</translation>
 <translation id="1121094540300013208">Raporty o użytkowaniu i awariach</translation>
 <translation id="1137305377394488060">z ostatniej godziny</translation>
+<translation id="1146678959555564648">Włącz tryb VR</translation>
 <translation id="1178581264944972037">Wstrzymaj</translation>
 <translation id="1181037720776840403">Usuń</translation>
 <translation id="1197267115302279827">Przenieś zakładki</translation>
@@ -247,6 +248,7 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="393697183122708255">Brak włączonego wyszukiwania głosowego</translation>
 <translation id="3946611741043634542">Przechodząc dalej, akceptujesz <ph name="BEGIN_LINK1" />Warunki korzystania z usługi<ph name="END_LINK1" /> Chrome i <ph name="BEGIN_LINK2" />Informacje na temat ochrony prywatności<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Zaloguj się</translation>
+<translation id="3967822245660637423">Pobieranie zakończone</translation>
 <translation id="397583555483684758">Synchronizacja przestała działać</translation>
 <translation id="3988213473815854515">Lokalizacja jest dozwolona</translation>
 <translation id="3997476611815694295">Nieistotne dane</translation>
@@ -259,7 +261,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4095146165863963773">Usunąć dane aplikacji?</translation>
 <translation id="4099578267706723511">Pomóż ulepszyć Chrome, wysyłając do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="410351446219883937">Autoodtwarzanie</translation>
-<translation id="411254640334432676">Błąd pobierania.</translation>
 <translation id="4113030288477039509">Zarządzany przez administratora</translation>
 <translation id="4165986682804962316">Ustawienia witryny</translation>
 <translation id="4170011742729630528">Usługa jest niedostępna. Spróbuj ponownie później.</translation>
@@ -277,7 +278,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="4275663329226226506">Multimedia</translation>
 <translation id="4278390842282768270">Dopuszczone</translation>
 <translation id="4307992518367153382">Podstawy</translation>
-<translation id="4334294535648607276">Pobieranie ukończone.</translation>
 <translation id="4351244548802238354">Zamknij okno</translation>
 <translation id="4376501731284077108">Brak kontroli</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -335,12 +335,10 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5063480226653192405">Wykorzystanie</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="510275257476243843">Pozostała godzina</translation>
-<translation id="5107381076085091558">Pobieranie zostało wstrzymane.</translation>
 <translation id="5127805178023152808">Synchronizacja jest wyłączona</translation>
 <translation id="5131405117025179004">Edycja zapisanego konta</translation>
 <translation id="5138299137310274655">Język tej strony to <ph name="SOURCE_LANGUAGE" />. Przetłumaczyć ją na <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Wyczyść zapisane dane</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />błyskawiczna<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">To jest konto dziecka</translation>
 <translation id="5161254044473106830">Tytuł jest wymagany</translation>
 <translation id="5164482624172255778">Czy chcesz, aby następnym razem przeglądarka Google Chrome zaoferowała tłumaczenie stron z tej witryny, których język to <ph name="LANGUAGE" />?</translation>
@@ -655,6 +653,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8719023831149562936">Nie można przesłać bieżącej karty</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8730621377337864115">Gotowe</translation>
+<translation id="8748850008226585750">Treści ukryte</translation>
 <translation id="8812942424849541387">Określ działanie w <ph name="BEGIN_LINK1" />Ustawieniach<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Zakładki</translation>
 <translation id="883635517171802338">Blokuj próby pokazywania wyskakujących okienek na stronach (zalecane)</translation>
@@ -662,7 +661,6 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Karta <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Pamięć</translation>
-<translation id="8872506776304248286">Otwórz w aplikacji</translation>
 <translation id="8901170036886848654">Nie znaleziono zakładek</translation>
 <translation id="8909135823018751308">Udostępnij…</translation>
 <translation id="8912362522468806198">Konta Google</translation>

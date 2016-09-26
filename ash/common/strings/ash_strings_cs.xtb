@@ -46,7 +46,6 @@
 <translation id="2268813581635650749">Odhlásit vše</translation>
 <translation id="2297568595583585744">Stavový panel</translation>
 <translation id="2303600792989757991">Přepnutí přehledu okna</translation>
-<translation id="2372145515558759244">Synchronizace aplikací...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. Než toto povolení schválíte, zkontrolujte si, zda je na zařízení zobrazen následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Došlo k chybě</translation>
@@ -60,7 +59,6 @@
 <translation id="2727977024730340865">Byla připojena nabíječka s nízkým výkonem. Nabíjení baterie nemusí probíhat spolehlivě.</translation>
 <translation id="2761704814324807722">Systémový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Vyhledávání</translation>
-<translation id="2805756323405976993">Aplikace</translation>
 <translation id="2819276065543622893">Nyní budete odhlášeni.</translation>
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2844169650293029770">Zařízení USB Type-C (levý přední port)</translation>
@@ -108,6 +106,7 @@
 <translation id="3866182280516392520">Adresa IPv6</translation>
 <translation id="3891340733213178823">Odhlaste se dvojitým stisknutím kombinace kláves Ctrl+Shift+Q.</translation>
 <translation id="3892641579809465218">Interní displej</translation>
+<translation id="3893630138897523026">ChromeVox (hlasová odezva)</translation>
 <translation id="3963445509666917109">Reproduktor (interní)</translation>
 <translation id="3967919079500697218">Možnost pořizovat snímky obrazovky byla zakázána správcem.</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
@@ -188,7 +187,6 @@
 <translation id="6713285437468012787">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ bylo spárováno a je nyní k dispozici všem uživatelům. Toto párování můžete odebrat pomocí Nastavení.</translation>
 <translation id="6785414152754474415">Baterie je nabita na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
 <translation id="683971173229319003">Hledat+L</translation>
-<translation id="68610848741840742">ChromeVox (hlasová odezva)</translation>
 <translation id="6911468394164995108">Připojit k jiné...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Disk Google</translation>
@@ -213,6 +211,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> nepodporuje. Rozlišení bylo změněno zpět na <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7573962313813535744">Ukotvený režim</translation>
 <translation id="7580671184200851182">Přehrávat ve všech reproduktorech stejný zvuk (mono)</translation>
+<translation id="7581273696622423628">Zúčastnit se průzkumu</translation>
 <translation id="7593891976182323525">Vyhledávání nebo Shift</translation>
 <translation id="7649070708921625228">Nápověda</translation>
 <translation id="7692480393933218409">Nabíjení připojených zařízení USB Type-C</translation>

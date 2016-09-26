@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">Logga ut alla</translation>
 <translation id="2297568595583585744">Statusfält</translation>
 <translation id="2303600792989757991">Växla fönsteröversikt</translation>
-<translation id="2372145515558759244">Synkroniserar appar ...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling. Innan du godkänner bekräftar du att den här lösenordsnyckeln visas på den enheten: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Det uppstod ett fel</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
 <translation id="2761704814324807722">Statusfältet, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Sök</translation>
-<translation id="2805756323405976993">Appar</translation>
 <translation id="2819276065543622893">Du loggas nu ut.</translation>
 <translation id="2825619548187458965">Hylla</translation>
 <translation id="2844169650293029770">USB-C-enhet (främre porten på vänster sida)</translation>
@@ -109,6 +107,7 @@
 <translation id="3866182280516392520">IPv6-adress</translation>
 <translation id="3891340733213178823">Tryck på Ctrl+Skift+Q två gånger om du vill logga ut.</translation>
 <translation id="3892641579809465218">Intern bildskärm</translation>
+<translation id="3893630138897523026">ChromeVox (talad feedback)</translation>
 <translation id="3963445509666917109">Högtalare (inbyggd)</translation>
 <translation id="3967919079500697218">Möjligheten att ta skärmdumpar har inaktiverats av administratören.</translation>
 <translation id="397105322502079400">Beräknar ...</translation>
@@ -190,7 +189,6 @@
 <translation id="6713285437468012787">Bluetooth-enheten <ph name="DEVICE_NAME" /> har kopplats och är nu tillgänglig för alla användare. Du kan ta bort kopplingen i Inställningar.</translation>
 <translation id="6785414152754474415">Batteriet är fullt till <ph name="PERCENTAGE" /> % och laddas.</translation>
 <translation id="683971173229319003">Sök+L</translation>
-<translation id="68610848741840742">ChromeVox (talad feedback)</translation>
 <translation id="6911468394164995108">Anslut till andra ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -214,6 +212,7 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> har inte stöd för <ph name="SPECIFIED_RESOLUTION" />. Upplösningen ändrades till <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Dockat läge</translation>
 <translation id="7580671184200851182">Spela samma ljud i alla högtalare (monoljud)</translation>
+<translation id="7581273696622423628">Svara på enkäten</translation>
 <translation id="7593891976182323525">Sök eller Skift</translation>
 <translation id="7649070708921625228">Hjälp</translation>
 <translation id="7692480393933218409">Laddar anslutna USB-C-enheter</translation>

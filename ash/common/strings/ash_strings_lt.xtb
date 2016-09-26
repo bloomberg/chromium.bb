@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">Atjungti visus</translation>
 <translation id="2297568595583585744">Būsenos dėklas</translation>
 <translation id="2303600792989757991">Perjungti lango apžvalgą</translation>
-<translation id="2372145515558759244">Sinchronizuojamos programos...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ prašo leidimo susieti. Prieš sutikdami, patvirtinkite, kad šiame įrenginyje rodomas šis slaptasis raktas: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Įvyko klaida</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">Prijungtas mažos galios įkroviklis. Akumuliatoriaus įkrovimas gali būti nepatikimas.</translation>
 <translation id="2761704814324807722">Būsenos dėklas, laikas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">„Alt“ + paieškos klavišas</translation>
-<translation id="2805756323405976993">Taikomosios programos</translation>
 <translation id="2819276065543622893">Būsite atjungti.</translation>
 <translation id="2825619548187458965">Lentyna</translation>
 <translation id="2844169650293029770">USB-C įrenginys (prievadas kairėje, priekinėje dalyje)</translation>
@@ -110,6 +108,7 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="3866182280516392520">„IPv6“ adresas</translation>
 <translation id="3891340733213178823">Jei norite atsijungti, du kartus paspauskite „Ctrl“ + „Shift“ + Q.</translation>
 <translation id="3892641579809465218">Vidinė pateiktis</translation>
+<translation id="3893630138897523026">„ChromeVox“ (ekrano skaitymas balsu)</translation>
 <translation id="3963445509666917109">Garsiakalbis (vidinis)</translation>
 <translation id="3967919079500697218">Jūsų administratorius išjungė ekrano kopijų kūrimo funkciją.</translation>
 <translation id="397105322502079400">Skaičiuojama...</translation>
@@ -191,7 +190,6 @@ Jei norite atšaukti, paspauskite paieškos arba antrojo lygio klavišą.</trans
 <translation id="6713285437468012787">„Bluetooth“ įrenginys „<ph name="DEVICE_NAME" />“ susietas ir dabar pasiekiamas visiems naudotojams. Nustatymuose galite pašalinti šį susiejimą.</translation>
 <translation id="6785414152754474415">Likusi akumuliatoriaus įkrova: <ph name="PERCENTAGE" /> %. Jis įkraunamas.</translation>
 <translation id="683971173229319003">Paieškos klavišas + L</translation>
-<translation id="68610848741840742">„ChromeVox“ (ekrano skaitymas balsu)</translation>
 <translation id="6911468394164995108">Prisijungti prie kito...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">„Google“ diskas</translation>
@@ -216,6 +214,7 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ nepalaiko <ph name="SPECIFIED_RESOLUTION" />. Skyra pakeista į <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Doko režimas</translation>
 <translation id="7580671184200851182">Paleisti tą patį garso įrašą visuose garsiakalbiuose (monofoninio garso įrašas)</translation>
+<translation id="7581273696622423628">Dalyvauti apklausoje</translation>
 <translation id="7593891976182323525">Paieškos arba antrojo lygio klavišas</translation>
 <translation id="7649070708921625228">Žinynas</translation>
 <translation id="7692480393933218409">Įkraunami prijungti USB-C įrenginiai</translation>

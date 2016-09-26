@@ -47,7 +47,6 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="2268813581635650749">Salir de todo</translation>
 <translation id="2297568595583585744">Bandeja de estado</translation>
 <translation id="2303600792989757991">Activar vista general de ventanas</translation>
-<translation id="2372145515558759244">Sincronizando aplicaciones...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Antes de aceptar, debes confirmar que aparece la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Se ha producido un error</translation>
@@ -61,7 +60,6 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="2727977024730340865">Conexión a un cargador de baja potencia. Es posible que la carga de la batería no sea confiable.</translation>
 <translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
-<translation id="2805756323405976993">Aplicaciones</translation>
 <translation id="2819276065543622893">Saldrás de la sesión ahora.</translation>
 <translation id="2825619548187458965">Biblioteca</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (puerto lateral izquierdo delantero)</translation>
@@ -110,6 +108,7 @@ Presiona Mayús o la tecla de búsqueda para cancelar la operación.</translatio
 <translation id="3866182280516392520">Dirección IPv6</translation>
 <translation id="3891340733213178823">Presiona Ctrl + Mayús + Q dos veces para salir.</translation>
 <translation id="3892641579809465218">Pantalla interna</translation>
+<translation id="3893630138897523026">ChromeVox (comentarios por voz)</translation>
 <translation id="3963445509666917109">Altavoz (interno)</translation>
 <translation id="3967919079500697218">Tu administrador inhabilitó la función para realizar capturas de pantalla.</translation>
 <translation id="397105322502079400">Calculando...</translation>
@@ -191,7 +190,6 @@ Para cambiarlo, presiona Shift + Alt.</translation>
 <translation id="6713285437468012787">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" se sincronizó y ahora está disponible para todos los usuarios. Puedes ir a Configuración para eliminar esta sincronización.</translation>
 <translation id="6785414152754474415">La batería tiene un <ph name="PERCENTAGE" /> % de carga y se está cargando.</translation>
 <translation id="683971173229319003">Tecla de búsqueda + L</translation>
-<translation id="68610848741840742">ChromeVox (comentarios por voz)</translation>
 <translation id="6911468394164995108">Conectarte a otra red...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -215,6 +213,7 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admite una resolución de <ph name="SPECIFIED_RESOLUTION" />. La resolución se cambió a <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7573962313813535744">Modo acoplado</translation>
 <translation id="7580671184200851182">Reproducir el mismo audio en todos los altavoces (sonido mono)</translation>
+<translation id="7581273696622423628">Responder encuesta</translation>
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7692480393933218409">Cargando dispositivos USB-C conectados</translation>

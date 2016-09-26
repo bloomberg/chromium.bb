@@ -15,6 +15,7 @@
 <translation id="1107591249535594099">പരിശോധിച്ചെങ്കിൽ, വേഗതേറിയ ഫോം പൂരിപ്പിക്കലിനായി ഈ ഉപകരണത്തിൽ നിങ്ങളുടെ കാർഡിന്റെ ഒരു പകർപ്പ് Chrome സംഭരിക്കും.</translation>
 <translation id="1111153019813902504">സമീപകാലത്തെ ബുക്‌മാര്‍ക്കുകള്‍</translation>
 <translation id="1113869188872983271">&amp;പുനഃക്രമീകരിക്കുന്നത് പഴയപടിയാക്കുക</translation>
+<translation id="1126551341858583091">ലോക്കൽ സ്‌‌റ്റോറേജിന്റെ വലുപ്പം <ph name="CRASH_SIZE" /> ആണ്.</translation>
 <translation id="112840717907525620">നയ കാഷെ ശരി</translation>
 <translation id="113188000913989374"><ph name="SITE" /> സൈറ്റ് പറയുന്നത്:</translation>
 <translation id="1132774398110320017">Chrome ഓട്ടോഫിൽ ക്രമീകരണങ്ങൾ...</translation>
@@ -111,6 +112,7 @@
 <translation id="2212735316055980242">നയം കണ്ടെത്തിയില്ല</translation>
 <translation id="2213606439339815911">എൻട്രികൾ ലഭ്യമാക്കുന്നു...</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ഡയഗണോസ്‌റ്റിക്‌സ് ആപ്പ്<ph name="END_LINK" /> ഉപയോഗിച്ച് കണകഷൻ പ്രശ്‌നം പരിഹരിക്കുക</translation>
+<translation id="2239100178324503013">ഇപ്പോൾ അയയ്‌ക്കുക</translation>
 <translation id="225207911366869382">ഈ നയത്തിനായി ഈ മൂല്യത്തെ ഒഴിവാക്കി.</translation>
 <translation id="2262243747453050782">HTTP പിശക്</translation>
 <translation id="2282872951544483773">ലഭ്യമല്ലാത്ത പരീക്ഷണങ്ങൾ</translation>
@@ -288,6 +290,7 @@
 <translation id="3963721102035795474">റീഡർ മോഡ്</translation>
 <translation id="397105322502079400">കണക്കാക്കുന്നു...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> ബ്ലോക്കുചെയ്‌തിരിക്കുന്നു</translation>
+<translation id="40103911065039147">{URL_count,plural, =1{സമീപത്ത് ഒരു വെബ്‌പേജുണ്ട്}other{സമീപത്ത് # വെബ്‌പേജുകളുണ്ട്}}</translation>
 <translation id="4021036232240155012">ഒരു വെബ്‌സൈറ്റിന്റെ പേര് അതിന്റെ ഇന്റർനെറ്റ് വിലാസത്തിലേക്ക് വിവർത്തനം ചെയ്യുന്ന നെറ്റ്‌വർക്ക് സേവനമാണ് DNS.</translation>
 <translation id="4030383055268325496">&amp;ചേർക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="404928562651467259">മുന്നറിയിപ്പ്</translation>
@@ -357,6 +360,7 @@
 <translation id="4880827082731008257">തിരയൽ ചരിത്രം</translation>
 <translation id="4884656795097055129">ആവശ്യമുള്ള സമയത്ത് കൂടുതൽ ലേഖനങ്ങൾ ദൃശ്യമാകും.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4914479371620770914">{URL_count,plural, =1{ഒരു വെബ്‌പേജ് കൂടിയുണ്ട്}other{# വെബ്‌പേജുകൾ കൂടിയുണ്ട്}}</translation>
 <translation id="4923417429809017348">ഈ പേജിനെ അറിയപ്പെടാത്ത ഒരു ഭാഷയില്‍‌ നിന്നും <ph name="LANGUAGE_LANGUAGE" /> എന്നതിലേക്ക് വിവര്‍‌ത്തനം ചെയ്തു</translation>
 <translation id="4926049483395192435">വ്യക്തമാക്കേണ്ടതാണ്.</translation>
 <translation id="4930497775425430760">പുതിയ സൈറ്റുകളിൽ ആദ്യമായി പോകുമ്പോൾ അവയ്‌ക്ക് രക്ഷിതാവിന്റെ അംഗീകാരം ആവശ്യമായതിനാലാണ് ഈ സന്ദേശം കാണുന്നത്.</translation>
@@ -486,6 +490,7 @@
 <translation id="647261751007945333">ഉപകരണ നയങ്ങൾ</translation>
 <translation id="6489534406876378309">ക്രാഷുകൾ അപ്‌ലോഡുചെയ്യുന്നത് ആരംഭിക്കുക</translation>
 <translation id="6529602333819889595">&amp;ഇല്ലാതാക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
+<translation id="6534179046333460208">ഫിസിക്കൽ വെബ് നിർദ്ദേശങ്ങൾ</translation>
 <translation id="6550675742724504774">ഓപ്ഷനുകൾ</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" />-യിൽ താഴെ</translation>
 <translation id="6596325263575161958">എൻക്രിപ്‌ഷൻ ഓപ്‌ഷനുകൾ</translation>
@@ -543,8 +548,10 @@
 <translation id="7269802741830436641">ഈ വെബ്പേജിന് ഒരു റീഡയറക്ട് ലൂപ്പ് ഉണ്ട്</translation>
 <translation id="7275334191706090484">നിയന്ത്രിത ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="7298195798382681320">ശുപാർശചെയ്യുന്നത്</translation>
+<translation id="7309308571273880165"><ph name="CRASH_TIME" />-ന് ക്യാപ്‌ചർ ചെയ്‌ത ക്രാഷ് റിപ്പോർട്ടുകൾ (ഉപയോക്താവ് അഭ്യർത്ഥിച്ച അപ്‌ലോഡ്, ഇതുവരെ അപ്‌ലോഡുചെയ്‌തിട്ടില്ല)</translation>
 <translation id="7334320624316649418">&amp;പുനഃക്രമീകരിക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="733923710415886693">സർട്ടിഫിക്കറ്റ് സുതാര്യതയിലൂടെ സെർവറുടെ സർട്ടിഫിക്കറ്റ് വെളിപ്പെടുത്തിയിട്ടില്ല.</translation>
+<translation id="7351800657706554155"><ph name="SITE" /> സൈറ്റിന്റെ സർട്ടിഫിക്കറ്റ് റദ്ദാക്കിയതിനാൽ നിങ്ങൾക്കിപ്പോൾ ഇത് സന്ദർശിക്കാനാകില്ല. നെറ്റ്‌വർക്ക് പിശകുകളും ആക്രമണങ്ങളും സാധാരണയായി താൽക്കാലിക പ്രശ്‌നങ്ങളായതിനാൽ, ഈ പേജ് മിക്കവാറും പിന്നീട് പ്രവർത്തിക്കും. <ph name="BEGIN_LEARN_MORE_LINK" />കൂടുതലറിയുക<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7353601530677266744">കമാന്‍റ് ലൈന്‍‌</translation>
 <translation id="7372973238305370288">തിരയൽ ഫലം</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -642,12 +649,12 @@
 <translation id="8349305172487531364">ബുക്മാര്‍ക്ക് ബാര്‍</translation>
 <translation id="8363502534493474904">ഫ്ലൈറ്റ് മോഡ് ഓഫാക്കുന്നു</translation>
 <translation id="8364627913115013041">സജ്ജമാക്കിയിട്ടില്ല.</translation>
+<translation id="8380941800586852976">അപകടകരമായത്</translation>
 <translation id="8412145213513410671">ക്രാഷുകള്‍ <ph name="CRASH_COUNT" /></translation>
 <translation id="8412392972487953978">നിങ്ങള്‍ സമാന പാസ്ഫ്രെയ്സ് രണ്ടുതവണ നല്‍കണം.</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8433057134996913067">ഇത് നിങ്ങളെ മിക്ക വെബ്‌സൈറ്റുകളിൽ നിന്നും സൈൻ ഔട്ട് ചെയ്യിക്കും.</translation>
 <translation id="8437238597147034694">&amp;നീക്കുന്നത് പഴയപടിയാക്കുക</translation>
-<translation id="8459333855531264009">സുരക്ഷിതമല്ല</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{ഒരു ക്രെഡിറ്റ് കാർഡ്}other{# ക്രെഡിറ്റ് കാർഡുകൾ}}</translation>
 <translation id="8488350697529856933">ഇതിന് ബാധകമാക്കുന്നു</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> പ്രതികരിക്കാൻ കൂടുതൽ സമയമെടുത്തു.</translation>
@@ -671,7 +678,6 @@
 <translation id="8741995161408053644">നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="8790007591277257123">&amp;ഇല്ലാതാക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="8798099450830957504">സ്ഥിരസ്ഥിതി</translation>
-<translation id="8803639129939845298">സുരക്ഷിതം</translation>
 <translation id="8804164990146287819">സ്വകാര്യത നയം</translation>
 <translation id="8820817407110198400">ബുക്ക്‌മാര്‍ക്കുകള്‍</translation>
 <translation id="8834246243508017242">കോൺടാക്‌റ്റുകൾ ഉപയോഗിച്ച് ഓട്ടോഫിൽ പ്രവർത്തനക്ഷമമാക്കുക…</translation>
@@ -713,7 +719,6 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ഫോം മായ്‌ക്കുക</translation>
 <translation id="939736085109172342">പുതിയ ഫോള്‍ഡര്‍</translation>
-<translation id="943029900877297437">നിങ്ങൾ Google അക്കൗണ്ടിൽ സംരക്ഷിച്ച കാർഡുകൾ ഉപയോഗിക്കാൻ, Chrome-ൽ സൈൻ ഇൻ ചെയ്യുക.</translation>
 <translation id="962701380617707048">നിങ്ങളുടെ കാർഡ് വിശദാംശങ്ങൾ അപ്‌ഡേറ്റുചെയ്യാൻ, <ph name="CREDIT_CARD" />-ന്റെ കാലാവധി തീരുന്ന തീയതിയും CVC-യും നൽകുക</translation>
 <translation id="969892804517981540">ഔദ്യോഗിക ബില്‍ഡ്</translation>
 <translation id="988159990683914416">വികാസക പതിപ്പ്</translation>

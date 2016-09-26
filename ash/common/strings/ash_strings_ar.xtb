@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">خروج الجميع</translation>
 <translation id="2297568595583585744">علبة الحالة</translation>
 <translation id="2303600792989757991">نظرة عامة لنافذة التبديل</translation>
-<translation id="2372145515558759244">جارٍ مزامنة التطبيقات...</translation>
 <translation id="2391579633712104609">180 درجة</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، الرجاء التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">حدث خطأ</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">تمّ توصيل شاحن منخفض الطاقة. لذا قد لا تكون عملية شحن البطارية جديرة بالثقة.</translation>
 <translation id="2761704814324807722">علبة الحالة، والوقت <ph name="TIME" />، و<ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">‏Alt+مفتاح البحث</translation>
-<translation id="2805756323405976993">تطبيقات</translation>
 <translation id="2819276065543622893">سيتم تسجيل خروجك الآن.</translation>
 <translation id="2825619548187458965">الرف</translation>
 <translation id="2844169650293029770">‏جهاز USB-C (المنفذ الأمامي الأيسر)</translation>
@@ -109,6 +107,7 @@
 <translation id="3866182280516392520">‏عنوان IPv6</translation>
 <translation id="3891340733213178823">‏للخروج اضغط على Ctrl+Shift+Q مرتين.</translation>
 <translation id="3892641579809465218">العرض الداخلي</translation>
+<translation id="3893630138897523026">‏ChromeVox (التعليق المنطوق)</translation>
 <translation id="3963445509666917109">سماعة (داخلية)</translation>
 <translation id="3967919079500697218">تم تعطيل إمكانية التقاط لقطات شاشة من قِبل المشرف..</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
@@ -190,7 +189,6 @@
 <translation id="6713285437468012787">تم إقران جهاز بلوتوث "<ph name="DEVICE_NAME" />" وهو الآن متاح لجميع المستخدمين. يمكنك إزالة هذا الإقران باستخدام الإعدادات.</translation>
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية ويجري شحنها.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">‏ChromeVox (التعليق المنطوق)</translation>
 <translation id="6911468394164995108">الانضمام إلى شبكة أخرى...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -213,6 +211,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" />. تم تغيير الدقة إلى <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">وضع الإرساء</translation>
 <translation id="7580671184200851182">تشغيل نفس الصوت عبر جميع مكبرات الصوت (صوت أحادي)</translation>
+<translation id="7581273696622423628">المشاركة في استطلاع الرأي</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
 <translation id="7649070708921625228">مساعدة</translation>
 <translation id="7692480393933218409">‏جارٍ شحن أجهزة USB-C المتصلة</translation>

@@ -287,6 +287,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="8548209692293300397">Predtým ste sa prihlásili ako používateľ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Ak chcete získať prístup k počítačom v danom účte, musíte sa <ph name="LINK_BEGIN" />prihlásiť do prehliadača Google Chrome<ph name="LINK_END" /> pomocou daného účtu a znova nainštalovať aplikáciu Vzdialená plocha Chrome.</translation>
 <translation id="8642984861538780905">Priemerné</translation>
 <translation id="8712909229180978490">Nevidím svoje uložené súbory online na Disku Google.</translation>
+<translation id="8743328882720071828">Chcete povoliť používateľovi <ph name="CLIENT_USERNAME" /> zobraziť a ovládať váš počítač?</translation>
 <translation id="8759753423332885148">Prečítajte si viac informácií.</translation>
 <translation id="8791202241915690908">Stiahnutie nástroja na inštaláciu hostiteľa funkcie Chromoting</translation>
 <translation id="894763922177556086">Dobré</translation>

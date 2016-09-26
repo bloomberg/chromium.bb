@@ -38,7 +38,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1773601347087397504">Get help with using Chrome OS</translation>
 <translation id="1818142563254268765">Chrome could not update itself to the latest version, so you are missing out on amazing new features and security fixes. You need to update Chrome.</translation>
 <translation id="1877026089748256423">Chrome is out of date</translation>
-<translation id="1924381329666691588">Google Chrome cannot be displayed in this language.</translation>
 <translation id="2063848847527508675">Chrome OS needs to be restarted to apply the update.</translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2084710999043359739">Add to Chrome</translation>
@@ -120,6 +119,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="437002079035561265">This computer will no longer receive Google Chrome updates because this Linux system is no longer supported.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Please sign out and sign in again for this change to take effect.</translation>
+<translation id="4458462641685292929">Another operation on Google Chrome is in progress. Please try again later.</translation>
 <translation id="4480040274068703980">Chrome OS could not sync your data due to an error signing in.</translation>
 <translation id="4519152997629025674">Google Chrome may use <ph name="BEGIN_LINK" />web services<ph name="END_LINK" /> to improve your browsing experience. You may optionally disable these services at any time.</translation>
 <translation id="4561051373932531560">Google Chrome lets you click a phone number on the web and call it with Skype!</translation>
@@ -132,6 +132,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="4743926867934016338">Accept &amp; Search</translation>
 <translation id="4751441238232965030">This computer will soon stop receiving 32-bit Google Chrome updates. Please upgrade to 64-bit Google Chrome.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
+<translation id="4771048833395599659">This file may be dangerous, so Chrome has blocked it.</translation>
 <translation id="4794050651896644714">Save details in Chrome</translation>
 <translation id="4891791193823137474">Let Google Chrome run in the background</translation>
 <translation id="4921569541910214635">Share a computer? Now you can set up Chrome just the way you like it.</translation>
@@ -165,7 +166,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="5563479599352954471">Search with one touch</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
-<translation id="5637867606963802593">Chrome OS cannot be displayed in this language.</translation>
 <translation id="568643307450491754">Find your bookmarks in the Chrome menu or on the bookmarks bar.</translation>
 <translation id="573759479754913123">About Chrome OS</translation>
 <translation id="5749068826913805084">Chrome needs storage access to download files.</translation>
@@ -192,6 +192,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6400076122676892962">This computer will soon stop receiving Google Chrome updates because Mac OS X 10.6, 10.7 and 10.8 will no longer be supported.</translation>
 <translation id="6470176598693778404">This computer will no longer receive Google Chrome updates because Mac OS X 10.6, 10.7 and 10.8 are no longer supported.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{A download is currently in progress. Do you want to cancel the download and exit Google Chrome?}other{# downloads are currently in progress. Do you want to cancel the downloads and exit Google Chrome?}}</translation>
+<translation id="6566149418543181476">Updating Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">You're using <ph name="PROFILE_EMAIL" /> to sync your Chrome stuff. To update your sync preference or to use Chrome without a Google account, visit <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Copied to Chrome</translation>
 <translation id="6626317981028933585">Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.</translation>
@@ -199,6 +200,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="6676384891291319759">Access the Internet</translation>
 <translation id="6757767188268205357">Don't bother me</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
+<translation id="686561893457936865">Take Chrome everywhere</translation>
 <translation id="6883876366448858277">sends a word and its surrounding context to Google Search, returning definitions, pictures and other search results.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Updating your device...</translation>
@@ -259,7 +261,9 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8255190535488645436">Google Chrome is using your camera and microphone.</translation>
 <translation id="8286862437124483331">Google Chrome is trying to show passwords. Type your Windows password to allow this.</translation>
 <translation id="8290100596633877290">Whoa! Google Chrome has crashed. Relaunch now?</translation>
+<translation id="8342675569599923794">This file is dangerous, so Chrome has blocked it.</translation>
 <translation id="8406086379114794905">Help make Chrome better</translation>
+<translation id="8455999171311319804">Optional: Help make Chrome OS better by automatically sending diagnostic and usage data to Google.</translation>
 <translation id="853189717709780425">You are signing in with a managed account and giving its administrator control over your Google Chrome profile. Your Chrome data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>

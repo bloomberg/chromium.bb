@@ -15,6 +15,7 @@
 <translation id="1107591249535594099">যদি পরীক্ষা করা হয়, Chrome দ্রুত ফর্ম পূরণ করার জন্য এই ডিভাইসে থাকা আপনার কার্ডের একটি প্রতিলিপি সঞ্চয় করবে৷</translation>
 <translation id="1111153019813902504">সাম্প্রতিক বুকমার্কস</translation>
 <translation id="1113869188872983271">&amp;পুনর্বিন্যাসকে পূর্বাবস্থায় ফেরান</translation>
+<translation id="1126551341858583091">স্থানীয় সঞ্চয়স্থানের আকার হলো <ph name="CRASH_SIZE" />।</translation>
 <translation id="112840717907525620">নীতি ক্যাশেটি ঠিক আছে</translation>
 <translation id="113188000913989374"><ph name="SITE" /> বলছে:</translation>
 <translation id="1132774398110320017">Chrome স্বতঃপূর্ণ সেটিংস...</translation>
@@ -112,6 +113,7 @@
 <translation id="2212735316055980242">নীতি পাওয়া যায়নি</translation>
 <translation id="2213606439339815911">এন্ট্রিগুলি আনা হচ্ছে...</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ডায়াগনস্টিক অ্যাপ্লিকেশান<ph name="END_LINK" /> ব্যবহার করে আপনার সংযোগ ঠিক করুন</translation>
+<translation id="2239100178324503013">এখনই পাঠান</translation>
 <translation id="225207911366869382">এই মান এই নীতির জন্য অসমর্থিত হয়েছে৷</translation>
 <translation id="2262243747453050782">HTTP ত্রুটি</translation>
 <translation id="2282872951544483773">অনুপলব্ধ পরীক্ষানিরীক্ষাগুলি</translation>
@@ -290,6 +292,7 @@
 <translation id="3963721102035795474">পাঠক মোড</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> অবরুদ্ধ হয়ে রয়েছে</translation>
+<translation id="40103911065039147">{URL_count,plural, =1{আশেপাশের ১টি ওয়েবপৃষ্ঠা}one{আশেপাশের #টি ওয়েবপৃষ্ঠা}other{আশেপাশের #টি ওয়েবপৃষ্ঠা}}</translation>
 <translation id="4021036232240155012">DNS সেই নেটওয়ার্ক পরিষেবা যা কোনো ওয়েবসাইটের নামকে ইন্টারনেট ঠিকানায় রুপান্তরিত করে।</translation>
 <translation id="4030383055268325496">&amp;যোগ করাকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="404928562651467259">সতর্কতা</translation>
@@ -359,6 +362,7 @@
 <translation id="4880827082731008257">ইতিহাস অনুসন্ধান</translation>
 <translation id="4884656795097055129">সঠিক সময়ে আরো নিবন্ধ হাজির হবে।</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4914479371620770914">{URL_count,plural, =1{এবং আরো ১টি ওয়েব পৃষ্ঠা}one{এবং আরো #টি ওয়েব পৃষ্ঠা}other{এবং আরো #টি ওয়েব পৃষ্ঠা}}</translation>
 <translation id="4923417429809017348">এই পৃষ্ঠাটি কোন অজানা ভাষা থেকে <ph name="LANGUAGE_LANGUAGE" />-এ অনুবাদ করা হয়েছে</translation>
 <translation id="4926049483395192435">নির্দিষ্ট করা উচিত৷</translation>
 <translation id="4930497775425430760">নতুন সাইটগুলি আপনি প্রথম বারের মত ঘুরে দেখার সময় আপনার পিতা বা মাতার সেগুলি অনুমোদন দেওয়ার প্রয়োজন হওয়ার কারণে আপনি এই বার্তাটি দেখতে পাচ্ছেন।</translation>
@@ -487,6 +491,7 @@
 <translation id="647261751007945333">ডিভাইস নীতিগুলি</translation>
 <translation id="6489534406876378309">ক্র্যাশগুলি আপলোড করা শুরু করুন</translation>
 <translation id="6529602333819889595">&amp;মুছে ফেলাকে পুনরায় করুন</translation>
+<translation id="6534179046333460208">বাস্তবিক ওয়েব প্রস্তাবনাগুলি</translation>
 <translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> এর কম</translation>
 <translation id="6596325263575161958">এনক্রিপশন বিকল্পগুলি</translation>
@@ -544,8 +549,10 @@
 <translation id="7269802741830436641">এই ওয়েবপৃষ্ঠাটির একটি পুনঃচালনা লুপ আছে</translation>
 <translation id="7275334191706090484">পরিচালিত বুকমার্কগুলি</translation>
 <translation id="7298195798382681320">প্রস্তাবিত</translation>
+<translation id="7309308571273880165"><ph name="CRASH_TIME" /> এ ক্র্যাশ প্রতিবেদন ক্যাপচার করা হয়েছে (ব্যবহারকারী দ্বারা আপলোডের অনুরোধ করা হয়েছে, এখনও আপলোড করা হয়নি)</translation>
 <translation id="7334320624316649418">&amp;পুনর্বিন্যাসকে পুনরায় করুন</translation>
 <translation id="733923710415886693">সার্ভারের শংসাপত্রটি শংসাপত্রের স্বচ্ছতার মাধ্যমে প্রকাশ করা হয়নি।</translation>
+<translation id="7351800657706554155">আপনি এখন <ph name="SITE" /> এ যেতে পারবেন না কারণ এই শংসাপত্র প্রত্যাহার করা হয়েছে। নেটওয়ার্ক ত্রুটি এবং আক্রমণ সাধারণত সাময়িকভাবে হয়ে থাকে, তাই এই পৃষ্ঠাটি সম্ভবত পরে কাজ করবে। <ph name="BEGIN_LEARN_MORE_LINK" />আরো জানুন<ph name="END_LEARN_MORE_LINK" />।</translation>
 <translation id="7353601530677266744">কম্যান্ড লাইন</translation>
 <translation id="7372973238305370288">ফলাফল অনুসন্ধান করুন</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -643,12 +650,12 @@
 <translation id="8349305172487531364">বুকমার্কস দণ্ড</translation>
 <translation id="8363502534493474904">বিমান মোড বন্ধ করে দেখুন</translation>
 <translation id="8364627913115013041">সেট করা নেই৷</translation>
+<translation id="8380941800586852976">বিপজ্জনক</translation>
 <translation id="8412145213513410671">ক্র্যাশ (<ph name="CRASH_COUNT" />টি)</translation>
 <translation id="8412392972487953978">আপনাকে একই পাসফ্রেজ অবশ্যই দু'বার প্রবেশ করাতে হবে৷</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8433057134996913067">এটি বেশিরভাগ ওয়েবসাইট থেকে আপনাকে প্রস্থান করুন করবে।</translation>
 <translation id="8437238597147034694">&amp;সরানোকে পূর্বাবস্থায় ফেরান</translation>
-<translation id="8459333855531264009">সুরক্ষিত নয়</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{১টি ক্রেডিট কার্ড}one{#টি ক্রেডিট কার্ড}other{#টি ক্রেডিট কার্ড}}</translation>
 <translation id="8488350697529856933">এতে প্রয়োগ হয়</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> সাড়া দিতে খুবে বেশি সময় নিয়েছে।</translation>
@@ -672,7 +679,6 @@
 <translation id="8741995161408053644"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> এ আপনার Google অ্যাকাউন্টের অন্যান্য ধরনের ব্রাউজিং ইতিহাস থাকতে পারে।</translation>
 <translation id="8790007591277257123">&amp;মুছে ফেলাকে পুনরায় করুন</translation>
 <translation id="8798099450830957504">ডিফল্ট</translation>
-<translation id="8803639129939845298">সুরক্ষিত</translation>
 <translation id="8804164990146287819">গোপনীয়তা নীতি</translation>
 <translation id="8820817407110198400">বুকমার্কস</translation>
 <translation id="8834246243508017242">পরিচিতিগুলি ব্যবহার করে স্বতঃপূর্ণ সক্ষম করুন...</translation>
@@ -714,7 +720,6 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ফর্ম সাফ করুন</translation>
 <translation id="939736085109172342">নতুন ফোল্ডার</translation>
-<translation id="943029900877297437">আপনার Google অ্যাকাউন্টে সংরক্ষণ করা কার্ডগুলি ব্যবহার করার জন্য, Chrome এ সাইন ইন করুন।</translation>
 <translation id="962701380617707048">আপনার কার্ডের বিবরণ আপডেট করার জন্য মেয়াদ শেষের তারিখ এবং <ph name="CREDIT_CARD" /> এর CVC  লিখুন</translation>
 <translation id="969892804517981540">অফিসিয়াল বিল্ড</translation>
 <translation id="988159990683914416">বিকাশকারী বিল্ড</translation>

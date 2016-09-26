@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Bogmærker, der er gemt på dine andre enheder, vises her.</translation>
 <translation id="1121094540300013208">Forbrugs- og nedbrudsrapporter</translation>
 <translation id="1137305377394488060">den seneste time</translation>
+<translation id="1146678959555564648">Angiv VR</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1197267115302279827">Flyt bogmærker</translation>
@@ -247,6 +248,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="393697183122708255">Aktiveret talesøgning ikke tilgængelig</translation>
 <translation id="3946611741043634542">Ved at fortsætte accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Log ind</translation>
+<translation id="3967822245660637423">Download gennemført</translation>
 <translation id="397583555483684758">Synkroniseringen fungerer ikke mere</translation>
 <translation id="3988213473815854515">Placeringen er tilladt</translation>
 <translation id="3997476611815694295">Lagerplads, der ikke er vigtig</translation>
@@ -259,7 +261,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4095146165863963773">Vil du slette appdata?</translation>
 <translation id="4099578267706723511">Hjælp med at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="410351446219883937">Autoplay</translation>
-<translation id="411254640334432676">Download mislykkedes.</translation>
 <translation id="4113030288477039509">Administreres af din administrator</translation>
 <translation id="4165986682804962316">Indstillinger for website</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
@@ -277,7 +278,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4275663329226226506">Medier</translation>
 <translation id="4278390842282768270">Tilladt</translation>
 <translation id="4307992518367153382">Grundlæggende valgmuligheder</translation>
-<translation id="4334294535648607276">Download gennemført.</translation>
 <translation id="4351244548802238354">Luk dialogboksen</translation>
 <translation id="4376501731284077108">Ukontrolleret</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -335,12 +335,10 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5063480226653192405">Forbrug</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
 <translation id="510275257476243843">1 time tilbage</translation>
-<translation id="5107381076085091558">Downloaden er sat på pause.</translation>
 <translation id="5127805178023152808">Synkronisering er slået fra</translation>
 <translation id="5131405117025179004">Rediger gemt konto</translation>
 <translation id="5138299137310274655">Denne side er på <ph name="SOURCE_LANGUAGE" />. Vil du oversætte til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Ryd lagrede data</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />Instant<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Dette er et barns konto</translation>
 <translation id="5161254044473106830">Der skal angives en titel</translation>
 <translation id="5164482624172255778">Skal Google Chrome tilbyde at oversætte sider på <ph name="LANGUAGE" /> fra dette website næste gang?</translation>
@@ -655,6 +653,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8719023831149562936">Den aktuelle fane kan ikke overføres</translation>
 <translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="8730621377337864115">Fuldført</translation>
+<translation id="8748850008226585750">Indholdet er skjult</translation>
 <translation id="8812942424849541387">Kontrollér, hvordan dette fungerer i <ph name="BEGIN_LINK1" />Indstillinger<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="883635517171802338">Bloker visning af pop up-vinduer på websites (anbefales)</translation>
@@ -662,7 +661,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, fane</translation>
 <translation id="885701979325669005">Lagerplads</translation>
-<translation id="8872506776304248286">Åbn i app</translation>
 <translation id="8901170036886848654">Der blev ikke fundet nogen bogmærker</translation>
 <translation id="8909135823018751308">Del…</translation>
 <translation id="8912362522468806198">Google-konto</translation>

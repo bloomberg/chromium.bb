@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Les adreces d'interès desades als altres dispositius es mostraran aquí.</translation>
 <translation id="1121094540300013208">Informes d'ús i d'error</translation>
 <translation id="1137305377394488060">de l'última hora</translation>
+<translation id="1146678959555564648">Activa el mode de RV</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
 <translation id="1197267115302279827">Mou les adreces d'interès</translation>
@@ -218,7 +219,7 @@ Podeu controlar el Web físic a la configuració de Chrome.
 <translation id="3518985090088779359">Accepta i continua</translation>
 <translation id="3522247891732774234">Hi ha una actualització disponible. Més opcions</translation>
 <translation id="3527085408025491307">Carpeta</translation>
-<translation id="3549644494707163724">Encripta totes les dades sincronitzades amb la vostra frase de contrasenya de sincronització</translation>
+<translation id="3549644494707163724">Encripta totes les dades sincronitzades amb la teva frase de contrasenya de sincronització</translation>
 <translation id="3590487821116122040">Emmagatzematge del lloc web que Chrome no considera important (com ara els llocs web sense configuració desada o aquells que no visiteu sovint)</translation>
 <translation id="360480449234699036">Consulteu més informació sobre els temes en altres llocs web sense sortir de la pàgina. La funció Toca per cercar envia una paraula i el seu context a la Cerca de Google i ofereix com a resultat definicions, imatges, resultats de la cerca i altres detalls.
 
@@ -247,6 +248,7 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="393697183122708255">La cerca per veu no està disponible</translation>
 <translation id="3946611741043634542">En continuar, acceptes les <ph name="BEGIN_LINK1" />Condicions del servei<ph name="END_LINK1" /> i l'<ph name="BEGIN_LINK2" />Avís de privadesa<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="3950820424414687140">Inicia la sessió</translation>
+<translation id="3967822245660637423">S'ha completat la baixada</translation>
 <translation id="397583555483684758">La sincronització ha deixat de funcionar</translation>
 <translation id="3988213473815854515">La ubicació es permet</translation>
 <translation id="3997476611815694295">Emmagatzematge no important</translation>
@@ -259,7 +261,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4095146165863963773">Voleu esborrar les dades de l'aplicació?</translation>
 <translation id="4099578267706723511">Ajuda a millorar Chrome enviant estadístiques d'ús i d'informes d'error a Google.</translation>
 <translation id="410351446219883937">Reproducció automàtica</translation>
-<translation id="411254640334432676">S'ha produït un error durant la baixada.</translation>
 <translation id="4113030288477039509">Gestionat per l'administrador</translation>
 <translation id="4165986682804962316">Configuració del lloc</translation>
 <translation id="4170011742729630528">El servei no està disponible. Torneu-ho a provar més tard.</translation>
@@ -277,7 +278,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4275663329226226506">Multimèdia</translation>
 <translation id="4278390842282768270">Permeses</translation>
 <translation id="4307992518367153382">Bàsic</translation>
-<translation id="4334294535648607276">S'ha completat la baixada.</translation>
 <translation id="4351244548802238354">Tanca el quadre de diàleg</translation>
 <translation id="4376501731284077108">No controlats</translation>
 <translation id="4378154925671717803">Telèfon</translation>
@@ -335,12 +335,10 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="5063480226653192405">Ús</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="510275257476243843">Queda 1 hora</translation>
-<translation id="5107381076085091558">S'ha aturat la baixada.</translation>
 <translation id="5127805178023152808">Sincronització desactivada</translation>
 <translation id="5131405117025179004">Edita el compte desat</translation>
 <translation id="5138299137310274655">La pàgina està en <ph name="SOURCE_LANGUAGE" />. Voleu traduir-la i que es mostri en <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Esborrar les dades emmagatzemades</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" />: <ph name="STYLE_BEGIN" />instantània<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Aquest és un compte infantil</translation>
 <translation id="5161254044473106830">Cal indicar un títol</translation>
 <translation id="5164482624172255778">Voleu que Google Chrome us ofereixi la possibilitat de traduir les pàgines en <ph name="LANGUAGE" /> d'aquest lloc la propera vegada?</translation>
@@ -655,6 +653,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8719023831149562936">La pestanya actual no es pot compartir.</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
 <translation id="8730621377337864115">Fet</translation>
+<translation id="8748850008226585750">Contingut amagat</translation>
 <translation id="8812942424849541387">Controleu-ne el funcionament a <ph name="BEGIN_LINK1" />Configuració<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
 <translation id="883635517171802338">Bloqueja les finestres emergents als llocs web (opció recomanada)</translation>
@@ -662,7 +661,6 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, pestanya</translation>
 <translation id="885701979325669005">Emmagatzematge</translation>
-<translation id="8872506776304248286">Obre a l'aplicació</translation>
 <translation id="8901170036886848654">No s'ha trobat cap adreça d'interès</translation>
 <translation id="8909135823018751308">Comparteix...</translation>
 <translation id="8912362522468806198">Compte de Google</translation>

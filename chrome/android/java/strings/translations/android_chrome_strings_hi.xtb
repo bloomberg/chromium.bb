@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">आपके अन्‍य डिवाइस पर सहेजे गए बुकमार्क यहां दिखाई देंगे.</translation>
 <translation id="1121094540300013208">उपयोग और क्रैश रिपोर्ट</translation>
 <translation id="1137305377394488060">पिछला घंटा</translation>
+<translation id="1146678959555564648">VR डालें</translation>
 <translation id="1178581264944972037">पॉज़ करें</translation>
 <translation id="1181037720776840403">निकालें</translation>
 <translation id="1197267115302279827">बुकमार्क ले जाएं</translation>
@@ -247,6 +248,7 @@
 <translation id="393697183122708255">कोई सक्षम बोलकर खोजें उपलब्‍ध नहीं</translation>
 <translation id="3946611741043634542">जारी रखकर, आप Chrome की <ph name="BEGIN_LINK1" />सेवा की शर्तों<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />निजता सूचना<ph name="END_LINK2" /> से सहमत होते हैं.</translation>
 <translation id="3950820424414687140">प्रवेश करें</translation>
+<translation id="3967822245660637423">डाउनलोड पूर्ण</translation>
 <translation id="397583555483684758">समन्‍वयन ने कार्य करना बंद कर दिया है</translation>
 <translation id="3988213473815854515">स्‍थान अनुमत है</translation>
 <translation id="3997476611815694295">महत्वहीन मेमोरी</translation>
@@ -259,7 +261,6 @@
 <translation id="4095146165863963773">ऐप्लिकेशन डेटा हटाएं?</translation>
 <translation id="4099578267706723511">Google को उपयोग के आंकड़े और क्रैश रिपोर्ट भेजने की अनुमति देकर Chrome को बेहतर बनाने में सहायता करें.</translation>
 <translation id="410351446219883937">स्वतः चलाएं</translation>
-<translation id="411254640334432676">डाउनलोड विफल रहा.</translation>
 <translation id="4113030288477039509">आपके व्यवस्थापक द्वारा प्रबंधित</translation>
 <translation id="4165986682804962316">साइट सेटिंग</translation>
 <translation id="4170011742729630528">सेवा उपलब्ध नहीं है; बाद में पुन: प्रयास करें.</translation>
@@ -277,7 +278,6 @@
 <translation id="4275663329226226506">मीडिया</translation>
 <translation id="4278390842282768270">अनुमति है</translation>
 <translation id="4307992518367153382">आधारभूत बातें</translation>
-<translation id="4334294535648607276">डाउनलोड पूर्ण.</translation>
 <translation id="4351244548802238354">संवाद बंद करें</translation>
 <translation id="4376501731284077108">अनियंत्रित</translation>
 <translation id="4378154925671717803">फ़ोन</translation>
@@ -335,12 +335,10 @@
 <translation id="5063480226653192405">उपयोग</translation>
 <translation id="5100237604440890931">संक्षिप्त - विस्तृत करने के लिए क्लिक करें.</translation>
 <translation id="510275257476243843">1 घंटा शेष</translation>
-<translation id="5107381076085091558">डाउनलोड रोका गया.</translation>
 <translation id="5127805178023152808">समन्वयन बंद है</translation>
 <translation id="5131405117025179004">सहेजा गया खाता संपादित करें</translation>
 <translation id="5138299137310274655">यह पृष्‍ठ <ph name="SOURCE_LANGUAGE" /> में है. इसका <ph name="TARGET_LANGUAGE" /> में अनुवाद करें?</translation>
 <translation id="515227803646670480">संग्रहीत डेटा साफ़ करें</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />झटपट<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">यह बच्चे का खाता है</translation>
 <translation id="5161254044473106830">शीर्षक आवश्‍यक</translation>
 <translation id="5164482624172255778">क्या आप चाहते हैं कि Google Chrome अगली बार इस साइट के <ph name="LANGUAGE" /> पृष्ठों का अनुवाद करने का ऑफ़र दे?</translation>
@@ -655,6 +653,7 @@
 <translation id="8719023831149562936">वर्तमान टैब को बीम नहीं किया जा सकता</translation>
 <translation id="8725066075913043281">पुन: प्रयास करें</translation>
 <translation id="8730621377337864115">पूर्ण</translation>
+<translation id="8748850008226585750">छिपी हुई सामग्री</translation>
 <translation id="8812942424849541387">नियंत्रित करें कि यह <ph name="BEGIN_LINK1" />सेटिंग<ph name="END_LINK1" /> में कैसे काम करता है</translation>
 <translation id="8820817407110198400">बुकमार्क</translation>
 <translation id="883635517171802338">साइट को पॉप-अप दिखाने से अवरुद्ध करें (अनुशंसित)</translation>
@@ -662,7 +661,6 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, टैब</translation>
 <translation id="885701979325669005">मेमोरी</translation>
-<translation id="8872506776304248286">ऐप्लिकेशन में खोलें</translation>
 <translation id="8901170036886848654">कोई बुकमार्क नहीं मिला</translation>
 <translation id="8909135823018751308">साझा करें…</translation>
 <translation id="8912362522468806198">Google खाता</translation>

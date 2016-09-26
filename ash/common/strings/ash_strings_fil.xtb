@@ -47,7 +47,6 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="2268813581635650749">I-sign out ang lahat</translation>
 <translation id="2297568595583585744">Tray ng katayuan</translation>
 <translation id="2303600792989757991">I-toggle ang window ng pangkalahatang-ideya</translation>
-<translation id="2372145515558759244">Nagsi-sync ng apps...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares . Bago tanggapin, pakikumpirma na ipinapakita ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">May isang naganap na error</translation>
@@ -61,7 +60,6 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="2727977024730340865">Naka-saksak sa isang low-power charger. Maaaring hindi maging tiyak ang pag-charge ng baterya.</translation>
 <translation id="2761704814324807722">Status tray, oras <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2805756323405976993">Mga App</translation>
 <translation id="2819276065543622893">Masa-sign out ka ngayon.</translation>
 <translation id="2825619548187458965">Shelf</translation>
 <translation id="2844169650293029770">USB-C device (port sa kaliwang bahagi sa harap)</translation>
@@ -110,6 +108,7 @@ Pindutin ang Search o Shift upang kanselahin.</translation>
 <translation id="3866182280516392520">IPv6 Address</translation>
 <translation id="3891340733213178823">Pindutin ang Ctrl+Shift+Q nang dalawang beses upang mag-sign out.</translation>
 <translation id="3892641579809465218">Panloob na Display</translation>
+<translation id="3893630138897523026">ChromeVox (pasalitang feedback)</translation>
 <translation id="3963445509666917109">Speaker (Internal)</translation>
 <translation id="3967919079500697218">Na-disable ng iyong administrator ang kakayahang kumuha ng mga screenshot.</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
@@ -191,7 +190,6 @@ Pindutin ang Shift + Alt upang magpalit.</translation>
 <translation id="6713285437468012787">Naipares na ang bluetooth device na "<ph name="DEVICE_NAME" />" at available na ngayon sa lahat ng user. Maaari mong alisin ang pagpapares na ito gamit ang Mga Setting.</translation>
 <translation id="6785414152754474415">Ang baterya ay <ph name="PERCENTAGE" />% na puno at nagcha-charge.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox (pasalitang feedback)</translation>
 <translation id="6911468394164995108">Sumali sa iba...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@ Pindutin ang Alt+Search o Shift upang kanselahin.</translation>
 <translation id="7561014039265304140">Hindi sinusuportahan ng <ph name="DISPLAY_NAME" /> ang <ph name="SPECIFIED_RESOLUTION" />. Ang resolution ay ginawang <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Mode na naka-dock</translation>
 <translation id="7580671184200851182">I-play ang parehong audio sa lahat ng speaker (mono audio)</translation>
+<translation id="7581273696622423628">Sagutan ang survey</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7649070708921625228">Tulong</translation>
 <translation id="7692480393933218409">China-charge ang mga nakakonektang USB-C device</translation>

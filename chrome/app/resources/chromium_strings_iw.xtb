@@ -8,7 +8,6 @@
 <translation id="1221340462641866827">‏מערכת ההפעלה של Chromium אינה תומכת בהפעלת יישום חיצוני כדי לטפל בקישורים של <ph name="SCHEME" />. הקישור הנדרש הוא <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">‏נמצאה במערכת התקנה מתנגשת של Chromium. הסר את ההתקנה ונסה שוב.</translation>
 <translation id="1298199220304005244">‏עזרה באמצעות מערכת ההפעלה של Chromium</translation>
-<translation id="1347507563453473396">‏לא ניתן להציג את Chromium בשפה זו.</translation>
 <translation id="1396446129537741364">‏Chromium מנסה להציג סיסמאות.</translation>
 <translation id="1403254041219632970">‏גרסאות עתידיות של Chromium כבר לא יתמכו במערכת Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
 <translation id="1414495520565016063">‏נכנסת ל-Chromium!</translation>
@@ -123,10 +122,12 @@
 <translation id="4987820182225656817">‏אורחים יכולים להשתמש ב-Chromium בלי להשאיר דבר מאחור.</translation>
 <translation id="4994636714258228724">‏הוסף את עצמך ל-Chromium</translation>
 <translation id="5032989939245619637">‏שמור פרטים ב-Chromium</translation>
+<translation id="5045248521775609809">‏לוקחים את Chromium לכל מקום</translation>
 <translation id="5113946445248196174">‏Chromium אינו יכול לקבוע או להגדיר את דפדפן ברירת המחדל.</translation>
 <translation id="5116586539350239523">‏Chromium יאחסן את הפרטים האישיים שלך באופן מאובטח כדי שלא תידרש להקליד אותם שוב.</translation>
 <translation id="5231355151045086930">‏יציאה מ-Chromium</translation>
 <translation id="5358375970380395591">‏אתה נכנס עם חשבון מנוהל ונותן למנהל המערכת שלו שליטה על הפרופיל שלך ב-Chromium. הנתונים שלך ב-Chromium, כגון יישומים, סימניות, היסטוריה, סיסמאות והגדרות אחרות ייקשרו באופן קבוע ל-<ph name="USER_NAME" />. תוכל למחוק את הנתונים האלה באמצעות לוח הבקרה של חשבונות Google, אבל לא תוכל לשייך את הנתונים האלה לחשבון אחר. <ph name="LEARN_MORE" /></translation>
+<translation id="5386450000063123300">‏מעדכן את Chromium‏ (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">‏גרסה חדשה של Chromium זמינה כעת.</translation>
 <translation id="5427571867875391349">‏הגדר את Chromium כדפדפן ברירת המחדל שלך</translation>
 <translation id="5466153949126434691">‏Chromium מתעדכן באופן אוטומטי, כך שתמיד ברשותך הגרסה העדכנית ביותר. כשההורדה תסתיים, Chromium יופעל מחדש ותוכל להמשיך.</translation>
@@ -157,6 +158,7 @@
 <translation id="6212496753309875659">‏במחשב זה קיימת כבר גרסה מתקדמת יותר של Chromium. אם התוכנה אינה פועלת, הסר את ההתקנה של Chromium ונסה שוב.</translation>
 <translation id="6248213926982192922">‏הפוך את Chromium לדפדפן ברירת המחדל</translation>
 <translation id="6309712487085796862">‏Chromium משתמש במצלמה שלך.</translation>
+<translation id="6333502561965082103">‏מתבצעת כרגע פעולה אחרת ב-Chromium. נסה שוב מאוחר יותר.</translation>
 <translation id="6334986366598267305">‏קל יותר כעת להשתמש ב-Chromium באמצעות חשבון Google שלך ובמחשבים משותפים.</translation>
 <translation id="6373523479360886564">‏האם אתה בטוח שברצונך להסיר את התקנת Chromium?</translation>
 <translation id="6394232988457703198">‏עליך לאתחל את Chromium עכשיו.</translation>
@@ -214,7 +216,6 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 בדוק את האימייל בחשבון <ph name="ACCOUNT_EMAIL" /> לקבלת הנחיות נוספות.</translation>
 <translation id="7419987137528340081">‏אם אתה מעדיף לשמור את נתוני Chromium הקיימים שלך בנפרד, תוכל ליצור משתמש Chromium חדש עבור <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">‏Chromium דורש גרסת Windows XP או מאוחרת יותר. תכונות מסוימות עלולות שלא לפעול.</translation>
-<translation id="7437562785125777404">‏לא ניתן להציג את Chromium OS בשפה זו.</translation>
 <translation id="7473891865547856676">לא, תודה</translation>
 <translation id="7483335560992089831">‏לא ניתן להתקין את אותה גרסת Chromium שפועלת כרגע. סגור את Chromium ונסה שוב.</translation>
 <translation id="750717762378961310">‏הקובץ הזה זדוני, ו-Chromium חסם אותו.</translation>
@@ -234,7 +235,9 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8030318113982266900">מעדכן את המכשיר שלך לערוץ <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">‏Chromium זקוק להרשאות גישה כדי לשתף תכונות מסוימות עם האתר הזה.</translation>
 <translation id="8134284582177628525">‏אם אתם משתף את המחשב הזה עם <ph name="PROFILE_NAME" />, הוסף את עצמך ל-Chromium כדי לגלוש בנפרד. אחרת, נתק את חשבון Google שלו.</translation>
+<translation id="81770708095080097">‏Chromium‏ חסם את הקובץ הזה כי הוא מסוכן.</translation>
 <translation id="8269379391216269538">‏עזור לנו לשפר את Chromium</translation>
+<translation id="8290862415967981663">‏Chromium‏ חסם את הקובץ הזה כי הוא עלול להיות מסוכן.</translation>
 <translation id="8453117565092476964">‏הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Chromium.</translation>
 <translation id="8493179195440786826">‏Chromium אינו מעודכן</translation>
 <translation id="85843667276690461">‏עזרה באמצעות Chromium</translation>

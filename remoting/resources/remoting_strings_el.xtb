@@ -287,6 +287,7 @@ Chromoting</translation>
 <translation id="8548209692293300397">Συνδεθήκατε προηγουμένως ως <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  Για να αποκτήσετε πρόσβαση στους υπολογιστές σας με αυτόν το λογαριασμό, <ph name="LINK_BEGIN" />συνδεθείτε στο Google Chrome<ph name="LINK_END" /> με αυτόν το λογαριασμό και εγκαταστήστε εκ νέου την Απομακρυσμένη επιφάνεια εργασίας Chrome.</translation>
 <translation id="8642984861538780905">Επαρκές</translation>
 <translation id="8712909229180978490">Δεν μπορώ να δω τα αρχεία μου που είναι αποθηκευμένα στο διαδίκτυο στο Google Drive.</translation>
+<translation id="8743328882720071828">Θέλετε να επιτρέψετε στον χρήστη <ph name="CLIENT_USERNAME" /> να βλέπει και να ελέγχει τον υπολογιστή σας;</translation>
 <translation id="8759753423332885148">Μάθετε περισσότερα.</translation>
 <translation id="8791202241915690908">Λήψη προγράμματος εγκατάστασης κεντρικού υπολογιστή Chromoting</translation>
 <translation id="894763922177556086">Καλό</translation>

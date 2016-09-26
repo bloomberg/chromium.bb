@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">儲存在您其他裝置上的書籤會顯示在這裡。</translation>
 <translation id="1121094540300013208">使用資料和當機報告</translation>
 <translation id="1137305377394488060">過去 1 小時</translation>
+<translation id="1146678959555564648">進入虛擬實境</translation>
 <translation id="1178581264944972037">暫停</translation>
 <translation id="1181037720776840403">移除</translation>
 <translation id="1197267115302279827">移動書籤</translation>
@@ -247,6 +248,7 @@
 <translation id="393697183122708255">沒有可用的語音搜尋功能</translation>
 <translation id="3946611741043634542">繼續操作即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》。</translation>
 <translation id="3950820424414687140">登入</translation>
+<translation id="3967822245660637423">下載完成</translation>
 <translation id="397583555483684758">同步處理功能已停止運作</translation>
 <translation id="3988213473815854515">禁止存取位置資訊</translation>
 <translation id="3997476611815694295">不重要網站的儲存資料量</translation>
@@ -259,7 +261,6 @@
 <translation id="4095146165863963773">要刪除應用程式資料嗎？</translation>
 <translation id="4099578267706723511">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chrome 更臻完美。</translation>
 <translation id="410351446219883937">自動播放</translation>
-<translation id="411254640334432676">下載失敗。</translation>
 <translation id="4113030288477039509">您的管理員已停用這項功能</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4170011742729630528">服務無法使用，請稍後再試。</translation>
@@ -277,7 +278,6 @@
 <translation id="4275663329226226506">媒體</translation>
 <translation id="4278390842282768270">允許</translation>
 <translation id="4307992518367153382">基本選項</translation>
-<translation id="4334294535648607276">下載完成。</translation>
 <translation id="4351244548802238354">關閉對話方塊</translation>
 <translation id="4376501731284077108">不受控制</translation>
 <translation id="4378154925671717803">電話</translation>
@@ -335,12 +335,10 @@
 <translation id="5063480226653192405">用量</translation>
 <translation id="5100237604440890931">已收合 - 按一下即可展開。</translation>
 <translation id="510275257476243843">還剩 1 小時</translation>
-<translation id="5107381076085091558">已暫停下載。</translation>
 <translation id="5127805178023152808">同步功能已停用</translation>
 <translation id="5131405117025179004">編輯已儲存的帳戶</translation>
 <translation id="5138299137310274655">這是<ph name="SOURCE_LANGUAGE" />網頁，需要翻譯成<ph name="TARGET_LANGUAGE" />嗎？</translation>
 <translation id="515227803646670480">清除儲存的資料</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />免安裝<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">這是兒童帳戶</translation>
 <translation id="5161254044473106830">請輸入標題</translation>
 <translation id="5164482624172255778">下次造訪這個網站時，需要 Google Chrome 為您翻譯其中的<ph name="LANGUAGE" />網頁嗎？</translation>
@@ -655,6 +653,7 @@
 <translation id="8719023831149562936">無法傳輸目前的分頁</translation>
 <translation id="8725066075913043281">再試一次</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="8748850008226585750">內容已隱藏</translation>
 <translation id="8812942424849541387">您可以在「<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />」頁面中管理這項功能的運作方式</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="883635517171802338">禁止網站顯示彈出式視窗 (建議)</translation>
@@ -662,7 +661,6 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> (分頁)</translation>
 <translation id="885701979325669005">儲存空間</translation>
-<translation id="8872506776304248286">在應用程式中開啟</translation>
 <translation id="8901170036886848654">找不到符合條件的書籤</translation>
 <translation id="8909135823018751308">分享…</translation>
 <translation id="8912362522468806198">Google 帳戶</translation>

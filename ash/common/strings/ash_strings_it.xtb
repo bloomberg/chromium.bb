@@ -47,7 +47,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2268813581635650749">Disconnetti tutti</translation>
 <translation id="2297568595583585744">Barra di stato</translation>
 <translation id="2303600792989757991">Attiva/disattiva panoramica finestra</translation>
-<translation id="2372145515558759244">Sincronizzazione applicazioni...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato. Prima di accettare, conferma che questa passkey viene visualizzata sul dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Si è verificato un errore</translation>
@@ -61,7 +60,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="2727977024730340865">Collegato a un caricabatterie a basso consumo. La carica della batteria potrebbe non essere affidabile.</translation>
 <translation id="2761704814324807722">Barra di stato, ora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+tasto per la ricerca</translation>
-<translation id="2805756323405976993">App</translation>
 <translation id="2819276065543622893">Verrai disconnesso ora.</translation>
 <translation id="2825619548187458965">Shelf</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta anteriore sinistra)</translation>
@@ -110,6 +108,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3866182280516392520">Indirizzo IPv6</translation>
 <translation id="3891340733213178823">Premi due volte Ctrl+Maiusc+Q per uscire.</translation>
 <translation id="3892641579809465218">Display interno</translation>
+<translation id="3893630138897523026">ChromeVox (lettura vocale)</translation>
 <translation id="3963445509666917109">Altoparlante (interno)</translation>
 <translation id="3967919079500697218">La possibilità di effettuare screenshot è stata disabilitata dal tuo amministratore.</translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
@@ -191,7 +190,6 @@ Premi Maiusc+Alt per cambiare metodo.</translation>
 <translation id="6713285437468012787">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" è stato accoppiato ed è ora disponibile per tutti gli utenti. Puoi rimuovere tale accoppiamento utilizzando il menu Impostazioni.</translation>
 <translation id="6785414152754474415">Percentuale di caricamento batteria: <ph name="PERCENTAGE" />%. La batteria è in carica.</translation>
 <translation id="683971173229319003">Tasto di ricerca+L</translation>
-<translation id="68610848741840742">ChromeVox (lettura vocale)</translation>
 <translation id="6911468394164995108">Connetti a un'altra...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> non supporta <ph name="SPECIFIED_RESOLUTION" />. La risoluzione è stata modificata in <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Modalità dock</translation>
 <translation id="7580671184200851182">Riproduci lo stesso audio su tutti gli altoparlanti (audio mono)</translation>
+<translation id="7581273696622423628">Vai al sondaggio</translation>
 <translation id="7593891976182323525">Tasto per la ricerca o Maiusc</translation>
 <translation id="7649070708921625228">Guida</translation>
 <translation id="7692480393933218409">Dispositivi USB-C collegati in carica</translation>

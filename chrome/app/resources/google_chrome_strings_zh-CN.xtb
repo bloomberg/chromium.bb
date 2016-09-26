@@ -34,7 +34,6 @@
 <translation id="1773601347087397504">获取 Chrome 操作系统使用帮助</translation>
 <translation id="1818142563254268765">Chrome无法自动更新到最新版本，因此其中缺少一些非常棒的新功能和安全修复程序。要获得这些内容，您需要更新Chrome。</translation>
 <translation id="1877026089748256423">Chrome版本太旧</translation>
-<translation id="1924381329666691588">Google Chrome 无法以这种语言显示。</translation>
 <translation id="2063848847527508675">需要重新启动 Chrome 操作系统以应用更新。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
 <translation id="2084710999043359739">添加到 Chrome 浏览器</translation>
@@ -117,6 +116,7 @@
 <translation id="437002079035561265">Google Chrome 不再支持此 Linux 系统，因此这台计算机将不再接收 Google Chrome 更新。</translation>
 <translation id="4407807842708586359">Google Chrome 操作系统</translation>
 <translation id="4458285410772214805">请先退出，然后重新登录，以便此更改生效。</translation>
+<translation id="4458462641685292929">Google Chrome 正在执行另一项操作，请稍后重试。</translation>
 <translation id="4480040274068703980">登录时出现错误，Chrome操作系统无法同步您的数据。</translation>
 <translation id="4519152997629025674">Google Chrome 可能会使用<ph name="BEGIN_LINK" />网络服务<ph name="END_LINK" />来改善您的浏览体验。不过，您可以随时停用这些服务。</translation>
 <translation id="4561051373932531560">您可以在 Google Chrome 浏览器中点击网上的电话号码，然后通过 Skype 拨打！</translation>
@@ -129,6 +129,7 @@
 <translation id="4743926867934016338">接受并搜索</translation>
 <translation id="4751441238232965030">此计算机很快将停止接收 32 位 Google Chrome 更新。请升级到 64 位 Google Chrome。</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
+<translation id="4771048833395599659">此文件可能存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="4794050651896644714">在 Chrome 中保存详细信息</translation>
 <translation id="4891791193823137474">让 Google Chrome 浏览器在后台运行</translation>
 <translation id="4921569541910214635">与其他人共用计算机？现在，您可以随心所欲地设置Chrome。</translation>
@@ -158,7 +159,6 @@
 <translation id="5563479599352954471">触摸一下即可启动搜索</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">无需离开所在页面，即可了解网站上的主题。</translation>
-<translation id="5637867606963802593">Chrome 操作系统无法以这种语言显示。</translation>
 <translation id="568643307450491754">在 Chrome 菜单或书签栏中查找您的书签。</translation>
 <translation id="573759479754913123">关于 Chrome 操作系统</translation>
 <translation id="5749068826913805084">Chrome 需要具备存储空间使用权限，才能下载文件。</translation>
@@ -185,6 +185,7 @@
 <translation id="6400076122676892962">此计算机很快就不会再收到 Google Chrome 更新，因为 Mac OS X 10.6、10.7 和 10.8 将不再受支持。</translation>
 <translation id="6470176598693778404">此计算机将不会再收到 Google Chrome 更新，因为 Mac OS X 10.6、10.7 和 10.8 不再受支持。</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{有 1 项下载任务正在进行。确定要取消下载并退出 Google Chrome 吗？}other{有 # 项下载任务正在进行。确定要取消下载并退出 Google Chrome 吗？}}</translation>
+<translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chrome资料和数据。要更新您的同步偏好设置或在不登录Google帐户的情况下使用Chrome，请前往<ph name="SETTINGS_LINK" />部分。</translation>
 <translation id="6600954340915313787">已复制到 Chrome</translation>
 <translation id="6626317981028933585">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入 Google Chrome 浏览器，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
@@ -192,6 +193,7 @@
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6757767188268205357">谢绝打扰</translation>
 <translation id="683440813066116847">Google Chrome Canary版的入站规则，允许mDNS流量。</translation>
+<translation id="686561893457936865">随时随地使用 Chrome</translation>
 <translation id="6883876366448858277">将某个字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片及其他搜索结果。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">正在更新设备...</translation>
@@ -252,7 +254,9 @@
 <translation id="8255190535488645436">Google Chrome 正在使用您的摄像头和麦克风。</translation>
 <translation id="8286862437124483331">Google Chrome正在尝试显示密码，请输入您的Windows密码以允许此操作。</translation>
 <translation id="8290100596633877290">哎呀！Google Chrome 浏览器崩溃了。是否立即重新启动？</translation>
+<translation id="8342675569599923794">此文件存在危险，因此 Chrome 已将其拦截。</translation>
 <translation id="8406086379114794905">帮助我们改进Chrome</translation>
+<translation id="8455999171311319804">可选：将诊断数据和使用情况数据自动发送给 Google，协助我们改进 Chrome 操作系统。</translation>
 <translation id="853189717709780425">您目前是以托管帐户登录，该帐户的管理员将能够控制您的 Google Chrome 个人资料。您的 Chrome 数据（例如您的应用、书签、历史记录、密码和其他设置）将永久绑定到 <ph name="USER_NAME" />。您可以通过 Google 帐户信息中心删除这些数据，但无法将这些数据关联到其他帐户。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome 应用启动器 Canary</translation>

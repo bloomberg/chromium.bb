@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">ستظهر هنا الإشارات التي تم حفظها على أجهزتك الأخرى.</translation>
 <translation id="1121094540300013208">تقارير الاستخدام والأعطال</translation>
 <translation id="1137305377394488060">الساعة الماضية</translation>
+<translation id="1146678959555564648">‏إدخال VR</translation>
 <translation id="1178581264944972037">تعليق</translation>
 <translation id="1181037720776840403">إزالة</translation>
 <translation id="1197267115302279827">نقل الإشارات المرجعية</translation>
@@ -247,6 +248,7 @@
 <translation id="393697183122708255">لا يتوفر بحث صوتي تم تمكينه</translation>
 <translation id="3946611741043634542">‏من خلال المتابعة، فإنك توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> من Chrome.</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
+<translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="397583555483684758">توقفت المزامنة</translation>
 <translation id="3988213473815854515">الموقع مسموح به</translation>
 <translation id="3997476611815694295">سعة تخزين غير مهمة</translation>
@@ -259,7 +261,6 @@
 <translation id="4095146165863963773">هل ترغب في حذف بيانات التطبيق؟</translation>
 <translation id="4099578267706723511">‏ساعد في تحسين Chrome عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google.</translation>
 <translation id="410351446219883937">تشغيل تلقائي</translation>
-<translation id="411254640334432676">فشلت عملية التنزيل</translation>
 <translation id="4113030288477039509">يديره المسؤول</translation>
 <translation id="4165986682804962316">إعدادات الموقع</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
@@ -277,7 +278,6 @@
 <translation id="4275663329226226506">الوسائط</translation>
 <translation id="4278390842282768270">مسموح بها</translation>
 <translation id="4307992518367153382">أساسيّات</translation>
-<translation id="4334294535648607276">اكتمل التنزيل.</translation>
 <translation id="4351244548802238354">إغلاق مربع الحوار</translation>
 <translation id="4376501731284077108">غير مُتحكم فيه</translation>
 <translation id="4378154925671717803">الهاتف</translation>
@@ -336,12 +336,10 @@
 <translation id="5063480226653192405">الاستخدام</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
 <translation id="510275257476243843">يتبقى ساعة واحدة</translation>
-<translation id="5107381076085091558">تم توقف التنزيل مؤقتًا.</translation>
 <translation id="5127805178023152808">المزامنة معطلة</translation>
 <translation id="5131405117025179004">تعديل حساب محفوظ</translation>
 <translation id="5138299137310274655">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE" /> هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE" />؟</translation>
 <translation id="515227803646670480">محو البيانات المخزنة</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />فوري<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">هذا حساب طفل</translation>
 <translation id="5161254044473106830">العنوان مطلوب</translation>
 <translation id="5164482624172255778">‏هل تريد أن يعرض Google Chrome ترجمة الصفحات باللغة <ph name="LANGUAGE" /> من هذا الموقع مرة أخرى؟</translation>
@@ -656,6 +654,7 @@
 <translation id="8719023831149562936">تعذر إرسال علامة التبويب الحالية باستخدام الشعاع</translation>
 <translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="8730621377337864115">تم</translation>
+<translation id="8748850008226585750">المحتويات مخفية</translation>
 <translation id="8812942424849541387">التحكم في كيفية عمل هذا في <ph name="BEGIN_LINK1" />الإعدادات<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">إشارات</translation>
 <translation id="883635517171802338">منع مواقع الويب من عرض النوافذ المنبثقة (موصى به)</translation>
@@ -663,7 +662,6 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">التخزين</translation>
-<translation id="8872506776304248286">فتح في التطبيق</translation>
 <translation id="8901170036886848654">لا توجد إشارات مرجعية</translation>
 <translation id="8909135823018751308">مشاركة…</translation>
 <translation id="8912362522468806198">‏حساب Google‏</translation>

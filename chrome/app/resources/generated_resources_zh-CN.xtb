@@ -19,6 +19,7 @@
 <translation id="1029595648591494741">要试用“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="1031362278801463162">正在加载预览</translation>
 <translation id="1031460590482534116">在尝试存储客户端证书时出错。错误编号：<ph name="ERROR_NUMBER" /> (<ph name="ERROR_NAME" />)。</translation>
+<translation id="1031573127485938293">询问（依照政策）</translation>
 <translation id="103279545524624934">请释放磁盘空间以启动 Android 应用。</translation>
 <translation id="1033780634303702874">访问您的串行设备</translation>
 <translation id="1035094536595558507">幻灯片视图</translation>
@@ -119,6 +120,7 @@
 <translation id="1163361280229063150">{NUM_DOWNLOAD,plural, =1{有 1 项下载任务正在进行。确定要取消下载并退出隐身模式吗？}other{有 # 项下载任务正在进行。确定要取消下载并退出隐身模式吗？}}</translation>
 <translation id="1163931534039071049">查看框架的源代码(&amp;V)</translation>
 <translation id="1164674268730883318">要关闭 Smart Lock（<ph name="DEVICE_TYPE" /> 版）吗？</translation>
+<translation id="1164899421101904659">输入 PIN 码解锁密钥</translation>
 <translation id="1165039591588034296">错误</translation>
 <translation id="1166212789817575481">关闭右侧标签页</translation>
 <translation id="1168020859489941584">即将在 <ph name="TIME_REMAINING" />后打开...</translation>
@@ -135,6 +137,7 @@
 <translation id="1181037720776840403">删除</translation>
 <translation id="1183083053288481515">正在使用管理员提供的证书</translation>
 <translation id="1183237619868651138">无法将 <ph name="EXTERNAL_CRX_FILE" /> 安装在本地缓存中。</translation>
+<translation id="1184214524891303587"><ph name="BEGIN_WHITEPAPER_LINK" />自动向 Google 报告<ph name="END_WHITEPAPER_LINK" />可能出现的安全事件的详细信息。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1185924365081634987">您也可以尝试<ph name="GUEST_SIGNIN_LINK_START" />以访客身份浏览<ph name="GUEST_SIGNIN_LINK_END" />，以便修复该网络错误。</translation>
 <translation id="1187550858834764592">非常短（800 毫秒）</translation>
 <translation id="1187722533808055681">闲置状态唤醒</translation>
@@ -280,6 +283,7 @@
 <translation id="1386830813511981192">目前，您可以在 <ph name="DEVICE_TYPE" /> 上体验超过一百万款应用和游戏。</translation>
 <translation id="1389297115360905376">只能通过 <ph name="CHROME_WEB_STORE" />添加该程序。</translation>
 <translation id="1390548061267426325">在常规标签页中打开</translation>
+<translation id="1391807639023934267">页面加载速度更快。</translation>
 <translation id="1393283411312835250">太阳和云朵</translation>
 <translation id="1395262318152388157">进度滑块</translation>
 <translation id="1395730723686586365">更新程序已启动</translation>
@@ -524,7 +528,6 @@
 <translation id="1666788816626221136">您有一些证书不属于前面任何类别：</translation>
 <translation id="1670399744444387456">基本</translation>
 <translation id="1673103856845176271">出于安全原因，无法访问该文件。</translation>
-<translation id="1675023460278456180">Material 混合设计</translation>
 <translation id="167832068858235403">调低音量</translation>
 <translation id="1679068421605151609">开发者工具</translation>
 <translation id="1681120471812444678">设置以添加打印机…</translation>
@@ -548,6 +551,7 @@
 <translation id="1701062906490865540">移除此用户</translation>
 <translation id="1702294042233267824">在通过多功能框搜索时使用的搜索引擎</translation>
 <translation id="1702534956030472451">西欧语言</translation>
+<translation id="1706625117072057435">缩放级别</translation>
 <translation id="1707463636381878959">与其他用户共享此网络</translation>
 <translation id="1708199901407471282">从“打开新的标签页”页面打开建议的网页时，如果已有其他标签页打开了建议的网页，那么系统会直接切换到该标签页，而不会在新标签页中加载建议的网页。</translation>
 <translation id="1708338024780164500">（无效）</translation>
@@ -564,6 +568,7 @@
 <translation id="1723940674997333416">允许来自https来源的不安全WebSocket</translation>
 <translation id="1725149567830788547">显示控件(&amp;C)</translation>
 <translation id="172612876728038702">正在设置 TPM。这可能需要几分钟，请耐心等待。</translation>
+<translation id="1727135806684246609">Material 安全性标示</translation>
 <translation id="1729533290416704613">它还能够控制您通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="1731346223650886555">分号</translation>
 <translation id="1731589410171062430">总计：<ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /> （<ph name="NUMBER_OF_PAGES" /> <ph name="PAGE_OR_PAGES_LABEL" />）</translation>
@@ -686,7 +691,6 @@
 <translation id="1921986354447415460">土耳其语 F 键盘</translation>
 <translation id="192494336144674234">打开方式</translation>
 <translation id="1926339101652878330">这些设置由企业政策控制。如需更多信息，请与管理员联系。</translation>
-<translation id="192810479200670759">明确强制界面采用从左至右或从右至左书写模式，覆盖默认的界面语言书写方向。</translation>
 <translation id="1928202201223835302">输入原来的 PIN 码</translation>
 <translation id="1929546189971853037">读取您在所有登录过的设备上的浏览记录</translation>
 <translation id="1931134289871235022">斯洛伐克语</translation>
@@ -753,6 +757,7 @@
 <translation id="2025632980034333559">“<ph name="APP_NAME" />”崩溃了。点击此信息框，以重新加载该扩展程序。</translation>
 <translation id="2028531481946156667">无法启动格式化过程。</translation>
 <translation id="2028997212275086731">RAR 归档</translation>
+<translation id="2031024818991965590">在 Web Payments 中扫描信用卡</translation>
 <translation id="203168018648013061">发生同步错误：请通过 Google 信息中心重置同步。</translation>
 <translation id="2031695690821674406">在用户明确选择了帐户时填充密码，而不是在页面加载时自动填充凭据。</translation>
 <translation id="2034346955588403444">添加其他 Wi-Fi 网络</translation>
@@ -808,6 +813,7 @@
 <translation id="2114326799768592691">重新加载框架(&amp;F)</translation>
 <translation id="2115926821277323019">必须是有效网址</translation>
 <translation id="2116673936380190819">过去一小时</translation>
+<translation id="2121825465123208577">调整大小</translation>
 <translation id="2125314715136825419">继续操作，不更新 Adobe Reader（不建议）</translation>
 <translation id="2127166530420714525">无法更改蓝牙适配器的电源状态。</translation>
 <translation id="2127372758936585790">低功率充电器</translation>
@@ -857,6 +863,7 @@
 <translation id="2177950615300672361">隐身标签页：<ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA 泄漏</translation>
 <translation id="218492098606937156">启用触摸事件</translation>
+<translation id="2187317261103489799">检测（默认）</translation>
 <translation id="2187895286714876935">服务器证书导入错误</translation>
 <translation id="2190069059097339078">WiFi 凭据获取工具</translation>
 <translation id="219008588003277019">Native Client 模块：<ph name="NEXE_NAME" /></translation>
@@ -891,6 +898,7 @@
 <translation id="2224444042887712269">此设置属于<ph name="OWNER_EMAIL" />。</translation>
 <translation id="2224551243087462610">修改文件夹名</translation>
 <translation id="2226449515541314767">已禁止该网站完全控制 MIDI 设备。</translation>
+<translation id="2226720438730111184">告诉我们所发生的情况</translation>
 <translation id="2229161054156947610">剩余时间超过 1 小时</translation>
 <translation id="222931766245975952">文件被截断</translation>
 <translation id="222949136907494149"><ph name="URL" /> 想要使用您的计算机的所在位置信息。</translation>
@@ -989,7 +997,6 @@
 <translation id="23434688402327542">哈萨克语键盘</translation>
 <translation id="2344028582131185878">自动下载</translation>
 <translation id="2347476388323331511">无法同步</translation>
-<translation id="2347991999864119449">让我自行选择何时运行插件内容</translation>
 <translation id="2348165084656290171">要分享音频，请先选择一个标签页或整个屏幕。</translation>
 <translation id="2348176352564285430">应用：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="2350182423316644347">正在初始化应用…</translation>
@@ -998,6 +1005,7 @@
 <translation id="2351520734632194850"><ph name="MHZ" /> MHz</translation>
 <translation id="2352467521400612932">触控笔设置</translation>
 <translation id="2352662711729498748">&lt; 1MB</translation>
+<translation id="2355395290879513365">攻击者可能能够看到您正在此网站上浏览的图片，并通过编辑这些图片让您受骗。</translation>
 <translation id="2356070529366658676">询问</translation>
 <translation id="2357949918965361754">借助此功能，您可以将 Chrome 上的内容显示在您的电视或其他设备上。</translation>
 <translation id="2359345697448000899">您可以通过点击“工具”菜单中的“扩展程序”，管理您的扩展程序。</translation>
@@ -1030,6 +1038,7 @@
 <translation id="2392369802118427583">激活</translation>
 <translation id="2394296868155622118">管理帐单明细…</translation>
 <translation id="2394566832561516196">系统将在您下次重新加载网页后清除设置。</translation>
+<translation id="2395616325548404795">您的 <ph name="DEVICE_TYPE" /> 已成功注册企业管理服务，但未能发送其资产和位置信息。请通过管理控制台为此设备手动输入这些信息。</translation>
 <translation id="2398076520462956013">Android 手机的网页加载进度条完成时间。</translation>
 <translation id="2399147786307302860">高级同步设置...</translation>
 <translation id="2401053206567162910">目前此设备不支持该应用，但 Chrome Gnomes 正设法解决这一问题，使该应用能够尽快在此设备上顺利运行。</translation>
@@ -1041,6 +1050,7 @@
 <translation id="241082044617551207">未知插件</translation>
 <translation id="2412835451908901523">请输入<ph name="CARRIER_ID" />提供的 PIN 解锁密钥（8 位数）。</translation>
 <translation id="2413749388954403953">更改书签界面</translation>
+<translation id="2415098038728534445">屏蔽（通过扩展程序管理）</translation>
 <translation id="2415294094132942411">添加到桌面…</translation>
 <translation id="2421956571193030337">请仅通过您信任的帐户使用此功能。</translation>
 <translation id="2422426094670600218">&lt;未命名&gt;</translation>
@@ -1076,7 +1086,6 @@
 <translation id="2460160116472764928">Google 安全浏览功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />检测到恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。<ph name="BEGIN_LEARN_MORE_LINK" />了解详情<ph name="END_LEARN_MORE_LINK" />。</translation>
 <translation id="2462724976360937186">证书授权中心密钥 ID</translation>
 <translation id="2464089476039395325">HTTP 代理</translation>
-<translation id="2467815441875554965">环境相关搜索</translation>
 <translation id="2469890184320718637">文字采用勾边（而不是位图 alpha 蒙版）渲染。</translation>
 <translation id="2470332835941011566">允许 <ph name="URL" /> 通过安全密钥识别您的身份？</translation>
 <translation id="2470702053775288986">已停用不支持的扩展程序</translation>
@@ -1134,6 +1143,7 @@
 <translation id="253434972992662860">暂停(&amp;P)</translation>
 <translation id="2534460670861217804">安全的 HTTP 代理</translation>
 <translation id="2539110682392681234">您的管理员强制要求使用代理。</translation>
+<translation id="2539524384386349900">检测</translation>
 <translation id="2541423446708352368">显示所有下载内容</translation>
 <translation id="2542049655219295786">Google 表格</translation>
 <translation id="2546283357679194313">Cookie 和网站数据</translation>
@@ -1155,6 +1165,7 @@
 <translation id="2565828445440744174">实验性 WebAssembly</translation>
 <translation id="2566124945717127842">Powerwash会将您的<ph name="IDS_SHORT_PRODUCT_NAME" />设备重置为初始状态。</translation>
 <translation id="2568774940984945469">信息栏容器</translation>
+<translation id="2570000010887652771">节省数据流量。</translation>
 <translation id="2570648609346224037">下载恢复映像时出现问题。</translation>
 <translation id="257088987046510401">主题背景</translation>
 <translation id="2572032849266859634">已授予对 <ph name="VOLUME_NAME" />的只读权限。</translation>
@@ -1304,6 +1315,7 @@
 <translation id="276969039800130567">您已用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
 <translation id="2772936498786524345">忍者</translation>
+<translation id="2773802008104670137">这种类型的文件可能会损害您的计算机。</translation>
 <translation id="2773948261276885771">设置网页</translation>
 <translation id="2776441542064982094">似乎没有可用于在网络中注册的设备。如果您的设备已开启并连接到互联网，请按照说明手册中的说明尝试对其进行注册。</translation>
 <translation id="277674485549860058">设置 Chrome 操作系统界面中的 Material Design 元素。</translation>
@@ -1509,6 +1521,7 @@
 <translation id="3004391367407090544">请稍后再试</translation>
 <translation id="300544934591011246">旧密码</translation>
 <translation id="3007072109817179209">WebRTC 对使用平台硬件进行视频流解码的支持。</translation>
+<translation id="3007214526293698309">更正宽高比</translation>
 <translation id="3008863991906202557">启用后，桌面用户菜单将切换为更加直观的 Material Design 版本。</translation>
 <translation id="3009300415590184725">确定要取消移动数据服务安装过程吗？</translation>
 <translation id="3009779501245596802">索引型数据库</translation>
@@ -1832,7 +1845,9 @@
 <translation id="3423858849633684918">请重新启动 <ph name="PRODUCT_NAME" /></translation>
 <translation id="3425233587047449821">新版韩语 IME</translation>
 <translation id="3426704822745136852">指定光栅线程数。</translation>
+<translation id="3427092606871434483">允许（默认）</translation>
 <translation id="3429599832623003132">$1 项</translation>
+<translation id="3432227430032737297">移除显示的所有 Cookie</translation>
 <translation id="3432757130254800023">向本地网络上的显示屏发送音频和视频</translation>
 <translation id="3433621910545056227">糟糕！系统无法建立设备安装时间属性锁定。</translation>
 <translation id="343467364461911375">有些内容服务会使用机器标识符来标识您的个人身份，以便授予您访问受保护内容的权限。</translation>
@@ -1868,6 +1883,7 @@
 <translation id="3467267818798281173">要求 Google 提供拼写建议</translation>
 <translation id="3467789682390027873">PIN 码或密码</translation>
 <translation id="3468522857997926824">已将 <ph name="FILE_COUNT" /> 张照片备份到 <ph name="BEGIN_LINK" />Google 云端硬盘<ph name="END_LINK" /></translation>
+<translation id="3468745736289470383">共享屏幕</translation>
 <translation id="3470442499439619530">删除此用户</translation>
 <translation id="3470502288861289375">正在复制…</translation>
 <translation id="3473479545200714844">屏幕放大镜</translation>
@@ -2016,6 +2032,7 @@
 <translation id="363903084947548957">下一种输入法</translation>
 <translation id="3640214691812501263">要为<ph name="USER_NAME" />添加“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="3643454140968246241">正在同步 <ph name="COUNT" /> 个文件...</translation>
+<translation id="3644896802912593514">宽度</translation>
 <translation id="3646789916214779970">重置为默认主题背景</translation>
 <translation id="3647563953638326454">云端导入</translation>
 <translation id="3648348069317717750">检测到<ph name="USB_DEVICE_NAME" /></translation>
@@ -2203,7 +2220,6 @@
 <translation id="3892414795099177503">添加 OpenVPN / L2TP…</translation>
 <translation id="3893536212201235195">读取和更改您的无障碍设置</translation>
 <translation id="3893630138897523026">ChromeVox（语音反馈）</translation>
-<translation id="3893977120523121937">运行所有插件内容</translation>
 <translation id="389589731200570180">与访客共享</translation>
 <translation id="3897092660631435901">菜单</translation>
 <translation id="3898521660513055167">令牌状态</translation>
@@ -2233,6 +2249,7 @@
 <translation id="3926002189479431949">Smart Lock 的配对手机已更改</translation>
 <translation id="3927932062596804919">拒绝</translation>
 <translation id="3930521966936686665">播放设备</translation>
+<translation id="3932245045276584535">添加新的历史记录条目时，需要用户通过手势操作来确认。</translation>
 <translation id="3936390757709632190">在新标签页中打开音频(&amp;O)</translation>
 <translation id="3936768791051458634">变更版本…</translation>
 <translation id="3936925983113350642">以后恢复证书时需要使用您所选择的密码。请将密码记录在安全的地方。</translation>
@@ -2246,6 +2263,7 @@
 <translation id="3943582379552582368">返回(&amp;B)</translation>
 <translation id="3943857333388298514">粘贴</translation>
 <translation id="3944266449990965865">全屏</translation>
+<translation id="3946209740501886391">在该网站上一律询问</translation>
 <translation id="3946471364541867667">TalkBack 设置</translation>
 <translation id="3947376313153737208">未选择</translation>
 <translation id="3948116654032448504">通过<ph name="SEARCH_ENGINE" />搜索图片(&amp;S)</translation>
@@ -2315,6 +2333,7 @@
 <translation id="4058793769387728514">立即检查文稿</translation>
 <translation id="4059285154003114015">打印框架(&amp;P)…</translation>
 <translation id="406070391919917862">后台应用</translation>
+<translation id="4061502419206152498">仅显示不安全的内容（以非动画形式）</translation>
 <translation id="4062251648694601778">尽情享受<ph name="SHORT_PRODUCT_NAME" />设备给您带来的便利吧！如有任何问题，只需点击状态栏中的“?”，即可获得帮助。</translation>
 <translation id="4065876735068446555">您正在使用的网络 (<ph name="NETWORK_ID" />) 可能需要您访问其登录页面。</translation>
 <translation id="4068506536726151626">此网页包含来自以下网站的元素，这些网站正在追踪您的位置：</translation>
@@ -2351,7 +2370,9 @@
 <translation id="409980434320521454">无法同步</translation>
 <translation id="4100733287846229632">设备存储空间严重不足</translation>
 <translation id="4101878899871018532">密码管理器将不会询问是否保存用于同步的凭据。</translation>
+<translation id="410351446219883937">自动播放</translation>
 <translation id="4104163789986725820">导出(&amp;X)...</translation>
+<translation id="4105523032910086267">设置 Material Design 安全性标示的动画和公开范围。</translation>
 <translation id="4105563239298244027">获取 1 TB 免费的 Google 云端硬盘存储空间</translation>
 <translation id="4109135793348361820">将窗口移至<ph name="USER_NAME" />(<ph name="USER_EMAIL" />)</translation>
 <translation id="4110342520124362335">已拦截来自 <ph name="DOMAIN" /> 的 Cookie。</translation>
@@ -2444,6 +2465,7 @@
 <translation id="4249248555939881673">正在等待建立网络连接…</translation>
 <translation id="4249373718504745892">已禁止此网页使用您的摄像头和麦克风。</translation>
 <translation id="4250229828105606438">屏幕截图</translation>
+<translation id="4250431568374086873">您与此网站之间建立的连接并非完全安全</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4254813446494774748">翻译语言：</translation>
 <translation id="425573743389990240">电池放电率（单位为瓦，负值表示电池正在充电）</translation>
@@ -2488,6 +2510,7 @@
 <translation id="4307281933914537745">了解关于系统恢复的详情</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES" /> K（实际大小为 <ph name="NUM_KILOBYTES_LIVE" /> K）</translation>
 <translation id="431076611119798497">详细信息(&amp;D)</translation>
+<translation id="4312866146174492540">屏蔽（默认）</translation>
 <translation id="4315548163539304064">正在扫描您的媒体设备…
     <ph name="LINE_BREAK1" />
     找到了 <ph name="FILE_COUNT" /> 张新照片</translation>
@@ -2512,6 +2535,7 @@
 <translation id="4350019051035968019">该设备无法注册到您的帐户所属的网域，因为它已标记为受其他网域管理。</translation>
 <translation id="4354806558096370704">启用本机 CUPS 打印后端。</translation>
 <translation id="4355925451975609675">按 |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| 即可前进</translation>
+<translation id="4356334633973342967">或指定您自己的驱动程序：</translation>
 <translation id="4358353773267946514"><ph name="LANGUAGE_1" />、<ph name="LANGUAGE_2" /></translation>
 <translation id="4358697938732213860">添加地址</translation>
 <translation id="4359408040881008151">安装此扩展程序是因为某个/些扩展程序需要安装它才能正常使用。</translation>
@@ -2720,12 +2744,16 @@
 <translation id="4685045708662437080">这有助于 Google 识别您所说的内容并提升语音和音频识别精确度，从而让您更快速、更轻松地获得所需的结果。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="4690246192099372265">瑞典语</translation>
 <translation id="4690462567478992370">停止使用无效的证书</translation>
+<translation id="4692302215262324251"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 已为您的 <ph name="DEVICE_TYPE" /> 成功注册企业管理服务。
+    <ph name="LINE_BREAK_AND_EMPTY_LINE" />
+    如果您不希望如此，请与支持团队联系。</translation>
 <translation id="469230890969474295">OEM文件夹</translation>
 <translation id="4692342183939154835">WebRTC 硬件视频编码</translation>
 <translation id="4692623383562244444">搜索引擎</translation>
 <translation id="4697551882387947560">浏览会话结束时</translation>
 <translation id="4699172675775169585">缓存的图片和文件</translation>
 <translation id="4699357559218762027">（自动启动）</translation>
+<translation id="4700034875857467999">屏蔽（依照政策）</translation>
 <translation id="4704677965327178154">不允许任何网站使用插件访问您的计算机。</translation>
 <translation id="4707302005824653064">管理员(<ph name="CUSTODIAN_EMAIL" />)可在chrome.com上查看使用情况和历史记录。</translation>
 <translation id="4707579418881001319">L2TP/IPSec + 用户证书</translation>
@@ -2750,6 +2778,7 @@
 <translation id="4731422630970790516">栏中第 3 项</translation>
 <translation id="473221644739519769">将您的打印机添加到Google云打印可让您随时随地打印。您可以与自己选择的任何用户共享这些打印机，还可以通过Chrome、手机、平板电脑、PC或任何其他联网设备使用这些打印机进行打印。</translation>
 <translation id="4732760563705710320">抱歉，您的投射设备不支持此视频。</translation>
+<translation id="4734518477988699048">输入的值无效。</translation>
 <translation id="473546211690256853">此帐户由 <ph name="DOMAIN" /> 管理</translation>
 <translation id="4737715515457435632">请连接到网络</translation>
 <translation id="473775607612524610">更新</translation>
@@ -2762,6 +2791,7 @@
 <translation id="4749157430980974800">格鲁吉亚语键盘</translation>
 <translation id="4750394297954878236">建议</translation>
 <translation id="475088594373173692">第 1 位用户</translation>
+<translation id="4750917950439032686">您发送给这个网站的信息（例如密码或信用卡号）不会外泄。</translation>
 <translation id="4753602155423695878">Android 手机的网页加载进度条动画</translation>
 <translation id="4755240240651974342">芬兰语键盘</translation>
 <translation id="4755351698505571593">只有所有者才能修改此设置。</translation>
@@ -2783,6 +2813,7 @@
 <translation id="4784330909746505604">PowerPoint 演示文稿</translation>
 <translation id="4785040501822872973">此计算机将在 <ph name="LOGOUT_TIME_LEFT" /> 秒后重置。
 按任意键以继续浏览。</translation>
+<translation id="4790972063719531840">自动向 Google 发送诊断数据和使用情况数据</translation>
 <translation id="4791148004876134991">更改当有 Chrome 应用处于活动状态时 Cmd+` 的行为。启用后，在浏览器窗口中按 Cmd+` 将不会循环切换 Chrome 应用，并且当有 Chrome 应用处于活动状态时，按 Cmd+` 将不会循环切换浏览器窗口。</translation>
 <translation id="4792711294155034829">报告问题(&amp;R)...</translation>
 <translation id="479280082949089240">由该网页设置的 Cookie</translation>
@@ -2847,7 +2878,6 @@
 <translation id="4856478137399998590">您的移动数据服务已激活，可以立即使用</translation>
 <translation id="4857958313965051829">管理您的 Android <ph name="BEGIN_LINK" />偏好设置<ph name="END_LINK" />。</translation>
 <translation id="4858913220355269194">足球</translation>
-<translation id="4860565041166337978">允许系统下载管理器处理下载内容（如适用）。</translation>
 <translation id="48607902311828362">飞行模式</translation>
 <translation id="4861833787540810454">播放(&amp;P)</translation>
 <translation id="4862050643946421924">添加设备…</translation>
@@ -2860,7 +2890,6 @@
 <translation id="4871370605780490696">添加书签</translation>
 <translation id="4871833665870725367">您希望 <ph name="PASSWORD_MANAGER_BRAND" /> 更新您用于登录 <ph name="ORIGIN" /> 的密码吗？</translation>
 <translation id="4873312501243535625">媒体文件检查工具</translation>
-<translation id="4874451058913116256">浏览器顶部界面中的 Material Design</translation>
 <translation id="4874539263382920044">标题必须至少包含一个字符</translation>
 <translation id="4875622588773761625">要让<ph name="PASSWORD_MANAGER_BRAND" />更新您登录此网站时使用的密码吗？</translation>
 <translation id="4876895919560854374">将屏幕锁定和解锁</translation>
@@ -2889,6 +2918,7 @@
 <translation id="490305855972338124">配置 Android 手机的网页加载进度条完成时间。</translation>
 <translation id="4903369323166982260">运行 Chrome 清理工具</translation>
 <translation id="4906679076183257864">重置为默认值</translation>
+<translation id="4907161631261076876">此文件属于不常下载的内容，可能存在危险。</translation>
 <translation id="4907306957610201395">权限类别</translation>
 <translation id="49088176676474409">隐藏 VPD 值。</translation>
 <translation id="4910021444507283344">WebGL</translation>
@@ -2920,7 +2950,6 @@
 <translation id="4942394808693235155">检查并应用更新</translation>
 <translation id="494286511941020793">代理配置帮助</translation>
 <translation id="4950138595962845479">选项...</translation>
-<translation id="4952186391360931024">非 Material</translation>
 <translation id="4953808748584563296">默认的橙色头像</translation>
 <translation id="4956752588882954117">您可以查看网页了。</translation>
 <translation id="4956847150856741762">1</translation>
@@ -2937,6 +2966,7 @@
 <translation id="4973307593867026061">添加打印机</translation>
 <translation id="4973698491777102067">清除指定时间段内的数据：</translation>
 <translation id="497421865427891073">前进</translation>
+<translation id="4974590756084640048">重新启用警告功能</translation>
 <translation id="4974733135013075877">退出并启用 childlock 功能</translation>
 <translation id="497490572025913070">合成渲染层边框</translation>
 <translation id="4977942889532008999">确认访问</translation>
@@ -2968,6 +2998,7 @@
 <translation id="5015762597229892204">选择打印机驱动程序应用</translation>
 <translation id="5016865932503687142">允许用户手动强制保存密码，而不依靠密码管理器的试探法进行保存。</translation>
 <translation id="5017508259293544172">LEAP</translation>
+<translation id="501848278921108858">允许（通过扩展程序管理）</translation>
 <translation id="5023943178135355362">自然滚动 <ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="5024856940085636730">某项操作所用的时间超出预期。要取消该操作吗？</translation>
 <translation id="5026874946691314267">不再显示此通知</translation>
@@ -3198,6 +3229,7 @@
 <translation id="5329858601952122676">删除(&amp;D)</translation>
 <translation id="5330145655348521461">这些文件已在其他桌面打开。请转至<ph name="USER_NAME" />(<ph name="MAIL_ADDRESS" />)查看这些文件。</translation>
 <translation id="5332624210073556029">时区：</translation>
+<translation id="5333807720589685258">如果您无法输入正确的 PIN 码解锁密钥，您的 SIM 卡将被永久停用。</translation>
 <translation id="5333958554630697967">启用开发中的实验性网络平台功能。</translation>
 <translation id="5334142896108694079">脚本缓存</translation>
 <translation id="533433379391851622">正确版本应为“<ph name="EXPECTED_VERSION" />”，但实际版本为“<ph name="NEW_ID" />”。</translation>
@@ -3344,6 +3376,7 @@
 <translation id="5512653252560939721">用户证书必须受硬件支持。</translation>
 <translation id="5513242761114685513">上下文菜单</translation>
 <translation id="5515008897660088170">Toolkit-Views 应用窗口。</translation>
+<translation id="5516183516694518900">使用您的 Google 帐户登录 Chrome 后，您可以在自己的所有设备上获取自己的书签、历史记录、密码和其他设置。</translation>
 <translation id="551752069230578406">正在将打印机添加到您的帐户 - 这可能需要一段时间…</translation>
 <translation id="5518584115117143805">电子邮件加密证书</translation>
 <translation id="5521010850848859697">服务器 2</translation>
@@ -3401,6 +3434,7 @@
 <translation id="5584537427775243893">正在导入</translation>
 <translation id="5585118885427931890">无法创建书签文件夹。</translation>
 <translation id="5585912436068747822">格式化失败</translation>
+<translation id="5587341999787829537">不要允许 iframe 查看顶层浏览内容，除非两者来源相同或 iframe 正在处理用户手势操作。</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="5592595402373377407">尚无足够的数据。</translation>
 <translation id="5595485650161345191">修改地址</translation>
@@ -3575,6 +3609,7 @@
 <translation id="5833610766403489739">此文件已移至其他位置。请查看您的下载位置设置并重试。</translation>
 <translation id="5833726373896279253">这些设置的修改权仅限于所有者：</translation>
 <translation id="5834581999798853053">约剩 <ph name="TIME" /> 分钟</translation>
+<translation id="5838278095973806738">请勿在此网站上输入任何敏感信息（例如密码或信用卡信息），因为攻击者可能会盗取这些信息。</translation>
 <translation id="5838456317242088717">当前的隐身会话</translation>
 <translation id="5838825566232597749">美式 Workman 国际</translation>
 <translation id="5839277899276241121">与帐单邮寄地址相同</translation>
@@ -3600,6 +3635,7 @@
 <translation id="5859272821192576954">搞定了！接下来即可开始使用环聊</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5860209693144823476">标签页 3</translation>
+<translation id="5860494867054883682">正在将您的设备更新至<ph name="CHANNEL_NAME" />版本 (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5862109781435984885">在任务栏中显示触控笔工具</translation>
 <translation id="58625595078799656"><ph name="PRODUCT_NAME" />要求您使用 Google 密码或自定义的密码对数据进行加密。</translation>
 <translation id="5863445608433396414">启用调试功能</translation>
@@ -3641,6 +3677,8 @@
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916664084637901428">启用</translation>
 <translation id="59174027418879706">已启用</translation>
+<translation id="5919865442305153341"><ph name="SIGNIN_ERROR" /> <ph name="BEGIN_LINK" /></translation>
+<translation id="5920262536204764679">{NUM_COOKIES,plural, =1{正在使用 1 个}other{正在使用 # 个}}</translation>
 <translation id="5925147183566400388">核证作业准则 (Certification Practice Statement) 指针</translation>
 <translation id="5930693802084567591">您的数据已于 <ph name="TIME" />使用您的 Google 密码加密，请在下方输入该密码。</translation>
 <translation id="5931146425219109062">读取和更改您在访问的网站上的所有数据</translation>
@@ -3719,7 +3757,6 @@
 <translation id="6052976518993719690">SSL 证书授权中心</translation>
 <translation id="6053401458108962351">清除浏览数据(&amp;C)...</translation>
 <translation id="6054173164583630569">法语键盘</translation>
-<translation id="6054934624902824745">管理各个插件…</translation>
 <translation id="6055392876709372977">PKCS #1，带有 RSA 加密的 SHA-256</translation>
 <translation id="6056710589053485679">正常重新加载</translation>
 <translation id="6059232451013891645">文件夹：</translation>
@@ -3803,6 +3840,7 @@
 <translation id="6169666352732958425">无法投射桌面。</translation>
 <translation id="6171550060231646388">模拟硬件“Ok Google”功能</translation>
 <translation id="6175314957787328458">Microsoft 域 GUID</translation>
+<translation id="6177128806592000436">您与此网站之间建立的连接不安全</translation>
 <translation id="6178664161104547336">选择证书</translation>
 <translation id="6181431612547969857">下载已被阻止</translation>
 <translation id="6181444274883918285">添加例外网站</translation>
@@ -3861,6 +3899,7 @@
 <translation id="6253586523465486793">强制执行下拉刷新触发器，不必验证即可重新加载（通常是指标记停用时的常规缓存验证重新加载）。</translation>
 <translation id="6254503684448816922">密钥泄漏</translation>
 <translation id="6256079118265363670">在您的 Chromebook 上启用 Google Play 商店。</translation>
+<translation id="625755898061068298">您已选择针对此网站停用安全警告功能。</translation>
 <translation id="6259104249628300056">在您的本地网络中查找设备</translation>
 <translation id="6263082573641595914">Microsoft CA 版本</translation>
 <translation id="6263284346895336537">非关键</translation>
@@ -3931,6 +3970,7 @@
 <translation id="6348657800373377022">组合框</translation>
 <translation id="6349839454356033837">Android 在播放媒体时遇到了问题。</translation>
 <translation id="6353618411602605519">克罗地亚语键盘</translation>
+<translation id="6356558429970749205">从 Web Payments API 的界面中启用信用卡 OCR 扫描功能</translation>
 <translation id="6356936121715252359">Adobe Flash Player 存储设置…</translation>
 <translation id="6357619544108132570">欢迎使用<ph name="SHORT_PRODUCT_NAME" />系列产品！这不是一款普通的计算机。</translation>
 <translation id="6361850914223837199">错误详情：</translation>
@@ -3986,7 +4026,6 @@
 <translation id="642282551015776456">该名称可能无法用作文件名或文件夹名</translation>
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6423731501149634044">将 Adobe Reader 用作默认的 PDF 查看工具？</translation>
-<translation id="6425092077175753609">Material</translation>
 <translation id="6426039856985689743">停用移动数据</translation>
 <translation id="642870617012116879">此网站试图自动下载多个文件。</translation>
 <translation id="6430814529589430811">Base64 编码 ASCII，单一证书</translation>
@@ -4020,6 +4059,7 @@
 <translation id="6462080265650314920">应用必须以“<ph name="CONTENT_TYPE" />”内容类型提供。</translation>
 <translation id="6462082050341971451">您还在吗？</translation>
 <translation id="6462109140674788769">希腊语键盘</translation>
+<translation id="6462195605655322895">用户通过手势操作确认后，脚本才能添加历史记录条目。</translation>
 <translation id="6463795194797719782">修改(&amp;E)</translation>
 <translation id="6466492211071551451">爱尔兰语键盘</translation>
 <translation id="6466988389784393586">打开所有书签(&amp;O)</translation>
@@ -4029,6 +4069,7 @@
 <translation id="6474706907372204693">上一种输入法</translation>
 <translation id="6474884162850599008">取消与 Google 云端硬盘帐户的关联</translation>
 <translation id="6475697075626596525"><ph name="APP_NAME" />想要共享您屏幕上的内容。请选择您希望共享哪些内容。</translation>
+<translation id="6478248366783946499">要保留危险文件吗？</translation>
 <translation id="6483805311199035658">正在打开 <ph name="FILE" />...</translation>
 <translation id="6485131920355264772">检索存储空间信息失败</translation>
 <translation id="6485352695865682479">连接状态：</translation>
@@ -4067,9 +4108,11 @@
 <translation id="6528546217685656218">缺少此客户端证书的私钥，或私钥无效。</translation>
 <translation id="652948702951888897">Chrome 历史记录</translation>
 <translation id="653019979737152879">正在同步<ph name="FILE_NAME" />…</translation>
+<translation id="6531282281159901044">保留危险文件</translation>
 <translation id="6534583978616527129">初始化此连接</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />除非您有意这么做或被要求这样做，否则请不要随意启用这项功能，因为收集数据可能会降低性能。</translation>
 <translation id="654233263479157500">使用网络服务帮助解决导航错误</translation>
+<translation id="6544215763872433504">Google 为您开发的网络浏览器</translation>
 <translation id="6545665334409411530">重复速度</translation>
 <translation id="6545834809683560467">在地址栏或应用启动器搜索框中输入搜索字词和网址时，借助联想查询服务自动补齐相关内容</translation>
 <translation id="6546686722964485737">加入 WiMAX 网络</translation>
@@ -4082,6 +4125,7 @@
 <translation id="6551508934388063976">无法使用命令。请按 Ctrl+N 打开一个新窗口。</translation>
 <translation id="655384502888039633"><ph name="USER_COUNT" /> 位用户</translation>
 <translation id="6555432686520421228">删除所有用户帐户并重置您的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 设备，使其焕然一新。</translation>
+<translation id="6556239504065605927">安全连接</translation>
 <translation id="6556866813142980365">重做</translation>
 <translation id="6557565812667414268">仅对高 DPI 显示屏启用</translation>
 <translation id="6559580823502247193">（已在此设备中）</translation>
@@ -4094,6 +4138,7 @@
 <translation id="6566142449942033617">无法加载插件的路径“<ph name="PLUGIN_PATH" />”。</translation>
 <translation id="6567688344210276845">无法加载网页操作的“<ph name="ICON" />”图标。</translation>
 <translation id="6569050677975271054">仅限静态黑名单</translation>
+<translation id="6569112282151101523">获取信息</translation>
 <translation id="6571070086367343653">修改信用卡</translation>
 <translation id="657402800789773160">重新加载此页(&amp;R)</translation>
 <translation id="6575134580692778371">未配置</translation>
@@ -4138,6 +4183,7 @@
 <translation id="6630752851777525409"><ph name="EXTENSION_NAME" />希望获得某个证书的永久访问权限，以便代表您进行自我身份验证。</translation>
 <translation id="6637362044401670482">启用对虚拟键盘滚动反弹的支持。</translation>
 <translation id="6639554308659482635">SQLite 使用的内存</translation>
+<translation id="6644846457769259194">正在更新您的设备 (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Netscape 证书授权中心吊销网址</translation>
 <translation id="6647838571840953560">目前使用的是<ph name="CHANNEL_NAME" />版本</translation>
 <translation id="6649018507441623493">请稍候…</translation>
@@ -4187,6 +4233,7 @@
 <translation id="6708242697268981054">来源：</translation>
 <translation id="6709357832553498500">使用“<ph name="EXTENSIONNAME" />”连接</translation>
 <translation id="6710213216561001401">上一个</translation>
+<translation id="6712158998835983046">显示所有内容（以动画形式）</translation>
 <translation id="6718273304615422081">正在压缩…</translation>
 <translation id="671928215901716392">锁定屏幕</translation>
 <translation id="6721972322305477112">文件(&amp;F)</translation>
@@ -4215,6 +4262,7 @@
 <translation id="674632704103926902">启用点按拖动功能</translation>
 <translation id="6746392203843147041">调高音量</translation>
 <translation id="6748140994595080445">更改<ph name="APP_NAME" />处理和显示语言的方式。</translation>
+<translation id="6748412074417976825">只有在来源相同或处理用户手势操作时才能启用 Framebusting</translation>
 <translation id="6748465660675848252">您可以继续，但系统将只恢复已同步的数据和设置。所有本地数据都将会丢失。</translation>
 <translation id="6751256176799620176">已选择 1 个文件夹</translation>
 <translation id="6751344591405861699"><ph name="WINDOW_TITLE" />（隐身）</translation>
@@ -4234,6 +4282,7 @@
 <translation id="6790497603648687708">已远程添加“<ph name="EXTENSION_NAME" />”</translation>
 <translation id="6790820461102226165">添加用户…</translation>
 <translation id="6791443592650989371">激活状态：</translation>
+<translation id="6792072150955115067"><ph name="APP_NAME" />想要与 <ph name="TARGET_NAME" /> 共享您屏幕上的内容。请选择您希望共享哪些内容。</translation>
 <translation id="6793604637258913070">文本插入符号出现或移动时突出显示</translation>
 <translation id="6797493596609571643">糟糕，出问题了。</translation>
 <translation id="6798954102094737107">插件：<ph name="PLUGIN_NAME" /></translation>
@@ -4253,7 +4302,6 @@
 <translation id="6823506025919456619">您需要登录 Chrome，才能看到自己的设备</translation>
 <translation id="6824564591481349393">复制电子邮件地址(&amp;E)</translation>
 <translation id="6824725898506587159">管理语言</translation>
-<translation id="6825718953004242472">移除图标</translation>
 <translation id="6825883775269213504">俄语</translation>
 <translation id="6827236167376090743">此视频将不断循环播放。</translation>
 <translation id="6828153365543658583">只允许以下用户登录：</translation>
@@ -4323,7 +4371,6 @@
 <translation id="6929555043669117778">继续拦截弹出式窗口</translation>
 <translation id="6930242544192836755">持续时间</translation>
 <translation id="6934265752871836553">使用全新的代码提升Chrome提取内容的速度。在此路径之后进行的更改很可能会影响大量内容。</translation>
-<translation id="6935367737854035550">设置浏览器顶部界面中的 Material Design 元素。</translation>
 <translation id="6935867720248834680">GMS 服务不可用</translation>
 <translation id="6937152069980083337">Google 日语输入法（美式键盘）</translation>
 <translation id="693807610556624488">对“<ph name="DEVICE_NAME" />”执行的写入操作超出属性长度上限。</translation>
@@ -4420,6 +4467,7 @@
 <translation id="7045480833981818310">Google 文档、表格和幻灯片的 Office 编辑扩展程序</translation>
 <translation id="7047998246166230966">指针</translation>
 <translation id="7048141481140415714">启用通过按Ctrl+Alt+Shift+8切换到TouchView最大化模式。</translation>
+<translation id="7049293980323620022">要保留文件吗？</translation>
 <translation id="7051943809462976355">正在搜索鼠标…</translation>
 <translation id="7052215492372573690">PIN 码必须至少为 4 位数</translation>
 <translation id="7052237160939977163">发送性能跟踪数据</translation>
@@ -4537,13 +4585,13 @@
 <translation id="7221855153210829124">显示通知</translation>
 <translation id="7221869452894271364">重新加载此页</translation>
 <translation id="7222232353993864120">电子邮件地址</translation>
-<translation id="7222245588540287464">是否启用环境相关搜索。</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7222624196722476520">保加利亚语注音键盘</translation>
 <translation id="722363467515709460">启用屏幕放大镜</translation>
 <translation id="7223775956298141902">啊哦，您没有任何扩展程序 :-(</translation>
 <translation id="7224023051066864079">子网掩码：</translation>
 <translation id="7225179976675429563">缺少网络类型</translation>
+<translation id="7230191962699768124">显示所有内容（以非动画形式）</translation>
 <translation id="7230787553283372882">自定义文字大小</translation>
 <translation id="7231224339346098802">用数字指明要打印多少份（1 份或多份）。</translation>
 <translation id="7238585580608191973">SHA-256 指纹</translation>
@@ -4625,6 +4673,7 @@
 <translation id="7352495173098919663">修改</translation>
 <translation id="7352651011704765696">出了点问题</translation>
 <translation id="7353651168734309780"><ph name="EXTENSION_NAME" /> 需要新的权限</translation>
+<translation id="7360183604634508679">书签菜单</translation>
 <translation id="7361039089383199231">$1 字节</translation>
 <translation id="736108944194701898">鼠标速度：</translation>
 <translation id="7361824946268431273">更加高速、简约、安全的计算机</translation>
@@ -4665,6 +4714,7 @@
 <translation id="740624631517654988">已拦截弹出窗口</translation>
 <translation id="7406691462051376731">这台设备目前会向 Google 发送诊断数据和使用情况数据。设备所有者强制启用了这项<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="7409233648990234464">重新启动并执行 Powerwash</translation>
+<translation id="7409836189476010449">运行 Flash</translation>
 <translation id="7410344089573941623"><ph name="HOST" /> 想要使用摄像头和麦克风时询问我是否同意</translation>
 <translation id="7411343637221933631">{NUM_COOKIES,plural, =1{有 1 项来自此网站}other{有 # 项来自此网站}}</translation>
 <translation id="7412226954991670867">GPU 内存</translation>
@@ -4741,6 +4791,7 @@
 <translation id="7504676042960447229"><ph name="SITE_NAME" /> 想要：</translation>
 <translation id="750509436279396091">打开下载内容文件夹</translation>
 <translation id="7505167922889582512">显示隐藏文件</translation>
+<translation id="7506541170099744506">您的 <ph name="DEVICE_TYPE" /> 已成功注册企业管理服务。</translation>
 <translation id="7507930499305566459">状态响应程序证书</translation>
 <translation id="7508545000531937079">幻灯片演示</translation>
 <translation id="7511149348717996334">启用 Material Design 设置</translation>
@@ -4757,7 +4808,6 @@
 <translation id="7525067979554623046">创建</translation>
 <translation id="7529471622666797993"><ph name="BEGIN_LINK" />高级字体设置<ph name="END_LINK" />（需要使用扩展程序）</translation>
 <translation id="7530016656428373557">电池放电率（瓦）</translation>
-<translation id="7531316138346596025">插件例外情况</translation>
 <translation id="7532099961752278950">按应用设置：</translation>
 <translation id="7536709149194614609">请重新启动此设备，然后稍后重试。</translation>
 <translation id="7540972813190816353">检查更新时出错：<ph name="ERROR" /></translation>
@@ -4990,7 +5040,7 @@
 <translation id="786073089922909430">服务：<ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">下载内容(&amp;D)</translation>
 <translation id="7864539943188674973">停用蓝牙</translation>
-<translation id="7870576007982733437">使用系统下载管理器（如适用）。</translation>
+<translation id="786957569166715433"><ph name="DEVICE_NAME" /> - 已配对</translation>
 <translation id="7870790288828963061">找不到自助服务终端应用的更高版本，因此没有要更新的内容。请拔下 U 盘。</translation>
 <translation id="787150342916295244">信用卡扫描</translation>
 <translation id="7874357055309047713">在所有网站上始终运行</translation>
@@ -5072,6 +5122,7 @@
 <translation id="7979036127916589816">同步错误</translation>
 <translation id="7980084013673500153">资源 ID：<ph name="ASSET_ID" /></translation>
 <translation id="7982083145464587921">请重新启动您的设备以修复此错误。</translation>
+<translation id="7982283708762922719">高度</translation>
 <translation id="7982789257301363584">网络</translation>
 <translation id="7984180109798553540">为提高安全性，<ph name="PRODUCT_NAME" />会对您的数据进行加密。</translation>
 <translation id="798525203920325731">网络命名空间</translation>
@@ -5116,6 +5167,7 @@
 <translation id="8032244173881942855">无法投射标签页。</translation>
 <translation id="8035871966943390569">下拉刷新效果</translation>
 <translation id="8037117027592400564">读取使用合成语音说出的所有文字</translation>
+<translation id="8037357227543935929">询问（默认）</translation>
 <translation id="803771048473350947">文件</translation>
 <translation id="8037713009824540257">添加网站</translation>
 <translation id="8038111231936746805">（默认）</translation>
@@ -5221,7 +5273,9 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8180239481735238521">页</translation>
 <translation id="8180786512391440389">“<ph name="EXTENSION" />”可以读取及删除选中位置的图片、视频及音频文件。</translation>
+<translation id="8181116764437338384">允许（依照政策）</translation>
 <translation id="8181988707601696997">应用启动器同步</translation>
+<translation id="8184288427634747179">改用“<ph name="AVATAR_NAME" />”</translation>
 <translation id="8184538546369750125">使用全局默认设置（允许）</translation>
 <translation id="818454486170715660"><ph name="NAME" /> - 所有者</translation>
 <translation id="8185331656081929126">在网络中检测到新打印机时显示通知</translation>
@@ -5360,6 +5414,7 @@
 <translation id="8381750437846184350">控制 Google 如何利用您的浏览记录为您提供个性化的 Google 搜索、广告和其他 Google 服务</translation>
 <translation id="8382913212082956454">复制电子邮件地址(&amp;E)</translation>
 <translation id="8384113940676655504">启用 Smart Lock 设置，让 Chromebook 通过蓝牙低功耗模式发现附近的配对手机，以便用来解锁 Chromebook。</translation>
+<translation id="8389849690213170419">目前显示的是您登录的设备中的历史记录。</translation>
 <translation id="8390029840652165810">请确保您的网络连接正常，如果仍然有问题，请退出后重新登录并刷新您的凭据。</translation>
 <translation id="8390445751804042000">允许在收到某些网络数据包时唤醒设备。</translation>
 <translation id="8390449457866780408">服务器无法使用。</translation>
@@ -5425,7 +5480,6 @@
 <translation id="8461914792118322307">代理</translation>
 <translation id="8463215747450521436">此受监管用户可能已被管理员删除或停用。如果您想继续以此用户身份登录，请与管理员联系。</translation>
 <translation id="8464132254133862871">此用户帐户不能使用该服务。</translation>
-<translation id="8464505512337106916">检测并运行重要插件内容（推荐）</translation>
 <translation id="8465252176946159372">无效</translation>
 <translation id="8466234950814670489">Tar 归档</translation>
 <translation id="8467473010914675605">韩语输入法</translation>
@@ -5435,6 +5489,7 @@
 <translation id="8475647382427415476">Google 云端硬盘暂时无法同步“<ph name="FILENAME" />”，将在稍后重试。</translation>
 <translation id="8477241577829954800">被取代</translation>
 <translation id="8477384620836102176">基本信息(&amp;G)</translation>
+<translation id="8480082892550707549">即使您之前从该网站下载过文件，该网站也可能暂时存在安全隐患（遭到黑客入侵）。请稍后再尝试下载此文件。</translation>
 <translation id="8480417584335382321">网页缩放：</translation>
 <translation id="8481940801237642152">您与此网站建立的是私密连接，但网络上的某些用户也许能更改此网页的外观。</translation>
 <translation id="8483248364096924578">IP 地址</translation>
@@ -5655,6 +5710,7 @@
 <translation id="8775404590947523323">系统会自动保存您所做的修改。<ph name="BREAKS" />要保留原始图像的副本，请取消选中“覆盖原始文件”。</translation>
 <translation id="8777218413579204310">检测内容</translation>
 <translation id="8777628254805677039">根密码</translation>
+<translation id="8778590208284402708">未针对任何网站设置缩放级别。</translation>
 <translation id="878069093594050299">此证书已通过验证，具有以下用法：</translation>
 <translation id="8782565991310229362">已取消启动自助服务终端应用。</translation>
 <translation id="8783093612333542422">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt;希望与您共享打印机&lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt;。</translation>
@@ -5681,6 +5737,7 @@
 <translation id="8808478386290700967">Chrome 网上应用店</translation>
 <translation id="8808686172382650546">猫</translation>
 <translation id="8811462119186190367">同步设置后，Chrome 浏览器的语言已由“<ph name="FROM_LOCALE" />”更改为“<ph name="TO_LOCALE" />”。</translation>
+<translation id="8813698869395535039">无法登录 <ph name="USERNAME" /></translation>
 <translation id="8813811964357448561">张纸</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="881799181680267069">隐藏其他应用</translation>
@@ -5708,6 +5765,7 @@
 <translation id="8852742364582744935">以下应用和扩展程序已添加完毕：</translation>
 <translation id="885381502874625531">白俄罗斯语键盘</translation>
 <translation id="8856844195561710094">无法停止蓝牙设备查找功能。</translation>
+<translation id="8856939286556828596">网站详情</translation>
 <translation id="885701979325669005">存储空间</translation>
 <translation id="8858798938034909167">您可以在任意设备上通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 获取自己的密码</translation>
 <translation id="8859057652521303089">选择语言：</translation>
@@ -5821,6 +5879,7 @@
 <translation id="9008201768610948239">忽略</translation>
 <translation id="9009299913548444929">此功能暂时无法使用。<ph name="BEGIN_LINK" />帮助<ph name="END_LINK" /></translation>
 <translation id="9009369504041480176">正在上传 (<ph name="PROGRESS_PERCENT" />%)...</translation>
+<translation id="9011163749350026987">始终显示图标</translation>
 <translation id="9011178328451474963">最后一个标签页</translation>
 <translation id="9013284500811652791"><ph name="UWS_NAME" />、<ph name="UWS_NAME" />以及另外 1 个</translation>
 <translation id="901440679911238150">您的帐户详细信息已过期。请<ph name="BEGIN_LINK" />重新登录<ph name="END_LINK" />。</translation>
@@ -5832,6 +5891,7 @@
 <translation id="901834265349196618">电子邮件</translation>
 <translation id="9019062154811256702">读取和更改自动填充设置</translation>
 <translation id="9021662811137657072">检测到病毒</translation>
+<translation id="9022847679183471841"><ph name="AVATAR_NAME" />目前已在此计算机上使用该帐户。</translation>
 <translation id="9024127637873500333">在新标签页中打开(&amp;O)</translation>
 <translation id="9024331582947483881">全屏</translation>
 <translation id="9025098623496448965">确定，返回登录屏幕</translation>
@@ -6003,6 +6063,7 @@
 <translation id="952992212772159698">未激活</translation>
 <translation id="960719561871045870">运营商代码</translation>
 <translation id="960987915827980018">约剩 1 小时</translation>
+<translation id="962778376131245616">仅显示不安全的内容（以动画形式）</translation>
 <translation id="96421021576709873">Wi-Fi 网络</translation>
 <translation id="965490406356730238">为捕获的帧启用硬件加速 mjpeg 解码功能（若适用）。</translation>
 <translation id="968174221497644223">应用缓存</translation>

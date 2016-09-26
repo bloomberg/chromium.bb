@@ -34,7 +34,6 @@
 <translation id="1773601347087397504">前往 Chrome 作業系統說明頁面</translation>
 <translation id="1818142563254268765">由於 Chrome 無法更新至最新版本，您現在無法使用各種最新功能和安全性修正。請更新 Chrome。</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
-<translation id="1924381329666691588">Google Chrome 的介面文字無法設為這種語言。</translation>
 <translation id="2063848847527508675">Chrome 作業系統必須重新啟動，才能套用更新。</translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2084710999043359739">加到 Chrome</translation>
@@ -116,6 +115,7 @@
 <translation id="437002079035561265">Google Chrome 已停止支援這種 Linux 系統，因此這部電腦不會再收到 Google Chrome 更新。</translation>
 <translation id="4407807842708586359">Google Chrome 作業系統</translation>
 <translation id="4458285410772214805">請先登出，然後重新登入，這項變更才會生效。</translation>
+<translation id="4458462641685292929">Google Chrome 正在執行另一項作業，請稍後再試。</translation>
 <translation id="4480040274068703980">登入時發生錯誤，因此 Chrome 作業系統無法同步處理您的資料。</translation>
 <translation id="4519152997629025674">Google Chrome 會使用<ph name="BEGIN_LINK" />網頁服務<ph name="END_LINK" />來改善瀏覽功能，當然您也可以隨時停用這些服務。</translation>
 <translation id="4561051373932531560">Google Chrome 可讓您按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
@@ -128,6 +128,7 @@
 <translation id="4743926867934016338">接受並搜尋</translation>
 <translation id="4751441238232965030">這台電腦將不會再收到 32 位元的 Google Chrome 更新，請升級至 64 位元的 Google Chrome。</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
+<translation id="4771048833395599659">這個檔案可能不安全，因此遭到 Chrome 封鎖。</translation>
 <translation id="4794050651896644714">在 Chrome 中儲存詳細資料</translation>
 <translation id="4891791193823137474">讓 Google Chrome 在背景執行</translation>
 <translation id="4921569541910214635">如果您與他人共用電腦，現在可以依自己的喜好和習慣設定 Chrome。</translation>
@@ -159,7 +160,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5563479599352954471">輕觸即可搜尋</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
-<translation id="5637867606963802593">Chrome 作業系統的介面文字無法設為這種語言。</translation>
 <translation id="568643307450491754">您的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
@@ -186,6 +186,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6400076122676892962">Google Chrome 將停止支援 Mac OS X 10.6、10.7 和 10.8，因此這部電腦很快就不會再收到 Google Chrome 更新。</translation>
 <translation id="6470176598693778404">Google Chrome 已停止支援 Mac OS X 10.6、10.7 和 10.8，因此這部電腦不會再收到 Google Chrome 更新。</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{目前正在執行一項下載作業。您要取消下載並結束 Google Chrome 嗎？}other{目前正在執行 # 項下載作業。您要取消下載並結束 Google Chrome 嗎？}}</translation>
+<translation id="6566149418543181476">正在更新 Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">您正使用 <ph name="PROFILE_EMAIL" /> 帳戶同步處理您的 Chrome 資料。如要更新您的偏好設定，或是在未登入 Google 帳戶的情況下使用 Chrome，請前往 [<ph name="SETTINGS_LINK" />]。</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
 <translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要將這些設定匯入到 Google Chrome，請儲存您的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>
@@ -193,6 +194,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
 <translation id="6757767188268205357">不要再問我</translation>
 <translation id="683440813066116847">允許 mDNS 流量的 Google Chrome Canary 輸入規則。</translation>
+<translation id="686561893457936865">隨時隨地都能使用 Chrome</translation>
 <translation id="6883876366448858277">將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片和其他搜尋結果。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">正在更新裝置...</translation>
@@ -253,7 +255,9 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的攝影機和麥克風。</translation>
 <translation id="8286862437124483331">Google Chrome 現在會嘗試顯示密碼。如果您同意的話，請輸入您的 Windows 密碼。</translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當掉了，要立即重新啟動嗎？</translation>
+<translation id="8342675569599923794">這個檔案並不安全，因此遭到 Chrome 封鎖。</translation>
 <translation id="8406086379114794905">協助改善 Chrome 的服務品質</translation>
+<translation id="8455999171311319804">選擇性：自動將診斷資料和使用情況資料傳送給 Google，協助我們讓 Chrome 作業系統更臻完善。</translation>
 <translation id="853189717709780425">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome 應用程式啟動器 Canary 頻道</translation>

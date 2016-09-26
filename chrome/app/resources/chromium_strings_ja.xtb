@@ -8,7 +8,6 @@
 <translation id="1221340462641866827">Chromium OS では、<ph name="SCHEME" /> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK" /> です。</translation>
 <translation id="1293235220023151515">競合する Chromium のインストールがシステムに見つかりました。アンインストールして、もう一度お試しください。</translation>
 <translation id="1298199220304005244">Chromium OS の使用に関するアドバイス</translation>
-<translation id="1347507563453473396">Chromium をこの言語で表示することはできません。</translation>
 <translation id="1396446129537741364">Chromium はパスワードを表示しようとしています。</translation>
 <translation id="1403254041219632970">Chromium の今後のバージョンでは Mac OS X 10.6、10.7、10.8 はサポートされなくなります。</translation>
 <translation id="1414495520565016063">Chromium にログインしました</translation>
@@ -125,10 +124,12 @@
 <translation id="4987820182225656817">ゲスト ユーザーは、記録を残さずに Chromium を使用できます。</translation>
 <translation id="4994636714258228724">Chromium に自分を追加</translation>
 <translation id="5032989939245619637">Chromium で詳細を保存する</translation>
+<translation id="5045248521775609809">どの端末でも同じ Chromium を使用できます</translation>
 <translation id="5113946445248196174">Chromium では既定のブラウザを判定または設定できません。</translation>
 <translation id="5116586539350239523">Chromium でユーザーの情報が安全に保存されるので、再度入力する必要がなくなります。</translation>
 <translation id="5231355151045086930">Chromium からのログアウト</translation>
 <translation id="5358375970380395591">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME" /> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。<ph name="LEARN_MORE" /></translation>
+<translation id="5386450000063123300">Chromium を更新しています（<ph name="PROGRESS_PERCENT" />）</translation>
 <translation id="5398878173008909840">Chromium の最新バージョンをぜひお試しください。</translation>
 <translation id="5427571867875391349">Chromium をデフォルト ブラウザに設定する</translation>
 <translation id="5466153949126434691">Chromium は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chromium が再起動し、すぐにお使いいただけます。</translation>
@@ -159,6 +160,7 @@
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
 <translation id="6248213926982192922">Chromium を既定のブラウザにする</translation>
 <translation id="6309712487085796862">Chromium がカメラを使用しています。</translation>
+<translation id="6333502561965082103">Chromium で別の処理が行われています。しばらくしてからもう一度お試しください。</translation>
 <translation id="6334986366598267305">共有パソコンの Chromium で Google アカウントが簡単に使用できるようになりました。</translation>
 <translation id="6373523479360886564">Chromium をアンインストールしてもよろしいですか？</translation>
 <translation id="6394232988457703198">今すぐ Chromium を再起動してください。</translation>
@@ -216,7 +218,6 @@
 詳しくは、<ph name="ACCOUNT_EMAIL" /> 宛にメールをお送りしましたのでご確認ください。</translation>
 <translation id="7419987137528340081">既存の Chromium データを個別に保持したい場合は、<ph name="USER_NAME" /> 用の新しい Chromium ユーザーを作成できます。</translation>
 <translation id="7421823331379285070">Chromium は、Windows XP 以降が必要です。一部の機能が動作しない場合があります。</translation>
-<translation id="7437562785125777404">Chromium OS をこの言語で表示することはできません。</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="7483335560992089831">実行中の Chromium と同じバージョンをインストールすることはできません。Chromium を閉じてからもう一度お試しください。</translation>
 <translation id="750717762378961310">不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
@@ -236,7 +237,9 @@
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>
 <translation id="8033665941300843262">このサイトと制限付き機能を共有するには、Chromium に制限付き機能へのアクセスを許可する必要があります。</translation>
 <translation id="8134284582177628525">このパソコンを <ph name="PROFILE_NAME" /> さんと共有する場合は、個別に閲覧できるように、ご自分を Chromium に追加してください。そうしない場合は、他のユーザーの Google アカウントの接続を解除してください。</translation>
+<translation id="81770708095080097">このファイルは危険なファイルであるため、Chromium でブロックしました。</translation>
 <translation id="8269379391216269538">Chromium の品質向上にご協力ください</translation>
+<translation id="8290862415967981663">このファイルは危険なファイルの可能性があるため、Chromium でブロックしました。</translation>
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
 <translation id="8493179195440786826">Chromium は古いバージョンです</translation>
 <translation id="85843667276690461">Chromium の使用に関するアドバイス</translation>

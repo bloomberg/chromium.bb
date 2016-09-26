@@ -47,7 +47,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="2268813581635650749">Alle abmelden</translation>
 <translation id="2297568595583585744">Statusleiste</translation>
 <translation id="2303600792989757991">Fensterübersicht umschalten</translation>
-<translation id="2372145515558759244">Apps werden synchronisiert...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für das Pairing. Bevor Sie akzeptieren, überprüfen Sie, ob folgender Zugangscode auf dem Gerät angezeigt wird: <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Ein Fehler ist aufgetreten.</translation>
@@ -61,7 +60,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
 <translation id="2761704814324807722">Statusleiste, Uhrzeit <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Suchtaste</translation>
-<translation id="2805756323405976993">Apps</translation>
 <translation id="2819276065543622893">Sie werden jetzt abgemeldet.</translation>
 <translation id="2825619548187458965">Ablage</translation>
 <translation id="2844169650293029770">USB-C-Gerät (Port vorne links)</translation>
@@ -110,6 +108,7 @@ Drücken Sie die Such-Taste oder Shift, um die Aktivierung aufzuheben.</translat
 <translation id="3866182280516392520">IPv6-Adresse</translation>
 <translation id="3891340733213178823">Drücken Sie zum Abmelden zweimal Strg + Shift + Q.</translation>
 <translation id="3892641579809465218">Interne Anzeige</translation>
+<translation id="3893630138897523026">ChromeVox (gesprochenes Feedback)</translation>
 <translation id="3963445509666917109">Lautsprecher (intern)</translation>
 <translation id="3967919079500697218">Die Funktion zum Erfassen von Screenshots wurde vom Administrator deaktiviert.</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
@@ -191,7 +190,6 @@ Drücken Sie zum Wechseln Shift+Alt.</translation>
 <translation id="6713285437468012787">Das Pairing für das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" wurde durchgeführt und das Gerät ist nun für alle Nutzer verfügbar. Sie können das Pairing unter "Einstellungen" entfernen.</translation>
 <translation id="6785414152754474415">Akku ist zu <ph name="PERCENTAGE" /> % geladen und wird geladen.</translation>
 <translation id="683971173229319003">Suche + L</translation>
-<translation id="68610848741840742">ChromeVox (gesprochenes Feedback)</translation>
 <translation id="6911468394164995108">Andere Netzwerke...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>

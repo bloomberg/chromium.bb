@@ -756,6 +756,9 @@
 <translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
+<translation id="3322902067538988734">Ako se to pravilo postavi na True, korisnik se mora prijaviti na <ph name="PRODUCT_NAME" /> svojim profilom da bi mogao upotrebljavati preglednik. Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na False.
+
+      Ako se to pravilo postavi na False ili se ne konfigurira, korisnik može upotrebljavati preglednik bez prijave na <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
 
@@ -909,6 +912,11 @@
 
       Ako se to pravilo ne postavi, SPDY će biti dostupan.</translation>
 <translation id="3891357445869647828">Omogući JavaScript</translation>
+<translation id="3891953007921334498">Onemogućuje Alate za razvojne programere i konzolu JavaScripta.
+
+      Ako omogućite tu postavku, više neće biti moguće pristupiti Alatima za razvojne programere i više se neće moći provjeravati elementi web-lokacija. Bit će onemogućeni svi tipkovni prečaci i stavke izbornika ili kontekstnih izbornika za otvaranje Alata za razvojne programere ili konzole JavaScripta.
+
+      Ako se ta opcija onemogući ili ne postavi, korisnik može upotrebljavati Alate za razvojne programere i konzole JavaScripta.</translation>
 <translation id="3907986150060929099">Postavi preporučene jezike za javnu sesiju</translation>
 <translation id="391531815696899618">Onemogućuje sinkronizaciju Google diska u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /> kada je postavljeno na točno. U tom se slučaju nikakvi podaci ne prenose na Google disk.
 
@@ -1003,6 +1011,7 @@
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
 <translation id="4250680216510889253">Ne</translation>
+<translation id="4272136423200695428">Omogućuje nametanje prijave za <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Određuje parametre koji se upotrebljavaju prilikom pretraživanja slika pomoću POST metode. Sastoji se od zarezom odvojenih parova naziv/vrijednost. Ako je vrijednost parametar predloška, primjerice {imageThumbnail} u gornjem primjeru, zamijenit će se podacima stvarne minijature slike.
 
           To je pravilo izborno. Ako nije postavljeno, zahtjev za pretraživanje slika poslat će se pomoću GET metode.

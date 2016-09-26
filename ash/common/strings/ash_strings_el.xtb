@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">Αποσύνδεση όλων</translation>
 <translation id="2297568595583585744">Δίσκος κατάστασης</translation>
 <translation id="2303600792989757991">Επισκόπηση εναλλαγής παραθύρων</translation>
-<translation id="2372145515558759244">Συγχρονισμός εφαρμογών…</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης. Προτού αποδεχτείτε, επιβεβαιώστε ότι αυτό το κλειδί πρόσβασης εμφανίζεται στη συγκεκριμένη συσκευή: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Παρουσιάστηκε σφάλμα</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">Σύνδεση με φορτιστή χαμηλής ισχύος. Η φόρτιση της μπαταρίας ενδέχεται να μη γίνεται με αξιόπιστο τρόπο.</translation>
 <translation id="2761704814324807722">Δίσκος κατάστασης, ώρα <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2805756323405976993">Εφαρμογές </translation>
 <translation id="2819276065543622893">Θα αποσυνδεθείτε τώρα.</translation>
 <translation id="2825619548187458965">Ράφι</translation>
 <translation id="2844169650293029770">Συσκευή USB-C (αριστερή μπροστινή θύρα)</translation>
@@ -110,6 +108,7 @@
 <translation id="3866182280516392520">Διεύθυνση IPv6</translation>
 <translation id="3891340733213178823">Πατήστε Ctrl + Shift + Q δύο φορές για να αποσυνδεθείτε.</translation>
 <translation id="3892641579809465218">Εσωτερική οθόνη</translation>
+<translation id="3893630138897523026">ChromeVox (προφορικά σχόλια)</translation>
 <translation id="3963445509666917109">Ηχείο (Εσωτερικό)</translation>
 <translation id="3967919079500697218">Η δυνατότητα λήψης στιγμιότυπων οθόνης έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
@@ -191,7 +190,6 @@
 <translation id="6713285437468012787">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" έχει συζευχθεί και είναι πλέον διαθέσιμη σε όλους τους χρήστες. Μπορείτε να καταργήσετε αυτήν τη σύζευξη μέσω των Ρυθμίσεων.</translation>
 <translation id="6785414152754474415">Η μπαταρία είναι πλήρης <ph name="PERCENTAGE" />% και φορτίζει.</translation>
 <translation id="683971173229319003">Πλήκτρο αναζήτησης+L</translation>
-<translation id="68610848741840742">ChromeVox (προφορικά σχόλια)</translation>
 <translation id="6911468394164995108">Συμμετοχή σε άλλο…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@
 <translation id="7561014039265304140">Το <ph name="DISPLAY_NAME" /> δεν υποστηρίζει το <ph name="SPECIFIED_RESOLUTION" />. Η ανάλυση άλλαξε σε <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Λειτουργία βάσης σύνδεσης</translation>
 <translation id="7580671184200851182">Αναπαραγωγή του ίδιου ήχου μέσω όλων των ηχείων (μονοφωνικός ήχος)</translation>
+<translation id="7581273696622423628">Συμμετοχή σε έρευνα</translation>
 <translation id="7593891976182323525">Search ή Shift</translation>
 <translation id="7649070708921625228">Βοήθεια</translation>
 <translation id="7692480393933218409">Φόρτιση συνδεδεμένων συσκευών USB-C</translation>

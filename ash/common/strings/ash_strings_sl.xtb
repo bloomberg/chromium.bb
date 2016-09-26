@@ -47,7 +47,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="2268813581635650749">Odjava vseh</translation>
 <translation id="2297568595583585744">Pladenj stanja</translation>
 <translation id="2303600792989757991">Preklop pregleda okna</translation>
-<translation id="2372145515558759244">Sinhronizacija aplikacij ...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi dovoljenje za seznanjanje. Preden sprejmete, se prepričajte, da je na napravi prikazano to geslo: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Prišlo je do napake</translation>
@@ -61,7 +60,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="2727977024730340865">Priključen je nizkoenergijski polnilnik. Polnjenje akumulatorja morda ne bo zanesljivo.</translation>
 <translation id="2761704814324807722">Vrstica stanja, čas: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + iskanje</translation>
-<translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2819276065543622893">Zdaj boste odjavljeni.</translation>
 <translation id="2825619548187458965">Polica</translation>
 <translation id="2844169650293029770">Naprava USB-C (vrata levo spredaj)</translation>
@@ -110,6 +108,7 @@ Pritisnite tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="3866182280516392520">Naslov IPv6</translation>
 <translation id="3891340733213178823">Dvakrat pritisnite Ctrl + Shift + Q, če se želite odjaviti.</translation>
 <translation id="3892641579809465218">Notranji zaslon</translation>
+<translation id="3893630138897523026">ChromeVox (izgovorjava povratnih informacij)</translation>
 <translation id="3963445509666917109">Zvočnik (vgrajeni)</translation>
 <translation id="3967919079500697218">Skrbnik je onemogočil možnost izdelave posnetkov zaslona.</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
@@ -191,7 +190,6 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="6713285437468012787">Naprava Bluetooth »<ph name="DEVICE_NAME" />« je seznanjena in je zdaj na voljo vsem uporabnikom. To seznanitev lahko odstranite v nastavitvah.</translation>
 <translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> % – polnjenje še poteka.</translation>
 <translation id="683971173229319003">Iskanje + L</translation>
-<translation id="68610848741840742">ChromeVox (izgovorjava povratnih informacij)</translation>
 <translation id="6911468394164995108">Pridružite se drugemu ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ne podpira ločljivosti <ph name="SPECIFIED_RESOLUTION" />. Spremenjena je bila na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Zasidran način</translation>
 <translation id="7580671184200851182">Predvajaj isti zvok prek vseh zvočnikov (mono zvok)</translation>
+<translation id="7581273696622423628">Izpolnjevanje ankete</translation>
 <translation id="7593891976182323525">Iskanje ali Shift</translation>
 <translation id="7649070708921625228">Pomoč</translation>
 <translation id="7692480393933218409">Polnjenje povezanih naprav USB-C</translation>

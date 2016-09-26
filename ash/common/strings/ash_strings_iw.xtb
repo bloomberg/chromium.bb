@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">הוצא את כולם</translation>
 <translation id="2297568595583585744">מגש סטטוס</translation>
 <translation id="2303600792989757991">החלף סקירת חלון</translation>
-<translation id="2372145515558759244">מסנכרן יישומים...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה. לפני שתאשר, ודא שמפתח הסיסמה הבא מוצג במכשיר הזה: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">אירעה שגיאה</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">מחובר למטען בעל מתח נמוך. ייתכן שטעינת הסוללה לא תהיה אמינה.</translation>
 <translation id="2761704814324807722">מגש מערכת, שעה <ph name="TIME" />‏, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">‏Alt + חיפוש</translation>
-<translation id="2805756323405976993">אפליקציות</translation>
 <translation id="2819276065543622893">תצא עכשיו מהחשבון.</translation>
 <translation id="2825619548187458965">מדף</translation>
 <translation id="2844169650293029770">‏מכשיר עם יציאת USB-C (יציאה שמאלית-קדמית)</translation>
@@ -110,6 +108,7 @@
 <translation id="3866182280516392520">‏כתובת IPv6</translation>
 <translation id="3891340733213178823">‏הקש פעמיים על Ctrl+Shift+Q כדי לצאת.</translation>
 <translation id="3892641579809465218">תצוגה פנימית</translation>
+<translation id="3893630138897523026">‏ChromeVox (משוב קולי)</translation>
 <translation id="3963445509666917109">רמקול (פנימי)</translation>
 <translation id="3967919079500697218">היכולת לצלם צילומי מסך הושבתה על-ידי מנהל המערכת שלך.</translation>
 <translation id="397105322502079400">מחשב...</translation>
@@ -191,7 +190,6 @@
 <translation id="6713285437468012787">‏מכשיר ה-Bluetooth‏ "<ph name="DEVICE_NAME" />" הותאם והוא זמין כעת לכל המשתמשים. אתה יכול להסיר את ההתאמה הזו ב'הגדרות'.</translation>
 <translation id="6785414152754474415">‏הסוללה טעונה ברמה של ‎<ph name="PERCENTAGE" />%‎ ומתבצעת טעינה.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">‏ChromeVox (משוב קולי)</translation>
 <translation id="6911468394164995108">הצטרף לרשת אחרת...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -215,6 +213,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> אינו תומך ב-<ph name="SPECIFIED_RESOLUTION" />. הרזולוציה שונתה ל-<ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">מצב מעוגן</translation>
 <translation id="7580671184200851182">השמע את אותו אודיו מכל הרמקולים (אודיו מונו)</translation>
+<translation id="7581273696622423628">השתתף בסקר</translation>
 <translation id="7593891976182323525">‏חיפוש או Shift</translation>
 <translation id="7649070708921625228">עזרה</translation>
 <translation id="7692480393933218409">‏טעינת מכשירים מחוברים עם יציאת USB-C</translation>

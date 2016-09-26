@@ -287,6 +287,7 @@
 <translation id="8548209692293300397">Вы уже вошли как <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Чтобы получить доступ к компьютерам, <ph name="LINK_BEGIN" />войдите в Google Chrome<ph name="LINK_END" />, используя данные этого аккаунта, и переустановите Удаленный рабочий стол Chrome.</translation>
 <translation id="8642984861538780905">среднее</translation>
 <translation id="8712909229180978490">Не удается посмотреть сохраненные на Диске файлы онлайн.</translation>
+<translation id="8743328882720071828">Разрешить пользователю <ph name="CLIENT_USERNAME" /> управлять вашим компьютером?</translation>
 <translation id="8759753423332885148">Подробнее…</translation>
 <translation id="8791202241915690908">Установка хоста для Пульта Chrome</translation>
 <translation id="894763922177556086">высокое</translation>

@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">すべてログアウト</translation>
 <translation id="2297568595583585744">ステータス トレイ</translation>
 <translation id="2303600792989757991">ウィンドウ切り替えの概要</translation>
-<translation id="2372145515558759244">アプリの同期中...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。許可するにあたっては、このデバイスで次のパスキーが表示されることを確認してください: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">エラーが発生しました</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">低電力の充電器に接続しています。バッテリーが充電されない可能性があります。</translation>
 <translation id="2761704814324807722">ステータス トレイ、時刻 <ph name="TIME" />、<ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+ 検索</translation>
-<translation id="2805756323405976993">アプリ</translation>
 <translation id="2819276065543622893">ログアウトします。</translation>
 <translation id="2825619548187458965">シェルフ</translation>
 <translation id="2844169650293029770">USB-C デバイス（左手前のポート）</translation>
@@ -110,6 +108,7 @@
 <translation id="3866182280516392520">IPv6 アドレス</translation>
 <translation id="3891340733213178823">ログアウトするには、Ctrl+Shift+Q を 2 回押します。</translation>
 <translation id="3892641579809465218">内蔵ディスプレイ</translation>
+<translation id="3893630138897523026">ChromeVox（音声フィードバック）</translation>
 <translation id="3963445509666917109">スピーカー（内蔵）</translation>
 <translation id="3967919079500697218">スクリーンショットを撮る機能は、管理者によって無効にされています。</translation>
 <translation id="397105322502079400">計算しています...</translation>
@@ -191,7 +190,6 @@
 <translation id="6713285437468012787">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定されました。すべてのユーザーはこのデバイスを使用できます。[設定] から、このペア設定を削除することもできます。</translation>
 <translation id="6785414152754474415">バッテリー残量: <ph name="PERCENTAGE" />%、充電しています。</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox（音声フィードバック）</translation>
 <translation id="6911468394164995108">他のネットワークに接続...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
@@ -216,6 +214,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7573962313813535744">ドッキング モード</translation>
 <translation id="7580671184200851182">すべてのスピーカーで同じオーディオを再生（モノラル オーディオ）</translation>
+<translation id="7581273696622423628">アンケートに答える</translation>
 <translation id="7593891976182323525">検索/Shift</translation>
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7692480393933218409">接続された USB-C デバイスを充電しています</translation>

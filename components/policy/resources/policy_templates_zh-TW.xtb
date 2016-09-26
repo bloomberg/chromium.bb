@@ -757,6 +757,9 @@
 <translation id="3322771899429619102">允許您設定網址模式清單，指定可以使用金鑰產生功能的網站。如果網址模式為「KeygenBlockedForUrls」，則會覆寫這類例外狀況。
 
           如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
+<translation id="3322902067538988734">如果將這項政策設為 true，使用者必須以個人設定檔登入 <ph name="PRODUCT_NAME" />，才能使用瀏覽器。此外，BrowserGuestModeEnabled 的預設值將設為 false。
+
+      如果將這項政策設為 false 或不設定這項政策，使用者不需登入 <ph name="PRODUCT_NAME" /> 也能使用瀏覽器。</translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
 <translation id="3417418267404583991">如果這項政策設為 True 或未設定，<ph name="PRODUCT_OS_NAME" /> 會啟用訪客登入。訪客登入是匿名的使用者工作階段，並且不需要密碼。
 
@@ -910,6 +913,11 @@
 
       如果未設定這項政策，則可使用 SPDY。</translation>
 <translation id="3891357445869647828">啟用 JavaScript</translation>
+<translation id="3891953007921334498">停用開發人員工具和 JavaScript 控制台。
+
+      如果啟用這項設定，使用者就無法再存取開發人員工具，也無法再檢查網站元素。此外，所有可開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單項目或內容選單項目都會遭到停用。
+
+      如果將這個選項設為停用或不設定這個選項，使用者即可使用開發人員工具和 JavaScript 控制台。</translation>
 <translation id="3907986150060929099">為公開工作階段設定建議的語言代碼</translation>
 <translation id="391531815696899618">如果您設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會停用 Google 雲端硬碟同步功能。這種情形下，系統無法將資料上傳至 Google 雲端硬碟。
 
@@ -1004,6 +1012,7 @@
 
           如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
 <translation id="4250680216510889253">否</translation>
+<translation id="4272136423200695428">啟用 <ph name="PRODUCT_NAME" /> 的強制登入功能。</translation>
 <translation id="427632463972968153">指定使用 POST 執行圖片搜尋時所用的參數，其包含以逗號分隔的名稱/數值配對。如果數值為範本參數 (例如上例中的 {imageThumbnail})，系統將會以實際圖片的縮圖資料替代這個數值。
 
           這項政策是選擇性的，如果未設定，系統將使用 GET 方法圖片搜尋要求。

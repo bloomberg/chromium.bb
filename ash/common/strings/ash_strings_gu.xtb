@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">બધામાંથી સાઇન આઉટ કરો</translation>
 <translation id="2297568595583585744">સ્થિતિ ટ્રે</translation>
 <translation id="2303600792989757991">ટોગલ વિન્ડો વિહંગાવલોકન</translation>
-<translation id="2372145515558759244">એપ્લિકેશન્સને સમન્વયિત કરી રહ્યું છે...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. સ્વીકારતાં પહેલાં, કૃપા કરીને તે ઉપકરણ પર બતાવેલ આ પાસકીની પુષ્ટિ કરો: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">કોઈ ભૂલ આવી છે</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">નિમ્ન-પાવર ચાર્જરમાં પ્લગ કરેલું છે. બૅટરી ચાર્જિંગ વિશ્વસનીય હશે નહીં.</translation>
 <translation id="2761704814324807722">સ્થિતિ ટ્રે, સમય <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2805756323405976993">એપ્સ</translation>
 <translation id="2819276065543622893">તમે હવે સાઇન આઉટ થશો.</translation>
 <translation id="2825619548187458965">શેલ્ફ</translation>
 <translation id="2844169650293029770">USB-C ઉપકરણ (ડાબી બાજુનું આગળનું પોર્ટ)</translation>
@@ -110,6 +108,7 @@
 <translation id="3866182280516392520">IPv6 સરનામું</translation>
 <translation id="3891340733213178823">સાઇન આઉટ કરવા માટે બે વાર Ctrl+Shift+Q દબાવો.</translation>
 <translation id="3892641579809465218">આંતરિક પ્રદર્શન</translation>
+<translation id="3893630138897523026">ChromeVox (બોલાયેલ પ્રતિસાદ)</translation>
 <translation id="3963445509666917109">સ્પીકર (આંતરિક)</translation>
 <translation id="3967919079500697218">સ્ક્રીનશૉટ્સ લેવાની ક્ષમતા તમારા વ્યવસ્થાપક દ્વારા અક્ષમ કરવામાં આવી છે.</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
@@ -191,7 +190,6 @@
 <translation id="6713285437468012787">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ની જોડી બનાવવામાં આવી અને હવે તે બધા વપરાશકર્તાઓને ઉપલબ્ધ છે. તમે સેટિંગ્સનો ઉપયોગ કરીને આ જોડીને દૂર કરી શકો છો.</translation>
 <translation id="6785414152754474415">બેટરી <ph name="PERCENTAGE" /> % પૂર્ણ અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox (બોલાયેલ પ્રતિસાદ)</translation>
 <translation id="6911468394164995108">અન્યથી જોડાઓ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ડ્રાઇવ</translation>
@@ -215,6 +213,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> ને સમર્થન આપતું નથી. રિઝોલ્યુશન <ph name="FALLBACK_RESOLUTION" /> પર બદલાયું હતું</translation>
 <translation id="7573962313813535744">ડોક કરેલ મોડ</translation>
 <translation id="7580671184200851182">તમામ સ્પીકર્સ મારફતે સમાન ઑડિઓ ચલાવો (મોનો ઑડિઓ)</translation>
+<translation id="7581273696622423628">સર્વેક્ષણમાં ભાગ લો</translation>
 <translation id="7593891976182323525">Search અથવા Shift</translation>
 <translation id="7649070708921625228">સહાય</translation>
 <translation id="7692480393933218409">કનેક્ટ કરેલા USB-C ઉપકરણોને ચાર્જ કરી રહ્યાં છે</translation>

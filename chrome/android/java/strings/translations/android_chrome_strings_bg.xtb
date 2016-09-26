@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Тук ще се показват отметките, които сте запазили на другите си устройства.</translation>
 <translation id="1121094540300013208">Отчети за употребата и сигнали за сривове</translation>
 <translation id="1137305377394488060">последния час</translation>
+<translation id="1146678959555564648">Вход във Виртуална Реалност</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Премахване</translation>
 <translation id="1197267115302279827">Преместване на отметки</translation>
@@ -247,6 +248,7 @@
 <translation id="393697183122708255">Не е налице активирано гласово търсене</translation>
 <translation id="3946611741043634542">С продължаването си приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome.</translation>
 <translation id="3950820424414687140">Вход</translation>
+<translation id="3967822245660637423">Изтеглянето завърши</translation>
 <translation id="397583555483684758">Синхронизирането спря да работи</translation>
 <translation id="3988213473815854515">Местоположението е разрешено</translation>
 <translation id="3997476611815694295">Маловажни данни в хранилището</translation>
@@ -259,7 +261,6 @@
 <translation id="4095146165863963773">Да се изтрият ли данните на приложенията?</translation>
 <translation id="4099578267706723511">Помогнете за подобряването на Chrome, като изпращате до Google статистически данни за употребата и сигнали за сривове.</translation>
 <translation id="410351446219883937">Автоматично възпроизвеждане</translation>
-<translation id="411254640334432676">Изтеглянето не бе успешно.</translation>
 <translation id="4113030288477039509">Управлява се от администратора ви</translation>
 <translation id="4165986682804962316">Настройки за сайта</translation>
 <translation id="4170011742729630528">Няма достъп до услугата. Опитайте отново по-късно.</translation>
@@ -277,7 +278,6 @@
 <translation id="4275663329226226506">Медия</translation>
 <translation id="4278390842282768270">Разрешено</translation>
 <translation id="4307992518367153382">Основни положения</translation>
-<translation id="4334294535648607276">Изтеглянето завърши.</translation>
 <translation id="4351244548802238354">Затваряне на диалоговия прозорец</translation>
 <translation id="4376501731284077108">Без контрол</translation>
 <translation id="4378154925671717803">Телефон</translation>
@@ -335,12 +335,10 @@
 <translation id="5063480226653192405">Употреба</translation>
 <translation id="5100237604440890931">Свито – кликнете за разгъване.</translation>
 <translation id="510275257476243843">Остава 1 час</translation>
-<translation id="5107381076085091558">Изтеглянето е на пауза.</translation>
 <translation id="5127805178023152808">Синхронизирането е изключено</translation>
 <translation id="5131405117025179004">Редактиране на запазен профил</translation>
 <translation id="5138299137310274655">Тази страница е на <ph name="SOURCE_LANGUAGE" />. Да се преведе ли на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Изчистване на съхраняваните данни</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />мигновено<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Това е профил на дете</translation>
 <translation id="5161254044473106830">Изисква се заглавие</translation>
 <translation id="5164482624172255778">Искате ли следващия път Google Chrome да предложи да преведе от <ph name="LANGUAGE" /> страниците от този сайт?</translation>
@@ -655,6 +653,7 @@
 <translation id="8719023831149562936">Текущият раздел не може да се излъчи</translation>
 <translation id="8725066075913043281">Опитайте отново</translation>
 <translation id="8730621377337864115">Готово</translation>
+<translation id="8748850008226585750">Съдържанието е скрито</translation>
 <translation id="8812942424849541387">Контролирайте това поведение от <ph name="BEGIN_LINK1" />Настройки<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="883635517171802338">Блокиране на показването на изскачащи прозорци от сайтовете (препоръчително)</translation>
@@ -662,7 +661,6 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">„<ph name="TAB_TITLE" />“ – раздел</translation>
 <translation id="885701979325669005">Хранилище</translation>
-<translation id="8872506776304248286">Отваряне в прилож.</translation>
 <translation id="8901170036886848654">Няма намерени отметки</translation>
 <translation id="8909135823018751308">Споделяне…</translation>
 <translation id="8912362522468806198">Профил в Google</translation>

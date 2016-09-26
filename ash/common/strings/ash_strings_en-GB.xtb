@@ -47,7 +47,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="2268813581635650749">Sign out all</translation>
 <translation id="2297568595583585744">Status tray</translation>
 <translation id="2303600792989757991">Toggle window overview</translation>
-<translation id="2372145515558759244">Syncing apps...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">An error occurred</translation>
@@ -61,7 +60,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
 <translation id="2761704814324807722">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2805756323405976993">Apps</translation>
 <translation id="2819276065543622893">You will be signed out now.</translation>
 <translation id="2825619548187458965">Shelf</translation>
 <translation id="2844169650293029770">USB-C device (left side front port)</translation>
@@ -110,6 +108,7 @@ Press Search or Shift to cancel.</translation>
 <translation id="3866182280516392520">IPv6 Address</translation>
 <translation id="3891340733213178823">Press Ctrl+Shift+Q twice to sign out.</translation>
 <translation id="3892641579809465218">Internal Display</translation>
+<translation id="3893630138897523026">ChromeVox (spoken feedback)</translation>
 <translation id="3963445509666917109">Speaker (Internal)</translation>
 <translation id="3967919079500697218">The ability to take screenshots has been disabled by your administrator.</translation>
 <translation id="397105322502079400">Calculating...</translation>
@@ -191,7 +190,6 @@ Press Shift + Alt to switch.</translation>
 <translation id="6713285437468012787">Bluetooth device "<ph name="DEVICE_NAME" />" has been paired and is now available to all users. You may remove this pairing using Settings.</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox (Spoken feedback)</translation>
 <translation id="6911468394164995108">Join other ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@ Press Alt+Search or Shift to cancel.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> doesn't support <ph name="SPECIFIED_RESOLUTION" />. The resolution was changed to <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Docked mode</translation>
 <translation id="7580671184200851182">Play the same audio through all speakers (mono audio)</translation>
+<translation id="7581273696622423628">Take survey</translation>
 <translation id="7593891976182323525">Search or Shift</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7692480393933218409">Charging connected USB-C devices</translation>

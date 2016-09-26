@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Bokmerker som er lagret på de andre enhetene dine, vises her.</translation>
 <translation id="1121094540300013208">Bruks- og programstopprapporter</translation>
 <translation id="1137305377394488060">den siste timen</translation>
+<translation id="1146678959555564648">Slå på VR-modus</translation>
 <translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1197267115302279827">Flytt bokmerker</translation>
@@ -247,6 +248,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="393697183122708255">Ingen aktiverte talesøk er tilgjengelige</translation>
 <translation id="3946611741043634542">Hvis du fortsetter, samtykker du i <ph name="BEGIN_LINK1" />vilkårene for bruk<ph name="END_LINK1" /> av Chrome og den tilhørende <ph name="BEGIN_LINK2" />merknaden om personvern<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Logg på</translation>
+<translation id="3967822245660637423">Nedlasting fullført</translation>
 <translation id="397583555483684758">Synkroniseringen har sluttet å fungere</translation>
 <translation id="3988213473815854515">Posisjon er tillatt</translation>
 <translation id="3997476611815694295">Uviktig lagring</translation>
@@ -259,7 +261,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4095146165863963773">Slette appdataene?</translation>
 <translation id="4099578267706723511">Gjør Chrome bedre ved å sende bruksstatistikk og programstopprapporter til Google.</translation>
 <translation id="410351446219883937">Autoavspilling</translation>
-<translation id="411254640334432676">Nedlastingen mislyktes.</translation>
 <translation id="4113030288477039509">Styres av administratoren din</translation>
 <translation id="4165986682804962316">Nettstedsinnstillinger</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgjengelig. Prøv på nytt senere.</translation>
@@ -277,7 +278,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4275663329226226506">Medier</translation>
 <translation id="4278390842282768270">Tillatt</translation>
 <translation id="4307992518367153382">Generelt</translation>
-<translation id="4334294535648607276">Nedlastingen er fullført.</translation>
 <translation id="4351244548802238354">Lukk dialogboks</translation>
 <translation id="4376501731284077108">Ukontrollert</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -335,12 +335,10 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5063480226653192405">Bruk</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="510275257476243843">1 time igjen</translation>
-<translation id="5107381076085091558">Nedlastingen er satt på pause.</translation>
 <translation id="5127805178023152808">Synkronisering er slått av</translation>
 <translation id="5131405117025179004">Endre den lagrede kontoen</translation>
 <translation id="5138299137310274655">Denne siden er på <ph name="SOURCE_LANGUAGE" />. Vil du oversette den til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Sletting av alle lagrede data</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />instant<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Dette er en barnekonto</translation>
 <translation id="5161254044473106830">Du må oppgi en tittel</translation>
 <translation id="5164482624172255778">Vil du at Google Chrome skal tilby seg å oversette sider på <ph name="LANGUAGE" /> fra dette nettstedet neste gang?</translation>
@@ -655,6 +653,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8719023831149562936">Kan ikke beame gjeldende fane</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
 <translation id="8730621377337864115">Ferdig</translation>
+<translation id="8748850008226585750">Innholdet er skjult</translation>
 <translation id="8812942424849541387">Kontrollér hvordan dette fungerer, i <ph name="BEGIN_LINK1" />innstillingene<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bokmerker</translation>
 <translation id="883635517171802338">Blokkér nettsteder fra å vise forgrunnsvinduer (anbefales)</translation>
@@ -662,7 +661,6 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> – fane</translation>
 <translation id="885701979325669005">Lagring</translation>
-<translation id="8872506776304248286">Åpne i appen</translation>
 <translation id="8901170036886848654">Fant ingen bokmerker</translation>
 <translation id="8909135823018751308">Del</translation>
 <translation id="8912362522468806198">Google-konto</translation>

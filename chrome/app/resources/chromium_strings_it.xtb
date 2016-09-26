@@ -8,7 +8,6 @@
 <translation id="1221340462641866827">Chromium OS non supporta l'avvio di un'applicazione esterna per la gestione dei link <ph name="SCHEME" />. Il link richiesto è <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Nel sistema è stata trovata un'installazione di Chromium in conflitto. Disinstallala e riprova.</translation>
 <translation id="1298199220304005244">Ricevi assistenza per l'utilizzo di Chromium OS</translation>
-<translation id="1347507563453473396">Impossibile visualizzare Chromium in questa lingua.</translation>
 <translation id="1396446129537741364">Chromium sta cercando di visualizzare le password.</translation>
 <translation id="1403254041219632970">Le versioni future di Chromium non supporteranno più Mac OS X 10.6, 10.7 o 10.8.</translation>
 <translation id="1414495520565016063">Hai eseguito l'accesso a Chromium.</translation>
@@ -125,10 +124,12 @@
 <translation id="4987820182225656817">Gli ospiti possono utilizzare Chromium senza lasciare tracce.</translation>
 <translation id="4994636714258228724">Aggiungiti a Chromium</translation>
 <translation id="5032989939245619637">Salva dati in Chromium</translation>
+<translation id="5045248521775609809">Porta Chromium ovunque</translation>
 <translation id="5113946445248196174">Chromium non è in grado di determinare o impostare il browser predefinito.</translation>
 <translation id="5116586539350239523">Chromium memorizzerà in sicurezza i tuoi dati personali affinché tu non debba digitarli di nuovo.</translation>
 <translation id="5231355151045086930">Uscita da Chromium</translation>
 <translation id="5358375970380395591">Stai per accedere con un account gestito e per dare al relativo amministratore il controllo del tuo profilo Chromium. I tuoi dati di Chromium, come app, Preferiti, cronologia, password e altre impostazioni, verranno collegati definitivamente a <ph name="USER_NAME" />. Potrai eliminare questi dati tramite la Dashboard di Google Account, ma non potrai associare questi dati a un altro account. <ph name="LEARN_MORE" /></translation>
+<translation id="5386450000063123300">Aggiornamento di Chromium in corso (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">È disponibile una nuova versione di Chromium.</translation>
 <translation id="5427571867875391349">Imposta Chromium come browser predefinito</translation>
 <translation id="5466153949126434691">Chromium si aggiorna automaticamente per consentirti di avere sempre la versione più recente. Al termine del download, Chromium si riavvierà e potrai procedere.</translation>
@@ -159,6 +160,7 @@
 <translation id="6212496753309875659">Questo computer ha già una versione più recente di Chromium. Se il software non funziona, disinstalla Chromium e riprova.</translation>
 <translation id="6248213926982192922">Imposta Chromium come browser predefinito</translation>
 <translation id="6309712487085796862">Chromium sta utilizzando la videocamera.</translation>
+<translation id="6333502561965082103">C'è un'altra operazione in corso su Chromium. Riprova più tardi.</translation>
 <translation id="6334986366598267305">Ora è più facile utilizzare Chromium con il tuo account Google e sui computer condivisi.</translation>
 <translation id="6373523479360886564">Vuoi disinstallare Chromium?</translation>
 <translation id="6394232988457703198">Chromium deve essere riavviato adesso.</translation>
@@ -216,7 +218,6 @@ Per impedire a <ph name="NEW_PROFILE_NAME" /> di accedere al tuo account, assicu
 Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Se preferisci tenere separati i tuoi dati Chromium esistenti, puoi creare un nuovo utente Chromium per <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium richiede Windows XP o versioni successive. Alcune funzioni potrebbero non essere disponibili.</translation>
-<translation id="7437562785125777404">Impossibile visualizzare Chromium OS in questa lingua.</translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="7483335560992089831">Impossibile installare una versione di Chromium uguale a quella in esecuzione. Chiudi Chromium e riprova.</translation>
 <translation id="750717762378961310">Il file è dannoso ed è stato bloccato da Chromium.</translation>
@@ -236,7 +237,9 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="8030318113982266900">Aggiornamento del dispositivo al canale <ph name="CHANNEL_NAME" />...</translation>
 <translation id="8033665941300843262">Chromium deve avere accesso alle autorizzazioni per condividerle con questo sito.</translation>
 <translation id="8134284582177628525">Se condividi questo computer con <ph name="PROFILE_NAME" />, aggiungiti a Chromium per navigare separatamente. In caso contrario scollega l'account Google della persona.</translation>
+<translation id="81770708095080097">Questo file è pericoloso, pertanto è stato bloccato da Chromium.</translation>
 <translation id="8269379391216269538">Contribuisci a migliorare Chromium</translation>
+<translation id="8290862415967981663">Questo file potrebbe essere pericoloso, pertanto è stato bloccato da Chromium.</translation>
 <translation id="8453117565092476964">L'archivio di installazione è danneggiato o non valido. Scarica di nuovo Chromium.</translation>
 <translation id="8493179195440786826">Chromium non è aggiornato</translation>
 <translation id="85843667276690461">Ricevi assistenza per l'utilizzo di Chromium</translation>

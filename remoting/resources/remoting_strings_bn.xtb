@@ -287,6 +287,7 @@ Host</translation>
 <translation id="8548209692293300397">আপনি আগে<ph name="USER_NAME" /><ph name="USER_EMAIL" /> হিসেবে প্রবেশ করুন করেছিলেন। সেই অ্যাকাউন্টে আপনার কম্পিউটার অ্যাক্সেস করতে, সেই অ্যাকাউন্টের মাধ্যমে<ph name="LINK_BEGIN" />Chromium-এ প্রবেশ করুন<ph name="LINK_END" /> এবং Chromoting পুনরায় ইনস্টল করুন।</translation>
 <translation id="8642984861538780905">মোটামুটি</translation>
 <translation id="8712909229180978490">আমি Google ড্রাইভে আমার সংরক্ষিত ফাইলগুলি অনলাইন হিসেবে দেখতে পাচ্ছি না।</translation>
+<translation id="8743328882720071828">আপনি কি <ph name="CLIENT_USERNAME" /> কে আপনার কম্পিউটার দেখার ও নিয়ন্ত্রণ করার অনুমতি দিতে চান?</translation>
 <translation id="8759753423332885148">আরো জানুন৷</translation>
 <translation id="8791202241915690908">Chromoting হোস্ট ইনস্টলার ডাউনলোড হচ্ছে</translation>
 <translation id="894763922177556086">শক্তিশালী</translation>

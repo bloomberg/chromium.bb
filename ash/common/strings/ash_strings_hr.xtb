@@ -47,7 +47,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="2268813581635650749">Odjavi sve</translation>
 <translation id="2297568595583585744">Ladica statusa</translation>
 <translation id="2303600792989757991">Prebaci na prozor pregleda</translation>
-<translation id="2372145515558759244">Sinkroniziranje aplikacija...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje. Prije prihvaćanja provjerite prikazuje li se na njemu ovaj pristupni ključ: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Došlo je do pogreške</translation>
@@ -61,7 +60,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="2727977024730340865">Uređaj je priključen na punjač male snage. Punjenje baterije možda nije pouzdano.</translation>
 <translation id="2761704814324807722">Traka statusa, vrijeme <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Pretraživanje</translation>
-<translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2819276065543622893">Odjavit ćete se sada.</translation>
 <translation id="2825619548187458965">Polica</translation>
 <translation id="2844169650293029770">USB-C uređaj (prednji lijevi priključak)</translation>
@@ -110,6 +108,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="3866182280516392520">IPv6 adresa</translation>
 <translation id="3891340733213178823">Pritisnite Ctrl + Shift + Q dvaput da biste se odjavili.</translation>
 <translation id="3892641579809465218">Unutarnji zaslon</translation>
+<translation id="3893630138897523026">ChromeVox (govorne povratne informacije)</translation>
 <translation id="3963445509666917109">Zvučnik (ugrađeni)</translation>
 <translation id="3967919079500697218">Administrator je onemogućio izradu snimki zaslona.</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
@@ -191,7 +190,6 @@ Pritisnite Shift + Alt za promjenu.</translation>
 <translation id="6713285437468012787">Bluetooth uređaj "<ph name="DEVICE_NAME" />" sada je uparen i dostupan svim korisnicima. To uparivanje možete ukloniti u Postavkama.</translation>
 <translation id="6785414152754474415">Baterija je <ph name="PERCENTAGE" />% puna i puni se.</translation>
 <translation id="683971173229319003">Pretraživanje + L</translation>
-<translation id="68610848741840742">ChromeVox (govorne povratne informacije)</translation>
 <translation id="6911468394164995108">Pridruži se drugoj...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google disk</translation>
@@ -216,6 +214,7 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ne podržava razlučivost <ph name="SPECIFIED_RESOLUTION" />. Razlučivost je promijenjena u <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Način rada u priključnoj stanici</translation>
 <translation id="7580671184200851182">Reprodukcija istog zvuka na svim zvučnicima (mono audio)</translation>
+<translation id="7581273696622423628">Ispunite anketu</translation>
 <translation id="7593891976182323525">Pretraživanje ili Shift</translation>
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="7692480393933218409">Punjenje povezanih USB-C uređaja</translation>

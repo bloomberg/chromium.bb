@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">다른 기기에서 저장한 북마크가 여기에 표시됩니다.</translation>
 <translation id="1121094540300013208">사용 및 비정상 종료 보고서</translation>
 <translation id="1137305377394488060">지난 1시간</translation>
+<translation id="1146678959555564648">가상 현실 시작</translation>
 <translation id="1178581264944972037">일시중지</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1197267115302279827">북마크 이동</translation>
@@ -56,7 +57,7 @@
 <translation id="1612196535745283361">기기를 스캔하려면 Chrome에서 위치 정보에 액세스해야 합니다. 위치 정보 액세스 권한이 <ph name="BEGIN_LINK" />이 기기에서 사용 중지<ph name="END_LINK" />되어 있습니다.</translation>
 <translation id="1620510694547887537">카메라</translation>
 <translation id="1623104350909869708">이 페이지가 추가적인 대화를 생성하지 않도록 차단</translation>
-<translation id="1628019612362412531">{NUM_SELECTED,plural, =1{선택한 항목 1개 삭제}other{선택한 항목 #개 삭제}}</translation>
+<translation id="1628019612362412531">{NUM_SELECTED,plural, =1{선택한 1개 항목 삭제}other{선택한 #개 항목 삭제}}</translation>
 <translation id="1639239467298939599">로드 중</translation>
 <translation id="1641113438599504367">안전 브라우징</translation>
 <translation id="164269334534774161"><ph name="CREATION_TIME" />에 작성된 이 페이지의 오프라인 사본을 보는 중입니다.</translation>
@@ -247,6 +248,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="393697183122708255">사용 가능한 음성 검색이 없습니다.</translation>
 <translation id="3946611741043634542">계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />개인정보 보호정책<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="3950820424414687140">로그인</translation>
+<translation id="3967822245660637423">다운로드 완료</translation>
 <translation id="397583555483684758">동기화가 중지되었습니다.</translation>
 <translation id="3988213473815854515">위치 허용됨</translation>
 <translation id="3997476611815694295">중요하지 않은 저장공간</translation>
@@ -259,7 +261,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4095146165863963773">앱 데이터를 삭제하시겠습니까?</translation>
 <translation id="4099578267706723511">사용 통계와 비정상 종료 보고서를 Google로 전송하면 Chrome 개선에 도움이 됩니다.</translation>
 <translation id="410351446219883937">자동재생</translation>
-<translation id="411254640334432676">다운로드에 실패했습니다.</translation>
 <translation id="4113030288477039509">관리자가 관리합니다.</translation>
 <translation id="4165986682804962316">사이트 설정</translation>
 <translation id="4170011742729630528">서비스를 사용할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
@@ -277,7 +278,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="4275663329226226506">미디어</translation>
 <translation id="4278390842282768270">허용됨</translation>
 <translation id="4307992518367153382">기본설정</translation>
-<translation id="4334294535648607276">다운로드가 완료되었습니다.</translation>
 <translation id="4351244548802238354">대화상자 닫기</translation>
 <translation id="4376501731284077108">제어되지 않음</translation>
 <translation id="4378154925671717803">휴대전화</translation>
@@ -335,12 +335,10 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5063480226653192405">사용</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="510275257476243843">1시간 남음</translation>
-<translation id="5107381076085091558">다운로드가 일시중지되었습니다.</translation>
 <translation id="5127805178023152808">동기화 사용 안함</translation>
 <translation id="5131405117025179004">저장된 계정 수정</translation>
 <translation id="5138299137310274655">이 페이지는 <ph name="SOURCE_LANGUAGE" />로 되어 있습니다. <ph name="TARGET_LANGUAGE" />로 번역할까요?</translation>
 <translation id="515227803646670480">저장된 데이터 삭제</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />순간 검색<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">자녀 계정입니다.</translation>
 <translation id="5161254044473106830">제목이 필요합니다.</translation>
 <translation id="5164482624172255778">다음에 Chrome에서 이 사이트의 <ph name="LANGUAGE" /> 페이지를 번역하시겠습니까?</translation>
@@ -534,7 +532,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />이(가) 사용자 위치 정보를 사용하여 지역 검색결과 표시</translation>
 <translation id="7327835590071894791">이제 탭이 백그라운드에 표시됩니다.</translation>
 <translation id="7347770551817603360">오프라인 콘텐츠</translation>
-<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{선택한 항목 1개 공유}other{선택한 항목 #개 공유}}</translation>
+<translation id="7353894246028566792">{NUM_SELECTED,plural, =1{선택한 1개 항목 공유}other{선택한 #개 항목 공유}}</translation>
 <translation id="7366340029385295517"><ph name="SCREEN_NAME" />(으)로 전송 중</translation>
 <translation id="7375125077091615385">유형:</translation>
 <translation id="7378627244592794276">안함</translation>
@@ -655,6 +653,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="8719023831149562936">현재 탭을 공유할 수 없습니다.</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="8730621377337864115">완료</translation>
+<translation id="8748850008226585750">숨겨진 콘텐츠</translation>
 <translation id="8812942424849541387"><ph name="BEGIN_LINK1" />설정<ph name="END_LINK1" />에서 작동 방식을 조정하세요.</translation>
 <translation id="8820817407110198400">북마크</translation>
 <translation id="883635517171802338">사이트에서 팝업을 표시하지 못하도록 차단(권장)</translation>
@@ -662,7 +661,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, 탭</translation>
 <translation id="885701979325669005">저장소</translation>
-<translation id="8872506776304248286">앱에서 열기</translation>
 <translation id="8901170036886848654">북마크가 없습니다.</translation>
 <translation id="8909135823018751308">공유…</translation>
 <translation id="8912362522468806198">Google 계정</translation>

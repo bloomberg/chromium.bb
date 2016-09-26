@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Zde se objeví záložky, které jste si uložili v ostatních zařízeních.</translation>
 <translation id="1121094540300013208">Zprávy o využití a selhání</translation>
 <translation id="1137305377394488060">z uplynulé hodiny</translation>
+<translation id="1146678959555564648">Zapnout virt. realitu</translation>
 <translation id="1178581264944972037">Pozastavit</translation>
 <translation id="1181037720776840403">Odebrat</translation>
 <translation id="1197267115302279827">Přesunutí záložek</translation>
@@ -247,6 +248,7 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="393697183122708255">Hlasové vyhledávání není k dispozici</translation>
 <translation id="3946611741043634542">Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />upozorněním ve věci ochrany osobních údajů<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Přihlaste se</translation>
+<translation id="3967822245660637423">Stahování bylo dokončeno</translation>
 <translation id="397583555483684758">Synchronizace přestala fungovat</translation>
 <translation id="3988213473815854515">Přístup k poloze je povolen</translation>
 <translation id="3997476611815694295">Nedůležité úložiště</translation>
@@ -259,7 +261,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4095146165863963773">Vymazat data aplikace?</translation>
 <translation id="4099578267706723511">Pomozte Chrome zlepšovat – posílejte Googlu statistiky využití a zprávy o selhání.</translation>
 <translation id="410351446219883937">Automatické přehrávání</translation>
-<translation id="411254640334432676">Stahování se nezdařilo.</translation>
 <translation id="4113030288477039509">Spravováno vaším administrátorem</translation>
 <translation id="4165986682804962316">Nastavení webu</translation>
 <translation id="4170011742729630528">Služba není k dispozici, zkuste to později.</translation>
@@ -277,7 +278,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="4275663329226226506">Média</translation>
 <translation id="4278390842282768270">Povoleno</translation>
 <translation id="4307992518367153382">Základy</translation>
-<translation id="4334294535648607276">Stahování bylo dokončeno.</translation>
 <translation id="4351244548802238354">Zavřít dialogové okno</translation>
 <translation id="4376501731284077108">Neurčeno</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -335,12 +335,10 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="5063480226653192405">Použití</translation>
 <translation id="5100237604440890931">Sbaleno – kliknutím rozbalíte</translation>
 <translation id="510275257476243843">Zbývá: 1 h</translation>
-<translation id="5107381076085091558">Stahování bylo pozastaveno.</translation>
 <translation id="5127805178023152808">Synchronizace je vypnuta</translation>
 <translation id="5131405117025179004">Úprava uloženého účtu</translation>
 <translation id="5138299137310274655">Stránka je v jazyce <ph name="SOURCE_LANGUAGE" />. Chcete ji přeložit do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Vymazat uložená data</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />okamžitá<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Toto je dětský účet</translation>
 <translation id="5161254044473106830">Je požadován název</translation>
 <translation id="5164482624172255778">Chcete, aby Google Chrome při příští návštěvě nabízel překlad stránek v jazyce <ph name="LANGUAGE" /> z tohoto webu?</translation>
@@ -655,6 +653,7 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="8719023831149562936">Aktuální kartu nelze přenést</translation>
 <translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="8730621377337864115">Hotovo</translation>
+<translation id="8748850008226585750">Skrytý obsah</translation>
 <translation id="8812942424849541387">Tuto funkci můžete ovládat v <ph name="BEGIN_LINK1" />Nastavení<ph name="END_LINK1" />.</translation>
 <translation id="8820817407110198400">Záložky</translation>
 <translation id="883635517171802338">Bránit webům v zobrazování vyskakovacích oken (doporučeno)</translation>
@@ -662,7 +661,6 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, karta</translation>
 <translation id="885701979325669005">Úložiště</translation>
-<translation id="8872506776304248286">Otevřít v aplikaci</translation>
 <translation id="8901170036886848654">Nebyly nalezeny žádné záložky</translation>
 <translation id="8909135823018751308">Sdílet…</translation>
 <translation id="8912362522468806198">Účet Google</translation>

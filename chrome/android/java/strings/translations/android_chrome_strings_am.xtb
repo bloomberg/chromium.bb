@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">በሌሎች መሣሪያዎችዎ ላይ የተቀመጡ ዕልባቶችዎ እዚህ ብቅ ይላሉ።</translation>
 <translation id="1121094540300013208">የአጠቃቀም እና የብልሽት ሪፖርቶች</translation>
 <translation id="1137305377394488060">ያለፈው ሰዓት</translation>
+<translation id="1146678959555564648">ቪአር አስገባ</translation>
 <translation id="1178581264944972037">ለአፍታ አቁም</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
 <translation id="1197267115302279827">ዕልባቶችን ውሰድ</translation>
@@ -247,6 +248,7 @@
 <translation id="393697183122708255">ምንም የነቃ የድምጽ ፍለጋ አይገኝም</translation>
 <translation id="3946611741043634542">በመቀጠልዎ በChrome <ph name="BEGIN_LINK1" />አገልግሎት ውል<ph name="END_LINK1" /> እና <ph name="BEGIN_LINK2" />የግላዊነት ማስታወቂያ<ph name="END_LINK2" /> ተስማምተዋል።</translation>
 <translation id="3950820424414687140">ይግቡ</translation>
+<translation id="3967822245660637423">ማውረድ ተጠናቅቋል</translation>
 <translation id="397583555483684758">ስምረት መሥራት አቁሟል</translation>
 <translation id="3988213473815854515">መገኛ አካባቢ ተፈቅዷል</translation>
 <translation id="3997476611815694295">የማያስፈልግ ማከማቻ</translation>
@@ -259,7 +261,6 @@
 <translation id="4095146165863963773">የመተግበሪያ ውሂብ ይሰረዝ?</translation>
 <translation id="4099578267706723511">የአጠቃቀም ስታቲክሶችን እና የብልሽት ሪፖርቶችን ወደ Google በመላክ Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ።</translation>
 <translation id="410351446219883937">ራስ-አጫውት</translation>
-<translation id="411254640334432676">ማውረድ አልተሳካም።</translation>
 <translation id="4113030288477039509">በእርስዎ አስተዳዳሪ የሚቀናበር</translation>
 <translation id="4165986682804962316">የጣቢያ ቅንብሮች</translation>
 <translation id="4170011742729630528">አገልግሎቱ አይገኝም፤ ቆይተው እንደገና ይሞክሩ።</translation>
@@ -277,7 +278,6 @@
 <translation id="4275663329226226506">ማህደረ መረጃ</translation>
 <translation id="4278390842282768270">ተፈቅዷል</translation>
 <translation id="4307992518367153382">መሠረታዊ</translation>
-<translation id="4334294535648607276">ማውረድ ተጠናቅቋል።</translation>
 <translation id="4351244548802238354">መገናኛ ዝጋ</translation>
 <translation id="4376501731284077108">ቁጥጥር ያልተደረገበት</translation>
 <translation id="4378154925671717803">ስልክ</translation>
@@ -335,12 +335,10 @@
 <translation id="5063480226653192405">አጠቃቀም</translation>
 <translation id="5100237604440890931">ተሰብስቧል - ለመዘርጋት ጠቅ ያድርጉ</translation>
 <translation id="510275257476243843">1 ሰዓት ይቀራል</translation>
-<translation id="5107381076085091558">ማውረድ ለአፍታ ቆሟል።</translation>
 <translation id="5127805178023152808">አመሳስል ጠፍቷል</translation>
 <translation id="5131405117025179004">የተቀመጠ መለያን ያርትዑ</translation>
 <translation id="5138299137310274655">ይህ ገጽ በ<ph name="SOURCE_LANGUAGE" /> ነው። ወደ <ph name="TARGET_LANGUAGE" /> ይተርጎም?</translation>
 <translation id="515227803646670480">የተከማቸ ውሂብን አጽዳ</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />ቅጽበታዊ<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">ይህ የህጻን መለያ ነው</translation>
 <translation id="5161254044473106830">ርዕስ ያስፈልጋል</translation>
 <translation id="5164482624172255778">Google Chrome በሚቀጥለው ጊዜ ላይ በዚህ ጣቢያ ላይ ያሉ የ<ph name="LANGUAGE" /> ገጾች እንዲተረጎምልዎ ይፈልጋሉ?</translation>
@@ -655,6 +653,7 @@
 <translation id="8719023831149562936">የአሁኑን ትር በሞገድ መላክ አልተቻለም</translation>
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
 <translation id="8730621377337864115">ተከናውኗል</translation>
+<translation id="8748850008226585750">ይዘቶች ተደብቀዋል</translation>
 <translation id="8812942424849541387">ይሄ እንዴት እንደሚሠራ በ<ph name="BEGIN_LINK1" />ቅንብሮች<ph name="END_LINK1" /> ውስጥ ይቆጣጠሩ</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
 <translation id="883635517171802338">ጣቢያዎች ብቅ-ባዮችን እንዳያሳዩ ያግዱ (የሚመከር)</translation>
@@ -662,7 +661,6 @@
 <translation id="8847988622838149491">ዩ ኤስ ቢ</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />፣ ትር</translation>
 <translation id="885701979325669005">ማከማቻ</translation>
-<translation id="8872506776304248286">በመተግበሪያ ውስጥ ክፈት</translation>
 <translation id="8901170036886848654">ምንም ዕልባቶች አልተገኙም</translation>
 <translation id="8909135823018751308">አጋራ…</translation>
 <translation id="8912362522468806198">የGoogle መለያ</translation>

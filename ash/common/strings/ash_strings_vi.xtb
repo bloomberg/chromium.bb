@@ -47,7 +47,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2268813581635650749">Đăng xuất tất cả</translation>
 <translation id="2297568595583585744">Khay trạng thái</translation>
 <translation id="2303600792989757991">Tổng quan về chuyển đổi cửa sổ</translation>
-<translation id="2372145515558759244">Đang đồng bộ hóa ứng dụng...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />" muốn được phép ghép nối. Trước khi chấp nhận, vui lòng xác nhận rằng mã xác nhận này đã hiển thị trên thiết bị đó: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Đã xảy ra lôi</translation>
@@ -61,7 +60,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="2727977024730340865">Được cắm vào bộ sạc công suất thấp. Việc sạc pin có thể không được đảm bảo.</translation>
 <translation id="2761704814324807722">Khay trạng thái, thời gian <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2805756323405976993">Ứng dụng</translation>
 <translation id="2819276065543622893">Bạn sẽ bị đăng xuất bây giờ.</translation>
 <translation id="2825619548187458965">Giá</translation>
 <translation id="2844169650293029770">Thiết bị USB-C (cổng phía trước, bên trái)</translation>
@@ -110,6 +108,7 @@ Nhấn Search hoặc Shift để hủy.</translation>
 <translation id="3866182280516392520">Địa chỉ IPv6</translation>
 <translation id="3891340733213178823">Nhấn Ctrl+Shift+Q hai lần để đăng xuất.</translation>
 <translation id="3892641579809465218">Màn hình nội bộ</translation>
+<translation id="3893630138897523026">ChromeVox (phản hồi bằng giọng nói)</translation>
 <translation id="3963445509666917109">Loa (Bên trong)</translation>
 <translation id="3967919079500697218">Quản trị viên của bạn đã tắt tính năng chụp ảnh màn hình.</translation>
 <translation id="397105322502079400">Đang tính...</translation>
@@ -191,7 +190,6 @@ Nhấn Shift + Alt để chuyển đổi.</translation>
 <translation id="6713285437468012787">Thiết bị Bluetooth "<ph name="DEVICE_NAME" />"đã được ghép nối và hiện khả dụng với tất cả người dùng. Bạn có thể xóa ghép nối này bằng Cài đặt.</translation>
 <translation id="6785414152754474415">Pin đầy <ph name="PERCENTAGE" />% và đang sạc.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox (Phản hồi bằng giọng nói)</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> không hỗ trợ <ph name="SPECIFIED_RESOLUTION" />. Độ phân giải đã được thay đổi thành <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Chế độ được gắn đế</translation>
 <translation id="7580671184200851182">Phát cùng một âm thanh qua tất cả các loa (đơn âm)</translation>
+<translation id="7581273696622423628">Thực hiện khảo sát</translation>
 <translation id="7593891976182323525">Search hoặc Shift</translation>
 <translation id="7649070708921625228">Trợ giúp</translation>
 <translation id="7692480393933218409">Đang sạc thiết bị USB-C được kết nối</translation>

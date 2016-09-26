@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Les favoris enregistrés sur vos autres appareils s'affichent ici.</translation>
 <translation id="1121094540300013208">Statistiques d'utilisation et rapports d'erreur</translation>
 <translation id="1137305377394488060">de la dernière heure</translation>
+<translation id="1146678959555564648">Activer la réalité virtuelle</translation>
 <translation id="1178581264944972037">Suspendre</translation>
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1197267115302279827">Déplacer les favoris</translation>
@@ -247,6 +248,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="393697183122708255">Aucune recherche vocale activée dispo.</translation>
 <translation id="3946611741043634542">En continuant, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation<ph name="END_LINK1" /> et l'<ph name="BEGIN_LINK2" />Avis de confidentialité<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="3950820424414687140">Ouvrir une session</translation>
+<translation id="3967822245660637423">Téléchargement terminé</translation>
 <translation id="397583555483684758">La synchronisation s'est arrêtée.</translation>
 <translation id="3988213473815854515">Position autorisée</translation>
 <translation id="3997476611815694295">Stockage non important</translation>
@@ -259,7 +261,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4095146165863963773">Supprimer les données de l'application ?</translation>
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
 <translation id="410351446219883937">Lecture automatique</translation>
-<translation id="411254640334432676">Échec du téléchargement.</translation>
 <translation id="4113030288477039509">Géré par votre administrateur</translation>
 <translation id="4165986682804962316">Paramètres du site</translation>
 <translation id="4170011742729630528">Service indisponible. Veuillez réessayer plus tard.</translation>
@@ -277,7 +278,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4275663329226226506">Médias</translation>
 <translation id="4278390842282768270">Autorisé</translation>
 <translation id="4307992518367153382">Options de base</translation>
-<translation id="4334294535648607276">Le téléchargement a bien été effectué.</translation>
 <translation id="4351244548802238354">Fermer la boîte de dialogue</translation>
 <translation id="4376501731284077108">Aucun contrôle</translation>
 <translation id="4378154925671717803">Téléphone</translation>
@@ -335,12 +335,10 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5063480226653192405">Utilisation</translation>
 <translation id="5100237604440890931">Réduit – Cliquer pour développer</translation>
 <translation id="510275257476243843">1 heure restante</translation>
-<translation id="5107381076085091558">Téléchargement suspendu.</translation>
 <translation id="5127805178023152808">La synchronisation est désactivée.</translation>
 <translation id="5131405117025179004">Modifier un compte enregistré</translation>
 <translation id="5138299137310274655">Cette page est rédigée en <ph name="SOURCE_LANGUAGE" />. Voulez-vous la traduire en <ph name="TARGET_LANGUAGE" /> ?</translation>
 <translation id="515227803646670480">Effacer les données stockées</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />Application instantanée<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Ce compte appartient à un enfant.</translation>
 <translation id="5161254044473106830">Veuillez saisir un titre.</translation>
 <translation id="5164482624172255778">Souhaitez-vous que Google Chrome vous propose de traduire les pages de ce site rédigées en <ph name="LANGUAGE" /> lors de votre prochaine visite ?</translation>
@@ -655,6 +653,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8719023831149562936">Impossible de partager l'onglet actuel.</translation>
 <translation id="8725066075913043281">Réessayer</translation>
 <translation id="8730621377337864115">OK</translation>
+<translation id="8748850008226585750">Contenu masqué</translation>
 <translation id="8812942424849541387">Contrôler comment cela fonctionne dans <ph name="BEGIN_LINK1" />Paramètres<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Favoris</translation>
 <translation id="883635517171802338">Bloquer l'affichage de fenêtres pop-up par les sites (recommandé)</translation>
@@ -662,7 +661,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">"<ph name="TAB_TITLE" />", onglet</translation>
 <translation id="885701979325669005">Stockage</translation>
-<translation id="8872506776304248286">Ouvrir dans l'appli</translation>
 <translation id="8901170036886848654">Aucun favori trouvé.</translation>
 <translation id="8909135823018751308">Partager…</translation>
 <translation id="8912362522468806198">Compte Google</translation>

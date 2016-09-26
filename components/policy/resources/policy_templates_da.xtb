@@ -764,6 +764,9 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3322771899429619102">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som har tilladelse til at benytte nøglegenerering. Hvis et webadressemønster findes i "KeygenBlockedForUrls", tilsidesættes disse undtagelser.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
+<translation id="3322902067538988734">Hvis denne politik er angivet som Sand, skal brugeren logge ind på <ph name="PRODUCT_NAME" /> med sin profil, inden browseren anvendes. Standardværdien for BrowserGuestModeEnabled angives dermed til Falsk.
+
+      Hvis denne politik er angivet som Falsk eller ikke er konfigureret, kan brugeren benytte browseren uden at logge ind på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3417418267404583991">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_OS_NAME" /> gæstelogins. Gæstelogins er anonyme brugersessioner, der ikke kræver en adgangskode,
 
@@ -923,6 +926,11 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
       Hvis denne politik ikke angives, vil SPDY være tilgængelig.</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
+<translation id="3891953007921334498">Deaktiverer udviklerværktøjerne og JavaScript-konsollen.
+
+      Hvis du aktiverer denne indstilling, kan der ikke opnås adgang til udviklerværktøjerne, og elementer på websites kan ikke længere inspiceres. Alle tastaturgenveje og alle angivelser i menuer eller genvejsmenuer, der bruges til at åbne udviklerværktøjerne eller JavaScript-konsollen, bliver deaktiveret.
+
+      Hvis du deaktiverer denne indstilling eller ikke angiver den, kan brugeren benytte udviklerværktøjerne og JavaScript-konsollen.</translation>
 <translation id="3907986150060929099">Indstil de anbefalede landestandarder for en offentlig session</translation>
 <translation id="391531815696899618">Deaktiverer Google Drev-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" />, når den er angivet til Sand. I dette tilfælde uploades der ingen data til Google Drev.
 
@@ -1017,6 +1025,7 @@ Hvis denne indstilling ikke er angivet, vil <ph name="PRODUCT_NAME" /> tillade b
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller fra brugerens personlige konfiguration.</translation>
 <translation id="4250680216510889253">Nej</translation>
+<translation id="4272136423200695428">Aktiverer påtvungen login for <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Angiver de parametre, der anvendes ved billedsøgning med POST. De består af kommaseparerede navne/værdipar. Hvis en værdi er en skabelonparameter såsom {imageThumbnail} i ovenstående eksempel, bliver den erstattet af data om rigtige miniaturebilleder.
 
           Denne politik er valgfri. Hvis den ikke er angivet, sendes anmodninger om billedsøgninger ved hjælp af GET-metoden.

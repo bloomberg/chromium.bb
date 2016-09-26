@@ -287,6 +287,7 @@ zdalnego Chrome</translation>
 <translation id="8548209692293300397">Poprzednio logowałeś się jako <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Aby uzyskać dostęp do swoich komputerów na tym koncie, <ph name="LINK_BEGIN" />zaloguj się na to konto w Google Chrome<ph name="LINK_END" /> i ponownie zainstaluj Pulpit zdalny Chrome.</translation>
 <translation id="8642984861538780905">Średnia</translation>
 <translation id="8712909229180978490">Nie widzę moich plików zapisanych na Dysku Google, gdy jestem online.</translation>
+<translation id="8743328882720071828">Zezwalasz użytkownikowi <ph name="CLIENT_USERNAME" /> na przeglądanie zawartości Twojego komputera i sterowanie nim?</translation>
 <translation id="8759753423332885148">Więcej informacji.</translation>
 <translation id="8791202241915690908">Pobierz instalatora hosta funkcji Chromoting</translation>
 <translation id="894763922177556086">Dobra</translation>

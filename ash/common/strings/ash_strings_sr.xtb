@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">Одјави све</translation>
 <translation id="2297568595583585744">Палета статуса</translation>
 <translation id="2303600792989757991">Укључи/искључи преглед прозора</translation>
-<translation id="2372145515558759244">Синхронизовање апликација...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање. Пре него што му је дате, уверите се да је ова шифра приказана на том уређају: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Дошло је до грешке</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">Уређај је укључен у пуњач мале снаге. Пуњење батерије можда неће бити поуздано.</translation>
 <translation id="2761704814324807722">Статусна трака, време <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + тастер за претрагу</translation>
-<translation id="2805756323405976993">Апликације</translation>
 <translation id="2819276065543622893">Бићете одмах одјављени.</translation>
 <translation id="2825619548187458965">Полица</translation>
 <translation id="2844169650293029770">Уређај са USB прикључком типа C (леви предњи порт)</translation>
@@ -110,6 +108,7 @@
 <translation id="3866182280516392520">IPv6 адреса</translation>
 <translation id="3891340733213178823">Двапут притисните Ctrl+Shift+Q да бисте се одјавили.</translation>
 <translation id="3892641579809465218">Интерни екран</translation>
+<translation id="3893630138897523026">ChromeVox (говорне повратне информације)</translation>
 <translation id="3963445509666917109">Звучник (интерни)</translation>
 <translation id="3967919079500697218">Администратор је онемогућио опцију прављења снимака екрана.</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
@@ -191,7 +190,6 @@
 <translation id="6713285437468012787">Bluetooth уређај „<ph name="DEVICE_NAME" />“ је упарен и сада је доступан свим корисницима. Можете да уклоните то упаривање помоћу Подешавања.</translation>
 <translation id="6785414152754474415">Батерија је <ph name="PERCENTAGE" />% пуна и још увек се пуни.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox (говорне повратне информације)</translation>
 <translation id="6911468394164995108">Придружи ме другој...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google диск</translation>
@@ -215,6 +213,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> не подржава <ph name="SPECIFIED_RESOLUTION" />. Резолуција је промењена на <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Режим са базном станицом</translation>
 <translation id="7580671184200851182">Пуштај исти звук на свим звучницима (моно звук)</translation>
+<translation id="7581273696622423628">Прикажи анкету</translation>
 <translation id="7593891976182323525">Тастер за претрагу или Shift</translation>
 <translation id="7649070708921625228">Помоћ</translation>
 <translation id="7692480393933218409">Пуњење повезаних уређаја са USB прикључком типа C</translation>

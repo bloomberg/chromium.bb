@@ -34,7 +34,6 @@
 <translation id="1773601347087397504">Отримати довідку щодо користування ОС Chrome</translation>
 <translation id="1818142563254268765">Не вдалось оновити Chrome до останньої версії. Щоб застосувати виправлення системи безпеки та скористатись новими цікавими функціями, оновіть Chrome.</translation>
 <translation id="1877026089748256423">Версія Chrome застаріла</translation>
-<translation id="1924381329666691588">Не можна вибрати цю мову для Google Chrome.</translation>
 <translation id="2063848847527508675">Щоб застосувати це оновлення, потрібно перезапустити ОС Chrome.</translation>
 <translation id="2077129598763517140">Використовувати апаратне прискорення, якщо доступно</translation>
 <translation id="2084710999043359739">Додати в Chrome</translation>
@@ -116,6 +115,7 @@
 <translation id="437002079035561265">На цей комп’ютер більше не надходитимуть оновлення Google Chrome, оскільки ця система Linux уже не підтримується.</translation>
 <translation id="4407807842708586359">ОС Google Chrome</translation>
 <translation id="4458285410772214805">Щоб зміна почала діяти, вийдіть і ввійдіть знову.</translation>
+<translation id="4458462641685292929">У Google Chrome виконується інша операція. Спробуйте пізніше.</translation>
 <translation id="4480040274068703980">ОС Chrome не вдалося синхронізувати ваші дані через помилку входу.</translation>
 <translation id="4519152997629025674">Google Chrome може покращувати веб-перегляд за допомогою <ph name="BEGIN_LINK" />веб-служб<ph name="END_LINK" />. Ви можете будь-коли вимкнути ці служби.</translation>
 <translation id="4561051373932531560">Google Chrome дозволяє натиснути номер телефону в Інтернеті та здійснити виклик через Skype.</translation>
@@ -128,6 +128,7 @@
 <translation id="4743926867934016338">Прийняти й шукати</translation>
 <translation id="4751441238232965030">Цей комп’ютер невдовзі перестане отримувати оновлення для 32-розрядної версії Google Chrome. Установіть 64-розрядну версію.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
+<translation id="4771048833395599659">Цей файл може бути небезпечним, тому Chrome заблокував його.</translation>
 <translation id="4794050651896644714">Зберігати дані в Chrome</translation>
 <translation id="4891791193823137474">Дозволити Google Chrome працювати у фоновому режимі</translation>
 <translation id="4921569541910214635">Користуєтеся комп’ютером спільно з іншими? Тепер ви можете налаштувати Chrome на свій смак.</translation>
@@ -157,7 +158,6 @@
 <translation id="5563479599352954471">Пошук одним дотиком</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">Дізнавайтеся про теми на веб-сайтах, залишаючись на сторінці.</translation>
-<translation id="5637867606963802593">Не можна вибрати цю мову для ОС Chrome.</translation>
 <translation id="568643307450491754">Шукайте свої закладки в меню Chrome або на панелі закладок.</translation>
 <translation id="573759479754913123">Про ОС Chrome</translation>
 <translation id="5749068826913805084">Щоб завантажувати файли, Chrome потребує доступу до пам’яті.</translation>
@@ -184,6 +184,7 @@
 <translation id="6400076122676892962">На цей комп’ютер невдовзі перестануть надходити оновлення Google Chrome, оскільки Mac OS X версій 10.6, 10.7 і 10.8 більше не підтримуватиметься.</translation>
 <translation id="6470176598693778404">На цей комп’ютер не надходитимуть оновлення Google Chrome, оскільки Mac OS X версій 10.6, 10.7 і 10.8 більше не підтримується.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{Триває завантаження. Скасувати його та вийти з Google Chrome?}one{Триває # завантаження. Скасувати їх і вийти з Google Chrome?}few{Тривають # завантаження. Скасувати їх і вийти з Google Chrome?}many{Тривають # завантажень. Скасувати їх і вийти з Google Chrome?}other{Тривають # завантаження. Скасувати їх і вийти з Google Chrome?}}</translation>
+<translation id="6566149418543181476">Google Chrome оновлюється (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Ви синхронізуєте дані Chrome через обліковий запис <ph name="PROFILE_EMAIL" />. Щоб оновити параметри синхронізації або використовувати Chrome без облікового запису Google, перейдіть на сторінку <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Скопійовано в Chrome</translation>
 <translation id="6626317981028933585">Шкода, але ваші налаштування Mozilla Firefox не є доступні, коли переглядач запущено. Щоб імпортувати такі налаштування у Google Chrome, збережіть зроблені вами зміни та закрийте усі вікна Firefox. Потім натисніть "Продовжити"</translation>
@@ -191,6 +192,7 @@
 <translation id="6676384891291319759">Доступ до Інтернету</translation>
 <translation id="6757767188268205357">Не турбувати мене</translation>
 <translation id="683440813066116847">Вхідне правило для Google Chrome Canary дозволяє трафік mDNS.</translation>
+<translation id="686561893457936865">Використовуйте Chrome на всіх пристроях</translation>
 <translation id="6883876366448858277">надсилає слово та його контекст у Пошук Google і повертає визначення, зображення й інші результати пошуку.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Оновлення пристрою...</translation>
@@ -251,7 +253,9 @@
 <translation id="8255190535488645436">Google Chrome використовує вашу камеру та мікрофон.</translation>
 <translation id="8286862437124483331">Google Chrome намагається показати паролі. Щоб дозволити, введіть свій пароль Windows.</translation>
 <translation id="8290100596633877290">Відбулося аварійне завершення роботи Google Chrome. Перезапустити зараз?</translation>
+<translation id="8342675569599923794">Цей файл небезпечний, тому Chrome заблокував його.</translation>
 <translation id="8406086379114794905">Допоможіть покращити Chrome</translation>
+<translation id="8455999171311319804">Додатково. Допоможіть покращити ОС Chrome, автоматично надсилаючи в Google дані про діагностику та використання.</translation>
 <translation id="853189717709780425">Ви входите, використовуючи дані керованого облікового запису, що дає його адміністратору можливість контролювати ваш профіль Google Chrome. Ваші дані Chrome, як-от програми, закладки, історія, паролі й інші налаштування, буде назавжди пов’язано з обліковим записом <ph name="USER_NAME" />. Ви зможете видалити ці дані на інформаційній панелі облікових записів Google, але не зможете пов’язати їх з іншим обліковим записом.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Панель запуску програм Chrome для версії Canary</translation>

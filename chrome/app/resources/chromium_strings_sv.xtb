@@ -10,7 +10,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1221340462641866827">Chromium OS stöder inte att ett externt program startas för att hantera <ph name="SCHEME" />-länkar. Den länk som efterfrågas är <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Det finns en annan installation av Chromium på datorn. Avinstallera den och försök igen.</translation>
 <translation id="1298199220304005244">Få hjälp med att använda Chromium OS</translation>
-<translation id="1347507563453473396">Det går inte att visa Chromium på det här språket.</translation>
 <translation id="1396446129537741364">Chromium försöker visa lösenord.</translation>
 <translation id="1403254041219632970">Framtida versioner av Chromium kommer inte att ha stöd för Mac OS X 10.6, 10.7 eller 10.8.</translation>
 <translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
@@ -127,10 +126,12 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4987820182225656817">Gäster kan använda Chromium utan att lämna spår efter sig.</translation>
 <translation id="4994636714258228724">Lägg till dig själv i Chromium</translation>
 <translation id="5032989939245619637">Spara information i Chromium</translation>
+<translation id="5045248521775609809">Ta med dig Chromium överallt</translation>
 <translation id="5113946445248196174">Chromium kan inte fastställa eller ange standardwebbläsaren.</translation>
 <translation id="5116586539350239523">Chromium sparar dina personliga uppgifter på ett säkert sätt så att du inte behöver ange dem på nytt.</translation>
 <translation id="5231355151045086930">Logga ut från Chromium</translation>
 <translation id="5358375970380395591">Du loggar in med ett hanterat konto och ger dess administratör kontroll över din Chromium-profil. Dina uppgifter i Chromium, t.ex. dina appar, bokmärken, din historik, ditt lösenord och andra inställningar, kopplas då permanent till <ph name="USER_NAME" />. Du kommer att kunna ta bort dessa uppgifter via instrumentpanelen i Google Konton, men du kommer inte att kunna koppla dem till något annat konto. <ph name="LEARN_MORE" /></translation>
+<translation id="5386450000063123300">Chromium uppdateras (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Det finns en ny version av Chromium.</translation>
 <translation id="5427571867875391349">Använd Chromium som standardwebbläsare</translation>
 <translation id="5466153949126434691">Chromium uppdateras automatiskt så att du alltid har den senaste versionen. När den här nedladdningen är klar startas Chromium om och sedan är du igång.</translation>
@@ -161,6 +162,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="6212496753309875659">Det finns redan en nyare version av Chromium på den här datorn. Avinstallera Chromium och försök igen om programvaran inte fungerar.</translation>
 <translation id="6248213926982192922">Använd Chromium som standardwebbläsare</translation>
 <translation id="6309712487085796862">Chromium använder din kamera.</translation>
+<translation id="6333502561965082103">En annan process i Chromium pågår. Försök igen senare.</translation>
 <translation id="6334986366598267305">Nu är det enklare att använda Chromium med ditt Google-konto och på delade datorer.</translation>
 <translation id="6373523479360886564">Vill du avinstallera Chromium?</translation>
 <translation id="6394232988457703198">Starta om Chromium nu.</translation>
@@ -218,7 +220,6 @@ Kom ihåg att låsa din profil när du inte använder Chromium om <ph name="NEW_
 Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Om du vill behålla dina befintliga uppgifter för Chromium privata kan du skapa en ny Chromium-användare för <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">För Chromium krävs Windows XP eller senare. En del funktioner fungerar eventuellt inte.</translation>
-<translation id="7437562785125777404">Det går inte att visa Chromium OS på det här språket.</translation>
 <translation id="7473891865547856676">Nej tack</translation>
 <translation id="7483335560992089831">Det går inte att installera samma version av Chromium som den som redan körs. Stäng Chromium och försök igen.</translation>
 <translation id="750717762378961310">Filen är skadlig och har blockerats av Chromium.</translation>
@@ -238,7 +239,9 @@ Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_E
 <translation id="8030318113982266900">Uppdaterar din enhet till kanalen <ph name="CHANNEL_NAME" /> ...</translation>
 <translation id="8033665941300843262">Chromium behöver tillgång till behörigheter för att kunna dela dem på den här webbplatsen.</translation>
 <translation id="8134284582177628525">Om du delar den här datorn med <ph name="PROFILE_NAME" /> lägger du till dig själv i Chromium så att du kan surfa enskilt. I annat fall kopplar du från deras Google-konto.</translation>
+<translation id="81770708095080097">Filen är farlig och har blockerats av Chromium.</translation>
 <translation id="8269379391216269538">Bidra till att förbättra Chromium</translation>
+<translation id="8290862415967981663">Filen kan vara farlig och har blockerats av Chromium.</translation>
 <translation id="8453117565092476964">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Chromium igen.</translation>
 <translation id="8493179195440786826">Den här versionen av Chromium är inaktuell</translation>
 <translation id="85843667276690461">Få hjälp med att använda Chromium</translation>

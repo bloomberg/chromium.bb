@@ -47,7 +47,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2268813581635650749">Wyloguj wszystkich</translation>
 <translation id="2297568595583585744">Zasobnik stanu</translation>
 <translation id="2303600792989757991">Przełącz widok ogólny okna</translation>
-<translation id="2372145515558759244">Synchronizuję aplikacje...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Zanim to zaakceptujesz, sprawdź, czy na tym urządzeniu wyświetla się klucz: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Wystąpił błąd</translation>
@@ -61,7 +60,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2727977024730340865">Podłączono ładowarkę o małej mocy. Ładowanie baterii może być nieprawidłowe.</translation>
 <translation id="2761704814324807722">Pasek stanu, godzina <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Szukaj</translation>
-<translation id="2805756323405976993">Aplikacje</translation>
 <translation id="2819276065543622893">Zostaniesz teraz wylogowany.</translation>
 <translation id="2825619548187458965">Półka</translation>
 <translation id="2844169650293029770">Urządzenie USB-C (przedni port na lewym boku)</translation>
@@ -110,6 +108,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="3866182280516392520">Adres IPv6</translation>
 <translation id="3891340733213178823">Naciśnij dwukrotnie Ctrl+Shift+Q, by się wylogować.</translation>
 <translation id="3892641579809465218">Wyświetlacz wewnętrzny</translation>
+<translation id="3893630138897523026">ChromeVox (potwierdzenia głosowe)</translation>
 <translation id="3963445509666917109">Głośnik (wewnętrzny)</translation>
 <translation id="3967919079500697218">Możliwość robienia zrzutów ekranów została wyłączona przez administratora.</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
@@ -191,7 +190,6 @@ Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="6713285437468012787">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” zostało sparowane i jest teraz dostępne dla wszystkich użytkowników. Możesz usunąć to sparowanie w Ustawieniach.</translation>
 <translation id="6785414152754474415">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="683971173229319003">Szukaj+L</translation>
-<translation id="68610848741840742">ChromeVox (potwierdzenia głosowe)</translation>
 <translation id="6911468394164995108">Połącz z inną...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Dysk Google</translation>
@@ -216,6 +214,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nie obsługuje <ph name="SPECIFIED_RESOLUTION" />. Zmieniono rozdzielczość na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Tryb dokowania</translation>
 <translation id="7580671184200851182">Odtwarzaj ten sam dźwięk na wszystkich głośnikach (dźwięk mono)</translation>
+<translation id="7581273696622423628">Wypełnij ankietę</translation>
 <translation id="7593891976182323525">Szukaj lub Shift</translation>
 <translation id="7649070708921625228">Pomoc</translation>
 <translation id="7692480393933218409">Ładowanie urządzeń podłączonych do portu USB-C</translation>

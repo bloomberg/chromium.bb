@@ -15,6 +15,7 @@
 <translation id="1107591249535594099">Ако поставите отметка, Chrome ще съхранява копие на картата ви на това устройство с цел по-бързо попълване на формуляри.</translation>
 <translation id="1111153019813902504">Скорошни отметки</translation>
 <translation id="1113869188872983271">&amp;Отмяна на пренареждането</translation>
+<translation id="1126551341858583091">Размерът на локалното хранилище е <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Кешът на правилото е в добро състояние</translation>
 <translation id="113188000913989374"><ph name="SITE" /> изпраща подкана:</translation>
 <translation id="1132774398110320017">Настройки за Автоматично попълване в Chrome...</translation>
@@ -111,6 +112,7 @@
 <translation id="2212735316055980242">Правилото не е намерено</translation>
 <translation id="2213606439339815911">Записите се извличат...</translation>
 <translation id="2230458221926704099">Поправете връзката си посредством <ph name="BEGIN_LINK" />приложението за диагностика<ph name="END_LINK" /></translation>
+<translation id="2239100178324503013">Изпращане сега</translation>
 <translation id="225207911366869382">Стойността е оттеглена за това правило.</translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
 <translation id="2282872951544483773">Експерименти, които не са налице</translation>
@@ -289,6 +291,7 @@
 <translation id="3963721102035795474">Режим за четене</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3973234410852337861">Хостът <ph name="HOST_NAME" /> е блокиран</translation>
+<translation id="40103911065039147">{URL_count,plural, =1{1 уеб страница в близост}other{# уеб страници в близост}}</translation>
 <translation id="4021036232240155012">DNS е услугата за мрежи, която преобразува имената на уебсайтовете към техните адреси в интернет.</translation>
 <translation id="4030383055268325496">&amp;Отмяна на добавянето</translation>
 <translation id="404928562651467259">ПРЕДУПРЕЖДЕНИЕ</translation>
@@ -358,6 +361,7 @@
 <translation id="4880827082731008257">Търсене в историята</translation>
 <translation id="4884656795097055129">В подходящия момент ще се покажат още статии.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
+<translation id="4914479371620770914">{URL_count,plural, =1{и още 1 уеб страница}other{и още # уеб страници}}</translation>
 <translation id="4923417429809017348">Тази страница е преведена от непознат език на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Трябва да се посочи.</translation>
 <translation id="4930497775425430760">Виждате това съобщение, защото родителят ви трябва да одобри новите сайтове при първото ви посещение.</translation>
@@ -487,6 +491,7 @@
 <translation id="647261751007945333">Правила за устройството</translation>
 <translation id="6489534406876378309">Стартиране на качването на сривове</translation>
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
+<translation id="6534179046333460208">Предложения от Физическата мрежа</translation>
 <translation id="6550675742724504774">Опции</translation>
 <translation id="6593753688552673085">по-малко от <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Опции за шифроване</translation>
@@ -544,8 +549,10 @@
 <translation id="7269802741830436641">Тази страница води до циклично пренасочване</translation>
 <translation id="7275334191706090484">Управлявани отметки</translation>
 <translation id="7298195798382681320">Препоръчително</translation>
+<translation id="7309308571273880165">Сигнал за срив, записан в/ъв <ph name="CRASH_TIME" /> (потребителят е заявил качване, което още не е извършено)</translation>
 <translation id="7334320624316649418">&amp;Възстановяване на пренареждането</translation>
 <translation id="733923710415886693">Сертификатът на сървъра не е разкрит чрез Прозрачност на сертификатите.</translation>
+<translation id="7351800657706554155">В момента не можете да посетите сайта <ph name="SITE" />, защото сертификатът му е анулиран. Обикновено мрежовите грешки и атаки са временни, така че тази страница вероятно ще работи по-късно. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7353601530677266744">Команден ред</translation>
 <translation id="7372973238305370288">резултат от търсенето</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -643,12 +650,12 @@
 <translation id="8349305172487531364">Лента на отметките</translation>
 <translation id="8363502534493474904">Изключете самолетния режим.</translation>
 <translation id="8364627913115013041">Не е зададено.</translation>
+<translation id="8380941800586852976">Опасно</translation>
 <translation id="8412145213513410671">Сривове (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Трябва да въведете един и същи пропуск два пъти.</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">Ще излезете от повечето уебсайтове.</translation>
 <translation id="8437238597147034694">&amp;Отмяна на преместването</translation>
-<translation id="8459333855531264009">Не е сигурно</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна карта}other{# кредитни карти}}</translation>
 <translation id="8488350697529856933">Прилага се към</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> не отговаря твърде дълго време.</translation>
@@ -672,7 +679,6 @@
 <translation id="8741995161408053644">Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Възстановяване на изтриването</translation>
 <translation id="8798099450830957504">По подразбиране</translation>
-<translation id="8803639129939845298">Сигурно</translation>
 <translation id="8804164990146287819">Декларация за поверителност</translation>
 <translation id="8820817407110198400">Отметки</translation>
 <translation id="8834246243508017242">Активиране на използването на контактите при автоматично попълване…</translation>
@@ -714,7 +720,6 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ИЗЧИСТВАНЕ НА ФОРМУЛЯРА</translation>
 <translation id="939736085109172342">Нова папка</translation>
-<translation id="943029900877297437">Влезте в Chrome, за да използвате картите, които сте запазили в профила си в Google.</translation>
 <translation id="962701380617707048">Въведете датата на валидност и кода за проверка за <ph name="CREDIT_CARD" />, за да актуализирате данните за картата си</translation>
 <translation id="969892804517981540">Официално издание</translation>
 <translation id="988159990683914416">Компилирана програма за програмисти</translation>

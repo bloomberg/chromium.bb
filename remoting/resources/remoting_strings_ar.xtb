@@ -288,6 +288,7 @@
 <translation id="8548209692293300397">‏لقد سجّلت الدخول سابقًا كالآتي <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />).  للوصول إلى أجهزة الكمبيوتر من خلال هذا الحساب، <ph name="LINK_BEGIN" />سجّل الدخول إلى Google Chrome<ph name="LINK_END" /> بهذا الحساب ثم أعد تثبيت سطح المكتب البعيد من Chrome.</translation>
 <translation id="8642984861538780905">متوسطة</translation>
 <translation id="8712909229180978490">‏لا أستطيع أن أرى الملفات المحفوظة عبر الإنترنت في Google Drive.</translation>
+<translation id="8743328882720071828">هل تريد السماح لـ <ph name="CLIENT_USERNAME" /> برؤية جهاز الكمبيوتر والتحكم فيه؟</translation>
 <translation id="8759753423332885148">معرفة المزيد.</translation>
 <translation id="8791202241915690908">‏تنزيل أداة تثبيت مضيف التوافق مع نظام التشغيل Chrome</translation>
 <translation id="894763922177556086">جيدة</translation>

@@ -34,7 +34,6 @@
 <translation id="1773601347087397504">‏دریافت راهنمایی برای استفاده از سیستم عامل Chrome </translation>
 <translation id="1818142563254268765">‏Chrome به‌طور خودکار به جدیدترین نسخه به‌روزرسانی نشد، بنابراین ویژگی‌های جدید فوق‌العاده و اشکال‌زدایی‌های امنیتی را از دست خواهید داد. باید Chrome را به‌روزرسانی کنید.</translation>
 <translation id="1877026089748256423">‏نسخه Chrome قدیمی است</translation>
-<translation id="1924381329666691588">‏Google Chrome نمی‌تواند به این زبان نشان داده شود.</translation>
 <translation id="2063848847527508675">‏برای اعمال به‌روزرسانی، سیستم‌عامل Chrome باید راه‌اندازی مجدد شود.</translation>
 <translation id="2077129598763517140">در صورت امکان از شتاب سخت‌افزاری استفاده شود</translation>
 <translation id="2084710999043359739">‏افزودن به Chrome</translation>
@@ -117,6 +116,7 @@
 <translation id="437002079035561265">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند، زیرا این سیستم Linux دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="4407807842708586359">‏سیستم عامل Google Chrome</translation>
 <translation id="4458285410772214805">لطفاً از سیستم خارج شوید و دوباره وارد آن شوید تا این تغییر اعمال شود.</translation>
+<translation id="4458462641685292929">‏عملکرد دیگری در Google Chrome درحال انجام است. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="4480040274068703980">‏به دلیل وجود یک خطای ورود به سیستم، سیستم‌عامل Chrome قادر به همگام‌سازی داده‌هایتان نبود.</translation>
 <translation id="4519152997629025674">‏ممکن است Google Chrome برای بهبود تجربه مرورتان، از <ph name="BEGIN_LINK" />سرویس‌های وب<ph name="END_LINK" /> استفاده کند. می‌توانید در هر زمانی این سرویس‌ها را به‌صورت اختیاری غیرفعال کنید.</translation>
 <translation id="4561051373932531560">‏Google Chrome به شما اجازه می‌دهد بر روی شماره تلفن روی وب کلیک کرده و از طریق Skype تماس بگیرید!</translation>
@@ -129,6 +129,7 @@
 <translation id="4743926867934016338">پذیرش و جستجو</translation>
 <translation id="4751441238232965030">‏به‌زودی دریافت به‌روزرسانی‌های Google Chrome ‏۳۲ بیتی در این رایانه متوقف خواهد شد. لطفاً به Google Chrome ‏۶۴ بیتی ارتقا دهید.</translation>
 <translation id="4754614261631455953">‏Google Chrome Canary (ورودی mDNS)</translation>
+<translation id="4771048833395599659">‏این فایل ممکن است خطرناک باشد، بنابراین Chrome آن را مسدود کرده است.</translation>
 <translation id="4794050651896644714">‏ذخیره جزئیات در Chrome</translation>
 <translation id="4891791193823137474">‏اجازه به Google Chrome برای اجرا در پس‌زمینه</translation>
 <translation id="4921569541910214635">‏از رایانه به‌طور مشترک استفاده می‌کنید؟ اکنون می‌توانید Chrome را هر طور که دوست دارید، تنظیم کنید.</translation>
@@ -158,7 +159,6 @@
 <translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
 <translation id="5566025111015594046">‏Google Chrome (ورودی mDNS)</translation>
 <translation id="5620765574781326016">بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی به دست آورید.</translation>
-<translation id="5637867606963802593">‏سیستم عامل Chrome نمی‌تواند به این زبان نشان داده شود.</translation>
 <translation id="568643307450491754">‏نشانک‌های خود را در منوی Chrome یا از نوار نشانک‌ها پیدا کنید.</translation>
 <translation id="573759479754913123">‏درباره سیستم عامل Chrome</translation>
 <translation id="5749068826913805084">‏Chrome برای بارگیری فایل‌ها باید به حافظه دسترسی داشته باشد.</translation>
@@ -185,6 +185,7 @@
 <translation id="6400076122676892962">‏دریافت به‌روزرسانی‌های Google Chrome به زودی در این رایانه متوقف خواهد شد زیرا Mac OS X نسخه ۱۰٫۶،‏ ۱۰٫۷ و ۱۰٫۸ دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="6470176598693778404">‏این رایانه دیگر به‌روزرسانی‌های Google Chrome را دریافت نمی‌کند زیرا Mac OS X نسخه ۱۰٫۶،‏ ۱۰٫۷ و ۱۰٫۸ دیگر پشتیبانی نمی‌شود.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{‏در حال حاضر یک بارگیری در حال انجام است. آیا می‌خواهید بارگیری را لغو کنید و از Google Chrome خارج شوید؟}one{‏در حال حاضر # بارگیری در حال انجام است. آیا می‌خواهید بارگیری را لغو کنید و از Google Chrome خارج شوید؟}other{‏در حال حاضر # بارگیری در حال انجام است. آیا می‌خواهید بارگیری‌ها را لغو کنید و از Google Chrome خارج شوید؟}}</translation>
+<translation id="6566149418543181476">‏درحال به‌روزرسانی Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">‏شما از <ph name="PROFILE_EMAIL" /> برای همگام‌سازی موارد Chrome خودتان استفاده می‌کنید. برای به‌روزرسانی تنظیمات ترجیحی همگام‌سازی‌تان یا استفاده از Chrome بدون حساب Google، به <ph name="SETTINGS_LINK" /> مراجعه کنید.</translation>
 <translation id="6600954340915313787">‏کپی در Chrome</translation>
 <translation id="6626317981028933585">‏متأسفانه تنظیمات Mozilla Firefox شما هنگام باز بودن مرورگر در دسترس نیست. برای واردکردن آن تنظیمات در Google Chrome، کارهای خود را ذخیره کنید و همه پنجره‌های Firefox را ببندید. سپس ادامه را کلیک کنید.</translation>
@@ -192,6 +193,7 @@
 <translation id="6676384891291319759">دسترسی به اینترنت</translation>
 <translation id="6757767188268205357">مرا اذیت نکن</translation>
 <translation id="683440813066116847">‏قانون ترافیک ورودی برای Google Chrome Canary به منظور اجازه به ترافیک mDNS .</translation>
+<translation id="686561893457936865">‏Chrome را همه‌ جا ببرید</translation>
 <translation id="6883876366448858277">‏کلمه و نوشتار اطرافش را به جستجوی Google ارسال می‌کند و معانی، تصاویر و نتایج جستجوی دیگر را برمی‌گرداند.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">درحال به‌روزرسانی دستگاه شما…</translation>
@@ -252,7 +254,9 @@
 <translation id="8255190535488645436">‏Google Chrome درحال استفاده از دوربین و میکروفون شما است.</translation>
 <translation id="8286862437124483331">‏Google Chrome در حال تلاش برای نشان دادن گذرواژه‌هاست. برای اجازه به این کار، گذرواژه Windows خود را تایپ کنید.</translation>
 <translation id="8290100596633877290">‏اوه! Google Chrome با اشکال مواجه شده است. دوباره راه‌اندازی شود؟</translation>
+<translation id="8342675569599923794">‏این فایل خطرناک است، بنابراین Chrome آن را مسدود کرده است.</translation>
 <translation id="8406086379114794905">‏به بهبود Chrome کمک کنید</translation>
+<translation id="8455999171311319804">‏اختیاری: با ارسال خودکار داده‌های تشخیصی و میزان استفاده به Google، به بهبود سیستم عامل Chrome کمک کنید.</translation>
 <translation id="853189717709780425">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست اجازه کنترل نمایه Google Chrome خود را می‌دهید. داده‌های Chrome شما مانند برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات شما برای همیشه به <ph name="USER_NAME" /> مرتبط می‌شوند. شما می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google خود حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط کنید.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>

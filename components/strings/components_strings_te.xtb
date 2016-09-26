@@ -15,6 +15,7 @@
 <translation id="1107591249535594099">ఎంచుకున్నట్లయితే, Chrome వేగవంతమైన ఫారమ్ పూరింపు కోసం ఈ పరికరంలో మీ కార్డ్ కాపీని నిల్వ చేస్తుంది.</translation>
 <translation id="1111153019813902504">ఇటీవల బుక్‌మార్క్‌లు</translation>
 <translation id="1113869188872983271">&amp;మళ్లీ క్రమం చేయడాన్ని రద్దు చేయి</translation>
+<translation id="1126551341858583091">స్థానిక నిల్వలో పరిమాణం <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">విధాన కాష్ సరిపోయింది</translation>
 <translation id="113188000913989374"><ph name="SITE" /> ఇలా చెబుతోంది:</translation>
 <translation id="1132774398110320017">Chrome స్వయంపూర్తి సెట్టింగ్‌లు...</translation>
@@ -111,6 +112,7 @@
 <translation id="2212735316055980242">విధానం కనుగొనబడలేదు</translation>
 <translation id="2213606439339815911">నమోదులను పొందుతోంది...</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />విశ్లేషణల అనువర్తనాన్ని<ph name="END_LINK" /> ఉపయోగించి మీ కనెక్షన్‌ను సరి చేయండి</translation>
+<translation id="2239100178324503013">ఇప్పుడే పంపండి</translation>
 <translation id="225207911366869382">ఈ విధానం కోసం ఈ విలువ తగ్గించబడింది.</translation>
 <translation id="2262243747453050782">HTTP లోపం</translation>
 <translation id="2282872951544483773">అందుబాటులో లేని ప్రయోగాలు</translation>
@@ -289,6 +291,7 @@
 <translation id="3963721102035795474">పాఠకుని మోడ్</translation>
 <translation id="397105322502079400">గణిస్తోంది...</translation>
 <translation id="3973234410852337861"><ph name="HOST_NAME" /> బ్లాక్ చేయబడింది</translation>
+<translation id="40103911065039147">{URL_count,plural, =1{1 వెబ్ పేజీ సమీపంలో ఉంది}other{# వెబ్ పేజీలు సమీపంలో ఉన్నాయి}}</translation>
 <translation id="4021036232240155012">DNS అనేది వెబ్‌సైట్ పేరును దాని ఇంటర్నెట్ చిరునామాకి అనువదించే నెట్‌వర్క్ సేవ.</translation>
 <translation id="4030383055268325496">&amp;జోడించడాన్ని రద్దు చేయి</translation>
 <translation id="404928562651467259">హెచ్చరిక</translation>
@@ -358,6 +361,7 @@
 <translation id="4880827082731008257">శోధన చరిత్ర</translation>
 <translation id="4884656795097055129">సమయం ఆసన్నమైనప్పుడు మరిన్ని కథనాలు కనిపిస్తాయి.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4914479371620770914">{URL_count,plural, =1{మరియు మరో 1 వెబ్ పేజీ}other{మరియు మరో # వెబ్ పేజీలు}}</translation>
 <translation id="4923417429809017348">ఈ పేజీ తెలియని భాష నుండి <ph name="LANGUAGE_LANGUAGE" />కు అనువదించబడింది</translation>
 <translation id="4926049483395192435">ఖచ్చితంగా పేర్కొనాలి.</translation>
 <translation id="4930497775425430760">మీరు మొదటిసారి కొత్త సైట్‌లను సందర్శించినప్పుడు వాటిని మీ తల్లి/తండ్రి ఆమోదించాల్సిన ఆవశ్యకం ఉన్నందున మీకు ఈ సందేశం కనిపిస్తోంది.</translation>
@@ -487,6 +491,7 @@
 <translation id="647261751007945333">పరికర విధానాలు</translation>
 <translation id="6489534406876378309">క్రాష్‌లను అప్‌లోడ్ చేయడాన్ని ప్రారంభించండి</translation>
 <translation id="6529602333819889595">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
+<translation id="6534179046333460208">ప్రత్యక్ష వెబ్ సూచనలు</translation>
 <translation id="6550675742724504774">ఎంపికలు</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> కంటే తక్కువ</translation>
 <translation id="6596325263575161958">గుప్తీకరణ ఎంపికలు</translation>
@@ -544,8 +549,10 @@
 <translation id="7269802741830436641">ఈ వెబ్‌పేజీ దారిమళ్ళించబడ్డ లూప్‌ని కలిగి ఉంది</translation>
 <translation id="7275334191706090484">నిర్వహించబడిన బుక్‌మార్క్‌లు</translation>
 <translation id="7298195798382681320">సిఫార్సు చేయబడినవి</translation>
+<translation id="7309308571273880165"><ph name="CRASH_TIME" /> తేదీన సంగ్రహించిన క్రాష్ నివేదిక (అప్‌లోడ్ చేయాల్సిందిగా వినియోగదారుకు అభ్యర్థన, ఇంకా అప్‌లోడ్ చేయలేదు)</translation>
 <translation id="7334320624316649418">&amp;మళ్లీ క్రమం చేయడాన్ని పునరావృతం చేయి</translation>
 <translation id="733923710415886693">సర్వర్ ప్రమాణపత్రాన్ని ప్రమాణపత్రం పారదర్శకత ద్వారా బహిరంగపరచలేదు.</translation>
+<translation id="7351800657706554155"><ph name="SITE" /> ప్రమాణపత్రం ఉపసంహరించబడినందున మీరు ఆ సైట్‌ను ఇప్పుడు సందర్శించలేరు. నెట్‌వర్క్ లోపాలు మరియు దాడులు సాధారణంగా తాత్కాలికంగానే ఉంటాయి, కనుక ఈ పేజీ కాసేపటి తర్వాత పని చేసే అవకాశం ఉంది. <ph name="BEGIN_LEARN_MORE_LINK" />మరింత తెలుసుకోండి<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7353601530677266744">ఆదేశ పంక్తి</translation>
 <translation id="7372973238305370288">శోధన ఫలితం</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -643,12 +650,12 @@
 <translation id="8349305172487531364">బుక్‌మార్క్‌ల పట్టీ</translation>
 <translation id="8363502534493474904">ఎయిర్‌ప్లైన్ మోడ్‌ను ఆఫ్ చేయడం</translation>
 <translation id="8364627913115013041">సెట్ చేయలేదు.</translation>
+<translation id="8380941800586852976">అపాయకరమైనది</translation>
 <translation id="8412145213513410671">క్రాష్‌లు (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">మీరు అదే పాస్‌ఫ్రేజ్‌ని రెండుసార్లు ఖచ్చితంగా ఎంటర్ చెయ్యాలి.</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8433057134996913067">దీని వలన మీరు చాలా వెబ్‌సైట్‌ల నుండి సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="8437238597147034694">&amp;తరలించడాన్ని రద్దు చేయి</translation>
-<translation id="8459333855531264009">సురక్షితం కాదు</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 క్రెడిట్ కార్డ్}other{# క్రెడిట్ కార్డ్‌లు}}</translation>
 <translation id="8488350697529856933">వీటికి వర్తిస్తుంది</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం పట్టింది.</translation>
@@ -672,7 +679,6 @@
 <translation id="8741995161408053644">మీ Google ఖాతా <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />లో ఇతర బ్రౌజింగ్ చరిత్ర రూపాలను కలిగి ఉండవచ్చు.</translation>
 <translation id="8790007591277257123">&amp;తొలగించడాన్ని పునరావృతం చేయి</translation>
 <translation id="8798099450830957504">డిఫాల్ట్</translation>
-<translation id="8803639129939845298">సురక్షితం</translation>
 <translation id="8804164990146287819">గోప్యతా విధానం</translation>
 <translation id="8820817407110198400">బుక్‌మార్క్‌లు</translation>
 <translation id="8834246243508017242">పరిచయాలను ఉపయోగించి స్వీయపూర్తిని ప్రారంభించండి…</translation>
@@ -714,7 +720,6 @@
 <translation id="933712198907837967">డైనర్స్ క్లబ్</translation>
 <translation id="935608979562296692">ఫారమ్‌ను తీసివేయండి</translation>
 <translation id="939736085109172342">క్రొత్త  ఫోల్డర్</translation>
-<translation id="943029900877297437">మీరు మీ Google ఖాతాకి సేవ్ చేసిన కార్డ్‌లను ఉపయోగించడానికి, Chromeకి సైన్ ఇన్ చేయండి.</translation>
 <translation id="962701380617707048">మీ కార్డ్ వివరాలను నవీకరించడానికి <ph name="CREDIT_CARD" /> కార్డ్ గడువు ముగింపు తేదీ మరియు CVCని నమోదు చేయండి</translation>
 <translation id="969892804517981540">అధికారిక బిల్డ్</translation>
 <translation id="988159990683914416">డెవలపర్ బిల్డ్</translation>

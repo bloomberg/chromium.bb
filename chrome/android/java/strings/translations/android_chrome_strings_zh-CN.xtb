@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">您在其他设备上保存的书签将列在此处。</translation>
 <translation id="1121094540300013208">使用情况统计信息和崩溃报告</translation>
 <translation id="1137305377394488060">过去 1 小时</translation>
+<translation id="1146678959555564648">进入 VR</translation>
 <translation id="1178581264944972037">暂停</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1197267115302279827">移动书签</translation>
@@ -247,6 +248,7 @@
 <translation id="393697183122708255">无法启用语音搜索功能</translation>
 <translation id="3946611741043634542">继续操作即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="3950820424414687140">登录</translation>
+<translation id="3967822245660637423">下载完毕</translation>
 <translation id="397583555483684758">同步功能已停止工作</translation>
 <translation id="3988213473815854515">允许访问位置信息</translation>
 <translation id="3997476611815694295">不重要网站的存储数据</translation>
@@ -259,7 +261,6 @@
 <translation id="4095146165863963773">要删除应用数据吗？</translation>
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
 <translation id="410351446219883937">自动播放</translation>
-<translation id="411254640334432676">下载失败。</translation>
 <translation id="4113030288477039509">由您的管理员管理</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
@@ -277,7 +278,6 @@
 <translation id="4275663329226226506">媒体</translation>
 <translation id="4278390842282768270">允许的 Cookie</translation>
 <translation id="4307992518367153382">基本设置</translation>
-<translation id="4334294535648607276">下载完毕。</translation>
 <translation id="4351244548802238354">关闭对话框</translation>
 <translation id="4376501731284077108">不限</translation>
 <translation id="4378154925671717803">电话</translation>
@@ -335,12 +335,10 @@
 <translation id="5063480226653192405">使用情况</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="510275257476243843">还剩 1 小时</translation>
-<translation id="5107381076085091558">已暂停下载。</translation>
 <translation id="5127805178023152808">同步功能已关闭</translation>
 <translation id="5131405117025179004">修改已保存的帐户</translation>
 <translation id="5138299137310274655">这是<ph name="SOURCE_LANGUAGE" />网页，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="515227803646670480">清除存储的数据</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />免安装<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">这是一个未成年人帐户</translation>
 <translation id="5161254044473106830">必须提供标题</translation>
 <translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE" />网页吗？</translation>
@@ -655,6 +653,7 @@
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="8725066075913043281">重试</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="8748850008226585750">内容已隐藏</translation>
 <translation id="8812942424849541387">您可以转到<ph name="BEGIN_LINK1" />设置<ph name="END_LINK1" />控制该功能的运行方式</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="883635517171802338">禁止网站显示弹出式窗口（推荐）</translation>
@@ -662,7 +661,6 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />，标签页</translation>
 <translation id="885701979325669005">存储空间</translation>
-<translation id="8872506776304248286">在应用中打开</translation>
 <translation id="8901170036886848654">未找到任何书签</translation>
 <translation id="8909135823018751308">分享…</translation>
 <translation id="8912362522468806198">Google 帐户</translation>

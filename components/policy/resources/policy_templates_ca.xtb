@@ -758,6 +758,9 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
+<translation id="3322902067538988734">Si aquesta política s'estableix en "true", l'usuari ha d'iniciar la sessió a <ph name="PRODUCT_NAME" /> amb el seu perfil abans d'utilitzar el navegador. El valor predeterminat de BrowserGuestModeEnabled és "false".
+
+      Si aquesta política s'estableix en "false" o no es configura cap valor, l'usuari pot utilitzar el navegador sense iniciar la sessió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
 
@@ -911,6 +914,11 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
       Si no hi dus a terme cap acció, SPDY estarà disponible.</translation>
 <translation id="3891357445869647828">Activa JavaScript</translation>
+<translation id="3891953007921334498">Desactiva les Eines per a desenvolupadors i la Consola de JavaScript.
+
+      Si actives aquesta opció de configuració, ja no es podrà accedir a les Eines per a desenvolupadors ni inspeccionar els elements del lloc web. Es desactivaran les tecles de drecera i les entrades als menús o als menús contextuals per obrir les Eines per a desenvolupadors o la Consola de JavaScript.
+
+      Si aquesta opció es desactiva o no es defineix, l'usuari podrà utilitzar les Eines per a desenvolupadors i la Consola de JavaScript.</translation>
 <translation id="3907986150060929099">Estableix les configuracions regionals recomanades per a una sessió pública</translation>
 <translation id="391531815696899618">Quan aquesta política s'estableix en True, desactiva la sincronització de Google Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" />. En aquest cas, no es pengen dades a Google Drive.
 
@@ -1005,6 +1013,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
 <translation id="4250680216510889253">No</translation>
+<translation id="4272136423200695428">Activa l'inici de sessió forçat a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Especifica els paràmetres utilitzats en cercar imatges amb POST. Consisteix en parelles de nom/valor separades per comes. Si un valor és un paràmetre de plantilla, com ara {imageThumbnail} a l'exemple anterior, se substituirà per dades de la miniatura de la imatge real.
 
           Aquesta política és opcional. Si no es defineix, la sol·licitud de cerca d'imatges s'enviarà mitjançant el mètode GET.

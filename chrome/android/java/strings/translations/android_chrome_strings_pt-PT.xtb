@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Os marcadores guardados nos seus outros dispositivos são apresentados aqui.</translation>
 <translation id="1121094540300013208">Relatórios de utilização e falhas</translation>
 <translation id="1137305377394488060">da hora anterior</translation>
+<translation id="1146678959555564648">Entrar na RV</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Remover</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
@@ -247,6 +248,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="393697183122708255">Nenhuma pesq. por voz ativada disponível</translation>
 <translation id="3946611741043634542">Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
 <translation id="3950820424414687140">Iniciar sessão</translation>
+<translation id="3967822245660637423">Transferência concluída</translation>
 <translation id="397583555483684758">A sincronização deixou de funcionar</translation>
 <translation id="3988213473815854515">A localização é permitida</translation>
 <translation id="3997476611815694295">Armazenamento desnecessário</translation>
@@ -259,7 +261,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4095146165863963773">Pretende eliminar os dados da aplicação?</translation>
 <translation id="4099578267706723511">Ajude a melhorar o Chrome ao enviar estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="410351446219883937">Reprodução automática</translation>
-<translation id="411254640334432676">A transferência falhou.</translation>
 <translation id="4113030288477039509">Gerido pelo administrador</translation>
 <translation id="4165986682804962316">Definições de sites</translation>
 <translation id="4170011742729630528">O serviço não está disponível. Tente novamente mais tarde.</translation>
@@ -277,7 +278,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="4275663329226226506">Multimédia</translation>
 <translation id="4278390842282768270">Permitidos:</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
-<translation id="4334294535648607276">Transferência concluída.</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
 <translation id="4376501731284077108">Não controlado</translation>
 <translation id="4378154925671717803">Telefone</translation>
@@ -335,12 +335,10 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5063480226653192405">Utilização</translation>
 <translation id="5100237604440890931">Reduzido. Clique para expandir.</translation>
 <translation id="510275257476243843">Falta 1 hora</translation>
-<translation id="5107381076085091558">Transferência interrompida.</translation>
 <translation id="5127805178023152808">A sincronização está desativada</translation>
 <translation id="5131405117025179004">Editar conta guardada</translation>
 <translation id="5138299137310274655">Esta página está em <ph name="SOURCE_LANGUAGE" />. Pretende traduzi-la para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Limpar dados armazenados</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> – <ph name="STYLE_BEGIN" />instantânea<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Esta conta pertence a uma criança</translation>
 <translation id="5161254044473106830">Título obrigatório</translation>
 <translation id="5164482624172255778">Pretende que o Google Chrome se ofereça para traduzir as páginas em <ph name="LANGUAGE" /> deste site da próxima vez?</translation>
@@ -655,6 +653,7 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8719023831149562936">Impossível transmitir o separador atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>
+<translation id="8748850008226585750">Conteúdo ocultado</translation>
 <translation id="8812942424849541387">Controle esta funcionalidade nas <ph name="BEGIN_LINK1" />Definições<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Marcadores</translation>
 <translation id="883635517171802338">Impedir a apresentação de pop-ups por parte dos sites (recomendado)</translation>
@@ -662,7 +661,6 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Separador <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Armazenamento</translation>
-<translation id="8872506776304248286">Abrir na aplicação</translation>
 <translation id="8901170036886848654">Nenhum marcador encontrado</translation>
 <translation id="8909135823018751308">Partilhar…</translation>
 <translation id="8912362522468806198">Conta Google</translation>

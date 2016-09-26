@@ -15,6 +15,7 @@
 <translation id="1107591249535594099">Ако означите ову опцију, Chrome ће складиштити копију картице на овом уређају ради бржег попуњавања образаца.</translation>
 <translation id="1111153019813902504">Недавни обележивачи</translation>
 <translation id="1113869188872983271">&amp;Опозови промену редоследа</translation>
+<translation id="1126551341858583091">Величина у локалном меморијском простору је <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Кеш смерница је у реду</translation>
 <translation id="113188000913989374"><ph name="SITE" /> каже:</translation>
 <translation id="1132774398110320017">Подешавања Chrome аутоматског попуњавања...</translation>
@@ -111,6 +112,7 @@
 <translation id="2212735316055980242">Смернице нису пронађене</translation>
 <translation id="2213606439339815911">Преузимање уноса...</translation>
 <translation id="2230458221926704099">Поправите везу помоћу <ph name="BEGIN_LINK" />апликације за дијагностику<ph name="END_LINK" /></translation>
+<translation id="2239100178324503013">Пошаљи одмах</translation>
 <translation id="225207911366869382">Ова вредност је застарела за ове смернице.</translation>
 <translation id="2262243747453050782">HTTP грешка</translation>
 <translation id="2282872951544483773">Недоступни експерименти</translation>
@@ -289,6 +291,7 @@
 <translation id="3963721102035795474">Режим читаоца</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
 <translation id="3973234410852337861">Хост <ph name="HOST_NAME" /> је блокиран</translation>
+<translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница у околини}one{# веб-страница у околини}few{# веб-странице у околини}other{# веб-страница у околини}}</translation>
 <translation id="4021036232240155012">DNS је мрежна услуга која преводи назив веб-сајта у његову интернет адресу.</translation>
 <translation id="4030383055268325496">&amp;Опозови додавање</translation>
 <translation id="404928562651467259">УПОЗОРЕЊЕ</translation>
@@ -358,6 +361,7 @@
 <translation id="4880827082731008257">Претражи историју</translation>
 <translation id="4884656795097055129">Још чланака ће се појавити у одговарајуће време.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
+<translation id="4914479371620770914">{URL_count,plural, =1{и јој 1 веб-страница}one{и још # веб-страница}few{и још # веб-странице}other{и још # веб-страница}}</translation>
 <translation id="4923417429809017348">Ова страница је преведена са непознатог језика на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Мора да буде наведено.</translation>
 <translation id="4930497775425430760">Ову поруку видите јер ваш родитељ треба да одобри нове сајтове при првој посети.</translation>
@@ -486,6 +490,7 @@
 <translation id="647261751007945333">Смернице за уређај</translation>
 <translation id="6489534406876378309">Покрени отпремање отказивања</translation>
 <translation id="6529602333819889595">&amp;Понови брисање</translation>
+<translation id="6534179046333460208">Предлози Интернета око нас</translation>
 <translation id="6550675742724504774">Опције</translation>
 <translation id="6593753688552673085">мање од <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Опције шифровања</translation>
@@ -543,8 +548,10 @@
 <translation id="7269802741830436641">Ова веб-страница има петљу за преусмеравање</translation>
 <translation id="7275334191706090484">Обележивачи којим се управља</translation>
 <translation id="7298195798382681320">Препоручено</translation>
+<translation id="7309308571273880165">Извештај о отказивању је снимљен <ph name="CRASH_TIME" /> (корисник треба да га отпреми, још увек није отпремљен)</translation>
 <translation id="7334320624316649418">&amp;Понови промену редоследа</translation>
 <translation id="733923710415886693">Сертификат сервера није откривен помоћу Транспарентности сертификата.</translation>
+<translation id="7351800657706554155">Тренутно не можете да посетите <ph name="SITE" /> јер је његов сертификат опозван. Грешке и напади на мрежи су обично привремени, па ће ова страница вероватно функционисати касније. <ph name="BEGIN_LEARN_MORE_LINK" />Сазнајте више<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="7353601530677266744">Командна линија</translation>
 <translation id="7372973238305370288">резултат претраге</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -642,12 +649,12 @@
 <translation id="8349305172487531364">Трака са обележивачима</translation>
 <translation id="8363502534493474904">да искључите режим рада у авиону</translation>
 <translation id="8364627913115013041">Није подешено.</translation>
+<translation id="8380941800586852976">Опасно</translation>
 <translation id="8412145213513410671">Отказивања (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Потребно је да двапут унесете исту приступну фразу.</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8433057134996913067">Овако ћете се одјавити са већине веб-сајтова.</translation>
 <translation id="8437238597147034694">&amp;Опозови премештање</translation>
-<translation id="8459333855531264009">Није безбедан</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 кредитна картица}one{# кредитна картица}few{# кредитне картице}other{# кредитних картица}}</translation>
 <translation id="8488350697529856933">Односе се на</translation>
 <translation id="8498891568109133222">Одговор хоста <ph name="HOST_NAME" /> је трајао предуго.</translation>
@@ -671,7 +678,6 @@
 <translation id="8741995161408053644">Google налог има друге облике историје прегледања на <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Понови брисање</translation>
 <translation id="8798099450830957504">Подразумевано</translation>
-<translation id="8803639129939845298">Безбедан</translation>
 <translation id="8804164990146287819">Политика приватности</translation>
 <translation id="8820817407110198400">Обележивачи</translation>
 <translation id="8834246243508017242">Омогућавање аутоматског попуњавања контактима…</translation>
@@ -713,7 +719,6 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ОБРИШИ ОБРАЗАЦ</translation>
 <translation id="939736085109172342">Нови директоријум</translation>
-<translation id="943029900877297437">Да бисте користили картице које сте сачували на Google налогу, пријавите се у Chrome.</translation>
 <translation id="962701380617707048">Унесите датум истека и CVC за картицу <ph name="CREDIT_CARD" /> да бисте ажурирали податке о картици</translation>
 <translation id="969892804517981540">Званична верзија</translation>
 <translation id="988159990683914416">Верзија за програмере</translation>

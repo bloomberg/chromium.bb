@@ -287,6 +287,7 @@
 <translation id="8548209692293300397">Ви раніше входили як <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Щоб отримати доступ до комп’ютерів, <ph name="LINK_BEGIN" />увійдіть у свій обліковий запис Google Chrome<ph name="LINK_END" /> і перевстановіть Віддалене керування Chrome.</translation>
 <translation id="8642984861538780905">Надійний сигнал</translation>
 <translation id="8712909229180978490">Мої збережені файли не відображаються на Google Диску в Інтернеті.</translation>
+<translation id="8743328882720071828">Дозволити користувачу <ph name="CLIENT_USERNAME" /> бачити ваш комп’ютер і керувати ним?</translation>
 <translation id="8759753423332885148">Докладніше.</translation>
 <translation id="8791202241915690908">Встановити хост для Віддаленого доступу ОС Chrome</translation>
 <translation id="894763922177556086">Хороший сигнал</translation>

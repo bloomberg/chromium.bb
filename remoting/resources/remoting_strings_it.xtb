@@ -287,6 +287,7 @@ Remote Desktop</translation>
 <translation id="8548209692293300397">Hai già eseguito l'accesso come <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedere ai tuoi computer nell'account in questione, <ph name="LINK_BEGIN" />accedi a Google Chrome<ph name="LINK_END" /> con tale account e installa di nuovo Chrome Remote Desktop.</translation>
 <translation id="8642984861538780905">Media</translation>
 <translation id="8712909229180978490">Non riesco a trovare i miei file salvati online su Google Drive.</translation>
+<translation id="8743328882720071828">Vuoi consentire a <ph name="CLIENT_USERNAME" /> di visualizzare e controllare il tuo computer?</translation>
 <translation id="8759753423332885148">Ulteriori informazioni.</translation>
 <translation id="8791202241915690908">Scarica il programma di installazione di Chromoting Host</translation>
 <translation id="894763922177556086">Buona</translation>

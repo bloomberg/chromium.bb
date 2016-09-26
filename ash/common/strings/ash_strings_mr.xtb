@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">सर्व साइन आउट करा</translation>
 <translation id="2297568595583585744">स्थिती ट्रे</translation>
 <translation id="2303600792989757991">विंडो विहंगावलोकन टॉगल करा</translation>
-<translation id="2372145515558759244">अ‍ॅप्स समक्रमित करत आहे...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डिव्हाइसवर ही पासकी दर्शविली असल्याची पुष्टी करा: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">एक त्रुटी आली आहे</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">एका निम्न-उर्जेच्या चार्जरवर प्लग इन केले. बॅटरी चार्जिंग विश्वसनीय असू शकत नाही.</translation>
 <translation id="2761704814324807722">स्थिती ट्रे, वेळ <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2805756323405976993">अनुप्रयोग</translation>
 <translation id="2819276065543622893">आता आपल्याला साइन आउट केले जाईल.</translation>
 <translation id="2825619548187458965">शेल्फ</translation>
 <translation id="2844169650293029770">USB-C डिव्‍हाइस (डाव्‍या बाजूचे पुढील पोर्ट)</translation>
@@ -110,6 +108,7 @@
 <translation id="3866182280516392520">IPv6 पत्ता</translation>
 <translation id="3891340733213178823">साइन आउट करण्यासाठी Ctrl+Shift+Q दोनदा दाबा.</translation>
 <translation id="3892641579809465218">अंतर्गत डिस्प्ले</translation>
+<translation id="3893630138897523026">ChromeVox (बोललेला अभिप्राय)</translation>
 <translation id="3963445509666917109">स्पीकर (अंतर्गत)</translation>
 <translation id="3967919079500697218">स्क्रीनशॉट घेण्याची क्षमता आपल्या प्रशासकाद्वारे अक्षम केली गेली आहे.</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
@@ -191,7 +190,6 @@
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" Bluetooth डिव्हाइस जोडले गेले आहे आणि सर्व वापरकर्त्यांसाठी आता उपलब्ध आहे. आपण सेटिंग्ज वापरून ही जोडणी काढू शकता.</translation>
 <translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE" />% भरली आहे आणि चार्ज होत आहे.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox (बोललेला अभिप्राय)</translation>
 <translation id="6911468394164995108">दुसरीकडे सामील व्हा...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google ड्राइव्ह</translation>
@@ -215,6 +213,7 @@
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> ला समर्थन देत नाही. रिजोल्यूशन <ph name="FALLBACK_RESOLUTION" /> मध्ये बदलले</translation>
 <translation id="7573962313813535744">डॉक केलेला मोड</translation>
 <translation id="7580671184200851182">सर्व स्पीकर मधून समान ऑडिओ प्ले करा (मोनो ऑडिओ)</translation>
+<translation id="7581273696622423628">सर्वेक्षण घ्या</translation>
 <translation id="7593891976182323525">Search किंवा Shift</translation>
 <translation id="7649070708921625228">मदत</translation>
 <translation id="7692480393933218409">कनेक्ट केलेले USB-C डिव्‍हाइसेस चार्ज करीत आहे</translation>

@@ -10,7 +10,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="1221340462641866827">Chromium OS ondersteunt het starten van een externe applicatie voor het verwerken van <ph name="SCHEME" />-links niet. De opgevraagde link is <ph name="PROTOLINK" />.</translation>
 <translation id="1293235220023151515">Er is een conflicterende installatie van Chromium op het systeem gevonden. Verwijder deze en probeer het opnieuw.</translation>
 <translation id="1298199220304005244">Hulp bij het gebruik van Chromium OS</translation>
-<translation id="1347507563453473396">Chromium kan niet worden weergegeven in deze taal.</translation>
 <translation id="1396446129537741364">Chromium probeert wachtwoorden weer te geven.</translation>
 <translation id="1403254041219632970">Toekomstige versies van Chromium bieden geen ondersteuning meer voor Mac OS X 10.6, 10.7 en 10.8.</translation>
 <translation id="1414495520565016063">U bent ingelogd bij Chromium.</translation>
@@ -127,10 +126,12 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4987820182225656817">Gasten kunnen Chromium gebruiken zonder iets achter te laten.</translation>
 <translation id="4994636714258228724">Jezelf toevoegen aan Chromium</translation>
 <translation id="5032989939245619637">Details opslaan in Chromium</translation>
+<translation id="5045248521775609809">Neem Chromium overal mee naartoe</translation>
 <translation id="5113946445248196174">Chromium kan de standaardbrowser niet bepalen of instellen.</translation>
 <translation id="5116586539350239523">Chromium slaat je persoonlijke gegevens veilig op, zodat je ze niet opnieuw hoeft op te geven.</translation>
 <translation id="5231355151045086930">Uitloggen bij Chromium</translation>
 <translation id="5358375970380395591">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Chromium-profiel. Je Chromium-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME" />. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account.<ph name="LEARN_MORE" /></translation>
+<translation id="5386450000063123300">Chromium updaten (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Er is een nieuwe versie van Chromium beschikbaar.</translation>
 <translation id="5427571867875391349">Chromium instellen als je standaardbrowser</translation>
 <translation id="5466153949126434691">Chromium wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie. Wanneer deze download is voltooid, wordt Chromium opnieuw gestart en kun je doorgaan.</translation>
@@ -161,6 +162,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6212496753309875659">Deze computer beschikt al over een recentere versie van Chromium. Als de software niet werkt, moet je Chromium verwijderen en het opnieuw proberen.</translation>
 <translation id="6248213926982192922">Chromium als standaardbrowser instellen</translation>
 <translation id="6309712487085796862">Chromium gebruikt je camera.</translation>
+<translation id="6333502561965082103">Er wordt een andere bewerking in Chromium uitgevoerd. Probeer het later opnieuw.</translation>
 <translation id="6334986366598267305">Het is nu gemakkelijker om Chromium met je Google-account en op gedeelde computers te gebruiken.</translation>
 <translation id="6373523479360886564">Weet je zeker dat je Chromium wilt verwijderen?</translation>
 <translation id="6394232988457703198">Je moet Chromium nu opnieuw starten.</translation>
@@ -218,7 +220,6 @@ Als je wilt voorkomen dat <ph name="NEW_PROFILE_NAME" /> toegang krijgt tot je a
 Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</translation>
 <translation id="7419987137528340081">Als je je huidige Chromium-gegevens liever gescheiden houdt, kun je een nieuwe Chromium-gebruiker maken voor <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Voor Chromium is Windows XP of hoger vereist. Sommige functies werken mogelijk niet.</translation>
-<translation id="7437562785125777404">Chromium OS kan niet worden weergegeven in deze taal.</translation>
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="7483335560992089831">Kan niet dezelfde Chromium-versie installeren, omdat deze versie nu actief is. Sluit Chromium en probeer het opnieuw.</translation>
 <translation id="750717762378961310">Dit bestand is schadelijk en is door Chromium geblokkeerd.</translation>
@@ -238,7 +239,9 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</t
 <translation id="8030318113982266900">Je apparaat bijwerken naar <ph name="CHANNEL_NAME" /> kanaal...</translation>
 <translation id="8033665941300843262">Chromium heeft toegang tot rechten nodig om ze te delen met deze site.</translation>
 <translation id="8134284582177628525">Als je deze computer met <ph name="PROFILE_NAME" /> deelt, voeg je jezelf toe aan Chromium om afzonderlijk te surfen. Anders ontkoppel je zijn Google-account.</translation>
+<translation id="81770708095080097">Dit bestand is gevaarlijk en is daarom door Chromium geblokkeerd.</translation>
 <translation id="8269379391216269538">Help ons Chromium beter te maken</translation>
+<translation id="8290862415967981663">Dit bestand kan gevaarlijk zijn en is daarom door Chromium geblokkeerd.</translation>
 <translation id="8453117565092476964">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Chromium opnieuw.</translation>
 <translation id="8493179195440786826">Chromium is verouderd</translation>
 <translation id="85843667276690461">Hulp bij het gebruik van Chromium</translation>

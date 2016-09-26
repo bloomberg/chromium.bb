@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">সবগুলি প্রস্থান করুন করুন</translation>
 <translation id="2297568595583585744">স্থিতি ট্রে</translation>
 <translation id="2303600792989757991">উইন্ডোর ওভারভিউ টগল করুন</translation>
-<translation id="2372145515558759244">অ্যাপ্লিকেশনগুলি সিঙ্ক হচ্ছে...</translation>
 <translation id="2391579633712104609">১৮০°</translation>
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, দয়া করে এই পাস কীটি যে ডিভাইসে প্রদর্শিত হয়েছে তা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">একটি ত্রুটি ঘটেছে</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">একটি নিম্ন শক্তির চার্জার প্লাগইন করা হয়েছে৷ বিশ্বস্ত ব্যাটারি চার্জ নাও হতে পারে৷</translation>
 <translation id="2761704814324807722">স্থিতি ট্রে, সময় <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2805756323405976993">অ্যাপ্স</translation>
 <translation id="2819276065543622893">আপনি এখনই প্রস্থান করুন হবেন৷</translation>
 <translation id="2825619548187458965">তাক</translation>
 <translation id="2844169650293029770">USB-C ডিভাইস (বাম দিকের সামনের পোর্ট)</translation>
@@ -110,6 +108,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="3866182280516392520">IPv6 ঠিকানা</translation>
 <translation id="3891340733213178823">প্রস্থান করুন করার জন্য দুবার Ctrl+Shift+Q টিপুন৷</translation>
 <translation id="3892641579809465218">অভ্যন্তরীণ প্রদর্শন</translation>
+<translation id="3893630138897523026">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>
 <translation id="3963445509666917109">স্পিকার (অভ্যন্তরীণ)</translation>
 <translation id="3967919079500697218">স্ক্রীনশট নেওয়ার ক্ষমতা আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে৷</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
@@ -191,7 +190,6 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="6713285437468012787">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করা হয়েছে এবং এখন সমস্ত ব্যবহারকারীর কাছে উপলব্ধ। আপনি সেটিংস ব্যবহার করে এই সংযুক্তি সরিয়ে দিতে পারেন।</translation>
 <translation id="6785414152754474415">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ এবং চার্জ হচ্ছে৷</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox (কথ্য প্রতিক্রিয়া)</translation>
 <translation id="6911468394164995108">অন্যতে যোগদান করুন ...</translation>
 <translation id="6915678159055240887">ক্রোমবাক্স</translation>
 <translation id="6979158407327259162">Google ড্রাইভ</translation>
@@ -215,6 +213,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> সমর্থন করে না৷ রেজোলিউশন <ph name="FALLBACK_RESOLUTION" /> এ পরিবর্তিত হয়েছে</translation>
 <translation id="7573962313813535744">ডকযুক্ত মোড</translation>
 <translation id="7580671184200851182">সব স্পিকারে একই অডিও বাজান (মনো অডিও)</translation>
+<translation id="7581273696622423628">সমীক্ষায় যোগ দিন</translation>
 <translation id="7593891976182323525">Search অথবা Shift</translation>
 <translation id="7649070708921625228">সহায়তা</translation>
 <translation id="7692480393933218409">সংযুক্ত USB-C ডিভাইসগুলি চার্জ হচ্ছে</translation>

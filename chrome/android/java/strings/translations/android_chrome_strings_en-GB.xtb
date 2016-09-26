@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Bookmarks saved on your other devices will appear here.</translation>
 <translation id="1121094540300013208">Usage and crash reports</translation>
 <translation id="1137305377394488060">past hour</translation>
+<translation id="1146678959555564648">Enter VR</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="1197267115302279827">Move bookmarks</translation>
@@ -247,6 +248,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="393697183122708255">No enabled voice search available</translation>
 <translation id="3946611741043634542">By continuing, you agree to Chrome’s <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />.</translation>
 <translation id="3950820424414687140">Sign in</translation>
+<translation id="3967822245660637423">Download complete</translation>
 <translation id="397583555483684758">Sync has stopped working</translation>
 <translation id="3988213473815854515">Location is allowed</translation>
 <translation id="3997476611815694295">Unimportant storage</translation>
@@ -259,7 +261,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4095146165863963773">Delete app data?</translation>
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
 <translation id="410351446219883937">Autoplay</translation>
-<translation id="411254640334432676">Download failed.</translation>
 <translation id="4113030288477039509">Managed by your administrator</translation>
 <translation id="4165986682804962316">Site settings</translation>
 <translation id="4170011742729630528">The service is not available; try again later.</translation>
@@ -277,7 +278,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Allowed</translation>
 <translation id="4307992518367153382">Basics</translation>
-<translation id="4334294535648607276">Download complete.</translation>
 <translation id="4351244548802238354">Close dialogue</translation>
 <translation id="4376501731284077108">Uncontrolled</translation>
 <translation id="4378154925671717803">Phone</translation>
@@ -335,12 +335,10 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5063480226653192405">Usage</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="510275257476243843">1 hour left</translation>
-<translation id="5107381076085091558">Download paused.</translation>
 <translation id="5127805178023152808">Sync is off</translation>
 <translation id="5131405117025179004">Edit saved account</translation>
 <translation id="5138299137310274655">This page is in <ph name="SOURCE_LANGUAGE" />. Translate it to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Clear stored data</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />Instant<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">This is a kid’s account</translation>
 <translation id="5161254044473106830">Title required</translation>
 <translation id="5164482624172255778">Would you like Google Chrome to offer to translate <ph name="LANGUAGE" /> pages from this site next time?</translation>
@@ -653,6 +651,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8719023831149562936">Can’t beam current tab</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8730621377337864115">Finished</translation>
+<translation id="8748850008226585750">Contents hidden</translation>
 <translation id="8812942424849541387">Control how this works in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883635517171802338">Block sites from showing pop-ups (recommended)</translation>
@@ -660,7 +659,6 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>
-<translation id="8872506776304248286">Open in app</translation>
 <translation id="8901170036886848654">No bookmarks found</translation>
 <translation id="8909135823018751308">Share…</translation>
 <translation id="8912362522468806198">Google Account</translation>

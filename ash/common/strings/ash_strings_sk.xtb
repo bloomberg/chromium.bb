@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">Odhlásiť všetkých</translation>
 <translation id="2297568595583585744">Stavový panel</translation>
 <translation id="2303600792989757991">Prepnúť prehľad okien</translation>
-<translation id="2372145515558759244">Prebieha synchronizácia aplikácií...</translation>
 <translation id="2391579633712104609">180 °</translation>
 <translation id="2429753432712299108">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Skôr ako žiadosti vyhoviete, overte, či sa na danom zariadení zobrazuje nasledujúci prístupový kľúč: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Vyskytla sa chyba</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">Batéria je zapojená do nabíjačky s nízkym výkonom. Nabíjanie batérie nemusí byť spoľahlivé.</translation>
 <translation id="2761704814324807722">Stavový panel, čas <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Hľadať</translation>
-<translation id="2805756323405976993">Aplikácie</translation>
 <translation id="2819276065543622893">Teraz prebehne odhlásenie.</translation>
 <translation id="2825619548187458965">Polička</translation>
 <translation id="2844169650293029770">Zariadenie USB-C (port vľavo vpredu)</translation>
@@ -110,6 +108,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="3866182280516392520">Adresa IPv6</translation>
 <translation id="3891340733213178823">Ak sa chcete odhlásiť, stlačte dvakrát kombináciu klávesov Ctrl+Shift+Q.</translation>
 <translation id="3892641579809465218">Interný displej</translation>
+<translation id="3893630138897523026">ChromeVox (hlasová spätná väzba)</translation>
 <translation id="3963445509666917109">Reproduktor (vnútorný)</translation>
 <translation id="3967919079500697218">Váš správca zakázal zaznamenávanie snímok obrazovky.</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
@@ -191,7 +190,6 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="6713285437468012787">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> bolo spárované a je k dispozícii pre všetkých používateľov. Párovanie môžete zrušiť pomocou ponuky Nastavenia.</translation>
 <translation id="6785414152754474415">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>
 <translation id="683971173229319003">Hľadať+L</translation>
-<translation id="68610848741840742">ChromeVox (hlasová spätná väzba)</translation>
 <translation id="6911468394164995108">Pripojiť k ďalšej...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Disk Google</translation>
@@ -216,6 +214,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="7561014039265304140">Obrazovka <ph name="DISPLAY_NAME" /> nepodporuje rozlíšenie <ph name="SPECIFIED_RESOLUTION" />. Rozlíšenie bolo zmenené na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Režim v doku</translation>
 <translation id="7580671184200851182">Prehrávajte rovnaký zvuk zo všetkých reproduktorov (monofónny zvuk)</translation>
+<translation id="7581273696622423628">Zúčastniť sa prieskumu</translation>
 <translation id="7593891976182323525">Hľadať alebo Shift</translation>
 <translation id="7649070708921625228">Pomocník</translation>
 <translation id="7692480393933218409">Nabíjajú sa pripojené zariadenia USB-C</translation>

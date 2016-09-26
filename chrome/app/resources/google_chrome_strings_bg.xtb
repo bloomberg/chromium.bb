@@ -36,7 +36,6 @@
 <translation id="1773601347087397504">Получаване на помощ за използването на Chrome OS</translation>
 <translation id="1818142563254268765">Chrome не можа да се актуализира до последната версия, така че пропускате невероятни нови функции и поправки за подобряване на сигурността. Налага се да актуализирате браузъра.</translation>
 <translation id="1877026089748256423">Chrome не е актуален</translation>
-<translation id="1924381329666691588">Google Chrome не може да се показва на този език.</translation>
 <translation id="2063848847527508675">Chrome OS трябва да се рестартира, за да приложи актуализацията.</translation>
 <translation id="2077129598763517140">Да се използва хардуерно ускорение, когато е налице</translation>
 <translation id="2084710999043359739">Добавяне</translation>
@@ -118,6 +117,7 @@
 <translation id="437002079035561265">Занапред компютърът няма да получава актуализации на Google Chrome, защото тази система Linux вече не се поддържа.</translation>
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="4458285410772214805">Моля, излезте от профила си и влезте отново, за да влезе в сила тази промяна.</translation>
+<translation id="4458462641685292929">Извършва се друго действие, свързано с Google Chrome. Моля, опитайте отново по-късно.</translation>
 <translation id="4480040274068703980">Chrome OS не можа да синхронизира данните ви поради грешка при влизане в профила.</translation>
 <translation id="4519152997629025674">Google Chrome може да използва <ph name="BEGIN_LINK" />уеб услуги<ph name="END_LINK" />, за да подобри сърфирането ви. В състояние сте да ги деактивирате по всяко време.</translation>
 <translation id="4561051373932531560">Google Chrome ви позволява да кликнете върху телефонен номер в мрежата и да се обадите до него със Skype!</translation>
@@ -130,6 +130,7 @@
 <translation id="4743926867934016338">Приемане и търсене</translation>
 <translation id="4751441238232965030">Този компютър скоро ще спре да получава актуализации за 32-битовата версия на Google Chrome. Моля, надстройте до 64-битовата версия на браузъра.</translation>
 <translation id="4754614261631455953">Google Chrome Canary (входящ трафик за mDNS)</translation>
+<translation id="4771048833395599659">Chrome блокира този файл, тъй като може да е опасен.</translation>
 <translation id="4794050651896644714">Подробностите да се запазват в Chrome</translation>
 <translation id="4891791193823137474">Google Chrome да се изпълнява на заден план</translation>
 <translation id="4921569541910214635">Споделяте компютър? Вече можете да настроите Chrome точно по свой вкус.</translation>
@@ -159,7 +160,6 @@
 <translation id="5563479599352954471">Търсене с едно докосване</translation>
 <translation id="5566025111015594046">Google Chrome (входящ трафик за mDNS)</translation>
 <translation id="5620765574781326016">Научете за темите в уебсайтовете, без да излизате от страницата.</translation>
-<translation id="5637867606963802593">Chrome OS не може да се показва на този език.</translation>
 <translation id="568643307450491754">Намерете отметките си в менюто на Chrome или в лентата на отметките.</translation>
 <translation id="573759479754913123">Всичко за Chrome OS</translation>
 <translation id="5749068826913805084">Chrome се нуждае от достъп до хранилището, за да изтегля файлове.</translation>
@@ -186,6 +186,7 @@
 <translation id="6400076122676892962">Този компютър скоро ще спре да получава актуализации на Google Chrome, тъй като Mac OS X 10.6, 10.7 и 10.8 вече няма да се поддържат.</translation>
 <translation id="6470176598693778404">От сега нататък този компютър няма да получава актуализации на Google Chrome, тъй като Mac OS X 10.6, 10.7 и 10.8 вече не се поддържат.</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{В момента се изтегля файл. Искате ли да анулирате изтеглянето и да излезете от Google Chrome?}other{В момента се изтеглят # файла. Искате ли да анулирате изтеглянията и да излезете от Google Chrome?}}</translation>
+<translation id="6566149418543181476">Google Chrome се актуализира (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">Използвате <ph name="PROFILE_EMAIL" /> за синхронизиране на нещата си в Chrome. За да актуализирате съответното предпочитание или да ползвате браузъра без профил в Google, посетете <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6600954340915313787">Копирано в Chrome</translation>
 <translation id="6626317981028933585">За съжаление настройките на Mozilla Firefox са недостъпни, докато този браузър работи. За да импортирате тези настройки в Google Chrome, запазете работата си и затворете всички прозорци на Firefox. След това кликнете върху „Напред”.</translation>
@@ -193,6 +194,7 @@
 <translation id="6676384891291319759">Достъп до интернет</translation>
 <translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="683440813066116847">Правило за Google Chrome Canary за допускане на входящия трафик за mDNS.</translation>
+<translation id="686561893457936865">Използвайте Chrome навсякъде</translation>
 <translation id="6883876366448858277">изпраща дума и текста около нея до Google Търсене, извеждайки определения, снимки и други резултати от търсенето.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">Устройството ви се актуализира...</translation>
@@ -253,7 +255,9 @@
 <translation id="8255190535488645436">Google Chrome използва камерата и микрофона ви.</translation>
 <translation id="8286862437124483331">Google Chrome опитва да покаже паролите. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="8290100596633877290">О, не! Google Chrome претърпя срив. Да се стартира ли отново сега?</translation>
+<translation id="8342675569599923794">Chrome блокира този файл, тъй като е опасен.</translation>
 <translation id="8406086379114794905">Помогнете за подобряването на Chrome</translation>
+<translation id="8455999171311319804">По избор: Помогнете за подобряването на Chrome OS, като автоматично изпращате до Google данни за диагностиката и употребата.</translation>
 <translation id="853189717709780425">Влизате с управляван профил и давате на администратора му контрол над потребителския си профил в Google Chrome. Данните ви в браузъра, като например приложения, отметки, история, пароли и други настройки, ще се свържат за постоянно с/ъс <ph name="USER_NAME" />. Ще можете да ги изтриете чрез таблото за управление на Google Профили, но няма да сте в състояние да ги свържете с друг профил.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Стартов панел за приложения в ранната версия на Chrome</translation>

@@ -34,7 +34,6 @@
 <translation id="1773601347087397504">รับความช่วยเหลือเกี่ยวกับการใช้ Chrome OS</translation>
 <translation id="1818142563254268765">Chrome ไม่สามารถอัปเดตตัวเองเป็นเวอร์ชันล่าสุดได้ คุณกำลังพลาดคุณลักษณะเจ๋งๆ และการปรับปรุงความปลอดภัย คุณจำเป็นต้องอัปเดต Chrome</translation>
 <translation id="1877026089748256423">Chrome ล้าสมัย</translation>
-<translation id="1924381329666691588">Google Chrome ไม่สามารถแสดงในภาษานี้</translation>
 <translation id="2063848847527508675">ต้องรีสตาร์ท Chrome OS เพื่อใช้การอัปเดต</translation>
 <translation id="2077129598763517140">ใช้การเร่งฮาร์ดแวร์เมื่อสามารถใช้ได้</translation>
 <translation id="2084710999043359739">เพิ่มลงใน Chrome</translation>
@@ -117,6 +116,7 @@
 <translation id="437002079035561265">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome อีกแล้วเนื่องจากไม่มีการสนับสนุนระบบ Linux นี้อีกต่อไป</translation>
 <translation id="4407807842708586359">ระบบปฏิบัติการ Google Chrome</translation>
 <translation id="4458285410772214805">โปรดออกจากระบบ และลงชื่อเข้าใช้อีกครั้งเพื่อให้การเปลี่ยนแปลงนี้มีผล</translation>
+<translation id="4458462641685292929">Google Chrome กำลังดำเนินการอย่างอื่นอยู่ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="4480040274068703980">Chrome OS ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากเกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
 <translation id="4519152997629025674">Google Chrome อาจใช้<ph name="BEGIN_LINK" />บริการเว็บ<ph name="END_LINK" />เพื่อปรับปรุงประสบการณ์ท่องเว็บของคุณ คุณสามารถเลือกปิดใช้บริการดังกล่าวได้ทุกเมื่อ</translation>
 <translation id="4561051373932531560">Google Chrome ทำให้คุณสามารถคลิกที่หมายเลขโทรศัพท์บนเว็บแล้วโทรหาด้วย Skype!</translation>
@@ -129,6 +129,7 @@
 <translation id="4743926867934016338">ยอมรับและค้นหา</translation>
 <translation id="4751441238232965030">ในไม่ช้านี้คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome แบบ 32 บิตอีกแล้ว โปรดอัปเกรดเป็น Google Chrome แบบ 64 บิต</translation>
 <translation id="4754614261631455953">Google Chrome Canary (mDNS-In)</translation>
+<translation id="4771048833395599659">ไฟล์นี้อาจเป็นอันตราย Chrome จึงบล็อกไว้</translation>
 <translation id="4794050651896644714">บันทึกรายละเอียดใน Chrome</translation>
 <translation id="4891791193823137474">ให้ Google Chrome ทำงานในเบื้องหลัง</translation>
 <translation id="4921569541910214635">หากต้องการแชร์คอมพิวเตอร์ ตอนนี้คุณสามารถตั้งค่า Chrome ในแบบที่คุณชอบได้แล้ว</translation>
@@ -158,7 +159,6 @@
 <translation id="5563479599352954471">ค้นหาด้วยการแตะเพียงครั้งเดียว</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="5620765574781326016">เรียนรู้เกี่ยวกับหัวข้อต่างๆ บนเว็บไซต์โดยไม่ต้องออกจากหน้า</translation>
-<translation id="5637867606963802593">Chrome OS ไม่สามารถแสดงในภาษานี้</translation>
 <translation id="568643307450491754">ค้นหาบุ๊กมาร์กของคุณในเมนู Chrome หรือในแถบบุ๊กมาร์ก</translation>
 <translation id="573759479754913123">เกี่ยวกับ Chrome OS</translation>
 <translation id="5749068826913805084">Chrome ต้องสามารถเข้าถึงพื้นที่เก็บข้อมูลเพื่อดาวน์โหลดไฟล์</translation>
@@ -185,6 +185,7 @@
 <translation id="6400076122676892962">คอมพิวเตอร์เครื่องนี้จะหยุดรับการอัปเดต Google Chrome ในอีกไม่ช้าเพราะระบบจะไม่รองรับ Mac OS X 10.6, 10.7 และ 10.8 อีกต่อไป</translation>
 <translation id="6470176598693778404">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดต Google Chrome อีกต่อไปเพราะระบบไม่รองรับ Mac OS X 10.6, 10.7 และ 10.8 แล้ว</translation>
 <translation id="6477562832195530369">{NUM_DOWNLOAD,plural, =1{ขณะนี้อยู่ระหว่างการดาวน์โหลด 1 รายการ คุณต้องการยกเลิกการดาวน์โหลดและออกจาก Google Chrome ไหม}other{ขณะนี้อยู่ระหว่างการดาวน์โหลด # รายการ คุณต้องการยกเลิกการดาวน์โหลดและออกจาก Google Chrome ไหม}}</translation>
+<translation id="6566149418543181476">กำลังอัปเดต Google Chrome (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6598387184982954187">คุณกำลังใช้ <ph name="PROFILE_EMAIL" /> ในการซิงค์ข้อมูลใน Chrome หากต้องการอัปเดตค่ากำหนดการซิงค์หรือใช้ Chrome โดยไม่มีบัญชี Google โปรดไปที่ <ph name="SETTINGS_LINK" /></translation>
 <translation id="6600954340915313787">คัดลอกไปยัง Chrome แล้ว</translation>
 <translation id="6626317981028933585">ขออภัย เราไม่สามารถเรียกข้อมูลการตั้งค่าของ Mozilla Firefox ได้ขณะที่เบราว์เซอร์ยังทำงานอยู่ หากต้องการนำเข้าข้อมูลการตั้งค่ามาที่ Google Chrome โปรดบันทึกงานที่คุณทำอยู่แล้วปิดหน้าต่าง Firefox ทั้งหมด จากนั้นคลิกดำเนินการต่อ</translation>
@@ -192,6 +193,7 @@
 <translation id="6676384891291319759">เข้าถึงอินเทอร์เน็ต</translation>
 <translation id="6757767188268205357">อย่ากวนใจฉัน</translation>
 <translation id="683440813066116847">กฎขาเข้าสำหรับ Google Chrome Canary เพื่ออนุญาตการเข้าชมแบบ mDNS</translation>
+<translation id="686561893457936865">ใช้ Chrome ได้ทุกที่</translation>
 <translation id="6883876366448858277">ส่งคำและบริบทโดยรอบไปยัง Google Search เพื่อแสดงคำจำกัดความ รูปภาพ และผลการค้นหาอื่นๆ</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6970811910055250180">กำลังอัปเดตอุปกรณ์ของคุณ...</translation>
@@ -252,7 +254,9 @@
 <translation id="8255190535488645436">Google Chrome ใช้กล้องและไมโครโฟนของคุณอยู่</translation>
 <translation id="8286862437124483331">Google Chrome กำลังพยายามแสดงรหัสผ่าน พิมพ์รหัสผ่าน Windows ของคุณเพื่อแสดงรหัสผ่าน</translation>
 <translation id="8290100596633877290">อ๊ะ! Google Chrome ขัดข้อง เปิดใหม่ตอนนี้หรือไม่</translation>
+<translation id="8342675569599923794">ไฟล์นี้อันตราย Chrome จึงบล็อกไว้</translation>
 <translation id="8406086379114794905">ช่วยปรับปรุง Chrome ให้ดีขึ้น</translation>
+<translation id="8455999171311319804">ไม่บังคับ: ช่วยทำให้ Chrome OS ดียิ่งขึ้นโดยการส่งข้อมูลการวินิจฉัยและการใช้งานไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="853189717709780425">คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่มีการจัดการ และให้อำนาจผู้ดูแลระบบของบัญชีดังกล่าวในการควบคุมโปรไฟล์ Google Chrome ของคุณ ข้อมูล Chrome เช่น แอป บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และการตั้งค่าอื่นๆ จะถูกผูกติดกับ <ph name="USER_NAME" /> อย่างถาวร คุณจะสามารถลบข้อมูลนี้ผ่านแดชบอร์ด Google Accounts ได้ แต่คุณจะไม่สามารถเชื่อมโยงข้อมูลนี้กับบัญชีอื่นได้</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Chrome App Launcher Canary</translation>

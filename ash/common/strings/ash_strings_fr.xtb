@@ -47,7 +47,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="2268813581635650749">Déconnecter tous les utilisateurs</translation>
 <translation id="2297568595583585744">Barre d'état</translation>
 <translation id="2303600792989757991">Activer/Désactiver la vue d'ensemble des fenêtres</translation>
-<translation id="2372145515558759244">Synchronisation des applications…</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Une erreur s'est produite.</translation>
@@ -61,7 +60,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
 <translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
-<translation id="2805756323405976993">Applications</translation>
 <translation id="2819276065543622893">Vous allez être déconnecté maintenant.</translation>
 <translation id="2825619548187458965">Étagère</translation>
 <translation id="2844169650293029770">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'avant)</translation>
@@ -110,6 +108,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="3866182280516392520">Adresse IPv6</translation>
 <translation id="3891340733213178823">Appuyez deux fois sur Ctrl + Maj + Q pour vous déconnecter.</translation>
 <translation id="3892641579809465218">Affichage interne</translation>
+<translation id="3893630138897523026">ChromeVox (commentaires audio)</translation>
 <translation id="3963445509666917109">Haut-parleur (interne)</translation>
 <translation id="3967919079500697218">Votre administrateur a désactivé la fonctionnalité de capture d'écran.</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
@@ -191,7 +190,6 @@ Appuyez sur Maj + Alt pour en utiliser un autre.</translation>
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="683971173229319003">Recherche+L</translation>
-<translation id="68610848741840742">ChromeVox (commentaires audio)</translation>
 <translation id="6911468394164995108">Autre réseau…</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION" />. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7573962313813535744">Mode Dock</translation>
 <translation id="7580671184200851182">Lire le même contenu audio sur toutes les enceintes (son mono)</translation>
+<translation id="7581273696622423628">Participer à l'enquête</translation>
 <translation id="7593891976182323525">Recherche ou Maj</translation>
 <translation id="7649070708921625228">Aide</translation>
 <translation id="7692480393933218409">Charge des appareils USB de type C connectés</translation>

@@ -733,6 +733,9 @@
 <translation id="3322771899429619102">可让您设置一个网址格式列表，以便指定哪些网站可以使用密钥生成功能。对于同时还包含在“KeygenBlockedForUrls”中的网址格式，系统将应用“KeygenBlockedForUrls”政策而忽略此政策。
 
           如果此政策未设置，系统将根据“DefaultKeygenSetting”政策（如果此政策已设置）或用户的个人配置为所有网站使用全局默认值。</translation>
+<translation id="3322902067538988734">如果此政策设为 true，用户必须先使用其个人资料登录 <ph name="PRODUCT_NAME" />，然后才能使用该浏览器。此外，BrowserGuestModeEnabled 的默认值将设为 false。
+
+      如果此政策设为 false 或未配置，用户无需登录 <ph name="PRODUCT_NAME" /> 即可使用该浏览器。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="3417418267404583991">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME" />将启用访客登录。访客登录是匿名用户会话，不需要密码。
 
@@ -885,6 +888,11 @@
 
       如果未设置此政策，将可以使用 SPDY 协议。</translation>
 <translation id="3891357445869647828">启用 JavaScript</translation>
+<translation id="3891953007921334498">停用开发者工具和 JavaScript 控制台。
+
+      如果您启用此设置，用户就无法再访问开发者工具和查看网站元素了。用于开启开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单或上下文菜单条目都会停用。
+
+      如果将此选项设为停用或未设置此选项，用户即可使用开发者工具和 JavaScript 控制台。</translation>
 <translation id="3907986150060929099">为公用自助终端设置建议的语言区域</translation>
 <translation id="391531815696899618">当此政策设为 True 时，在 <ph name="PRODUCT_OS_NAME" />的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，系统不会将任何数据上传到 Google 云端硬盘。
 
@@ -969,6 +977,7 @@
 
           如果此政策未设置，系统将根据“DefaultKeygenSetting”政策（如果此政策已设置）或用户的个人配置为所有网站使用全局默认值。</translation>
 <translation id="4250680216510889253">否</translation>
+<translation id="4272136423200695428">为 <ph name="PRODUCT_NAME" /> 启用强制登录功能。</translation>
 <translation id="427632463972968153">指定通过 POST 执行图片搜索时使用的参数。该参数由以英文逗号分隔的名称/值对组成。如果值为模板参数（例如上例中的 {imageThumbnail}），那么系统会将其替换成真正的缩略图数据。
 
           此为可选政策。如果未设置此政策，系统将使用 GET 方法发送图片搜索请求。

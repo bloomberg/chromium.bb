@@ -286,6 +286,7 @@
 <translation id="8548209692293300397">आपने पूर्व में <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) के रूप में प्रवेश किया था.  उस खाते में अपने कंप्‍यूटर एक्‍सेस करने के लिए, उस खाते से <ph name="LINK_BEGIN" />Google Chrome में प्रवेश करें<ph name="LINK_END" /> और Chrome दूरस्‍थ डेस्‍कटॉप को पुन: इंस्‍टॉल करें.</translation>
 <translation id="8642984861538780905">ठीक</translation>
 <translation id="8712909229180978490">मैं Google डिस्क में अपनी सहेजी गई फ़ाइलों को ऑनलाइन नहीं देख सकता/सकती.</translation>
+<translation id="8743328882720071828">क्या आप <ph name="CLIENT_USERNAME" /> को अपना कंप्यूटर देखने और नियंत्रित करने देना चाहते हैं?</translation>
 <translation id="8759753423332885148">अधिक जानें.</translation>
 <translation id="8791202241915690908">Chromoting होस्ट इंस्टॉलर डाउनलोड करें</translation>
 <translation id="894763922177556086">अच्छा</translation>

@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Bookmark yang tersimpan di perangkat lainnya akan muncul di sini.</translation>
 <translation id="1121094540300013208">Laporan kerusakan dan penggunaan</translation>
 <translation id="1137305377394488060">satu jam terakhir</translation>
+<translation id="1146678959555564648">Masuki Realitas Maya</translation>
 <translation id="1178581264944972037">Jeda</translation>
 <translation id="1181037720776840403">Hapus</translation>
 <translation id="1197267115302279827">Pindahkan bookmark</translation>
@@ -247,6 +248,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="393697183122708255">Tidak ada penelusuran suara yang aktif</translation>
 <translation id="3946611741043634542">Dengan melanjutkan, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Privasi<ph name="END_LINK2" /> Chrome.</translation>
 <translation id="3950820424414687140">Masuk</translation>
+<translation id="3967822245660637423">Unduhan selesai</translation>
 <translation id="397583555483684758">Sinkronisasi berhenti berfungsi</translation>
 <translation id="3988213473815854515">Lokasi diaktifkan</translation>
 <translation id="3997476611815694295">Penyimpanan tidak penting</translation>
@@ -259,7 +261,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4095146165863963773">Hapus data aplikasi?</translation>
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan kerusakan ke Google.</translation>
 <translation id="410351446219883937">Putar otomatis</translation>
-<translation id="411254640334432676">Unduhan gagal.</translation>
 <translation id="4113030288477039509">Dikelola oleh administrator</translation>
 <translation id="4165986682804962316">Setelan situs</translation>
 <translation id="4170011742729630528">Layanan tidak tersedia; coba lagi nanti.</translation>
@@ -277,7 +278,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4275663329226226506">Media</translation>
 <translation id="4278390842282768270">Diizinkan</translation>
 <translation id="4307992518367153382">Dasar-Dasar</translation>
-<translation id="4334294535648607276">Unduhan selesai.</translation>
 <translation id="4351244548802238354">Tutup dialog</translation>
 <translation id="4376501731284077108">Tidak terkontrol</translation>
 <translation id="4378154925671717803">Telepon</translation>
@@ -335,12 +335,10 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5063480226653192405">Penggunaan</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="510275257476243843">1 jam lagi</translation>
-<translation id="5107381076085091558">Unduhan dijeda.</translation>
 <translation id="5127805178023152808">Sinkronisasi nonaktif</translation>
 <translation id="5131405117025179004">Edit akun tersimpan</translation>
 <translation id="5138299137310274655">Laman ini berbahasa <ph name="SOURCE_LANGUAGE" />. Terjemahkan ke <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Hapus data tersimpan</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />Instan<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Ini akun anak</translation>
 <translation id="5161254044473106830">Perlu judul</translation>
 <translation id="5164482624172255778">Ingin Google Chrome menawarkan untuk menerjemahkan laman berbahasa <ph name="LANGUAGE" /> dari situs ini saat Anda mengunjunginya lagi?</translation>
@@ -655,6 +653,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="8719023831149562936">Tidak dapat memancarkan tab ini</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
 <translation id="8730621377337864115">Selesai</translation>
+<translation id="8748850008226585750">Konten tersembunyi</translation>
 <translation id="8812942424849541387">Kontrol cara kerjanya di <ph name="BEGIN_LINK1" />Setelan<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Bookmark</translation>
 <translation id="883635517171802338">Memblokir situs agar tidak menampilkan munculan (disarankan)</translation>
@@ -662,7 +661,6 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Penyimpanan</translation>
-<translation id="8872506776304248286">Buka di aplikasi</translation>
 <translation id="8901170036886848654">Tidak ditemukan bookmark</translation>
 <translation id="8909135823018751308">Bagikan...</translation>
 <translation id="8912362522468806198">Akun Google</translation>

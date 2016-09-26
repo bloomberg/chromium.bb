@@ -47,7 +47,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="2268813581635650749">Logi kõik kasutajad välja</translation>
 <translation id="2297568595583585744">Olekusalv</translation>
 <translation id="2303600792989757991">Akna ülevaate sisse- ja väljalülitamine</translation>
-<translation id="2372145515558759244">Rakenduste sünkroonimine ...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Enne nõustumist veenduge, et selles seadmes oleks kuvatud see parool: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Tekkis viga</translation>
@@ -61,7 +60,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="2727977024730340865">Ühendatud väikese energiakuluga laadijaga. Aku laadimine võib olla ebastabiilne.</translation>
 <translation id="2761704814324807722">Olekusalv, kellaaeg <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + otsinguklahv</translation>
-<translation id="2805756323405976993">Rakendused</translation>
 <translation id="2819276065543622893">Teid logitakse nüüd välja.</translation>
 <translation id="2825619548187458965">Riiul</translation>
 <translation id="2844169650293029770">C-tüüpi USB-seade (eesmine vasakpoolne port)</translation>
@@ -110,6 +108,7 @@ Tühistamiseks vajutage otsinguklahvi või tõstuklahvi</translation>
 <translation id="3866182280516392520">IPv6 aadress</translation>
 <translation id="3891340733213178823">Väljalogimiseks vajutage kaks korda klahvikombinatsiooni Ctrl + tõstuklahv + Q.</translation>
 <translation id="3892641579809465218">Sisemine kuva</translation>
+<translation id="3893630138897523026">ChromeVox (kõnena esitatud tagasiside)</translation>
 <translation id="3963445509666917109">Kõlar (sisemine)</translation>
 <translation id="3967919079500697218">Teie administraator on ekraanipiltide tegemise keelanud.</translation>
 <translation id="397105322502079400">Arvutamine ...</translation>
@@ -191,7 +190,6 @@ Selle muutmiseks vajutage klahve Tõstuklahv + Alt.</translation>
 <translation id="6713285437468012787">Bluetoothi seade „<ph name="DEVICE_NAME" />” on nüüd seotud ja saadaval kõikidele kasutajatele. Võite sidumise tühistada jaotises Seaded.</translation>
 <translation id="6785414152754474415">Aku on <ph name="PERCENTAGE" />% täis ja seda laetakse.</translation>
 <translation id="683971173229319003">Otsing + L</translation>
-<translation id="68610848741840742">ChromeVox (kõnena esitatud tagasiside)</translation>
 <translation id="6911468394164995108">Liitu muu võrguga ...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@ Tühistamiseks vajutage klahvikombinatsiooni Alt + otsinguklahv või tõstuklahv
 <translation id="7561014039265304140">Üksus <ph name="DISPLAY_NAME" /> ei toeta eraldusvõimet <ph name="SPECIFIED_RESOLUTION" />. Eraldusvõime muudeti tagasi väärtusele <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Dokkimisrežiim</translation>
 <translation id="7580671184200851182">Esita sama heli kõigist kõlaritest (monoheli)</translation>
+<translation id="7581273696622423628">Osalege küsitluses</translation>
 <translation id="7593891976182323525">Otsinguklahv või tõstuklahv</translation>
 <translation id="7649070708921625228">Abi</translation>
 <translation id="7692480393933218409">Ühendatud C-tüüpi USB-seadmete laadimine</translation>

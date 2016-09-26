@@ -15,6 +15,7 @@
 <translation id="1107591249535594099">Если флажок установлен, Chrome будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
 <translation id="1111153019813902504">Недавно в закладках</translation>
 <translation id="1113869188872983271">&amp;Отменить изменение порядка</translation>
+<translation id="1126551341858583091">Место на карте памяти: <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">В кеше политики ошибок не найдено</translation>
 <translation id="113188000913989374">Подтвердите действие на <ph name="SITE" />:</translation>
 <translation id="1132774398110320017">Настройки автозаполнения в Chrome...</translation>
@@ -111,6 +112,7 @@
 <translation id="2212735316055980242">Политика для устройства не найдена</translation>
 <translation id="2213606439339815911">Извлечение записей…</translation>
 <translation id="2230458221926704099">Чтобы устранить неполадки, проведите <ph name="BEGIN_LINK" />диагностику<ph name="END_LINK" /> подключения.</translation>
+<translation id="2239100178324503013">Отправить</translation>
 <translation id="225207911366869382">Это значение для данного правила больше не используется.</translation>
 <translation id="2262243747453050782">Ошибка HTTP</translation>
 <translation id="2282872951544483773">Недоступные расширения</translation>
@@ -288,6 +290,7 @@
 <translation id="3963721102035795474">Режим чтения</translation>
 <translation id="397105322502079400">Вычисление…</translation>
 <translation id="3973234410852337861">Сайт <ph name="HOST_NAME" /> заблокирован</translation>
+<translation id="40103911065039147">{URL_count,plural, =1{1 веб-страница поблизости}one{# веб-страница поблизости}few{# веб-страницы поблизости}many{# веб-страниц поблизости}other{# веб-страницы поблизости}}</translation>
 <translation id="4021036232240155012">DNS – это сетевая служба, преобразующая название сайта в IP-адрес.</translation>
 <translation id="4030383055268325496">&amp;Отменить добавление</translation>
 <translation id="404928562651467259">Внимание!</translation>
@@ -357,6 +360,7 @@
 <translation id="4880827082731008257">Искать в истории</translation>
 <translation id="4884656795097055129">Скоро здесь появятся другие статьи.</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
+<translation id="4914479371620770914">{URL_count,plural, =1{и ещё 1 веб-страница}one{и ещё # веб-страница}few{и ещё # веб-страницы}many{и ещё # веб-страниц}other{и ещё # веб-страницы}}</translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
 <translation id="4930497775425430760">Ваш родитель должен одобрить новые сайты, чтобы вы могли их посещать.</translation>
@@ -486,6 +490,7 @@
 <translation id="647261751007945333">Правила устройства</translation>
 <translation id="6489534406876378309">Начать загрузку сведений об ошибках</translation>
 <translation id="6529602333819889595">&amp;Повторить удаление</translation>
+<translation id="6534179046333460208">Интернет вокруг нас: рекомендации</translation>
 <translation id="6550675742724504774">Параметры</translation>
 <translation id="6593753688552673085">менее <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="6596325263575161958">Параметры шифрования</translation>
@@ -543,8 +548,10 @@
 <translation id="7269802741830436641">На этой странице обнаружена циклическая переадресация</translation>
 <translation id="7275334191706090484">Управляемые закладки</translation>
 <translation id="7298195798382681320">Рекомендованные</translation>
+<translation id="7309308571273880165"><ph name="CRASH_TIME" />: отчет о сбое сохранен, но ещё не загружен (пользователь запросил загрузку)</translation>
 <translation id="7334320624316649418">&amp;Повторить изменение порядка</translation>
 <translation id="733923710415886693">Сертификат сервера не проходил проверку.</translation>
+<translation id="7351800657706554155">Открыть сайт <ph name="SITE" /> сейчас нельзя, так как его сертификат отозван. Возможно, сбой вызван сетевой ошибкой или действиями злоумышленников. Сайт может заработать через некоторое время. <ph name="BEGIN_LEARN_MORE_LINK" />Подробнее…<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="7353601530677266744">Командная строка</translation>
 <translation id="7372973238305370288">результат поиска</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -642,12 +649,12 @@
 <translation id="8349305172487531364">Панель закладок</translation>
 <translation id="8363502534493474904">Отключите режим полета.</translation>
 <translation id="8364627913115013041">Не задано</translation>
+<translation id="8380941800586852976">Опасно</translation>
 <translation id="8412145213513410671">Сбои (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">Необходимо дважды ввести одну и ту же кодовую фразу.</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8433057134996913067">На большинстве сайтов будет выполнен выход из аккаунта.</translation>
 <translation id="8437238597147034694">&amp;Отменить перемещение</translation>
-<translation id="8459333855531264009">Не защищено</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 банковская карта}one{# банковская карта}few{# банковские карты}many{# банковских карт}other{# банковской карты}}</translation>
 <translation id="8488350697529856933">Объект применения</translation>
 <translation id="8498891568109133222">Превышено время ожидания ответа от сайта <ph name="HOST_NAME" />.</translation>
@@ -671,7 +678,6 @@
 <translation id="8741995161408053644">История просмотра также может храниться в вашем аккаунте Google: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Повторить удаление</translation>
 <translation id="8798099450830957504">По умолчанию</translation>
-<translation id="8803639129939845298">Защищено</translation>
 <translation id="8804164990146287819">Политика конфиденциальности</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="8834246243508017242">Включить автозаполнение контактов…</translation>
@@ -713,7 +719,6 @@
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">ОЧИСТИТЬ ФОРМУ</translation>
 <translation id="939736085109172342">Новая папка</translation>
-<translation id="943029900877297437">Чтобы использовать банковские карты, сохраненные в аккаунте Google, войдите в Chrome.</translation>
 <translation id="962701380617707048">Введите срок действия и CVC-код карты <ph name="CREDIT_CARD" /></translation>
 <translation id="969892804517981540">Официальная сборка</translation>
 <translation id="988159990683914416">Сборка для разработчиков</translation>

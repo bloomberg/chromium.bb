@@ -47,7 +47,6 @@
 <translation id="2268813581635650749">Изход за всички</translation>
 <translation id="2297568595583585744">Област на състоянието</translation>
 <translation id="2303600792989757991">Превключване на общия преглед на прозорците</translation>
-<translation id="2372145515558759244">Приложенията се синхронизират...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Преди да приемете, моля, уверете се, че на него се показва следният ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Възникна грешка</translation>
@@ -61,7 +60,6 @@
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
 <translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
-<translation id="2805756323405976993">Приложения</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>
 <translation id="2825619548187458965">Лавица</translation>
 <translation id="2844169650293029770">Устройство с USB-C (предният ляв порт)</translation>
@@ -110,6 +108,7 @@
 <translation id="3866182280516392520">IPv6 адрес</translation>
 <translation id="3891340733213178823">Натиснете два пъти „Ctrl+Shift+Q“ за изход.</translation>
 <translation id="3892641579809465218">Показване на вътрешна информация</translation>
+<translation id="3893630138897523026">ChromeVox (обратна връзка с говор)</translation>
 <translation id="3963445509666917109">Високоговорител (вътрешен)</translation>
 <translation id="3967919079500697218">Възможността за правене на екранни снимки е деактивирана от администратора ви.</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
@@ -191,7 +190,6 @@
 <translation id="6713285437468012787">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ е сдвоено и сега е налице за всички потребители. Може да премахнете това сдвояване посредством „Настройки“.</translation>
 <translation id="6785414152754474415">Батерията е <ph name="PERCENTAGE" />% пълна и се зарежда.</translation>
 <translation id="683971173229319003">търсене + L</translation>
-<translation id="68610848741840742">ChromeVox (обратна връзка с говор)</translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Диск</translation>
@@ -216,6 +214,7 @@
 <translation id="7561014039265304140">„<ph name="DISPLAY_NAME" />“ не поддържа разделителна способност от <ph name="SPECIFIED_RESOLUTION" />. Тя бе променена на <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Режим с докинг станция</translation>
 <translation id="7580671184200851182">Възпроизвеждане на един и същ звук през всички високоговорители (моно)</translation>
+<translation id="7581273696622423628">Участие в анкетата</translation>
 <translation id="7593891976182323525">„търсене“ или „Shift“</translation>
 <translation id="7649070708921625228">Помощ</translation>
 <translation id="7692480393933218409">Свързаните устройства с USB-C се зареждат</translation>

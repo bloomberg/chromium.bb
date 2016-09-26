@@ -47,7 +47,6 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="2268813581635650749">Log keluar semua</translation>
 <translation id="2297568595583585744">Dulang status</translation>
 <translation id="2303600792989757991">Togol gambaran keseluruhan tetingkap</translation>
-<translation id="2372145515558759244">Menyegerakkan aplikasi...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sebelum menerimanya, sila sahkan bahawa kekunci laluan ini dipaparkan pada peranti tersebut: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Ralat berlaku</translation>
@@ -61,7 +60,6 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="2727977024730340865">Dipalamkan pada pengecas berkuasa rendah. Pengecasan bateri mungkin tidak boleh diharapkan.</translation>
 <translation id="2761704814324807722">Dulang status, masa <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
-<translation id="2805756323405976993">Apl</translation>
 <translation id="2819276065543622893">Anda akan dilog keluar sekarang.</translation>
 <translation id="2825619548187458965">Rak</translation>
 <translation id="2844169650293029770">Peranti USB-C (port depan sebelah kiri)</translation>
@@ -109,6 +107,7 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="3866182280516392520">Alamat IPv6</translation>
 <translation id="3891340733213178823">Tekan Ctrl+Shift+Q dua kali untuk keluar.</translation>
 <translation id="3892641579809465218">Paparan Dalaman</translation>
+<translation id="3893630138897523026">ChromeVox (maklum balas dituturkan)</translation>
 <translation id="3963445509666917109">Pembesar Suara (Dalaman)</translation>
 <translation id="3967919079500697218">Keupayaan untuk mengambil tangkapan skrin telah dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="397105322502079400">Mengira...</translation>
@@ -190,7 +189,6 @@ Tekan Shift + Alt untuk menukar.</translation>
 <translation id="6713285437468012787">Peranti Bluetooth "<ph name="DEVICE_NAME" />" telah dipasangkan dan kini tersedia untuk semua pengguna. Anda boleh mengalih keluar pasangan ini menggunakan Tetapan.</translation>
 <translation id="6785414152754474415">Bateri <ph name="PERCENTAGE" />% penuh dan sedang dicas.</translation>
 <translation id="683971173229319003">Carian+L</translation>
-<translation id="68610848741840742">ChromeVox (Maklum balas pertuturan)</translation>
 <translation id="6911468394164995108">Sertai yang lain...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -215,6 +213,7 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> tidak menyokong <ph name="SPECIFIED_RESOLUTION" />. Resolusi telah ditukar kepada <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Mod dok</translation>
 <translation id="7580671184200851182">Mainkan audio yang sama melalui semua pembesar suara (audio mono)</translation>
+<translation id="7581273696622423628">Sertai tinjauan</translation>
 <translation id="7593891976182323525">Search atau Shift</translation>
 <translation id="7649070708921625228">Bantuan</translation>
 <translation id="7692480393933218409">Mengecas peranti USB-C yang disambungkan</translation>

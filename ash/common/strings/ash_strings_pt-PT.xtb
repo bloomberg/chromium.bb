@@ -47,7 +47,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="2268813581635650749">Terminar sessão de todos</translation>
 <translation id="2297568595583585744">Tabuleiro de estado</translation>
 <translation id="2303600792989757991">Ativar/desativar vista geral das janelas</translation>
-<translation id="2372145515558759244">A sincronizar aplicações...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Antes de aceitar, confirme que esta chave está indicada nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
@@ -61,7 +60,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="2727977024730340865">Ligado a um carregador de baixo consumo. O carregamento da bateria pode não ser fiável.</translation>
 <translation id="2761704814324807722">Tabuleiro do estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
-<translation id="2805756323405976993">Aplicações</translation>
 <translation id="2819276065543622893">A sessão será terminada agora.</translation>
 <translation id="2825619548187458965">Prateleira</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal do lado esquerdo)</translation>
@@ -110,6 +108,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="3866182280516392520">Endereço IPv6</translation>
 <translation id="3891340733213178823">Prima Ctrl+Shift+Q duas vezes para terminar sessão.</translation>
 <translation id="3892641579809465218">Ecrã interno</translation>
+<translation id="3893630138897523026">ChromeVox (respostas faladas)</translation>
 <translation id="3963445509666917109">Altifalante (interno)</translation>
 <translation id="3967919079500697218">A capacidade de criar capturas de ecrã foi desativada pelo seu administrador.</translation>
 <translation id="397105322502079400">A calcular...</translation>
@@ -191,7 +190,6 @@ Prima Shift + Alt para mudar.</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" foi sincronizado e está agora disponível para todos os utilizadores. Pode remover esta sincronização através das Definições.</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
 <translation id="683971173229319003">Pesquisa+L</translation>
-<translation id="68610848741840742">ChromeVox (respostas faladas)</translation>
 <translation id="6911468394164995108">Ligar-se a outra...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Modo ancorado</translation>
 <translation id="7580671184200851182">Reproduzir o mesmo áudio em todas as colunas (áudio mono)</translation>
+<translation id="7581273696622423628">Participar no inquérito</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7692480393933218409">A carregar os dispositivos USB-C ligados</translation>

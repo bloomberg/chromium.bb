@@ -47,7 +47,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2268813581635650749">Tanca la sessió de tots els usuaris</translation>
 <translation id="2297568595583585744">Safata d'estat</translation>
 <translation id="2303600792989757991">Commuta la visió general de la finestra</translation>
-<translation id="2372145515558759244">S'estan sincronitzant les aplicacions...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Abans d'acceptar, comproveu que aquesta clau d'accés es mostri al dispositiu: <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">S'ha produït un error</translation>
@@ -61,7 +60,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
 <translation id="2761704814324807722">Safata d'estat. Hora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Cerca</translation>
-<translation id="2805756323405976993">Aplicacions</translation>
 <translation id="2819276065543622893">Ara se us tancarà la sessió.</translation>
 <translation id="2825619548187458965">Prestatge</translation>
 <translation id="2844169650293029770">Dispositiu USB-C (port frontal esquerre)</translation>
@@ -110,6 +108,7 @@ Premeu Cerca o Maj per cancel·lar.</translation>
 <translation id="3866182280516392520">Adreça IPv6</translation>
 <translation id="3891340733213178823">Premeu Ctrl+Maj+Q dues vegades per tancar la sessió.</translation>
 <translation id="3892641579809465218">Pantalla interna</translation>
+<translation id="3893630138897523026">ChromeVox (comentaris de veu)</translation>
 <translation id="3963445509666917109">Altaveu (intern)</translation>
 <translation id="3967919079500697218">L'administrador ha desactivat l'opció per fer captures de pantalla.</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
@@ -191,7 +190,6 @@ Premeu Maj+Alt per canviar-lo.</translation>
 <translation id="6713285437468012787">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" s'ha emparellat i ja està disponible per a tots els usuaris. Podeu eliminar l'emparellament a la Configuració.</translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE" />% i s'està carregant.</translation>
 <translation id="683971173229319003">Cerca + L</translation>
-<translation id="68610848741840742">ChromeVox (comentaris de veu)</translation>
 <translation id="6911468394164995108">Connecta't a una altra xarxa...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -216,6 +214,7 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> no admet <ph name="SPECIFIED_RESOLUTION" />. S'ha canviat la resolució per <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7573962313813535744">Mode acoblat</translation>
 <translation id="7580671184200851182">Reprodueix el mateix àudio per tots els altaveus (àudio mono)</translation>
+<translation id="7581273696622423628">Vull respondre a l'enquesta</translation>
 <translation id="7593891976182323525">Cerca o Maj</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7692480393933218409">S'estan carregant els dispositius USB-C connectats</translation>

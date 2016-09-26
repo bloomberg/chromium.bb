@@ -47,7 +47,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2268813581635650749">Log alle ud</translation>
 <translation id="2297568595583585744">Statusbakke</translation>
 <translation id="2303600792989757991">Skift vinduesoversigt</translation>
-<translation id="2372145515558759244">Synkroniserer apps...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse. Inden du accepterer, skal du bekræfte, at denne adgangsnøgle er vist på den pågældende enhed: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Der opstod en fejl</translation>
@@ -61,7 +60,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2727977024730340865">Tilsluttet en oplader med lav kraft. Batteriopladningen er muligvis ikke pålidelig.</translation>
 <translation id="2761704814324807722">Statusbakke, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Søg</translation>
-<translation id="2805756323405976993">Apps</translation>
 <translation id="2819276065543622893">Du bliver logget ud nu.</translation>
 <translation id="2825619548187458965">Hylde</translation>
 <translation id="2844169650293029770">USB-C-enhed (porten foran i venstre side)</translation>
@@ -110,6 +108,7 @@ Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="3866182280516392520">IPv6-adresse</translation>
 <translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
 <translation id="3892641579809465218">Intern skærm</translation>
+<translation id="3893630138897523026">ChromeVox (talefeedback)</translation>
 <translation id="3963445509666917109">Højttaler (indbygget)</translation>
 <translation id="3967919079500697218">Din administrator har deaktiveret muligheden for at tage skærmbilleder.</translation>
 <translation id="397105322502079400">Beregner...</translation>
@@ -191,7 +190,6 @@ Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="6713285437468012787">Bluetooth-enheden "<ph name="DEVICE_NAME" />" er blevet parret og er nu tilgængelig for alle brugere, Du kan fjerne denne parring i Indstillinger.</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % opladet og oplades nu.</translation>
 <translation id="683971173229319003">Søg+L</translation>
-<translation id="68610848741840742">ChromeVox (talefeedback)</translation>
 <translation id="6911468394164995108">Vælg et andet...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drev</translation>
@@ -216,6 +214,7 @@ Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" />. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Tilstanden Tilsluttet dockingstation</translation>
 <translation id="7580671184200851182">Afspil den samme lyd via alle højttalere (monolyd)</translation>
+<translation id="7581273696622423628">Deltag i undersøgelsen</translation>
 <translation id="7593891976182323525">Søg eller Shift</translation>
 <translation id="7649070708921625228">Hjælp</translation>
 <translation id="7692480393933218409">Oplader tilsluttede USB-C-enheder</translation>

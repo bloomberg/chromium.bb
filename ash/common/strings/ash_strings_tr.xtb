@@ -47,7 +47,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="2268813581635650749">Tüm kullanıcıların oturumunu kapat</translation>
 <translation id="2297568595583585744">Durum tepsisi</translation>
 <translation id="2303600792989757991">Pencere genel bakışını değiştir</translation>
-<translation id="2372145515558759244">Uygulamalar senkronize ediliyor...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor. Kabul etmeden önce şu cihazda gösterilen bu parolanın gösterildiğini onaylayın: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Bir hata oluştu</translation>
@@ -61,7 +60,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="2727977024730340865">Düşük güçlü bir şarj cihazına takıldı. Şarj durumu güvenilir olmayabilir.</translation>
 <translation id="2761704814324807722">Durum tepsisi, saat: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Arama</translation>
-<translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2819276065543622893">Şimdi çıkış yapacaksınız.</translation>
 <translation id="2825619548187458965">Raf</translation>
 <translation id="2844169650293029770">USB-C cihaz (sol ön bağlantı noktası)</translation>
@@ -110,6 +108,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="3866182280516392520">IPv6 Adresi</translation>
 <translation id="3891340733213178823">Oturumu kapatmak için Ctrl+ÜstKrktr+Q tuşlarına iki defa basın.</translation>
 <translation id="3892641579809465218">Dahili Ekran</translation>
+<translation id="3893630138897523026">ChromeVox (sesli geri bildirim)</translation>
 <translation id="3963445509666917109">Hoparlör (Dahili)</translation>
 <translation id="3967919079500697218">Ekran görüntüsü alabilme işlevi yöneticiniz tarafından devre dışı bırakılmıştır.</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
@@ -192,7 +191,6 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşlendi ve artık tüm kullanıcılar tarafından kullanılabilir. Bu eşlemeyi Ayarlar'ı kullanarak kaldırabilirsiniz.</translation>
 <translation id="6785414152754474415">Pil %<ph name="PERCENTAGE" /> dolu ve şarj oluyor.</translation>
 <translation id="683971173229319003">Ara+L</translation>
-<translation id="68610848741840742">ChromeVox (Sesli geri bildirim)</translation>
 <translation id="6911468394164995108">Başka ağa katıl...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -217,6 +215,7 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> çözünürlüğünü desteklemiyor. Çözünürlük <ph name="FALLBACK_RESOLUTION" /> olarak değiştirildi</translation>
 <translation id="7573962313813535744">Yuva modu</translation>
 <translation id="7580671184200851182">Tüm hoparlörlerden aynı sesi çal (mono ses)</translation>
+<translation id="7581273696622423628">Ankete katıl</translation>
 <translation id="7593891976182323525">Arama veya Üst Karakter</translation>
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7692480393933218409">Bağlı USB-C cihazlar şarj ediliyor</translation>

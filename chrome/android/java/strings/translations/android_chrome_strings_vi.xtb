@@ -8,6 +8,7 @@
 <translation id="1111673857033749125">Dấu trang được lưu trên thiết bị khác của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="1121094540300013208">Báo cáo sử dụng và sự cố</translation>
 <translation id="1137305377394488060">giờ trước</translation>
+<translation id="1146678959555564648">Nhập VR</translation>
 <translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1181037720776840403">Xóa</translation>
 <translation id="1197267115302279827">Di chuyển dấu trang</translation>
@@ -247,6 +248,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="393697183122708255">Không có tìm kiếm bằng giọng nói đã bật</translation>
 <translation id="3946611741043634542">Bằng cách tiếp tục, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ<ph name="END_LINK1" /> và <ph name="BEGIN_LINK2" />Thông báo bảo mật<ph name="END_LINK2" /> của Chrome.</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
+<translation id="3967822245660637423">Tải xuống hoàn tất</translation>
 <translation id="397583555483684758">Đồng bộ hóa đã ngừng hoạt động</translation>
 <translation id="3988213473815854515">Vị trí được cho phép</translation>
 <translation id="3997476611815694295">Bộ nhớ không quan trọng</translation>
@@ -259,7 +261,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4095146165863963773">Xóa dữ liệu ứng dụng?</translation>
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
 <translation id="410351446219883937">Tự động phát</translation>
-<translation id="411254640334432676">Tải xuống không thành công.</translation>
 <translation id="4113030288477039509">Do quản trị viên của bạn quản lý</translation>
 <translation id="4165986682804962316">Cài đặt trang web</translation>
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
@@ -277,7 +278,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="4275663329226226506">Truyền thông</translation>
 <translation id="4278390842282768270">Được cho phép</translation>
 <translation id="4307992518367153382">Cơ bản</translation>
-<translation id="4334294535648607276">Quá trình tải xuống hoàn tất.</translation>
 <translation id="4351244548802238354">Đóng hộp thoại</translation>
 <translation id="4376501731284077108">Không bị hạn chế</translation>
 <translation id="4378154925671717803">Điện thoại</translation>
@@ -335,12 +335,10 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="5063480226653192405">Sử dụng</translation>
 <translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
 <translation id="510275257476243843">Còn 1 giờ</translation>
-<translation id="5107381076085091558">Đã tạm dừng tải xuống.</translation>
 <translation id="5127805178023152808">Đồng bộ hóa đã tắt</translation>
 <translation id="5131405117025179004">Chỉnh sửa tài khoản đã lưu</translation>
 <translation id="5138299137310274655">Trang này bằng <ph name="SOURCE_LANGUAGE" />. Dịch sang <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="515227803646670480">Xóa dữ liệu đã lưu trữ</translation>
-<translation id="5152837197884366695"><ph name="APP_NAME" /> - <ph name="STYLE_BEGIN" />Tức thì<ph name="STYLE_END" /></translation>
 <translation id="5156656584247937086">Đây là tài khoản của trẻ em</translation>
 <translation id="5161254044473106830">Cần có tiêu đề</translation>
 <translation id="5164482624172255778">Bạn có muốn Google Chrome đề xuất dịch các trang <ph name="LANGUAGE" /> từ trang web này vào lần tiếp theo không?</translation>
@@ -655,6 +653,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8719023831149562936">Không thể chiếu tab hiện tại</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8730621377337864115">Hoàn tất</translation>
+<translation id="8748850008226585750">Nội dung bị ẩn</translation>
 <translation id="8812942424849541387">Kiểm soát cách hoạt động của ứng dụng này trong <ph name="BEGIN_LINK1" />Cài đặt<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Dấu trang</translation>
 <translation id="883635517171802338">Chặn trang web hiển thị cửa sổ bật lên (được đề xuất)</translation>
@@ -662,7 +661,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Tab <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">Dung lượng</translation>
-<translation id="8872506776304248286">Mở trong ứng dụng</translation>
 <translation id="8901170036886848654">Không tìm thấy dấu trang</translation>
 <translation id="8909135823018751308">Chia sẻ...</translation>
 <translation id="8912362522468806198">Tài khoản Google</translation>

@@ -287,6 +287,7 @@ remot de Chrome</translation>
 <translation id="8548209692293300397">Heu iniciat la sessió anteriorment com a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />). Per accedir als ordinadors d'aquest compte, <ph name="LINK_BEGIN" />inicieu la sessió a Google Chrome<ph name="LINK_END" /> amb el compte en qüestió i torneu a instal·lar l'escriptori remot de Chrome.</translation>
 <translation id="8642984861538780905">Suficient</translation>
 <translation id="8712909229180978490">No puc veure els meus fitxers desats en línia a Google Drive.</translation>
+<translation id="8743328882720071828">Vols permetre que <ph name="CLIENT_USERNAME" /> pugui veure i controlar l'ordinador?</translation>
 <translation id="8759753423332885148">Més informació</translation>
 <translation id="8791202241915690908">Baixeu l'instal·lador de l'amfitrió de Chromoting</translation>
 <translation id="894763922177556086">Bona</translation>

@@ -47,7 +47,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="2268813581635650749">Desconectar todos</translation>
 <translation id="2297568595583585744">Bandeja de status</translation>
 <translation id="2303600792989757991">Visão geral da janela de alternância</translation>
-<translation id="2372145515558759244">Sincronizando aplicativos...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Antes de aceitar, verifique se esta senha aparece no dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
@@ -61,7 +60,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="2727977024730340865">Conectado a um carregador de baixa potência. O carregamento da bateria pode não ser confiável.</translation>
 <translation id="2761704814324807722">Bandeja de status, tempo <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Pesquisar</translation>
-<translation id="2805756323405976993">Apps</translation>
 <translation id="2819276065543622893">Você sairá agora.</translation>
 <translation id="2825619548187458965">Estante</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (porta frontal da esquerda)</translation>
@@ -109,6 +107,7 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="3866182280516392520">Endereço IPv6</translation>
 <translation id="3891340733213178823">Pressione Ctrl+Shift+Q duas vezes para sair.</translation>
 <translation id="3892641579809465218">Display interno</translation>
+<translation id="3893630138897523026">ChromeVox (feedback falado)</translation>
 <translation id="3963445509666917109">Alto-falante (interno)</translation>
 <translation id="3967919079500697218">A capacidade de fazer capturas de tela foi desativada pelo seu administrador.</translation>
 <translation id="397105322502079400">Calculando...</translation>
@@ -190,7 +189,6 @@ Pressione Shift + Alt para alternar.</translation>
 <translation id="6713285437468012787">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" está pareado e disponível para todos os usuários. Para cancelar o pareamento, vá para "Configurações".</translation>
 <translation id="6785414152754474415">A bateria está <ph name="PERCENTAGE" />% cheia e carregando.</translation>
 <translation id="683971173229319003">Pesquisa+L</translation>
-<translation id="68610848741840742">ChromeVox (feedback falado)</translation>
 <translation id="6911468394164995108">Conectar-se a outra...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Google Drive</translation>
@@ -215,6 +213,7 @@ Pressione Ctrl+Alt+Z para desativar.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Modo ancorado</translation>
 <translation id="7580671184200851182">Reproduzir o mesmo áudio pelos alto-falantes (áudio mono)</translation>
+<translation id="7581273696622423628">Responder à pesquisa</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7692480393933218409">Carregando dispositivos USB-C conectados</translation>

@@ -47,7 +47,6 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="2268813581635650749">Ondoa wote</translation>
 <translation id="2297568595583585744">Treya ya hali</translation>
 <translation id="2303600792989757991">Geuza muhtasari wa dirisha</translation>
-<translation id="2372145515558759244">Programu zinasawazishwa...</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Kabla hujakubali, tafadhali thibitisha kwamba nenosiri hili linaonyeshwa kwenye kifaa hicho: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Hitilafu fulani imetokea</translation>
@@ -61,7 +60,6 @@ Bonyeza Shift + Alt ili kubadilisha.</translation>
 <translation id="2727977024730340865">Imechomekwa katika chaja ya kawi ya chini. Huenda kuchaji kwa betri hakutakuwa kuzuri.</translation>
 <translation id="2761704814324807722">Treya ya hali, saa <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Utafutaji</translation>
-<translation id="2805756323405976993">Programu</translation>
 <translation id="2819276065543622893">Utaondolewa kwenye akaunti sasa hivi.</translation>
 <translation id="2825619548187458965">Rafu</translation>
 <translation id="2844169650293029770">Kifaa cha USB-C (mlango wa upande wa kushoto mbele)</translation>
@@ -110,6 +108,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="3866182280516392520">Anwani ya IPv6</translation>
 <translation id="3891340733213178823">Bonyeza Ctrl+Shift+Q mara mbili ili kuondoka katika akaunti.</translation>
 <translation id="3892641579809465218">Onyesho la Ndani</translation>
+<translation id="3893630138897523026">ChromeVox (maoni yaliyotamkwa)</translation>
 <translation id="3963445509666917109">Spika (Ya ndani)</translation>
 <translation id="3967919079500697218">Uwezo wa kupiga picha za skrini umezimwa na msimamizi wako.</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
@@ -191,7 +190,6 @@ Bonyeza Shift + Alt ili kubadili.</translation>
 <translation id="6713285437468012787">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kimeoanishwa na sasa kinapatikana kwa watumiaji wote. Unaweza kuondoa uoanishaji huu kwa kutumia Mipangilio.</translation>
 <translation id="6785414152754474415">Betri imejaa <ph name="PERCENTAGE" />% na inachaji.</translation>
 <translation id="683971173229319003">Search+L</translation>
-<translation id="68610848741840742">ChromeVox (Maoni Yaliyotamkwa)</translation>
 <translation id="6911468394164995108">Jiunge na mwingine...</translation>
 <translation id="6915678159055240887">Chromebox</translation>
 <translation id="6979158407327259162">Hifadhi ya Google</translation>
@@ -215,6 +213,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> haitumiki kwa <ph name="SPECIFIED_RESOLUTION" />. Ubora ulibadilishwa hadi <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7573962313813535744">Hali ya kituo</translation>
 <translation id="7580671184200851182">Cheza sauti moja kupitia spika zote (sauti ya mono)</translation>
+<translation id="7581273696622423628">Shiriki katika utafiti</translation>
 <translation id="7593891976182323525">Utafutaji au Hama</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="7692480393933218409">Kinachaji vifaa vilivyounganishwa vya USB-C</translation>

@@ -804,6 +804,9 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 <translation id="3322771899429619102">Te permite establecer una lista de patrones de URL para especificar los sitios web que pueden utilizar la generación de claves. Si un patrón de URL está en KeygenBlockedForUrls, se anularán estas excepciones.
 
        Si no se establece esta política, se utilizará el valor general predeterminado de la política DefaultKeygenSetting (si está configurada) para todos los sitios web. De lo contrario, se utilizará la configuración personalizada que haya definido el usuario.</translation>
+<translation id="3322902067538988734">Si se asigna el valor true a esta política, el usuario tiene que iniciar sesión en <ph name="PRODUCT_NAME" /> con su perfil antes de utilizar el navegador. El valor predeterminado de BrowserGuestModeEnabled será false.
+
+      Si se asigna el valor false a esta política o no se configura, el usuario puede utilizar el navegador sin iniciar sesión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
 <translation id="3417418267404583991">Si esta política no se configura o el valor correspondiente se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no necesitan contraseña.
 
@@ -965,6 +968,11 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Si esta política no se configura, el protocolo SPDY estará disponible.</translation>
 <translation id="3891357445869647828">Habilitar JavaScript</translation>
+<translation id="3891953007921334498">Permite inhabilitar las Herramientas para Desarrolladores y la consola de JavaScript.
+
+      Si habilitas esta opción, no se podrá acceder a las Herramientas para Desarrolladores ni se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o de menús contextuales que permiten abrir las Herramientas para Desarrolladores o la consola de JavaScript.
+
+      Si se inhabilita esta opción o si no se establece, se podrán usar las Herramientas para Desarrolladores y la consola de JavaScript.</translation>
 <translation id="3907986150060929099">Establecer las configuraciones regionales recomendadas para una sesión pública</translation>
 <translation id="391531815696899618">Si se utiliza el valor true para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" />, en cuyo caso no se suben datos a Google Drive.
 
@@ -1066,6 +1074,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
             Si no se establece esta política, se utilizará el valor general predeterminado de la política DefaultKeygenSetting (si está configurada) para todos los sitios web. De lo contrario, se utilizará la configuración personalizada que haya definido el usuario.</translation>
 <translation id="4250680216510889253">No</translation>
+<translation id="4272136423200695428">Habilita el inicio de sesión forzoso de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="427632463972968153">Especifica los parámetros utilizados al hacer una búsqueda de imágenes con POST. Se compone de pares de valor/nombre separados por comas. Si un valor es un parámetro de plantilla, como {imageThumbnail} en el ejemplo anterior, se sustituirá por datos de miniaturas de imágenes reales.
 
           Esta política es opcional. Si no se establece, la solicitud de búsqueda de imágenes se enviará mediante el método GET.
