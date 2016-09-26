@@ -82,10 +82,10 @@ class CPPLanguage: public Language {
     DemangleResult result;
     if (status == 0) {
       result = kDemangleSuccess;
-      demangled->clear();
+      demangled->assign(demangled_c);
     } else {
       result = kDemangleFailure;
-      demangled->assign(demangled_c);
+      demangled->clear();
     }
 
     if (demangled_c) {
