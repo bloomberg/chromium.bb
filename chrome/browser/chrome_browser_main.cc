@@ -1457,7 +1457,8 @@ void SetupSyzyASAN() {
 
   // Enable the deferred free mechanism in the syzyasan module, which helps the
   // performance by deferring some work on the critical path to a background
-  // thread.
+  // thread. Note that this is now enabled by default, the feature is kept as a
+  // kill switch.
   if (base::FeatureList::IsEnabled(features::kSyzyasanDeferredFree)) {
     typedef VOID(WINAPI * SyzyasanEnableDeferredFreeThreadFunc)(VOID);
     bool success = false;
