@@ -16,6 +16,8 @@
             the generated style resources under res_v14_compatibility/values/ (crbug.com/243952).
     -->
 
+    <style name="LauncherTheme" parent="@android:style/Theme.NoDisplay" />
+
     <style name="MainTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:textColorHighlight">@color/text_highlight_color</item>
