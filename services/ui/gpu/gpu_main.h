@@ -5,6 +5,7 @@
 #ifndef SERVICES_UI_GPU_GPU_MAIN_H_
 #define SERVICES_UI_GPU_GPU_MAIN_H_
 
+#include "base/threading/thread.h"
 #include "gpu/ipc/service/gpu_init.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 
@@ -21,18 +22,31 @@ class GpuMain : public gpu::GpuSandboxHelper {
   GpuMain();
   ~GpuMain() override;
 
-  void Add(mojom::GpuServiceInternalRequest request);
+  void OnStart();
+  void Create(mojom::GpuServiceInternalRequest request);
 
   GpuServiceInternal* gpu_service() { return gpu_service_internal_.get(); }
 
  private:
+  void InitOnGpuThread();
+  void TearDownOnGpuThread();
+  void CreateOnGpuThread(mojom::GpuServiceInternalRequest request);
+
   // gpu::GpuSandboxHelper:
   void PreSandboxStartup() override;
   bool EnsureSandboxInitialized() override;
 
+  std::unique_ptr<gpu::GpuInit> gpu_init_;
   std::unique_ptr<GpuServiceInternal> gpu_service_internal_;
-  gpu::GpuInit gpu_init_;
   std::unique_ptr<gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory_;
+
+  // The main thread for GpuService.
+  base::Thread gpu_thread_;
+
+  // The thread that handles IO events for GpuService.
+  base::Thread io_thread_;
+
+  base::WeakPtrFactory<GpuMain> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMain);
 };

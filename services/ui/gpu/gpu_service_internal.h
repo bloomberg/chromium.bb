@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
@@ -65,10 +64,8 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   GpuServiceInternal(const gpu::GPUInfo& gpu_info,
                      gpu::GpuWatchdogThread* watchdog,
-                     gpu::GpuMemoryBufferFactory* memory_buffer_factory);
-
-  void BindOnGpuThread(mojom::GpuServiceInternalRequest request);
-  void TearDownGpuThread();
+                     gpu::GpuMemoryBufferFactory* memory_buffer_factory,
+                     scoped_refptr<base::SingleThreadTaskRunner> io_runner);
 
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromeHandle(
       gfx::GpuMemoryBufferHandle buffer_handle,
@@ -102,17 +99,10 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
       bool is_gpu_host,
       const EstablishGpuChannelCallback& callback) override;
 
-  // The main thread task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;
-
-  // The main thread for GpuService.
-  base::Thread gpu_thread_;
-
-  // The thread that handles IO events for GpuService.
-  base::Thread io_thread_;
 
   gpu::GpuWatchdogThread* watchdog_thread_;
 
@@ -123,7 +113,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 
-  // All of the following are created, used, and destroyed in the gpu thread.
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
   std::unique_ptr<media::MediaService> media_service_;
