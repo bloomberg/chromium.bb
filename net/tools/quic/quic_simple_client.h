@@ -140,8 +140,9 @@ class QuicSimpleClient : public QuicClientBase,
 
   // If the crypto handshake has not yet been confirmed, adds the data to the
   // queue of data to resend if the client receives a stateless reject.
-  // Otherwise, deletes the data.  Takes ownerership of |data_to_resend|.
-  void MaybeAddQuicDataToResend(QuicDataToResend* data_to_resend);
+  // Otherwise, deletes the data.
+  void MaybeAddQuicDataToResend(
+      std::unique_ptr<QuicDataToResend> data_to_resend);
 
   void set_bind_to_address(const IPAddress& address) {
     bind_to_address_ = address;
@@ -247,12 +248,9 @@ class QuicSimpleClient : public QuicClientBase,
   // Body of most recent response.
   std::string latest_response_body_;
 
-  // Keeps track of any data sent before the handshake.
-  std::vector<QuicDataToResend*> data_sent_before_handshake_;
-
-  // Once the client receives a stateless reject, keeps track of any data that
-  // must be resent upon a subsequent successful connection.
-  std::vector<QuicDataToResend*> data_to_resend_on_connect_;
+  // Keeps track of any data that must be resent upon a subsequent successful
+  // connection, in case the client receives a stateless reject.
+  std::vector<std::unique_ptr<QuicDataToResend>> data_to_resend_on_connect_;
 
   // The log used for the sockets.
   NetLog net_log_;
