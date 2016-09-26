@@ -168,6 +168,32 @@
   {
     "cmd": [
       "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "new-branch",
+      "refactor"
+    ],
+    "cwd": "[SLAVE_BUILD]\\src",
+    "env": {
+      "PATH": "RECIPE_PACKAGE_REPO[depot_tools];%(PATH)s"
+    },
+    "name": "git new-branch refactor"
+  },
+  {
+    "cmd": [
+      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
+      "new-branch",
+      "feature",
+      "--upstream",
+      "refactor"
+    ],
+    "cwd": "[SLAVE_BUILD]\\src",
+    "env": {
+      "PATH": "RECIPE_PACKAGE_REPO[depot_tools];%(PATH)s"
+    },
+    "name": "git new-branch feature"
+  },
+  {
+    "cmd": [
+      "RECIPE_PACKAGE_REPO[depot_tools]\\git.bat",
       "rebase",
       "origin/master"
     ],

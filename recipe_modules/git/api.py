@@ -409,3 +409,22 @@ class GitApi(recipe_api.RecipeApi):
     if not rev_list_args:
       rev_list_args = ['--all']
     self('bundle', 'create', bundle_path, *rev_list_args, **kwargs)
+
+  def new_branch(self, branch, name=None, upstream=None, **kwargs):
+    """Runs git new-branch on a Git repository, to be used before git cl upload.
+
+    Args:
+      branch (str): new branch name, which must not yet exist.
+      name (str): step name.
+      upstream (str): to origin/master.
+      kwargs: Forwarded to '__call__'.
+    """
+    env = kwargs.pop('env', {})
+    env['PATH'] = self.m.path.pathsep.join([
+        str(self.package_repo_resource()), '%(PATH)s'])
+    args = ['new-branch', branch]
+    if upstream:
+      args.extend(['--upstream', upstream])
+    if not name:
+      name = 'git new-branch %s' % branch
+    return self(*args, name=name, env=env, **kwargs)
