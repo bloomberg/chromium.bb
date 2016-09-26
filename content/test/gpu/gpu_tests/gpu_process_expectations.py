@@ -13,6 +13,9 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     self.Fail('GpuProcess.video', ['linux'], bug=257109)
 
+    # Chrome on Android doesn't support software fallback.
+    self.Skip('GpuProcess.no_gpu_process', ['android'], bug=643282)
+
     # Nexus 5X
     # Skip this test because expecting it to fail will still run it.
     self.Skip('GpuProcess.skip_gpu_process',
