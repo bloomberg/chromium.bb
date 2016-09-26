@@ -177,9 +177,9 @@ public:
     virtual void mainFrameScrollOffsetChanged() const { }
     virtual void layoutUpdated(LocalFrame*) const { }
 
-    void mouseDidMoveOverElement(const HitTestResult&);
-    virtual void setToolTip(const String&, TextDirection) = 0;
-    void clearToolTip();
+    void mouseDidMoveOverElement(LocalFrame&, const HitTestResult&);
+    virtual void setToolTip(LocalFrame&, const String&, TextDirection) = 0;
+    void clearToolTip(LocalFrame&);
 
     void print(LocalFrame*);
 
@@ -306,7 +306,7 @@ protected:
 
 private:
     bool canOpenModalIfDuringPageDismissal(Frame* mainFrame, DialogType, const String& message);
-    void setToolTip(const HitTestResult&);
+    void setToolTip(LocalFrame&, const HitTestResult&);
 
     LayoutPoint m_lastToolTipPoint;
     String m_lastToolTipText;

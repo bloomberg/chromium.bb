@@ -377,7 +377,7 @@ void PaintLayerScrollableArea::setScrollOffset(const DoublePoint& newScrollOffse
 
     Page* page = frame->page();
     if (page)
-        page->chromeClient().clearToolTip();
+        page->chromeClient().clearToolTip(*frame);
 
     bool requiresPaintInvalidation = true;
 

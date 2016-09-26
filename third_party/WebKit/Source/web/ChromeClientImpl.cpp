@@ -664,17 +664,16 @@ void ChromeClientImpl::showMouseOverURL(const HitTestResult& result)
     m_webView->client()->setMouseOverURL(url);
 }
 
-void ChromeClientImpl::setToolTip(const String& tooltipText, TextDirection dir)
+void ChromeClientImpl::setToolTip(LocalFrame& frame, const String& tooltipText, TextDirection dir)
 {
-    if (!m_webView->client())
-        return;
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(&frame)->localRoot();
     if (!tooltipText.isEmpty()) {
-        m_webView->client()->setToolTipText(tooltipText, toWebTextDirection(dir));
+        webFrame->frameWidget()->client()->setToolTipText(tooltipText, toWebTextDirection(dir));
         m_didRequestNonEmptyToolTip = true;
     } else if (m_didRequestNonEmptyToolTip) {
-        // WebViewClient::setToolTipText will send an IPC message.  We'd like to
+        // WebWidgetClient::setToolTipText will send an IPC message.  We'd like to
         // reduce the number of setToolTipText calls.
-        m_webView->client()->setToolTipText(tooltipText, toWebTextDirection(dir));
+        webFrame->frameWidget()->client()->setToolTipText(tooltipText, toWebTextDirection(dir));
         m_didRequestNonEmptyToolTip = false;
     }
 }

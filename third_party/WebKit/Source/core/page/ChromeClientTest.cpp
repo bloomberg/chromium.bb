@@ -15,7 +15,7 @@ namespace {
 
 class ChromeClientToolTipLogger : public EmptyChromeClient {
 public:
-    void setToolTip(const String& text, TextDirection) override
+    void setToolTip(LocalFrame&, const String& text, TextDirection) override
     {
         m_toolTipForLastSetToolTip = text;
     }
@@ -42,25 +42,25 @@ TEST_F(ChromeClientTest, SetToolTipFlood)
     element->setAttribute(HTMLNames::titleAttr, "tooltip");
     result.setInnerNode(element);
 
-    client->setToolTip(result);
+    client->setToolTip(*doc->frame(), result);
     EXPECT_EQ("tooltip", logger.toolTipForLastSetToolTip());
 
     // seToolTip(HitTestResult) again in the same condition.
     logger.clearToolTipForLastSetToolTip();
-    client->setToolTip(result);
+    client->setToolTip(*doc->frame(), result);
     // setToolTip(String,TextDirection) should not be called.
     EXPECT_EQ(String(), logger.toolTipForLastSetToolTip());
 
     // Cancel the tooltip, and setToolTip(HitTestResult) again.
-    client->clearToolTip();
+    client->clearToolTip(*doc->frame());
     logger.clearToolTipForLastSetToolTip();
-    client->setToolTip(result);
+    client->setToolTip(*doc->frame(), result);
     // setToolTip(String,TextDirection) should not be called.
     EXPECT_EQ(String(), logger.toolTipForLastSetToolTip());
 
     logger.clearToolTipForLastSetToolTip();
     element->setAttribute(HTMLNames::titleAttr, "updated");
-    client->setToolTip(result);
+    client->setToolTip(*doc->frame(), result);
     // setToolTip(String,TextDirection) should be called because tooltip string
     // is different from the last one.
     EXPECT_EQ("updated", logger.toolTipForLastSetToolTip());

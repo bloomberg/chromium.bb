@@ -266,7 +266,6 @@ public:
     void initializeLayerTreeView() override {}
     void resetInputMethod() override {}
     WebScreenInfo screenInfo() override { return WebScreenInfo(); }
-    void setToolTipText(const WebString&, WebTextDirection hint) override {}
     void setTouchAction(WebTouchAction touchAction) override {}
     void showImeIfNeeded() override {}
     void showUnhandledTapUIIfNeeded(const WebPoint& tappedPosition, const WebNode& tappedNode, bool pageChanged) override {}

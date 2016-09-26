@@ -140,9 +140,10 @@ public:
         toChromeClientImpl(m_client)->setCursorOverridden(overrideCursor);
     }
 
-    void setToolTip(const String& tooltip, TextDirection direction) override
+    void setToolTip(LocalFrame& frame, const String& tooltip, TextDirection direction) override
     {
-        m_client->setToolTip(tooltip, direction);
+        DCHECK_EQ(&frame, m_overlay->overlayMainFrame());
+        m_client->setToolTip(*m_overlay->m_webViewImpl->mainFrameImpl()->frame(), tooltip, direction);
     }
 
     void invalidateRect(const IntRect&) override

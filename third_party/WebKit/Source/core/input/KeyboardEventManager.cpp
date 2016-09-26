@@ -80,7 +80,7 @@ bool KeyboardEventManager::handleAccessKey(const WebKeyboardEvent& evt)
 WebInputEventResult KeyboardEventManager::keyEvent(
     const WebKeyboardEvent& initialKeyEvent)
 {
-    m_frame->chromeClient().clearToolTip();
+    m_frame->chromeClient().clearToolTip(*m_frame);
 
     if (initialKeyEvent.windowsKeyCode == VK_CAPITAL)
         capsLockStateMayHaveChanged();

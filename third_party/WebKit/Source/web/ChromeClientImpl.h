@@ -111,7 +111,7 @@ public:
     void mainFrameScrollOffsetChanged() const override;
     void layoutUpdated(LocalFrame*) const override;
     void showMouseOverURL(const HitTestResult&) override;
-    void setToolTip(const String& tooltipText, TextDirection) override;
+    void setToolTip(LocalFrame&, const String&, TextDirection) override;
     void dispatchViewportPropertiesDidChange(const ViewportDescription&) const override;
     void printDelegate(LocalFrame*) override;
     void annotatedRegionsChanged() override;

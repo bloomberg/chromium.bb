@@ -32,7 +32,8 @@ public:
 
     // ChromeClient
     MOCK_METHOD2(attachRootGraphicsLayer, void(GraphicsLayer*, LocalFrame* localRoot));
-    MOCK_METHOD2(setToolTip, void(const String&, TextDirection));
+    MOCK_METHOD3(mockSetToolTip, void(LocalFrame*, const String&, TextDirection));
+    void setToolTip(LocalFrame& frame, const String& tooltipText, TextDirection dir) override { mockSetToolTip(&frame, tooltipText, dir); }
 
     void scheduleAnimation(Widget*) override { m_hasScheduledAnimation = true; }
     bool m_hasScheduledAnimation;
@@ -107,7 +108,7 @@ TEST_P(FrameViewTest, HideTooltipWhenScrollPositionChanges)
     document().body()->setInnerHTML("<div style='width:1000px;height:1000px'></div>", ASSERT_NO_EXCEPTION);
     document().view()->updateAllLifecyclePhases();
 
-    EXPECT_CALL(chromeClient(), setToolTip(String(), _));
+    EXPECT_CALL(chromeClient(), mockSetToolTip(document().frame(), String(), _));
     document().view()->layoutViewportScrollableArea()->setScrollPosition(DoublePoint(1, 1), UserScroll);
 }
 

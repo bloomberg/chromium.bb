@@ -127,17 +127,17 @@ bool ChromeClient::openJavaScriptPrompt(LocalFrame* frame, const String& prompt,
     });
 }
 
-void ChromeClient::mouseDidMoveOverElement(const HitTestResult& result)
+void ChromeClient::mouseDidMoveOverElement(LocalFrame& frame, const HitTestResult& result)
 {
     if (result.innerNode() && result.innerNode()->document().isDNSPrefetchEnabled())
         prefetchDNS(result.absoluteLinkURL().host());
 
     showMouseOverURL(result);
 
-    setToolTip(result);
+    setToolTip(frame, result);
 }
 
-void ChromeClient::setToolTip(const HitTestResult& result)
+void ChromeClient::setToolTip(LocalFrame& frame, const HitTestResult& result)
 {
     // First priority is a tooltip for element with "title" attribute.
     TextDirection toolTipDirection;
@@ -164,14 +164,14 @@ void ChromeClient::setToolTip(const HitTestResult& result)
         return;
     m_lastToolTipPoint = result.hitTestLocation().point();
     m_lastToolTipText = toolTip;
-    setToolTip(toolTip, toolTipDirection);
+    setToolTip(frame, toolTip, toolTipDirection);
 }
 
-void ChromeClient::clearToolTip()
+void ChromeClient::clearToolTip(LocalFrame& frame)
 {
     // Do not check m_lastToolTip* and do not update them intentionally.
     // We don't want to show tooltips with same content after clearToolTip().
-    setToolTip(String(), LTR);
+    setToolTip(frame, String(), LTR);
 }
 
 void ChromeClient::print(LocalFrame* frame)

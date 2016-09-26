@@ -143,7 +143,7 @@ public:
 
     void showMouseOverURL(const HitTestResult&) override {}
 
-    void setToolTip(const String&, TextDirection) override {}
+    void setToolTip(LocalFrame&, const String&, TextDirection) override {}
 
     void printDelegate(LocalFrame*) override {}
 

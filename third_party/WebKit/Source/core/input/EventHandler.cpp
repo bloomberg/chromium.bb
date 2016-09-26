@@ -924,7 +924,7 @@ WebInputEventResult EventHandler::handleMouseMoveEvent(const PlatformMouseEvent&
         frameView->mouseMovedInContentArea();
 
     hoveredNode.setToShadowHostIfInUserAgentShadowRoot();
-    page->chromeClient().mouseDidMoveOverElement(hoveredNode);
+    page->chromeClient().mouseDidMoveOverElement(*m_frame, hoveredNode);
 
     return result;
 }

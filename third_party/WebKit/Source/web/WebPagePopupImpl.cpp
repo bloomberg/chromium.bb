@@ -216,7 +216,7 @@ private:
             frame->client()->postAccessibilityEvent(WebAXObject(obj), static_cast<WebAXEvent>(notification));
     }
 
-    void setToolTip(const String& tooltipText, TextDirection dir) override
+    void setToolTip(LocalFrame&, const String& tooltipText, TextDirection dir) override
     {
         if (m_popup->widgetClient())
             m_popup->widgetClient()->setToolTipText(tooltipText, toWebTextDirection(dir));

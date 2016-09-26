@@ -3523,7 +3523,7 @@ void FrameView::setScrollOffset(const DoublePoint& offset, ScrollType scrollType
     m_frame->eventHandler().dispatchFakeMouseMoveEventSoon();
     Page* page = frame().page();
     if (page)
-        page->chromeClient().clearToolTip();
+        page->chromeClient().clearToolTip(*m_frame);
 
     LayoutViewItem layoutViewItem = document->layoutViewItem();
     if (!layoutViewItem.isNull()) {
