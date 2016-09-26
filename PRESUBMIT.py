@@ -12,22 +12,15 @@ import fnmatch
 import os
 
 
-def CommonChecks(input_api, output_api, tests_to_black_list):
-  results = []
-  results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
-  black_list = list(input_api.DEFAULT_BLACK_LIST) + [
-      r'^\.recipe_deps[\/\\].*',
-      r'^infra[\/\\]\.recipe_deps[\/\\].*',
-      r'^cpplint\.py$',
-      r'^cpplint_chromium\.py$',
-      r'^external_bin[\/\\].+',
-      r'^python[0-9]*_bin[\/\\].+',
-      r'^recipes\.py$',
-      r'^site-packages-py[0-9]\.[0-9][\/\\].+',
-      r'^svn_bin[\/\\].+',
-      r'^testing_support[\/\\]_rietveld[\/\\].+',
-      r'^testing_support[\/\\]_infra[\/\\].+',
+def DepotToolsPylint(input_api, output_api):
+  """Gather all the pylint logic into one place to make it self-contained."""
+  white_list = [
+    r'^[^/]*\.py$',
+    r'^testing_support/[^/]*\.py$',
+    r'^tests/[^/]*\.py$',
+    r'^recipe_modules/.*\.py$',  # Allow recursive search in recipe modules.
   ]
+  black_list = list(input_api.DEFAULT_BLACK_LIST)
   if os.path.exists('.gitignore'):
     with open('.gitignore') as fh:
       lines = [l.strip() for l in fh.readlines()]
@@ -42,21 +35,26 @@ def CommonChecks(input_api, output_api, tests_to_black_list):
     'R0401',  # Cyclic import
     'W0613',  # Unused argument
   ]
-  pylint = input_api.canned_checks.GetPylint(
+  return input_api.canned_checks.GetPylint(
       input_api,
       output_api,
-      white_list=[r'.*\.py$'],
+      white_list=white_list,
       black_list=black_list,
       disabled_warnings=disabled_warnings)
+
+
+def CommonChecks(input_api, output_api, tests_to_black_list):
+  results = []
+  results.extend(input_api.canned_checks.CheckOwners(input_api, output_api))
   # TODO(maruel): Make sure at least one file is modified first.
   # TODO(maruel): If only tests are modified, only run them.
+  tests = DepotToolsPylint(input_api, output_api)
   unit_tests = input_api.canned_checks.GetUnitTestsInDirectory(
       input_api,
       output_api,
       'tests',
       whitelist=[r'.*test\.py$'],
       blacklist=tests_to_black_list)
-  tests = pylint
   if not input_api.platform.startswith(('cygwin', 'win32')):
     tests.extend(unit_tests)
   else:
