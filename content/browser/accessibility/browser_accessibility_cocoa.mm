@@ -2798,6 +2798,9 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   } else if ([action isEqualToString:NSAccessibilityShowMenuAction]) {
     [self delegate]->AccessibilityShowContextMenu(
         browserAccessibility_->GetId());
+  } else if ([action isEqualToString:NSAccessibilityScrollToVisibleAction]) {
+    browserAccessibility_->manager()->ScrollToMakeVisible(
+        *browserAccessibility_, gfx::Rect());
   }
 }
 

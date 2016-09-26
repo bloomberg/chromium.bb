@@ -533,6 +533,11 @@ void RenderAccessibilityImpl::OnReset(int reset_token) {
 
 void RenderAccessibilityImpl::OnScrollToMakeVisible(
     int acc_obj_id, gfx::Rect subfocus) {
+  if (pdf_tree_source_ && pdf_tree_source_->GetFromId(acc_obj_id)) {
+    ScrollPdf(acc_obj_id);
+    return;
+  }
+
   const WebDocument& document = GetMainDocument();
   if (document.isNull())
     return;
@@ -718,6 +723,34 @@ void RenderAccessibilityImpl::AddPdfTreeToUpdate(AXContentTreeUpdate* update) {
       break;
     }
   }
+}
+
+void RenderAccessibilityImpl::ScrollPdf(int id_to_make_visible) {
+  // The PDF content doesn't scroll itself, rather it's just one big document
+  // and the embedding page scrolls. So, when we're requested to scroll to make
+  // a particular PDF node visible, get the coordinates of the target PDF node
+  // and then tell the document node to scroll to those coordinates.
+  //
+  // Note that calling scrollToMakeVisibleWithSubFocus() is preferable to
+  // telling the document to scroll to a specific coordinate because it will
+  // first compute whether that rectangle is visible and do nothing if it is.
+  // If it's not visible, it will automatically center it.
+
+  DCHECK(pdf_tree_source_);
+  ui::AXNodeData root_data = pdf_tree_source_->GetRoot()->data();
+  ui::AXNodeData target_data =
+      pdf_tree_source_->GetFromId(id_to_make_visible)->data();
+
+  gfx::RectF bounds = target_data.location;
+  if (root_data.transform)
+    root_data.transform->TransformRect(&bounds);
+
+  const WebDocument& document = GetMainDocument();
+  if (document.isNull())
+    return;
+
+  document.accessibilityObject().scrollToMakeVisibleWithSubFocus(
+      WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()));
 }
 
 }  // namespace content

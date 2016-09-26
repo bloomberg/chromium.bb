@@ -1516,7 +1516,7 @@ static int computeBestScrollOffset(int currentScrollOffset, int subfocusMin, int
 void AXObject::scrollToMakeVisibleWithSubFocus(const IntRect& subfocus) const
 {
     // Search up the parent chain until we find the first one that's scrollable.
-    AXObject* scrollParent = parentObject();
+    const AXObject* scrollParent = parentObject() ? parentObject() : this;
     ScrollableArea* scrollableArea = 0;
     while (scrollParent) {
         scrollableArea = scrollParent->getScrollableAreaIfScrollable();

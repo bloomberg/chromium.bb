@@ -132,6 +132,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnShowContextMenu(int acc_obj_id);
 
   void AddPdfTreeToUpdate(AXContentTreeUpdate* update);
+  void ScrollPdf(int id_to_make_visible);
 
   // Events from Blink are collected until they are ready to be
   // sent to the browser.
