@@ -54,7 +54,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "content/browser/renderer_host/media/audio_output_device_enumerator.h"
+#include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -119,13 +119,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   // |have_access| is true only if there is permission to access the device.
   typedef base::Callback<void(bool have_access)> OutputDeviceAccessCB;
 
-  // Internal callback type for information requests about an output device.
-  // |success| indicates the operation was successful. If true, |device_info|
-  // contains data about the device.
-  typedef base::Callback<void(bool success,
-                              const AudioOutputDeviceInfo& device_info)>
-      OutputDeviceInfoCB;
-
   // The type of a function that is run on the UI thread to check whether the
   // routing IDs reference a valid RenderFrameHost. The function then runs
   // |callback| on the IO thread with true/false if valid/invalid.
@@ -175,19 +168,6 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   // Helper methods.
 
-  // Proceed with device authorization after checking permissions.
-  void OnDeviceAuthorized(int stream_id,
-                          const std::string& device_id,
-                          const url::Origin& security_origin,
-                          base::TimeTicks auth_start_time,
-                          bool have_access);
-
-  // Proceed with device authorization after translating device ID.
-  void OnDeviceIDTranslated(int stream_id,
-                            base::TimeTicks auth_start_time,
-                            bool device_found,
-                            const AudioOutputDeviceInfo& device_info);
-
   // Complete the process of creating an audio stream. This will set up the
   // shared memory or shared socket in low latency mode and send the
   // NotifyStreamCreated message to the peer.
@@ -224,18 +204,35 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   void CheckOutputDeviceAccess(int render_frame_id,
                                const std::string& device_id,
                                const url::Origin& security_origin,
-                               const OutputDeviceAccessCB& callback);
+                               int stream_id,
+                               base::TimeTicks auth_start_time);
 
-  // Invoke |callback| after permission to use a device has been checked.
+  // Proceed with device authorization after checking permissions.
   void AccessChecked(std::unique_ptr<MediaStreamUIProxy> ui_proxy,
-                     const OutputDeviceAccessCB& callback,
+                     const std::string& device_id,
+                     const url::Origin& security_origin,
+                     int stream_id,
+                     base::TimeTicks auth_start_time,
                      bool have_access);
 
   // Translate the hashed |device_id| to a unique device ID.
   void TranslateDeviceID(const std::string& device_id,
                          const url::Origin& security_origin,
-                         const OutputDeviceInfoCB& callback,
-                         const AudioOutputDeviceEnumeration& enumeration);
+                         int stream_id,
+                         base::TimeTicks auth_start_time,
+                         const MediaDeviceEnumeration& enumeration);
+
+  // Get audio hardware parameters on the device thread.
+  media::AudioParameters GetDeviceParametersOnDeviceThread(
+      const std::string& device_id);
+
+  // Proceed with device authorization after translating device ID and
+  // receiving hardware parameters.
+  void DeviceParametersReceived(int stream_id,
+                                base::TimeTicks auth_start_time,
+                                bool device_found,
+                                const std::string& unique_id,
+                                const media::AudioParameters& output_params);
 
   // Helper method to check if the authorization procedure for stream
   // |stream_id| has started.

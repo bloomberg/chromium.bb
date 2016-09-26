@@ -40,8 +40,13 @@ using MediaDeviceEnumeration =
 class CONTENT_EXPORT MediaDevicesManager
     : public base::SystemMonitor::DevicesChangedObserver {
  public:
-  // Use MediaDeviceType values to index on this type.
-  using BoolDeviceTypes = std::array<bool, NUM_MEDIA_DEVICE_TYPES>;
+  // Use MediaDeviceType values to index on this type. By default all device
+  // types are false.
+  class BoolDeviceTypes final
+      : public std::array<bool, NUM_MEDIA_DEVICE_TYPES> {
+   public:
+    BoolDeviceTypes() { fill(false); }
+  };
 
   using EnumerationCallback =
       base::Callback<void(const MediaDeviceEnumeration&)>;

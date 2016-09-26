@@ -74,7 +74,8 @@ class MockAudioMirroringManager : public AudioMirroringManager {
 
 class MockAudioRendererHost : public AudioRendererHost {
  public:
-  MockAudioRendererHost(media::AudioManager* audio_manager,
+  MockAudioRendererHost(base::RunLoop* auth_run_loop,
+                        media::AudioManager* audio_manager,
                         AudioMirroringManager* mirroring_manager,
                         MediaInternals* media_internals,
                         MediaStreamManager* media_stream_manager,
@@ -85,7 +86,8 @@ class MockAudioRendererHost : public AudioRendererHost {
                           media_internals,
                           media_stream_manager,
                           salt),
-        shared_memory_length_(0) {
+        shared_memory_length_(0),
+        auth_run_loop_(auth_run_loop) {
     set_render_frame_id_validate_function_for_testing(&ValidateRenderFrameId);
   }
 
@@ -139,6 +141,7 @@ class MockAudioRendererHost : public AudioRendererHost {
                                 const std::string& matched_device_id) {
     OnDeviceAuthorized(stream_id, device_status, output_params,
                        matched_device_id);
+    auth_run_loop_->Quit();
   }
 
   void OnNotifyStreamCreated(
@@ -182,18 +185,10 @@ class MockAudioRendererHost : public AudioRendererHost {
   std::unique_ptr<base::SharedMemory> shared_memory_;
   std::unique_ptr<base::SyncSocket> sync_socket_;
   uint32_t shared_memory_length_;
+  base::RunLoop* auth_run_loop_;  // Used to wait for authorization.
 
   DISALLOW_COPY_AND_ASSIGN(MockAudioRendererHost);
 };
-
-namespace {
-
-void WaitForEnumeration(base::RunLoop* loop,
-                        const AudioOutputDeviceEnumeration& e) {
-  loop->Quit();
-}
-
-}  // namespace
 
 class AudioRendererHostTest : public testing::Test {
  public:
@@ -203,20 +198,10 @@ class AudioRendererHostTest : public testing::Test {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
-
-    // Enable caching to make enumerations run in a single thread
-    media_stream_manager_->audio_output_device_enumerator()->SetCachePolicy(
-        AudioOutputDeviceEnumerator::CACHE_POLICY_MANUAL_INVALIDATION);
-    base::RunLoop().RunUntilIdle();
-    base::RunLoop run_loop;
-    media_stream_manager_->audio_output_device_enumerator()->Enumerate(
-        base::Bind(&WaitForEnumeration, &run_loop));
-    run_loop.Run();
-
-    host_ =
-        new MockAudioRendererHost(audio_manager_.get(), &mirroring_manager_,
-                                  MediaInternals::GetInstance(),
-                                  media_stream_manager_.get(), std::string());
+    host_ = new MockAudioRendererHost(
+        &auth_run_loop_, audio_manager_.get(), &mirroring_manager_,
+        MediaInternals::GetInstance(), media_stream_manager_.get(),
+        std::string());
 
     // Simulate IPC channel connected.
     host_->set_peer_process_for_testing(base::Process::Current());
@@ -272,6 +257,7 @@ class AudioRendererHostTest : public testing::Test {
     }
     host_->OnRequestDeviceAuthorization(kStreamId, kRenderFrameId, session_id,
                                         device_id, security_origin);
+    auth_run_loop_.Run();
     if (expected_device_status == media::OUTPUT_DEVICE_STATUS_OK) {
       host_->OnCreateStream(kStreamId, kRenderFrameId, params);
 
@@ -365,6 +351,7 @@ class AudioRendererHostTest : public testing::Test {
   media::ScopedAudioManagerPtr audio_manager_;
   MockAudioMirroringManager mirroring_manager_;
   scoped_refptr<MockAudioRendererHost> host_;
+  base::RunLoop auth_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererHostTest);
 };

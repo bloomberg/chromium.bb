@@ -39,7 +39,6 @@
 #include "base/power_monitor/power_observer.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/media/audio_output_device_enumerator.h"
 #include "content/browser/renderer_host/media/media_devices_manager.h"
 #include "content/browser/renderer_host/media/media_stream_provider.h"
 #include "content/common/content_export.h"
@@ -93,11 +92,6 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Used to access AudioInputDeviceManager.
   AudioInputDeviceManager* audio_input_device_manager();
-
-  // TODO(guidou): Remove when AudioRendererHost migrates to
-  // MediaDevicesManager. See http://crbug.com/647660.
-  // Used to access AudioOutputDeviceEnumerator.
-  AudioOutputDeviceEnumerator* audio_output_device_enumerator();
 
   // Used to access MediaDevicesManager.
   MediaDevicesManager* media_devices_manager();
@@ -438,7 +432,6 @@ class CONTENT_EXPORT MediaStreamManager
   media::AudioManager* const audio_manager_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
-  std::unique_ptr<AudioOutputDeviceEnumerator> audio_output_device_enumerator_;
 #if defined(OS_WIN)
   base::Thread video_capture_thread_;
 #endif

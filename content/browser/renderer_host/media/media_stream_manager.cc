@@ -484,13 +484,6 @@ AudioInputDeviceManager* MediaStreamManager::audio_input_device_manager() {
   return audio_input_device_manager_.get();
 }
 
-AudioOutputDeviceEnumerator*
-MediaStreamManager::audio_output_device_enumerator() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(audio_output_device_enumerator_.get());
-  return audio_output_device_enumerator_.get();
-}
-
 MediaDevicesManager* MediaStreamManager::media_devices_manager() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(media_devices_manager_.get());
@@ -769,9 +762,10 @@ void MediaStreamManager::DoEnumerateDevices(const std::string& label) {
   if (request->audio_type() == MEDIA_DEVICE_AUDIO_OUTPUT) {
     DCHECK_EQ(MEDIA_NO_SERVICE, request->video_type());
     request->SetState(MEDIA_DEVICE_AUDIO_OUTPUT, MEDIA_REQUEST_STATE_REQUESTED);
+    MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+    devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
     media_devices_manager_->EnumerateDevices(
-        {{false /* audio input */, false /* video input*/,
-          true /* audio output */}},
+        devices_to_enumerate,
         base::Bind(&MediaStreamManager::AudioOutputDevicesEnumerated,
                    base::Unretained(this), label));
     return;
@@ -980,8 +974,11 @@ void MediaStreamManager::StartEnumeration(DeviceRequest* request,
   // base::Unretained is safe here because MediaStreamManager is deleted on the
   // UI thread, after the IO thread has been stopped.
   DCHECK(request_audio_input || request_video_input);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = request_audio_input;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = request_video_input;
   media_devices_manager_->EnumerateDevices(
-      {{request_audio_input, request_video_input, false /* no audio output */}},
+      devices_to_enumerate,
       base::Bind(&MediaStreamManager::DevicesEnumerated, base::Unretained(this),
                  request_audio_input, request_video_input, label));
 }
@@ -1486,9 +1483,6 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   video_capture_manager_->Register(this, device_task_runner_);
 #endif
 
-  audio_output_device_enumerator_.reset(new AudioOutputDeviceEnumerator(
-      audio_manager_, AudioOutputDeviceEnumerator::CACHE_POLICY_NO_CACHING));
-
   media_devices_manager_.reset(
       new MediaDevicesManager(audio_manager_, video_capture_manager_, this));
 }
@@ -1797,7 +1791,6 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
 
   audio_input_device_manager_ = NULL;
   video_capture_manager_ = NULL;
-  audio_output_device_enumerator_ = NULL;
   media_devices_manager_ = NULL;
   g_media_stream_manager_tls_ptr.Pointer()->Set(NULL);
 }

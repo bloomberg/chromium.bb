@@ -167,10 +167,12 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudioInput) {
       .Times(0);
   EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_)).Times(0);
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{true, false, false}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -183,10 +185,12 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheVideoInput) {
       .Times(kNumCalls);
   EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_)).Times(0);
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{false, true, false}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -200,10 +204,12 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudioOutput) {
   EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_))
       .Times(kNumCalls);
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{false, false, true}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -216,10 +222,13 @@ TEST_F(MediaDevicesManagerTest, EnumerateNoCacheAudio) {
   EXPECT_CALL(*audio_manager_, MockGetAudioInputDeviceNames(_))
       .Times(kNumCalls);
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{true, false, true}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -234,10 +243,13 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudio) {
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
   EnableCache(MEDIA_DEVICE_TYPE_AUDIO_INPUT);
   EnableCache(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{true, false, true}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -251,10 +263,12 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideo) {
   EXPECT_CALL(*audio_manager_, MockGetAudioOutputDeviceNames(_)).Times(0);
   EXPECT_CALL(*this, MockCallback(_)).Times(kNumCalls);
   EnableCache(MEDIA_DEVICE_TYPE_VIDEO_INPUT);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{false, true, false}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -277,10 +291,13 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudioWithDeviceChanges) {
   audio_manager_->SetNumAudioOutputDevices(num_audio_output_devices);
   EnableCache(MEDIA_DEVICE_TYPE_AUDIO_INPUT);
   EnableCache(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{true, false, true}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -300,7 +317,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAudioWithDeviceChanges) {
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{true, false, true}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -325,10 +342,12 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideoWithDeviceChanges) {
   size_t num_video_input_devices = 5;
   video_capture_device_factory_->set_number_of_devices(num_video_input_devices);
   EnableCache(MEDIA_DEVICE_TYPE_VIDEO_INPUT);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{false, true, false}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -345,7 +364,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheVideoWithDeviceChanges) {
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{false, true, false}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -373,10 +392,14 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAllWithDeviceChanges) {
   EnableCache(MEDIA_DEVICE_TYPE_AUDIO_INPUT);
   EnableCache(MEDIA_DEVICE_TYPE_AUDIO_OUTPUT);
   EnableCache(MEDIA_DEVICE_TYPE_VIDEO_INPUT);
+  MediaDevicesManager::BoolDeviceTypes devices_to_enumerate;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_INPUT] = true;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_VIDEO_INPUT] = true;
+  devices_to_enumerate[MEDIA_DEVICE_TYPE_AUDIO_OUTPUT] = true;
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{true, true, true}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
@@ -402,7 +425,7 @@ TEST_F(MediaDevicesManagerTest, EnumerateCacheAllWithDeviceChanges) {
   for (int i = 0; i < kNumCalls; i++) {
     base::RunLoop run_loop;
     media_devices_manager_->EnumerateDevices(
-        {{true, true, true}},
+        devices_to_enumerate,
         base::Bind(&MediaDevicesManagerTest::EnumerateCallback,
                    base::Unretained(this), &run_loop));
     run_loop.Run();
