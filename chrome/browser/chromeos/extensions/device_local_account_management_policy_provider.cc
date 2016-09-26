@@ -127,31 +127,6 @@ const char* const kSafeManifestEntries[] = {
     // Special-cased in IsPlatformAppSafeForPublicSession().
     // emk::kApp,
 
-    // Special-cased in IsPlatformAppSafeForPublicSession().
-    // emk::kManifestVersion,
-
-    // Just a display string.
-    emk::kName,
-
-    // Just a display string.
-    emk::kShortName,
-
-    // Version string (for app updates).
-    emk::kVersion,
-
-    // Name of directory containg default strings.
-    emk::kDefaultLocale,
-
-    // An implementation detail (actually written by Chrome, not the app
-    // author).
-    emk::kCurrentLocale,
-
-    // Just a display string.
-    emk::kDescription,
-
-    // Just UX.
-    emk::kIcons,
-
     // Documented in https://developer.chrome.com/extensions/manifest but not
     // implemented anywhere.  Still, a lot of apps use it.
     "author",
@@ -162,8 +137,21 @@ const char* const kSafeManifestEntries[] = {
     // TBD
     // emk::kCommands,
 
+    // An implementation detail (actually written by Chrome, not the app
+    // author).
+    emk::kCurrentLocale,
+
+    // Name of directory containg default strings.
+    emk::kDefaultLocale,
+
+    // Just a display string.
+    emk::kDescription,
+
     // TBD, looks unsafe
     // emk::kEventRules,
+
+    // Shared Modules configuration: Allow other extensions to access resources.
+    emk::kExport,
 
     // TBD
     // emk::kExternallyConnectable,
@@ -174,11 +162,11 @@ const char* const kSafeManifestEntries[] = {
     // TBD
     // emk::kFileSystemProviderCapabilities,
 
+    // Just UX.
+    emk::kIcons,
+
     // Shared Modules configuration: Import resources from another extension.
     emk::kImport,
-
-    // Shared Modules configuration: Allow other extensions to access resources.
-    emk::kExport,
 
     // Shared Modules configuration: Specify extension id for development.
     emk::kKey,
@@ -189,12 +177,18 @@ const char* const kSafeManifestEntries[] = {
     // Contradicts the purpose of running inside a Public Session.
     // emk::kKioskOnly,
 
+    // Special-cased in IsPlatformAppSafeForPublicSession().
+    // emk::kManifestVersion,
+
     // Descriptive statement about the app.
     emk::kMinimumChromeVersion,
 
     // NaCl modules are bound to app permissions just like the rest of the app
     // and thus should not pose a risk.
     emk::kNaClModules,
+
+    // Just a display string.
+    emk::kName,
 
     // TBD, doc missing
     // emk::kOAuth2,
@@ -217,6 +211,9 @@ const char* const kSafeManifestEntries[] = {
     // Execute some pages in a separate sandbox.  (Note: Using string literal
     // since extensions::manifest_keys only has constants for sub-keys.)
     "sandbox",
+
+    // Just a display string.
+    emk::kShortName,
 
     // TBD, doc missing
     // emk::kSignature,
@@ -244,6 +241,9 @@ const char* const kSafeManifestEntries[] = {
 
     // TBD
     // emk::kUsbPrinters,
+
+    // Version string (for app updates).
+    emk::kVersion,
 
     // Just a display string.
     emk::kVersionName,
