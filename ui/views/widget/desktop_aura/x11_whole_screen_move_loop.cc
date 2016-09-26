@@ -239,7 +239,6 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
 bool X11WholeScreenMoveLoop::GrabPointer(gfx::NativeCursor cursor) {
   XDisplay* display = gfx::GetXDisplay();
-  XGrabServer(display);
 
   // Pass "owner_events" as false so that X sends all mouse events to
   // |grab_input_window_|.
@@ -248,7 +247,6 @@ bool X11WholeScreenMoveLoop::GrabPointer(gfx::NativeCursor cursor) {
     DLOG(ERROR) << "Grabbing pointer for dragging failed: "
                 << ui::GetX11ErrorString(display, ret);
   }
-  XUngrabServer(display);
   XFlush(display);
   return ret == GrabSuccess;
 }
