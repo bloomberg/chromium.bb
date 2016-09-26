@@ -1037,6 +1037,9 @@ class Port(object):
     def inspector_build_directory(self):
         return self._build_path('resources', 'inspector')
 
+    def inspector_debug_directory(self):
+        return self.path_from_webkit_base('Source', 'devtools', 'front_end')
+
     def default_results_directory(self):
         """Absolute path to the default place to store the test results."""
         return self._build_path('layout-test-results')

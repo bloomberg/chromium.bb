@@ -1,0 +1,25 @@
+<html>
+<head>
+<base href="/inspector-debug/"></base>
+<script src="/inspector-debug/Runtime.js"></script>
+<script src="/inspector-unit/inspector-unit-test.js"></script>
+<script>
+function test() {
+    var suggestions = ["heyoo", "hey it's a suggestion", "hey another suggestion"];
+    var prompt = new WebInspector.TextPrompt((element, range, force, callback) => callback(suggestions));
+    prompt.setSuggestBoxEnabled(true);
+    var div = document.createElement("div");
+    WebInspector.inspectorView.element.appendChild(div);
+    prompt.attachAndStartEditing(div);
+    prompt.setText("hey");
+    prompt.complete();
+    UnitTest.addResult("UserEnteredText:" + prompt.userEnteredText());
+    UnitTest.addResult("Text:" + prompt.text());
+    UnitTest.completeTest();
+}
+</script>
+</head>
+<body>
+This tests if the TextPrompt autocomplete works properly.
+</body>
+</html>
