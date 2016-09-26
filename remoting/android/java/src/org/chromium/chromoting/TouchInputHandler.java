@@ -349,12 +349,12 @@ public class TouchInputHandler {
 
     private void handleSystemUiVisibilityChanged(
             SystemUiVisibilityChangedEventParameter parameter) {
-        if (parameter.softInputMethodVisible) {
+        if (parameter.systemUiVisible) {
             mDesktopCanvas.setSystemUiOffsetValues(parameter.left, parameter.top,
                     mRenderData.screenWidth - parameter.right,
                     mRenderData.screenHeight - parameter.bottom);
         } else {
-            mDesktopCanvas.setSystemUiOffsetValues(0, 0, 0, 0);
+            mDesktopCanvas.clearSystemUiOffsets();
         }
 
         mDesktopCanvas.repositionImage(true);

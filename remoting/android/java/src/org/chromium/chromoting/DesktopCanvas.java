@@ -30,7 +30,7 @@ public class DesktopCanvas {
     private PointF mViewportPosition = new PointF();
 
     /**
-     * Represents the amount of space, in pixels, used by system UI.
+     * Represents the amount of space, in pixels, used by System UI.
      */
     private Rect mSystemUiOffsetPixels = new Rect();
 
@@ -104,15 +104,20 @@ public class DesktopCanvas {
     }
 
     /**
-     * Sets the offset values used to calculate the space used by system UI.
+     * Sets the offset values used to calculate the space used by System UI.
      *
-     * @param left The space used by system UI on the left edge of the screen.
-     * @param top The space used by system UI on the top edge of the screen.
-     * @param right The space used by system UI on the right edge of the screen.
-     * @param bottom The space used by system UI on the bottom edge of the screen.
+     * @param left The space used by System UI on the left edge of the screen.
+     * @param top The space used by System UI on the top edge of the screen.
+     * @param right The space used by System UI on the right edge of the screen.
+     * @param bottom The space used by System UI on the bottom edge of the screen.
      */
     public void setSystemUiOffsetValues(int left, int top, int right, int bottom) {
         mSystemUiOffsetPixels.set(left, top, right, bottom);
+    }
+
+    /** Called to indicate that no System UI is visible. */
+    public void clearSystemUiOffsets() {
+        mSystemUiOffsetPixels.setEmpty();
     }
 
     /** Repositions the image by zooming it such that the image is displayed without borders. */
