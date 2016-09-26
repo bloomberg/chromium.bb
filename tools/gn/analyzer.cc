@@ -102,7 +102,7 @@ std::vector<std::string> GetStringVector(const base::DictionaryValue& dict,
 void WriteString(base::DictionaryValue& dict,
                  const std::string& key,
                  const std::string& value) {
-  dict.SetString(key, value);
+  dict.SetStringWithoutPathExpansion(key, value);
 };
 
 void WriteLabels(const Label& default_toolchain,
@@ -115,7 +115,7 @@ void WriteLabels(const Label& default_toolchain,
     strings.push_back(l.GetUserVisibleName(default_toolchain));
   std::sort(strings.begin(), strings.end());
   value->AppendStrings(strings);
-  dict.Set(key, std::move(value));
+  dict.SetWithoutPathExpansion(key, std::move(value));
 }
 
 Label AbsoluteOrSourceAbsoluteStringToLabel(const Label& default_toolchain,
@@ -207,7 +207,8 @@ std::string OutputsToJSON(const Outputs& outputs,
     if (outputs.compile_includes_all) {
       auto compile_targets = base::WrapUnique(new base::ListValue());
       compile_targets->AppendString("all");
-      value->Set("compile_targets", std::move(compile_targets));
+      value->SetWithoutPathExpansion("compile_targets",
+                                     std::move(compile_targets));
     } else {
       WriteLabels(default_toolchain, *value, "compile_targets",
                   outputs.compile_labels);
