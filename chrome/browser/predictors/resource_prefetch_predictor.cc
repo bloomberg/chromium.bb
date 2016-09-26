@@ -562,7 +562,7 @@ void ResourcePrefetchPredictor::StartPrefetching(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ResourcePrefetcherManager::MaybeAddPrefetch,
-                 prefetch_manager_, navigation_id, key_type, urls));
+                 prefetch_manager_, navigation_id, urls));
 }
 
 void ResourcePrefetchPredictor::StopPrefetching(

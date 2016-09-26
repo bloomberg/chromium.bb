@@ -33,10 +33,9 @@ class TestResourcePrefetcher : public ResourcePrefetcher {
  public:
   TestResourcePrefetcher(ResourcePrefetcher::Delegate* delegate,
                          const ResourcePrefetchPredictorConfig& config,
-                         const NavigationID& navigation_id,
-                         PrefetchKeyType key_type,
+                         const GURL& main_frame_url,
                          const std::vector<GURL>& urls)
-      : ResourcePrefetcher(delegate, config, navigation_id, key_type, urls) {}
+      : ResourcePrefetcher(delegate, config, main_frame_url, urls) {}
 
   ~TestResourcePrefetcher() override {}
 
@@ -151,6 +150,7 @@ ResourcePrefetcherTest::~ResourcePrefetcherTest() {
 }
 
 TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
+  GURL main_frame_url("http://www.google.com");
   std::vector<GURL> urls = {GURL("http://www.google.com/resource1.html"),
                             GURL("http://www.google.com/resource2.png"),
                             GURL("http://yahoo.com/resource1.png"),
@@ -164,11 +164,10 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
                             GURL("http://yahoo.com/resource4.png"),
                             GURL("http://yahoo.com/resource5.png")};
 
-  NavigationID navigation_id(1, 2, GURL("http://www.google.com"));
+  NavigationID navigation_id(1, 2, main_frame_url);
 
   prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_, config_,
-                                               navigation_id,
-                                               PREFETCH_KEY_TYPE_URL, urls));
+                                               main_frame_url, urls));
 
   // Starting the prefetcher maxes out the number of possible requests.
   AddStartUrlRequestExpectation("http://www.google.com/resource1.html");
@@ -229,6 +228,7 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherFinishes) {
 }
 
 TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
+  GURL main_frame_url("http://www.google.com");
   std::vector<GURL> urls = {GURL("http://www.google.com/resource1.html"),
                             GURL("http://www.google.com/resource2.png"),
                             GURL("http://yahoo.com/resource1.png"),
@@ -236,11 +236,10 @@ TEST_F(ResourcePrefetcherTest, TestPrefetcherStopped) {
                             GURL("http://yahoo.com/resource3.png"),
                             GURL("http://m.google.com/resource1.jpg")};
 
-  NavigationID navigation_id(1, 2, GURL("http://www.google.com"));
+  NavigationID navigation_id(1, 2, main_frame_url);
 
   prefetcher_.reset(new TestResourcePrefetcher(&prefetcher_delegate_, config_,
-                                               navigation_id,
-                                               PREFETCH_KEY_TYPE_HOST, urls));
+                                               main_frame_url, urls));
 
   // Starting the prefetcher maxes out the number of possible requests.
   AddStartUrlRequestExpectation("http://www.google.com/resource1.html");

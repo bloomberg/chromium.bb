@@ -27,8 +27,8 @@ class URLRequestContext;
 
 namespace predictors {
 
-// Responsible for prefetching resources for a single navigation based on the
-// input list of resources.
+// Responsible for prefetching resources for a single main frame URL based on
+// the input list of resources.
 //  - Limits the max number of resources in flight for any host and also across
 //    hosts.
 //  - When stopped, will wait for the pending requests to finish.
@@ -51,16 +51,14 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
   // |delegate| has to outlive the ResourcePrefetcher.
   ResourcePrefetcher(Delegate* delegate,
                      const ResourcePrefetchPredictorConfig& config,
-                     const NavigationID& navigation_id,
-                     PrefetchKeyType key_type,
+                     const GURL& main_frame_url,
                      const std::vector<GURL>& urls);
   ~ResourcePrefetcher() override;
 
   void Start();  // Kicks off the prefetching. Can only be called once.
   void Stop();   // No additional prefetches will be queued after this.
 
-  const NavigationID& navigation_id() const { return navigation_id_; }
-  PrefetchKeyType key_type() const { return key_type_; }
+  const GURL& main_frame_url() const { return main_frame_url_; }
 
  private:
   friend class ResourcePrefetcherTest;
@@ -113,8 +111,7 @@ class ResourcePrefetcher : public net::URLRequest::Delegate {
   PrefetcherState state_;
   Delegate* const delegate_;
   ResourcePrefetchPredictorConfig const config_;
-  NavigationID navigation_id_;
-  PrefetchKeyType key_type_;
+  GURL main_frame_url_;
   std::unique_ptr<GURL> urls_;
 
   std::map<net::URLRequest*, std::unique_ptr<net::URLRequest>>

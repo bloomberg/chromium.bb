@@ -26,7 +26,7 @@ class ResourcePrefetchPredictor;
 //  - Created and owned by the resource prefetch predictor.
 //  - Needs to be refcounted as it is de-referenced on two different threads.
 //  - Created on the UI thread, but most functions are called in the IO thread.
-//  - Will only allow one inflight prefresh per main frame URL.
+//  - Will only allow one inflight prefresh per host.
 class ResourcePrefetcherManager
     :  public ResourcePrefetcher::Delegate,
        public base::RefCountedThreadSafe<ResourcePrefetcherManager> {
@@ -45,10 +45,8 @@ class ResourcePrefetcherManager
   void ShutdownOnIOThread();
 
   // Will create a new ResourcePrefetcher for the main frame url of the input
-  // navigation if there isn't one already for the same URL or host (for host
-  // based).
+  // navigation if there isn't one already for the same host.
   void MaybeAddPrefetch(const NavigationID& navigation_id,
-                        PrefetchKeyType key_type,
                         const std::vector<GURL>& urls);
 
   // Stops the ResourcePrefetcher for the input navigation, if one was in

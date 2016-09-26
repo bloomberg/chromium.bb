@@ -25,14 +25,12 @@ namespace predictors {
 ResourcePrefetcher::ResourcePrefetcher(
     Delegate* delegate,
     const ResourcePrefetchPredictorConfig& config,
-    const NavigationID& navigation_id,
-    PrefetchKeyType key_type,
+    const GURL& main_frame_url,
     const std::vector<GURL>& urls)
     : state_(INITIALIZED),
       delegate_(delegate),
       config_(config),
-      navigation_id_(navigation_id),
-      key_type_(key_type) {
+      main_frame_url_(main_frame_url) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   std::copy(urls.begin(), urls.end(), std::back_inserter(request_queue_));
@@ -108,9 +106,9 @@ void ResourcePrefetcher::SendRequest(const GURL& url) {
   host_inflight_counts_[url.host()] += 1;
 
   url_request->set_method("GET");
-  url_request->set_first_party_for_cookies(navigation_id_.main_frame_url);
-  url_request->set_initiator(url::Origin(navigation_id_.main_frame_url));
-  url_request->SetReferrer(navigation_id_.main_frame_url.spec());
+  url_request->set_first_party_for_cookies(main_frame_url_);
+  url_request->set_initiator(url::Origin(main_frame_url_));
+  url_request->SetReferrer(main_frame_url_.spec());
   url_request->SetLoadFlags(url_request->load_flags() | net::LOAD_PREFETCH);
   StartURLRequest(url_request.get());
   inflight_requests_.insert(

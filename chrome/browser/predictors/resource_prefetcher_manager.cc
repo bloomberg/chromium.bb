@@ -52,39 +52,33 @@ void ResourcePrefetcherManager::ShutdownOnIOThread() {
 
 void ResourcePrefetcherManager::MaybeAddPrefetch(
     const NavigationID& navigation_id,
-    PrefetchKeyType key_type,
     const std::vector<GURL>& urls) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // Don't add a duplicate prefetch for the same host or URL.
-  std::string key = key_type == PREFETCH_KEY_TYPE_HOST ?
-      navigation_id.main_frame_url.host() : navigation_id.main_frame_url.spec();
+  // Don't add a duplicate prefetch for the same host.
+  const GURL& main_frame_url = navigation_id.main_frame_url;
+  std::string key = main_frame_url.host();
   if (base::ContainsKey(prefetcher_map_, key))
     return;
 
-  ResourcePrefetcher* prefetcher =
-      new ResourcePrefetcher(this, config_, navigation_id, key_type, urls);
-  prefetcher_map_[key] = base::WrapUnique(prefetcher);
+  auto prefetcher =
+      base::MakeUnique<ResourcePrefetcher>(this, config_, main_frame_url, urls);
   prefetcher->Start();
+  prefetcher_map_[key] = std::move(prefetcher);
 }
 
 void ResourcePrefetcherManager::MaybeRemovePrefetch(
     const NavigationID& navigation_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // Look for a URL based prefetch first.
-  auto it = prefetcher_map_.find(navigation_id.main_frame_url.spec());
+  const GURL& main_frame_url = navigation_id.main_frame_url;
+  std::string key = main_frame_url.host();
+
+  auto it = prefetcher_map_.find(key);
   if (it != prefetcher_map_.end() &&
-      it->second->navigation_id() == navigation_id) {
+      it->second->main_frame_url() == navigation_id.main_frame_url) {
     it->second->Stop();
     return;
-  }
-
-  // No URL based prefetching, look for host based.
-  it = prefetcher_map_.find(navigation_id.main_frame_url.host());
-  if (it != prefetcher_map_.end() &&
-      it->second->navigation_id() == navigation_id) {
-    it->second->Stop();
   }
 }
 
@@ -92,11 +86,7 @@ void ResourcePrefetcherManager::ResourcePrefetcherFinished(
     ResourcePrefetcher* resource_prefetcher) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  const GURL& main_frame_url =
-      resource_prefetcher->navigation_id().main_frame_url;
-  const std::string key =
-      resource_prefetcher->key_type() == PREFETCH_KEY_TYPE_HOST ?
-          main_frame_url.host() : main_frame_url.spec();
+  const std::string key = resource_prefetcher->main_frame_url().host();
   auto it = prefetcher_map_.find(key);
   DCHECK(it != prefetcher_map_.end());
   prefetcher_map_.erase(it);
