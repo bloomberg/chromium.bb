@@ -4,6 +4,7 @@
 
 #include "modules/webgl/WebGLTimerQueryEXT.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "public/platform/Platform.h"
@@ -17,8 +18,6 @@ WebGLTimerQueryEXT* WebGLTimerQueryEXT::create(WebGLRenderingContextBase* ctx)
 
 WebGLTimerQueryEXT::~WebGLTimerQueryEXT()
 {
-    unregisterTaskObserver();
-
     // See the comment in WebGLObject::detachAndDeleteObject().
     detachAndDeleteObject();
 }
@@ -27,10 +26,11 @@ WebGLTimerQueryEXT::WebGLTimerQueryEXT(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx)
     , m_target(0)
     , m_queryId(0)
-    , m_taskObserverRegistered(false)
     , m_canUpdateAvailability(false)
     , m_queryResultAvailable(false)
     , m_queryResult(0)
+    , m_taskRunner(TaskRunnerHelper::get(TaskType::Unthrottled, &ctx->canvas()->document())->clone())
+    , m_cancellableTaskFactory(CancellableTaskFactory::create(this, &WebGLTimerQueryEXT::allowAvailabilityUpdate))
 {
     context()->contextGL()->GenQueriesEXT(1, &m_queryId);
 }
@@ -43,7 +43,7 @@ void WebGLTimerQueryEXT::resetCachedResult()
     // When this is called, the implication is that we should start
     // keeping track of whether we can update the cached availability
     // and result.
-    registerTaskObserver();
+    scheduleAllowAvailabilityUpdate();
 }
 
 void WebGLTimerQueryEXT::updateCachedResult(gpu::gles2::GLES2Interface* gl)
@@ -73,7 +73,9 @@ void WebGLTimerQueryEXT::updateCachedResult(gpu::gles2::GLES2Interface* gl)
         GLuint64 result = 0;
         gl->GetQueryObjectui64vEXT(object(), GL_QUERY_RESULT_EXT, &result);
         m_queryResult = result;
-        unregisterTaskObserver();
+        m_cancellableTaskFactory->cancel();
+    } else {
+        scheduleAllowAvailabilityUpdate();
     }
 }
 
@@ -93,23 +95,13 @@ void WebGLTimerQueryEXT::deleteObjectImpl(gpu::gles2::GLES2Interface* gl)
     m_queryId = 0;
 }
 
-void WebGLTimerQueryEXT::registerTaskObserver()
+void WebGLTimerQueryEXT::scheduleAllowAvailabilityUpdate()
 {
-    if (!m_taskObserverRegistered) {
-        m_taskObserverRegistered = true;
-        Platform::current()->currentThread()->addTaskObserver(this);
-    }
+    if (!m_cancellableTaskFactory->isPending())
+        m_taskRunner->postTask(BLINK_FROM_HERE, m_cancellableTaskFactory->cancelAndCreate());
 }
 
-void WebGLTimerQueryEXT::unregisterTaskObserver()
-{
-    if (m_taskObserverRegistered) {
-        m_taskObserverRegistered = false;
-        Platform::current()->currentThread()->removeTaskObserver(this);
-    }
-}
-
-void WebGLTimerQueryEXT::didProcessTask()
+void WebGLTimerQueryEXT::allowAvailabilityUpdate()
 {
     m_canUpdateAvailability = true;
 }

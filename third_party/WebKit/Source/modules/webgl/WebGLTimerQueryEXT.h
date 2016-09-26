@@ -6,8 +6,7 @@
 #define WebGLTimerQueryEXT_h
 
 #include "modules/webgl/WebGLContextObject.h"
-
-#include "public/platform/WebThread.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 
 namespace gpu {
 namespace gles2 {
@@ -17,7 +16,9 @@ class GLES2Interface;
 
 namespace blink {
 
-class WebGLTimerQueryEXT : public WebGLContextObject, public WebThread::TaskObserver {
+class WebTaskRunner;
+
+class WebGLTimerQueryEXT : public WebGLContextObject {
     DEFINE_WRAPPERTYPEINFO();
 
 public:
@@ -43,20 +44,18 @@ private:
     bool hasObject() const override { return m_queryId != 0; }
     void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
-    void registerTaskObserver();
-    void unregisterTaskObserver();
-
-    // TaskObserver implementation.
-    void didProcessTask() override;
-    void willProcessTask() override { }
+    void scheduleAllowAvailabilityUpdate();
+    void allowAvailabilityUpdate();
 
     GLenum m_target;
     GLuint m_queryId;
 
-    bool m_taskObserverRegistered;
     bool m_canUpdateAvailability;
     bool m_queryResultAvailable;
     GLuint64 m_queryResult;
+
+    std::unique_ptr<WebTaskRunner> m_taskRunner;
+    std::unique_ptr<CancellableTaskFactory> m_cancellableTaskFactory;
 };
 
 } // namespace blink
