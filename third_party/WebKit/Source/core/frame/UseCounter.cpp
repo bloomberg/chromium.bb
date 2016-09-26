@@ -43,7 +43,7 @@ namespace {
 int totalPagesMeasuredCSSSampleId() { return 1; }
 
 // Make sure update_use_counter_css.py was run which updates histograms.xml.
-int maximumCSSSampleId() { return 545; }
+constexpr int kMaximumCSSSampleId = 545;
 
 } // namespace
 
@@ -579,7 +579,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(CSSPropertyID cssPrope
     case CSSPropertyOffsetPosition: return 545;
     // 1. Add new features above this line (don't change the assigned numbers of the existing
     // items).
-    // 2. Update maximumCSSSampleId() with the new maximum value.
+    // 2. Update kMaximumCSSSampleId with the new maximum value.
     // 3. Run the update_use_counter_css.py script in
     // chromium/src/tools/metrics/histograms to update the UMA histogram names.
 
@@ -795,8 +795,8 @@ EnumerationHistogram& UseCounter::featuresHistogram() const
 
 EnumerationHistogram& UseCounter::cssHistogram() const
 {
-    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram, ("WebCore.UseCounter_TEST.CSSProperties", maximumCSSSampleId()));
-    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svgHistogram, ("WebCore.UseCounter_TEST.SVGImage.CSSProperties", maximumCSSSampleId()));
+    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, histogram, ("WebCore.UseCounter_TEST.CSSProperties", kMaximumCSSSampleId));
+    DEFINE_STATIC_LOCAL(blink::EnumerationHistogram, svgHistogram, ("WebCore.UseCounter_TEST.SVGImage.CSSProperties", kMaximumCSSSampleId));
 
     return m_context == SVGImageContext ? svgHistogram : histogram;
 }
@@ -851,7 +851,7 @@ void UseCounter::LegacyCounter::updateMeasurements()
     // FIXME: Sometimes this function is called more than once per page. The following
     //        bool guards against incrementing the page count when there are no CSS
     //        bits set. https://crbug.com/236262.
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, cssPropertiesHistogram, ("WebCore.FeatureObserver.CSSProperties", maximumCSSSampleId()));
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, cssPropertiesHistogram, ("WebCore.FeatureObserver.CSSProperties", kMaximumCSSSampleId));
     bool needsPagesMeasuredUpdate = false;
     for (size_t i = firstCSSProperty; i <= lastUnresolvedCSSProperty; ++i) {
         if (m_CSSBits.quickGet(i)) {

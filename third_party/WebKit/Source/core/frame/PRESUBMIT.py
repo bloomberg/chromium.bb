@@ -23,7 +23,7 @@ def _RunUseCounterChecks(input_api, output_api):
     bucketFinder = input_api.re.compile(r'.*CSSProperty.*return\s*([0-9]+).*')
     # Looking for a line like "int maximumCSSSampleId() { return 452; }"
     maximumFinder = input_api.re.compile(
-        r'int maximumCSSSampleId\(\) { return ([0-9]+)')
+        r'constexpr int kMaximumCSSSampleId = ([0-9]+);')
     for line in useCounterCpp.NewContents():
         bucketMatch = bucketFinder.match(line)
         if bucketMatch:
