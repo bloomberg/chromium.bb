@@ -71,6 +71,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/security_style.h"
@@ -2789,7 +2790,11 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
       https_server_url.ReplaceComponents(replacements);
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver observer(contents, 2);
+  content::TestNavigationObserver observer(
+      contents,
+      // With PlzNavigate, the renderer only sees one navigation (i.e. not the
+      // redirect, since that happens in the browser).
+      content::IsBrowserSideNavigationEnabled() ? 1 : 2);
   ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
   observer.Wait();
 
@@ -2843,7 +2848,11 @@ IN_PROC_BROWSER_TEST_F(CommonNameMismatchBrowserTest,
       https_server_url.ReplaceComponents(replacements);
 
   WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
-  content::TestNavigationObserver observer(contents, 2);
+  content::TestNavigationObserver observer(
+      contents,
+      // With PlzNavigate, the renderer only sees one navigation (i.e. not the
+      // redirect, since that happens in the browser).
+      content::IsBrowserSideNavigationEnabled() ? 1 : 2);
   ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
   observer.Wait();
 
