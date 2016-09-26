@@ -4,6 +4,7 @@
 
 package org.chromium.blimp;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -283,6 +284,7 @@ public class BlimpRendererActivity
      * Displays debug metrics up to one decimal place.
      */
     @Override
+    @SuppressLint("DefaultLocale")
     public void updateDebugStatsUI(int received, int sent, int commits) {
         TextView tv = (TextView) findViewById(R.id.bytes_received_client);
         tv.setText(String.format("%.1f", (float) received / BYTES_PER_KILO));
