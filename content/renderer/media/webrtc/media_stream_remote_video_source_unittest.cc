@@ -41,9 +41,7 @@ class MediaStreamRemoteVideoSourceTest
   MediaStreamRemoteVideoSourceTest()
       : child_process_(new ChildProcess()),
         mock_factory_(new MockPeerConnectionDependencyFactory()),
-        webrtc_video_track_(mock_factory_->CreateLocalVideoTrack(
-            "test",
-            static_cast<cricket::VideoCapturer*>(NULL))),
+        webrtc_video_track_(MockWebRtcVideoTrack::Create("test")),
         remote_source_(new MediaStreamRemoteVideoSourceUnderTest(
             std::unique_ptr<TrackObserver>(
                 new TrackObserver(base::ThreadTaskRunnerHandle::Get(),

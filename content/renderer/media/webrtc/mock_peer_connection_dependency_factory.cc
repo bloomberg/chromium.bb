@@ -119,39 +119,6 @@ void MockMediaStream::NotifyObservers() {
 
 MockMediaStream::~MockMediaStream() {}
 
-class MockRtcVideoCapturer : public WebRtcVideoCapturerAdapter {
- public:
-  explicit MockRtcVideoCapturer(bool is_screencast)
-      : WebRtcVideoCapturerAdapter(is_screencast),
-        number_of_capturered_frames_(0),
-        width_(0),
-        height_(0) {
-  }
-
-  void OnFrameCaptured(const scoped_refptr<media::VideoFrame>& frame) override {
-    ++number_of_capturered_frames_;
-    width_ = frame->visible_rect().width();
-    height_ = frame->visible_rect().height();
-  }
-
-  int GetLastFrameWidth() const {
-    return width_;
-  }
-
-  int GetLastFrameHeight() const {
-    return height_;
-  }
-
-  int GetFrameNum() const {
-    return number_of_capturered_frames_;
-  }
-
- private:
-  int number_of_capturered_frames_;
-  int width_;
-  int height_;
-};
-
 scoped_refptr<MockWebRtcAudioTrack> MockWebRtcAudioTrack::Create(
     const std::string& id) {
   return new rtc::RefCountedObject<MockWebRtcAudioTrack>(id);
@@ -367,21 +334,11 @@ MockPeerConnectionDependencyFactory::CreatePeerConnection(
   return new rtc::RefCountedObject<MockPeerConnectionImpl>(this, observer);
 }
 
-WebRtcVideoCapturerAdapter*
-MockPeerConnectionDependencyFactory::CreateVideoCapturer(
-    bool is_screen_capture) {
-  return new MockRtcVideoCapturer(is_screen_capture);
-}
-
 scoped_refptr<webrtc::VideoTrackSourceInterface>
-MockPeerConnectionDependencyFactory::CreateVideoSource(
-    cricket::VideoCapturer* capturer) {
-  // Video source normally take ownership of |capturer|.
-  delete capturer;
-  NOTIMPLEMENTED();
+MockPeerConnectionDependencyFactory::CreateVideoTrackSourceProxy(
+    webrtc::VideoTrackSourceInterface* source) {
   return nullptr;
 }
-
 scoped_refptr<webrtc::MediaStreamInterface>
 MockPeerConnectionDependencyFactory::CreateLocalMediaStream(
     const std::string& label) {
@@ -396,13 +353,6 @@ MockPeerConnectionDependencyFactory::CreateLocalVideoTrack(
       new rtc::RefCountedObject<MockWebRtcVideoTrack>(
           id, source));
   return track;
-}
-
-scoped_refptr<webrtc::VideoTrackInterface>
-MockPeerConnectionDependencyFactory::CreateLocalVideoTrack(
-    const std::string& id,
-    cricket::VideoCapturer* capturer) {
-  return new rtc::RefCountedObject<MockWebRtcVideoTrack>(id, nullptr);
 }
 
 SessionDescriptionInterface*

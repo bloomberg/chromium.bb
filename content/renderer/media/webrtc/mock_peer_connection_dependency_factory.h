@@ -126,18 +126,13 @@ class MockPeerConnectionDependencyFactory
       const webrtc::PeerConnectionInterface::RTCConfiguration& config,
       blink::WebFrame* frame,
       webrtc::PeerConnectionObserver* observer) override;
-  WebRtcVideoCapturerAdapter* CreateVideoCapturer(
-      bool is_screen_capture) override;
-  scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoSource(
-      cricket::VideoCapturer* capturer) override;
+  scoped_refptr<webrtc::VideoTrackSourceInterface> CreateVideoTrackSourceProxy(
+      webrtc::VideoTrackSourceInterface* source) override;
   scoped_refptr<webrtc::MediaStreamInterface> CreateLocalMediaStream(
       const std::string& label) override;
   scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
       const std::string& id,
       webrtc::VideoTrackSourceInterface* source) override;
-  scoped_refptr<webrtc::VideoTrackInterface> CreateLocalVideoTrack(
-      const std::string& id,
-      cricket::VideoCapturer* capturer) override;
   webrtc::SessionDescriptionInterface* CreateSessionDescription(
       const std::string& type,
       const std::string& sdp,

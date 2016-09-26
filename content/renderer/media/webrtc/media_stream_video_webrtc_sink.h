@@ -49,6 +49,12 @@ class MediaStreamVideoWebRtcSink : public MediaStreamVideoSink {
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
+  // |video_source_| and |video_track_source_proxy_| are held as references to
+  // outlive |video_track_| since the interfaces between them don't use
+  // reference counting.
+  class WebRtcVideoSource;
+  scoped_refptr<WebRtcVideoSource> video_source_;
+  scoped_refptr<webrtc::VideoTrackSourceInterface> video_source_proxy_;
   scoped_refptr<webrtc::VideoTrackInterface> video_track_;
 
   class WebRtcVideoSourceAdapter;
