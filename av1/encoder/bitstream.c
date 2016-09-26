@@ -343,9 +343,14 @@ static void write_delta_qindex(const AV1_COMMON *cm, int delta_qindex,
 static void update_delta_q_probs(AV1_COMMON *cm, aom_writer *w,
                                  FRAME_COUNTS *counts) {
   int k;
-
+#if CONFIG_TILE_GROUPS
+  const probwt = cm->num_tg;
+#else
+  const probwt = 1;
+#endif
   for (k = 0; k < DELTA_Q_CONTEXTS; ++k) {
-    av1_cond_prob_diff_update(w, &cm->fc->delta_q_prob[k], counts->delta_q[k]);
+    av1_cond_prob_diff_update(w, &cm->fc->delta_q_prob[k], counts->delta_q[k],
+                              probwt);
   }
 }
 #endif
