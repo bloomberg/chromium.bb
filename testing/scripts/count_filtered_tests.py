@@ -63,7 +63,7 @@ def main_run(args):
   negative_filter_list = LoadFilterList(
       os.path.join(base_path, test_filter_file))
 
-  result = {'valid': True}
+  result = {'valid': True, 'failures': []}
   result['total_tests'] = len(tests)
   result['disabled_tests'] = len([t for t in tests if '.DISABLED_' in t])
 
