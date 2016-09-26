@@ -1,6 +1,7 @@
--BackgroundSyncBrowserTest*
+-DevToolsProtocolTest.ControlNavigationsMainFrame
 -IFrameZoomBrowserTest.RedirectToPageWithSubframeZoomsCorrectly
 -IFrameZoomBrowserTest.SubframesDontZoomIndependently
 -NavigationControllerBrowserTest.EnsureSamePageNavigationUpdatesFrameNavigationEntry
 -RequestDataResourceDispatcherHostBrowserTest.*
--ServiceWorker*
+-ServiceWorkerBrowserTest.FetchPageWithSaveData
+-ServiceWorkerBrowserTest.FetchPageWithSaveDataPassThroughOnFetch
