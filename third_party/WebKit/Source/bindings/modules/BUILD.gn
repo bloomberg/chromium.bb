@@ -93,17 +93,9 @@ make_names("event_target_modules_names") {
 
 # ------------------------------------------------------------------------------
 
-# In GYP, paths needed to be passed separately for static and generated files,
-# as static files are listed in a temporary file (b/c too long for command
-# line), but generated files must be passed at the command line, as their paths
-# are not fixed at GYP time, when the temporary file is generated, because
-# their paths depend on the build directory, which varies.
-#
-# FIXME: GN does not have this limitation and we can combine the lists.
 compute_interfaces_info_individual("interfaces_info_individual_modules") {
-  sources_static =
-      modules_definition_idl_files + modules_static_dependency_idl_files
-  sources_generated = modules_generated_dependency_idl_files
+  sources = modules_definition_idl_files + modules_static_dependency_idl_files +
+      modules_generated_dependency_idl_files
   interfaces_info_file =
       "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle"
   component_info_file =

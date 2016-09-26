@@ -50,7 +50,13 @@ import sys
 from idl_compiler import idl_filename_to_interface_name
 from idl_definitions import Visitor
 from idl_reader import IdlReader
-from utilities import get_file_contents, read_file_to_list, idl_filename_to_interface_name, idl_filename_to_component, write_pickle_file, get_interface_extended_attributes_from_idl, is_callback_interface_from_idl, merge_dict_recursively, shorten_union_name
+from utilities import idl_filename_to_component
+from utilities import idl_filename_to_interface_name
+from utilities import merge_dict_recursively
+from utilities import read_idl_files_list_from_file
+from utilities import shorten_union_name
+from utilities import write_pickle_file
+
 
 module_path = os.path.dirname(__file__)
 source_path = os.path.normpath(os.path.join(module_path, os.pardir, os.pardir))
@@ -63,7 +69,7 @@ class IdlBadFilenameError(Exception):
 
 
 def parse_options():
-    usage = 'Usage: %prog [options] [generated1.idl]...'
+    usage = 'Usage: %prog [options]'
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--cache-directory', help='cache directory')
     parser.add_option('--idl-files-list', help='file listing IDL files')
@@ -341,15 +347,10 @@ class InterfaceInfoCollector(object):
 ################################################################################
 
 def main():
-    options, args = parse_options()
+    options, _ = parse_options()
 
-    # Static IDL files are passed in a file (generated at GYP time), due to OS
-    # command line length limits
-    idl_files = read_file_to_list(options.idl_files_list)
-    # Generated IDL files are passed at the command line, since these are in the
-    # build directory, which is determined at build time, not GYP time, so these
-    # cannot be included in the file listing static files
-    idl_files.extend(args)
+    # IDL files are passed in a file, due to OS command line length limits
+    idl_files = read_idl_files_list_from_file(options.idl_files_list, is_gyp_format=False)
 
     # Compute information for individual files
     # Information is stored in global variables interfaces_info and

@@ -57,16 +57,10 @@ idl_compiler_files = get_path_info([
 # Calls the compute_interfaces_info_individual script.
 #
 # Parameters:
-#   sources_static = list of IDL files to pass as inputs
-#   sources_generated = list of generated IDL files to pass as inputs
-#   component_dir = name if subdirectory (one word, no slashes) of component.
+#   sources = list of IDL files to pass as inputs
 #   interfaces_info_file = output pickle file for interfaces info.
 #   component_info_file = output pickle file for component wide info.
 #   deps = dependencies
-#
-# FIXME: Note the static/generated split is for consistency with GYP. This
-# split is not necessary in the GN build and could be combined into a single
-# "sources".
 template("compute_interfaces_info_individual") {
   action(target_name) {
     script = "$bindings_scripts_dir/compute_interfaces_info_individual.py"
@@ -74,33 +68,24 @@ template("compute_interfaces_info_individual") {
       visibility = invoker.visibility
     }
 
-    # Save static list to temp file to avoid blowing out command-line length
-    # limit.
-    file_list = "$target_gen_dir/${target_name}_file_list.txt"
-    write_file(file_list, rebase_path(invoker.sources_static, root_build_dir))
-
-    inputs = [
-               "$bindings_scripts_dir/utilities.py",
-               file_list,
-             ] + invoker.sources_static + invoker.sources_generated
-
+    inputs = [ "$bindings_scripts_dir/utilities.py" ] + invoker.sources
     outputs = [
       invoker.interfaces_info_file,
       invoker.component_info_file,
     ]
 
+    response_file_contents = rebase_path(invoker.sources, root_build_dir)
     args = [
-             "--cache-directory",
-             rebase_path(bindings_scripts_output_dir, root_build_dir),
-             "--idl-files-list",
-             rebase_path(file_list, root_build_dir),
-             "--interfaces-info-file",
-             rebase_path(invoker.interfaces_info_file, root_build_dir),
-             "--component-info-file",
-             rebase_path(invoker.component_info_file, root_build_dir),
-             "--write-file-only-if-changed=1",
-             "--",
-           ] + rebase_path(invoker.sources_generated, root_build_dir)
+      "--cache-directory",
+      rebase_path(bindings_scripts_output_dir, root_build_dir),
+      "--idl-files-list",
+      "{{response_file_name}}",
+      "--interfaces-info-file",
+      rebase_path(invoker.interfaces_info_file, root_build_dir),
+      "--component-info-file",
+      rebase_path(invoker.component_info_file, root_build_dir),
+      "--write-file-only-if-changed=1",
+    ]
 
     deps = [ "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables" ] + invoker.deps
   }
