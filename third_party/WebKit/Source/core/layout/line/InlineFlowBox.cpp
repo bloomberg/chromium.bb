@@ -125,8 +125,6 @@ void InlineFlowBox::addToLine(InlineBox* child)
             }
             if (childStyle.hasTextCombine() || childStyle.getTextEmphasisMark() != TextEmphasisMarkNone)
                 shouldClearDescendantsHaveSameLineHeightAndBaseline = true;
-            if (child->isInlineTextBox() && isFirstLineStyle() && childStyle.textTransform() != child->getLineLayoutItem().styleRef(false).textTransform())
-                toInlineTextBox(child)->transformText();
         } else {
             if (child->getLineLayoutItem().isBR()) {
                 // FIXME: This is dumb. We only turn off because current layout test results expect the <br> to be 0-height on the baseline.

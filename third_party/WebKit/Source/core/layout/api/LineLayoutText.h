@@ -154,11 +154,6 @@ public:
         return toText()->minLogicalWidth();
     }
 
-    void applyTextTransformFromTo(int from, int len, const ComputedStyle* style)
-    {
-        toText()->applyTextTransformFromTo(from, len, style);
-    }
-
 private:
     LayoutText* toText() { return toLayoutText(layoutObject()); }
     const LayoutText* toText() const { return toLayoutText(layoutObject()); }
