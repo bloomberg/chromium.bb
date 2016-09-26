@@ -185,6 +185,56 @@ TEST_F(ImportantSitesUtilTest, SourceOrdering) {
                            important_sites);
 }
 
+TEST_F(ImportantSitesUtilTest, TooManyBookmarks) {
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
+  ASSERT_TRUE(service);
+
+  GURL url1("http://www.google.com/");
+  GURL url2("https://www.google.com/");
+  GURL url3("https://drive.google.com/");
+  GURL url4("https://www.chrome.com/");
+  GURL url5("https://www.example.com/");
+  GURL url6("https://youtube.com/");
+  GURL url7("https://foo.bar/");
+
+  // Add some as bookmarks.
+  AddBookmark(url1);
+  AddBookmark(url2);
+  AddBookmark(url3);
+  AddBookmark(url4);
+  AddBookmark(url5);
+
+  // We have just below our limit, so all sites are important (the first three
+  // origins collapse, so we end up with 3).
+  std::vector<ImportantDomainInfo> important_sites =
+      ImportantSitesUtil::GetImportantRegisterableDomains(profile(),
+                                                          kNumImportantSites);
+  EXPECT_EQ(3u, important_sites.size());
+
+  // Add the rest, which should put us over the limit.
+  AddBookmark(url6);
+  AddBookmark(url7);
+  // Too many bookmarks! Nothing shows up now.
+  important_sites = ImportantSitesUtil::GetImportantRegisterableDomains(
+      profile(), kNumImportantSites);
+  EXPECT_EQ(0u, important_sites.size());
+
+  // If we add some site engagement, these should show up in order (even though
+  // the engagement is too low for a signal by itself).
+  service->ResetScoreForURL(url1, 2);
+  service->ResetScoreForURL(url4, 3);
+  service->ResetScoreForURL(url7, 0);
+
+  important_sites = ImportantSitesUtil::GetImportantRegisterableDomains(
+      profile(), kNumImportantSites);
+  ASSERT_EQ(2u, important_sites.size());
+  std::vector<std::string> expected_sorted_domains = {"google.com",
+                                                      "chrome.com"};
+  std::vector<GURL> expected_sorted_origins = {url1, url4};
+  ExpectImportantResultsEq(expected_sorted_domains, expected_sorted_origins,
+                           important_sites);
+}
+
 TEST_F(ImportantSitesUtilTest, Blacklisting) {
   SiteEngagementService* service = SiteEngagementService::Get(profile());
   ASSERT_TRUE(service);

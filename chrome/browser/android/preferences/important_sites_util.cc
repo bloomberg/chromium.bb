@@ -35,6 +35,11 @@ using ImportantDomainInfo = ImportantSitesUtil::ImportantDomainInfo;
 static const char kNumTimesIgnoredName[] = "NumTimesIgnored";
 static const int kTimesIgnoredForBlacklist = 3;
 
+// These are the maximum # of bookmarks we can use as signals. If the user has
+// <= kMaxBookmarks, then we just use those bookmarks. Otherwise we filter all
+// bookmarks on site engagement > 0, sort, and trim to kMaxBookmarks.
+static const int kMaxBookmarks = 5;
+
 // Do not change the values here, as they are used for UMA histograms.
 enum ImportantReason {
   ENGAGEMENT = 0,
@@ -205,12 +210,13 @@ base::hash_set<std::string> GetBlacklistedImportantDomains(Profile* profile) {
 void PopulateInfoMapWithSiteEngagement(
     Profile* profile,
     SiteEngagementService::EngagementLevel minimum_engagement,
+    std::map<GURL, double>* engagement_map,
     base::hash_map<std::string, ImportantDomainInfo>* output) {
   SiteEngagementService* service = SiteEngagementService::Get(profile);
-  std::map<GURL, double> engagement_map = service->GetScoreMap();
+  *engagement_map = service->GetScoreMap();
   // We can have multiple origins for a single domain, so we record the one
   // with the highest engagement score.
-  for (const auto& url_engagement_pair : engagement_map) {
+  for (const auto& url_engagement_pair : *engagement_map) {
     if (!service->IsEngagementAtLeast(url_engagement_pair.first,
                                       minimum_engagement)) {
       continue;
@@ -250,15 +256,41 @@ void PopulateInfoMapWithContentTypeAllowed(
 
 void PopulateInfoMapWithBookmarks(
     Profile* profile,
+    const std::map<GURL, double>& engagement_map,
     base::hash_map<std::string, ImportantDomainInfo>* output) {
+  SiteEngagementService* service = SiteEngagementService::Get(profile);
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContextIfExists(profile);
   if (!model)
     return;
-  std::vector<BookmarkModel::URLAndTitle> bookmarks;
-  model->GetBookmarks(&bookmarks);
+  std::vector<BookmarkModel::URLAndTitle> untrimmed_bookmarks;
+  model->GetBookmarks(&untrimmed_bookmarks);
+
+  // Process the bookmarks and optionally trim them if we have too many.
+  std::vector<BookmarkModel::URLAndTitle> result_bookmarks;
+  if (untrimmed_bookmarks.size() > kMaxBookmarks) {
+    std::copy_if(untrimmed_bookmarks.begin(), untrimmed_bookmarks.end(),
+                 std::back_inserter(result_bookmarks),
+                 [service](const BookmarkModel::URLAndTitle& entry) {
+                   return service->IsEngagementAtLeast(
+                       entry.url.GetOrigin(),
+                       SiteEngagementService::ENGAGEMENT_LEVEL_LOW);
+                 });
+    std::sort(result_bookmarks.begin(), result_bookmarks.end(),
+              [&engagement_map](const BookmarkModel::URLAndTitle& a,
+                                const BookmarkModel::URLAndTitle& b) {
+                double a_score = engagement_map.at(a.url.GetOrigin());
+                double b_score = engagement_map.at(b.url.GetOrigin());
+                return a_score > b_score;
+              });
+    if (result_bookmarks.size() > kMaxBookmarks)
+      result_bookmarks.resize(kMaxBookmarks);
+  } else {
+    result_bookmarks = std::move(untrimmed_bookmarks);
+  }
+
   std::set<GURL> content_origins;
-  for (const BookmarkModel::URLAndTitle& bookmark : bookmarks) {
+  for (const BookmarkModel::URLAndTitle& bookmark : result_bookmarks) {
     MaybePopulateImportantInfoForReason(bookmark.url, &content_origins,
                                         ImportantReason::BOOKMARKS, output);
   }
@@ -290,9 +322,11 @@ std::vector<ImportantDomainInfo>
 ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
                                                     size_t max_results) {
   base::hash_map<std::string, ImportantDomainInfo> important_info;
+  std::map<GURL, double> engagement_map;
 
   PopulateInfoMapWithSiteEngagement(
-      profile, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM, &important_info);
+      profile, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM, &engagement_map,
+      &important_info);
 
   PopulateInfoMapWithContentTypeAllowed(
       profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
@@ -302,7 +336,7 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
       profile, CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, ImportantReason::DURABLE,
       &important_info);
 
-  PopulateInfoMapWithBookmarks(profile, &important_info);
+  PopulateInfoMapWithBookmarks(profile, engagement_map, &important_info);
 
   PopulateInfoMapWithHomeScreen(profile, &important_info);
 
