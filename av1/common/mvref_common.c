@@ -605,9 +605,6 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     }
 
     if (prev_frame_mvs->ref_frame[1] > INTRA_FRAME &&
-#if !CONFIG_MISC_FIXES
-        prev_frame_mvs->mv[1].as_int != prev_frame_mvs->mv[0].as_int &&
-#endif
         prev_frame_mvs->ref_frame[1] != ref_frame) {
       int_mv mv = prev_frame_mvs->mv[1];
       if (ref_sign_bias[prev_frame_mvs->ref_frame[1]] !=
