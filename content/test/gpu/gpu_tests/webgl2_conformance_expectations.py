@@ -147,8 +147,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Mac only.
 
     # Fixed on OSX 10.11
-    self.Fail('deqp/functional/gles3/shaderloop_do_while.html',
-        ['mac'], bug=617820)
     self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
         ['mac', 'amd'], bug=483282)
 
