@@ -35,7 +35,21 @@
 namespace cc {
 namespace {
 
-static const int kMaxDiscardableItems = 2000;
+// The number or entries to keep in the cache, depending on the memory state of
+// the system. This limit can be breached by in-use cache items, which cannot
+// be deleted.
+static const int kNormalMaxItemsInCache = 2000;
+static const int kThrottledMaxItemsInCache = 100;
+static const int kSuspendedMaxItemsInCache = 0;
+
+// The factor by which to reduce the GPU memory size of the cache when in the
+// THROTTLED memory state.
+static const int kThrottledCacheSizeReductionFactor = 2;
+
+// The maximum size in bytes of GPU memory in the cache while SUSPENDED or not
+// visible. This limit can be breached by in-use cache items, which cannot be
+// deleted.
+static const int kSuspendedOrInvisibleMaxGpuImageBytes = 0;
 
 // Returns true if an image would not be drawn and should therefore be
 // skipped rather than decoded.
@@ -327,10 +341,7 @@ GpuImageDecodeController::GpuImageDecodeController(ContextProvider* context,
     : format_(decode_format),
       context_(context),
       persistent_cache_(PersistentCache::NO_AUTO_EVICT),
-      cached_items_limit_(kMaxDiscardableItems),
-      cached_bytes_limit_(max_gpu_image_bytes),
-      bytes_used_(0),
-      max_gpu_image_bytes_(max_gpu_image_bytes) {
+      normal_max_gpu_image_bytes_(max_gpu_image_bytes) {
   // Acquire the context_lock so that we can safely retrieve the
   // GrContextThreadSafeProxy. This proxy can then be used with no lock held.
   {
@@ -522,7 +533,7 @@ void GpuImageDecodeController::SetShouldAggressivelyFreeResources(
     base::AutoLock lock(lock_);
     // We want to keep as little in our cache as possible. Set our memory limit
     // to zero and EnsureCapacity to clean up memory.
-    cached_bytes_limit_ = 0;
+    cached_bytes_limit_ = kSuspendedOrInvisibleMaxGpuImageBytes;
     EnsureCapacity(0);
 
     // We are holding the context lock, so finish cleaning up deleted images
@@ -530,7 +541,7 @@ void GpuImageDecodeController::SetShouldAggressivelyFreeResources(
     DeletePendingImages();
   } else {
     base::AutoLock lock(lock_);
-    cached_bytes_limit_ = max_gpu_image_bytes_;
+    cached_bytes_limit_ = normal_max_gpu_image_bytes_;
   }
 }
 
@@ -909,15 +920,35 @@ bool GpuImageDecodeController::EnsureCapacity(size_t required_size) {
 bool GpuImageDecodeController::CanFitSize(size_t size) const {
   lock_.AssertAcquired();
 
+  size_t bytes_limit;
+  if (memory_state_ == base::MemoryState::NORMAL) {
+    bytes_limit = cached_bytes_limit_;
+  } else if (memory_state_ == base::MemoryState::THROTTLED) {
+    bytes_limit = cached_bytes_limit_ / kThrottledCacheSizeReductionFactor;
+  } else {
+    DCHECK_EQ(base::MemoryState::SUSPENDED, memory_state_);
+    bytes_limit = kSuspendedOrInvisibleMaxGpuImageBytes;
+  }
+
   base::CheckedNumeric<uint32_t> new_size(bytes_used_);
   new_size += size;
-  return new_size.IsValid() && new_size.ValueOrDie() <= cached_bytes_limit_;
+  return new_size.IsValid() && new_size.ValueOrDie() <= bytes_limit;
 }
 
 bool GpuImageDecodeController::ExceedsPreferredCount() const {
   lock_.AssertAcquired();
 
-  return persistent_cache_.size() > cached_items_limit_;
+  size_t items_limit;
+  if (memory_state_ == base::MemoryState::NORMAL) {
+    items_limit = kNormalMaxItemsInCache;
+  } else if (memory_state_ == base::MemoryState::THROTTLED) {
+    items_limit = kThrottledMaxItemsInCache;
+  } else {
+    DCHECK_EQ(base::MemoryState::SUSPENDED, memory_state_);
+    items_limit = kSuspendedMaxItemsInCache;
+  }
+
+  return persistent_cache_.size() > items_limit;
 }
 
 void GpuImageDecodeController::DecodeImageIfNecessary(
@@ -1174,16 +1205,18 @@ bool GpuImageDecodeController::DiscardableIsLockedForTesting(
 void GpuImageDecodeController::OnMemoryStateChange(base::MemoryState state) {
   switch (state) {
     case base::MemoryState::NORMAL:
-      // TODO(tasak): go back to normal state.
+      memory_state_ = state;
       break;
     case base::MemoryState::THROTTLED:
-      // TODO(tasak): make the limits of this component's caches smaller to
-      // save memory usage.
+    case base::MemoryState::SUSPENDED: {
+      memory_state_ = state;
+
+      // We've just changed our memory state to a (potentially) more
+      // restrictive one. Re-enforce cache limits.
+      base::AutoLock lock(lock_);
+      EnsureCapacity(0);
       break;
-    case base::MemoryState::SUSPENDED:
-      // TODO(tasak): free this component's caches as much as possible before
-      // suspending renderer.
-      break;
+    }
     case base::MemoryState::UNKNOWN:
       // NOT_REACHED.
       break;

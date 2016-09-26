@@ -125,6 +125,9 @@ class CC_EXPORT GpuImageDecodeController
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  // base::MemoryCoordinatorClient overrides.
+  void OnMemoryStateChange(base::MemoryState state) override;
+
   // Called by Decode / Upload tasks.
   void DecodeImage(const DrawImage& image);
   void UploadImage(const DrawImage& image);
@@ -134,13 +137,13 @@ class CC_EXPORT GpuImageDecodeController
   void OnImageUploadTaskCompleted(const DrawImage& image);
 
   // For testing only.
-  void SetCachedItemLimitForTesting(size_t limit) {
-    cached_items_limit_ = limit;
-  }
   void SetCachedBytesLimitForTesting(size_t limit) {
     cached_bytes_limit_ = limit;
   }
   size_t GetBytesUsedForTesting() const { return bytes_used_; }
+  size_t GetNumCacheEntriesForTesting() const {
+    return persistent_cache_.size();
+  }
   size_t GetDrawImageSizeForTesting(const DrawImage& image);
   void SetImageDecodingFailedForTesting(const DrawImage& image);
   bool DiscardableIsLockedForTesting(const DrawImage& image);
@@ -300,9 +303,6 @@ class CC_EXPORT GpuImageDecodeController
                               ImageData* image_data);
   void DeletePendingImages();
 
-  // Overriden from base::MemoryCoordinatorClient.
-  void OnMemoryStateChange(base::MemoryState state) override;
-
   const ResourceFormat format_;
   ContextProvider* context_;
   sk_sp<GrContextThreadSafeProxy> context_threadsafe_proxy_;
@@ -320,10 +320,10 @@ class CC_EXPORT GpuImageDecodeController
   using InUseCache = std::unordered_map<InUseCacheKey, InUseCacheEntry>;
   InUseCache in_use_cache_;
 
-  size_t cached_items_limit_;
-  size_t cached_bytes_limit_;
-  size_t bytes_used_;
-  const size_t max_gpu_image_bytes_;
+  const size_t normal_max_gpu_image_bytes_;
+  size_t cached_bytes_limit_ = normal_max_gpu_image_bytes_;
+  size_t bytes_used_ = 0;
+  base::MemoryState memory_state_ = base::MemoryState::NORMAL;
 
   // We can't release GPU backed SkImages without holding the context lock,
   // so we add them to this list and defer deletion until the next time the lock

@@ -426,8 +426,8 @@ void StagingBufferPool::OnMemoryStateChange(base::MemoryState state) {
       // save memory usage.
       break;
     case base::MemoryState::SUSPENDED:
-      // TODO(tasak): free this component's caches as much as possible before
-      // suspending renderer.
+      // Release all buffers, regardless of how recently they were used.
+      ReleaseBuffersNotUsedSince(base::TimeTicks() + base::TimeDelta::Max());
       break;
     case base::MemoryState::UNKNOWN:
       // NOT_REACHED.

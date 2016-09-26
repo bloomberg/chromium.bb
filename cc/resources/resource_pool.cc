@@ -469,8 +469,8 @@ void ResourcePool::OnMemoryStateChange(base::MemoryState state) {
       // save memory usage.
       break;
     case base::MemoryState::SUSPENDED:
-      // TODO(tasak): free this component's caches as much as possible before
-      // suspending renderer.
+      // Release all resources, regardless of how recently they were used.
+      EvictResourcesNotUsedSince(base::TimeTicks() + base::TimeDelta::Max());
       break;
     case base::MemoryState::UNKNOWN:
       // NOT_REACHED.

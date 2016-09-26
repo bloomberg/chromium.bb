@@ -637,7 +637,6 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDrawAtRasterDecode) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  controller.SetCachedItemLimitForTesting(0);
   controller.SetCachedBytesLimitForTesting(0);
 
   sk_sp<SkImage> image = CreateImage(100, 100);
@@ -861,7 +860,6 @@ TEST(GpuImageDecodeControllerTest, AtRasterUsedDirectlyIfSpaceAllows) {
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  controller.SetCachedItemLimitForTesting(0);
   controller.SetCachedBytesLimitForTesting(0);
 
   sk_sp<SkImage> image = CreateImage(100, 100);
@@ -885,7 +883,6 @@ TEST(GpuImageDecodeControllerTest, AtRasterUsedDirectlyIfSpaceAllows) {
   EXPECT_TRUE(decoded_draw_image.is_at_raster_decode());
   EXPECT_FALSE(controller.DiscardableIsLockedForTesting(draw_image));
 
-  controller.SetCachedItemLimitForTesting(1000);
   controller.SetCachedBytesLimitForTesting(96 * 1024 * 1024);
 
   // Finish our draw after increasing the memory limit, image should be added to
@@ -908,7 +905,6 @@ TEST(GpuImageDecodeControllerTest,
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
 
-  controller.SetCachedItemLimitForTesting(0);
   controller.SetCachedBytesLimitForTesting(0);
 
   sk_sp<SkImage> image = CreateImage(100, 100);
@@ -1305,6 +1301,67 @@ TEST(GpuImageDecodeControllerTest, GetDecodedImageForDrawMipUsageChange) {
   DecodedDrawImage decoded_draw_image =
       controller.GetDecodedImageForDraw(draw_image_mips);
   controller.DrawWithImageFinished(draw_image_mips, decoded_draw_image);
+}
+
+TEST(GpuImageDecodeControllerTest, MemoryStateSuspended) {
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  TestGpuImageDecodeController controller(context_provider.get());
+
+  // First Insert an image into our cache.
+  sk_sp<SkImage> image = CreateImage(1, 1);
+  bool is_decomposable = true;
+  SkMatrix matrix = CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable);
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       kLow_SkFilterQuality, matrix);
+  scoped_refptr<TileTask> task;
+  bool need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+
+  TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(task.get());
+  controller.UnrefImage(draw_image);
+
+  // The image should be cached.
+  DCHECK_GT(controller.GetBytesUsedForTesting(), 0u);
+  DCHECK_EQ(controller.GetNumCacheEntriesForTesting(), 1u);
+
+  // Set us to the not visible state (prerequisite for SUSPENDED).
+  controller.SetShouldAggressivelyFreeResources(true);
+
+  // Image should be cached, but not using memory budget.
+  DCHECK_EQ(controller.GetBytesUsedForTesting(), 0u);
+  DCHECK_EQ(controller.GetNumCacheEntriesForTesting(), 1u);
+
+  // Set us to the SUSPENDED state.
+  controller.OnMemoryStateChange(base::MemoryState::SUSPENDED);
+
+  // Nothing should be cached.
+  DCHECK_EQ(controller.GetBytesUsedForTesting(), 0u);
+  DCHECK_EQ(controller.GetNumCacheEntriesForTesting(), 0u);
+
+  // Attempts to get a task for the image should fail, as we have no space (at
+  // raster only).
+  need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_FALSE(need_unref);
+  EXPECT_FALSE(task);
+
+  // Restore us to visible and NORMAL memory state.
+  controller.OnMemoryStateChange(base::MemoryState::NORMAL);
+  controller.SetShouldAggressivelyFreeResources(false);
+
+  // We should now be able to create a task again (space available).
+  need_unref = controller.GetTaskForImageAndRef(
+      draw_image, ImageDecodeController::TracingInfo(), &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+
+  TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(task.get());
+  controller.UnrefImage(draw_image);
 }
 
 }  // namespace

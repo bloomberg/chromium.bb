@@ -335,4 +335,36 @@ TEST_F(ResourcePoolTest, ReuseResource) {
   resource_pool_->ReleaseResource(resource);
 }
 
+TEST_F(ResourcePoolTest, MemoryStateSuspended) {
+  // Limits high enough to not be hit by this test.
+  size_t bytes_limit = 10 * 1024 * 1024;
+  size_t count_limit = 100;
+  resource_pool_->SetResourceUsageLimits(bytes_limit, count_limit);
+
+  gfx::Size size(100, 100);
+  ResourceFormat format = RGBA_8888;
+  gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
+  Resource* resource =
+      resource_pool_->AcquireResource(size, format, color_space);
+
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
+
+  // Suspending should not impact an in-use resource.
+  resource_pool_->OnMemoryStateChange(base::MemoryState::SUSPENDED);
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
+  resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
+
+  // Release the resource making it busy.
+  resource_pool_->ReleaseResource(resource);
+  EXPECT_EQ(1u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(1u, resource_pool_->GetBusyResourceCountForTesting());
+
+  // Suspending should now free the busy resource.
+  resource_pool_->OnMemoryStateChange(base::MemoryState::SUSPENDED);
+  EXPECT_EQ(0u, resource_pool_->GetTotalResourceCountForTesting());
+  EXPECT_EQ(0u, resource_pool_->GetBusyResourceCountForTesting());
+}
+
 }  // namespace cc

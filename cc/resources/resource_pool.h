@@ -85,6 +85,9 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  // Overriden from base::MemoryCoordinatorClient.
+  void OnMemoryStateChange(base::MemoryState state) override;
+
   size_t GetTotalMemoryUsageForTesting() const {
     return total_memory_usage_bytes_;
   }
@@ -157,9 +160,6 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   void EvictResourcesNotUsedSince(base::TimeTicks time_limit);
   bool HasEvictableResources() const;
   base::TimeTicks GetUsageTimeForLRUResource() const;
-
-  // Overriden from base::MemoryCoordinatorClient.
-  void OnMemoryStateChange(base::MemoryState state) override;
 
   ResourceProvider* resource_provider_;
   bool use_gpu_memory_buffers_;
