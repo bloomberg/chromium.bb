@@ -215,9 +215,6 @@ void VrShell::UpdateController() {
 
   // Determine which UI element (if any) the cursor is pointing to.
   float closest_element = std::numeric_limits<float>::infinity();
-  int closest_element_index = -1;
-  int pixel_x = 0;
-  int pixel_y = 0;
 
   for (std::size_t i = 0; i < scene_.GetUiElements().size(); ++i) {
     const ContentRectangle& plane = *scene_.GetUiElements()[i].get();
@@ -233,14 +230,10 @@ void VrShell::UpdateController() {
       if (is_inside) {
         closest_element = distance_to_plane;
         cursor_distance_ = desktop_dist * distance_to_plane;
-        closest_element_index = i;
-        pixel_x = int((plane.copy_rect.width * x) + plane.copy_rect.x);
-        pixel_y = int((plane.copy_rect.height * y) + plane.copy_rect.y);
         look_at_vector_ = plane_intersection_point;
       }
     }
   }
-  // TODO(mthiesse): Create input events for CVC using pixel_x/y.
 }
 
 void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
