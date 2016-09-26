@@ -58,13 +58,13 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
      * @param params          The {@link ContextMenuParams} that indicate what menu items to show.
      */
     @CalledByNative
-    private boolean showContextMenu(ContentViewCore contentViewCore, ContextMenuParams params) {
+    private void showContextMenu(ContentViewCore contentViewCore, ContextMenuParams params) {
         final View view = contentViewCore.getContainerView();
 
         if (view == null
                 || view.getVisibility() != View.VISIBLE
                 || view.getParent() == null) {
-            return false;
+            return;
         }
 
         mCurrentContextMenuParams = params;
@@ -74,10 +74,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
             WebContents webContents = contentViewCore.getWebContents();
             RecordHistogram.recordBooleanHistogram(
                     "ContextMenu.Shown", webContents != null);
-            if (webContents != null) webContents.onContextMenuOpened();
-            return true;
         }
-        return false;
     }
 
     /**

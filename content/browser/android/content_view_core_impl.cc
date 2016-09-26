@@ -651,19 +651,19 @@ void ContentViewCoreImpl::OnSelectionEvent(ui::SelectionEventType event,
       selection_rect.bottom());
 }
 
-bool ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
+void ContentViewCoreImpl::ShowPastePopup(int x_dip, int y_dip) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view)
-    return false;
+    return;
 
   view->OnShowingPastePopup(gfx::PointF(x_dip, y_dip));
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
-    return false;
-  return Java_ContentViewCore_showPastePopupWithFeedback(env, obj, x_dip,
-                                                         y_dip);
+    return;
+  Java_ContentViewCore_showPastePopup(env, obj, x_dip,
+                                      y_dip);
 }
 
 void ContentViewCoreImpl::StartContentIntent(const GURL& content_url,

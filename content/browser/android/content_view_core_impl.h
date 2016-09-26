@@ -62,7 +62,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   WebContents* GetWebContents() const override;
   ui::WindowAndroid* GetWindowAndroid() const override;
-  bool ShowPastePopup(int x, int y) override;
+  void ShowPastePopup(int x, int y) override;
   void PauseOrResumeGeolocation(bool should_pause) override;
 
   void AddObserver(ContentViewCoreImplObserver* observer);

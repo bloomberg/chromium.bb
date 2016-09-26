@@ -88,8 +88,6 @@ import java.util.UUID;
     // Lazily created proxy observer for handling all Java-based WebContentsObservers.
     private WebContentsObserverProxy mObserverProxy;
 
-    private boolean mContextMenuOpened;
-
     private WebContentsImpl(
             long nativeWebContentsAndroid, NavigationController navigationController) {
         mNativeWebContentsAndroid = nativeWebContentsAndroid;
@@ -436,24 +434,6 @@ import java.util.UUID;
                 srcRect.left, srcRect.top, srcRect.width(), srcRect.height());
     }
 
-    @Override
-    public void onContextMenuOpened() {
-        mContextMenuOpened = true;
-    }
-
-    @Override
-    public void onContextMenuClosed() {
-        if (!mContextMenuOpened) {
-            return;
-        } else {
-            mContextMenuOpened = false;
-        }
-
-        if (mNativeWebContentsAndroid != 0) {
-            nativeOnContextMenuClosed(mNativeWebContentsAndroid);
-        }
-    }
-
     @CalledByNative
     private void onGetContentBitmapFinished(ContentBitmapCallback callback, Bitmap bitmap,
             int response) {
@@ -555,7 +535,6 @@ import java.util.UUID;
     private native void nativeGetContentBitmap(long nativeWebContentsAndroid,
             ContentBitmapCallback callback, Bitmap.Config config, float scale,
             float x, float y, float width, float height);
-    private native void nativeOnContextMenuClosed(long nativeWebContentsAndroid);
     private native void nativeReloadLoFiImages(long nativeWebContentsAndroid);
     private native int nativeDownloadImage(long nativeWebContentsAndroid,
             String url, boolean isFavicon, int maxBitmapSize,

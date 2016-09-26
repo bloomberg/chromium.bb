@@ -162,7 +162,6 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
             @Override
             public void onDestroyActionMode() {
                 mActionMode = null;
-                mDelegate.onDismiss();
             }
 
             @Override

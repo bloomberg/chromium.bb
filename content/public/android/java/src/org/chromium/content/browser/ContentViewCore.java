@@ -2485,17 +2485,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
     @SuppressWarnings("unused")
     @CalledByNative
-    private boolean showPastePopupWithFeedback(int x, int y) {
-        if (showPastePopup(x, y)) {
-            if (mWebContents != null) mWebContents.onContextMenuOpened();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
     private void performLongPressHapticFeedback() {
         mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
     }
@@ -2507,15 +2496,16 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     // Coordinates are in DIP.
-    private boolean showPastePopup(int x, int y) {
+    @CalledByNative
+    private void showPastePopup(int x, int y) {
         if (mContainerView.getParent() == null || mContainerView.getVisibility() != View.VISIBLE) {
-            return false;
+            return;
         }
 
-        if (!mHasInsertion || !canPaste()) return false;
+        if (!mHasInsertion || !canPaste()) return;
 
         PastePopupMenu pastePopupMenu = getPastePopup();
-        if (pastePopupMenu == null) return false;
+        if (pastePopupMenu == null) return;
 
         final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
         final int xPix = (int) (x * deviceScale);
@@ -2524,9 +2514,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         try {
             pastePopupMenu.show(xPix, (int) (yPix + topControlsShownPix));
         } catch (WindowManager.BadTokenException e) {
-            return false;
         }
-        return true;
     }
 
     private void hidePastePopup() {
@@ -2540,11 +2528,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
                 public void paste() {
                     mWebContents.paste();
                     dismissTextHandles();
-                }
-
-                @Override
-                public void onDismiss() {
-                    if (mWebContents != null) mWebContents.onContextMenuClosed();
                 }
             };
             Context windowContext = getWindowAndroid().getContext().get();

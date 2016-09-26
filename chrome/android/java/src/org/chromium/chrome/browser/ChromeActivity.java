@@ -1783,24 +1783,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mContextMenuCloseObservers.removeObserver(callback);
     }
 
-    /**
-     * @see Activity#onContextMenuClosed(Menu)
-     */
-    @Override
-    public void onContextMenuClosed(Menu menu) {
-        for (Callback<Menu> callback : mContextMenuCloseObservers) {
-            callback.onResult(menu);
-        }
-
-        // TODO(peconn): See if we can make WebContents use the ObserverList.
-
-        final Tab currentTab = getActivityTab();
-        if (currentTab == null) return;
-        WebContents webContents = currentTab.getWebContents();
-        if (webContents == null) return;
-        webContents.onContextMenuClosed();
-    }
-
     private void enableHardwareAcceleration() {
         // HW acceleration is disabled in the manifest. Enable it only on high-end devices.
         if (!SysUtils.isLowEndDevice()) {

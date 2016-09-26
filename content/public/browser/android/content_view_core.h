@@ -42,7 +42,7 @@ class CONTENT_EXPORT ContentViewCore {
 
   // May return null reference.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
-  virtual bool ShowPastePopup(int x, int y) = 0;
+  virtual void ShowPastePopup(int x, int y) = 0;
 
   virtual void PauseOrResumeGeolocation(bool should_pause) = 0;
 

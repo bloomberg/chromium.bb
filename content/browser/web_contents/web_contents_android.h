@@ -174,9 +174,6 @@ class CONTENT_EXPORT WebContentsAndroid
                         jfloat width,
                         jfloat height);
 
-  void OnContextMenuClosed(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj);
-
   void ReloadLoFiImages(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
 
