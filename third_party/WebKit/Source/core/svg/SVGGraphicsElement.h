@@ -25,7 +25,6 @@
 #include "core/CoreExport.h"
 #include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGRectTearOff.h"
 #include "core/svg/SVGTests.h"
 #include "platform/heap/Handle.h"
 
@@ -34,6 +33,7 @@ namespace blink {
 class AffineTransform;
 class Path;
 class SVGMatrixTearOff;
+class SVGRectTearOff;
 
 class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
     DEFINE_WRAPPERTYPEINFO();

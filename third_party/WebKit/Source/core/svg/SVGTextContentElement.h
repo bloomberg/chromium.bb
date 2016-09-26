@@ -25,13 +25,13 @@
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGraphicsElement.h"
-#include "core/svg/SVGPointTearOff.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
 class ExceptionState;
 class LineLayoutItem;
+class SVGPointTearOff;
 
 enum SVGLengthAdjustType {
     SVGLengthAdjustUnknown,

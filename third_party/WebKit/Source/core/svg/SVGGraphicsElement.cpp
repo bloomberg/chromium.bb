@@ -25,6 +25,7 @@
 #include "core/layout/svg/LayoutSVGPath.h"
 #include "core/svg/SVGElementRareData.h"
 #include "core/svg/SVGMatrixTearOff.h"
+#include "core/svg/SVGRectTearOff.h"
 #include "platform/transforms/AffineTransform.h"
 
 namespace blink {
