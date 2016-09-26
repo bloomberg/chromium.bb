@@ -58,13 +58,13 @@ void GpuServiceProxy::OnInitialized(const gpu::GPUInfo& gpu_info) {
 
 void GpuServiceProxy::OnInternalGpuChannelEstablished(
     mojo::ScopedMessagePipeHandle channel_handle) {
-  io_thread_.reset(new base::Thread("GPUIOThread"));
+  io_thread_ = base::MakeUnique<base::Thread>("GPUIOThread");
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
   CHECK(io_thread_->StartWithOptions(thread_options));
 
-  gpu_memory_buffer_manager_.reset(new MusGpuMemoryBufferManager(
-      gpu_main_.gpu_service(), kInternalGpuChannelClientId));
+  gpu_memory_buffer_manager_ = base::MakeUnique<MusGpuMemoryBufferManager>(
+      gpu_main_.gpu_service(), kInternalGpuChannelClientId);
   gpu_channel_ = gpu::GpuChannelHost::Create(
       this, kInternalGpuChannelClientId, gpu_info_,
       IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,

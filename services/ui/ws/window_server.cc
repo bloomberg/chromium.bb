@@ -108,8 +108,8 @@ WindowTree* WindowServer::EmbedAtWindow(
           WindowServerDelegate::BindingType::EMBED, this, tree,
           &window_tree_request, &client);
   if (!binding) {
-    binding.reset(new ws::DefaultWindowTreeBinding(
-        tree, this, std::move(window_tree_request), std::move(client)));
+    binding = base::MakeUnique<ws::DefaultWindowTreeBinding>(
+        tree, this, std::move(window_tree_request), std::move(client));
   }
 
   AddTree(std::move(tree_ptr), std::move(binding), std::move(window_tree_ptr));
@@ -137,9 +137,9 @@ WindowTree* WindowServer::CreateTreeForWindowManager(
           WindowServerDelegate::BindingType::WINDOW_MANAGER, this,
           window_tree.get(), &window_tree_request, &window_tree_client);
   if (!window_tree_binding) {
-    window_tree_binding.reset(new DefaultWindowTreeBinding(
+    window_tree_binding = base::MakeUnique<DefaultWindowTreeBinding>(
         window_tree.get(), this, std::move(window_tree_request),
-        std::move(window_tree_client)));
+        std::move(window_tree_client));
   }
   WindowTree* window_tree_ptr = window_tree.get();
   AddTree(std::move(window_tree), std::move(window_tree_binding), nullptr);

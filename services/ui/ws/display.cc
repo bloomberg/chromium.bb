@@ -293,7 +293,7 @@ void Display::CreateRootWindow(const gfx::Size& size) {
       ServerWindow::Properties()));
   root_->SetBounds(gfx::Rect(size));
   root_->SetVisible(true);
-  focus_controller_.reset(new FocusController(this, root_.get()));
+  focus_controller_ = base::MakeUnique<FocusController>(this, root_.get());
   focus_controller_->AddObserver(this);
   InitWindowManagerDisplayRootsIfNecessary();
 }

@@ -130,7 +130,7 @@ void WindowTree::ConfigureWindowManager() {
   DCHECK(!window_manager_internal_);
   window_manager_internal_ = binding_->GetWindowManager();
   window_manager_internal_->OnConnect(id_);
-  window_manager_state_.reset(new WindowManagerState(this));
+  window_manager_state_ = base::MakeUnique<WindowManagerState>(this);
 }
 
 const ServerWindow* WindowTree::GetWindow(const WindowId& id) const {

@@ -204,7 +204,7 @@ void SetPropertyToTargetProperty(ServerWindow* window,
       duration += element.duration;
       if (duration > max_end_duration) {
         max_end_duration = duration;
-        value.reset(new ScheduledAnimationValue(element.target_value));
+        value = base::MakeUnique<ScheduledAnimationValue>(element.target_value);
       }
     }
   }

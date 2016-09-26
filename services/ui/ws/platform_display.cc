@@ -72,11 +72,11 @@ void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
   // scale_factor other than 1.0 but will prevent windows from being stacked.
   gfx::Rect bounds(metrics_.bounds.origin(), metrics_.pixel_size);
 #if defined(OS_WIN)
-  platform_window_.reset(new ui::WinWindow(this, bounds));
+  platform_window_ = base::MakeUnique<ui::WinWindow>(this, bounds);
 #elif defined(USE_X11)
-  platform_window_.reset(new ui::X11Window(this));
+  platform_window_ = base::MakeUnique<ui::X11Window>(this);
 #elif defined(OS_ANDROID)
-  platform_window_.reset(new ui::PlatformWindowAndroid(this));
+  platform_window_ = base::MakeUnique<ui::PlatformWindowAndroid>(this);
 #elif defined(USE_OZONE)
   platform_window_ =
       ui::OzonePlatform::GetInstance()->CreatePlatformWindow(this, bounds);

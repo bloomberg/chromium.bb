@@ -144,9 +144,9 @@ class DragControllerTest : public testing::Test, public DragSource {
       DragTestWindow* window,
       uint32_t drag_operations) {
     window->PerformOnDragDropStart(mime_data.Clone());
-    drag_operation_.reset(new DragController(
+    drag_operation_ = base::MakeUnique<DragController>(
         this, window->window(), window, PointerEvent::kMousePointerId,
-        std::move(mime_data), drag_operations));
+        std::move(mime_data), drag_operations);
   }
 
   void DispatchDrag(DragTestWindow* window,
@@ -192,9 +192,9 @@ class DragControllerTest : public testing::Test, public DragSource {
   void SetUp() override {
     testing::Test::SetUp();
 
-    window_delegate_.reset(new TestServerWindowDelegate());
-    root_window_.reset(
-        new ServerWindow(window_delegate_.get(), WindowId(1, 2)));
+    window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
+    root_window_ =
+        base::MakeUnique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
     window_delegate_->set_root_window(root_window_.get());
     root_window_->SetVisible(true);
   }

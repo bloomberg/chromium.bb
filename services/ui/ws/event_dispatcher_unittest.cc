@@ -318,14 +318,16 @@ ServerWindow* EventDispatcherTest::GetActiveSystemModalWindow() const {
 void EventDispatcherTest::SetUp() {
   testing::Test::SetUp();
 
-  window_delegate_.reset(new TestServerWindowDelegate());
-  root_window_.reset(new ServerWindow(window_delegate_.get(), WindowId(1, 2)));
+  window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
+  root_window_ =
+      base::MakeUnique<ServerWindow>(window_delegate_.get(), WindowId(1, 2));
   window_delegate_->set_root_window(root_window_.get());
   root_window_->SetVisible(true);
 
-  test_event_dispatcher_delegate_.reset(new TestEventDispatcherDelegate(this));
-  event_dispatcher_.reset(
-      new EventDispatcher(test_event_dispatcher_delegate_.get()));
+  test_event_dispatcher_delegate_ =
+      base::MakeUnique<TestEventDispatcherDelegate>(this);
+  event_dispatcher_ =
+      base::MakeUnique<EventDispatcher>(test_event_dispatcher_delegate_.get());
   test_event_dispatcher_delegate_->set_root(root_window_.get());
 }
 

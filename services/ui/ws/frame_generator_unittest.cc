@@ -70,11 +70,11 @@ void FrameGeneratorTest::DrawWindowTree(cc::RenderPass* pass) {
 
 void FrameGeneratorTest::SetUp() {
   testing::Test::SetUp();
-  frame_generator_delegate_.reset(new TestFrameGeneratorDelegate(
-      base::MakeUnique<ServerWindow>(&window_delegate_, WindowId())));
+  frame_generator_delegate_ = base::MakeUnique<TestFrameGeneratorDelegate>(
+      base::MakeUnique<ServerWindow>(&window_delegate_, WindowId()));
   PlatformDisplayInitParams init_params;
-  frame_generator_.reset(new FrameGenerator(frame_generator_delegate_.get(),
-                                            init_params.surfaces_state));
+  frame_generator_ = base::MakeUnique<FrameGenerator>(
+      frame_generator_delegate_.get(), init_params.surfaces_state);
   InitWindow(root_window());
 }
 

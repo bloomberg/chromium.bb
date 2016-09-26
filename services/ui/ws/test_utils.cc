@@ -407,7 +407,7 @@ TestWindowTreeBinding::~TestWindowTreeBinding() {}
 
 mojom::WindowManager* TestWindowTreeBinding::GetWindowManager() {
   if (!window_manager_.get())
-    window_manager_.reset(new TestWindowManager);
+    window_manager_ = base::MakeUnique<TestWindowManager>();
   return window_manager_.get();
 }
 void TestWindowTreeBinding::SetIncomingMethodCallProcessingPaused(bool paused) {
@@ -466,7 +466,7 @@ bool TestWindowServerDelegate::IsTestConfig() const {
 WindowServerTestHelper::WindowServerTestHelper()
     : cursor_id_(0), platform_display_factory_(&cursor_id_) {
   PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
-  window_server_.reset(new WindowServer(&window_server_delegate_));
+  window_server_ = base::MakeUnique<WindowServer>(&window_server_delegate_);
   window_server_delegate_.set_window_server(window_server_.get());
 }
 

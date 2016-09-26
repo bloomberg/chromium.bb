@@ -92,7 +92,8 @@ class UserActivityMonitorTest : public testing::Test {
     task_runner_ = make_scoped_refptr(new base::TestMockTimeTaskRunner(
         base::Time::Now(), base::TimeTicks::Now()));
     message_loop_.SetTaskRunner(task_runner_);
-    monitor_.reset(new UserActivityMonitor(task_runner_->GetMockTickClock()));
+    monitor_ =
+        base::MakeUnique<UserActivityMonitor>(task_runner_->GetMockTickClock());
   }
 
   base::MessageLoop message_loop_;

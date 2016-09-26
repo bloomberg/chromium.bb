@@ -40,9 +40,9 @@ FrameGenerator::~FrameGenerator() {
 void FrameGenerator::OnGpuChannelEstablished(
     scoped_refptr<gpu::GpuChannelHost> channel) {
   if (widget_ != gfx::kNullAcceleratedWidget) {
-    display_compositor_.reset(
-        new DisplayCompositor(base::ThreadTaskRunnerHandle::Get(), widget_,
-                              std::move(channel), surfaces_state_));
+    display_compositor_ = base::MakeUnique<DisplayCompositor>(
+        base::ThreadTaskRunnerHandle::Get(), widget_, std::move(channel),
+        surfaces_state_);
   } else {
     gpu_channel_ = std::move(channel);
   }

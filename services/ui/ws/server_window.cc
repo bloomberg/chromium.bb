@@ -180,7 +180,7 @@ void ServerWindow::SetClientArea(
 }
 
 void ServerWindow::SetHitTestMask(const gfx::Rect& mask) {
-  hit_test_mask_.reset(new gfx::Rect(mask));
+  hit_test_mask_ = base::MakeUnique<gfx::Rect>(mask);
 }
 
 void ServerWindow::ClearHitTestMask() {
@@ -373,7 +373,7 @@ void ServerWindow::DestroySurfacesScheduledForDestruction() {
 
 ServerWindowSurfaceManager* ServerWindow::GetOrCreateSurfaceManager() {
   if (!surface_manager_.get())
-    surface_manager_.reset(new ServerWindowSurfaceManager(this));
+    surface_manager_ = base::MakeUnique<ServerWindowSurfaceManager>(this);
   return surface_manager_.get();
 }
 

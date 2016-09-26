@@ -268,7 +268,7 @@ class WindowServerTest : public WindowServerTestBase {
   // returned.
   EmbedResult Embed(Window* window) {
     DCHECK(!embed_details_);
-    embed_details_.reset(new EmbedDetails);
+    embed_details_ = base::MakeUnique<EmbedDetails>();
     window->Embed(ConnectAndGetWindowServerClient(),
                   base::Bind(&WindowServerTest::EmbedCallbackImpl,
                              base::Unretained(this)));
@@ -1089,7 +1089,7 @@ class EstablishConnectionViaFactoryDelegate : public TestWindowManagerDelegate {
       return false;
 
     created_window_ = nullptr;
-    run_loop_.reset(new base::RunLoop);
+    run_loop_ = base::MakeUnique<base::RunLoop>();
     run_loop_->Run();
     run_loop_.reset();
     return created_window_ != nullptr;

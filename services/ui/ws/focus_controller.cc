@@ -140,7 +140,7 @@ void FocusController::SetActiveWindow(ServerWindow* window,
     cycle_windows_.reset();
   } else if (activation_reason_ != ActivationChangeReason::CYCLE) {
     DCHECK(!cycle_windows_);
-    cycle_windows_.reset(new ServerWindowTracker());
+    cycle_windows_ = base::MakeUnique<ServerWindowTracker>();
     if (active_window_)
       cycle_windows_->Add(active_window_);
   }
@@ -235,10 +235,12 @@ bool FocusController::SetFocusedWindowImpl(
   ServerWindow* track_window = focused_window_;
   if (!track_window)
     track_window = active_window_;
-  if (track_window)
-    drawn_tracker_.reset(new ServerWindowDrawnTracker(track_window, this));
-  else
+  if (track_window) {
+    drawn_tracker_ =
+        base::MakeUnique<ServerWindowDrawnTracker>(track_window, this);
+  } else {
     drawn_tracker_.reset();
+  }
   return true;
 }
 
