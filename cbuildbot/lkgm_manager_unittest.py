@@ -389,6 +389,11 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
     """Tests writing the LKGM version when LKGM.xml is missing."""
     self.testAddLKGMToManifest(present=False)
 
+  def _MockValidationPool(self, gerrit_patchs):
+    mock_pool = mock.Mock()
+    mock_pool.applied = gerrit_patchs
+    return mock_pool
+
   def testAddPatchesToManifest(self):
     """Tests whether we can add a fake patch to an empty manifest file.
 
@@ -412,7 +417,8 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
           1,
           3)
 
-      self.manager._AddPatchesToManifest(f.name, [gerrit_patch])
+      mock_pool = self._MockValidationPool([gerrit_patch])
+      self.manager._AddPatchesToManifest(f.name, mock_pool)
 
       new_doc = minidom.parse(f.name)
       element = new_doc.getElementsByTagName(
@@ -472,7 +478,8 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
           1,
           3)
 
-      self.manager._AddPatchesToManifest(f.name, [gerrit_patch])
+      mock_pool = self._MockValidationPool([gerrit_patch])
+      self.manager._AddPatchesToManifest(f.name, mock_pool)
 
       new_doc = minidom.parse(f.name)
       element = new_doc.getElementsByTagName(
@@ -481,3 +488,36 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
       self.assertEqual(
           element.getAttribute(cros_patch.ATTR_OWNER_EMAIL),
           gerrit_patch.owner_email)
+
+  def testAddPatchesToManifestWithInvalidTokens(self):
+    """Tests to add a fake patch with invalid tokens to a manifest.
+
+    Test whether _AddPatchesToManifest will skip commits with invalid tokens.
+    """
+    with TemporaryManifest() as f:
+      gerrit_patch = cros_patch.GerritFetchOnlyPatch(
+          'https://host/chromite/tacos',
+          'chromite/tacos',
+          'refs/changes/11/12345/4',
+          'master',
+          'cros-internal',
+          '7181e4b5e182b6f7d68461b04253de095bad74f9',
+          'I47ea30385af60ae4cc2acc5d1a283a46423bc6e1',
+          '12345',
+          '4',
+          'foo@chromium.org',
+          1,
+          1,
+          3,
+          #Invalid tokens
+          '…')
+
+      mock_pool = self._MockValidationPool([gerrit_patch])
+      self.manager._AddPatchesToManifest(f.name, mock_pool)
+
+      new_doc = minidom.parse(f.name)
+      self.assertEqual(0, len(new_doc.getElementsByTagName(
+          lkgm_manager.PALADIN_COMMIT_ELEMENT)))
+
+      self.assertEqual(1, mock_pool.SendNotification.call_count)
+      self.assertEqual(1, mock_pool.RemoveReady.call_count)

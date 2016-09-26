@@ -235,7 +235,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
     manifest_dom.documentElement.appendChild(chrome)
     self._WriteXml(manifest_dom, manifest)
 
-  def _AddPatchesToManifest(self, manifest, patches):
+  def _AddPatchesToManifest(self, manifest, validation_pool):
     """Adds list of |patches| to given |manifest|.
 
     The manifest should have sufficient information for the slave
@@ -244,15 +244,27 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 
     Args:
       manifest: Path to the manifest.
-      patches: A list of cros_patch.GerritPatch objects.
+      validation_pool: Validation pool to apply to the manifest.
     """
     manifest_dom = minidom.parse(manifest)
-    for patch in patches:
+    for patch in validation_pool.applied:
       pending_commit = manifest_dom.createElement(PALADIN_COMMIT_ELEMENT)
       attr_dict = patch.GetAttributeDict()
       for k, v in attr_dict.iteritems():
         pending_commit.setAttribute(k, v)
-      manifest_dom.documentElement.appendChild(pending_commit)
+
+      try:
+        # A patch with unicode can be added to manifest,
+        # but not with invalid tokens.
+        pending_commit_xml = pending_commit.toxml(encoding='utf-8')
+        minidom.parseString(pending_commit_xml)
+        manifest_dom.documentElement.appendChild(pending_commit)
+      except expat.ExpatError:
+        logging.error('Got parsing error for: %s', pending_commit_xml)
+        msg = ('Failed to apply your change. Please check if there are '
+               'invalid tokens in your commit messages.')
+        validation_pool.SendNotification(patch, msg)
+        validation_pool.RemoveReady(patch)
 
     self._WriteXml(manifest_dom, manifest)
 
@@ -355,7 +367,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
           not config_lib.IsPFQType(self.build_type)):
         return None
 
-      self._AddPatchesToManifest(new_manifest, validation_pool.applied)
+      self._AddPatchesToManifest(new_manifest, validation_pool)
 
       # Add info about the last known good version to the manifest. This will
       # be used by slaves to calculate what artifacts from old builds are safe
