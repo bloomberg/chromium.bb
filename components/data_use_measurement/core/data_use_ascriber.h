@@ -5,7 +5,14 @@
 #ifndef COMPONENTS_DATA_USE_MEASUREMENT_CORE_DATA_USE_ASCRIBER_H_
 #define COMPONENTS_DATA_USE_MEASUREMENT_CORE_DATA_USE_ASCRIBER_H_
 
+#include <stdint.h>
+
+#include <memory>
+
+#include "url/gurl.h"
+
 namespace net {
+class NetworkDelegate;
 class URLRequest;
 }
 
@@ -22,11 +29,28 @@ class DataUseAscriber {
  public:
   virtual ~DataUseAscriber() {}
 
+  // Creates a network delegate that will be used to track data use.
+  std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate(
+      std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate);
+
   // Returns the DataUseRecorder to which data usage for the given URL should
   // be ascribed. If no existing DataUseRecorder exists, a new one will be
   // created.
   virtual DataUseRecorder* GetDataUseRecorder(
       const net::URLRequest* request) = 0;
+
+  // Methods called by DataUseNetworkDelegate to propagate data use information:
+  virtual void OnBeforeUrlRequest(net::URLRequest* request);
+
+  virtual void OnBeforeRedirect(net::URLRequest* request,
+                                const GURL& new_location);
+
+  virtual void OnNetworkBytesSent(net::URLRequest* request, int64_t bytes_sent);
+
+  virtual void OnNetworkBytesReceived(net::URLRequest* request,
+                                      int64_t bytes_received);
+
+  virtual void OnUrlRequestCompleted(net::URLRequest* request, bool started);
 };
 
 }  // namespace data_use_measurement

@@ -4,7 +4,10 @@
 
 static_library("core") {
   sources = [
+    "data_use_ascriber.cc",
     "data_use_ascriber.h",
+    "data_use_network_delegate.cc",
+    "data_use_network_delegate.h",
     "data_use_user_data.cc",
     "data_use_user_data.h",
   ]

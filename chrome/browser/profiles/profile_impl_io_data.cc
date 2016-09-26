@@ -25,6 +25,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
@@ -477,7 +478,9 @@ void ProfileImplIOData::InitializeInternal(
   main_context->set_net_log(io_thread->net_log());
 
   network_delegate_ = data_reduction_proxy_io_data()->CreateNetworkDelegate(
-      std::move(chrome_network_delegate), true);
+      io_thread_globals->data_use_ascriber->CreateNetworkDelegate(
+          std::move(chrome_network_delegate)),
+      true);
 
   main_context->set_network_delegate(network_delegate_.get());
 

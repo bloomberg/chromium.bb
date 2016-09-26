@@ -49,6 +49,7 @@
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
 #include "components/data_usage/core/data_use_annotator.h"
+#include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/network_session_configurator/network_session_configurator.h"
@@ -528,7 +529,10 @@ void IOThread::Init() {
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
 #endif
 
-  globals_->system_network_delegate = std::move(chrome_network_delegate);
+  globals_->system_network_delegate =
+      globals_->data_use_ascriber->CreateNetworkDelegate(
+          std::move(chrome_network_delegate));
+
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
   std::map<std::string, std::string> network_quality_estimator_params;
