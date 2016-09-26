@@ -118,21 +118,7 @@ bool HpackDecoder::HandleHeaderRepresentation(StringPiece name,
   total_header_bytes_ += name.size() + value.size();
 
   if (handler_ == nullptr) {
-    if (FLAGS_chromium_http2_flag_use_new_spdy_header_block_header_joining) {
-      decoded_block_.AppendValueOrAddHeader(name, value);
-    } else {
-      auto it = decoded_block_.find(name);
-      if (it == decoded_block_.end()) {
-        // This is a new key.
-        decoded_block_[name] = value;
-      } else {
-        // The key already exists, append |value| with appropriate delimiter.
-        string new_value = it->second.as_string();
-        new_value.append((name == "cookie") ? "; " : string(1, '\0'));
-        value.AppendToString(&new_value);
-        decoded_block_.ReplaceOrAppendHeader(name, new_value);
-      }
-    }
+    decoded_block_.AppendValueOrAddHeader(name, value);
   } else {
     DCHECK(decoded_block_.empty());
     handler_->OnHeader(name, value);
