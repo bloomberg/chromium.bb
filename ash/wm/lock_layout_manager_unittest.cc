@@ -130,9 +130,6 @@ TEST_F(LockLayoutManagerTest, NorwmalWindowBoundsArePreserved) {
 }
 
 TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
-  if (!SupportsHostWindowResize())
-    return;
-
   gfx::Rect screen_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
@@ -183,9 +180,6 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
 }
 
 TEST_F(LockLayoutManagerTest, KeyboardBounds) {
-  if (!SupportsHostWindowResize())
-    return;
-
   display::Display primary_display =
       display::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Rect screen_bounds = primary_display.bounds();

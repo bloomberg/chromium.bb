@@ -213,14 +213,5 @@ bool AshTestHelper::SupportsMultipleDisplays() {
 #endif
 }
 
-// static
-bool AshTestHelper::SupportsHostWindowResize() {
-#if defined(OS_WIN)
-  return false;
-#else
-  return true;
-#endif
-}
-
 }  // namespace test
 }  // namespace ash

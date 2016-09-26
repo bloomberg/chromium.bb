@@ -241,9 +241,6 @@ class DockedWindowResizerTest
 
 // Verifies a window can be dragged and attached to the dock.
 TEST_P(DockedWindowResizerTest, AttachRightPrecise) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
@@ -257,9 +254,6 @@ TEST_P(DockedWindowResizerTest, AttachRightPrecise) {
 // Verifies a window can be dragged and attached to the dock
 // even if pointer overshoots the screen edge by a few pixels (sticky edge)
 TEST_P(DockedWindowResizerTest, AttachRightOvershoot) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), +4);
@@ -273,9 +267,6 @@ TEST_P(DockedWindowResizerTest, AttachRightOvershoot) {
 // Verifies a window can be dragged and then if a pointer is not quite reaching
 // the screen edge the window does not get docked and stays in the desktop.
 TEST_P(DockedWindowResizerTest, AttachRightUndershoot) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   // Grabbing at 70px ensures that at least 30% of the window is in screen,
@@ -298,9 +289,6 @@ TEST_P(DockedWindowResizerTest, AttachRightUndershoot) {
 
 // Verifies a window can be dragged and attached to the dock.
 TEST_P(DockedWindowResizerTest, AttachLeftPrecise) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 0);
@@ -314,9 +302,6 @@ TEST_P(DockedWindowResizerTest, AttachLeftPrecise) {
 // Verifies a window can be dragged and attached to the dock
 // even if pointer overshoots the screen edge by a few pixels (sticky edge)
 TEST_P(DockedWindowResizerTest, AttachLeftOvershoot) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), -4);
@@ -330,9 +315,6 @@ TEST_P(DockedWindowResizerTest, AttachLeftOvershoot) {
 // Verifies a window can be dragged and then if a pointer is not quite reaching
 // the screen edge the window does not get docked and stays in the desktop.
 TEST_P(DockedWindowResizerTest, AttachLeftUndershoot) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   gfx::Rect initial_bounds(window->bounds());
@@ -347,9 +329,6 @@ TEST_P(DockedWindowResizerTest, AttachLeftUndershoot) {
 // Dock on the right side, change shelf alignment, check that windows move to
 // the opposite side.
 TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
@@ -383,9 +362,6 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
 
 // Dock on the right side, try to undock, then drag more to really undock
 TEST_P(DockedWindowResizerTest, AttachTryDetach) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, ideal_width() + 10, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
@@ -429,9 +405,6 @@ TEST_P(DockedWindowResizerTest, AttachTryDetach) {
 // and the position of the mouse are used in determining whether a window should
 // be undocked.
 TEST_P(DockedWindowResizerTest, AttachTryDetachDragRightEdgeOfHeader) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, ideal_width() + 10, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
@@ -472,9 +445,6 @@ TEST_P(DockedWindowResizerTest, AttachTryDetachDragRightEdgeOfHeader) {
 
 // Minimize a docked window, then restore it and check that it is still docked.
 TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
@@ -499,9 +469,6 @@ TEST_P(DockedWindowResizerTest, AttachMinimizeRestore) {
 
 // Maximize a docked window and check that it is maximized and no longer docked.
 TEST_P(DockedWindowResizerTest, AttachMaximize) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
@@ -522,8 +489,6 @@ TEST_P(DockedWindowResizerTest, AttachMaximize) {
 
 // Dock two windows, undock one, check that the other one is still docked.
 TEST_P(DockedWindowResizerTest, AttachTwoWindows) {
-  if (!SupportsHostWindowResize())
-    return;
   UpdateDisplay("600x600");
 
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
@@ -565,9 +530,6 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindows) {
 
 // Create two windows, dock one and change shelf to auto-hide.
 TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
 
@@ -607,9 +569,6 @@ TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
 // Dock one window, try to dock another window on the opposite side (should not
 // dock).
 TEST_P(DockedWindowResizerTest, AttachOnTwoSides) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
@@ -632,9 +591,6 @@ TEST_P(DockedWindowResizerTest, AttachOnTwoSides) {
 
 // Tests that reverting a drag restores docked state if a window was docked.
 TEST_P(DockedWindowResizerTest, RevertDragRestoresAttachment) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragRelativeToEdge(DOCKED_EDGE_RIGHT, window.get(), 0);
@@ -659,8 +615,6 @@ TEST_P(DockedWindowResizerTest, RevertDragRestoresAttachment) {
 
 // Tests that reverting drag restores undocked state if a window was not docked.
 TEST_P(DockedWindowResizerTest, RevertDockedDragRevertsAttachment) {
-  if (!SupportsHostWindowResize())
-    return;
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DockedWindowLayoutManager* manager =
@@ -757,8 +711,6 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
 // Dock two windows, undock one.
 // Test the docked windows area size and default container resizing.
 TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne) {
-  if (!SupportsHostWindowResize())
-    return;
   UpdateDisplay("600x600");
 
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
@@ -828,9 +780,6 @@ TEST_P(DockedWindowResizerTest, AttachTwoWindowsDetachOne) {
 
 // Dock one of the windows. Maximize other testing desktop resizing.
 TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
@@ -925,9 +874,6 @@ TEST_P(DockedWindowResizerTest, AttachWindowMaximizeOther) {
 
 // Dock one window. Test the sticky behavior near screen or desktop edge.
 TEST_P(DockedWindowResizerTest, AttachOneTestSticky) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 210, 201)));
   // Work area should cover the whole screen.
@@ -1020,9 +966,6 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky) {
 // Dock two windows, resize one.
 // Test the docked windows area size and remaining desktop resizing.
 TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
-  if (!SupportsHostWindowResize())
-    return;
-
   // Wider display to start since panels are limited to half the display width.
   UpdateDisplay("1000x600");
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
@@ -1162,9 +1105,6 @@ TEST_P(DockedWindowResizerTest, ResizeOneOfTwoWindows) {
 // Dock a window, resize it and test that undocking it restores the pre-docked
 // size.
 TEST_P(DockedWindowResizerTest, ResizingKeepsSize) {
-  if (!SupportsHostWindowResize())
-    return;
-
   // Wider display to start since panels are limited to half the display width.
   UpdateDisplay("1000x600");
   const gfx::Size original_size(201, 201);
@@ -1217,9 +1157,6 @@ TEST_P(DockedWindowResizerTest, ResizingKeepsSize) {
 
 // Dock a window, resize it and test that it stays docked.
 TEST_P(DockedWindowResizerTest, ResizingKeepsDockedState) {
-  if (!SupportsHostWindowResize())
-    return;
-
   // Wider display to start since panels are limited to half the display width.
   UpdateDisplay("1000x600");
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
@@ -1275,9 +1212,6 @@ TEST_P(DockedWindowResizerTest, ResizingKeepsDockedState) {
 
 // Dock two windows, resize one. Test the docked windows area size.
 TEST_P(DockedWindowResizerTest, ResizeTwoWindows) {
-  if (!SupportsHostWindowResize())
-    return;
-
   // Wider display to start since panels are limited to half the display width.
   UpdateDisplay("1000x600");
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
@@ -1342,9 +1276,6 @@ TEST_P(DockedWindowResizerTest, ResizeTwoWindows) {
 // Tests that dragging a window down to shelf attaches a panel but does not
 // attach a regular window.
 TEST_P(DockedWindowResizerTest, DragToShelf) {
-  if (!SupportsHostWindowResize())
-    return;
-
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   // Work area should cover the whole screen.
   EXPECT_EQ(ScreenUtil::GetDisplayBoundsInParent(w1.get()).width(),
@@ -1389,9 +1320,6 @@ TEST_P(DockedWindowResizerTest, DragToShelf) {
 // Tests that docking and undocking a |window| with a transient child properly
 // maintains the parent of that transient child to be the same as the |window|.
 TEST_P(DockedWindowResizerTest, DragWindowWithTransientChild) {
-  if (!SupportsHostWindowResize())
-    return;
-
   // Create a window with a transient child.
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
@@ -1432,9 +1360,6 @@ TEST_P(DockedWindowResizerTest, DragWindowWithTransientChild) {
 // Tests that reparenting windows during the drag does not affect system modal
 // windows that are transient children of the dragged windows.
 TEST_P(DockedWindowResizerTest, DragWindowWithModalTransientChild) {
-  if (!SupportsHostWindowResize())
-    return;
-
   // Create a window.
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
@@ -1474,7 +1399,7 @@ TEST_P(DockedWindowResizerTest, DragWindowWithModalTransientChild) {
 
 // Tests that side snapping a window undocks it, closes the dock and then snaps.
 TEST_P(DockedWindowResizerTest, SideSnapDocked) {
-  if (!SupportsHostWindowResize() || test_panels())
+  if (test_panels())
     return;
 
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
@@ -1531,7 +1456,7 @@ TEST_P(DockedWindowResizerTest, SideSnapDocked) {
 // Tests that a window is undocked if the window is maximized via a keyboard
 // accelerator during a drag.
 TEST_P(DockedWindowResizerTest, MaximizedDuringDrag) {
-  if (!SupportsHostWindowResize() || test_panels())
+  if (test_panels())
     return;
 
   std::unique_ptr<aura::Window> window(

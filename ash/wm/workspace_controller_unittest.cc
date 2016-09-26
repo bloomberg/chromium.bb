@@ -721,8 +721,6 @@ TEST_P(WorkspaceControllerTest, TransientParent) {
 
 // Test the placement of newly created windows.
 TEST_P(WorkspaceControllerTest, BasicAutoPlacingOnCreate) {
-  if (!SupportsHostWindowResize())
-    return;
   UpdateDisplay("1600x1200");
   // Creating a popup handler here to make sure it does not interfere with the
   // existing windows.
@@ -1037,9 +1035,6 @@ TEST_P(WorkspaceControllerTest, TestUserHandledWindowRestore) {
 
 // Solo window should be restored to the bounds where a user moved to.
 TEST_P(WorkspaceControllerTest, TestRestoreToUserModifiedBounds) {
-  if (!SupportsHostWindowResize())
-    return;
-
   UpdateDisplay("400x300");
   gfx::Rect default_bounds(10, 0, 100, 100);
   std::unique_ptr<aura::Window> window1(

@@ -72,10 +72,6 @@ class AshTestHelper {
   // or false otherwise (e.g. win8 bot).
   static bool SupportsMultipleDisplays();
 
-  // True if the running environment supports host window resize,
-  // or false otherwise (e.g. win8 bot).
-  static bool SupportsHostWindowResize();
-
  private:
   AshTestEnvironment* ash_test_environment_;  // Not owned.
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.

@@ -1633,9 +1633,6 @@ TEST_P(WindowSelectorTest, CreateLabelUnderWindow) {
 // Tests that overview updates the window positions if the display orientation
 // changes.
 TEST_P(WindowSelectorTest, DisplayOrientationChanged) {
-  if (!SupportsHostWindowResize())
-    return;
-
   aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
   UpdateDisplay("600x200");
   EXPECT_EQ("0,0 600x200", root_window->bounds().ToString());
@@ -1701,8 +1698,6 @@ TEST_P(WindowSelectorTest, CloseWindowWithKey) {
 // Tests traversing some windows in overview mode with the arrow keys in every
 // possible direction.
 TEST_P(WindowSelectorTest, BasicArrowKeyNavigation) {
-  if (!SupportsHostWindowResize())
-    return;
   const size_t test_windows = 9;
   UpdateDisplay("800x600");
   ScopedVector<aura::Window> windows;

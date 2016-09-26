@@ -125,9 +125,6 @@ TEST_F(AshPopupAlignmentDelegateTest, MAYBE_ShelfAlignment) {
 }
 
 TEST_F(AshPopupAlignmentDelegateTest, LockScreen) {
-  if (!SupportsHostWindowResize())
-    return;
-
   const gfx::Rect toast_size(0, 0, 10, 10);
 
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_LEFT);

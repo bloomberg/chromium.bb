@@ -545,9 +545,6 @@ TEST_P(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
 
 // Assertions around dragging to the left/right edge of the screen.
 TEST_P(WorkspaceWindowResizerTest, Edge) {
-  if (!SupportsHostWindowResize())
-    return;
-
   // Resize host window to force insets update.
   UpdateDisplay("800x700");
   // TODO(varkha): Insets are reset after every drag because of

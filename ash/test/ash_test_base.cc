@@ -208,10 +208,6 @@ bool AshTestBase::SupportsMultipleDisplays() {
 }
 
 // static
-bool AshTestBase::SupportsHostWindowResize() {
-  return AshTestHelper::SupportsHostWindowResize();
-}
-
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
   DisplayManagerTestApi().UpdateDisplay(display_specs);
 }

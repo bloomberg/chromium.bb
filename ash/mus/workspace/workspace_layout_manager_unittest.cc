@@ -155,8 +155,6 @@ TEST_F(WorkspaceLayoutManagerTest, NoMinimumVisibilityForPopupWindows) {
 
 /*
 TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
-  if (!SupportsHostWindowResize())
-    return;
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 30, 40)));
   wm::WindowState* window_state = wm::GetWindowState(window.get());

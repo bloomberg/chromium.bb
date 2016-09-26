@@ -144,9 +144,6 @@ class OutOfDisplayDelegate : public views::WidgetDelegate {
 }  // namespace
 
 TEST_P(WindowPositionerTest, EnsureMinimumVisibility) {
-  if (!SupportsHostWindowResize())
-    return;
-
   UpdateDisplay("400x400");
   views::Widget* widget = new views::Widget();
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
@@ -205,8 +202,6 @@ TEST_P(WindowPositionerTest, FirstRunMaximizeWindowLowResolution) {
 }
 
 TEST_P(WindowPositionerTest, IgnoreFullscreenInAutoRearrange) {
-  if (!SupportsHostWindowResize())
-    return;
   // Set bigger than 1366 so that the new window is opened in normal state.
   UpdateDisplay("1400x800");
 

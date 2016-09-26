@@ -22,6 +22,7 @@
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "grit/ash_strings.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
@@ -626,10 +627,9 @@ TEST_P(DisplayManagerTest, ZeroOverscanInsets) {
   EXPECT_EQ(display2_id, changed()[0].id());
 }
 
+#if !defined(OS_WIN)
+// Disabled on windows because of http://crbug.com/650326.
 TEST_P(DisplayManagerTest, TestDeviceScaleOnlyChange) {
-  if (!SupportsHostWindowResize())
-    return;
-
   UpdateDisplay("1000x600");
   aura::WindowTreeHost* host = Shell::GetPrimaryRootWindow()->GetHost();
   EXPECT_EQ(1, host->compositor()->device_scale_factor());
@@ -643,6 +643,7 @@ TEST_P(DisplayManagerTest, TestDeviceScaleOnlyChange) {
   EXPECT_EQ("500x300",
             Shell::GetPrimaryRootWindow()->bounds().size().ToString());
 }
+#endif
 
 display::ManagedDisplayInfo CreateDisplayInfo(int64_t id,
                                               const gfx::Rect& bounds) {

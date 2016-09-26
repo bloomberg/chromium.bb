@@ -131,9 +131,6 @@ class AshTestBase : public testing::Test {
   // Proxy to AshTestHelper::SupportsMultipleDisplays().
   static bool SupportsMultipleDisplays();
 
-  // Proxy to AshTestHelper::SupportsHostWindowResize().
-  static bool SupportsHostWindowResize();
-
   void set_start_session(bool start_session) { start_session_ = start_session; }
 
   // Sets material mode for the test. This will override material mode set via

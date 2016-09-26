@@ -150,10 +150,6 @@ TEST_F(AppListPresenterDelegateTest, NonPrimaryDisplay) {
 // Tests opening the app launcher on a tiny display that is too small to contain
 // it.
 TEST_F(AppListPresenterDelegateTest, TinyDisplay) {
-  // UpdateDisplay is not supported in this case, so just skip the test.
-  if (!SupportsHostWindowResize())
-    return;
-
   // Set up a screen with a tiny display (height smaller than the app list).
   UpdateDisplay("400x300");
 

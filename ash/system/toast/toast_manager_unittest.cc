@@ -171,15 +171,11 @@ TEST_F(ToastManagerTest, PositionWithVisibleBottomShelf) {
   EXPECT_TRUE(toast_bounds.Intersects(shelf->GetUserWorkAreaBounds()));
   EXPECT_NEAR(root_bounds.CenterPoint().x(), toast_bounds.CenterPoint().x(), 1);
 
-  if (SupportsHostWindowResize()) {
-    // If host resize is not supported, ShelfLayoutManager::GetIdealBounds()
-    // doesn't return correct value.
-    gfx::Rect shelf_bounds = shelf->GetIdealBounds();
-    EXPECT_FALSE(toast_bounds.Intersects(shelf_bounds));
-    EXPECT_EQ(shelf_bounds.y() - 5, toast_bounds.bottom());
-    EXPECT_EQ(root_bounds.bottom() - shelf_bounds.height() - 5,
-              toast_bounds.bottom());
-  }
+  gfx::Rect shelf_bounds = shelf->GetIdealBounds();
+  EXPECT_FALSE(toast_bounds.Intersects(shelf_bounds));
+  EXPECT_EQ(shelf_bounds.y() - 5, toast_bounds.bottom());
+  EXPECT_EQ(root_bounds.bottom() - shelf_bounds.height() - 5,
+            toast_bounds.bottom());
 }
 
 TEST_F(ToastManagerTest, PositionWithAutoHiddenBottomShelf) {
@@ -235,15 +231,11 @@ TEST_F(ToastManagerTest, PositionWithVisibleLeftShelf) {
   EXPECT_TRUE(toast_bounds.Intersects(shelf->GetUserWorkAreaBounds()));
   EXPECT_EQ(root_bounds.bottom() - 5, toast_bounds.bottom());
 
-  if (SupportsHostWindowResize()) {
-    // If host resize is not supported then calling WmShelf::GetIdealBounds()
-    // doesn't return correct value.
-    gfx::Rect shelf_bounds = shelf->GetIdealBounds();
-    EXPECT_FALSE(toast_bounds.Intersects(shelf_bounds));
-    EXPECT_EQ(round(shelf_bounds.right() +
-                    (root_bounds.width() - shelf_bounds.width()) / 2.0),
-              round(precise_toast_bounds.CenterPoint().x()));
-  }
+  gfx::Rect shelf_bounds = shelf->GetIdealBounds();
+  EXPECT_FALSE(toast_bounds.Intersects(shelf_bounds));
+  EXPECT_EQ(round(shelf_bounds.right() +
+                  (root_bounds.width() - shelf_bounds.width()) / 2.0),
+            round(precise_toast_bounds.CenterPoint().x()));
 }
 
 TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
@@ -268,15 +260,11 @@ TEST_F(ToastManagerTest, PositionWithUnifiedDesktop) {
   EXPECT_TRUE(root_bounds.Contains(toast_bounds));
   EXPECT_NEAR(root_bounds.CenterPoint().x(), toast_bounds.CenterPoint().x(), 1);
 
-  if (SupportsHostWindowResize()) {
-    // If host resize is not supported then calling WmShelf::GetIdealBounds()
-    // doesn't return correct value.
-    gfx::Rect shelf_bounds = shelf->GetIdealBounds();
-    EXPECT_FALSE(toast_bounds.Intersects(shelf_bounds));
-    EXPECT_EQ(shelf_bounds.y() - 5, toast_bounds.bottom());
-    EXPECT_EQ(root_bounds.bottom() - shelf_bounds.height() - 5,
-              toast_bounds.bottom());
-  }
+  gfx::Rect shelf_bounds = shelf->GetIdealBounds();
+  EXPECT_FALSE(toast_bounds.Intersects(shelf_bounds));
+  EXPECT_EQ(shelf_bounds.y() - 5, toast_bounds.bottom());
+  EXPECT_EQ(root_bounds.bottom() - shelf_bounds.height() - 5,
+            toast_bounds.bottom());
 }
 
 TEST_F(ToastManagerTest, CancelToast) {

@@ -59,9 +59,6 @@ void TestLauncherAlignment(WmWindow* root,
 }
 
 TEST_P(ShelfWidgetTest, TestAlignment) {
-  if (!SupportsHostWindowResize())
-    return;
-
   // Note that for a left- and right-aligned shelf, this offset must be
   // applied to a maximized window's width rather than its height.
   const int offset = GetMdMaximizedWindowHeightOffset();
@@ -214,9 +211,6 @@ TEST_P(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
 // Tests that the shelf lets mouse-events close to the edge fall through to the
 // window underneath.
 TEST_P(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
-  if (!SupportsHostWindowResize())
-    return;
-
   UpdateDisplay("400x400");
   ShelfWidget* shelf_widget = GetShelfWidget();
   gfx::Rect shelf_bounds = shelf_widget->GetWindowBoundsInScreen();

@@ -631,10 +631,6 @@ class TestObserver : public WallpaperManager::Observer {
 };
 
 IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, DisplayChange) {
-  // TODO(derat|oshima|bshe): Host windows can't be resized on Win8.
-  if (!ash::test::AshTestHelper::SupportsHostWindowResize())
-    return;
-
   TestObserver observer(WallpaperManager::Get());
 
   // Set the wallpaper to ensure that UpdateWallpaper() will be called when the

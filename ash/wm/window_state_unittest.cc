@@ -107,9 +107,6 @@ TEST_P(WindowStateTest, SnapWindowBasic) {
 // Test how the minimum and maximum size specified by the aura::WindowDelegate
 // affect snapping.
 TEST_P(WindowStateTest, SnapWindowMinimumSize) {
-  if (!SupportsHostWindowResize())
-    return;
-
   UpdateDisplay("0+0-600x900");
   const gfx::Rect kWorkAreaBounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
@@ -142,9 +139,6 @@ TEST_P(WindowStateTest, SnapWindowMinimumSize) {
 
 // Test that the minimum size specified by aura::WindowDelegate gets respected.
 TEST_P(WindowStateTest, TestRespectMinimumSize) {
-  if (!SupportsHostWindowResize())
-    return;
-
   UpdateDisplay("0+0-1024x768");
 
   aura::test::TestWindowDelegate delegate;
@@ -172,9 +166,6 @@ TEST_P(WindowStateTest, TestRespectMinimumSize) {
 // Test that the minimum window size specified by aura::WindowDelegate does not
 // exceed the screen size.
 TEST_P(WindowStateTest, TestIgnoreTooBigMinimumSize) {
-  if (!SupportsHostWindowResize())
-    return;
-
   UpdateDisplay("0+0-1024x768");
   const gfx::Size work_area_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area().size();
@@ -203,9 +194,6 @@ TEST_P(WindowStateTest, TestIgnoreTooBigMinimumSize) {
 
 // Test that setting the bounds of a snapped window keeps its snapped.
 TEST_P(WindowStateTest, SnapWindowSetBounds) {
-  if (!SupportsHostWindowResize())
-    return;
-
   UpdateDisplay("0+0-900x600");
   const gfx::Rect kWorkAreaBounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
@@ -321,9 +309,6 @@ TEST_P(WindowStateTest, StateSwapRestore) {
 // Tests that a window that had same bounds as the work area shrinks after the
 // window is maximized and then restored.
 TEST_P(WindowStateTest, RestoredWindowBoundsShrink) {
-  if (!SupportsHostWindowResize())
-    return;
-
   UpdateDisplay("0+0-600x900");
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
   WindowState* window_state = GetWindowState(window.get());
@@ -343,8 +328,6 @@ TEST_P(WindowStateTest, RestoredWindowBoundsShrink) {
 }
 
 TEST_P(WindowStateTest, DoNotResizeMaximizedWindowInFullscreen) {
-  if (!SupportsHostWindowResize())
-    return;
   const int height_offset = GetMdMaximizedWindowHeightOffset();
 
   std::unique_ptr<aura::Window> maximized(CreateTestWindowInShellWithId(0));
