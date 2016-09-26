@@ -58,6 +58,12 @@ class PaymentsClientDelegate {
 class PaymentsClient : public net::URLFetcherDelegate,
                        public OAuth2TokenService::Consumer {
  public:
+  // The names of the fields used to send non-location elements as part of an
+  // address. Used in the implementation and in tests which verify that these
+  // values are set or not at appropriate times.
+  static const char kRecipientName[];
+  static const char kPhoneNumber[];
+
   // A collection of the information required to make a credit card unmask
   // request.
   struct UnmaskRequestDetails {
@@ -103,9 +109,12 @@ class PaymentsClient : public net::URLFetcherDelegate,
   void UnmaskCard(const UnmaskRequestDetails& request_details);
 
   // Determine if the user meets the Payments service's conditions for upload.
-  // If so, the required legal message for display will be returned via
+  // The service uses |addresses| (from which names and phone numbers are
+  // removed) and |app_locale| to determine which legal message to display. If
+  // the conditions are met, the legal message will be returned via
   // OnDidGetUploadDetails.
-  virtual void GetUploadDetails(const std::string& app_locale);
+  virtual void GetUploadDetails(const std::vector<AutofillProfile>& addresses,
+                                const std::string& app_locale);
 
   // The user has indicated that they would like to upload a card with the given
   // cvc. This request will fail server-side if a successful call to
