@@ -604,6 +604,7 @@ _cheets_x86_boards = _cheets_boards | frozenset([
     'auron_paine',
     'auron_yuna',
     'banon',
+    'buddy',
     'cave',
     'celes',
     'chell',
