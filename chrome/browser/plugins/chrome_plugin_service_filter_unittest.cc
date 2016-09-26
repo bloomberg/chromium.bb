@@ -49,8 +49,8 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
         filter_(nullptr),
         flash_plugin_path_(FILE_PATH_LITERAL("/path/to/flash")) {}
 
-  bool IsPluginAvailable(const GURL& url,
-                         const GURL& policy_url,
+  bool IsPluginAvailable(const GURL& plugin_content_url,
+                         const GURL& main_url,
                          const void* resource_context,
                          const content::WebPluginInfo& plugin_info) {
     bool is_available = false;
@@ -61,8 +61,8 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&ChromePluginServiceFilterTest::IsPluginAvailableOnIOThread,
-                   base::Unretained(this), url, policy_url, resource_context,
-                   plugin_info, &is_available),
+                   base::Unretained(this), plugin_content_url, main_url,
+                   resource_context, plugin_info, &is_available),
         run_loop.QuitClosure());
     run_loop.Run();
 
@@ -82,15 +82,15 @@ class ChromePluginServiceFilterTest : public ChromeRenderViewHostTestHarness {
                                      profile()->GetResourceContext());
   }
 
-  void IsPluginAvailableOnIOThread(const GURL& url,
-                                   const GURL& policy_url,
+  void IsPluginAvailableOnIOThread(const GURL& plugin_content_url,
+                                   const GURL& main_url,
                                    const void* resource_context,
                                    content::WebPluginInfo plugin_info,
                                    bool* is_available) {
     *is_available = filter_->IsPluginAvailable(
         web_contents()->GetRenderProcessHost()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID(), resource_context, url,
-        policy_url, &plugin_info);
+        web_contents()->GetMainFrame()->GetRoutingID(), resource_context,
+        plugin_content_url, main_url, &plugin_info);
   }
 
   ChromePluginServiceFilter* filter_;

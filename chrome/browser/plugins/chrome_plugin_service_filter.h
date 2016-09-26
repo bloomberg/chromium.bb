@@ -59,13 +59,13 @@ class ChromePluginServiceFilter : public content::PluginServiceFilter,
                            const std::string& identifier);
 
   // PluginServiceFilter implementation.
-  // If |url| is not available, the same GURL passed as |policy_url| should be
-  // passed.
+  // If |plugin_content_url| is not available, the same GURL passed as
+  // |top_level_url| should be passed. These GURLs may be empty.
   bool IsPluginAvailable(int render_process_id,
                          int render_frame_id,
                          const void* context,
-                         const GURL& url,
-                         const GURL& policy_url,
+                         const GURL& plugin_content_url,
+                         const GURL& top_level_url,
                          content::WebPluginInfo* plugin) override;
 
   // CanLoadPlugin always grants permission to the browser

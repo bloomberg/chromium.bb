@@ -166,8 +166,8 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     int render_process_id,
     int render_frame_id,
     const void* context,
-    const GURL& url,
-    const GURL& policy_url,
+    const GURL& plugin_content_url,
+    const GURL& main_url,
     content::WebPluginInfo* plugin) {
   base::AutoLock auto_lock(lock_);
   const ProcessDetails* details = GetProcess(render_process_id);
@@ -176,7 +176,8 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
   if (details) {
     for (const auto& plugin_override : details->overridden_plugins) {
       if (plugin_override.render_frame_id == render_frame_id &&
-          (plugin_override.url.is_empty() || plugin_override.url == url)) {
+          (plugin_override.url.is_empty() ||
+           plugin_override.url == plugin_content_url)) {
         bool use = plugin_override.plugin.path == plugin->path;
         if (use)
           *plugin = plugin_override.plugin;
@@ -201,8 +202,6 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
   // additional checks.
   if (plugin->name == base::ASCIIToUTF16(content::kFlashPluginName) &&
       base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins)) {
-    DCHECK(!policy_url.is_empty());
-
     // Check the content setting first, and always respect the ALLOW or BLOCK
     // state. When IsPluginAvailable() is called to check whether a plugin
     // should be advertised, |url| has the same value of |policy_url| (i.e. the
@@ -212,7 +211,7 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     HostContentSettingsMap* settings_map =
         context_info_it->second->host_content_settings_map.get();
     ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-        settings_map, policy_url, url);
+        settings_map, main_url, plugin_content_url);
     flash_setting = PluginsFieldTrial::EffectiveContentSetting(
         CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
     if (flash_setting == CONTENT_SETTING_ALLOW)
@@ -222,7 +221,7 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
 
     // The content setting is neither ALLOW or BLOCK. Check whether the site
     // meets the engagement cutoff for making Flash available without a prompt.
-    if (SiteEngagementService::GetScoreFromSettings(settings_map, url) <
+    if (SiteEngagementService::GetScoreFromSettings(settings_map, main_url) <
         PluginsFieldTrial::GetSiteEngagementThresholdForFlash()) {
       return false;
     }
