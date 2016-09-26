@@ -27,6 +27,7 @@
 #ifndef TextCodecICU_h
 #define TextCodecICU_h
 
+#include "base/gtest_prod_util.h"
 #include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncoding.h"
 #include <memory>
@@ -47,7 +48,7 @@ public:
 
 private:
     TextCodecICU(const TextEncoding&);
-    static std::unique_ptr<TextCodec> create(const TextEncoding&, const void*);
+    WTF_EXPORT static std::unique_ptr<TextCodec> create(const TextEncoding&, const void*);
 
     String decode(const char*, size_t length, FlushBehavior, bool stopOnError, bool& sawError) override;
     CString encode(const UChar*, size_t length, UnencodableHandling) override;
@@ -72,6 +73,8 @@ private:
 #if defined(USING_SYSTEM_ICU)
     mutable bool m_needsGBKFallbacks;
 #endif
+
+    FRIEND_TEST_ALL_PREFIXES(TextCodecICUTest, IgnorableCodePoint);
 };
 
 struct ICUConverterWrapper {

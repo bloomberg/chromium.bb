@@ -424,6 +424,12 @@ static void formatEscapedEntityCallback(const void* context, UConverterFromUnico
     }
 }
 
+static void numericEntityCallback(const void* context, UConverterFromUnicodeArgs* fromUArgs, const UChar* codeUnits, int32_t length,
+    UChar32 codePoint, UConverterCallbackReason reason, UErrorCode* err)
+{
+    formatEscapedEntityCallback(context, fromUArgs, codeUnits, length, codePoint, reason, err, EntitiesForUnencodables);
+}
+
 // Invalid character handler when writing escaped entities in CSS encoding for
 // unrepresentable characters. See the declaration of TextCodec::encode for more.
 static void cssEscapedEntityCallback(const void* context, UConverterFromUnicodeArgs* fromUArgs, const UChar* codeUnits, int32_t length,
@@ -452,7 +458,7 @@ static void gbkCallbackEscape(const void* context, UConverterFromUnicodeArgs* fr
         ucnv_cbFromUWriteUChars(fromUArgs, &source, source + 1, 0, err);
         return;
     }
-    UCNV_FROM_U_CALLBACK_ESCAPE(context, fromUArgs, codeUnits, length, codePoint, reason, err);
+    numericEntityCallback(context, fromUArgs, codeUnits, length, codePoint, reason, err);
 }
 
 // Combines both gbkCssEscapedEntityCallback and GBK character substitution.
@@ -547,9 +553,9 @@ CString TextCodecICU::encodeInternal(const TextCodecInput& input, UnencodableHan
         break;
     case EntitiesForUnencodables:
 #if !defined(USING_SYSTEM_ICU)
-        ucnv_setFromUCallBack(m_converterICU, UCNV_FROM_U_CALLBACK_ESCAPE, UCNV_ESCAPE_XML_DEC, 0, 0, &err);
+        ucnv_setFromUCallBack(m_converterICU, numericEntityCallback, 0, 0, 0, &err);
 #else
-        ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkCallbackEscape : UCNV_FROM_U_CALLBACK_ESCAPE, UCNV_ESCAPE_XML_DEC, 0, 0, &err);
+        ucnv_setFromUCallBack(m_converterICU, m_needsGBKFallbacks ? gbkCallbackEscape : numericEntityCallback, 0, 0, 0, &err);
 #endif
         break;
     case URLEncodedEntitiesForUnencodables:
