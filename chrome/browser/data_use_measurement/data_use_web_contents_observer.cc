@@ -5,6 +5,7 @@
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber_service.h"
+#include "chrome/browser/data_use_measurement/chrome_data_use_ascriber_service_factory.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 
@@ -15,9 +16,13 @@ namespace data_use_measurement {
 
 // static
 void DataUseWebContentsObserver::CreateForWebContents(
-    content::WebContents* web_contents,
-    ChromeDataUseAscriberService* service) {
+    content::WebContents* web_contents) {
   DCHECK(web_contents);
+
+  ChromeDataUseAscriberService* service =
+      ChromeDataUseAscriberServiceFactory::GetForBrowserContext(
+          web_contents->GetBrowserContext());
+
   // Nothing to do if there is no service (Incognito), or if instance already
   // exists.
   if (!service || FromWebContents(web_contents))

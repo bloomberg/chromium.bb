@@ -4,7 +4,11 @@
 
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 
+#include <memory>
+#include <string>
+
 #include "base/lazy_instance.h"
+#include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -39,6 +43,8 @@ ChromeExtensionHostDelegate::~ChromeExtensionHostDelegate() {}
 void ChromeExtensionHostDelegate::OnExtensionHostCreated(
     content::WebContents* web_contents) {
   ChromeExtensionWebContentsObserver::CreateForWebContents(web_contents);
+  data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
+      web_contents);
   PrefsTabHelper::CreateForWebContents(web_contents);
 }
 

@@ -27,10 +27,8 @@ class DataUseWebContentsObserver
     : public content::WebContentsObserver,
       public content::WebContentsUserData<DataUseWebContentsObserver> {
  public:
-  // Creates a DataUseWebContentsObserver for the given WebContents and
-  // ChromeDataUseAscriberService.
-  static void CreateForWebContents(content::WebContents* web_contents,
-                                   ChromeDataUseAscriberService* service);
+  // Creates a DataUseWebContentsObserver for the given WebContents.
+  static void CreateForWebContents(content::WebContents* web_contents);
 
   ~DataUseWebContentsObserver() override;
 
