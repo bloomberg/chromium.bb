@@ -1303,6 +1303,6 @@ crbug.com/646323 [ Win Linux ] editing/selection/modify_move/move_backward_line_
 
 crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
 
-crbug.com/649631 [ Win7 Win10 ] fast/borders/border-styles-split.html [ Pass Failure ]
-crbug.com/649631 [ Win7 Win10 ] fast/backgrounds/border-radius-split-background.html [ Pass Failure ]
-crbug.com/649631 [ Win7 Win10 ] fast/backgrounds/border-radius-split-background-image.html [ Pass Failure ]
+crbug.com/649631 [ Win7 Win10 ] fast/borders/border-styles-split.html [ NeedsRebaseline ]
+crbug.com/649631 [ Win7 Win10 ] fast/backgrounds/border-radius-split-background.html [ NeedsRebaseline ]
+crbug.com/649631 [ Win7 Win10 ] fast/backgrounds/border-radius-split-background-image.html [ NeedsRebaseline ]
