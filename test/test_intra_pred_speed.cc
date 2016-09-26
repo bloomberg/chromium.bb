@@ -47,12 +47,12 @@ void TestIntraPred(const char name[], AvxPredFunc const *pred_funcs,
   const int kTotalPixels = 32 * kBPS;
   DECLARE_ALIGNED(16, uint8_t, src[kTotalPixels]);
   DECLARE_ALIGNED(16, uint8_t, ref_src[kTotalPixels]);
-  DECLARE_ALIGNED(16, uint8_t, left[kBPS]);
+  DECLARE_ALIGNED(16, uint8_t, left[kBPS * 2]);
   DECLARE_ALIGNED(16, uint8_t, above_mem[2 * kBPS + 16]);
   uint8_t *const above = above_mem + 16;
   for (int i = 0; i < kTotalPixels; ++i) ref_src[i] = rnd.Rand8();
-  for (int i = 0; i < kBPS; ++i) left[i] = rnd.Rand8();
-  for (int i = -1; i < kBPS; ++i) above[i] = rnd.Rand8();
+  for (int i = 0; i < kBPS * 2; ++i) left[i] = rnd.Rand8();
+  for (int i = -1; i < kBPS * 2; ++i) above[i] = rnd.Rand8();
   const int kNumTests = static_cast<int>(2.e10 / num_pixels_per_test);
 
   // some code assumes the top row has been extended:
@@ -160,24 +160,22 @@ void TestIntraPred32(AvxPredFunc const *pred_funcs) {
 INTRA_PRED_TEST(C, TestIntraPred4, aom_dc_predictor_4x4_c,
                 aom_dc_left_predictor_4x4_c, aom_dc_top_predictor_4x4_c,
                 aom_dc_128_predictor_4x4_c, aom_v_predictor_4x4_c,
-                aom_h_predictor_4x4_c, aom_d45_predictor_4x4_c,
+                aom_h_predictor_4x4_c, aom_d45e_predictor_4x4_c,
                 aom_d135_predictor_4x4_c, aom_d117_predictor_4x4_c,
-                aom_d153_predictor_4x4_c, aom_d207_predictor_4x4_c,
-                aom_d63_predictor_4x4_c, aom_tm_predictor_4x4_c)
+                aom_d153_predictor_4x4_c, aom_d207e_predictor_4x4_c,
+                aom_d63e_predictor_4x4_c, aom_tm_predictor_4x4_c)
 
 #if HAVE_SSE2 && CONFIG_USE_X86INC
 INTRA_PRED_TEST(SSE2, TestIntraPred4, aom_dc_predictor_4x4_sse2,
                 aom_dc_left_predictor_4x4_sse2, aom_dc_top_predictor_4x4_sse2,
                 aom_dc_128_predictor_4x4_sse2, aom_v_predictor_4x4_sse2,
-                aom_h_predictor_4x4_sse2, aom_d45_predictor_4x4_sse2, NULL,
-                NULL, NULL, aom_d207_predictor_4x4_sse2, NULL,
+                aom_h_predictor_4x4_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_tm_predictor_4x4_sse2)
 #endif  // HAVE_SSE2 && CONFIG_USE_X86INC
 
 #if HAVE_SSSE3 && CONFIG_USE_X86INC
 INTRA_PRED_TEST(SSSE3, TestIntraPred4, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, aom_d153_predictor_4x4_ssse3, NULL,
-                aom_d63_predictor_4x4_ssse3, NULL)
+                NULL, NULL, aom_d153_predictor_4x4_ssse3, NULL, NULL, NULL)
 #endif  // HAVE_SSSE3 && CONFIG_USE_X86INC
 
 #if HAVE_DSPR2
@@ -190,9 +188,8 @@ INTRA_PRED_TEST(DSPR2, TestIntraPred4, aom_dc_predictor_4x4_dspr2, NULL, NULL,
 INTRA_PRED_TEST(NEON, TestIntraPred4, aom_dc_predictor_4x4_neon,
                 aom_dc_left_predictor_4x4_neon, aom_dc_top_predictor_4x4_neon,
                 aom_dc_128_predictor_4x4_neon, aom_v_predictor_4x4_neon,
-                aom_h_predictor_4x4_neon, aom_d45_predictor_4x4_neon,
-                aom_d135_predictor_4x4_neon, NULL, NULL, NULL, NULL,
-                aom_tm_predictor_4x4_neon)
+                aom_h_predictor_4x4_neon, NULL, aom_d135_predictor_4x4_neon,
+                NULL, NULL, NULL, NULL, aom_tm_predictor_4x4_neon)
 #endif  // HAVE_NEON
 
 #if HAVE_MSA
@@ -209,23 +206,22 @@ INTRA_PRED_TEST(MSA, TestIntraPred4, aom_dc_predictor_4x4_msa,
 INTRA_PRED_TEST(C, TestIntraPred8, aom_dc_predictor_8x8_c,
                 aom_dc_left_predictor_8x8_c, aom_dc_top_predictor_8x8_c,
                 aom_dc_128_predictor_8x8_c, aom_v_predictor_8x8_c,
-                aom_h_predictor_8x8_c, aom_d45_predictor_8x8_c,
+                aom_h_predictor_8x8_c, aom_d45e_predictor_8x8_c,
                 aom_d135_predictor_8x8_c, aom_d117_predictor_8x8_c,
-                aom_d153_predictor_8x8_c, aom_d207_predictor_8x8_c,
-                aom_d63_predictor_8x8_c, aom_tm_predictor_8x8_c)
+                aom_d153_predictor_8x8_c, aom_d207e_predictor_8x8_c,
+                aom_d63e_predictor_8x8_c, aom_tm_predictor_8x8_c)
 
 #if HAVE_SSE2 && CONFIG_USE_X86INC
 INTRA_PRED_TEST(SSE2, TestIntraPred8, aom_dc_predictor_8x8_sse2,
                 aom_dc_left_predictor_8x8_sse2, aom_dc_top_predictor_8x8_sse2,
                 aom_dc_128_predictor_8x8_sse2, aom_v_predictor_8x8_sse2,
-                aom_h_predictor_8x8_sse2, aom_d45_predictor_8x8_sse2, NULL,
-                NULL, NULL, NULL, NULL, aom_tm_predictor_8x8_sse2)
+                aom_h_predictor_8x8_sse2, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_tm_predictor_8x8_sse2)
 #endif  // HAVE_SSE2 && CONFIG_USE_X86INC
 
 #if HAVE_SSSE3 && CONFIG_USE_X86INC
 INTRA_PRED_TEST(SSSE3, TestIntraPred8, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, NULL, aom_d153_predictor_8x8_ssse3,
-                aom_d207_predictor_8x8_ssse3, aom_d63_predictor_8x8_ssse3, NULL)
+                NULL, NULL, aom_d153_predictor_8x8_ssse3, NULL, NULL, NULL)
 #endif  // HAVE_SSSE3 && CONFIG_USE_X86INC
 
 #if HAVE_DSPR2
@@ -238,8 +234,8 @@ INTRA_PRED_TEST(DSPR2, TestIntraPred8, aom_dc_predictor_8x8_dspr2, NULL, NULL,
 INTRA_PRED_TEST(NEON, TestIntraPred8, aom_dc_predictor_8x8_neon,
                 aom_dc_left_predictor_8x8_neon, aom_dc_top_predictor_8x8_neon,
                 aom_dc_128_predictor_8x8_neon, aom_v_predictor_8x8_neon,
-                aom_h_predictor_8x8_neon, aom_d45_predictor_8x8_neon, NULL,
-                NULL, NULL, NULL, NULL, aom_tm_predictor_8x8_neon)
+                aom_h_predictor_8x8_neon, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_tm_predictor_8x8_neon)
 
 #endif  // HAVE_NEON
 
@@ -257,10 +253,10 @@ INTRA_PRED_TEST(MSA, TestIntraPred8, aom_dc_predictor_8x8_msa,
 INTRA_PRED_TEST(C, TestIntraPred16, aom_dc_predictor_16x16_c,
                 aom_dc_left_predictor_16x16_c, aom_dc_top_predictor_16x16_c,
                 aom_dc_128_predictor_16x16_c, aom_v_predictor_16x16_c,
-                aom_h_predictor_16x16_c, aom_d45_predictor_16x16_c,
+                aom_h_predictor_16x16_c, aom_d45e_predictor_16x16_c,
                 aom_d135_predictor_16x16_c, aom_d117_predictor_16x16_c,
-                aom_d153_predictor_16x16_c, aom_d207_predictor_16x16_c,
-                aom_d63_predictor_16x16_c, aom_tm_predictor_16x16_c)
+                aom_d153_predictor_16x16_c, aom_d207e_predictor_16x16_c,
+                aom_d63e_predictor_16x16_c, aom_tm_predictor_16x16_c)
 
 #if HAVE_SSE2 && CONFIG_USE_X86INC
 INTRA_PRED_TEST(SSE2, TestIntraPred16, aom_dc_predictor_16x16_sse2,
@@ -273,9 +269,8 @@ INTRA_PRED_TEST(SSE2, TestIntraPred16, aom_dc_predictor_16x16_sse2,
 
 #if HAVE_SSSE3 && CONFIG_USE_X86INC
 INTRA_PRED_TEST(SSSE3, TestIntraPred16, NULL, NULL, NULL, NULL, NULL, NULL,
-                aom_d45_predictor_16x16_ssse3, NULL, NULL,
-                aom_d153_predictor_16x16_ssse3, aom_d207_predictor_16x16_ssse3,
-                aom_d63_predictor_16x16_ssse3, NULL)
+                NULL, NULL, NULL, aom_d153_predictor_16x16_ssse3, NULL, NULL,
+                NULL)
 #endif  // HAVE_SSSE3 && CONFIG_USE_X86INC
 
 #if HAVE_DSPR2
@@ -289,8 +284,8 @@ INTRA_PRED_TEST(NEON, TestIntraPred16, aom_dc_predictor_16x16_neon,
                 aom_dc_left_predictor_16x16_neon,
                 aom_dc_top_predictor_16x16_neon,
                 aom_dc_128_predictor_16x16_neon, aom_v_predictor_16x16_neon,
-                aom_h_predictor_16x16_neon, aom_d45_predictor_16x16_neon, NULL,
-                NULL, NULL, NULL, NULL, aom_tm_predictor_16x16_neon)
+                aom_h_predictor_16x16_neon, NULL, NULL, NULL, NULL, NULL, NULL,
+                aom_tm_predictor_16x16_neon)
 #endif  // HAVE_NEON
 
 #if HAVE_MSA
@@ -307,10 +302,10 @@ INTRA_PRED_TEST(MSA, TestIntraPred16, aom_dc_predictor_16x16_msa,
 INTRA_PRED_TEST(C, TestIntraPred32, aom_dc_predictor_32x32_c,
                 aom_dc_left_predictor_32x32_c, aom_dc_top_predictor_32x32_c,
                 aom_dc_128_predictor_32x32_c, aom_v_predictor_32x32_c,
-                aom_h_predictor_32x32_c, aom_d45_predictor_32x32_c,
+                aom_h_predictor_32x32_c, aom_d45e_predictor_32x32_c,
                 aom_d135_predictor_32x32_c, aom_d117_predictor_32x32_c,
-                aom_d153_predictor_32x32_c, aom_d207_predictor_32x32_c,
-                aom_d63_predictor_32x32_c, aom_tm_predictor_32x32_c)
+                aom_d153_predictor_32x32_c, aom_d207e_predictor_32x32_c,
+                aom_d63e_predictor_32x32_c, aom_tm_predictor_32x32_c)
 
 #if HAVE_SSE2 && CONFIG_USE_X86INC
 INTRA_PRED_TEST(SSE2, TestIntraPred32, aom_dc_predictor_32x32_sse2,
@@ -323,9 +318,8 @@ INTRA_PRED_TEST(SSE2, TestIntraPred32, aom_dc_predictor_32x32_sse2,
 
 #if HAVE_SSSE3 && CONFIG_USE_X86INC
 INTRA_PRED_TEST(SSSE3, TestIntraPred32, NULL, NULL, NULL, NULL, NULL, NULL,
-                aom_d45_predictor_32x32_ssse3, NULL, NULL,
-                aom_d153_predictor_32x32_ssse3, aom_d207_predictor_32x32_ssse3,
-                aom_d63_predictor_32x32_ssse3, NULL)
+                NULL, NULL, NULL, aom_d153_predictor_32x32_ssse3, NULL, NULL,
+                NULL)
 #endif  // HAVE_SSSE3 && CONFIG_USE_X86INC
 
 #if HAVE_NEON
