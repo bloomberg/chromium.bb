@@ -19,6 +19,11 @@ const base::Feature kBrotliEncoding{"brotli-encoding",
 const base::Feature kCanvas2DImageChromium{"Canvas2DImageChromium",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the compositing of scrolling content that supports painting the
+// background with the foreground, such that LCD text will still be enabled.
+const base::Feature kCompositeOpaqueScrollers{"CompositeOpaqueScrollers",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables the credential management API:
 // https://w3c.github.io/webappsec-credential-management/
 const base::Feature kCredentialManagementAPI{"CredentialManagementAPI",
