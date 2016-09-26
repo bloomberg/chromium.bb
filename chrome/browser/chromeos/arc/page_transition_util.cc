@@ -7,10 +7,9 @@
 namespace arc {
 
 bool ShouldIgnoreNavigation(ui::PageTransition page_transition) {
-  // Mask out any redirect qualifiers - this method handles navigation from
-  // redirect and non-redirect navigations equivalently.
+  // Mask out server-sided redirects only.
   page_transition = ui::PageTransitionFromInt(
-      page_transition & ~ui::PAGE_TRANSITION_IS_REDIRECT_MASK);
+      page_transition & ~ui::PAGE_TRANSITION_SERVER_REDIRECT);
 
   if (!ui::PageTransitionCoreTypeIs(page_transition,
                                     ui::PAGE_TRANSITION_LINK)) {
@@ -21,8 +20,8 @@ bool ShouldIgnoreNavigation(ui::PageTransition page_transition) {
 
   if (ui::PageTransitionGetQualifier(page_transition) != 0) {
     // Qualifiers indicate that this navigation was the result of a click on a
-    // forward/back button, or typing in the URL bar, etc.  Don't handle any of
-    // those types of navigations.
+    // forward/back button, or typing in the URL bar, or a client-side redirect,
+    // etc.  Don't handle any of those types of navigations.
     return true;
   }
 
