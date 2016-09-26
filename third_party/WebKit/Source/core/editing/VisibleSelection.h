@@ -80,8 +80,8 @@ public:
 
     VisiblePositionTemplate<Strategy> visibleStart() const { return createVisiblePositionDeprecated(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
     VisiblePositionTemplate<Strategy> visibleEnd() const { return createVisiblePositionDeprecated(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
-    VisiblePositionTemplate<Strategy> visibleBase() const { return createVisiblePositionDeprecated(m_base, isRange() ? (isBaseFirst() ? TextAffinity::Upstream : TextAffinity::Downstream) : affinity()); }
-    VisiblePositionTemplate<Strategy> visibleExtent() const { return createVisiblePositionDeprecated(m_extent, isRange() ? (isBaseFirst() ? TextAffinity::Downstream : TextAffinity::Upstream) : affinity()); }
+    VisiblePositionTemplate<Strategy> visibleBase() const { return createVisiblePosition(m_base, isRange() ? (isBaseFirst() ? TextAffinity::Upstream : TextAffinity::Downstream) : affinity()); }
+    VisiblePositionTemplate<Strategy> visibleExtent() const { return createVisiblePosition(m_extent, isRange() ? (isBaseFirst() ? TextAffinity::Downstream : TextAffinity::Upstream) : affinity()); }
 
     bool operator==(const VisibleSelectionTemplate&) const;
     bool operator!=(const VisibleSelectionTemplate& other) const { return !operator==(other); }
