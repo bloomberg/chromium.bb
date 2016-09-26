@@ -15,7 +15,7 @@
 template <class Key, class Value>
 class ScopedPtrExpiringCache {
  private:
-  typedef linked_hash_map<Key, Value*> LinkedHashMap;
+  typedef net::linked_hash_map<Key, Value*> LinkedHashMap;
 
  public:
   typedef typename LinkedHashMap::iterator iterator;
