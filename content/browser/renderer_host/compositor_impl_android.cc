@@ -545,12 +545,9 @@ void CompositorImpl::SetVisible(bool visible) {
 
     host_->SetVisible(false);
     host_->ReleaseCompositorFrameSink();
-    // see crbug.com/643721
-    host_->SetDeferCommits(true);
     pending_swapbuffers_ = 0;
     display_.reset();
   } else {
-    host_->SetDeferCommits(false);
     host_->SetVisible(true);
     if (compositor_frame_sink_request_pending_)
       HandlePendingCompositorFrameSinkRequest();
