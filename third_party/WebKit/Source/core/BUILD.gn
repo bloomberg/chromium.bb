@@ -640,13 +640,6 @@ make_qualified_names("make_core_generated_xml_names") {
   ]
 }
 
-# make_token_matcher -----------------------------------------------------------
-
-make_token_matcher("make_core_generated_make_token_matcher_for_viewport") {
-  input_file = "html/HTMLMetaElement-in.cpp"
-  output_file = "$blink_core_output_dir/HTMLMetaElement.cpp"
-}
-
 # One-off scripts --------------------------------------------------------------
 
 # FIXME: The implementation of Blink-in-JS is not yet mature.
@@ -838,7 +831,6 @@ target(core_link_small_target_type, "core_generated") {
     ":make_core_generated_html_entity_table",
     ":make_core_generated_html_tokenizer_names",
     ":make_core_generated_input_type_names",
-    ":make_core_generated_make_token_matcher_for_viewport",
     ":make_core_generated_math_ml_names",
     ":make_core_generated_media_feature_names",
     ":make_core_generated_media_type_names",

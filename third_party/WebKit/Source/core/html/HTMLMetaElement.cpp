@@ -37,20 +37,6 @@
 
 namespace blink {
 
-#define DEFINE_ARRAY_FOR_MATCHING(name, source, maxMatchLength) \
-const UChar* name; \
-const unsigned uMaxMatchLength = maxMatchLength; \
-UChar characterBuffer[uMaxMatchLength]; \
-if (!source.is8Bit()) { \
-    name = source.characters16(); \
-} else { \
-    unsigned bufferLength = std::min(uMaxMatchLength, source.length()); \
-    const LChar* characters8 = source.characters8(); \
-    for (unsigned i = 0; i < bufferLength; ++i) \
-        characterBuffer[i] = characters8[i]; \
-    name = characterBuffer; \
-}
-
 using namespace HTMLNames;
 
 inline HTMLMetaElement::HTMLMetaElement(Document& document)
@@ -181,16 +167,10 @@ Length HTMLMetaElement::parseViewportValueAsLength(Document* document, bool repo
     // 3) device-width and device-height are used as keywords.
     // 4) Other keywords and unknown values translate to 0.0.
 
-    unsigned length = valueString.length();
-    DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 13);
-    SWITCH(characters, length) {
-        CASE("device-width") {
-            return Length(DeviceWidth);
-        }
-        CASE("device-height") {
-            return Length(DeviceHeight);
-        }
-    }
+    if (equalIgnoringCase(valueString, "device-width"))
+        return Length(DeviceWidth);
+    if (equalIgnoringCase(valueString, "device-height"))
+        return Length(DeviceHeight);
 
     float value = parsePositiveNumber(document, reportWarnings, keyString, valueString);
 
@@ -209,22 +189,14 @@ float HTMLMetaElement::parseViewportValueAsZoom(Document* document, bool reportW
     // 5) no and unknown values are translated to 0.0
 
     computedValueMatchesParsedValue = false;
-    unsigned length = valueString.length();
-    DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 13);
-    SWITCH(characters, length) {
-        CASE("yes") {
-            return 1;
-        }
-        CASE("no") {
-            return 0;
-        }
-        CASE("device-width") {
-            return 10;
-        }
-        CASE("device-height") {
-            return 10;
-        }
-    }
+    if (equalIgnoringCase(valueString, "yes"))
+        return 1;
+    if (equalIgnoringCase(valueString, "no"))
+        return 0;
+    if (equalIgnoringCase(valueString, "device-width"))
+        return 10;
+    if (equalIgnoringCase(valueString, "device-height"))
+        return 10;
 
     float value = parsePositiveNumber(document, reportWarnings, keyString, valueString);
 
@@ -251,24 +223,18 @@ bool HTMLMetaElement::parseViewportValueAsUserZoom(Document* document, bool repo
     // Numbers in the range <-1, 1>, and unknown values, are mapped to no.
 
     computedValueMatchesParsedValue = false;
-    unsigned length = valueString.length();
-    DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 13);
-    SWITCH(characters, length) {
-        CASE("yes") {
-            computedValueMatchesParsedValue = true;
-            return true;
-        }
-        CASE("no") {
-            computedValueMatchesParsedValue = true;
-            return false;
-        }
-        CASE("device-width") {
-            return true;
-        }
-        CASE("device-height") {
-            return true;
-        }
+    if (equalIgnoringCase(valueString, "yes")) {
+        computedValueMatchesParsedValue = true;
+        return true;
     }
+    if (equalIgnoringCase(valueString, "no")) {
+        computedValueMatchesParsedValue = true;
+        return false;
+    }
+    if (equalIgnoringCase(valueString, "device-width"))
+        return true;
+    if (equalIgnoringCase(valueString, "device-height"))
+        return true;
 
     float value = parsePositiveNumber(document, reportWarnings, keyString, valueString);
     if (fabs(value) < 1)
@@ -279,22 +245,14 @@ bool HTMLMetaElement::parseViewportValueAsUserZoom(Document* document, bool repo
 
 float HTMLMetaElement::parseViewportValueAsDPI(Document* document, bool reportWarnings, const String& keyString, const String& valueString)
 {
-    unsigned length = valueString.length();
-    DEFINE_ARRAY_FOR_MATCHING(characters, valueString, 10);
-    SWITCH(characters, length) {
-        CASE("device-dpi") {
-            return ViewportDescription::ValueDeviceDPI;
-        }
-        CASE("low-dpi") {
-            return ViewportDescription::ValueLowDPI;
-        }
-        CASE("medium-dpi") {
-            return ViewportDescription::ValueMediumDPI;
-        }
-        CASE("high-dpi") {
-            return ViewportDescription::ValueHighDPI;
-        }
-    }
+    if (equalIgnoringCase(valueString, "device-dpi"))
+        return ViewportDescription::ValueDeviceDPI;
+    if (equalIgnoringCase(valueString, "low-dpi"))
+        return ViewportDescription::ValueLowDPI;
+    if (equalIgnoringCase(valueString, "medium-dpi"))
+        return ViewportDescription::ValueMediumDPI;
+    if (equalIgnoringCase(valueString, "high-dpi"))
+        return ViewportDescription::ValueHighDPI;
 
     bool ok;
     float value = parsePositiveNumber(document, reportWarnings, keyString, valueString, &ok);
@@ -308,59 +266,38 @@ void HTMLMetaElement::processViewportKeyValuePair(Document* document, bool repor
 {
     ViewportDescription* description = static_cast<ViewportDescription*>(data);
 
-    unsigned length = keyString.length();
-
-    DEFINE_ARRAY_FOR_MATCHING(characters, keyString, 17);
-    SWITCH(characters, length) {
-        CASE("width") {
-            const Length& width = parseViewportValueAsLength(document, reportWarnings, keyString, valueString);
-            if (width.isAuto())
-                return;
+    if (keyString == "width") {
+        const Length& width = parseViewportValueAsLength(document, reportWarnings, keyString, valueString);
+        if (!width.isAuto()) {
             description->minWidth = Length(ExtendToZoom);
             description->maxWidth = width;
-            return;
         }
-        CASE("height") {
-            const Length& height = parseViewportValueAsLength(document, reportWarnings, keyString, valueString);
-            if (height.isAuto())
-                return;
+    } else if (keyString == "height") {
+        const Length& height = parseViewportValueAsLength(document, reportWarnings, keyString, valueString);
+        if (!height.isAuto()) {
             description->minHeight = Length(ExtendToZoom);
             description->maxHeight = height;
-            return;
         }
-        CASE("initial-scale") {
-            description->zoom = parseViewportValueAsZoom(document, reportWarnings, keyString, valueString, description->zoomIsExplicit, viewportMetaZeroValuesQuirk);
-            return;
-        }
-        CASE("minimum-scale") {
-            description->minZoom = parseViewportValueAsZoom(document, reportWarnings, keyString, valueString, description->minZoomIsExplicit, viewportMetaZeroValuesQuirk);
-            return;
-        }
-        CASE("maximum-scale") {
-            description->maxZoom = parseViewportValueAsZoom(document, reportWarnings, keyString, valueString, description->maxZoomIsExplicit, viewportMetaZeroValuesQuirk);
-            return;
-        }
-        CASE("user-scalable") {
-            description->userZoom = parseViewportValueAsUserZoom(document, reportWarnings, keyString, valueString, description->userZoomIsExplicit);
-            return;
-        }
-        CASE("target-densitydpi") {
-            description->deprecatedTargetDensityDPI = parseViewportValueAsDPI(document, reportWarnings, keyString, valueString);
-            if (reportWarnings)
-                reportViewportWarning(document, TargetDensityDpiUnsupported, String(), String());
-            return;
-        }
-        CASE("minimal-ui") {
-            // Ignore vendor-specific argument.
-            return;
-        }
-        CASE("shrink-to-fit") {
-            // Ignore vendor-specific argument.
-            return;
-        }
-    }
-    if (reportWarnings)
+    } else if (keyString == "initial-scale") {
+        description->zoom = parseViewportValueAsZoom(document, reportWarnings, keyString, valueString, description->zoomIsExplicit, viewportMetaZeroValuesQuirk);
+    } else if (keyString == "minimum-scale") {
+        description->minZoom = parseViewportValueAsZoom(document, reportWarnings, keyString, valueString, description->minZoomIsExplicit, viewportMetaZeroValuesQuirk);
+    } else if (keyString == "maximum-scale") {
+        description->maxZoom = parseViewportValueAsZoom(document, reportWarnings, keyString, valueString, description->maxZoomIsExplicit, viewportMetaZeroValuesQuirk);
+    } else if (keyString == "user-scalable") {
+        description->userZoom = parseViewportValueAsUserZoom(document, reportWarnings, keyString, valueString, description->userZoomIsExplicit);
+    } else if (keyString == "target-densitydpi") {
+        description->deprecatedTargetDensityDPI = parseViewportValueAsDPI(document, reportWarnings, keyString, valueString);
+        if (reportWarnings)
+            reportViewportWarning(document, TargetDensityDpiUnsupported, String(), String());
+    } else if (keyString == "minimal-ui") {
+        // Ignore vendor-specific argument.
+    } else if (keyString == "shrink-to-fit") {
+        // Ignore vendor-specific argument.
+    } else if (reportWarnings) {
         reportViewportWarning(document, UnrecognizedViewportArgumentKeyError, keyString, String());
+
+    }
 }
 
 static const char* viewportErrorMessageTemplate(ViewportErrorCode errorCode)

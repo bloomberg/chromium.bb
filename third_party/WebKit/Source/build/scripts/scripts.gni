@@ -200,24 +200,3 @@ template("make_event_factory") {
                            ])
   }
 }
-
-# Calls the make_token_matcher script.
-#   input_file: The "*-in.cpp" file
-#   output_file: The output file
-template("make_token_matcher") {
-  action(target_name) {
-    script = "//third_party/WebKit/Source/build/scripts/make_token_matcher.py"
-
-    inputs = scripts_for_in_files + [ invoker.input_file ]
-    outputs = [
-      invoker.output_file,
-    ]
-
-    args = [
-      rebase_path(invoker.input_file, root_build_dir),
-      rebase_path(invoker.output_file, root_build_dir),
-    ]
-
-    deps = make_core_generated_deps
-  }
-}
