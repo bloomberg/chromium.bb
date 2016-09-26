@@ -277,6 +277,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   bool IsPairable() const;
 
   // Indicates whether the device is paired with the adapter.
+  // On Chrome OS this function also returns true if the user has connected
+  // to the device in the past.
+  // TODO(crbug.com/649651): Change Chrome OS to only return true if the
+  // device is actually paired.
   virtual bool IsPaired() const = 0;
 
   // Indicates whether the device is currently connected to the adapter.
