@@ -4,14 +4,21 @@
 
 #include "components/leveldb_proto/leveldb_database.h"
 
+#include <inttypes.h>
+
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -31,17 +38,20 @@ bool LevelDB::Destroy(const base::FilePath& database_dir) {
   return s.ok();
 }
 
-LevelDB::LevelDB(const char* client_name) : open_histogram_(nullptr) {
+LevelDB::LevelDB(const char* client_name)
+    : open_histogram_(nullptr), client_name_(client_name) {
   // Used in lieu of UMA_HISTOGRAM_ENUMERATION because the histogram name is
   // not a constant.
   open_histogram_ = base::LinearHistogram::FactoryGet(
-      std::string("LevelDB.Open.") + client_name, 1,
+      std::string("LevelDB.Open.") + client_name_, 1,
       leveldb_env::LEVELDB_STATUS_MAX, leveldb_env::LEVELDB_STATUS_MAX + 1,
       base::Histogram::kUmaTargetedHistogramFlag);
 }
 
 LevelDB::~LevelDB() {
   DFAKE_SCOPED_LOCK(thread_checker_);
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
 }
 
 bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
@@ -62,6 +72,11 @@ bool LevelDB::InitWithOptions(const base::FilePath& database_dir,
   if (status.ok()) {
     CHECK(db);
     db_.reset(db);
+
+    base::trace_event::MemoryDumpManager::GetInstance()
+        ->RegisterDumpProviderWithSequencedTaskRunner(
+            this, "LevelDB", base::SequencedTaskRunnerHandle::Get(),
+            base::trace_event::MemoryDumpProvider::Options());
     return true;
   }
 
@@ -142,6 +157,40 @@ bool LevelDB::Get(const std::string& key, bool* found, std::string* entry) {
   DLOG(WARNING) << "Failed loading leveldb_proto entry with key \"" << key
                 << "\": " << status.ToString();
   return false;
+}
+
+bool LevelDB::OnMemoryDump(const base::trace_event::MemoryDumpArgs& dump_args,
+                           base::trace_event::ProcessMemoryDump* pmd) {
+  DFAKE_SCOPED_LOCK(thread_checker_);
+  if (!db_)
+    return false;
+
+  std::string value;
+  uint64_t size;
+  bool res = db_->GetProperty("leveldb.approximate-memory-usage", &value);
+  DCHECK(res);
+  res = base::StringToUint64(value, &size);
+  DCHECK(res);
+
+  base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+      base::StringPrintf("leveldb/leveldb_proto/0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(db_.get())));
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
+  if (!client_name_.empty() &&
+      dump_args.level_of_detail !=
+          base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND) {
+    dump->AddString("client_name", "", client_name_);
+  }
+
+  // Memory is allocated from system allocator (malloc).
+  const char* system_allocator_pool_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+  if (system_allocator_pool_name)
+    pmd->AddSuballocation(dump->guid(), system_allocator_pool_name);
+
+  return true;
 }
 
 }  // namespace leveldb_proto
