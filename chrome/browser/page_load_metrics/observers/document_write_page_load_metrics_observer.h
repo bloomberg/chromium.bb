@@ -14,9 +14,6 @@ namespace internal {
 extern const char kHistogramDocWriteParseStartToFirstContentfulPaint[];
 extern const char kHistogramDocWriteBlockParseStartToFirstContentfulPaint[];
 extern const char kHistogramDocWriteBlockReloadCount[];
-extern const char kHistogramDocWriteParseStartToFirstContentfulPaintImmediate[];
-extern const char
-    kHistogramDocWriteBlockParseStartToFirstContentfulPaintImmediate[];
 
 }  // namespace internal
 
@@ -25,10 +22,6 @@ class DocumentWritePageLoadMetricsObserver
  public:
   DocumentWritePageLoadMetricsObserver();
   // page_load_metrics::PageLoadMetricsObserver implementation:
-  void OnComplete(
-      const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& extra_info) override;
-
   void OnFirstContentfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
@@ -45,14 +38,6 @@ class DocumentWritePageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
-  void LogDocumentWriteEvaluatorData(
-      const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
-
-  void LogDocumentWriteBlockData(
-      const page_load_metrics::PageLoadTiming& timing,
-      const page_load_metrics::PageLoadExtraInfo& info);
-
   void LogDocumentWriteEvaluatorFirstContentfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info);

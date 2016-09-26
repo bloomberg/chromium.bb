@@ -33,13 +33,6 @@ bool WasStartedInForegroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
     const PageLoadExtraInfo& info);
 
-// Returns true if:
-// - Parse started and did not complete but the entire page load duration
-// happened in the foreground.
-// - Parse completed and happened entirely in the foreground.
-bool WasParseInForeground(const base::Optional<base::TimeDelta>& parse_start,
-                          const base::Optional<base::TimeDelta>& parse_stop,
-                          const PageLoadExtraInfo& info);
 }  // namespace page_load_metrics
 
 #endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UTIL_H_
