@@ -534,15 +534,17 @@ bool ResourcePrefetchPredictor::GetPrefetchData(
 void ResourcePrefetchPredictor::PopulatePrefetcherRequest(
     const PrefetchData& data,
     std::vector<GURL>* urls) {
-  for (const ResourceRow& row : data.resources) {
-    float confidence = static_cast<float>(row.number_of_hits) /
-                       (row.number_of_hits + row.number_of_misses);
+  for (const ResourceData& resource : data.resources) {
+    float confidence =
+        static_cast<float>(resource.number_of_hits()) /
+        (resource.number_of_hits() + resource.number_of_misses());
     if (confidence < config_.min_resource_confidence_to_trigger_prefetch ||
-        row.number_of_hits < config_.min_resource_hits_to_trigger_prefetch) {
+        resource.number_of_hits() <
+            config_.min_resource_hits_to_trigger_prefetch) {
       continue;
     }
 
-    urls->push_back(row.resource_url);
+    urls->push_back(GURL(resource.resource_url()));
   }
 }
 
@@ -769,19 +771,21 @@ void ResourcePrefetchPredictor::LearnNavigation(
           resources_seen.end()) {
         continue;
       }
-      ResourceRow row_to_add;
-      row_to_add.resource_url = new_resources[i].resource_url;
-      row_to_add.resource_type = new_resources[i].resource_type;
-      row_to_add.number_of_hits = 1;
-      row_to_add.average_position = i + 1;
-      row_to_add.priority = new_resources[i].priority;
-      row_to_add.has_validators = new_resources[i].has_validators;
-      row_to_add.always_revalidate = new_resources[i].always_revalidate;
-      cache_entry->second.resources.push_back(row_to_add);
+      ResourceData resource_to_add;
+      resource_to_add.set_resource_url(new_resources[i].resource_url.spec());
+      resource_to_add.set_resource_type(static_cast<ResourceData::ResourceType>(
+          new_resources[i].resource_type));
+      resource_to_add.set_number_of_hits(1);
+      resource_to_add.set_average_position(i + 1);
+      resource_to_add.set_priority(
+          static_cast<ResourceData::Priority>(new_resources[i].priority));
+      resource_to_add.set_has_validators(new_resources[i].has_validators);
+      resource_to_add.set_always_revalidate(new_resources[i].always_revalidate);
+      cache_entry->second.resources.push_back(resource_to_add);
       resources_seen.insert(new_resources[i].resource_url);
     }
   } else {
-    ResourceRows& old_resources = cache_entry->second.resources;
+    std::vector<ResourceData>& old_resources = cache_entry->second.resources;
     cache_entry->second.last_visit = base::Time::Now();
 
     // Build indices over the data.
@@ -795,33 +799,41 @@ void ResourcePrefetchPredictor::LearnNavigation(
     }
     int old_resources_size = static_cast<int>(old_resources.size());
     for (int i = 0; i < old_resources_size; ++i) {
-      const ResourceRow& row = old_resources[i];
-      DCHECK(old_index.find(row.resource_url) == old_index.end());
-      old_index[row.resource_url] = i;
+      const ResourceData& resource = old_resources[i];
+      GURL resource_url(resource.resource_url());
+      DCHECK(old_index.find(resource_url) == old_index.end());
+      old_index[resource_url] = i;
     }
 
     // Go through the old urls and update their hit/miss counts.
     for (int i = 0; i < old_resources_size; ++i) {
-      ResourceRow& old_row = old_resources[i];
-      if (new_index.find(old_row.resource_url) == new_index.end()) {
-        ++old_row.number_of_misses;
-        ++old_row.consecutive_misses;
+      ResourceData& old_resource = old_resources[i];
+      GURL resource_url(old_resource.resource_url());
+      if (new_index.find(resource_url) == new_index.end()) {
+        old_resource.set_number_of_misses(old_resource.number_of_misses() + 1);
+        old_resource.set_consecutive_misses(old_resource.consecutive_misses() +
+                                            1);
       } else {
-        const URLRequestSummary& new_row =
-            new_resources[new_index[old_row.resource_url]];
+        const URLRequestSummary& new_summary =
+            new_resources[new_index[resource_url]];
 
         // Update the resource type since it could have changed.
-        if (new_row.resource_type != content::RESOURCE_TYPE_LAST_TYPE)
-          old_row.resource_type = new_row.resource_type;
+        if (new_summary.resource_type != content::RESOURCE_TYPE_LAST_TYPE)
+          old_resource.set_resource_type(
+              static_cast<ResourceData::ResourceType>(
+                  new_summary.resource_type));
 
-        old_row.priority = new_row.priority;
+        old_resource.set_priority(
+            static_cast<ResourceData::Priority>(new_summary.priority));
 
-        int position = new_index[old_row.resource_url] + 1;
-        int total = old_row.number_of_hits + old_row.number_of_misses;
-        old_row.average_position =
-            ((old_row.average_position * total) + position) / (total + 1);
-        ++old_row.number_of_hits;
-        old_row.consecutive_misses = 0;
+        int position = new_index[resource_url] + 1;
+        int total =
+            old_resource.number_of_hits() + old_resource.number_of_misses();
+        old_resource.set_average_position(
+            ((old_resource.average_position() * total) + position) /
+            (total + 1));
+        old_resource.set_number_of_hits(old_resource.number_of_hits() + 1);
+        old_resource.set_consecutive_misses(0);
       }
     }
 
@@ -832,15 +844,17 @@ void ResourcePrefetchPredictor::LearnNavigation(
         continue;
 
       // Only need to add new stuff.
-      ResourceRow row_to_add;
-      row_to_add.resource_url = summary.resource_url;
-      row_to_add.resource_type = summary.resource_type;
-      row_to_add.number_of_hits = 1;
-      row_to_add.average_position = i + 1;
-      row_to_add.priority = summary.priority;
-      row_to_add.has_validators = new_resources[i].has_validators;
-      row_to_add.always_revalidate = new_resources[i].always_revalidate;
-      old_resources.push_back(row_to_add);
+      ResourceData resource_to_add;
+      resource_to_add.set_resource_url(summary.resource_url.spec());
+      resource_to_add.set_resource_type(
+          static_cast<ResourceData::ResourceType>(summary.resource_type));
+      resource_to_add.set_number_of_hits(1);
+      resource_to_add.set_average_position(i + 1);
+      resource_to_add.set_priority(
+          static_cast<ResourceData::Priority>(summary.priority));
+      resource_to_add.set_has_validators(new_resources[i].has_validators);
+      resource_to_add.set_always_revalidate(new_resources[i].always_revalidate);
+      old_resources.push_back(resource_to_add);
 
       // To ensure we dont add the same url twice.
       old_index[summary.resource_url] = 0;
@@ -848,16 +862,14 @@ void ResourcePrefetchPredictor::LearnNavigation(
   }
 
   // Trim and sort the resources after the update.
-  ResourceRows& resources = cache_entry->second.resources;
-  for (ResourceRows::iterator it = resources.begin();
-       it != resources.end();) {
-    it->UpdateScore();
-    if (it->consecutive_misses >= config_.max_consecutive_misses)
+  std::vector<ResourceData>& resources = cache_entry->second.resources;
+  for (auto it = resources.begin(); it != resources.end();) {
+    if (it->consecutive_misses() >= config_.max_consecutive_misses)
       it = resources.erase(it);
     else
       ++it;
   }
-  ResourcePrefetchPredictorTables::SortResourceRows(&resources);
+  ResourcePrefetchPredictorTables::SortResources(&resources);
   if (resources.size() > config_.max_resources_per_entry)
     resources.resize(config_.max_resources_per_entry);
 

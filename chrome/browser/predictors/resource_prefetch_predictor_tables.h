@@ -40,42 +40,8 @@ using chrome_browser_predictors::ResourceData;
 //  - HostMetadataTable - misc data for hosts.
 class ResourcePrefetchPredictorTables : public PredictorTableBase {
  public:
-  // Used in the UrlResourceTable and HostResourceTable to store resources
-  // required for the page or host.
-  struct ResourceRow {
-    ResourceRow();
-    ResourceRow(const ResourceRow& other);
-    ResourceRow(const std::string& resource_url,
-                content::ResourceType resource_type,
-                int number_of_hits,
-                int number_of_misses,
-                int consecutive_misses,
-                double average_position,
-                net::RequestPriority priority,
-                bool has_validators,
-                bool always_revalidate);
-    void UpdateScore();
-    bool operator==(const ResourceRow& rhs) const;
-    static void FromProto(const ResourceData& proto, ResourceRow* row);
-    void ToProto(ResourceData* resource_data) const;
-
-    GURL resource_url;
-    content::ResourceType resource_type;
-    size_t number_of_hits;
-    size_t number_of_misses;
-    size_t consecutive_misses;
-    double average_position;
-    net::RequestPriority priority;
-    bool has_validators;
-    bool always_revalidate;
-
-    // Not stored.
-    float score;
-  };
-  typedef std::vector<ResourceRow> ResourceRows;
-
-  // Sorts the resource rows by score, decreasing.
-  static void SortResourceRows(ResourceRows* rows);
+  // Sorts the resources by score, decreasing.
+  static void SortResources(std::vector<ResourceData>* resources);
 
   // Aggregated data for a Url or Host. Although the data differs slightly, we
   // store them in the same structure, because most of the fields are common and
@@ -84,16 +50,15 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
     PrefetchData(PrefetchKeyType key_type, const std::string& primary_key);
     PrefetchData(const PrefetchData& other);
     ~PrefetchData();
-    bool operator==(const PrefetchData& rhs) const;
 
     bool is_host() const { return key_type == PREFETCH_KEY_TYPE_HOST; }
 
     // Is the data a host as opposed to a Url?
     PrefetchKeyType key_type;  // Not const to be able to assign.
-    std::string primary_key;  // is_host() ? main frame url : host.
+    std::string primary_key;   // is_host() ? host : main frame url.
 
     base::Time last_visit;
-    ResourceRows resources;
+    std::vector<ResourceData> resources;
   };
   // Map from primary key to PrefetchData for the key.
   typedef std::map<std::string, PrefetchData> PrefetchDataMap;
@@ -130,6 +95,7 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
                            DatabaseVersionIsSet);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTablesTest,
                            DatabaseIsResetWhenIncompatible);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTablesTest, ComputeScore);
 
   ResourcePrefetchPredictorTables();
   ~ResourcePrefetchPredictorTables() override;
@@ -146,6 +112,9 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // Returns true if the strings in the |data| are less than |kMaxStringLength|
   // in length.
   static bool StringsAreSmallerThanDBLimit(const PrefetchData& data);
+
+  // Computes score of |data|.
+  static float ComputeScore(const ResourceData& data);
 
   // PredictorTableBase methods.
   void CreateTableIfNonExistent() override;

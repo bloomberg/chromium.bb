@@ -23,7 +23,7 @@ using sql::Statement;
 
 namespace {
 
-using ResourceRow = predictors::ResourcePrefetchPredictorTables::ResourceRow;
+using ResourceData = predictors::ResourceData;
 
 const char kMetadataTableName[] = "resource_prefetch_predictor_metadata";
 const char kUrlResourceTableName[] = "resource_prefetch_predictor_url";
@@ -54,37 +54,34 @@ const char kInsertMetadataTableStatementTemplate[] =
     "INSERT INTO %s (main_page_url, last_visit_time) VALUES (?,?)";
 const char kDeleteStatementTemplate[] = "DELETE FROM %s WHERE main_page_url=?";
 
-void BindResourceRowToStatement(const ResourceRow& row,
-                                const std::string& primary_key,
-                                Statement* statement) {
-  chrome_browser_predictors::ResourceData proto;
-  row.ToProto(&proto);
-  int size = proto.ByteSize();
+void BindResourceDataToStatement(const ResourceData& data,
+                                 const std::string& primary_key,
+                                 Statement* statement) {
+  int size = data.ByteSize();
+  DCHECK(size > 0);
   std::vector<char> proto_buffer(size);
-  proto.SerializeToArray(&proto_buffer[0], size);
+  data.SerializeToArray(&proto_buffer[0], size);
 
   statement->BindString(0, primary_key);
-  statement->BindString(1, row.resource_url.spec());
+  statement->BindString(1, data.resource_url());
   statement->BindBlob(2, &proto_buffer[0], size);
 }
 
-bool StepAndInitializeResourceRow(Statement* statement,
-                                  ResourceRow* row,
-                                  std::string* primary_key) {
+bool StepAndInitializeResourceData(Statement* statement,
+                                   ResourceData* data,
+                                   std::string* primary_key) {
   if (!statement->Step())
     return false;
 
   *primary_key = statement->ColumnString(0);
 
   int size = statement->ColumnByteLength(2);
-  const void* data = statement->ColumnBlob(2);
-  DCHECK(data);
-  chrome_browser_predictors::ResourceData proto;
-  proto.ParseFromArray(data, size);
-  ResourceRow::FromProto(proto, row);
+  const void* blob = statement->ColumnBlob(2);
+  DCHECK(blob);
+  data->ParseFromArray(blob, size);
 
-  GURL resource_url(statement->ColumnString(1));
-  DCHECK(resource_url == row->resource_url);
+  std::string resource_url = statement->ColumnString(1);
+  DCHECK(resource_url == data->resource_url());
 
   return true;
 }
@@ -93,117 +90,14 @@ bool StepAndInitializeResourceRow(Statement* statement,
 
 namespace predictors {
 
-ResourceRow::ResourceRow()
-    : resource_type(content::RESOURCE_TYPE_LAST_TYPE),
-      number_of_hits(0),
-      number_of_misses(0),
-      consecutive_misses(0),
-      average_position(0.0),
-      priority(net::IDLE),
-      has_validators(false),
-      always_revalidate(false),
-      score(0.0) {}
-
-ResourceRow::ResourceRow(const ResourceRow& other)
-    : resource_url(other.resource_url),
-      resource_type(other.resource_type),
-      number_of_hits(other.number_of_hits),
-      number_of_misses(other.number_of_misses),
-      consecutive_misses(other.consecutive_misses),
-      average_position(other.average_position),
-      priority(other.priority),
-      has_validators(other.has_validators),
-      always_revalidate(other.always_revalidate),
-      score(other.score) {}
-
-ResourceRow::ResourceRow(const std::string& i_resource_url,
-                         content::ResourceType i_resource_type,
-                         int i_number_of_hits,
-                         int i_number_of_misses,
-                         int i_consecutive_misses,
-                         double i_average_position,
-                         net::RequestPriority i_priority,
-                         bool i_has_validators,
-                         bool i_always_revalidate)
-    : resource_url(i_resource_url),
-      resource_type(i_resource_type),
-      number_of_hits(i_number_of_hits),
-      number_of_misses(i_number_of_misses),
-      consecutive_misses(i_consecutive_misses),
-      average_position(i_average_position),
-      priority(i_priority),
-      has_validators(i_has_validators),
-      always_revalidate(i_always_revalidate) {
-  UpdateScore();
-}
-
-void ResourceRow::UpdateScore() {
-  // The score is calculated so that when the rows are sorted, stylesheets,
-  // scripts and fonts appear first, sorted by position(ascending) and then the
-  // rest of the resources sorted by position (ascending).
-  static const int kMaxResourcesPerType = 100;
-  switch (resource_type) {
-    case content::RESOURCE_TYPE_STYLESHEET:
-    case content::RESOURCE_TYPE_SCRIPT:
-    case content::RESOURCE_TYPE_FONT_RESOURCE:
-      score = (2 * kMaxResourcesPerType) - average_position;
-      break;
-
-    case content::RESOURCE_TYPE_IMAGE:
-    default:
-      score = kMaxResourcesPerType - average_position;
-      break;
-  }
-  // TODO(lizeb): Take priority into account.
-}
-
-bool ResourceRow::operator==(const ResourceRow& rhs) const {
-  return resource_url == rhs.resource_url &&
-         resource_type == rhs.resource_type &&
-         number_of_hits == rhs.number_of_hits &&
-         number_of_misses == rhs.number_of_misses &&
-         consecutive_misses == rhs.consecutive_misses &&
-         average_position == rhs.average_position && priority == rhs.priority &&
-         has_validators == rhs.has_validators &&
-         always_revalidate == rhs.always_revalidate && score == rhs.score;
-}
-
-void ResourceRow::ToProto(ResourceData* resource_data) const {
-  using chrome_browser_predictors::ResourceData_Priority;
-  using chrome_browser_predictors::ResourceData_ResourceType;
-
-  resource_data->set_resource_url(resource_url.spec());
-  resource_data->set_resource_type(
-      static_cast<ResourceData_ResourceType>(resource_type));
-  resource_data->set_number_of_hits(number_of_hits);
-  resource_data->set_number_of_misses(number_of_misses);
-  resource_data->set_consecutive_misses(consecutive_misses);
-  resource_data->set_average_position(average_position);
-  resource_data->set_priority(static_cast<ResourceData_Priority>(priority));
-  resource_data->set_has_validators(has_validators);
-  resource_data->set_always_revalidate(always_revalidate);
-}
-
 // static
-void ResourceRow::FromProto(const ResourceData& proto, ResourceRow* row) {
-  row->resource_url = GURL(proto.resource_url());
-  row->resource_type =
-      static_cast<content::ResourceType>(proto.resource_type());
-  row->number_of_hits = proto.number_of_hits();
-  row->number_of_misses = proto.number_of_misses();
-  row->consecutive_misses = proto.consecutive_misses();
-  row->average_position = proto.average_position();
-  row->priority = static_cast<net::RequestPriority>(proto.priority());
-  row->has_validators = proto.has_validators();
-  row->always_revalidate = proto.always_revalidate();
-  row->UpdateScore();
-}
-
-// static
-void ResourcePrefetchPredictorTables::SortResourceRows(ResourceRows* rows) {
-  std::sort(rows->begin(), rows->end(),
-            [](const ResourceRow& x, const ResourceRow& y) {
-              return x.score > y.score;
+void ResourcePrefetchPredictorTables::SortResources(
+    std::vector<ResourceData>* resources) {
+  // Sort indices instead of ResourceData objects and then apply resulting
+  // permutation to the resources.
+  std::sort(resources->begin(), resources->end(),
+            [](const ResourceData& x, const ResourceData& y) {
+              return ComputeScore(x) > ComputeScore(y);
             });
 }
 
@@ -223,12 +117,6 @@ ResourcePrefetchPredictorTables::PrefetchData::PrefetchData(
 }
 
 ResourcePrefetchPredictorTables::PrefetchData::~PrefetchData() {
-}
-
-bool ResourcePrefetchPredictorTables::PrefetchData::operator==(
-    const PrefetchData& rhs) const {
-  return key_type == rhs.key_type && primary_key == rhs.primary_key &&
-      resources == rhs.resources;
 }
 
 void ResourcePrefetchPredictorTables::GetAllData(
@@ -329,20 +217,21 @@ void ResourcePrefetchPredictorTables::GetAllDataHelper(
   Statement resource_reader(DB()->GetUniqueStatement(
       base::StringPrintf("SELECT * FROM %s", resource_table_name).c_str()));
 
-  ResourceRow row;
+  ResourceData resource;
   std::string primary_key;
-  while (StepAndInitializeResourceRow(&resource_reader, &row, &primary_key)) {
+  while (StepAndInitializeResourceData(&resource_reader, &resource,
+                                       &primary_key)) {
     PrefetchDataMap::iterator it = data_map->find(primary_key);
     if (it == data_map->end()) {
       it = data_map->insert(std::make_pair(
           primary_key, PrefetchData(key_type, primary_key))).first;
     }
-    it->second.resources.push_back(row);
+    it->second.resources.push_back(resource);
   }
 
   // Sort each of the resource row vectors by score.
   for (auto& kv : *data_map)
-    SortResourceRows(&(kv.second.resources));
+    SortResources(&(kv.second.resources));
 
   // Read the metadata and keep track of entries that have metadata, but no
   // resource entries, so they can be deleted.
@@ -388,12 +277,12 @@ bool ResourcePrefetchPredictorTables::UpdateDataHelper(
     return false;
 
   // Add the new data to the tables.
-  for (const ResourceRow& resource : data.resources) {
+  for (const ResourceData& resource : data.resources) {
     std::unique_ptr<Statement> resource_inserter(
         data.is_host() ? GetHostResourceUpdateStatement()
                        : GetUrlResourceUpdateStatement());
-    BindResourceRowToStatement(resource, data.primary_key,
-                               resource_inserter.get());
+    BindResourceDataToStatement(resource, data.primary_key,
+                                resource_inserter.get());
     if (!resource_inserter->Run())
       return false;
   }
@@ -434,11 +323,30 @@ bool ResourcePrefetchPredictorTables::StringsAreSmallerThanDBLimit(
   if (data.primary_key.length() > kMaxStringLength)
     return false;
 
-  for (const ResourceRow& row : data.resources) {
-    if (row.resource_url.spec().length() > kMaxStringLength)
+  for (const ResourceData& resource : data.resources) {
+    if (resource.resource_url().length() > kMaxStringLength)
       return false;
   }
   return true;
+}
+
+// static
+float ResourcePrefetchPredictorTables::ComputeScore(const ResourceData& data) {
+  // The score is calculated so that when the rows are sorted, stylesheets,
+  // scripts and fonts appear first, sorted by position(ascending) and then the
+  // rest of the resources sorted by position (ascending).
+  static const int kMaxResourcesPerType = 100;
+  switch (data.resource_type()) {
+    case ResourceData::RESOURCE_TYPE_STYLESHEET:
+    case ResourceData::RESOURCE_TYPE_SCRIPT:
+    case ResourceData::RESOURCE_TYPE_FONT_RESOURCE:
+      return (2 * kMaxResourcesPerType) - data.average_position();
+
+    case ResourceData::RESOURCE_TYPE_IMAGE:
+    default:
+      return kMaxResourcesPerType - data.average_position();
+  }
+  // TODO(lizeb): Take priority into account.
 }
 
 // static

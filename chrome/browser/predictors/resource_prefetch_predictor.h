@@ -159,8 +159,6 @@ class ResourcePrefetchPredictor
     INITIALIZED = 2
   };
 
-  typedef ResourcePrefetchPredictorTables::ResourceRow ResourceRow;
-  typedef ResourcePrefetchPredictorTables::ResourceRows ResourceRows;
   typedef ResourcePrefetchPredictorTables::PrefetchData PrefetchData;
   typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
   typedef std::map<NavigationID, linked_ptr<std::vector<URLRequestSummary> > >

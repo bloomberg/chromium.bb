@@ -3172,6 +3172,8 @@ test("unit_tests") {
     "../browser/predictors/autocomplete_action_predictor_unittest.cc",
     "../browser/predictors/resource_prefetch_common_unittest.cc",
     "../browser/predictors/resource_prefetch_predictor_tables_unittest.cc",
+    "../browser/predictors/resource_prefetch_predictor_test_util.cc",
+    "../browser/predictors/resource_prefetch_predictor_test_util.h",
     "../browser/predictors/resource_prefetch_predictor_unittest.cc",
     "../browser/predictors/resource_prefetcher_unittest.cc",
     "../browser/prefs/chrome_pref_service_unittest.cc",

@@ -24,14 +24,18 @@ using predictors::ResourcePrefetchPredictorTables;
 
 namespace {
 
-std::string ConvertResourceType(content::ResourceType type) {
+using predictors::ResourceData;
+
+std::string ConvertResourceType(ResourceData::ResourceType type) {
   switch (type) {
-    case content::RESOURCE_TYPE_IMAGE:
+    case ResourceData::RESOURCE_TYPE_IMAGE:
       return "Image";
-    case content::RESOURCE_TYPE_STYLESHEET:
+    case ResourceData::RESOURCE_TYPE_STYLESHEET:
       return "Stylesheet";
-    case content::RESOURCE_TYPE_SCRIPT:
+    case ResourceData::RESOURCE_TYPE_SCRIPT:
       return "Script";
+    case ResourceData::RESOURCE_TYPE_FONT_RESOURCE:
+      return "Font";
     default:
       return "Unknown";
   }
@@ -110,24 +114,20 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
 void PredictorsHandler::AddPrefetchDataMapToListValue(
     const ResourcePrefetchPredictor::PrefetchDataMap& data_map,
     base::ListValue* db) const {
-  for (ResourcePrefetchPredictor::PrefetchDataMap::const_iterator it =
-       data_map.begin(); it != data_map.end(); ++it) {
+  for (const auto& p : data_map) {
     std::unique_ptr<base::DictionaryValue> main(new base::DictionaryValue());
-    main->SetString("main_frame_url", it->first);
+    main->SetString("main_frame_url", p.first);
     base::ListValue* resources = new base::ListValue();
-    for (ResourcePrefetchPredictor::ResourceRows::const_iterator
-         row = it->second.resources.begin();
-         row != it->second.resources.end(); ++row) {
+    for (const predictors::ResourceData& r : p.second.resources) {
       std::unique_ptr<base::DictionaryValue> resource(
           new base::DictionaryValue());
-      resource->SetString("resource_url", row->resource_url.spec());
+      resource->SetString("resource_url", r.resource_url());
       resource->SetString("resource_type",
-                          ConvertResourceType(row->resource_type));
-      resource->SetInteger("number_of_hits", row->number_of_hits);
-      resource->SetInteger("number_of_misses", row->number_of_misses);
-      resource->SetInteger("consecutive_misses", row->consecutive_misses);
-      resource->SetDouble("position", row->average_position);
-      resource->SetDouble("score", row->score);
+                          ConvertResourceType(r.resource_type()));
+      resource->SetInteger("number_of_hits", r.number_of_hits());
+      resource->SetInteger("number_of_misses", r.number_of_misses());
+      resource->SetInteger("consecutive_misses", r.consecutive_misses());
+      resource->SetDouble("position", r.average_position());
       resources->Append(std::move(resource));
     }
     main->Set("resources", resources);
