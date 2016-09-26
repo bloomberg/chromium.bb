@@ -20,6 +20,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/storage_partition.h"
@@ -99,6 +100,30 @@ bool IsSecureFrame(FrameTreeNode* frame) {
   return true;
 }
 
+// TODO(clamy): This should match what's happening in
+// blink::FrameFetchContext::addAdditionalRequestHeaders.
+void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
+                                 const GURL& url,
+                                 FrameMsg_Navigate_Type::Value navigation_type,
+                                 BrowserContext* browser_context) {
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return;
+
+  bool is_reload =
+      navigation_type == FrameMsg_Navigate_Type::RELOAD ||
+      navigation_type == FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE ||
+      navigation_type == FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE ||
+      navigation_type == FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
+  if (is_reload)
+    headers->RemoveHeader("Save-Data");
+
+  if (GetContentClient()->browser()->IsDataSaverEnabled(browser_context))
+    headers->SetHeaderIfMissing("Save-Data", "on");
+
+  headers->SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
+                              GetContentClient()->GetUserAgent());
+}
+
 }  // namespace
 
 // static
@@ -114,13 +139,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
     bool is_history_navigation_in_new_child,
     const base::TimeTicks& navigation_start,
     NavigationControllerImpl* controller) {
-  // Copy existing headers and add necessary headers that may not be present
-  // in the RequestNavigationParams.
-  net::HttpRequestHeaders headers;
-  headers.AddHeadersFromString(entry.extra_headers());
-  headers.SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
-                             GetContentClient()->GetUserAgent());
-
   // Fill POST data in the request body.
   scoped_refptr<ResourceRequestBodyImpl> request_body;
   if (frame_entry.method() == "POST")
@@ -130,7 +148,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       frame_tree_node, entry.ConstructCommonNavigationParams(
                            frame_entry, request_body, dest_url, dest_referrer,
                            navigation_type, lofi_state, navigation_start),
-      BeginNavigationParams(headers.ToString(), net::LOAD_NORMAL,
+      BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
                             false,  // has_user_gestures
                             false,  // skip_service_worker
                             REQUEST_CONTEXT_TYPE_LOCATION),
@@ -224,6 +242,13 @@ NavigationRequest::NavigationRequest(
                                 common_params_.navigation_type,
                                 common_params_.method == "POST");
 
+  // Add necessary headers that may not be present in the BeginNavigationParams.
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(begin_params_.headers);
+  AddAdditionalRequestHeaders(
+      &headers, common_params_.url, common_params_.navigation_type,
+      frame_tree_node_->navigator()->GetController()->GetBrowserContext());
+  begin_params_.headers = headers.ToString();
 }
 
 NavigationRequest::~NavigationRequest() {
