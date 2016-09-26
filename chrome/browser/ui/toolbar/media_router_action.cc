@@ -209,6 +209,11 @@ void MediaRouterAction::RegisterWithDialogController() {
 }
 
 void MediaRouterAction::UpdateDialogState() {
+  // The WebContents may be null during browser test shutdown, in which case we
+  // cannot call GetMediaRouterDialogController().
+  if (!delegate_->GetCurrentWebContents())
+    return;
+
   if (GetMediaRouterDialogController()->IsShowingMediaRouterDialog())
     OnDialogShown();
   else
