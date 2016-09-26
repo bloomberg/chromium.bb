@@ -61,11 +61,8 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  void SetupLocalDatabaseManager() {
-    v4_local_database_manager_->StartOnIOThread(NULL, V4ProtocolConfig());
-
-    task_runner_->RunPendingTasks();
-    base::RunLoop().RunUntilIdle();
+  void ForceDisableLocalDatabaseManager() {
+    v4_local_database_manager_->enabled_ = false;
   }
 
   void ReplaceV4Database(const StoreAndHashPrefixes& store_and_hash_prefixes) {
@@ -73,8 +70,11 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
         task_runner_, base::MakeUnique<StoreMap>(), store_and_hash_prefixes));
   }
 
-  void ForceDisableLocalDatabaseManager() {
-    v4_local_database_manager_->enabled_ = false;
+  void SetupLocalDatabaseManager() {
+    v4_local_database_manager_->StartOnIOThread(NULL, V4ProtocolConfig());
+
+    task_runner_->RunPendingTasks();
+    base::RunLoop().RunUntilIdle();
   }
 
   base::ScopedTempDir base_dir_;

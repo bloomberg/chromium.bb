@@ -21,45 +21,6 @@ SafeBrowsingDatabaseManager::~SafeBrowsingDatabaseManager() {
   DCHECK(!v4_get_hash_protocol_manager_);
 }
 
-void SafeBrowsingDatabaseManager::StartOnIOThread(
-    net::URLRequestContextGetter* request_context_getter,
-    const V4ProtocolConfig& config) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  v4_get_hash_protocol_manager_ = V4GetHashProtocolManager::Create(
-      request_context_getter, GetStoresForFullHashRequests(), config);
-}
-
-// |shutdown| not used. Destroys the v4 protocol managers. This may be called
-// multiple times during the life of the DatabaseManager.
-// Must be called on IO thread.
-void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Delete pending checks, calling back any clients with empty metadata.
-  for (const SafeBrowsingApiCheck* check : api_checks_) {
-    if (check->client()) {
-      check->client()->
-          OnCheckApiBlacklistUrlResult(check->url(), ThreatMetadata());
-    }
-  }
-
-  // This cancels all in-flight GetHash requests.
-  v4_get_hash_protocol_manager_.reset();
-}
-
-SafeBrowsingDatabaseManager::ApiCheckSet::iterator
-SafeBrowsingDatabaseManager::FindClientApiCheck(Client* client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (ApiCheckSet::iterator it = api_checks_.begin();
-      it != api_checks_.end(); ++it) {
-    if ((*it)->client() == client) {
-      return it;
-    }
-  }
-  return api_checks_.end();
-}
-
 bool SafeBrowsingDatabaseManager::CancelApiCheck(Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ApiCheckSet::iterator it = FindClientApiCheck(client);
@@ -69,11 +30,6 @@ bool SafeBrowsingDatabaseManager::CancelApiCheck(Client* client) {
   }
   NOTREACHED();
   return false;
-}
-
-std::unordered_set<ListIdentifier>
-SafeBrowsingDatabaseManager::GetStoresForFullHashRequests() {
-  return std::unordered_set<ListIdentifier>({GetChromeUrlApiId()});
 }
 
 bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
@@ -99,6 +55,23 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
   return false;
 }
 
+SafeBrowsingDatabaseManager::ApiCheckSet::iterator
+SafeBrowsingDatabaseManager::FindClientApiCheck(Client* client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (ApiCheckSet::iterator it = api_checks_.begin(); it != api_checks_.end();
+       ++it) {
+    if ((*it)->client() == client) {
+      return it;
+    }
+  }
+  return api_checks_.end();
+}
+
+std::unordered_set<ListIdentifier>
+SafeBrowsingDatabaseManager::GetStoresForFullHashRequests() {
+  return std::unordered_set<ListIdentifier>({GetChromeUrlApiId()});
+}
+
 void SafeBrowsingDatabaseManager::OnThreatMetadataResponse(
     std::unique_ptr<SafeBrowsingApiCheck> check,
     const ThreatMetadata& md) {
@@ -113,6 +86,33 @@ void SafeBrowsingDatabaseManager::OnThreatMetadataResponse(
 
   check->client()->OnCheckApiBlacklistUrlResult(check->url(), md);
   api_checks_.erase(it);
+}
+
+void SafeBrowsingDatabaseManager::StartOnIOThread(
+    net::URLRequestContextGetter* request_context_getter,
+    const V4ProtocolConfig& config) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  v4_get_hash_protocol_manager_ = V4GetHashProtocolManager::Create(
+      request_context_getter, GetStoresForFullHashRequests(), config);
+}
+
+// |shutdown| not used. Destroys the v4 protocol managers. This may be called
+// multiple times during the life of the DatabaseManager.
+// Must be called on IO thread.
+void SafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Delete pending checks, calling back any clients with empty metadata.
+  for (const SafeBrowsingApiCheck* check : api_checks_) {
+    if (check->client()) {
+      check->client()->OnCheckApiBlacklistUrlResult(check->url(),
+                                                    ThreatMetadata());
+    }
+  }
+
+  // This cancels all in-flight GetHash requests.
+  v4_get_hash_protocol_manager_.reset();
 }
 
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(

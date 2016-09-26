@@ -42,6 +42,11 @@ class SafeBrowsingDatabaseManager
    public:
     virtual ~Client() {}
 
+    // Called when the result of checking the API blacklist is known.
+    // TODO(kcarattini): Consider if we need |url| passed here, remove if not.
+    virtual void OnCheckApiBlacklistUrlResult(const GURL& url,
+                                              const ThreatMetadata& metadata) {}
+
     // Called when the result of checking a browse URL is known.
     virtual void OnCheckBrowseUrlResult(const GURL& url,
                                         SBThreatType threat_type,
@@ -55,27 +60,29 @@ class SafeBrowsingDatabaseManager
     virtual void OnCheckExtensionsResult(
         const std::set<std::string>& threats) {}
 
-    // Called when the result of checking the API blacklist is known.
-    // TODO(kcarattini): Consider if we need |url| passed here, remove if not.
-    virtual void OnCheckApiBlacklistUrlResult(const GURL& url,
-                                              const ThreatMetadata& metadata) {}
-
     // Called when the result of checking the resource blacklist is known.
     virtual void OnCheckResourceUrlResult(const GURL& url,
                                           SBThreatType threat_type,
                                           const std::string& threat_hash) {}
   };
 
-  // Returns true if URL-checking is supported on this build+device.
-  // If false, calls to CheckBrowseUrl may dcheck-fail.
-  virtual bool IsSupported() const = 0;
+  //
+  // Methods called by the client to cancel pending checks.
+  //
 
-  // Returns the ThreatSource for this implementation.
-  virtual ThreatSource GetThreatSource() const = 0;
+  // Called on the IO thread to cancel a pending API check if the result is no
+  // longer needed. Returns true if the client was found and the check
+  // successfully cancelled.
+  virtual bool CancelApiCheck(Client* client);
 
-  // Returns true if checks are never done synchronously, and therefore
-  // always have some latency.
-  virtual bool ChecksAreAlwaysAsync() const = 0;
+  // Called on the IO thread to cancel a pending check if the result is no
+  // longer needed.  Also called after the result has been handled. Api checks
+  // are handled separately. To cancel an API check use CancelApiCheck.
+  virtual void CancelCheck(Client* client) = 0;
+
+  //
+  // Methods to check whether the database manager supports a certain feature.
+  //
 
   // Returns true if this resource type should be checked.
   virtual bool CanCheckResourceType(
@@ -84,8 +91,26 @@ class SafeBrowsingDatabaseManager
   // Returns true if the url's scheme can be checked.
   virtual bool CanCheckUrl(const GURL& url) const = 0;
 
-  // Returns whether download protection is enabled.
-  virtual bool IsDownloadProtectionEnabled() const = 0;
+  // Returns true if checks are never done synchronously, and therefore
+  // always have some latency.
+  virtual bool ChecksAreAlwaysAsync() const = 0;
+
+  //
+  // Methods to check (possibly asynchronously) whether a given resource is
+  // safe. If the database manager can't determine it synchronously, the
+  // appropriate method on the |client| is called back when the reputation of
+  // the resource is known.
+  //
+
+  // Called on the IO thread to check if the given url has blacklisted APIs.
+  // "client" is called asynchronously with the result when it is ready. Callers
+  // should wait for results before calling this method a second time with the
+  // same client. This method has the same implementation for both the local and
+  // remote database managers since it pings Safe Browsing servers directly
+  // without accessing the database at all.  Returns true if we can
+  // synchronously determine that the url is safe. Otherwise it returns false,
+  // and "client" is called asynchronously with the result when it is ready.
+  virtual bool CheckApiBlacklistUrl(const GURL& url, Client* client);
 
   // Called on the IO thread to check if the given url is safe or not.  If we
   // can synchronously determine that the url is safe, CheckUrl returns true.
@@ -109,21 +134,16 @@ class SafeBrowsingDatabaseManager
   // to callback in |client|.
   virtual bool CheckResourceUrl(const GURL& url, Client* client) = 0;
 
+  //
+  // Methods to synchronously check whether a URL, or full hash, or IP address
+  // or a DLL file is safe.
+  //
+
   // Check if the |url| matches any of the full-length hashes from the client-
   // side phishing detection whitelist.  Returns true if there was a match and
   // false otherwise.  To make sure we are conservative we will return true if
   // an error occurs.  This method must be called on the IO thread.
   virtual bool MatchCsdWhitelistUrl(const GURL& url) = 0;
-
-  // Check if the given IP address (either IPv4 or IPv6) matches the malware
-  // IP blacklist.
-  virtual bool MatchMalwareIP(const std::string& ip_address) = 0;
-
-  // Check if the |url| matches any of the full-length hashes from the download
-  // whitelist.  Returns true if there was a match and false otherwise. To make
-  // sure we are conservative we will return true if an error occurs.  This
-  // method must be called on the IO thread.
-  virtual bool MatchDownloadWhitelistUrl(const GURL& url) = 0;
 
   // Check if |str| matches any of the full-length hashes from the download
   // whitelist.  Returns true if there was a match and false otherwise. To make
@@ -131,37 +151,49 @@ class SafeBrowsingDatabaseManager
   // method must be called on the IO thread.
   virtual bool MatchDownloadWhitelistString(const std::string& str) = 0;
 
+  // Check if the |url| matches any of the full-length hashes from the download
+  // whitelist.  Returns true if there was a match and false otherwise. To make
+  // sure we are conservative we will return true if an error occurs.  This
+  // method must be called on the IO thread.
+  virtual bool MatchDownloadWhitelistUrl(const GURL& url) = 0;
+
+  // Check if the given IP address (either IPv4 or IPv6) matches the malware
+  // IP blacklist.
+  virtual bool MatchMalwareIP(const std::string& ip_address) = 0;
+
   // Check if |str|, a lowercase DLL file name, matches any of the full-length
   // hashes from the module whitelist.  Returns true if there was a match and
   // false otherwise.  To make sure we are conservative we will return true if
   // an error occurs.  This method must be called on the IO thread.
   virtual bool MatchModuleWhitelistString(const std::string& str) = 0;
 
-  // Check if the CSD malware IP matching kill switch is turned on.
-  virtual bool IsMalwareKillSwitchOn() = 0;
+  //
+  // Methods to check the config of the DatabaseManager.
+  //
+
+  // Returns the lists that this DatabaseManager should get full hashes for.
+  virtual std::unordered_set<ListIdentifier> GetStoresForFullHashRequests();
+
+  // Returns the ThreatSource for this implementation.
+  virtual ThreatSource GetThreatSource() const = 0;
 
   // Check if the CSD whitelist kill switch is turned on.
   virtual bool IsCsdWhitelistKillSwitchOn() = 0;
 
-  // Called on the IO thread to cancel a pending check if the result is no
-  // longer needed.  Also called after the result has been handled. Api checks
-  // are handled separately. To cancel an API check use CancelApiCheck.
-  virtual void CancelCheck(Client* client) = 0;
+  // Returns whether download protection is enabled.
+  virtual bool IsDownloadProtectionEnabled() const = 0;
 
-  // Called on the IO thread to cancel a pending API check if the result is no
-  // longer needed. Returns true if the client was found and the check
-  // successfully cancelled.
-  virtual bool CancelApiCheck(Client* client);
+  // Check if the CSD malware IP matching kill switch is turned on.
+  virtual bool IsMalwareKillSwitchOn() = 0;
 
-  // Called on the IO thread to check if the given url has blacklisted APIs.
-  // "client" is called asynchronously with the result when it is ready. Callers
-  // should wait for results before calling this method a second time with the
-  // same client. This method has the same implementation for both the local and
-  // remote database managers since it pings Safe Browsing servers directly
-  // without accessing the database at all.  Returns true if we can
-  // synchronously determine that the url is safe. Otherwise it returns false,
-  // and "client" is called asynchronously with the result when it is ready.
-  virtual bool CheckApiBlacklistUrl(const GURL& url, Client* client);
+  // Returns true if URL-checking is supported on this build+device.
+  // If false, calls to CheckBrowseUrl may dcheck-fail.
+  virtual bool IsSupported() const = 0;
+
+  //
+  // Methods to indicate when to start or suspend the SafeBrowsing operations.
+  // These functions are always called on the IO thread.
+  //
 
   // Called to initialize objects that are used on the io_thread, such as the
   // v4 protocol manager.  This may be called multiple times during the life of
@@ -219,17 +251,13 @@ class SafeBrowsingDatabaseManager
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingDatabaseManagerTest,
                            CachedResultsAreEvicted);
 
-  typedef std::set<SafeBrowsingApiCheck*> ApiCheckSet;
-
-  // Returns the lists that this DatabaseManager should get full hashes for.
-  virtual std::unordered_set<ListIdentifier> GetStoresForFullHashRequests();
-
   // Called on the IO thread when the SafeBrowsingProtocolManager has received
   // the full hash and api results for prefixes of the |url| argument in
   // CheckApiBlacklistUrl.
-  virtual void OnThreatMetadataResponse(
-      std::unique_ptr<SafeBrowsingApiCheck> check,
-      const ThreatMetadata& md);
+  void OnThreatMetadataResponse(std::unique_ptr<SafeBrowsingApiCheck> check,
+                                const ThreatMetadata& md);
+
+  typedef std::set<SafeBrowsingApiCheck*> ApiCheckSet;
 
   // In-progress checks. This set owns the SafeBrowsingApiCheck pointers and is
   // responsible for deleting them when removing from the set.

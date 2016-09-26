@@ -38,33 +38,29 @@ class RemoteSafeBrowsingDatabaseManager : public SafeBrowsingDatabaseManager {
   // SafeBrowsingDatabaseManager implementation
   //
 
-  bool IsSupported() const override;
-  safe_browsing::ThreatSource GetThreatSource() const override;
-  bool ChecksAreAlwaysAsync() const override;
+  void CancelCheck(Client* client) override;
   bool CanCheckResourceType(content::ResourceType resource_type) const override;
   bool CanCheckUrl(const GURL& url) const override;
-  bool IsDownloadProtectionEnabled() const override;
+  bool ChecksAreAlwaysAsync() const override;
   bool CheckBrowseUrl(const GURL& url, Client* client) override;
-  void CancelCheck(Client* client) override;
-  void StartOnIOThread(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config) override;
-  void StopOnIOThread(bool shutdown) override;
-
-  // These will fail with DCHECK() since their functionality isn't implemented.
-  // We may later add support for a subset of them.
   bool CheckDownloadUrl(const std::vector<GURL>& url_chain,
                         Client* client) override;
   bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                          Client* client) override;
-  bool MatchCsdWhitelistUrl(const GURL& url) override;
-  bool MatchMalwareIP(const std::string& ip_address) override;
-  bool MatchDownloadWhitelistUrl(const GURL& url) override;
-  bool MatchDownloadWhitelistString(const std::string& str) override;
-  bool MatchModuleWhitelistString(const std::string& str) override;
   bool CheckResourceUrl(const GURL& url, Client* client) override;
-  bool IsMalwareKillSwitchOn() override;
+  bool MatchCsdWhitelistUrl(const GURL& url) override;
+  bool MatchDownloadWhitelistString(const std::string& str) override;
+  bool MatchDownloadWhitelistUrl(const GURL& url) override;
+  bool MatchMalwareIP(const std::string& ip_address) override;
+  bool MatchModuleWhitelistString(const std::string& str) override;
+  safe_browsing::ThreatSource GetThreatSource() const override;
   bool IsCsdWhitelistKillSwitchOn() override;
+  bool IsDownloadProtectionEnabled() const override;
+  bool IsMalwareKillSwitchOn() override;
+  bool IsSupported() const override;
+  void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
+                       const V4ProtocolConfig& config) override;
+  void StopOnIOThread(bool shutdown) override;
 
   //
   // RemoteSafeBrowsingDatabaseManager implementation

@@ -55,8 +55,8 @@ V4LocalDatabaseManager::PendingCheck::PendingCheck(
     const GURL& url)
     : client(client),
       client_callback_type(client_callback_type),
-      url(url),
-      result_threat_type(SB_THREAT_TYPE_SAFE) {}
+      result_threat_type(SB_THREAT_TYPE_SAFE),
+      url(url) {}
 
 V4LocalDatabaseManager::PendingCheck::~PendingCheck() {}
 
@@ -73,16 +73,20 @@ V4LocalDatabaseManager::~V4LocalDatabaseManager() {
   DCHECK(!enabled_);
 }
 
-bool V4LocalDatabaseManager::IsSupported() const {
-  return true;
-}
+//
+// Start: SafeBrowsingDatabaseManager implementation
+//
 
-ThreatSource V4LocalDatabaseManager::GetThreatSource() const {
-  return ThreatSource::LOCAL_PVER4;
-}
+void V4LocalDatabaseManager::CancelCheck(Client* client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(enabled_);
 
-bool V4LocalDatabaseManager::ChecksAreAlwaysAsync() const {
-  return false;
+  auto it = pending_clients_.find(client);
+  if (it != pending_clients_.end()) {
+    pending_clients_.erase(it);
+  }
+
+  // TODO(vakh): Handle the case of queued checks.
 }
 
 bool V4LocalDatabaseManager::CanCheckResourceType(
@@ -96,76 +100,8 @@ bool V4LocalDatabaseManager::CanCheckUrl(const GURL& url) const {
          url.SchemeIs(url::kFtpScheme);
 }
 
-bool V4LocalDatabaseManager::IsDownloadProtectionEnabled() const {
-  // TODO(vakh): Investigate the possibility of using a command line switch for
-  // this instead.
-  return true;
-}
-
-bool V4LocalDatabaseManager::CheckDownloadUrl(
-    const std::vector<GURL>& url_chain,
-    Client* client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(vakh): Implement this skeleton.
-  return true;
-}
-
-bool V4LocalDatabaseManager::CheckExtensionIDs(
-    const std::set<std::string>& extension_ids,
-    Client* client) {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
-}
-
-bool V4LocalDatabaseManager::MatchMalwareIP(const std::string& ip_address) {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+bool V4LocalDatabaseManager::ChecksAreAlwaysAsync() const {
   return false;
-}
-
-bool V4LocalDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
-}
-
-bool V4LocalDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
-}
-
-bool V4LocalDatabaseManager::MatchDownloadWhitelistString(
-    const std::string& str) {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
-}
-
-bool V4LocalDatabaseManager::MatchModuleWhitelistString(
-    const std::string& str) {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
-}
-
-bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
-}
-
-bool V4LocalDatabaseManager::IsMalwareKillSwitchOn() {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
-}
-
-bool V4LocalDatabaseManager::IsCsdWhitelistKillSwitchOn() {
-  // TODO(vakh): Implement this skeleton.
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return true;
 }
 
 bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
@@ -218,6 +154,150 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
   }
 }
 
+bool V4LocalDatabaseManager::CheckDownloadUrl(
+    const std::vector<GURL>& url_chain,
+    Client* client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // TODO(vakh): Implement this skeleton.
+  return true;
+}
+
+bool V4LocalDatabaseManager::CheckExtensionIDs(
+    const std::set<std::string>& extension_ids,
+    Client* client) {
+  // TODO(vakh): Implement this skeleton.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return true;
+}
+
+bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
+  // TODO(vakh): Implement this skeleton.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return true;
+}
+
+bool V4LocalDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
+  // TODO(vakh): Implement this skeleton.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return true;
+}
+
+bool V4LocalDatabaseManager::MatchDownloadWhitelistString(
+    const std::string& str) {
+  // TODO(vakh): Implement this skeleton.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return true;
+}
+
+bool V4LocalDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
+  // TODO(vakh): Implement this skeleton.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return true;
+}
+
+bool V4LocalDatabaseManager::MatchMalwareIP(const std::string& ip_address) {
+  // TODO(vakh): Implement this skeleton.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return false;
+}
+
+bool V4LocalDatabaseManager::MatchModuleWhitelistString(
+    const std::string& str) {
+  // TODO(vakh): Implement this skeleton.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return true;
+}
+
+ThreatSource V4LocalDatabaseManager::GetThreatSource() const {
+  return ThreatSource::LOCAL_PVER4;
+}
+
+bool V4LocalDatabaseManager::IsCsdWhitelistKillSwitchOn() {
+  // TODO(vakh): Implement this skeleton.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return true;
+}
+
+bool V4LocalDatabaseManager::IsDownloadProtectionEnabled() const {
+  // TODO(vakh): Investigate the possibility of using a command line switch for
+  // this instead.
+  return true;
+}
+
+bool V4LocalDatabaseManager::IsMalwareKillSwitchOn() {
+  // TODO(vakh): Implement this skeleton.
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return true;
+}
+
+bool V4LocalDatabaseManager::IsSupported() const {
+  return true;
+}
+
+void V4LocalDatabaseManager::StartOnIOThread(
+    net::URLRequestContextGetter* request_context_getter,
+    const V4ProtocolConfig& config) {
+  SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
+
+  db_updated_callback_ = base::Bind(&V4LocalDatabaseManager::DatabaseUpdated,
+                                    base::Unretained(this));
+
+  SetupUpdateProtocolManager(request_context_getter, config);
+  SetupDatabase();
+
+  enabled_ = true;
+}
+
+void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  enabled_ = false;
+
+  pending_clients_.clear();
+
+  // Delete the V4Database. Any pending writes to disk are completed.
+  // This operation happens on the task_runner on which v4_database_ operates
+  // and doesn't block the IO thread.
+  V4Database::Destroy(std::move(v4_database_));
+
+  // Delete the V4UpdateProtocolManager.
+  // This cancels any in-flight update request.
+  v4_update_protocol_manager_.reset();
+
+  db_updated_callback_.Reset();
+
+  SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
+}
+
+//
+// End: SafeBrowsingDatabaseManager implementation
+//
+
+void V4LocalDatabaseManager::DatabaseReady(
+    std::unique_ptr<V4Database> v4_database) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // The following check is needed because it is possible that by the time the
+  // database is ready, StopOnIOThread has been called.
+  if (enabled_) {
+    v4_database_ = std::move(v4_database);
+
+    // The database is in place. Start fetching updates now.
+    v4_update_protocol_manager_->ScheduleNextUpdate(
+        v4_database_->GetStoreStateMap());
+  } else {
+    // Schedule the deletion of v4_database off IO thread.
+    V4Database::Destroy(std::move(v4_database));
+  }
+}
+
+void V4LocalDatabaseManager::DatabaseUpdated() {
+  if (enabled_) {
+    v4_update_protocol_manager_->ScheduleNextUpdate(
+        v4_database_->GetStoreStateMap());
+  }
+}
+
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
     SBThreatType* result_threat_type,
     ThreatMetadata* metadata,
@@ -234,6 +314,26 @@ void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
       *metadata = fhi.metadata;
     }
   }
+}
+
+// Returns the SBThreatType corresponding to a given SafeBrowsing list.
+SBThreatType V4LocalDatabaseManager::GetSBThreatTypeForList(
+    const ListIdentifier& list_id) {
+  auto it = std::find_if(
+      std::begin(list_infos_), std::end(list_infos_),
+      [&list_id](ListInfo const& li) { return li.list_id() == list_id; });
+  DCHECK(list_infos_.end() != it);
+  DCHECK_NE(SB_THREAT_TYPE_SAFE, it->sb_threat_type());
+  return it->sb_threat_type();
+}
+
+std::unordered_set<ListIdentifier>
+V4LocalDatabaseManager::GetStoresForFullHashRequests() {
+  std::unordered_set<ListIdentifier> stores_for_full_hash;
+  for (auto it : list_infos_) {
+    stores_for_full_hash.insert(it.list_id());
+  }
+  return stores_for_full_hash;
 }
 
 void V4LocalDatabaseManager::OnFullHashResponse(
@@ -268,42 +368,6 @@ void V4LocalDatabaseManager::RespondToClient(
   // TODO(vakh): Implement this skeleton.
 }
 
-void V4LocalDatabaseManager::CancelCheck(Client* client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(enabled_);
-
-  auto it = pending_clients_.find(client);
-  if (it != pending_clients_.end()) {
-    pending_clients_.erase(it);
-  }
-
-  // TODO(vakh): Handle the case of queued checks.
-}
-
-void V4LocalDatabaseManager::StartOnIOThread(
-    net::URLRequestContextGetter* request_context_getter,
-    const V4ProtocolConfig& config) {
-  SafeBrowsingDatabaseManager::StartOnIOThread(request_context_getter, config);
-
-  db_updated_callback_ = base::Bind(&V4LocalDatabaseManager::DatabaseUpdated,
-                                    base::Unretained(this));
-
-  SetupUpdateProtocolManager(request_context_getter, config);
-  SetupDatabase();
-
-  enabled_ = true;
-}
-
-void V4LocalDatabaseManager::SetupUpdateProtocolManager(
-    net::URLRequestContextGetter* request_context_getter,
-    const V4ProtocolConfig& config) {
-  V4UpdateCallback callback = base::Bind(
-      &V4LocalDatabaseManager::UpdateRequestCompleted, base::Unretained(this));
-
-  v4_update_protocol_manager_ =
-      V4UpdateProtocolManager::Create(request_context_getter, config, callback);
-}
-
 void V4LocalDatabaseManager::SetupDatabase() {
   DCHECK(!base_path_.empty());
   DCHECK(!list_infos_.empty());
@@ -325,43 +389,14 @@ void V4LocalDatabaseManager::SetupDatabase() {
   V4Database::Create(task_runner_, base_path_, list_infos_, db_ready_callback);
 }
 
-void V4LocalDatabaseManager::DatabaseReady(
-    std::unique_ptr<V4Database> v4_database) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+void V4LocalDatabaseManager::SetupUpdateProtocolManager(
+    net::URLRequestContextGetter* request_context_getter,
+    const V4ProtocolConfig& config) {
+  V4UpdateCallback callback = base::Bind(
+      &V4LocalDatabaseManager::UpdateRequestCompleted, base::Unretained(this));
 
-  // The following check is needed because it is possible that by the time the
-  // database is ready, StopOnIOThread has been called.
-  if (enabled_) {
-    v4_database_ = std::move(v4_database);
-
-    // The database is in place. Start fetching updates now.
-    v4_update_protocol_manager_->ScheduleNextUpdate(
-        v4_database_->GetStoreStateMap());
-  } else {
-    // Schedule the deletion of v4_database off IO thread.
-    V4Database::Destroy(std::move(v4_database));
-  }
-}
-
-void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  enabled_ = false;
-
-  pending_clients_.clear();
-
-  // Delete the V4Database. Any pending writes to disk are completed.
-  // This operation happens on the task_runner on which v4_database_ operates
-  // and doesn't block the IO thread.
-  V4Database::Destroy(std::move(v4_database_));
-
-  // Delete the V4UpdateProtocolManager.
-  // This cancels any in-flight update request.
-  v4_update_protocol_manager_.reset();
-
-  db_updated_callback_.Reset();
-
-  SafeBrowsingDatabaseManager::StopOnIOThread(shutdown);
+  v4_update_protocol_manager_ =
+      V4UpdateProtocolManager::Create(request_context_getter, config, callback);
 }
 
 void V4LocalDatabaseManager::UpdateRequestCompleted(
@@ -369,33 +404,6 @@ void V4LocalDatabaseManager::UpdateRequestCompleted(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   v4_database_->ApplyUpdate(std::move(parsed_server_response),
                             db_updated_callback_);
-}
-
-void V4LocalDatabaseManager::DatabaseUpdated() {
-  if (enabled_) {
-    v4_update_protocol_manager_->ScheduleNextUpdate(
-        v4_database_->GetStoreStateMap());
-  }
-}
-
-// Returns the SBThreatType corresponding to a given SafeBrowsing list.
-SBThreatType V4LocalDatabaseManager::GetSBThreatTypeForList(
-    const ListIdentifier& list_id) {
-  auto it = std::find_if(
-      std::begin(list_infos_), std::end(list_infos_),
-      [&list_id](ListInfo const& li) { return li.list_id() == list_id; });
-  DCHECK(list_infos_.end() != it);
-  DCHECK_NE(SB_THREAT_TYPE_SAFE, it->sb_threat_type());
-  return it->sb_threat_type();
-}
-
-std::unordered_set<ListIdentifier>
-V4LocalDatabaseManager::GetStoresForFullHashRequests() {
-  std::unordered_set<ListIdentifier> stores_for_full_hash;
-  for (auto it : list_infos_) {
-    stores_for_full_hash.insert(it.list_id());
-  }
-  return stores_for_full_hash;
 }
 
 }  // namespace safe_browsing

@@ -143,17 +143,19 @@ RemoteSafeBrowsingDatabaseManager::~RemoteSafeBrowsingDatabaseManager() {
   DCHECK(!enabled_);
 }
 
-bool RemoteSafeBrowsingDatabaseManager::IsSupported() const {
-  return SafeBrowsingApiHandler::GetInstance() != nullptr;
-}
-
-safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()
-    const {
-  return safe_browsing::ThreatSource::REMOTE;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
-  return true;
+void RemoteSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(enabled_);
+  for (auto itr = current_requests_.begin(); itr != current_requests_.end();
+       ++itr) {
+    if ((*itr)->client() == client) {
+      DVLOG(2) << "Canceling check for URL " << (*itr)->url();
+      delete *itr;
+      current_requests_.erase(itr);
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 bool RemoteSafeBrowsingDatabaseManager::CanCheckResourceType(
@@ -166,66 +168,7 @@ bool RemoteSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
          url.SchemeIs(url::kFtpScheme);
 }
 
-bool RemoteSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {
-  return false;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::CheckDownloadUrl(
-    const std::vector<GURL>& url_chain,
-    Client* client) {
-  NOTREACHED();
-  return true;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::CheckExtensionIDs(
-    const std::set<std::string>& extension_ids,
-    Client* client) {
-  NOTREACHED();
-  return true;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::MatchMalwareIP(
-    const std::string& ip_address) {
-  NOTREACHED();
-  return false;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
-  NOTREACHED();
-  return true;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::MatchDownloadWhitelistUrl(
-    const GURL& url) {
-  NOTREACHED();
-  return true;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
-    const std::string& str) {
-  NOTREACHED();
-  return true;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
-    const std::string& str) {
-  NOTREACHED();
-  return true;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
-                                                         Client* client) {
-  NOTREACHED();
-  return true;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
-  NOTREACHED();
-  return true;
-}
-
-bool RemoteSafeBrowsingDatabaseManager::IsCsdWhitelistKillSwitchOn() {
-  NOTREACHED();
+bool RemoteSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {
   return true;
 }
 
@@ -260,19 +203,76 @@ bool RemoteSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
   return false;
 }
 
-void RemoteSafeBrowsingDatabaseManager::CancelCheck(Client* client) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(enabled_);
-  for (auto itr = current_requests_.begin(); itr != current_requests_.end();
-       ++itr) {
-    if ((*itr)->client() == client) {
-      DVLOG(2) << "Canceling check for URL " << (*itr)->url();
-      delete *itr;
-      current_requests_.erase(itr);
-      return;
-    }
-  }
+bool RemoteSafeBrowsingDatabaseManager::CheckDownloadUrl(
+    const std::vector<GURL>& url_chain,
+    Client* client) {
   NOTREACHED();
+  return true;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::CheckExtensionIDs(
+    const std::set<std::string>& extension_ids,
+    Client* client) {
+  NOTREACHED();
+  return true;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::CheckResourceUrl(const GURL& url,
+                                                         Client* client) {
+  NOTREACHED();
+  return true;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
+  NOTREACHED();
+  return true;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::MatchDownloadWhitelistString(
+    const std::string& str) {
+  NOTREACHED();
+  return true;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::MatchDownloadWhitelistUrl(
+    const GURL& url) {
+  NOTREACHED();
+  return true;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::MatchMalwareIP(
+    const std::string& ip_address) {
+  NOTREACHED();
+  return false;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::MatchModuleWhitelistString(
+    const std::string& str) {
+  NOTREACHED();
+  return true;
+}
+
+safe_browsing::ThreatSource RemoteSafeBrowsingDatabaseManager::GetThreatSource()
+    const {
+  return safe_browsing::ThreatSource::REMOTE;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::IsCsdWhitelistKillSwitchOn() {
+  NOTREACHED();
+  return true;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::IsDownloadProtectionEnabled() const {
+  return false;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::IsMalwareKillSwitchOn() {
+  NOTREACHED();
+  return true;
+}
+
+bool RemoteSafeBrowsingDatabaseManager::IsSupported() const {
+  return SafeBrowsingApiHandler::GetInstance() != nullptr;
 }
 
 void RemoteSafeBrowsingDatabaseManager::StartOnIOThread(

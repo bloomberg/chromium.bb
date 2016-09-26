@@ -56,15 +56,15 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     // know whether the URL in |url| is safe or unsafe.
     ClientCallbackType client_callback_type;
 
+    // The threat verdict for the URL being checked.
+    SBThreatType result_threat_type;
+
     // The URL that is being checked for being unsafe.
     GURL url;
 
     // The metadata associated with the full hash of the severest match found
     // for that URL.
     ThreatMetadata url_metadata;
-
-    // The threat verdict for the URL being checked.
-    SBThreatType result_threat_type;
   };
 
   // Construct V4LocalDatabaseManager.
@@ -75,29 +75,33 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // SafeBrowsingDatabaseManager implementation
   //
 
-  bool IsSupported() const override;
-  safe_browsing::ThreatSource GetThreatSource() const override;
-  bool ChecksAreAlwaysAsync() const override;
+  void CancelCheck(Client* client) override;
   bool CanCheckResourceType(content::ResourceType resource_type) const override;
   bool CanCheckUrl(const GURL& url) const override;
-  bool IsDownloadProtectionEnabled() const override;
+  bool ChecksAreAlwaysAsync() const override;
   bool CheckBrowseUrl(const GURL& url, Client* client) override;
-  void CancelCheck(Client* client) override;
-  void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
-                       const V4ProtocolConfig& config) override;
-  void StopOnIOThread(bool shutdown) override;
   bool CheckDownloadUrl(const std::vector<GURL>& url_chain,
                         Client* client) override;
   bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
                          Client* client) override;
-  bool MatchCsdWhitelistUrl(const GURL& url) override;
-  bool MatchMalwareIP(const std::string& ip_address) override;
-  bool MatchDownloadWhitelistUrl(const GURL& url) override;
-  bool MatchDownloadWhitelistString(const std::string& str) override;
-  bool MatchModuleWhitelistString(const std::string& str) override;
   bool CheckResourceUrl(const GURL& url, Client* client) override;
-  bool IsMalwareKillSwitchOn() override;
+  bool MatchCsdWhitelistUrl(const GURL& url) override;
+  bool MatchDownloadWhitelistString(const std::string& str) override;
+  bool MatchDownloadWhitelistUrl(const GURL& url) override;
+  bool MatchMalwareIP(const std::string& ip_address) override;
+  bool MatchModuleWhitelistString(const std::string& str) override;
+  safe_browsing::ThreatSource GetThreatSource() const override;
   bool IsCsdWhitelistKillSwitchOn() override;
+  bool IsDownloadProtectionEnabled() const override;
+  bool IsMalwareKillSwitchOn() override;
+  bool IsSupported() const override;
+  void StartOnIOThread(net::URLRequestContextGetter* request_context_getter,
+                       const V4ProtocolConfig& config) override;
+  void StopOnIOThread(bool shutdown) override;
+
+  //
+  // End: SafeBrowsingDatabaseManager implementation
+  //
 
  protected:
   std::unordered_set<ListIdentifier> GetStoresForFullHashRequests() override;
@@ -117,8 +121,12 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
 
   ~V4LocalDatabaseManager() override;
 
-  // Returns the SBThreatType for a given ListIdentifier.
-  SBThreatType GetSBThreatTypeForList(const ListIdentifier& list_id);
+  // Called when all the stores managed by the database have been read from
+  // disk after startup and the database is ready for use.
+  void DatabaseReady(std::unique_ptr<V4Database> v4_database);
+
+  // Called when the database has been updated and schedules the next update.
+  void DatabaseUpdated();
 
   // Finds the most severe |SBThreatType| and the corresponding |metadata| from
   // |full_hash_infos|.
@@ -127,16 +135,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
       ThreatMetadata* metadata,
       const std::vector<FullHashInfo>& full_hash_infos);
 
-  // The callback called each time the protocol manager downloads updates
-  // successfully.
-  void UpdateRequestCompleted(
-      std::unique_ptr<ParsedServerResponse> parsed_server_response);
-
-  void SetupUpdateProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
-      const V4ProtocolConfig& config);
-
-  void SetupDatabase();
+  // Returns the SBThreatType for a given ListIdentifier.
+  SBThreatType GetSBThreatTypeForList(const ListIdentifier& list_id);
 
   // Called when the |v4_get_hash_protocol_manager_| has the full hash response
   // available for the URL that we requested. It determines the severest
@@ -144,26 +144,33 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   void OnFullHashResponse(std::unique_ptr<PendingCheck> pending_check,
                           const std::vector<FullHashInfo>& full_hash_infos);
 
-  // Called when all the stores managed by the database have been read from
-  // disk after startup and the database is ready for use.
-  void DatabaseReady(std::unique_ptr<V4Database> v4_database);
-
-  // Called when the database has been updated and schedules the next update.
-  void DatabaseUpdated();
-
   // Calls the appopriate method on the |client| object, based on the contents
   // of |pending_check|.
   void RespondToClient(std::unique_ptr<PendingCheck> pending_check);
 
+  // Instantiates and initializes |v4_database_| on the task runner. Sets up the
+  // callback for |DatabaseReady| when the database is ready for use.
+  void SetupDatabase();
+
+  // Instantiates and initializes |v4_update_protocol_manager_|.
+  void SetupUpdateProtocolManager(
+      net::URLRequestContextGetter* request_context_getter,
+      const V4ProtocolConfig& config);
+
+  // The callback called each time the protocol manager downloads updates
+  // successfully.
+  void UpdateRequestCompleted(
+      std::unique_ptr<ParsedServerResponse> parsed_server_response);
+
   // The base directory under which to create the files that contain hashes.
   const base::FilePath base_path_;
 
+  // Called when the V4Database has finished applying the latest update and is
+  // ready to process next update.
+  DatabaseUpdatedCallback db_updated_callback_;
+
   // Whether the service is running.
   bool enabled_;
-
-  // The set of clients that are waiting for a full hash response from the
-  // SafeBrowsing service.
-  PendingClients pending_clients_;
 
   // The list of stores to manage (for hash prefixes and full hashes). Each
   // element contains the identifier for the store, the corresponding
@@ -171,19 +178,19 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // name of the file on disk that would contain the prefixes, if applicable.
   ListInfos list_infos_;
 
-  // The protocol manager that downloads the hash prefix updates.
-  std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
+  // The set of clients that are waiting for a full hash response from the
+  // SafeBrowsing service.
+  PendingClients pending_clients_;
+
+  // The sequenced task runner for running safe browsing database operations.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The database that manages the stores containing the hash prefix updates.
   // All writes to this variable must happen on the IO thread only.
   std::unique_ptr<V4Database> v4_database_;
 
-  // Called when the V4Database has finished applying the latest update and is
-  // ready to process next update.
-  DatabaseUpdatedCallback db_updated_callback_;
-
-  // The sequenced task runner for running safe browsing database operations.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  // The protocol manager that downloads the hash prefix updates.
+  std::unique_ptr<V4UpdateProtocolManager> v4_update_protocol_manager_;
 
   friend class base::RefCountedThreadSafe<V4LocalDatabaseManager>;
   DISALLOW_COPY_AND_ASSIGN(V4LocalDatabaseManager);
