@@ -25,7 +25,6 @@
 #endif
 
 #if defined(OS_WIN)
-#define snprintf _snprintf
 typedef SSIZE_T ssize_t;
 #endif
 

@@ -17,6 +17,7 @@
 #include "base/metrics/histogram.h"
 #include "base/process/process_metrics.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -378,7 +379,7 @@ Status MakeIOError(Slice filename,
                    base::File::Error error) {
   DCHECK_LT(error, 0);
   char buf[512];
-  snprintf(buf, sizeof(buf), "%s (ChromeMethodBFE: %d::%s::%d)",
+  base::snprintf(buf, sizeof(buf), "%s (ChromeMethodBFE: %d::%s::%d)",
            message.c_str(), method, MethodIDToString(method), -error);
   return Status::IOError(filename, buf);
 }
@@ -387,7 +388,7 @@ Status MakeIOError(Slice filename,
                    const std::string& message,
                    MethodID method) {
   char buf[512];
-  snprintf(buf, sizeof(buf), "%s (ChromeMethodOnly: %d::%s)", message.c_str(),
+  base::snprintf(buf, sizeof(buf), "%s (ChromeMethodOnly: %d::%s)", message.c_str(),
            method, MethodIDToString(method));
   return Status::IOError(filename, buf);
 }
@@ -689,7 +690,7 @@ Status ChromiumEnv::RenameFile(const std::string& src, const std::string& dst) {
   DCHECK(error != base::File::FILE_OK);
   RecordOSError(kRenameFile, error);
   char buf[100];
-  snprintf(buf,
+  base::snprintf(buf,
            sizeof(buf),
            "Could not rename file: %s",
            FileErrorString(error));
