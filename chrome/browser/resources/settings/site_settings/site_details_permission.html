@@ -34,6 +34,11 @@
                 data-permission-value$="[[PermissionValues.BLOCK]]">
               $i18n{siteSettingsActionBlock}
             </button>
+            <button id="sessionOnly" class="dropdown-item" role="option"
+                data-permission-value$="[[PermissionValues.SESSION_ONLY]]"
+                hidden$="[[!isCookiesCategory_(category)]]">
+              $i18n{siteSettingsActionSessionOnly}
+            </button>
           </paper-listbox>
         </paper-dropdown-menu-light>
       </div>

@@ -41,6 +41,11 @@ Polymer({
         this.removePatternWildcard(right);
   },
 
+  /** @private */
+  isCookiesCategory_: function(category) {
+    return category == settings.ContentSettingsTypes.COOKIES;
+  },
+
   /**
    * Sets the site to display.
    * @param {!SiteException} site The site to display.

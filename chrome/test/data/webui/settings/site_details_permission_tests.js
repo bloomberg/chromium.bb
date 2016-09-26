@@ -19,8 +19,24 @@ cr.define('site_details_permission', function() {
         exceptions: {
           camera: [
             {
-              embeddingOrigin: 'https://foo-allow.com:443',
-              origin: 'https://foo-allow.com:443',
+              embeddingOrigin: '',
+              origin: 'https://www.example.com',
+              setting: 'allow',
+              source: 'preference',
+            },
+          ]
+        }
+      };
+
+      /**
+       * An example pref with only one entry allowed.
+       */
+      var prefsCookies = {
+        exceptions: {
+          cookies: [
+            {
+              embeddingOrigin: '',
+              origin: 'https://www.example.com',
               setting: 'allow',
               source: 'preference',
             },
@@ -59,7 +75,7 @@ cr.define('site_details_permission', function() {
         return browserProxy.whenCalled('setCategoryPermissionForOrigin').then(
             function(arguments) {
               assertEquals(origin, arguments[0]);
-              assertEquals(origin, arguments[1]);
+              assertEquals('', arguments[1]);
               assertEquals(testElement.category, arguments[2]);
               assertEquals(allow ?
                   settings.PermissionValues.ALLOW :
@@ -81,12 +97,12 @@ cr.define('site_details_permission', function() {
       });
 
       test('camera category', function() {
-        var origin = "https://foo-allow.com:443";
+        var origin = "https://www.example.com";
         browserProxy.setPrefs(prefs);
         testElement.category = settings.ContentSettingsTypes.CAMERA;
         testElement.site = {
           origin: origin,
-          embeddingOrigin: origin,
+          embeddingOrigin: '',
         };
 
         return browserProxy.whenCalled('getExceptionList').then(function() {
@@ -108,13 +124,46 @@ cr.define('site_details_permission', function() {
         });
       });
 
+      test('cookies category', function() {
+        var origin = "https://www.example.com";
+        browserProxy.setPrefs(prefsCookies);
+        testElement.category = settings.ContentSettingsTypes.COOKIES;
+        testElement.site = {
+          origin: origin,
+          embeddingOrigin: '',
+        };
+
+        return browserProxy.whenCalled('getExceptionList').then(function() {
+          assertFalse(testElement.$.details.hidden);
+
+          var header = testElement.$.details.querySelector(
+              '#permissionHeader');
+          assertEquals('Cookies', header.innerText.trim(),
+              'Widget should be labelled correctly');
+
+          MockInteractions.tap(testElement.$.sessionOnly);
+          return browserProxy.whenCalled('setCategoryPermissionForOrigin');
+        }).then(function(arguments) {
+          assertEquals(origin, arguments[0]);
+          assertEquals('', arguments[1]);
+          assertEquals(testElement.category, arguments[2]);
+          assertEquals(settings.PermissionValues.SESSION_ONLY, arguments[3]);
+          // Flip the permission and validate that prefs stay in sync.
+          browserProxy.resetResolver('setCategoryPermissionForOrigin');
+          return validatePermissionFlipWorks(origin, true);
+        }).then(function() {
+          browserProxy.resetResolver('setCategoryPermissionForOrigin');
+          return validatePermissionFlipWorks(origin, false);
+        });
+      });
+
       test('disappear on empty', function() {
-        var origin = "https://foo-allow.com:443";
+        var origin = "https://www.example.com";
         browserProxy.setPrefs(prefs);
         testElement.category = settings.ContentSettingsTypes.CAMERA;
         testElement.site = {
           origin: origin,
-          embeddingOrigin: origin,
+          embeddingOrigin: '',
         };
 
         return browserProxy.whenCalled('getExceptionList').then(function() {
