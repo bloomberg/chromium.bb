@@ -2011,19 +2011,6 @@ public class AwContents implements SmartClipProvider,
         if (!isDestroyed(WARN)) mNavigationController.clearHistory();
     }
 
-    public String[] getHttpAuthUsernamePassword(String host, String realm) {
-        return mBrowserContext.getHttpAuthDatabase(mContext)
-                .getHttpAuthUsernamePassword(host, realm);
-    }
-
-    public void setHttpAuthUsernamePassword(String host, String realm, String username,
-            String password) {
-        if (TRACE) Log.i(TAG, "%s setHttpAuthUsernamePassword=%s", this, host);
-        if (isDestroyed(WARN)) return;
-        mBrowserContext.getHttpAuthDatabase(mContext)
-                .setHttpAuthUsernamePassword(host, realm, username, password);
-    }
-
     /**
      * @see android.webkit.WebView#getCertificate()
      */

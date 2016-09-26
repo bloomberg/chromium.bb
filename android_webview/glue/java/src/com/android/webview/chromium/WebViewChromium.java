@@ -373,7 +373,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return;
         }
-        mAwContents.setHttpAuthUsernamePassword(host, realm, username, password);
+        ((WebViewDatabaseAdapter) mFactory.getWebViewDatabase(mContext))
+                .setHttpAuthUsernamePassword(host, realm, username, password);
     }
 
     @Override
@@ -388,7 +389,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return ret;
         }
-        return mAwContents.getHttpAuthUsernamePassword(host, realm);
+        return ((WebViewDatabaseAdapter) mFactory.getWebViewDatabase(mContext))
+                .getHttpAuthUsernamePassword(host, realm);
     }
 
     @Override

@@ -67,6 +67,34 @@ final class WebViewDatabaseAdapter extends WebViewDatabase {
         mHttpAuthDatabase.clearHttpAuthUsernamePassword();
     }
 
+    // TODO(ntfschr): add @Override once the next Android is released (http://crbug.com/616583)
+    public void setHttpAuthUsernamePassword(
+            final String host, final String realm, final String username, final String password) {
+        if (checkNeedsPost()) {
+            mFactory.addTask(new Runnable() {
+                @Override
+                public void run() {
+                    mHttpAuthDatabase.setHttpAuthUsernamePassword(host, realm, username, password);
+                }
+            });
+            return;
+        }
+        mHttpAuthDatabase.setHttpAuthUsernamePassword(host, realm, username, password);
+    }
+
+    // TODO(ntfschr): add @Override once the next Android is released (http://crbug.com/616583)
+    public String[] getHttpAuthUsernamePassword(final String host, final String realm) {
+        if (checkNeedsPost()) {
+            return mFactory.runOnUiThreadBlocking(new Callable<String[]>() {
+                @Override
+                public String[] call() {
+                    return mHttpAuthDatabase.getHttpAuthUsernamePassword(host, realm);
+                }
+            });
+        }
+        return mHttpAuthDatabase.getHttpAuthUsernamePassword(host, realm);
+    }
+
     @Override
     public boolean hasFormData() {
         if (checkNeedsPost()) {
