@@ -44,6 +44,8 @@ class ScopedAppGLStateRestore {
     MODE_RESOURCE_MANAGEMENT,
   };
 
+  static ScopedAppGLStateRestore* Current();
+
   explicit ScopedAppGLStateRestore(CallMode mode);
   ~ScopedAppGLStateRestore();
 

@@ -39,7 +39,7 @@ scoped_refptr<SurfacesInstance> SurfacesInstance::GetOrCreateInstance() {
 }
 
 SurfacesInstance::SurfacesInstance()
-    : next_surface_client_id_(1u), gl_surface_(new AwGLSurface) {
+    : next_surface_client_id_(1u) {
   cc::RendererSettings settings;
 
   // Should be kept in sync with compositor_impl_android.cc.
@@ -60,7 +60,8 @@ SurfacesInstance::SurfacesInstance()
       new cc::TextureMailboxDeleter(nullptr));
   std::unique_ptr<ParentOutputSurface> output_surface_holder(
       new ParentOutputSurface(AwRenderThreadContextProvider::Create(
-          gl_surface_, DeferredGpuCommandService::GetInstance())));
+          make_scoped_refptr(new AwGLSurface),
+          DeferredGpuCommandService::GetInstance())));
   output_surface_ = output_surface_holder.get();
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
       begin_frame_source.get(), nullptr,
@@ -101,17 +102,11 @@ cc::SurfaceManager* SurfacesInstance::GetSurfaceManager() {
   return surface_manager_.get();
 }
 
-void SurfacesInstance::SetBackingFrameBufferObject(
-    int framebuffer_binding_ext) {
-  gl_surface_->SetBackingFrameBufferObject(framebuffer_binding_ext);
-}
-
 void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
                                    const gfx::Rect& clip,
                                    const gfx::Transform& transform,
                                    const gfx::Size& frame_size,
-                                   const cc::SurfaceId& child_id,
-                                   const ScopedAppGLStateRestore& gl_state) {
+                                   const cc::SurfaceId& child_id) {
   DCHECK(std::find(child_ids_.begin(), child_ids_.end(), child_id) !=
          child_ids_.end());
 
@@ -148,7 +143,6 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   surface_factory_->SubmitCompositorFrame(root_id_, std::move(frame),
                                           cc::SurfaceFactory::DrawCallback());
 
-  output_surface_->SetGLState(gl_state);
   display_->Resize(viewport);
   display_->SetExternalClip(clip);
   display_->DrawAndSwap();

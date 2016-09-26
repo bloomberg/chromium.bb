@@ -286,20 +286,10 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
       draw_info->mode == AwDrawGLInfo::kModeDraw
           ? ScopedAppGLStateRestore::MODE_DRAW
           : ScopedAppGLStateRestore::MODE_RESOURCE_MANAGEMENT);
-  // Set the correct FBO before kModeDraw. The GL commands run in kModeDraw
-  // require a correctly bound FBO. The FBO remains until the next kModeDraw.
-  // So kModeProcess between kModeDraws has correctly bound FBO, too.
-  if (hardware_renderer_) {
-    hardware_renderer_->SetBackingFrameBufferObject(
-        state_restore.framebuffer_binding_ext());
-  }
-
   ScopedAllowGL allow_gl;
   if (!hardware_renderer_ && draw_info->mode == AwDrawGLInfo::kModeDraw &&
       !IsInsideHardwareRelease() && HasFrameForHardwareRendererOnRT()) {
     hardware_renderer_.reset(new HardwareRenderer(this));
-    hardware_renderer_->SetBackingFrameBufferObject(
-        state_restore.framebuffer_binding_ext());
     hardware_renderer_->CommitFrame();
   }
 
@@ -323,7 +313,7 @@ void RenderThreadManager::DrawGL(AwDrawGLInfo* draw_info) {
   }
 
   if (hardware_renderer_)
-    hardware_renderer_->DrawGL(draw_info, state_restore);
+    hardware_renderer_->DrawGL(draw_info);
   DeferredGpuCommandService::GetInstance()->PerformIdleWork(false);
 }
 

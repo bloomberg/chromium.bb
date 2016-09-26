@@ -71,8 +71,7 @@ void HardwareRenderer::CommitFrame() {
   DCHECK(!child_frame_->frame->gl_frame_data);
 }
 
-void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
-                              const ScopedAppGLStateRestore& gl_state) {
+void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
   TRACE_EVENT0("android_webview", "HardwareRenderer::DrawGL");
 
   // We need to watch if the current Android context has changed and enforce
@@ -144,8 +143,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
   gfx::Rect clip(draw_info->clip_left, draw_info->clip_top,
                  draw_info->clip_right - draw_info->clip_left,
                  draw_info->clip_bottom - draw_info->clip_top);
-  surfaces_->DrawAndSwap(viewport, clip, transform, frame_size_, child_id_,
-                         gl_state);
+  surfaces_->DrawAndSwap(viewport, clip, transform, frame_size_, child_id_);
 }
 
 void HardwareRenderer::AllocateSurface() {
@@ -173,11 +171,6 @@ void HardwareRenderer::ReturnResources(
 void HardwareRenderer::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
   // TODO(tansell): Hook this up.
-}
-
-void HardwareRenderer::SetBackingFrameBufferObject(
-    int framebuffer_binding_ext) {
-  surfaces_->SetBackingFrameBufferObject(framebuffer_binding_ext);
 }
 
 void HardwareRenderer::ReturnResourcesInChildFrame() {

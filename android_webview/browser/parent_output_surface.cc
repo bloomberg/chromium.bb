@@ -5,6 +5,7 @@
 #include "android_webview/browser/parent_output_surface.h"
 
 #include "android_webview/browser/aw_render_thread_context_provider.h"
+#include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface_client.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -14,7 +15,6 @@ namespace android_webview {
 ParentOutputSurface::ParentOutputSurface(
     scoped_refptr<AwRenderThreadContextProvider> context_provider)
     : cc::OutputSurface(std::move(context_provider)) {
-  stencil_state_.stencil_test_enabled = false;
 }
 
 ParentOutputSurface::~ParentOutputSurface() {
@@ -38,35 +38,35 @@ void ParentOutputSurface::SwapBuffers(cc::CompositorFrame frame) {
 }
 
 bool ParentOutputSurface::HasExternalStencilTest() const {
-  return stencil_state_.stencil_test_enabled;
+  return ScopedAppGLStateRestore::Current()
+      ->stencil_state()
+      .stencil_test_enabled;
 }
 
 void ParentOutputSurface::ApplyExternalStencil() {
-  DCHECK(stencil_state_.stencil_test_enabled);
+  StencilState stencil_state =
+      ScopedAppGLStateRestore::Current()->stencil_state();
+  DCHECK(stencil_state.stencil_test_enabled);
   gpu::gles2::GLES2Interface* gl = context_provider()->ContextGL();
-  gl->StencilFuncSeparate(GL_FRONT, stencil_state_.stencil_front_func,
-                          stencil_state_.stencil_front_mask,
-                          stencil_state_.stencil_front_ref);
-  gl->StencilFuncSeparate(GL_BACK, stencil_state_.stencil_back_func,
-                          stencil_state_.stencil_back_mask,
-                          stencil_state_.stencil_back_ref);
-  gl->StencilMaskSeparate(GL_FRONT, stencil_state_.stencil_front_writemask);
-  gl->StencilMaskSeparate(GL_BACK, stencil_state_.stencil_back_writemask);
-  gl->StencilOpSeparate(GL_FRONT, stencil_state_.stencil_front_fail_op,
-                        stencil_state_.stencil_front_z_fail_op,
-                        stencil_state_.stencil_front_z_pass_op);
-  gl->StencilOpSeparate(GL_BACK, stencil_state_.stencil_back_fail_op,
-                        stencil_state_.stencil_back_z_fail_op,
-                        stencil_state_.stencil_back_z_pass_op);
+  gl->StencilFuncSeparate(GL_FRONT, stencil_state.stencil_front_func,
+                          stencil_state.stencil_front_mask,
+                          stencil_state.stencil_front_ref);
+  gl->StencilFuncSeparate(GL_BACK, stencil_state.stencil_back_func,
+                          stencil_state.stencil_back_mask,
+                          stencil_state.stencil_back_ref);
+  gl->StencilMaskSeparate(GL_FRONT, stencil_state.stencil_front_writemask);
+  gl->StencilMaskSeparate(GL_BACK, stencil_state.stencil_back_writemask);
+  gl->StencilOpSeparate(GL_FRONT, stencil_state.stencil_front_fail_op,
+                        stencil_state.stencil_front_z_fail_op,
+                        stencil_state.stencil_front_z_pass_op);
+  gl->StencilOpSeparate(GL_BACK, stencil_state.stencil_back_fail_op,
+                        stencil_state.stencil_back_z_fail_op,
+                        stencil_state.stencil_back_z_pass_op);
 }
 
 uint32_t ParentOutputSurface::GetFramebufferCopyTextureFormat() {
   auto* gl = static_cast<AwRenderThreadContextProvider*>(context_provider());
   return gl->GetCopyTextureInternalFormat();
-}
-
-void ParentOutputSurface::SetGLState(const ScopedAppGLStateRestore& gl_state) {
-  stencil_state_ = gl_state.stencil_state();
 }
 
 }  // namespace android_webview

@@ -26,14 +26,10 @@ class AwGLSurface : public gl::GLSurface {
   void* GetHandle() override;
   void* GetDisplay() override;
 
-  void SetBackingFrameBufferObject(unsigned int fbo);
-
  protected:
   ~AwGLSurface() override;
 
  private:
-  unsigned int fbo_;
-
   DISALLOW_COPY_AND_ASSIGN(AwGLSurface);
 };
 

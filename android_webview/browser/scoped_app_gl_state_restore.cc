@@ -66,6 +66,7 @@ bool ClearGLErrors(bool warn, const char* msg) {
 bool g_globals_initialized = false;
 GLint g_gl_max_texture_units = 0;
 bool g_supports_oes_vertex_array_object = false;
+ScopedAppGLStateRestore* g_current_instance = nullptr;
 
 }  // namespace
 
@@ -416,11 +417,22 @@ ScopedAppGLStateRestoreImpl::~ScopedAppGLStateRestoreImpl() {
 
 }  // namespace internal
 
-ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode)
-    : impl_(new internal::ScopedAppGLStateRestoreImpl(mode)) {
+// static
+ScopedAppGLStateRestore* ScopedAppGLStateRestore::Current() {
+  DCHECK(g_current_instance);
+  return g_current_instance;
 }
 
-ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {}
+ScopedAppGLStateRestore::ScopedAppGLStateRestore(CallMode mode)
+    : impl_(new internal::ScopedAppGLStateRestoreImpl(mode)) {
+  DCHECK(!g_current_instance);
+  g_current_instance = this;
+}
+
+ScopedAppGLStateRestore::~ScopedAppGLStateRestore() {
+  DCHECK_EQ(this, g_current_instance);
+  g_current_instance = nullptr;
+}
 
 StencilState ScopedAppGLStateRestore::stencil_state() const {
   return impl_->stencil_state();

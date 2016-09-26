@@ -4,9 +4,11 @@
 
 #include "android_webview/browser/aw_gl_surface.h"
 
+#include "android_webview/browser/scoped_app_gl_state_restore.h"
+
 namespace android_webview {
 
-AwGLSurface::AwGLSurface() : fbo_(0) {}
+AwGLSurface::AwGLSurface() {}
 
 AwGLSurface::~AwGLSurface() {}
 
@@ -18,7 +20,7 @@ bool AwGLSurface::IsOffscreen() {
 }
 
 unsigned int AwGLSurface::GetBackingFramebufferObject() {
-  return fbo_;
+  return ScopedAppGLStateRestore::Current()->framebuffer_binding_ext();
 }
 
 gfx::SwapResult AwGLSurface::SwapBuffers() {
@@ -35,10 +37,6 @@ void* AwGLSurface::GetHandle() {
 
 void* AwGLSurface::GetDisplay() {
   return NULL;
-}
-
-void AwGLSurface::SetBackingFrameBufferObject(unsigned int fbo) {
-  fbo_ = fbo;
 }
 
 }  // namespace android_webview

@@ -5,7 +5,6 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_PARENT_OUTPUT_SURFACE_H_
 #define ANDROID_WEBVIEW_BROWSER_PARENT_OUTPUT_SURFACE_H_
 
-#include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "base/macros.h"
 #include "cc/output/output_surface.h"
 
@@ -29,11 +28,7 @@ class ParentOutputSurface : NON_EXPORTED_BASE(public cc::OutputSurface) {
   void ApplyExternalStencil() override;
   uint32_t GetFramebufferCopyTextureFormat() override;
 
-  void SetGLState(const ScopedAppGLStateRestore& gl_state);
-
  private:
-  StencilState stencil_state_;
-
   DISALLOW_COPY_AND_ASSIGN(ParentOutputSurface);
 };
 
