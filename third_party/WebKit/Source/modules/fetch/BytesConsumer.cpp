@@ -6,7 +6,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
-#include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
+#include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "platform/blob/BlobData.h"
 #include "public/platform/WebTaskRunner.h"
@@ -324,9 +324,8 @@ void BytesConsumer::tee(ExecutionContext* executionContext, BytesConsumer* src, 
     if (blobDataHandle) {
         // Register a client in order to be consistent.
         src->setClient(new NoopClient);
-        // TODO(yhirano): Do not use FetchBlobDataConsumerHandle.
-        *dest1 = new BytesConsumerForDataConsumerHandle(executionContext, FetchBlobDataConsumerHandle::create(executionContext, blobDataHandle));
-        *dest2 = new BytesConsumerForDataConsumerHandle(executionContext, FetchBlobDataConsumerHandle::create(executionContext, blobDataHandle));
+        *dest1 = new BlobBytesConsumer(executionContext, blobDataHandle);
+        *dest2 = new BlobBytesConsumer(executionContext, blobDataHandle);
         return;
     }
 

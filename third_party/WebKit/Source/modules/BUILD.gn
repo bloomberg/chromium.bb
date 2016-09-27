@@ -227,6 +227,7 @@ source_set("unit_tests") {
     "credentialmanager/PasswordCredentialTest.cpp",
     "csspaint/PaintRenderingContext2DTest.cpp",
     "csspaint/PaintWorkletTest.cpp",
+    "fetch/BlobBytesConsumerTest.cpp",
     "fetch/BodyStreamBufferTest.cpp",
     "fetch/BytesConsumerForDataConsumerHandleTest.cpp",
     "fetch/BytesConsumerTest.cpp",

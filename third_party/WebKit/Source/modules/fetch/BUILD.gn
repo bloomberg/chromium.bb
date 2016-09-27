@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/modules/modules.gni")
 
 blink_modules_sources("fetch") {
   sources = [
+    "BlobBytesConsumer.cpp",
+    "BlobBytesConsumer.h",
     "Body.cpp",
     "Body.h",
     "BodyStreamBuffer.cpp",
