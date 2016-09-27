@@ -87,7 +87,8 @@ KURL redirectLoopURL() { return KURL(KURL(), "http://example.com/loop"); }
 
 enum ThreadableLoaderToTest {
     DocumentThreadableLoaderTest,
-    WorkerThreadableLoaderTest
+    WorkerThreadableLoaderTest,
+    PerThreadHeapEnabledWorkerThreadableLoaderTest
 };
 
 class ThreadableLoaderTestHelper {
@@ -162,8 +163,9 @@ private:
 
 class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper, public WorkerLoaderProxyProvider {
 public:
-    WorkerThreadableLoaderTestHelper()
+    WorkerThreadableLoaderTestHelper(BlinkGC::ThreadHeapMode threadHeapMode)
         : m_dummyPageHolder(DummyPageHolder::create(IntSize(1, 1)))
+        , m_threadHeapMode(threadHeapMode)
     {
     }
 
@@ -241,7 +243,8 @@ public:
         m_securityOrigin = document().getSecurityOrigin();
         m_workerThread = wrapUnique(new WorkerThreadForTest(
             this,
-            *m_mockWorkerReportingProxy));
+            *m_mockWorkerReportingProxy,
+            m_threadHeapMode));
 
         expectWorkerLifetimeReportingCalls();
         m_workerThread->startWithSourceCode(m_securityOrigin.get(), "//fake source code");
@@ -339,6 +342,7 @@ private:
     Checkpoint m_checkpoint;
     // |m_loader| must be touched only from the worker thread only.
     CrossThreadPersistent<ThreadableLoader> m_loader;
+    const BlinkGC::ThreadHeapMode m_threadHeapMode;
 };
 
 class ThreadableLoaderTest : public ::testing::TestWithParam<ThreadableLoaderToTest> {
@@ -350,7 +354,10 @@ public:
             m_helper = wrapUnique(new DocumentThreadableLoaderTestHelper);
             break;
         case WorkerThreadableLoaderTest:
-            m_helper = wrapUnique(new WorkerThreadableLoaderTestHelper);
+            m_helper = wrapUnique(new WorkerThreadableLoaderTestHelper(BlinkGC::MainThreadHeapMode));
+            break;
+        case PerThreadHeapEnabledWorkerThreadableLoaderTest:
+            m_helper = wrapUnique(new WorkerThreadableLoaderTestHelper(BlinkGC::PerThreadHeapMode));
             break;
         }
     }
@@ -456,6 +463,10 @@ INSTANTIATE_TEST_CASE_P(Document,
 INSTANTIATE_TEST_CASE_P(Worker,
     ThreadableLoaderTest,
     ::testing::Values(WorkerThreadableLoaderTest));
+
+INSTANTIATE_TEST_CASE_P(PerThreadHeapEnabledWorker,
+    ThreadableLoaderTest,
+    ::testing::Values(PerThreadHeapEnabledWorkerThreadableLoaderTest));
 
 TEST_P(ThreadableLoaderTest, StartAndStop)
 {

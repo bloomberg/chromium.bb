@@ -22,10 +22,11 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
 public:
     DedicatedWorkerThreadForTest(
         WorkerLoaderProxyProvider* workerLoaderProxyProvider,
-        InProcessWorkerObjectProxy& workerObjectProxy)
+        InProcessWorkerObjectProxy& workerObjectProxy,
+        BlinkGC::ThreadHeapMode threadHeapMode)
         : DedicatedWorkerThread(WorkerLoaderProxy::create(workerLoaderProxyProvider), workerObjectProxy, monotonicallyIncreasingTime())
     {
-        m_workerBackingThread = WorkerBackingThread::createForTest("Test thread");
+        m_workerBackingThread = WorkerBackingThread::createForTest("Test thread", threadHeapMode);
     }
 
     WorkerOrWorkletGlobalScope* createWorkerGlobalScope(std::unique_ptr<WorkerThreadStartupData> startupData) override
@@ -36,14 +37,14 @@ public:
 
 class InProcessWorkerMessagingProxyForTest : public InProcessWorkerMessagingProxy {
 public:
-    InProcessWorkerMessagingProxyForTest(ExecutionContext* executionContext)
+    InProcessWorkerMessagingProxyForTest(ExecutionContext* executionContext, BlinkGC::ThreadHeapMode threadHeapMode)
         : InProcessWorkerMessagingProxy(executionContext, nullptr /* workerObject */ , nullptr /* workerClients */)
     {
         workerObjectProxy().m_nextIntervalInSec = 0.1;
         workerObjectProxy().m_maxIntervalInSec = 0.2;
 
         m_mockWorkerLoaderProxyProvider = wrapUnique(new MockWorkerLoaderProxyProvider());
-        m_workerThread = wrapUnique(new DedicatedWorkerThreadForTest(m_mockWorkerLoaderProxyProvider.get(), workerObjectProxy()));
+        m_workerThread = wrapUnique(new DedicatedWorkerThreadForTest(m_mockWorkerLoaderProxyProvider.get(), workerObjectProxy(), threadHeapMode));
         workerThreadCreated();
 
         m_mockWorkerThreadLifecycleObserver = new MockWorkerThreadLifecycleObserver(m_workerThread->getWorkerThreadLifecycleContext());
@@ -124,12 +125,17 @@ private:
 
 using WaitUntilMode = InProcessWorkerMessagingProxyForTest::WaitUntilMode;
 
-class DedicatedWorkerTest : public ::testing::Test {
+class DedicatedWorkerTest : public ::testing::TestWithParam<BlinkGC::ThreadHeapMode> {
 public:
+    DedicatedWorkerTest()
+        : m_threadHeapMode(GetParam())
+    {
+    }
+
     void SetUp() override
     {
         m_page = DummyPageHolder::create();
-        m_workerMessagingProxy = wrapUnique(new InProcessWorkerMessagingProxyForTest(&m_page->document()));
+        m_workerMessagingProxy = wrapUnique(new InProcessWorkerMessagingProxyForTest(&m_page->document(), m_threadHeapMode));
         m_securityOrigin = SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
     }
 
@@ -179,9 +185,18 @@ private:
     RefPtr<SecurityOrigin> m_securityOrigin;
     std::unique_ptr<DummyPageHolder> m_page;
     std::unique_ptr<InProcessWorkerMessagingProxyForTest> m_workerMessagingProxy;
+    const BlinkGC::ThreadHeapMode m_threadHeapMode;
 };
 
-TEST_F(DedicatedWorkerTest, PendingActivity_NoActivity)
+INSTANTIATE_TEST_CASE_P(MainThreadHeap,
+    DedicatedWorkerTest,
+    ::testing::Values(BlinkGC::MainThreadHeapMode));
+
+INSTANTIATE_TEST_CASE_P(PerThreadHeap,
+    DedicatedWorkerTest,
+    ::testing::Values(BlinkGC::PerThreadHeapMode));
+
+TEST_P(DedicatedWorkerTest, PendingActivity_NoActivity)
 {
     const String sourceCode = "// Do nothing";
     startWithSourceCode(sourceCode);
@@ -194,7 +209,7 @@ TEST_F(DedicatedWorkerTest, PendingActivity_NoActivity)
     EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
-TEST_F(DedicatedWorkerTest, PendingActivity_SetTimeout)
+TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeout)
 {
     // Start an oneshot timer on initial script evaluation.
     const String sourceCode = "setTimeout(function() {}, 50);";
@@ -209,7 +224,7 @@ TEST_F(DedicatedWorkerTest, PendingActivity_SetTimeout)
     EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
 }
 
-TEST_F(DedicatedWorkerTest, PendingActivity_SetInterval)
+TEST_P(DedicatedWorkerTest, PendingActivity_SetInterval)
 {
     // Start a repeated timer on initial script evaluation, and stop it when a
     // message is received.
@@ -234,7 +249,7 @@ TEST_F(DedicatedWorkerTest, PendingActivity_SetInterval)
     EXPECT_FALSE(workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
 }
 
-TEST_F(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent)
+TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent)
 {
     // Start an oneshot timer on a message event.
     const String sourceCode =
@@ -262,7 +277,7 @@ TEST_F(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent)
     EXPECT_FALSE(workerMessagingProxy()->workerGlobalScopeMayHavePendingActivity());
 }
 
-TEST_F(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent)
+TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent)
 {
     // Start a repeated timer on a message event, and stop it when another
     // message is received.

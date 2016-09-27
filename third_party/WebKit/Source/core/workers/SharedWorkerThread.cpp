@@ -45,7 +45,7 @@ std::unique_ptr<SharedWorkerThread> SharedWorkerThread::create(const String& nam
 
 SharedWorkerThread::SharedWorkerThread(const String& name, PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
     : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy)
-    , m_workerBackingThread(WorkerBackingThread::create("SharedWorker Thread"))
+    , m_workerBackingThread(WorkerBackingThread::create("SharedWorker Thread", BlinkGC::MainThreadHeapMode))
     , m_name(name.isolatedCopy())
 {
 }

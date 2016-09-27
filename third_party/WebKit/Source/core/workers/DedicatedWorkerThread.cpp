@@ -46,7 +46,7 @@ std::unique_ptr<DedicatedWorkerThread> DedicatedWorkerThread::create(PassRefPtr<
 
 DedicatedWorkerThread::DedicatedWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, InProcessWorkerObjectProxy& workerObjectProxy, double timeOrigin)
     : WorkerThread(std::move(workerLoaderProxy), workerObjectProxy)
-    , m_workerBackingThread(WorkerBackingThread::create("DedicatedWorker Thread"))
+    , m_workerBackingThread(WorkerBackingThread::create("DedicatedWorker Thread", BlinkGC::MainThreadHeapMode))
     , m_workerObjectProxy(workerObjectProxy)
     , m_timeOrigin(timeOrigin)
 {

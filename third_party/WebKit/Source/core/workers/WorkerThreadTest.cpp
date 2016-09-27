@@ -33,14 +33,19 @@ void waitForSignalTask(WorkerThread* workerThread, WaitableEvent* waitableEvent)
 
 } // namespace
 
-class WorkerThreadTest : public ::testing::Test {
+class WorkerThreadTest : public ::testing::TestWithParam<BlinkGC::ThreadHeapMode> {
 public:
+    WorkerThreadTest()
+        : m_threadHeapMode(GetParam())
+    {
+    }
+
     void SetUp() override
     {
         m_loaderProxyProvider = wrapUnique(new MockWorkerLoaderProxyProvider());
         m_reportingProxy = wrapUnique(new MockWorkerReportingProxy());
         m_securityOrigin = SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
-        m_workerThread = wrapUnique(new WorkerThreadForTest(m_loaderProxyProvider.get(), *m_reportingProxy));
+        m_workerThread = wrapUnique(new WorkerThreadForTest(m_loaderProxyProvider.get(), *m_reportingProxy, m_threadHeapMode));
         m_lifecycleObserver = new MockWorkerThreadLifecycleObserver(m_workerThread->getWorkerThreadLifecycleContext());
     }
 
@@ -115,9 +120,18 @@ protected:
     std::unique_ptr<MockWorkerReportingProxy> m_reportingProxy;
     std::unique_ptr<WorkerThreadForTest> m_workerThread;
     Persistent<MockWorkerThreadLifecycleObserver> m_lifecycleObserver;
+    const BlinkGC::ThreadHeapMode m_threadHeapMode;
 };
 
-TEST_F(WorkerThreadTest, ShouldScheduleToTerminateExecution)
+INSTANTIATE_TEST_CASE_P(MainThreadHeap,
+    WorkerThreadTest,
+    ::testing::Values(BlinkGC::MainThreadHeapMode));
+
+INSTANTIATE_TEST_CASE_P(PerThreadHeap,
+    WorkerThreadTest,
+    ::testing::Values(BlinkGC::PerThreadHeapMode));
+
+TEST_P(WorkerThreadTest, ShouldScheduleToTerminateExecution)
 {
     using ThreadState = WorkerThread::ThreadState;
     MutexLocker dummyLock(m_workerThread->m_threadStateMutex);
@@ -139,7 +153,7 @@ TEST_F(WorkerThreadTest, ShouldScheduleToTerminateExecution)
     m_workerThread->setExitCode(dummyLock, ExitCode::GracefullyTerminated);
 }
 
-TEST_F(WorkerThreadTest, AsyncTerminate_OnIdle)
+TEST_P(WorkerThreadTest, AsyncTerminate_OnIdle)
 {
     expectReportingCalls();
     start();
@@ -156,7 +170,7 @@ TEST_F(WorkerThreadTest, AsyncTerminate_OnIdle)
     EXPECT_EQ(ExitCode::GracefullyTerminated, getExitCode());
 }
 
-TEST_F(WorkerThreadTest, SyncTerminate_OnIdle)
+TEST_P(WorkerThreadTest, SyncTerminate_OnIdle)
 {
     expectReportingCalls();
     start();
@@ -169,7 +183,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_OnIdle)
     EXPECT_EQ(ExitCode::SyncForciblyTerminated, getExitCode());
 }
 
-TEST_F(WorkerThreadTest, AsyncTerminate_ImmediatelyAfterStart)
+TEST_P(WorkerThreadTest, AsyncTerminate_ImmediatelyAfterStart)
 {
     expectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization();
     start();
@@ -181,7 +195,7 @@ TEST_F(WorkerThreadTest, AsyncTerminate_ImmediatelyAfterStart)
     EXPECT_EQ(ExitCode::GracefullyTerminated, getExitCode());
 }
 
-TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart)
+TEST_P(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart)
 {
     expectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization();
     start();
@@ -201,7 +215,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_ImmediatelyAfterStart)
     EXPECT_TRUE(ExitCode::GracefullyTerminated == exitCode || ExitCode::SyncForciblyTerminated == exitCode);
 }
 
-TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning)
+TEST_P(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning)
 {
     const long long kForceTerminationDelayInMs = 10;
     setForceTerminationDelayInMs(kForceTerminationDelayInMs);
@@ -226,7 +240,7 @@ TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning)
     EXPECT_EQ(ExitCode::AsyncForciblyTerminated, getExitCode());
 }
 
-TEST_F(WorkerThreadTest, SyncTerminate_WhileTaskIsRunning)
+TEST_P(WorkerThreadTest, SyncTerminate_WhileTaskIsRunning)
 {
     expectReportingCallsForWorkerForciblyTerminated();
     startWithSourceCodeNotToFinish();
@@ -237,7 +251,7 @@ TEST_F(WorkerThreadTest, SyncTerminate_WhileTaskIsRunning)
     EXPECT_EQ(ExitCode::SyncForciblyTerminated, getExitCode());
 }
 
-TEST_F(WorkerThreadTest, AsyncTerminateAndThenSyncTerminate_WhileTaskIsRunning)
+TEST_P(WorkerThreadTest, AsyncTerminateAndThenSyncTerminate_WhileTaskIsRunning)
 {
     const long long kForceTerminationDelayInMs = 10;
     setForceTerminationDelayInMs(kForceTerminationDelayInMs);
@@ -257,7 +271,7 @@ TEST_F(WorkerThreadTest, AsyncTerminateAndThenSyncTerminate_WhileTaskIsRunning)
     EXPECT_EQ(ExitCode::SyncForciblyTerminated, getExitCode());
 }
 
-TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization)
+TEST_P(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization)
 {
     EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
@@ -319,7 +333,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization)
     EXPECT_EQ(ExitCode::GracefullyTerminated, getExitCode());
 }
 
-TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning)
+TEST_P(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning)
 {
     expectReportingCalls();
     start();

@@ -100,9 +100,10 @@ class WorkerThreadForTest : public WorkerThread {
 public:
     WorkerThreadForTest(
         WorkerLoaderProxyProvider* mockWorkerLoaderProxyProvider,
-        WorkerReportingProxy& mockWorkerReportingProxy)
+        WorkerReportingProxy& mockWorkerReportingProxy,
+        BlinkGC::ThreadHeapMode threadHeapMode)
         : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider), mockWorkerReportingProxy)
-        , m_workerBackingThread(WorkerBackingThread::createForTest("Test thread"))
+        , m_workerBackingThread(WorkerBackingThread::createForTest("Test thread", threadHeapMode))
     {
     }
 
