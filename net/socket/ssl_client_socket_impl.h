@@ -37,6 +37,10 @@ class FilePath;
 class SequencedTaskRunner;
 }
 
+namespace crypto {
+class OpenSSLErrStackTracer;
+}
+
 namespace net {
 
 class CertVerifier;
@@ -248,6 +252,12 @@ class SSLClientSocketImpl : public SSLClientSocket {
   // Returns whether TLS channel ID is enabled.
   bool IsChannelIDEnabled() const;
 
+  // Returns the net error corresponding to the most recent OpenSSL
+  // error. ssl_error is the output of SSL_get_error.
+  int MapLastOpenSSLError(int ssl_error,
+                          const crypto::OpenSSLErrStackTracer& tracer,
+                          OpenSSLErrorInfo* info);
+
   bool transport_send_busy_;
   bool transport_recv_busy_;
 
@@ -360,6 +370,8 @@ class SSLClientSocketImpl : public SSLClientSocket {
   ScopedSSL_SESSION pending_session_;
   // True if the initial handshake's certificate has been verified.
   bool certificate_verified_;
+  // Set to true if a CertificateRequest was received.
+  bool certificate_requested_;
   // The request handle for |channel_id_service_|.
   ChannelIDService::Request channel_id_request_;
 

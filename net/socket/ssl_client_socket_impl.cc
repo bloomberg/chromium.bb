@@ -499,6 +499,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       negotiated_protocol_(kProtoUnknown),
       channel_id_sent_(false),
       certificate_verified_(false),
+      certificate_requested_(false),
       signature_result_(kNoPendingResult),
       transport_security_state_(context.transport_security_state),
       policy_enforcer_(context.ct_policy_enforcer),
@@ -680,6 +681,7 @@ void SSLClientSocketImpl::Disconnect() {
   tb_was_negotiated_ = false;
   pending_session_ = nullptr;
   certificate_verified_ = false;
+  certificate_requested_ = false;
   channel_id_request_.Cancel();
 
   signature_result_ = kNoPendingResult;
@@ -1135,7 +1137,7 @@ int SSLClientSocketImpl::DoHandshake() {
     }
 
     OpenSSLErrorInfo error_info;
-    net_error = MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
+    net_error = MapLastOpenSSLError(ssl_error, err_tracer, &error_info);
     if (net_error == ERR_IO_PENDING) {
       // If not done, stay in this state
       next_handshake_state_ = STATE_HANDSHAKE;
@@ -1537,7 +1539,7 @@ int SSLClientSocketImpl::DoPayloadRead() {
       DCHECK_NE(kNoPendingResult, signature_result_);
       pending_read_error_ = ERR_IO_PENDING;
     } else {
-      pending_read_error_ = MapOpenSSLErrorWithDetails(
+      pending_read_error_ = MapLastOpenSSLError(
           pending_read_ssl_error_, err_tracer, &pending_read_error_info_);
     }
 
@@ -1596,8 +1598,7 @@ int SSLClientSocketImpl::DoPayloadWrite() {
   if (ssl_error == SSL_ERROR_WANT_PRIVATE_KEY_OPERATION)
     return ERR_IO_PENDING;
   OpenSSLErrorInfo error_info;
-  int net_error =
-      MapOpenSSLErrorWithDetails(ssl_error, err_tracer, &error_info);
+  int net_error = MapLastOpenSSLError(ssl_error, err_tracer, &error_info);
 
   if (net_error != ERR_IO_PENDING) {
     net_log_.AddEvent(
@@ -1821,6 +1822,7 @@ int SSLClientSocketImpl::ClientCertRequestCallback(SSL* ssl) {
   DCHECK(ssl == ssl_);
 
   net_log_.AddEvent(NetLogEventType::SSL_CLIENT_CERT_REQUESTED);
+  certificate_requested_ = true;
 
   // Clear any currently configured certificates.
   SSL_certs_clear(ssl_);
@@ -2286,6 +2288,38 @@ void SSLClientSocketImpl::RecordChannelIDSupport() const {
 
 bool SSLClientSocketImpl::IsChannelIDEnabled() const {
   return ssl_config_.channel_id_enabled && channel_id_service_;
+}
+
+int SSLClientSocketImpl::MapLastOpenSSLError(
+    int ssl_error,
+    const crypto::OpenSSLErrStackTracer& tracer,
+    OpenSSLErrorInfo* info) {
+  int net_error = MapOpenSSLErrorWithDetails(ssl_error, tracer, info);
+
+  if (ssl_error == SSL_ERROR_SSL &&
+      ERR_GET_LIB(info->error_code) == ERR_LIB_SSL) {
+    // TLS does not provide an alert for missing client certificates, so most
+    // servers send a generic handshake_failure alert. Detect this case by
+    // checking if we have received a CertificateRequest but sent no
+    // certificate. See https://crbug.com/646567.
+    if (ERR_GET_REASON(info->error_code) ==
+            SSL_R_SSLV3_ALERT_HANDSHAKE_FAILURE &&
+        certificate_requested_ && ssl_config_.send_client_cert &&
+        !ssl_config_.client_cert) {
+      net_error = ERR_BAD_SSL_CLIENT_AUTH_CERT;
+    }
+
+    // Per spec, access_denied is only for client-certificate-based access
+    // control, but some buggy firewalls use it when blocking a page. To avoid a
+    // confusing error, map it to a generic protocol error if no
+    // CertificateRequest was sent. See https://crbug.com/630883.
+    if (ERR_GET_REASON(info->error_code) == SSL_R_TLSV1_ALERT_ACCESS_DENIED &&
+        !certificate_requested_) {
+      net_error = ERR_SSL_PROTOCOL_ERROR;
+    }
+  }
+
+  return net_error;
 }
 
 }  // namespace net
