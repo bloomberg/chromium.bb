@@ -92,6 +92,11 @@ public class ChromeApplication extends ContentApplication {
 
     private PrintingController mPrintingController;
 
+    public ChromeApplication() {
+        super();
+        ContextUtils.initApplicationContext(this);
+    }
+
     /**
      * This is called during early initialization in order to set up ChildProcessLauncher
      * for certain Chrome packaging configurations
@@ -113,7 +118,6 @@ public class ChromeApplication extends ContentApplication {
         TraceEvent.begin("ChromeApplication.onCreate");
 
         super.onCreate();
-        ContextUtils.initApplicationContext(this);
 
         TraceEvent.end("ChromeApplication.onCreate");
     }
