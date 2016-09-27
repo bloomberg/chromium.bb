@@ -27,7 +27,7 @@
               // Delay the check until after the postMessage has a chance to execute.
               setTimeout(t.step_func_done(function () {
                 assert_true(loaded[generateURL("append")]);
-              }, 1));
+              }), 1);
           });
           e.onerror = t.unreached_func("Error should not be triggered.");
           document.body.appendChild(e);
@@ -41,7 +41,7 @@
               // Delay the check until after the postMessage has a chance to execute.
               setTimeout(t.step_func_done(function () {
                 assert_true(loaded[generateURL("append-async")]);
-              }, 1));
+              }), 1);
           });
           e.onerror = t.unreached_func("Error should not be triggered.");
           document.body.appendChild(e);
@@ -55,7 +55,7 @@
               // Delay the check until after the postMessage has a chance to execute.
               setTimeout(t.step_func_done(function () {
                 assert_true(loaded[generateURL("append-defer")]);
-              }, 1));
+              }), 1);
           });
           e.onerror = t.unreached_func("Error should not be triggered.");
           document.body.appendChild(e);
@@ -66,7 +66,7 @@
           setTimeout(t.step_func_done(function () {
             assert_equals(loaded[generateURL("write")], undefined);
             assert_true(blocked[65]);
-          }, 1));
+          }), 1);
         }, "Script injected via 'document.write' is not allowed with 'strict-dynamic'.");
 
         async_test(function (t) {
@@ -74,7 +74,7 @@
           setTimeout(t.step_func_done(function () {
             assert_equals(loaded[generateURL("write-defer")], undefined);
             assert_true(blocked[73]);
-          }, 1));
+          }), 1);
         }, "Deferred script injected via 'document.write' is not allowed with 'strict-dynamic'.");
 
         async_test(function (t) {
@@ -82,7 +82,7 @@
           setTimeout(t.step_func_done(function () {
             assert_equals(loaded[generateURL("write-async")], undefined);
             assert_true(blocked[81]);
-          }, 1));
+          }), 1);
         }, "Async script injected via 'document.write' is not allowed with 'strict-dynamic'.");
     </script>
     <script nonce="abcdefg" defer>
@@ -94,7 +94,7 @@
               setTimeout(t.step_func_done(function () {
                 assert_true(loaded[generateURL("defer-append")]);
                 assert_equals(blocked[generateURL("defer-append")], undefined);
-              }, 1));
+              }), 1);
           });
           e.onerror = t.unreached_func("Error should not be triggered.");
           document.body.appendChild(e);
@@ -109,7 +109,7 @@
               setTimeout(t.step_func_done(function () {
                 assert_true(loaded[generateURL("defer-append-async")]);
                 assert_equals(blocked[generateURL("defer-append-async")], undefined);
-              }, 1));
+              }), 1);
           });
           e.onerror = t.unreached_func("Error should not be triggered.");
           document.body.appendChild(e);
@@ -124,26 +124,26 @@
               setTimeout(t.step_func_done(function () {
                 assert_true(loaded[generateURL("defer-append-defer")]);
                 assert_equals(blocked[generateURL("defer-append-defer")], undefined);
-              }, 1));
+              }), 1);
           });
           e.onerror = t.unreached_func("Error should not be triggered.");
           document.body.appendChild(e);
         }, "Deferred script injected via deferred 'appendChild' is allowed with 'strict-dynamic'.");
 
         async_test(function (t) {
-          document.write("<scr" + "ipt src='" + generateURL("write") + "'></scr" + "ipt>");
+          document.write("<scr" + "ipt src='" + generateURL("defer-write") + "'></scr" + "ipt>");
           setTimeout(t.step_func_done(function () {
             assert_equals(loaded[generateURL("defer-write")], undefined);
             assert_true(blocked[134]);
-          }, 1));
+          }), 1);
         }, "Script injected via deferred 'document.write' is not allowed with 'strict-dynamic'.");
 
         async_test(function (t) {
           document.write("<scr" + "ipt defer src='" + generateURL("defer-write-defer") + "'></scr" + "ipt>");
           setTimeout(t.step_func_done(function () {
-            assert_equals(loaded[generateURL("write-defer")], undefined);
+            assert_equals(loaded[generateURL("defer-write-defer")], undefined);
             assert_true(blocked[142]);
-          }, 1));
+          }), 1);
         }, "Deferred script injected via deferred 'document.write' is not allowed with 'strict-dynamic'.");
 
         async_test(function (t) {
@@ -151,7 +151,7 @@
           setTimeout(t.step_func_done(function () {
             assert_equals(loaded[generateURL("defer-write-async")], undefined);
             assert_true(blocked[150]);
-          }, 1));
+          }), 1);
         }, "Async script injected via deferred 'document.write' is not allowed with 'strict-dynamic'.");
     </script>
 </body>
