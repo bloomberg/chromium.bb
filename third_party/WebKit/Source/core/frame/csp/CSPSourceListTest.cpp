@@ -93,6 +93,32 @@ TEST_F(CSPSourceListTest, BasicMatchingStar)
     EXPECT_FALSE(sourceList.matches(KURL(base, "applewebdata://example.test/")));
 }
 
+TEST_F(CSPSourceListTest, StarMatchesSelf)
+{
+    KURL base;
+    String sources = "*";
+    CSPSourceList sourceList(csp.get(), "script-src");
+    parseSourceList(sourceList, sources);
+
+
+    // With a protocol of 'file', '*' matches 'file:':
+    RefPtr<SecurityOrigin> origin = SecurityOrigin::create("file", "", 0);
+    csp->setupSelf(*origin);
+    EXPECT_TRUE(sourceList.matches(KURL(base, "file:///etc/hosts")));
+
+    // The other results are the same as above:
+    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example.com/")));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "https://example.com/")));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example.com/bar")));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "http://foo.example.com/")));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "http://foo.example.com/bar")));
+
+    EXPECT_FALSE(sourceList.matches(KURL(base, "data:https://example.test/")));
+    EXPECT_FALSE(sourceList.matches(KURL(base, "blob:https://example.test/")));
+    EXPECT_FALSE(sourceList.matches(KURL(base, "filesystem:https://example.test/")));
+    EXPECT_FALSE(sourceList.matches(KURL(base, "applewebdata://example.test/")));
+}
+
 TEST_F(CSPSourceListTest, BasicMatchingSelf)
 {
     KURL base;
