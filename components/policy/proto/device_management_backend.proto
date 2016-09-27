@@ -33,8 +33,8 @@ message DeviceRegisterRequest {
   enum Type {
     TT   = 0;             // Register for TT release.
     USER = 1;             // Register for Chrome OS user polices.
-    DEVICE = 2;           // Register for device policies.
-    BROWSER = 3;          // Register for Chrome user policies.
+    DEVICE = 2;           // Register for Chrome OS device policies.
+    BROWSER = 3;          // Register for desktop Chrome browser user policies.
     ANDROID_BROWSER = 4;  // Register for Android Chrome browser user policies.
     IOS_BROWSER = 5;      // Register for iOS Chrome browser user policies.
   }
@@ -93,7 +93,7 @@ message DeviceRegisterRequest {
     // Attestation-based with the option to use a different authentication
     // mechanism.
     FLAVOR_ENROLLMENT_ATTESTATION = 8;
-    // Attestation-based enrollment.
+    // Forced attestation-based enrollment (cannot fallback to another flavor).
     FLAVOR_ENROLLMENT_ATTESTATION_FORCED = 9;
   };
 
@@ -159,6 +159,7 @@ message DeviceServiceApiAccessRequest {
   optional string oauth2_client_id = 2;
 }
 
+// Response from server to API access request.
 message DeviceServiceApiAccessResponse {
   // The OAuth2 authorization code for the requested scope(s).
   // This can be exchanged for a refresh token.
@@ -316,7 +317,8 @@ message PolicyData {
     ACTIVE = 0;
     // Association is alive, but the corresponding domain is not managed.
     UNMANAGED = 1;
-    // Client got dropped on the server side.
+    // The device has been deprovisioned by the administrator and is no longer
+    // managed.
     DEPROVISIONED = 2;
   }
   optional AssociationState state = 9 [default = ACTIVE];
@@ -394,7 +396,7 @@ message PolicyData {
   // server-side.
   optional string directory_api_id = 22;
 
-  // List of device affiliation IDs. If exists overlap between user
+  // List of device affiliation IDs. If there exists an overlap between user
   // affiliation IDs and device affiliation IDs, we consider that the user is
   // affiliated on the device. Otherwise the user is not affiliated on the
   // device. Should be fetched with device policy. Ignored if fetched with
@@ -458,74 +460,6 @@ message PolicyPublicKeyAndDomain {
   // The domain associated with this key (should match the domain portion of
   // the username field of the policy).
   optional string domain = 2;
-}
-
-// This protobuf defines a single remote command from server to client for
-// execution.
-message RemoteCommand {
-  enum Type {
-    // Simple echo command for testing, will be ignored in production code.
-    COMMAND_ECHO_TEST = -1;
-
-    // Reboot the device.
-    DEVICE_REBOOT = 0;
-
-    // Take a screenshot.
-    DEVICE_SCREENSHOT = 1;
-  }
-
-  // The command type.
-  optional Type type = 1;
-
-  // An opaque unique identifier for the command.
-  optional int64 unique_id = 2;
-
-  // The age of the command (in milliseconds) when it is sent from server to
-  // client, defined as current_server_time - command_generated_time.
-  optional int64 age_of_command = 3;
-
-  // Extra parameters for this command, expected to be a JSON string.
-  optional string payload = 4;
-}
-
-// This protobuf defines the execution result of a single remote command
-// which will be sent back to the server.
-message RemoteCommandResult {
-  enum ResultType {
-    RESULT_IGNORED = 0;  // The command was ignored as obsolete.
-    RESULT_FAILURE = 1;  // The command could not be executed.
-    RESULT_SUCCESS = 2;  // The command was successfully executed.
-  }
-
-  // The result of the command.
-  optional ResultType result = 1;
-
-  // The opaque unique identifier of the command. This value is copied from the
-  // RemoteCommand protobuf that contained the command.
-  optional int64 unique_id = 2;
-
-  // The time at which the command was executed, if the the result is
-  // RESULT_SUCCESS.
-  optional int64 timestamp = 3;
-
-  // Extra information sent to server as result of execution, expected to be a
-  // JSON string.
-  optional string payload = 4;
-}
-
-message DeviceRemoteCommandRequest {
-  // The command ID of the last command received from the server until
-  // now.  Omitted if no commands have been received yet.
-  optional int64 last_command_unique_id = 1;
-
-  // The execution results of previously fetched commands.
-  // The client should send back a command result whenever possible.
-  repeated RemoteCommandResult command_results = 2;
-}
-
-message DeviceRemoteCommandResponse {
-  // The queue of pending commands.
-  repeated RemoteCommand commands = 1;
 }
 
 // Request from device to server for reading policies.
@@ -640,7 +574,6 @@ message NetworkInterface {
   optional string device_path = 5;
 }
 
-
 // Information about configured/visible networks - this is separate from
 // NetworkInterface because a configured network may not be associated with
 // any specific interface, or may be visible across multiple interfaces.
@@ -698,6 +631,8 @@ message DeviceUser {
 // Information about a single disk volume.
 message VolumeInfo {
   optional string volume_id = 1;
+
+  // The unit is bytes.
   optional int64 storage_total = 2;
   optional int64 storage_free = 3;
 }
@@ -759,7 +694,8 @@ message DeviceStatusReportRequest {
   // Samples of free RAM [in bytes] (unreliable due to GC).
   repeated int64 system_ram_free = 15;
 
-  // CPU temp information.
+  // Samples of CPU temperatures in Celsius, plus associated labels
+  // identifying which CPU produced the temperature measurement.
   repeated CPUTempInfo cpu_temp_info = 16;
 
   // This field is set only when an OS update is needed because of the required
@@ -811,7 +747,7 @@ message AppStatus {
   optional string required_platform_version = 5;
 }
 
-// Report session (a user on one device) level status.
+// Report current active session (a user on one device) level status.
 message SessionStatusReportRequest {
   // Installed apps for this user on this device.
   // No longer used -- use installed_apps instead.
@@ -1033,6 +969,74 @@ message CheckDevicePairingResponse {
   optional StatusCode status_code = 1 [default = NOT_PAIRED];
 }
 
+// This protobuf defines a single remote command from server to client for
+// execution.
+message RemoteCommand {
+  enum Type {
+    // Simple echo command for testing, will be ignored in production code.
+    COMMAND_ECHO_TEST = -1;
+
+    // Reboot the device.
+    DEVICE_REBOOT = 0;
+
+    // Take a screenshot.
+    DEVICE_SCREENSHOT = 1;
+  }
+
+  // The command type.
+  optional Type type = 1;
+
+  // An opaque unique identifier for the command.
+  optional int64 unique_id = 2;
+
+  // The age of the command (in milliseconds) when it is sent from server to
+  // client, defined as current_server_time - command_generated_time.
+  optional int64 age_of_command = 3;
+
+  // Extra parameters for this command, expected to be a JSON string.
+  optional string payload = 4;
+}
+
+// This protobuf defines the execution result of a single remote command
+// which will be sent back to the server.
+message RemoteCommandResult {
+  enum ResultType {
+    RESULT_IGNORED = 0;  // The command was ignored as obsolete.
+    RESULT_FAILURE = 1;  // The command could not be executed.
+    RESULT_SUCCESS = 2;  // The command was successfully executed.
+  }
+
+  // The result of the command.
+  optional ResultType result = 1;
+
+  // The opaque unique identifier of the command. This value is copied from the
+  // RemoteCommand protobuf that contained the command.
+  optional int64 unique_id = 2;
+
+  // The time at which the command was executed, if the the result is
+  // RESULT_SUCCESS.
+  optional int64 timestamp = 3;
+
+  // Extra information sent to server as result of execution, expected to be a
+  // JSON string.
+  optional string payload = 4;
+}
+
+message DeviceRemoteCommandRequest {
+  // The command ID of the last command received from the server until
+  // now.  Omitted if no commands have been received yet.
+  optional int64 last_command_unique_id = 1;
+
+  // The execution results of previously fetched commands.
+  // The client should send back a command result whenever possible.
+  repeated RemoteCommandResult command_results = 2;
+}
+
+message DeviceRemoteCommandResponse {
+  // The queue of pending commands.
+  repeated RemoteCommand commands = 1;
+}
+
 // Sent by the client to the server to check if the current user is allowed
 // to update attributes (asset id and location).  The HTTP request contains an
 // end-user OAuth token.
@@ -1109,7 +1113,7 @@ message CertificateBasedDeviceRegistrationData {
   }
 
   optional CertificateType certificate_type = 1;
-  // device certificate in X.509 format.
+  // Device certificate in X.509 format.
   // We use CertificateFactory.generateCertificate() call and
   // the certificate provided must be DER-encoded and may be supplied in binary
   // or printable (Base64) encoding. If the certificate is provided in Base64
@@ -1127,6 +1131,7 @@ message CertificateBasedDeviceRegistrationData {
 //
 // * HTTP method is POST
 // * Data mime type is application/x-protobuffer
+//   * See GoogleContentTypeEnum.java
 // * HTTP parameters are (all required, all case sensitive):
 //   * request: MUST BE one of
 //     * api_authorization
