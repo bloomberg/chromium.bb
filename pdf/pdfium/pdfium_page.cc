@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -461,21 +462,29 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
   if (!available_)
     return pp::Rect();
 
-  int new_left, new_top, new_right, new_bottom;
-  FPDF_PageToDevice(
-      page_,
-      static_cast<int>((rect_.x() - offset.x()) * zoom),
-      static_cast<int>((rect_.y() - offset.y()) * zoom),
-      static_cast<int>(ceil(rect_.width() * zoom)),
-      static_cast<int>(ceil(rect_.height() * zoom)),
-      rotation, left, top, &new_left, &new_top);
-  FPDF_PageToDevice(
-      page_,
-      static_cast<int>((rect_.x() - offset.x()) * zoom),
-      static_cast<int>((rect_.y() - offset.y()) * zoom),
-      static_cast<int>(ceil(rect_.width() * zoom)),
-      static_cast<int>(ceil(rect_.height() * zoom)),
-      rotation, right, bottom, &new_right, &new_bottom);
+  double start_x = (rect_.x() - offset.x()) * zoom;
+  double start_y = (rect_.y() - offset.y()) * zoom;
+  double size_x = rect_.width() * zoom;
+  double size_y = rect_.height() * zoom;
+  if (!base::IsValueInRangeForNumericType<int>(start_x) ||
+      !base::IsValueInRangeForNumericType<int>(start_y) ||
+      !base::IsValueInRangeForNumericType<int>(size_x) ||
+      !base::IsValueInRangeForNumericType<int>(size_y)) {
+    return pp::Rect();
+  }
+
+  int new_left;
+  int new_top;
+  int new_right;
+  int new_bottom;
+  FPDF_PageToDevice(page_, static_cast<int>(start_x), static_cast<int>(start_y),
+                    static_cast<int>(ceil(size_x)),
+                    static_cast<int>(ceil(size_y)), rotation, left, top,
+                    &new_left, &new_top);
+  FPDF_PageToDevice(page_, static_cast<int>(start_x), static_cast<int>(start_y),
+                    static_cast<int>(ceil(size_x)),
+                    static_cast<int>(ceil(size_y)), rotation, right, bottom,
+                    &new_right, &new_bottom);
 
   // If the PDF is rotated, the horizontal/vertical coordinates could be
   // flipped.  See
@@ -485,8 +494,17 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
   if (new_bottom < new_top)
     std::swap(new_bottom, new_top);
 
-  return pp::Rect(
-      new_left, new_top, new_right - new_left + 1, new_bottom - new_top + 1);
+  base::CheckedNumeric<int32_t> new_size_x = new_right;
+  new_size_x -= new_left;
+  new_size_x += 1;
+  base::CheckedNumeric<int32_t> new_size_y = new_bottom;
+  new_size_y -= new_top;
+  new_size_y += 1;
+  if (!new_size_x.IsValid() || !new_size_y.IsValid())
+    return pp::Rect();
+
+  return pp::Rect(new_left, new_top, new_size_x.ValueOrDie(),
+                  new_size_y.ValueOrDie());
 }
 
 PDFiumPage::ScopedLoadCounter::ScopedLoadCounter(PDFiumPage* page)
