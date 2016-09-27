@@ -335,13 +335,19 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
 
   // Blocks until all pending tasks are complete. This should only be called in
   // unit tests when you want to validate something that should have happened.
-  // This will not flush delayed tasks; delayed tasks get deleted.
+  // Does not wait for delayed tasks. If redirection to TaskScheduler is
+  // disabled, delayed tasks are deleted. If redirection to TaskScheduler is
+  // enabled, this will wait for all tasks posted to TaskScheduler (not just
+  // tasks posted to this SequencedWorkerPool).
   //
   // Note that calling this will not prevent other threads from posting work to
   // the queue while the calling thread is waiting on Flush(). In this case,
   // Flush will return only when there's no more work in the queue. Normally,
   // this doesn't come up since in a test, all the work is being posted from
   // the main thread.
+  //
+  // TODO(gab): Remove mentions of TaskScheduler in this comment if
+  // http://crbug.com/622400 fails.
   void FlushForTesting();
 
   // Spuriously signal that there is work to be done.

@@ -896,8 +896,6 @@ bool SequencedWorkerPool::Inner::IsRunningSequenceOnCurrentThread(
 void SequencedWorkerPool::Inner::CleanupForTesting() {
   DCHECK_NE(subtle::NoBarrier_Load(&g_all_pools_state),
             AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER);
-  DCHECK(!RunsTasksOnCurrentThread());
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
   AutoLock lock(lock_);
   CHECK_EQ(CLEANUP_DONE, cleanup_state_);
   if (shutdown_called_)
@@ -1599,7 +1597,15 @@ bool SequencedWorkerPool::RunsTasksOnCurrentThread() const {
 }
 
 void SequencedWorkerPool::FlushForTesting() {
-  inner_->CleanupForTesting();
+  DCHECK(!RunsTasksOnCurrentThread());
+  base::ThreadRestrictions::ScopedAllowWait allow_wait;
+  if (subtle::NoBarrier_Load(&g_all_pools_state) ==
+      AllPoolsState::REDIRECTED_TO_TASK_SCHEDULER) {
+    // TODO(gab): Remove this if http://crbug.com/622400 fails.
+    TaskScheduler::GetInstance()->FlushForTesting();
+  } else {
+    inner_->CleanupForTesting();
+  }
 }
 
 void SequencedWorkerPool::SignalHasWorkForTesting() {
