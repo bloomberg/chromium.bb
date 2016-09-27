@@ -9,6 +9,7 @@
 #ifndef V8LongExperimentalCallbackFunction_h
 #define V8LongExperimentalCallbackFunction_h
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -29,7 +30,7 @@ public:
 
     DECLARE_TRACE();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue);
+    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, int num1, int num2, int& returnValue);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {

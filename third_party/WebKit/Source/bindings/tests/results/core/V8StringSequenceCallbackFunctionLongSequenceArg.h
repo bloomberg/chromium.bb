@@ -6,8 +6,8 @@
 
 // clang-format off
 
-#ifndef V8VoidExperimentalCallbackFunction_h
-#define V8VoidExperimentalCallbackFunction_h
+#ifndef V8StringSequenceCallbackFunctionLongSequenceArg_h
+#define V8StringSequenceCallbackFunctionLongSequenceArg_h
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScopedPersistent.h"
@@ -19,18 +19,18 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT V8VoidExperimentalCallbackFunction final : public GarbageCollectedFinalized<V8VoidExperimentalCallbackFunction> {
+class CORE_EXPORT V8StringSequenceCallbackFunctionLongSequenceArg final : public GarbageCollectedFinalized<V8StringSequenceCallbackFunctionLongSequenceArg> {
 public:
-    static V8VoidExperimentalCallbackFunction* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+    static V8StringSequenceCallbackFunctionLongSequenceArg* create(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     {
-        return new V8VoidExperimentalCallbackFunction(isolate, callback);
+        return new V8StringSequenceCallbackFunctionLongSequenceArg(isolate, callback);
     }
 
-    ~V8VoidExperimentalCallbackFunction() = default;
+    ~V8StringSequenceCallbackFunctionLongSequenceArg() = default;
 
     DECLARE_TRACE();
 
-    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState);
+    bool call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, const Vector<int>& arg, Vector<String>& returnValue);
 
     v8::Local<v8::Function> v8Value(v8::Isolate* isolate)
     {
@@ -44,10 +44,10 @@ public:
     }
 
 private:
-    V8VoidExperimentalCallbackFunction(v8::Isolate* isolate, v8::Local<v8::Function>);
+    V8StringSequenceCallbackFunctionLongSequenceArg(v8::Isolate* isolate, v8::Local<v8::Function>);
     ScopedPersistent<v8::Function> m_callback;
 };
 
 } // namespace blink
 
-#endif // V8VoidExperimentalCallbackFunction_h
+#endif // V8StringSequenceCallbackFunctionLongSequenceArg_h

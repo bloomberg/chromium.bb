@@ -26,13 +26,14 @@ DEFINE_TRACE(V8LongExperimentalCallbackFunction)
 {
 }
 
-bool V8LongExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, int num1, int num2, int& returnValue)
+bool V8LongExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, int num1, int num2, int& returnValue)
 {
     if (!scriptState->contextIsValid())
         return false;
 
     if (m_callback.isEmpty())
         return false;
+
     ScriptState::Scope scope(scriptState);
 
     v8::Local<v8::Value> num1Argument = v8::Integer::New(scriptState->isolate(), num1);
@@ -48,7 +49,7 @@ bool V8LongExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWr
 
     if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 2, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
     {
-        int cppValue = toInt32(info.GetIsolate(), v8ReturnValue, NormalConversion, exceptionState);
+        int cppValue = toInt32(scriptState->isolate(), v8ReturnValue, NormalConversion, exceptionState);
         if (exceptionState.hadException())
             return false;
         returnValue = cppValue;

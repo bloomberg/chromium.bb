@@ -9,6 +9,7 @@
 #include "bindings/core/v8/V8TestCallback.h"
 #include "bindings/core/v8/V8TestInterfaceCallback.h"
 #include "bindings/core/v8/V8TestReceiverObjectCallback.h"
+#include "bindings/core/v8/V8TestSequenceCallback.h"
 #include "core/html/HTMLDivElement.h"
 
 namespace blink {
@@ -22,7 +23,7 @@ String CallbackFunctionTest::testCallback(ScriptState* scriptState, V8TestCallba
     ScriptWrappable* scriptWrappable;
     String returnValue;
 
-    if (callback->call(scriptState, scriptWrappable = nullptr, message1, message2, returnValue)) {
+    if (callback->call(scriptState, scriptWrappable = nullptr, exceptionState, message1, message2, returnValue)) {
         return String("SUCCESS: ") + returnValue;
     }
     return String("Error!");
@@ -32,14 +33,23 @@ void CallbackFunctionTest::testInterfaceCallback(ScriptState* scriptState, V8Tes
 {
     ScriptWrappable* scriptWrappable;
 
-    callback->call(scriptState, scriptWrappable = nullptr, divElement);
+    callback->call(scriptState, scriptWrappable = nullptr, exceptionState, divElement);
     return;
 }
 
 void CallbackFunctionTest::testReceiverObjectCallback(ScriptState* scriptState, V8TestReceiverObjectCallback* callback, ExceptionState& exceptionState)
 {
-    callback->call(scriptState, this);
+    callback->call(scriptState, this, exceptionState);
     return;
+}
+
+Vector<String> CallbackFunctionTest::testSequenceCallback(ScriptState* scriptState, V8TestSequenceCallback* callback, const Vector<int>& numbers, ExceptionState& exceptionState)
+{
+    Vector<String> returnValue;
+    if (callback->call(scriptState, nullptr, exceptionState, numbers, returnValue)) {
+        return returnValue;
+    }
+    return Vector<String>();
 }
 
 } // namespace blink

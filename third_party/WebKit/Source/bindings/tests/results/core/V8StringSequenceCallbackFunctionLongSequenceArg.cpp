@@ -6,28 +6,27 @@
 
 // clang-format off
 
-#include "V8VoidCallbackFunctionInterfaceArg.h"
+#include "V8StringSequenceCallbackFunctionLongSequenceArg.h"
 
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8HTMLDivElement.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
 
-V8VoidCallbackFunctionInterfaceArg::V8VoidCallbackFunctionInterfaceArg(v8::Isolate* isolate, v8::Local<v8::Function> callback)
+V8StringSequenceCallbackFunctionLongSequenceArg::V8StringSequenceCallbackFunctionLongSequenceArg(v8::Isolate* isolate, v8::Local<v8::Function> callback)
     : m_callback(isolate, callback)
 {
     DCHECK(!m_callback.isEmpty());
     m_callback.setPhantom();
 }
 
-DEFINE_TRACE(V8VoidCallbackFunctionInterfaceArg)
+DEFINE_TRACE(V8StringSequenceCallbackFunctionLongSequenceArg)
 {
 }
 
-bool V8VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, HTMLDivElement* divElement)
+bool V8StringSequenceCallbackFunctionLongSequenceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, const Vector<int>& arg, Vector<String>& returnValue)
 {
     if (!scriptState->contextIsValid())
         return false;
@@ -37,11 +36,11 @@ bool V8VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWr
 
     ScriptState::Scope scope(scriptState);
 
-    v8::Local<v8::Value> divElementArgument = toV8(divElement, scriptState->context()->Global(), scriptState->isolate());
+    v8::Local<v8::Value> argArgument = toV8(arg, scriptState->context()->Global(), scriptState->isolate());
 
     v8::Local<v8::Value> thisValue = toV8(scriptWrappable, scriptState->context()->Global(), scriptState->isolate());
 
-    v8::Local<v8::Value> argv[] = { divElementArgument };
+    v8::Local<v8::Value> argv[] = { argArgument };
 
     v8::Local<v8::Value> v8ReturnValue;
     v8::TryCatch exceptionCatcher(scriptState->isolate());
@@ -49,6 +48,10 @@ bool V8VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWr
 
     if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 1, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
     {
+        Vector<String> cppValue = toImplArray<Vector<String>>(v8ReturnValue, 0, scriptState->isolate(), exceptionState);
+        if (exceptionState.hadException())
+            return false;
+        returnValue = cppValue;
         return true;
     }
     return false;

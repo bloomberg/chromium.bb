@@ -26,13 +26,14 @@ DEFINE_TRACE(V8VoidExperimentalCallbackFunction)
 {
 }
 
-bool V8VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable)
+bool V8VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState)
 {
     if (!scriptState->contextIsValid())
         return false;
 
     if (m_callback.isEmpty())
         return false;
+
     ScriptState::Scope scope(scriptState);
 
     v8::Local<v8::Value> thisValue = toV8(scriptWrappable, scriptState->context()->Global(), scriptState->isolate());

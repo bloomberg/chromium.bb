@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -17,6 +18,7 @@ class ScriptState;
 class V8TestCallback;
 class V8TestInterfaceCallback;
 class V8TestReceiverObjectCallback;
+class V8TestSequenceCallback;
 
 class CallbackFunctionTest final : public GarbageCollected<CallbackFunctionTest>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -28,6 +30,7 @@ public:
     String testCallback(ScriptState*, V8TestCallback*, const String&, const String&, ExceptionState&);
     void testInterfaceCallback(ScriptState*, V8TestInterfaceCallback*, HTMLDivElement*, ExceptionState&);
     void testReceiverObjectCallback(ScriptState*, V8TestReceiverObjectCallback*, ExceptionState&);
+    Vector<String> testSequenceCallback(ScriptState*, V8TestSequenceCallback*, const Vector<int>& numbers, ExceptionState&);
 };
 
 } // namespace blink

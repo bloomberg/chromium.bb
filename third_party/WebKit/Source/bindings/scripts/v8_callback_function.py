@@ -11,6 +11,7 @@ from v8_globals import includes  # pylint: disable=W0403
 import v8_utilities  # pylint: disable=W0403
 
 CALLBACK_FUNCTION_H_INCLUDES = frozenset([
+    'bindings/core/v8/ExceptionState.h',
     'bindings/core/v8/ScopedPersistent.h',
     'platform/heap/Handle.h',
     'wtf/text/WTFString.h',
@@ -33,19 +34,26 @@ def callback_function_context(callback_function):
         if argument.idl_type.is_interface_type:
             forward_declarations.append(argument.idl_type)
         argument.idl_type.add_includes_for_type(callback_function.extended_attributes)
+
     context = {
         'cpp_class': callback_function.name,
         'cpp_includes': sorted(includes),
         'forward_declarations': sorted(forward_declarations),
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
-        'return_cpp_type': (idl_type.cpp_type + '&') if idl_type.cpp_type != 'void' else None,
-        'return_value': idl_type.v8_value_to_local_cpp_value(
-            callback_function.extended_attributes, 'v8ReturnValue', 'cppValue',
-            bailout_return_value="false") if idl_type.cpp_type != 'void' else None,
         'v8_class': v8_utilities.v8_class_name(callback_function),
     }
-    context.update(arguments_context(callback_function.arguments, context['return_cpp_type']))
+
+    if idl_type_str != 'void':
+        context.update({
+            'return_cpp_type': idl_type.cpp_type + '&',
+            'return_value': idl_type.v8_value_to_local_cpp_value(
+                callback_function.extended_attributes,
+                'v8ReturnValue', 'cppValue',
+                isolate='scriptState->isolate()', bailout_return_value='false'),
+        })
+
+    context.update(arguments_context(callback_function.arguments, context.get('return_cpp_type')))
     return context
 
 
@@ -58,7 +66,11 @@ def arguments_context(arguments, return_cpp_type):
                 creation_context='scriptState->context()->Global()'),
         }
 
-    argument_declarations = ['ScriptState* scriptState', 'ScriptWrappable* scriptWrappable']
+    argument_declarations = [
+        'ScriptState* scriptState',
+        'ScriptWrappable* scriptWrappable',
+        'ExceptionState& exceptionState',
+    ]
     argument_declarations.extend(
         '%s %s' % (argument.idl_type.callback_cpp_type, argument.name)
         for argument in arguments)

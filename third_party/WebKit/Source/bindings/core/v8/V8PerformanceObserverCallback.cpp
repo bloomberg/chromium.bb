@@ -33,7 +33,8 @@ void V8PerformanceObserverCallback::handleEvent(PerformanceObserverEntryList* en
     if (!canInvokeCallback())
         return;
 
-    m_callback->call(m_scriptState.get(), observer, entries, observer);
+    TrackExceptionState exceptionState;
+    m_callback->call(m_scriptState.get(), observer, exceptionState, entries, observer);
 }
 
 DEFINE_TRACE(V8PerformanceObserverCallback)
