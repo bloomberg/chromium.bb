@@ -47,7 +47,8 @@ namespace blink {
 static const int defaultFontSize = 10;
 static const char defaultFontFamily[] = "sans-serif";
 
-class LoadFontPromiseResolver final : public FontFace::LoadFontCallback {
+class LoadFontPromiseResolver final : public GarbageCollectedFinalized<LoadFontPromiseResolver>, public FontFace::LoadFontCallback {
+    USING_GARBAGE_COLLECTED_MIXIN(LoadFontPromiseResolver);
 public:
     static LoadFontPromiseResolver* create(FontFaceArray faces, ScriptState* scriptState)
     {
@@ -218,14 +219,14 @@ void FontFaceSet::beginFontLoading(FontFace* fontFace)
     addToLoadingFonts(fontFace);
 }
 
-void FontFaceSet::fontLoaded(FontFace* fontFace)
+void FontFaceSet::notifyLoaded(FontFace* fontFace)
 {
     m_histogram.updateStatus(fontFace);
     m_loadedFonts.append(fontFace);
     removeFromLoadingFonts(fontFace);
 }
 
-void FontFaceSet::loadError(FontFace* fontFace)
+void FontFaceSet::notifyError(FontFace* fontFace)
 {
     m_histogram.updateStatus(fontFace);
     m_failedFonts.append(fontFace);
@@ -250,6 +251,7 @@ void FontFaceSet::addToLoadingFonts(FontFace* fontFace)
         handlePendingEventsAndPromisesSoon();
     }
     m_loadingFonts.add(fontFace);
+    fontFace->addCallback(this);
 }
 
 void FontFaceSet::removeFromLoadingFonts(FontFace* fontFace)
@@ -556,6 +558,7 @@ DEFINE_TRACE(FontFaceSet)
     EventTargetWithInlineData::trace(visitor);
     Supplement<Document>::trace(visitor);
     ActiveDOMObject::trace(visitor);
+    FontFace::LoadFontCallback::trace(visitor);
 }
 
 } // namespace blink

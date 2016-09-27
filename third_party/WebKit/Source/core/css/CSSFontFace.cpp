@@ -189,22 +189,8 @@ void CSSFontFace::setLoadStatus(FontFace::LoadStatusType newStatus)
     if (!m_segmentedFontFace)
         return;
     Document* document = m_segmentedFontFace->fontSelector()->document();
-    if (!document)
-        return;
-
-    switch (newStatus) {
-    case FontFace::Loading:
+    if (document && newStatus == FontFace::Loading)
         FontFaceSet::from(*document)->beginFontLoading(m_fontFace);
-        break;
-    case FontFace::Loaded:
-        FontFaceSet::from(*document)->fontLoaded(m_fontFace);
-        break;
-    case FontFace::Error:
-        FontFaceSet::from(*document)->loadError(m_fontFace);
-        break;
-    default:
-        break;
-    }
 }
 
 DEFINE_TRACE(CSSFontFace)

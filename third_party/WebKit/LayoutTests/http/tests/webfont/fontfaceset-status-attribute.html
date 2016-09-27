@@ -1,42 +1,45 @@
-<html>
-<head>
-<script src="../../js-test-resources/js-test.js"></script>
+<!DOCTYPE html>
 <style>
   @font-face {
     font-family: 'TestFont';
     src: url(slow-ahem-loading.cgi);
   }
 </style>
+<style id="RemoveMe">
+  @font-face {
+    font-family: 'TestFont2';
+    src: url(slow-ahem-loading.cgi?2);
+  }
+</style>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-description('Test for FontFaceSet.status attribute');
 
-window.jsTestIsAsync = true;
+promise_test(function(t) {
+    assert_false(document.fonts.check('10px TestFont'));
+    assert_equals(document.fonts.status, "loaded");
+    var loadPromise = document.fonts.load('10px TestFont');
+    assert_equals(document.fonts.status, "loading");
 
-function runTests() {
-    shouldBeFalse("document.fonts.check('10px TestFont')");
-    shouldBeEqualToString("document.fonts.status", "loaded");
-    document.fonts.load('10px TestFont').then(onsuccess);
-    shouldBeEqualToString("document.fonts.status", "loading");
-}
+    return loadPromise
+        .then(function() {
+            assert_true(document.fonts.check('10px TestFont'));
+            return document.fonts.ready;
+        }).then(function() {
+            assert_equals(document.fonts.status, "loaded");
+        });
+}, 'FontFaceSet.status attribute');
 
-function onsuccess() {
-    shouldBeTrue("document.fonts.check('10px TestFont')");
-    document.fonts.ready.then(onFontsReady);
-}
+promise_test(function(t) {
+    document.fonts.load('10px TestFont2');
+    assert_equals(document.fonts.status, "loading");
+    var style = document.getElementById('RemoveMe');
+    style.parentNode.removeChild(style);
 
-function onFontsReady() {
-    shouldBeEqualToString("document.fonts.status", "loaded");
-    finishJSTest();
-}
+    return document.fonts.ready
+        .then(function() {
+            assert_equals(document.fonts.status, "loaded");
+        });
+}, 'Removing @font-face while loading');
 
-if (document.fonts)
-    runTests();
-else {
-    testFailed('document.fonts does not exist');
-    finishJSTest();
-}
 </script>
-</head>
-<body>
-</body>
-</html>

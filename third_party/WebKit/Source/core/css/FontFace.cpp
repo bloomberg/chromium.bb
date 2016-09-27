@@ -381,6 +381,11 @@ ScriptPromise FontFace::load(ScriptState* scriptState)
 void FontFace::loadWithCallback(LoadFontCallback* callback, ExecutionContext* context)
 {
     loadInternal(context);
+    addCallback(callback);
+}
+
+void FontFace::addCallback(LoadFontCallback* callback)
+{
     if (m_status == Loaded)
         callback->notifyLoaded(this);
     else if (m_status == Error)

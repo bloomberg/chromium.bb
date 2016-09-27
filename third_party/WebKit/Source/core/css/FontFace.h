@@ -101,7 +101,7 @@ public:
 
     bool hadBlankText() const;
 
-    class LoadFontCallback : public GarbageCollectedFinalized<LoadFontCallback> {
+    class LoadFontCallback : public GarbageCollectedMixin {
     public:
         virtual ~LoadFontCallback() { }
         virtual void notifyLoaded(FontFace*) = 0;
@@ -109,6 +109,7 @@ public:
         DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
     void loadWithCallback(LoadFontCallback*, ExecutionContext*);
+    void addCallback(LoadFontCallback*);
 
     // ScriptWrappable:
     bool hasPendingActivity() const final;

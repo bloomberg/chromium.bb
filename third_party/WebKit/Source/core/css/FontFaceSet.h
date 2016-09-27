@@ -57,7 +57,7 @@ class ExecutionContext;
 
 using FontFaceSetIterable = PairIterable<Member<FontFace>, Member<FontFace>>;
 
-class FontFaceSet final : public EventTargetWithInlineData, public Supplement<Document>, public ActiveDOMObject, public FontFaceSetIterable {
+class FontFaceSet final : public EventTargetWithInlineData, public Supplement<Document>, public ActiveDOMObject, public FontFaceSetIterable, public FontFace::LoadFontCallback {
     USING_GARBAGE_COLLECTED_MIXIN(FontFaceSet);
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(FontFaceSet);
@@ -87,8 +87,10 @@ public:
 
     void didLayout();
     void beginFontLoading(FontFace*);
-    void fontLoaded(FontFace*);
-    void loadError(FontFace*);
+
+    // FontFace::LoadFontCallback
+    void notifyLoaded(FontFace*) override;
+    void notifyError(FontFace*) override;
 
     size_t approximateBlankCharacterCount() const;
 
