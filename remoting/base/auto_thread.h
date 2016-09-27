@@ -7,9 +7,11 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "remoting/base/auto_thread_task_runner.h"
 
@@ -81,7 +83,7 @@ class AutoThread : base::PlatformThread::Delegate {
  private:
   AutoThread(const char* name, AutoThreadTaskRunner* joiner);
 
-  void QuitThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  void QuitThread(const base::Closure& quit_when_idle_closure);
   void JoinAndDeleteThread();
 
   // base::PlatformThread::Delegate methods:
@@ -108,6 +110,9 @@ class AutoThread : base::PlatformThread::Delegate {
 
   // AutoThreadTaskRunner to post a task to to join & delete this thread.
   scoped_refptr<AutoThreadTaskRunner> joiner_;
+
+  // Verifies that QuitThread() is called on the same thread as ThreadMain().
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoThread);
 };
