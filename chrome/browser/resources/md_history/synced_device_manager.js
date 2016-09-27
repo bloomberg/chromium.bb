@@ -204,12 +204,13 @@ Polymer({
   /**
    * Decide what message should be displayed when user is logged in and there
    * are no synced tabs.
-   * @param {boolean} fetchingSyncedTabs
    * @return {string}
    */
-  noSyncedTabsMessage: function(fetchingSyncedTabs) {
-    return loadTimeData.getString(
-        fetchingSyncedTabs ? 'loading' : 'noSyncedResults');
+  noSyncedTabsMessage: function() {
+    var stringName = this.fetchingSyncedTabs_ ? 'loading' : 'noSyncedResults';
+    if (this.searchTerm !== '')
+      stringName = 'noSearchResults';
+    return loadTimeData.getString(stringName);
   },
 
   /**
@@ -239,15 +240,18 @@ Polymer({
       var oldDevice = this.syncedDevices_[i];
       if (oldDevice.tag != sessionList[i].tag ||
           oldDevice.timestamp != sessionList[i].timestamp) {
-        this.splice(
-            'syncedDevices_', i, 1, this.createInternalDevice_(sessionList[i]));
+        var device = this.createInternalDevice_(sessionList[i]);
+        if (device.tabs.length != 0)
+          this.splice('syncedDevices_', i, 1, device);
       }
     }
 
     if (sessionList.length >= this.syncedDevices_.length) {
       // The list grew; append new items.
       for (var i = updateCount; i < sessionList.length; i++) {
-        this.push('syncedDevices_', this.createInternalDevice_(sessionList[i]));
+        var device = this.createInternalDevice_(sessionList[i]);
+        if (device.tabs.length != 0)
+          this.push('syncedDevices_', device);
       }
     } else {
       // The list shrank; remove deleted items.

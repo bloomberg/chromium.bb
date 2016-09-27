@@ -2214,8 +2214,10 @@ Polymer({
     }
     return show;
   },
-  noSyncedTabsMessage: function(fetchingSyncedTabs) {
-    return loadTimeData.getString(fetchingSyncedTabs ? 'loading' : 'noSyncedResults');
+  noSyncedTabsMessage: function() {
+    var stringName = this.fetchingSyncedTabs_ ? 'loading' : 'noSyncedResults';
+    if (this.searchTerm !== '') stringName = 'noSearchResults';
+    return loadTimeData.getString(stringName);
   },
   updateSyncedDevices: function(sessionList) {
     this.fetchingSyncedTabs_ = false;
@@ -2228,12 +2230,14 @@ Polymer({
     for (var i = 0; i < updateCount; i++) {
       var oldDevice = this.syncedDevices_[i];
       if (oldDevice.tag != sessionList[i].tag || oldDevice.timestamp != sessionList[i].timestamp) {
-        this.splice('syncedDevices_', i, 1, this.createInternalDevice_(sessionList[i]));
+        var device = this.createInternalDevice_(sessionList[i]);
+        if (device.tabs.length != 0) this.splice('syncedDevices_', i, 1, device);
       }
     }
     if (sessionList.length >= this.syncedDevices_.length) {
       for (var i = updateCount; i < sessionList.length; i++) {
-        this.push('syncedDevices_', this.createInternalDevice_(sessionList[i]));
+        var device = this.createInternalDevice_(sessionList[i]);
+        if (device.tabs.length != 0) this.push('syncedDevices_', device);
       }
     } else {
       this.splice('syncedDevices_', updateCount, this.syncedDevices_.length - updateCount);

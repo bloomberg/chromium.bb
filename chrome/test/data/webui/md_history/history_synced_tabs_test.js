@@ -164,6 +164,13 @@ cr.define('md_history.history_synced_tabs_test', function() {
               Polymer.dom(cards[0].root)
                   .querySelectorAll('.website-title')[0].children[0]
                   .textContent.trim());
+
+          element.searchTerm = 'Sans';
+          return flush();
+        }).then(function() {
+          assertEquals(0, getCards(element).length);
+
+          assertNoSyncedTabsMessageShown(element, 'noSearchResults');
         });
       });
 
