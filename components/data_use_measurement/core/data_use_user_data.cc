@@ -84,6 +84,8 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "DataReductionProxy";
     case PRECACHE:
       return "Precache";
+    case NTP_TILES:
+      return "NTPTiles";
   }
   return "INVALID";
 }

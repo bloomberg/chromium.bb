@@ -43,6 +43,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
     SAFE_BROWSING,
     DATA_REDUCTION_PROXY,
     PRECACHE,
+    NTP_TILES,
   };
 
   // The state of the application. Only available on Android and on other

@@ -19,6 +19,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/pref_names.h"
@@ -278,6 +279,9 @@ void PopularSites::OnReadFileDone(std::unique_ptr<std::string> data,
 
 void PopularSites::FetchPopularSites() {
   fetcher_ = URLFetcher::Create(pending_url_, URLFetcher::GET, this);
+  // TODO(sfiera): Count the downloaded bytes of icons fetched by popular sites.
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_.get(), data_use_measurement::DataUseUserData::NTP_TILES);
   fetcher_->SetRequestContext(download_context_);
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DO_NOT_SAVE_COOKIES);
