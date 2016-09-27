@@ -21,7 +21,6 @@ namespace {
 ContentSettingsUsagesState::CommittedDetails CreateDetailsWithURL(
     const GURL& url) {
   ContentSettingsUsagesState::CommittedDetails details;
-  details.current_url_valid = true;
   details.current_url = url;
   return details;
 }

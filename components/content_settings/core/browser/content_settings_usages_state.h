@@ -22,10 +22,6 @@ class ContentSettingsUsagesState {
  public:
   // Information about navigation.
   struct CommittedDetails {
-    CommittedDetails();
-    ~CommittedDetails();
-
-    bool current_url_valid;
     GURL current_url;
     GURL previous_url;
   };

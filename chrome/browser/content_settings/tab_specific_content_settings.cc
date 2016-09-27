@@ -38,6 +38,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -53,21 +54,20 @@ using content::NavigationController;
 using content::NavigationEntry;
 using content::WebContents;
 
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings);
-
 namespace {
 
-ContentSettingsUsagesState::CommittedDetails GetCommittedDetails(
-    const content::LoadCommittedDetails& details) {
-  ContentSettingsUsagesState::CommittedDetails committed_details;
-  committed_details.current_url_valid = !!details.entry;
-  if (details.entry)
-    committed_details.current_url = details.entry->GetURL();
-  committed_details.previous_url = details.previous_url;
-  return committed_details;
+static TabSpecificContentSettings* GetForWCGetter(
+    const base::Callback<content::WebContents*(void)>& wc_getter) {
+  WebContents* web_contents = wc_getter.Run();
+  if (!web_contents)
+    return nullptr;
+
+  return TabSpecificContentSettings::FromWebContents(web_contents);
 }
 
 }  // namespace
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings);
 
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
     TabSpecificContentSettings* tab_specific_content_settings)
@@ -133,15 +133,14 @@ TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
 }
 
 // static
-void TabSpecificContentSettings::CookiesRead(int render_process_id,
-                                             int render_frame_id,
-                                             const GURL& url,
-                                             const GURL& frame_url,
-                                             const net::CookieList& cookie_list,
-                                             bool blocked_by_policy) {
+void TabSpecificContentSettings::CookiesRead(
+    const base::Callback<content::WebContents*(void)>& wc_getter,
+    const GURL& url,
+    const GURL& frame_url,
+    const net::CookieList& cookie_list,
+    bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings =
-      GetForFrame(render_process_id, render_frame_id);
+  TabSpecificContentSettings* settings = GetForWCGetter(wc_getter);
   if (settings) {
     settings->OnCookiesRead(url, frame_url, cookie_list,
                             blocked_by_policy);
@@ -150,16 +149,14 @@ void TabSpecificContentSettings::CookiesRead(int render_process_id,
 
 // static
 void TabSpecificContentSettings::CookieChanged(
-    int render_process_id,
-    int render_frame_id,
+    const base::Callback<WebContents*(void)>& wc_getter,
     const GURL& url,
     const GURL& frame_url,
     const std::string& cookie_line,
     const net::CookieOptions& options,
     bool blocked_by_policy) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings =
-      GetForFrame(render_process_id, render_frame_id);
+  TabSpecificContentSettings* settings = GetForWCGetter(wc_getter);
   if (settings)
     settings->OnCookieChanged(url, frame_url, cookie_line, options,
                               blocked_by_policy);
@@ -778,39 +775,46 @@ bool TabSpecificContentSettings::OnMessageReceived(
   return handled;
 }
 
-void TabSpecificContentSettings::DidNavigateMainFrame(
-    const content::LoadCommittedDetails& details,
-    const content::FrameNavigateParams& params) {
-  if (!details.is_in_page) {
-    // Clear "blocked" flags.
-    ClearBlockedContentSettingsExceptForCookies();
-    blocked_plugin_names_.clear();
-    GeolocationDidNavigate(details);
-    MidiDidNavigate(details);
-
-    if (web_contents()->GetVisibleURL().SchemeIsHTTPOrHTTPS()) {
-      content_settings::RecordPluginsAction(
-          content_settings::PLUGINS_ACTION_TOTAL_NAVIGATIONS);
-    }
-  }
-}
-
-void TabSpecificContentSettings::DidStartProvisionalLoadForFrame(
-    content::RenderFrameHost* render_frame_host,
-    const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
-  if (render_frame_host->GetParent())
+void TabSpecificContentSettings::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
     return;
+
+  const content::NavigationController& controller =
+      web_contents()->GetController();
+  content::NavigationEntry* last_committed_entry =
+      controller.GetLastCommittedEntry();
+  if (last_committed_entry)
+    previous_url_ = last_committed_entry->GetURL();
 
   // If we're displaying a network error page do not reset the content
   // settings delegate's cookies so the user has a chance to modify cookie
   // settings.
-  if (!is_error_page)
+  if (!navigation_handle->IsErrorPage())
     ClearCookieSpecificContentSettings();
   ClearGeolocationContentSettings();
   ClearMidiContentSettings();
   ClearPendingProtocolHandler();
+}
+
+void TabSpecificContentSettings::DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      !navigation_handle->HasCommitted() ||
+      navigation_handle->IsSamePage()) {
+    return;
+  }
+
+  // Clear "blocked" flags.
+  ClearBlockedContentSettingsExceptForCookies();
+  blocked_plugin_names_.clear();
+  GeolocationDidNavigate(navigation_handle);
+  MidiDidNavigate(navigation_handle);
+
+  if (web_contents()->GetVisibleURL().SchemeIsHTTPOrHTTPS()) {
+    content_settings::RecordPluginsAction(
+        content_settings::PLUGINS_ACTION_TOTAL_NAVIGATIONS);
+  }
 }
 
 void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
@@ -847,13 +851,20 @@ void TabSpecificContentSettings::ClearMidiContentSettings() {
 }
 
 void TabSpecificContentSettings::GeolocationDidNavigate(
-    const content::LoadCommittedDetails& details) {
-  geolocation_usages_state_.DidNavigate(GetCommittedDetails(details));
+    content::NavigationHandle* navigation_handle) {
+  ContentSettingsUsagesState::CommittedDetails committed_details;
+  committed_details.current_url = navigation_handle->GetURL();
+  committed_details.previous_url = previous_url_;
+
+  geolocation_usages_state_.DidNavigate(committed_details);
 }
 
 void TabSpecificContentSettings::MidiDidNavigate(
-    const content::LoadCommittedDetails& details) {
-  midi_usages_state_.DidNavigate(GetCommittedDetails(details));
+    content::NavigationHandle* navigation_handle) {
+  ContentSettingsUsagesState::CommittedDetails committed_details;
+  committed_details.current_url = navigation_handle->GetURL();
+  committed_details.previous_url = previous_url_;
+  midi_usages_state_.DidNavigate(committed_details);
 }
 
 void TabSpecificContentSettings::BlockAllContentForTesting() {

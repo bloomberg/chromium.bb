@@ -778,6 +778,12 @@ class ClearSiteDataObserver : public BrowsingDataRemover::Observer {
   int count_;
 };
 
+WebContents* GetWebContents(int render_process_id, int render_frame_id) {
+  RenderFrameHost* rfh =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  return WebContents::FromRenderFrameHost(rfh);
+}
+
 }  // namespace
 
 ChromeContentBrowserClient::ChromeContentBrowserClient()
@@ -1811,10 +1817,12 @@ bool ChromeContentBrowserClient::AllowGetCookie(
   bool allow = io_data->GetCookieSettings()->
       IsReadingCookieAllowed(url, first_party);
 
+  base::Callback<content::WebContents*(void)> wc_getter =
+      base::Bind(&GetWebContents, render_process_id, render_frame_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&TabSpecificContentSettings::CookiesRead, render_process_id,
-                 render_frame_id, url, first_party, cookie_list, !allow));
+      base::Bind(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
+                 first_party, cookie_list, !allow));
   return allow;
 }
 
@@ -1832,11 +1840,12 @@ bool ChromeContentBrowserClient::AllowSetCookie(
       io_data->GetCookieSettings();
   bool allow = cookie_settings->IsSettingCookieAllowed(url, first_party);
 
+  base::Callback<content::WebContents*(void)> wc_getter =
+      base::Bind(&GetWebContents, render_process_id, render_frame_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&TabSpecificContentSettings::CookieChanged, render_process_id,
-                 render_frame_id, url, first_party, cookie_line, options,
-                 !allow));
+      base::Bind(&TabSpecificContentSettings::CookieChanged, wc_getter, url,
+                 first_party, cookie_line, options, !allow));
   return allow;
 }
 

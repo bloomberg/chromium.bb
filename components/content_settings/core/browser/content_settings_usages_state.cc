@@ -10,12 +10,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/url_formatter/url_formatter.h"
 
-ContentSettingsUsagesState::CommittedDetails::CommittedDetails()
-    : current_url_valid(false) {
-}
-
-ContentSettingsUsagesState::CommittedDetails::~CommittedDetails() {}
-
 ContentSettingsUsagesState::ContentSettingsUsagesState(
     HostContentSettingsMap* host_content_settings_map,
     ContentSettingsType type)
@@ -33,12 +27,10 @@ void ContentSettingsUsagesState::OnPermissionSet(
 }
 
 void ContentSettingsUsagesState::DidNavigate(const CommittedDetails& details) {
-  if (details.current_url_valid)
-    embedder_url_ = details.current_url;
+  embedder_url_ = details.current_url;
   if (state_map_.empty())
     return;
-  if (!details.current_url_valid ||
-      details.previous_url.GetOrigin() != details.current_url.GetOrigin()) {
+  if (details.previous_url.GetOrigin() != details.current_url.GetOrigin()) {
     state_map_.clear();
     return;
   }
