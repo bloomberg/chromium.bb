@@ -45,6 +45,20 @@ TEST(array_init)
 	}
 }
 
+TEST(array_release)
+{
+	struct wl_array array;
+	void *ptr;
+
+	wl_array_init(&array);
+	ptr = wl_array_add(&array, 1);
+	assert(ptr != NULL);
+	assert(array.data != NULL);
+
+	wl_array_release(&array);
+	assert(array.data == WL_ARRAY_POISON_PTR);
+}
+
 TEST(array_add)
 {
 	struct mydata {
