@@ -827,3 +827,10 @@ TEST(ContentSettingsPatternTest, Schemes) {
   EXPECT_EQ(ContentSettingsPattern::SCHEME_OTHER,
             Pattern("filesystem:http://www.google.com/temporary/").GetScheme());
 }
+
+TEST(ContentSettingsPatternTest, FileSchemeHasPath) {
+  EXPECT_FALSE(Pattern("file:///*").HasPath());
+  EXPECT_TRUE(Pattern("file:///foo").HasPath());
+  EXPECT_TRUE(Pattern("file:///foo/bar/").HasPath());
+  EXPECT_TRUE(Pattern("file:///foo/bar/test.html").HasPath());
+}

@@ -623,9 +623,27 @@ void HostContentSettingsMap::RecordExceptionMetrics() {
         continue;
       }
 
-      UMA_HISTOGRAM_ENUMERATION("ContentSettings.ExceptionScheme",
-                                setting_entry.primary_pattern.GetScheme(),
+      ContentSettingsPattern::SchemeType scheme =
+          setting_entry.primary_pattern.GetScheme();
+      UMA_HISTOGRAM_ENUMERATION("ContentSettings.ExceptionScheme", scheme,
                                 ContentSettingsPattern::SCHEME_MAX);
+
+      if (scheme == ContentSettingsPattern::SCHEME_FILE) {
+        UMA_HISTOGRAM_BOOLEAN("ContentSettings.ExceptionSchemeFile.HasPath",
+                              setting_entry.primary_pattern.HasPath());
+        size_t num_values;
+        int histogram_value =
+            ContentSettingTypeToHistogramValue(content_type, &num_values);
+        if (setting_entry.primary_pattern.HasPath()) {
+          UMA_HISTOGRAM_ENUMERATION(
+              "ContentSettings.ExceptionSchemeFile.Type.WithPath",
+              histogram_value, num_values);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              "ContentSettings.ExceptionSchemeFile.Type.WithoutPath",
+              histogram_value, num_values);
+        }
+      }
 
       if (setting_entry.source == "preference")
         ++num_exceptions;
