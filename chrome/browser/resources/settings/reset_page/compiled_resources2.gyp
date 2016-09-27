@@ -6,6 +6,7 @@
     {
       'target_name': 'reset_page',
       'dependencies': [
+        '../compiled_resources2.gyp:route',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],

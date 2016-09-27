@@ -95,6 +95,7 @@ cr.define('settings', function() {
   // These are disfavored. If we add anymore, we should add explicit support.
   r.SIGN_OUT = r.BASIC.createChild('/signOut');
   r.CLEAR_BROWSER_DATA = r.ADVANCED.createChild('/clearBrowserData');
+  r.RESET_DIALOG = r.ADVANCED.createChild('/resetProfileSettings');
 
 <if expr="chromeos">
   r.INTERNET = r.BASIC.createSection('/internet', 'internet');

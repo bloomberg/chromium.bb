@@ -18,6 +18,8 @@
 Polymer({
   is: 'settings-reset-page',
 
+  behaviors: [settings.RouteObserverBehavior],
+
   properties: {
 <if expr="chromeos">
     /** @private */
@@ -31,9 +33,21 @@ Polymer({
     },
   },
 
+  /** @protected */
+  currentRouteChanged: function() {
+    if (settings.getCurrentRoute() == settings.Route.RESET_DIALOG) {
+      this.$.resetProfileDialog.get().open();
+    }
+  },
+
   /** @private */
   onShowResetProfileDialog_: function() {
-    this.$.resetProfileDialog.get().open();
+    settings.navigateTo(settings.Route.RESET_DIALOG);
+  },
+
+  /** @private */
+  onResetProfileDialogClose_: function() {
+    settings.navigateToPreviousRoute();
   },
 
 <if expr="chromeos">
