@@ -1852,6 +1852,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Feature({"ContextualSearch"})
     @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
+    @RetryOnFailure
     public void testPromoOpenCountForDecided() throws InterruptedException, TimeoutException {
         mPolicy.overrideDecidedStateForTesting(true);
 
