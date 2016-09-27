@@ -185,6 +185,8 @@ private:
 
 class {{config.protocol.export_macro}} Backend {
 public:
+    virtual ~Backend() { }
+
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
     {% if ("handlers" in command) and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
@@ -233,9 +235,6 @@ public:
   {% if not has_disable(domain.commands) %}
     virtual void disable(ErrorString*) { }
   {% endif %}
-
-protected:
-    virtual ~Backend() { }
 };
 
 // ------------- Frontend interface.
