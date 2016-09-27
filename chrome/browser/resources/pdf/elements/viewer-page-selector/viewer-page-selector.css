@@ -29,6 +29,7 @@
   line-height: 18px;
   padding: 3px;
   text-align: end;
+  vertical-align: baseline;
 }
 
 #input:focus,
