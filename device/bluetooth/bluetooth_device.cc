@@ -479,6 +479,10 @@ void BluetoothDevice::UpdateTimestamp() {
   last_update_time_ = base::Time::NowFromSystemTime();
 }
 
+base::Time BluetoothDevice::GetLastUpdateTime() const {
+  return last_update_time_;
+}
+
 // static
 int8_t BluetoothDevice::ClampPower(int power) {
   if (power < INT8_MIN) {

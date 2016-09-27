@@ -73,7 +73,7 @@ class BluetoothClassicDeviceMac : public BluetoothDeviceMac {
       const GattConnectionCallback& callback,
       const ConnectErrorCallback& error_callback) override;
 
-  base::Time GetLastUpdateTime() const;
+  base::Time GetLastUpdateTime() const override;
 
   // Returns the Bluetooth address for the |device|. The returned address has a
   // normalized format (see below).

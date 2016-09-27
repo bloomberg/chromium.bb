@@ -469,12 +469,19 @@ void BluetoothAdapterMac::ClassicDeviceAdded(IOBluetoothDevice* device) {
   std::string device_address =
       BluetoothClassicDeviceMac::GetDeviceAddress(device);
 
-  // Only notify observers once per device.
-  if (devices_.count(device_address))
-    return;
+  BluetoothDevice* device_classic = GetDevice(device_address);
 
-  BluetoothDevice* device_classic = new BluetoothClassicDeviceMac(this, device);
+  // Only notify observers once per device.
+  if (device_classic != nullptr) {
+    VLOG(3) << "Updating classic device: " << device_classic->GetAddress();
+    device_classic->UpdateTimestamp();
+    return;
+  }
+
+  device_classic = new BluetoothClassicDeviceMac(this, device);
   devices_.set(device_address, base::WrapUnique(device_classic));
+  VLOG(1) << "Adding new classic device: " << device_classic->GetAddress();
+
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     DeviceAdded(this, device_classic));
 }
@@ -567,7 +574,11 @@ void BluetoothAdapterMac::LowEnergyCentralManagerUpdatedState() {}
 void BluetoothAdapterMac::AddPairedDevices() {
   // Add any new paired devices.
   for (IOBluetoothDevice* device in [IOBluetoothDevice pairedDevices]) {
-    ClassicDeviceAdded(device);
+    // pairedDevices sometimes includes unknown devices that are not paired.
+    // Radar issue with id 2282763004 has been filed about it.
+    if ([device isPaired]) {
+      ClassicDeviceAdded(device);
+    }
   }
 }
 

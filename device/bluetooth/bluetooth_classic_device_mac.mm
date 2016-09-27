@@ -62,7 +62,9 @@ BluetoothUUID ExtractUuid(IOBluetoothSDPDataElement* service_class_data) {
 BluetoothClassicDeviceMac::BluetoothClassicDeviceMac(
     BluetoothAdapterMac* adapter,
     IOBluetoothDevice* device)
-    : BluetoothDeviceMac(adapter), device_([device retain]) {}
+    : BluetoothDeviceMac(adapter), device_([device retain]) {
+  UpdateTimestamp();
+}
 
 BluetoothClassicDeviceMac::~BluetoothClassicDeviceMac() {
 }
@@ -255,8 +257,9 @@ void BluetoothClassicDeviceMac::CreateGattConnection(
 }
 
 base::Time BluetoothClassicDeviceMac::GetLastUpdateTime() const {
-  return base::Time::FromDoubleT(
-      [[device_ getLastInquiryUpdate] timeIntervalSince1970]);
+  // getLastInquiryUpdate returns nil unpredictably so just use the
+  // cross platform implementation of last update time.
+  return last_update_time_;
 }
 
 int BluetoothClassicDeviceMac::GetHostTransmitPower(

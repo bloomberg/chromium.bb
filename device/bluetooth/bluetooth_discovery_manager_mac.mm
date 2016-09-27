@@ -31,7 +31,7 @@ class BluetoothDiscoveryManagerMacClassic;
 
 namespace device {
 
-// ementation of BluetoothDiscoveryManagerMac for Bluetooth classic device
+// Implementation of BluetoothDiscoveryManagerMac for Bluetooth classic device
 // discovery, using the IOBluetooth framework.
 class BluetoothDiscoveryManagerMacClassic
     : public BluetoothDiscoveryManagerMac {
@@ -57,6 +57,10 @@ class BluetoothDiscoveryManagerMacClassic
 
     DVLOG(1) << "Discovery requested";
     should_do_discovery_ = true;
+
+    // Clean the cache so that new discovery sessions find previously
+    // discovered devices as well.
+    [inquiry_ clearFoundDevices];
 
     if (inquiry_running_) {
       DVLOG(1) << "Device inquiry already running";
