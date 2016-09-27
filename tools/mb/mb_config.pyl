@@ -298,7 +298,7 @@
 
     'chromium.perf.fyi': {
       'Win Builder': 'official_goma',
-      'Win Clang Builder': 'official_clang',
+      'Win Clang Builder': 'official_goma_minimal_symbols_clang',
     },
 
     'client.nacl.sdk': {
@@ -1201,6 +1201,10 @@
 
     'official_clang': [
       'clang', 'official',
+    ],
+
+    'official_goma_minimal_symbols_clang': [
+      'official', 'goma', 'minimal_symbols', 'clang',
     ],
 
     'official_clang_x86': [
