@@ -132,6 +132,9 @@ void DomDistillerViewerSource::RequestViewerHandle::SendJavaScript(
 
 void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
+
   const GURL& navigation = navigation_handle->GetURL();
   bool expected_main_view_request =
       navigation.SchemeIs(expected_scheme_.c_str()) &&
