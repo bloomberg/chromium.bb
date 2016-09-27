@@ -7,7 +7,17 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_server_id.h"
 
+using base::StringPiece;
+
 namespace net {
+
+QuicClientBase::QuicDataToResend::QuicDataToResend(
+    std::unique_ptr<SpdyHeaderBlock> headers,
+    StringPiece body,
+    bool fin)
+    : headers_(std::move(headers)), body_(body), fin_(fin) {}
+
+QuicClientBase::QuicDataToResend::~QuicDataToResend() {}
 
 QuicClientBase::QuicClientBase(const QuicServerId& server_id,
                                const QuicVersionVector& supported_versions,

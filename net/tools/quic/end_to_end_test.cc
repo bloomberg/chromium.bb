@@ -1868,10 +1868,9 @@ class TestAckListener : public QuicAckListenerInterface {
 class TestResponseListener : public QuicClient::ResponseListener {
  public:
   void OnCompleteResponse(QuicStreamId id,
-                          const BalsaHeaders& response_headers,
+                          const SpdyHeaderBlock& response_headers,
                           const string& response_body) override {
-    string debug_string;
-    response_headers.DumpHeadersToString(&debug_string);
+    string debug_string = response_headers.DebugString();
     DVLOG(1) << "response for stream " << id << " " << debug_string << "\n"
              << response_body;
   }

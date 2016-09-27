@@ -20,7 +20,6 @@
 #include "net/quic/core/quic_client_push_promise_index.h"
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_spdy_stream.h"
-#include "net/tools/balsa/balsa_headers.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_client_base.h"
 #include "net/tools/quic/quic_client_session.h"
@@ -48,36 +47,8 @@ class QuicClient : public QuicClientBase,
     ResponseListener() {}
     virtual ~ResponseListener() {}
     virtual void OnCompleteResponse(QuicStreamId id,
-                                    const BalsaHeaders& response_headers,
+                                    const SpdyHeaderBlock& response_headers,
                                     const std::string& response_body) = 0;
-  };
-
-  // The client uses these objects to keep track of any data to resend upon
-  // receipt of a stateless reject.  Recall that the client API allows callers
-  // to optimistically send data to the server prior to handshake-confirmation.
-  // If the client subsequently receives a stateless reject, it must tear down
-  // its existing session, create a new session, and resend all previously sent
-  // data.  It uses these objects to keep track of all the sent data, and to
-  // resend the data upon a subsequent connection.
-  class QuicDataToResend {
-   public:
-    // Takes ownership of |headers|.  |headers| may be null, since it's possible
-    // to send data without headers.
-    QuicDataToResend(BalsaHeaders* headers, base::StringPiece body, bool fin);
-
-    virtual ~QuicDataToResend();
-
-    // Must be overridden by specific classes with the actual method for
-    // re-sending data.
-    virtual void Resend() = 0;
-
-   protected:
-    BalsaHeaders* headers_;
-    base::StringPiece body_;
-    bool fin_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(QuicDataToResend);
   };
 
   // Create a quic client, which will have events managed by an externally owned
@@ -114,12 +85,12 @@ class QuicClient : public QuicClientBase,
   void Disconnect();
 
   // Sends an HTTP request and does not wait for response before returning.
-  void SendRequest(const BalsaHeaders& headers,
+  void SendRequest(const SpdyHeaderBlock& headers,
                    base::StringPiece body,
                    bool fin);
 
   // Sends an HTTP request and waits for response before returning.
-  void SendRequestAndWaitForResponse(const BalsaHeaders& headers,
+  void SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
                                      base::StringPiece body,
                                      bool fin);
 
@@ -185,6 +156,7 @@ class QuicClient : public QuicClientBase,
 
   size_t latest_response_code() const;
   const std::string& latest_response_headers() const;
+  const SpdyHeaderBlock& latest_response_header_block() const;
   const std::string& latest_response_body() const;
   const std::string& latest_response_trailers() const;
 
@@ -216,13 +188,12 @@ class QuicClient : public QuicClientBase,
   // Specific QuicClient class for storing data to resend.
   class ClientQuicDataToResend : public QuicDataToResend {
    public:
-    // Takes ownership of |headers|.
-    ClientQuicDataToResend(BalsaHeaders* headers,
+    ClientQuicDataToResend(std::unique_ptr<SpdyHeaderBlock> headers,
                            base::StringPiece body,
                            bool fin,
                            QuicClient* client)
-        : QuicDataToResend(headers, body, fin), client_(client) {
-      DCHECK(headers);
+        : QuicDataToResend(std::move(headers), body, fin), client_(client) {
+      DCHECK(headers_);
       DCHECK(client);
     }
 
@@ -242,13 +213,6 @@ class QuicClient : public QuicClientBase,
 
   // Actually clean up |fd|.
   void CleanUpUDPSocketImpl(int fd);
-
-  // If the request URL matches a push promise, bypass sending the
-  // request.
-  bool MaybeHandlePromised(const BalsaHeaders& headers,
-                           const SpdyHeaderBlock& spdy_headers,
-                           base::StringPiece body,
-                           bool fin);
 
   // Address of the server.
   IPEndPoint server_address_;
@@ -283,9 +247,11 @@ class QuicClient : public QuicClientBase,
   // If true, store the latest response code, headers, and body.
   bool store_response_;
   // HTTP response code from most recent response.
-  size_t latest_response_code_;
+  int latest_response_code_;
   // HTTP/2 headers from most recent response.
   std::string latest_response_headers_;
+  // HTTP/2 header black from most recent response.
+  SpdyHeaderBlock latest_response_header_block_;
   // Body of most recent response.
   std::string latest_response_body_;
   // HTTP/2 trailers from most recent response.

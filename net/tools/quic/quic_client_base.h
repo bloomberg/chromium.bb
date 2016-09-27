@@ -33,6 +33,35 @@ class QuicServerId;
 
 class QuicClientBase {
  public:
+  // The client uses these objects to keep track of any data to resend upon
+  // receipt of a stateless reject.  Recall that the client API allows callers
+  // to optimistically send data to the server prior to handshake-confirmation.
+  // If the client subsequently receives a stateless reject, it must tear down
+  // its existing session, create a new session, and resend all previously sent
+  // data.  It uses these objects to keep track of all the sent data, and to
+  // resend the data upon a subsequent connection.
+  class QuicDataToResend {
+   public:
+    // |headers| may be null, since it's possible to send data without headers.
+    QuicDataToResend(std::unique_ptr<SpdyHeaderBlock> headers,
+                     base::StringPiece body,
+                     bool fin);
+
+    virtual ~QuicDataToResend();
+
+    // Must be overridden by specific classes with the actual method for
+    // re-sending data.
+    virtual void Resend() = 0;
+
+   protected:
+    std::unique_ptr<SpdyHeaderBlock> headers_;
+    base::StringPiece body_;
+    bool fin_;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(QuicDataToResend);
+  };
+
   QuicClientBase(const QuicServerId& server_id,
                  const QuicVersionVector& supported_versions,
                  const QuicConfig& config,

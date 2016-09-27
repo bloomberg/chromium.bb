@@ -50,36 +50,6 @@ class QuicSimpleClient : public QuicClientBase,
                                     const std::string& response_body) = 0;
   };
 
-  // The client uses these objects to keep track of any data to resend upon
-  // receipt of a stateless reject.  Recall that the client API allows callers
-  // to optimistically send data to the server prior to handshake-confirmation.
-  // If the client subsequently receives a stateless reject, it must tear down
-  // its existing session, create a new session, and resend all previously sent
-  // data.  It uses these objects to keep track of all the sent data, and to
-  // resend the data upon a subsequent connection.
-  class QuicDataToResend {
-   public:
-    // Takes ownership of |headers|.  |headers| may be null, since it's possible
-    // to send data without headers.
-    QuicDataToResend(HttpRequestInfo* headers,
-                     base::StringPiece body,
-                     bool fin);
-
-    virtual ~QuicDataToResend();
-
-    // Must be overridden by specific classes with the actual method for
-    // re-sending data.
-    virtual void Resend() = 0;
-
-   protected:
-    HttpRequestInfo* headers_;
-    base::StringPiece body_;
-    bool fin_;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(QuicDataToResend);
-  };
-
   // Create a quic client, which will have events managed by an externally owned
   // EpollServer.
   QuicSimpleClient(IPEndPoint server_address,
@@ -112,12 +82,12 @@ class QuicSimpleClient : public QuicClientBase,
   void Disconnect();
 
   // Sends an HTTP request and does not wait for response before returning.
-  void SendRequest(const HttpRequestInfo& headers,
+  void SendRequest(const SpdyHeaderBlock& headers,
                    base::StringPiece body,
                    bool fin);
 
   // Sends an HTTP request and waits for response before returning.
-  void SendRequestAndWaitForResponse(const HttpRequestInfo& headers,
+  void SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
                                      base::StringPiece body,
                                      bool fin);
 
@@ -179,12 +149,11 @@ class QuicSimpleClient : public QuicClientBase,
   class ClientQuicDataToResend : public QuicDataToResend {
    public:
     // Takes ownership of |headers|.
-    ClientQuicDataToResend(HttpRequestInfo* headers,
+    ClientQuicDataToResend(std::unique_ptr<SpdyHeaderBlock> headers,
                            base::StringPiece body,
                            bool fin,
                            QuicSimpleClient* client)
-        : QuicDataToResend(headers, body, fin), client_(client) {
-      DCHECK(headers);
+        : QuicDataToResend(std::move(headers), body, fin), client_(client) {
       DCHECK(client);
     }
 

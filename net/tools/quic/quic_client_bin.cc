@@ -313,11 +313,10 @@ int main(int argc, char* argv[]) {
 
   // Make sure to store the response, for later output.
   client.set_store_response(true);
-
   // Send the request.
   net::SpdyHeaderBlock header_block =
       net::SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers);
-  client.SendRequestAndWaitForResponse(headers, body, /*fin=*/true);
+  client.SendRequestAndWaitForResponse(header_block, body, /*fin=*/true);
 
   // Print request and response details.
   if (!FLAGS_quiet) {

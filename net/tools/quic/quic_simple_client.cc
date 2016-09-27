@@ -28,12 +28,12 @@
 
 using std::string;
 using std::vector;
+using base::StringPiece;
 
 namespace net {
 
 void QuicSimpleClient::ClientQuicDataToResend::Resend() {
   client_->SendRequest(*headers_, body_, fin_);
-  delete headers_;
   headers_ = nullptr;
 }
 
@@ -91,17 +91,6 @@ bool QuicSimpleClient::Initialize() {
 
   initialized_ = true;
   return true;
-}
-
-QuicSimpleClient::QuicDataToResend::QuicDataToResend(HttpRequestInfo* headers,
-                                                     base::StringPiece body,
-                                                     bool fin)
-    : headers_(headers), body_(body), fin_(fin) {}
-
-QuicSimpleClient::QuicDataToResend::~QuicDataToResend() {
-  if (headers_) {
-    delete headers_;
-  }
 }
 
 bool QuicSimpleClient::CreateUDPSocket() {
@@ -244,25 +233,22 @@ void QuicSimpleClient::Disconnect() {
   initialized_ = false;
 }
 
-void QuicSimpleClient::SendRequest(const HttpRequestInfo& headers,
-                                   base::StringPiece body,
+void QuicSimpleClient::SendRequest(const SpdyHeaderBlock& headers,
+                                   StringPiece body,
                                    bool fin) {
   QuicSpdyClientStream* stream = CreateReliableClientStream();
   if (stream == nullptr) {
     LOG(DFATAL) << "stream creation failed!";
     return;
   }
-  SpdyHeaderBlock header_block;
-  CreateSpdyHeadersFromHttpRequest(headers, headers.extra_headers, true,
-                                   &header_block);
   stream->set_visitor(this);
-  stream->SendRequest(std::move(header_block), body, fin);
+  stream->SendRequest(headers.Clone(), body, fin);
   if (FLAGS_enable_quic_stateless_reject_support) {
     // Record this in case we need to resend.
-    auto* new_headers = new HttpRequestInfo;
-    *new_headers = headers;
-    auto* data_to_resend =
-        new ClientQuicDataToResend(new_headers, body, fin, this);
+    std::unique_ptr<SpdyHeaderBlock> new_headers(
+        new SpdyHeaderBlock(headers.Clone()));
+    auto data_to_resend =
+        new ClientQuicDataToResend(std::move(new_headers), body, fin, this);
     MaybeAddQuicDataToResend(std::unique_ptr<QuicDataToResend>(data_to_resend));
   }
 }
@@ -283,10 +269,10 @@ void QuicSimpleClient::MaybeAddQuicDataToResend(
 }
 
 void QuicSimpleClient::SendRequestAndWaitForResponse(
-    const HttpRequestInfo& request,
+    const SpdyHeaderBlock& headers,
     base::StringPiece body,
     bool fin) {
-  SendRequest(request, body, fin);
+  SendRequest(headers, body, fin);
   while (WaitForEvents()) {
   }
 }
@@ -294,10 +280,13 @@ void QuicSimpleClient::SendRequestAndWaitForResponse(
 void QuicSimpleClient::SendRequestsAndWaitForResponse(
     const base::CommandLine::StringVector& url_list) {
   for (size_t i = 0; i < url_list.size(); ++i) {
-    HttpRequestInfo request;
-    request.method = "GET";
-    request.url = GURL(url_list[i]);
-    SendRequest(request, "", true);
+    string url = GURL(url_list[i]).spec();
+    SpdyHeaderBlock headers;
+    if (!SpdyUtils::PopulateHeaderBlockFromUrl(url, &headers)) {
+      QUIC_BUG << "Unable to create request";
+      continue;
+    }
+    SendRequest(headers, "", true);
   }
 
   while (WaitForEvents()) {

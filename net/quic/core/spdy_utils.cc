@@ -242,4 +242,23 @@ bool SpdyUtils::UrlIsValid(const SpdyHeaderBlock& headers) {
   return url != "" && GURL(url).is_valid();
 }
 
+// static
+bool SpdyUtils::PopulateHeaderBlockFromUrl(const string url,
+                                           SpdyHeaderBlock* headers) {
+  (*headers)[":method"] = "GET";
+  size_t pos = url.find("://");
+  if (pos == string::npos) {
+    return false;
+  }
+  (*headers)[":scheme"] = url.substr(0, pos);
+  size_t start = pos + 3;
+  pos = url.find("/", start);
+  if (pos == string::npos) {
+    return false;
+  }
+  (*headers)[":authority"] = url.substr(start, pos - start);
+  (*headers)[":path"] = url.substr(pos);
+  return true;
+}
+
 }  // namespace net

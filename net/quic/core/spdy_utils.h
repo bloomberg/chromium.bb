@@ -67,6 +67,11 @@ class NET_EXPORT_PRIVATE SpdyUtils {
   // and is a well-formed URL.
   static bool UrlIsValid(const net::SpdyHeaderBlock& headers);
 
+  // Populates the fields of |headers| to make a GET request of |url|,
+  // which must be fully-qualified.
+  static bool PopulateHeaderBlockFromUrl(const std::string url,
+                                         SpdyHeaderBlock* headers);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyUtils);
 };

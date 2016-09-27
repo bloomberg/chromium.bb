@@ -13,6 +13,7 @@
 
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/base/sockaddr_storage.h"
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_bug_tracker.h"
@@ -21,6 +22,7 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_protocol.h"
 #include "net/quic/core/quic_server_id.h"
+#include "net/quic/core/spdy_utils.h"
 #include "net/tools/quic/quic_epoll_alarm_factory.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
 #include "net/tools/quic/quic_socket_utils.h"
@@ -34,6 +36,7 @@
 #define MMSG_MORE 0
 
 using base::StringPiece;
+using base::StringToInt;
 using std::string;
 using std::vector;
 
@@ -43,7 +46,6 @@ const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 
 void QuicClient::ClientQuicDataToResend::Resend() {
   client_->SendRequest(*headers_, body_, fin_);
-  delete headers_;
   headers_ = nullptr;
 }
 
@@ -122,17 +124,6 @@ bool QuicClient::Initialize() {
   epoll_server_->RegisterFD(GetLatestFD(), this, kEpollFlags);
   initialized_ = true;
   return true;
-}
-
-QuicClient::QuicDataToResend::QuicDataToResend(BalsaHeaders* headers,
-                                               StringPiece body,
-                                               bool fin)
-    : headers_(headers), body_(body), fin_(fin) {}
-
-QuicClient::QuicDataToResend::~QuicDataToResend() {
-  if (headers_) {
-    delete headers_;
-  }
 }
 
 bool QuicClient::CreateUDPSocketAndBind() {
@@ -275,21 +266,20 @@ void QuicClient::CleanUpUDPSocketImpl(int fd) {
   }
 }
 
-void QuicClient::SendRequest(const BalsaHeaders& headers,
+void QuicClient::SendRequest(const SpdyHeaderBlock& headers,
                              StringPiece body,
                              bool fin) {
   QuicClientPushPromiseIndex::TryHandle* handle;
-  QuicAsyncStatus rv = push_promise_index()->Try(
-      SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers), this, &handle);
+  QuicAsyncStatus rv = push_promise_index()->Try(headers, this, &handle);
   if (rv == QUIC_SUCCESS)
     return;
 
   if (rv == QUIC_PENDING) {
     // May need to retry request if asynchronous rendezvous fails.
-    auto* new_headers = new BalsaHeaders;
-    new_headers->CopyFrom(headers);
+    std::unique_ptr<SpdyHeaderBlock> new_headers(
+        new SpdyHeaderBlock(headers.Clone()));
     push_promise_data_to_resend_.reset(
-        new ClientQuicDataToResend(new_headers, body, fin, this));
+        new ClientQuicDataToResend(std::move(new_headers), body, fin, this));
     return;
   }
 
@@ -298,14 +288,13 @@ void QuicClient::SendRequest(const BalsaHeaders& headers,
     QUIC_BUG << "stream creation failed!";
     return;
   }
-  stream->SendRequest(SpdyBalsaUtils::RequestHeadersToSpdyHeaders(headers),
-                      body, fin);
+  stream->SendRequest(headers.Clone(), body, fin);
   if (FLAGS_enable_quic_stateless_reject_support) {
     // Record this in case we need to resend.
-    auto* new_headers = new BalsaHeaders;
-    new_headers->CopyFrom(headers);
-    auto* data_to_resend =
-        new ClientQuicDataToResend(new_headers, body, fin, this);
+    std::unique_ptr<SpdyHeaderBlock> new_headers(
+        new SpdyHeaderBlock(headers.Clone()));
+    auto data_to_resend =
+        new ClientQuicDataToResend(std::move(new_headers), body, fin, this);
     MaybeAddQuicDataToResend(std::unique_ptr<QuicDataToResend>(data_to_resend));
   }
 }
@@ -325,7 +314,7 @@ void QuicClient::MaybeAddQuicDataToResend(
   data_to_resend_on_connect_.push_back(std::move(data_to_resend));
 }
 
-void QuicClient::SendRequestAndWaitForResponse(const BalsaHeaders& headers,
+void QuicClient::SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
                                                StringPiece body,
                                                bool fin) {
   SendRequest(headers, body, fin);
@@ -336,8 +325,11 @@ void QuicClient::SendRequestAndWaitForResponse(const BalsaHeaders& headers,
 void QuicClient::SendRequestsAndWaitForResponse(
     const vector<string>& url_list) {
   for (size_t i = 0; i < url_list.size(); ++i) {
-    BalsaHeaders headers;
-    headers.SetRequestFirstlineFromStringPieces("GET", url_list[i], "HTTP/1.1");
+    SpdyHeaderBlock headers;
+    if (!SpdyUtils::PopulateHeaderBlockFromUrl(url_list[i], &headers)) {
+      QUIC_BUG << "Unable to create request";
+      continue;
+    }
     SendRequest(headers, "", true);
   }
   while (WaitForEvents()) {
@@ -417,10 +409,8 @@ void QuicClient::OnClose(QuicSpdyStream* stream) {
   DCHECK(stream != nullptr);
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);
-  BalsaHeaders response_headers;
-  SpdyBalsaUtils::SpdyHeadersToResponseHeaders(
-      client_stream->response_headers(), &response_headers);
 
+  const SpdyHeaderBlock& response_headers = client_stream->response_headers();
   if (response_listener_.get() != nullptr) {
     response_listener_->OnCompleteResponse(stream->id(), response_headers,
                                            client_stream->data());
@@ -428,8 +418,13 @@ void QuicClient::OnClose(QuicSpdyStream* stream) {
 
   // Store response headers and body.
   if (store_response_) {
-    latest_response_code_ = response_headers.parsed_response_code();
-    response_headers.DumpHeadersToString(&latest_response_headers_);
+    auto status = response_headers.find(":status");
+    if (status == response_headers.end() ||
+        !StringToInt(status->second, &latest_response_code_)) {
+      LOG(ERROR) << "Invalid response headers: no status code";
+    }
+    latest_response_headers_ = response_headers.DebugString();
+    latest_response_header_block_ = response_headers.Clone();
     latest_response_body_ = client_stream->data();
     latest_response_trailers_ =
         client_stream->received_trailers().DebugString();
@@ -461,6 +456,11 @@ size_t QuicClient::latest_response_code() const {
 const string& QuicClient::latest_response_headers() const {
   QUIC_BUG_IF(!store_response_) << "Response not stored!";
   return latest_response_headers_;
+}
+
+const SpdyHeaderBlock& QuicClient::latest_response_header_block() const {
+  QUIC_BUG_IF(!store_response_) << "Response not stored!";
+  return latest_response_header_block_;
 }
 
 const string& QuicClient::latest_response_body() const {
