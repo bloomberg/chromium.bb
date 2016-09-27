@@ -66,12 +66,7 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
     record_time = data['record_time_ms']
     pixels_rasterized = data['pixels_rasterized']
     rasterize_time = data['rasterize_time_ms']
-    # TODO(schenney): Remove this workaround when reference builds get past
-    # the change that adds this comment.
-    if 'picture_memory_usage' in data:
-      picture_memory_usage = data['picture_memory_usage']
-    else:
-      picture_memory_usage = 0
+    picture_memory_usage = data['picture_memory_usage']
 
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'pixels_recorded', 'pixels', pixels_recorded))
@@ -87,18 +82,11 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
 
     record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
     record_time_painting_disabled = data['record_time_painting_disabled_ms']
-    # TODO(schenney): Remove this workaround when reference builds get past
-    # the change that adds this comment.
-    record_time_caching_disabled = \
-        data.get('record_time_caching_disabled_ms', 0)
-    # TODO(schenney): Remove this workaround when reference builds get past
-    # the change that adds this comment.
+    record_time_caching_disabled = data['record_time_caching_disabled_ms']
     record_time_construction_disabled = \
-        data.get('record_time_construction_disabled_ms', 0)
-    # TODO(wangxianzhu): Remove this workaround when reference builds get past
-    # the change that adds this comment.
+        data['record_time_construction_disabled_ms']
     record_time_subsequence_caching_disabled = \
-        data.get('record_time_subsequence_caching_disabled_ms', 0)
+        data['record_time_subsequence_caching_disabled_ms']
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'record_time_sk_null_canvas', 'ms',
         record_time_sk_null_canvas))
@@ -126,12 +114,10 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
           data['total_picture_layers_with_no_content']
       total_picture_layers_off_screen = \
           data['total_picture_layers_off_screen']
-      # TODO(schenney): Remove this workaround when reference builds get past
-      # the change that adds this comment.
-      if 'total_pictures_in_pile_size' in data:
-        total_pictures_in_pile_size = data['total_pictures_in_pile_size']
-      else:
-        total_pictures_in_pile_size = 0
+      # TODO(wkorman): Why are we storing rasterize_results_.total_memory_usage
+      # in a field called |total_pictures_in_pile_size|? Did we just repurpose
+      # that field to avoid having to rename/create another?
+      total_pictures_in_pile_size = data['total_pictures_in_pile_size']
 
       results.AddValue(scalar.ScalarValue(
           results.current_page, 'total_size_of_pictures_in_piles', 'bytes',
