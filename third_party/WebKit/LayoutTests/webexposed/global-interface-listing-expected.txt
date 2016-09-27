@@ -4747,9 +4747,9 @@ interface RemotePlayback : EventTarget
     attribute @@toStringTag
     getter onstatechange
     getter state
-    method connect
     method constructor
     method getAvailability
+    method prompt
     setter onstatechange
 interface RemotePlaybackAvailability : EventTarget
     attribute @@toStringTag

@@ -36,7 +36,7 @@ public:
     ExecutionContext* getExecutionContext() const override;
 
     ScriptPromise getAvailability(ScriptState*);
-    ScriptPromise connect(ScriptState*);
+    ScriptPromise prompt(ScriptState*);
 
     String state() const;
 
@@ -50,15 +50,16 @@ public:
 private:
     explicit RemotePlayback(HTMLMediaElement&);
 
+    // WebRemotePlaybackClient implementation.
     void stateChanged(WebRemotePlaybackState) override;
     void availabilityChanged(bool available) override;
-    void connectCancelled() override;
+    void promptCancelled() override;
 
     WebRemotePlaybackState m_state;
     bool m_availability;
     HeapVector<Member<RemotePlaybackAvailability>> m_availabilityObjects;
     Member<HTMLMediaElement> m_mediaElement;
-    HeapVector<Member<ScriptPromiseResolver>> m_connectPromiseResolvers;
+    HeapVector<Member<ScriptPromiseResolver>> m_promptPromiseResolvers;
 };
 
 } // namespace blink

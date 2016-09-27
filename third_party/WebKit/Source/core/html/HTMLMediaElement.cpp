@@ -3009,7 +3009,7 @@ void HTMLMediaElement::disconnectedFromRemoteDevice()
 void HTMLMediaElement::cancelledRemotePlaybackRequest()
 {
     if (remotePlaybackClient())
-        remotePlaybackClient()->connectCancelled();
+        remotePlaybackClient()->promptCancelled();
 }
 
 void HTMLMediaElement::requestReload(const WebURL& newUrl)
