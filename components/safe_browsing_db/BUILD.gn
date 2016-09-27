@@ -276,6 +276,7 @@ static_library("v4_update_protocol_manager") {
     ":util",
     ":v4_protocol_manager_util",
     "//base",
+    "//components/data_use_measurement/core",
     "//net",
     "//url",
   ]

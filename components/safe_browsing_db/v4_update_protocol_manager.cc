@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/timer/timer.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -286,6 +287,8 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
   std::unique_ptr<net::URLFetcher> fetcher = net::URLFetcher::Create(
       url_fetcher_id_++, update_url, net::URLFetcher::GET, this);
   fetcher->SetExtraRequestHeaders(headers.ToString());
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
 
   request_.reset(fetcher.release());
 

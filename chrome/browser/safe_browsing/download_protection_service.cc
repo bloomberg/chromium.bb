@@ -48,6 +48,7 @@
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "chrome/common/safe_browsing/zip_analyzer_results.h"
 #include "chrome/common/url_constants.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
@@ -1043,6 +1044,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
     fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */,
                                        GetDownloadRequestUrl(),
                                        net::URLFetcher::POST, this);
+    data_use_measurement::DataUseUserData::AttachToFetcher(
+        fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     fetcher_->SetAutomaticallyRetryOn5xx(false);  // Don't retry on error.
     fetcher_->SetRequestContext(service_->request_context_getter_.get());
@@ -1372,6 +1375,8 @@ class DownloadProtectionService::PPAPIDownloadRequest
 
     fetcher_ = net::URLFetcher::Create(0, GetDownloadRequestUrl(),
                                        net::URLFetcher::POST, this);
+    data_use_measurement::DataUseUserData::AttachToFetcher(
+        fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     fetcher_->SetAutomaticallyRetryOn5xx(false);
     fetcher_->SetRequestContext(service_->request_context_getter_.get());

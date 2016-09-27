@@ -15,6 +15,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/threat_details_cache.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -82,6 +83,9 @@ void ThreatDetailsCacheCollector::OpenEntry() {
 
   current_fetch_ = net::URLFetcher::Create(GURL(resources_it_->first),
                                            net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      current_fetch_.get(),
+      data_use_measurement::DataUseUserData::SAFE_BROWSING);
   current_fetch_->SetRequestContext(request_context_getter_.get());
   // Only from cache, and don't save cookies.
   current_fetch_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE |

@@ -20,6 +20,7 @@
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -117,6 +118,8 @@ void ModelLoader::StartFetch() {
   // This will save on the order of ~50KB/week/client of bandwidth.
   fetcher_ = net::URLFetcher::Create(0 /* ID used for testing */, url_,
                                      net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   fetcher_->SetRequestContext(request_context_getter_);
   fetcher_->Start();
 }

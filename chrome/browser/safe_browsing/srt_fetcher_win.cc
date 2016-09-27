@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/pref_names.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/rappor_service.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -587,6 +588,9 @@ class SRTFetcher : public net::URLFetcherDelegate {
                                              GURL(GetSRTDownloadURL()),
                                              net::URLFetcher::GET,
                                              this)) {
+    data_use_measurement::DataUseUserData::AttachToFetcher(
+        url_fetcher_.get(),
+        data_use_measurement::DataUseUserData::SAFE_BROWSING);
     url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
     url_fetcher_->SetMaxRetriesOn5xx(3);
     url_fetcher_->SaveResponseToTemporaryFile(

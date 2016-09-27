@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -169,6 +170,8 @@ void TwoPhaseUploaderImpl::UploadMetadata() {
   state_ = UPLOAD_METADATA;
   url_fetcher_ =
       net::URLFetcher::Create(base_url_, net::URLFetcher::POST, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   url_fetcher_->SetRequestContext(url_request_context_getter_.get());
   url_fetcher_->SetExtraRequestHeaders(kStartHeader);
   url_fetcher_->SetUploadData(kUploadContentType, metadata_);
@@ -181,6 +184,8 @@ void TwoPhaseUploaderImpl::UploadFile() {
 
   url_fetcher_ =
       net::URLFetcher::Create(upload_url_, net::URLFetcher::PUT, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      url_fetcher_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   url_fetcher_->SetRequestContext(url_request_context_getter_.get());
   url_fetcher_->SetUploadFilePath(kUploadContentType, file_path_, 0,
                                   std::numeric_limits<uint64_t>::max(),

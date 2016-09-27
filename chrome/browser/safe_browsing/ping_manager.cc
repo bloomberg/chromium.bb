@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/safe_browsing/permission_reporter.h"
 #include "components/certificate_reporting/error_reporter.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
@@ -98,6 +99,8 @@ void SafeBrowsingPingManager::ReportSafeBrowsingHit(
                                                : net::URLFetcher::POST,
       this);
   net::URLFetcher* report = report_ptr.get();
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      report, data_use_measurement::DataUseUserData::SAFE_BROWSING);
   report_ptr->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   report_ptr->SetRequestContext(request_context_getter_.get());
   if (!hit_report.post_data.empty())
@@ -111,6 +114,8 @@ void SafeBrowsingPingManager::ReportThreatDetails(const std::string& report) {
   GURL report_url = ThreatDetailsUrl();
   std::unique_ptr<net::URLFetcher> fetcher =
       net::URLFetcher::Create(report_url, net::URLFetcher::POST, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   fetcher->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->SetUploadData("application/octet-stream", report);

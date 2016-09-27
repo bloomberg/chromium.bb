@@ -40,6 +40,7 @@ class DataUseUserData : public base::SupportsUserData::Data {
     POLICY,
     SPELL_CHECKER,
     NTP_SNIPPETS,
+    SAFE_BROWSING,
   };
 
   explicit DataUseUserData(ServiceName service_name);

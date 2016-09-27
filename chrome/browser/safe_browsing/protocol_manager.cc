@@ -20,6 +20,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/common/env_vars.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
@@ -214,6 +215,8 @@ void SafeBrowsingProtocolManager::GetFullHash(
   std::unique_ptr<net::URLFetcher> fetcher_ptr = net::URLFetcher::Create(
       url_fetcher_id_++, gethash_url, net::URLFetcher::POST, this);
   net::URLFetcher* fetcher = fetcher_ptr.get();
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher, data_use_measurement::DataUseUserData::SAFE_BROWSING);
   hash_requests_[fetcher] = {std::move(fetcher_ptr),
                              FullHashDetails(callback, is_download)};
 
@@ -580,6 +583,8 @@ bool SafeBrowsingProtocolManager::IssueBackupUpdateRequest(
   GURL backup_update_url = BackupUpdateUrl(backup_update_reason);
   request_ = net::URLFetcher::Create(url_fetcher_id_++, backup_update_url,
                                      net::URLFetcher::POST, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      request_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("text/plain", update_list_data_);
@@ -607,6 +612,8 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   request_type_ = CHUNK_REQUEST;
   request_ = net::URLFetcher::Create(url_fetcher_id_++, chunk_url,
                                      net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      request_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_.get());
   chunk_request_start_ = base::Time::Now();
@@ -658,6 +665,8 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   GURL update_url = UpdateUrl(is_extended_reporting);
   request_ = net::URLFetcher::Create(url_fetcher_id_++, update_url,
                                      net::URLFetcher::POST, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      request_.get(), data_use_measurement::DataUseUserData::SAFE_BROWSING);
   request_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
   request_->SetRequestContext(request_context_getter_.get());
   request_->SetUploadData("text/plain", update_list_data_);

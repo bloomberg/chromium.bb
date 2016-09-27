@@ -23,6 +23,7 @@
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -290,6 +291,8 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
                               GetClientReportUrl(kClientReportPhishingUrl),
                               net::URLFetcher::POST, this));
   net::URLFetcher* fetcher_ptr = fetcher.get();
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_ptr, data_use_measurement::DataUseUserData::SAFE_BROWSING);
 
   // Remember which callback and URL correspond to the current fetcher object.
   std::unique_ptr<ClientPhishingReportInfo> info(new ClientPhishingReportInfo);
@@ -333,6 +336,8 @@ void ClientSideDetectionService::StartClientReportMalwareRequest(
                               GetClientReportUrl(kClientReportMalwareUrl),
                               net::URLFetcher::POST, this));
   net::URLFetcher* fetcher_ptr = fetcher.get();
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_ptr, data_use_measurement::DataUseUserData::SAFE_BROWSING);
 
   // Remember which callback and URL correspond to the current fetcher object.
   std::unique_ptr<ClientMalwareReportInfo> info(new ClientMalwareReportInfo);
