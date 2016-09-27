@@ -66,6 +66,26 @@ std::string HexStringToID(const std::string& hexstr) {
   return id;
 }
 
+std::string GetOSVersion() {
+#if defined(OS_WIN)
+  int32_t major = 0;
+  int32_t minor = 0;
+  int32_t bugfix = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  return base::StringPrintf("%d.%d.%d", major, minor, bugfix);
+#else
+  return base::SysInfo().OperatingSystemVersion();
+#endif
+}
+
+std::string GetServicePack() {
+#if defined(OS_WIN)
+  return base::win::OSInfo::GetInstance()->service_pack_str();
+#else
+  return std::string();
+#endif
+}
+
 }  // namespace
 
 std::string BuildProtocolRequest(const std::string& prod_id,
@@ -115,11 +135,18 @@ std::string BuildProtocolRequest(const std::string& prod_id,
                       GetPhysicalMemoryGB());  // "physmem" in GB.
 
   // OS version and platform information.
+  const std::string os_version = GetOSVersion();
+  const std::string os_sp = GetServicePack();
+
   base::StringAppendF(
-      &request, "<os platform=\"%s\" version=\"%s\" arch=\"%s\"/>",
+      &request, "<os platform=\"%s\" arch=\"%s\"",
       os_long_name.c_str(),                                    // "platform"
-      base::SysInfo().OperatingSystemVersion().c_str(),        // "version"
       base::SysInfo().OperatingSystemArchitecture().c_str());  // "arch"
+  if (!os_version.empty())
+    base::StringAppendF(&request, " version=\"%s\"", os_version.c_str());
+  if (!os_sp.empty())
+    base::StringAppendF(&request, " sp=\"%s\"", os_sp.c_str());
+  base::StringAppendF(&request, "/>");
 
   // The actual payload of the request.
   base::StringAppendF(&request, "%s</request>", request_body.c_str());
