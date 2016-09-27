@@ -2314,7 +2314,8 @@ void RenderViewImpl::OnDragTargetDrop(const DropData& drop_data,
                                       const gfx::Point& client_point,
                                       const gfx::Point& screen_point,
                                       int key_modifiers) {
-  webview()->dragTargetDrop(DropDataToWebDragData(drop_data), client_point,
+  webview()->dragTargetDrop(DropDataToWebDragData(drop_data),
+                            ConvertWindowPointToViewport(client_point),
                             screen_point, key_modifiers);
 }
 
