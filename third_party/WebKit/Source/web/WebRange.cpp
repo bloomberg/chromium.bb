@@ -42,7 +42,7 @@ WebRange::WebRange(int start, int length)
     : m_start(start)
     , m_end(start + length)
 {
-    DCHECK(start != -1 && length != 0) << "These values are reserved to indicate that the range is null";
+    DCHECK(start != -1 || length != 0) << "These values are reserved to indicate that the range is null";
 }
 
 WebRange::WebRange(const EphemeralRange& range)
