@@ -139,6 +139,7 @@ void PresentationController::frameDestroyed()
         m_client->setController(nullptr);
         m_client = nullptr;
     }
+    DOMWindowProperty::frameDestroyed();
 }
 
 PresentationConnection* PresentationController::findConnection(WebPresentationConnectionClient* connectionClient)

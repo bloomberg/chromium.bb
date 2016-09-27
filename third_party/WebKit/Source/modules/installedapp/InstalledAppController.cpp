@@ -57,6 +57,7 @@ void InstalledAppController::getInstalledApps(const WebSecurityOrigin& url, std:
 void InstalledAppController::frameDestroyed()
 {
     m_client = nullptr;
+    DOMWindowProperty::frameDestroyed();
 }
 
 DEFINE_TRACE(InstalledAppController)

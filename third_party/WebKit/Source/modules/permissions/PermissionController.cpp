@@ -46,6 +46,7 @@ WebPermissionClient* PermissionController::client() const
 void PermissionController::frameDestroyed()
 {
     m_client = nullptr;
+    DOMWindowProperty::frameDestroyed();
 }
 
 DEFINE_TRACE(PermissionController)

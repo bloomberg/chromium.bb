@@ -202,6 +202,7 @@ bool ScreenOrientationController::hasLastData()
 void ScreenOrientationController::frameDestroyed()
 {
     m_client = nullptr;
+    DOMWindowProperty::frameDestroyed();
 }
 
 void ScreenOrientationController::notifyDispatcher()
