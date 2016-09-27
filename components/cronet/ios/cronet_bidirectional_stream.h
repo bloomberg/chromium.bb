@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "net/http/bidirectional_stream.h"
 
@@ -219,6 +220,9 @@ class CronetBidirectionalStream : public net::BidirectionalStream::Delegate {
 
   std::unique_ptr<net::BidirectionalStream> bidi_stream_;
   Delegate* delegate_;
+
+  base::WeakPtr<CronetBidirectionalStream> weak_this_;
+  base::WeakPtrFactory<CronetBidirectionalStream> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CronetBidirectionalStream);
 };

@@ -167,6 +167,8 @@ class TestBidirectionalStreamCallback {
       return false;
 
     cronet_bidirectional_stream_cancel(stream);
+    cronet_bidirectional_stream_write(stream, "abc", 3, false);
+
     return true;
   }
 
