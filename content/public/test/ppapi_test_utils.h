@@ -27,9 +27,8 @@ bool RegisterTestPluginWithExtraParameters(
     const base::FilePath::StringType& extra_registration_parameters)
     WARN_UNUSED_RESULT;
 
-// Registers the Power Saver test plugin to application/x-ppapi-tests.
-// Returns true on success, and false otherwise.
-bool RegisterPowerSaverTestPlugin(base::CommandLine* command_line)
+// Registers the Flash-imitating Power Saver test plugin.
+bool RegisterFlashTestPlugin(base::CommandLine* command_line)
     WARN_UNUSED_RESULT;
 
 // Registers the Blink test plugin to application/x-blink-test-plugin.

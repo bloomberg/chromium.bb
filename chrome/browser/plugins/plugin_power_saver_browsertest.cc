@@ -31,7 +31,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "ppapi/shared_impl/ppapi_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/window_open_disposition.h"
@@ -274,12 +273,8 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnablePepperTesting);
     command_line->AppendSwitch(switches::kEnablePluginPlaceholderTesting);
-    command_line->AppendSwitchASCII(
-        switches::kOverridePluginPowerSaverForTesting, "ignore-list");
-
-    ASSERT_TRUE(ppapi::RegisterPowerSaverTestPlugin(command_line));
+    ASSERT_TRUE(ppapi::RegisterFlashTestPlugin(command_line));
 
     // Allows us to use the same reference image on HiDPI/Retina displays.
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1");
@@ -293,6 +288,9 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
     // Although this is redundant with the Field Trial testing configuration,
     // the official builders don't use those, so we also enable it here.
     feature_list.InitAndEnableFeature(features::kBlockSmallContent);
+
+    // Disable HTML5 By Default feature to test Plugin Power Saver specifically.
+    feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
   }
 
  protected:
@@ -417,17 +415,17 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
   LoadHTML(
       "<object id='small_same_origin' data='fake.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='100'>"
+      "    type='application/x-shockwave-flash' width='400' height='100'>"
       "</object>"
       "<object id='small_same_origin_poster' data='fake.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='100' "
+      "    type='application/x-shockwave-flash' width='400' height='100' "
       "    poster='click_me.png'>"
       "</object>"
       "<object id='large_cross_origin' data='http://b.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='500'>"
+      "    type='application/x-shockwave-flash' width='400' height='500'>"
       "</object>"
       "<object id='medium_16_9_cross_origin' data='http://c.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='480' height='270'>"
+      "    type='application/x-shockwave-flash' width='480' height='270'>"
       "</object>");
 
   VerifyPluginMarkedEssential(GetActiveWebContents(), "small_same_origin");
@@ -447,11 +445,11 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_SmallCrossOrigin) {
   LoadHTML(
       "<object id='plugin' data='http://otherorigin.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='100'>"
+      "    type='application/x-shockwave-flash' width='400' height='100'>"
       "</object>"
       "<br>"
       "<object id='plugin_poster' data='http://otherorigin.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='100' "
+      "    type='application/x-shockwave-flash' width='400' height='100' "
       "    poster='click_me.png'>"
       "</object>");
 
@@ -467,13 +465,13 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_SmallCrossOrigin) {
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallerThanPlayIcon) {
   LoadHTML(
-      "<object id='plugin_16' type='application/x-ppapi-tests' "
+      "<object id='plugin_16' type='application/x-shockwave-flash' "
       "    width='16' height='16'></object>"
-      "<object id='plugin_32' type='application/x-ppapi-tests' "
+      "<object id='plugin_32' type='application/x-shockwave-flash' "
       "    width='32' height='32'></object>"
-      "<object id='plugin_16_64' type='application/x-ppapi-tests' "
+      "<object id='plugin_16_64' type='application/x-shockwave-flash' "
       "    width='16' height='64'></object>"
-      "<object id='plugin_64_16' type='application/x-ppapi-tests' "
+      "<object id='plugin_64_16' type='application/x-shockwave-flash' "
       "    width='64' height='16'></object>");
 
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin_16");
@@ -496,46 +494,46 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_PosterTests) {
   // as well as verifies that the poster is rendered correctly with various
   // mismatched aspect ratios and sizes, following the same rules as VIDEO.
   LoadHTML(
-      "<object id='plugin_src' type='application/x-ppapi-tests' "
+      "<object id='plugin_src' type='application/x-shockwave-flash' "
       "    width='100' height='100' poster='click_me.png'></object>"
-      "<object id='plugin_srcset' type='application/x-ppapi-tests' "
+      "<object id='plugin_srcset' type='application/x-shockwave-flash' "
       "    width='100' height='100' "
       "    poster='click_me.png 1x, click_me.png 2x'></object>"
       "<br>"
 
-      "<object id='plugin_poster_param' type='application/x-ppapi-tests' "
+      "<object id='plugin_poster_param' type='application/x-shockwave-flash' "
       "    width='100' height='100'>"
       "  <param name='poster' value='click_me.png 1x, click_me.png 2x'>"
       "</object>"
-      "<embed id='plugin_embed_src' type='application/x-ppapi-tests' "
+      "<embed id='plugin_embed_src' type='application/x-shockwave-flash' "
       "    width='100' height='100' poster='click_me.png'></embed>"
-      "<embed id='plugin_embed_srcset' type='application/x-ppapi-tests' "
+      "<embed id='plugin_embed_srcset' type='application/x-shockwave-flash' "
       "    width='100' height='100'"
       "    poster='click_me.png 1x, click_me.png 2x'></embed>"
       "<br>"
 
-      "<object id='poster_missing' type='application/x-ppapi-tests' "
+      "<object id='poster_missing' type='application/x-shockwave-flash' "
       "    width='100' height='100' poster='missing.png'></object>"
-      "<object id='poster_too_small' type='application/x-ppapi-tests' "
+      "<object id='poster_too_small' type='application/x-shockwave-flash' "
       "    width='100' height='50' poster='click_me.png'></object>"
-      "<object id='poster_too_big' type='application/x-ppapi-tests' "
+      "<object id='poster_too_big' type='application/x-shockwave-flash' "
       "    width='100' height='150' poster='click_me.png'></object>"
       "<br>"
 
-      "<object id='poster_16' type='application/x-ppapi-tests' "
+      "<object id='poster_16' type='application/x-shockwave-flash' "
       "    width='16' height='16' poster='click_me.png'></object>"
-      "<object id='poster_32' type='application/x-ppapi-tests' "
+      "<object id='poster_32' type='application/x-shockwave-flash' "
       "    width='32' height='32' poster='click_me.png'></object>"
-      "<object id='poster_16_64' type='application/x-ppapi-tests' "
+      "<object id='poster_16_64' type='application/x-shockwave-flash' "
       "    width='16' height='64' poster='click_me.png'></object>"
-      "<object id='poster_64_16' type='application/x-ppapi-tests' "
+      "<object id='poster_64_16' type='application/x-shockwave-flash' "
       "    width='64' height='16' poster='click_me.png'></object>"
       "<br>"
 
       "<div id='container' "
       "    style='width: 400px; height: 100px; overflow: hidden;'>"
       "  <object id='poster_obscured' data='http://otherorigin.com/fake.swf' "
-      "      type='application/x-ppapi-tests' width='400' height='500' "
+      "      type='application/x-shockwave-flash' width='400' height='500' "
       "      poster='click_me.png'>"
       "  </object>"
       "</div>");
@@ -569,16 +567,17 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePostersNotThrottled) {
   // and that large posters can whitelist origins for other plugins.
   LoadHTML(
       "<object id='poster_small' data='http://a.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='50' height='50' "
+      "    type='application/x-shockwave-flash' width='50' height='50' "
       "    poster='click_me.png'></object>"
       "<object id='poster_whitelisted_origin' data='http://b.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='50' height='50' "
+      "    type='application/x-shockwave-flash' width='50' height='50' "
       "    poster='click_me.png'></object>"
       "<object id='plugin_whitelisted_origin' data='http://b.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='50' height='50'></object>"
+      "    type='application/x-shockwave-flash' width='50' height='50'>"
+      "</object>"
       "<br>"
       "<object id='poster_large' data='http://b.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='300' "
+      "    type='application/x-shockwave-flash' width='400' height='300' "
       "    poster='click_me.png'></object>");
 
   VerifyPluginIsPlaceholderOnly("poster_small");
@@ -598,12 +597,13 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, LargePostersNotThrottled) {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_OriginWhitelisting) {
   LoadHTML(
       "<object id='plugin_small' data='http://a.com/fake1.swf' "
-      "    type='application/x-ppapi-tests' width='100' height='100'></object>"
+      "    type='application/x-shockwave-flash' width='100' height='100'>"
+      "</object>"
       "<object id='plugin_small_poster' data='http://a.com/fake1.swf' "
-      "    type='application/x-ppapi-tests' width='100' height='100' "
+      "    type='application/x-shockwave-flash' width='100' height='100' "
       "    poster='click_me.png'></object>"
       "<object id='plugin_large' data='http://a.com/fake2.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='500'>"
+      "    type='application/x-shockwave-flash' width='400' height='500'>"
       "</object>");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_small");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin_small_poster");
@@ -617,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
       "<div id='container' "
       "    style='width: 100px; height: 400px; overflow: hidden;'>"
       "  <object id='plugin' data='http://otherorigin.com/fake.swf' "
-      "      type='application/x-ppapi-tests' width='400' height='500' "
+      "      type='application/x-shockwave-flash' width='400' height='500' "
       "      style='float: right;'>"
       "  </object>"
       "</div>");
@@ -636,7 +636,8 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingSmallPlugin) {
   LoadHTML(
       "<object id='plugin' data='http://otherorigin.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='80'></object>");
+      "    type='application/x-shockwave-flash' width='400' height='80'>"
+      "</object>");
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 
   std::string script = "window.document.getElementById('plugin').height = 400;";
@@ -647,9 +648,10 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingSmallPlugin) {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabPlugins) {
   content::WebContents* background_contents = LoadHTMLInBackgroundTab(
       "<object id='same_origin' data='fake.swf' "
-      "    type='application/x-ppapi-tests'></object>"
+      "    type='application/x-shockwave-flash'></object>"
       "<object id='small_cross_origin' data='http://otherorigin.com/fake1.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='80'></object>");
+      "    type='application/x-shockwave-flash' width='400' height='80'>"
+      "</object>");
 
   EXPECT_FALSE(PluginLoaded(background_contents, "same_origin"));
   EXPECT_FALSE(PluginLoaded(background_contents, "small_cross_origin"));
@@ -665,7 +667,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ZoomIndependent) {
       ->SetZoomLevel(4.0);
   LoadHTML(
       "<object id='plugin' data='http://otherorigin.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='400' height='200'>"
+      "    type='application/x-shockwave-flash' width='400' height='200'>"
       "</object>");
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 }
@@ -673,13 +675,13 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ZoomIndependent) {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BlockTinyPlugins) {
   LoadHTML(
       "<object id='tiny_same_origin' data='fake.swf' "
-      "    type='application/x-ppapi-tests' width='3' height='3'>"
+      "    type='application/x-shockwave-flash' width='3' height='3'>"
       "</object>"
       "<object id='tiny_cross_origin_1' data='http://a.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='3' height='3'>"
+      "    type='application/x-shockwave-flash' width='3' height='3'>"
       "</object>"
       "<object id='tiny_cross_origin_2' data='http://a.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='1' height='1'>"
+      "    type='application/x-shockwave-flash' width='1' height='1'>"
       "</object>");
 
   VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_same_origin");
@@ -690,7 +692,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BlockTinyPlugins) {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabTinyPlugins) {
   content::WebContents* background_contents = LoadHTMLInBackgroundTab(
       "<object id='tiny' data='http://a.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='3' height='3'>"
+      "    type='application/x-shockwave-flash' width='3' height='3'>"
       "</object>");
   EXPECT_FALSE(PluginLoaded(background_contents, "tiny"));
 
@@ -701,9 +703,10 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BackgroundTabTinyPlugins) {
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingTinyPlugins) {
   LoadHTML(
       "<object id='expand_to_peripheral' data='http://a.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='4' height='4'></object>"
+      "    type='application/x-shockwave-flash' width='4' height='4'></object>"
       "<object id='expand_to_essential' data='http://b.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='4' height='4'></object>");
+      "    type='application/x-shockwave-flash' width='4' height='4'>"
+      "</object>");
 
   VerifyPluginIsPlaceholderOnly("expand_to_peripheral");
   VerifyPluginIsPlaceholderOnly("expand_to_essential");
@@ -726,6 +729,7 @@ class PluginPowerSaverAllowTinyBrowserTest
     : public PluginPowerSaverBrowserTest {
  public:
   void SetUpInProcessBrowserTestFixture() override {
+    PluginPowerSaverBrowserTest::SetUpInProcessBrowserTestFixture();
     feature_list.InitAndDisableFeature(features::kBlockSmallContent);
   }
 
@@ -737,10 +741,10 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverAllowTinyBrowserTest,
                        EssentialTinyPlugins) {
   LoadHTML(
       "<object id='tiny_cross_origin_1' data='http://a.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='3' height='3'>"
+      "    type='application/x-shockwave-flash' width='3' height='3'>"
       "</object>"
       "<object id='tiny_cross_origin_2' data='http://a.com/fake.swf' "
-      "    type='application/x-ppapi-tests' width='1' height='1'>"
+      "    type='application/x-shockwave-flash' width='1' height='1'>"
       "</object>");
 
   VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_1");

@@ -90,8 +90,7 @@ PowerSaverInfo PowerSaverInfo::Get(content::RenderFrame* render_frame,
       plugin_info.name == base::ASCIIToUTF16(content::kFlashPluginName);
 
   PowerSaverInfo info;
-  bool is_eligible = power_saver_setting_on &&
-                     (is_flash || override_for_testing == "ignore-list");
+  bool is_eligible = power_saver_setting_on && is_flash;
   info.power_saver_enabled = override_for_testing == "always" ||
                              (power_saver_setting_on && is_eligible);
 

@@ -278,7 +278,10 @@ static_library("test_support") {
       "//ppapi/shared_impl:test_support",
     ]
   } else {
-    sources -= [ "ppapi_unittest.cc" ]
+    sources -= [
+      "../public/test/ppapi_test_utils.cc",
+      "ppapi_unittest.cc",
+    ]
   }
 
   if (enable_webrtc) {

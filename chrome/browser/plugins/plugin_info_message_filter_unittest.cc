@@ -22,6 +22,7 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -144,9 +145,15 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
         CONTENT_SETTING_BLOCK : CONTENT_SETTING_DEFAULT;
     bool is_default = !expected_is_default;
     bool is_managed = !expected_is_managed;
-    PluginUtils::GetPluginContentSetting(
-        host_content_settings_map_, content::WebPluginInfo(), url, url, plugin,
-        &setting, &is_default, &is_managed);
+
+    // Pass in a fake Flash plugin info.
+    content::WebPluginInfo plugin_info(
+        base::ASCIIToUTF16(content::kFlashPluginName), base::FilePath(),
+        base::ASCIIToUTF16("1"), base::ASCIIToUTF16("Fake Flash"));
+
+    PluginUtils::GetPluginContentSetting(host_content_settings_map_,
+                                         plugin_info, url, url, plugin,
+                                         &setting, &is_default, &is_managed);
     EXPECT_EQ(expected_setting, setting);
     EXPECT_EQ(expected_is_default, is_default);
     EXPECT_EQ(expected_is_managed, is_managed);

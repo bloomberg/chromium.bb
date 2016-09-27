@@ -414,10 +414,7 @@ PrerenderInProcessBrowserTest::~PrerenderInProcessBrowserTest() {}
 
 void PrerenderInProcessBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kEnablePepperTesting);
-  command_line->AppendSwitchASCII(switches::kOverridePluginPowerSaverForTesting,
-                                  "ignore-list");
-  ASSERT_TRUE(ppapi::RegisterPowerSaverTestPlugin(command_line));
+  ASSERT_TRUE(ppapi::RegisterFlashTestPlugin(command_line));
 }
 
 void PrerenderInProcessBrowserTest::TearDownInProcessBrowserTestFixture() {

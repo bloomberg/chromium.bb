@@ -6,6 +6,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
@@ -32,24 +34,22 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "media/cdm/cdm_paths.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
-#endif
-
-#if defined(ENABLE_PEPPER_CDMS)
-#include "chrome/browser/media/pepper_cdm_test_constants.h"
-#include "chrome/browser/media/pepper_cdm_test_helper.h"
 #endif
 
 using content::BrowserThread;
@@ -342,16 +342,8 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
 #if defined(ENABLE_PLUGINS)
 class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
  protected:
-  // Registers any CDM plugins not registered by default.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-#if defined(ENABLE_PEPPER_CDMS)
-    // Append the switch to register the External Clear Key CDM.
-    base::FilePath::StringType pepper_plugins = BuildPepperCdmRegistration(
-        kClearKeyCdmBaseDirectory, kClearKeyCdmAdapterFileName,
-        kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType);
-    command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
-                                     pepper_plugins);
-#endif  // defined(ENABLE_PEPPER_CDMS)
+    ASSERT_TRUE(ppapi::RegisterFlashTestPlugin(command_line));
 
 #if !defined(DISABLE_NACL)
     // Ensure NaCl can run.
@@ -359,14 +351,19 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
 #endif
   }
 
-#if defined(ENABLE_PEPPER_CDMS)
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
     InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
     test_launcher_utils::RemoveCommandLineSwitch(
         default_command_line, switches::kDisableComponentUpdate, command_line);
   }
-#endif  // defined(ENABLE_PEPPER_CDMS)
+
+  void SetUpInProcessBrowserTestFixture() override {
+    ContentSettingsTest::SetUpInProcessBrowserTestFixture();
+
+    // Disable the HTML by Default feature so we can test blocked plugins.
+    feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
+  }
 
   void RunLoadPepperPluginTest(const char* mime_type, bool expect_loaded) {
     const char* expected_result = expect_loaded ? "Loaded" : "Not Loaded";
@@ -442,6 +439,9 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
               tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
     EXPECT_FALSE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_PLUGINS));
   }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
 };
 
 class PepperContentSettingsSpecialCasesPluginsBlockedTest
@@ -469,26 +469,23 @@ class PepperContentSettingsSpecialCasesJavaScriptBlockedTest
   }
 };
 
-#if defined(ENABLE_PEPPER_CDMS)
 // A sanity check to verify that the plugin that is used as a baseline below
 // can be loaded.
-IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Baseline) {
+IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesTest, Flash) {
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
                                  CONTENT_SETTING_ALLOW);
 
-  RunLoadPepperPluginTest(kClearKeyCdmPepperMimeType, true);
+  RunLoadPepperPluginTest(content::kFlashPluginSwfMimeType, true);
 }
-#endif  // defined(ENABLE_PEPPER_CDMS)
 
 // The following tests verify that Pepper plugins that use JavaScript settings
 // instead of Plugins settings still work when Plugins are blocked.
 
-#if defined(ENABLE_PEPPER_CDMS)
 // The plugin successfully loaded above is blocked.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
-                       Normal) {
-  RunLoadPepperPluginTest(kClearKeyCdmPepperMimeType, false);
+                       BlockedFlash) {
+  RunLoadPepperPluginTest(content::kFlashPluginSwfMimeType, false);
 }
 
 #if defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_CHROMEOS)
@@ -502,7 +499,6 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
   RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_CHROMEOS)
-#endif  // defined(ENABLE_PEPPER_CDMS)
 
 #if !defined(DISABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
@@ -514,14 +510,13 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
 // The following tests verify that those same Pepper plugins do not work when
 // JavaScript is blocked.
 
-#if defined(ENABLE_PEPPER_CDMS)
 // A plugin with no special behavior is not blocked when JavaScript is blocked.
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
-                       Normal) {
-  RunJavaScriptBlockedTest("load_clearkey_no_js.html", false);
+                       Flash) {
+  RunJavaScriptBlockedTest("load_flash_no_js.html", false);
 }
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
+#if defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        WidevineCdm) {
   // Check that Widevine CDM is available and registered.
@@ -531,8 +526,7 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
   EXPECT_TRUE(IsPepperCdmRegistered(kWidevineCdmPluginMimeType));
   RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
 }
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 
 #if !defined(DISABLE_NACL)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,

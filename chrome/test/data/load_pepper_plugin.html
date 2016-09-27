@@ -22,7 +22,8 @@ var mimeType = QueryString.mimetype;
 
 function inject() {
   var child = document.createElement('div');
-  child.innerHTML = '<object type="' + mimeType + '" id="plugin" border=1>' +
+  // Set data="foo" to make this content same-origin (so it's not throttled).
+  child.innerHTML = '<object type="' + mimeType + '" id="plugin" data="foo">' +
                     '  <b>You should not see this text!</b>' +
                     '</object>';
   document.getElementById('content').appendChild(child);
@@ -36,12 +37,12 @@ function inject() {
       document.title = 'Not Loaded';
       return;
     }
-    
+
     plugin.postMessage('hello');
     // If we do not get an exception, the Pepper plugin is loaded.
     document.title = 'Loaded';
   } catch (e) {
-    var errorMessage = 'Unexpected Exception: ' + e.toString(); 
+    var errorMessage = 'Unexpected Exception: ' + e.toString();
     document.title = errorMessage;
     console.log(errorMessage);
   }

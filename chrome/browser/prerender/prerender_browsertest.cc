@@ -26,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -62,6 +63,7 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
@@ -91,6 +93,7 @@
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/constants.h"
@@ -1350,9 +1353,26 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDelayLoadPlugin) {
   NavigateToDestURL();
 }
 
-// For Content Setting DETECT, checks that plugins are not loaded while
+// TODO(tommycli): Remove once we implement Plugin Power Saver on ALLOW.
+// See crbug.com/649814
+class PrerenderBrowserTestWithPluginPowerSaver : public PrerenderBrowserTest {
+ public:
+  PrerenderBrowserTestWithPluginPowerSaver() {}
+  ~PrerenderBrowserTestWithPluginPowerSaver() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    PrerenderBrowserTest::SetUpInProcessBrowserTestFixture();
+    feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+// For Plugin Power Saver, checks that plugins are not loaded while
 // a page is being preloaded, but are loaded when the page is displayed.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderContentSettingDetect) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithPluginPowerSaver,
+                       PrerenderPluginPowerSaver) {
   HostContentSettingsMap* content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(
           current_browser()->profile());

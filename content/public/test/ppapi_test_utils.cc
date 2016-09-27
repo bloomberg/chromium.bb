@@ -11,8 +11,10 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
+#include "ppapi/shared_impl/ppapi_switches.h"
 
 using CharType = base::FilePath::CharType;
 using StringType = base::FilePath::StringType;
@@ -88,11 +90,27 @@ bool RegisterTestPluginWithExtraParameters(
                                            extra_registration_parameters);
 }
 
-bool RegisterPowerSaverTestPlugin(base::CommandLine* command_line) {
+bool RegisterFlashTestPlugin(base::CommandLine* command_line) {
+  // Power Saver plugin requires Pepper testing API.
+  command_line->AppendSwitch(switches::kEnablePepperTesting);
+
+  // The Power Saver plugin ignores the data attribute and just draws a
+  // checkerboard pattern - while providing some Plugin Power Saver diagnostics.
+  //
+  // It was originally designed just for Plugin Power Saver tests, but is
+  // useful for testing as a fake Flash plugin in a variety of tests.
   base::FilePath::StringType library_name =
       base::FilePath::FromUTF8Unsafe(ppapi::kPowerSaverTestPluginName).value();
-  return RegisterPluginWithDefaultMimeType(command_line, library_name,
-                                           FILE_PATH_LITERAL(""));
+  std::vector<PluginInfo> plugins;
+  // Register a fake Flash with 100.0 version (to avoid outdated checks).
+  base::FilePath::StringType fake_flash_parameter =
+      base::FilePath::FromUTF8Unsafe(
+          std::string("#") + content::kFlashPluginName + "#Description#100.0")
+          .value();
+  plugins.push_back(
+      PluginInfo(library_name, fake_flash_parameter,
+                 FILE_PATH_LITERAL("application/x-shockwave-flash")));
+  return RegisterPlugins(command_line, plugins);
 }
 
 bool RegisterBlinkTestPlugin(base::CommandLine* command_line) {
