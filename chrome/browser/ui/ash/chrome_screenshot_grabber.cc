@@ -136,8 +136,10 @@ class ScreenshotGrabberNotificationDelegate : public NotificationDelegate {
         break;
       }
       case BUTTON_ANNOTATE: {
-        if (chromeos::IsNoteTakingAppAvailable(profile_))
+        if (chromeos::IsNoteTakingAppAvailable(profile_)) {
           chromeos::LaunchNoteTakingAppForNewNote(profile_, screenshot_path_);
+          content::RecordAction(base::UserMetricsAction("Screenshot_Annotate"));
+        }
         break;
       }
       default:
