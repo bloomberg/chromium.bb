@@ -528,7 +528,7 @@ bool WebViewGuest::AddMessageToConsole(WebContents* source,
   args->SetString(webview::kSourceId, source_id);
   DispatchEventToView(base::MakeUnique<GuestViewEvent>(
       webview::kEventConsoleMessage, std::move(args)));
-  return true;
+  return false;
 }
 
 void WebViewGuest::CloseContents(WebContents* source) {
