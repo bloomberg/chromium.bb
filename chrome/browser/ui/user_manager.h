@@ -72,9 +72,6 @@ class UserManager {
   // Hides the reauth dialog if it is showing.
   static void HideReauthDialog();
 
-// TODO(zmin): Remove the condition for MACOSX once user_manager_mac.cc is
-// updated.
-#if !defined(OS_MACOSX)
   // Shows a dialog where the user login his or her profile by the first time
   // via user manager.
   static void ShowSigninDialog(content::BrowserContext* browser_context,
@@ -85,7 +82,6 @@ class UserManager {
 
   // Get the path of profile that is being signed in.
   static base::FilePath GetSigninProfilePath();
-#endif
 
   // Abstract base class for performing online reauthentication of profiles in
   // the User Manager. It is concretely implemented in UserManagerMac and
