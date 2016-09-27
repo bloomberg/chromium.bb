@@ -22,8 +22,6 @@ class UnusedElementsDetector(object):
   __WHITELIST = (
     # Necessary for closure.
     'polymer-externs',
-    # TODO(tsergeant): Remove app-route from Chromium.
-    'app-route',
   )
 
   def __init__(self):

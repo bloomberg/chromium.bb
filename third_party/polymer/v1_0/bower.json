@@ -3,7 +3,6 @@
   "private": true,
   "dependencies": {
     "app-layout": "PolymerElements/app-layout#0.9.2",
-    "app-route": "PolymerElements/app-route#0.9.2",
     "font-roboto": "PolymerElements/font-roboto#1.0.1",
     "iron-a11y-announcer": "PolymerElements/iron-a11y-announcer#1.0.5",
     "iron-a11y-keys-behavior": "PolymerElements/iron-a11y-keys-behavior#1.1.9",
