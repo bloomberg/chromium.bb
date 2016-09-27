@@ -40,8 +40,10 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-@class UIView;
 @protocol InfoBarViewProtocol;
+@protocol TextFieldStyling;
+@class UITextField;
+@class UIView;
 typedef UIView<InfoBarViewProtocol>* InfoBarViewPlaceholder;
 
 namespace ios {
@@ -109,6 +111,9 @@ class ChromeBrowserProvider {
       const GURL& page_url,
       const std::vector<int>& desired_sizes_in_pixel,
       const favicon_base::FaviconResultsCallback& callback) const;
+  // Creates and returns a new styled text field with the given |frame|.
+  virtual UITextField<TextFieldStyling>* CreateStyledTextField(
+      CGRect frame) const NS_RETURNS_RETAINED;
 
   // Returns whether safe browsing is enabled. See the comment on
   // metrics_services_manager_client.h for details on |on_update_callback|.

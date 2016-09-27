@@ -4,10 +4,23 @@
 
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 
+#import <UIKit/UIKit.h>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/test_updatable_resource_provider.h"
+
+@interface TestStyledTextField : UITextField<TextFieldStyling>
+@end
+
+@implementation TestStyledTextField
+@synthesize placeholderStyle = _placeholderStyle;
+@synthesize textValidator = _textValidator;
+
+- (void)setUseErrorStyling:(BOOL)error {
+}
+@end
 
 namespace ios {
 
@@ -38,6 +51,11 @@ ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {
 UpdatableResourceProvider*
 TestChromeBrowserProvider::GetUpdatableResourceProvider() {
   return test_updatable_resource_provider_.get();
+}
+
+UITextField<TextFieldStyling>* TestChromeBrowserProvider::CreateStyledTextField(
+    CGRect frame) const {
+  return [[TestStyledTextField alloc] initWithFrame:frame];
 }
 
 }  // namespace ios
