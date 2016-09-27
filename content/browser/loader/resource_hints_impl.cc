@@ -94,6 +94,7 @@ int PreresolveUrl(content::ResourceContext* resource_context,
   net::AddressList* addresses = new net::AddressList;
   net::HostResolver* resolver = resource_context->GetHostResolver();
   net::HostResolver::RequestInfo resolve_info(net::HostPortPair::FromURL(url));
+  resolve_info.set_is_speculative(true);
   return resolver->Resolve(
       resolve_info, net::IDLE, addresses,
       base::Bind(&OnResolveComplete, base::Owned(request_holder),
