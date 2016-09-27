@@ -1301,3 +1301,4 @@ crbug.com/649631 [ Win7 Win10 ] fast/backgrounds/border-radius-split-background.
 crbug.com/649631 [ Win7 Win10 ] fast/backgrounds/border-radius-split-background-image.html [ NeedsRebaseline ]
 
 crbug.com/649046 fast/backgrounds/size/scaled-sprited-background.html [ NeedsRebaseline ]
+crbug.com/650655 virtual/enable_wasm/http/tests/wasm/wasm_serialization_tests.html [ NeedsManualRebaseline ]
