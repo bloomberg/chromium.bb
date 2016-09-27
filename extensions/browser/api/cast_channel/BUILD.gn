@@ -27,5 +27,6 @@ source_set("cast_channel") {
   deps = [
     "//extensions/common/api",
     "//extensions/common/api/cast_channel:cast_channel_proto",
+    "//third_party/zlib",
   ]
 }
