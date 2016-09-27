@@ -14,13 +14,45 @@
 #include "mojo/edk/embedder/embedder.h"
 
 namespace {
+
 const char kCrashReporterPath[] = "/sbin/crash_reporter";
+
+// Runs crash_reporter to save the crash info provided via the pipe.
+void RunCrashReporter(const std::string& crash_type,
+                      const std::string& device,
+                      const std::string& board,
+                      const std::string& cpu_abi,
+                      mojo::edk::ScopedPlatformHandle pipe) {
+  base::FileHandleMappingVector fd_map = {
+      std::make_pair(pipe.get().handle, STDIN_FILENO)};
+
+  base::LaunchOptions options;
+  options.fds_to_remap = &fd_map;
+
+  auto process =
+      base::LaunchProcess({kCrashReporterPath, "--arc_java_crash=" + crash_type,
+                           "--arc_device=" + device, "--arc_board=" + board,
+                           "--arc_cpu_abi=" + cpu_abi},
+                          options);
+
+  int exit_code = 0;
+  if (!process.WaitForExit(&exit_code)) {
+    LOG(ERROR) << "Failed to wait for " << kCrashReporterPath;
+  } else if (exit_code != EX_OK) {
+    LOG(ERROR) << kCrashReporterPath << " failed with exit code " << exit_code;
+  }
 }
+
+}  // namespace
 
 namespace arc {
 
-ArcCrashCollectorBridge::ArcCrashCollectorBridge(ArcBridgeService* bridge)
-    : ArcService(bridge), binding_(this) {
+ArcCrashCollectorBridge::ArcCrashCollectorBridge(
+    ArcBridgeService* bridge,
+    scoped_refptr<base::TaskRunner> blocking_task_runner)
+    : ArcService(bridge),
+      blocking_task_runner_(blocking_task_runner),
+      binding_(this) {
   arc_bridge_service()->crash_collector()->AddObserver(this);
 }
 
@@ -39,27 +71,12 @@ void ArcCrashCollectorBridge::OnInstanceReady() {
 
 void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,
                                         mojo::ScopedHandle pipe) {
-  mojo::edk::ScopedPlatformHandle handle;
-  mojo::edk::PassWrappedPlatformHandle(pipe.get().value(), &handle);
+  mojo::edk::ScopedPlatformHandle pipe_handle;
+  mojo::edk::PassWrappedPlatformHandle(pipe.get().value(), &pipe_handle);
 
-  base::FileHandleMappingVector fd_map = {
-      std::make_pair(handle.get().handle, STDIN_FILENO)};
-
-  base::LaunchOptions options;
-  options.fds_to_remap = &fd_map;
-
-  auto process =
-      base::LaunchProcess({kCrashReporterPath, "--arc_java_crash=" + type.get(),
-                           "--arc_device=" + device_, "--arc_board=" + board_,
-                           "--arc_cpu_abi=" + cpu_abi_},
-                          options);
-
-  int exit_code;
-  if (!process.WaitForExit(&exit_code)) {
-    LOG(ERROR) << "Failed to wait for " << kCrashReporterPath;
-  } else if (exit_code != EX_OK) {
-    LOG(ERROR) << kCrashReporterPath << " failed with exit code " << exit_code;
-  }
+  blocking_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&RunCrashReporter, type, device_, board_, cpu_abi_,
+                            base::Passed(std::move(pipe_handle))));
 }
 
 void ArcCrashCollectorBridge::SetBuildProperties(const mojo::String& device,

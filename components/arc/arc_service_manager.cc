@@ -60,7 +60,8 @@ ArcServiceManager::ArcServiceManager(
   AddService(base::MakeUnique<ArcBluetoothBridge>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcBootPhaseMonitorBridge>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcClipboardBridge>(arc_bridge_service()));
-  AddService(base::MakeUnique<ArcCrashCollectorBridge>(arc_bridge_service()));
+  AddService(base::MakeUnique<ArcCrashCollectorBridge>(arc_bridge_service(),
+                                                       blocking_task_runner_));
   AddService(base::MakeUnique<ArcImeService>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcMetricsService>(arc_bridge_service()));
   AddService(base::MakeUnique<ArcNetHostImpl>(arc_bridge_service()));
