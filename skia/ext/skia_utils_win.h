@@ -71,13 +71,6 @@ SK_API sk_sp<SkSurface> MapPlatformSurface(HDC context);
 // Returns an empty bitmap on error.
 SK_API SkBitmap MapPlatformBitmap(HDC context);
 
-// Creates an offscreen HDC suitable for writing to via MapPlatformSurface().
-// Caller is responsible for calling DeleteDC() when done.
-// Will return null if any errors are encountered.
-// TODO(fmalita): consider returning ScopedCreateDC() when that type is
-// returnable (https://crbug.com/622442)
-SK_API HDC CreateOffscreenSurface(int width, int height);
-
 // Fills in a BITMAPINFOHEADER structure given the bitmap's size.
 SK_API void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr);
 

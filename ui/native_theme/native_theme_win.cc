@@ -15,6 +15,7 @@
 #include "base/win/scoped_gdi_object.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/platform_canvas.h"
@@ -110,6 +111,40 @@ RECT InsetRect(const RECT* rect, int size) {
   result.Inset(size, size);
   return result.ToRECT();
 }
+
+// Custom scoped object for storing DC and a bitmap that was selected into it,
+// and making sure that they are deleted in the right order.
+class ScopedCreateDCWithBitmap {
+ public:
+  explicit ScopedCreateDCWithBitmap(base::win::ScopedCreateDC::Handle hdc)
+      : dc_(hdc) {}
+
+  ~ScopedCreateDCWithBitmap() {
+    // Delete DC before the bitmap, since objects should not be deleted while
+    // selected into a DC.
+    dc_.Close();
+  }
+
+  bool IsValid() const { return dc_.IsValid(); }
+
+  base::win::ScopedCreateDC::Handle Get() const { return dc_.Get(); }
+
+  // Selects |handle| to bitmap into DC. Returns false if handle is not valid.
+  bool SelectBitmap(base::win::ScopedBitmap::element_type handle) {
+    bitmap_.reset(handle);
+    if (!bitmap_.is_valid())
+      return false;
+
+    SelectObject(dc_.Get(), bitmap_.get());
+    return true;
+  }
+
+ private:
+  base::win::ScopedCreateDC dc_;
+  base::win::ScopedBitmap bitmap_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedCreateDCWithBitmap);
+};
 
 }  // namespace
 
@@ -664,13 +699,26 @@ void NativeThemeWin::PaintIndirect(SkCanvas* destination_canvas,
   //                  be sped up by doing it only once per part/state and
   //                  keeping a cache of the resulting bitmaps.
 
-  // Create an offscreen canvas that is backed by an HDC.
-  // This can fail if we don't have access to GDI or if lower-level Windows
-  // calls fail, possibly due to GDI handle exhaustion.
-  base::win::ScopedCreateDC offscreen_hdc(
-      skia::CreateOffscreenSurface(rect.width(), rect.height()));
+  // If this process doesn't have access to GDI, we'd need to use shared memory
+  // segment instead but that is not supported right now.
+  if (!base::win::IsUser32AndGdi32Available())
+    return;
+
+  ScopedCreateDCWithBitmap offscreen_hdc(CreateCompatibleDC(nullptr));
   if (!offscreen_hdc.IsValid())
     return;
+
+  skia::InitializeDC(offscreen_hdc.Get());
+  HRGN clip = CreateRectRgn(0, 0, rect.width(), rect.height());
+  if ((SelectClipRgn(offscreen_hdc.Get(), clip) == ERROR) ||
+      !DeleteObject(clip)) {
+    return;
+  }
+
+  if (!offscreen_hdc.SelectBitmap(skia::CreateHBitmap(
+          rect.width(), rect.height(), false, nullptr, nullptr))) {
+    return;
+  }
 
   // Will be NULL if lower-level Windows calls fail, or if the backing
   // allocated is 0 pixels in size (which should never happen according to

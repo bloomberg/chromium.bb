@@ -8,8 +8,6 @@
 #include <windows.h>
 
 #include "base/debug/gdi_debug_util_win.h"
-#include "base/win/scoped_hdc.h"
-#include "base/win/win_util.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkTypes.h"
@@ -195,35 +193,8 @@ SkBitmap MapPlatformBitmap(HDC context) {
   return bitmap;
 }
 
-HDC CreateOffscreenSurface(int width, int height) {
-  HBITMAP bitmap = nullptr;
-
-  // If this process doesn't have access to GDI, we'll have to use a shared
-  // memory segment instead.
-  if (!base::win::IsUser32AndGdi32Available())
-    return nullptr;
-
-  bitmap = CreateHBitmap(width, height, false, nullptr, nullptr);
-  if (!bitmap)
-    return nullptr;
-
-  base::win::ScopedCreateDC scoped_hdc(CreateCompatibleDC(nullptr));
-  if (!scoped_hdc.IsValid())
-    return nullptr;
-  InitializeDC(scoped_hdc.Get());
-  HRGN clip = CreateRectRgn(0, 0, width, height);
-  if ((SelectClipRgn(scoped_hdc.Get(), clip) == ERROR) ||
-      (!DeleteObject(clip)))
-    return nullptr;
-
-  SelectObject(scoped_hdc.Get(), bitmap);
-
-  // The caller must call DeleteDC(hdc) on this object once done with it.
-  return scoped_hdc.Take();
-}
-
 void CreateBitmapHeader(int width, int height, BITMAPINFOHEADER* hdr) {
-   CreateBitmapHeaderWithColorDepth(width, height, 32, hdr);
+  CreateBitmapHeaderWithColorDepth(width, height, 32, hdr);
 }
 
 HBITMAP CreateHBitmap(int width, int height, bool is_opaque,
