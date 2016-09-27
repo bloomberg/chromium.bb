@@ -575,11 +575,14 @@ def ReportResults(symbols, failed_list):
   logging.info('Uploaded %(uploaded)d, Skipped %(duplicate)d duplicates.',
                result_counts)
 
-  if result_counts[SymbolFile.INITIAL] or result_counts[SymbolFile.ERROR]:
+  if result_counts[SymbolFile.ERROR]:
     logging.PrintBuildbotStepWarnings()
-    logging.warning('%d non-recoverable upload errors caused %d skipped'
-                    ' uploads.',
-                    result_counts[SymbolFile.ERROR],
+    logging.warning('%d non-recoverable upload errors',
+                    result_counts[SymbolFile.ERROR])
+
+  if result_counts[SymbolFile.INITIAL]:
+    logging.PrintBuildbotStepWarnings()
+    logging.warning('%d upload(s) were skipped because of excessive errors',
                     result_counts[SymbolFile.INITIAL])
 
   if failed_list is not None:
