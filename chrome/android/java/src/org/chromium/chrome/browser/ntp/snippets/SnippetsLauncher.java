@@ -35,6 +35,9 @@ public class SnippetsLauncher {
     // TODO(treib): Remove this after M55.
     private static final String OBSOLETE_TASK_TAG_RESCHEDULE = "RescheduleSnippets";
 
+    // The amount of "flex" to add around the fetching periods, as a ratio of the period.
+    private static final double FLEX_FACTOR = 0.1;
+
     // The instance of SnippetsLauncher currently owned by a C++ SnippetsLauncherAndroid, if any.
     // If it is non-null then the browser is running.
     private static SnippetsLauncher sInstance;
@@ -97,10 +100,18 @@ public class SnippetsLauncher {
 
     private static PeriodicTask buildFetchTask(
             String tag, long periodSeconds, int requiredNetwork) {
+        // Add a bit of "flex" around the target period. This achieves the following:
+        // - It makes sure the task doesn't run (significantly) before its initial period has
+        //   elapsed. In practice, the scheduler seems to behave like that anyway, but it doesn't
+        //   guarantee that, so we shouldn't rely on it.
+        // - It gives the scheduler a bit of room to optimize for battery life.
+        long effectivePeriodSeconds = (long) (periodSeconds * (1.0 + FLEX_FACTOR));
+        long flexSeconds = (long) (periodSeconds * (2.0 * FLEX_FACTOR));
         return new PeriodicTask.Builder()
                 .setService(ChromeBackgroundService.class)
                 .setTag(tag)
-                .setPeriod(periodSeconds)
+                .setPeriod(effectivePeriodSeconds)
+                .setFlex(flexSeconds)
                 .setRequiredNetwork(requiredNetwork)
                 .setPersisted(true)
                 .setUpdateCurrent(true)
