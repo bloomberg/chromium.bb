@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -188,7 +189,7 @@ class DelayLoadStartAndExecuteJavascript
         script_(script),
         has_user_gesture_(false),
         script_was_executed_(false),
-        rvh_(NULL) {
+        rfh_(nullptr) {
     registrar_.Add(this,
                    chrome::NOTIFICATION_TAB_ADDED,
                    content::NotificationService::AllSources());
@@ -208,35 +209,34 @@ class DelayLoadStartAndExecuteJavascript
     registrar_.RemoveAll();
   }
 
-  void DidStartProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override {
-    if (validated_url != delay_url_ || !rvh_)
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->GetURL() != delay_url_ || !rfh_)
       return;
 
     if (has_user_gesture_) {
-      rvh_->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
+      rfh_->ExecuteJavaScriptWithUserGestureForTests(
           base::UTF8ToUTF16(script_));
     } else {
-      rvh_->GetMainFrame()->ExecuteJavaScriptForTests(
-          base::UTF8ToUTF16(script_));
+      rfh_->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script_));
     }
     script_was_executed_ = true;
   }
 
-  void DidCommitProvisionalLoadForFrame(
-      content::RenderFrameHost* render_frame_host,
-      const GURL& url,
-      ui::PageTransition transition_type) override {
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (!navigation_handle->HasCommitted() || navigation_handle->IsErrorPage())
+      return;
+
     if (script_was_executed_ &&
-        base::EndsWith(url.spec(), until_url_suffix_,
+        base::EndsWith(navigation_handle->GetURL().spec(), until_url_suffix_,
                        base::CompareCase::SENSITIVE)) {
       content::WebContentsObserver::Observe(NULL);
       test_navigation_listener_->ResumeAll();
     }
-    rvh_ = render_frame_host->GetRenderViewHost();
+
+    if (navigation_handle->IsInMainFrame())
+      rfh_ = navigation_handle->GetRenderFrameHost();
   }
 
   void set_has_user_gesture(bool has_user_gesture) {
@@ -253,7 +253,7 @@ class DelayLoadStartAndExecuteJavascript
   std::string script_;
   bool has_user_gesture_;
   bool script_was_executed_;
-  content::RenderViewHost* rvh_;
+  content::RenderFrameHost* rfh_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayLoadStartAndExecuteJavascript);
 };
