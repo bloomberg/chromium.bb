@@ -56,6 +56,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   GLSurface::Format GetFormat() override;
 
   static bool InitializeOneOff(EGLNativeDisplayType native_display);
+  static void ResetForTesting();
   static EGLDisplay GetHardwareDisplay();
   static EGLDisplay InitializeDisplay(EGLNativeDisplayType native_display);
   static EGLNativeDisplayType GetNativeDisplay();
@@ -77,6 +78,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGL);
+  static bool initialized_;
 };
 
 // Encapsulates an EGL surface bound to a view.

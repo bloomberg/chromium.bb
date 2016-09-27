@@ -105,6 +105,8 @@ using ui::GetLastEGLErrorString;
 
 namespace gl {
 
+bool GLSurfaceEGL::initialized_ = false;
+
 #if defined(OS_WIN)
 unsigned int NativeViewGLSurfaceEGL::current_swap_generation_ = 0;
 unsigned int NativeViewGLSurfaceEGL::swaps_this_generation_ = 0;
@@ -255,12 +257,6 @@ bool ValidateEglConfig(EGLDisplay display,
 }
 
 EGLConfig ChooseConfig(GLSurface::Format format) {
-  static std::map<GLSurface::Format, EGLConfig> config_map;
-
-  if (config_map.find(format) != config_map.end()) {
-    return config_map[format];
-  }
-
   // Choose an EGL configuration.
   // On X this is only used for PBuffer surfaces.
   std::vector<EGLint> renderable_types;
@@ -387,7 +383,6 @@ EGLConfig ChooseConfig(GLSurface::Format format) {
         }
       }
     }
-    config_map[format] = config;
     return config;
   }
 
@@ -472,8 +467,7 @@ EGLConfig GLSurfaceEGL::GetConfig() {
 
 // static
 bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
-  static bool initialized = false;
-  if (initialized)
+  if (initialized_)
     return true;
 
   // Must be called before InitializeDisplay().
@@ -532,10 +526,26 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
     }
   }
 #endif
-
-  initialized = true;
+  initialized_ = true;
 
   return true;
+}
+
+// static
+void GLSurfaceEGL::ResetForTesting() {
+  if (g_display != EGL_NO_DISPLAY)
+    eglTerminate(g_display);
+  g_display = EGL_NO_DISPLAY;
+
+  g_egl_extensions = nullptr;
+  g_egl_create_context_robustness_supported = false;
+  g_egl_sync_control_supported = false;
+  g_egl_window_fixed_size_supported = false;
+  g_egl_surface_orientation_supported = false;
+  g_use_direct_composition = false;
+  g_egl_surfaceless_context_supported = false;
+
+  initialized_ = false;
 }
 
 // static
