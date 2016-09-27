@@ -91,6 +91,14 @@ async_test(function(t) {
       assert_true(capabilities.redEyeReduction,
           mock_capabilities.red_eye_reduction, 'redEyeReduction');
 
+      assert_true(capabilities.colorTemperature instanceof MediaSettingsRange);
+      assert_equals(capabilities.colorTemperature.max,
+                    mock_capabilities.color_temperature.max);
+      assert_equals(capabilities.colorTemperature.min,
+                    mock_capabilities.color_temperature.min);
+      assert_equals(capabilities.colorTemperature.current,
+                    mock_capabilities.color_temperature.current);
+
       t.done();
     })
     .catch(error => {

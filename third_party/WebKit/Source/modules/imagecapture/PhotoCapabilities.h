@@ -50,6 +50,9 @@ public:
     bool redEyeReduction() const  { return m_redEyeReduction; }
     void setRedEyeReduction(bool redEyeReduction) { m_redEyeReduction = redEyeReduction; }
 
+    MediaSettingsRange* colorTemperature() const { return m_colorTemperature; }
+    void setColorTemperature(MediaSettingsRange* value) { m_colorTemperature = value; }
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -65,6 +68,8 @@ private:
     media::mojom::blink::MeteringMode m_whiteBalanceMode = media::mojom::blink::MeteringMode::NONE;
     media::mojom::blink::FillLightMode m_fillLightMode = media::mojom::blink::FillLightMode::NONE;
     bool m_redEyeReduction;
+
+    Member<MediaSettingsRange> m_colorTemperature;
 };
 
 } // namespace blink

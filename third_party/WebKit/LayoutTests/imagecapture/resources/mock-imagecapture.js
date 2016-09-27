@@ -26,6 +26,7 @@ let mockImageCaptureReady = define(
           white_balance_mode : imageCapture.MeteringMode.CONTINUOUS,
           fill_light_mode : imageCapture.FillLightMode.AUTO,
           red_eye_reduction : true,
+          color_temperature : { min : 2500, max : 6500, current : 6000 },
       }};
       this.settings_ = null;
     }

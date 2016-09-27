@@ -386,6 +386,26 @@ void V4L2CaptureDelegate::GetPhotoCapabilities(
                                     : mojom::MeteringMode::MANUAL;
   }
 
+  photo_capabilities->color_temperature = mojom::Range::New();
+  v4l2_queryctrl color_temperature_range = {};
+  color_temperature_range.id = V4L2_CID_WHITE_BALANCE_TEMPERATURE;
+  color_temperature_range.type = V4L2_CTRL_TYPE_INTEGER;
+  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QUERYCTRL,
+                         &color_temperature_range)) >= 0) {
+    photo_capabilities->color_temperature->max =
+        color_temperature_range.maximum;
+    photo_capabilities->color_temperature->min =
+        color_temperature_range.minimum;
+  }
+
+  v4l2_control color_temperature_current = {};
+  color_temperature_current.id = V4L2_CID_WHITE_BALANCE_TEMPERATURE;
+  if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_G_CTRL,
+                         &color_temperature_current)) >= 0) {
+    photo_capabilities->color_temperature->current =
+        color_temperature_current.value;
+  }
+
   photo_capabilities->iso = mojom::Range::New();
   photo_capabilities->height = mojom::Range::New();
   photo_capabilities->width = mojom::Range::New();
@@ -409,6 +429,31 @@ void V4L2CaptureDelegate::SetPhotoOptions(
     if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &zoom_current)) < 0)
       DPLOG(ERROR) << "setting zoom to " << settings->zoom / kZoomMultiplier;
   }
+
+  if (settings->has_white_balance_mode &&
+      (settings->white_balance_mode == mojom::MeteringMode::CONTINUOUS ||
+       settings->white_balance_mode == mojom::MeteringMode::MANUAL)) {
+    v4l2_control white_balance_set = {};
+    white_balance_set.id = V4L2_CID_AUTO_WHITE_BALANCE;
+    white_balance_set.value =
+        settings->white_balance_mode == mojom::MeteringMode::CONTINUOUS;
+    HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &white_balance_set));
+  }
+
+  // Color temperature can only be applied if Auto White Balance is off.
+  if (settings->has_color_temperature) {
+    v4l2_control auto_white_balance_current = {};
+    auto_white_balance_current.id = V4L2_CID_AUTO_WHITE_BALANCE;
+    const int result = HANDLE_EINTR(
+        ioctl(device_fd_.get(), VIDIOC_G_CTRL, &auto_white_balance_current));
+    if (result >= 0 && !auto_white_balance_current.value) {
+      v4l2_control set_temperature = {};
+      set_temperature.id = V4L2_CID_WHITE_BALANCE_TEMPERATURE;
+      set_temperature.value = settings->color_temperature;
+      HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_S_CTRL, &set_temperature));
+    }
+  }
+
   callback.Run(true);
 }
 

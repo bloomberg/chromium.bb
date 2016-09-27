@@ -8,7 +8,7 @@
     RuntimeEnabled=ImageCapture
 ] dictionary PhotoSettings {
     MeteringMode whiteBalanceMode;
-    // TODO(mcasas): Implement |colorTemperature| https://crbug.com/650675.
+    unsigned long colorTemperature;
     MeteringMode exposureMode;
     unsigned long exposureCompensation;
     unsigned long iso;

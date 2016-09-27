@@ -22,16 +22,18 @@ enum FillLightMode { NONE, OFF, AUTO, FLASH, TORCH };
 // Equivalent to idl PhotoCapabilities,
 // https://www.w3.org/TR/image-capture/#PhotoCapabilities
 struct PhotoCapabilities {
+  MeteringMode white_balance_mode;
+  Range color_temperature;
+  MeteringMode exposure_mode;
+  Range exposure_compensation;
   Range iso;
+  bool red_eye_reduction;
+  MeteringMode focus_mode;
+
   Range height;
   Range width;
   Range zoom;
-  MeteringMode focus_mode;
-  MeteringMode exposure_mode;
-  Range exposure_compensation;
-  MeteringMode white_balance_mode;
   FillLightMode fill_light_mode;
-  bool red_eye_reduction;
 };
 
 // Equivalent to idl Point2D.
@@ -45,27 +47,30 @@ struct Point2D {
 // https://www.w3.org/TR/image-capture/#PhotoSettings
 struct PhotoSettings {
   // uint32 cannot be nullable, i.e. uint32? does not work, use instead a flag.
+  bool has_white_balance_mode;
+  MeteringMode white_balance_mode;
+  bool has_color_temperature;
+  uint32 color_temperature;
+  bool has_exposure_mode;
+  MeteringMode exposure_mode;
+  bool has_exposure_compensation;
+  uint32 exposure_compensation;
+  bool has_iso;
+  uint32 iso;
+  bool has_red_eye_reduction;
+  bool red_eye_reduction;
+  bool has_focus_mode;
+  MeteringMode focus_mode;
+  array<Point2D> points_of_interest;
+
   bool has_zoom;
   uint32 zoom;
   bool has_width;
   uint32 width;
   bool has_height;
   uint32 height;
-  bool has_focus_mode;
-  MeteringMode focus_mode;
-  bool has_exposure_mode;
-  MeteringMode exposure_mode;
-  bool has_exposure_compensation;
-  uint32 exposure_compensation;
-  bool has_white_balance_mode;
-  MeteringMode white_balance_mode;
-  bool has_iso;
-  uint32 iso;
-  bool has_red_eye_reduction;
-  bool red_eye_reduction;
   bool has_fill_light_mode;
   FillLightMode fill_light_mode;
-  array<Point2D> points_of_interest;
 };
 
 // This is a mojo move-only equivalent of a Blob, i.e. MIME type and Data.

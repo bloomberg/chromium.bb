@@ -177,6 +177,9 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState, const PhotoSett
             settings->points_of_interest.append(std::move(mojoPoint));
         }
     }
+    settings->has_color_temperature = photoSettings.hasColorTemperature();
+    if (settings->has_color_temperature)
+        settings->color_temperature = photoSettings.colorTemperature();
 
     m_service->SetOptions(m_streamTrack->component()->source()->id(), std::move(settings), convertToBaseCallback(WTF::bind(&ImageCapture::onSetOptions, wrapPersistent(this), wrapPersistent(resolver))));
     return promise;
@@ -261,6 +264,7 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         MediaSettingsRange* width = MediaSettingsRange::create(capabilities->width->max, capabilities->width->min, capabilities->width->current);
         MediaSettingsRange* zoom = MediaSettingsRange::create(capabilities->zoom->max, capabilities->zoom->min, capabilities->zoom->current);
         MediaSettingsRange* exposureCompensation = MediaSettingsRange::create(capabilities->exposure_compensation->max, capabilities->exposure_compensation->min, capabilities->exposure_compensation->current);
+        MediaSettingsRange* colorTemperature = MediaSettingsRange::create(capabilities->color_temperature->max, capabilities->color_temperature->min, capabilities->color_temperature->current);
         PhotoCapabilities* caps = PhotoCapabilities::create();
         caps->setIso(iso);
         caps->setImageHeight(height);
@@ -272,6 +276,7 @@ void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, media::mojom:
         caps->setWhiteBalanceMode(capabilities->white_balance_mode);
         caps->setFillLightMode(capabilities->fill_light_mode);
         caps->setRedEyeReduction(capabilities->red_eye_reduction);
+        caps->setColorTemperature(colorTemperature);
         resolver->resolve(caps);
     }
     m_serviceRequests.remove(resolver);

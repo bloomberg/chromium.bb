@@ -4544,6 +4544,7 @@ interface Permissions
     method revoke
 interface PhotoCapabilities
     attribute @@toStringTag
+    getter colorTemperature
     getter exposureCompensation
     getter exposureMode
     getter fillLightMode

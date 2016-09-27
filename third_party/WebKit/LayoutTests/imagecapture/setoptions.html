@@ -33,6 +33,7 @@ async_test(function(t) {
                         iso : 120,
                         redEyeReduction : true,
                         fillLightMode : "flash",
+                        colorTemperature : 6000,
                       };
   mockImageCaptureReady
     .then(mock => {
@@ -95,6 +96,11 @@ async_test(function(t) {
       assert_equals(optionsDict.fillLightMode,
                     fillLightModeNames[theMock.options().fill_light_mode],
                     'fillLightMode value');
+      assert_true(theMock.options().has_color_temperature,
+                  'has_color_temperature must be true');
+      assert_equals(optionsDict.colorTemperature,
+                    theMock.options().color_temperature,
+                    'colorTemperature value');
 
       t.done();
     })

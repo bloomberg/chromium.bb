@@ -23,7 +23,7 @@ enum FillLightMode {
     RuntimeEnabled=ImageCapture,
 ] interface PhotoCapabilities {
     readonly attribute MeteringMode whiteBalanceMode;
-    // TODO(mcasas): Implement |colorTemperature| https://crbug.com/650675.
+    readonly attribute MediaSettingsRange colorTemperature;
     readonly attribute MeteringMode exposureMode;
     readonly attribute MediaSettingsRange exposureCompensation;
     readonly attribute MediaSettingsRange iso;
