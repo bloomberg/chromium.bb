@@ -15,7 +15,11 @@
 namespace blink {
 
 // A paint effect created by the opacity css property along with a reference to
-// the parent effect node, or nullptr for the root.
+// the parent effect for inherited effects.
+//
+// The effect tree is rooted at a node with no parent. This root node should
+// not be modified.
+//
 // TODO(pdr): Support more effects than just opacity.
 class PLATFORM_EXPORT EffectPaintPropertyNode : public RefCounted<EffectPaintPropertyNode> {
 public:
@@ -26,6 +30,7 @@ public:
 
     void update(PassRefPtr<const EffectPaintPropertyNode> parent, float opacity)
     {
+        DCHECK(!isRoot());
         DCHECK(parent != this);
         m_parent = parent;
         m_opacity = opacity;

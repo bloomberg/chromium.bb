@@ -51,14 +51,14 @@ PaintPropertyTreeBuilderContext PaintPropertyTreeBuilder::setupInitialContext()
     PaintPropertyTreeBuilderContext context;
 
     context.current.clip = context.absolutePosition.clip = context.fixedPosition.clip = rootClipNode();
+    context.currentEffect = rootEffectNode();
 
-    // TODO(pdr): Update the root layer scrolling paths to use the static root nodes for transform, effect, and scroll.
+    // TODO(pdr): Update the root layer scrolling paths to use the static root nodes for transform and scroll.
     if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
         return context;
 
     context.current.transform = context.absolutePosition.transform = context.fixedPosition.transform = rootTransformNode();
     context.current.scroll = context.absolutePosition.scroll = context.fixedPosition.scroll = rootScrollNode();
-    context.currentEffect = rootEffectNode();
 
     // Ensure scroll tree properties are reset. They will be rebuilt during the tree walk.
     rootScrollNode()->clearMainThreadScrollingReasons();
@@ -279,14 +279,6 @@ void PaintPropertyTreeBuilder::updateTransform(const LayoutObject& object, Paint
 
 void PaintPropertyTreeBuilder::updateEffect(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
-    if (object.isLayoutView() && !context.currentEffect) {
-        const LayoutView& layoutView = toLayoutView(object);
-        DCHECK(RuntimeEnabledFeatures::rootLayerScrollingEnabled());
-        DCHECK(layoutView.frameView()->frame().isMainFrame());
-        context.currentEffect = layoutView.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateEffect(nullptr, 1.0);
-        return;
-    }
-
     if (!object.styleRef().hasOpacity()) {
         if (ObjectPaintProperties* properties = object.getMutableForPainting().objectPaintProperties())
             properties->clearEffect();
