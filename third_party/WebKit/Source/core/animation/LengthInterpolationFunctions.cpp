@@ -149,6 +149,8 @@ Length LengthInterpolationFunctions::createLength(const InterpolableValue& inter
     double percentage = 0;
     for (size_t i = 0; i < CSSPrimitiveValue::LengthUnitTypeCount; i++) {
         double value = toInterpolableNumber(*interpolableList.get(i)).value();
+        if (value == 0)
+            continue;
         if (i == CSSPrimitiveValue::UnitTypePercentage) {
             percentage = value;
         } else {
