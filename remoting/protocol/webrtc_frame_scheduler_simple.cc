@@ -23,6 +23,11 @@ constexpr base::TimeDelta kTargetFrameInterval =
 // Target quantizer at which stop the encoding top-off.
 const int kTargetQuantizerForVp8TopOff = 30;
 
+// Minimum target bitrate per megapixel. The value is chosen experimentally such
+// that when screen is not changing the codec converges to the target quantizer
+// above in less than 10 frames.
+const int kVp8MinimumTargetBitrateKbpsPerMegapixel = 2500;
+
 }  // namespace
 
 WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple()
@@ -60,7 +65,11 @@ bool WebrtcFrameSchedulerSimple::GetEncoderFrameParams(
     return false;
   }
 
-  params_out->bitrate_kbps = target_bitrate_kbps_;
+  // TODO(sergeyu): This logic is applicable only to VP8. Reconsider it for VP9.
+  int minimum_bitrate =
+      static_cast<uint64_t>(kVp8MinimumTargetBitrateKbpsPerMegapixel) *
+      frame.size().width() * frame.size().height() / 1000000LL;
+  params_out->bitrate_kbps = std::max(minimum_bitrate, target_bitrate_kbps_);
 
   // TODO(sergeyu): Currently duration is always set to 1/15 of a second.
   // Experiment with different values, and try changing it dynamically.

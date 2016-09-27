@@ -40,7 +40,7 @@ class WebrtcFrameSchedulerSimple : public WebrtcFrameScheduler {
   base::Closure capture_callback_;
   bool paused_ = false;
   bool key_frame_request_ = false;
-  uint32_t target_bitrate_kbps_ = 1000;  // Initial bitrate.
+  int target_bitrate_kbps_ = 1000;  // Initial bitrate.
 
   base::TimeTicks last_capture_started_time_;
   base::TimeTicks last_frame_send_finish_time_;
