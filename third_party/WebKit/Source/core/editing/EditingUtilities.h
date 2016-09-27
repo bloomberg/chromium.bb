@@ -72,6 +72,7 @@ class Range;
 
 CORE_EXPORT bool needsLayoutTreeUpdate(const Node&);
 CORE_EXPORT bool needsLayoutTreeUpdate(const Position&);
+CORE_EXPORT bool needsLayoutTreeUpdate(const PositionInFlatTree&);
 
 // -------------------------------------------------------------------------
 // Node

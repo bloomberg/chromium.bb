@@ -91,12 +91,23 @@ bool needsLayoutTreeUpdate(const Node& node)
     return document.view() && document.view()->needsLayout();
 }
 
-bool needsLayoutTreeUpdate(const Position& position)
+template <typename PositionType>
+static bool needsLayoutTreeUpdateAlgorithm(const PositionType& position)
 {
     const Node* node = position.anchorNode();
     if (!node)
         return false;
     return needsLayoutTreeUpdate(*node);
+}
+
+bool needsLayoutTreeUpdate(const Position& position)
+{
+    return needsLayoutTreeUpdateAlgorithm<Position>(position);
+}
+
+bool needsLayoutTreeUpdate(const PositionInFlatTree& position)
+{
+    return needsLayoutTreeUpdateAlgorithm<PositionInFlatTree>(position);
 }
 
 // Atomic means that the node has no children, or has children which are ignored for the
@@ -533,12 +544,14 @@ PositionInFlatTree previousVisuallyDistinctCandidate(const PositionInFlatTree& p
 
 VisiblePosition firstEditableVisiblePositionAfterPositionInRoot(const Position& position, ContainerNode& highestRoot)
 {
-    return createVisiblePositionDeprecated(firstEditablePositionAfterPositionInRoot(position, highestRoot));
+    DCHECK(!needsLayoutTreeUpdate(position));
+    return createVisiblePosition(firstEditablePositionAfterPositionInRoot(position, highestRoot));
 }
 
 VisiblePositionInFlatTree firstEditableVisiblePositionAfterPositionInRoot(const PositionInFlatTree& position, ContainerNode& highestRoot)
 {
-    return createVisiblePositionDeprecated(firstEditablePositionAfterPositionInRoot(position, highestRoot));
+    DCHECK(!needsLayoutTreeUpdate(position));
+    return createVisiblePosition(firstEditablePositionAfterPositionInRoot(position, highestRoot));
 }
 
 template <typename Strategy>
@@ -588,12 +601,14 @@ PositionInFlatTree firstEditablePositionAfterPositionInRoot(const PositionInFlat
 
 VisiblePosition lastEditableVisiblePositionBeforePositionInRoot(const Position& position, ContainerNode& highestRoot)
 {
-    return createVisiblePositionDeprecated(lastEditablePositionBeforePositionInRoot(position, highestRoot));
+    DCHECK(!needsLayoutTreeUpdate(position));
+    return createVisiblePosition(lastEditablePositionBeforePositionInRoot(position, highestRoot));
 }
 
 VisiblePositionInFlatTree lastEditableVisiblePositionBeforePositionInRoot(const PositionInFlatTree& position, ContainerNode& highestRoot)
 {
-    return createVisiblePositionDeprecated(lastEditablePositionBeforePositionInRoot(position, highestRoot));
+    DCHECK(!needsLayoutTreeUpdate(position));
+    return createVisiblePosition(lastEditablePositionBeforePositionInRoot(position, highestRoot));
 }
 
 template <typename Strategy>
@@ -1315,13 +1330,15 @@ Node* enclosingListChild(Node *node)
 // FIXME: This method should not need to call isStartOfParagraph/isEndOfParagraph
 Node* enclosingEmptyListItem(const VisiblePosition& visiblePos)
 {
+    DCHECK(visiblePos.isValid());
+
     // Check that position is on a line by itself inside a list item
     Node* listChildNode = enclosingListChild(visiblePos.deepEquivalent().anchorNode());
     if (!listChildNode || !isStartOfParagraph(visiblePos) || !isEndOfParagraph(visiblePos))
         return 0;
 
-    VisiblePosition firstInListChild = createVisiblePositionDeprecated(firstPositionInOrBeforeNode(listChildNode));
-    VisiblePosition lastInListChild = createVisiblePositionDeprecated(lastPositionInOrAfterNode(listChildNode));
+    VisiblePosition firstInListChild = createVisiblePosition(firstPositionInOrBeforeNode(listChildNode));
+    VisiblePosition lastInListChild = createVisiblePosition(lastPositionInOrAfterNode(listChildNode));
 
     if (firstInListChild.deepEquivalent() != visiblePos.deepEquivalent() || lastInListChild.deepEquivalent() != visiblePos.deepEquivalent())
         return 0;
@@ -1753,13 +1770,16 @@ VisiblePosition visiblePositionForIndex(int index, ContainerNode* scope)
 {
     if (!scope)
         return VisiblePosition();
+    DCHECK(!scope->document().needsLayoutTreeUpdate());
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(scope->document().lifecycle());
+
     EphemeralRange range = PlainTextRange(index).createRangeForSelection(*scope);
     // Check for an invalid index. Certain editing operations invalidate indices
     // because of problems with
     // TextIteratorEmitsCharactersBetweenAllVisiblePositions.
     if (range.isNull())
         return VisiblePosition();
-    return createVisiblePositionDeprecated(range.startPosition());
+    return createVisiblePosition(range.startPosition());
 }
 
 // Determines whether a node is inside a range or visibly starts and ends at the boundaries of the range.
