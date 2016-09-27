@@ -24,19 +24,16 @@ import unittest
 
 from main import change_directory
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.logtesting import LogTesting
+from webkitpy.common.system.logtesting import LoggingTestCase
 
 
-class ChangeDirectoryTest(unittest.TestCase):
+class ChangeDirectoryTest(LoggingTestCase):
     _original_directory = "/original"
     _checkout_root = "/WebKit"
 
     def setUp(self):
-        self._log = LogTesting.setUp(self)
+        super(ChangeDirectoryTest, self).setUp()
         self.filesystem = MockFileSystem(dirs=[self._original_directory, self._checkout_root], cwd=self._original_directory)
-
-    def tearDown(self):
-        self._log.tearDown()
 
     def _change_directory(self, paths, checkout_root):
         return change_directory(self.filesystem, paths=paths, checkout_root=checkout_root)
@@ -44,7 +41,7 @@ class ChangeDirectoryTest(unittest.TestCase):
     def _assert_result(self, actual_return_value, expected_return_value,
                        expected_log_messages, expected_current_directory):
         self.assertEqual(actual_return_value, expected_return_value)
-        self._log.assertMessages(expected_log_messages)
+        self.assertLog(expected_log_messages)
         self.assertEqual(self.filesystem.getcwd(), expected_current_directory)
 
     def test_paths_none(self):
