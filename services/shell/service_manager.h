@@ -88,11 +88,6 @@ class ServiceManager : public Service {
   // guaranteed and can lead to random flake.
   mojom::Resolver* GetResolver(const Identity& identity);
 
-  // Destroys all Service Manager-ends of connections established with Services.
-  // Services connected by this Service Manager will observe pipe errors and
-  // have a chance to shut down.
-  void TerminateServiceManagerConnections();
-
   // Called when |instance| encounters an error. Deletes |instance|.
   void OnInstanceError(Instance* instance);
 
@@ -166,6 +161,10 @@ class ServiceManager : public Service {
   // Maps service identities to reachable instances. Note that the Instance*
   // values here are NOT owned by this map.
   std::map<Identity, Instance*> identity_to_instance_;
+
+  // Always points to the ServiceManager's own Instance. Note that this
+  // Instance still has an entry in |root_instances_|.
+  Instance* service_manager_instance_;
 
   // Tracks the names of instances that are allowed to field connection requests
   // from all users.

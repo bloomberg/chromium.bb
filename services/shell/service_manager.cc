@@ -487,9 +487,9 @@ ServiceManager::ServiceManager(
       weak_ptr_factory_(this) {
   mojom::ServicePtr service;
   mojom::ServiceRequest request = mojo::GetProxy(&service);
-  Instance* instance = CreateInstance(
+  service_manager_instance_ = CreateInstance(
       Identity(), CreateServiceManagerIdentity(), GetPermissiveCapabilities());
-  instance->StartWithService(std::move(service));
+  service_manager_instance_->StartWithService(std::move(service));
   singletons_.insert(kServiceManagerName);
   service_context_.reset(new ServiceContext(this, std::move(request)));
 
@@ -498,7 +498,15 @@ ServiceManager::ServiceManager(
 }
 
 ServiceManager::~ServiceManager() {
-  TerminateServiceManagerConnections();
+  // Ensure we tear down the ServiceManager instance last. This is to avoid
+  // hitting bindings DCHECKs, since the ServiceManager or Catalog may at any
+  // given time own in-flight responders for Instances' Connector requests.
+  std::unique_ptr<Instance> service_manager_instance;
+  auto iter = root_instances_.find(service_manager_instance_);
+  DCHECK(iter != root_instances_.end());
+  service_manager_instance = std::move(iter->second);
+
+  root_instances_.clear();
 }
 
 void ServiceManager::SetInstanceQuitCallback(
@@ -574,13 +582,11 @@ mojom::Resolver* ServiceManager::GetResolver(const Identity& identity) {
   return resolver;
 }
 
-void ServiceManager::TerminateServiceManagerConnections() {
-  Instance* instance = GetExistingInstance(CreateServiceManagerIdentity());
-  if (instance)
-    OnInstanceError(instance);
-}
-
 void ServiceManager::OnInstanceError(Instance* instance) {
+  // We never clean up the ServiceManager's own instance.
+  if (instance == service_manager_instance_)
+    return;
+
   const Identity identity = instance->identity();
   identity_to_instance_.erase(identity);
 

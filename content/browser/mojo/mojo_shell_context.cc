@@ -287,12 +287,16 @@ MojoShellContext::MojoShellContext() {
 }
 
 MojoShellContext::~MojoShellContext() {
+  // NOTE: The in-process ServiceManager MUST be destroyed before the browser
+  // process-wide MojoShellConnection. Otherwise it's possible for the
+  // ServiceManager to receive connection requests for exe:content_browser which
+  // it may attempt to service by launching a new instance of the browser.
+  if (in_process_context_)
+    in_process_context_->ShutDown();
   if (MojoShellConnection::GetForProcess())
     MojoShellConnection::DestroyForProcess();
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&DestroyConnectorOnIOThread));
-  if (in_process_context_)
-    in_process_context_->ShutDown();
 }
 
 // static
