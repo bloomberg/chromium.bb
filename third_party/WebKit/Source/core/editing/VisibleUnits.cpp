@@ -1923,8 +1923,8 @@ VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBounda
 
 bool inSameBlock(const VisiblePosition& a, const VisiblePosition& b)
 {
-    // TODO(xiaochengh): Ensure that this function is called with valid |a| and
-    // |b|, and add |DCHECK(a.isValid())| and |DCHECK(b.isValid())|
+    DCHECK(a.isValid()) << a;
+    DCHECK(b.isValid()) << b;
     return !a.isNull() && enclosingBlock(a.deepEquivalent().computeContainerNode()) == enclosingBlock(b.deepEquivalent().computeContainerNode());
 }
 

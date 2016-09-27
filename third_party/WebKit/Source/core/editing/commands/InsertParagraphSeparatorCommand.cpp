@@ -201,7 +201,6 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         // move to another place.
         listChild = toHTMLElement(enclosingAnchorElement(originalInsertionPosition));
     }
-    VisiblePosition visiblePos = createVisiblePositionDeprecated(insertionPosition, affinity);
     calculateStyleBeforeInsertion(insertionPosition);
 
     //---------------------------------------------------------------------
@@ -212,11 +211,8 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     //---------------------------------------------------------------------
     // Prepare for more general cases.
 
-    bool isFirstInBlock = isStartOfBlock(visiblePos);
-    bool isLastInBlock = isEndOfBlock(visiblePos);
-    bool nestNewBlock = false;
-
     // Create block to be inserted.
+    bool nestNewBlock = false;
     Element* blockToInsert = nullptr;
     if (isRootEditableElement(*startBlock)) {
         blockToInsert = createDefaultParagraphElement(document());
@@ -226,6 +222,10 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     } else {
         blockToInsert = startBlock->cloneElementWithoutChildren();
     }
+
+    VisiblePosition visiblePos = createVisiblePositionDeprecated(insertionPosition, affinity);
+    bool isFirstInBlock = isStartOfBlock(visiblePos);
+    bool isLastInBlock = isEndOfBlock(visiblePos);
 
     //---------------------------------------------------------------------
     // Handle case when position is in the last visible position in its block,
