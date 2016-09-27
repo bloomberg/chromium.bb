@@ -334,8 +334,6 @@ void BaseRenderingContext2D::compositedDraw(const DrawFunc& drawFunc, SkCanvas* 
     }
 
     compositePaint.setImageFilter(filter);
-    // TODO(junov): crbug.com/502921 We could use primitive bounds if we knew that the filter
-    // does not affect transparent black regions *and* !isFullCanvasCompositeMode
     c->saveLayer(nullptr, &compositePaint);
     SkPaint foregroundPaint = *state().getPaint(paintType, DrawForegroundOnly, imageType);
     foregroundPaint.setXfermodeMode(SkXfermode::kSrcOver_Mode);
