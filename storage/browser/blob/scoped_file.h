@@ -21,8 +21,7 @@ namespace storage {
 
 // A scoped reference for a FilePath that can optionally schedule the file
 // to be deleted and/or to notify a consumer when it is going to be scoped out.
-// This class supports move semantics, i.e. consumers can call Pass() to
-// pass the ownership of ScopedFile.
+// Consumers can pass the ownership of a ScopedFile via std::move().
 //
 // TODO(kinuko): Probably this can be moved under base or somewhere more
 // common place.
