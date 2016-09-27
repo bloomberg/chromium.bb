@@ -4,6 +4,7 @@
 
 #include "chrome/common/service_process_util.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/callback.h"
