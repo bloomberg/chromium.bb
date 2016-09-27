@@ -154,7 +154,7 @@ class NoTransferRequestDelegate : public WebContentsDelegate {
  public:
   NoTransferRequestDelegate() {}
 
-  bool ShouldTransferNavigation() override {
+  bool ShouldTransferNavigation(bool is_main_frame_navigation) override {
     // Intentionally cancel the transfer.
     return false;
   }

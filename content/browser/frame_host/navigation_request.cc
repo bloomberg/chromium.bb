@@ -386,9 +386,8 @@ void NavigationRequest::OnResponseStarted(
   // renderer, allow the embedder to cancel the transfer.
   if (!browser_initiated_ &&
       render_frame_host != frame_tree_node_->current_frame_host() &&
-      !frame_tree_node_->navigator()
-           ->GetDelegate()
-           ->ShouldTransferNavigation()) {
+      !frame_tree_node_->navigator()->GetDelegate()->ShouldTransferNavigation(
+          frame_tree_node_->IsMainFrame())) {
     frame_tree_node_->ResetNavigationRequest(false);
     return;
   }

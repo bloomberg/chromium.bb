@@ -605,7 +605,7 @@ class CONTENT_EXPORT WebContentsImpl
                                         ReloadType reload_type) override;
   void RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                       const OpenURLParams& params) override;
-  bool ShouldTransferNavigation() override;
+  bool ShouldTransferNavigation(bool is_main_frame_navigation) override;
   bool ShouldPreserveAbortedURLs() override;
   void DidStartLoading(FrameTreeNode* frame_tree_node,
                        bool to_different_document) override;

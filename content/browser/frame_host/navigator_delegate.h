@@ -115,7 +115,7 @@ class CONTENT_EXPORT NavigatorDelegate {
 
   // Returns whether to continue a navigation that needs to transfer to a
   // different process between the load start and commit.
-  virtual bool ShouldTransferNavigation();
+  virtual bool ShouldTransferNavigation(bool is_main_frame_navigation);
 
   // Returns whether URLs for aborted browser-initiated navigations should be
   // preserved in the omnibox.  Defaults to false.

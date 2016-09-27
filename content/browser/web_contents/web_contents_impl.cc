@@ -3351,10 +3351,10 @@ void WebContentsImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
   }
 }
 
-bool WebContentsImpl::ShouldTransferNavigation() {
+bool WebContentsImpl::ShouldTransferNavigation(bool is_main_frame_navigation) {
   if (!delegate_)
     return true;
-  return delegate_->ShouldTransferNavigation();
+  return delegate_->ShouldTransferNavigation(is_main_frame_navigation);
 }
 
 bool WebContentsImpl::ShouldPreserveAbortedURLs() {
