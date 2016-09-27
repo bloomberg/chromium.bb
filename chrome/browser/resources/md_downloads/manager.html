@@ -13,11 +13,6 @@
 
 <dom-module id="downloads-manager">
   <template>
-    <style no-process>
-      #toolbar {
-        background: var(--md-toolbar-color);
-      }
-    </style>
     <downloads-toolbar id="toolbar" spinner-active="{{spinnerActive_}}">
     </downloads-toolbar>
     <iron-list id="downloads-list" items="{{items_}}"

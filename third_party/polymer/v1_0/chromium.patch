@@ -23,16 +23,3 @@ index baf9ab3..985fe6c 100644
  },
  removeCustomPropAssignment: function (cssText) {
  return cssText.replace(this._rx.customProp, '').replace(this._rx.mixinProp, '');
-diff --git a/components-chromium/polymer/polymer-extracted.js b/components-chromium/polymer/polymer-extracted.js
-index 627bdd3..7ba497c 100644
---- a/components-chromium/polymer/polymer-extracted.js
-+++ b/components-chromium/polymer/polymer-extracted.js
-@@ -2521,7 +2521,7 @@ AT_START: '@'
- var settings = Polymer.Settings;
- return {
- NATIVE_VARIABLES: Polymer.Settings.useNativeCSSProperties,
--MODULE_STYLES_SELECTOR: 'style, link[rel=import][type~=css], template',
-+MODULE_STYLES_SELECTOR: 'style:not([no-process]), link[rel=import][type~=css], template',
- INCLUDE_ATTR: 'include',
- toCssText: function (rules, callback) {
- if (typeof rules === 'string') {

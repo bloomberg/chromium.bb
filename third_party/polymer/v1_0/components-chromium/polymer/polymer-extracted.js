@@ -2529,7 +2529,7 @@ AT_START: '@'
 var settings = Polymer.Settings;
 return {
 NATIVE_VARIABLES: Polymer.Settings.useNativeCSSProperties,
-MODULE_STYLES_SELECTOR: 'style:not([no-process]), link[rel=import][type~=css], template',
+MODULE_STYLES_SELECTOR: 'style, link[rel=import][type~=css], template',
 INCLUDE_ATTR: 'include',
 toCssText: function (rules, callback) {
 if (typeof rules === 'string') {

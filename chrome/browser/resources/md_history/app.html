@@ -15,16 +15,15 @@
 
 <dom-module id="history-app">
   <template>
-    <style no-process>
-      history-toolbar {
-        background: var(--md-toolbar-color);
-      }
-    </style>
     <style include="shared-style">
       :host {
         display: block;
         height: 100%;
         overflow: hidden;
+      }
+
+      history-toolbar {
+        background: var(--md-toolbar-color);
       }
 
       /* Sizing this with flex causes slow load performance, see
