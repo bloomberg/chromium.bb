@@ -41,7 +41,7 @@ namespace ntp_snippets {
 NTPSnippet::NTPSnippet(const std::string& id)
     : id_(id), score_(0), is_dismissed_(false), best_source_index_(0) {}
 
-NTPSnippet::~NTPSnippet() {}
+NTPSnippet::~NTPSnippet() = default;
 
 // static
 std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
@@ -194,7 +194,6 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
       DLOG(WARNING) << "Invalid article url " << source_proto.url();
       continue;
     }
-    std::string publisher_name = source_proto.publisher_name();
     GURL amp_url;
     if (source_proto.has_amp_url()) {
       amp_url = GURL(source_proto.amp_url());
@@ -202,7 +201,8 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
                                             << source_proto.amp_url();
     }
 
-    snippet->add_source(SnippetSource(url, publisher_name, amp_url));
+    snippet->add_source(
+        SnippetSource(url, source_proto.publisher_name(), amp_url));
   }
 
   if (snippet->sources_.empty()) {

@@ -38,11 +38,9 @@ using testing::_;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::IsEmpty;
-using testing::IsNull;
 using testing::Not;
 using testing::NotNull;
 using testing::PrintToString;
-using testing::SizeIs;
 using testing::StartsWith;
 using testing::WithArg;
 
@@ -425,7 +423,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfully) {
       "    }]"
       "  }"
       "}]}";
-  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsSingleArticle("http://localhost/foobar")));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -461,7 +459,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ShouldFetchSuccessfully) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsSingleArticle("http://localhost/foobar")));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -485,7 +483,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, EmptyCategoryIsOK) {
       "  \"id\": 1,"
       "  \"localizedTitle\": \"Articles for You\""
       "}]}";
-  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsEmptyArticleList()));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -536,7 +534,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
       "    \"faviconUrl\" : \"http://localhost/favicon.ico\" "
       "  }]"
       "}]}";
-  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   NTPSnippetsFetcher::OptionalSnippets snippets;
   EXPECT_CALL(mock_callback(), Run(_))
@@ -544,7 +542,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
                                             test_excluded(),
                                             /*count=*/1,
-                                            /*force_request=*/true);
+                                            /*interactive_request=*/true);
   FastForwardUntilNoTasksRemain();
 
   ASSERT_TRUE(snippets);
@@ -579,7 +577,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
 
 TEST_F(NTPSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
   const std::string kJsonStr = "{\"recos\": []}";
-  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsEmptyArticleList()));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -652,7 +650,7 @@ TEST_F(NTPSnippetsFetcherHostRestrictedTest, ShouldRestrictToHosts) {
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
-  SetFakeResponse(/*data=*/std::string(), net::HTTP_NOT_FOUND,
+  SetFakeResponse(/*response_data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -674,7 +672,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportUrlStatusError) {
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
-  SetFakeResponse(/*data=*/std::string(), net::HTTP_NOT_FOUND,
+  SetFakeResponse(/*response_data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -695,7 +693,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpError) {
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
   const std::string kInvalidJsonStr = "{ \"recos\": []";
-  SetFakeResponse(/*data=*/kInvalidJsonStr, net::HTTP_OK,
+  SetFakeResponse(/*response_data=*/kInvalidJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -718,7 +716,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonError) {
 }
 
 TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
-  SetFakeResponse(/*data=*/std::string(), net::HTTP_OK,
+  SetFakeResponse(/*response_data=*/std::string(), net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -738,7 +736,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
 TEST_F(NTPSnippetsFetcherTest, ShouldReportInvalidListError) {
   const std::string kJsonStr =
       "{\"recos\": [{ \"contentInfo\": { \"foo\" : \"bar\" }}]}";
-  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(/*snippets=*/Not(HasValue()))).Times(1);
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -771,7 +769,7 @@ TEST_F(NTPSnippetsFetcherTest, ShouldReportHttpErrorForMissingBakedResponse) {
 
 TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
   const std::string kJsonStr = "{ \"recos\": [] }";
-  SetFakeResponse(/*data=*/kJsonStr, net::HTTP_OK,
+  SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(), Run(IsEmptyArticleList()));
   snippets_fetcher().FetchSnippetsFromHosts(test_hosts(), test_lang(),
@@ -803,9 +801,8 @@ TEST_F(NTPSnippetsFetcherTest, ShouldCancelOngoingFetch) {
     // Matchers above aren't any more precise than this, so this is sufficient
     // for test-failure diagnostics.
     return os << "list with " << snippets->size() << " elements";
-  } else {
-    return os << "null";
   }
+  return os << "null";
 }
 
 }  // namespace ntp_snippets

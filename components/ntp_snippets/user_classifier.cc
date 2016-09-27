@@ -4,9 +4,8 @@
 
 #include "components/ntp_snippets/user_classifier.h"
 
-#include <float.h>
-
 #include <algorithm>
+#include <cfloat>
 #include <string>
 
 #include "base/metrics/histogram_macros.h"
@@ -215,7 +214,7 @@ UserClassifier::UserClassifier(PrefService* pref_service)
   }
 }
 
-UserClassifier::~UserClassifier() {}
+UserClassifier::~UserClassifier() = default;
 
 // static
 void UserClassifier::RegisterProfilePrefs(PrefRegistrySimple* registry) {

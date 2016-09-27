@@ -226,8 +226,7 @@ NTPSnippetsService::NTPSnippetsService(
                                      base::Unretained(this)));
 }
 
-NTPSnippetsService::~NTPSnippetsService() {
-}
+NTPSnippetsService::~NTPSnippetsService() = default;
 
 // static
 void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -564,7 +563,7 @@ void NTPSnippetsService::OnSuggestionsChanged(
   // for its callback.
   NotifyNewSuggestions();
 
-  FetchSnippetsFromHosts(hosts, /*force_request=*/false);
+  FetchSnippetsFromHosts(hosts, /*interactive_request=*/false);
 }
 
 void NTPSnippetsService::OnFetchFinished(
@@ -825,9 +824,8 @@ void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
   // |image_decoder_| is null in tests.
   if (image_decoder_ && !data.empty()) {
     image_decoder_->DecodeImage(
-        std::move(data),
-        base::Bind(&NTPSnippetsService::OnSnippetImageDecodedFromDatabase,
-                   base::Unretained(this), callback, suggestion_id));
+        data, base::Bind(&NTPSnippetsService::OnSnippetImageDecodedFromDatabase,
+                         base::Unretained(this), callback, suggestion_id));
     return;
   }
 
@@ -900,7 +898,7 @@ void NTPSnippetsService::EnterStateReady() {
     // Either add a DCHECK here that we actually are allowed to do network I/O
     // or change the logic so that some explicit call is always needed for the
     // network request.
-    FetchSnippets(/*force_request=*/false);
+    FetchSnippets(/*interactive_request=*/false);
     fetch_when_ready_ = false;
   }
 

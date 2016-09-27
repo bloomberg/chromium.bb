@@ -202,7 +202,7 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
                            const std::string& snippet_id) const;
 
   // image_fetcher::ImageFetcherDelegate implementation.
-  void OnImageDataFetched(const std::string& snippet_id,
+  void OnImageDataFetched(const std::string& suggestion_id,
                           const std::string& image_data) override;
 
   // Callbacks for the NTPSnippetsDatabase.

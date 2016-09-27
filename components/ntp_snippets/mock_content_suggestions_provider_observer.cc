@@ -7,10 +7,10 @@
 namespace ntp_snippets {
 
 MockContentSuggestionsProviderObserver::
-    MockContentSuggestionsProviderObserver() {}
+    MockContentSuggestionsProviderObserver() = default;
 
 MockContentSuggestionsProviderObserver::
-    ~MockContentSuggestionsProviderObserver() {}
+    ~MockContentSuggestionsProviderObserver() = default;
 
 void MockContentSuggestionsProviderObserver::OnNewSuggestions(
     ContentSuggestionsProvider* provider,

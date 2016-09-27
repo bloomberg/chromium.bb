@@ -20,8 +20,8 @@ const size_t kMaxSuggestionsCount = 10;
 }  // namespace
 
 // TODO(vitaliii): remove when Physical Web C++ interface is provided.
-UrlInfo::UrlInfo() {}
-UrlInfo::~UrlInfo() {}
+UrlInfo::UrlInfo() = default;
+UrlInfo::~UrlInfo() = default;
 UrlInfo::UrlInfo(const UrlInfo& other) = default;
 
 PhysicalWebPageSuggestionsProvider::PhysicalWebPageSuggestionsProvider(
@@ -34,7 +34,8 @@ PhysicalWebPageSuggestionsProvider::PhysicalWebPageSuggestionsProvider(
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
 }
 
-PhysicalWebPageSuggestionsProvider::~PhysicalWebPageSuggestionsProvider() {}
+PhysicalWebPageSuggestionsProvider::~PhysicalWebPageSuggestionsProvider() =
+    default;
 
 void PhysicalWebPageSuggestionsProvider::OnDisplayableUrlsChanged(
     const std::vector<UrlInfo>& urls) {

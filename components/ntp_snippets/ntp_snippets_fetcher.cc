@@ -4,7 +4,7 @@
 
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -125,11 +125,12 @@ std::string GetFetchEndpoint() {
 }
 
 bool UsesChromeContentSuggestionsAPI(const GURL& endpoint) {
-  if (endpoint == GURL(kChromeReaderServer)) {
+  if (endpoint == GURL(kChromeReaderServer))
     return false;
-  } else if (endpoint != GURL(kContentSuggestionsServer) &&
-             endpoint != GURL(kContentSuggestionsDevServer) &&
-             endpoint != GURL(kContentSuggestionsAlphaServer)) {
+
+  if (endpoint != GURL(kContentSuggestionsServer) &&
+      endpoint != GURL(kContentSuggestionsDevServer) &&
+      endpoint != GURL(kContentSuggestionsAlphaServer)) {
     LOG(WARNING) << "Unknown value for " << kContentSuggestionsBackend << ": "
                  << "assuming chromecontentsuggestions-style API";
   }
@@ -195,9 +196,10 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
       signin_manager_(signin_manager),
       token_service_(token_service),
       waiting_for_refresh_token_(false),
-      url_request_context_getter_(url_request_context_getter),
+      url_request_context_getter_(std::move(url_request_context_getter)),
       category_factory_(category_factory),
       parse_json_callback_(parse_json_callback),
+      count_to_fetch_(0),
       fetch_url_(GetFetchEndpoint()),
       fetch_api_(UsesChromeContentSuggestionsAPI(fetch_url_)
                      ? CHROME_CONTENT_SUGGESTIONS_API

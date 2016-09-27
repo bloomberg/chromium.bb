@@ -41,7 +41,7 @@ NTPSnippetsStatusService::NTPSnippetsStatusService(
   }
 }
 
-NTPSnippetsStatusService::~NTPSnippetsStatusService() {}
+NTPSnippetsStatusService::~NTPSnippetsStatusService() = default;
 
 // static
 void NTPSnippetsStatusService::RegisterProfilePrefs(

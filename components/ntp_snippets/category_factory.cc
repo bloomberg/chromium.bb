@@ -31,7 +31,7 @@ CategoryFactory::CategoryFactory() {
             ordered_categories_.size());
 }
 
-CategoryFactory::~CategoryFactory() {}
+CategoryFactory::~CategoryFactory() = default;
 
 Category CategoryFactory::FromKnownCategory(KnownCategories known_category) {
   if (known_category < KnownCategories::LOCAL_CATEGORIES_COUNT) {

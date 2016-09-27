@@ -54,7 +54,6 @@ using testing::IsEmpty;
 using testing::Mock;
 using testing::MockFunction;
 using testing::NiceMock;
-using testing::Return;
 using testing::SaveArg;
 using testing::SizeIs;
 using testing::StartsWith;
@@ -349,7 +348,8 @@ class NTPSnippetsServiceTest : public ::testing::Test {
                           kTestContentSuggestionsServerEndpoint}}),
         fake_url_fetcher_factory_(
             /*default_factory=*/&failing_url_fetcher_factory_),
-        test_url_(kTestContentSuggestionsServerWithAPIKey) {
+        test_url_(kTestContentSuggestionsServerWithAPIKey),
+        image_fetcher_(nullptr) {
     NTPSnippetsService::RegisterProfilePrefs(utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());
 

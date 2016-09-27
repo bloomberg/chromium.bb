@@ -32,7 +32,6 @@ using testing::ElementsAre;
 using testing::IsEmpty;
 using testing::Property;
 using testing::Test;
-using testing::UnorderedElementsAre;
 using testing::_;
 
 namespace ntp_snippets {
@@ -77,9 +76,9 @@ void AddTabToSession(SyncedSession* session,
 
 class FakeForeignSessionsProvider : public ForeignSessionsProvider {
  public:
-  ~FakeForeignSessionsProvider() override {}
+  ~FakeForeignSessionsProvider() override = default;
   void SetAllForeignSessions(std::vector<const SyncedSession*> sessions) {
-    sessions_ = sessions;
+    sessions_ = std::move(sessions);
     change_callback_.Run();
   }
 
@@ -146,7 +145,7 @@ class ForeignSessionsSuggestionsProviderTest : public Test {
     for (const auto& kv : sessions_map_) {
       sessions.push_back(kv.second.get());
     }
-    fake_foreign_sessions_provider_->SetAllForeignSessions(sessions);
+    fake_foreign_sessions_provider_->SetAllForeignSessions(std::move(sessions));
   }
 
   void Dismiss(const std::string& url) {

@@ -47,7 +47,7 @@ NTPSnippetsDatabase::NTPSnippetsDatabase(
                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
-NTPSnippetsDatabase::~NTPSnippetsDatabase() {}
+NTPSnippetsDatabase::~NTPSnippetsDatabase() = default;
 
 bool NTPSnippetsDatabase::IsInitialized() const {
   return !IsErrorState() && database_initialized_ &&

@@ -13,6 +13,6 @@ ContentSuggestion::ContentSuggestion(ContentSuggestion&&) = default;
 
 ContentSuggestion& ContentSuggestion::operator=(ContentSuggestion&&) = default;
 
-ContentSuggestion::~ContentSuggestion() {}
+ContentSuggestion::~ContentSuggestion() = default;
 
 }  // namespace ntp_snippets

@@ -21,7 +21,6 @@ using bookmarks::BookmarkNode;
 
 using testing::IsEmpty;
 using testing::SizeIs;
-using testing::UnorderedElementsAre;
 
 namespace ntp_snippets {
 

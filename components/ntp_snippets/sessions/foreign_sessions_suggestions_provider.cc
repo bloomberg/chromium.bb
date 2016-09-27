@@ -99,7 +99,8 @@ ForeignSessionsSuggestionsProvider::ForeignSessionsSuggestionsProvider(
   OnForeignTabChange();
 }
 
-ForeignSessionsSuggestionsProvider::~ForeignSessionsSuggestionsProvider() {}
+ForeignSessionsSuggestionsProvider::~ForeignSessionsSuggestionsProvider() =
+    default;
 
 // static
 void ForeignSessionsSuggestionsProvider::RegisterProfilePrefs(

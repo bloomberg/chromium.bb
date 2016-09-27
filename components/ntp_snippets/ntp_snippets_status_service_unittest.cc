@@ -17,8 +17,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::Return;
-
 namespace ntp_snippets {
 
 class NTPSnippetsStatusServiceTest : public ::testing::Test {

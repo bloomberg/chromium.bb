@@ -30,7 +30,7 @@ ContentSuggestionsService::ContentSuggestionsService(
     history_service_observer_.Add(history_service);
 }
 
-ContentSuggestionsService::~ContentSuggestionsService() {}
+ContentSuggestionsService::~ContentSuggestionsService() = default;
 
 void ContentSuggestionsService::Shutdown() {
   ntp_snippets_service_ = nullptr;
@@ -176,14 +176,14 @@ void ContentSuggestionsService::RegisterProvider(
 void ContentSuggestionsService::OnNewSuggestions(
     ContentSuggestionsProvider* provider,
     Category category,
-    std::vector<ContentSuggestion> new_suggestions) {
+    std::vector<ContentSuggestion> suggestions) {
   if (RegisterCategoryIfRequired(provider, category))
     NotifyCategoryStatusChanged(category);
 
   if (!IsCategoryStatusAvailable(provider->GetCategoryStatus(category)))
     return;
 
-  suggestions_by_category_[category] = std::move(new_suggestions);
+  suggestions_by_category_[category] = std::move(suggestions);
 
   // The positioning of the bookmarks category depends on whether it's empty.
   // TODO(treib): Remove this temporary hack, crbug.com/640568.

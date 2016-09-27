@@ -13,7 +13,7 @@ ContentSuggestionsProvider::ContentSuggestionsProvider(
     CategoryFactory* category_factory)
     : observer_(observer), category_factory_(category_factory) {}
 
-ContentSuggestionsProvider::~ContentSuggestionsProvider() {}
+ContentSuggestionsProvider::~ContentSuggestionsProvider() = default;
 
 std::string ContentSuggestionsProvider::MakeUniqueID(
     Category category,

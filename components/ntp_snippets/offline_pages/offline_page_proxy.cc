@@ -9,7 +9,6 @@
 using offline_pages::MultipleOfflinePageItemResult;
 using offline_pages::MultipleOfflinePageItemCallback;
 using offline_pages::OfflinePageModel;
-using offline_pages::OfflinePageItem;
 
 namespace ntp_snippets {
 

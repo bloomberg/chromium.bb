@@ -23,15 +23,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 
-using testing::ByRef;
-using testing::Const;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::InvokeWithoutArgs;
 using testing::IsEmpty;
-using testing::IsNull;
 using testing::Mock;
-using testing::NotNull;
 using testing::Property;
 using testing::_;
 
@@ -56,11 +52,11 @@ class MockProvider : public ContentSuggestionsProvider {
     }
   }
 
-  CategoryStatus GetCategoryStatus(Category category) {
+  CategoryStatus GetCategoryStatus(Category category) override {
     return statuses_[category.id()];
   }
 
-  CategoryInfo GetCategoryInfo(Category category) {
+  CategoryInfo GetCategoryInfo(Category category) override {
     return CategoryInfo(base::ASCIIToUTF16("Section title"),
                         ContentSuggestionsCardLayout::FULL_CARD, true, true);
   }
@@ -107,13 +103,18 @@ class MockProvider : public ContentSuggestionsProvider {
 
 class MockServiceObserver : public ContentSuggestionsService::Observer {
  public:
+  MockServiceObserver() = default;
+  ~MockServiceObserver() override = default;
+
   MOCK_METHOD1(OnNewSuggestions, void(Category category));
   MOCK_METHOD2(OnCategoryStatusChanged,
                void(Category changed_category, CategoryStatus new_status));
   MOCK_METHOD2(OnSuggestionInvalidated,
                void(Category category, const std::string& suggestion_id));
   MOCK_METHOD0(ContentSuggestionsServiceShutdown, void());
-  ~MockServiceObserver() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockServiceObserver);
 };
 
 }  // namespace

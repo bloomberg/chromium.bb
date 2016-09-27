@@ -15,6 +15,6 @@ CategoryInfo::CategoryInfo(const base::string16& title,
       has_more_button_(has_more_button),
       show_if_empty_(show_if_empty) {}
 
-CategoryInfo::~CategoryInfo() {}
+CategoryInfo::~CategoryInfo() = default;
 
 }  // namespace ntp_snippets

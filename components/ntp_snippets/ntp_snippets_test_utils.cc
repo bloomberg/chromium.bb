@@ -24,7 +24,7 @@ FakeSyncService::FakeSyncService()
       is_encrypt_everything_enabled_(false),
       active_data_types_(syncer::HISTORY_DELETE_DIRECTIVES) {}
 
-FakeSyncService::~FakeSyncService() {}
+FakeSyncService::~FakeSyncService() = default;
 
 bool FakeSyncService::CanSyncStart() const {
   return can_sync_start_;

@@ -87,7 +87,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
 
   NTPSnippetsFetcher(
       SigninManagerBase* signin_manager,
-      OAuth2TokenService* oauth2_token_service,
+      OAuth2TokenService* token_service,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       PrefService* pref_service,
       CategoryFactory* category_factory,

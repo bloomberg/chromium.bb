@@ -4,7 +4,7 @@
 
 #include "components/ntp_snippets/request_throttler.h"
 
-#include <limits.h>
+#include <climits>
 #include <vector>
 
 #include "base/metrics/histogram.h"
