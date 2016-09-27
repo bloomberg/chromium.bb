@@ -1353,12 +1353,11 @@ ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
       y_offset_(0.0f),
       x_offset_ordinal_(0.0f),
       y_offset_ordinal_(0.0f),
-      finger_count_(0) {
+      finger_count_(0),
+      momentum_phase_(EventMomentumPhase::NONE) {
   if (type() == ET_SCROLL) {
-    GetScrollOffsets(native_event,
-                     &x_offset_, &y_offset_,
-                     &x_offset_ordinal_, &y_offset_ordinal_,
-                     &finger_count_);
+    GetScrollOffsets(native_event, &x_offset_, &y_offset_, &x_offset_ordinal_,
+                     &y_offset_ordinal_, &finger_count_, &momentum_phase_);
   } else if (type() == ET_SCROLL_FLING_START ||
              type() == ET_SCROLL_FLING_CANCEL) {
     GetFlingData(native_event,

@@ -114,7 +114,8 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* y_offset,
                       float* x_offset_ordinal,
                       float* y_offset_ordinal,
-                      int* finger_count) {
+                      int* finger_count,
+                      EventMomentumPhase* momentum_phase) {
   const ui::ScrollEvent* event =
       static_cast<const ui::ScrollEvent*>(native_event);
   DCHECK(event->IsScrollEvent());
@@ -128,6 +129,8 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
     *y_offset_ordinal = event->y_offset_ordinal();
   if (finger_count)
     *finger_count = event->finger_count();
+  if (momentum_phase)
+    *momentum_phase = event->momentum_phase();
 
   return true;
 }

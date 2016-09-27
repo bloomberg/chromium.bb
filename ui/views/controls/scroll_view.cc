@@ -459,6 +459,14 @@ void ScrollView::OnMouseExited(const ui::MouseEvent& event) {
     vert_sb_->OnMouseExitedScrollView(event);
 }
 
+void ScrollView::OnScrollEvent(ui::ScrollEvent* event) {
+#if defined(OS_MACOSX)
+  // TODO(tapted): Send |event| to a cc::InputHandler. For now, there's nothing
+  // to do because Widget::OnScrollEvent() will automatically process an
+  // unhandled ScrollEvent as a MouseWheelEvent.
+#endif
+}
+
 void ScrollView::OnGestureEvent(ui::GestureEvent* event) {
   // If the event happened on one of the scrollbars, then those events are
   // sent directly to the scrollbars. Otherwise, only scroll events are sent to

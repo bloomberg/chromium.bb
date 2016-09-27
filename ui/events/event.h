@@ -974,6 +974,7 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
   float x_offset_ordinal() const { return x_offset_ordinal_; }
   float y_offset_ordinal() const { return y_offset_ordinal_; }
   int finger_count() const { return finger_count_; }
+  EventMomentumPhase momentum_phase() const { return momentum_phase_; }
 
  private:
   // Potential accelerated offsets.
@@ -984,6 +985,10 @@ class EVENTS_EXPORT ScrollEvent : public MouseEvent {
   float y_offset_ordinal_;
   // Number of fingers on the pad.
   int finger_count_;
+
+  // For non-fling events, provides momentum information (e.g. for the case
+  // where the device provides continuous event updates during a fling).
+  EventMomentumPhase momentum_phase_;
 };
 
 class EVENTS_EXPORT GestureEvent : public LocatedEvent {

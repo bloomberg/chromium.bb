@@ -736,8 +736,8 @@ ui::KeyEvent GetCharacterEventFromNSEvent(NSEvent* event) {
   if (!hostedView_)
     return;
 
-  ui::MouseWheelEvent event(theEvent);
-  hostedView_->GetWidget()->OnMouseEvent(&event);
+  ui::ScrollEvent event(theEvent);
+  hostedView_->GetWidget()->OnScrollEvent(&event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

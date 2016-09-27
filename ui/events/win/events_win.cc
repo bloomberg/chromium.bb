@@ -349,7 +349,8 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* y_offset,
                       float* x_offset_ordinal,
                       float* y_offset_ordinal,
-                      int* finger_count) {
+                      int* finger_count,
+                      EventMomentumPhase* momentum_phase) {
   // TODO(ananta)
   // Support retrieving the scroll offsets from the scroll event.
   if (native_event.message == WM_VSCROLL || native_event.message == WM_HSCROLL)

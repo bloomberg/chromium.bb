@@ -110,6 +110,10 @@ void ComputeEventLatencyOS(const base::NativeEvent& native_event) {
 
   EventType type = EventTypeFromNative(native_event);
   switch (type) {
+#if defined(OS_MACOSX)
+    // On Mac, ET_SCROLL and ET_MOUSEWHEEL represent the same class of events.
+    case ET_SCROLL:
+#endif
     case ET_MOUSEWHEEL:
       UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.MOUSE_WHEEL",
                                   delta.InMicroseconds(), 1, 1000000, 50);

@@ -96,6 +96,7 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   bool OnMouseWheel(const ui::MouseWheelEvent& e) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   const char* GetClassName() const override;
 
