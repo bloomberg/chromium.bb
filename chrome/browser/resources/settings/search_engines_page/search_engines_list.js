@@ -9,19 +9,21 @@
 Polymer({
   is: 'settings-search-engines-list',
 
+  behaviors: [CrScrollableBehavior],
+
   properties: {
     /** @type {!Array<!SearchEngine>} */
     engines: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
       observer: 'enginesChanged_',
     }
   },
 
   /** @private */
   enginesChanged_: function() {
-    // Rather than adding an event to notify this element when it is shown,
-    // observe changes to |engines| and notify the iron-list.
-    this.$$('iron-list').fire('iron-resize');
+    this.updateScrollableContents();
   },
 });

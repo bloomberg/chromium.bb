@@ -61,6 +61,12 @@
         @apply(--cr-actionable);
       }
 
+      .scroll-container {
+        display: flex;
+        flex-direction: column;
+        min-height: 1px;
+      }
+
       [selectable]:focus,
       [selectable] > :focus {
         @apply(--cr-selectable-focus);
