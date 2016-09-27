@@ -36,6 +36,9 @@ class CC_EXPORT ImageManager {
   ImageDecodeController* controller_ = nullptr;
   std::vector<DrawImage> predecode_locked_images_;
 
+  // Debugging information for crbug.com/650234.
+  size_t num_times_controller_was_set_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(ImageManager);
 };
 

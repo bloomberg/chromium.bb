@@ -346,10 +346,10 @@ void TileManager::FinishTasksAndCleanUp() {
 
   raster_buffer_provider_->Shutdown();
 
+  tile_task_manager_->CheckForCompletedTasks();
+
   // Now that all tasks have been finished, we can clear any |orphan_tasks_|.
   orphan_tasks_.clear();
-
-  tile_task_manager_->CheckForCompletedTasks();
 
   FreeResourcesForReleasedTiles();
   CleanUpReleasedTiles();

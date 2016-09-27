@@ -11,14 +11,17 @@ ImageManager::~ImageManager() = default;
 
 void ImageManager::SetImageDecodeController(ImageDecodeController* controller) {
   // We can only switch from null to non-null and back.
-  DCHECK(controller || controller_);
-  DCHECK(!controller || !controller_);
+  // CHECK to debug crbug.com/650234.
+  CHECK(controller || controller_);
+  CHECK(!controller || !controller_);
 
   if (!controller) {
     SetPredecodeImages(std::vector<DrawImage>(),
                        ImageDecodeController::TracingInfo());
   }
   controller_ = controller;
+  // Debugging information for crbug.com/650234.
+  ++num_times_controller_was_set_;
 }
 
 void ImageManager::GetTasksForImagesAndRef(
@@ -41,7 +44,8 @@ void ImageManager::GetTasksForImagesAndRef(
 }
 
 void ImageManager::UnrefImages(const std::vector<DrawImage>& images) {
-  DCHECK(controller_);
+  // Debugging information for crbug.com/650234.
+  CHECK(controller_) << num_times_controller_was_set_;
   for (auto image : images)
     controller_->UnrefImage(image);
 }
