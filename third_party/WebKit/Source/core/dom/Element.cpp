@@ -2889,7 +2889,7 @@ const ComputedStyle* Element::ensureComputedStyle(PseudoId pseudoElementSpecifie
     if (PseudoElement* element = pseudoElement(pseudoElementSpecifier))
         return element->ensureComputedStyle();
 
-    if (!inActiveDocument() && document().frame()) {
+    if (!inActiveDocument()) {
         // FIXME: Try to do better than this. Ensure that styleForElement() works for elements that are not in the
         // document tree and figure out when to destroy the computed style for such elements.
         return nullptr;

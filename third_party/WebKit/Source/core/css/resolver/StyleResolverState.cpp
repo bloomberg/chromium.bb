@@ -46,6 +46,8 @@ StyleResolverState::StyleResolverState(Document& document, const ElementResolveC
         // TODO(jchaffraix): We should make m_parentStyle const (https://crbug.com/468152)
         m_parentStyle = const_cast<ComputedStyle*>(m_elementContext.parentStyle());
     }
+
+    DCHECK(document.isActive());
 }
 
 StyleResolverState::StyleResolverState(Document& document, Element* element, const ComputedStyle* parentStyle)

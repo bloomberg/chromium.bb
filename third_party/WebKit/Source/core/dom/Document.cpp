@@ -1418,11 +1418,7 @@ FrameHost* Document::frameHost() const
 
 Settings* Document::settings() const
 {
-    if (m_frame)
-        return m_frame->settings();
-    if (!m_defaultSettings)
-        m_defaultSettings = Settings::create();
-    return m_defaultSettings.get();
+    return m_frame ? m_frame->settings() : nullptr;
 }
 
 Range* Document::createRange()
