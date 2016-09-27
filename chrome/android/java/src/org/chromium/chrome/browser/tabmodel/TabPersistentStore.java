@@ -118,9 +118,8 @@ public class TabPersistentStore extends TabPersister {
 
         /**
          * To be called when the TabStates have all been loaded.
-         * @param context Context used by the TabPersistentStore.
          */
-        void onStateLoaded(Context context);
+        void onStateLoaded();
 
         /**
          * To be called when the TabState from another instance has been merged.
@@ -142,8 +141,8 @@ public class TabPersistentStore extends TabPersister {
 
         TabModelMetadata(int selectedIndex) {
             index = selectedIndex;
-            ids = new ArrayList<Integer>();
-            urls = new ArrayList<String>();
+            ids = new ArrayList<>();
+            urls = new ArrayList<>();
         }
     }
 
@@ -152,15 +151,14 @@ public class TabPersistentStore extends TabPersister {
         private static File sDirectory;
 
         static {
-            Context appContext = ContextUtils.getApplicationContext();
-            sDirectory = appContext.getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE);
+            sDirectory = ContextUtils.getApplicationContext()
+                    .getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE);
         }
     }
 
     private final TabPersistencePolicy mPersistencePolicy;
     private final TabModelSelector mTabModelSelector;
     private final TabCreatorManager mTabCreatorManager;
-    private final Context mContext;
     private TabPersistentStoreObserver mObserver;
 
     private final Deque<Tab> mTabsToSave;
@@ -198,22 +196,20 @@ public class TabPersistentStore extends TabPersister {
     /**
      * Creates an instance of a TabPersistentStore.
      * @param modelSelector The {@link TabModelSelector} to restore to and save from.
-     * @param context       A Context instance.
      * @param tabCreatorManager The {@link TabCreatorManager} to use.
      * @param observer      Notified when the TabPersistentStore has completed tasks.
      * @param mergeTabs     Whether tabs from a second TabModelSelector should be merged into
      *                      into this instance.
      */
     public TabPersistentStore(TabPersistencePolicy policy, TabModelSelector modelSelector,
-            Context context, TabCreatorManager tabCreatorManager,
-            TabPersistentStoreObserver observer, final boolean mergeTabs) {
+            TabCreatorManager tabCreatorManager, TabPersistentStoreObserver observer,
+            final boolean mergeTabs) {
         mPersistencePolicy = policy;
         mTabModelSelector = modelSelector;
-        mContext = context;
         mTabCreatorManager = tabCreatorManager;
-        mTabsToSave = new ArrayDeque<Tab>();
-        mTabsToRestore = new ArrayDeque<TabRestoreDetails>();
-        mTabIdsToRestore = new HashSet<Integer>();
+        mTabsToSave = new ArrayDeque<>();
+        mTabsToRestore = new ArrayDeque<>();
+        mTabIdsToRestore = new HashSet<>();
         mObserver = observer;
         mPreferences = ContextUtils.getAppSharedPreferences();
 
@@ -750,7 +746,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private byte[] serializeTabMetadata() throws IOException {
-        List<TabRestoreDetails> tabsToRestore = new ArrayList<TabRestoreDetails>();
+        List<TabRestoreDetails> tabsToRestore = new ArrayList<>();
 
         // The metadata file may be being written out before all of the Tabs have been restored.
         // Save that information out, as well.
@@ -1137,7 +1133,7 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private void onStateLoaded() {
-        if (mObserver != null) mObserver.onStateLoaded(mContext);
+        if (mObserver != null) mObserver.onStateLoaded();
     }
 
     private void loadNextTab() {
@@ -1307,8 +1303,12 @@ public class TabPersistentStore extends TabPersister {
         return new AsyncTask<Void, Void, DataInputStream>() {
             @Override
             protected DataInputStream doInBackground(Void... params) {
+                Log.w(TAG, "Starting to fetch tab list.");
                 File stateFile = new File(getStateDirectory(), stateFileName);
-                if (!stateFile.exists()) return null;
+                if (!stateFile.exists()) {
+                    Log.e(TAG, "State file does not exist.");
+                    return null;
+                }
                 if (LibraryLoader.isInitialized()) {
                     RecordHistogram.recordCountHistogram(
                             "Android.TabPersistentStore.MergeStateMetadataFileSize",
@@ -1321,10 +1321,12 @@ public class TabPersistentStore extends TabPersister {
                     data = new byte[(int) stateFile.length()];
                     stream.read(data);
                 } catch (IOException exception) {
+                    Log.e(TAG, "Could not read state file.", exception);
                     return null;
                 } finally {
                     StreamUtil.closeQuietly(stream);
                 }
+                Log.w(TAG, "Finished fetching tab list.");
                 return new DataInputStream(new ByteArrayInputStream(data));
             }
         }.executeOnExecutor(executor);

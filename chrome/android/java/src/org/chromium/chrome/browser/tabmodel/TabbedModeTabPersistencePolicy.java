@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.StrictMode;
@@ -76,7 +75,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
     private static File sStateDirectory;
 
     private final SharedPreferences mPreferences;
-    private final Context mContext;
     private final int mSelectorIndex;
     private final int mOtherSelectorIndex;
 
@@ -85,14 +83,11 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
 
     /**
      * Constructs a persistence policy that handles the Tabbed mode specific logic.
-     *
-     * @param context       A Context instance.
      * @param selectorIndex The index that represents which state file to pull and save state to.
      *                      This is used when there can be more than one TabModelSelector.
      */
-    public TabbedModeTabPersistencePolicy(Context context, int selectorIndex) {
+    public TabbedModeTabPersistencePolicy(int selectorIndex) {
         mPreferences = ContextUtils.getAppSharedPreferences();
-        mContext = context;
         mSelectorIndex = selectorIndex;
         mOtherSelectorIndex = selectorIndex == 0 ? 1 : 0;
     }
@@ -172,7 +167,6 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
                     if (!hasRunMultiInstanceMigration) {
                         performMultiInstanceMigration();
                     }
-
                     return null;
                 }
             }.executeOnExecutor(executor);
@@ -186,11 +180,12 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
      */
     @WorkerThread
     private void performLegacyMigration() {
+        Log.w(TAG, "Starting to perform legacy migration.");
         File newFolder = getOrCreateStateDirectory();
         File[] newFiles = newFolder.listFiles();
         // Attempt migration if we have no tab state file in the new directory.
         if (newFiles == null || newFiles.length == 0) {
-            File oldFolder = mContext.getFilesDir();
+            File oldFolder = ContextUtils.getApplicationContext().getFilesDir();
             File modelFile = new File(oldFolder, LEGACY_SAVED_STATE_FILE);
             if (modelFile.exists()) {
                 if (!modelFile.renameTo(new File(newFolder, getStateFileName()))) {
@@ -210,6 +205,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
             }
         }
         setLegacyFileMigrationPref();
+        Log.w(TAG, "Finished performing legacy migration.");
     }
 
     /**
@@ -218,6 +214,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
      */
     @WorkerThread
     private void performMultiInstanceMigration() {
+        Log.w(TAG, "Starting to perform multi-instance migration.");
         // 0. Do not rename the old metadata file if the new metadata file already exists. This
         //    should not happen, but if it does and the metadata file is overwritten then users
         //    may lose tabs. See crbug.com/649384.
@@ -297,6 +294,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
         }
 
         setMultiInstanceFileMigrationPref();
+        Log.w(TAG, "Finished performing multi-instance migration.");
     }
 
     private void setLegacyFileMigrationPref() {

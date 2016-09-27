@@ -54,9 +54,9 @@ public class MultiInstanceMigrationTest extends InstrumentationTestCase {
             public void run() {
                 MockTabModelSelector selector = new MockTabModelSelector(0, 0, null);
                 TabbedModeTabPersistencePolicy persistencePolicy =
-                        new TabbedModeTabPersistencePolicy(mAppContext, 0);
+                        new TabbedModeTabPersistencePolicy(0);
                 TabPersistentStore store = new TabPersistentStore(
-                        persistencePolicy, selector, mAppContext, null, null, false);
+                        persistencePolicy, selector, null, null, false);
                 store.waitForMigrationToFinish();
             }
         });

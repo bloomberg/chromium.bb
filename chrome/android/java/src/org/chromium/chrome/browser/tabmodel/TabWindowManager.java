@@ -212,7 +212,7 @@ public class TabWindowManager implements ActivityStateListener {
                 int selectorIndex) {
             assert activity == windowAndroid.getActivity().get();
             TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(
-                    activity, selectorIndex);
+                    selectorIndex);
             return new TabModelSelectorImpl(activity, persistencePolicy, windowAndroid, true);
         }
     }

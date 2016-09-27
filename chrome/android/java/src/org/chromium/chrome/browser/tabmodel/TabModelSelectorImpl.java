@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.content.Context;
 import android.os.Handler;
 
 import org.chromium.base.VisibleForTesting;
@@ -71,7 +70,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         final TabPersistentStoreObserver persistentStoreObserver =
                 new TabPersistentStoreObserver() {
             @Override
-            public void onStateLoaded(Context context) {
+            public void onStateLoaded() {
                 markTabStateInitialized();
             }
 
@@ -102,7 +101,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                 && mActivity.getClass().equals(ChromeTabbedActivity.class)
                 && TabWindowManager.getInstance().getNumberOfAssignedTabModelSelectors() == 0;
 
-        mTabSaver = new TabPersistentStore(persistencePolicy, this, mActivity, mActivity,
+        mTabSaver = new TabPersistentStore(persistencePolicy, this, mActivity,
                 persistentStoreObserver, mergeTabs);
         mOrderController = new TabModelOrderController(this);
     }

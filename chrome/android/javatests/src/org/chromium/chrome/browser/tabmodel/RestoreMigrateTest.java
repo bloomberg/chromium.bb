@@ -78,9 +78,9 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
             @Override
             public TabPersistentStore call() throws Exception {
                 TabPersistencePolicy persistencePolicy = new TabbedModeTabPersistencePolicy(
-                        mAppContext, selectorIndex);
+                        selectorIndex);
                 TabPersistentStore store = new TabPersistentStore(
-                        persistencePolicy, selector, mAppContext, null, null, false);
+                        persistencePolicy, selector, null, null, false);
                 return store;
             }
         });
