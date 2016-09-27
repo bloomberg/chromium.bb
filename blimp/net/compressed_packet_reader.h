@@ -5,6 +5,8 @@
 #ifndef BLIMP_NET_COMPRESSED_PACKET_READER_H_
 #define BLIMP_NET_COMPRESSED_PACKET_READER_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "blimp/net/blimp_net_export.h"
 #include "blimp/net/packet_reader.h"
@@ -40,14 +42,15 @@ class BLIMP_NET_EXPORT CompressedPacketReader : public PacketReader {
       int result);
 
   // Decompresses the contents of |compressed_buf_| to the buffer
-  // |decompressed|.
-  // |decompressed_size| is set to the size of the decompressed payload.
+  // |decompressed_buf|. The size of |compressed_buf| is passed with the
+  // argument |size_compressed|.
   // On success, returns a >= 0 value indicating the size of the
   // decompressed payload.
   // On failure, returns a negative value indicating the error code
   // (see net_errors.h).
-  int DecompressPacket(const scoped_refptr<net::GrowableIOBuffer>& decompressed,
-                       int size);
+  int DecompressPacket(
+      const scoped_refptr<net::GrowableIOBuffer>& decompressed_buf,
+      int size_compressed);
 
   std::unique_ptr<PacketReader> source_;
   scoped_refptr<net::GrowableIOBuffer> compressed_buf_;

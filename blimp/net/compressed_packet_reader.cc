@@ -4,7 +4,9 @@
 
 #include "blimp/net/compressed_packet_reader.h"
 
+#include <algorithm>
 #include <iostream>
+#include <utility>
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -17,6 +19,12 @@
 #include "net/socket/stream_socket.h"
 
 namespace blimp {
+namespace {
+
+constexpr double kInitialDecompressionBufferSizeFactor = 1.5;
+constexpr double kDecompressionGrowthFactor = 2.0;
+
+}  // namespace
 
 CompressedPacketReader::CompressedPacketReader(
     std::unique_ptr<PacketReader> source)
@@ -42,6 +50,7 @@ void CompressedPacketReader::ReadPacket(
     const net::CompletionCallback& callback) {
   DCHECK(decompressed_buf);
   DCHECK(!callback.is_null());
+
   source_->ReadPacket(
       compressed_buf_,
       base::Bind(&CompressedPacketReader::OnCompressedPacketReceived,
@@ -61,39 +70,65 @@ void CompressedPacketReader::OnCompressedPacketReceived(
 }
 
 int CompressedPacketReader::DecompressPacket(
-    const scoped_refptr<net::GrowableIOBuffer>& decompressed,
-    int size) {
-  compressed_buf_->set_offset(0);
-  decompressed->set_offset(0);
-  if (static_cast<size_t>(decompressed->capacity()) <
-      kMaxPacketPayloadSizeBytes) {
-    decompressed->SetCapacity(kMaxPacketPayloadSizeBytes);
+    const scoped_refptr<net::GrowableIOBuffer>& decompressed_buf,
+    int size_compressed) {
+  scoped_refptr<net::DrainableIOBuffer> drainable_input(
+      new net::DrainableIOBuffer(compressed_buf_.get(), size_compressed));
+
+  // Prepare the sink for decompressed data.
+  decompressed_buf->set_offset(0);
+  const int min_size = kInitialDecompressionBufferSizeFactor * size_compressed;
+  if (decompressed_buf->capacity() < min_size) {
+    decompressed_buf->SetCapacity(min_size);
   }
 
-  zlib_stream_.next_in = reinterpret_cast<uint8_t*>(compressed_buf_->data());
-  zlib_stream_.avail_in = base::checked_cast<uint32_t>(size);
-  zlib_stream_.next_out = reinterpret_cast<uint8_t*>(decompressed->data());
-  zlib_stream_.avail_out = decompressed->RemainingCapacity();
-  int inflate_result = inflate(&zlib_stream_, Z_SYNC_FLUSH);
-  if (inflate_result != Z_OK) {
-    DLOG(ERROR) << "inflate() returned unexpected error code: "
-                << inflate_result;
-    return net::ERR_UNEXPECTED;
-  }
-  DCHECK_GT(decompressed->RemainingCapacity(),
-            base::checked_cast<int>(zlib_stream_.avail_out));
-  int decompressed_size =
-      decompressed->RemainingCapacity() - zlib_stream_.avail_out;
+  // Repeatedly decompress |drainable_input| until it's fully consumed, growing
+  // |decompressed_buf| as necessary to accomodate the decompressed output.
+  do {
+    zlib_stream_.next_in = reinterpret_cast<uint8_t*>(drainable_input->data());
+    zlib_stream_.avail_in = drainable_input->BytesRemaining();
+    zlib_stream_.next_out =
+        reinterpret_cast<uint8_t*>(decompressed_buf->data());
+    zlib_stream_.avail_out = decompressed_buf->RemainingCapacity();
+    int inflate_result = inflate(&zlib_stream_, Z_SYNC_FLUSH);
+    if (inflate_result != Z_OK) {
+      DLOG(ERROR) << "inflate() returned unexpected error code: "
+                  << inflate_result;
+      return net::ERR_UNEXPECTED;
+    }
 
-  // Verify that the decompressed output isn't bigger than the maximum allowable
-  // payload size, by checking if there are bytes waiting to be processed.
-  if (zlib_stream_.avail_in > 0) {
-    DLOG(ERROR)
-        << "Decompressed buffer size exceeds allowable limits; aborting.";
-    return net::ERR_FILE_TOO_BIG;
-  }
+    // Process the inflate() result.
+    const int bytes_in =
+        drainable_input->BytesRemaining() - zlib_stream_.avail_in;
+    const int bytes_out =
+        (decompressed_buf->RemainingCapacity() - zlib_stream_.avail_out);
+    drainable_input->DidConsume(bytes_in);
+    decompressed_buf->set_offset(decompressed_buf->offset() + bytes_out);
+    if (static_cast<size_t>(decompressed_buf->offset()) >
+        kMaxPacketPayloadSizeBytes) {
+      DLOG(ERROR)
+          << "Decompressed buffer size exceeds allowable limits; aborting.";
+      return net::ERR_FILE_TOO_BIG;
+    }
 
-  return decompressed_size;
+    if (drainable_input->BytesRemaining() > 0) {
+      // Output buffer isn't large enough to fit the compressed input, so
+      // enlarge it.
+      DCHECK_GT(zlib_stream_.avail_in, 0u);
+      DCHECK_EQ(0u, zlib_stream_.avail_out);
+
+      decompressed_buf->SetCapacity(
+          std::min(static_cast<size_t>(kDecompressionGrowthFactor *
+                                       decompressed_buf->capacity()),
+                   kMaxPacketPayloadSizeBytes + 1));
+      VLOG(2) << "Increase buffer size to " << decompressed_buf->capacity()
+              << " bytes.";
+    }
+  } while (zlib_stream_.avail_in > 0);
+
+  int total_decompressed_size = decompressed_buf->offset();
+  decompressed_buf->set_offset(0);
+  return total_decompressed_size;
 }
 
 }  // namespace blimp
