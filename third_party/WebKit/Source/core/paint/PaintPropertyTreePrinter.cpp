@@ -24,25 +24,25 @@ class PropertyTreePrinterTraits;
 template <typename PropertyTreeNode>
 class PropertyTreePrinter {
 public:
-    void showTree(const FrameView& frameView)
+    String treeAsString(const FrameView& frameView)
     {
         DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
         collectPropertyNodes(frameView);
-        showAllPropertyNodes(nullptr);
-    }
 
-    void showPath(const PropertyTreeNode* node)
-    {
-        for (const PropertyTreeNode* n = node; n; n = n->parent())
-            addPropertyNode(n, "");
-        showAllPropertyNodes(nullptr);
+        const PropertyTreeNode* rootNode = lookupRootNode();
+        if (!rootNode)
+            return "";
+
+        if (!m_nodeToDebugString.contains(rootNode))
+            addPropertyNode(rootNode, "root");
+
+        StringBuilder stringBuilder;
+        addAllPropertyNodes(stringBuilder, rootNode);
+        return stringBuilder.toString();
     }
 
     void addPropertyNode(const PropertyTreeNode* node, String debugInfo)
     {
-        // showAllPropertyNodes determines the root node itself so roots should
-        // not be added explicitly.
-        DCHECK(node && !node->isRoot());
         m_nodeToDebugString.set(node, debugInfo);
     }
 
@@ -70,34 +70,34 @@ private:
             collectPropertyNodes(*child);
     }
 
-    void showAllPropertyNodes(const PropertyTreeNode* node, unsigned indent = 0)
+    void addAllPropertyNodes(StringBuilder& stringBuilder, const PropertyTreeNode* node, unsigned indent = 0)
     {
-        // If no node is specified, show the root node.
-        if (!node) {
-            for (const auto* childNode : m_nodeToDebugString.keys()) {
-                if (childNode->parent() && childNode->parent()->isRoot()) {
-                    showAllPropertyNodes(childNode->parent());
-                    break;
-                }
-            }
-            return;
-        }
-
-        StringBuilder stringBuilder;
+        DCHECK(node);
         for (unsigned i = 0; i < indent; i++)
             stringBuilder.append(' ');
-        if (node->isRoot())
-            stringBuilder.append("root");
-        else if (m_nodeToDebugString.contains(node))
+        if (m_nodeToDebugString.contains(node))
             stringBuilder.append(m_nodeToDebugString.get(node));
         stringBuilder.append(String::format(" %p", node));
         Traits::printNodeAsString(node, stringBuilder);
-        fprintf(stderr, "%s\n", stringBuilder.toString().ascii().data());
+        stringBuilder.append("\n");
 
         for (const auto* childNode : m_nodeToDebugString.keys()) {
             if (childNode->parent() == node)
-                showAllPropertyNodes(childNode, indent + 2);
+                addAllPropertyNodes(stringBuilder, childNode, indent + 2);
         }
+    }
+
+    // Root nodes may not be directly accessible but they can be determined by
+    // walking up to the parent of a previously collected node.
+    const PropertyTreeNode* lookupRootNode()
+    {
+        for (const auto* node : m_nodeToDebugString.keys()) {
+            if (node->isRoot())
+                return node;
+            if (node->parent() && node->parent()->isRoot())
+                return node->parent();
+        }
+        return nullptr;
     }
 
     HashMap<const PropertyTreeNode*, String> m_nodeToDebugString;
@@ -510,42 +510,42 @@ CORE_EXPORT void showAllPropertyTrees(const blink::FrameView& rootFrame)
 
 void showTransformPropertyTree(const blink::FrameView& rootFrame)
 {
-    blink::PropertyTreePrinter<blink::TransformPaintPropertyNode>().showTree(rootFrame);
+    fprintf(stderr, "%s\n", transformPropertyTreeAsString(rootFrame).utf8().data());
 }
 
 void showClipPropertyTree(const blink::FrameView& rootFrame)
 {
-    blink::PropertyTreePrinter<blink::ClipPaintPropertyNode>().showTree(rootFrame);
+    fprintf(stderr, "%s\n", clipPropertyTreeAsString(rootFrame).utf8().data());
 }
 
 void showEffectPropertyTree(const blink::FrameView& rootFrame)
 {
-    blink::PropertyTreePrinter<blink::EffectPaintPropertyNode>().showTree(rootFrame);
+    fprintf(stderr, "%s\n", effectPropertyTreeAsString(rootFrame).utf8().data());
 }
 
 void showScrollPropertyTree(const blink::FrameView& rootFrame)
 {
-    blink::PropertyTreePrinter<blink::ScrollPaintPropertyNode>().showTree(rootFrame);
+    fprintf(stderr, "%s\n", scrollPropertyTreeAsString(rootFrame).utf8().data());
 }
 
-void showPaintPropertyPath(const blink::TransformPaintPropertyNode* node)
+String transformPropertyTreeAsString(const blink::FrameView& rootFrame)
 {
-    blink::PropertyTreePrinter<blink::TransformPaintPropertyNode>().showPath(node);
+    return blink::PropertyTreePrinter<blink::TransformPaintPropertyNode>().treeAsString(rootFrame);
 }
 
-void showPaintPropertyPath(const blink::ClipPaintPropertyNode* node)
+String clipPropertyTreeAsString(const blink::FrameView& rootFrame)
 {
-    blink::PropertyTreePrinter<blink::ClipPaintPropertyNode>().showPath(node);
+    return blink::PropertyTreePrinter<blink::ClipPaintPropertyNode>().treeAsString(rootFrame);
 }
 
-void showPaintPropertyPath(const blink::EffectPaintPropertyNode* node)
+String effectPropertyTreeAsString(const blink::FrameView& rootFrame)
 {
-    blink::PropertyTreePrinter<blink::EffectPaintPropertyNode>().showPath(node);
+    return blink::PropertyTreePrinter<blink::EffectPaintPropertyNode>().treeAsString(rootFrame);
 }
 
-void showPaintPropertyPath(const blink::ScrollPaintPropertyNode* node)
+String scrollPropertyTreeAsString(const blink::FrameView& rootFrame)
 {
-    blink::PropertyTreePrinter<blink::ScrollPaintPropertyNode>().showPath(node);
+    return blink::PropertyTreePrinter<blink::ScrollPaintPropertyNode>().treeAsString(rootFrame);
 }
 
 String paintPropertyTreeGraph(const blink::FrameView& frameView)

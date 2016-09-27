@@ -1199,6 +1199,7 @@ source_set("unit_tests") {
     "paint/PaintLayerPainterTest.cpp",
     "paint/PaintLayerScrollableAreaTest.cpp",
     "paint/PaintPropertyTreeBuilderTest.cpp",
+    "paint/PaintPropertyTreePrinterTest.cpp",
     "paint/SVGInlineTextBoxPainterTest.cpp",
     "paint/StubChromeClientForSPv2.h",
     "paint/TableCellPainterTest.cpp",
