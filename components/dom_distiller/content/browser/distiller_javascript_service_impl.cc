@@ -22,9 +22,6 @@ DistillerJavaScriptServiceImpl::DistillerJavaScriptServiceImpl(
 
 DistillerJavaScriptServiceImpl::~DistillerJavaScriptServiceImpl() {}
 
-void DistillerJavaScriptServiceImpl::HandleDistillerEchoCall(
-    const mojo::String& message) {}
-
 void DistillerJavaScriptServiceImpl::HandleDistillerFeedbackCall(
     bool good) {
   FeedbackReporter::ReportQuality(good);

@@ -33,10 +33,6 @@ class DistillerNativeJavaScript {
   // Make sure the mojo service is connected.
   void EnsureServiceConnected();
 
-  // Native code for "distiller.echo" in JavaScript. This simply returns the
-  // provided string.
-  std::string DistillerEcho(const std::string& message);
-
   content::RenderFrame* render_frame_;
   mojom::DistillerJavaScriptServicePtr distiller_js_service_;
 };

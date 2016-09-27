@@ -41,14 +41,6 @@ void DistillerNativeJavaScript::AddJavaScriptObjectToFrame(
 
   EnsureServiceConnected();
 
-  // Some of the JavaScript functions require extra work to be done when it is
-  // called, so they have wrapper functions maintained in this class.
-  BindFunctionToObject(
-      distiller_obj,
-      "echo",
-      base::Bind(
-          &DistillerNativeJavaScript::DistillerEcho, base::Unretained(this)));
-
   // Many functions can simply call the Mojo interface directly and have no
   // wrapper function for binding. Note that calling distiller_js_service.get()
   // does not transfer ownership of the interface.
@@ -88,17 +80,6 @@ void DistillerNativeJavaScript::EnsureServiceConnected() {
     render_frame_->GetRemoteInterfaces()->GetInterface(
         &distiller_js_service_);
   }
-}
-
-std::string DistillerNativeJavaScript::DistillerEcho(
-    const std::string& message) {
-  EnsureServiceConnected();
-  // TODO(mdjones): It is possible and beneficial to have information
-  // returned from the browser process with these calls. The problem
-  // is waiting blocks this process.
-  distiller_js_service_->HandleDistillerEchoCall(message);
-
-  return message;
 }
 
 v8::Local<v8::Object> GetOrCreateDistillerObject(v8::Isolate* isolate,

@@ -23,10 +23,6 @@ class DistillerJavaScriptServiceImpl
 
   // Mojo mojom::DistillerJavaScriptService implementation.
 
-  // Echo implementation, this call does not actually return as it would be
-  // blocking.
-  void HandleDistillerEchoCall(const mojo::String& message) override;
-
   // Send UMA feedback and start the external feedback reporter if one exists.
   void HandleDistillerFeedbackCall(bool good) override;
 

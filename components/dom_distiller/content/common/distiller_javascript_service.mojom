@@ -7,10 +7,6 @@ module dom_distiller.mojom;
 // This service is implemented by the browser process and is used by the
 // renderer when a distiller JavaScript function is called.
 interface DistillerJavaScriptService {
-
-  // Handle the "distiller.echo" function.
-  HandleDistillerEchoCall(string message);
-
   // Handle the "distiller.sendFeedback" function.
   HandleDistillerFeedbackCall(bool good);
 
