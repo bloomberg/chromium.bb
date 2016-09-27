@@ -11,6 +11,7 @@
         "content::mojom::TestMojoService",
         "IPC::mojom::ChannelBootstrap",
         "mojom::ResourceUsageReporter",
+        "visitedlink::mojom::VisitedLinkNotificationSink",
         "web_cache::mojom::WebCache"
       ]
     },
