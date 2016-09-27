@@ -139,7 +139,7 @@ public class ResourceManager implements ResourceLoaderCallback {
     @SuppressWarnings("cast")
     @Override
     public void onResourceLoaded(int resType, int resId, Resource resource) {
-        if (resource == null) return;
+        if (resource == null || resource.getBitmap() == null) return;
 
         if (resType != AndroidResourceType.CRUSHED_SPRITE) {
             saveMetadataForLoadedResource(resType, resId, resource);
