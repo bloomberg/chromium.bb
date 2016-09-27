@@ -63,7 +63,9 @@ class FakeAutocompleteProviderClient
     : public testing::NiceMock<MockAutocompleteProviderClient> {
  public:
   FakeAutocompleteProviderClient()
-      : physical_web_data_source_(base::MakeUnique<MockPhysicalWebDataSource>())
+      : physical_web_data_source_(
+            base::MakeUnique<MockPhysicalWebDataSource>()),
+        is_off_the_record_(false)
   {
   }
 
@@ -75,14 +77,24 @@ class FakeAutocompleteProviderClient
     return physical_web_data_source_.get();
   }
 
+  bool IsOffTheRecord() const override {
+    return is_off_the_record_;
+  }
+
   // Convenience method to avoid downcasts when accessing the mock data source.
   MockPhysicalWebDataSource* GetMockPhysicalWebDataSource() {
     return physical_web_data_source_.get();
   }
 
+  // Allow tests to enable incognito mode.
+  void SetOffTheRecord(bool is_off_the_record) {
+    is_off_the_record_ = is_off_the_record;
+  }
+
  private:
   std::unique_ptr<MockPhysicalWebDataSource> physical_web_data_source_;
   TestSchemeClassifier scheme_classifier_;
+  bool is_off_the_record_;
 };
 
 }  // namespace
@@ -376,4 +388,18 @@ TEST_F(PhysicalWebProviderTest, TestRTLPageTitleInOverflowItem) {
   OverflowItemTestCase(CreateInputForNTP(), std::move(metadata_list),
                        "ויקיפדיה", PhysicalWebProvider::kPhysicalWebMaxMatches,
                        false, true);
+}
+
+TEST_F(PhysicalWebProviderTest, TestNoMatchesInIncognito) {
+  // Enable incognito mode
+  client_->SetOffTheRecord(true);
+
+  MockPhysicalWebDataSource* data_source =
+      client_->GetMockPhysicalWebDataSource();
+  EXPECT_TRUE(data_source);
+
+  data_source->SetMetadata(CreateMetadata(1));
+  provider_->Start(CreateInputForNTP(), false);
+
+  EXPECT_TRUE(provider_->matches().empty());
 }

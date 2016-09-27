@@ -51,8 +51,9 @@ void PhysicalWebProvider::Start(const AutocompleteInput& input,
   done_ = false;
   matches_.clear();
 
-  // Stop providing suggestions when the user enters text into the omnibox.
-  if (!input.from_omnibox_focus()) {
+  // Stop providing suggestions in incognito mode or when the user enters text
+  // into the omnibox.
+  if (client_->IsOffTheRecord() || !input.from_omnibox_focus()) {
     done_ = true;
     return;
   }
