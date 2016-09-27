@@ -633,11 +633,11 @@ void PaintLayerCompositor::frameViewDidScroll()
         scrollingCoordinatorHandlesOffset = scrollingCoordinator->scrollableAreaScrollLayerDidChange(frameView);
     }
 
-    // Scroll position = scroll minimum + scroll offset. Adjust the layer's
+    // Scroll position = scroll origin + scroll offset. Adjust the layer's
     // position to handle whatever the scroll coordinator isn't handling.
-    // The minimum scroll position is non-zero for RTL pages with overflow.
+    // The scroll origin is non-zero for RTL pages with overflow.
     if (scrollingCoordinatorHandlesOffset)
-        m_scrollLayer->setPosition(-frameView->minimumScrollPosition());
+        m_scrollLayer->setPosition(frameView->scrollOrigin());
     else
         m_scrollLayer->setPosition(-scrollPosition);
 

@@ -1209,7 +1209,7 @@ void GraphicsLayer::setScrollableArea(ScrollableArea* scrollableArea, bool isVis
 void GraphicsLayer::didScroll()
 {
     if (m_scrollableArea) {
-        DoublePoint newPosition = m_scrollableArea->minimumScrollPosition() + toDoubleSize(m_layer->layer()->scrollPositionDouble());
+        DoublePoint newPosition = -m_scrollableArea->scrollOrigin() + toDoubleSize(m_layer->layer()->scrollPositionDouble());
 
         // FrameView::setScrollPosition doesn't work for compositor commits (interacts poorly with programmatic scroll animations)
         // so we need to use the ScrollableArea version. The FrameView method should go away soon anyway.
