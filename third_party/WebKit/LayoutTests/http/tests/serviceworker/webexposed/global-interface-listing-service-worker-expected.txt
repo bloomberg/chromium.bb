@@ -122,6 +122,12 @@ interface DataView
     method setUint16
     method setUint32
     method setUint8
+interface DetectedObject
+    getter boundingBox
+    method constructor
+interface Detector
+    method constructor
+    method detect
 interface Event
     attribute AT_TARGET
     attribute BLUR

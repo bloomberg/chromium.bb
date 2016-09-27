@@ -204,6 +204,7 @@ ServiceWorkerClientsGetID status=stable
 ServiceWorkerWindowClientNavigate status=stable
 SetRootScroller status=experimental
 ShadowDOMV1 status=stable
+ShapeDetection status=experimental
 SharedArrayBuffer
 SharedWorker status=stable
 SlimmingPaintInvalidation implied_by=SlimmingPaintV2

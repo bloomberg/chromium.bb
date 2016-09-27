@@ -1168,6 +1168,18 @@ interface DelayNode : AudioNode
     attribute @@toStringTag
     getter delayTime
     method constructor
+interface DetectedFace
+    attribute @@toStringTag
+    getter boundingBox
+    method constructor
+interface DetectedObject
+    attribute @@toStringTag
+    getter boundingBox
+    method constructor
+interface Detector
+    attribute @@toStringTag
+    method constructor
+    method detect
 interface DeviceLightEvent : Event
     attribute @@toStringTag
     getter value
@@ -1721,6 +1733,10 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
+interface FaceDetector
+    attribute @@toStringTag
+    method constructor
+    method detect
 interface FederatedCredential : SiteBoundCredential
     attribute @@toStringTag
     getter protocol

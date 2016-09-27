@@ -141,6 +141,7 @@ target(modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/screen_orientation",
     "//third_party/WebKit/Source/modules/sensor",
     "//third_party/WebKit/Source/modules/serviceworkers",
+    "//third_party/WebKit/Source/modules/shapedetection",
     "//third_party/WebKit/Source/modules/speech",
     "//third_party/WebKit/Source/modules/srcobject",
     "//third_party/WebKit/Source/modules/storage",
