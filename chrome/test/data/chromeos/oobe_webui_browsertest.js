@@ -77,6 +77,12 @@ OobeWebUITest.prototype = {
       'requiredOwnedAriaRoleMissing',
       requiredOwnedAriaRoleMissingSelectors);
 
+    // Polymer.PaperButtonBehavior.ariaActiveAttribute starts with aria- but is
+    // not an ARIA attribute. Ignore for paper-icon-button.
+    this.accessibilityAuditConfig.ignoreSelectors(
+      'badAriaAttribute',
+      'paper-icon-button[aria-active-attribute]');
+
     var badAriaAttributeSelectors = [
       '#forgotPasswordDlg',
       '#cancelConfirmDlg',
