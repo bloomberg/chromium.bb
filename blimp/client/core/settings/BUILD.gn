@@ -55,6 +55,7 @@ if (is_android) {
       "//blimp/client:blimp_java_resources",
       "//blimp/client/core:common_java",
       "//blimp/client/public:public_headers_java",
+      "//components/signin/core/browser/android:java",
       "//components/sync/android:sync_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
     ]

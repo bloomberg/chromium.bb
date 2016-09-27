@@ -12,7 +12,7 @@ import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 
 import org.chromium.base.PackageUtils;
-import org.chromium.components.sync.signin.ChromeSigninController;
+import org.chromium.components.signin.ChromeSigninController;
 
 import java.util.List;
 

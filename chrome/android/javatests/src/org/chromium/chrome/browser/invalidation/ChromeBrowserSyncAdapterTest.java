@@ -22,8 +22,8 @@ import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.invalidation.PendingInvalidation;
+import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.signin.AccountManagerHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 

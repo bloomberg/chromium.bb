@@ -10,7 +10,6 @@ import android.content.Context;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.components.sync.signin.AccountManagerHelper;
 
 /**
  * ChildAccountInfoFetcher for the Android platform.

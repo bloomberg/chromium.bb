@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 android_library("sync_java") {
   deps = [
     "//base:base_java",
+    "//components/signin/core/browser/android:java",
     "//net/android:net_java",
     "//third_party/android_tools:android_gcm_java",
     "//third_party/android_tools:android_support_annotations_java",
@@ -29,11 +30,6 @@ android_library("sync_java") {
     "java/src/org/chromium/components/sync/notifier/InvalidationIntentProtocol.java",
     "java/src/org/chromium/components/sync/notifier/InvalidationPreferences.java",
     "java/src/org/chromium/components/sync/notifier/RandomizedInvalidationClientNameGenerator.java",
-    "java/src/org/chromium/components/sync/signin/AccountManagerDelegate.java",
-    "java/src/org/chromium/components/sync/signin/AccountManagerHelper.java",
-    "java/src/org/chromium/components/sync/signin/AuthException.java",
-    "java/src/org/chromium/components/sync/signin/ChromeSigninController.java",
-    "java/src/org/chromium/components/sync/signin/SystemAccountManagerDelegate.java",
   ]
 }
 
@@ -43,6 +39,8 @@ android_library("sync_javatests") {
     ":sync_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//components/signin/core/browser/android:java",
+    "//components/signin/core/browser/android:signin_java_test_support",
     "//components/sync:sync_java_test_support",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
@@ -52,7 +50,6 @@ android_library("sync_javatests") {
     "javatests/src/org/chromium/components/sync/AndroidSyncSettingsTest.java",
     "javatests/src/org/chromium/components/sync/notifier/InvalidationClientNameProviderTest.java",
     "javatests/src/org/chromium/components/sync/notifier/InvalidationPreferencesTest.java",
-    "javatests/src/org/chromium/components/sync/notifier/signin/AccountManagerHelperTest.java",
   ]
 }
 

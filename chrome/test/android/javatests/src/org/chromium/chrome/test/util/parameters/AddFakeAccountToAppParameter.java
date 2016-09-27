@@ -11,7 +11,7 @@ import org.chromium.base.test.util.parameter.BaseParameter;
 import org.chromium.base.test.util.parameter.Parameter;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
 import org.chromium.chrome.test.util.ChromeSigninUtils;
-import org.chromium.components.sync.signin.ChromeSigninController;
+import org.chromium.components.signin.ChromeSigninController;
 
 /**
  * Adds a fake account to app when this parameter is used.

@@ -12,7 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerHelper;
 
 import java.util.HashSet;
 import java.util.List;

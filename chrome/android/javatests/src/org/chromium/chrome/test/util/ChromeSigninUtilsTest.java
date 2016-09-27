@@ -10,7 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.components.sync.signin.ChromeSigninController;
+import org.chromium.components.signin.ChromeSigninController;
 
 /**
  * Tests for {@link ChromeSigninUtils}.

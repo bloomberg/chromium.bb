@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.sync.test.util;
+package org.chromium.components.signin.test.util;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -16,8 +16,8 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.components.sync.signin.AccountManagerDelegate;
-import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerDelegate;
+import org.chromium.components.signin.AccountManagerHelper;
 
 import java.util.ArrayList;
 import java.util.HashSet;

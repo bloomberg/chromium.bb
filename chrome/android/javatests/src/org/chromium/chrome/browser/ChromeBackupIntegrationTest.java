@@ -21,9 +21,9 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.signin.AccountIdProvider;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
-import org.chromium.components.sync.signin.AccountManagerHelper;
-import org.chromium.components.sync.signin.ChromeSigninController;
-import org.chromium.components.sync.test.util.MockAccountManager;
+import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.test.util.MockAccountManager;
 
 import java.io.File;
 import java.io.FileInputStream;

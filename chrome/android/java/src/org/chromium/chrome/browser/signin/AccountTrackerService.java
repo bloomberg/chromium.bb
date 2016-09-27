@@ -14,7 +14,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerHelper;
 
 /**
 * Android wrapper of AccountTrackerService which provides access from the java layer.

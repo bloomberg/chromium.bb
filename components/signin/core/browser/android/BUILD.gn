@@ -14,9 +14,44 @@ generate_jni("jni_headers") {
 android_library("java") {
   deps = [
     "//base:base_java",
-    "//components/sync/android:sync_java",
+    "//net/android:net_java",
+    google_play_services_library,
   ]
 
-  java_files =
-      [ "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java" ]
+  java_files = [
+    "java/src/org/chromium/components/signin/AccountManagerDelegate.java",
+    "java/src/org/chromium/components/signin/AccountManagerHelper.java",
+    "java/src/org/chromium/components/signin/AuthException.java",
+    "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java",
+    "java/src/org/chromium/components/signin/ChromeSigninController.java",
+    "java/src/org/chromium/components/signin/SystemAccountManagerDelegate.java",
+  ]
+}
+
+android_library("javatests") {
+  testonly = true
+  deps = [
+    ":java",
+    ":signin_java_test_support",
+    "//base:base_java",
+    "//base:base_java_test_support",
+  ]
+
+  java_files = [ "javatests/src/org/chromium/components/signin/test/AccountManagerHelperTest.java" ]
+}
+
+android_library("signin_java_test_support") {
+  testonly = true
+  deps = [
+    ":java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//third_party/jsr-305:jsr_305_javalib",
+  ]
+
+  java_files = [
+    "javatests/src/org/chromium/components/signin/test/util/AccountHolder.java",
+    "javatests/src/org/chromium/components/signin/test/util/MockAccountManager.java",
+    "javatests/src/org/chromium/components/signin/test/util/SimpleFuture.java",
+  ]
 }

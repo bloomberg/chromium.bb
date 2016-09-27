@@ -19,11 +19,11 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.ModelTypeHelper;
 import org.chromium.components.sync.notifier.InvalidationIntentProtocol;
-import org.chromium.components.sync.signin.ChromeSigninController;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -134,6 +134,8 @@ public class InvalidationControllerTest {
         AndroidSyncSettings.overrideForTests(mContext, delegate);
 
         ChromeSigninController.get(mContext).setSignedInAccountName("test@example.com");
+        AndroidSyncSettings.updateAccount(
+                mContext, ChromeSigninController.get(mContext).getSignedInUser());
         AndroidSyncSettings.enableChromeSync(mContext);
     }
 

@@ -16,10 +16,10 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.test.util.AccountHolder;
+import org.chromium.components.signin.test.util.MockAccountManager;
 import org.chromium.components.sync.AndroidSyncSettings;
-import org.chromium.components.sync.signin.AccountManagerHelper;
-import org.chromium.components.sync.test.util.AccountHolder;
-import org.chromium.components.sync.test.util.MockAccountManager;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 

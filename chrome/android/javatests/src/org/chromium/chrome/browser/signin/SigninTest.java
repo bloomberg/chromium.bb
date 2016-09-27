@@ -30,8 +30,8 @@ import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.sync.signin.ChromeSigninController;
-import org.chromium.components.sync.test.util.MockAccountManager;
+import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.signin.test.util.MockAccountManager;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 
 /**

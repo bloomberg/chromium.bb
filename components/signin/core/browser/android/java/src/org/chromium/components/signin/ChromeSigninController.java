@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.sync.signin;
+package org.chromium.components.signin;
 
 import android.accounts.Account;
 import android.content.Context;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.components.sync.AndroidSyncSettings;
 
 /**
  * Caches the signed-in username in the app prefs.
@@ -27,7 +26,6 @@ public class ChromeSigninController {
 
     private ChromeSigninController(Context context) {
         mApplicationContext = context.getApplicationContext();
-        AndroidSyncSettings.updateAccount(context, getSignedInUser());
     }
 
     /**
@@ -62,8 +60,6 @@ public class ChromeSigninController {
                 .edit()
                 .putString(SIGNED_IN_ACCOUNT_KEY, accountName)
                 .apply();
-        // TODO(maxbogue): Move this to SigninManager.
-        AndroidSyncSettings.updateAccount(mApplicationContext, getSignedInUser());
     }
 
     public String getSignedInAccountName() {

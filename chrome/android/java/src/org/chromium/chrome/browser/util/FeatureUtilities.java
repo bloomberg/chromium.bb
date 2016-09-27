@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
-import org.chromium.components.sync.signin.AccountManagerHelper;
+import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;

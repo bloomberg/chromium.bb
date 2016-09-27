@@ -1080,15 +1080,8 @@ if (is_android) {
     deps = [
       "android:sync_java",
       "//base:base_java",
-      "//base:base_java_test_support",
-      "//third_party/jsr-305:jsr_305_javalib",
     ]
-    java_files = [
-      "test/android/javatests/src/org/chromium/components/sync/test/util/AccountHolder.java",
-      "test/android/javatests/src/org/chromium/components/sync/test/util/MockAccountManager.java",
-      "test/android/javatests/src/org/chromium/components/sync/test/util/MockSyncContentResolverDelegate.java",
-      "test/android/javatests/src/org/chromium/components/sync/test/util/SimpleFuture.java",
-    ]
+    java_files = [ "test/android/javatests/src/org/chromium/components/sync/test/util/MockSyncContentResolverDelegate.java" ]
   }
 
   static_library("test_support_sync_fake_server_android") {

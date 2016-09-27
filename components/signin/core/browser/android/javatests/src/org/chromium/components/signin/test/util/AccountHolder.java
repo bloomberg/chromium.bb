@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.sync.test.util;
+package org.chromium.components.signin.test.util;
 
 import android.accounts.Account;
 import android.os.Handler;

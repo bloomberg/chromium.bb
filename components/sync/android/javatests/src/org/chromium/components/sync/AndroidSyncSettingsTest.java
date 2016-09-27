@@ -13,10 +13,10 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.test.util.AccountHolder;
+import org.chromium.components.signin.test.util.MockAccountManager;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
-import org.chromium.components.sync.signin.AccountManagerHelper;
-import org.chromium.components.sync.test.util.AccountHolder;
-import org.chromium.components.sync.test.util.MockAccountManager;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 
 /**

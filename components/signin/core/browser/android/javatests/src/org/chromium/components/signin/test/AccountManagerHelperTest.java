@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.components.sync.notifier.signin;
+package org.chromium.components.signin.test;
 
 import android.accounts.Account;
 import android.content.Context;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.components.sync.signin.AccountManagerHelper;
-import org.chromium.components.sync.test.util.AccountHolder;
-import org.chromium.components.sync.test.util.MockAccountManager;
-import org.chromium.components.sync.test.util.SimpleFuture;
+import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.test.util.AccountHolder;
+import org.chromium.components.signin.test.util.MockAccountManager;
+import org.chromium.components.signin.test.util.SimpleFuture;
 
 /**
  * Test class for {@link AccountManagerHelper}.

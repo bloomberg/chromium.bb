@@ -11,7 +11,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.components.sync.signin.ChromeSigninController;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.ui.base.WindowAndroid;
 
 /**

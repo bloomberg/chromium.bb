@@ -26,6 +26,8 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelTypeHelper;
 import org.chromium.components.sync.SyncConstants;
@@ -33,8 +35,6 @@ import org.chromium.components.sync.notifier.InvalidationClientNameProvider;
 import org.chromium.components.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.components.sync.notifier.InvalidationPreferences;
 import org.chromium.components.sync.notifier.InvalidationPreferences.EditContext;
-import org.chromium.components.sync.signin.AccountManagerHelper;
-import org.chromium.components.sync.signin.ChromeSigninController;
 
 import java.util.Collections;
 import java.util.HashSet;

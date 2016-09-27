@@ -1,3 +1,0 @@
-include_rules = [
-  "+components/sync/android/java/src/org/chromium/components/sync/signin",
-]

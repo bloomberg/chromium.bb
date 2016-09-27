@@ -17,7 +17,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.blimp.core.MockBlimpClientContext;
 import org.chromium.blimp.core.MockBlimpClientContextDelegate;
-import org.chromium.components.sync.signin.ChromeSigninController;
+import org.chromium.components.signin.ChromeSigninController;
 
 /**
  * Test blimp setting page.

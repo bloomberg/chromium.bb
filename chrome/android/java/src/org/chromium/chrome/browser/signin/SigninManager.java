@@ -22,8 +22,9 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.sync.SyncUserDataWiper;
-import org.chromium.components.sync.signin.AccountManagerHelper;
-import org.chromium.components.sync.signin.ChromeSigninController;
+import org.chromium.components.signin.AccountManagerHelper;
+import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.sync.AndroidSyncSettings;
 
 import javax.annotation.Nullable;
 
@@ -434,6 +435,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         // Cache the signed-in account name. This must be done after the native call, otherwise
         // sync tries to start without being signed in natively and crashes.
         ChromeSigninController.get(mContext).setSignedInAccountName(mSignInState.account.name);
+        AndroidSyncSettings.updateAccount(mContext, mSignInState.account);
 
         if (mSignInState.callback != null) {
             mSignInState.callback.onSignInComplete();
@@ -513,6 +515,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         // http://crbug.com/589028
         nativeSignOut(mNativeSigninManagerAndroid);
         ChromeSigninController.get(mContext).setSignedInAccountName(null);
+        AndroidSyncSettings.updateAccount(mContext, null);
 
         if (wipeData) {
             wipeProfileData(wipeDataHooks);
