@@ -8,9 +8,10 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 # See the GpuTestExpectations class for documentation.
 
 class WebGLConformanceExpectations(GpuTestExpectations):
-  def __init__(self, conformance_path):
+  def __init__(self, conformance_path, url_prefixes=None):
     self.conformance_path = conformance_path
-    super(WebGLConformanceExpectations, self).__init__()
+    super(WebGLConformanceExpectations, self).__init__(
+      url_prefixes=url_prefixes)
 
   def Fail(self, pattern, condition=None, bug=None):
     self.CheckPatternIsValid(pattern)
@@ -27,7 +28,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
   def CheckPatternIsValid(self, pattern):
     # Look for basic wildcards.
-    if not '*' in pattern and not 'WebglExtension.' in pattern:
+    if not '*' in pattern and not 'WebglExtension_' in pattern:
       full_path = os.path.normpath(os.path.join(self.conformance_path, pattern))
       if not os.path.exists(full_path):
         raise Exception('The WebGL conformance test path specified in ' +
@@ -40,61 +41,70 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # It's expected that not all extensions will be available on all platforms.
     # Having a test listed here is not necessarily a problem.
 
-    self.Fail('WebglExtension.EXT_color_buffer_float',
+    self.Fail('WebglExtension_EXT_color_buffer_float',
         ['win', 'mac'])
-    self.Fail('WebglExtension.WEBGL_compressed_texture_astc',
+    # Skip these, rather than expect them to fail, to speed up test
+    # execution. The browser is restarted even after expected test
+    # failures.
+    self.Skip('WebglExtension_WEBGL_compressed_texture_astc',
         ['win', 'mac', 'linux'])
-    self.Fail('WebglExtension.WEBGL_compressed_texture_atc',
+    self.Skip('WebglExtension_WEBGL_compressed_texture_atc',
         ['win', 'mac', 'linux'])
-    self.Fail('WebglExtension.WEBGL_compressed_texture_etc1',
+    self.Skip('WebglExtension_WEBGL_compressed_texture_etc1',
         ['mac', 'linux'])
-    self.Fail('WebglExtension.WEBGL_compressed_texture_pvrtc',
+    self.Skip('WebglExtension_WEBGL_compressed_texture_pvrtc',
+        ['win', 'mac', 'linux'])
+    self.Skip('WebglExtension_WEBGL_compressed_texture_s3tc_srgb',
         ['win', 'mac', 'linux'])
 
     # Extensions not available under D3D9
-    self.Fail('WebglExtension.EXT_disjoint_timer_query',
+    self.Fail('WebglExtension_EXT_disjoint_timer_query',
         ['win', 'd3d9'])
-    self.Fail('WebglExtension.EXT_sRGB',
+    self.Fail('WebglExtension_EXT_sRGB',
         ['win', 'd3d9'])
-    self.Fail('WebglExtension.WEBGL_compressed_texture_etc1',
+    self.Fail('WebglExtension_WEBGL_compressed_texture_etc1',
         ['win', 'd3d9'])
 
-    self.Fail('WebglExtension.WEBGL_depth_texture',
+    self.Fail('WebglExtension_WEBGL_depth_texture',
         ['win', 'amd', 'd3d9'])
 
-    self.Fail('WebglExtension.WEBGL_draw_buffers',
+    self.Fail('WebglExtension_WEBGL_draw_buffers',
         ['win', 'd3d9'])
 
     # Android general
-    self.Fail('WebglExtension.EXT_disjoint_timer_query',
+    self.Fail('WebglExtension_EXT_disjoint_timer_query',
         ['android'])
-    self.Fail('WebglExtension.EXT_frag_depth',
+    self.Fail('WebglExtension_EXT_frag_depth',
         ['android'])
-    self.Fail('WebglExtension.EXT_shader_texture_lod',
+    self.Fail('WebglExtension_EXT_shader_texture_lod',
         ['android'])
-    self.Fail('WebglExtension.WEBGL_compressed_texture_astc',
+    self.Fail('WebglExtension_WEBGL_compressed_texture_astc',
         ['android'])
-    self.Fail('WebglExtension.WEBGL_compressed_texture_pvrtc',
+    self.Fail('WebglExtension_WEBGL_compressed_texture_pvrtc',
         ['android'])
-    self.Fail('WebglExtension.WEBGL_compressed_texture_s3tc',
+    self.Fail('WebglExtension_WEBGL_compressed_texture_s3tc',
         ['android'])
-    self.Fail('WebglExtension.WEBGL_depth_texture',
+    self.Fail('WebglExtension_WEBGL_depth_texture',
         ['android'])
-    self.Fail('WebglExtension.WEBGL_draw_buffers',
+    self.Fail('WebglExtension_WEBGL_draw_buffers',
         ['android'])
 
     # Nexus 5
-    self.Fail('WebglExtension.OES_texture_float_linear',
+    self.Fail('WebglExtension_OES_texture_float_linear',
               ['android', ('qualcomm', 'Adreno (TM) 330')])
 
+    # Nexus 5X
+    self.Fail('WebglExtension_EXT_sRGB',
+              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
+
     # Nexus 6 (Adreno 420) and 6P (Adreno 430)
-    self.Fail('WebglExtension.EXT_sRGB',
+    self.Fail('WebglExtension_EXT_sRGB',
               ['android',
                ('qualcomm', 'Adreno (TM) 420'),
                ('qualcomm', 'Adreno (TM) 430')])
 
     # Nexus 9
-    self.Fail('WebglExtension.WEBGL_compressed_texture_atc',
+    self.Fail('WebglExtension_WEBGL_compressed_texture_atc',
               ['android', ('nvidia', 'NVIDIA Tegra')])
 
     # ========================
@@ -436,8 +446,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # This test is skipped because it is crashing the GPU process.
     self.Skip('conformance/glsl/misc/shader-with-non-reserved-words.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=609883)
-    self.Fail('WebglExtension.EXT_sRGB',
-              ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)
     self.Fail('conformance/textures/misc/' +
               'tex-image-and-sub-image-2d-with-array-buffer-view.html',
               ['android', ('qualcomm', 'Adreno (TM) 418')], bug=610951)

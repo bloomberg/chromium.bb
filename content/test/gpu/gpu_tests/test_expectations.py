@@ -89,12 +89,16 @@ class Expectation(object):
 class TestExpectations(object):
   """A class which defines the expectations for a page set test execution"""
 
-  def __init__(self):
+  def __init__(self, url_prefixes=None):
     self._expectations = []
+    self._url_prefixes = []
     self._skip_matching_names = False
     self._built_expectation_cache = True
     self._ClearExpectationsCache()
     self.SetExpectations()
+    if url_prefixes:
+      for p in url_prefixes:
+        self._url_prefixes.append(p)
 
   def SetExpectations(self):
     """Called on creation. Override to set up custom expectations."""
@@ -177,6 +181,13 @@ class TestExpectations(object):
     query_index = url_path.find('?')
     if query_index > 0:
       url_path = url_path[0:query_index]
+    # Look for the URL prefixes specified at construction time, and
+    # trim the first one found, if any.
+    if self._url_prefixes:
+      for p in self._url_prefixes:
+        if url_path.startswith(p):
+          url_path = url_path[len(p):]
+          break
     return url_path
 
   def _GetExpectationObjectForPage(self, browser, page):
