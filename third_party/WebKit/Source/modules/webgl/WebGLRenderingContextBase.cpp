@@ -968,7 +968,11 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     m_maxViewportDims[0] = m_maxViewportDims[1] = 0;
     contextProvider->contextGL()->GetIntegerv(GL_MAX_VIEWPORT_DIMS, m_maxViewportDims);
 
-    RefPtr<DrawingBuffer> buffer = createDrawingBuffer(std::move(contextProvider));
+    RefPtr<DrawingBuffer> buffer;
+    if (passedOffscreenCanvas)
+        buffer = createDrawingBuffer(std::move(contextProvider), DrawingBuffer::DisallowChromiumImage);
+    else
+        buffer = createDrawingBuffer(std::move(contextProvider), DrawingBuffer::AllowChromiumImage);
     if (!buffer) {
         m_contextLostMode = SyntheticLostContext;
         return;
@@ -990,7 +994,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES2);
 }
 
-PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider)
+PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, DrawingBuffer::ChromiumImageUsage chromiumImageUsage)
 {
     bool premultipliedAlpha = creationAttributes().premultipliedAlpha();
     bool wantAlphaChannel = creationAttributes().alpha();
@@ -1015,7 +1019,8 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(std::un
         wantStencilBuffer,
         wantAntialiasing,
         preserve,
-        webGLVersion);
+        webGLVersion,
+        chromiumImageUsage);
 }
 
 void WebGLRenderingContextBase::initializeNewContext()
@@ -6177,7 +6182,8 @@ void WebGLRenderingContextBase::maybeRestoreContext(TimerBase*)
     RefPtr<DrawingBuffer> buffer;
     if (contextProvider && contextProvider->bindToCurrentThread()) {
         // Construct a new drawing buffer with the new GL context.
-        buffer = createDrawingBuffer(std::move(contextProvider));
+        // TODO(xidachen): make sure that the second parameter is correct for OffscreenCanvas.
+        buffer = createDrawingBuffer(std::move(contextProvider), DrawingBuffer::AllowChromiumImage);
         // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is set to null.
     }
     if (!buffer) {

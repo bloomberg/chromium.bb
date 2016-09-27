@@ -79,6 +79,63 @@ class PixelTestsStorySet(story_set_module.StorySet):
   def __init__(self, expectations, base_name='Pixel', try_es3=False):
     super(PixelTestsStorySet, self).__init__()
     self._AddAllPages(expectations, base_name, False)
+
+    # Pages requiring the use of --enable-experimental-canvas-features
+    self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_offscreenCanvas_transferToImageBitmap_main.html',
+      name=base_name + '.OffscreenCanvasTransferToImageBitmap',
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      story_set=self,
+      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
+      expectations=expectations))
+
+    self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_offscreenCanvas_transferToImageBitmap_worker.html',
+      name=base_name + '.OffscreenCanvasTransferToImageBitmapWorker',
+      test_rect=[0, 0, 300, 300],
+      revision=1,
+      story_set=self,
+      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
+      expectations=expectations))
+
+    self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_offscreenCanvas_webgl_commit_main.html',
+      name=base_name + '.OffscreenCanvasWebGLGreenBox',
+      test_rect=[0, 0, 300, 300],
+      revision=2,
+      story_set=self,
+      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
+      expectations=expectations))
+
+    self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_offscreenCanvas_webgl_commit_worker.html',
+      name=base_name + '.OffscreenCanvasWebGLRedBoxWorker',
+      test_rect=[0, 0, 300, 300],
+      revision=3,
+      story_set=self,
+      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
+      expectations=expectations))
+
+    self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_acceleratedOffscreen2d_commit_main.html',
+      name=base_name + '.OffscreenCanvasAccelerated2D',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      story_set=self,
+      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
+      expectations=expectations))
+
+    self.AddStory(PixelTestsPage(
+      url='file://../../data/gpu/pixel_acceleratedOffscreen2d_commit_worker.html',
+      name=base_name + '.OffscreenCanvasAccelerated2DWorker',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      story_set=self,
+      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
+      expectations=expectations))
+
+
     # Would be better to fetch this from Telemetry.
     # TODO(kbr): enable this on all platforms. Don't know what will
     # happen on Android right now.
@@ -173,42 +230,6 @@ class PixelTestsStorySet(story_set_module.StorySet):
     else:
       es3_suffix = ''
       shared_page_state_class = gpu_test_base.GpuSharedPageState
-
-    self.AddStory(PixelTestsPage(
-      url='file://../../data/gpu/pixel_offscreenCanvas_webgl_commit_main.html',
-      name=base_name + '.OffscreenCanvasWebGLGreenBox' + es3_suffix,
-      test_rect=[0, 0, 300, 300],
-      revision=1,
-      story_set=self,
-      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
-      expectations=expectations))
-
-    self.AddStory(PixelTestsPage(
-      url='file://../../data/gpu/pixel_offscreenCanvas_webgl_commit_worker.html',
-      name=base_name + '.OffscreenCanvasWebGLRedBoxWorker' + es3_suffix,
-      test_rect=[0, 0, 300, 300],
-      revision=2,
-      story_set=self,
-      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
-      expectations=expectations))
-
-    self.AddStory(PixelTestsPage(
-      url='file://../../data/gpu/pixel_acceleratedOffscreen2d_commit_main.html',
-      name=base_name + '.OffscreenCanvasAccelerated2D' + es3_suffix,
-      test_rect=[0, 0, 350, 350],
-      revision=1,
-      story_set=self,
-      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
-      expectations=expectations))
-
-    self.AddStory(PixelTestsPage(
-      url='file://../../data/gpu/pixel_acceleratedOffscreen2d_commit_worker.html',
-      name=base_name + '.OffscreenCanvasAccelerated2DWorker' + es3_suffix,
-      test_rect=[0, 0, 350, 350],
-      revision=1,
-      story_set=self,
-      shared_page_state_class=EnableExperimentalCanvasFeaturesSharedPageState,
-      expectations=expectations))
 
     self.AddStory(PixelTestsPage(
       url='file://../../data/gpu/pixel_canvas2d.html',

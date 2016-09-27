@@ -90,7 +90,8 @@ static bool shouldFailDrawingBufferCreationForTesting = false;
 PassRefPtr<DrawingBuffer> DrawingBuffer::create(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider,
     const IntSize& size, bool premultipliedAlpha, bool wantAlphaChannel,
     bool wantDepthBuffer, bool wantStencilBuffer, bool wantAntialiasing,
-    PreserveDrawingBuffer preserve, WebGLVersion webGLVersion)
+    PreserveDrawingBuffer preserve, WebGLVersion webGLVersion,
+    ChromiumImageUsage chromiumImageUsage)
 {
     ASSERT(contextProvider);
 
@@ -123,7 +124,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(std::unique_ptr<WebGraphicsConte
 
     RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(contextProvider), std::move(extensionsUtil),
         discardFramebufferSupported, wantAlphaChannel, premultipliedAlpha,
-        preserve, webGLVersion, wantDepthBuffer, wantStencilBuffer));
+        preserve, webGLVersion, wantDepthBuffer, wantStencilBuffer, chromiumImageUsage));
     if (!drawingBuffer->initialize(size, multisampleSupported)) {
         drawingBuffer->beginDestruction();
         return PassRefPtr<DrawingBuffer>();
@@ -145,7 +146,8 @@ DrawingBuffer::DrawingBuffer(
     PreserveDrawingBuffer preserve,
     WebGLVersion webGLVersion,
     bool wantDepth,
-    bool wantStencil)
+    bool wantStencil,
+    ChromiumImageUsage chromiumImageUsage)
     : m_preserveDrawingBuffer(preserve)
     , m_webGLVersion(webGLVersion)
     , m_contextProvider(std::move(contextProvider))
@@ -157,6 +159,7 @@ DrawingBuffer::DrawingBuffer(
     , m_softwareRendering(m_contextProvider->isSoftwareRendering())
     , m_wantDepth(wantDepth)
     , m_wantStencil(wantStencil)
+    , m_chromiumImageUsage(chromiumImageUsage)
 {
     memset(m_colorMask, 0, 4 * sizeof(GLboolean));
     memset(m_clearColor, 0, 4 * sizeof(GLfloat));
@@ -232,7 +235,7 @@ bool DrawingBuffer::defaultBufferRequiresAlphaChannelToBePreserved()
     }
 
     bool rgbEmulation = contextProvider()->getCapabilities().emulate_rgb_buffer_with_rgba
-        || (RuntimeEnabledFeatures::webGLImageChromiumEnabled() && contextProvider()->getCapabilities().chromium_image_rgb_emulation);
+        || (shouldUseChromiumImage() && contextProvider()->getCapabilities().chromium_image_rgb_emulation);
     return !m_wantAlphaChannel && rgbEmulation;
 }
 
@@ -536,7 +539,7 @@ PassRefPtr<DrawingBuffer::MailboxInfo> DrawingBuffer::takeRecycledMailbox()
     // Creation of image backed mailboxes is very expensive, so be less
     // aggressive about pruning them.
     size_t cacheLimit = 1;
-    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
+    if (shouldUseChromiumImage())
         cacheLimit = 4;
 
     RefPtr<RecycledMailbox> recycled;
@@ -1138,7 +1141,7 @@ void DrawingBuffer::clearChromiumImageAlpha(const TextureInfo& info)
 
 DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(const IntSize& size)
 {
-    if (!RuntimeEnabledFeatures::webGLImageChromiumEnabled())
+    if (!shouldUseChromiumImage())
         return createDefaultTextureAndAllocateMemory(size);
 
     TextureParameters parameters = chromiumImageTextureParameters();
@@ -1171,7 +1174,7 @@ DrawingBuffer::TextureInfo DrawingBuffer::createDefaultTextureAndAllocateMemory(
 void DrawingBuffer::resizeTextureMemory(TextureInfo* info, const IntSize& size)
 {
     ASSERT(info->textureId);
-    if (!RuntimeEnabledFeatures::webGLImageChromiumEnabled()) {
+    if (!shouldUseChromiumImage()) {
         if (info->immutable) {
             DCHECK(m_storageTextureSupported);
             m_gl->DeleteTextures(1, &info->textureId);
@@ -1231,7 +1234,7 @@ GLenum DrawingBuffer::getMultisampledRenderbufferFormat()
     DCHECK(wantExplicitResolve());
     if (m_wantAlphaChannel)
         return GL_RGBA8_OES;
-    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled() && contextProvider()->getCapabilities().chromium_image_rgb_emulation)
+    if (shouldUseChromiumImage() && contextProvider()->getCapabilities().chromium_image_rgb_emulation)
         return GL_RGBA8_OES;
     if (contextProvider()->getCapabilities().disable_webgl_rgb_multisampling_usage)
         return GL_RGBA8_OES;
@@ -1244,6 +1247,11 @@ void DrawingBuffer::restoreTextureBindings()
     // GL_TEXTURE_RECTANGLE. Only GL_TEXTURE_2D needs to be restored since
     // the public interface for WebGL does not support GL_TEXTURE_RECTANGLE.
     m_gl->BindTexture(GL_TEXTURE_2D, m_texture2DBinding);
+}
+
+bool DrawingBuffer::shouldUseChromiumImage()
+{
+    return RuntimeEnabledFeatures::webGLImageChromiumEnabled() && m_chromiumImageUsage == AllowChromiumImage;
 }
 
 } // namespace blink

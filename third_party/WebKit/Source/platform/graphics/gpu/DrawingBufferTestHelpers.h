@@ -34,7 +34,8 @@ public:
     DrawingBufferForTests(std::unique_ptr<WebGraphicsContext3DProvider> contextProvider, std::unique_ptr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
         : DrawingBuffer(std::move(contextProvider), std::move(extensionsUtil), false /* discardFramebufferSupported */,
             true /* wantAlphaChannel */, false /* premultipliedAlpha */, preserve, WebGL1,
-            false /* wantDepth */, false /* wantStencil */)
+            false /* wantDepth */, false /* wantStencil */,
+            DrawingBuffer::AllowChromiumImage /* ChromiumImageUsage */)
         , m_live(0)
     { }
 

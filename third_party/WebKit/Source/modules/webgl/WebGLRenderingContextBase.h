@@ -446,7 +446,7 @@ protected:
 
     WebGLRenderingContextBase(HTMLCanvasElement*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes&, unsigned);
     WebGLRenderingContextBase(OffscreenCanvas*, std::unique_ptr<WebGraphicsContext3DProvider>, const CanvasContextCreationAttributes&, unsigned);
-    PassRefPtr<DrawingBuffer> createDrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>);
+    PassRefPtr<DrawingBuffer> createDrawingBuffer(std::unique_ptr<WebGraphicsContext3DProvider>, DrawingBuffer::ChromiumImageUsage);
     void setupFlags();
 
     // CanvasRenderingContext implementation.

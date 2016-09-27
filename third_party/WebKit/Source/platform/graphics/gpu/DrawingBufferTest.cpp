@@ -512,7 +512,8 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
             wantStencilBuffer,
             wantAntialiasing,
             preserve,
-            DrawingBuffer::WebGL1);
+            DrawingBuffer::WebGL1,
+            DrawingBuffer::AllowChromiumImage);
 
         // When we request a depth or a stencil buffer, we will get both.
         EXPECT_EQ(cases[i].requestDepth || cases[i].requestStencil, drawingBuffer->hasDepthBuffer());

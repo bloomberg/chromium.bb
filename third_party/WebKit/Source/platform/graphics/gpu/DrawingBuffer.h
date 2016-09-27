@@ -76,11 +76,16 @@ class PLATFORM_EXPORT DrawingBuffer : public NON_EXPORTED_BASE(cc::TextureLayerC
 public:
     enum PreserveDrawingBuffer {
         Preserve,
-        Discard
+        Discard,
     };
     enum WebGLVersion {
         WebGL1,
         WebGL2,
+    };
+
+    enum ChromiumImageUsage {
+        AllowChromiumImage,
+        DisallowChromiumImage,
     };
 
     static PassRefPtr<DrawingBuffer> create(
@@ -92,7 +97,8 @@ public:
         bool wantStencilBuffer,
         bool wantAntialiasing,
         PreserveDrawingBuffer,
-        WebGLVersion);
+        WebGLVersion,
+        ChromiumImageUsage);
     static void forceNextDrawingBufferCreationToFail();
 
     ~DrawingBuffer() override;
@@ -261,7 +267,8 @@ protected: // For unittests
         PreserveDrawingBuffer,
         WebGLVersion,
         bool wantsDepth,
-        bool wantsStencil);
+        bool wantsStencil,
+        ChromiumImageUsage);
 
     bool initialize(const IntSize&, bool useMultisampling);
 
@@ -503,6 +510,13 @@ private:
 
     // Used to flip a bitmap vertically.
     Vector<uint8_t> m_scanline;
+
+    // In the case of OffscreenCanvas, we do not want to enable the WebGLImageChromium flag,
+    // so we replace all the RuntimeEnabledFeatures::webGLImageChromiumEnabled() call with
+    // shouldUseChromiumImage() call, and set m_chromiumImageUsage to DisallowChromiumImage
+    // in the case of OffscreenCanvas.
+    ChromiumImageUsage m_chromiumImageUsage;
+    bool shouldUseChromiumImage();
 };
 
 } // namespace blink
