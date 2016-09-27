@@ -17,45 +17,13 @@
 
 namespace media {
 
-namespace {
-
-// Android MediaCodec can only output 16bit PCM audio.
-const int kBytesPerOutputSample = 2;
-
-inline int GetChannelCount(const AudioDecoderConfig& config) {
-  return ChannelLayoutToChannelCount(config.channel_layout());
-}
-
-// Converts interleaved data into planar data and writes it to |planes|.
-// The planes are populated in the order of channels in the interleaved frame.
-// If |channel_count| is less than the number of available planes the extra
-// destination planes will not be touched.
-void SeparatePlanes(const uint8_t* interleaved_data,
-                    size_t frame_count,
-                    size_t bytes_per_frame,
-                    size_t channel_count,
-                    const std::vector<uint8_t*>& planes) {
-  DCHECK(interleaved_data);
-  DCHECK_LE(channel_count, planes.size());
-
-  const uint8_t* src_frame = interleaved_data;
-  for (size_t i = 0; i < frame_count; ++i, src_frame += bytes_per_frame) {
-    for (size_t ch = 0; ch < channel_count; ++ch) {
-      const int16_t* src_sample =
-          reinterpret_cast<const int16_t*>(src_frame) + ch;
-      int16_t* dst_sample = reinterpret_cast<int16_t*>(planes[ch]) + i;
-      *dst_sample = *src_sample;
-    }
-  }
-}
-
-}  // namespace (anonymous)
-
 MediaCodecAudioDecoder::MediaCodecAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       state_(STATE_UNINITIALIZED),
       channel_count_(0),
+      channel_layout_(CHANNEL_LAYOUT_NONE),
+      sample_rate_(0),
       media_drm_bridge_cdm_context_(nullptr),
       cdm_registration_id_(0),
       weak_factory_(this) {
@@ -110,8 +78,6 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
   }
 
   config_ = config;
-  timestamp_helper_.reset(
-      new AudioTimestampHelper(config_.samples_per_second()));
   output_cb_ = BindToCurrentLoop(output_cb);
 
   if (config_.is_encrypted()) {
@@ -127,12 +93,7 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
     return;
   }
 
-  // Guess the channel count from |config_| in case OnOutputFormatChanged
-  // that delivers the true count is not called before the first data arrives.
-  // It seems upon certain input errors a codec may substitute silence and
-  // not call OnOutputFormatChanged in this case.
-  channel_count_ = GetChannelCount(config_);
-
+  ResetTimestampState();
   SetState(STATE_READY);
   bound_init_cb.Run(true);
 }
@@ -213,9 +174,7 @@ void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
   if (!success)
     success = CreateMediaCodecLoop();
 
-  // Reset AudioTimestampHelper.
-  timestamp_helper_->SetBaseTimestamp(kNoTimestamp);
-
+  ResetTimestampState();
   SetState(success ? STATE_READY : STATE_ERROR);
 
   task_runner_->PostTask(FROM_HERE, closure);
@@ -392,53 +351,27 @@ bool MediaCodecAudioDecoder::OnDecodedFrame(
   // For proper |frame_count| calculation we need to use the actual number
   // of channels which can be different from |config_| value.
   DCHECK_GT(channel_count_, 0);
-  const int bytes_per_frame = kBytesPerOutputSample * channel_count_;
+
+  // Android MediaCodec can only output 16bit PCM audio.
+  const int bytes_per_frame = sizeof(uint16_t) * channel_count_;
   const size_t frame_count = out.size / bytes_per_frame;
 
-  // Create AudioOutput buffer based on configuration.
-  const int config_channel_count = GetChannelCount(config_);
-  const SampleFormat sample_format = config_channel_count == channel_count_
-                                         ? kSampleFormatS16         // can copy
-                                         : kSampleFormatPlanarS16;  // upsample
+  // Create AudioOutput buffer based on current parameters.
+  scoped_refptr<AudioBuffer> audio_buffer =
+      AudioBuffer::CreateBuffer(kSampleFormatS16, channel_layout_,
+                                channel_count_, sample_rate_, frame_count);
 
-  scoped_refptr<AudioBuffer> audio_buffer = AudioBuffer::CreateBuffer(
-      sample_format, config_.channel_layout(), config_channel_count,
-      config_.samples_per_second(), frame_count);
+  // Copy data into AudioBuffer.
+  CHECK_LE(out.size, audio_buffer->data_size());
 
-  if (config_channel_count == channel_count_) {
-    // Copy data into AudioBuffer.
-    CHECK_LE(out.size, audio_buffer->data_size());
-
-    MediaCodecStatus status = media_codec->CopyFromOutputBuffer(
-        out.index, out.offset, audio_buffer->channel_data()[0], out.size);
-
-    if (status != MEDIA_CODEC_OK) {
-      media_codec->ReleaseOutputBuffer(out.index, false);
-      return false;
-    }
-  } else {
-    // Separate the planes while copying MediaCodec buffer into AudioBuffer.
-    DCHECK_LT(channel_count_, config_channel_count);
-
-    const uint8_t* interleaved_data = nullptr;
-    size_t interleaved_capacity = 0;
-    MediaCodecStatus status = media_codec->GetOutputBufferAddress(
-        out.index, out.offset, &interleaved_data, &interleaved_capacity);
-
-    if (status != MEDIA_CODEC_OK) {
-      media_codec->ReleaseOutputBuffer(out.index, false);
-      return false;
-    }
-
-    DCHECK_LE(out.size, interleaved_capacity);
-
-    memset(audio_buffer->channel_data()[0], 0, audio_buffer->data_size());
-    SeparatePlanes(interleaved_data, frame_count, bytes_per_frame,
-                   channel_count_, audio_buffer->channel_data());
-  }
+  MediaCodecStatus status = media_codec->CopyFromOutputBuffer(
+      out.index, out.offset, audio_buffer->channel_data()[0], out.size);
 
   // Release MediaCodec output buffer.
   media_codec->ReleaseOutputBuffer(out.index, false);
+
+  if (status != MEDIA_CODEC_OK)
+    return false;
 
   // Calculate and set buffer timestamp.
 
@@ -471,32 +404,49 @@ bool MediaCodecAudioDecoder::OnOutputFormatChanged() {
     DLOG(ERROR) << "GetOutputSamplingRate failed.";
     return false;
   }
-  if (new_sampling_rate != config_.samples_per_second()) {
-    // We do not support the change of sampling rate on the fly
-    DLOG(ERROR) << "Sampling rate change is not supported by "
-                << GetDisplayName() << " (detected change "
-                << config_.samples_per_second() << "->" << new_sampling_rate
-                << ")";
-    return false;
+  if (new_sampling_rate != sample_rate_) {
+    DVLOG(1) << __FUNCTION__
+             << ": detected sample rate change: " << sample_rate_ << " -> "
+             << new_sampling_rate;
+
+    sample_rate_ = new_sampling_rate;
+    const base::TimeDelta base_timestamp =
+        timestamp_helper_->base_timestamp() == kNoTimestamp
+            ? kNoTimestamp
+            : timestamp_helper_->GetTimestamp();
+    timestamp_helper_.reset(new AudioTimestampHelper(sample_rate_));
+    if (base_timestamp != kNoTimestamp)
+      timestamp_helper_->SetBaseTimestamp(base_timestamp);
   }
 
-  status = media_codec->GetOutputChannelCount(&channel_count_);
-  if (status != MEDIA_CODEC_OK) {
+  int new_channel_count = 0;
+  status = media_codec->GetOutputChannelCount(&new_channel_count);
+  if (status != MEDIA_CODEC_OK || !new_channel_count) {
     DLOG(ERROR) << "GetOutputChannelCount failed.";
     return false;
   }
 
-  const int config_channel_count = GetChannelCount(config_);
-  DVLOG(1) << __FUNCTION__ << ": new channel count:" << channel_count_
-           << " (configured for " << config_channel_count << ")";
-
-  if (channel_count_ > config_channel_count) {
-    DLOG(ERROR) << "Actual channel count " << channel_count_
-                << " is greater than configured " << config_channel_count;
-    return false;
+  if (new_channel_count != channel_count_) {
+    DVLOG(1) << __FUNCTION__
+             << ": detected channel count change: " << channel_count_ << " -> "
+             << new_channel_count;
+    channel_count_ = new_channel_count;
+    channel_layout_ = GuessChannelLayout(channel_count_);
   }
 
   return true;
+}
+
+void MediaCodecAudioDecoder::ResetTimestampState() {
+  // Guess the channel count from |config_| in case OnOutputFormatChanged
+  // that delivers the true count is not called before the first data arrives.
+  // It seems upon certain input errors a codec may substitute silence and
+  // not call OnOutputFormatChanged in this case.
+  channel_layout_ = config_.channel_layout();
+  channel_count_ = ChannelLayoutToChannelCount(channel_layout_);
+
+  sample_rate_ = config_.samples_per_second();
+  timestamp_helper_.reset(new AudioTimestampHelper(sample_rate_));
 }
 
 #undef RETURN_STRING

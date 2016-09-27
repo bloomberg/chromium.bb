@@ -524,10 +524,16 @@ INSTANTIATE_TEST_CASE_P(OpusAudioDecoderBehavioralTest,
 
 #if defined(OS_ANDROID)
 #if defined(USE_PROPRIETARY_CODECS)
-const DecodedBufferExpectations kSfxAdtsMCExpectations[] = {
+const DecodedBufferExpectations kSfxAdtsMcExpectations[] = {
     {0, 23219, "-1.80,-1.49,-0.23,1.11,1.54,-0.11,"},
     {23219, 23219, "-1.90,-1.53,-0.15,1.28,1.23,-0.33,"},
     {46439, 23219, "0.54,0.88,2.19,3.54,3.24,1.63,"},
+};
+
+const DecodedBufferExpectations kHeAacMcExpectations[] = {
+    {0, 42666, "-1.76,-0.12,1.72,1.45,0.10,-1.32,"},
+    {42666, 42666, "-1.78,-0.13,1.70,1.44,0.09,-1.32,"},
+    {85333, 42666, "-1.78,-0.13,1.70,1.44,0.08,-1.33,"},
 };
 #endif
 
@@ -535,8 +541,10 @@ const DecoderTestData kMediaCodecTests[] = {
     {MEDIA_CODEC, kCodecOpus, "bear-opus.ogg", kBearOpusExpectations, 24, 48000,
      CHANNEL_LAYOUT_STEREO},
 #if defined(USE_PROPRIETARY_CODECS)
-    {MEDIA_CODEC, kCodecAAC, "sfx.adts", kSfxAdtsMCExpectations, 0, 44100,
+    {MEDIA_CODEC, kCodecAAC, "sfx.adts", kSfxAdtsMcExpectations, 0, 44100,
      CHANNEL_LAYOUT_MONO},
+    {MEDIA_CODEC, kCodecAAC, "bear-audio-implicit-he-aac-v2.aac",
+     kHeAacMcExpectations, 0, 24000, CHANNEL_LAYOUT_MONO},
 #endif
 };
 
