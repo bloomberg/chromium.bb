@@ -47,19 +47,20 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
     const GURL& url,
     int64_t size_bytes,
-    const net::URLRequestStatus& status,
+    net::Error net_error,
     const std::string& status_message) {
   DCHECK_NE(kInvalidServiceWorkerResourceId, LookupResourceId(url));
+  DCHECK_NE(net::ERR_IO_PENDING, net_error);
   DCHECK(owner_->status() == ServiceWorkerVersion::NEW ||
          owner_->status() == ServiceWorkerVersion::INSTALLING ||
          owner_->status() == ServiceWorkerVersion::REDUNDANT);
   if (!context_)
     return;  // Our storage has been wiped via DeleteAndStartOver.
-  if (!status.is_success()) {
+  if (net_error != net::OK) {
     context_->storage()->DoomUncommittedResource(LookupResourceId(url));
     resource_map_.erase(url);
     if (owner_->script_url() == url) {
-      main_script_status_ = status;
+      main_script_status_ = net::URLRequestStatus::FromError(net_error);
       main_script_status_message_ = status_message;
     }
   } else {

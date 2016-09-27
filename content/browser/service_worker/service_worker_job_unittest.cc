@@ -859,15 +859,13 @@ class UpdateJobTestHelper
       // Spoof caching the script for the initial version.
       WriteStringResponse(storage(), resource_id, kMockScriptBody);
       version->script_cache_map()->NotifyFinishedCaching(
-          script, kMockScriptSize, net::URLRequestStatus(), std::string());
+          script, kMockScriptSize, net::OK, std::string());
     } else {
       if (script.GetOrigin() == kNoChangeOrigin) {
         // Simulate fetching the updated script and finding it's identical to
         // the incumbent.
-        net::URLRequestStatus status =
-            net::URLRequestStatus::FromError(net::ERR_FILE_EXISTS);
         version->script_cache_map()->NotifyFinishedCaching(
-            script, kMockScriptSize, status, std::string());
+            script, kMockScriptSize, net::ERR_FILE_EXISTS, std::string());
         SimulateWorkerScriptLoaded(embedded_worker_id);
         return;
       }
@@ -875,7 +873,7 @@ class UpdateJobTestHelper
       // Spoof caching the script for the new version.
       WriteStringResponse(storage(), resource_id, "mock_different_script");
       version->script_cache_map()->NotifyFinishedCaching(
-          script, kMockScriptSize, net::URLRequestStatus(), std::string());
+          script, kMockScriptSize, net::OK, std::string());
     }
 
     EmbeddedWorkerTestHelper::OnStartWorker(

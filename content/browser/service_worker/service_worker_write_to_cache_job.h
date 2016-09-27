@@ -90,9 +90,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   // write data to the disk cache.
   void InitNetRequest(int extra_load_flags);
   void StartNetRequest();
-  net::URLRequestStatus ReadNetData(net::IOBuffer* buf,
-                                    int buf_size,
-                                    int* bytes_read);
+  int ReadNetData(net::IOBuffer* buf, int buf_size);
 
   // Callbacks for writing headers and data via |cache_writer_|. Note that since
   // the MaybeWriteHeaders and MaybeWriteData methods on |cache_writer_| are
@@ -113,7 +111,7 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   void OnSSLCertificateError(net::URLRequest* request,
                              const net::SSLInfo& ssl_info,
                              bool fatal) override;
-  void OnResponseStarted(net::URLRequest* request) override;
+  void OnResponseStarted(net::URLRequest* request, int net_error) override;
   void OnReadCompleted(net::URLRequest* request, int bytes_read) override;
 
   bool CheckPathRestriction(net::URLRequest* request);
@@ -128,12 +126,12 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
   // script cache if necessary.
   int HandleNetData(int bytes_read);
 
-  void NotifyStartErrorHelper(const net::URLRequestStatus& status,
+  void NotifyStartErrorHelper(net::Error net_error,
                               const std::string& status_message);
 
-  // Returns an error code that is passed in through |status| or a new one if an
-  // additional error is found.
-  net::Error NotifyFinishedCaching(net::URLRequestStatus status,
+  // Returns the error code, which is |net_error| or
+  // a new one if an additional error is found.
+  net::Error NotifyFinishedCaching(net::Error net_error,
                                    const std::string& status_message);
 
   std::unique_ptr<ServiceWorkerResponseReader> CreateCacheResponseReader();
