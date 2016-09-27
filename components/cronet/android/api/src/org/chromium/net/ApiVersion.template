@@ -4,7 +4,10 @@
 
 package org.chromium.net;
 
-// Version based on chrome/VERSION.
+/**
+ * Version based on chrome/VERSION.
+ * {@hide as it's only used internally}
+ */
 public class ApiVersion {
     public static final String CRONET_VERSION = "@MAJOR@.@MINOR@.@BUILD@.@PATCH@";
     public static final String LAST_CHANGE = "@LASTCHANGE@";
