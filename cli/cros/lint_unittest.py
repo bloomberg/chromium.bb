@@ -17,6 +17,52 @@ from chromite.lib import cros_test_lib
 # pylint: disable=protected-access
 
 
+class DocStringSectionDetailsTest(cros_test_lib.TestCase):
+  """Basic DocStringSectionDetails class tests."""
+
+  def testInit(self):
+    """Verify constructor behavior."""
+    s = lint.DocStringSectionDetails()
+    self.assertEqual(None, s.name)
+    self.assertEqual(None, s.header)
+    self.assertEqual([], s.lines)
+    self.assertEqual(None, s.lineno)
+
+    s = lint.DocStringSectionDetails(
+        name='Args', header='  Args:', lines=['    foo: Yes.'], lineno=2)
+    self.assertEqual('Args', s.name)
+    self.assertEqual('  Args:', s.header)
+    self.assertEqual(['    foo: Yes.'], s.lines)
+    self.assertEqual(2, s.lineno)
+
+  def testStr(self):
+    """Sanity check __str__."""
+    s = lint.DocStringSectionDetails()
+    self.assertNotEqual(None, str(s))
+
+  def testRepr(self):
+    """Sanity check __repr__."""
+    s = lint.DocStringSectionDetails()
+    self.assertNotEqual(None, repr(s))
+
+  def testEqual(self):
+    """Sanity check __eq__."""
+    s1 = lint.DocStringSectionDetails()
+    s2 = lint.DocStringSectionDetails()
+    self.assertEqual(s1, s2)
+
+    s2 = lint.DocStringSectionDetails(name='Args')
+    self.assertNotEqual(s1, s2)
+    s2 = lint.DocStringSectionDetails(header='  Args:')
+    self.assertNotEqual(s1, s2)
+    s2 = lint.DocStringSectionDetails(lineno=2)
+    self.assertNotEqual(s1, s2)
+
+    s1 = lint.DocStringSectionDetails(name='n', header='h', lineno=0)
+    s2 = lint.DocStringSectionDetails(name='n', header='h', lineno=0)
+    self.assertEqual(s1, s2)
+
+
 class TestNode(object):
   """Object good enough to stand in for lint funcs"""
 
@@ -344,7 +390,8 @@ class DocStringCheckerTest(CheckerTestCase):
     for dc, args, vararg, kwarg in datasets:
       self.results = []
       node = TestNode(doc=dc, args=args, vararg=vararg, kwarg=kwarg)
-      self.checker._check_all_args_in_doc(node, node.lines)
+      sections = self.checker._parse_docstring_sections(node, node.lines)
+      self.checker._check_all_args_in_doc(node, node.lines, sections)
       self.assertLintPassed()
 
   def testBadFuncArgs(self):
@@ -382,8 +429,48 @@ class DocStringCheckerTest(CheckerTestCase):
     for dc, args in datasets:
       self.results = []
       node = TestNode(doc=dc, args=args)
-      self.checker._check_all_args_in_doc(node, node.lines)
+      sections = self.checker._parse_docstring_sections(node, node.lines)
+      self.checker._check_all_args_in_doc(node, node.lines, sections)
       self.assertLintFailed()
+
+  def test_parse_docstring_sections(self):
+    """Check docstrings are parsed."""
+    datasets = (
+        ("""Some docstring
+
+         Args:
+           foo: blah
+
+         Raises:
+           blaaaaaah
+
+         Note:
+           This section shouldn't be checked.
+
+         Returns:
+           some value
+         """, [
+             ('Args', lint.DocStringSectionDetails(
+                 name='Args',
+                 header='         Args:',
+                 lines=['           foo: blah'],
+                 lineno=3)),
+             ('Raises', lint.DocStringSectionDetails(
+                 name='Raises',
+                 header='         Raises:',
+                 lines=['           blaaaaaah'],
+                 lineno=6)),
+             ('Returns', lint.DocStringSectionDetails(
+                 name='Returns',
+                 header='         Returns:',
+                 lines=['           some value'],
+                 lineno=12)),
+         ]),
+    )
+    for dc, expected in datasets:
+      node = TestNode(doc=dc)
+      sections = self.checker._parse_docstring_sections(node, node.lines)
+      self.assertEqual(expected, sections.items())
 
 
 class ChromiteLoggingCheckerTest(CheckerTestCase):

@@ -20,6 +20,7 @@ as many/few checkers as we want in this one module.
 
 from __future__ import print_function
 
+import collections
 import os
 import re
 import sys
@@ -29,6 +30,47 @@ from pylint.interfaces import IAstroidChecker
 
 
 # pylint: disable=too-few-public-methods
+
+
+class DocStringSectionDetails(object):
+  """Object to hold details about a docstring section.
+
+  e.g. This holds the Args: or Returns: data.
+  """
+
+  def __init__(self, name=None, header=None, lines=None, lineno=None):
+    """Initialize.
+
+    Args:
+      name: The name of this section, e.g. "Args".
+      header: The raw header of this section, e.g. "  Args:".
+      lines: The raw lines making up the section.
+      lineno: The first line of the section in the overall docstring.
+        This counts from one and includes the section header line.
+    """
+    self.name = name
+    self.header = header
+    self.lines = [] if lines is None else lines
+    self.lineno = lineno
+
+  def __str__(self):
+    """A human readable string for this object."""
+    return 'DocStringSectionDetails(%r, %r)' % (self.name, self.lineno)
+
+  def __repr__(self):
+    """A string to quickly identify this object."""
+    return 'DocStringSectionDetails(%r, %r, %r, %r)' % (
+        self.name, self.header, self.lines, self.lineno,
+    )
+
+  def __eq__(self, other):
+    """Test whether two DocStringSectionDetails objects are equivalent"""
+    return (
+        self.name == other.name and
+        self.header == other.header and
+        self.lines == other.lines and
+        self.lineno == other.lineno
+    )
 
 
 class DocStringChecker(BaseChecker):
@@ -118,8 +160,9 @@ class DocStringChecker(BaseChecker):
     if node.doc:
       lines = node.doc.split('\n')
       self._check_common(node, lines)
-      self._check_section_lines(node, lines)
-      self._check_all_args_in_doc(node, lines)
+      sections = self._parse_docstring_sections(node, lines)
+      self._check_section_lines(node, lines, sections)
+      self._check_all_args_in_doc(node, lines, sections)
       self._check_func_signature(node)
     else:
       # This is what C0111 already does for us, so ignore.
@@ -225,9 +268,19 @@ class DocStringChecker(BaseChecker):
         margs = {'offset': len(lines) - 2, 'line': lines[-2]}
         self.add_message('C9003', node=node, line=node.fromlineno, args=margs)
 
-  def _check_section_lines(self, node, lines):
-    """Verify each section (Args/Returns/Yields/Raises) is sane"""
-    lineno_sections = [-1] * len(self.VALID_SECTIONS)
+  def _parse_docstring_sections(self, node, lines):
+    """Find all the sections and return them
+
+    Args:
+      node: The python object we're checking.
+      lines: Parsed docstring lines.
+
+    Returns:
+      An ordered dict of sections and their (start, end) line numbers.
+      The start line does not include the section header itself.
+      {'Args': [start_line_number, end_line_number], ...}
+    """
+    sections = collections.OrderedDict()
     invalid_sections = (
         # Handle common misnamings.
         'arg', 'argument', 'arguments',
@@ -238,14 +291,12 @@ class DocStringChecker(BaseChecker):
     indent_len = self._docstring_indent(node)
 
     in_args_section = False
-    last = lines[0].strip()
-    for i, line in enumerate(lines[1:]):
+    last_section = None
+    for lineno, line in enumerate(lines[1:], start=2):
       line_indent_len = len(line) - len(line.lstrip(' '))
       margs = {
-          'offset': i + 1,
+          'offset': lineno,
           'line': line,
-          'want_indent': indent_len,
-          'curr_indent': line_indent_len,
       }
       l = line.strip()
 
@@ -262,77 +313,80 @@ class DocStringChecker(BaseChecker):
       if in_args_section:
         in_args_section = (indent_len < line_indent_len)
 
-      if (not in_args_section and
-          (section in self.VALID_SECTIONS or
-           section.lower() in invalid_sections)):
-        # Make sure it has some number of leading whitespace.
-        if not line.startswith(' '):
-          self.add_message('C9004', node=node, line=node.fromlineno, args=margs)
-
-        # Make sure it has a single trailing colon.
-        if l != '%s:' % section:
-          self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
-
-        # Make sure it's valid.
+      if not in_args_section:
+        # We only parse known invalid & valid sections here.  This avoids
+        # picking up things that look like sections but aren't (e.g. "Note:"
+        # lines), and avoids running checks on sections we don't yet support.
         if section.lower() in invalid_sections:
           self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
-        else:
-          line_old = lineno_sections[self.VALID_SECTIONS.index(section)]
-          if line_old != -1:
+        elif section in self.VALID_SECTIONS:
+          if section in sections:
             # We got the same section more than once?
             margs_copy = margs.copy()
             margs_copy.update({
-                'line_old': line_old,
+                'line_old': sections[section].lineno,
                 'section': section,
             })
             self.add_message('C9017', node=node, line=node.fromlineno,
                              args=margs_copy)
           else:
             # Gather the order of the sections.
-            lineno_sections[self.VALID_SECTIONS.index(section)] = i
+            sections[section] = last_section = DocStringSectionDetails(
+                name=section, header=line, lineno=lineno)
 
-        # Verify blank line before it.
-        if last != '':
-          self.add_message('C9006', node=node, line=node.fromlineno, args=margs)
-
-      last = l
-
-      # Detect whether we're in the Args section once we've processed the Args
-      # section itself.
-      if not in_args_section:
+        # Detect whether we're in the Args section once we've processed the Args
+        # section itself.
         in_args_section = (section == 'Args')
 
+      if l == '' and last_section:
+        last_section.lines = lines[last_section.lineno:lineno - 1]
+        last_section = None
+
+    return sections
+
+  def _check_section_lines(self, node, lines, sections):
+    """Verify each section (Args/Returns/Yields/Raises) is sane"""
+    indent_len = self._docstring_indent(node)
+
     # Make sure the sections are in the right order.
-    valid_lineno = lambda x: x >= 0
-    lineno_sections = filter(valid_lineno, lineno_sections)
-    if lineno_sections != sorted(lineno_sections):
+    found_sections = [x for x in self.VALID_SECTIONS if x in sections]
+    if found_sections != sections.keys():
       self.add_message('C9008', node=node, line=node.fromlineno)
 
-    # Check the indentation level on all the sections.
-    for lineno in lineno_sections:
-      # First the section header (e.g. Args:).
-      lineno += 1
-      line = lines[lineno]
+    for section in sections.values():
+      # We're going to check the section line itself.
+      lineno = section.lineno
+      line = section.header
+      margs = {
+          'offset': lineno,
+          'line': line,
+      }
+
+      # Make sure it has some number of leading whitespace.
+      if not line.startswith(' '):
+        self.add_message('C9004', node=node, line=node.fromlineno, args=margs)
+
+      # Make sure it has a single trailing colon.
+      if line.strip() != '%s:' % section.name:
+        self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
+
+      # Verify blank line before it.  We use -2 because lineno counts from one,
+      # but lines is a zero-based list.
+      if lines[lineno - 2] != '':
+        self.add_message('C9006', node=node, line=node.fromlineno, args=margs)
+
+      # Check the indentation level on all the sections.
       if len(line) - len(line.lstrip(' ')) != indent_len:
-        margs = {'offset': lineno, 'line': line}
         self.add_message('C9015', node=node, line=node.fromlineno, args=margs)
 
-  def _check_all_args_in_doc(self, node, lines):
+  def _check_all_args_in_doc(self, node, _lines, sections):
     """All function arguments are mentioned in doc"""
     if not hasattr(node, 'argnames'):
       return
 
-    # Locate the start of the args section.
-    arg_lines = []
-    for l in lines:
-      if arg_lines:
-        if l.strip() in [''] + ['%s:' % x for x in self.VALID_SECTIONS]:
-          break
-      elif l.strip() != 'Args:':
-        continue
-      arg_lines.append(l)
-    else:
-      # If they don't have an Args section, then give it a pass.
+    # If they don't have an Args section, then give it a pass.
+    section = sections.get('Args')
+    if section is None:
       return
 
     # Now verify all args exist.
@@ -347,7 +401,7 @@ class DocStringChecker(BaseChecker):
       if arg.name.startswith('_'):
         continue
 
-      for l in arg_lines:
+      for l in section.lines:
         aline = l.lstrip()
         if aline.startswith('%s:' % arg.name):
           amsg = aline[len(arg.name) + 1:]
