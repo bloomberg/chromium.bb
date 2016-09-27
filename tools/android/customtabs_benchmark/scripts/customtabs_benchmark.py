@@ -40,8 +40,8 @@ def RunOnce(device, url, warmup, no_prerendering, delay_to_may_launch_url,
 
   Returns:
     The output line (str), like this (one line only):
-    <warmup>,<no_prerendering>,<delay_to_may_launch_url>,<intent_sent_ms>,
-      <page_load_started_ms>,<page_load_finished_ms>
+    <warmup>,<no_prerendering>,<delay_to_may_launch_url>,<delay_to_launch>,
+      <intent_sent_ms>,<page_load_started_ms>,<page_load_finished_ms>
     or None on error.
   """
   launch_intent = intent.Intent(
