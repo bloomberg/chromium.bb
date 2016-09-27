@@ -55,6 +55,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       display: flex;
       margin: 0;
     }
+
+    :root {
+      --downloads-card-margin: 24px;
+      --downloads-card-width: 622px;
+    }
   </style>
 </head>
 <body><div hidden="" by-vulcanize=""><script src="chrome://resources/js/load_time_data.js"></script>
@@ -1006,17 +1011,54 @@ paper-ripple {
   </svg>
 </iron-iconset-svg>
 <dom-module id="downloads-item" assetpath="chrome://downloads/" css-build="shadow">
-  <template><style scope="downloads-item">:host {
+  <template>
+    <style scope="downloads-item">[is='action-link'] {
+  cursor: pointer;
+  display: inline-block;
+  text-decoration: none;
+}
+
+[is='action-link']:hover {
+  text-decoration: underline;
+}
+
+[is='action-link']:active {
+  color: rgb(5, 37, 119);
+  text-decoration: underline;
+}
+
+[is='action-link'][disabled] {
+  color: #999;
+  cursor: default;
+  pointer-events: none;
+  text-decoration: none;
+}
+
+[is='action-link'].no-outline {
+  outline: none;
+}
+
+:host {
   display: flex;
-  flex-direction: column;
+        flex-direction: column;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+paper-button {
+  font-weight: 500;
+        margin: 0;
+        min-width: auto;
 }
 
 #date {
   color: rgb(104, 113, 116);
-  font-size: 100%;
-  font-weight: 500;
-  margin: 24px auto 10px;
-  width: var(--downloads-item-width);
+        font-size: 100%;
+        font-weight: 500;
+        margin: 24px auto 10px;
+        width: var(--downloads-card-width);
 }
 
 #date:empty {
@@ -1025,13 +1067,13 @@ paper-ripple {
 
 #content {
   background: white;
-  border-radius: 2px;
-  display: flex;
-  flex: none;
-  margin: 6px auto;
-  min-height: 103px;
-  position: relative;
-  width: var(--downloads-item-width);
+        border-radius: 2px;
+        display: flex;
+        flex: none;
+        margin: 6px auto;
+        min-height: 103px;
+        position: relative;
+        width: var(--downloads-card-width);
 }
 
 #content.is-active {
@@ -1040,20 +1082,20 @@ paper-ripple {
 
 #content:not(.is-active) {
   background: rgba(255, 255, 255, .6);
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .03), 0 1px 4px 0 rgba(0, 0, 0, .048),
-              0 3px 1px -2px rgba(0, 0, 0, .12);
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .03), 0 1px 4px 0 rgba(0, 0, 0, .048),
+                    0 3px 1px -2px rgba(0, 0, 0, .12);
 }
 
 #details {
   -webkit-border-start: 1px #d8d8d8 solid;
-  -webkit-padding-end: 16px;
-  -webkit-padding-start: 24px;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-width: 0;  
-  padding-bottom: 12px;
-  padding-top: 16px;
+        -webkit-padding-end: 16px;
+        -webkit-padding-start: var(--downloads-card-margin);
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-width: 0;  
+        padding-bottom: 12px;
+        padding-top: 16px;
 }
 
 #content:not(.is-active) #details {
@@ -1066,29 +1108,29 @@ paper-ripple {
 
 .icon-wrapper {
   align-self: center;
-  flex: none;
-  justify-content: center;
-  margin: 0 24px;
+        flex: none;
+        justify-content: center;
+        margin: 0 24px;
 }
 
 .icon {
   height: 32px;
-  width: 32px;
+        width: 32px;
 }
 
 #content:-webkit-any(.show-progress, .dangerous) #file-icon-wrapper {
   align-self: flex-start;
-  padding-top: 16px;
+        padding-top: 16px;
 }
 
 #content:not(.is-active) .icon {
   -webkit-filter: grayscale(100%);
-  opacity: .5;
+        opacity: .5;
 }
 
 #danger-icon {
   height: 32px;
-  width: 32px;
+        width: 32px;
 }
 
 #danger-icon[icon='cr:warning'] {
@@ -1105,7 +1147,7 @@ paper-ripple {
 
 #name, #file-link {
   font-weight: 500;
-  word-break: break-all;
+        word-break: break-all;
 }
 
 #name {
@@ -1118,17 +1160,17 @@ paper-ripple {
 
 #tag {
   color: #5a5a5a;
-  font-weight: 500;
+        font-weight: 500;
 }
 
 #url {
   color: inherit;
-  margin-top: 6px;
-  min-height: 0;
-  overflow: hidden;
-  text-decoration: none;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+        margin-top: 6px;
+        min-height: 0;
+        overflow: hidden;
+        text-decoration: none;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 }
 
 .is-active #url {
@@ -1149,8 +1191,8 @@ paper-ripple {
 
 #progress {
   --paper-progress-active-color: rgb(54, 126, 237);
-  --paper-progress-container-color: rgb(223, 222, 223);
-  width: auto;
+        --paper-progress-container-color: rgb(223, 222, 223);
+        width: auto;
 }
 
 .controls {
@@ -1183,67 +1225,28 @@ paper-ripple {
 
 #remove-wrapper {
   align-self: flex-start;
-  margin: 0;
+        margin: 0;
 }
 
 #remove {
   color: #969696;
-  font-size: 16px;
-  height: 32px;
-  line-height: 17px;  
-  width: 32px;
+        font-size: 16px;
+        height: 32px;
+        line-height: 17px;  
+        width: 32px;
 }
 
 #incognito {
   bottom: 20px;
-  content: -webkit-image-set(
-      url("chrome://downloads/1x/incognito_marker.png") 1x,
-      url("chrome://downloads/2x/incognito_marker.png") 2x);
-  position: absolute;
-  right: 10px;
-}
-
-* {
-  --downloads-item-width: 622px;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-paper-button {
-  font-weight: 500;
-  margin: 0;
-  min-width: auto;
-}
-
-[is='action-link'] {
-  cursor: pointer;
-  display: inline-block;
-  text-decoration: none;
-}
-
-[is='action-link']:hover {
-  text-decoration: underline;
-}
-
-[is='action-link']:active {
-  color: rgb(5, 37, 119);
-  text-decoration: underline;
-}
-
-[is='action-link'][disabled] {
-  color: #999;
-  cursor: default;
-  pointer-events: none;
-  text-decoration: none;
-}
-
-[is='action-link'].no-outline {
-  outline: none;
+        content: -webkit-image-set(
+            url("chrome://downloads/1x/incognito_marker.png") 1x,
+            url("chrome://downloads/2x/incognito_marker.png") 2x);
+        position: absolute;
+        right: 10px;
 }
 
 </style>
+
     <h3 id="date">[[computeDate_(data.hideDate, data.since_string, data.date_string)]]</h3>
 
     <div id="content" on-dragstart="onDragStart_" class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
@@ -1311,8 +1314,6 @@ paper-button {
     </div>
 
   </template>
-  
-  
   
   </dom-module>
 
@@ -3428,34 +3429,39 @@ h1 {
   </template>
   </dom-module>
 <dom-module id="downloads-toolbar" assetpath="chrome://downloads/" css-build="shadow">
-  <template><style scope="downloads-toolbar">:host {
+  <template>
+    <style scope="downloads-toolbar">:host {
   align-items: center;
-  background: var(--md-toolbar-color);
-  color: white;
-  display: flex;
-  min-height: 56px;
+        background: var(--md-toolbar-color);
+        color: white;
+        display: flex;
+        min-height: 56px;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 #toolbar {
   --cr-toolbar-field-end-padding: 0;
-  --cr-toolbar-field-width: var(--downloads-item-width);
-  --cr-toolbar-header-wide_-_-webkit-margin-start:  24px; --cr-toolbar-header-wide_-_-webkit-margin-end:  16px;;
-  --cr-toolbar-left-content-wide_-_-webkit-margin-start:  0; --cr-toolbar-left-content-wide_-_flex:  1 0 1px; --cr-toolbar-left-content-wide_-_max-width:  none; --cr-toolbar-left-content-wide_-_position:  static;;
-  --cr-toolbar-right-content-wide_-_flex:  1 0 1px; --cr-toolbar-right-content-wide_-_position:  static;;
-  align-items: center;
-  flex: 1;
+        --cr-toolbar-field-width: var(--downloads-card-width);
+        --cr-toolbar-header-wide_-_-webkit-margin-start:  24px; --cr-toolbar-header-wide_-_-webkit-margin-end:  16px;;
+        --cr-toolbar-left-content-wide_-_-webkit-margin-start:  0; --cr-toolbar-left-content-wide_-_flex:  1 0 1px; --cr-toolbar-left-content-wide_-_max-width:  none; --cr-toolbar-left-content-wide_-_position:  static;;
+        --cr-toolbar-right-content-wide_-_flex:  1 0 1px; --cr-toolbar-right-content-wide_-_position:  static;;
+        align-items: center;
+        flex: 1;
 }
 
 paper-icon-button {
   --iron-icon-height: 20px;
-  --iron-icon-width: 20px;
-  --paper-icon-button_-_height:  32px; --paper-icon-button_-_padding:  6px; --paper-icon-button_-_width:  32px;;
+        --iron-icon-width: 20px;
+        --paper-icon-button_-_height:  32px; --paper-icon-button_-_padding:  6px; --paper-icon-button_-_width:  32px;;
 }
 
 .more-actions {
   -webkit-margin-end: 16px;
-  -webkit-margin-start: 8px;
-  text-align: end;
+        -webkit-margin-start: 8px;
+        text-align: end;
 }
 
 #more {
@@ -3468,25 +3474,11 @@ paper-menu {
 
 paper-item {
   -webkit-user-select: none;
-  cursor: pointer;
-  font: inherit;
-  min-height: 40px;
-  
-  white-space: nowrap;
-}
-
-* {
-  --downloads-item-width: 622px;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-paper-button {
-  font-weight: 500;
-  margin: 0;
-  min-width: auto;
+        cursor: pointer;
+        font: inherit;
+        min-height: 40px;
+        
+        white-space: nowrap;
 }
 
 </style>
@@ -3506,8 +3498,6 @@ paper-button {
       </div>
     </cr-toolbar>
   </template>
-  
-  
   </dom-module>
 <style>
 /* Copyright 2016 The Chromium Authors. All rights reserved.
@@ -3529,34 +3519,39 @@ paper-button {
   <template>
     <style scope="downloads-manager">:host {
   display: flex;
-  flex: 1 0;
-  flex-direction: column;
-  height: 100%;
-  z-index: 0;
+        flex: 1 0;
+        flex-direction: column;
+        height: 100%;
+        z-index: 0;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 @media screen and (max-width: 1024px) {
 :host {
-  flex-basis: 670px;
+  flex-basis: calc(
+              var(--downloads-card-width) + 2 * var(--downloads-card-margin));
 }
 
 }
 
 #toolbar {
   position: relative;
-  z-index: 1;
+        z-index: 1;
 }
 
 #toolbar::after {
   box-shadow: inset 0 5px 6px -3px rgba(0, 0, 0, 0.4);
-  content: '';
-  display: block;
-  height: 6px;
-  opacity: 0;
-  position: absolute;
-  top: 100%;
-  transition: opacity 500ms;
-  width: 100%;
+        content: '';
+        display: block;
+        height: 6px;
+        opacity: 0;
+        position: absolute;
+        top: 100%;
+        transition: opacity 500ms;
+        width: 100%;
 }
 
 :host([has-shadow_]) #toolbar::after {
@@ -3577,42 +3572,26 @@ paper-button {
 
 #no-downloads {
   align-items: center;
-  color: #b4b4b4;
-  display: flex;
-  font-size: 123.1%;
-  font-weight: 500;
-  justify-content: center;
-  
-  min-height: min-content;
+        color: #b4b4b4;
+        display: flex;
+        font-size: 123.1%;
+        font-weight: 500;
+        justify-content: center;
+        
+        min-height: min-content;
 }
 
 #no-downloads .illustration {
   background: -webkit-image-set(
-      url("chrome://downloads/1x/no_downloads.png") 1x,
-      url("chrome://downloads/2x/no_downloads.png") 2x) no-repeat center center;
-  height: 144px;  
-  margin-bottom: 32px;
-}
-
-* {
-  --downloads-item-width: 622px;
-}
-
-[hidden] {
-  display: none !important;
-}
-
-paper-button {
-  font-weight: 500;
-  margin: 0;
-  min-width: auto;
-}
-
-#toolbar {
-  background: var(--md-toolbar-color);
+            url("chrome://downloads/1x/no_downloads.png") 1x,
+            url("chrome://downloads/2x/no_downloads.png") 2x)
+            no-repeat center center;
+        height: 144px;  
+        margin-bottom: 32px;
 }
 
 </style>
+
     <downloads-toolbar id="toolbar" spinner-active="{{spinnerActive_}}">
     </downloads-toolbar>
     <iron-list id="downloads-list" items="{{items_}}" hidden="[[!hasDownloads_]]">
@@ -3628,8 +3607,6 @@ paper-button {
       </div>
     </div>
   </template>
-  
-  
   </dom-module>
 </div>
   <downloads-manager></downloads-manager>
