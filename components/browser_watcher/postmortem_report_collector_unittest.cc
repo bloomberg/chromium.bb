@@ -78,8 +78,10 @@ class MockCrashReportDatabase : public CrashReportDatabase {
                CrashReportDatabase::OperationStatus(const Report* report,
                                                     bool successful,
                                                     const std::string& id));
-  MOCK_METHOD1(SkipReportUpload,
-               CrashReportDatabase::OperationStatus(const UUID& uuid));
+  MOCK_METHOD2(SkipReportUpload,
+               CrashReportDatabase::OperationStatus(
+                   const UUID& uuid,
+                   crashpad::Metrics::CrashSkippedReason reason));
   MOCK_METHOD1(DeleteReport,
                CrashReportDatabase::OperationStatus(const UUID& uuid));
   MOCK_METHOD1(RequestUpload,
