@@ -7,16 +7,15 @@
 
 #include "remoting/test/fake_socket_factory.h"
 
-#include <math.h>
-#include <stddef.h>
-
+#include <cmath>
+#include <cstddef>
+#include <cstdlib>
 #include <string>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -33,12 +32,16 @@ namespace {
 const int kPortRangeStart = 1024;
 const int kPortRangeEnd = 65535;
 
+double RandDouble() {
+  return static_cast<double>(std::rand()) / RAND_MAX;
+}
+
 double GetNormalRandom(double average, double stddev) {
   // Based on Box-Muller transform, see
   // http://en.wikipedia.org/wiki/Box_Muller_transform .
   return average +
-         stddev * sqrt(-2.0 * log(1.0 - base::RandDouble())) *
-             cos(base::RandDouble() * 2.0 * M_PI);
+         stddev * sqrt(-2.0 * log(1.0 - RandDouble())) *
+             cos(RandDouble() * 2.0 * M_PI);
 }
 
 class FakeUdpSocket : public rtc::AsyncPacketSocket {
@@ -328,7 +331,7 @@ void FakePacketSocketFactory::DoReceivePacket() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   PendingPacket packet;
-  if (pending_packets_.size() > 1 && base::RandDouble() < out_of_order_rate_) {
+  if (pending_packets_.size() > 1 && RandDouble() < out_of_order_rate_) {
     std::list<PendingPacket>::iterator it = pending_packets_.begin();
     ++it;
     packet = *it;

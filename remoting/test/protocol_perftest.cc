@@ -419,52 +419,12 @@ INSTANTIATE_TEST_CASE_P(
         // 8 Mbps
         NetworkPerformanceParams(1000000, 300000, 30, 5, 0.01),
         NetworkPerformanceParams(1000000, 2000000, 30, 5, 0.01),
+        // 2 Mbps
+        NetworkPerformanceParams(250000, 300000, 30, 5, 0.01),
+        NetworkPerformanceParams(250000, 2000000, 30, 5, 0.01),
         // 800 kBps
-        NetworkPerformanceParams(100000, 30000, 130, 5, 0.01),
-        NetworkPerformanceParams(100000, 200000, 130, 5, 0.01)));
-
-const int kIntermittentFrameSize = 100 * 1000;
-
-// Frame generator that rewrites the whole screen every 60th frame. Should only
-// be used with the VERBATIM codec as the allocated frame may contain arbitrary
-// data.
-class IntermittentChangeFrameGenerator
-    : public base::RefCountedThreadSafe<IntermittentChangeFrameGenerator> {
- public:
-  IntermittentChangeFrameGenerator()
-      : frame_index_(0) {}
-
-  std::unique_ptr<webrtc::DesktopFrame> GenerateFrame(
-      webrtc::SharedMemoryFactory* shared_memory_factory) {
-    const int kWidth = 1000;
-    const int kHeight = kIntermittentFrameSize / kWidth / 4;
-
-    bool fresh_frame = false;
-    if (frame_index_ % 60 == 0 || !current_frame_) {
-      current_frame_.reset(webrtc::SharedDesktopFrame::Wrap(
-          new webrtc::BasicDesktopFrame(webrtc::DesktopSize(kWidth, kHeight))));
-      fresh_frame = true;
-    }
-    ++frame_index_;
-
-    std::unique_ptr<webrtc::DesktopFrame> result(current_frame_->Share());
-    result->mutable_updated_region()->Clear();
-    if (fresh_frame) {
-      result->mutable_updated_region()->AddRect(
-          webrtc::DesktopRect::MakeXYWH(0, 0, kWidth, kHeight));
-    }
-    return result;
-  }
-
- private:
-  ~IntermittentChangeFrameGenerator() {}
-  friend class base::RefCountedThreadSafe<IntermittentChangeFrameGenerator>;
-
-  int frame_index_;
-  std::unique_ptr<webrtc::SharedDesktopFrame> current_frame_;
-
-  DISALLOW_COPY_AND_ASSIGN(IntermittentChangeFrameGenerator);
-};
+        NetworkPerformanceParams(100000, 30000, 130, 5, 0.00),
+        NetworkPerformanceParams(100000, 200000, 130, 5, 0.00)));
 
 // TotalLatency[Ice|Webrtc] tests measure video latency in the case when the
 // whole screen is updated occasionally. It's intended to simulate the case when
