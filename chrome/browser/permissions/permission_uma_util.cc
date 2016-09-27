@@ -672,8 +672,7 @@ void PermissionUmaUtil::RecordPermissionAction(
     case PermissionType::FLASH:
       PERMISSION_ACTION_UMA(secure_origin, "Permissions.Action.Flash",
                             "Permissions.Action.SecureOrigin.Flash",
-                            "Permissions.Action.InsecureOrigin.Flash",
-                            action);
+                            "Permissions.Action.InsecureOrigin.Flash", action);
       break;
     // The user is not prompted for these permissions, thus there is no
     // permission action recorded for them.

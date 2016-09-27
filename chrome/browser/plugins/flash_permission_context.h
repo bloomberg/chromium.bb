@@ -8,6 +8,9 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 
+class GURL;
+class PermissionRequestID;
+
 class FlashPermissionContext : public PermissionContextBase {
  public:
   explicit FlashPermissionContext(Profile* profile);
@@ -15,6 +18,12 @@ class FlashPermissionContext : public PermissionContextBase {
 
  private:
   // PermissionContextBase:
+  ContentSetting GetPermissionStatus(
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const override;
+  void UpdateTabContext(const PermissionRequestID& id,
+                        const GURL& requesting_origin,
+                        bool allowed) override;
   bool IsRestrictedToSecureOrigins() const override;
 
   DISALLOW_COPY_AND_ASSIGN(FlashPermissionContext);

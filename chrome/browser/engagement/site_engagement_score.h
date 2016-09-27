@@ -153,15 +153,16 @@ class SiteEngagementScore {
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, FirstDailyEngagementBonus);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PartiallyEmptyDictionary);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PopulatedDictionary);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, Reset);
-  FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, FirstDailyEngagementBonus);
+  friend class ChromePluginServiceFilterTest;
+  friend class FlashPermissionTestConfig;
   friend class ImportantSitesUtilTest;
   friend class SiteEngagementHelperTest;
   friend class SiteEngagementScoreTest;
   friend class SiteEngagementServiceTest;
-  friend class ChromePluginServiceFilterTest;
 
   using ParamValues = std::array<std::pair<std::string, double>, MAX_VARIATION>;
 

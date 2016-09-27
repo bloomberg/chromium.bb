@@ -8,15 +8,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/plugins/plugins_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 using content::BrowserThread;
 using content::NavigationHandle;
@@ -26,11 +29,18 @@ namespace {
 
 const char kFlashDownloadURL[] = "get.adobe.com/flash";
 
+void DoNothing(blink::mojom::PermissionStatus result) {}
+
 bool ShouldInterceptNavigation(
     content::WebContents* source,
     const navigation_interception::NavigationParams& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(crbug.com/626728): Implement permission prompt logic.
+  PermissionManager* manager = PermissionManager::Get(
+      Profile::FromBrowserContext(source->GetBrowserContext()));
+  manager->RequestPermission(
+      content::PermissionType::FLASH, source->GetMainFrame(),
+      source->GetLastCommittedURL(), true, base::Bind(&DoNothing));
+
   return true;
 }
 
@@ -53,16 +63,12 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
     return false;
   }
 
-  std::unique_ptr<base::Value> general_setting =
-      host_content_settings_map->GetWebsiteSetting(
-          source_url, source_url, CONTENT_SETTINGS_TYPE_PLUGINS, std::string(),
-          nullptr);
-  ContentSetting plugin_setting =
-      content_settings::ValueToContentSetting(general_setting.get());
-  plugin_setting = PluginsFieldTrial::EffectiveContentSetting(
-      CONTENT_SETTINGS_TYPE_PLUGINS, plugin_setting);
+  ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
+      host_content_settings_map, source_url, source_url);
+  flash_setting = PluginsFieldTrial::EffectiveContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 
-  return plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
+  return flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
 }
 
 // static
