@@ -682,6 +682,20 @@ void VolumeManager::OnProvidedFileSystemUnmount(
   DoUnmountEvent(mount_error, volume);
 }
 
+void VolumeManager::OnExternalStorageDisabledChangedUnmountCallback(
+    chromeos::MountError error_code) {
+  if (disk_mount_manager_->mount_points().empty())
+    return;
+  // Repeat until unmount all paths
+  const std::string& mount_path =
+      disk_mount_manager_->mount_points().begin()->second.mount_path;
+  disk_mount_manager_->UnmountPath(
+      mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
+      base::Bind(
+          &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
 void VolumeManager::OnExternalStorageDisabledChanged() {
   // If the policy just got disabled we have to unmount every device currently
   // mounted. The opposite is fine - we can let the user re-plug their device to
@@ -690,14 +704,15 @@ void VolumeManager::OnExternalStorageDisabledChanged() {
     // We do not iterate on mount_points directly, because mount_points can
     // be changed by UnmountPath().
     // TODO(hidehiko): Is it necessary to unmount mounted archives, too, here?
-    while (!disk_mount_manager_->mount_points().empty()) {
-      std::string mount_path =
-          disk_mount_manager_->mount_points().begin()->second.mount_path;
-      disk_mount_manager_->UnmountPath(
-          mount_path,
-          chromeos::UNMOUNT_OPTIONS_NONE,
-          chromeos::disks::DiskMountManager::UnmountPathCallback());
-    }
+    if (disk_mount_manager_->mount_points().empty())
+      return;
+    const std::string& mount_path =
+        disk_mount_manager_->mount_points().begin()->second.mount_path;
+    disk_mount_manager_->UnmountPath(
+        mount_path, chromeos::UNMOUNT_OPTIONS_NONE,
+        base::Bind(
+            &VolumeManager::OnExternalStorageDisabledChangedUnmountCallback,
+            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

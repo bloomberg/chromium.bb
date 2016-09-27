@@ -105,7 +105,19 @@ void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
                     OnMountEvent(DiskMountManager::UNMOUNTING,
                                  chromeos::MOUNT_ERROR_NONE,
                                  mount_point));
-  // Currently |callback| is just ignored.
+  // Enqueue callback so that |FakeDiskMountManager::FinishAllUnmountRequest()|
+  // can call them.
+  pending_unmount_callbacks_.push(callback);
+}
+
+bool FakeDiskMountManager::FinishAllUnmountPathRequests() {
+  if (pending_unmount_callbacks_.empty())
+    return false;
+  while (!pending_unmount_callbacks_.empty()) {
+    pending_unmount_callbacks_.front().Run(chromeos::MOUNT_ERROR_NONE);
+    pending_unmount_callbacks_.pop();
+  }
+  return true;
 }
 
 void FakeDiskMountManager::FormatMountedDevice(const std::string& mount_path) {

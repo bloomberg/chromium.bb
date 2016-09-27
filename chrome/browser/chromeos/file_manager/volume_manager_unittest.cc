@@ -722,6 +722,10 @@ TEST_F(VolumeManagerTest, OnExternalStorageDisabledChanged) {
   profile()->GetPrefs()->SetBoolean(prefs::kExternalStorageDisabled, true);
   volume_manager()->OnExternalStorageDisabledChanged();
 
+  // Wait until all unmount request finishes, so that callback chain to unmount
+  // all the mount points will be invoked.
+  disk_mount_manager_->FinishAllUnmountPathRequests();
+
   // The all mount points should be unmounted.
   EXPECT_EQ(0U, disk_mount_manager_->mount_points().size());
 

@@ -301,6 +301,8 @@ class VolumeManager : public KeyedService,
                     const linked_ptr<Volume>& volume);
   void DoUnmountEvent(chromeos::MountError error_code,
                       const linked_ptr<Volume>& volume);
+  void OnExternalStorageDisabledChangedUnmountCallback(
+      chromeos::MountError error_code);
 
   Profile* profile_;
   drive::DriveIntegrationService* drive_integration_service_;  // Not owned.
