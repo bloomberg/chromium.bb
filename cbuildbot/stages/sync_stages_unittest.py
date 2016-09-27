@@ -17,6 +17,7 @@ import tempfile
 
 from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import chromeos_config
+from chromite.cbuildbot import config_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import lkgm_manager
@@ -29,6 +30,7 @@ from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
+from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import cidb
@@ -355,6 +357,10 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
                      return_value=True)
     self.PatchObject(buildbucket_lib, 'BuildBucketAuth',
                      return_value=mock.Mock())
+    # Create and set up a fake cidb instance.
+    self.fake_db = fake_cidb.FakeCIDBConnection()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.fake_db)
+
     self._Prepare()
 
   def ConstructStage(self):
@@ -397,6 +403,46 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
     result = self._run.attrs.metadata.GetValue('changes')
     self.assertEqual(expected, result)
 
+  def testScheduleImportantSlaveBuildsFailure(self):
+    """Test ScheduleSlaveBuilds with important slave failures."""
+    stage = self.ConstructStage()
+    self.PatchObject(sync_stages.SyncStage, 'PostSlaveBuildToBuildbucket',
+                     side_effect=buildbucket_lib.BuildbucketResponseException)
+
+    slave_config_map_1 = {
+        'slave_external': config_lib.BuildConfig(
+            important=True, active_waterfall=constants.WATERFALL_EXTERNAL)}
+    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
+                     return_value=slave_config_map_1)
+    self.assertRaises(
+        buildbucket_lib.BuildbucketResponseException,
+        stage.ScheduleSlaveBuildsViaBuildbucket,
+        important_only=False, dryrun=True)
+
+    slave_config_map_2 = {
+        'slave_internal': config_lib.BuildConfig(
+            important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
+    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
+                     return_value=slave_config_map_2)
+    stage.ScheduleSlaveBuildsViaBuildbucket(
+        important_only=False, dryrun=True)
+
+  def testScheduleUnimportantSlaveBuildsFailure(self):
+    """Test ScheduleSlaveBuilds with unimportant slave failures."""
+    stage = self.ConstructStage()
+    self.PatchObject(sync_stages.SyncStage, 'PostSlaveBuildToBuildbucket',
+                     side_effect=buildbucket_lib.BuildbucketResponseException)
+
+    slave_config_map = {
+        'slave_external': config_lib.BuildConfig(
+            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
+        'slave_internal': config_lib.BuildConfig(
+            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),}
+    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
+                     return_value=slave_config_map)
+    stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
+
+
 class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   """Helper class for testing the CommitQueueSync stage"""
   MANIFEST_CONTENTS = '<manifest/>'
@@ -432,6 +478,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTestCase):
                      return_value=True)
     self.PatchObject(buildbucket_lib, 'BuildBucketAuth',
                      return_value=mock.Mock())
+    self.PatchObject(buildbucket_lib, 'BuildBucketRequest')
 
     # Create a fake repo / manifest on disk that is used by subclasses.
     for subdir in ('repo', 'manifests'):

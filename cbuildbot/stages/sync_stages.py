@@ -546,13 +546,21 @@ class SyncStage(generic_stages.BuilderStage):
     slave_config_map = self._GetSlaveConfigMap(important_only)
     for slave_name, slave_config in slave_config_map.iteritems():
       try:
+        # TODO: Schedule slave builds for the external waterfall first.
+        # Do not overwrite dryrun for internal waterfall after confirming
+        # buildbucket can safely replace the git-based scheduler.
+        if slave_config.active_waterfall == constants.WATERFALL_INTERNAL:
+          dryrun = True
+
         self.PostSlaveBuildToBuildbucket(slave_name, slave_config,
                                          build_id, dryrun)
       except buildbucket_lib.BuildbucketResponseException as e:
-        # TODO: Catch and log the error. Should raise the exception
-        # when Buildbucket is enabled to trigger slave builds and
-        # scheduling important slave builds are failed.
-        logging.error('Failed to schedule %s: %s' % (slave_name, e))
+        if (slave_config.important and
+            slave_config.active_waterfall == constants.WATERFALL_EXTERNAL):
+          raise
+        else:
+          logging.warning('Failed to schedule %s: %s' % (slave_name, e))
+
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -1216,11 +1224,8 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     if (self._run.config.name == constants.CQ_MASTER and
         not self._run.options.force_version and
         self._run.options.buildbot):
-      # TODO: dryrun is default to True now, should set
-      # dryrun=self._run.options.debug after confirming the buildbucket
-      # server works and removing the git-based schedulers.
       self.ScheduleSlaveBuildsViaBuildbucket(important_only=False,
-                                             dryrun=True)
+                                             dryrun=self._run.options.debug)
 
 
 class PreCQSyncStage(SyncStage):
