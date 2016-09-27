@@ -598,6 +598,11 @@ MediaControlOverflowMenuButtonElement* MediaControlOverflowMenuButtonElement::cr
 void MediaControlOverflowMenuButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
+        if (mediaControls().overflowMenuVisible())
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.OverflowClose"));
+        else
+            Platform::current()->recordAction(UserMetricsAction("Media.Controls.OverflowOpen"));
+
         mediaControls().toggleOverflowMenu();
         event->setDefaultHandled();
     }
@@ -662,6 +667,7 @@ void MediaControlDownloadButtonElement::defaultEventHandler(Event* event)
 {
     const KURL& url = mediaElement().currentSrc();
     if (event->type() == EventTypeNames::click && !(url.isNull() || url.isEmpty())) {
+        Platform::current()->recordAction(UserMetricsAction("Media.Controls.Download"));
         if (!m_anchor) {
             HTMLAnchorElement* anchor = HTMLAnchorElement::create(document());
             anchor->setAttribute(HTMLNames::downloadAttr, "");

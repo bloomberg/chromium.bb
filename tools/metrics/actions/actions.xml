@@ -8661,6 +8661,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Media.Controls.Download">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user clicked on the controls' download button.</description>
+</action>
+
 <action name="Media.Controls.EnterFullscreen">
   <owner>mlamouri@chromium.org</owner>
   <description>The user entered fullscreen mode from the controls.</description>
@@ -8674,6 +8679,16 @@ should be able to be added at any place in this file.
 <action name="Media.Controls.Mute">
   <owner>mlamouri@chromium.org</owner>
   <description>The user muted a media element from the controls.</description>
+</action>
+
+<action name="Media.Controls.OverflowClose">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user closed the overflow menu via the controls.</description>
+</action>
+
+<action name="Media.Controls.OverflowOpen">
+  <owner>mlamouri@chromium.org</owner>
+  <description>The user opened the overflow menu via the controls.</description>
 </action>
 
 <action name="Media.Controls.Pause">
