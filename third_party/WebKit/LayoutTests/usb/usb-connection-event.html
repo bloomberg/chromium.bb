@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-devices.js"></script>
+<script src="resources/usb-helpers.js"></script>
+<script>
+'use strict';
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let evt = new USBConnectionEvent('connect', { device: devices[0] });
+    assert_equals(evt.type, 'connect');
+    assert_equals(evt.device, devices[0]);
+  });
+}, 'Can construct a USBConnectionEvent with a device');
+
+test(t => {
+  try {
+    new USBConnectionEvent('connect', { device: null });
+    assert_unreached('expected TypeError');
+  } catch (err) {
+    assert_true(err instanceof TypeError);
+  }
+
+  try {
+    new USBConnectionEvent('connect', {})
+    assert_unreached('expected TypeError');
+  } catch (err) {
+    assert_true(err instanceof TypeError);
+  }
+}, 'Cannot construct a USBConnectionEvent without a device');
+</script>

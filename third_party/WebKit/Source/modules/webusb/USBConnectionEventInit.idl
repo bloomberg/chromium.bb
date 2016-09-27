@@ -5,8 +5,5 @@
 // http://wicg.github.io/webusb/#events
 
 dictionary USBConnectionEventInit : EventInit {
-    // TODO(foolip): |device| should be required and not nullable.
-    // https://crbug.com/647693
-    // https://github.com/WICG/webusb/issues/63
-    USBDevice? device;
+    required USBDevice device;
 };

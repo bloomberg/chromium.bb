@@ -5,8 +5,8 @@
 // http://wicg.github.io/webusb/#events
 
 [
-    Constructor(DOMString type, optional USBConnectionEventInit eventInitDict),
+    Constructor(DOMString type, USBConnectionEventInit eventInitDict),
     OriginTrialEnabled=WebUSB,
 ] interface USBConnectionEvent : Event {
-    readonly attribute USBDevice device;
+    [SameObject] readonly attribute USBDevice device;
 };

@@ -21,10 +21,8 @@ USBConnectionEvent* USBConnectionEvent::create(const AtomicString& type, USBDevi
 
 USBConnectionEvent::USBConnectionEvent(const AtomicString& type, const USBConnectionEventInit& initializer)
     : Event(type, initializer)
-    , m_device(nullptr)
+    , m_device(initializer.device())
 {
-    if (initializer.hasDevice())
-        m_device = initializer.device();
 }
 
 USBConnectionEvent::USBConnectionEvent(const AtomicString& type, USBDevice* device)
