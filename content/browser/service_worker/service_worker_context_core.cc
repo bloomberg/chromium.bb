@@ -564,10 +564,10 @@ void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
   live_versions_[version->version_id()] = version;
   version->AddListener(this);
   if (observer_list_.get()) {
+    ServiceWorkerVersionInfo version_info = version->GetInfo();
     observer_list_->Notify(FROM_HERE,
                            &ServiceWorkerContextObserver::OnNewLiveVersion,
-                           version->version_id(), version->registration_id(),
-                           version->script_url());
+                           version_info);
   }
 }
 
@@ -746,6 +746,17 @@ void ServiceWorkerContextCore::OnVersionStateChanged(
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextObserver::OnVersionStateChanged,
                          version->version_id(), version->status());
+}
+
+void ServiceWorkerContextCore::OnDevToolsRoutingIdChanged(
+    ServiceWorkerVersion* version) {
+  if (!observer_list_ || !version->embedded_worker())
+    return;
+  observer_list_->Notify(
+      FROM_HERE,
+      &ServiceWorkerContextObserver::OnVersionDevToolsRoutingIdChanged,
+      version->version_id(), version->embedded_worker()->process_id(),
+      version->embedded_worker()->worker_devtools_agent_route_id());
 }
 
 void ServiceWorkerContextCore::OnMainScriptHttpResponseInfoSet(

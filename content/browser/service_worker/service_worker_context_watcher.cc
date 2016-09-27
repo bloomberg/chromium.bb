@@ -165,20 +165,17 @@ void ServiceWorkerContextWatcher::OnNewLiveRegistration(int64_t registration_id,
                        ServiceWorkerRegistrationInfo::IS_NOT_DELETED);
 }
 
-void ServiceWorkerContextWatcher::OnNewLiveVersion(int64_t version_id,
-                                                   int64_t registration_id,
-                                                   const GURL& script_url) {
+void ServiceWorkerContextWatcher::OnNewLiveVersion(
+    const ServiceWorkerVersionInfo& version_info) {
+  int64_t version_id = version_info.version_id;
   if (ServiceWorkerVersionInfo* version = version_info_map_.get(version_id)) {
-    DCHECK_EQ(version->registration_id, registration_id);
-    DCHECK_EQ(version->script_url, script_url);
+    DCHECK_EQ(version->registration_id, version_info.registration_id);
+    DCHECK_EQ(version->script_url, version_info.script_url);
     return;
   }
 
   std::unique_ptr<ServiceWorkerVersionInfo> version(
-      new ServiceWorkerVersionInfo());
-  version->version_id = version_id;
-  version->registration_id = registration_id;
-  version->script_url = script_url;
+      new ServiceWorkerVersionInfo(version_info));
   SendVersionInfo(*version);
   if (!IsStoppedAndRedundant(*version))
     version_info_map_.set(version_id, std::move(version));
@@ -205,6 +202,23 @@ void ServiceWorkerContextWatcher::OnVersionStateChanged(
   if (version->status == status)
     return;
   version->status = status;
+  SendVersionInfo(*version);
+  if (IsStoppedAndRedundant(*version))
+    version_info_map_.erase(version_id);
+}
+
+void ServiceWorkerContextWatcher::OnVersionDevToolsRoutingIdChanged(
+    int64_t version_id,
+    int process_id,
+    int devtools_agent_route_id) {
+  ServiceWorkerVersionInfo* version = version_info_map_.get(version_id);
+  DCHECK(version);
+  if (version->process_id == process_id &&
+      version->devtools_agent_route_id == devtools_agent_route_id) {
+    return;
+  }
+  version->process_id = process_id;
+  version->devtools_agent_route_id = devtools_agent_route_id;
   SendVersionInfo(*version);
   if (IsStoppedAndRedundant(*version))
     version_info_map_.erase(version_id);

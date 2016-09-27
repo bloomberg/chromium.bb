@@ -563,6 +563,7 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
     // we set the NULL time here.
     step_time_ = base::TimeTicks();
   }
+  FOR_EACH_OBSERVER(Listener, listener_list_, OnRegisteredToDevToolsManager());
 }
 
 void EmbeddedWorkerInstance::OnStartWorkerMessageSent() {

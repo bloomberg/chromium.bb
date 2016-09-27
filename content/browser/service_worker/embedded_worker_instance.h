@@ -80,6 +80,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
     virtual void OnStarting() {}
     virtual void OnProcessAllocated() {}
+    virtual void OnRegisteredToDevToolsManager() {}
     virtual void OnStartWorkerMessageSent() {}
     virtual void OnThreadStarted() {}
     virtual void OnStarted() {}

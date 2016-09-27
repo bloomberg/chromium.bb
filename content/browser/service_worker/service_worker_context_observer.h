@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "url/gurl.h"
 
@@ -51,13 +52,14 @@ class ServiceWorkerContextObserver {
   };
   virtual void OnNewLiveRegistration(int64_t registration_id,
                                      const GURL& pattern) {}
-  virtual void OnNewLiveVersion(int64_t version_id,
-                                int64_t registration_id,
-                                const GURL& script_url) {}
+  virtual void OnNewLiveVersion(const ServiceWorkerVersionInfo& version_info) {}
   virtual void OnRunningStateChanged(int64_t version_id,
                                      EmbeddedWorkerStatus running_status) {}
   virtual void OnVersionStateChanged(int64_t version_id,
                                      ServiceWorkerVersion::Status status) {}
+  virtual void OnVersionDevToolsRoutingIdChanged(int64_t version_id,
+                                                 int process_id,
+                                                 int devtools_agent_route_id) {}
   virtual void OnMainScriptHttpResponseInfoSet(
       int64_t version_id,
       base::Time script_response_time,

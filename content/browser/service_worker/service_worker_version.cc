@@ -317,9 +317,9 @@ ServiceWorkerVersion::ServiceWorkerVersion(
   DCHECK(context_);
   DCHECK(registration);
   DCHECK(script_url_.is_valid());
-  context_->AddLiveVersion(this);
   embedded_worker_ = context_->embedded_worker_registry()->CreateWorker();
   embedded_worker_->AddListener(this);
+  context_->AddLiveVersion(this);
 }
 
 ServiceWorkerVersion::~ServiceWorkerVersion() {
@@ -866,6 +866,10 @@ void ServiceWorkerVersion::OnScriptLoaded() {
 void ServiceWorkerVersion::OnScriptLoadFailed() {
   if (IsInstalled(status()))
     UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", false);
+}
+
+void ServiceWorkerVersion::OnRegisteredToDevToolsManager() {
+  FOR_EACH_OBSERVER(Listener, listeners_, OnDevToolsRoutingIdChanged(this));
 }
 
 void ServiceWorkerVersion::OnReportException(

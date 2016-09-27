@@ -68,15 +68,16 @@ class ServiceWorkerContextWatcher
   // ServiceWorkerContextObserver implements
   void OnNewLiveRegistration(int64_t registration_id,
                              const GURL& pattern) override;
-  void OnNewLiveVersion(int64_t version_id,
-                        int64_t registration_id,
-                        const GURL& script_url) override;
+  void OnNewLiveVersion(const ServiceWorkerVersionInfo& version_info) override;
   void OnRunningStateChanged(
       int64_t version_id,
       content::EmbeddedWorkerStatus running_status) override;
   void OnVersionStateChanged(
       int64_t version_id,
       content::ServiceWorkerVersion::Status status) override;
+  void OnVersionDevToolsRoutingIdChanged(int64_t version_id,
+                                         int process_id,
+                                         int devtools_agent_route_id) override;
   void OnMainScriptHttpResponseInfoSet(
       int64_t version_id,
       base::Time script_response_time,

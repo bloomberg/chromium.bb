@@ -102,6 +102,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
    public:
     virtual void OnRunningStateChanged(ServiceWorkerVersion* version) {}
     virtual void OnVersionStateChanged(ServiceWorkerVersion* version) {}
+    virtual void OnDevToolsRoutingIdChanged(ServiceWorkerVersion* version) {}
     virtual void OnMainScriptHttpResponseInfoSet(
         ServiceWorkerVersion* version) {}
     virtual void OnErrorReported(ServiceWorkerVersion* version,
@@ -554,6 +555,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnDetached(EmbeddedWorkerStatus old_status) override;
   void OnScriptLoaded() override;
   void OnScriptLoadFailed() override;
+  void OnRegisteredToDevToolsManager() override;
   void OnReportException(const base::string16& error_message,
                          int line_number,
                          int column_number,
