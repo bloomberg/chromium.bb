@@ -62,7 +62,8 @@ class ChromotingHostTest : public testing::Test {
     task_runner_ = new AutoThreadTaskRunner(message_loop_.task_runner(),
                                             base::Bind(&base::DoNothing));
 
-    desktop_environment_factory_.reset(new FakeDesktopEnvironmentFactory());
+    desktop_environment_factory_.reset(
+        new FakeDesktopEnvironmentFactory(message_loop_.task_runner()));
     session_manager_ = new protocol::MockSessionManager();
 
     host_.reset(new ChromotingHost(

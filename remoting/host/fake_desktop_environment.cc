@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "remoting/host/audio_capturer.h"
+#include "remoting/host/desktop_capturer_proxy.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/fake_desktop_capturer.h"
@@ -53,8 +54,9 @@ void FakeScreenControls::SetScreenResolution(
     const ScreenResolution& resolution) {
 }
 
-FakeDesktopEnvironment::FakeDesktopEnvironment() {}
-
+FakeDesktopEnvironment::FakeDesktopEnvironment(
+    scoped_refptr<base::SingleThreadTaskRunner> capture_thread)
+    : capture_thread_(capture_thread) {}
 FakeDesktopEnvironment::~FakeDesktopEnvironment() {}
 
 // DesktopEnvironment implementation.
@@ -74,11 +76,15 @@ std::unique_ptr<ScreenControls> FakeDesktopEnvironment::CreateScreenControls() {
 
 std::unique_ptr<webrtc::DesktopCapturer>
 FakeDesktopEnvironment::CreateVideoCapturer() {
-  std::unique_ptr<protocol::FakeDesktopCapturer> result(
+  std::unique_ptr<protocol::FakeDesktopCapturer> fake_capturer(
       new protocol::FakeDesktopCapturer());
   if (!frame_generator_.is_null())
-    result->set_frame_generator(frame_generator_);
-  return std::move(result);
+    fake_capturer->set_frame_generator(frame_generator_);
+
+  std::unique_ptr<DesktopCapturerProxy> result(
+      new DesktopCapturerProxy(capture_thread_));
+  result->set_capturer(std::move(fake_capturer));
+  return result;
 }
 
 std::unique_ptr<webrtc::MouseCursorMonitor>
@@ -96,13 +102,16 @@ uint32_t FakeDesktopEnvironment::GetDesktopSessionId() const {
   return UINT32_MAX;
 }
 
-FakeDesktopEnvironmentFactory::FakeDesktopEnvironmentFactory() {}
+FakeDesktopEnvironmentFactory::FakeDesktopEnvironmentFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> capture_thread)
+    : capture_thread_(capture_thread) {}
 FakeDesktopEnvironmentFactory::~FakeDesktopEnvironmentFactory() {}
 
 // DesktopEnvironmentFactory implementation.
 std::unique_ptr<DesktopEnvironment> FakeDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  std::unique_ptr<FakeDesktopEnvironment> result(new FakeDesktopEnvironment());
+  std::unique_ptr<FakeDesktopEnvironment> result(
+      new FakeDesktopEnvironment(capture_thread_));
   result->set_frame_generator(frame_generator_);
   last_desktop_environment_ = result->AsWeakPtr();
   return std::move(result);

@@ -73,8 +73,10 @@ std::unique_ptr<webrtc::DesktopCapturer>
 BasicDesktopEnvironment::CreateVideoCapturer() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return base::MakeUnique<DesktopCapturerProxy>(video_capture_task_runner_,
-                                                *desktop_capture_options_);
+  std::unique_ptr<DesktopCapturerProxy> result(
+      new DesktopCapturerProxy(video_capture_task_runner_));
+  result->CreateCapturer(*desktop_capture_options_);
+  return std::move(result);
 }
 
 BasicDesktopEnvironment::BasicDesktopEnvironment(

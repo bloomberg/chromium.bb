@@ -31,6 +31,10 @@ class DesktopCapturerProxy::Core : public webrtc::DesktopCapturer::Callback {
   explicit Core(base::WeakPtr<DesktopCapturerProxy> proxy);
   ~Core() override;
 
+  void set_capturer(std::unique_ptr<webrtc::DesktopCapturer> capturer) {
+    DCHECK(!capturer_);
+    capturer_ = std::move(capturer);
+  }
   void CreateCapturer(const webrtc::DesktopCaptureOptions& options);
 
   void Start();
@@ -109,17 +113,26 @@ void DesktopCapturerProxy::Core::OnCaptureResult(
 }
 
 DesktopCapturerProxy::DesktopCapturerProxy(
-    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner,
-    const webrtc::DesktopCaptureOptions& options)
+    scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner)
     : capture_task_runner_(capture_task_runner), weak_factory_(this) {
   core_.reset(new Core(weak_factory_.GetWeakPtr()));
+}
+
+DesktopCapturerProxy::~DesktopCapturerProxy() {
+  capture_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+}
+
+void DesktopCapturerProxy::CreateCapturer(
+    const webrtc::DesktopCaptureOptions& options) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   capture_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Core::CreateCapturer,
                             base::Unretained(core_.get()), options));
 }
 
-DesktopCapturerProxy::~DesktopCapturerProxy() {
-  capture_task_runner_->DeleteSoon(FROM_HERE, core_.release());
+void DesktopCapturerProxy::set_capturer(
+    std::unique_ptr<webrtc::DesktopCapturer> capturer) {
+  core_->set_capturer(std::move(capturer));
 }
 
 void DesktopCapturerProxy::Start(Callback* callback) {

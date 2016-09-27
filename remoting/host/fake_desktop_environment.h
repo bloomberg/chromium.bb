@@ -71,7 +71,8 @@ class FakeDesktopEnvironment
     : public DesktopEnvironment,
       public base::SupportsWeakPtr<FakeDesktopEnvironment> {
  public:
-  FakeDesktopEnvironment();
+  explicit FakeDesktopEnvironment(
+      scoped_refptr<base::SingleThreadTaskRunner> capture_thread);
   ~FakeDesktopEnvironment() override;
 
   // Sets frame generator to be used for protocol::FakeDesktopCapturer created
@@ -97,6 +98,7 @@ class FakeDesktopEnvironment
   }
 
  private:
+  scoped_refptr<base::SingleThreadTaskRunner> capture_thread_;
   protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
 
   base::WeakPtr<FakeInputInjector> last_input_injector_;
@@ -106,7 +108,8 @@ class FakeDesktopEnvironment
 
 class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
  public:
-  FakeDesktopEnvironmentFactory();
+  explicit FakeDesktopEnvironmentFactory(
+      scoped_refptr<base::SingleThreadTaskRunner> capture_thread);
   ~FakeDesktopEnvironmentFactory() override;
 
   // Sets frame generator to be used for protocol::FakeDesktopCapturer created
@@ -127,6 +130,7 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   }
 
  private:
+  scoped_refptr<base::SingleThreadTaskRunner> capture_thread_;
   protocol::FakeDesktopCapturer::FrameGenerator frame_generator_;
 
   base::WeakPtr<FakeDesktopEnvironment> last_desktop_environment_;

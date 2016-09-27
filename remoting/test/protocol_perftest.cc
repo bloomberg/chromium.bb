@@ -107,6 +107,9 @@ class ProtocolPerfTest
     capture_thread_.Start();
     encode_thread_.Start();
     decode_thread_.Start();
+
+    desktop_environment_factory_.reset(
+        new FakeDesktopEnvironmentFactory(capture_thread_.task_runner()));
   }
 
   virtual ~ProtocolPerfTest() {
@@ -265,7 +268,7 @@ class ProtocolPerfTest
     // Encoder runs on a separate thread, main thread is used for everything
     // else.
     host_.reset(new ChromotingHost(
-        &desktop_environment_factory_, std::move(session_manager),
+        desktop_environment_factory_.get(), std::move(session_manager),
         transport_context, host_thread_.task_runner(),
         encode_thread_.task_runner()));
 
@@ -354,7 +357,7 @@ class ProtocolPerfTest
   base::Thread capture_thread_;
   base::Thread encode_thread_;
   base::Thread decode_thread_;
-  FakeDesktopEnvironmentFactory desktop_environment_factory_;
+  std::unique_ptr<FakeDesktopEnvironmentFactory> desktop_environment_factory_;
 
   FakeCursorShapeStub cursor_shape_stub_;
 
@@ -472,7 +475,7 @@ void ProtocolPerfTest::MeasureTotalLatency(bool use_webrtc) {
       test::CyclicFrameGenerator::Create();
   frame_generator->set_draw_barcode(true);
 
-  desktop_environment_factory_.set_frame_generator(
+  desktop_environment_factory_->set_frame_generator(
       base::Bind(&test::CyclicFrameGenerator::GenerateFrame, frame_generator));
 
   StartHostAndClient(use_webrtc);
@@ -539,7 +542,7 @@ void ProtocolPerfTest::MeasureScrollPerformance(bool use_webrtc) {
   scoped_refptr<test::ScrollFrameGenerator> frame_generator =
       new test::ScrollFrameGenerator();
 
-  desktop_environment_factory_.set_frame_generator(
+  desktop_environment_factory_->set_frame_generator(
       base::Bind(&test::ScrollFrameGenerator::GenerateFrame, frame_generator));
 
   StartHostAndClient(use_webrtc);
