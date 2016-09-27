@@ -10,6 +10,7 @@ window.
 Text After Enter:
 window.
 
+
 Text Before Enter:
 if.(1.===.2)
 Text After Enter:
@@ -31,6 +32,7 @@ Text Before Enter:
 [1,2,
 Text After Enter:
 [1,2,
+.
 
 Text Before Enter:
 [1,2,3]
@@ -41,6 +43,7 @@ Text Before Enter:
 {abc:
 Text After Enter:
 {abc:
+.
 
 Text Before Enter:
 {abc:123}
@@ -55,6 +58,7 @@ Text After Enter:
 function.incomplete().{
 ....if.(1)
 ........5;
+....
 
 Text Before Enter:
 function.bad().{
@@ -70,11 +74,7 @@ function.good().{
 ....}
 }
 Text After Enter:
-function.good().{
-....if.(1).{
-........5;
-....}
-}
+<empty>
 
 Text Before Enter:
 1,
@@ -104,6 +104,7 @@ var.templateStr.=.`
 Text After Enter:
 var.templateStr.=.`
 
+
 Text Before Enter:
 var.templateStr.=.`str`
 Text After Enter:
@@ -112,7 +113,7 @@ Text After Enter:
 Text Before Enter:
 var.doubleQ.=."
 Text After Enter:
-var.doubleQ.=."
+<empty>
 
 Text Before Enter:
 var.singleQ.=.'
@@ -122,6 +123,6 @@ Text After Enter:
 Text Before Enter:
 var.singleQ.=.'str'
 Text After Enter:
-var.singleQ.=.'str'
+<empty>
 
 

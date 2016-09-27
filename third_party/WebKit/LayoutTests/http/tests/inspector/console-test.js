@@ -21,7 +21,7 @@ InspectorTest.evaluateInConsole = function(code, callback, dontForceMainContext)
     callback = InspectorTest.safeWrap(callback);
 
     var consoleView = WebInspector.ConsoleView.instance();
-    consoleView._appendCommand(code, true);
+    consoleView._prompt._appendCommand(code, true);
     InspectorTest.addConsoleViewSniffer(function(commandResult) {
         callback(commandResult.toMessageElement().deepTextContent());
     });

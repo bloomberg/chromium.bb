@@ -57,22 +57,16 @@ function test()
     function pressEnterAfter(text)
     {
         var fulfill;
-        var ended = false;
         var promise = new Promise(x => fulfill = x);
-        InspectorTest.addConsoleViewSniffer(enterProcessed);
-        InspectorTest.addSniffer(WebInspector.ConsolePrompt.prototype, "newlineAndIndent", enterProcessed);
+        InspectorTest.addSniffer(WebInspector.ConsolePrompt.prototype, "_enterProcessedForTest", enterProcessed);
 
         prompt.setText(text);
         prompt.moveCaretToEndOfPrompt();
-        prompt.element.dispatchEvent(InspectorTest.createKeyEvent("Enter"));
-
+        prompt._enterKeyPressed(InspectorTest.createKeyEvent("Enter"));
         return promise;
 
         function enterProcessed()
         {
-            if (ended)
-                return;
-            ended = true;
             InspectorTest.addResult("Text Before Enter:");
             InspectorTest.addResult(text.replace(/ /g, "."));
             InspectorTest.addResult("Text After Enter:");
