@@ -153,7 +153,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
     DCHECK(!keyframes.first()->offset());
     DCHECK_EQ(keyframes.last()->offset(), 1);
 
-    // FIXME: This is only used for use counting neutral keyframes running on the compositor.
+    // This is used for use counting neutral keyframes running on the compositor.
     PropertySet allProperties;
     for (const auto& keyframe : keyframes) {
         for (const auto& property : keyframe->properties())

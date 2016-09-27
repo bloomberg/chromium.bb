@@ -36,7 +36,6 @@
 
 namespace blink {
 
-// FIXME: Once cross-fade works on generated image types, remove this method.
 bool AnimatableImage::usesDefaultInterpolationWith(const AnimatableValue* value) const
 {
     if (!m_value->isImageValue())

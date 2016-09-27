@@ -308,7 +308,6 @@ static SVGPaintType normalizeSVGPaintType(SVGPaintType paintType)
     return paintType == SVG_PAINTTYPE_CURRENTCOLOR ? SVG_PAINTTYPE_RGBCOLOR : paintType;
 }
 
-// FIXME: Generate this function.
 PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID property, const ComputedStyle& style)
 {
     DCHECK(CSSPropertyMetadata::isInterpolableProperty(property));

@@ -96,7 +96,6 @@ private:
 
     void interpolateValue(double fraction, std::unique_ptr<TypedInterpolationValue>& result) const final
     {
-        // TODO(alancutter): Remove this optimisation once Oilpan is default.
         if (!std::isnan(m_lastFraction) && (fraction < 0.5) == (m_lastFraction < 0.5))
             return;
         const TypedInterpolationValue* side = ((fraction < 0.5) ? m_start : m_end).get();

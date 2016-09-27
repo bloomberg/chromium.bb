@@ -8,8 +8,6 @@
 
 namespace blink {
 
-// TODO(alancutter): Generate these functions.
-
 ValueRange LengthPropertyFunctions::getValueRange(CSSPropertyID property)
 {
     switch (property) {
