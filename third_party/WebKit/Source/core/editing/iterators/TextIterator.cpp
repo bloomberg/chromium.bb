@@ -615,8 +615,16 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox()
                         // See http://crbug.com/318925
                         // For trailing space.
                         if (!nextTextBox && m_textBox->root().nextRootBox() && m_textBox->root().lastChild() == m_textBox) {
-                            if (str.endsWith(' ') && subrunEnd == str.length() - 1 && str[subrunEnd - 1] != ' ')
-                                ++subrunEnd;
+                            if (str.endsWith(' ') && subrunEnd == str.length() - 1 && str[subrunEnd - 1] != ' ') {
+                                // If there is the leading space in the next line, we don't need to restore the trailing space.
+                                // Example: <div style="width: 2em;"><b><i>foo </i></b> bar</div>
+                                InlineBox* firstBoxOfNextLine = m_textBox->root().nextRootBox()->firstChild();
+                                Node* firstNodeOfNextLine = nullptr;
+                                if (firstBoxOfNextLine)
+                                    firstNodeOfNextLine = firstBoxOfNextLine->getLineLayoutItem().node();
+                                if (!firstNodeOfNextLine || firstNodeOfNextLine->nodeValue()[0] != ' ')
+                                    ++subrunEnd;
+                            }
                         }
                         // For leading space.
                         if (!emitsImageAltText() && !doesNotBreakAtReplacedElement() && !forInnerText()
