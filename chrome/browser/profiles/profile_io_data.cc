@@ -1326,8 +1326,12 @@ void ProfileIOData::DestroyResourceContext() {
   // notifications by severing the link between it and the
   // cert_transparency_verifier_ and unregistering it from new STH
   // notifications.
-  cert_transparency_verifier_->SetObserver(nullptr);
-  ct_tree_tracker_unregistration_.Run();
+  // Only do this if the profile was initalized and
+  // |cert_transparency_verifier_| is not null.
+  if (cert_transparency_verifier_) {
+    cert_transparency_verifier_->SetObserver(nullptr);
+    ct_tree_tracker_unregistration_.Run();
+  }
 }
 
 std::unique_ptr<net::HttpNetworkSession>
