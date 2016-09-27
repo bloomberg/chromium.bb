@@ -80,7 +80,7 @@ void FakeConnectionToClient::Disconnect(ErrorCode disconnect_error) {
   is_connected_ = false;
   disconnect_error_ = disconnect_error;
   if (event_handler_)
-    event_handler_->OnConnectionClosed(this, disconnect_error_);
+    event_handler_->OnConnectionClosed(disconnect_error_);
 }
 
 Session* FakeConnectionToClient::session() {

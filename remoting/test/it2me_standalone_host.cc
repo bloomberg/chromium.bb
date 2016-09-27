@@ -86,9 +86,9 @@ void It2MeStandaloneHost::Connect() {
       &handler_, std::unique_ptr<protocol::ConnectionToClient>(&connection_),
       &factory_, base::TimeDelta(), scoped_refptr<protocol::PairingRegistry>(),
       std::vector<HostExtension*>()));
-  session_->OnConnectionAuthenticated(&connection_);
-  session_->OnConnectionChannelsConnected(&connection_);
-  session_->CreateMediaStreams(&connection_);
+  session_->OnConnectionAuthenticated();
+  session_->OnConnectionChannelsConnected();
+  session_->CreateMediaStreams();
 }
 
 }  // namespace test

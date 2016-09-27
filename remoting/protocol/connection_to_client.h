@@ -37,32 +37,28 @@ class ConnectionToClient {
   class EventHandler {
    public:
     // Called when the network connection is authenticating
-    virtual void OnConnectionAuthenticating(ConnectionToClient* connection) = 0;
+    virtual void OnConnectionAuthenticating() = 0;
 
     // Called when the network connection is authenticated.
-    virtual void OnConnectionAuthenticated(ConnectionToClient* connection) = 0;
+    virtual void OnConnectionAuthenticated() = 0;
 
     // Called to request creation of video streams. May be called before or
     // after OnConnectionChannelsConnected().
-    virtual void CreateMediaStreams(ConnectionToClient* connection) = 0;
+    virtual void CreateMediaStreams() = 0;
 
     // Called when the network connection is authenticated and all
     // channels are connected.
-    virtual void OnConnectionChannelsConnected(
-        ConnectionToClient* connection) = 0;
+    virtual void OnConnectionChannelsConnected() = 0;
 
     // Called when the network connection is closed or failed.
-    virtual void OnConnectionClosed(ConnectionToClient* connection,
-                                    ErrorCode error) = 0;
+    virtual void OnConnectionClosed(ErrorCode error) = 0;
 
     // Called when a new input event is received.
-    virtual void OnInputEventReceived(ConnectionToClient* connection,
-                                      int64_t timestamp) = 0;
+    virtual void OnInputEventReceived(int64_t timestamp) = 0;
 
     // Called on notification of a route change event, which happens when a
     // channel is connected.
-    virtual void OnRouteChange(ConnectionToClient* connection,
-                               const std::string& channel_name,
+    virtual void OnRouteChange(const std::string& channel_name,
                                const TransportRoute& route) = 0;
 
    protected:

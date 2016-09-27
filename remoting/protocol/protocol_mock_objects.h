@@ -70,21 +70,16 @@ class MockConnectionToClientEventHandler
   MockConnectionToClientEventHandler();
   ~MockConnectionToClientEventHandler() override;
 
-  MOCK_METHOD1(OnConnectionAuthenticating,
-               void(ConnectionToClient* connection));
-  MOCK_METHOD1(OnConnectionAuthenticated, void(ConnectionToClient* connection));
-  MOCK_METHOD1(CreateMediaStreams, void(ConnectionToClient* connection));
-  MOCK_METHOD1(OnConnectionChannelsConnected,
-               void(ConnectionToClient* connection));
-  MOCK_METHOD2(OnConnectionClosed,
-               void(ConnectionToClient* connection, ErrorCode error));
+  MOCK_METHOD0(OnConnectionAuthenticating, void());
+  MOCK_METHOD0(OnConnectionAuthenticated, void());
+  MOCK_METHOD0(CreateMediaStreams, void());
+  MOCK_METHOD0(OnConnectionChannelsConnected, void());
+  MOCK_METHOD1(OnConnectionClosed, void(ErrorCode error));
   MOCK_METHOD1(OnCreateVideoEncoder,
                void(std::unique_ptr<VideoEncoder>* encoder));
-  MOCK_METHOD2(OnInputEventReceived,
-               void(ConnectionToClient* connection, int64_t timestamp));
-  MOCK_METHOD3(OnRouteChange,
-               void(ConnectionToClient* connection,
-                    const std::string& channel_name,
+  MOCK_METHOD1(OnInputEventReceived, void(int64_t timestamp));
+  MOCK_METHOD2(OnRouteChange,
+               void(const std::string& channel_name,
                     const TransportRoute& route));
 
  private:

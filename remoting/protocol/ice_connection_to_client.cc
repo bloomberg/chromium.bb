@@ -146,7 +146,7 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
       // Don't care about these events.
       break;
     case Session::AUTHENTICATING:
-      event_handler_->OnConnectionAuthenticating(this);
+      event_handler_->OnConnectionAuthenticating();
       break;
     case Session::AUTHENTICATED:
       // Initialize channels.
@@ -166,14 +166,14 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
 
       // Notify the handler after initializing the channels, so that
       // ClientSession can get a client clipboard stub.
-      event_handler_->OnConnectionAuthenticated(this);
+      event_handler_->OnConnectionAuthenticated();
       break;
 
     case Session::CLOSED:
     case Session::FAILED:
       CloseChannels();
       event_handler_->OnConnectionClosed(
-          this, state == Session::FAILED ? session_->error() : OK);
+          state == Session::FAILED ? session_->error() : OK);
       break;
   }
 }
@@ -182,7 +182,7 @@ void IceConnectionToClient::OnSessionStateChange(Session::State state) {
 void IceConnectionToClient::OnIceTransportRouteChange(
     const std::string& channel_name,
     const TransportRoute& route) {
-  event_handler_->OnRouteChange(this, channel_name, route);
+  event_handler_->OnRouteChange(channel_name, route);
 }
 
 void IceConnectionToClient::OnIceTransportError(ErrorCode error) {
@@ -206,7 +206,7 @@ void IceConnectionToClient::OnChannelClosed(
 
 void IceConnectionToClient::OnInputEventReceived(int64_t timestamp) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnInputEventReceived(this, timestamp);
+  event_handler_->OnInputEventReceived(timestamp);
 }
 
 void IceConnectionToClient::NotifyIfChannelsReady() {
@@ -222,8 +222,8 @@ void IceConnectionToClient::NotifyIfChannelsReady() {
       session_->config().is_audio_enabled()) {
     return;
   }
-  event_handler_->OnConnectionChannelsConnected(this);
-  event_handler_->CreateMediaStreams(this);
+  event_handler_->OnConnectionChannelsConnected();
+  event_handler_->CreateMediaStreams();
 }
 
 void IceConnectionToClient::CloseChannels() {

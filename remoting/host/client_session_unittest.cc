@@ -200,13 +200,13 @@ void ClientSessionTest::ConnectClientSession() {
   EXPECT_FALSE(connection_->clipboard_stub());
   EXPECT_FALSE(connection_->input_stub());
 
-  client_session_->OnConnectionAuthenticated(client_session_->connection());
+  client_session_->OnConnectionAuthenticated();
 
   EXPECT_TRUE(connection_->clipboard_stub());
   EXPECT_TRUE(connection_->input_stub());
 
-  client_session_->CreateMediaStreams(client_session_->connection());
-  client_session_->OnConnectionChannelsConnected(client_session_->connection());
+  client_session_->CreateMediaStreams();
+  client_session_->OnConnectionChannelsConnected();
 }
 
 void ClientSessionTest::NotifyVideoSize() {

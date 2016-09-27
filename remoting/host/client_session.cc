@@ -215,15 +215,12 @@ void ClientSession::DeliverClientMessage(
   }
 }
 
-void ClientSession::OnConnectionAuthenticating(
-    protocol::ConnectionToClient* connection) {
+void ClientSession::OnConnectionAuthenticating() {
   event_handler_->OnSessionAuthenticating(this);
 }
 
-void ClientSession::OnConnectionAuthenticated(
-    protocol::ConnectionToClient* connection) {
+void ClientSession::OnConnectionAuthenticated() {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(connection_.get(), connection);
   DCHECK(!audio_stream_);
   DCHECK(!desktop_environment_);
   DCHECK(!input_injector_);
@@ -276,10 +273,8 @@ void ClientSession::OnConnectionAuthenticated(
   clipboard_echo_filter_.set_client_stub(connection_->client_stub());
 }
 
-void ClientSession::CreateMediaStreams(
-    protocol::ConnectionToClient* connection) {
+void ClientSession::CreateMediaStreams() {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(connection_.get(), connection);
 
   // Create a VideoStream to pump frames from the capturer to the client.
   video_stream_ = connection_->StartVideoStream(
@@ -299,10 +294,8 @@ void ClientSession::CreateMediaStreams(
   video_stream_->Pause(pause_video_);
 }
 
-void ClientSession::OnConnectionChannelsConnected(
-    protocol::ConnectionToClient* connection) {
+void ClientSession::OnConnectionChannelsConnected() {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(connection_.get(), connection);
 
   DCHECK(!channels_connected_);
   channels_connected_ = true;
@@ -331,11 +324,8 @@ void ClientSession::OnConnectionChannelsConnected(
   event_handler_->OnSessionChannelsConnected(this);
 }
 
-void ClientSession::OnConnectionClosed(
-    protocol::ConnectionToClient* connection,
-    protocol::ErrorCode error) {
+void ClientSession::OnConnectionClosed(protocol::ErrorCode error) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(connection_.get(), connection);
 
   HOST_LOG << "Client disconnected: " << client_jid_ << "; error = " << error;
 
@@ -364,21 +354,17 @@ void ClientSession::OnConnectionClosed(
 }
 
 void ClientSession::OnInputEventReceived(
-    protocol::ConnectionToClient* connection,
     int64_t event_timestamp) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(connection_.get(), connection);
 
   if (video_stream_.get())
     video_stream_->OnInputEventReceived(event_timestamp);
 }
 
 void ClientSession::OnRouteChange(
-    protocol::ConnectionToClient* connection,
     const std::string& channel_name,
     const protocol::TransportRoute& route) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(connection_.get(), connection);
   event_handler_->OnSessionRouteChange(this, channel_name, route);
 }
 

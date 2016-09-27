@@ -145,16 +145,12 @@ class ConnectionTest : public testing::Test,
   void Connect() {
     {
       testing::InSequence sequence;
-      EXPECT_CALL(host_event_handler_,
-                  OnConnectionAuthenticating(host_connection_.get()));
-      EXPECT_CALL(host_event_handler_,
-                  OnConnectionAuthenticated(host_connection_.get()));
+      EXPECT_CALL(host_event_handler_, OnConnectionAuthenticating());
+      EXPECT_CALL(host_event_handler_, OnConnectionAuthenticated());
     }
-    EXPECT_CALL(host_event_handler_,
-                OnConnectionChannelsConnected(host_connection_.get()))
-        .WillOnce(
-            InvokeWithoutArgs(this, &ConnectionTest::OnHostConnected));
-    EXPECT_CALL(host_event_handler_, OnRouteChange(_, _, _))
+    EXPECT_CALL(host_event_handler_, OnConnectionChannelsConnected())
+        .WillOnce(InvokeWithoutArgs(this, &ConnectionTest::OnHostConnected));
+    EXPECT_CALL(host_event_handler_, OnRouteChange(_, _))
         .Times(testing::AnyNumber());
 
     {
@@ -300,8 +296,7 @@ TEST_P(ConnectionTest, Disconnect) {
 
   EXPECT_CALL(client_event_handler_,
               OnConnectionState(ConnectionToHost::CLOSED, OK));
-  EXPECT_CALL(host_event_handler_,
-              OnConnectionClosed(host_connection_.get(), OK));
+  EXPECT_CALL(host_event_handler_, OnConnectionClosed(OK));
 
   client_session_->Close(OK);
   base::RunLoop().RunUntilIdle();
@@ -334,8 +329,7 @@ TEST_P(ConnectionTest, Events) {
 
   base::RunLoop run_loop;
 
-  EXPECT_CALL(host_event_handler_,
-              OnInputEventReceived(host_connection_.get(), _));
+  EXPECT_CALL(host_event_handler_, OnInputEventReceived(_));
   EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(event)))
       .WillOnce(QuitRunLoop(&run_loop));
 
@@ -380,8 +374,7 @@ TEST_P(ConnectionTest, DestroyOnIncomingMessage) {
 
   base::RunLoop run_loop;
 
-  EXPECT_CALL(host_event_handler_,
-              OnInputEventReceived(host_connection_.get(), _));
+  EXPECT_CALL(host_event_handler_, OnInputEventReceived(_));
   EXPECT_CALL(host_input_stub_, InjectKeyEvent(EqualsKeyEvent(event)))
       .WillOnce(DoAll(InvokeWithoutArgs(this, &ConnectionTest::DestroyHost),
                       QuitRunLoop(&run_loop)));

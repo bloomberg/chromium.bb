@@ -114,19 +114,13 @@ class ClientSession : public base::NonThreadSafe,
   void DeliverClientMessage(const protocol::ExtensionMessage& message) override;
 
   // protocol::ConnectionToClient::EventHandler interface.
-  void OnConnectionAuthenticating(
-      protocol::ConnectionToClient* connection) override;
-  void OnConnectionAuthenticated(
-      protocol::ConnectionToClient* connection) override;
-  void CreateMediaStreams(protocol::ConnectionToClient* connection) override;
-  void OnConnectionChannelsConnected(
-      protocol::ConnectionToClient* connection) override;
-  void OnConnectionClosed(protocol::ConnectionToClient* connection,
-                          protocol::ErrorCode error) override;
-  void OnInputEventReceived(protocol::ConnectionToClient* connection,
-                            int64_t timestamp) override;
-  void OnRouteChange(protocol::ConnectionToClient* connection,
-                     const std::string& channel_name,
+  void OnConnectionAuthenticating() override;
+  void OnConnectionAuthenticated() override;
+  void CreateMediaStreams() override;
+  void OnConnectionChannelsConnected() override;
+  void OnConnectionClosed(protocol::ErrorCode error) override;
+  void OnInputEventReceived(int64_t timestamp) override;
+  void OnRouteChange(const std::string& channel_name,
                      const protocol::TransportRoute& route) override;
 
   // ClientSessionControl interface.

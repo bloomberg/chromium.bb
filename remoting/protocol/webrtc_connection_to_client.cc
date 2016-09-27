@@ -123,17 +123,17 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
       break;
 
     case Session::AUTHENTICATING:
-      event_handler_->OnConnectionAuthenticating(this);
+      event_handler_->OnConnectionAuthenticating();
       break;
 
     case Session::AUTHENTICATED: {
       base::WeakPtr<WebrtcConnectionToClient> self = weak_factory_.GetWeakPtr();
-      event_handler_->OnConnectionAuthenticated(this);
+      event_handler_->OnConnectionAuthenticated();
 
       // OnConnectionAuthenticated() call above may result in the connection
       // being torn down.
       if (self)
-        event_handler_->CreateMediaStreams(this);
+        event_handler_->CreateMediaStreams();
       break;
     }
 
@@ -143,7 +143,7 @@ void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
       event_dispatcher_.reset();
       transport_->Close(state == Session::CLOSED ? OK : session_->error());
       event_handler_->OnConnectionClosed(
-          this, state == Session::CLOSED ? OK : session_->error());
+          state == Session::CLOSED ? OK : session_->error());
       break;
   }
 }
@@ -191,7 +191,7 @@ void WebrtcConnectionToClient::OnChannelInitialized(
 
   if (control_dispatcher_ && control_dispatcher_->is_connected() &&
       event_dispatcher_ && event_dispatcher_->is_connected()) {
-    event_handler_->OnConnectionChannelsConnected(this);
+    event_handler_->OnConnectionChannelsConnected();
   }
 }
 
@@ -206,7 +206,7 @@ void WebrtcConnectionToClient::OnChannelClosed(
 
 void WebrtcConnectionToClient::OnInputEventReceived(int64_t timestamp) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  event_handler_->OnInputEventReceived(this, timestamp);
+  event_handler_->OnInputEventReceived(timestamp);
 }
 
 }  // namespace protocol
