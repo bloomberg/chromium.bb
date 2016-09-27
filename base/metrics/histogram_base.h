@@ -92,7 +92,7 @@ class BASE_EXPORT HistogramBase {
   static const Sample kSampleType_MAX;  // INT_MAX
 
   enum Flags {
-    kNoFlags = 0,
+    kNoFlags = 0x0,
 
     // Histogram should be UMA uploaded.
     kUmaTargetedHistogramFlag = 0x1,
@@ -122,6 +122,8 @@ class BASE_EXPORT HistogramBase {
     // histogram is created.
     kIsPersistent = 0x40,
 
+    // TODO(rkaplow): Look into this, but looks like this is unused and can
+    // be removed.
     // Only for Histogram and its sub classes: fancy bucket-naming support.
     kHexRangePrintingFlag = 0x8000,
   };
