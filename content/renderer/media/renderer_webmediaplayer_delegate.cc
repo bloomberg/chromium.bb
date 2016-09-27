@@ -220,9 +220,16 @@ void RendererWebMediaPlayerDelegate::RemoveIdleDelegate(int delegate_id) {
 
 void RendererWebMediaPlayerDelegate::CleanupIdleDelegates(
     base::TimeDelta timeout) {
+  // Drop reentrant cleanups which can occur during forced suspension when the
+  // number of idle delegates is too high for a given device.
+  if (idle_cleanup_running_)
+    return;
+
   // Iterate over the delegates and suspend the idle ones. Note: The call to
-  // OnHidden() can trigger calls into RemoveIdleDelegate(), so for iterator
-  // validity we set |idle_cleanup_running_| to true and defer deletions.
+  // OnSuspendRequested() can trigger calls into RemoveIdleDelegate(), so for
+  // iterator validity we set |idle_cleanup_running_| to true and defer
+  // deletions.
+  DCHECK(!idle_cleanup_running_);
   base::AutoReset<bool> scoper(&idle_cleanup_running_, true);
   const base::TimeTicks now = tick_clock_->NowTicks();
   for (auto& idle_delegate_entry : idle_delegate_map_) {
