@@ -739,7 +739,7 @@ void StyleEngine::scheduleInvalidationsForRemovedSibling(Element* beforeElement,
 
     scheduleSiblingInvalidationsForElement(removedElement, *schedulingParent, 1);
 
-    for (unsigned i = 2; beforeElement && i <= affectedSiblings; i++, beforeElement = ElementTraversal::previousSibling(*beforeElement))
+    for (unsigned i = 1; beforeElement && i <= affectedSiblings; i++, beforeElement = ElementTraversal::previousSibling(*beforeElement))
         scheduleSiblingInvalidationsForElement(*beforeElement, *schedulingParent, i);
 }
 
