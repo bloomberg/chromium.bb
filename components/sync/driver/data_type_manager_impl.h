@@ -145,12 +145,19 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   void StopImpl();
 
+  // Returns the currently enabled types.
+  syncer::ModelTypeSet GetEnabledTypes() const;
+
   BackendDataTypeConfigurer* configurer_;
   // Map of all data type controllers that are available for sync.
   // This list is determined at startup by various command line flags.
   const DataTypeController::TypeMap* controllers_;
   State state_;
   syncer::ModelTypeSet last_requested_types_;
+
+  // A set of types that were enabled at the time initialization with the
+  // |model_association_manager_| was last attempted.
+  syncer::ModelTypeSet last_enabled_types_;
 
   // Whether an attempt to reconfigure was made while we were busy configuring.
   // The |last_requested_types_| will reflect the newest set of requested types.

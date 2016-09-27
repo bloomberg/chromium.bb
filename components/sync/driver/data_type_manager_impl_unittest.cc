@@ -314,6 +314,18 @@ class SyncDataTypeManagerImplTest : public testing::Test {
         base::MakeUnique<FakeDataTypeController>(model_type);
   }
 
+  // Convenience method to create a controller and set some parameters.
+  void AddController(ModelType model_type,
+                     bool should_load_model_before_configure,
+                     bool should_delay_model_load) {
+    AddController(model_type);
+    GetController(model_type)
+        ->SetShouldLoadModelBeforeConfigure(should_load_model_before_configure);
+    if (should_delay_model_load) {
+      GetController(model_type)->SetDelayModelLoad();
+    }
+  }
+
   // Gets the fake controller for the given type, which should have
   // been previously added via AddController().
   FakeDataTypeController* GetController(ModelType model_type) const {
@@ -1629,11 +1641,9 @@ TEST_F(SyncDataTypeManagerImplTest, CatchUpMultipleConfigureCalls) {
 }
 
 // Test that DataTypeManagerImpl delays configuration until all datatypes for
-//  which ShouldLoadModelBeforeConfigure() returns true loaded their models.
+// which ShouldLoadModelBeforeConfigure() returns true loaded their models.
 TEST_F(SyncDataTypeManagerImplTest, DelayConfigureForUSSTypes) {
-  AddController(BOOKMARKS);
-  GetController(BOOKMARKS)->SetShouldLoadModelBeforeConfigure(true);
-  GetController(BOOKMARKS)->SetDelayModelLoad();
+  AddController(BOOKMARKS, true, true);
 
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
@@ -1657,6 +1667,27 @@ TEST_F(SyncDataTypeManagerImplTest, DelayConfigureForUSSTypes) {
   GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(1U, configurer_.activated_types().Size());
+}
+
+// Test that when encryption fails for a given type, the corresponding
+// controller is not told to register with its backend.
+TEST_F(SyncDataTypeManagerImplTest, RegisterWithBackendOnEncryptionError) {
+  AddController(BOOKMARKS, true, true);
+  AddController(PASSWORDS, true, true);
+  SetConfigureStartExpectation();
+
+  FailEncryptionFor(ModelTypeSet(BOOKMARKS));
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS, PASSWORDS));
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
+  EXPECT_EQ(DataTypeController::MODEL_STARTING,
+            GetController(PASSWORDS)->state());
+  EXPECT_EQ(0, GetController(BOOKMARKS)->register_with_backend_call_count());
+  EXPECT_EQ(0, GetController(PASSWORDS)->register_with_backend_call_count());
+
+  dtm_->OnAllDataTypesReadyForConfigure();
+  EXPECT_EQ(0, GetController(BOOKMARKS)->register_with_backend_call_count());
+  EXPECT_EQ(1, GetController(PASSWORDS)->register_with_backend_call_count());
 }
 
 }  // namespace sync_driver
