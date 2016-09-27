@@ -39,7 +39,6 @@ const int kTimeCheckInterval = 1;
 
 const char* kModeSuffixes[RecordingSource::RECORDING_MODE_COUNT] = {
     "",
-    "_sk_null_canvas",
     "_painting_disabled",
     "_caching_disabled",
     "_construction_disabled",
@@ -126,9 +125,6 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
       case RecordingSource::RECORD_NORMALLY:
         // Already setup for normal recording.
         break;
-      case RecordingSource::RECORD_WITH_SK_NULL_CANVAS:
-        // Not supported for Display List recording.
-        continue;
       case RecordingSource::RECORD_WITH_PAINTING_DISABLED:
         painting_control = ContentLayerClient::DISPLAY_LIST_PAINTING_DISABLED;
         break;

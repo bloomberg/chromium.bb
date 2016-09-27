@@ -78,16 +78,12 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'record_time', 'ms', record_time))
 
-    record_time_sk_null_canvas = data['record_time_sk_null_canvas_ms']
     record_time_painting_disabled = data['record_time_painting_disabled_ms']
     record_time_caching_disabled = data['record_time_caching_disabled_ms']
     record_time_construction_disabled = \
         data['record_time_construction_disabled_ms']
     record_time_subsequence_caching_disabled = \
         data['record_time_subsequence_caching_disabled_ms']
-    results.AddValue(scalar.ScalarValue(
-        results.current_page, 'record_time_sk_null_canvas', 'ms',
-        record_time_sk_null_canvas))
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'record_time_painting_disabled', 'ms',
         record_time_painting_disabled))
