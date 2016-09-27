@@ -245,6 +245,7 @@ const char kChromeUISyncFileSystemInternalsHost[] = "syncfs-internals";
 const char kChromeUISyncInternalsHost[] = "sync-internals";
 const char kChromeUISyncResourcesHost[] = "syncresources";
 const char kChromeUISystemInfoHost[] = "system";
+const char kChromeUITaskSchedulerInternalsHost[] = "taskscheduler-internals";
 const char kChromeUITermsHost[] = "terms";
 const char kChromeUIThemeHost[] = "theme";
 const char kChromeUIThumbnailHost[] = "thumb";
@@ -631,6 +632,7 @@ const char* const kChromeHostURLs[] = {
   kChromeUISuggestionsHost,
   kChromeUISupervisedUserInternalsHost,
   kChromeUISyncInternalsHost,
+  kChromeUITaskSchedulerInternalsHost,
   kChromeUITermsHost,
   kChromeUIThumbnailListHost,
   kChromeUITranslateInternalsHost,

@@ -255,6 +255,9 @@
   "components/components_strings.grd": {
     "messages": [28020],
   },
+  "chrome/browser/resources/task_scheduler_internals/resources.grd": {
+    "includes": [29000],
+  },
   # Chromium strings and Google Chrome strings must start at the same id.
   # We only use one file depending on whether we're building Chromium or
   # Google Chrome.

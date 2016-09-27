@@ -51,6 +51,17 @@ grit("policy_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
+grit("task_scheduler_internals_resources") {
+  source = "task_scheduler_internals/resources.grd"
+  use_qualified_include = true
+  defines = chrome_grit_defines
+  outputs = [
+    "grit/task_scheduler_internals_resources.h",
+    "task_scheduler_internals_resources.pak",
+  ]
+  output_dir = "$root_gen_dir/chrome"
+}
+
 grit("translate_internals_resources") {
   source = "translate_internals_resources.grd"
   use_qualified_include = true

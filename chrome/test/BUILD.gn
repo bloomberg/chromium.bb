@@ -1788,6 +1788,7 @@ test("browser_tests") {
       "../browser/ui/webui/settings/md_settings_ui_browsertest.cc",
       "../browser/ui/webui/signin/inline_login_ui_browsertest.cc",
       "../browser/ui/webui/signin/user_manager_ui_browsertest.cc",
+      "../browser/ui/webui/task_scheduler_internals/task_scheduler_internals_ui_browsertest.cc",
       "../browser/ui/webui/uber/uber_ui_browsertest.cc",
       "../browser/ui/webui/web_ui_test_handler.cc",
       "../browser/ui/webui/web_ui_test_handler.h",

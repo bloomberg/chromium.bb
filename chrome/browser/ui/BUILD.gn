@@ -400,6 +400,8 @@ split_static_library("ui") {
     "webui/sync_internals_message_handler.h",
     "webui/sync_internals_ui.cc",
     "webui/sync_internals_ui.h",
+    "webui/task_scheduler_internals/task_scheduler_internals_ui.cc",
+    "webui/task_scheduler_internals/task_scheduler_internals_ui.h",
     "webui/test_files_request_filter.cc",
     "webui/test_files_request_filter.h",
     "webui/translate_internals/translate_internals_handler.cc",
