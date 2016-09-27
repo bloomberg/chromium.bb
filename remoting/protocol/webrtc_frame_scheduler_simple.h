@@ -8,6 +8,7 @@
 #include "remoting/protocol/webrtc_frame_scheduler.h"
 
 #include "base/timer/timer.h"
+#include "remoting/base/running_samples.h"
 
 namespace remoting {
 namespace protocol {
@@ -46,6 +47,9 @@ class WebrtcFrameSchedulerSimple : public WebrtcFrameScheduler {
 
   // Set to true when encoding unchanged frames for top-off.
   bool top_off_is_active_ = false;
+
+  // Accumulator for capture and encoder delay history.
+  RunningSamples frame_processing_delay_us_;
 
   base::OneShotTimer capture_timer_;
 };

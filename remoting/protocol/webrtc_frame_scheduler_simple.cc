@@ -13,6 +13,9 @@ namespace protocol {
 
 namespace {
 
+// Number of samples used to estimate processing time for the next frame.
+const int kStatsWindow = 5;
+
 const int kTargetFrameRate = 30;
 constexpr base::TimeDelta kTargetFrameInterval =
     base::TimeDelta::FromMilliseconds(1000 / kTargetFrameRate);
@@ -22,7 +25,8 @@ const int kTargetQuantizerForVp8TopOff = 30;
 
 }  // namespace
 
-WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple() {}
+WebrtcFrameSchedulerSimple::WebrtcFrameSchedulerSimple()
+    : frame_processing_delay_us_(kStatsWindow) {}
 WebrtcFrameSchedulerSimple::~WebrtcFrameSchedulerSimple() {}
 
 void WebrtcFrameSchedulerSimple::Start(const base::Closure& capture_callback) {
@@ -82,6 +86,9 @@ void WebrtcFrameSchedulerSimple::OnFrameEncoded(
     return;
   }
 
+  frame_processing_delay_us_.Record(
+      (base::TimeTicks::Now() - last_capture_started_time_).InMicroseconds());
+
   // Top-off until the target quantizer value is reached.
   top_off_is_active_ = encoded_frame.quantizer > kTargetQuantizerForVp8TopOff;
 
@@ -104,7 +111,10 @@ void WebrtcFrameSchedulerSimple::ScheduleNextFrame() {
   // If this is not the first frame then capture next frame after the previous
   // one has finished sending.
   if (!last_frame_send_finish_time_.is_null()) {
-    delay = std::max(base::TimeDelta(), last_frame_send_finish_time_ - now);
+    base::TimeDelta expected_processing_time =
+        base::TimeDelta::FromMicroseconds(frame_processing_delay_us_.Max());
+    delay = std::max(base::TimeDelta(), last_frame_send_finish_time_ -
+                                            expected_processing_time - now);
   }
 
   // Cap interval between frames to kTargetFrameInterval.
