@@ -365,8 +365,16 @@ AdbClientSocket::~AdbClientSocket() {
 }
 
 void AdbClientSocket::Connect(const net::CompletionCallback& callback) {
-  net::AddressList address_list = net::AddressList::CreateFromIPAddress(
-      net::IPAddress::IPv4Localhost(), port_);
+  // In a IPv4/IPv6 dual stack environment, getaddrinfo for localhost could
+  // only return IPv6 address while current adb (1.0.36) will always listen
+  // on IPv4. So just try IPv4 first, then fall back to IPv6.
+  net::IPAddressList list = {net::IPAddress::IPv4Localhost(),
+                             net::IPAddress::IPv6Localhost()};
+  net::AddressList ip_list = net::AddressList::CreateFromIPAddressList(
+      list, "localhost");
+  net::AddressList address_list = net::AddressList::CopyWithPort(
+      ip_list, port_);
+
   socket_.reset(new net::TCPClientSocket(address_list, NULL, NULL,
                                          net::NetLog::Source()));
   int result = socket_->Connect(callback);
