@@ -119,6 +119,9 @@ WindowManagerState::WindowManagerState(WindowTree* window_tree)
 }
 
 WindowManagerState::~WindowManagerState() {
+  for (auto& display_root : window_manager_display_roots_)
+    display_root->display()->OnWillDestroyTree(window_tree_);
+
   for (auto& display_root : orphaned_window_manager_display_roots_)
     display_root->root()->RemoveObserver(this);
 }

@@ -17,6 +17,7 @@
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
+#include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window_surface_manager_test_api.h"
@@ -541,6 +542,30 @@ TEST_F(WindowManagerStateTest, PostAcceleratorForgotten) {
             ChangesToDescription1(*tracker->changes())[0]);
   WindowTreeTestApi(window_tree()).AckLastEvent(mojom::EventResult::UNHANDLED);
   EXPECT_FALSE(window_manager()->on_accelerator_called());
+}
+
+// Verifies there is no crash if the WindowTree of a window manager is destroyed
+// with no roots.
+TEST(WindowManagerStateShutdownTest, DestroyTreeBeforeDisplay) {
+  WindowServerTestHelper ws_test_helper;
+  ws_test_helper.window_server_delegate()->set_num_displays_to_create(1);
+  WindowServer* window_server = ws_test_helper.window_server();
+  const UserId kUserId1 = "2";
+  WindowManagerWindowTreeFactorySetTestApi(
+      window_server->window_manager_window_tree_factory_set())
+      .Add(kUserId1);
+  ASSERT_EQ(1u, window_server->display_manager()->displays().size());
+  Display* display = *(window_server->display_manager()->displays().begin());
+  WindowManagerDisplayRoot* window_manager_display_root =
+      display->GetWindowManagerDisplayRootForUser(kUserId1);
+  ASSERT_TRUE(window_manager_display_root);
+  WindowTree* tree =
+      window_manager_display_root->window_manager_state()->window_tree();
+  ASSERT_EQ(1u, tree->roots().size());
+  ClientWindowId root_client_id;
+  ASSERT_TRUE(tree->IsWindowKnown(*(tree->roots().begin()), &root_client_id));
+  EXPECT_TRUE(tree->DeleteWindow(root_client_id));
+  window_server->DestroyTree(tree);
 }
 
 }  // namespace test

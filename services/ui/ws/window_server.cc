@@ -160,20 +160,6 @@ void WindowServer::DestroyTree(WindowTree* tree) {
   for (auto& pair : tree_map_)
     pair.second->OnWindowDestroyingTreeImpl(tree);
 
-  // Notify the hosts, taking care to only notify each host once.
-  std::set<Display*> displays_notified;
-  for (auto* root : tree->roots()) {
-    // WindowTree holds its roots as a const, which is right as WindowTree
-    // doesn't need to modify the window. OTOH we do. We could look up the
-    // window using the id to get non-const version, but instead we cast.
-    Display* display =
-        display_manager_->GetDisplayContaining(const_cast<ServerWindow*>(root));
-    if (display && displays_notified.count(display) == 0) {
-      display->OnWillDestroyTree(tree);
-      displays_notified.insert(display);
-    }
-  }
-
   window_manager_window_tree_factory_set_.DeleteFactoryAssociatedWithTree(tree);
 
   // Remove any requests from the client that resulted in a call to the window
