@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -18,10 +19,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 
 class Profile;
-
-namespace base {
-class SharedMemory;
-}
 
 namespace net {
 class URLFetcher;

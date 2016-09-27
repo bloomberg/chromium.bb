@@ -3600,6 +3600,8 @@ split_static_library("browser") {
       "media/webrtc/webrtc_rtp_dump_handler.h",
       "media/webrtc/webrtc_rtp_dump_writer.cc",
       "media/webrtc/webrtc_rtp_dump_writer.h",
+      "media/webrtc/webrtc_text_log_handler.cc",
+      "media/webrtc/webrtc_text_log_handler.h",
     ]
   }
   if (enable_service_discovery) {
