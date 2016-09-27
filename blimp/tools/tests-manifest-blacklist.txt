@@ -8,7 +8,6 @@
 ./libfont_service_library.so
 ./libtracing_library.so
 ./libmus_library.so
-./libosmesa.so
 ./mojo_runner
 snapshot_blob.bin
 */test_env.py

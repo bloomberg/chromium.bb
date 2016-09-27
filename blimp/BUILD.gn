@@ -167,6 +167,7 @@ if (is_linux) {
       _rebased_blimp_engine_env_tests_manifest,
     ]
     inputs = [
+      _rebased_blimp_engine_env_tests_blacklist,
       _blimp_engine_env_tests_runtime_deps,
     ]
     outputs = [
