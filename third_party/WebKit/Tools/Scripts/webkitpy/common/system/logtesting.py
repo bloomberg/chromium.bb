@@ -35,7 +35,6 @@ import unittest
 
 
 class TestLogStream(object):
-
     """Represents a file-like object for unit-testing logging.
 
     This is meant for passing to the logging.StreamHandler constructor.
@@ -44,17 +43,16 @@ class TestLogStream(object):
     """
 
     def __init__(self, test_case):
-        """Create an instance.
+        """Creates an instance.
 
         Args:
-          test_case: A unittest.TestCase instance.
+            test_case: A unittest.TestCase instance.
         """
         self._test_case = test_case
-        self.messages = []
-        """A list of log messages written to the stream."""
+        self.messages = []  # A list of log messages written to the stream.
 
     # Python documentation says that any object passed to the StreamHandler
-    # constructor should support write() and flush():
+    # constructor should support write() and flush().
     #
     # http://docs.python.org/library/logging.html#module-logging.handlers
 
@@ -65,51 +63,47 @@ class TestLogStream(object):
         pass
 
     def assertMessages(self, messages):
-        """Assert that the given messages match the logged messages.
-
-        messages: A list of log message strings.
-        """
+        """Asserts that the given messages match the logged messages."""
         self._test_case.assertEqual(messages, self.messages)
 
 
 class LogTesting(object):
-
     """Supports end-to-end unit-testing of log messages.
 
-        Sample usage:
+    Sample usage:
 
-          class SampleTest(unittest.TestCase):
+      class SampleTest(unittest.TestCase):
 
-              def setUp(self):
-                  self._log = LogTesting.setUp(self)  # Turn logging on.
+          def setUp(self):
+              self._log = LogTesting.setUp(self)  # Turn logging on.
 
-              def tearDown(self):
-                  self._log.tearDown()  # Turn off and reset logging.
+          def tearDown(self):
+              self._log.tearDown()  # Turn off and reset logging.
 
-              def test_logging_in_some_method(self):
-                  call_some_method()  # Contains calls to _log.info(), etc.
+          def test_logging_in_some_method(self):
+              call_some_method()  # Contains calls to _log.info(), etc.
 
-                  # Check the resulting log messages.
-                  self._log.assertMessages(["INFO: expected message #1",
-                                          "WARNING: expected message #2"])
+              # Check the resulting log messages.
+              self._log.assertMessages(["INFO: expected message #1",
+                                      "WARNING: expected message #2"])
     """
 
     def __init__(self, test_stream, handler):
-        """Create an instance.
+        """Creates an instance.
 
-        This method should never be called directly.  Instances should
+        This method should never be called directly. Instances should
         instead be created using the static setUp() method.
 
         Args:
-          test_stream: A TestLogStream instance.
-          handler: The handler added to the logger.
+            test_stream: A TestLogStream instance.
+            handler: The handler added to the logger.
         """
         self._test_stream = test_stream
         self._handler = handler
 
     @staticmethod
     def _getLogger():
-        """Return the logger being tested."""
+        """Returns the logger being tested."""
         # It is possible we might want to return something other than
         # the root logger in some special situation.  For now, the
         # root logger seems to suffice.
@@ -117,7 +111,7 @@ class LogTesting(object):
 
     @staticmethod
     def setUp(test_case, logging_level=logging.INFO):
-        """Configure logging for unit testing.
+        """Configures logging for unit testing.
 
         Configures the root logger to log to a testing log stream.
         Only messages logged at or above the given level are logged
@@ -130,13 +124,13 @@ class LogTesting(object):
         of a unittest.TestCase.  See the docstring of this class
         for more details.
 
-        Returns:
-          A LogTesting instance.
-
         Args:
-          test_case: A unittest.TestCase instance.
-          logging_level: An integer logging level that is the minimum level
-                         of log messages you would like to test.
+            test_case: A unittest.TestCase instance.
+            logging_level: An integer logging level that is the minimum level
+                           of log messages you would like to test.
+
+        Returns:
+            A LogTesting instance.
         """
         stream = TestLogStream(test_case)
         handler = logging.StreamHandler(stream)
@@ -160,60 +154,59 @@ class LogTesting(object):
         logger.removeHandler(self._handler)
 
     def messages(self):
-        """Return the current list of log messages."""
+        """Returns the current list of log messages."""
         return self._test_stream.messages
 
     # FIXME: Add a clearMessages() method for cases where the caller
     #        deliberately doesn't want to assert every message.
 
-    # We clear the log messages after asserting since they are no longer
-    # needed after asserting.  This serves two purposes: (1) it simplifies
-    # the calling code when we want to check multiple logging calls in a
-    # single test method, and (2) it lets us check in the tearDown() method
-    # that there are no remaining log messages to be asserted.
-    #
-    # The latter ensures that no extra log messages are getting logged that
-    # the caller might not be aware of or may have forgotten to check for.
-    # This gets us a bit more mileage out of our tests without writing any
-    # additional code.
     def assertMessages(self, messages):
-        """Assert the current array of log messages, and clear its contents.
+        """Asserts the current array of log messages, and clear its contents.
+
+        We clear the log messages after asserting since they are no longer
+        needed after asserting.  This serves two purposes: (1) it simplifies
+        the calling code when we want to check multiple logging calls in a
+        single test method, and (2) it lets us check in the tearDown() method
+        that there are no remaining log messages to be asserted.
+
+        The latter ensures that no extra log messages are getting logged that
+        the caller might not be aware of or may have forgotten to check for.
+        This gets us a bit more mileage out of our tests without writing any
+        additional code.
+
+        We want to clear the array of messages even in the case of
+        an Exception (e.g. an AssertionError).  Otherwise, another
+        AssertionError can occur in the tearDown() because the
+        array might not have gotten emptied.
 
         Args:
-          messages: A list of log message strings.
+            messages: A list of log message strings.
         """
         try:
             self._test_stream.assertMessages(messages)
         finally:
-            # We want to clear the array of messages even in the case of
-            # an Exception (e.g. an AssertionError).  Otherwise, another
-            # AssertionError can occur in the tearDown() because the
-            # array might not have gotten emptied.
             self._test_stream.messages = []
 
 
-# This class needs to inherit from unittest.TestCase.  Otherwise, the
-# setUp() and tearDown() methods will not get fired for test case classes
-# that inherit from this class -- even if the class inherits from *both*
-# unittest.TestCase and LoggingTestCase.
-#
-# FIXME: Rename this class to LoggingTestCaseBase to be sure that
-#        the unittest module does not interpret this class as a unittest
-#        test case itself.
 class LoggingTestCase(unittest.TestCase):
 
     """Supports end-to-end unit-testing of log messages.
 
-        Sample usage:
+    This class needs to inherit from unittest.TestCase.  Otherwise, the
+    setUp() and tearDown() methods will not get fired for test case classes
+    that inherit from this class -- even if the class inherits from *both*
+    unittest.TestCase and LoggingTestCase.
 
-          class SampleTest(LoggingTestCase):
+    Sample usage:
 
-              def test_logging_in_some_method(self):
-                  call_some_method()  # Contains calls to _log.info(), etc.
+      class SampleTest(LoggingTestCase):
 
-                  # Check the resulting log messages.
-                  self.assertLog(["INFO: expected message #1",
-                                  "WARNING: expected message #2"])
+          def test_logging_in_some_method(self):
+              call_some_method()  # Contains calls to _log.info(), etc.
+
+              # Check the resulting log messages.
+              self.assertLog(["INFO: expected message #1",
+                              "WARNING: expected message #2"])
     """
 
     def setUp(self):
@@ -229,13 +222,8 @@ class LoggingTestCase(unittest.TestCase):
     # FIXME: Add a clearMessages() method for cases where the caller
     #        deliberately doesn't want to assert every message.
 
-    # See the code comments preceding LogTesting.assertMessages() for
-    # an explanation of why we clear the array of messages after
-    # asserting its contents.
+    # See the docstring for LogTesting.assertMessages() for an explanation
+    # of why we clear the array of messages after asserting its contents.
     def assertLog(self, messages):
-        """Assert the current array of log messages, and clear its contents.
-
-        Args:
-          messages: A list of log message strings.
-        """
+        """Asserts the current array of log messages, and clear its contents."""
         self._log.assertMessages(messages)
