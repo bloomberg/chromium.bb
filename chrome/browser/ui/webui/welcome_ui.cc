@@ -5,32 +5,37 @@
 #include "chrome/browser/ui/webui/welcome_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/url_constants.h"
+#include "chrome/browser/ui/webui/welcome_handler.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/resources/grit/webui_resources.h"
 
-namespace {
-
-// A URL ending in /1 indicates that we should modify the page to use the
-// "Take Chrome Everywhere" text.
-const char* kEverywhereVariantPath = "/1";
-
-}  // namespace
-
 WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     : content::WebUIController(web_ui) {
-  // TODO(tmartino): Create WelcomeHandler, and add here.
+  Profile* profile = Profile::FromWebUI(web_ui);
+
+  // This page is not shown to incognito or guest profiles. If one should end up
+  // here, we return, causing a 404-like page.
+  if (!profile ||
+      profile->GetProfileType() != Profile::ProfileType::REGULAR_PROFILE) {
+    return;
+  }
+
+  web_ui->AddMessageHandler(new WelcomeHandler(web_ui));
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
 
   // Check URL for variations.
-  bool is_everywhere_variant = url.path() == kEverywhereVariantPath;
+  std::string value;
+  bool is_everywhere_variant =
+      (net::GetValueForKeyInQuery(url, "variant", &value) &&
+       value == "everywhere");
 
   int header_id = is_everywhere_variant ? IDS_WELCOME_HEADER_AFTER_FIRST_RUN
                                         : IDS_WELCOME_HEADER;
@@ -56,7 +61,6 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("watermark.svg", IDR_WEBUI_IMAGES_GOOGLE_LOGO);
   html_source->SetDefaultResource(IDR_WELCOME_HTML);
 
-  Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, html_source);
 }
 

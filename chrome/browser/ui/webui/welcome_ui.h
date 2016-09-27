@@ -9,7 +9,9 @@
 #include "url/gurl.h"
 
 // The WebUI for chrome://welcome, the page which greets new Desktop users and
-// promotes sign-in.
+// promotes sign-in. By default, this page uses the "Welcome to Chrome" language
+// and layout; the "Take Chrome Everywhere" variant may be accessed by appending
+// the query string "?variant=everywhere".
 class WelcomeUI : public content::WebUIController {
  public:
   WelcomeUI(content::WebUI* web_ui, const GURL& url);
