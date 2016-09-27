@@ -37,6 +37,7 @@ group("core") {
     ":switches",
     "//blimp/client/core/compositor",
     "//blimp/client/core/contents",
+    "//blimp/client/core/feedback",
     "//blimp/client/core/geolocation",
     "//blimp/client/core/render_widget",
     "//blimp/client/core/session",
@@ -80,6 +81,7 @@ source_set("unit_tests") {
     ":context",
     "//blimp/client/core/compositor:unit_tests",
     "//blimp/client/core/contents:unit_tests",
+    "//blimp/client/core/feedback:unit_tests",
     "//blimp/client/core/geolocation:unit_tests",
     "//blimp/client/core/render_widget:unit_tests",
     "//blimp/client/core/session:unit_tests",
@@ -108,6 +110,7 @@ source_set("context") {
 
   deps = [
     ":switches",
+    "//blimp/client/core/feedback",
     "//blimp/client/core/geolocation",
     "//blimp/client/core/settings",
   ]
@@ -168,6 +171,7 @@ if (is_android) {
       ":context_java",
       ":switches_java",
       "//blimp/client/core/contents:contents_java",
+      "//blimp/client/core/feedback:feedback_java",
       "//blimp/client/core/settings:settings_java",
       "//device/geolocation:geolocation_java",
     ]
@@ -195,6 +199,7 @@ if (is_android) {
       ":switches_java",
       "//base:base_java",
       "//blimp/client/core/contents:contents_java",
+      "//blimp/client/core/feedback:feedback_java",
       "//blimp/client/core/settings:settings_java",
       "//blimp/client/public:public_headers_java",
       "//ui/android:ui_java",

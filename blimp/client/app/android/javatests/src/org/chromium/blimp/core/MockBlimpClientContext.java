@@ -13,6 +13,9 @@ import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.blimp_public.contents.BlimpContents;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Mock {@link BlimpClientContext}.
  * This test support class only tests Java layer and is not backed by any native code.
@@ -70,4 +73,9 @@ public class MockBlimpClientContext implements BlimpClientContext, BlimpPreferen
 
     @Override
     public void initSettingsPage(AboutBlimpPreferences preferences) {}
+
+    @Override
+    public Map<String, String> getFeedbackMap() {
+        return new HashMap<>();
+    }
 }

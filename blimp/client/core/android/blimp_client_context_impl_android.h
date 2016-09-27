@@ -40,6 +40,10 @@ class BlimpClientContextImplAndroid : public BlimpClientContextImpl {
       const base::android::JavaRef<jobject>& jobj,
       jlong window_android_ptr);
 
+  base::android::ScopedJavaLocalRef<jobject> CreateBlimpFeedbackDataJava(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& jobj);
+
   // Start authentication flow from Java.
   void ConnectFromJava(JNIEnv* env,
                        const base::android::JavaRef<jobject>& jobj);

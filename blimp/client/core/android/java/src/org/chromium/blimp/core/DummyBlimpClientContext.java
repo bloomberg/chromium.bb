@@ -13,6 +13,9 @@ import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.blimp_public.contents.BlimpContents;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A dummy implementation of the {@link BlimpClientContext}.
  */
@@ -66,4 +69,9 @@ public class DummyBlimpClientContext implements BlimpClientContext {
 
     @Override
     public void connect() {}
+
+    @Override
+    public Map<String, String> getFeedbackMap() {
+        return new HashMap<>();
+    }
 }

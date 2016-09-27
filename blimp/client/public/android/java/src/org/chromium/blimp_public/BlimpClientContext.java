@@ -9,6 +9,8 @@ import android.preference.PreferenceFragment;
 import org.chromium.blimp_public.contents.BlimpContents;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.Map;
+
 /**
  * BlimpClientContext is the Java representation of a native BlimpClientContext object.
  * It is owned by the native BrowserContext.
@@ -51,4 +53,10 @@ public interface BlimpClientContext {
      * Start authentication flow and connection to engine.
      */
     void connect();
+
+    /**
+     * Gathers data about Blimp that should be send for feedback reports.
+     * @return a map of all the Blimp-related feedback data.
+     */
+    Map<String, String> getFeedbackMap();
 }

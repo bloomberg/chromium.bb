@@ -20,6 +20,7 @@
 #include "blimp/client/core/contents/ime_feature.h"
 #include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
+#include "blimp/client/core/feedback/blimp_feedback_data.h"
 #include "blimp/client/core/geolocation/geolocation_feature.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/core/session/cross_thread_network_event_observer.h"
@@ -145,6 +146,11 @@ void BlimpClientContextImpl::ConnectWithAssignment(
       FROM_HERE,
       base::Bind(&ClientNetworkComponents::ConnectWithAssignment,
                  base::Unretained(net_components_.get()), assignment));
+}
+
+std::unordered_map<std::string, std::string>
+BlimpClientContextImpl::CreateFeedbackData() {
+  return CreateBlimpFeedbackData();
 }
 
 void BlimpClientContextImpl::OnAuthTokenReceived(

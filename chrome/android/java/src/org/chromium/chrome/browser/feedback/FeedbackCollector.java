@@ -12,6 +12,8 @@ import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.blimp_public.BlimpClientContext;
+import org.chromium.chrome.browser.blimp.BlimpClientContextFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -240,6 +242,7 @@ public class FeedbackCollector
         addConnectivityData();
         addDataReductionProxyData();
         addVariationsData();
+        addBlimpData();
         return asBundle();
     }
 
@@ -265,6 +268,14 @@ public class FeedbackCollector
     private void addVariationsData() {
         if (mProfile.isOffTheRecord()) return;
         mData.putAll(VariationsAssociatedData.getFeedbackMap());
+    }
+
+    private void addBlimpData() {
+        if (mProfile.isOffTheRecord()) return;
+
+        BlimpClientContext blimpClientContext =
+                BlimpClientContextFactory.getBlimpClientContextForProfile(mProfile);
+        mData.putAll(blimpClientContext.getFeedbackMap());
     }
 
     private Bundle asBundle() {

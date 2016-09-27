@@ -4,10 +4,14 @@
 
 #include "blimp/client/core/android/blimp_client_context_impl_android.h"
 
+#include <string>
+#include <unordered_map>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
+#include "blimp/client/core/feedback/android/blimp_feedback_data_android.h"
 #include "blimp/client/core/settings/android/blimp_settings_android.h"
 #include "blimp/client/public/blimp_client_context.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
@@ -80,6 +84,15 @@ BlimpClientContextImplAndroid::CreateBlimpContentsJava(
   BlimpContentsImpl* blimp_contents_impl =
       static_cast<BlimpContentsImpl*>(blimp_contents.release());
   return blimp_contents_impl->GetJavaObject();
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+BlimpClientContextImplAndroid::CreateBlimpFeedbackDataJava(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& jobj) {
+  std::unordered_map<std::string, std::string> feedback_data =
+      CreateFeedbackData();
+  return CreateBlimpFeedbackDataJavaObject(feedback_data);
 }
 
 GURL BlimpClientContextImplAndroid::GetAssignerURL() {

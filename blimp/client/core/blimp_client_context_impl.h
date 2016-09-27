@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -61,6 +62,9 @@ class BlimpClientContextImpl
       gfx::NativeWindow window) override;
   void Connect() override;
   void ConnectWithAssignment(const Assignment& assignment) override;
+
+  // Creates a data object containing data about Blimp to be used for feedback.
+  std::unordered_map<std::string, std::string> CreateFeedbackData();
 
  protected:
   // Returns the URL to use for connections to the assigner. Used to construct

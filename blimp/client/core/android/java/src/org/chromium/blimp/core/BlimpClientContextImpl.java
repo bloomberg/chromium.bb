@@ -9,6 +9,7 @@ import android.preference.PreferenceFragment;
 import org.chromium.base.CommandLine;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.blimp.core.feedback.BlimpFeedbackData;
 import org.chromium.blimp.core.settings.AboutBlimpPreferences;
 import org.chromium.blimp.core.settings.BlimpPreferencesDelegate;
 import org.chromium.blimp.core.settings.PreferencesUtil;
@@ -16,6 +17,9 @@ import org.chromium.blimp_public.BlimpClientContext;
 import org.chromium.blimp_public.BlimpClientContextDelegate;
 import org.chromium.blimp_public.contents.BlimpContents;
 import org.chromium.ui.base.WindowAndroid;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * BlimpClientContextImpl is a Java wrapper to allow communicating with the native
@@ -91,6 +95,13 @@ public class BlimpClientContextImpl implements BlimpClientContext, BlimpPreferen
         nativeConnectFromJava(mNativeBlimpClientContextImplAndroid);
     }
 
+    @Override
+    public Map<String, String> getFeedbackMap() {
+        if (mNativeBlimpClientContextImplAndroid == 0 || !isBlimpEnabled()) return new HashMap<>();
+
+        return nativeCreateBlimpFeedbackDataJava(mNativeBlimpClientContextImplAndroid).asMap();
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeBlimpClientContextImplAndroid = 0;
@@ -109,6 +120,9 @@ public class BlimpClientContextImpl implements BlimpClientContext, BlimpPreferen
 
     private native BlimpContents nativeCreateBlimpContentsJava(
             long nativeBlimpClientContextImplAndroid, long windowAndroidPtr);
+
+    private native BlimpFeedbackData nativeCreateBlimpFeedbackDataJava(
+            long nativeBlimpClientContextImplAndroid);
 
     private native void nativeConnectFromJava(long nativeBlimpClientContextImplAndroid);
     private native void nativeInitSettingsPage(
