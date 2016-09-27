@@ -183,5 +183,11 @@ void TestHeadersHandler::OnHeaderBlockEnd(size_t header_bytes_parsed) {
   header_bytes_parsed_ = header_bytes_parsed;
 }
 
+void TestHeadersHandler::OnHeaderBlockEnd(
+    size_t header_bytes_parsed,
+    size_t /* compressed_header_bytes_parsed */) {
+  header_bytes_parsed_ = header_bytes_parsed;
+}
+
 }  // namespace test
 }  // namespace net

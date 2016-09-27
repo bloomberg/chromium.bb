@@ -89,7 +89,11 @@ bool HpackDecoder::HandleControlFrameHeadersComplete(size_t* compressed_len) {
   }
 
   if (handler_ != nullptr) {
-    handler_->OnHeaderBlockEnd(total_header_bytes_);
+    if (FLAGS_chromium_http2_flag_log_compressed_size) {
+      handler_->OnHeaderBlockEnd(total_header_bytes_, total_parsed_bytes_);
+    } else {
+      handler_->OnHeaderBlockEnd(total_header_bytes_);
+    }
   }
   headers_block_buffer_.clear();
   total_parsed_bytes_ = 0;
