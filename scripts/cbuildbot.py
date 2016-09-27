@@ -523,7 +523,8 @@ def _CreateParser():
   parser.add_remote_option('--repo-cache', type='path',
                            help='Directory from which to copy a repo checkout '
                                 'if our build root is empty, to avoid '
-                                'excessive GoB load with a fresh sync.')
+                                'excessive GoB load with a fresh sync.'
+                                'Deprecated in favor of --git-cache-dir.')
   group.add_remote_option('--no-buildbot-tags', action='store_false',
                           dest='enable_buildbot_tags', default=True,
                           help='Suppress buildbot specific tags from log '
@@ -624,6 +625,7 @@ def _CreateParser():
                                 'version rather than create or get latest. '
                                 'Examples: 4815.0.0-rc1, 4815.1.2'))
   group.add_remote_option('--git-cache-dir', dest='git_cache_dir', default=None,
+                          api=constants.REEXEC_API_GIT_CACHE_DIR,
                           help=('Specify the cache directory to store the '
                                 'project caches populated by the git-cache '
                                 'tool. Bootstrap the projects based on the git '
