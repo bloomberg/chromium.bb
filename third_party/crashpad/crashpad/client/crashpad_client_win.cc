@@ -487,8 +487,9 @@ void CrashpadClient::DumpWithoutCrash(const CONTEXT& context) {
 // static
 void CrashpadClient::DumpAndCrash(EXCEPTION_POINTERS* exception_pointers) {
   if (g_signal_exception == INVALID_HANDLE_VALUE) {
-    LOG(ERROR) << "haven't called UseHandler()";
-    return;
+    LOG(ERROR) << "haven't called UseHandler(), no dump captured";
+    const UINT kCrashUnregistered = 0xffff7003;
+    TerminateProcess(GetCurrentProcess(), kCrashUnregistered);
   }
 
   UnhandledExceptionHandler(exception_pointers);
