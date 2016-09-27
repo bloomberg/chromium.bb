@@ -40,15 +40,6 @@ class QuicClientPeer;
 class QuicSimpleClient : public QuicClientBase,
                          public QuicChromiumPacketReader::Visitor {
  public:
-  class ResponseListener {
-   public:
-    ResponseListener() {}
-    virtual ~ResponseListener() {}
-    virtual void OnCompleteResponse(QuicStreamId id,
-                                    const HttpResponseHeaders& response_headers,
-                                    const std::string& response_body) = 0;
-  };
-
   // Create a quic client, which will have events managed by an externally owned
   // EpollServer.
   QuicSimpleClient(IPEndPoint server_address,
@@ -104,32 +95,6 @@ class QuicSimpleClient : public QuicClientBase,
                 IPEndPoint local_address,
                 IPEndPoint peer_address) override;
 
-  // QuicSpdyStream::Visitor
-  void OnClose(QuicSpdyStream* stream) override;
-
-  void set_bind_to_address(const IPAddress& address) {
-    bind_to_address_ = address;
-  }
-
-  const IPAddress& bind_to_address() const { return bind_to_address_; }
-
-  void set_local_port(int local_port) { local_port_ = local_port; }
-
-  const IPEndPoint& server_address() const { return server_address_; }
-
-  const IPEndPoint& client_address() const { return client_address_; }
-
-  // Takes ownership of the listener.
-  void set_response_listener(ResponseListener* listener) {
-    response_listener_.reset(listener);
-  }
-
-  void set_store_response(bool val) { store_response_ = val; }
-
-  size_t latest_response_code() const;
-  const std::string& latest_response_headers() const;
-  const std::string& latest_response_body() const;
-
  protected:
   virtual QuicChromiumAlarmFactory* CreateQuicAlarmFactory();
   virtual QuicChromiumConnectionHelper* CreateQuicConnectionHelper();
@@ -150,23 +115,11 @@ class QuicSimpleClient : public QuicClientBase,
   //  Used by |helper_| to time alarms.
   QuicClock clock_;
 
-  // Address of the server.
-  const IPEndPoint server_address_;
-
   // Address of the client if the client is connected to the server.
   IPEndPoint client_address_;
 
-  // If initialized, the address to bind to.
-  IPAddress bind_to_address_;
-
-  // Local port to bind to. Initialize to 0.
-  int local_port_;
-
   // UDP socket connected to the server.
   std::unique_ptr<UDPClientSocket> socket_;
-
-  // Listens for full responses.
-  std::unique_ptr<ResponseListener> response_listener_;
 
   // Tracks if the client is initialized to connect.
   bool initialized_;
@@ -178,15 +131,6 @@ class QuicSimpleClient : public QuicClientBase,
   // True if the kernel supports SO_RXQ_OVFL, the number of packets dropped
   // because the socket would otherwise overflow.
   bool overflow_supported_;
-
-  // If true, store the latest response code, headers, and body.
-  bool store_response_;
-  // HTTP response code from most recent response.
-  size_t latest_response_code_;
-  // HTTP headers from most recent response.
-  std::string latest_response_headers_;
-  // Body of most recent response.
-  std::string latest_response_body_;
 
   // The log used for the sockets.
   NetLog net_log_;

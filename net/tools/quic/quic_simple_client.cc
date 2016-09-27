@@ -43,11 +43,11 @@ QuicSimpleClient::QuicSimpleClient(
                      CreateQuicConnectionHelper(),
                      CreateQuicAlarmFactory(),
                      std::move(proof_verifier)),
-      server_address_(server_address),
-      local_port_(0),
       initialized_(false),
       packet_reader_started_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  set_server_address(server_address);
+}
 
 QuicSimpleClient::QuicSimpleClient(
     IPEndPoint server_address,
@@ -61,11 +61,11 @@ QuicSimpleClient::QuicSimpleClient(
                      CreateQuicConnectionHelper(),
                      CreateQuicAlarmFactory(),
                      std::move(proof_verifier)),
-      server_address_(server_address),
-      local_port_(0),
       initialized_(false),
       packet_reader_started_(false),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  set_server_address(server_address);
+}
 
 QuicSimpleClient::~QuicSimpleClient() {
   if (connected()) {
@@ -93,16 +93,16 @@ bool QuicSimpleClient::CreateUDPSocket() {
       new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
                           &net_log_, NetLog::Source()));
 
-  int address_family = server_address_.GetSockAddrFamily();
-  if (bind_to_address_.size() != 0) {
-    client_address_ = IPEndPoint(bind_to_address_, local_port_);
+  int address_family = server_address().GetSockAddrFamily();
+  if (bind_to_address().size() != 0) {
+    client_address_ = IPEndPoint(bind_to_address(), local_port());
   } else if (address_family == AF_INET) {
-    client_address_ = IPEndPoint(IPAddress::IPv4AllZeros(), local_port_);
+    client_address_ = IPEndPoint(IPAddress::IPv4AllZeros(), local_port());
   } else {
-    client_address_ = IPEndPoint(IPAddress::IPv6AllZeros(), local_port_);
+    client_address_ = IPEndPoint(IPAddress::IPv6AllZeros(), local_port());
   }
 
-  int rc = socket->Connect(server_address_);
+  int rc = socket->Connect(server_address());
   if (rc != OK) {
     LOG(ERROR) << "Connect failed: " << ErrorToShortString(rc);
     return false;
@@ -195,7 +195,7 @@ void QuicSimpleClient::StartConnect() {
   }
 
   CreateQuicClientSession(new QuicConnection(
-      GetNextConnectionId(), server_address_, helper(), alarm_factory(),
+      GetNextConnectionId(), server_address(), helper(), alarm_factory(),
       writer(),
       /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
 
@@ -293,7 +293,7 @@ bool QuicSimpleClient::MigrateSocket(const IPAddress& new_host) {
     return false;
   }
 
-  bind_to_address_ = new_host;
+  set_bind_to_address(new_host);
   if (!CreateUDPSocket()) {
     return false;
   }
@@ -305,40 +305,6 @@ bool QuicSimpleClient::MigrateSocket(const IPAddress& new_host) {
   session()->connection()->SetQuicPacketWriter(writer, false);
 
   return true;
-}
-
-void QuicSimpleClient::OnClose(QuicSpdyStream* stream) {
-  DCHECK(stream != nullptr);
-  QuicSpdyClientStream* client_stream =
-      static_cast<QuicSpdyClientStream*>(stream);
-  HttpResponseInfo response;
-  SpdyHeadersToHttpResponse(client_stream->response_headers(), &response);
-  if (response_listener_.get() != nullptr) {
-    response_listener_->OnCompleteResponse(stream->id(), *response.headers,
-                                           client_stream->data());
-  }
-
-  // Store response headers and body.
-  if (store_response_) {
-    latest_response_code_ = client_stream->response_code();
-    response.headers->GetNormalizedHeaders(&latest_response_headers_);
-    latest_response_body_ = client_stream->data();
-  }
-}
-
-size_t QuicSimpleClient::latest_response_code() const {
-  LOG_IF(DFATAL, !store_response_) << "Response not stored!";
-  return latest_response_code_;
-}
-
-const string& QuicSimpleClient::latest_response_headers() const {
-  LOG_IF(DFATAL, !store_response_) << "Response not stored!";
-  return latest_response_headers_;
-}
-
-const string& QuicSimpleClient::latest_response_body() const {
-  LOG_IF(DFATAL, !store_response_) << "Response not stored!";
-  return latest_response_body_;
 }
 
 QuicConnectionId QuicSimpleClient::GenerateNewConnectionId() {

@@ -40,15 +40,6 @@ class QuicClient : public QuicClientBase,
                    public EpollCallbackInterface,
                    public ProcessPacketInterface {
  public:
-  class ResponseListener {
-   public:
-    ResponseListener() {}
-    virtual ~ResponseListener() {}
-    virtual void OnCompleteResponse(QuicStreamId id,
-                                    const SpdyHeaderBlock& response_headers,
-                                    const std::string& response_body) = 0;
-  };
-
   // Create a quic client, which will have events managed by an externally owned
   // EpollServer.
   QuicClient(IPEndPoint server_address,
@@ -68,7 +59,6 @@ class QuicClient : public QuicClientBase,
   // From QuicClientBase
   bool Initialize() override;
   bool WaitForEvents() override;
-  QuicSpdyClientStream* CreateReliableClientStream() override;
 
   // "Connect" to the QUIC server, including performing synchronous crypto
   // handshake.
@@ -109,9 +99,6 @@ class QuicClient : public QuicClientBase,
   void OnUnregistration(int fd, bool replaced) override {}
   void OnShutdown(EpollServer* eps, int fd) override {}
 
-  // QuicSpdyStream::Visitor
-  void OnClose(QuicSpdyStream* stream) override;
-
   // If the client has at least one UDP socket, return address of the latest
   // created one. Otherwise, return an empty socket address.
   const IPEndPoint GetLatestClientAddress() const;
@@ -119,33 +106,6 @@ class QuicClient : public QuicClientBase,
   // If the client has at least one UDP socket, return the latest created one.
   // Otherwise, return -1.
   int GetLatestFD() const;
-
-  void set_bind_to_address(const IPAddress& address) {
-    bind_to_address_ = address;
-  }
-
-  const IPAddress& bind_to_address() const { return bind_to_address_; }
-
-  void set_local_port(int local_port) { local_port_ = local_port; }
-
-  const IPEndPoint& server_address() const { return server_address_; }
-
-  void set_server_address(const IPEndPoint& server_address) {
-    server_address_ = server_address;
-  }
-
-  // Takes ownership of the std::listener.
-  void set_response_listener(ResponseListener* listener) {
-    response_listener_.reset(listener);
-  }
-
-  void set_store_response(bool val) { store_response_ = val; }
-
-  size_t latest_response_code() const;
-  const std::string& latest_response_headers() const;
-  const SpdyHeaderBlock& latest_response_header_block() const;
-  const std::string& latest_response_body() const;
-  const std::string& latest_response_trailers() const;
 
  protected:
   // Implements ProcessPacketInterface. This will be called for each received
@@ -179,24 +139,12 @@ class QuicClient : public QuicClientBase,
   // Actually clean up |fd|.
   void CleanUpUDPSocketImpl(int fd);
 
-  // Address of the server.
-  IPEndPoint server_address_;
-
-  // If initialized, the address to bind to.
-  IPAddress bind_to_address_;
-
-  // Local port to bind to. Initialize to 0.
-  int local_port_;
-
   // Listens for events on the client socket.
   EpollServer* epoll_server_;
 
   // Map mapping created UDP sockets to their addresses. By using linked hash
   // map, the order of socket creation can be recorded.
   linked_hash_map<int, IPEndPoint> fd_address_map_;
-
-  // Listens for full responses.
-  std::unique_ptr<ResponseListener> response_listener_;
 
   // Tracks if the client is initialized to connect.
   bool initialized_;
@@ -208,19 +156,6 @@ class QuicClient : public QuicClientBase,
   // True if the kernel supports SO_RXQ_OVFL, the number of packets dropped
   // because the socket would otherwise overflow.
   bool overflow_supported_;
-
-  // If true, store the latest response code, headers, and body.
-  bool store_response_;
-  // HTTP response code from most recent response.
-  int latest_response_code_;
-  // HTTP/2 headers from most recent response.
-  std::string latest_response_headers_;
-  // HTTP/2 header black from most recent response.
-  SpdyHeaderBlock latest_response_header_block_;
-  // Body of most recent response.
-  std::string latest_response_body_;
-  // HTTP/2 trailers from most recent response.
-  std::string latest_response_trailers_;
 
   // Point to a QuicPacketReader object on the heap. The reader allocates more
   // space than allowed on the stack.

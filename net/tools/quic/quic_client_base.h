@@ -34,6 +34,16 @@ class QuicServerId;
 class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
                        public QuicSpdyStream::Visitor {
  public:
+  // A ResponseListener is notified when a complete response is received.
+  class ResponseListener {
+   public:
+    ResponseListener() {}
+    virtual ~ResponseListener() {}
+    virtual void OnCompleteResponse(QuicStreamId id,
+                                    const SpdyHeaderBlock& response_headers,
+                                    const std::string& response_body) = 0;
+  };
+
   // The client uses these objects to keep track of any data to resend upon
   // receipt of a stateless reject.  Recall that the client API allows callers
   // to optimistically send data to the server prior to handshake-confirmation.
@@ -71,6 +81,9 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
                  std::unique_ptr<ProofVerifier> proof_verifier);
 
   ~QuicClientBase() override;
+
+  // QuicSpdyStream::Visitor
+  void OnClose(QuicSpdyStream* stream) override;
 
   // Initializes the client to create a connection. Should be called exactly
   // once before calling StartConnect or Connect. Returns true if the
@@ -221,6 +234,32 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   void MaybeAddQuicDataToResend(
       std::unique_ptr<QuicDataToResend> data_to_resend);
 
+  void set_store_response(bool val) { store_response_ = val; }
+
+  size_t latest_response_code() const;
+  const std::string& latest_response_headers() const;
+  const SpdyHeaderBlock& latest_response_header_block() const;
+  const std::string& latest_response_body() const;
+  const std::string& latest_response_trailers() const;
+
+  void set_response_listener(std::unique_ptr<ResponseListener> listener) {
+    response_listener_ = std::move(listener);
+  }
+
+  void set_bind_to_address(IPAddress address) { bind_to_address_ = address; }
+
+  IPAddress bind_to_address() const { return bind_to_address_; }
+
+  void set_local_port(int local_port) { local_port_ = local_port; }
+
+  int local_port() const { return local_port_; }
+
+  const IPEndPoint& server_address() const { return server_address_; }
+
+  void set_server_address(const IPEndPoint& server_address) {
+    server_address_ = server_address;
+  }
+
  protected:
   // Takes ownership of |connection|.
   virtual QuicClientSession* CreateQuicClientSession(
@@ -292,6 +331,15 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   // |server_id_| is a tuple (hostname, port, is_https) of the server.
   QuicServerId server_id_;
 
+  // Address of the server.
+  IPEndPoint server_address_;
+
+  // If initialized, the address to bind to.
+  IPAddress bind_to_address_;
+
+  // Local port to bind to. Initialize to 0.
+  int local_port_;
+
   // config_ and crypto_config_ contain configuration and cached state about
   // servers.
   QuicConfig config_;
@@ -343,6 +391,22 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   bool connected_or_attempting_connect_;
 
   QuicClientPushPromiseIndex push_promise_index_;
+
+  // If true, store the latest response code, headers, and body.
+  bool store_response_;
+  // HTTP response code from most recent response.
+  int latest_response_code_;
+  // HTTP/2 headers from most recent response.
+  std::string latest_response_headers_;
+  // HTTP/2 headers from most recent response.
+  SpdyHeaderBlock latest_response_header_block_;
+  // Body of most recent response.
+  std::string latest_response_body_;
+  // HTTP/2 trailers from most recent response.
+  std::string latest_response_trailers_;
+
+  // Listens for full responses.
+  std::unique_ptr<ResponseListener> response_listener_;
 
   // Keeps track of any data that must be resent upon a subsequent successful
   // connection, in case the client receives a stateless reject.

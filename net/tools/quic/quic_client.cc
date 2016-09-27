@@ -69,15 +69,13 @@ QuicClient::QuicClient(IPEndPoint server_address,
           new QuicEpollConnectionHelper(epoll_server, QuicAllocator::SIMPLE),
           new QuicEpollAlarmFactory(epoll_server),
           std::move(proof_verifier)),
-      server_address_(server_address),
-      local_port_(0),
       epoll_server_(epoll_server),
       initialized_(false),
       packets_dropped_(0),
       overflow_supported_(false),
-      store_response_(false),
-      latest_response_code_(-1),
-      packet_reader_(new QuicPacketReader()) {}
+      packet_reader_(new QuicPacketReader()) {
+  set_server_address(server_address);
+}
 
 QuicClient::~QuicClient() {
   if (connected()) {
@@ -123,19 +121,19 @@ bool QuicClient::Initialize() {
 
 bool QuicClient::CreateUDPSocketAndBind() {
   int fd =
-      QuicSocketUtils::CreateUDPSocket(server_address_, &overflow_supported_);
+      QuicSocketUtils::CreateUDPSocket(server_address(), &overflow_supported_);
   if (fd < 0) {
     return false;
   }
 
   IPEndPoint client_address;
-  if (bind_to_address_.size() != 0) {
-    client_address = IPEndPoint(bind_to_address_, local_port_);
-  } else if (server_address_.GetSockAddrFamily() == AF_INET) {
-    client_address = IPEndPoint(IPAddress::IPv4AllZeros(), local_port_);
+  if (bind_to_address().size() != 0) {
+    client_address = IPEndPoint(bind_to_address(), local_port());
+  } else if (server_address().GetSockAddrFamily() == AF_INET) {
+    client_address = IPEndPoint(IPAddress::IPv4AllZeros(), local_port());
   } else {
     IPAddress any6 = IPAddress::IPv6AllZeros();
-    client_address = IPEndPoint(any6, local_port_);
+    client_address = IPEndPoint(any6, local_port());
   }
 
   sockaddr_storage raw_addr;
@@ -208,7 +206,8 @@ void QuicClient::StartConnect() {
   }
 
   CreateQuicClientSession(new QuicConnection(
-      GetNextConnectionId(), server_address_, helper(), alarm_factory(), writer,
+      GetNextConnectionId(), server_address(), helper(), alarm_factory(),
+      writer,
       /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
 
   // Reset |writer()| after |session()| so that the old writer outlives the old
@@ -301,14 +300,6 @@ void QuicClient::SendRequestsAndWaitForResponse(
   }
 }
 
-QuicSpdyClientStream* QuicClient::CreateReliableClientStream() {
-  QuicSpdyClientStream* stream = QuicClientBase::CreateReliableClientStream();
-  if (stream) {
-    stream->set_visitor(this);
-  }
-  return stream;
-}
-
 bool QuicClient::WaitForEvents() {
   DCHECK(connected());
 
@@ -334,7 +325,7 @@ bool QuicClient::MigrateSocket(const IPAddress& new_host) {
 
   CleanUpUDPSocket(GetLatestFD());
 
-  bind_to_address_ = new_host;
+  set_bind_to_address(new_host);
   if (!CreateUDPSocketAndBind()) {
     return false;
   }
@@ -368,57 +359,6 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
   if (event->in_events & EPOLLERR) {
     DVLOG(1) << "Epollerr";
   }
-}
-
-void QuicClient::OnClose(QuicSpdyStream* stream) {
-  DCHECK(stream != nullptr);
-  QuicSpdyClientStream* client_stream =
-      static_cast<QuicSpdyClientStream*>(stream);
-
-  const SpdyHeaderBlock& response_headers = client_stream->response_headers();
-  if (response_listener_.get() != nullptr) {
-    response_listener_->OnCompleteResponse(stream->id(), response_headers,
-                                           client_stream->data());
-  }
-
-  // Store response headers and body.
-  if (store_response_) {
-    auto status = response_headers.find(":status");
-    if (status == response_headers.end() ||
-        !StringToInt(status->second, &latest_response_code_)) {
-      LOG(ERROR) << "Invalid response headers: no status code";
-    }
-    latest_response_headers_ = response_headers.DebugString();
-    latest_response_header_block_ = response_headers.Clone();
-    latest_response_body_ = client_stream->data();
-    latest_response_trailers_ =
-        client_stream->received_trailers().DebugString();
-  }
-}
-
-size_t QuicClient::latest_response_code() const {
-  QUIC_BUG_IF(!store_response_) << "Response not stored!";
-  return latest_response_code_;
-}
-
-const string& QuicClient::latest_response_headers() const {
-  QUIC_BUG_IF(!store_response_) << "Response not stored!";
-  return latest_response_headers_;
-}
-
-const SpdyHeaderBlock& QuicClient::latest_response_header_block() const {
-  QUIC_BUG_IF(!store_response_) << "Response not stored!";
-  return latest_response_header_block_;
-}
-
-const string& QuicClient::latest_response_body() const {
-  QUIC_BUG_IF(!store_response_) << "Response not stored!";
-  return latest_response_body_;
-}
-
-const string& QuicClient::latest_response_trailers() const {
-  QUIC_BUG_IF(!store_response_) << "Response not stored!";
-  return latest_response_trailers_;
 }
 
 QuicPacketWriter* QuicClient::CreateQuicPacketWriter() {
