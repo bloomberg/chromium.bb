@@ -1,33 +1,42 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 </head>
 <body>
 <script>
 var test_suborigin_options = [
-    [ "foobar 'unsafe-postmessage-send'", "Single option" ],
-    [ "foobar 'unsafe-postmessage-receive' 'unsafe-postmessage-send'", "Two options" ],
-    [ "foobar 'unsafe-cookies' 'unsafe-postmessage-receive' 'unsafe-postmessage-send'", "All options" ],
-    [ "foobar 'unknown'", "Unknown option" ],
-    [ "foobar 'unknown' 'unsafe-cookies'", "Unknown option with valid options" ],
+  [ 'foobar \'unsafe-postmessage-send\'', 'Single option' ],
+  [ 'foobar \'unsafe-postmessage-receive\' \'unsafe-postmessage-send\'',
+    'Two options' ],
+  [ 'foobar \'unsafe-cookies\' \'unsafe-postmessage-receive\' ' +
+    '\'unsafe-postmessage-send\'',
+    'All options' ],
+  [ 'foobar \'unknown\'', 'Unknown option' ],
+  [ 'foobar \'unknown\' \'unsafe-cookies\'',
+    'Unknown option with valid options' ],
 ];
 
 for (option in test_suborigin_options) {
-    async_test(t => {
-        var id = option;
-        var iframe;
-        window.addEventListener('message', t.step_func(event => {
+  async_test(t => {
+      var id = option;
+      var iframe;
+      window.addEventListener('message', t.step_func(event => {
             if (event.source != iframe.contentWindow)
-                return;
+              return;
 
-            assert_equals(event.data, "SecurityError: Blocked a frame with origin \"http://127.0.0.1:8000\" from accessing a cross-origin frame.");
+            assert_equals(event.data,
+              'SecurityError: Blocked a frame with origin ' +
+              '"http://127.0.0.1:8000" from accessing a cross-origin frame.');
             t.done();
-        }));
-        iframe = document.createElement('iframe');
-        iframe.setAttribute('src', "resources/reach-into-iframe.php?childsuborigin=" + test_suborigin_options[id][0]);
-        document.body.appendChild(iframe);
+          }));
+      iframe = document.createElement('iframe');
+      iframe.setAttribute('src',
+        'resources/reach-into-iframe.php?childsuborigin=' +
+        test_suborigin_options[id][0]);
+      document.body.appendChild(iframe);
     }, test_suborigin_options[option][1]);
 }
 </script>

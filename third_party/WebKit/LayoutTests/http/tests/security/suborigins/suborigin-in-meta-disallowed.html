@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta http-equiv="Suborigin" content="foobar">
-        <title>The &lt;meta&gt; tag does not allow a page to enter a suborigin.</title>
-        <script src="/resources/testharness.js"></script>
-        <script src="/resources/testharnessreport.js"></script>
-    </head>
-    <script>
-    window.onmessage = function(event) {
-        var secret;
-        try {
-            secret = document.getElementById('iframe').contentWindow.secret;
-        } catch(e) {
-            secret = '' + e;
-        }
-        assert_equals(secret, 'SecurityError: Blocked a frame with origin \"http://127.0.0.1:8000\" from accessing a cross-origin frame.');
-        done();
-    };
-    </script>
-    <iframe id="iframe" src="resources/post-to-parent.php?suborigin=foobar"></iframe>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Suborigin" content="foobar">
+<title>The &lt;meta&gt; tag does not allow a page to enter a suborigin.</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+</head>
+<script>
+window.onmessage = function(event) {
+  var secret;
+  try {
+    secret = document.getElementById('iframe').contentWindow.secret;
+  } catch(e) {
+    secret = '' + e;
+  }
+  assert_equals(secret,
+    'SecurityError: Blocked a frame with origin \"http://127.0.0.1:8000\" ' +
+    'from accessing a cross-origin frame.');
+  done();
+};
+</script>
+<iframe id="iframe" src="resources/post-to-parent.php?suborigin=foobar"></iframe>
 </html>

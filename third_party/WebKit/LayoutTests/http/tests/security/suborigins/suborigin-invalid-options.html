@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 </head>
 <body>
 <script>
 var test_suborigin_options = [
-    [ "foobar '", "Single quote as option" ],
-    [ "foobar 'unsafe-postmessage-send';", "Character after single policy" ],
-    [ "foobar 'unsafe-postmessage-send'; 'unsafe-cookies';", "Charecters after multiple policies" ],
-    [ "foobar; 'unsafe-postmessage-send'", "Character before policy" ],
-    [ "foobar 'b@d character$'", "Bad characters in option" ],
+  [ 'foobar \'', 'Single quote as option' ],
+  [ 'foobar \'unsafe-postmessage-send\';', 'Character after single policy' ],
+  [ 'foobar \'unsafe-postmessage-send\'; \'unsafe-cookies\';',
+    'Charecters after multiple policies' ],
+  [ 'foobar; \'unsafe-postmessage-send\'', 'Character before policy' ],
+  [ 'foobar \'b@d character$\'', 'Bad characters in option' ],
 ];
 
 for (option in test_suborigin_options) {
-    async_test(t => {
-        var id = option;
-        var iframe;
-        window.addEventListener('message', t.step_func(event => {
-            if (event.source != iframe.contentWindow)
-                return;
+  async_test(t => {
+      var id = option;
+      var iframe;
+      window.addEventListener('message', t.step_func(event => {
+          if (event.source != iframe.contentWindow)
+            return;
 
-            assert_equals(event.data, "I am a secret");
-            t.done();
+          assert_equals(event.data, 'I am a secret');
+          t.done();
         }));
-        iframe = document.createElement('iframe');
-        iframe.setAttribute('src', "resources/reach-into-iframe.php?childsuborigin=" + test_suborigin_options[id][0]);
-        document.body.appendChild(iframe);
+      iframe = document.createElement('iframe');
+      iframe.setAttribute('src',
+        'resources/reach-into-iframe.php?childsuborigin=' +
+        test_suborigin_options[id][0]);
+      document.body.appendChild(iframe);
     }, test_suborigin_options[option][1]);
 }
 </script>

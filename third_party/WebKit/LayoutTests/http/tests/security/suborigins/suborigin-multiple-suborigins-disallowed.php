@@ -1,11 +1,15 @@
+<?php
+header("Suborigin: foo, bar");
+?>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
+</head>
+<body>
 <script>
 if (window.testRunner)
   testRunner.dumpAsText();
 </script>
-<meta http-equiv="Suborigin" content="foobar">
-</head>
+</body>
 </html>

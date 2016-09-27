@@ -4,36 +4,37 @@ header("Suborigin: foobar 'unsafe-postmessage-receive'");
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>Validate that unsafe-postmessage-receive allows Suborigin to receive messages as physical origin via postMessage.</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 </head>
 <script>
-var iframe_test = async_test("Validate serialization of event.origin and event.suborigin in postMessage from an iframe");
-var window_test = async_test("Validate serialization of event.origin and event.suborigin in postMessage from a window");
+async_test(t => {
+    window.addEventListener('message', make_test(t, 'iframe'));
+  },
+  'Validate serialization of event.origin and event.suborigin in ' +
+  'postMessage from an iframe using \'unsafe-postmessage-receive\'');
+async_test(t => {
+    window.addEventListener('message', make_test(t, 'window'));
+  },
+  'Validate serialization of event.origin and event.suborigin in ' +
+  'postMessage from a window \'unsafe-postmessage-receive\'');
 
-window.onmessage = function(event) {
-    if (event.data.type === 'iframe') {
-        iframe_test.step(function() {
-            assert_equals(event.origin, "http-so://foobar1.127.0.0.1:8000");
-            assert_equals(event.suborigin, "foobar1");
-            assert_equals(event.data.suborigin,  "foobar1");
-            iframe_test.done();
-        });
-    } else if (event.data.type === 'window') {
-        window_test.step(function() {
-            assert_equals(event.origin, "http-so://foobar2.127.0.0.1:8000");
-            assert_equals(event.suborigin, "foobar2");
-            assert_equals(event.data.suborigin, "foobar2");
-            window_test.done();
-        });
-    } else {
-        assert_unreached();
-    }
-
+function make_test(t, name) {
+  return t.step_func(function(event) {
+      if (event.data.type === name) {
+        assert_equals(event.origin, 'http-so://' + name + '.127.0.0.1:8000');
+        assert_equals(event.suborigin, name);
+        assert_equals(event.data.suborigin,  name);
+        t.done();
+      }
+    });
 }
 
-window.open("resources/post-document-to-parent.php?suborigin=foobar2&type=window&target=http://127.0.0.1:8000");
+window.open(
+  'resources/post-document-to-parent.php?suborigin=window&type=window&' +
+  'target=http://127.0.0.1:8000');
 </script>
-<iframe src="resources/post-document-to-parent.php?suborigin=foobar1&type=iframe&target=http://127.0.0.1:8000"></iframe>
+<iframe src="resources/post-document-to-parent.php?suborigin=iframe&type=iframe&target=http://127.0.0.1:8000"></iframe>
 </html>

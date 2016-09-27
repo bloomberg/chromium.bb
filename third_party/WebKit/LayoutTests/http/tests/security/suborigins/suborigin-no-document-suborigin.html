@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>Validate lack of document.suborigin</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 </head>
 <script>
-assert_equals(document.suborigin, "", "document.suborigin should not exist when the page doesn't have a suborigin.");
+assert_equals(document.suborigin, '',
+  'document.suborigin should not exist when the page doesn\'t have a ' +
+  'suborigin.');
 done();
 </script>
 </html>

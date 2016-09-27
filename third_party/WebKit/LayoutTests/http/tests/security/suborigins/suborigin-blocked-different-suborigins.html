@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
 <title>Block contentWindow access between two different suborigins</title>
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 </head>
 <script>
 window.onmessage = function(event) {
-    assert_equals(event.data, '');
-    done();
+  assert_equals(event.data, '');
+  done();
 };
 </script>
 <iframe id="iframe" src="resources/iframe-reaches-into-parent.php?suborigin=foobar&childsuborigin=bazbar"></iframe>
