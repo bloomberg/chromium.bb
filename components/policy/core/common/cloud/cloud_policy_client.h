@@ -80,7 +80,10 @@ class POLICY_EXPORT CloudPolicyClient {
     virtual void OnClientError(CloudPolicyClient* client) = 0;
   };
 
-  // |service| and |signing_service| are weak pointers and it's the caller's
+  // If non-empty, |machine_id| and |machine_model| are passed to the server
+  // verbatim. As these reveal machine identity, they must only be used where
+  // this is appropriate (i.e. device policy, but not user policy). |service|
+  // and |signing_service| are weak pointers and it's the caller's
   // responsibility to keep them valid for the lifetime of CloudPolicyClient.
   // |verification_key_hash| contains an identifier telling the DMServer which
   // verification key to use. The |signing_service| is used to sign sensitive
