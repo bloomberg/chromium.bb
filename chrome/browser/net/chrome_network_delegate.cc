@@ -238,6 +238,8 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "456327 URLRequest::ChromeNetworkDelegate::OnBeforeURLRequest"));
 
+  data_use_measurement_.OnBeforeURLRequest(request);
+
   // TODO(joaodasilva): This prevents extensions from seeing URLs that are
   // blocked. However, an extension might redirect the request to another URL,
   // which is not blocked.

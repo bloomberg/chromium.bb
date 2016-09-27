@@ -56,7 +56,8 @@ class DataUseMeasurementTest : public testing::Test {
       request->SetUserData(
           data_use_measurement::DataUseUserData::kUserDataKey,
           new data_use_measurement::DataUseUserData(
-              data_use_measurement::DataUseUserData::SUGGESTIONS));
+              data_use_measurement::DataUseUserData::SUGGESTIONS,
+              data_use_measurement_.CurrentAppState()));
     } else {
       content::ResourceRequestInfo::AllocateForTesting(
           request.get(), content::RESOURCE_TYPE_MAIN_FRAME, nullptr, -2, -2, -2,

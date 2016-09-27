@@ -40,6 +40,9 @@ class DataUseMeasurement {
       const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder);
   ~DataUseMeasurement();
 
+  // Called before a request is sent.
+  void OnBeforeURLRequest(net::URLRequest* request);
+
   // Called right after a redirect response code was received for |request|.
   void OnBeforeRedirect(const net::URLRequest& request,
                         const GURL& new_location);
@@ -63,16 +66,14 @@ class DataUseMeasurement {
 #endif
 
  private:
+  friend class DataUseMeasurementTest;
+
   // Specifies that data is received or sent, respectively.
   enum TrafficDirection { DOWNSTREAM, UPSTREAM };
 
-  // The state of the application. Only available on Android and on other
-  // platforms it is always FOREGROUND.
-  enum AppState { BACKGROUND, FOREGROUND };
-
   // Returns the current application state (Foreground or Background). It always
   // returns Foreground if Chrome is not running on Android.
-  AppState CurrentAppState() const;
+  DataUseUserData::AppState CurrentAppState() const;
 
   // Makes the full name of the histogram. It is made from |prefix| and suffix
   // which is made based on network and application status. suffix is a string
@@ -80,8 +81,11 @@ class DataUseMeasurement {
   // ("Downstream") path, whether the app was in the "Foreground" or
   // "Background", and whether a "Cellular" or "WiFi" network was use. For
   // example, "Prefix.Upstream.Foreground.Cellular" is a possible output.
+  // |started_in_foreground| indicates if the request started when the app was
+  // in foreground.
   std::string GetHistogramName(const char* prefix,
                                TrafficDirection dir,
+                               bool started_in_foreground,
                                bool is_connection_cellular) const;
 
 #if defined(OS_ANDROID)
@@ -102,9 +106,12 @@ class DataUseMeasurement {
   // exchanged message, its direction (which is upstream or downstream) and
   // reports to two histogram groups. DataUse.MessageSize.ServiceName and
   // DataUse.Services.{Dimensions}. In the second one, services are buckets.
+  // |started_in_foreground| indicates if the request started when the app was
+  // in foreground.
   void ReportDataUsageServices(
       data_use_measurement::DataUseUserData::ServiceName service,
       TrafficDirection dir,
+      bool started_in_foreground,
       bool is_connection_cellular,
       int64_t message_size) const;
 

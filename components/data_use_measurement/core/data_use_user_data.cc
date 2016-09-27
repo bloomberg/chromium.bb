@@ -4,12 +4,32 @@
 
 #include "components/data_use_measurement/core/data_use_user_data.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/application_status_listener.h"
+#endif
+
 #include "net/url_request/url_fetcher.h"
 
 namespace data_use_measurement {
 
-DataUseUserData::DataUseUserData(ServiceName service_name)
-    : service_name_(service_name) {}
+namespace {
+
+DataUseUserData::AppState GetCurrentAppState() {
+#if defined(OS_ANDROID)
+  return base::android::ApplicationStatusListener::GetState() ==
+                 base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES
+             ? DataUseUserData::FOREGROUND
+             : DataUseUserData::BACKGROUND;
+#else
+  // If the OS is not Android, all the requests are considered Foreground.
+  return DataUseUserData::FOREGROUND;
+#endif
+}
+
+}  // namespace
+
+DataUseUserData::DataUseUserData(ServiceName service_name, AppState app_state)
+    : service_name_(service_name), app_state_(app_state) {}
 
 DataUseUserData::~DataUseUserData() {}
 
@@ -20,7 +40,7 @@ const void* const DataUseUserData::kUserDataKey =
 // static
 base::SupportsUserData::Data* DataUseUserData::Create(
     ServiceName service_name) {
-  return new DataUseUserData(service_name);
+  return new DataUseUserData(service_name, GetCurrentAppState());
 }
 
 // static

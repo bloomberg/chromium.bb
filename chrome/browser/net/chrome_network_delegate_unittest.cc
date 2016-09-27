@@ -91,7 +91,8 @@ std::unique_ptr<net::URLRequest> RequestURL(
     request->SetUserData(
         data_use_measurement::DataUseUserData::kUserDataKey,
         new data_use_measurement::DataUseUserData(
-            data_use_measurement::DataUseUserData::SUGGESTIONS));
+            data_use_measurement::DataUseUserData::SUGGESTIONS,
+            data_use_measurement::DataUseUserData::FOREGROUND));
   }
   request->Start();
   base::RunLoop().RunUntilIdle();
