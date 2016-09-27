@@ -25,24 +25,22 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+#include "wayland-util.h"
 #include "wayland-private.h"
 #include "test-runner.h"
 
 TEST(array_init)
 {
-	const int iterations = 4122; /* this is arbitrary */
-	int i;
+	struct wl_array array;
 
-	/* Init array an arbitray amount of times and verify the
-	 * defaults are sensible. */
+	/* fill with garbage to emulate uninitialized memory */
+	memset(&array, 0x57, sizeof array);
 
-	for (i = 0; i < iterations; i++) {
-		struct wl_array array;
-		wl_array_init(&array);
-		assert(array.size == 0);
-		assert(array.alloc == 0);
-		assert(array.data == 0);
-	}
+	wl_array_init(&array);
+	assert(array.size == 0);
+	assert(array.alloc == 0);
+	assert(array.data == 0);
 }
 
 TEST(array_release)
