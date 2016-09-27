@@ -512,5 +512,20 @@ TEST(TopControlsManagerTest, HideAndPeekBottomControls) {
   manager->ScrollEnd();
 }
 
+TEST(TopControlsManagerTest, HideAndImmediateShowKeepsControlsVisible) {
+  MockTopControlsManagerClient client(100.f, 0.5f, 0.5f);
+  client.SetBottomControlsHeight(100.f);
+  TopControlsManager* manager = client.manager();
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+
+  manager->UpdateTopControlsState(BOTH, HIDDEN, true);
+  EXPECT_TRUE(manager->has_animation());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+
+  manager->UpdateTopControlsState(BOTH, SHOWN, true);
+  EXPECT_FALSE(manager->has_animation());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+}
+
 }  // namespace
 }  // namespace cc

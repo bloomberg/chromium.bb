@@ -96,8 +96,10 @@ void TopControlsManager::UpdateTopControlsState(TopControlsState constraints,
   float final_shown_ratio = 1.f;
   if (constraints == HIDDEN || current == HIDDEN)
     final_shown_ratio = 0.f;
-  if (final_shown_ratio == TopControlsShownRatio())
+  if (final_shown_ratio == TopControlsShownRatio()) {
+    ResetAnimations();
     return;
+  }
 
   if (animate) {
     SetupAnimation(final_shown_ratio ? SHOWING_CONTROLS : HIDING_CONTROLS);
