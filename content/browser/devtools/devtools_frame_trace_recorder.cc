@@ -28,7 +28,7 @@ namespace content {
 namespace {
 
 static base::subtle::Atomic32 frame_data_count = 0;
-static int kMaximumFrameDataCount = 150;
+static int kMaximumFrameDataCount = 450;
 static size_t kFrameAreaLimit = 256000;
 
 class TraceableDevToolsScreenshot
