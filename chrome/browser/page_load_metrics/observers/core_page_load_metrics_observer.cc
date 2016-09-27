@@ -214,7 +214,8 @@ CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
 
 CorePageLoadMetricsObserver::~CorePageLoadMetricsObserver() {}
 
-void CorePageLoadMetricsObserver::OnCommit(
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+CorePageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   transition_ = navigation_handle->GetPageTransition();
   initiated_by_user_gesture_ = navigation_handle->HasUserGesture();
@@ -225,6 +226,7 @@ void CorePageLoadMetricsObserver::OnCommit(
     was_no_store_main_resource_ =
         headers->HasHeaderValue("cache-control", "no-store");
   }
+  return CONTINUE_OBSERVING;
 }
 
 void CorePageLoadMetricsObserver::OnDomContentLoadedEventStart(

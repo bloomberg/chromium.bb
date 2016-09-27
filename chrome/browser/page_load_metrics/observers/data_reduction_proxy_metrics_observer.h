@@ -51,7 +51,7 @@ class DataReductionProxyMetricsObserver
   ~DataReductionProxyMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
-  void OnCommit(content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnComplete(const page_load_metrics::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnDomContentLoadedEventStart(

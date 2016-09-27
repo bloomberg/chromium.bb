@@ -30,15 +30,15 @@ namespace {
 const char kDefaultTestUrl[] = "https://google.com/";
 const char kDefaultTestUrlAnchor[] = "https://google.com/#samepage";
 const char kDefaultTestUrl2[] = "https://whatever.com/";
+const char kFilteredCommitUrl[] = "https://whatever.com/ignore-on-commit";
 
 // Simple PageLoadMetricsObserver that copies observed PageLoadTimings into the
 // provided std::vector, so they can be analyzed by unit tests.
 class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
  public:
-  explicit TestPageLoadMetricsObserver(
-      std::vector<PageLoadTiming>* updated_timings,
-      std::vector<PageLoadTiming>* complete_timings,
-      std::vector<GURL>* observed_committed_urls)
+  TestPageLoadMetricsObserver(std::vector<PageLoadTiming>* updated_timings,
+                              std::vector<PageLoadTiming>* complete_timings,
+                              std::vector<GURL>* observed_committed_urls)
       : updated_timings_(updated_timings),
         complete_timings_(complete_timings),
         observed_committed_urls_(observed_committed_urls) {}
@@ -71,6 +71,29 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
   std::vector<GURL>* const observed_committed_urls_;
 };
 
+// Test PageLoadMetricsObserver that stops observing page loads with certain
+// substrings in the URL.
+class FilteringPageLoadMetricsObserver : public PageLoadMetricsObserver {
+ public:
+  explicit FilteringPageLoadMetricsObserver(
+      std::vector<GURL>* completed_filtered_urls)
+      : completed_filtered_urls_(completed_filtered_urls) {}
+
+  ObservePolicy OnCommit(content::NavigationHandle* handle) override {
+    const bool should_ignore =
+        handle->GetURL().spec().find("ignore-on-commit") != std::string::npos;
+    return should_ignore ? STOP_OBSERVING : CONTINUE_OBSERVING;
+  }
+
+  void OnComplete(const PageLoadTiming& timing,
+                  const PageLoadExtraInfo& extra_info) override {
+    completed_filtered_urls_->push_back(extra_info.committed_url);
+  }
+
+ private:
+  std::vector<GURL>* const completed_filtered_urls_;
+};
+
 class TestPageLoadMetricsEmbedderInterface
     : public PageLoadMetricsEmbedderInterface {
  public:
@@ -88,6 +111,8 @@ class TestPageLoadMetricsEmbedderInterface
   void RegisterObservers(PageLoadTracker* tracker) override {
     tracker->AddObserver(base::MakeUnique<TestPageLoadMetricsObserver>(
         &updated_timings_, &complete_timings_, &observed_committed_urls_));
+    tracker->AddObserver(base::MakeUnique<FilteringPageLoadMetricsObserver>(
+        &completed_filtered_urls_));
   }
   const std::vector<PageLoadTiming>& updated_timings() const {
     return updated_timings_;
@@ -101,10 +126,16 @@ class TestPageLoadMetricsEmbedderInterface
     return observed_committed_urls_;
   }
 
+  // committed URLs passed to FilteringPageLoadMetricsObserver::OnComplete().
+  const std::vector<GURL>& completed_filtered_urls() const {
+    return completed_filtered_urls_;
+  }
+
  private:
   std::vector<PageLoadTiming> updated_timings_;
   std::vector<PageLoadTiming> complete_timings_;
   std::vector<GURL> observed_committed_urls_;
+  std::vector<GURL> completed_filtered_urls_;
   bool is_prerendering_;
   bool is_ntp_;
 };
@@ -174,6 +205,10 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   const std::vector<GURL>& observed_committed_urls_from_on_start() const {
     return embedder_interface_->observed_committed_urls_from_on_start();
+  }
+
+  const std::vector<GURL>& completed_filtered_urls() const {
+    return embedder_interface_->completed_filtered_urls();
   }
 
  protected:
@@ -521,6 +556,29 @@ TEST_F(MetricsWebContentsObserverTest, FlushMetricsOnAppEnterBackground) {
       internal::kPageLoadCompletedAfterAppBackground, false, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kPageLoadCompletedAfterAppBackground, true, 1);
+}
+
+TEST_F(MetricsWebContentsObserverTest, StopObservingOnCommit) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+  ASSERT_TRUE(completed_filtered_urls().empty());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_TRUE(completed_filtered_urls().empty());
+
+  // kFilteredCommitUrl should stop observing in OnCommit, and thus should not
+  // reach OnComplete().
+  web_contents_tester->NavigateAndCommit(GURL(kFilteredCommitUrl));
+  ASSERT_EQ(std::vector<GURL>({GURL(kDefaultTestUrl)}),
+            completed_filtered_urls());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  ASSERT_EQ(std::vector<GURL>({GURL(kDefaultTestUrl)}),
+            completed_filtered_urls());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  ASSERT_EQ(std::vector<GURL>({GURL(kDefaultTestUrl), GURL(kDefaultTestUrl2)}),
+            completed_filtered_urls());
 }
 
 }  // namespace page_load_metrics

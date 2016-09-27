@@ -32,13 +32,15 @@ NoStatePrefetchPageLoadMetricsObserver::NoStatePrefetchPageLoadMetricsObserver(
 NoStatePrefetchPageLoadMetricsObserver::
     ~NoStatePrefetchPageLoadMetricsObserver() {}
 
-void NoStatePrefetchPageLoadMetricsObserver::OnCommit(
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+NoStatePrefetchPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   const net::HttpResponseHeaders* response_headers =
       navigation_handle->GetResponseHeaders();
 
   is_no_store_ = response_headers &&
                  response_headers->HasHeaderValue("cache-control", "no-store");
+  return CONTINUE_OBSERVING;
 }
 
 void NoStatePrefetchPageLoadMetricsObserver::OnFirstContentfulPaint(

@@ -91,7 +91,8 @@ DataReductionProxyMetricsObserver::DataReductionProxyMetricsObserver()
 DataReductionProxyMetricsObserver::~DataReductionProxyMetricsObserver() {}
 
 // Check if the NavigationData indicates anything about the DataReductionProxy.
-void DataReductionProxyMetricsObserver::OnCommit(
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataReductionProxyMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   // This BrowserContext is valid for the lifetime of
   // DataReductionProxyMetricsObserver. BrowserContext is always valid and
@@ -110,15 +111,16 @@ void DataReductionProxyMetricsObserver::OnCommit(
       static_cast<ChromeNavigationData*>(
           navigation_handle->GetNavigationData());
   if (!chrome_navigation_data)
-    return;
+    return STOP_OBSERVING;
   data_reduction_proxy::DataReductionProxyData* data =
       chrome_navigation_data->GetDataReductionProxyData();
   if (!data)
-    return;
+    return STOP_OBSERVING;
   data_ = data->DeepCopy();
   // DataReductionProxy page loads should only occur on HTTP navigations.
   DCHECK(!data_->used_data_reduction_proxy() ||
          !navigation_handle->GetURL().SchemeIsCryptographic());
+  return CONTINUE_OBSERVING;
 }
 
 void DataReductionProxyMetricsObserver::OnComplete(

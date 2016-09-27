@@ -19,7 +19,7 @@ class GoogleCaptchaObserver
   GoogleCaptchaObserver();
 
   // page_load_metrics::PageLoadMetricsObserver implementation:
-  void OnCommit(content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnRedirect(content::NavigationHandle* navigation_handle) override;
 
  private:

@@ -11,22 +11,21 @@
 
 namespace chrome {
 
-StaleWhileRevalidateMetricsObserver::StaleWhileRevalidateMetricsObserver()
-    : is_interesting_domain_(false) {}
+StaleWhileRevalidateMetricsObserver::StaleWhileRevalidateMetricsObserver() {}
 
-void StaleWhileRevalidateMetricsObserver::OnCommit(
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+StaleWhileRevalidateMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
-  is_interesting_domain_ = net::IsHostInStaleWhileRevalidateExperimentDomain(
-      navigation_handle->GetURL().host());
+  return net::IsHostInStaleWhileRevalidateExperimentDomain(
+             navigation_handle->GetURL().host())
+             ? CONTINUE_OBSERVING
+             : STOP_OBSERVING;
 }
 
 void StaleWhileRevalidateMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& extra_info) {
   using page_load_metrics::WasStartedInForegroundOptionalEventInForeground;
-
-  if (!is_interesting_domain_)
-    return;
 
   if (WasStartedInForegroundOptionalEventInForeground(timing.load_event_start,
                                                       extra_info)) {

@@ -164,7 +164,9 @@ class PageLoadMetricsObserver {
   // the navigation, but will be destroyed soon after this call. Don't hold a
   // reference to it.
   // Note that this does not get called for same page navigations.
-  virtual void OnCommit(content::NavigationHandle* navigation_handle) {}
+  // Observers that return STOP_OBSERVING will not receive any additional
+  // callbacks, and will be deleted after invocation of this method returns.
+  virtual ObservePolicy OnCommit(content::NavigationHandle* navigation_handle);
 
   // OnHidden is triggered when a page leaves the foreground. It does not fire
   // when a foreground page is permanently closed; for that, listen to

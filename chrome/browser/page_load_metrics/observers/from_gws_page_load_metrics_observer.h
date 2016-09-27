@@ -142,7 +142,7 @@ class FromGWSPageLoadMetricsObserver
   void OnStart(content::NavigationHandle* navigation_handle,
                const GURL& currently_committed_url,
                bool started_in_foreground) override;
-  void OnCommit(content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
 
   void OnDomContentLoadedEventStart(
       const page_load_metrics::PageLoadTiming& timing,

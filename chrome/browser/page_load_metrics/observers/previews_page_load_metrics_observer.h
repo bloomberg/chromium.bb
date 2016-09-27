@@ -40,7 +40,7 @@ class PreviewsPageLoadMetricsObserver
   ~PreviewsPageLoadMetricsObserver() override;
 
   // page_load_metrics::PageLoadMetricsObserver:
-  void OnCommit(content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnDomContentLoadedEventStart(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
@@ -59,9 +59,6 @@ class PreviewsPageLoadMetricsObserver
   // Whether |web_contents| is showing an offline pages preview. Overridden in
   // testing.
   virtual bool IsOfflinePreview(content::WebContents* web_contents) const;
-
-  // Whether this page load was an offline pages preview.
-  bool is_offline_preview_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsPageLoadMetricsObserver);
 };

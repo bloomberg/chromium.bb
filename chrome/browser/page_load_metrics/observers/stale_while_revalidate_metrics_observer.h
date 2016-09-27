@@ -15,16 +15,12 @@ class StaleWhileRevalidateMetricsObserver
  public:
   StaleWhileRevalidateMetricsObserver();
   // page_load_metrics::PageLoadMetricsObserver implementation:
-  void OnCommit(content::NavigationHandle* navigation_handle) override;
+  ObservePolicy OnCommit(content::NavigationHandle* navigation_handle) override;
   void OnComplete(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& extra_info) override;
 
  private:
-  // True if the committed URL is one of the domains of interest to the
-  // stale-while-revalidate experiment.
-  bool is_interesting_domain_;
-
   DISALLOW_COPY_AND_ASSIGN(StaleWhileRevalidateMetricsObserver);
 };
 

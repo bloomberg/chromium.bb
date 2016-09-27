@@ -412,7 +412,8 @@ void FromGWSPageLoadMetricsObserver::OnStart(
   logger_.SetProvisionalUrl(navigation_handle->GetURL());
 }
 
-void FromGWSPageLoadMetricsObserver::OnCommit(
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+FromGWSPageLoadMetricsObserver::OnCommit(
     content::NavigationHandle* navigation_handle) {
   // We'd like to also check navigation_handle->HasUserGesture() here, however
   // this signal is not carried forward for navigations that open links in new
@@ -427,6 +428,7 @@ void FromGWSPageLoadMetricsObserver::OnCommit(
           navigation_handle->GetPageTransition()));
 
   logger_.SetNavigationStart(navigation_handle->NavigationStart());
+  return CONTINUE_OBSERVING;
 }
 
 void FromGWSPageLoadMetricsObserver::OnDomContentLoadedEventStart(
