@@ -19,8 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-std::unique_ptr<TestingPrefServiceSimple> pref(new TestingPrefServiceSimple());
-
 namespace component_updater {
 
 class ChromeComponentUpdaterConfiguratorTest : public testing::Test {
