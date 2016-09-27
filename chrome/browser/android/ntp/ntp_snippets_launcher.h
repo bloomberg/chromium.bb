@@ -20,8 +20,7 @@ class NTPSnippetsLauncher : public ntp_snippets::NTPSnippetsScheduler {
 
   // ntp_snippets::NTPSnippetsScheduler implementation.
   bool Schedule(base::TimeDelta period_wifi,
-                base::TimeDelta period_fallback,
-                base::Time reschedule_time) override;
+                base::TimeDelta period_fallback) override;
   bool Unschedule() override;
 
  private:

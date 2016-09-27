@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.content.Context;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
-import com.google.android.gms.gcm.OneoffTask;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
 
@@ -18,8 +17,6 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeBackgroundService;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
-
-import java.util.Date;
 
 /**
  * The {@link SnippetsLauncher} singleton is created and owned by the C++ browser.
@@ -35,9 +32,8 @@ public class SnippetsLauncher {
     // TODO(treib): Remove this after M55.
     private static final String OBSOLETE_TASK_TAG_WIFI_CHARGING = "FetchSnippetsWifiCharging";
 
-    // Task tag for re-scheduling the snippet fetching. This is used to support different fetching
-    // intervals during different times of day.
-    public static final String TASK_TAG_RESCHEDULE = "RescheduleSnippets";
+    // TODO(treib): Remove this after M55.
+    private static final String OBSOLETE_TASK_TAG_RESCHEDULE = "RescheduleSnippets";
 
     // The instance of SnippetsLauncher currently owned by a C++ SnippetsLauncherAndroid, if any.
     // If it is non-null then the browser is running.
@@ -100,46 +96,27 @@ public class SnippetsLauncher {
     }
 
     private static PeriodicTask buildFetchTask(
-            String tag, long periodSeconds, int requiredNetwork, boolean requiresCharging) {
+            String tag, long periodSeconds, int requiredNetwork) {
         return new PeriodicTask.Builder()
                 .setService(ChromeBackgroundService.class)
                 .setTag(tag)
                 .setPeriod(periodSeconds)
                 .setRequiredNetwork(requiredNetwork)
-                .setRequiresCharging(requiresCharging)
                 .setPersisted(true)
                 .setUpdateCurrent(true)
                 .build();
     }
 
-    private static OneoffTask buildRescheduleTask(Date date) {
-        Date now = new Date();
-        // Convert from milliseconds to seconds, rounding up.
-        long delaySeconds = (date.getTime() - now.getTime() + 999) / 1000;
-        final long intervalSeconds = 15 * 60;
-        return new OneoffTask.Builder()
-                .setService(ChromeBackgroundService.class)
-                .setTag(TASK_TAG_RESCHEDULE)
-                .setExecutionWindow(delaySeconds, delaySeconds + intervalSeconds)
-                .setRequiredNetwork(Task.NETWORK_STATE_ANY)
-                .setRequiresCharging(false)
-                .setPersisted(true)
-                .setUpdateCurrent(true)
-                .build();
-    }
-
-    private void scheduleOrCancelFetchTask(
-            String taskTag, long period, int requiredNetwork, boolean requiresCharging) {
+    private void scheduleOrCancelFetchTask(String taskTag, long period, int requiredNetwork) {
         if (period > 0) {
-            mScheduler.schedule(buildFetchTask(taskTag, period, requiredNetwork, requiresCharging));
+            mScheduler.schedule(buildFetchTask(taskTag, period, requiredNetwork));
         } else {
             mScheduler.cancelTask(taskTag, ChromeBackgroundService.class);
         }
     }
 
     @CalledByNative
-    private boolean schedule(
-            long periodWifiSeconds, long periodFallbackSeconds, long rescheduleTime) {
+    private boolean schedule(long periodWifiSeconds, long periodFallbackSeconds) {
         if (!mGCMEnabled) return false;
         Log.d(TAG, "Scheduling: " + periodWifiSeconds + " " + periodFallbackSeconds);
         // Google Play Services may not be up to date, if the application was not installed through
@@ -147,14 +124,10 @@ public class SnippetsLauncher {
         try {
             mScheduler.cancelTask(OBSOLETE_TASK_TAG_WIFI_CHARGING, ChromeBackgroundService.class);
             scheduleOrCancelFetchTask(
-                    TASK_TAG_WIFI, periodWifiSeconds, Task.NETWORK_STATE_UNMETERED, false);
+                    TASK_TAG_WIFI, periodWifiSeconds, Task.NETWORK_STATE_UNMETERED);
             scheduleOrCancelFetchTask(
-                    TASK_TAG_FALLBACK, periodFallbackSeconds, Task.NETWORK_STATE_CONNECTED, false);
-            if (rescheduleTime > 0) {
-                mScheduler.schedule(buildRescheduleTask(new Date(rescheduleTime)));
-            } else {
-                mScheduler.cancelTask(TASK_TAG_RESCHEDULE, ChromeBackgroundService.class);
-            }
+                    TASK_TAG_FALLBACK, periodFallbackSeconds, Task.NETWORK_STATE_CONNECTED);
+            mScheduler.cancelTask(OBSOLETE_TASK_TAG_RESCHEDULE, ChromeBackgroundService.class);
         } catch (IllegalArgumentException e) {
             // Disable GCM for the remainder of this session.
             mGCMEnabled = false;
@@ -168,7 +141,7 @@ public class SnippetsLauncher {
     private boolean unschedule() {
         if (!mGCMEnabled) return false;
         Log.i(TAG, "Unscheduling");
-        return schedule(0, 0, 0);
+        return schedule(0, 0);
     }
 }
 

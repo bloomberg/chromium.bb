@@ -280,8 +280,7 @@ void NTPSnippetsService::RescheduleFetching() {
 
   if (ready()) {
     scheduler_->Schedule(GetFetchingIntervalWifi(),
-                         GetFetchingIntervalFallback(),
-                         /*reschedule_time=*/base::Time());
+                         GetFetchingIntervalFallback());
   } else {
     scheduler_->Unschedule();
   }

@@ -100,7 +100,7 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
   // Fetches snippets from the server for specified hosts (overriding
   // suggestions from the suggestion service) and adds them to the current ones.
   // Only called from chrome://snippets-internals, DO NOT USE otherwise!
-  // Ignored while |loaded()| is false.
+  // Ignored while ready() is false.
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
                               bool interactive_request);
 

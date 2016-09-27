@@ -13,16 +13,13 @@ namespace ntp_snippets {
 // Interface to schedule the periodic fetching of snippets.
 class NTPSnippetsScheduler {
  public:
-  // Schedule periodic fetching of snippets, with different period depending on
-  // network state, and also set up a delay after which the periods may change.
-  // The concrete implementation should call
-  // NTPSnippetsService::FetchSnippets once per period, and
-  // NTPSnippetsService::RescheduleFetching at |reschedule_time|.
-  // Any of the values can be zero to indicate that the corresponding task
+  // Schedule periodic fetching of snippets, with different periods depending on
+  // network state. The concrete implementation should call
+  // NTPSnippetsService::FetchSnippets once per period.
+  // Any of the periods can be zero to indicate that the corresponding task
   // should not be scheduled.
   virtual bool Schedule(base::TimeDelta period_wifi,
-                        base::TimeDelta period_fallback,
-                        base::Time reschedule_time) = 0;
+                        base::TimeDelta period_fallback) = 0;
 
   // Cancel any scheduled tasks.
   virtual bool Unschedule() = 0;

@@ -260,10 +260,9 @@ class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
 
 class MockScheduler : public NTPSnippetsScheduler {
  public:
-  MOCK_METHOD3(Schedule,
+  MOCK_METHOD2(Schedule,
                bool(base::TimeDelta period_wifi,
-                    base::TimeDelta period_fallback,
-                    base::Time reschedule_time));
+                    base::TimeDelta period_fallback));
   MOCK_METHOD0(Unschedule, bool());
 };
 
@@ -482,7 +481,7 @@ TEST_F(NTPSnippetsServiceTest, ScheduleOnStart) {
   // We should get two |Schedule| calls: The first when initialization
   // completes, the second one after the automatic (since the service doesn't
   // have any data yet) fetch finishes.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   auto service = MakeSnippetsService();
 
   // When we have no snippets are all, loading the service initiates a fetch.
@@ -494,12 +493,12 @@ TEST_F(NTPSnippetsServiceTest, RescheduleAfterSuccessfulFetch) {
   // We should get two |Schedule| calls: The first when initialization
   // completes, the second one after the automatic (since the service doesn't
   // have any data yet) fetch finishes.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   auto service = MakeSnippetsService();
   base::RunLoop().RunUntilIdle();
 
   // A successful fetch should trigger another |Schedule|.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _));
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
 }
 
@@ -507,12 +506,12 @@ TEST_F(NTPSnippetsServiceTest, DontRescheduleAfterFailedFetch) {
   // We should get two |Schedule| calls: The first when initialization
   // completes, the second one after the automatic (since the service doesn't
   // have any data yet) fetch finishes.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   auto service = MakeSnippetsService();
   base::RunLoop().RunUntilIdle();
 
   // A failed fetch should NOT trigger another |Schedule|.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(0);
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(0);
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSnippet()}));
 }
 
@@ -520,7 +519,7 @@ TEST_F(NTPSnippetsServiceTest, DontRescheduleBeforeInit) {
   // We should get two |Schedule| calls: The first when initialization
   // completes, the second one after the automatic (since the service doesn't
   // have any data yet) fetch finishes.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   // The |RescheduleFetching| call shouldn't do anything (in particular not
   // result in an |Unschedule|), since the service isn't initialized yet.
   EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
@@ -529,7 +528,7 @@ TEST_F(NTPSnippetsServiceTest, DontRescheduleBeforeInit) {
   WaitForSnippetsServiceInitialization();
 
   // Now that initialization has finished, |RescheduleFetching| should work.
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _, _));
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _));
   service->RescheduleFetching();
 }
 
@@ -537,11 +536,11 @@ TEST_F(NTPSnippetsServiceTest, RescheduleOnStateChange) {
   {
     InSequence s;
     // Initial startup.
-    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
+    EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
     // Service gets disabled.
     EXPECT_CALL(mock_scheduler(), Unschedule());
     // Service gets enabled again.
-    EXPECT_CALL(mock_scheduler(), Schedule(_, _, _)).Times(2);
+    EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   }
   auto service = MakeSnippetsService();
   ASSERT_TRUE(service->ready());

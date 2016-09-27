@@ -73,8 +73,7 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     /**
-     * Reschedules the fetching of snippets. Used to support different fetching intervals for
-     * different times of day.
+     * Reschedules the fetching of snippets.
      */
     public static void rescheduleFetching() {
         nativeRescheduleFetching();
