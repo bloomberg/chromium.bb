@@ -215,7 +215,7 @@
     "includes": [25500],
     "structures": [25600],
   },
-  "extensions/extensions_strings.grd": {
+  "extensions/strings/extensions_strings.grd": {
     "messages": [25650],
   },
   "extensions/shell/app_shell_resources.grd": {
