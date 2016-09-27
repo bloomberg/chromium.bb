@@ -350,28 +350,91 @@ wl_list_insert_list(struct wl_list *list, struct wl_list *other);
 	     pos = tmp,							\
 	     tmp = wl_container_of(pos->member.prev, tmp, member))
 
+/**
+ * \class wl_array
+ *
+ * Dynamic array
+ *
+ * A wl_array is a dynamic array that can only grow until released. It is
+ * intended for relatively small allocations whose size is variable or not known
+ * in advance. While construction of a wl_array does not require all elements to
+ * be of the same size, wl_array_for_each() does require all elements to have
+ * the same type and size.
+ *
+ */
 struct wl_array {
 	size_t size;
 	size_t alloc;
 	void *data;
 };
 
+/**
+ * Initializes the array.
+ *
+ * \param array Array to initialize
+ *
+ * \memberof wl_array
+ */
+void
+wl_array_init(struct wl_array *array);
+
+/**
+ * Releases the array data.
+ *
+ * \note Leaves the array in an invalid state.
+ *
+ * \param array Array whose data is to be released
+ *
+ * \memberof wl_array
+ */
+void
+wl_array_release(struct wl_array *array);
+
+/**
+ * Increases the size of the array by \p size bytes.
+ *
+ * \param array Array whose size is to be increased
+ * \param size Number of bytes to increase the size of the array by
+ *
+ * \return A pointer to the beginning of the newly appended space, or NULL when
+ *         resizing fails.
+ *
+ * \memberof wl_array
+ */
+void *
+wl_array_add(struct wl_array *array, size_t size);
+
+/**
+ * Copies the contents of \p source to \p array.
+ *
+ * \param array Destination array to copy to
+ * \param source Source array to copy from
+ *
+ * \return 0 on success, or -1 on failure
+ *
+ * \memberof wl_array
+ */
+int
+wl_array_copy(struct wl_array *array, struct wl_array *source);
+
+/**
+ * Iterates over an array.
+ *
+ * This macro expresses a for-each iterator for wl_array. It assigns each
+ * element in the array to \p pos, which can then be referenced in a trailing
+ * code block. \p pos must be a pointer to the array element type, and all
+ * array elements must be of the same type and size.
+ *
+ * \param pos Cursor that each array element will be assigned to
+ * \param array Array to iterate over
+ *
+ * \relates wl_array
+ * \sa wl_list_for_each()
+ */
 #define wl_array_for_each(pos, array)					\
 	for (pos = (array)->data;					\
 	     (const char *) pos < ((const char *) (array)->data + (array)->size); \
 	     (pos)++)
-
-void
-wl_array_init(struct wl_array *array);
-
-void
-wl_array_release(struct wl_array *array);
-
-void *
-wl_array_add(struct wl_array *array, size_t size);
-
-int
-wl_array_copy(struct wl_array *array, struct wl_array *source);
 
 typedef int32_t wl_fixed_t;
 
