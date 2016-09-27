@@ -148,6 +148,7 @@ struct MEDIA_EXPORT ProtectionSchemeInfo : Box {
 struct MEDIA_EXPORT MovieHeader : Box {
   DECLARE_BOX_METHODS(MovieHeader);
 
+  uint8_t version;
   uint64_t creation_time;
   uint64_t modification_time;
   uint32_t timescale;

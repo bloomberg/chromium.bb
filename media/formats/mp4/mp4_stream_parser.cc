@@ -420,7 +420,17 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         moov_->extends.header.fragment_duration, moov_->header.timescale);
     params.liveness = DemuxerStream::LIVENESS_RECORDED;
   } else if (moov_->header.duration > 0 &&
-             moov_->header.duration != std::numeric_limits<uint64_t>::max()) {
+             ((moov_->header.version == 0 &&
+               moov_->header.duration !=
+                   std::numeric_limits<uint32_t>::max()) ||
+              (moov_->header.version == 1 &&
+               moov_->header.duration !=
+                   std::numeric_limits<uint64_t>::max()))) {
+    // In ISO/IEC 14496-12:2012, 8.2.2.3: "If the duration cannot be determined
+    // then duration is set to all 1s."
+    // The duration field is either 32-bit or 64-bit depending on the version in
+    // MovieHeaderBox. We interpret not 0 and not all 1's here as "known
+    // duration".
     params.duration =
         TimeDeltaFromRational(moov_->header.duration, moov_->header.timescale);
     params.liveness = DemuxerStream::LIVENESS_RECORDED;
@@ -429,6 +439,10 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
     // real-time, such as used in live streaming, it is not likely that the
     // fragment_duration is known in advance and this (mehd) box may be
     // omitted."
+
+    // We have an unknown duration (neither any mvex fragment_duration nor moov
+    // duration value indicated a known duration, above.)
+
     // TODO(wolenetz): Investigate gating liveness detection on timeline_offset
     // when it's populated. See http://crbug.com/312699
     params.liveness = DemuxerStream::LIVENESS_LIVE;

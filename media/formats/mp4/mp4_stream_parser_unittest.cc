@@ -290,6 +290,17 @@ TEST_F(MP4StreamParserTest, Reinitialization) {
                                  512));
 }
 
+TEST_F(MP4StreamParserTest, UnknownDuration_V0_AllBitsSet) {
+  EXPECT_MEDIA_LOG(VideoCodecLog("avc1.64001F"));
+  EXPECT_MEDIA_LOG(AudioCodecLog("mp4a.40.2"));
+  InitializeParser();
+  // 32 bit duration field in mvhd box, all bits set.
+  ParseMP4File(
+      "bear-1280x720-av_frag-initsegment-mvhd_version_0-mvhd_duration_bits_all_"
+      "set.mp4",
+      512);
+}
+
 TEST_F(MP4StreamParserTest, MPEG2_AAC_LC) {
   InSequence s;
   std::set<int> audio_object_types;
