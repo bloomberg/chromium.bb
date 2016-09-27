@@ -427,6 +427,8 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
 #define ZCR_REMOTE_SURFACE_V1_UNPIN	15
 #define ZCR_REMOTE_SURFACE_V1_SET_SYSTEM_MODAL	16
 #define ZCR_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL	17
+#define ZCR_REMOTE_SURFACE_V1_SET_MOVING	18
+#define ZCR_REMOTE_SURFACE_V1_UNSET_MOVING	19
 
 /**
  * @ingroup iface_zcr_remote_surface_v1
@@ -500,6 +502,14 @@ zcr_remote_surface_v1_add_listener(struct zcr_remote_surface_v1 *zcr_remote_surf
  * @ingroup iface_zcr_remote_surface_v1
  */
 #define ZCR_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL_SINCE_VERSION	1
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_SET_MOVING_SINCE_VERSION	2
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ */
+#define ZCR_REMOTE_SURFACE_V1_UNSET_MOVING_SINCE_VERSION	2
 
 /** @ingroup iface_zcr_remote_surface_v1 */
 static inline void
@@ -812,6 +822,35 @@ zcr_remote_surface_v1_unset_system_modal(struct zcr_remote_surface_v1 *zcr_remot
 {
 	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
 			 ZCR_REMOTE_SURFACE_V1_UNSET_SYSTEM_MODAL);
+}
+
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ *
+ * Notifies the compositor when an interactive, user-driven move of the
+ * surface starts. The compositor may assume that subsequent
+ * set_window_geometry requests are position updates until it receives a
+ * unset_moving request.
+ */
+static inline void
+zcr_remote_surface_v1_set_moving(struct zcr_remote_surface_v1 *zcr_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+			 ZCR_REMOTE_SURFACE_V1_SET_MOVING);
+}
+
+/**
+ * @ingroup iface_zcr_remote_surface_v1
+ *
+ * Notifies the compositor when an interactive, user-driven move of the
+ * surface stops. The compositor may choose to stop the move regardless
+ * of this request.
+ */
+static inline void
+zcr_remote_surface_v1_unset_moving(struct zcr_remote_surface_v1 *zcr_remote_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_remote_surface_v1,
+			 ZCR_REMOTE_SURFACE_V1_UNSET_MOVING);
 }
 
 #define ZCR_NOTIFICATION_SURFACE_V1_DESTROY	0

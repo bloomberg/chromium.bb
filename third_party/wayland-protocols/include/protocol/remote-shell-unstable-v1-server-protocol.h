@@ -538,6 +538,27 @@ struct zcr_remote_surface_v1_interface {
 	 */
 	void (*unset_system_modal)(struct wl_client *client,
 				   struct wl_resource *resource);
+	/**
+	 * interactive move started
+	 *
+	 * Notifies the compositor when an interactive, user-driven move
+	 * of the surface starts. The compositor may assume that subsequent
+	 * set_window_geometry requests are position updates until it
+	 * receives a unset_moving request.
+	 * @since 2
+	 */
+	void (*set_moving)(struct wl_client *client,
+			   struct wl_resource *resource);
+	/**
+	 * interactive move stopped
+	 *
+	 * Notifies the compositor when an interactive, user-driven move
+	 * of the surface stops. The compositor may choose to stop the move
+	 * regardless of this request.
+	 * @since 2
+	 */
+	void (*unset_moving)(struct wl_client *client,
+			     struct wl_resource *resource);
 };
 
 #define ZCR_REMOTE_SURFACE_V1_CLOSE	0
