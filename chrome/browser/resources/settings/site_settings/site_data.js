@@ -76,14 +76,9 @@ Polymer({
     this.$.list.render();
   },
 
-  /**
-   * Returns whether remove all should be shown.
-   * @param {!Array<!CookieDataSummaryItem>} sites The sites list to use to
-   *     determine whether the button should be visible.
-   * @private
-   */
-  removeAllIsVisible_: function(sites) {
-    return sites.length > 0;
+  /** @private */
+  isRemoveButtonVisible_: function(sites, renderedItemCount) {
+    return renderedItemCount != 0;
   },
 
   /**

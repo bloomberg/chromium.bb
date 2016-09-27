@@ -36,7 +36,8 @@
     </style>
     <div class="layout horizontal">
       <div class="flex site-header">$i18n{siteSettingsCookieHeader}</div>
-      <div class="secondary-action" hidden$="[[!removeAllIsVisible_(sites)]]">
+      <div class="secondary-action"
+          hidden$="[[!isRemoveButtonVisible_(sites, renderedItemCount)]]">
         <paper-button on-tap="onDeleteMultipleSites_" class="secondary-button">
           [[computeRemoveLabel_(filterString_)]]
         </paper-button>
@@ -47,7 +48,8 @@
     </div>
 
     <div class="list-frame vertical-list">
-      <template is="dom-repeat" id="list" items="[[sites]]" filter="showItem_">
+      <template is="dom-repeat" id="list" items="[[sites]]" filter="showItem_"
+          rendered-item-count="{{renderedItemCount}}">
         <div class="list-item layout horizontal">
           <div class="layout horizontal flex" on-tap="onSiteTap_" actionable>
             <div class="favicon-image site"
@@ -61,7 +63,6 @@
         </div>
       </template>
     </div>
-
   </template>
   <script src="cookie_info.js"></script>
   <script src="cookie_tree_node.js"></script>
