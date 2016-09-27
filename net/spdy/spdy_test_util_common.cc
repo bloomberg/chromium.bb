@@ -540,7 +540,7 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
 
   base::WeakPtr<SpdySession> spdy_session =
       http_session->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          key, std::move(connection), net_log, OK, is_secure);
+          key, std::move(connection), net_log, is_secure);
   // Failure is reported asynchronously.
   EXPECT_TRUE(spdy_session);
   EXPECT_TRUE(HasSpdySession(http_session->spdy_session_pool(), key));
@@ -643,7 +643,7 @@ base::WeakPtr<SpdySession> CreateFakeSpdySessionHelper(
           expected_status == OK ? ERR_IO_PENDING : expected_status)));
   base::WeakPtr<SpdySession> spdy_session =
       pool->CreateAvailableSessionFromSocket(
-          key, std::move(handle), NetLogWithSource(), OK, true /* is_secure */);
+          key, std::move(handle), NetLogWithSource(), true /* is_secure */);
   // Failure is reported asynchronously.
   EXPECT_TRUE(spdy_session);
   EXPECT_TRUE(HasSpdySession(pool, key));

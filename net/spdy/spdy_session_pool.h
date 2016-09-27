@@ -68,10 +68,7 @@ class NET_EXPORT SpdySessionPool
   // not already be a session for the given key.
   //
   // |is_secure| can be false for testing or when SPDY is configured
-  // to work with non-secure sockets. If |is_secure| is true,
-  // |certificate_error_code| indicates that the certificate error
-  // encountered when connecting the SSL socket, with OK meaning there
-  // was no error.
+  // to work with non-secure sockets.
   //
   // Returns the new SpdySession. Note that the SpdySession begins reading from
   // |connection| on a subsequent event loop iteration, so it may be closed
@@ -80,7 +77,6 @@ class NET_EXPORT SpdySessionPool
       const SpdySessionKey& key,
       std::unique_ptr<ClientSocketHandle> connection,
       const NetLogWithSource& net_log,
-      int certificate_error_code,
       bool is_secure);
 
   // Return an available session for |key| that has an unclaimed push stream for

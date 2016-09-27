@@ -78,7 +78,6 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
     const SpdySessionKey& key,
     std::unique_ptr<ClientSocketHandle> connection,
     const NetLogWithSource& net_log,
-    int certificate_error_code,
     bool is_secure) {
   TRACE_EVENT0("net", "SpdySessionPool::CreateAvailableSessionFromSocket");
 
@@ -91,8 +90,7 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
       session_max_recv_window_size_, stream_max_recv_window_size_, time_func_,
       proxy_delegate_, net_log.net_log()));
 
-  new_session->InitializeWithSocket(std::move(connection), this, is_secure,
-                                    certificate_error_code);
+  new_session->InitializeWithSocket(std::move(connection), this, is_secure);
 
   base::WeakPtr<SpdySession> available_session = new_session->GetWeakPtr();
   sessions_.insert(new_session.release());

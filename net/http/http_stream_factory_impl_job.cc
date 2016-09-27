@@ -1204,7 +1204,7 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   spdy_session =
       session_->spdy_session_pool()->CreateAvailableSessionFromSocket(
-          spdy_session_key, std::move(connection_), net_log_, OK, using_ssl_);
+          spdy_session_key, std::move(connection_), net_log_, using_ssl_);
 
   if (!spdy_session->HasAcceptableTransportSecurity()) {
     spdy_session->CloseSessionOnError(

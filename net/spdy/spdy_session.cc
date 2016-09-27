@@ -644,7 +644,6 @@ SpdySession::SpdySession(const SpdySessionKey& spdy_session_key,
       in_flight_write_frame_type_(DATA),
       in_flight_write_frame_size_(0),
       is_secure_(false),
-      certificate_error_code_(OK),
       availability_state_(STATE_AVAILABLE),
       read_state_(READ_STATE_DO_READ),
       write_state_(WRITE_STATE_IDLE),
@@ -707,23 +706,19 @@ SpdySession::~SpdySession() {
 void SpdySession::InitializeWithSocket(
     std::unique_ptr<ClientSocketHandle> connection,
     SpdySessionPool* pool,
-    bool is_secure,
-    int certificate_error_code) {
+    bool is_secure) {
   CHECK(!in_io_loop_);
   DCHECK_EQ(availability_state_, STATE_AVAILABLE);
   DCHECK_EQ(read_state_, READ_STATE_DO_READ);
   DCHECK_EQ(write_state_, WRITE_STATE_IDLE);
   DCHECK(!connection_);
 
-  DCHECK(certificate_error_code == OK ||
-         certificate_error_code < ERR_IO_PENDING);
   // TODO(akalin): Check connection->is_initialized() instead. This
   // requires re-working CreateFakeSpdySession(), though.
   DCHECK(connection->socket());
 
   connection_ = std::move(connection);
   is_secure_ = is_secure;
-  certificate_error_code_ = certificate_error_code;
 
   session_send_window_size_ = kDefaultInitialWindowSize;
   session_recv_window_size_ = kDefaultInitialWindowSize;
@@ -772,10 +767,6 @@ int SpdySession::GetPushStream(const GURL& url,
   if (availability_state_ == STATE_DRAINING)
     return ERR_CONNECTION_CLOSED;
 
-  Error err = TryAccessStream(url);
-  if (err != OK)
-    return err;
-
   *stream = GetActivePushStream(url);
   if (*stream) {
     DCHECK_LT(streams_pushed_and_claimed_count_, streams_pushed_count_);
@@ -784,23 +775,8 @@ int SpdySession::GetPushStream(const GURL& url,
   return OK;
 }
 
-// {,Try}CreateStream() and TryAccessStream() can be called with
-// |in_io_loop_| set if a stream is being created in response to
-// another being closed due to received data.
-
-Error SpdySession::TryAccessStream(const GURL& url) {
-  if (is_secure_ && certificate_error_code_ != OK &&
-      (url.SchemeIs("https") || url.SchemeIs("wss"))) {
-    RecordProtocolErrorHistogram(
-        PROTOCOL_ERROR_REQUEST_FOR_SECURE_CONTENT_OVER_INSECURE_SESSION);
-    DoDrainSession(
-        static_cast<Error>(certificate_error_code_),
-        "Tried to get SPDY stream for secure content over an unauthenticated "
-        "session.");
-    return ERR_SPDY_PROTOCOL_ERROR;
-  }
-  return OK;
-}
+// {,Try}CreateStream() can be called with |in_io_loop_| set if a stream is
+// being created in response to another being closed due to received data.
 
 int SpdySession::TryCreateStream(
     const base::WeakPtr<SpdyStreamRequest>& request,
@@ -812,10 +788,6 @@ int SpdySession::TryCreateStream(
 
   if (availability_state_ == STATE_DRAINING)
     return ERR_CONNECTION_CLOSED;
-
-  Error err = TryAccessStream(request->url());
-  if (err != OK)
-    return err;
 
   if ((active_streams_.size() + created_streams_.size() - num_pushed_streams_ <
        max_concurrent_streams_)) {
@@ -841,13 +813,6 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
 
   if (availability_state_ == STATE_DRAINING)
     return ERR_CONNECTION_CLOSED;
-
-  Error err = TryAccessStream(request.url());
-  if (err != OK) {
-    // This should have been caught in TryCreateStream().
-    NOTREACHED();
-    return err;
-  }
 
   DCHECK(connection_->socket());
   UMA_HISTOGRAM_BOOLEAN("Net.SpdySession.CreateStreamWithSocketConnected",

@@ -333,16 +333,12 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |pool| is the SpdySessionPool that owns us.  Its lifetime must
   // strictly be greater than |this|.
   //
-  // |certificate_error_code| must either be OK or less than
-  // ERR_IO_PENDING.
-  //
   // The session begins reading from |connection| on a subsequent event loop
   // iteration, so the SpdySession may close immediately afterwards if the first
   // read of |connection| fails.
   void InitializeWithSocket(std::unique_ptr<ClientSocketHandle> connection,
                             SpdySessionPool* pool,
-                            bool is_secure,
-                            int certificate_error_code);
+                            bool is_secure);
 
   // Check to see if this SPDY session can support an additional domain.
   // If the session is un-authenticated, then this call always returns true.
@@ -644,12 +640,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     WRITE_STATE_DO_WRITE,
     WRITE_STATE_DO_WRITE_COMPLETE,
   };
-
-  // Checks whether a stream for the given |url| can be created or
-  // retrieved from the set of unclaimed push streams. Returns OK if
-  // so. Otherwise, the session is closed and an error <
-  // ERR_IO_PENDING is returned.
-  Error TryAccessStream(const GURL& url);
 
   // Called by SpdyStreamRequest to start a request to create a
   // stream. If OK is returned, then |stream| will be filled in with a
@@ -1077,9 +1067,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Flag if we're using an SSL connection for this SpdySession.
   bool is_secure_;
-
-  // Certificate error code when using a secure connection.
-  int certificate_error_code_;
 
   // Spdy Frame state.
   std::unique_ptr<BufferedSpdyFramer> buffered_spdy_framer_;
