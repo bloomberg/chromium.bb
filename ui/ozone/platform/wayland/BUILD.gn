@@ -26,6 +26,8 @@ source_set("wayland") {
     "wayland_connection.h",
     "wayland_object.cc",
     "wayland_object.h",
+    "wayland_output.cc",
+    "wayland_output.h",
     "wayland_pointer.cc",
     "wayland_pointer.h",
     "wayland_surface_factory.cc",

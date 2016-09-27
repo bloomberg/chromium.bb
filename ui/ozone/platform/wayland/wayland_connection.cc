@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_util.h"
+#include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
 static_assert(XDG_SHELL_VERSION_CURRENT == 5, "Unsupported xdg-shell version");
@@ -105,6 +107,12 @@ void WaylandConnection::RemoveWindow(gfx::AcceleratedWidget widget) {
   window_map_.erase(widget);
 }
 
+WaylandOutput* WaylandConnection::PrimaryOutput() const {
+  if (!output_list_.size())
+    return nullptr;
+  return output_list_.front().get();
+}
+
 void WaylandConnection::OnDispatcherListChanged() {
   StartProcessingEvents();
 }
@@ -125,6 +133,11 @@ void WaylandConnection::OnFileCanReadWithoutBlocking(int fd) {
 }
 
 void WaylandConnection::OnFileCanWriteWithoutBlocking(int fd) {}
+
+const std::vector<std::unique_ptr<WaylandOutput>>&
+WaylandConnection::GetOutputList() const {
+  return output_list_;
+}
 
 // static
 void WaylandConnection::Global(void* data,
@@ -169,6 +182,18 @@ void WaylandConnection::Global(void* data,
                            connection);
     xdg_shell_use_unstable_version(connection->shell_.get(),
                                    XDG_SHELL_VERSION_CURRENT);
+  } else if (base::EqualsCaseInsensitiveASCII(interface, "wl_output")) {
+    wl::Object<wl_output> output = wl::Bind<wl_output>(registry, name, 1);
+    if (!output) {
+      LOG(ERROR) << "Failed to bind to wl_output global";
+      return;
+    }
+
+    if (!connection->output_list_.empty())
+      NOTIMPLEMENTED() << "Multiple screens support is not implemented";
+
+    connection->output_list_.push_back(
+        base::WrapUnique(new WaylandOutput(output.release())));
   }
 
   connection->ScheduleFlush();

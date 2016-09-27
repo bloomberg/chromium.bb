@@ -12,6 +12,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/gfx/geometry/rect.h"
 
 struct wl_client;
 struct wl_display;
@@ -21,6 +22,7 @@ struct wl_resource;
 
 namespace wl {
 
+// Base class for managing the life cycle of server objects.
 class ServerObject {
  public:
   ServerObject(wl_resource* resource);
@@ -36,6 +38,7 @@ class ServerObject {
   DISALLOW_COPY_AND_ASSIGN(ServerObject);
 };
 
+// Manage xdg_surface for providing desktop UI.
 class MockXdgSurface : public ServerObject {
  public:
   MockXdgSurface(wl_resource* resource);
@@ -53,6 +56,7 @@ class MockXdgSurface : public ServerObject {
   DISALLOW_COPY_AND_ASSIGN(MockXdgSurface);
 };
 
+// Manage client surface
 class MockSurface : public ServerObject {
  public:
   MockSurface(wl_resource* resource);
@@ -84,6 +88,8 @@ struct GlobalDeleter {
   void operator()(wl_global* global);
 };
 
+// Base class for managing the life cycle of global objects:
+// It presents a global object used to emit global events to all clients.
 class Global {
  public:
   Global(const wl_interface* interface,
@@ -91,12 +97,16 @@ class Global {
          uint32_t version);
   virtual ~Global();
 
+  // Create a global object.
   bool Initialize(wl_display* display);
+  // Called from Bind() to send additional information to clients.
+  virtual void OnBind() {}
 
   // The first bound resource to this global, which is usually all that is
   // useful when testing a simple client.
   wl_resource* resource() { return resource_; }
 
+  // Send the global event to clients.
   static void Bind(wl_client* client,
                    void* data,
                    uint32_t version,
@@ -114,6 +124,7 @@ class Global {
   DISALLOW_COPY_AND_ASSIGN(Global);
 };
 
+// Manage wl_compositor object.
 class MockCompositor : public Global {
  public:
   MockCompositor();
@@ -127,6 +138,22 @@ class MockCompositor : public Global {
   DISALLOW_COPY_AND_ASSIGN(MockCompositor);
 };
 
+// Handle wl_output object.
+class MockOutput : public Global {
+ public:
+  MockOutput();
+  ~MockOutput() override;
+  void SetRect(const gfx::Rect rect) { rect_ = rect; }
+  const gfx::Rect GetRect() { return rect_; }
+  void OnBind() override;
+
+ private:
+  gfx::Rect rect_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockOutput);
+};
+
+// Manage wl_seat object: group of input devices.
 class MockSeat : public Global {
  public:
   MockSeat();
@@ -138,6 +165,7 @@ class MockSeat : public Global {
   DISALLOW_COPY_AND_ASSIGN(MockSeat);
 };
 
+// Manage xdg_shell object.
 class MockXdgShell : public Global {
  public:
   MockXdgShell();
@@ -180,6 +208,7 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
 
   MockSeat* seat() { return &seat_; }
   MockXdgShell* xdg_shell() { return &xdg_shell_; }
+  MockOutput* output() { return &output_; }
 
  private:
   void DoPause();
@@ -197,7 +226,9 @@ class FakeServer : public base::Thread, base::MessagePumpLibevent::Watcher {
   base::WaitableEvent pause_event_;
   base::WaitableEvent resume_event_;
 
+  // Represent Wayland global objects
   MockCompositor compositor_;
+  MockOutput output_;
   MockSeat seat_;
   MockXdgShell xdg_shell_;
 

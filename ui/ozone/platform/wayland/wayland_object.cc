@@ -37,6 +37,9 @@ void (*ObjectTraits<wl_compositor>::deleter)(wl_compositor*) =
 const wl_interface* ObjectTraits<wl_display>::interface = &wl_display_interface;
 void (*ObjectTraits<wl_display>::deleter)(wl_display*) = &wl_display_disconnect;
 
+const wl_interface* ObjectTraits<wl_output>::interface = &wl_output_interface;
+void (*ObjectTraits<wl_output>::deleter)(wl_output*) = &wl_output_destroy;
+
 const wl_interface* ObjectTraits<wl_pointer>::interface = &wl_pointer_interface;
 void (*ObjectTraits<wl_pointer>::deleter)(wl_pointer*) = &delete_pointer;
 

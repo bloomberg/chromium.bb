@@ -9,8 +9,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_output.h"
 
 namespace ui {
+
+class OutputObserver : public WaylandOutput::Observer {
+ public:
+  explicit OutputObserver(const base::Closure& closure) : closure_(closure) {}
+
+  void OnOutputReadyForUse() override {
+    if (!closure_.is_null())
+      closure_.Run();
+  }
+
+ private:
+  const base::Closure closure_;
+};
 
 TEST(WaylandConnectionTest, UseUnstableVersion) {
   base::MessageLoopForUI message_loop;
@@ -39,6 +53,30 @@ TEST(WaylandConnectionTest, Ping) {
 
   xdg_shell_send_ping(server.xdg_shell()->resource(), 1234);
   EXPECT_CALL(*server.xdg_shell(), Pong(1234));
+
+  server.Resume();
+  base::RunLoop().RunUntilIdle();
+  server.Pause();
+}
+
+TEST(WaylandConnectionTest, Output) {
+  base::MessageLoopForUI message_loop;
+  wl::FakeServer server;
+  ASSERT_TRUE(server.Start());
+  server.output()->SetRect(gfx::Rect(0, 0, 800, 600));
+  WaylandConnection connection;
+  ASSERT_TRUE(connection.Initialize());
+  connection.StartProcessingEvents();
+
+  base::RunLoop run_loop;
+  OutputObserver observer(run_loop.QuitClosure());
+  connection.PrimaryOutput()->SetObserver(&observer);
+  run_loop.Run();
+
+  ASSERT_TRUE(connection.GetOutputList().size() == 1);
+  WaylandOutput* output = connection.PrimaryOutput();
+  ASSERT_TRUE(output->Geometry().width() == 800);
+  ASSERT_TRUE(output->Geometry().height() == 600);
 
   server.Resume();
   base::RunLoop().RunUntilIdle();

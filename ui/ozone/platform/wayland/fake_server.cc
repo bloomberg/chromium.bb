@@ -18,6 +18,7 @@ namespace wl {
 namespace {
 
 const uint32_t kCompositorVersion = 4;
+const uint32_t kOutputVersion = 2;
 const uint32_t kSeatVersion = 4;
 const uint32_t kXdgShellVersion = 1;
 
@@ -278,6 +279,7 @@ void Global::Bind(wl_client* client,
     global->resource_ = resource;
   wl_resource_set_implementation(resource, global->implementation_, global,
                                  &Global::OnResourceDestroyed);
+  global->OnBind();
 }
 
 // static
@@ -294,6 +296,21 @@ MockCompositor::~MockCompositor() {}
 
 void MockCompositor::AddSurface(std::unique_ptr<MockSurface> surface) {
   surfaces_.push_back(std::move(surface));
+}
+
+MockOutput::MockOutput()
+    : Global(&wl_output_interface, nullptr, kOutputVersion) {}
+
+MockOutput::~MockOutput() {}
+
+// Notify clients of the change for output position.
+void MockOutput::OnBind() {
+  const char* kUnknownMake = "unknown";
+  const char* kUnknownModel = "unknown";
+  wl_output_send_geometry(resource(), rect_.x(), rect_.y(), 0, 0, 0,
+                          kUnknownMake, kUnknownModel, 0);
+  wl_output_send_mode(resource(), WL_OUTPUT_MODE_CURRENT, rect_.width(),
+                      rect_.height(), 0);
 }
 
 MockSeat::MockSeat() : Global(&wl_seat_interface, &seat_impl, kSeatVersion) {}
@@ -336,6 +353,8 @@ bool FakeServer::Start() {
   if (wl_display_init_shm(display_.get()) < 0)
     return false;
   if (!compositor_.Initialize(display_.get()))
+    return false;
+  if (!output_.Initialize(display_.get()))
     return false;
   if (!seat_.Initialize(display_.get()))
     return false;
