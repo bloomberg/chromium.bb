@@ -13467,30 +13467,43 @@ static void installV8TestObjectTemplate(v8::Isolate* isolate, const DOMWrapperWo
     V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partiallyRuntimeEnabledOverloadedVoidMethodMethodConfiguration);
 }
 
+void V8TestObject::installFeatureName(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface)
+{
+    v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestObject::wrapperTypeInfo.domTemplate(isolate, world);
+    v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
+    ALLOW_UNUSED_LOCAL(signature);
+    const V8DOMConfiguration::AccessorConfiguration accessororiginTrialEnabledLongAttributeConfiguration = \
+        {"originTrialEnabledLongAttribute", TestObjectV8Internal::originTrialEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::originTrialEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessororiginTrialEnabledLongAttributeConfiguration);
+    const V8DOMConfiguration::AccessorConfiguration accessorunscopableOriginTrialEnabledLongAttributeConfiguration = \
+        {"unscopableOriginTrialEnabledLongAttribute", TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessorunscopableOriginTrialEnabledLongAttributeConfiguration);
+    const V8DOMConfiguration::MethodConfiguration methodOrigintrialenabledvoidmethodConfiguration = {"originTrialEnabledVoidMethod", TestObjectV8Internal::originTrialEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+    V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodOrigintrialenabledvoidmethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration methodPerworldbindingsorigintrialenabledvoidmethodConfiguration = {"perWorldBindingsOriginTrialEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
+    V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodPerworldbindingsorigintrialenabledvoidmethodConfiguration);
+}
+
 void V8TestObject::installFeatureName(ScriptState* scriptState, v8::Local<v8::Object> instance)
 {
-    v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestObject::wrapperTypeInfo.domTemplate(scriptState->isolate(), scriptState->world());
-    v8::Local<v8::Signature> signature = v8::Signature::New(scriptState->isolate(), interfaceTemplate);
-    ALLOW_UNUSED_LOCAL(signature);
     V8PerContextData* perContextData = V8PerContextData::from(scriptState->context());
     v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestObject::wrapperTypeInfo);
     v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestObject::wrapperTypeInfo);
     ALLOW_UNUSED_LOCAL(interface);
-    const V8DOMConfiguration::AccessorConfiguration accessororiginTrialEnabledLongAttributeConfiguration = \
-        {"originTrialEnabledLongAttribute", TestObjectV8Internal::originTrialEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::originTrialEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-    V8DOMConfiguration::installAccessor(scriptState->isolate(), scriptState->world(), instance, prototype, interface, signature, accessororiginTrialEnabledLongAttributeConfiguration);
-    const V8DOMConfiguration::AccessorConfiguration accessorunscopableOriginTrialEnabledLongAttributeConfiguration = \
-        {"unscopableOriginTrialEnabledLongAttribute", TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-    V8DOMConfiguration::installAccessor(scriptState->isolate(), scriptState->world(), instance, prototype, interface, signature, accessorunscopableOriginTrialEnabledLongAttributeConfiguration);
-    const V8DOMConfiguration::MethodConfiguration methodOrigintrialenabledvoidmethodConfiguration = {"originTrialEnabledVoidMethod", TestObjectV8Internal::originTrialEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-    V8DOMConfiguration::installMethod(scriptState->isolate(), scriptState->world(), instance, prototype, interface, signature, methodOrigintrialenabledvoidmethodConfiguration);
-    const V8DOMConfiguration::MethodConfiguration methodPerworldbindingsorigintrialenabledvoidmethodConfiguration = {"perWorldBindingsOriginTrialEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype};
-    V8DOMConfiguration::installMethod(scriptState->isolate(), scriptState->world(), instance, prototype, interface, signature, methodPerworldbindingsorigintrialenabledvoidmethodConfiguration);
+    installFeatureName(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
 }
 
 void V8TestObject::installFeatureName(ScriptState* scriptState)
 {
     installFeatureName(scriptState, v8::Local<v8::Object>());
+}
+
+void V8TestObject::installFeatureName1(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface)
+{
+    const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst1Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1", 1, 0, V8DOMConfiguration::ConstantTypeShort};
+    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature1OriginTrialEnabledConst1Configuration);
+    const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst2Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2", 2, 0, V8DOMConfiguration::ConstantTypeShort};
+    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature1OriginTrialEnabledConst2Configuration);
 }
 
 void V8TestObject::installFeatureName1(ScriptState* scriptState, v8::Local<v8::Object> instance)
@@ -13499,15 +13512,20 @@ void V8TestObject::installFeatureName1(ScriptState* scriptState, v8::Local<v8::O
     v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestObject::wrapperTypeInfo);
     v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestObject::wrapperTypeInfo);
     ALLOW_UNUSED_LOCAL(interface);
-    const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst1Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST1", 1, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(scriptState->isolate(), interface, prototype, constantFeature1OriginTrialEnabledConst1Configuration);
-    const V8DOMConfiguration::ConstantConfiguration constantFeature1OriginTrialEnabledConst2Configuration = {"FEATURE1_ORIGIN_TRIAL_ENABLED_CONST2", 2, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(scriptState->isolate(), interface, prototype, constantFeature1OriginTrialEnabledConst2Configuration);
+    installFeatureName1(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
 }
 
 void V8TestObject::installFeatureName1(ScriptState* scriptState)
 {
     installFeatureName1(scriptState, v8::Local<v8::Object>());
+}
+
+void V8TestObject::installFeatureName2(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface)
+{
+    const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst1Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1", 3, 0, V8DOMConfiguration::ConstantTypeShort};
+    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature2OriginTrialEnabledConst1Configuration);
+    const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst2Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2", 4, 0, V8DOMConfiguration::ConstantTypeShort};
+    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature2OriginTrialEnabledConst2Configuration);
 }
 
 void V8TestObject::installFeatureName2(ScriptState* scriptState, v8::Local<v8::Object> instance)
@@ -13516,15 +13534,18 @@ void V8TestObject::installFeatureName2(ScriptState* scriptState, v8::Local<v8::O
     v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestObject::wrapperTypeInfo);
     v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestObject::wrapperTypeInfo);
     ALLOW_UNUSED_LOCAL(interface);
-    const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst1Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST1", 3, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(scriptState->isolate(), interface, prototype, constantFeature2OriginTrialEnabledConst1Configuration);
-    const V8DOMConfiguration::ConstantConfiguration constantFeature2OriginTrialEnabledConst2Configuration = {"FEATURE2_ORIGIN_TRIAL_ENABLED_CONST2", 4, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(scriptState->isolate(), interface, prototype, constantFeature2OriginTrialEnabledConst2Configuration);
+    installFeatureName2(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
 }
 
 void V8TestObject::installFeatureName2(ScriptState* scriptState)
 {
     installFeatureName2(scriptState, v8::Local<v8::Object>());
+}
+
+void V8TestObject::installFeatureName3(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface)
+{
+    const V8DOMConfiguration::ConstantConfiguration constantFeature3OriginTrialEnabledConst1Configuration = {"FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1", 5, 0, V8DOMConfiguration::ConstantTypeShort};
+    V8DOMConfiguration::installConstant(isolate, interface, prototype, constantFeature3OriginTrialEnabledConst1Configuration);
 }
 
 void V8TestObject::installFeatureName3(ScriptState* scriptState, v8::Local<v8::Object> instance)
@@ -13533,8 +13554,7 @@ void V8TestObject::installFeatureName3(ScriptState* scriptState, v8::Local<v8::O
     v8::Local<v8::Object> prototype = perContextData->prototypeForType(&V8TestObject::wrapperTypeInfo);
     v8::Local<v8::Function> interface = perContextData->constructorForType(&V8TestObject::wrapperTypeInfo);
     ALLOW_UNUSED_LOCAL(interface);
-    const V8DOMConfiguration::ConstantConfiguration constantFeature3OriginTrialEnabledConst1Configuration = {"FEATURE3_ORIGIN_TRIAL_ENABLED_CONST1", 5, 0, V8DOMConfiguration::ConstantTypeShort};
-    V8DOMConfiguration::installConstant(scriptState->isolate(), interface, prototype, constantFeature3OriginTrialEnabledConst1Configuration);
+    installFeatureName3(scriptState->isolate(), scriptState->world(), instance, prototype, interface);
 }
 
 void V8TestObject::installFeatureName3(ScriptState* scriptState)

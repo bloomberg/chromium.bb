@@ -497,15 +497,7 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         m_workerReportingProxy.didCreateWorkerGlobalScope(globalScope());
         m_workerInspectorController = WorkerInspectorController::create(this);
 
-        // TODO(nhiroki): Handle a case where the script controller fails to
-        // initialize the context.
         globalScope()->scriptController()->initializeContextIfNeeded();
-
-        // If Origin Trials have been registered before the V8 context was ready,
-        // then inject them into the context now
-        OriginTrialContext* originTrialContext = OriginTrialContext::from(globalScope());
-        if (originTrialContext)
-            originTrialContext->initializePendingFeatures();
 
         setThreadState(lock, ThreadState::Running);
     }

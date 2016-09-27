@@ -35,23 +35,14 @@
 #include "bindings/core/v8/V8File.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
-#include "bindings/modules/v8/V8DedicatedWorkerGlobalScopePartial.h"
 #include "bindings/modules/v8/V8IDBCursor.h"
 #include "bindings/modules/v8/V8IDBCursorWithValue.h"
 #include "bindings/modules/v8/V8IDBDatabase.h"
 #include "bindings/modules/v8/V8IDBIndex.h"
 #include "bindings/modules/v8/V8IDBKeyRange.h"
 #include "bindings/modules/v8/V8IDBObjectStore.h"
-#include "bindings/modules/v8/V8InstallEvent.h"
-#include "bindings/modules/v8/V8NavigatorPartial.h"
-#include "bindings/modules/v8/V8ServiceWorkerGlobalScope.h"
-#include "bindings/modules/v8/V8SharedWorkerGlobalScopePartial.h"
-#include "bindings/modules/v8/V8WindowPartial.h"
-#include "bindings/modules/v8/V8WorkerNavigatorPartial.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/origin_trials/OriginTrialContext.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"
@@ -570,78 +561,4 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState, const IDBValue*
 }
 #endif
 
-namespace {
-InstallOriginTrialsFunction s_originalInstallOriginTrialsFunction = nullptr;
-}
-
-void installOriginTrialsForModules(ScriptState* scriptState)
-{
-    // TODO(iclelland): Generate all of this logic at compile-time, based on the
-    // configuration of origin trial enabled attibutes and interfaces in IDL
-    // files. (crbug.com/615060)
-    (*s_originalInstallOriginTrialsFunction)(scriptState);
-
-    v8::Local<v8::Context> context = scriptState->context();
-    ExecutionContext* executionContext = toExecutionContext(context);
-    OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext, OriginTrialContext::DontCreateIfNotExists);
-    if (!originTrialContext)
-        return;
-
-    ScriptState::Scope scope(scriptState);
-    v8::Local<v8::Object> global = context->Global();
-
-    if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage"))) {
-        if (executionContext->isDocument()) {
-            V8WindowPartial::installDurableStorage(scriptState, global);
-            V8NavigatorPartial::installDurableStorage(scriptState);
-        } else if (executionContext->isSharedWorkerGlobalScope()) {
-            V8SharedWorkerGlobalScopePartial::installDurableStorage(scriptState, global);
-            V8WorkerNavigatorPartial::installDurableStorage(scriptState);
-        } else if (executionContext->isDedicatedWorkerGlobalScope()) {
-            V8DedicatedWorkerGlobalScopePartial::installDurableStorage(scriptState, global);
-            V8WorkerNavigatorPartial::installDurableStorage(scriptState);
-        } else if (executionContext->isServiceWorkerGlobalScope()) {
-            V8ServiceWorkerGlobalScope::installDurableStorage(scriptState, global);
-            V8WorkerNavigatorPartial::installDurableStorage(scriptState);
-        }
-    }
-
-    if (!originTrialContext->featureBindingsInstalled("WebBluetooth") && (RuntimeEnabledFeatures::webBluetoothEnabled() || originTrialContext->isFeatureEnabled("WebBluetooth"))) {
-        if (executionContext->isDocument()) {
-            // For global interfaces e.g. BluetoothUUID.
-            V8WindowPartial::installWebBluetooth(scriptState, global);
-            // For navigator interfaces e.g. navigator.bluetooth.
-            V8NavigatorPartial::installWebBluetooth(scriptState);
-        }
-    }
-
-    if (!originTrialContext->featureBindingsInstalled("WebShare") && (RuntimeEnabledFeatures::webShareEnabled() || originTrialContext->isFeatureEnabled("WebShare"))) {
-        if (executionContext->isDocument()) {
-            // For navigator interfaces e.g. navigator.share.
-            V8NavigatorPartial::installWebShare(scriptState);
-        }
-    }
-
-    if (!originTrialContext->featureBindingsInstalled("WebUSB") && (RuntimeEnabledFeatures::webUSBEnabled() || originTrialContext->isFeatureEnabled("WebUSB"))) {
-        if (executionContext->isDocument()) {
-            // For global interfaces e.g. USBInterface.
-            V8WindowPartial::installWebUSB(scriptState, global);
-            // For navigator interfaces e.g. navigator.usb.
-            V8NavigatorPartial::installWebUSB(scriptState);
-        }
-    }
-
-
-    if (!originTrialContext->featureBindingsInstalled("ForeignFetch") && (RuntimeEnabledFeatures::foreignFetchEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
-        if (executionContext->isServiceWorkerGlobalScope()) {
-            V8ServiceWorkerGlobalScope::installForeignFetch(scriptState, global);
-            V8InstallEvent::installForeignFetch(scriptState);
-        }
-    }
-}
-
-void registerInstallOriginTrialsForModules()
-{
-    s_originalInstallOriginTrialsFunction = setInstallOriginTrialsFunction(&installOriginTrialsForModules);
-}
 } // namespace blink

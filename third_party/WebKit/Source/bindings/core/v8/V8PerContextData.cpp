@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/V8PerContextData.h"
 
+#include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
@@ -129,6 +130,9 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
         if (!v8CallBoolean(prototypeObject->SetPrototype(currentContext, m_errorPrototype.newLocal(m_isolate))))
             return v8::Local<v8::Function>();
     }
+
+    // Origin Trials
+    installConditionalFeatures(type, ScriptState::from(currentContext), prototypeObject, interfaceObject);
 
     m_constructorMap.Set(type, interfaceObject);
 

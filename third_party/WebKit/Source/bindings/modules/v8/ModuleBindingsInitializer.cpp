@@ -5,8 +5,8 @@
 #include "bindings/modules/v8/ModuleBindingsInitializer.h"
 
 #include "bindings/core/v8/V8PerIsolateData.h"
+#include "bindings/modules/v8/ConditionalFeaturesForModules.h"
 #include "bindings/modules/v8/SerializedScriptValueForModulesFactory.h"
-#include "bindings/modules/v8/V8BindingForModules.h"
 
 namespace blink {
 
@@ -16,7 +16,7 @@ void initPartialInterfacesInModules();
 
 void ModuleBindingsInitializer::init()
 {
-    registerInstallOriginTrialsForModules();
+    registerInstallConditionalFeaturesForModules();
     initPartialInterfacesInModules();
     SerializedScriptValueFactory::initialize(new SerializedScriptValueForModulesFactory);
 }

@@ -4,6 +4,7 @@
 
 #include "core/origin_trials/OriginTrialContext.h"
 
+#include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/WindowProxy.h"
@@ -156,7 +157,6 @@ void OriginTrialContext::addToken(const String& token)
         m_tokens.append(token);
         validateToken(token);
     }
-    initializePendingFeatures();
 }
 
 void OriginTrialContext::addTokens(const Vector<String>& tokens)
@@ -166,36 +166,6 @@ void OriginTrialContext::addTokens(const Vector<String>& tokens)
             m_tokens.append(token);
             validateToken(token);
         }
-    }
-    initializePendingFeatures();
-}
-
-void OriginTrialContext::initializePendingFeatures()
-{
-    // TODO(iclelland): Factor this logic out to methods on the various
-    // execution contexts
-    if (m_host->isDocument()) {
-        LocalFrame* frame = toDocument(m_host.get())->frame();
-        if (!frame)
-            return;
-        ScriptState* state = ScriptState::forMainWorld(frame);
-        if (!state)
-            return;
-        if (!frame->script().windowProxy(state->world())->isContextInitialized())
-            return;
-        v8::HandleScope handleScope(state->isolate());
-        installOriginTrials(state);
-    } else if (m_host->isWorkerGlobalScope()) {
-        WorkerOrWorkletScriptController* scriptController = toWorkerGlobalScope(m_host.get())->scriptController();
-        if (!scriptController)
-            return;
-        ScriptState* state = scriptController->getScriptState();
-        if (!state)
-            return;
-        if (!scriptController->isContextInitialized())
-            return;
-        v8::HandleScope handleScope(state->isolate());
-        installOriginTrials(state);
     }
 }
 

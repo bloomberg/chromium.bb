@@ -25,6 +25,7 @@
 
 #include "core/testing/v8/WebCoreTestSupport.h"
 
+#include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8OriginTrialsTest.h"
@@ -41,7 +42,7 @@ using namespace blink;
 namespace WebCoreTestSupport {
 
 namespace {
-blink::InstallOriginTrialsFunction s_originalInstallOriginTrialsFunction = nullptr;
+blink::InstallConditionalFeaturesFunction s_originalInstallConditionalFeaturesFunction = nullptr;
 }
 
 v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context)
@@ -58,6 +59,11 @@ v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context> context)
 
 void injectInternalsObject(v8::Local<v8::Context> context)
 {
+    // Set conditional features installation function to |installConditionalFeaturesForTests|
+    if (!s_originalInstallConditionalFeaturesFunction) {
+        s_originalInstallConditionalFeaturesFunction = setInstallConditionalFeaturesFunction(installConditionalFeaturesForTests);
+    }
+
     ScriptState* scriptState = ScriptState::from(context);
     ScriptState::Scope scope(scriptState);
     v8::Local<v8::Object> global = scriptState->context()->Global();
@@ -67,43 +73,18 @@ void injectInternalsObject(v8::Local<v8::Context> context)
 
     global->Set(scriptState->context(), v8AtomicString(scriptState->isolate(), Internals::internalsId), internals).ToChecked();
 
-    // Set origin trials installation function to |installOriginTrialsForTests|
-    if (!s_originalInstallOriginTrialsFunction) {
-        s_originalInstallOriginTrialsFunction = setInstallOriginTrialsFunction(installOriginTrialsForTests);
-    }
-
-    // If Origin Trials have been registered before the internals object was ready,
-    // then inject them into the context now
-    ExecutionContext* executionContext = toExecutionContext(context);
-    if (executionContext) {
-        OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext);
-        if (originTrialContext)
-            originTrialContext->initializePendingFeatures();
-    }
 }
 
-void installOriginTrialsForTests(ScriptState* scriptState)
+void installConditionalFeaturesForTests(const WrapperTypeInfo* type, const blink::ScriptState* scriptState, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject)
 {
-    (*s_originalInstallOriginTrialsFunction)(scriptState);
+    (*s_originalInstallConditionalFeaturesFunction)(type, scriptState, prototypeObject, interfaceObject);
 
-    v8::Local<v8::Context> context = scriptState->context();
-    ExecutionContext* executionContext = toExecutionContext(scriptState->context());
-    if (!executionContext->isDocument() && !executionContext->isWorkerGlobalScope())
-        return;
+    ExecutionContext* executionContext = scriptState->getExecutionContext();
     OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext, OriginTrialContext::DontCreateIfNotExists);
-    if (!originTrialContext)
-        return;
 
-    ScriptState::Scope scope(scriptState);
-    v8::Local<v8::Object> global = context->Global();
-    v8::Isolate* isolate = scriptState->isolate();
-
-    if (!originTrialContext->featureBindingsInstalled("Frobulate") && originTrialContext->isFeatureEnabled("Frobulate")) {
-        v8::Local<v8::String> internalsName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("internals"), v8::NewStringType::kNormal).ToLocalChecked();
-        v8::Local<v8::Value> v8Internals = global->Get(context, internalsName).ToLocalChecked();
-        if (v8Internals->IsObject()) {
-            V8OriginTrialsTest::installOriginTrialsSampleAPI(scriptState);
-            originTrialContext->setFeatureBindingsInstalled("Frobulate");
+    if (type == &V8OriginTrialsTest::wrapperTypeInfo) {
+        if (originTrialContext && originTrialContext->isFeatureEnabled("Frobulate")) {
+            V8OriginTrialsTest::installOriginTrialsSampleAPI(scriptState->isolate(), scriptState->world(), v8::Local<v8::Object>(), prototypeObject, interfaceObject);
         }
     }
 }

@@ -275,16 +275,6 @@ bool WindowProxy::initialize()
         MainThreadDebugger::instance()->contextCreated(m_scriptState.get(), frame, origin);
         frame->loader().client()->didCreateScriptContext(context, m_world->extensionGroup(), m_world->worldId());
     }
-    // If Origin Trials have been registered before the V8 context was ready,
-    // then inject them into the context now
-    if (m_world->isMainWorld()) {
-        ExecutionContext* executionContext = m_scriptState->getExecutionContext();
-        if (executionContext) {
-            OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext);
-            if (originTrialContext)
-                originTrialContext->initializePendingFeatures();
-        }
-    }
     return true;
 }
 

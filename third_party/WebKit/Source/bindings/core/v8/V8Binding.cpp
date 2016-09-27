@@ -58,7 +58,6 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkletGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
@@ -782,73 +781,6 @@ v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame* frame, DOMWrapperWorld& 
 {
     ASSERT(frame);
     return frame->windowProxy(world)->contextIfInitialized();
-}
-
-void installOriginTrialsCore(ScriptState* scriptState)
-{
-    // TODO(iclelland): Generate all of this logic at compile-time, based on the
-    // configuration of origin trial enabled attibutes and interfaces in IDL
-    // files. (crbug.com/615060)
-
-    ExecutionContext* executionContext = scriptState->getExecutionContext();
-    OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext, OriginTrialContext::DontCreateIfNotExists);
-    if (!originTrialContext)
-        return;
-
-    if (!originTrialContext->featureBindingsInstalled("LinkServiceWorker") && (RuntimeEnabledFeatures::linkServiceWorkerEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
-        if (executionContext->isDocument()) {
-            V8HTMLLinkElement::installLinkServiceWorker(scriptState);
-        }
-    }
-}
-
-namespace {
-InstallOriginTrialsFunction s_installOriginTrialsFunction = &installOriginTrialsCore;
-}
-
-void installOriginTrials(ScriptState* scriptState)
-{
-    v8::Local<v8::Context> context = scriptState->context();
-    ExecutionContext* executionContext = toExecutionContext(context);
-    OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext, OriginTrialContext::DontCreateIfNotExists);
-    if (!originTrialContext)
-        return;
-
-    ScriptState::Scope scope(scriptState);
-
-    (*s_installOriginTrialsFunction)(scriptState);
-
-    // Mark each enabled feature as having been installed.
-    if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage"))) {
-        originTrialContext->setFeatureBindingsInstalled("DurableStorage");
-    }
-
-    if (!originTrialContext->featureBindingsInstalled("WebBluetooth") && (RuntimeEnabledFeatures::webBluetoothEnabled() || originTrialContext->isFeatureEnabled("WebBluetooth"))) {
-        originTrialContext->setFeatureBindingsInstalled("WebBluetooth");
-    }
-
-    if (!originTrialContext->featureBindingsInstalled("WebShare") && (RuntimeEnabledFeatures::webShareEnabled() || originTrialContext->isFeatureEnabled("WebShare"))) {
-        originTrialContext->setFeatureBindingsInstalled("WebShare");
-    }
-
-    if (!originTrialContext->featureBindingsInstalled("WebUSB") && (RuntimeEnabledFeatures::webUSBEnabled() || originTrialContext->isFeatureEnabled("WebUSB"))) {
-        originTrialContext->setFeatureBindingsInstalled("WebUSB");
-    }
-
-    if (!originTrialContext->featureBindingsInstalled("LinkServiceWorker") && (RuntimeEnabledFeatures::linkServiceWorkerEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
-        originTrialContext->setFeatureBindingsInstalled("LinkServiceWorker");
-    }
-
-    if (!originTrialContext->featureBindingsInstalled("ForeignFetch") && (RuntimeEnabledFeatures::foreignFetchEnabled() || originTrialContext->isFeatureEnabled("ForeignFetch"))) {
-        originTrialContext->setFeatureBindingsInstalled("ForeignFetch");
-    }
-}
-
-InstallOriginTrialsFunction setInstallOriginTrialsFunction(InstallOriginTrialsFunction newInstallOriginTrialsFunction)
-{
-    InstallOriginTrialsFunction originalFunction = s_installOriginTrialsFunction;
-    s_installOriginTrialsFunction = newInstallOriginTrialsFunction;
-    return originalFunction;
 }
 
 void crashIfIsolateIsDead(v8::Isolate* isolate)

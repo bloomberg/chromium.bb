@@ -31,12 +31,17 @@
 // ...but this file is used in cases where we don't have V8 (e.g., Skia)
 namespace v8 {
 class Context;
+class Function;
+class Isolate;
+class Object;
 class Value;
 template <class T> class Local;
 }
 
 namespace blink {
 class ScriptState;
+class DOMWrapperWorld;
+struct WrapperTypeInfo;
 }
 
 namespace WebCoreTestSupport {
@@ -44,7 +49,7 @@ namespace WebCoreTestSupport {
 v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context>);
 void injectInternalsObject(v8::Local<v8::Context>);
 void resetInternalsObject(v8::Local<v8::Context>);
-void installOriginTrialsForTests(blink::ScriptState*);
+void installConditionalFeaturesForTests(const blink::WrapperTypeInfo*, const blink::ScriptState*, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject);
 
 } // namespace blink
 
