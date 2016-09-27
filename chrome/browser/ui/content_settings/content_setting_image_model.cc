@@ -104,47 +104,24 @@ struct ContentSettingsImageDetails {
   int accessed_tooltip_id;
 };
 
-static const ContentSettingsImageDetails kImageDetails[] = {
-    {CONTENT_SETTINGS_TYPE_COOKIES,
-     gfx::VectorIconId::COOKIE,
-     IDS_BLOCKED_COOKIES_TITLE,
-     0,
-     IDS_ACCESSED_COOKIES_TITLE},
-    {CONTENT_SETTINGS_TYPE_IMAGES,
-     gfx::VectorIconId::IMAGE,
-     IDS_BLOCKED_IMAGES_TITLE,
-     0,
-     0},
-    {CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-     gfx::VectorIconId::CODE,
-     IDS_BLOCKED_JAVASCRIPT_TITLE,
-     0,
-     0},
-    {CONTENT_SETTINGS_TYPE_PLUGINS,
-     gfx::VectorIconId::EXTENSION,
-     IDS_BLOCKED_PLUGINS_MESSAGE,
-     IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT,
-     0},
-    {CONTENT_SETTINGS_TYPE_POPUPS,
-     gfx::VectorIconId::WEB,
-     IDS_BLOCKED_POPUPS_TOOLTIP,
-     IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT,
-     0},
-    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
-     gfx::VectorIconId::MIXED_CONTENT,
-     IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT,
-     0,
-     0},
-    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
-     gfx::VectorIconId::EXTENSION,
-     IDS_BLOCKED_PPAPI_BROKER_TITLE,
-     0,
-     IDS_ALLOWED_PPAPI_BROKER_TITLE},
+const ContentSettingsImageDetails kImageDetails[] = {
+    {CONTENT_SETTINGS_TYPE_COOKIES, gfx::VectorIconId::COOKIE,
+     IDS_BLOCKED_COOKIES_TITLE, 0, IDS_ACCESSED_COOKIES_TITLE},
+    {CONTENT_SETTINGS_TYPE_IMAGES, gfx::VectorIconId::IMAGE,
+     IDS_BLOCKED_IMAGES_TITLE, 0, 0},
+    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, gfx::VectorIconId::CODE,
+     IDS_BLOCKED_JAVASCRIPT_TITLE, 0, 0},
+    {CONTENT_SETTINGS_TYPE_PLUGINS, gfx::VectorIconId::EXTENSION,
+     IDS_BLOCKED_PLUGINS_MESSAGE, IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT, 0},
+    {CONTENT_SETTINGS_TYPE_POPUPS, gfx::VectorIconId::WEB,
+     IDS_BLOCKED_POPUPS_TOOLTIP, IDS_BLOCKED_POPUPS_EXPLANATORY_TEXT, 0},
+    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, gfx::VectorIconId::MIXED_CONTENT,
+     IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT, 0, 0},
+    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, gfx::VectorIconId::EXTENSION,
+     IDS_BLOCKED_PPAPI_BROKER_TITLE, 0, IDS_ALLOWED_PPAPI_BROKER_TITLE},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
-     gfx::VectorIconId::FILE_DOWNLOAD,
-     IDS_BLOCKED_DOWNLOAD_TITLE,
-     IDS_BLOCKED_DOWNLOADS_EXPLANATION,
-     IDS_ALLOWED_DOWNLOAD_TITLE},
+     gfx::VectorIconId::FILE_DOWNLOAD, IDS_BLOCKED_DOWNLOAD_TITLE,
+     IDS_BLOCKED_DOWNLOADS_EXPLANATION, IDS_ALLOWED_DOWNLOAD_TITLE},
 };
 
 const ContentSettingsImageDetails* GetImageDetails(ContentSettingsType type) {
@@ -263,7 +240,7 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
     // For cookies, only show the cookie blocked page action if cookies are
     // blocked by default.
     if (type == CONTENT_SETTINGS_TYPE_COOKIES &&
-        (map->GetDefaultContentSetting(type, NULL) != CONTENT_SETTING_BLOCK))
+        (map->GetDefaultContentSetting(type, nullptr) != CONTENT_SETTING_BLOCK))
       return;
 
     tooltip_id = image_details->accessed_tooltip_id;
@@ -306,7 +283,7 @@ void ContentSettingGeolocationImageModel::UpdateFromWebContents(
   // If any embedded site has access the allowed icon takes priority over the
   // blocked icon.
   unsigned int state_flags = 0;
-  usages_state.GetDetailedInfo(NULL, &state_flags);
+  usages_state.GetDetailedInfo(nullptr, &state_flags);
   bool allowed =
       !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
   set_icon_by_vector_id(gfx::VectorIconId::MY_LOCATION,
@@ -504,7 +481,7 @@ void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
   // If any embedded site has access the allowed icon takes priority over the
   // blocked icon.
   unsigned int state_flags = 0;
-  usages_state.GetDetailedInfo(NULL, &state_flags);
+  usages_state.GetDetailedInfo(nullptr, &state_flags);
   bool allowed =
       !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
   set_icon_by_vector_id(gfx::VectorIconId::MIDI,
