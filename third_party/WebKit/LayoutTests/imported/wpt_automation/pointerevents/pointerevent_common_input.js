@@ -138,6 +138,21 @@ function touchScrollInTarget(targetSelector, direction) {
   });
 }
 
+function pinchZoomInTarget(targetSelector, scale) {
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      scrollPageIfNeeded(targetSelector, document);
+      var target = document.querySelector(targetSelector);
+      var targetRect = target.getBoundingClientRect();
+      chrome.gpuBenchmarking.pinchBy(scale, targetRect.left + (targetRect.width/2), targetRect.top + (targetRect.height/2), function() {
+        resolve();
+      });
+    } else {
+      reject();
+    }
+  });
+}
+
 // Pen inputs.
 function penMoveToDocument() {
   return new Promise(function(resolve, reject) {

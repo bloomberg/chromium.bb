@@ -912,9 +912,6 @@ WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(cons
 {
     DCHECK_EQ(pinchEvent.type, WebInputEvent::GesturePinchUpdate);
 
-    // Touchscreen pinch events should not reach Blink.
-    DCHECK_EQ(pinchEvent.sourceDevice, WebGestureDeviceTouchpad);
-
     // For pinch gesture events, match typical trackpad behavior on Windows by sending fake
     // wheel events with the ctrl modifier set when we see trackpad pinch gestures.  Ideally
     // we'd someday get a platform 'pinch' event and send that instead.
@@ -2218,14 +2215,18 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
     if (result != WebInputEventResult::NotHandled)
         return result;
 
-    // Unhandled touchpad gesture pinch events synthesize mouse wheel events.
+    // Unhandled pinch events should adjust the scale.
     if (inputEvent.type == WebInputEvent::GesturePinchUpdate) {
         const WebGestureEvent& pinchEvent = static_cast<const WebGestureEvent&>(inputEvent);
 
-        // First, synthesize a Windows-like wheel event to send to any handlers that may exist.
-        result = handleSyntheticWheelFromTouchpadPinchEvent(pinchEvent);
-        if (result != WebInputEventResult::NotHandled)
-            return result;
+        // For touchpad gestures synthesize a Windows-like wheel event
+        // to send to any handlers that may exist. Not necessary for touchscreen
+        // as touch events would have already been sent for the gesture.
+        if (pinchEvent.sourceDevice == WebGestureDeviceTouchpad) {
+            result = handleSyntheticWheelFromTouchpadPinchEvent(pinchEvent);
+            if (result != WebInputEventResult::NotHandled)
+                return result;
+        }
 
         if (pinchEvent.data.pinchUpdate.zoomDisabled)
             return WebInputEventResult::NotHandled;

@@ -555,6 +555,9 @@ public:
             // True if this event was synthesized in order to force a hit test; avoiding scroll
             // latching behavior until crbug.com/526463 is fully implemented.
             bool synthetic;
+
+            // number of pointers down.
+            int pointerCount;
         } scrollBegin;
 
         struct {

@@ -56,13 +56,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(
         POINTER_ACTION_TYPE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::InputEventDispatchType,
                           content::InputEventDispatchType::DISPATCH_TYPE_MAX)
-IPC_ENUM_TRAITS_VALIDATE(content::TouchAction, (
-    value >= 0 &&
-    value <= content::TOUCH_ACTION_MAX &&
-    (!(value & content::TOUCH_ACTION_NONE) ||
-        (value == content::TOUCH_ACTION_NONE)) &&
-    (!(value & content::TOUCH_ACTION_PINCH_ZOOM) ||
-        (value == content::TOUCH_ACTION_MANIPULATION))))
+IPC_ENUM_TRAITS_MAX_VALUE(content::TouchAction, content::TOUCH_ACTION_MAX)
 
 IPC_STRUCT_TRAITS_BEGIN(ui::DidOverscrollParams)
   IPC_STRUCT_TRAITS_MEMBER(accumulated_overscroll)

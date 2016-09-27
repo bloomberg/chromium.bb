@@ -297,6 +297,7 @@ WebGestureEvent CreateWebGestureEvent(const GestureEventDetails& details,
       break;
     case ET_GESTURE_SCROLL_BEGIN:
       gesture.type = WebInputEvent::GestureScrollBegin;
+      gesture.data.scrollBegin.pointerCount = details.touch_points();
       gesture.data.scrollBegin.deltaXHint = details.scroll_x_hint();
       gesture.data.scrollBegin.deltaYHint = details.scroll_y_hint();
       break;

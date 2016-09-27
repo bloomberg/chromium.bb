@@ -981,7 +981,7 @@ static CSSValue* consumeClip(CSSParserTokenRange& range, CSSParserMode cssParser
     return CSSQuadValue::create(top, right, bottom, left, CSSQuadValue::SerializeAsRect);
 }
 
-static bool consumePan(CSSParserTokenRange& range, CSSValue*& panX, CSSValue*& panY)
+static bool consumePan(CSSParserTokenRange& range, CSSValue*& panX, CSSValue*& panY, CSSValue*& pinchZoom)
 {
     CSSValueID id = range.peek().id();
     if ((id == CSSValuePanX || id == CSSValuePanRight || id == CSSValuePanLeft) && !panX) {
@@ -992,6 +992,8 @@ static bool consumePan(CSSParserTokenRange& range, CSSValue*& panX, CSSValue*& p
         if (id != CSSValuePanY && !RuntimeEnabledFeatures::cssTouchActionPanDirectionsEnabled())
             return false;
         panY = consumeIdent(range);
+    } else if (id == CSSValuePinchZoom && !pinchZoom && RuntimeEnabledFeatures::cssTouchActionPinchZoomEnabled()) {
+        pinchZoom = consumeIdent(range);
     } else {
         return false;
     }
@@ -1009,15 +1011,20 @@ static CSSValue* consumeTouchAction(CSSParserTokenRange& range)
 
     CSSValue* panX = nullptr;
     CSSValue* panY = nullptr;
-    if (!consumePan(range, panX, panY))
+    CSSValue* pinchZoom = nullptr;
+    if (!consumePan(range, panX, panY, pinchZoom))
         return nullptr;
-    if (!range.atEnd() && !consumePan(range, panX, panY))
+    if (!range.atEnd() && !consumePan(range, panX, panY, pinchZoom))
+        return nullptr;
+    if (!range.atEnd() && !consumePan(range, panX, panY, pinchZoom))
         return nullptr;
 
     if (panX)
         list->append(*panX);
     if (panY)
         list->append(*panY);
+    if (pinchZoom)
+        list->append(*pinchZoom);
     return list;
 }
 

@@ -966,14 +966,17 @@ static CSSValue* touchActionFlagsToCSSValue(TouchAction touchAction)
             list->append(*CSSPrimitiveValue::createIdentifier(CSSValuePanLeft));
         else if (touchAction & TouchActionPanRight)
             list->append(*CSSPrimitiveValue::createIdentifier(CSSValuePanRight));
-
         if ((touchAction & TouchActionPanY) == TouchActionPanY)
             list->append(*CSSPrimitiveValue::createIdentifier(CSSValuePanY));
         else if (touchAction & TouchActionPanUp)
             list->append(*CSSPrimitiveValue::createIdentifier(CSSValuePanUp));
         else if (touchAction & TouchActionPanDown)
             list->append(*CSSPrimitiveValue::createIdentifier(CSSValuePanDown));
+
+        if ((touchAction & TouchActionPinchZoom) == TouchActionPinchZoom)
+            list->append(*CSSPrimitiveValue::createIdentifier(CSSValuePinchZoom));
     }
+
     ASSERT(list->length());
     return list;
 }
