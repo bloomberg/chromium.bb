@@ -64,6 +64,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   // Gives the GL internal format that should be used for calling CopyTexImage2D
   // on the default framebuffer.
   uint32_t GetCopyTextureInternalFormat();
+  void FreeUnusedSharedMemory();
 
   // cc::ContextProvider implementation.
   bool BindToCurrentThread() override;

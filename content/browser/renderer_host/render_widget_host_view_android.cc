@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/android/application_status_listener.h"
 #include "base/android/build_info.h"
 #include "base/android/context_utils.h"
 #include "base/bind.h"
@@ -16,6 +17,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -100,6 +102,10 @@ const int kUndefinedCompositorFrameSinkId = -1;
 
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 
+using base::android::ApplicationState;
+using base::android::ApplicationStatusListener;
+using base::MemoryPressureListener;
+
 class GLHelperHolder {
  public:
   static GLHelperHolder* Create();
@@ -111,16 +117,36 @@ class GLHelperHolder {
     return provider_->ContextGL()->GetGraphicsResetStatusKHR() != GL_NO_ERROR;
   }
 
+  void FreeUnusedSharedMemoryIfNeeded();
+
  private:
-  GLHelperHolder() = default;
+  GLHelperHolder();
   void Initialize();
   void OnContextLost();
+  void OnApplicationStatusChanged(ApplicationState new_state);
+  void OnMemoryPressure(MemoryPressureListener::MemoryPressureLevel level);
 
   scoped_refptr<ContextProviderCommandBuffer> provider_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
 
+  // Set to |false| if there are only stopped activities (or none).
+  bool has_running_or_paused_activities_;
+  // Whether we recently were signaled a low memory condition.
+  bool did_signal_memory_pressure_;
+
+  std::unique_ptr<ApplicationStatusListener> app_status_listener_;
+  std::unique_ptr<MemoryPressureListener> mem_pressure_listener_;
+
   DISALLOW_COPY_AND_ASSIGN(GLHelperHolder);
 };
+
+GLHelperHolder::GLHelperHolder()
+    : has_running_or_paused_activities_(
+          (ApplicationStatusListener::GetState() ==
+           base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) ||
+          (ApplicationStatusListener::GetState() ==
+           base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES)),
+      did_signal_memory_pressure_(false) {}
 
 GLHelperHolder* GLHelperHolder::Create() {
   GLHelperHolder* holder = new GLHelperHolder;
@@ -184,19 +210,60 @@ void GLHelperHolder::Initialize() {
       base::Bind(&GLHelperHolder::OnContextLost, base::Unretained(this)));
   gl_helper_.reset(new display_compositor::GLHelper(
       provider_->ContextGL(), provider_->ContextSupport()));
+
+  // Unretained() is safe because |this| owns the following two callbacks.
+  app_status_listener_.reset(new ApplicationStatusListener(base::Bind(
+      &GLHelperHolder::OnApplicationStatusChanged, base::Unretained(this))));
+  mem_pressure_listener_.reset(new MemoryPressureListener(base::Bind(
+      &GLHelperHolder::OnMemoryPressure, base::Unretained(this))));
+}
+
+void GLHelperHolder::FreeUnusedSharedMemoryIfNeeded() {
+  if (!has_running_or_paused_activities_ || did_signal_memory_pressure_)
+    provider_->FreeUnusedSharedMemory();
 }
 
 void GLHelperHolder::OnContextLost() {
+  app_status_listener_.reset();
+  mem_pressure_listener_.reset();
+  gl_helper_.reset();
   // Need to post a task because the command buffer client cannot be deleted
   // from within this callback.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RenderWidgetHostViewAndroid::OnContextLost));
 }
 
-// This can only be used for readback postprocessing. It may return null if the
-// channel was lost and not reestablished yet.
-display_compositor::GLHelper* GetPostReadbackGLHelper() {
+void GLHelperHolder::OnApplicationStatusChanged(ApplicationState new_state) {
+  bool new_has_running_or_paused_activities =
+      new_state == base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES ||
+      new_state == base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES;
+
+  if (!has_running_or_paused_activities_ &&
+      new_has_running_or_paused_activities) {
+    // Reset at this time since on Android there is no 'back to normal'
+    // notification (but only onTrim/onLowMemory).
+    did_signal_memory_pressure_ = false;
+  } else if (!new_has_running_or_paused_activities) {
+    provider_->FreeUnusedSharedMemory();
+  }
+
+  has_running_or_paused_activities_ = new_has_running_or_paused_activities;
+}
+
+void GLHelperHolder::OnMemoryPressure(
+    MemoryPressureListener::MemoryPressureLevel level) {
+  if (level == MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE ||
+      level == MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    did_signal_memory_pressure_ = true;
+    provider_->FreeUnusedSharedMemory();
+  }
+}
+
+GLHelperHolder* GetPostReadbackGLHelperHolder(bool create_if_necessary) {
   static GLHelperHolder* g_readback_helper_holder = nullptr;
+
+  if (!create_if_necessary && !g_readback_helper_holder)
+    return nullptr;
 
   if (g_readback_helper_holder && g_readback_helper_holder->IsLost()) {
     delete g_readback_helper_holder;
@@ -206,7 +273,21 @@ display_compositor::GLHelper* GetPostReadbackGLHelper() {
   if (!g_readback_helper_holder)
     g_readback_helper_holder = GLHelperHolder::Create();
 
-  return g_readback_helper_holder->gl_helper();
+  return g_readback_helper_holder;
+}
+
+display_compositor::GLHelper* GetPostReadbackGLHelper() {
+  bool create_if_necessary = true;
+  return GetPostReadbackGLHelperHolder(create_if_necessary)->gl_helper();
+}
+
+void FreeUnusedGLHelperMemory() {
+  bool create_if_necessary = false;
+  GLHelperHolder* holder = GetPostReadbackGLHelperHolder(create_if_necessary);
+
+  if (holder) {
+    holder->FreeUnusedSharedMemoryIfNeeded();
+  }
 }
 
 void CopyFromCompositingSurfaceFinished(
@@ -225,6 +306,9 @@ void CopyFromCompositingSurfaceFinished(
     if (gl_helper)
       gl_helper->GenerateSyncToken(&sync_token);
   }
+
+  FreeUnusedGLHelperMemory();
+
   const bool lost_resource = !sync_token.HasData();
   release_callback->Run(sync_token, lost_resource);
   UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
