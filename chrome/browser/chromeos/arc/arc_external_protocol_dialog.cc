@@ -32,7 +32,8 @@ namespace arc {
 
 namespace {
 
-constexpr uint32_t kMinInstanceVersion = 3;  // RequestActivityIcons' MinVersion
+constexpr uint32_t kMinVersionForHandleUrl = 2;
+constexpr uint32_t kMinVersionForRequestUrlHandlerList = 2;
 
 // Shows the Chrome OS' original external protocol dialog as a fallback.
 void ShowFallbackExternalProtocolDialog(int render_process_host_id,
@@ -41,10 +42,6 @@ void ShowFallbackExternalProtocolDialog(int render_process_host_id,
   WebContents* web_contents =
       tab_util::GetWebContentsByID(render_process_host_id, routing_id);
   new ExternalProtocolDialog(web_contents, url);
-}
-
-mojom::IntentHelperInstance* GetIntentHelper() {
-  return ArcIntentHelperBridge::GetIntentHelperInstance(kMinInstanceVersion);
 }
 
 scoped_refptr<ActivityIconLoader> GetIconLoader() {
@@ -69,8 +66,10 @@ void OnIntentPickerClosed(int render_process_host_id,
                           ArcNavigationThrottle::CloseReason close_reason) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  mojom::IntentHelperInstance* intent_helper = GetIntentHelper();
-  if (!intent_helper || selected_app_index >= handlers.size())
+  // Make sure that the instance at least supports HandleUrl.
+  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
+      "HandleUrl", kMinVersionForHandleUrl);
+  if (!instance || selected_app_index >= handlers.size())
     close_reason = ArcNavigationThrottle::CloseReason::ERROR;
 
   switch (close_reason) {
@@ -80,8 +79,8 @@ void OnIntentPickerClosed(int render_process_host_id,
     }
     case ArcNavigationThrottle::CloseReason::JUST_ONCE_PRESSED: {
       // Launch the selected app.
-      intent_helper->HandleUrl(url.spec(),
-                               handlers[selected_app_index]->package_name);
+      instance->HandleUrl(url.spec(),
+                          handlers[selected_app_index]->package_name);
       CloseTabIfNeeded(render_process_host_id, routing_id);
       break;
     }
@@ -140,10 +139,11 @@ void OnUrlHandlerList(int render_process_host_id,
                       mojo::Array<mojom::IntentHandlerInfoPtr> handlers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  mojom::IntentHelperInstance* intent_helper = GetIntentHelper();
+  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
+      "HandleUrl", kMinVersionForHandleUrl);
   scoped_refptr<ActivityIconLoader> icon_loader = GetIconLoader();
 
-  if (!intent_helper || !icon_loader || !handlers.size()) {
+  if (!instance || !icon_loader || !handlers.size()) {
     // No handler is available on ARC side. Show the Chrome OS dialog.
     ShowFallbackExternalProtocolDialog(render_process_host_id, routing_id, url);
     return;
@@ -169,8 +169,9 @@ bool RunArcExternalProtocolDialog(const GURL& url,
   if (ShouldIgnoreNavigation(page_transition))
     return false;
 
-  mojom::IntentHelperInstance* intent_helper = GetIntentHelper();
-  if (!intent_helper)
+  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
+      "RequestUrlHandlerList", kMinVersionForRequestUrlHandlerList);
+  if (!instance)
     return false;  // ARC is either not supported or not yet ready.
 
   WebContents* web_contents =
@@ -182,7 +183,7 @@ bool RunArcExternalProtocolDialog(const GURL& url,
 
   // Show ARC version of the dialog, which is IntentPickerBubbleView. To show
   // the bubble view, we need to ask ARC for a handler list first.
-  intent_helper->RequestUrlHandlerList(
+  instance->RequestUrlHandlerList(
       url.spec(),
       base::Bind(OnUrlHandlerList, render_process_host_id, routing_id, url));
   return true;

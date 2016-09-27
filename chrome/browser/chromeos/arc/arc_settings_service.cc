@@ -38,6 +38,8 @@ using ::chromeos::system::TimezoneSettings;
 
 namespace {
 
+constexpr uint32_t kMinVersionForSendBroadcast = 1;
+
 bool GetHttpProxyServer(const ProxyConfigDictionary* proxy_config_dict,
                         std::string* host,
                         int* port) {
@@ -456,20 +458,17 @@ void ArcSettingsServiceImpl::SyncLocationServiceEnabled() const {
 void ArcSettingsServiceImpl::SendSettingsBroadcast(
     const std::string& action,
     const base::DictionaryValue& extras) const {
-  if (!arc_bridge_service_->intent_helper()->instance()) {
-    LOG(ERROR) << "IntentHelper instance is not ready.";
+  auto* instance = arc_bridge_service_->intent_helper()->GetInstanceForMethod(
+      "SendBroadcast", kMinVersionForSendBroadcast);
+  if (!instance)
     return;
-  }
-
   std::string extras_json;
   bool write_success = base::JSONWriter::Write(extras, &extras_json);
   DCHECK(write_success);
 
-  if (arc_bridge_service_->intent_helper()->version() >= 1) {
-    arc_bridge_service_->intent_helper()->instance()->SendBroadcast(
-        action, "org.chromium.arc.intent_helper",
-        "org.chromium.arc.intent_helper.SettingsReceiver", extras_json);
-  }
+  instance->SendBroadcast(action, "org.chromium.arc.intent_helper",
+                          "org.chromium.arc.intent_helper.SettingsReceiver",
+                          extras_json);
 }
 
 void ArcSettingsServiceImpl::DefaultNetworkChanged(

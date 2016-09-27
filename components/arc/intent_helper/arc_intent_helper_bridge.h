@@ -79,12 +79,14 @@ class ArcIntentHelperBridge
   // Gets the mojo instance if it's available. On failure, returns nullptr and
   // updates |out_error_code| if it's not nullptr.
   static mojom::IntentHelperInstance* GetIntentHelperInstanceWithErrorCode(
-      int min_instance_version,
+      const std::string& method_name_for_logging,
+      uint32_t min_instance_version,
       GetResult* out_error_code);
 
   // Does the same as above without asking for the error code.
   static mojom::IntentHelperInstance* GetIntentHelperInstance(
-      int min_instance_version);
+      const std::string& method_name_for_logging,
+      uint32_t min_instance_version);
 
  private:
   mojo::Binding<mojom::IntentHelperHost> binding_;

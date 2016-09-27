@@ -10,11 +10,16 @@
 
 namespace {
 
+// For Speak and Stop.
+constexpr uint32_t kDefaultMinVersion = 0;
+
 // Helper returning an ARC tts instance.
-arc::mojom::TtsInstance* GetArcTts() {
+arc::mojom::TtsInstance* GetArcTts(const std::string& method_name_for_logging,
+                                   uint32_t min_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return arc::ArcBridgeService::Get()
-             ? arc::ArcBridgeService::Get()->tts()->instance()
+             ? arc::ArcBridgeService::Get()->tts()->GetInstanceForMethod(
+                   method_name_for_logging, min_version)
              : nullptr;
 }
 
@@ -25,7 +30,10 @@ arc::mojom::TtsInstance* GetArcTts() {
 class TtsPlatformImplChromeOs : public TtsPlatformImpl {
  public:
   // TtsPlatformImpl overrides:
-  bool PlatformImplAvailable() override { return GetArcTts() != nullptr; }
+  bool PlatformImplAvailable() override {
+    return arc::ArcBridgeService::Get() &&
+           arc::ArcBridgeService::Get()->tts()->has_instance();
+  }
 
   bool LoadBuiltInTtsExtension(
       content::BrowserContext* browser_context) override {
@@ -41,7 +49,7 @@ class TtsPlatformImplChromeOs : public TtsPlatformImpl {
              const std::string& lang,
              const VoiceData& voice,
              const UtteranceContinuousParameters& params) override {
-    arc::mojom::TtsInstance* tts = GetArcTts();
+    arc::mojom::TtsInstance* tts = GetArcTts("Speak", kDefaultMinVersion);
     if (!tts)
       return false;
 
@@ -55,7 +63,7 @@ class TtsPlatformImplChromeOs : public TtsPlatformImpl {
   }
 
   bool StopSpeaking() override {
-    arc::mojom::TtsInstance* tts = GetArcTts();
+    arc::mojom::TtsInstance* tts = GetArcTts("Stop", kDefaultMinVersion);
     if (!tts)
       return false;
 

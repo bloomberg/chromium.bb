@@ -48,8 +48,10 @@ ArcIntentHelperBridge::~ArcIntentHelperBridge() {
 void ArcIntentHelperBridge::OnInstanceReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
   ash::Shell::GetInstance()->set_link_handler_model_factory(this);
-  arc_bridge_service()->intent_helper()->instance()->Init(
-      binding_.CreateInterfacePtrAndBind());
+  auto* instance =
+      arc_bridge_service()->intent_helper()->GetInstanceForMethod("Init");
+  DCHECK(instance);
+  instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
 void ArcIntentHelperBridge::OnInstanceClosed() {
@@ -121,7 +123,8 @@ ArcIntentHelperBridge::FilterOutIntentHelper(
 // static
 mojom::IntentHelperInstance*
 ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
-    int min_instance_version,
+    const std::string& method_name_for_logging,
+    uint32_t min_instance_version,
     GetResult* out_error_code) {
   ArcBridgeService* bridge_service = ArcBridgeService::Get();
   if (!bridge_service) {
@@ -136,29 +139,30 @@ ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
     }
     return nullptr;
   }
-  mojom::IntentHelperInstance* intent_helper_instance =
-      bridge_service->intent_helper()->instance();
-  if (!intent_helper_instance) {
+
+  if (!bridge_service->intent_helper()->has_instance()) {
     VLOG(2) << "ARC intent helper instance is not ready.";
     if (out_error_code)
       *out_error_code = GetResult::FAILED_ARC_NOT_READY;
     return nullptr;
   }
-  const int version = bridge_service->intent_helper()->version();
-  if (version < min_instance_version) {
-    VLOG(1) << "ARC intent helper instance is too old. required: "
-            << min_instance_version << ", actual: " << version;
+
+  auto* instance = bridge_service->intent_helper()->GetInstanceForMethod(
+      method_name_for_logging, min_instance_version);
+  if (!instance) {
     if (out_error_code)
       *out_error_code = GetResult::FAILED_ARC_NOT_SUPPORTED;
     return nullptr;
   }
-  return intent_helper_instance;
+  return instance;
 }
 
 // static
 mojom::IntentHelperInstance* ArcIntentHelperBridge::GetIntentHelperInstance(
-    int min_instance_version) {
-  return GetIntentHelperInstanceWithErrorCode(min_instance_version, nullptr);
+    const std::string& method_name_for_logging,
+    uint32_t min_instance_version) {
+  return GetIntentHelperInstanceWithErrorCode(method_name_for_logging,
+                                              min_instance_version, nullptr);
 }
 
 void ArcIntentHelperBridge::OnIntentFiltersUpdated(

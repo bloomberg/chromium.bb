@@ -229,8 +229,9 @@ bool ArcAuthService::IsAllowedForProfile(const Profile* profile) {
 }
 
 void ArcAuthService::OnInstanceReady() {
-  arc_bridge_service()->auth()->instance()->Init(
-      binding_.CreateInterfacePtrAndBind());
+  auto* instance = arc_bridge_service()->auth()->GetInstanceForMethod("Init");
+  DCHECK(instance);
+  instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
 void ArcAuthService::OnBridgeStopped(ArcBridgeService::StopReason reason) {

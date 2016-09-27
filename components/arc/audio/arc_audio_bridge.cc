@@ -11,6 +11,14 @@
 
 namespace arc {
 
+namespace {
+
+// Note: unlike most of our mojom definitions, AudioInstance::Init's minimum
+// version is not zero.
+constexpr uint32_t kMinInstanceVersionForInit = 1;
+
+}  // namespace
+
 ArcAudioBridge::ArcAudioBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->audio()->AddObserver(this);
@@ -29,16 +37,9 @@ ArcAudioBridge::~ArcAudioBridge() {
 
 void ArcAudioBridge::OnInstanceReady() {
   mojom::AudioInstance* audio_instance =
-      arc_bridge_service()->audio()->instance();
-  if (!audio_instance) {
-    LOG(ERROR) << "OnAudioInstanceReady called, "
-               << "but no audio instance found";
-    return;
-  }
-  if (arc_bridge_service()->audio()->version() < 1) {
-    LOG(WARNING) << "Audio instance is too old and does not support Init()";
-    return;
-  }
+      arc_bridge_service()->audio()->GetInstanceForMethod(
+          "Init", kMinInstanceVersionForInit);
+  DCHECK(audio_instance);  // the instance on ARC side is too old.
   audio_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
@@ -82,7 +83,7 @@ void ArcAudioBridge::SendSwitchState(bool headphone_inserted,
 
   VLOG(1) << "Send switch state " << switch_state;
   mojom::AudioInstance* audio_instance =
-      arc_bridge_service()->audio()->instance();
+      arc_bridge_service()->audio()->GetInstanceForMethod("NotifySwitchState");
   if (audio_instance)
     audio_instance->NotifySwitchState(switch_state);
 }

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
 
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -171,7 +173,8 @@ void SyncArcPackageHelper::InstallPackage(
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_list_prefs);
   FakeAppInstance* fake_app_instance = static_cast<FakeAppInstance*>(
-      arc_app_list_prefs->app_instance_holder()->instance());
+      arc_app_list_prefs->app_instance_holder()->GetInstanceForMethod(
+          "InstallPackage"));
 
   DCHECK(fake_app_instance);
   // After this function, new package should be added to local sync service
@@ -184,7 +187,8 @@ void SyncArcPackageHelper::UninstallPackage(Profile* profile,
   ArcAppListPrefs* arc_app_list_prefs = ArcAppListPrefs::Get(profile);
   DCHECK(arc_app_list_prefs);
   FakeAppInstance* fake_app_instance = static_cast<FakeAppInstance*>(
-      arc_app_list_prefs->app_instance_holder()->instance());
+      arc_app_list_prefs->app_instance_holder()->GetInstanceForMethod(
+          "UninstallPackage"));
   DCHECK(fake_app_instance);
   // After this function, package should be removed from local sync service
   // and uninstall event should be sent to sync server.

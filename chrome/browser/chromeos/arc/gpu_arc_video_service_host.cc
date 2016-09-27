@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/gpu_arc_video_service_host.h"
 
 #include <string>
+#include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -69,7 +70,8 @@ GpuArcVideoServiceHost::~GpuArcVideoServiceHost() {
 
 void GpuArcVideoServiceHost::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto* video_instance = arc_bridge_service()->video()->instance();
+  auto* video_instance =
+      arc_bridge_service()->video()->GetInstanceForMethod("Init");
   DCHECK(video_instance);
   video_instance->Init(binding_.CreateInterfacePtrAndBind());
 }

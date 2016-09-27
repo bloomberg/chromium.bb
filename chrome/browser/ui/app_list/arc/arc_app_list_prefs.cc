@@ -45,7 +45,8 @@ const char kShouldSync[] = "should_sync";
 const char kSystem[] = "system";
 const char kUninstalled[] = "uninstalled";
 
-constexpr int kSetNotificationsEnabledMinVersion = 6;
+constexpr uint32_t kSetNotificationsEnabledMinVersion = 6;
+constexpr uint32_t kRequestIconMinVersion = 9;
 
 // Provider of write access to a dictionary storing ARC prefs.
 class ScopedArcPrefUpdate : public DictionaryPrefUpdate {
@@ -267,7 +268,7 @@ void ArcAppListPrefs::StartPrefs() {
   auth_service->AddObserver(this);
 
   app_instance_holder_->AddObserver(this);
-  if (!app_instance_holder_->instance())
+  if (!app_instance_holder_->has_instance())
     OnInstanceClosed();
 }
 
@@ -305,8 +306,7 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  arc::mojom::AppInstance* app_instance = app_instance_holder_->instance();
-  if (!app_instance) {
+  if (!app_instance_holder_->has_instance()) {
     // AppInstance should be ready since we have app_id in ready_apps_. This
     // can happen in browser_tests.
     return;
@@ -319,10 +319,19 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
   }
 
   if (app_info->icon_resource_id.empty()) {
+    auto* app_instance =
+        app_instance_holder_->GetInstanceForMethod("RequestAppIcon");
+    // Version 0 instance should always be available here because has_instance()
+    // returned true above.
+    DCHECK(app_instance);
     app_instance->RequestAppIcon(
         app_info->package_name, app_info->activity,
         static_cast<arc::mojom::ScaleFactor>(scale_factor));
   } else {
+    auto* app_instance = app_instance_holder_->GetInstanceForMethod(
+        "RequestIcon", kRequestIconMinVersion);
+    if (!app_instance)
+      return;  // The instance version on ARC side was too old.
     app_instance->RequestIcon(
         app_info->icon_resource_id,
         static_cast<arc::mojom::ScaleFactor>(scale_factor),
@@ -628,16 +637,16 @@ void ArcAppListPrefs::SetDefaltAppsReadyCallback(base::Closure callback) {
 }
 
 void ArcAppListPrefs::OnInstanceReady() {
-  arc::mojom::AppInstance* app_instance = app_instance_holder_->instance();
+  // Init() is also available at version 0.
+  arc::mojom::AppInstance* app_instance =
+      app_instance_holder_->GetInstanceForMethod("RefreshAppList");
 
   sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
   DCHECK(sync_service_);
 
   // In some tests app_instance may not be set.
-  if (!app_instance) {
-    VLOG(2) << "Request to refresh app list when bridge service is not ready.";
+  if (!app_instance)
     return;
-  }
 
   is_initialized_ = false;
 

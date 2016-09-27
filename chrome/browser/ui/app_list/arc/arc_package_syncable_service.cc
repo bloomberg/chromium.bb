@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service.h"
 
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -28,6 +30,9 @@ using syncer::SyncChange;
 using ArcSyncItem = ArcPackageSyncableService::SyncItem;
 
 constexpr int64_t kNoAndroidID = 0;
+
+constexpr uint32_t kUninstallPackageMinVersion = 2;
+constexpr uint32_t kInstallPackageMinVersion = 8;
 
 std::unique_ptr<ArcSyncItem> CreateSyncItemFromSyncSpecifics(
     const sync_pb::ArcPackageSpecifics& specifics) {
@@ -428,11 +433,16 @@ bool ArcPackageSyncableService::DeleteSyncItemSpecifics(
 
 void ArcPackageSyncableService::InstallPackage(const ArcSyncItem* sync_item) {
   DCHECK(sync_item);
-  if (!prefs_ || !prefs_->app_instance_holder()->instance()) {
+  if (!prefs_) {
     VLOG(2) << "Request to install package when bridge service is not ready: "
             << sync_item->package_name << ".";
     return;
   }
+
+  auto* instance = prefs_->app_instance_holder()->GetInstanceForMethod(
+      "InstallPackage", kInstallPackageMinVersion);
+  if (!instance)
+    return;
 
   mojom::ArcPackageInfo package;
   package.package_name = sync_item->package_name;
@@ -440,19 +450,23 @@ void ArcPackageSyncableService::InstallPackage(const ArcSyncItem* sync_item) {
   package.last_backup_android_id = sync_item->last_backup_android_id;
   package.last_backup_time = sync_item->last_backup_time;
   package.sync = true;
-  prefs_->app_instance_holder()->instance()->InstallPackage(package.Clone());
+  instance->InstallPackage(package.Clone());
 }
 
 void ArcPackageSyncableService::UninstallPackage(const ArcSyncItem* sync_item) {
   DCHECK(sync_item);
-  if (!prefs_ || !prefs_->app_instance_holder()->instance()) {
+  if (!prefs_) {
     VLOG(2) << "Request to uninstall package when bridge service is not ready: "
             << sync_item->package_name << ".";
     return;
   }
 
-  prefs_->app_instance_holder()->instance()->UninstallPackage(
-      sync_item->package_name);
+  auto* instance = prefs_->app_instance_holder()->GetInstanceForMethod(
+      "UninstallPackage", kUninstallPackageMinVersion);
+  if (!instance)
+    return;
+
+  instance->UninstallPackage(sync_item->package_name);
 }
 
 bool ArcPackageSyncableService::ShouldSyncPackage(

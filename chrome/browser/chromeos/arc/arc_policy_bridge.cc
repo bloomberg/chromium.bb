@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_string_value_serializer.h"
@@ -267,12 +268,8 @@ void ArcPolicyBridge::OnInstanceReady() {
   policy_service_->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 
   mojom::PolicyInstance* const policy_instance =
-      arc_bridge_service()->policy()->instance();
-  if (!policy_instance) {
-    LOG(ERROR) << "OnPolicyInstanceReady called, but no policy instance found";
-    return;
-  }
-
+      arc_bridge_service()->policy()->GetInstanceForMethod("Init");
+  DCHECK(policy_instance);
   policy_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
@@ -300,8 +297,11 @@ void ArcPolicyBridge::OnPolicyUpdated(const policy::PolicyNamespace& ns,
                                       const policy::PolicyMap& previous,
                                       const policy::PolicyMap& current) {
   VLOG(1) << "ArcPolicyBridge::OnPolicyUpdated";
-  DCHECK(arc_bridge_service()->policy()->instance());
-  arc_bridge_service()->policy()->instance()->OnPolicyUpdated();
+  auto* instance =
+      arc_bridge_service()->policy()->GetInstanceForMethod("OnPolicyUpdated");
+  if (!instance)
+    return;
+  instance->OnPolicyUpdated();
 }
 
 void ArcPolicyBridge::InitializePolicyService() {

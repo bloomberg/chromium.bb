@@ -89,9 +89,8 @@ ActivityIconLoader::GetResult ActivityIconLoader::GetActivityIcons(
   }
 
   ArcIntentHelperBridge::GetResult error_code;
-  mojom::IntentHelperInstance* instance =
-      ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
-          kMinInstanceVersion, &error_code);
+  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstanceWithErrorCode(
+      "RequestActivityIcons", kMinInstanceVersion, &error_code);
   if (!instance) {
     // The mojo channel is not yet ready (or not supported at all). Run the
     // callback with |result| that could be empty.

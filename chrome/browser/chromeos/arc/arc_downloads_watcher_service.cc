@@ -288,7 +288,8 @@ void ArcDownloadsWatcherService::OnDownloadsChanged(
     mojo::Array<mojo::String> paths) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  auto* instance = arc_bridge_service()->file_system()->instance();
+  auto* instance = arc_bridge_service()->file_system()->GetInstanceForMethod(
+      "RequestMediaScan");
   if (!instance)
     return;
   instance->RequestMediaScan(std::move(paths));

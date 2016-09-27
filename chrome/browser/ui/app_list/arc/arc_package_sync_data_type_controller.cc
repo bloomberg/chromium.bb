@@ -42,7 +42,7 @@ bool ArcPackageSyncDataTypeController::ReadyForStart() const {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   return profile_->GetPrefs()->GetBoolean(
              sync_driver::SyncPrefs::GetPrefNameForDataType(type())) &&
-         prefs && prefs->app_instance_holder()->instance();
+         prefs && prefs->app_instance_holder()->has_instance();
 }
 
 void ArcPackageSyncDataTypeController::OnArcAppsSyncPrefChanged() {

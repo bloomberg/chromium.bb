@@ -56,9 +56,9 @@ LinkHandlerModelImpl::LinkHandlerModelImpl(
 LinkHandlerModelImpl::~LinkHandlerModelImpl() {}
 
 bool LinkHandlerModelImpl::Init(const GURL& url) {
-  mojom::IntentHelperInstance* intent_helper_instance =
-      ArcIntentHelperBridge::GetIntentHelperInstance(kMinInstanceVersion);
-  if (!intent_helper_instance)
+  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
+      "RequestUrlHandlerList", kMinInstanceVersion);
+  if (!instance)
     return false;
 
   // Check if ARC apps can handle the |url|. Since the information is held in
@@ -66,7 +66,7 @@ bool LinkHandlerModelImpl::Init(const GURL& url) {
   // callback function, OnUrlHandlerList, is called within a few milliseconds
   // even on the slowest Chromebook we support.
   const GURL rewritten(RewriteUrlFromQueryIfAvailable(url));
-  intent_helper_instance->RequestUrlHandlerList(
+  instance->RequestUrlHandlerList(
       rewritten.spec(), base::Bind(&LinkHandlerModelImpl::OnUrlHandlerList,
                                    weak_ptr_factory_.GetWeakPtr()));
   return true;
@@ -78,15 +78,14 @@ void LinkHandlerModelImpl::AddObserver(Observer* observer) {
 
 void LinkHandlerModelImpl::OpenLinkWithHandler(const GURL& url,
                                                uint32_t handler_id) {
-  mojom::IntentHelperInstance* intent_helper_instance =
-      ArcIntentHelperBridge::GetIntentHelperInstance(kMinInstanceVersion);
-  if (!intent_helper_instance)
+  auto* instance = ArcIntentHelperBridge::GetIntentHelperInstance(
+      "HandleUrl", kMinInstanceVersion);
+  if (!instance)
     return;
   if (handler_id >= handlers_.size())
     return;
   const GURL rewritten(RewriteUrlFromQueryIfAvailable(url));
-  intent_helper_instance->HandleUrl(rewritten.spec(),
-                                    handlers_[handler_id]->package_name);
+  instance->HandleUrl(rewritten.spec(), handlers_[handler_id]->package_name);
 }
 
 void LinkHandlerModelImpl::OnUrlHandlerList(

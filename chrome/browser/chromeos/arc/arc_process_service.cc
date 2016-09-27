@@ -245,7 +245,8 @@ bool ArcProcessService::RequestAppProcessList(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   arc::mojom::ProcessInstance* process_instance =
-      arc_bridge_service()->process()->instance();
+      arc_bridge_service()->process()->GetInstanceForMethod(
+          "RequestProcessList");
   if (!process_instance) {
     return false;
   }

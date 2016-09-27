@@ -31,8 +31,10 @@ ArcCrashCollectorBridge::~ArcCrashCollectorBridge() {
 void ArcCrashCollectorBridge::OnInstanceReady() {
   mojom::CrashCollectorHostPtr host_ptr;
   binding_.Bind(mojo::GetProxy(&host_ptr));
-  arc_bridge_service()->crash_collector()->instance()->Init(
-      std::move(host_ptr));
+  auto* instance =
+      arc_bridge_service()->crash_collector()->GetInstanceForMethod("Init");
+  DCHECK(instance);
+  instance->Init(std::move(host_ptr));
 }
 
 void ArcCrashCollectorBridge::DumpCrash(const mojo::String& type,

@@ -96,12 +96,8 @@ ArcWallpaperService::~ArcWallpaperService() {
 void ArcWallpaperService::OnInstanceReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   mojom::WallpaperInstance* wallpaper_instance =
-      arc_bridge_service()->wallpaper()->instance();
-  if (!wallpaper_instance) {
-    LOG(DFATAL) << "OnWallpaperInstanceReady called, "
-                << "but no wallpaper instance found";
-    return;
-  }
+      arc_bridge_service()->wallpaper()->GetInstanceForMethod("Init");
+  DCHECK(wallpaper_instance);
   wallpaper_instance->Init(binding_.CreateInterfacePtrAndBind());
   ash::WmShell::Get()->wallpaper_controller()->AddObserver(this);
 }

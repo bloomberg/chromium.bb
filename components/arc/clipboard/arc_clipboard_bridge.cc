@@ -39,12 +39,8 @@ ArcClipboardBridge::~ArcClipboardBridge() {
 
 void ArcClipboardBridge::OnInstanceReady() {
   mojom::ClipboardInstance* clipboard_instance =
-      arc_bridge_service()->clipboard()->instance();
-  if (!clipboard_instance) {
-    LOG(ERROR) << "OnClipboardInstanceReady called, "
-               << "but no clipboard instance found";
-    return;
-  }
+      arc_bridge_service()->clipboard()->GetInstanceForMethod("Init");
+  DCHECK(clipboard_instance);
   clipboard_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
@@ -62,7 +58,10 @@ void ArcClipboardBridge::GetTextContent() {
   clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
 
   mojom::ClipboardInstance* clipboard_instance =
-      arc_bridge_service()->clipboard()->instance();
+      arc_bridge_service()->clipboard()->GetInstanceForMethod(
+          "OnGetTextContent");
+  if (!clipboard_instance)
+    return;
   clipboard_instance->OnGetTextContent(ConvertString16ToMojoString(text));
 }
 

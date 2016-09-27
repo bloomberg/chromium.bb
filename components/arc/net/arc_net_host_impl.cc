@@ -309,7 +309,9 @@ void ArcNetHostImpl::OnInstanceReady() {
 
   mojom::NetHostPtr host;
   binding_.Bind(GetProxy(&host));
-  arc_bridge_service()->net()->instance()->Init(std::move(host));
+  auto* instance = arc_bridge_service()->net()->GetInstanceForMethod("Init");
+  DCHECK(instance);
+  instance->Init(std::move(host));
 }
 
 void ArcNetHostImpl::GetNetworksDeprecated(

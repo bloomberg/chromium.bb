@@ -32,7 +32,8 @@ ArcObbMounterBridge::~ArcObbMounterBridge() {
 
 void ArcObbMounterBridge::OnInstanceReady() {
   mojom::ObbMounterInstance* obb_mounter_instance =
-      arc_bridge_service()->obb_mounter()->instance();
+      arc_bridge_service()->obb_mounter()->GetInstanceForMethod("Init");
+  DCHECK(obb_mounter_instance);
   obb_mounter_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 

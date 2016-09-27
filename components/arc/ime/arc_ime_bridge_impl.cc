@@ -88,8 +88,9 @@ ArcImeBridgeImpl::~ArcImeBridgeImpl() {
 }
 
 void ArcImeBridgeImpl::OnInstanceReady() {
-  bridge_service_->ime()->instance()->Init(
-      binding_.CreateInterfacePtrAndBind());
+  auto* instance = bridge_service_->ime()->GetInstanceForMethod("Init");
+  DCHECK(instance);
+  instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 
 void ArcImeBridgeImpl::SendSetCompositionText(

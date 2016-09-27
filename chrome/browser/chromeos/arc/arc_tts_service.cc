@@ -20,12 +20,9 @@ ArcTtsService::~ArcTtsService() {
 }
 
 void ArcTtsService::OnInstanceReady() {
-  mojom::TtsInstance* tts_instance = arc_bridge_service()->tts()->instance();
-  if (!tts_instance) {
-    LOG(ERROR) << "OnTtsInstanceReady called, "
-               << "but no tts instance found";
-    return;
-  }
+  mojom::TtsInstance* tts_instance =
+      arc_bridge_service()->tts()->GetInstanceForMethod("Init");
+  DCHECK(tts_instance);
   tts_instance->Init(binding_.CreateInterfacePtrAndBind());
 }
 

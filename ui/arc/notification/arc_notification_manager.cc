@@ -49,11 +49,8 @@ void ArcNotificationManager::OnInstanceReady() {
   DCHECK(!ready_);
 
   auto* notifications_instance =
-      arc_bridge_service()->notifications()->instance();
-  if (!notifications_instance) {
-    VLOG(2) << "Request to refresh app list when bridge service is not ready.";
-    return;
-  }
+      arc_bridge_service()->notifications()->GetInstanceForMethod("Init");
+  DCHECK(notifications_instance);
 
   notifications_instance->Init(binding_.CreateInterfacePtrAndBind());
   ready_ = true;
@@ -122,7 +119,8 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
   items_.erase(it);
 
   auto* notifications_instance =
-      arc_bridge_service()->notifications()->instance();
+      arc_bridge_service()->notifications()->GetInstanceForMethod(
+          "SendNotificationEventToAndroid");
 
   // On shutdown, the ARC channel may quit earlier then notifications.
   if (!notifications_instance) {
@@ -144,7 +142,8 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
   }
 
   auto* notifications_instance =
-      arc_bridge_service()->notifications()->instance();
+      arc_bridge_service()->notifications()->GetInstanceForMethod(
+          "SendNotificationEventToAndroid");
 
   // On shutdown, the ARC channel may quit earlier then notifications.
   if (!notifications_instance) {
@@ -167,7 +166,8 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
   }
 
   auto* notifications_instance =
-      arc_bridge_service()->notifications()->instance();
+      arc_bridge_service()->notifications()->GetInstanceForMethod(
+          "SendNotificationEventToAndroid");
 
   // On shutdown, the ARC channel may quit earlier then notifications.
   if (!notifications_instance) {

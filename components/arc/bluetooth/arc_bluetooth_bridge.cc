@@ -290,19 +290,15 @@ void ArcBluetoothBridge::OnAdapterInitialized(
   // register ourselves as an observer with it then. Since our adapter is
   // ready, we should register it now.
   if (!bluetooth_adapter_->HasObserver(this) &&
-      arc_bridge_service()->bluetooth()->instance()) {
+      arc_bridge_service()->bluetooth()->has_instance()) {
     bluetooth_adapter_->AddObserver(this);
   }
 }
 
 void ArcBluetoothBridge::OnInstanceReady() {
   mojom::BluetoothInstance* bluetooth_instance =
-      arc_bridge_service()->bluetooth()->instance();
-  if (!bluetooth_instance) {
-    LOG(ERROR) << "OnBluetoothInstanceReady called, "
-               << "but no bluetooth instance found";
-    return;
-  }
+      arc_bridge_service()->bluetooth()->GetInstanceForMethod("Init");
+  DCHECK(bluetooth_instance);
 
   bluetooth_instance->Init(binding_.CreateInterfacePtrAndBind());
 

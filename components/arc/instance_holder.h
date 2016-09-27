@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_INSTANCE_HOLDER_H_
 #define COMPONENTS_ARC_INSTANCE_HOLDER_H_
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -35,18 +36,17 @@ class InstanceHolder {
 
   InstanceHolder() = default;
 
-  // Gets the Mojo interface for all the instance services. This will return
-  // nullptr if that particular service is not ready yet. Use an Observer if you
-  // want to be notified when this is ready. This can only be called on the
-  // thread that this class was created on.
-  T* instance() const { return instance_; }
-  uint32_t version() const { return version_; }
+  // Returns true if the Mojo interface is ready at least for its version 0
+  // interface. Use an Observer if you want to be notified when this is ready.
+  // This can only be called on the thread that this class was created on.
+  bool has_instance() const { return instance_; }
 
   // Gets the Mojo interface that's intended to call for
   // |method_name_for_logging|, but only if its reported version is at least
   // |min_version|. Returns nullptr if the instance is either not ready or does
   // not have the requested version, and logs appropriately.
-  T* GetInstanceForMethod(const char* method_name_for_logging,
+  // TODO(lhchavez): Improve the API. (crbug.com/649782)
+  T* GetInstanceForMethod(const std::string& method_name_for_logging,
                           uint32_t min_version) {
     if (!instance_) {
       VLOG(1) << "Instance for " << T::Name_ << "::" << method_name_for_logging
@@ -54,16 +54,17 @@ class InstanceHolder {
       return nullptr;
     }
     if (version_ < min_version) {
-      VLOG(1) << "Instance for " << T::Name_ << "::" << method_name_for_logging
-              << " version mismatch. Expected " << min_version << " got "
-              << version_;
+      LOG(ERROR) << "Instance for " << T::Name_
+                 << "::" << method_name_for_logging
+                 << " version mismatch. Expected " << min_version << " got "
+                 << version_;
       return nullptr;
     }
     return instance_;
   }
 
   // Same as the above, but for the version zero.
-  T* GetInstanceForMethod(const char* method_name_for_logging) {
+  T* GetInstanceForMethod(const std::string& method_name_for_logging) {
     return GetInstanceForMethod(method_name_for_logging, 0u);
   }
 
@@ -74,7 +75,7 @@ class InstanceHolder {
     DCHECK(thread_checker_.CalledOnValidThread());
     observer_list_.AddObserver(observer);
 
-    if (instance())
+    if (instance_)
       observer->OnInstanceReady();
   }
 
