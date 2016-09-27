@@ -251,6 +251,8 @@ class SSLClientSocketImpl::SSLContext {
         ssl_ctx_.get(), SSL_SESS_CACHE_CLIENT | SSL_SESS_CACHE_NO_INTERNAL);
     SSL_CTX_sess_set_new_cb(ssl_ctx_.get(), NewSessionCallback);
 
+    SSL_CTX_set_grease_enabled(ssl_ctx_.get(), 1);
+
     if (!SSL_CTX_add_client_custom_ext(ssl_ctx_.get(), kTbExtNum,
                                        &TokenBindingAddCallback,
                                        &TokenBindingFreeCallback, nullptr,
