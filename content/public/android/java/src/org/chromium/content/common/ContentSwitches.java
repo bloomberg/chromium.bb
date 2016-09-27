@@ -27,10 +27,6 @@ public abstract class ContentSwitches {
     // Change the url of the JavaScript that gets injected when accessibility mode is enabled.
     public static final String ACCESSIBILITY_JAVASCRIPT_URL = "accessibility-js-url";
 
-    // Indicates Chrome is running for performance benchmark.
-    public static final String RUNNING_PERFORMANCE_BENCHMARK =
-            "running-performance-benchmark";
-
     // Sets the ISO country code that will be used for phone number detection.
     public static final String NETWORK_COUNTRY_ISO = "network-country-iso";
 
