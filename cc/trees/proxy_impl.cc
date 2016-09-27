@@ -92,9 +92,7 @@ ProxyImpl::~ProxyImpl() {
 
   // Take away the CompositorFrameSink before destroying things so it doesn't
   // try to call into its client mid-shutdown.
-  scheduler_->DidLoseCompositorFrameSink();
   layer_tree_host_impl_->ReleaseCompositorFrameSink();
-
   scheduler_ = nullptr;
   layer_tree_host_impl_ = nullptr;
   // We need to explicitly shutdown the notifier to destroy any weakptrs it is

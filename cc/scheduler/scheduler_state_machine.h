@@ -82,8 +82,6 @@ class CC_EXPORT SchedulerStateMachine {
     BEGIN_MAIN_FRAME_STATE_SENT,
     BEGIN_MAIN_FRAME_STATE_STARTED,
     BEGIN_MAIN_FRAME_STATE_READY_TO_COMMIT,
-    BEGIN_MAIN_FRAME_STATE_WAITING_FOR_ACTIVATION,
-    BEGIN_MAIN_FRAME_STATE_WAITING_FOR_DRAW,
   };
   static const char* BeginMainFrameStateToString(BeginMainFrameState state);
 
@@ -156,6 +154,9 @@ class CC_EXPORT SchedulerStateMachine {
   // TODO(sunnyps): Rename OnBeginImplFrameDeadline to OnDraw or similar.
   void OnBeginImplFrameDeadline();
   void OnBeginImplFrameIdle();
+
+  int current_frame_number() const { return current_frame_number_; }
+
   BeginImplFrameState begin_impl_frame_state() const {
     return begin_impl_frame_state_;
   }

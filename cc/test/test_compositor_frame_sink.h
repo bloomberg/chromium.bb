@@ -78,7 +78,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   void DisplayDidDrawAndSwap() override;
 
  private:
-  void DidDrawCallback(bool synchronous);
+  void DidDrawCallback();
 
   // TODO(danakj): These don't need to be stored in unique_ptrs when
   // CompositorFrameSink is owned/destroyed on the compositor thread.
@@ -97,8 +97,6 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   gfx::Size enlarge_pass_texture_amount_;
 
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
-
-  base::WeakPtrFactory<TestCompositorFrameSink> weak_ptrs_;
 };
 
 }  // namespace cc
