@@ -112,6 +112,13 @@ class FakeModelTypeService : public ModelTypeService {
   std::string GetClientTag(const EntityData& entity_data) override;
   std::string GetStorageKey(const EntityData& entity_data) override;
   void OnChangeProcessorSet() override;
+  ConflictResolution ResolveConflict(
+      const EntityData& local_data,
+      const EntityData& remote_data) const override;
+
+  // Store a resolution for the next call to ResolveConflict. Note that if this
+  // is a USE_NEW resolution, the data will only exist for one resolve call.
+  void SetConflictResolution(ConflictResolution resolution);
 
   // Sets the error that the next fallible call to the service will generate.
   void SetServiceError(syncer::SyncError::ErrorType error_type);
@@ -128,6 +135,9 @@ class FakeModelTypeService : public ModelTypeService {
  private:
   // Applies |change_list| to the metadata store.
   void ApplyMetadataChangeList(std::unique_ptr<MetadataChangeList> change_list);
+
+  // The conflict resolution to use for calls to ResolveConflict.
+  std::unique_ptr<ConflictResolution> conflict_resolution_;
 
   // The error to produce on the next service call.
   syncer::SyncError service_error_;

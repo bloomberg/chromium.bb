@@ -17,6 +17,7 @@
 
 using browser_sync::ChromeSyncClient;
 using browser_sync::ProfileSyncComponentsFactoryImpl;
+using syncer_v2::ConflictResolution;
 using syncer_v2::FakeModelTypeService;
 using syncer_v2::ModelTypeService;
 using syncer_v2::SharedModelTypeProcessor;
@@ -24,7 +25,7 @@ using syncer_v2::SharedModelTypeProcessor;
 const char kKey1[] = "key1";
 const char kValue1[] = "value1";
 const char kValue2[] = "value2";
-const char kResolutionValue[] = "RESOLVED";
+const char kValue3[] = "value3";
 
 // A ChromeSyncClient that provides a ModelTypeService for PREFERENCES.
 class TestSyncClient : public ChromeSyncClient {
@@ -67,13 +68,6 @@ class TestModelTypeService : public FakeModelTypeService {
   void OnChangeProcessorSet() override {
     change_processor()->OnMetadataLoaded(syncer::SyncError(),
                                          db().CreateMetadataBatch());
-  }
-
-  syncer_v2::ConflictResolution ResolveConflict(
-      const syncer_v2::EntityData& local_data,
-      const syncer_v2::EntityData& remote_data) const override {
-    return syncer_v2::ConflictResolution::UseNew(
-        GenerateEntityData(local_data.non_unique_name, kResolutionValue));
   }
 
   void AddObserver(Observer* observer) { observers_.insert(observer); }
@@ -293,6 +287,10 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
   ASSERT_TRUE(SetupSync());
   TestModelTypeService* model1 = GetModelTypeService(0);
   TestModelTypeService* model2 = GetModelTypeService(1);
+  model1->SetConflictResolution(ConflictResolution::UseNew(
+      FakeModelTypeService::GenerateEntityData(kKey1, kValue3)));
+  model2->SetConflictResolution(ConflictResolution::UseNew(
+      FakeModelTypeService::GenerateEntityData(kKey1, kValue3)));
 
   // Write conflicting entities.
   model1->WriteItem(kKey1, kValue1);
@@ -300,6 +298,6 @@ IN_PROC_BROWSER_TEST_F(TwoClientUssSyncTest, ConflictResolution) {
 
   // Wait for them to be resolved to kResolutionValue by the custom conflict
   // resolution logic in TestModelTypeService.
-  ASSERT_TRUE(DataChecker(model1, kKey1, kResolutionValue).Wait());
-  ASSERT_TRUE(DataChecker(model2, kKey1, kResolutionValue).Wait());
+  ASSERT_TRUE(DataChecker(model1, kKey1, kValue3).Wait());
+  ASSERT_TRUE(DataChecker(model2, kKey1, kValue3).Wait());
 }

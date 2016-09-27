@@ -304,6 +304,18 @@ void FakeModelTypeService::SetServiceError(
                                      syncer::PREFERENCES);
 }
 
+ConflictResolution FakeModelTypeService::ResolveConflict(
+    const EntityData& local_data,
+    const EntityData& remote_data) const {
+  DCHECK(conflict_resolution_);
+  return std::move(*conflict_resolution_);
+}
+
+void FakeModelTypeService::SetConflictResolution(
+    ConflictResolution resolution) {
+  conflict_resolution_.reset(new ConflictResolution(std::move(resolution)));
+}
+
 void FakeModelTypeService::CheckPostConditions() {
   DCHECK(!service_error_.IsSet());
 }

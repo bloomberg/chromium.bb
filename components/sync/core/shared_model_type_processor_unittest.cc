@@ -176,12 +176,6 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return type_processor()->entities_.size();
   }
 
-  // Store a resolution for the next call to ResolveConflict. Note that if this
-  // is a USE_NEW resolution, the data will only exist for one resolve call.
-  void SetConflictResolution(ConflictResolution resolution) {
-    conflict_resolution_.reset(new ConflictResolution(std::move(resolution)));
-  }
-
   // Sets the error type that OnReadyToConnect (our StartCallback) expects to
   // receive.
   void ExpectStartError(syncer::SyncError::ErrorType error_type) {
@@ -248,15 +242,6 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
         keys, base::Bind(&SharedModelTypeProcessorTest::CaptureDataCallback,
                          base::Unretained(this), callback));
   }
-
-  ConflictResolution ResolveConflict(
-      const EntityData& local_data,
-      const EntityData& remote_data) const override {
-    DCHECK(conflict_resolution_);
-    return std::move(*conflict_resolution_);
-  }
-
-  std::unique_ptr<ConflictResolution> conflict_resolution_;
 
   // This sets ThreadTaskRunnerHandle on the current thread, which the type
   // processor will pick up as the sync task runner.
