@@ -163,11 +163,8 @@ void NavigationResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     bool* defer) {
   // If the request has already committed, close the stream and leave it as-is.
-  //
-  // TODO(davidben): The net error code should be passed through StreamWriter
-  // down to the stream's consumer. See https://crbug.com/426162.
   if (writer_.stream()) {
-    writer_.Finalize();
+    writer_.Finalize(status.error());
     return;
   }
 

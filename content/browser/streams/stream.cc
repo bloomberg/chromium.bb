@@ -118,11 +118,11 @@ void Stream::Flush() {
   writer_->Flush();
 }
 
-void Stream::Finalize() {
+void Stream::Finalize(int status) {
   if (!writer_.get())
     return;
 
-  writer_->Close(0);
+  writer_->Close(status);
   writer_.reset();
 
   // Continue asynchronously.
@@ -185,6 +185,10 @@ void Stream::CloseHandle() {
   registry_->UnregisterStream(url());
   if (write_observer_)
     write_observer_->OnClose(this);
+}
+
+int Stream::GetStatus() {
+  return reader_->GetStatus();
 }
 
 void Stream::OnSpaceAvailable() {

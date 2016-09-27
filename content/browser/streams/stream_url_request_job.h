@@ -53,6 +53,7 @@ class CONTENT_EXPORT StreamURLRequestJob
   int total_bytes_read_;
   int max_range_;
   bool request_failed_;
+  int error_code_;  // Only set if request_failed_.
 
   base::WeakPtrFactory<StreamURLRequestJob> weak_factory_;
 

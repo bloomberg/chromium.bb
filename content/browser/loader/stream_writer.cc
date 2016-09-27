@@ -19,7 +19,7 @@ StreamWriter::StreamWriter() : controller_(nullptr), immediate_mode_(false) {
 
 StreamWriter::~StreamWriter() {
   if (stream_.get())
-    Finalize();
+    Finalize(0);
 }
 
 void StreamWriter::InitializeStream(StreamRegistry* registry,
@@ -67,9 +67,9 @@ void StreamWriter::OnReadCompleted(int bytes_read, bool* defer) {
     *defer = true;
 }
 
-void StreamWriter::Finalize() {
+void StreamWriter::Finalize(int status) {
   DCHECK(stream_.get());
-  stream_->Finalize();
+  stream_->Finalize(status);
   stream_->RemoveWriteObserver(this);
   stream_ = nullptr;
 }

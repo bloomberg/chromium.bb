@@ -578,7 +578,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse) {
     expected_response += kTestData;
     stream->AddData(kTestData, sizeof(kTestData) - 1);
   }
-  stream->Finalize();
+  stream->Finalize(net::OK);
 
   EXPECT_FALSE(HasWork());
   base::RunLoop().RunUntilIdle();
@@ -628,7 +628,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_DelayedRegistration) {
     expected_response += kTestData;
     stream->AddData(kTestData, sizeof(kTestData) - 1);
   }
-  stream->Finalize();
+  stream->Finalize(net::OK);
 
   EXPECT_FALSE(HasWork());
   base::RunLoop().RunUntilIdle();
@@ -670,7 +670,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_QuickFinalize) {
     expected_response += kTestData;
     stream->AddData(kTestData, sizeof(kTestData) - 1);
   }
-  stream->Finalize();
+  stream->Finalize(net::OK);
   SetUpWithHelper(new StreamResponder(stream_url));
 
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
@@ -729,7 +729,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponse_Flush) {
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(expected_response, url_request_delegate_.response_data());
   }
-  stream->Finalize();
+  stream->Finalize(net::OK);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request_->status().is_success());
   EXPECT_EQ(200,
@@ -786,7 +786,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, StreamResponseAndCancel) {
     expected_response += kTestData;
     stream->AddData(kTestData, sizeof(kTestData) - 1);
   }
-  stream->Finalize();
+  stream->Finalize(net::OK);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request_->status().is_success());
@@ -830,7 +830,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
   ASSERT_FALSE(stream_context->registry()->GetStream(stream_url).get());
   for (int i = 0; i < 1024; ++i)
     stream->AddData(kTestData, sizeof(kTestData) - 1);
-  stream->Finalize();
+  stream->Finalize(net::OK);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(request_->status().is_success());

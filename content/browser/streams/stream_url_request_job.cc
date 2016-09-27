@@ -30,6 +30,7 @@ StreamURLRequestJob::StreamURLRequestJob(
       total_bytes_read_(0),
       max_range_(0),
       request_failed_(false),
+      error_code_(net::OK),
       weak_factory_(this) {
   DCHECK(stream_.get());
   stream_->SetReadObserver(this);
@@ -92,12 +93,8 @@ void StreamURLRequestJob::Kill() {
 }
 
 int StreamURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
-  // TODO(ellyjones): This is not right. The old code returned true here, but
-  // ReadRawData's old contract was to return true only for synchronous
-  // successes, which had the effect of treating all errors as synchronous EOFs.
-  // See https://crbug.com/508957
   if (request_failed_)
-    return 0;
+    return error_code_;
 
   DCHECK(buf);
   int to_read = buf_size;
@@ -112,9 +109,10 @@ int StreamURLRequestJob::ReadRawData(net::IOBuffer* buf, int buf_size) {
   int bytes_read = 0;
   switch (stream_->ReadRawData(buf, to_read, &bytes_read)) {
     case Stream::STREAM_HAS_DATA:
-    case Stream::STREAM_COMPLETE:
       total_bytes_read_ += bytes_read;
       return bytes_read;
+    case Stream::STREAM_COMPLETE:
+      return stream_->GetStatus();
     case Stream::STREAM_EMPTY:
       pending_buffer_ = buf;
       pending_buffer_size_ = to_read;
@@ -169,6 +167,7 @@ void StreamURLRequestJob::DidStart() {
 
 void StreamURLRequestJob::NotifyFailure(int error_code) {
   request_failed_ = true;
+  error_code_ = error_code;
 
   // This method can only be called before headers are set.
   DCHECK(!headers_set_);

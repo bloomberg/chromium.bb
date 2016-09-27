@@ -68,7 +68,7 @@ class StreamWriter : public StreamWriteObserver {
   void OnReadCompleted(int bytes_read, bool* defer);
 
   // Called when there is no more data to read to the stream.
-  void Finalize();
+  void Finalize(int status);
 
  private:
   // StreamWriteObserver implementation.

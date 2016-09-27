@@ -68,13 +68,15 @@ class StreamURLRequestJobTest : public testing::Test {
 
   void TestSuccessRequest(const GURL& url,
                           const std::string& expected_response) {
-    TestRequest("GET", url, net::HttpRequestHeaders(), 200, expected_response);
+    TestRequest("GET", url, net::HttpRequestHeaders(), 200, net::OK,
+                expected_response);
   }
 
   void TestRequest(const std::string& method,
                    const GURL& url,
                    const net::HttpRequestHeaders& extra_headers,
                    int expected_status_code,
+                   int expected_error_code,
                    const std::string& expected_response) {
     net::TestDelegate delegate;
     request_ = url_request_context_.CreateRequest(
@@ -87,7 +89,10 @@ class StreamURLRequestJobTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // Verify response.
-    EXPECT_TRUE(request_->status().is_success());
+    if (expected_error_code)
+      EXPECT_EQ(expected_error_code, request_->status().error());
+    else
+      EXPECT_TRUE(request_->status().is_success());
     ASSERT_TRUE(request_->response_headers());
     EXPECT_EQ(expected_status_code,
               request_->response_headers()->response_code());
@@ -111,7 +116,7 @@ TEST_F(StreamURLRequestJobTest, TestGetSimpleDataRequest) {
       new net::StringIOBuffer(kTestData1));
 
   stream->AddData(buffer, buffer->size());
-  stream->Finalize();
+  stream->Finalize(net::OK);
 
   TestSuccessRequest(kStreamURL, kTestData1);
 }
@@ -129,7 +134,7 @@ TEST_F(StreamURLRequestJobTest, TestGetLargeStreamRequest) {
       new net::StringIOBuffer(large_data));
 
   stream->AddData(buffer, buffer->size());
-  stream->Finalize();
+  stream->Finalize(net::OK);
   TestSuccessRequest(kStreamURL, large_data);
 }
 
@@ -154,13 +159,13 @@ TEST_F(StreamURLRequestJobTest, TestRangeDataRequest) {
       new net::StringIOBuffer(kTestData2));
 
   stream->AddData(buffer, buffer->size());
-  stream->Finalize();
+  stream->Finalize(net::OK);
 
   net::HttpRequestHeaders extra_headers;
   extra_headers.SetHeader(net::HttpRequestHeaders::kRange,
                           net::HttpByteRange::Bounded(0, 3).GetHeaderValue());
   TestRequest("GET", kStreamURL, extra_headers,
-              200, std::string(kTestData2, 4));
+              200, net::OK, std::string(kTestData2, 4));
 }
 
 TEST_F(StreamURLRequestJobTest, TestInvalidRangeDataRequest) {
@@ -171,12 +176,13 @@ TEST_F(StreamURLRequestJobTest, TestInvalidRangeDataRequest) {
       new net::StringIOBuffer(kTestData2));
 
   stream->AddData(buffer, buffer->size());
-  stream->Finalize();
+  stream->Finalize(net::OK);
 
   net::HttpRequestHeaders extra_headers;
   extra_headers.SetHeader(net::HttpRequestHeaders::kRange,
                           net::HttpByteRange::Bounded(1, 3).GetHeaderValue());
-  TestRequest("GET", kStreamURL, extra_headers, 405, std::string());
+  TestRequest("GET", kStreamURL, extra_headers, 405,
+              net::ERR_METHOD_NOT_SUPPORTED, std::string());
 }
 
 }  // namespace content

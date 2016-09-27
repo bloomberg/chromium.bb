@@ -12,6 +12,7 @@
 #include "content/browser/streams/stream_register_observer.h"
 #include "content/browser/streams/stream_registry.h"
 #include "content/browser/streams/stream_write_observer.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -62,6 +63,7 @@ class TestStreamReader : public StreamReadObserver {
           break;
         case Stream::STREAM_COMPLETE:
           completed_ = true;
+          status_ = stream->GetStatus();
           return;
         case Stream::STREAM_EMPTY:
           EXPECT_FALSE(completed_);
@@ -84,11 +86,13 @@ class TestStreamReader : public StreamReadObserver {
 
   bool completed() const { return completed_; }
   bool aborted() const { return aborted_; }
+  int status() const { return status_; }
 
  private:
   scoped_refptr<net::GrowableIOBuffer> buffer_;
   bool completed_ = false;
   bool aborted_ = false;
+  int status_ = 0;
 };
 
 class TestStreamWriter : public StreamWriteObserver {
@@ -195,9 +199,10 @@ TEST_F(StreamTest, Stream) {
   const int kBufferSize = 1000000;
   scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
   writer.Write(stream.get(), buffer, kBufferSize);
-  stream->Finalize();
+  stream->Finalize(net::OK);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(reader.completed());
+  EXPECT_EQ(net::OK, reader.status());
 
   ASSERT_EQ(reader.buffer()->capacity(), kBufferSize);
   for (int i = 0; i < kBufferSize; i++)
@@ -218,6 +223,20 @@ TEST_F(StreamTest, Abort) {
   EXPECT_TRUE(reader.aborted());
 }
 
+TEST_F(StreamTest, Error) {
+  TestStreamReader reader;
+  TestStreamWriter writer;
+
+  GURL url("blob://stream");
+  scoped_refptr<Stream> stream(new Stream(registry_.get(), &writer, url));
+  EXPECT_TRUE(stream->SetReadObserver(&reader));
+
+  stream->Finalize(net::ERR_ACCESS_DENIED);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(reader.completed());
+  EXPECT_EQ(net::ERR_ACCESS_DENIED, reader.status());
+}
+
 // Test that even if a reader receives an empty buffer, once TransferData()
 // method is called on it with |source_complete| = true, following Read() calls
 // on it never returns STREAM_EMPTY. Together with StreamTest.Stream above, this
@@ -236,10 +255,11 @@ TEST_F(StreamTest, ClosedReaderDoesNotReturnStreamEmpty) {
   const int kBufferSize = 0;
   scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
   stream->AddData(buffer, kBufferSize);
-  stream->Finalize();
+  stream->Finalize(net::OK);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(reader.completed());
   EXPECT_EQ(0, reader.buffer()->capacity());
+  EXPECT_EQ(net::OK, reader.status());
 }
 
 TEST_F(StreamTest, GetStream) {

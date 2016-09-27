@@ -5,6 +5,7 @@
 #include "content/browser/loader/stream_resource_handler.h"
 
 #include "base/logging.h"
+#include "net/url_request/url_request_status.h"
 
 namespace content {
 
@@ -54,7 +55,7 @@ bool StreamResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 void StreamResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     bool* defer) {
-  writer_.Finalize();
+  writer_.Finalize(status.error());
 }
 
 void StreamResourceHandler::OnDataDownloaded(int bytes_downloaded) {

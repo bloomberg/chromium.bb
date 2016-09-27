@@ -74,7 +74,7 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
   void Flush();
 
   // Notifies this stream that it will not be receiving any more data.
-  void Finalize();
+  void Finalize(int status);
 
   // Reads a maximum of |buf_size| from the stream into |buf|.  Sets
   // |*bytes_read| to the number of bytes actually read.
@@ -84,6 +84,10 @@ class CONTENT_EXPORT Stream : public base::RefCountedThreadSafe<Stream> {
 
   std::unique_ptr<StreamHandle> CreateHandle();
   void CloseHandle();
+
+  // Returns the status of the stream. This is either an error code that
+  // occurred while reading, or the status that was set in Finalize above.
+  int GetStatus();
 
   // Indicates whether there is space in the buffer to add more data.
   bool can_add_data() const { return can_add_data_; }

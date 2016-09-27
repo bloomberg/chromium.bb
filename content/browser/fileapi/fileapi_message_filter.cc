@@ -565,7 +565,7 @@ void FileAPIMessageFilter::OnFinishBuildingStream(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<Stream> stream(GetStreamForURL(url));
   if (stream.get())
-    stream->Finalize();
+    stream->Finalize(net::OK);
 }
 
 void FileAPIMessageFilter::OnAbortBuildingStream(const GURL& url) {

@@ -14,6 +14,7 @@
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_switches.h"
 #include "content/test/test_navigation_url_loader_factory.h"
+#include "net/base/net_errors.h"
 
 namespace content {
 
@@ -62,7 +63,7 @@ std::unique_ptr<StreamHandle> MakeEmptyStream() {
   StreamRegistry* stream_registry =
       browser_side_navigation_test_utils.Get()->stream_registry();
   scoped_refptr<Stream> stream(new Stream(stream_registry, NULL, url));
-  stream->Finalize();
+  stream->Finalize(net::OK);
   return stream->CreateHandle();
 }
 
