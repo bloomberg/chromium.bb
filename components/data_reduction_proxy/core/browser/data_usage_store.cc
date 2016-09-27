@@ -225,7 +225,6 @@ bool DataUsageStore::BucketOverlapsInterval(
     const base::Time& start_interval,
     const base::Time& end_interval) {
   DCHECK(!bucket_last_updated.is_null());
-  DCHECK(!start_interval.is_null());
   DCHECK(!end_interval.is_null());
   DCHECK_LE(start_interval, end_interval);
 
