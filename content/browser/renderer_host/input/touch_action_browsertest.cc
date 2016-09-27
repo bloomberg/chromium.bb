@@ -51,7 +51,7 @@ const char kTouchActionDataURL[] =
     "  width: 96px;"
     "  border: 2px solid blue;"
     "}"
-    ".spacer { height: 1000px; }"
+    ".spacer { height: 10000px; }"
     ".ta-none { touch-action: none; }"
     "</style>"
     "<div class=box></div>"
@@ -138,7 +138,7 @@ class TouchActionBrowserTest : public ContentBrowserTest {
 
     int scrollHeight = ExecuteScriptAndExtractInt(
         "document.documentElement.scrollHeight");
-    EXPECT_EQ(1200, scrollHeight);
+    EXPECT_EQ(10200, scrollHeight);
 
     scoped_refptr<FrameWatcher> frame_watcher(new FrameWatcher());
     frame_watcher->AttachTo(shell()->web_contents());
