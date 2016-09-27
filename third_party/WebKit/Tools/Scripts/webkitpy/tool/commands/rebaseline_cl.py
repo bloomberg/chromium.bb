@@ -73,11 +73,29 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         else:
             test_prefix_list = self._test_prefix_list(
                 issue_number, only_changed_tests=options.only_changed_tests)
+
+        # TODO(qyearsley): Fix places where non-existing tests may be added:
+        #  1. Make sure that the tests obtained when passing --only-changed-tests include only existing tests.
+        #  2. Make sure that update-w3c-test-expectations doesn't specify non-existing tests (http://crbug.com/649691).
+        test_prefix_list = self._filter_existing(test_prefix_list)
+
         self._log_test_prefix_list(test_prefix_list)
 
         if options.dry_run:
             return
         self._rebaseline(options, test_prefix_list)
+
+    def _filter_existing(self, test_prefix_list):
+        """Filters out entries in |test_prefix_list| for tests that don't exist."""
+        new_test_prefix_list = {}
+        port = self._tool.port_factory.get()
+        for test in test_prefix_list:
+            path = port.abspath_for_test(test)
+            if self._tool.filesystem.exists(path):
+                new_test_prefix_list[test] = test_prefix_list[test]
+            else:
+                _log.warning('%s not found, removing from list.', path)
+        return new_test_prefix_list
 
     def _get_issue_number(self, options):
         """Gets the Rietveld CL number from either |options| or from the current local branch."""

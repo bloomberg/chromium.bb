@@ -16,6 +16,7 @@ from webkitpy.tool.commands.rebaseline_cl import RebaselineCL
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
 
 
+# TODO(qyearsley): Change this to use webkitpy.common.system.logtesting.LoggingTestCase instead of using OutputCapture.
 class RebaselineCLTest(BaseTestCase):
     command_constructor = RebaselineCL
 
@@ -55,6 +56,17 @@ class RebaselineCLTest(BaseTestCase):
             },
         })
         self.command.rietveld = Rietveld(web)
+
+        # Write to the mock filesystem so that these tests are considered to exist.
+        port = self.mac_port
+        tests = [
+            'fast/dom/prototype-taco.html',
+            'fast/dom/prototype-inheritance.html',
+            'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
+        ]
+        for test in tests:
+            # pylint: disable=protected-access
+            self._write(port._filesystem.join(port.layout_tests_dir(), test), 'contents')
 
     @staticmethod
     def command_options(**kwargs):
@@ -134,6 +146,18 @@ class RebaselineCLTest(BaseTestCase):
              'Rebaselining fast/dom/prototype-inheritance.html\n'
              'Rebaselining fast/dom/prototype-taco.html\n'))
 
+    def test_execute_with_nonexistent_test(self):
+        oc = OutputCapture()
+        try:
+            oc.capture_output()
+            self.command.execute(self.command_options(issue=11112222), ['some/non/existent/test.html'], self.tool)
+        finally:
+            _, _, logs = oc.restore_output()
+        self.assertMultiLineEqual(
+            logs,
+            '/test.checkout/LayoutTests/some/non/existent/test.html not found, removing from list.\n'
+            'No tests to rebaseline; exiting.\n')
+
     def test_execute_with_trigger_jobs_option(self):
         oc = OutputCapture()
         try:
@@ -154,19 +178,7 @@ class RebaselineCLTest(BaseTestCase):
              'Rebaselining fast/dom/prototype-taco.html\n'
              'Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n'))
         # The first executive call, before the rebaseline calls, is triggering try jobs.
-        self.assertEqual(
-            self.tool.executive.calls,
-            [
-                ['git', 'cl', 'try', '-b', 'MOCK Try Linux'],
-                [
-                    ['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'png',
-                     'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html'],
-                    ['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt',
-                     'fast/dom/prototype-inheritance.html'],
-                    ['python', 'echo', 'optimize-baselines', '--no-modify-scm', '--suffixes', 'txt',
-                     'fast/dom/prototype-taco.html']
-                ]
-            ])
+        self.assertEqual(self.tool.executive.calls[0], ['git', 'cl', 'try', '-b', 'MOCK Try Linux'])
 
     def test_rebaseline_calls(self):
         """Tests the list of commands that are invoked when rebaseline is called."""
