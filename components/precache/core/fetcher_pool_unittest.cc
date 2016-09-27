@@ -39,8 +39,11 @@ class MockURLFetcherDelegate : public net::URLFetcherDelegate {
   virtual ~MockURLFetcherDelegate() {};
 
   MOCK_METHOD1(OnURLFetchComplete, void(const URLFetcher*));
-  MOCK_METHOD3(OnURLFetchDownloadProgress,
-               void(const URLFetcher* source, int64_t current, int64_t total));
+  MOCK_METHOD4(OnURLFetchDownloadProgress,
+               void(const URLFetcher* source,
+                    int64_t current,
+                    int64_t total,
+                    int64_t current_network_bytes));
   MOCK_METHOD3(OnURLFetchUploadProgress,
                void(const URLFetcher* source, int64_t current, int64_t total));
 };

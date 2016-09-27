@@ -630,7 +630,8 @@ class DownloadFileRequestBase : public UrlFetchRequestBase {
   // net::URLFetcherDelegate overrides.
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                   int64_t current,
-                                  int64_t total) override;
+                                  int64_t total,
+                                  int64_t current_network_bytes) override;
 
  private:
   const DownloadActionCallback download_action_callback_;

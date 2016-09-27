@@ -137,7 +137,7 @@ void MockGoogleStreamingServer::SimulateServerResponse(
       net::URLRequestStatus::FromError(success ? net::OK : net::ERR_FAILED));
   fetcher->set_response_code(success ? 200 : 500);
   fetcher->SetResponseString(http_response);
-  fetcher->delegate()->OnURLFetchDownloadProgress(fetcher, 0, 0);
+  fetcher->delegate()->OnURLFetchDownloadProgress(fetcher, 0, 0, 0);
 }
 
 // Can return NULL if the SpeechRecognizer has not requested the connection yet.

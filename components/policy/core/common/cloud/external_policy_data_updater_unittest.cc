@@ -178,9 +178,8 @@ TEST_F(ExternalPolicyDataUpdaterTest, PayloadSizeExceedsLimit) {
 
   // Indicate that the payload size will exceed allowed maximum.
   fetcher->delegate()->OnURLFetchDownloadProgress(
-      fetcher,
-      kExternalPolicyDataMaxSize + 1,
-      -1);
+      fetcher, kExternalPolicyDataMaxSize + 1, -1,
+      kExternalPolicyDataMaxSize + 1);
   backend_task_runner_->RunPendingTasks();
   io_task_runner_->RunUntilIdle();
 

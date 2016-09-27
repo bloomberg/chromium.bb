@@ -370,7 +370,8 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
 
 void HttpBridge::OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                             int64_t current,
-                                            int64_t total) {
+                                            int64_t total,
+                                            int64_t current_network_bytes) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   // Reset the delay when forward progress is made.
   base::AutoLock lock(fetch_state_lock_);

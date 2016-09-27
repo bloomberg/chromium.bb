@@ -264,7 +264,8 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
   ~Fetcher() override;
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                   int64_t current,
-                                  int64_t total) override;
+                                  int64_t total,
+                                  int64_t current_network_bytes) override;
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   int64_t response_bytes() const { return response_bytes_; }
   int64_t network_response_bytes() const { return network_response_bytes_; }

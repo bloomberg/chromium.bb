@@ -46,7 +46,8 @@ class UrlFetcherDownloader : public CrxDownloader,
   void OnURLFetchComplete(const net::URLFetcher* source) override;
   void OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                   int64_t current,
-                                  int64_t total) override;
+                                  int64_t total,
+                                  int64_t current_network_bytes) override;
   std::unique_ptr<net::URLFetcher> url_fetcher_;
   net::URLRequestContextGetter* context_getter_;
 

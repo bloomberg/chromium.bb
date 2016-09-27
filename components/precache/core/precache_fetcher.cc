@@ -286,23 +286,25 @@ void PrecacheFetcher::Fetcher::LoadFromNetwork() {
 void PrecacheFetcher::Fetcher::OnURLFetchDownloadProgress(
     const net::URLFetcher* source,
     int64_t current,
-    int64_t total) {
-  // If going over the per-resource download cap.
+    int64_t total,
+    int64_t current_network_bytes) {
+  // If network bytes going over the per-resource download cap.
   if (fetch_stage_ == FetchStage::NETWORK &&
-      // |current| is guaranteed to be non-negative, so this cast is safe.
-      static_cast<size_t>(std::max(current, total)) > max_bytes_) {
+      // |current_network_bytes| is guaranteed to be non-negative, so this cast
+      // is safe.
+      static_cast<size_t>(current_network_bytes) > max_bytes_) {
     VLOG(1) << "Cancelling " << url_ << ": (" << current << "/" << total
             << ") is over " << max_bytes_;
 
     // Call the completion callback, to attempt the next download, or to trigger
     // cleanup in precache_delegate_->OnDone().
-    response_bytes_ = network_response_bytes_ = current;
+    response_bytes_ = current;
+    network_response_bytes_ = current_network_bytes;
     was_cached_ = source->WasCached();
 
     UMA_HISTOGRAM_CUSTOM_COUNTS("Precache.Fetch.ResponseBytes.NetworkWasted",
                                 network_response_bytes_, 1,
                                 1024 * 1024 /* 1 MB */, 100);
-
     // Cancel the download.
     network_url_fetcher_.reset();
     callback_.Run(*this);

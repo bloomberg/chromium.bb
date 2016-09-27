@@ -253,7 +253,8 @@ void ExternalPolicyDataFetcherBackend::OnURLFetchComplete(
 void ExternalPolicyDataFetcherBackend::OnURLFetchDownloadProgress(
     const net::URLFetcher* source,
     int64_t current,
-    int64_t total) {
+    int64_t total,
+    int64_t current_network_bytes) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   auto it = job_map_.find(source);
   DCHECK(it != job_map_.end());

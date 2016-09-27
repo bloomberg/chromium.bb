@@ -341,7 +341,8 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
 
 void LogoTracker::OnURLFetchDownloadProgress(const net::URLFetcher* source,
                                              int64_t current,
-                                             int64_t total) {
+                                             int64_t total,
+                                             int64_t current_network_bytes) {
   if (total > kMaxDownloadBytes || current > kMaxDownloadBytes) {
     LOG(WARNING) << "Search provider logo exceeded download size limit";
     ReturnToIdle(DOWNLOAD_OUTCOME_DOWNLOAD_FAILED);

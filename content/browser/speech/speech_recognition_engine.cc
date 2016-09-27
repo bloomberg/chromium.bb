@@ -136,7 +136,8 @@ void SpeechRecognitionEngine::OnURLFetchComplete(const URLFetcher* source) {
 void SpeechRecognitionEngine::OnURLFetchDownloadProgress(
     const URLFetcher* source,
     int64_t current,
-    int64_t total) {
+    int64_t total,
+    int64_t current_network_bytes) {
   const bool kPartialResponse = false;
   DispatchHTTPResponse(source, kPartialResponse);
 }

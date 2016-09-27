@@ -158,9 +158,8 @@ TEST_F(ExternalPolicyDataFetcherTest, MaxSizeExceeded) {
 
   // Indicate that the data size will exceed maximum allowed.
   fetcher->delegate()->OnURLFetchDownloadProgress(
-      fetcher,
-      kExternalPolicyDataMaxSize + 1,
-      -1);
+      fetcher, kExternalPolicyDataMaxSize + 1, -1,
+      kExternalPolicyDataMaxSize + 1);
 
   // Verify that the fetch is no longer running.
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));

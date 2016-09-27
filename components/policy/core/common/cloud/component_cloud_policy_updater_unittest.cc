@@ -243,7 +243,8 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyDataInvalid) {
   EXPECT_EQ(GURL(kTestDownload2), fetcher->GetOriginalURL());
 
   // Indicate that the policy data size will exceed allowed maximum.
-  fetcher->delegate()->OnURLFetchDownloadProgress(fetcher, 6 * 1024 * 1024, -1);
+  fetcher->delegate()->OnURLFetchDownloadProgress(fetcher, 6 * 1024 * 1024, -1,
+                                                  6 * 1024 * 1024);
   task_runner_->RunUntilIdle();
 
   // Verify that the third download has been started.

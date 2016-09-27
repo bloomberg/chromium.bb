@@ -509,9 +509,8 @@ void SpeechRecognitionEngineTest::ProvideMockProtoResultDownstream(
   response_buffer_.append(response_string);
   downstream_fetcher->SetResponseString(response_buffer_);
   downstream_fetcher->delegate()->OnURLFetchDownloadProgress(
-      downstream_fetcher,
-      response_buffer_.size(),
-      -1 /* total response length not used */);
+      downstream_fetcher, response_buffer_.size(),
+      -1 /* total response length not used */, response_buffer_.size());
 }
 
 void SpeechRecognitionEngineTest::ProvideMockResultDownstream(

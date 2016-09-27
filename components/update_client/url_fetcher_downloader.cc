@@ -98,7 +98,8 @@ void UrlFetcherDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
 void UrlFetcherDownloader::OnURLFetchDownloadProgress(
     const net::URLFetcher* source,
     int64_t current,
-    int64_t total) {
+    int64_t total,
+    int64_t current_network_bytes) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   downloaded_bytes_ = current;

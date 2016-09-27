@@ -984,7 +984,8 @@ void DownloadFileRequestBase::GetOutputFilePath(
 void DownloadFileRequestBase::OnURLFetchDownloadProgress(
     const URLFetcher* source,
     int64_t current,
-    int64_t total) {
+    int64_t total,
+    int64_t current_network_bytes) {
   if (!progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }
