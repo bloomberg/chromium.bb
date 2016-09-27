@@ -44,4 +44,11 @@ FailedProvisionalLoadInfo::FailedProvisionalLoadInfo(base::TimeDelta interval,
 
 FailedProvisionalLoadInfo::~FailedProvisionalLoadInfo() {}
 
+PageLoadMetricsObserver::ObservePolicy
+PageLoadMetricsObserver::FlushMetricsOnAppEnterBackground(
+    const PageLoadTiming& timing,
+    const PageLoadExtraInfo& extra_info) {
+  return CONTINUE_OBSERVING;
+}
+
 }  // namespace page_load_metrics

@@ -59,6 +59,12 @@ class TestPageLoadMetricsObserver : public PageLoadMetricsObserver {
     complete_timings_->push_back(timing);
   }
 
+  ObservePolicy FlushMetricsOnAppEnterBackground(
+      const PageLoadTiming& timing,
+      const PageLoadExtraInfo& extra_info) override {
+    return STOP_OBSERVING;
+  }
+
  private:
   std::vector<PageLoadTiming>* const updated_timings_;
   std::vector<PageLoadTiming>* const complete_timings_;
@@ -184,7 +190,6 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 TEST_F(MetricsWebContentsObserverTest, SuccessfulMainFrameNavigation) {
   PageLoadTiming timing;
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.response_start = base::TimeDelta::FromMilliseconds(2);
 
   content::WebContentsTester* web_contents_tester =
       content::WebContentsTester::For(web_contents());
@@ -497,6 +502,16 @@ TEST_F(MetricsWebContentsObserverTest, FlushMetricsOnAppEnterBackground) {
       internal::kPageLoadCompletedAfterAppBackground, false, 1);
   histogram_tester_.ExpectBucketCount(
       internal::kPageLoadCompletedAfterAppBackground, true, 0);
+
+  // Navigate again, which forces completion callbacks on the previous
+  // navigation to be invoked.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  // Verify that, even though the page load completed, no complete timings were
+  // reported, because the TestPageLoadMetricsObserver's
+  // FlushMetricsOnAppEnterBackground implementation returned STOP_OBSERVING,
+  // thus preventing OnComplete from being invoked.
+  ASSERT_EQ(0, CountCompleteTimingReported());
 
   DeleteContents();
 

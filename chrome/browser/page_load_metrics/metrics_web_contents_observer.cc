@@ -473,6 +473,16 @@ void PageLoadTracker::FlushMetricsOnAppEnterBackground() {
     RecordAppBackgroundPageLoadCompleted(false);
     app_entered_background_ = true;
   }
+
+  const PageLoadExtraInfo info = ComputePageLoadExtraInfo();
+  for (auto it = observers_.begin(); it != observers_.end();) {
+    if ((*it)->FlushMetricsOnAppEnterBackground(timing_, info) ==
+        PageLoadMetricsObserver::STOP_OBSERVING) {
+      it = observers_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 void PageLoadTracker::NotifyClientRedirectTo(
@@ -915,6 +925,11 @@ void MetricsWebContentsObserver::OnInputEvent(
 }
 
 void MetricsWebContentsObserver::FlushMetricsOnAppEnterBackground() {
+  // Signal to observers that we've been backgrounded, in cases where the
+  // FlushMetricsOnAppEnterBackground callback gets invoked before the
+  // associated WasHidden callback.
+  WasHidden();
+
   if (committed_load_)
     committed_load_->FlushMetricsOnAppEnterBackground();
   for (const auto& kv : provisional_loads_) {

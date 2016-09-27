@@ -128,6 +128,17 @@ struct PageLoadExtraInfo {
 // owned by the PageLoadTracker tracking a page load.
 class PageLoadMetricsObserver {
  public:
+  // ObservePolicy is used as a return value on some PageLoadMetricsObserver
+  // callbacks to indicate whether the observer would like to continue observing
+  // metric callbacks. Observers that wish to continue observing metric
+  // callbacks should return CONTINUE_OBSERVING; observers that wish to stop
+  // observing callbacks should return STOP_OBSERVING. Observers that return
+  // STOP_OBSERVING may be deleted.
+  enum ObservePolicy {
+    CONTINUE_OBSERVING,
+    STOP_OBSERVING,
+  };
+
   virtual ~PageLoadMetricsObserver() {}
 
   // The page load started, with the given navigation handle. Note that OnStart
@@ -205,10 +216,26 @@ class PageLoadMetricsObserver {
   virtual void OnParseStop(const PageLoadTiming& timing,
                            const PageLoadExtraInfo& extra_info) {}
 
-  // Observer method to be invoked when there is a change in PageLoadMetadata's
-  // behavior_flags.
+  // Invoked when there is a change in PageLoadMetadata's behavior_flags.
   virtual void OnLoadingBehaviorObserved(
       const page_load_metrics::PageLoadExtraInfo& extra_info) {}
+
+  // Invoked when the UMA metrics subsystem is persisting metrics as the
+  // application goes into the background, on platforms where the browser
+  // process may be killed after backgrounding (Android). Implementers should
+  // persist any metrics that have been buffered in memory in this callback, as
+  // the application may be killed at any time after this method is invoked
+  // without further notification. Note that this may be called both for
+  // provisional loads as well as committed loads. Implementations that only
+  // want to track committed loads should check extra_info.time_to_commit to
+  // determine if the load had committed. If the implementation returns
+  // CONTINUE_OBSERVING, this method may be called multiple times per observer,
+  // once for each time that the application enters the backround.
+  //
+  // The default implementation does nothing, and returns CONTINUE_OBSERVING.
+  virtual ObservePolicy FlushMetricsOnAppEnterBackground(
+      const PageLoadTiming& timing,
+      const PageLoadExtraInfo& extra_info);
 
   // One of OnComplete or OnFailedProvisionalLoad is invoked for tracked page
   // loads, immediately before the observer is deleted. These callbacks will not
