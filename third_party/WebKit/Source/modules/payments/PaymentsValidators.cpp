@@ -9,12 +9,12 @@
 
 namespace blink {
 
-// We limit the maximum length of the currency code to 2048 bytes for security reasons.
-static const int maxCurrencyCodeLength = 2048;
+// We limit the maximum length of string to 2048 bytes for security reasons.
+static const int maxiumStringLength = 2048;
 
 bool PaymentsValidators::isValidCurrencyCodeFormat(const String& code, String* optionalErrorMessage)
 {
-    if (code.length() <= maxCurrencyCodeLength)
+    if (code.length() <= maxiumStringLength)
         return true;
 
     if (optionalErrorMessage)
@@ -86,6 +86,17 @@ bool PaymentsValidators::isValidShippingAddress(const mojom::blink::PaymentAddre
     }
 
     return true;
+}
+
+bool PaymentsValidators::isValidErrorMsgFormat(const String& error, String* optionalErrorMessage)
+{
+    if (error.length() <= maxiumStringLength)
+        return true;
+
+    if (optionalErrorMessage)
+        *optionalErrorMessage = "Error message should be at most 2048 characters long";
+
+    return false;
 }
 
 } // namespace blink

@@ -103,6 +103,7 @@ struct PaymentDetails {
   array<PaymentItem> display_items;
   array<PaymentShippingOption> shipping_options;
   array<PaymentDetailsModifier> modifiers;
+  string error;
 };
 
 struct PaymentOptions {

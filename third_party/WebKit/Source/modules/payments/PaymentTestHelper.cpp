@@ -114,13 +114,23 @@ PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange detail, Paym
     else
         modifier = buildPaymentDetailsModifierForTest();
 
+    String errorMessage = "";
+    if (detail == PaymentTestDetailError)
+        errorMessage = valueToUse;
+
     PaymentDetails result;
     result.setTotal(total);
     result.setDisplayItems(HeapVector<PaymentItem>(1, item));
     result.setShippingOptions(HeapVector<PaymentShippingOption>(1, shippingOption));
     result.setModifiers(HeapVector<PaymentDetailsModifier>(1, modifier));
+    result.setError(errorMessage);
 
     return result;
+}
+
+PaymentDetails buildPaymentDetailsErrorMsgForTest(const String& valueToUse)
+{
+    return buildPaymentDetailsForTest(PaymentTestDetailError, PaymentTestDataNone, PaymentTestOverwriteValue, valueToUse);
 }
 
 HeapVector<PaymentMethodData> buildPaymentMethodDataForTest()

@@ -31,7 +31,8 @@ enum PaymentTestDetailToChange {
     PaymentTestDetailItem,
     PaymentTestDetailShippingOption,
     PaymentTestDetailModifierTotal,
-    PaymentTestDetailModifierItem
+    PaymentTestDetailModifierItem,
+    PaymentTestDetailError
 };
 
 enum PaymentTestDataToChange {
@@ -55,6 +56,8 @@ PaymentShippingOption buildShippingOptionForTest(PaymentTestDataToChange = Payme
 PaymentDetailsModifier buildPaymentDetailsModifierForTest(PaymentTestDetailToChange = PaymentTestDetailNone, PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
 
 PaymentDetails buildPaymentDetailsForTest(PaymentTestDetailToChange = PaymentTestDetailNone, PaymentTestDataToChange = PaymentTestDataNone, PaymentTestModificationType = PaymentTestOverwriteValue, const String& valueToUse = String());
+
+PaymentDetails buildPaymentDetailsErrorMsgForTest(const String& valueToUse = String());
 
 HeapVector<PaymentMethodData> buildPaymentMethodDataForTest();
 

@@ -79,6 +79,9 @@ std::ostream& operator<<(std::ostream& out, DetailsTestCase testCase)
     case PaymentTestDetailModifierItem:
         out << "modifiers.displayItem ";
         break;
+    case PaymentTestDetailError:
+        out << "error ";
+        break;
     case PaymentTestDetailNone:
         NOTREACHED();
         break;

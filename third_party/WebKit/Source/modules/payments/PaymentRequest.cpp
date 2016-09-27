@@ -125,6 +125,11 @@ struct TypeConverter<PaymentDetailsPtr, blink::PaymentDetails> {
         else
             output->modifiers = mojo::WTFArray<PaymentDetailsModifierPtr>::New(0);
 
+        if (input.hasError())
+            output->error = input.error();
+        else
+            output->error = WTF::emptyString();
+
         return output;
     }
 };
@@ -303,6 +308,12 @@ void validatePaymentDetails(const PaymentDetails& details, ExceptionState& excep
 
     if (details.hasModifiers()) {
         validatePaymentDetailsModifiers(details.modifiers(), exceptionState);
+    }
+
+    String errorMessage;
+    if (!PaymentsValidators::isValidErrorMsgFormat(details.error(), &errorMessage)) {
+        exceptionState.throwTypeError(errorMessage);
+        return;
     }
 }
 
@@ -533,6 +544,11 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const HeapVector<Paymen
     validatePaymentDetails(details, exceptionState);
     if (exceptionState.hadException())
         return;
+
+    if (details.hasError() && !details.error().isEmpty()) {
+        exceptionState.throwTypeError("Error value should be empty");
+        return;
+    }
 
     if (m_options.requestShipping()) {
         m_shippingOption = getSelectedShippingOption(details);

@@ -35,7 +35,6 @@ TEST(PaymentRequestTest, NoExceptionWithValidData)
     EXPECT_FALSE(scope.getExceptionState().hadException());
 }
 
-
 TEST(PaymentRequestTest, SupportedMethodListRequired)
 {
     V8TestingScope scope;
@@ -51,6 +50,16 @@ TEST(PaymentRequestTest, TotalRequired)
     V8TestingScope scope;
     makePaymentRequestOriginSecure(scope.document());
     PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), PaymentDetails(), scope.getExceptionState());
+
+    EXPECT_TRUE(scope.getExceptionState().hadException());
+    EXPECT_EQ(V8TypeError, scope.getExceptionState().code());
+}
+
+TEST(PaymentRequestTest, ErrorMsgMustBeEmptyInConstrctor)
+{
+    V8TestingScope scope;
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsErrorMsgForTest("This is an error message."), scope.getExceptionState());
 
     EXPECT_TRUE(scope.getExceptionState().hadException());
     EXPECT_EQ(V8TypeError, scope.getExceptionState().code());
@@ -464,6 +473,22 @@ TEST(PaymentRequestTest, UseTheSelectedShippingOptionFromPaymentDetailsUpdate)
     EXPECT_FALSE(scope.getExceptionState().hadException());
 
     EXPECT_EQ("fast", request->shippingOption());
+}
+
+TEST(PaymentRequestTest, NoExceptionWithErrorMessageInUpdate)
+{
+    V8TestingScope scope;
+    PaymentRequestMockFunctionScope funcs(scope.getScriptState());
+    makePaymentRequestOriginSecure(scope.document());
+    PaymentRequest* request = PaymentRequest::create(scope.getScriptState(), buildPaymentMethodDataForTest(), buildPaymentDetailsForTest(), scope.getExceptionState());
+    EXPECT_FALSE(scope.getExceptionState().hadException());
+
+    request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectNoCall());
+    String detailWithErrorMsg = "{\"total\": {\"label\": \"Total\", \"amount\": {\"currency\": \"USD\", \"value\": \"5.00\"}},"
+        "\"error\": \"This is an error message.\"}";
+
+    request->onUpdatePaymentDetails(ScriptValue::from(scope.getScriptState(), fromJSONString(scope.getScriptState(), detailWithErrorMsg, scope.getExceptionState())));
+    EXPECT_FALSE(scope.getExceptionState().hadException());
 }
 
 } // namespace

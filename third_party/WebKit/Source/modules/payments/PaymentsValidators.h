@@ -38,6 +38,9 @@ public:
     //  - Has a valid script code, if any.
     // A script code should be present only if language code is present.
     static bool isValidShippingAddress(const mojom::blink::PaymentAddressPtr&, String* optionalErrorMessage);
+
+    // Returns false if |error| is too long (greater than 2048).
+    static bool isValidErrorMsgFormat(const String& code, String* optionalErrorMessage);
 };
 
 } // namespace blink
