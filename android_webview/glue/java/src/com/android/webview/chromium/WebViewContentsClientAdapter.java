@@ -100,6 +100,8 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
     private WebView.FindListener mFindListener;
     // The listener receiving notifications of screen updates.
     private WebView.PictureListener mPictureListener;
+    // Whether the picture listener is invalidate only (i.e. receives a null Picture)
+    private boolean mPictureListenerInvalidateOnly;
 
     private WebViewDelegate mWebViewDelegate;
 
@@ -181,8 +183,9 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         mFindListener = listener;
     }
 
-    void setPictureListener(WebView.PictureListener listener) {
+    void setPictureListener(WebView.PictureListener listener, boolean invalidateOnly) {
         mPictureListener = listener;
+        mPictureListenerInvalidateOnly = invalidateOnly;
     }
 
     //--------------------------------------------------------------------------------------------
@@ -549,7 +552,8 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
                     public void run() {
                         if (mPictureListener != null) {
                             if (TRACE) Log.d(TAG, "onPageFinished-fake");
-                            mPictureListener.onNewPicture(mWebView, new Picture());
+                            mPictureListener.onNewPicture(mWebView,
+                                    mPictureListenerInvalidateOnly ? null : new Picture());
                         }
                     }
                 }, 100);

@@ -408,7 +408,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         // Make sure that we do not trigger any callbacks after destruction
         mContentsClientAdapter.setWebChromeClient(null);
         mContentsClientAdapter.setWebViewClient(null);
-        mContentsClientAdapter.setPictureListener(null);
+        mContentsClientAdapter.setPictureListener(null, true);
         mContentsClientAdapter.setFindListener(null);
         mContentsClientAdapter.setDownloadListener(null);
 
@@ -1296,9 +1296,9 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             });
             return;
         }
-        mContentsClientAdapter.setPictureListener(listener);
-        mAwContents.enableOnNewPicture(
-                listener != null, mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR2);
+        boolean invalidateOnly = mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR2;
+        mContentsClientAdapter.setPictureListener(listener, invalidateOnly);
+        mAwContents.enableOnNewPicture(listener != null, invalidateOnly);
     }
 
     @Override
