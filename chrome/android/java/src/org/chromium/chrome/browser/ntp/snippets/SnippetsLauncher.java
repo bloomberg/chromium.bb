@@ -10,6 +10,7 @@ import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.gcm.Task;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -37,6 +38,9 @@ public class SnippetsLauncher {
 
     // The amount of "flex" to add around the fetching periods, as a ratio of the period.
     private static final double FLEX_FACTOR = 0.1;
+
+    @VisibleForTesting
+    public static final String PREF_IS_SCHEDULED = "ntp_snippets.is_scheduled";
 
     // The instance of SnippetsLauncher currently owned by a C++ SnippetsLauncherAndroid, if any.
     // If it is non-null then the browser is running.
@@ -129,7 +133,14 @@ public class SnippetsLauncher {
     @CalledByNative
     private boolean schedule(long periodWifiSeconds, long periodFallbackSeconds) {
         if (!mGCMEnabled) return false;
-        Log.d(TAG, "Scheduling: " + periodWifiSeconds + " " + periodFallbackSeconds);
+        Log.i(TAG, "Scheduling: " + periodWifiSeconds + " " + periodFallbackSeconds);
+
+        boolean isScheduled = periodWifiSeconds != 0 || periodFallbackSeconds != 0;
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(PREF_IS_SCHEDULED, isScheduled)
+                .apply();
+
         // Google Play Services may not be up to date, if the application was not installed through
         // the Play Store. In this case, scheduling the task will fail silently.
         try {
@@ -142,6 +153,8 @@ public class SnippetsLauncher {
         } catch (IllegalArgumentException e) {
             // Disable GCM for the remainder of this session.
             mGCMEnabled = false;
+
+            ContextUtils.getAppSharedPreferences().edit().remove(PREF_IS_SCHEDULED).apply();
             // Return false so that the failure will be logged.
             return false;
         }
@@ -153,6 +166,11 @@ public class SnippetsLauncher {
         if (!mGCMEnabled) return false;
         Log.i(TAG, "Unscheduling");
         return schedule(0, 0);
+    }
+
+    public static boolean shouldRescheduleTasksOnUpgrade() {
+        // Reschedule the periodic tasks if they were enabled previously.
+        return ContextUtils.getAppSharedPreferences().getBoolean(PREF_IS_SCHEDULED, false);
     }
 }
 

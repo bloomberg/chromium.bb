@@ -120,6 +120,11 @@ public class ChromeBackgroundService extends GcmTaskService {
         SnippetsBridge.fetchSnippets(/*forceRequest=*/false);
     }
 
+    @VisibleForTesting
+    protected void rescheduleFetching() {
+        SnippetsBridge.rescheduleFetching();
+    }
+
     private void handlePrecache(Context context, String tag) {
         if (!hasPrecacheInstance()) {
             launchBrowser(context, tag);
@@ -202,9 +207,29 @@ public class ChromeBackgroundService extends GcmTaskService {
         }
     }
 
+    @VisibleForTesting
+    protected void rescheduleBackgroundSyncTasksOnUpgrade() {
+        BackgroundSyncLauncher.rescheduleTasksOnUpgrade(this);
+    }
+
+    @VisibleForTesting
+    protected void reschedulePrecacheTasksOnUpgrade() {
+        PrecacheController.rescheduleTasksOnUpgrade(this);
+    }
+
+    private void rescheduleSnippetsTasksOnUpgrade() {
+        if (SnippetsLauncher.shouldRescheduleTasksOnUpgrade()) {
+            if (!SnippetsLauncher.hasInstance()) {
+                launchBrowser(this, /*tag=*/""); // The |tag| doesn't matter here.
+            }
+            rescheduleFetching();
+        }
+    }
+
     @Override
     public void onInitializeTasks() {
-        BackgroundSyncLauncher.rescheduleTasksOnUpgrade(this);
-        PrecacheController.rescheduleTasksOnUpgrade(this);
+        rescheduleBackgroundSyncTasksOnUpgrade();
+        reschedulePrecacheTasksOnUpgrade();
+        rescheduleSnippetsTasksOnUpgrade();
     }
 }
