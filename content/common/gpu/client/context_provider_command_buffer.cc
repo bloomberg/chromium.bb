@@ -245,11 +245,13 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
   ContextGL()->TraceBeginCHROMIUM("gpu_toplevel", unique_context_name.c_str());
   // If support_locking_ is true, the context may be used from multiple
   // threads, and any async callstacks will need to hold the same lock, so
-  // give it to the command buffer.
+  // give it to the command buffer and cache controller.
   // We don't hold a lock here since there's no need, so set the lock very last
   // to prevent asserts that we're not holding it.
-  if (support_locking_)
+  if (support_locking_) {
     command_buffer_->SetLock(&context_lock_);
+    cache_controller_->SetLock(&context_lock_);
+  }
   return true;
 }
 

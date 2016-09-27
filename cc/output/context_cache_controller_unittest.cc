@@ -5,6 +5,7 @@
 #include "cc/output/context_cache_controller.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_context_support.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -25,7 +26,8 @@ class MockContextSupport : public TestContextSupport {
 
 TEST(ContextCacheControllerTest, ScopedVisibilityBasic) {
   StrictMock<MockContextSupport> context_support;
-  ContextCacheController cache_controller(&context_support, nullptr);
+  auto task_runner = make_scoped_refptr(new base::TestMockTimeTaskRunner);
+  ContextCacheController cache_controller(&context_support, task_runner);
 
   EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
   std::unique_ptr<ContextCacheController::ScopedVisibility> visibility =
@@ -38,18 +40,75 @@ TEST(ContextCacheControllerTest, ScopedVisibilityBasic) {
 
 TEST(ContextCacheControllerTest, ScopedVisibilityMulti) {
   StrictMock<MockContextSupport> context_support;
-  ContextCacheController cache_controller(&context_support, nullptr);
+  auto task_runner = make_scoped_refptr(new base::TestMockTimeTaskRunner);
+  ContextCacheController cache_controller(&context_support, task_runner);
 
   EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
-  std::unique_ptr<ContextCacheController::ScopedVisibility> visibility_1 =
-      cache_controller.ClientBecameVisible();
+  auto visibility_1 = cache_controller.ClientBecameVisible();
   Mock::VerifyAndClearExpectations(&context_support);
-  std::unique_ptr<ContextCacheController::ScopedVisibility> visibility_2 =
-      cache_controller.ClientBecameVisible();
+  auto visibility_2 = cache_controller.ClientBecameVisible();
 
   cache_controller.ClientBecameNotVisible(std::move(visibility_1));
   EXPECT_CALL(context_support, SetAggressivelyFreeResources(true));
   cache_controller.ClientBecameNotVisible(std::move(visibility_2));
+}
+
+TEST(ContextCacheControllerTest, ScopedBusyWhileVisible) {
+  StrictMock<MockContextSupport> context_support;
+  auto task_runner = make_scoped_refptr(new base::TestMockTimeTaskRunner);
+  ContextCacheController cache_controller(&context_support, task_runner);
+
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
+  auto visibility = cache_controller.ClientBecameVisible();
+  Mock::VerifyAndClearExpectations(&context_support);
+
+  // Now that we're visible, ensure that going idle triggers a delayed cleanup.
+  auto busy = cache_controller.ClientBecameBusy();
+  cache_controller.ClientBecameNotBusy(std::move(busy));
+
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(true));
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  Mock::VerifyAndClearExpectations(&context_support);
+
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(true));
+  cache_controller.ClientBecameNotVisible(std::move(visibility));
+}
+
+TEST(ContextCacheControllerTest, ScopedBusyWhileNotVisible) {
+  StrictMock<MockContextSupport> context_support;
+  auto task_runner = make_scoped_refptr(new base::TestMockTimeTaskRunner);
+  ContextCacheController cache_controller(&context_support, task_runner);
+
+  auto busy = cache_controller.ClientBecameBusy();
+
+  // We are not visible, so becoming busy should not trigger an idle callback.
+  cache_controller.ClientBecameNotBusy(std::move(busy));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(5));
+}
+
+TEST(ContextCacheControllerTest, ScopedBusyMulitpleWhileVisible) {
+  StrictMock<MockContextSupport> context_support;
+  auto task_runner = make_scoped_refptr(new base::TestMockTimeTaskRunner);
+  ContextCacheController cache_controller(&context_support, task_runner);
+
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
+  auto visible = cache_controller.ClientBecameVisible();
+  Mock::VerifyAndClearExpectations(&context_support);
+
+  auto busy_1 = cache_controller.ClientBecameBusy();
+  cache_controller.ClientBecameNotBusy(std::move(busy_1));
+  auto busy_2 = cache_controller.ClientBecameBusy();
+  cache_controller.ClientBecameNotBusy(std::move(busy_2));
+
+  // When we fast forward, only one cleanup should happen.
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(true));
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(false));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(5));
+  Mock::VerifyAndClearExpectations(&context_support);
+
+  EXPECT_CALL(context_support, SetAggressivelyFreeResources(true));
+  cache_controller.ClientBecameNotVisible(std::move(visible));
 }
 
 }  // namespace
