@@ -1,0 +1,19 @@
+CONSOLE ERROR: line 37: Uncaught (in promise) Error: uncaught
+CONSOLE ERROR: line 37: Uncaught (in promise) Error: uncaught
+Tests that pause on promise rejection works.
+
+=== Pausing only on uncaught exceptions ===
+Set timer for test function.
+Call stack:
+    0) testFunction (async-pause-on-exception.html:37)
+Paused on promise rejection: 'Error: uncaught'.
+
+=== Pausing on all exceptions ===
+Set timer for test function.
+Call stack:
+    0) testFunction (async-pause-on-exception.html:36)
+Paused on promise rejection: 'Error: caught'.
+Call stack:
+    0) testFunction (async-pause-on-exception.html:37)
+Paused on promise rejection: 'Error: uncaught'.
+
