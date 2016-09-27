@@ -318,6 +318,11 @@ public:
         m_layoutObject->invalidatePaintRectangle(dirtyRect);
     }
 
+    PassRefPtr<ComputedStyle> getUncachedPseudoStyle(const PseudoStyleRequest& pseudoStyleRequest, const ComputedStyle* parentStyle = nullptr, const ComputedStyle* ownStyle = nullptr) const
+    {
+        return m_layoutObject->getUncachedPseudoStyle(pseudoStyleRequest, parentStyle, ownStyle);
+    }
+
 protected:
     LayoutObject* layoutObject() { return m_layoutObject; }
     const LayoutObject* layoutObject() const { return m_layoutObject; }

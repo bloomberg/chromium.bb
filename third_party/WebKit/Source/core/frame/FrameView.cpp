@@ -2486,8 +2486,9 @@ void FrameView::updateScrollCorner()
 
         if (!cornerStyle) {
             // If we have an owning ipage/LocalFrame element, then it can set the custom scrollbar also.
-            if (LayoutPart* layoutObject = m_frame->ownerLayoutObject())
-                cornerStyle = layoutObject->getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdScrollbarCorner), layoutObject->style());
+            LayoutPartItem layoutItem = m_frame->ownerLayoutItem();
+            if (!layoutItem.isNull())
+                cornerStyle = layoutItem.getUncachedPseudoStyle(PseudoStyleRequest(PseudoIdScrollbarCorner), layoutItem.style());
         }
     }
 
