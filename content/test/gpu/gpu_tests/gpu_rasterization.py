@@ -34,10 +34,7 @@ class GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
   def CustomizeBrowserOptions(self, options):
     # --test-type=gpu is used only to suppress the "Google API Keys are missing"
     # infobar, which causes flakiness in tests.
-    options.AppendExtraBrowserArgs(['--enable-threaded-compositing',
-                                    '--enable-impl-side-painting',
-                                    '--force-gpu-rasterization',
-                                    '--enable-gpu-benchmarking',
+    options.AppendExtraBrowserArgs(['--force-gpu-rasterization',
                                     '--test-type=gpu'])
 
   def ValidateAndMeasurePage(self, page, tab, results):

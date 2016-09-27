@@ -70,8 +70,6 @@ class Repaint(Smoothness):
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs([
-        '--enable-impl-side-painting',
-        '--enable-threaded-compositing',
         '--enable-gpu-benchmarking'
     ])
 
