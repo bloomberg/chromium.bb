@@ -445,6 +445,9 @@ void PingLoader::loadImage(LocalFrame* frame, const KURL& url)
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/links.html#hyperlink-auditing
 void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const KURL& destinationURL)
 {
+    if (!pingURL.protocolIsInHTTPFamily())
+        return;
+
     ResourceRequest request(pingURL);
     request.setHTTPMethod(HTTPNames::POST);
     request.setHTTPContentType("text/ping");
@@ -458,8 +461,8 @@ void PingLoader::sendLinkAuditPing(LocalFrame* frame, const KURL& pingURL, const
 
     request.setHTTPHeaderField(HTTPNames::Ping_To, AtomicString(destinationURL.getString()));
 
-    // Ping-From follows the same rules as the default referrer beahavior for subresource requests.
-    if (!SecurityPolicy::shouldHideReferrer(pingURL, frame->document()->url().getString()))
+    RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
+    if (protocolIs(frame->document()->url().getString(), "http") || frame->document()->getSecurityOrigin()->canAccess(pingOrigin.get()))
         request.setHTTPHeaderField(HTTPNames::Ping_From, AtomicString(frame->document()->url().getString()));
 
     sendPingCommon(frame, request, FetchInitiatorTypeNames::ping, AllowStoredCredentials, false);

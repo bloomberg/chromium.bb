@@ -1172,6 +1172,7 @@ source_set("unit_tests") {
     "loader/FrameFetchContextTest.cpp",
     "loader/LinkLoaderTest.cpp",
     "loader/MixedContentCheckerTest.cpp",
+    "loader/PingLoaderTest.cpp",
     "loader/TextResourceDecoderBuilderTest.cpp",
     "loader/ThreadableLoaderTest.cpp",
     "origin_trials/OriginTrialContextTest.cpp",
