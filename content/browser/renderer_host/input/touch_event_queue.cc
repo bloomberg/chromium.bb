@@ -766,7 +766,10 @@ void TouchEventQueue::AckTouchEventToClient(
     InputEventAckState ack_result,
     const ui::LatencyInfo* optional_latency_info) {
   DCHECK(!dispatching_touch_ack_);
-  DCHECK(!touch_queue_.empty());
+  if (touch_queue_.empty()) {
+    NOTREACHED() << "Too many acks";
+    return;
+  }
   std::unique_ptr<CoalescedWebTouchEvent> acked_event(touch_queue_.front());
   DCHECK(acked_event);
 
