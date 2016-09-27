@@ -17,7 +17,6 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/frame_host/cross_site_transferring_request.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"

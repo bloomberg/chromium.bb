@@ -27,7 +27,6 @@
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/frame_host/navigation_request_info.h"
-#include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
 #include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/navigation_url_loader.h"
@@ -617,16 +616,6 @@ class TestUserData : public base::SupportsUserData::Data {
 
  private:
   bool* was_deleted_;
-};
-
-class TransfersAllNavigationsContentBrowserClient
-    : public TestContentBrowserClient {
- public:
-  bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
-                                      const GURL& current_url,
-                                      const GURL& new_url) override {
-    return true;
-  }
 };
 
 enum GenericResourceThrottleFlags {
@@ -2686,7 +2675,7 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
 
   GlobalRequestID global_request_id(web_contents_filter_->child_id(),
                                     request_id);
-  host_.MarkAsTransferredNavigation(global_request_id, nullptr);
+  host_.MarkAsTransferredNavigation(global_request_id, base::Closure());
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
@@ -2713,13 +2702,11 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }
-  // This test expects the cross site request to be leaked, so it can transfer
-  // the request directly.
-  CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
 
   EXPECT_EQ(0, host_.pending_requests());
 
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
+  NavigationResourceThrottle::set_force_transfer_for_testing(true);
 
   int render_view_id = 0;
   int request_id = 1;
@@ -2729,11 +2716,6 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
               "Location: http://other.com/blech\n\n");
 
   HandleScheme("http");
-
-  // Temporarily replace ContentBrowserClient with one that will trigger the
-  // transfer navigation code paths.
-  TransfersAllNavigationsContentBrowserClient new_client;
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
@@ -2752,9 +2734,6 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
   // Flush all the pending requests to get the response through the
   // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
-
-  // Restore, now that we've set up a transfer.
-  SetBrowserClientForTesting(old_client);
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = MakeForwardingFilter();
@@ -2788,10 +2767,8 @@ TEST_P(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }
-  // This test expects the cross site request to be leaked, so it can transfer
-  // the request directly.
-  CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
 
+  NavigationResourceThrottle::set_force_transfer_for_testing(true);
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
 
   EXPECT_EQ(0, host_.pending_requests());
@@ -2806,11 +2783,6 @@ TEST_P(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
               kResponseBody);
 
   HandleScheme("http");
-
-  // Temporarily replace ContentBrowserClient with one that will trigger the
-  // transfer navigation code paths.
-  TransfersAllNavigationsContentBrowserClient new_client;
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   // Make the first request.
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
@@ -2828,8 +2800,7 @@ TEST_P(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
   // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
 
-  // Restore, now that we've set up a transfer.
-  SetBrowserClientForTesting(old_client);
+  NavigationResourceThrottle::set_force_transfer_for_testing(false);
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = MakeForwardingFilter();
@@ -2875,10 +2846,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationText) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }
-  // This test expects the cross site request to be leaked, so it can transfer
-  // the request directly.
-  CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
 
+  NavigationResourceThrottle::set_force_transfer_for_testing(true);
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
 
   EXPECT_EQ(0, host_.pending_requests());
@@ -2891,11 +2860,6 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationText) {
               "Location: http://other.com/blech\n\n");
 
   HandleScheme("http");
-
-  // Temporarily replace ContentBrowserClient with one that will trigger the
-  // transfer navigation code paths.
-  TransfersAllNavigationsContentBrowserClient new_client;
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
@@ -2917,9 +2881,6 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationText) {
   // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   base::RunLoop().RunUntilIdle();
-
-  // Restore, now that we've set up a transfer.
-  SetBrowserClientForTesting(old_client);
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = MakeForwardingFilter();
@@ -2951,10 +2912,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }
-  // This test expects the cross site request to be leaked, so it can transfer
-  // the request directly.
-  CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
 
+  NavigationResourceThrottle::set_force_transfer_for_testing(true);
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
 
   EXPECT_EQ(0, host_.pending_requests());
@@ -2969,11 +2928,6 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
   const std::string kResponseBody = "hello world";
 
   HandleScheme("http");
-
-  // Temporarily replace ContentBrowserClient with one that will trigger the
-  // transfer navigation code paths.
-  TransfersAllNavigationsContentBrowserClient new_client;
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   // Create a first filter that can be deleted before the second one starts.
   {
@@ -3002,9 +2956,6 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
     while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   }
   // The first filter is now deleted, as if the child process died.
-
-  // Restore.
-  SetBrowserClientForTesting(old_client);
 
   // Make sure we don't hold onto the ResourceMessageFilter after it is deleted.
   GlobalRequestID first_global_request_id(first_child_id, request_id);
@@ -3041,10 +2992,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
     SUCCEED() << "Test is not applicable with browser side navigation enabled";
     return;
   }
-  // This test expects the cross site request to be leaked, so it can transfer
-  // the request directly.
-  CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
 
+  NavigationResourceThrottle::set_force_transfer_for_testing(true);
   NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
 
   EXPECT_EQ(0, host_.pending_requests());
@@ -3057,11 +3006,6 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
               "Location: http://other.com/blech\n\n");
 
   HandleScheme("http");
-
-  // Temporarily replace ContentBrowserClient with one that will trigger the
-  // transfer navigation code paths.
-  TransfersAllNavigationsContentBrowserClient new_client;
-  ContentBrowserClient* old_client = SetBrowserClientForTesting(&new_client);
 
   MakeTestRequestWithResourceType(filter_.get(), render_view_id, request_id,
                                   GURL("http://example.com/blah"),
@@ -3090,9 +3034,6 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   // MimeTypeResourceHandler.
   while (net::URLRequestTestJob::ProcessOnePendingMessage()) {}
   base::RunLoop().RunUntilIdle();
-
-  // Restore.
-  SetBrowserClientForTesting(old_client);
 
   // This second filter is used to emulate a second process.
   scoped_refptr<ForwardingFilter> second_filter = MakeForwardingFilter();
