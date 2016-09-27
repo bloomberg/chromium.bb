@@ -388,7 +388,10 @@ void ModuleEnumerator::ScanNow(ModulesVector* list) {
 void ModuleEnumerator::ScanImpl() {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  enumerated_modules_->clear();
+  // The provided destination for the enumerated modules should be empty, as it
+  // should only be populated once, by a single ModuleEnumerator instance. See
+  // EnumerateModulesModel::ScanNow for details.
+  DCHECK(enumerated_modules_->empty());
 
   // Make sure the path mapping vector is setup so we can collapse paths.
   PreparePathMappings();
@@ -724,9 +727,20 @@ void EnumerateModulesModel::MaybePostScanningTask() {
 void EnumerateModulesModel::ScanNow() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // If a module enumerator exists then a scan is already underway.
+  // |module_enumerator_| is used as a lock to know whether or not there are
+  // active/pending blocking pool tasks. If a module enumerator exists then a
+  // scan is already underway. Otherwise, either no scan has been completed or
+  // a scan has terminated.
   if (module_enumerator_)
     return;
+
+  // Only allow a single scan per process lifetime. Immediately notify any
+  // observers that the scan is complete. At this point |enumerated_modules_| is
+  // safe to access as no potentially racing blocking pool task can exist.
+  if (!enumerated_modules_.empty()) {
+    FOR_EACH_OBSERVER(Observer, observers_, OnScanCompleted());
+    return;
+  }
 
   // ScanNow does not block, rather it simply schedules a task.
   module_enumerator_.reset(new ModuleEnumerator(this));
