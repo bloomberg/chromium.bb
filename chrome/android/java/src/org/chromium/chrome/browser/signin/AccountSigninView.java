@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.signin;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
@@ -81,9 +82,17 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
      */
     public interface Delegate {
         /**
-         * Provides an Activity for the view to create dialogs.
+         * Provides an Activity for the View to check GMSCore version.
          */
         public Activity getActivity();
+
+        /**
+         * Provides a FragmentManager for the View to create dialogs. This is done through a
+         * different mechanism than getActivity().getFragmentManager() as a potential fix to
+         * https://crbug.com/646978 on the theory that getActivity() and getFragmentManager()
+         * return null at different times.
+         */
+        public FragmentManager getFragmentManager();
     }
 
     private static final String TAG = "AccountSigninView";
@@ -256,7 +265,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
             // Any dialogs that may have been showing are now invalid (they were created for the
             // previously selected account).
             ConfirmSyncDataStateMachine
-                    .cancelAllDialogs(mDelegate.getActivity().getFragmentManager());
+                    .cancelAllDialogs(mDelegate.getFragmentManager());
 
             if (mAccountNames.containsAll(oldAccountNames)) {
                 // A new account has been added and no accounts have been deleted. We will have
@@ -386,7 +395,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         String accountName = getSelectedAccountName();
         ConfirmSyncDataStateMachine.run(PrefServiceBridge.getInstance().getSyncLastAccountName(),
                 accountName, ImportSyncType.PREVIOUS_DATA_FOUND,
-                mDelegate.getActivity().getFragmentManager(),
+                mDelegate.getFragmentManager(),
                 getContext(), new ConfirmImportSyncDataDialog.Listener() {
                     @Override
                     public void onConfirm(boolean wipeData) {
