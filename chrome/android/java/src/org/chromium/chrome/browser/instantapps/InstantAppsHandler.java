@@ -13,6 +13,7 @@ import android.provider.Browser;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordUserAction;
@@ -69,10 +70,11 @@ public class InstantAppsHandler {
     private Set<String> mOptInHosts = new HashSet<>();
 
     /** @return The singleton instance of {@link InstantAppsHandler}. */
-    public static InstantAppsHandler getInstance(ChromeApplication application) {
+    public static InstantAppsHandler getInstance() {
         synchronized (INSTANCE_LOCK) {
             if (sInstance == null) {
-                sInstance = application.createInstantAppsHandler();
+                Context appContext = ContextUtils.getApplicationContext();
+                sInstance = ((ChromeApplication) appContext).createInstantAppsHandler();
             }
         }
         return sInstance;
@@ -128,7 +130,8 @@ public class InstantAppsHandler {
      * Cache whether the Instant Apps feature is enabled.
      * This should only be called with the native library loaded.
      */
-    public void cacheInstantAppsEnabled(Context context) {
+    public void cacheInstantAppsEnabled() {
+        Context context = ContextUtils.getApplicationContext();
         boolean isEnabled = false;
         boolean wasEnabled = isEnabled(context);
         CommandLine instance = CommandLine.getInstance();
@@ -268,5 +271,15 @@ public class InstantAppsHandler {
     public void recordDefaultOpen(String hostname) {
         mOptInHosts.add(hostname);
         // TODO(mariakhomenko): Implement persistence for optInHosts.
+    }
+
+    /**
+     * Gets the instant app intent for the given URL if one exists.
+     *
+     * @param url The URL whose instant app this is associated with.
+     * @return An instant app intent for the URL if one exists.
+     */
+    public Intent getInstantAppIntentForUrl(String url) {
+        return null;
     }
 }

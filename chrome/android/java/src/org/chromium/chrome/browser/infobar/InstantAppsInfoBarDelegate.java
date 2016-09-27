@@ -12,7 +12,6 @@ import android.graphics.Bitmap;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.instantapps.InstantAppsBannerData;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.content_public.browser.WebContents;
@@ -55,8 +54,7 @@ public class InstantAppsInfoBarDelegate {
         } catch (ActivityNotFoundException e) {
             Log.e(TAG, "No activity found to launch intent " + data.getIntent(), e);
         }
-        InstantAppsHandler.getInstance((ChromeApplication) appContext)
-                .recordDefaultOpen(data.getHostname());
+        InstantAppsHandler.getInstance().recordDefaultOpen(data.getHostname());
     }
 
     private static native void nativeLaunch(WebContents webContents, InstantAppsBannerData data);

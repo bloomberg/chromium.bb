@@ -203,8 +203,7 @@ public class ChromeLauncherActivity extends Activity
         }
 
         // Check if we should launch an Instant App to handle the intent.
-        ChromeApplication application = (ChromeApplication) getApplication();
-        if (InstantAppsHandler.getInstance(application).handleIncomingIntent(
+        if (InstantAppsHandler.getInstance().handleIncomingIntent(
                 this, intent, mIsCustomTabIntent)) {
             finish();
             return;

@@ -34,7 +34,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -562,8 +561,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean maybeLaunchInstantApp(String url, String referrerUrl) {
-        return InstantAppsHandler.getInstance((ChromeApplication) mApplicationContext)
-                .handleNavigation(getAvailableContext(), url,
-                        TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl));
+        return InstantAppsHandler.getInstance().handleNavigation(getAvailableContext(), url,
+                TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl));
     }
 }

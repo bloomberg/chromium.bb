@@ -1116,6 +1116,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Android.InstantApps.LaunchedFromWebsiteSettingsPopup">
+  <owner>mariakhomenko@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <description>
+    An instant app was launched from the website settings popup.
+  </description>
+</action>
+
 <action name="Android.LauncherShortcut.NewIncognitoTab">
   <owner>twellington@chromium.org</owner>
   <description>

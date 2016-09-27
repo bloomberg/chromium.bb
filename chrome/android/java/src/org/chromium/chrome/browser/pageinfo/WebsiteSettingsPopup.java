@@ -10,6 +10,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -48,6 +49,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
+import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -254,6 +256,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
     private final ElidedUrlTextView mUrlTitle;
     private final TextView mUrlConnectionMessage;
     private final LinearLayout mPermissionsList;
+    private final Button mInstantAppButton;
     private final Button mSiteSettingsButton;
 
     // The dialog the container is placed in.
@@ -293,6 +296,9 @@ public class WebsiteSettingsPopup implements OnClickListener {
 
     // The name of the content publisher, if any.
     private String mContentPublisher;
+
+    // The intent associated with the instant app for this URL (or null if one does not exist).
+    private Intent mInstantAppIntent;
 
     /**
      * Creates the WebsiteSettingsPopup, but does not display it. Also initializes the corresponding
@@ -351,6 +357,10 @@ public class WebsiteSettingsPopup implements OnClickListener {
                 .findViewById(R.id.website_settings_connection_message);
         mPermissionsList = (LinearLayout) mContainer
                 .findViewById(R.id.website_settings_permissions_list);
+
+        mInstantAppButton =
+                (Button) mContainer.findViewById(R.id.website_settings_instant_app_button);
+        mInstantAppButton.setOnClickListener(this);
 
         mSiteSettingsButton =
                 (Button) mContainer.findViewById(R.id.website_settings_site_settings_button);
@@ -466,6 +476,10 @@ public class WebsiteSettingsPopup implements OnClickListener {
                            || mParsedUrl.getScheme().equals("https"))) {
             mSiteSettingsButton.setVisibility(View.GONE);
         }
+
+        mInstantAppIntent = mIsInternalPage ? null
+                : InstantAppsHandler.getInstance().getInstantAppIntentForUrl(mFullUrl);
+        if (mInstantAppIntent == null) mInstantAppButton.setVisibility(View.GONE);
     }
 
     /**
@@ -750,6 +764,13 @@ public class WebsiteSettingsPopup implements OnClickListener {
                     mContext.startActivity(preferencesIntent);
                 }
             });
+        } else if (view == mInstantAppButton) {
+            try {
+                mContext.startActivity(mInstantAppIntent);
+                RecordUserAction.record("Android.InstantApps.LaunchedFromWebsiteSettingsPopup");
+            } catch (ActivityNotFoundException e) {
+                mInstantAppButton.setEnabled(false);
+            }
         } else if (view == mUrlTitle) {
             // Expand/collapse the displayed URL title.
             mUrlTitle.toggleTruncation();
@@ -810,6 +831,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
         List<View> animatableViews = new ArrayList<View>();
         animatableViews.add(mUrlTitle);
         animatableViews.add(mUrlConnectionMessage);
+        animatableViews.add(mInstantAppButton);
         for (int i = 0; i < mPermissionsList.getChildCount(); i++) {
             animatableViews.add(mPermissionsList.getChildAt(i));
         }

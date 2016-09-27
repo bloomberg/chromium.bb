@@ -228,7 +228,7 @@ public class ChromeActivitySessionTracker {
      */
     private void cacheNativeFlags() {
         if (mIsFinishedCachingNativeFlags) return;
-        FeatureUtilities.cacheNativeFlags(mApplication);
+        FeatureUtilities.cacheNativeFlags();
         mIsFinishedCachingNativeFlags = true;
     }
 
