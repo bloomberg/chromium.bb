@@ -89,9 +89,13 @@ class AndroidBuildTests(cros_test_lib.TestCase):
 
     # Check that this was indeed recognized as a service account.
     self.assertIsInstance(
-        creds, oauth2client.service_account.ServiceAccountCredentials)
+        creds, oauth2client.service_account._ServiceAccountCredentials)
 
     # Check identification of this service account.
+    self.assertEqual(
+        creds._service_account_id,
+        '78539106351-7rmgdpp1v64a3dpqqqpoi2qeir3tse0k'
+        '.apps.googleusercontent.com')
     self.assertEqual(
         creds._service_account_email,
         '78539106351-7rmgdpp1v64a3dpqqqpoi2qeir3tse0k'

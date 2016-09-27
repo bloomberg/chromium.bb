@@ -21,7 +21,8 @@ credentials.
 import os
 import threading
 
-from oauth2client import client
+from oauth2client.client import Credentials
+from oauth2client.client import Storage as BaseStorage
 
 
 __author__ = 'jcgregorio@google.com (Joe Gregorio)'
@@ -31,17 +32,32 @@ class CredentialsFileSymbolicLinkError(Exception):
     """Credentials files must not be symbolic links."""
 
 
-class Storage(client.Storage):
+class Storage(BaseStorage):
     """Store and retrieve a single credential to and from a file."""
 
     def __init__(self, filename):
-        super(Storage, self).__init__(lock=threading.Lock())
         self._filename = filename
+        self._lock = threading.Lock()
 
     def _validate_file(self):
         if os.path.islink(self._filename):
             raise CredentialsFileSymbolicLinkError(
-                'File: {0} is a symbolic link.'.format(self._filename))
+                'File: %s is a symbolic link.' % self._filename)
+
+    def acquire_lock(self):
+        """Acquires any lock necessary to access this Storage.
+
+        This lock is not reentrant.
+        """
+        self._lock.acquire()
+
+    def release_lock(self):
+        """Release the Storage lock.
+
+        Trying to release a lock that isn't held will result in a
+        RuntimeError.
+        """
+        self._lock.release()
 
     def locked_get(self):
         """Retrieve Credential from file.
@@ -62,7 +78,7 @@ class Storage(client.Storage):
             return credentials
 
         try:
-            credentials = client.Credentials.new_from_json(content)
+            credentials = Credentials.new_from_json(content)
             credentials.set_store(self)
         except ValueError:
             pass
