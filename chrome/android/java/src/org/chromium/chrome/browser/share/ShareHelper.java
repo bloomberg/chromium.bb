@@ -11,6 +11,8 @@ import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -401,6 +403,9 @@ public class ShareHelper {
         builder.setTitle(activity.getString(R.string.share_link_chooser_title));
         builder.setAdapter(adapter, null);
 
+        // Need a mutable object to record whether the callback has been fired.
+        final boolean[] callbackCalled = new boolean[1];
+
         final AlertDialog dialog = builder.create();
         dialog.show();
         dialog.getListView().setOnItemClickListener(new OnItemClickListener() {
@@ -410,11 +415,26 @@ public class ShareHelper {
                 ActivityInfo ai = info.activityInfo;
                 ComponentName component =
                         new ComponentName(ai.applicationInfo.packageName, ai.name);
-                if (callback != null) callback.onTargetChosen(component);
+                if (callback != null && !callbackCalled[0]) {
+                    callback.onTargetChosen(component);
+                    callbackCalled[0] = true;
+                }
                 if (saveLastUsed) setLastShareComponentName(component);
                 makeIntentAndShare(false, activity, title, text, url, offlineUri, screenshotUri,
                         component, null);
                 dialog.dismiss();
+            }
+        });
+
+        if (callback == null) return;
+
+        dialog.setOnDismissListener(new OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                if (!callbackCalled[0]) {
+                    callback.onCancel();
+                    callbackCalled[0] = true;
+                }
             }
         });
     }
