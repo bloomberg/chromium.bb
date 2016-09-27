@@ -84,7 +84,6 @@ class OfflinePageModelImplTest
   void OnSavePageDone(SavePageResult result, int64_t offline_id);
   void OnDeletePageDone(DeletePageResult result);
   void OnCheckPagesExistOfflineDone(const CheckPagesExistOfflineResult& result);
-  void OnClearAllDone();
   void OnGetOfflineIdsForClientIdDone(MultipleOfflineIdResult* storage,
                                       const MultipleOfflineIdResult& result);
   void OnGetSingleOfflinePageItemResult(const OfflinePageItem** storage,
@@ -244,10 +243,6 @@ void OfflinePageModelImplTest::OnDeletePageDone(DeletePageResult result) {
 void OfflinePageModelImplTest::OnCheckPagesExistOfflineDone(
     const CheckPagesExistOfflineResult& result) {
   last_pages_exist_result_ = result;
-}
-
-void OfflinePageModelImplTest::OnClearAllDone() {
-  PumpLoop();
 }
 
 void OfflinePageModelImplTest::OnStoreUpdateDone(bool /* success - ignored */) {
@@ -967,31 +962,6 @@ TEST_F(OfflinePageModelImplTest, CanSaveURL) {
   EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("chrome://version")));
   EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("chrome-native://newtab/")));
   EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("/invalid/url.mhtml")));
-}
-
-TEST_F(OfflinePageModelImplTest, ClearAll) {
-  SavePage(kTestUrl, kTestClientId1);
-  SavePage(kTestUrl2, kTestClientId2);
-
-  const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
-  EXPECT_EQ(2UL, offline_pages.size());
-  EXPECT_EQ(2UL, GetStore()->GetAllPages().size());
-  base::FilePath archiver_path = offline_pages[0].file_path;
-  EXPECT_TRUE(base::PathExists(archiver_path));
-
-  // ClearAll should delete all the files and wipe out both cache and store.
-  model()->ClearAll(
-      base::Bind(&OfflinePageModelImplTest::OnClearAllDone, AsWeakPtr()));
-  PumpLoop();
-  EXPECT_EQ(0UL, GetAllPages().size());
-  EXPECT_EQ(0UL, GetStore()->GetAllPages().size());
-  EXPECT_FALSE(base::PathExists(archiver_path));
-
-  // The model should reload the store after the reset. All model operations
-  // should continue to work.
-  SavePage(kTestUrl2, kTestClientId2);
-  EXPECT_EQ(1UL, GetAllPages().size());
-  EXPECT_EQ(1UL, GetStore()->GetAllPages().size());
 }
 
 TEST_F(OfflinePageModelImplTest, SaveRetrieveMultipleClientIds) {

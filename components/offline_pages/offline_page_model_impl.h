@@ -73,7 +73,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                 std::unique_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback) override;
   void MarkPageAccessed(int64_t offline_id) override;
-  void ClearAll(const base::Closure& callback) override;
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                               const DeletePageCallback& callback) override;
   void DeleteCachedPagesByURLPredicate(
@@ -221,15 +220,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
                                size_t pages_allowed,
                                const MultipleOfflinePageItemResult& items);
   void OnDeleteOldPagesWithSameURL(DeletePageResult result);
-
-  // Steps for clearing all.
-  void OnRemoveAllFilesDoneForClearAll(const base::Closure& callback,
-                                       DeletePageResult result);
-  void OnResetStoreDoneForClearAll(const base::Closure& callback, bool success);
-  void OnReloadStoreDoneForClearAll(
-      const base::Closure& callback,
-      OfflinePageMetadataStore::LoadStatus load_status,
-      const std::vector<OfflinePageItem>& offline_pages);
 
   void CacheLoadedData(const std::vector<OfflinePageItem>& offline_pages);
 

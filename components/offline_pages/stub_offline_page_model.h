@@ -30,7 +30,6 @@ class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
                 std::unique_ptr<OfflinePageArchiver> archiver,
                 const SavePageCallback& callback) override;
   void MarkPageAccessed(int64_t offline_id) override;
-  void ClearAll(const base::Closure& callback) override;
   void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                               const DeletePageCallback& callback) override;
   void DeleteCachedPagesByURLPredicate(

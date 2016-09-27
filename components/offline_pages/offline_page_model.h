@@ -96,9 +96,6 @@ class OfflinePageModel : public base::SupportsUserData {
   // will be updated. Requires that the model is loaded.
   virtual void MarkPageAccessed(int64_t offline_id) = 0;
 
-  // Wipes out all the data by deleting all saved files and clearing the store.
-  virtual void ClearAll(const base::Closure& callback) = 0;
-
   // Deletes pages based on |offline_ids|.
   virtual void DeletePagesByOfflineId(const std::vector<int64_t>& offline_ids,
                                       const DeletePageCallback& callback) = 0;

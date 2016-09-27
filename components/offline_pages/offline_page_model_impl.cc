@@ -41,17 +41,6 @@ namespace {
 const base::TimeDelta kStorageManagerStartingDelay =
     base::TimeDelta::FromSeconds(20);
 
-// This enum is used in an UMA histogram. Hence the entries here shouldn't
-// be deleted or re-ordered and new ones should be added to the end.
-enum ClearAllStatus {
-  CLEAR_ALL_SUCCEEDED,
-  STORE_RESET_FAILED,
-  STORE_RELOAD_FAILED,
-
-  // NOTE: always keep this entry at the end.
-  CLEAR_ALL_STATUS_COUNT
-};
-
 int64_t GenerateOfflineId() {
   return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 }
@@ -437,18 +426,6 @@ void OfflinePageModelImpl::DoDeletePagesByOfflineId(
       paths_to_delete,
       base::Bind(&OfflinePageModelImpl::OnDeleteArchiveFilesDone,
                  weak_ptr_factory_.GetWeakPtr(), offline_ids, callback));
-}
-
-void OfflinePageModelImpl::ClearAll(const base::Closure& callback) {
-  DCHECK(is_loaded_);
-
-  std::vector<int64_t> offline_ids;
-  for (const auto& id_page_pair : offline_pages_)
-    offline_ids.push_back(id_page_pair.first);
-  DeletePagesByOfflineId(
-      offline_ids,
-      base::Bind(&OfflinePageModelImpl::OnRemoveAllFilesDoneForClearAll,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void OfflinePageModelImpl::DeleteCachedPagesByURLPredicate(
@@ -1048,51 +1025,6 @@ void OfflinePageModelImpl::OnDeleteOrphanedArchivesDone(
                        static_cast<int32_t>(archives.size()));
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.Consistency.DeleteOrphanedArchivesResult",
                         success);
-}
-
-void OfflinePageModelImpl::OnRemoveAllFilesDoneForClearAll(
-    const base::Closure& callback,
-    DeletePageResult result) {
-  store_->Reset(base::Bind(&OfflinePageModelImpl::OnResetStoreDoneForClearAll,
-                           weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void OfflinePageModelImpl::OnResetStoreDoneForClearAll(
-    const base::Closure& callback,
-    bool success) {
-  DCHECK(success);
-  if (!success) {
-    offline_event_logger_.RecordStoreClearError();
-    UMA_HISTOGRAM_ENUMERATION("OfflinePages.ClearAllStatus2",
-                              STORE_RESET_FAILED, CLEAR_ALL_STATUS_COUNT);
-  }
-
-  offline_pages_.clear();
-  store_->GetOfflinePages(
-      base::Bind(&OfflinePageModelImpl::OnReloadStoreDoneForClearAll,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
-}
-
-void OfflinePageModelImpl::OnReloadStoreDoneForClearAll(
-    const base::Closure& callback,
-    OfflinePageMetadataStore::LoadStatus load_status,
-    const std::vector<OfflinePageItem>& offline_pages) {
-  DCHECK_EQ(OfflinePageMetadataStore::LOAD_SUCCEEDED, load_status);
-  UMA_HISTOGRAM_ENUMERATION(
-      "OfflinePages.ClearAllStatus2",
-      load_status == OfflinePageMetadataStore::LOAD_SUCCEEDED
-          ? CLEAR_ALL_SUCCEEDED
-          : STORE_RELOAD_FAILED,
-      CLEAR_ALL_STATUS_COUNT);
-
-  if (load_status == OfflinePageMetadataStore::LOAD_SUCCEEDED) {
-    offline_event_logger_.RecordStoreCleared();
-  } else {
-    offline_event_logger_.RecordStoreReloadError();
-  }
-
-  CacheLoadedData(offline_pages);
-  callback.Run();
 }
 
 void OfflinePageModelImpl::CacheLoadedData(
