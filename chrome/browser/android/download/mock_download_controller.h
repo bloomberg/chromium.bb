@@ -25,10 +25,6 @@ class MockDownloadController : public DownloadControllerBase {
   ~MockDownloadController() override;
 
   // DownloadControllerBase implementation.
-  void CreateGETDownload(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      bool must_download,
-      const DownloadInfo& info) override;
   void OnDownloadStarted(content::DownloadItem* download_item) override;
   void StartContextMenuDownload(
       const content::ContextMenuParams& params,

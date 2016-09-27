@@ -59,13 +59,6 @@ class DownloadControllerBase : public content::DownloadItem::Observer {
   static void SetDownloadControllerBase(
       DownloadControllerBase* download_controller);
 
-  // Starts a new download request with Android. Should be called on the
-  // UI thread.
-  virtual void CreateGETDownload(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      bool must_download,
-      const DownloadInfo& info) = 0;
-
   // Should be called when a download is started. It can be either a GET
   // request with authentication or a POST request. Notifies the embedding
   // app about the download. Should be called on the UI thread.

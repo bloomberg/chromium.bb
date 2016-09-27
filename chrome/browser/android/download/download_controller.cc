@@ -234,66 +234,6 @@ bool DownloadController::HasFileAccessPermission(
       env, GetJavaObject()->Controller(env), jwindow_android);
 }
 
-void DownloadController::CreateGETDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    bool must_download,
-    const DownloadInfo& info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // We are yielding the UI thread and render_view_host may go away by
-  // the time we come back. Pass along render_process_id and render_view_id
-  // to retrieve it later (if it still exists).
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadController::StartAndroidDownload,
-                 base::Unretained(this),
-                 wc_getter, must_download, info));
-}
-
-void DownloadController::StartAndroidDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    bool must_download, const DownloadInfo& info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  WebContents* web_contents = wc_getter.Run();
-  if (!web_contents) {
-    // The view went away. Can't proceed.
-    LOG(ERROR) << "Download failed on URL:" << info.url.spec();
-    return;
-  }
-
-  AcquireFileAccessPermission(
-      web_contents,
-      base::Bind(&DownloadController::StartAndroidDownloadInternal,
-                 base::Unretained(this), wc_getter, must_download, info));
-}
-
-void DownloadController::StartAndroidDownloadInternal(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    bool must_download, const DownloadInfo& info, bool allowed) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!allowed)
-    return;
-
-  WebContents* web_contents = wc_getter.Run();
-  // The view went away. Can't proceed.
-  if (!web_contents)
-    return;
-
-  base::string16 filename = net::GetSuggestedFilename(
-      info.url, info.content_disposition,
-      std::string(),  // referrer_charset
-      std::string(),  // suggested_name
-      info.original_mime_type,
-      default_file_name_);
-  ChromeDownloadDelegate::FromWebContents(web_contents)->RequestHTTPGetDownload(
-      info.url.spec(), info.user_agent,
-      info.content_disposition, info.original_mime_type,
-      info.cookie, info.referer, filename,
-      info.total_bytes, info.has_user_gesture,
-      must_download);
-}
-
 void DownloadController::OnDownloadStarted(
     DownloadItem* download_item) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -305,8 +245,7 @@ void DownloadController::OnDownloadStarted(
   download_item->AddObserver(this);
 
   ChromeDownloadDelegate::FromWebContents(web_contents)->OnDownloadStarted(
-      download_item->GetTargetFilePath().BaseName().value(),
-      download_item->GetMimeType());
+      download_item->GetTargetFilePath().BaseName().value());
 }
 
 void DownloadController::OnDownloadUpdated(DownloadItem* item) {

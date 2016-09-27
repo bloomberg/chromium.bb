@@ -17,11 +17,6 @@ MockDownloadController::MockDownloadController()
 
 MockDownloadController::~MockDownloadController() {}
 
-void MockDownloadController::CreateGETDownload(
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    bool must_download, const DownloadInfo& info) {
-}
-
 void MockDownloadController::OnDownloadStarted(
     content::DownloadItem* download_item) {
 }

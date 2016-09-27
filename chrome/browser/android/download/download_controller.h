@@ -76,10 +76,6 @@ class DownloadController : public DownloadControllerBase {
   bool HasFileAccessPermission(ui::WindowAndroid* window_android);
 
   // DownloadControllerBase implementation.
-  void CreateGETDownload(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      bool must_download,
-      const DownloadInfo& info) override;
   void OnDownloadStarted(content::DownloadItem* download_item) override;
   void StartContextMenuDownload(const content::ContextMenuParams& params,
                                 content::WebContents* web_contents,
@@ -91,16 +87,6 @@ class DownloadController : public DownloadControllerBase {
 
   // DownloadItem::Observer interface.
   void OnDownloadUpdated(content::DownloadItem* item) override;
-
-  void StartAndroidDownload(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      bool must_download,
-      const DownloadInfo& info);
-  void StartAndroidDownloadInternal(
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      bool must_download,
-      const DownloadInfo& info,
-      bool allowed);
 
   // The download item contains dangerous file types.
   void OnDangerousDownload(content::DownloadItem *item);

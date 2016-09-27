@@ -19,18 +19,7 @@ class ChromeDownloadDelegate
 
   void SetJavaRef(JNIEnv*, jobject obj);
 
-  void RequestHTTPGetDownload(const std::string& url,
-                              const std::string& user_agent,
-                              const std::string& content_disposition,
-                              const std::string& mime_type,
-                              const std::string& cookie,
-                              const std::string& referer,
-                              const base::string16& file_name,
-                              int64_t content_length,
-                              bool has_user_geature,
-                              bool must_download);
-  void OnDownloadStarted(const std::string& filename,
-                         const std::string& mime_type);
+  void OnDownloadStarted(const std::string& filename);
   void OnDangerousDownload(const std::string& filename,
                            const std::string& guid);
   void RequestFileAccess(intptr_t callback_id);
