@@ -11,9 +11,21 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import android.support.annotation.Nullable;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuItem.OnMenuItemClickListener;
+
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
+import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
+import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
+import org.chromium.chrome.browser.ntp.MostVisitedItem;
+import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
@@ -21,6 +33,8 @@ import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
+import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Unit tests for {@link NewTabPageAdapter}.
@@ -198,7 +213,7 @@ public class NewTabPageAdapterTest {
         mSource.setInfoForCategory(KnownCategories.ARTICLES,
                 new SuggestionsCategoryInfo("Articles for you",
                                            ContentSuggestionsCardLayout.FULL_CARD, false, true));
-        mAdapter = new NewTabPageAdapter(null, null, mSource, null);
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
     }
 
     /**
@@ -382,20 +397,20 @@ public class NewTabPageAdapterTest {
         assertItemsFor();
 
         // Same when loading a new NTP.
-        mAdapter = new NewTabPageAdapter(null, null, mSource, null);
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
         assertItemsFor();
 
         // Same for CATEGORY_EXPLICITLY_DISABLED.
         mSource.setStatusForCategory(KnownCategories.ARTICLES, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(KnownCategories.ARTICLES, snippets);
-        mAdapter = new NewTabPageAdapter(null, null, mSource, null);
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
         assertItemsFor(section(5));
         mSource.setStatusForCategory(
                 KnownCategories.ARTICLES, CategoryStatus.CATEGORY_EXPLICITLY_DISABLED);
         assertItemsFor();
 
         // Same when loading a new NTP.
-        mAdapter = new NewTabPageAdapter(null, null, mSource, null);
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
         assertItemsFor();
     }
 
@@ -416,7 +431,7 @@ public class NewTabPageAdapterTest {
         assertItemsFor(section(4));
 
         // But it disappears when loading a new NTP.
-        mAdapter = new NewTabPageAdapter(null, null, mSource, null);
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null);
         assertItemsFor();
     }
 
@@ -437,7 +452,7 @@ public class NewTabPageAdapterTest {
                                   "", ContentSuggestionsCardLayout.MINIMAL_CARD, false, true));
 
         // 1.1 - Initial state
-        mAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
         assertItemsFor(sectionWithStatusCard());
 
         // 1.2 - With suggestions
@@ -462,7 +477,7 @@ public class NewTabPageAdapterTest {
                                   "", ContentSuggestionsCardLayout.MINIMAL_CARD, false, false));
 
         // 2.1 - Initial state
-        mAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
         assertItemsFor();
 
         // 2.2 - With suggestions
@@ -494,7 +509,7 @@ public class NewTabPageAdapterTest {
                                   "", ContentSuggestionsCardLayout.MINIMAL_CARD, true, true));
 
         // 1.1 - Initial state.
-        mAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
         assertItemsFor(sectionWithStatusCardAndMoreButton());
 
         // 1.2 - With suggestions.
@@ -519,7 +534,7 @@ public class NewTabPageAdapterTest {
                                   "", ContentSuggestionsCardLayout.MINIMAL_CARD, false, true));
 
         // 2.1 - Initial state.
-        mAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(suggestionsSource), null, null);
         assertItemsFor(sectionWithStatusCard());
 
         // 2.2 - With suggestions.
@@ -572,7 +587,7 @@ public class NewTabPageAdapterTest {
                                           ContentSuggestionsCardLayout.MINIMAL_CARD, true, false));
         mSource.setStatusForCategory(dynamicCategory1, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(dynamicCategory1, dynamics1);
-        mAdapter = new NewTabPageAdapter(null, null, mSource, null); // Reload
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null); // Reload
         assertItemsFor(section(3), sectionWithMoreButton(5));
 
         int dynamicCategory2 = 1011;
@@ -582,7 +597,7 @@ public class NewTabPageAdapterTest {
                                           ContentSuggestionsCardLayout.MINIMAL_CARD, false, false));
         mSource.setStatusForCategory(dynamicCategory2, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(dynamicCategory2, dynamics2);
-        mAdapter = new NewTabPageAdapter(null, null, mSource, null); // Reload
+        mAdapter = new NewTabPageAdapter(new MockNewTabPageManager(mSource), null, null); // Reload
         assertItemsFor(section(3), sectionWithMoreButton(5), section(11));
     }
 
@@ -598,7 +613,8 @@ public class NewTabPageAdapterTest {
         registerCategory(suggestionsSource, KnownCategories.PHYSICAL_WEB_PAGES, 0);
         registerCategory(suggestionsSource, KnownCategories.DOWNLOADS, 0);
 
-        NewTabPageAdapter ntpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        NewTabPageAdapter ntpAdapter = new NewTabPageAdapter(
+                new MockNewTabPageManager(suggestionsSource), null, null);
         List<ItemGroup> groups = ntpAdapter.getGroups();
 
         assertEquals(7, groups.size());
@@ -619,7 +635,8 @@ public class NewTabPageAdapterTest {
         registerCategory(suggestionsSource, KnownCategories.DOWNLOADS, 0);
         registerCategory(suggestionsSource, KnownCategories.BOOKMARKS, 0);
 
-        ntpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        ntpAdapter = new NewTabPageAdapter(
+                new MockNewTabPageManager(suggestionsSource), null, null);
         groups = ntpAdapter.getGroups();
 
         assertEquals(7, groups.size());
@@ -639,7 +656,8 @@ public class NewTabPageAdapterTest {
         registerCategory(suggestionsSource, KnownCategories.PHYSICAL_WEB_PAGES, 0);
         registerCategory(suggestionsSource, KnownCategories.DOWNLOADS, 0);
 
-        ntpAdapter = new NewTabPageAdapter(null, null, suggestionsSource, null);
+        ntpAdapter = new NewTabPageAdapter(
+                new MockNewTabPageManager(suggestionsSource), null, null);
 
         // The adapter is already initialised, it will not accept new categories anymore.
         registerCategory(suggestionsSource, 42, 1);
@@ -724,5 +742,163 @@ public class NewTabPageAdapterTest {
 
     private int getCategory(ItemGroup itemGroup) {
         return ((SuggestionsSection) itemGroup).getCategory();
+    }
+
+    private static class MockNewTabPageManager implements NewTabPageManager {
+        SuggestionsSource mSuggestionsSource;
+
+        public MockNewTabPageManager(SuggestionsSource suggestionsSource) {
+            mSuggestionsSource = suggestionsSource;
+        }
+
+        @Override
+        public void openMostVisitedItem(MostVisitedItem item) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void onCreateContextMenu(ContextMenu menu, OnMenuItemClickListener listener) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean onMenuItemClick(int menuId, MostVisitedItem item) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isLocationBarShownInNTP() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isVoiceSearchEnabled() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isFakeOmniboxTextEnabledTablet() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isOpenInNewWindowEnabled() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isOpenInIncognitoEnabled() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void navigateToBookmarks() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void navigateToRecentTabs() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void navigateToDownloadManager() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void trackSnippetsPageImpression(int[] categories, int[] suggestionsPerCategory) {
+        }
+
+        @Override
+        public void trackSnippetImpression(SnippetArticle article) {
+        }
+
+        @Override
+        public void trackSnippetMenuOpened(SnippetArticle article) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void trackSnippetCategoryActionImpression(int category, int position) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void trackSnippetCategoryActionClick(int category, int position) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void openSnippet(int windowOpenDisposition, SnippetArticle article) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void focusSearchBox(boolean beginVoiceSearch, String pastedText) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void setMostVisitedURLsObserver(MostVisitedURLsObserver observer, int numResults) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void getLocalFaviconImageForURL(String url, int size,
+                FaviconImageCallback faviconCallback) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void getLargeIconForUrl(String url, int size, LargeIconCallback callback) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void ensureIconIsAvailable(String pageUrl, String iconUrl, boolean isLargeIcon,
+                boolean isTemporary, IconAvailabilityCallback callback) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void getUrlsAvailableOffline(Set<String> pageUrls, Callback<Set<String>> callback) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void onLogoClicked(boolean isAnimatedLogoShowing) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void getSearchProviderLogo(LogoObserver logoObserver) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void onLoadingComplete(MostVisitedItem[] mostVisitedItems) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void addContextMenuCloseCallback(Callback<Menu> callback) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void removeContextMenuCloseCallback(Callback<Menu> callback) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void onLearnMoreClicked() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        @Nullable public SuggestionsSource getSuggestionsSource() {
+            return mSuggestionsSource;
+        }
     }
 }

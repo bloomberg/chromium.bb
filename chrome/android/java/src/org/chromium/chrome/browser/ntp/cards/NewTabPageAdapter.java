@@ -47,7 +47,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     private final NewTabPageManager mNewTabPageManager;
     private final View mAboveTheFoldView;
-    private SuggestionsSource mSuggestionsSource;
     private final UiConfig mUiConfig;
     private final ItemTouchCallbacks mItemTouchCallbacks = new ItemTouchCallbacks();
     private NewTabPageRecyclerView mRecyclerView;
@@ -136,14 +135,14 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
      * @param suggestionsSource the bridge to interact with the content suggestions service.
      * @param uiConfig the NTP UI configuration, to be passed to created views.
      */
-    public NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView,
-            SuggestionsSource suggestionsSource, UiConfig uiConfig) {
+    public NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig) {
         mNewTabPageManager = manager;
         mAboveTheFoldView = aboveTheFoldView;
-        mSuggestionsSource = suggestionsSource;
         mUiConfig = uiConfig;
 
-        int[] categories = mSuggestionsSource.getCategories();
+        SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
+
+        int[] categories = suggestionsSource.getCategories();
         int[] suggestionsPerCategory = new int[categories.length];
         int i = 0;
         for (int category : categories) {
@@ -158,17 +157,16 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             suggestionsPerCategory[i++] = suggestions.size();
 
             // Create the new section.
-            SuggestionsCategoryInfo info = mSuggestionsSource.getCategoryInfo(category);
+            SuggestionsCategoryInfo info = suggestionsSource.getCategoryInfo(category);
             if (suggestions.isEmpty() && !info.showIfEmpty()) continue;
             mSections.put(category, new SuggestionsSection(category, info, this));
 
             // Add the new suggestions.
             setSuggestions(category, suggestions, categoryStatus);
         }
-        // |mNewTabPageManager| is null in some tests.
-        if (mNewTabPageManager != null) {
-            mNewTabPageManager.trackSnippetsPageImpression(categories, suggestionsPerCategory);
-        }
+
+        mNewTabPageManager.trackSnippetsPageImpression(categories, suggestionsPerCategory);
+
         suggestionsSource.setObserver(this);
         updateGroups();
     }
@@ -189,7 +187,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         // The status may have changed while the suggestions were loading, perhaps they should not
         // be displayed any more.
         @CategoryStatusEnum
-        int status = mSuggestionsSource.getCategoryStatus(category);
+        int status = mNewTabPageManager.getSuggestionsSource().getCategoryStatus(category);
         if (!SnippetsBridge.isCategoryEnabled(status)) {
             Log.w(TAG, "Received suggestions for a disabled category (id=%d, status=%d)", category,
                     status);
@@ -197,7 +195,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         }
 
         List<SnippetArticle> suggestions =
-                mSuggestionsSource.getSuggestionsForCategory(category);
+                mNewTabPageManager.getSuggestionsSource().getSuggestionsForCategory(category);
 
         Log.d(TAG, "Received %d new suggestions for category %d.", suggestions.size(), category);
 
@@ -257,8 +255,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_SNIPPET) {
-            return new SnippetArticleViewHolder(mRecyclerView, mNewTabPageManager,
-                    mSuggestionsSource, mUiConfig);
+            return new SnippetArticleViewHolder(mRecyclerView, mNewTabPageManager, mUiConfig);
         }
 
         if (viewType == NewTabPageItem.VIEW_TYPE_SPACING) {
@@ -397,7 +394,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     private void dismissSection(SuggestionsSection section) {
-        mSuggestionsSource.dismissCategory(section.getCategory());
+        mNewTabPageManager.getSuggestionsSource().dismissCategory(section.getCategory());
 
         mSections.remove(section.getCategory());
         updateGroups();
@@ -405,7 +402,17 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     private void dismissSuggestion(int position) {
         SnippetArticle suggestion = (SnippetArticle) getItems().get(position);
-        mSuggestionsSource.getSuggestionVisited(suggestion, new Callback<Boolean>() {
+
+        SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
+        if (suggestionsSource == null) {
+            // It is possible for this method to be called after the NewTabPage has had destroy()
+            // called. This can happen when NewTabPageRecyclerView.dismissWithAnimation() is called
+            // and the animation ends after the user has navigated away. In this case we cannot
+            // inform the native side that the snippet has been dismissed (http://crbug.com/649299).
+            return;
+        }
+
+        suggestionsSource.getSuggestionVisited(suggestion, new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
                 NewTabPageUma.recordSnippetAction(result
@@ -417,7 +424,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mRecyclerView.announceForAccessibility(mRecyclerView.getResources().getString(
                 R.string.ntp_accessibility_item_removed, suggestion.mTitle));
 
-        mSuggestionsSource.dismissSuggestion(suggestion);
+        suggestionsSource.dismissSuggestion(suggestion);
         SuggestionsSection section = (SuggestionsSection) getGroup(position);
         section.removeSuggestion(suggestion);
 

@@ -77,8 +77,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 View aboveTheFold = new View(getActivity());
 
                 mRecyclerView.setAboveTheFoldView(aboveTheFold);
-                mAdapter = new NewTabPageAdapter(mNtpManager, aboveTheFold, mSnippetsSource,
-                        mUiConfig);
+                mAdapter = new NewTabPageAdapter(mNtpManager, aboveTheFold, mUiConfig);
                 mRecyclerView.setAdapter(mAdapter);
             }
         });
@@ -344,6 +343,11 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         @Override
         public void onLearnMoreClicked() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public SuggestionsSource getSuggestionsSource() {
+            return mSnippetsSource;
         }
     }
 }

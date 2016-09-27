@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
+import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.MostVisitedSites;
@@ -632,6 +633,11 @@ public class NewTabPage
         public void removeContextMenuCloseCallback(Callback<Menu> callback) {
             mActivity.removeContextMenuCloseCallback(callback);
         }
+
+        @Override
+        public SuggestionsSource getSuggestionsSource() {
+            return mSnippetsBridge;
+        }
     };
 
     /**
@@ -677,7 +683,7 @@ public class NewTabPage
 
         LayoutInflater inflater = LayoutInflater.from(activity);
         mNewTabPageView = (NewTabPageView) inflater.inflate(R.layout.new_tab_page_view, null);
-        mNewTabPageView.initialize(mNewTabPageManager, mSearchProviderHasLogo, mSnippetsBridge);
+        mNewTabPageView.initialize(mNewTabPageManager, mSearchProviderHasLogo);
 
         RecordHistogram.recordBooleanHistogram(
                 "NewTabPage.MobileIsUserOnline", NetworkChangeNotifier.isOnline());

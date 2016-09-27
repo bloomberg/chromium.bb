@@ -66,7 +66,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     private static final int ID_REMOVE = 4;
 
     private final NewTabPageManager mNewTabPageManager;
-    private final SuggestionsSource mSuggestionsSource;
     private final TextView mHeadlineTextView;
     private final TextView mPublisherTextView;
     private final TextView mArticleSnippetTextView;
@@ -154,11 +153,10 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
      * @param uiConfig The NTP UI configuration object used to adjust the article UI.
      */
     public SnippetArticleViewHolder(NewTabPageRecyclerView parent, NewTabPageManager manager,
-            SuggestionsSource suggestionsSource, UiConfig uiConfig) {
+            UiConfig uiConfig) {
         super(R.layout.new_tab_page_snippets_card, parent, uiConfig);
 
         mNewTabPageManager = manager;
-        mSuggestionsSource = suggestionsSource;
         mThumbnailView = (ImageView) itemView.findViewById(R.id.article_thumbnail);
         mHeadlineTextView = (TextView) itemView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) itemView.findViewById(R.id.article_publisher);
@@ -286,7 +284,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
     public void onBindViewHolder(SnippetArticle article) {
         super.onBindViewHolder();
 
-        mArticle = (SnippetArticle) article;
+        mArticle = article;
         updateLayout();
 
         mHeadlineTextView.setText(mArticle.mTitle);
@@ -332,7 +330,8 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             } else {
                 mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
                 mImageCallback = new FetchImageCallback(this, mArticle);
-                mSuggestionsSource.fetchSuggestionImage(mArticle, mImageCallback);
+                mNewTabPageManager.getSuggestionsSource()
+                        .fetchSuggestionImage(mArticle, mImageCallback);
             }
         }
 

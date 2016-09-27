@@ -15,6 +15,7 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.widget.RecyclerView;
@@ -50,8 +51,8 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
-import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
+import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObserver;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
@@ -277,6 +278,13 @@ public class NewTabPageView extends FrameLayout
          * Handles clicks on the "learn more" link in the footer.
          */
         void onLearnMoreClicked();
+
+        /**
+         * Returns the SuggestionsSource or null if it doesn't exist. The SuggestionsSource is
+         * invalidated (has destroy() called) when the NewTabPage is destroyed so use this method
+         * instead of keeping your own reference.
+         */
+        @Nullable SuggestionsSource getSuggestionsSource();
     }
 
     /**
@@ -295,13 +303,12 @@ public class NewTabPageView extends FrameLayout
      * @param searchProviderHasLogo Whether the search provider has a logo.
      * @param snippetsBridge The optional bridge, that can be used to interact with the snippets.
      */
-    public void initialize(NewTabPageManager manager, boolean searchProviderHasLogo,
-            SnippetsBridge snippetsBridge) {
+    public void initialize(NewTabPageManager manager, boolean searchProviderHasLogo) {
         mManager = manager;
         mUiConfig = new UiConfig(this);
         ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
 
-        mUseCardsUi = snippetsBridge != null;
+        mUseCardsUi = manager.getSuggestionsSource() != null;
         if (mUseCardsUi) {
             stub.setLayoutResource(R.layout.new_tab_page_recycler_view);
             mRecyclerView = (NewTabPageRecyclerView) stub.inflate();
@@ -350,7 +357,7 @@ public class NewTabPageView extends FrameLayout
         // Set up snippets
         if (mUseCardsUi) {
             mNewTabPageAdapter =
-                    new NewTabPageAdapter(mManager, mNewTabPageLayout, snippetsBridge, mUiConfig);
+                    new NewTabPageAdapter(mManager, mNewTabPageLayout, mUiConfig);
             mRecyclerView.setAdapter(mNewTabPageAdapter);
 
             // Set up swipe-to-dismiss
