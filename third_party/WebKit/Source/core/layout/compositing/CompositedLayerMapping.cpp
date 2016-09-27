@@ -808,7 +808,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compo
     FloatSize contentsSize(relativeCompositingBounds.size());
 
     updateMainGraphicsLayerGeometry(relativeCompositingBounds, localCompositingBounds, graphicsLayerParentLocation);
-    updateOverflowControlsHostLayerGeometry(compositingStackingContext, compositingContainer);
+    updateOverflowControlsHostLayerGeometry(compositingStackingContext, compositingContainer, graphicsLayerParentLocation);
     updateContentsOffsetInCompositingLayer(snappedOffsetFromCompositedAncestor, graphicsLayerParentLocation);
     updateSquashingLayerGeometry(graphicsLayerParentLocation, compositingContainer, m_squashedLayers, m_squashingLayer.get(), &m_squashingLayerOffsetFromTransformedAncestor, layersNeedingPaintInvalidation);
 
@@ -912,29 +912,43 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(const PaintLaye
     graphicsLayerParentLocation = parentClipRect.location();
 }
 
-void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(const PaintLayer* compositingStackingContext, const PaintLayer* compositingContainer)
+void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(const PaintLayer* compositingStackingContext, const PaintLayer* compositingContainer, IntPoint graphicsLayerParentLocation)
 {
     if (!m_overflowControlsHostLayer)
         return;
 
+    // To position and clip the scrollbars correctly, m_overflowControlsHostLayer should match our
+    // border box rect, which is at the origin of our LayoutObject. Its position is computed in
+    // various ways depending on who its parent GraphicsLayer is going to be.
     LayoutPoint hostLayerPosition;
 
     if (needsToReparentOverflowControls()) {
+        CompositedLayerMapping* stackingCLM = compositingStackingContext->compositedLayerMapping();
+        DCHECK(stackingCLM);
+
+        // Either m_overflowControlsHostLayer or m_overflowControlsAncestorClippingLayer (if it
+        // exists) will be a child of the main GraphicsLayer of the compositing stacking context.
+        IntSize stackingOffsetFromLayoutObject = stackingCLM->mainGraphicsLayer()->offsetFromLayoutObject();
+
         if (m_overflowControlsAncestorClippingLayer) {
             m_overflowControlsAncestorClippingLayer->setSize(m_ancestorClippingLayer->size());
             m_overflowControlsAncestorClippingLayer->setOffsetFromLayoutObject(m_ancestorClippingLayer->offsetFromLayoutObject());
             m_overflowControlsAncestorClippingLayer->setMasksToBounds(true);
-            hostLayerPosition = toLayoutPoint(LayoutSize(-m_overflowControlsAncestorClippingLayer->offsetFromLayoutObject()));
 
-            FloatPoint position = m_ancestorClippingLayer->position();
-            if (compositingStackingContext != compositingContainer) {
-                LayoutPoint offset;
+            FloatPoint position;
+            if (compositingStackingContext == compositingContainer) {
+                position = m_ancestorClippingLayer->position();
+            } else {
+                // graphicsLayerParentLocation is the location of m_ancestorClippingLayer
+                // relative to compositingContainer (including any offset from
+                // compositingContainer's m_childContainmentLayer).
+                LayoutPoint offset = LayoutPoint(graphicsLayerParentLocation);
                 compositingContainer->convertToLayerCoords(compositingStackingContext, offset);
-                FloatSize offsetFromStackingContainer = toFloatSize(FloatPoint(offset));
-                position += offsetFromStackingContainer;
+                position = FloatPoint(offset) - FloatSize(stackingOffsetFromLayoutObject);
             }
 
             m_overflowControlsAncestorClippingLayer->setPosition(position);
+            hostLayerPosition.move(-m_ancestorClippingLayer->offsetFromLayoutObject());
         } else {
             // The controls are in the same 2D space as the compositing container, so we can map them into the space of the container.
             TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
@@ -943,15 +957,12 @@ void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(const Paint
             hostLayerPosition = LayoutPoint(transformState.lastPlanarPoint());
             if (PaintLayerScrollableArea* scrollableArea = compositingStackingContext->getScrollableArea())
                 hostLayerPosition.move(LayoutSize(scrollableArea->adjustedScrollOffset()));
+            hostLayerPosition.move(-stackingOffsetFromLayoutObject);
         }
+    } else {
+        hostLayerPosition.move(-m_graphicsLayer->offsetFromLayoutObject());
     }
 
-    // To clip correctly, m_overflowControlsHostLayer should match the border box rect, which is at
-    // the origin of the LayoutObject. The parent is m_graphicsLayer, so we must adjust the position
-    // by the distance from m_graphicsLayer to the LayoutObject.
-
-    IntSize offsetFromLayoutObject = m_graphicsLayer->offsetFromLayoutObject() - roundedIntSize(m_owningLayer.subpixelAccumulation());
-    hostLayerPosition.move(-offsetFromLayoutObject);
     m_overflowControlsHostLayer->setPosition(FloatPoint(hostLayerPosition));
 
     const IntRect borderBox = toLayoutBox(m_owningLayer.layoutObject())->pixelSnappedBorderBoxRect();
