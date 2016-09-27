@@ -112,7 +112,7 @@ class PrerenderContents::WebContentsDelegateImpl
     return NULL;
   }
 
-  bool ShouldTransferNavigation(bool is_main_frame_navigation) override {
+  bool ShouldTransferNavigation() override {
     // Cancel the prerender if the navigation attempts to transfer to a
     // different process.  Examples include server redirects to privileged pages
     // or cross-site subframe navigations in --site-per-process.

@@ -10,8 +10,7 @@ bool NavigatorDelegate::CanOverscrollContent() const {
   return false;
 }
 
-bool NavigatorDelegate::ShouldTransferNavigation(
-    bool is_main_frame_navigation) {
+bool NavigatorDelegate::ShouldTransferNavigation() {
   return true;
 }
 
