@@ -3189,7 +3189,11 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   datasource->setNavigationStartTime(
       ConvertToBlinkTime(navigation_state->common_params().navigation_start));
 
-  if (IsBrowserSideNavigationEnabled()) {
+  // PlzNavigate: if an actual navigation took place, inform the datasource of
+  // what happened in the browser.
+  if (IsBrowserSideNavigationEnabled() &&
+      !navigation_state->request_params()
+           .navigation_timing.fetch_start.is_null()) {
     // Set timing of several events that happened during navigation.
     // They will be used in blink for the Navigation Timing API.
     double redirect_start = ConvertToBlinkTime(
