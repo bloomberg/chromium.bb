@@ -24,6 +24,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_piece.h"
 #include "base/task_runner_util.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
 #include "components/precache/core/proto/precache.pb.h"
@@ -254,6 +255,9 @@ void PrecacheFetcher::Fetcher::LoadFromCache() {
   fetch_stage_ = FetchStage::CACHE;
   cache_url_fetcher_ =
       net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      cache_url_fetcher_.get(),
+      data_use_measurement::DataUseUserData::PRECACHE);
   cache_url_fetcher_->SetRequestContext(request_context_);
   cache_url_fetcher_->SetLoadFlags(net::LOAD_ONLY_FROM_CACHE | kNoTracking);
   std::unique_ptr<URLFetcherNullWriter> null_writer(new URLFetcherNullWriter);
@@ -265,6 +269,9 @@ void PrecacheFetcher::Fetcher::LoadFromNetwork() {
   fetch_stage_ = FetchStage::NETWORK;
   network_url_fetcher_ =
       net::URLFetcher::Create(url_, net::URLFetcher::GET, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      network_url_fetcher_.get(),
+      data_use_measurement::DataUseUserData::PRECACHE);
   network_url_fetcher_->SetRequestContext(request_context_);
   if (is_resource_request_) {
     // LOAD_VALIDATE_CACHE allows us to refresh Date headers for resources

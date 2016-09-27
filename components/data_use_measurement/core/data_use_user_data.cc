@@ -80,6 +80,10 @@ std::string DataUseUserData::GetServiceNameAsString(ServiceName service_name) {
       return "NTPSnippets";
     case SAFE_BROWSING:
       return "SafeBrowsing";
+    case DATA_REDUCTION_PROXY:
+      return "DataReductionProxy";
+    case PRECACHE:
+      return "Precache";
   }
   return "INVALID";
 }

@@ -58,6 +58,7 @@ if (is_android) {
       "//base",
       "//components/data_reduction_proxy/core/common",
       "//components/data_reduction_proxy/proto:data_reduction_proxy_proto",
+      "//components/data_use_measurement/core",
       "//components/pref_registry",
       "//components/prefs",
       "//components/variations",
@@ -82,6 +83,7 @@ static_library("browser") {
   ]
   deps = [
     "//base",
+    "//components/data_use_measurement/core",
     "//components/pref_registry",
     "//components/prefs",
     "//components/variations",

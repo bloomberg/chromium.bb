@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/url_request/url_fetcher.h"
@@ -142,6 +143,9 @@ void DataReductionProxyPingbackClient::CreateFetcherForDataAndStart() {
   metrics_request_.Clear();
   current_fetcher_ =
       net::URLFetcher::Create(pingback_url_, net::URLFetcher::POST, this);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      current_fetcher_.get(),
+      data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
   current_fetcher_->SetLoadFlags(net::LOAD_BYPASS_PROXY);
   current_fetcher_->SetUploadData("application/x-protobuf", serialized_request);
   current_fetcher_->SetRequestContext(url_request_context_);

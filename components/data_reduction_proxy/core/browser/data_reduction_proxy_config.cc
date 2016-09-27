@@ -28,6 +28,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -232,6 +233,9 @@ class SecureProxyChecker : public net::URLFetcherDelegate {
                                    FetcherResponseCallback fetcher_callback) {
     fetcher_ = net::URLFetcher::Create(secure_proxy_check_url,
                                        net::URLFetcher::GET, this);
+    data_use_measurement::DataUseUserData::AttachToFetcher(
+        fetcher_.get(),
+        data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
     fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_PROXY);
     fetcher_->SetRequestContext(url_request_context_getter_.get());
     // Configure max retries to be at most kMaxRetries times for 5xx errors.

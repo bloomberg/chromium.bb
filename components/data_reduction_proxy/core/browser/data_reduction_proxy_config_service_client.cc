@@ -26,6 +26,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -393,6 +394,9 @@ DataReductionProxyConfigServiceClient::GetURLFetcherForConfig(
   DCHECK(thread_checker_.CalledOnValidThread());
   std::unique_ptr<net::URLFetcher> fetcher(net::URLFetcher::Create(
       secure_proxy_check_url, net::URLFetcher::POST, this));
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher.get(),
+      data_use_measurement::DataUseUserData::DATA_REDUCTION_PROXY);
   fetcher->SetLoadFlags(net::LOAD_BYPASS_PROXY);
   fetcher->SetUploadData("application/x-protobuf", request_body);
   DCHECK(url_request_context_getter_);

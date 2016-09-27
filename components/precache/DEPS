@@ -2,6 +2,7 @@ include_rules = [
   # Precache is a layered component; subdirectories must introduce the ability
   # to use the content layer explicitly as appropriate.
   # http://www.chromium.org/developers/design-documents/layered-components-design
+  "+components/data_use_measurement/core",
   "-components/precache",
   "+components/precache/core",
 

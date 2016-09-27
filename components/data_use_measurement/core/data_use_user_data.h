@@ -41,6 +41,8 @@ class DataUseUserData : public base::SupportsUserData::Data {
     SPELL_CHECKER,
     NTP_SNIPPETS,
     SAFE_BROWSING,
+    DATA_REDUCTION_PROXY,
+    PRECACHE,
   };
 
   // The state of the application. Only available on Android and on other

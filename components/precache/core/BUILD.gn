@@ -43,6 +43,7 @@ static_library("core") {
   deps = [
     ":proto",
     "//base",
+    "//components/data_use_measurement/core",
     "//components/history/core/browser",
     "//components/prefs",
     "//net",
