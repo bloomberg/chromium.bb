@@ -427,7 +427,7 @@ TEST_F(RendererImplTest, StartPlayingFromWithPlaybackRate) {
   Mock::VerifyAndClearExpectations(video_renderer_);
 
   // Positive playback rate when ticking should start time.
-  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(true));
+  EXPECT_CALL(*video_renderer_, OnTimeProgressing());
   SetPlaybackRate(1.0);
   Mock::VerifyAndClearExpectations(video_renderer_);
 
@@ -436,7 +436,7 @@ TEST_F(RendererImplTest, StartPlayingFromWithPlaybackRate) {
   Mock::VerifyAndClearExpectations(video_renderer_);
 
   // Zero playback rate should stop time.
-  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(false));
+  EXPECT_CALL(*video_renderer_, OnTimeStopped());
   SetPlaybackRate(0.0);
   Mock::VerifyAndClearExpectations(video_renderer_);
 
@@ -445,8 +445,8 @@ TEST_F(RendererImplTest, StartPlayingFromWithPlaybackRate) {
   Mock::VerifyAndClearExpectations(video_renderer_);
 
   // Starting playback and flushing should cause time to stop.
-  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(true));
-  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(false));
+  EXPECT_CALL(*video_renderer_, OnTimeProgressing());
+  EXPECT_CALL(*video_renderer_, OnTimeStopped());
   SetPlaybackRate(1.0);
   Flush(false);
 
@@ -507,7 +507,7 @@ TEST_F(RendererImplTest, VideoStreamEnded) {
 
   EXPECT_CALL(time_source_, StopTicking());
   EXPECT_CALL(callbacks_, OnEnded());
-  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(false));
+  EXPECT_CALL(*video_renderer_, OnTimeStopped());
 
   video_renderer_client_->OnEnded();
   base::RunLoop().RunUntilIdle();
@@ -523,7 +523,7 @@ TEST_F(RendererImplTest, AudioVideoStreamsEnded) {
 
   EXPECT_CALL(time_source_, StopTicking());
   EXPECT_CALL(callbacks_, OnEnded());
-  EXPECT_CALL(*video_renderer_, OnTimeStateChanged(false));
+  EXPECT_CALL(*video_renderer_, OnTimeStopped());
 
   video_renderer_client_->OnEnded();
   base::RunLoop().RunUntilIdle();

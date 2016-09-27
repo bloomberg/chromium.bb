@@ -54,8 +54,9 @@ class MEDIA_EXPORT VideoRenderer {
 
   // Called when time starts or stops moving. Time progresses when a base time
   // has been set and the playback rate is > 0. If either condition changes,
-  // |time_progressing| will be false.
-  virtual void OnTimeStateChanged(bool time_progressing) = 0;
+  // time stops progressing.
+  virtual void OnTimeProgressing() = 0;
+  virtual void OnTimeStopped() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoRenderer);

@@ -237,10 +237,8 @@ void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success) {
     return;
   }
 
-  // We're all good!  Consider ourselves flushed. (ThreadMain() should never
-  // see us in the kUninitialized state).
-  // Since we had an initial Preroll(), we consider ourself flushed, because we
-  // have not populated any buffers yet.
+  // We're all good! Consider ourselves flushed because we have not read any
+  // frames yet.
   state_ = kFlushed;
 
   algorithm_.reset(new VideoRendererAlgorithm(wall_clock_time_cb_));
@@ -285,41 +283,52 @@ void VideoRendererImpl::SetGpuMemoryBufferVideoForTesting(
   gpu_memory_buffer_pool_.swap(gpu_memory_buffer_pool);
 }
 
-void VideoRendererImpl::OnTimeStateChanged(bool time_progressing) {
+void VideoRendererImpl::OnTimeProgressing() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  time_progressing_ = time_progressing;
 
-  // WARNING: Do not attempt to use |lock_| here as this may be a reentrant call
-  // in response to callbacks firing above.
+  // WARNING: Do not attempt to use |lock_| here as StartSink() may cause a
+  // reentrant call.
 
-  if (sink_started_ == time_progressing_)
+  time_progressing_ = true;
+
+  if (sink_started_)
     return;
 
-  if (time_progressing_) {
-    // If only an EOS frame came in after a seek, the renderer may not have
-    // received the ended event yet though we've posted it.
-    if (rendered_end_of_stream_)
-      return;
+  // If only an EOS frame came in after a seek, the renderer may not have
+  // received the ended event yet though we've posted it.
+  if (rendered_end_of_stream_)
+    return;
 
-    // If we have no frames queued, there is a pending buffering state change in
-    // flight and we should ignore the start attempt.
-    if (!algorithm_->frames_queued()) {
-      DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
-      return;
-    }
+  // If we have no frames queued, there is a pending buffering state change in
+  // flight and we should ignore the start attempt.
+  if (!algorithm_->frames_queued()) {
+    DCHECK_EQ(buffering_state_, BUFFERING_HAVE_NOTHING);
+    return;
+  }
 
-    StartSink();
-  } else {
-    StopSink();
+  StartSink();
+}
 
-    // Make sure we expire everything we can if we can't read anymore currently,
-    // otherwise playback may hang indefinitely.  Note: There are no effective
-    // frames queued at this point, otherwise FrameReady() would have canceled
-    // the underflow state before reaching this point.
-    if (buffering_state_ == BUFFERING_HAVE_NOTHING) {
-      base::AutoLock al(lock_);
-      RemoveFramesForUnderflowOrBackgroundRendering();
-    }
+void VideoRendererImpl::OnTimeStopped() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // WARNING: Do not attempt to use |lock_| here as StopSink() may cause a
+  // reentrant call.
+
+  time_progressing_ = false;
+
+  if (!sink_started_)
+    return;
+
+  StopSink();
+
+  // Make sure we expire everything we can if we can't read any more currently,
+  // otherwise playback may hang indefinitely.  Note: There are no effective
+  // frames queued at this point, otherwise FrameReady() would have canceled
+  // the underflow state before reaching this point.
+  if (buffering_state_ == BUFFERING_HAVE_NOTHING) {
+    base::AutoLock al(lock_);
+    RemoveFramesForUnderflowOrBackgroundRendering();
   }
 }
 
@@ -415,10 +424,7 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   if (buffering_state_ == BUFFERING_HAVE_NOTHING && HaveEnoughData_Locked())
     TransitionToHaveEnough_Locked();
 
-  // Always request more decoded video if we have capacity. This serves two
-  // purposes:
-  //   1) Prerolling while paused
-  //   2) Keeps decoding going if video rendering thread starts falling behind
+  // Always request more decoded video if we have capacity.
   AttemptRead_Locked();
 }
 

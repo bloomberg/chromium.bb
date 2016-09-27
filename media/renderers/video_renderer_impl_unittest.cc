@@ -304,7 +304,7 @@ class VideoRendererImplTest : public testing::Test {
       Mock::VerifyAndClearExpectations(&mock_cb_);
     }
 
-    renderer_->OnTimeStateChanged(true);
+    renderer_->OnTimeProgressing();
 
     // Advance time slightly, but enough to exceed the duration of the last
     // frame.
@@ -342,8 +342,8 @@ class VideoRendererImplTest : public testing::Test {
     }
 
     // Simulate delayed buffering state callbacks.
-    renderer_->OnTimeStateChanged(false);
-    renderer_->OnTimeStateChanged(true);
+    renderer_->OnTimeStopped();
+    renderer_->OnTimeProgressing();
 
     // Receiving end of stream should signal having enough.
     {
@@ -379,7 +379,7 @@ class VideoRendererImplTest : public testing::Test {
       Mock::VerifyAndClearExpectations(&mock_cb_);
     }
 
-    renderer_->OnTimeStateChanged(true);
+    renderer_->OnTimeProgressing();
     time_source_.StartTicking();
 
     // Advance time, this should cause have nothing to be signaled.
@@ -398,7 +398,7 @@ class VideoRendererImplTest : public testing::Test {
     AdvanceTimeInMs(59);
     EXPECT_EQ(3u, renderer_->frames_queued_for_testing());
     time_source_.StopTicking();
-    renderer_->OnTimeStateChanged(false);
+    renderer_->OnTimeStopped();
     EXPECT_EQ(0u, renderer_->frames_queued_for_testing());
     ASSERT_TRUE(IsReadPending());
 
@@ -529,7 +529,7 @@ TEST_F(VideoRendererImplTest, InitializeAndEndOfStream) {
     event.RunAndWait();
   }
   // Firing a time state changed to true should be ignored...
-  renderer_->OnTimeStateChanged(true);
+  renderer_->OnTimeProgressing();
   EXPECT_FALSE(null_video_sink_->is_started());
   Destroy();
 }
@@ -615,7 +615,7 @@ TEST_F(VideoRendererImplTest, DecodeError_Playing) {
   EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
 
   StartPlayingFrom(0);
-  renderer_->OnTimeStateChanged(true);
+  renderer_->OnTimeProgressing();
   time_source_.StartTicking();
   AdvanceTimeInMs(10);
 
@@ -692,7 +692,7 @@ TEST_F(VideoRendererImplTest, StartPlayingFrom_LowDelay) {
   QueueFrames("20");
   SatisfyPendingDecode();
 
-  renderer_->OnTimeStateChanged(true);
+  renderer_->OnTimeProgressing();
   time_source_.StartTicking();
 
   WaitableMessageLoopEvent event;
@@ -796,13 +796,13 @@ TEST_F(VideoRendererImplTest, RenderingStopsAfterOneFrameWithEOS) {
 
     null_video_sink_->set_stop_cb(event.GetClosure());
     StartPlayingFrom(0);
-    renderer_->OnTimeStateChanged(true);
+    renderer_->OnTimeProgressing();
 
     EXPECT_TRUE(IsReadPending());
     SatisfyPendingDecodeWithEndOfStream();
     WaitForEnded();
 
-    renderer_->OnTimeStateChanged(false);
+    renderer_->OnTimeStopped();
     event.RunAndWait();
   }
 
@@ -850,7 +850,7 @@ TEST_F(VideoRendererImplTest, RenderingStartedThenStopped) {
       .Times(testing::AtMost(1));
   EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
       .Times(testing::AtMost(1));
-  renderer_->OnTimeStateChanged(true);
+  renderer_->OnTimeProgressing();
   time_source_.StartTicking();
 
   // Suspend all future callbacks and synthetically advance the media time,
@@ -890,7 +890,7 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionBeforeEOS) {
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
         .WillOnce(RunClosure(event.GetClosure()));
-    renderer_->OnTimeStateChanged(true);
+    renderer_->OnTimeProgressing();
     time_source_.StartTicking();
     event.RunAndWait();
   }
@@ -898,7 +898,7 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionBeforeEOS) {
   WaitForPendingDecode();
 
   // Jump time far enough forward that no frames are valid.
-  renderer_->OnTimeStateChanged(false);
+  renderer_->OnTimeStopped();
   AdvanceTimeInMs(1000);
   time_source_.StopTicking();
 
@@ -929,9 +929,9 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionWhileHaveEnough) {
 
   null_video_sink_->set_background_render(true);
   time_source_.StartTicking();
-  renderer_->OnTimeStateChanged(true);
+  renderer_->OnTimeProgressing();
   WaitForPendingDecode();
-  renderer_->OnTimeStateChanged(false);
+  renderer_->OnTimeStopped();
 
   // Jump time far enough forward that no frames are valid.
   AdvanceTimeInMs(1000);
@@ -947,7 +947,7 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionWhileHaveEnough) {
   }
 
   // This should do nothing.
-  renderer_->OnTimeStateChanged(true);
+  renderer_->OnTimeProgressing();
 
   // Providing the end of stream packet should remove all frames and exit.
   SatisfyPendingDecodeWithEndOfStream();
@@ -1004,7 +1004,7 @@ TEST_F(VideoRendererImplTest, FramesAreNotExpiredDuringPreroll) {
   EXPECT_CALL(mock_cb_, OnVideoOpacityChange(_)).Times(1);
   StartPlayingFrom(0);
 
-  renderer_->OnTimeStateChanged(true);
+  renderer_->OnTimeProgressing();
   time_source_.StartTicking();
 
   WaitableMessageLoopEvent event;
@@ -1049,7 +1049,7 @@ TEST_F(VideoRendererImplTest, NaturalSizeChange) {
     EXPECT_CALL(mock_cb_, OnVideoNaturalSizeChange(initial_size));
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));
     StartPlayingFrom(0);
-    renderer_->OnTimeStateChanged(true);
+    renderer_->OnTimeProgressing();
     time_source_.StartTicking();
   }
   {
@@ -1115,7 +1115,7 @@ TEST_F(VideoRendererImplTest, OpacityChange) {
     EXPECT_CALL(mock_cb_, OnVideoOpacityChange(false));
     EXPECT_CALL(mock_cb_, FrameReceived(HasTimestampMatcher(0)));
     StartPlayingFrom(0);
-    renderer_->OnTimeStateChanged(true);
+    renderer_->OnTimeProgressing();
     time_source_.StartTicking();
   }
   {
