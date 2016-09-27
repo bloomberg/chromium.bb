@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 
-#include "base/callback.h"
-
 namespace file_manager {
 
 FakeDiskMountManager::MountRequest::MountRequest(
@@ -55,9 +53,7 @@ const chromeos::disks::DiskMountManager::Disk*
 FakeDiskMountManager::FindDiskBySourcePath(
     const std::string& source_path) const {
   DiskMap::const_iterator iter = disks_.find(source_path);
-  if (iter == disks_.end())
-    return nullptr;
-  return iter->second.get();
+  return iter != disks_.end() ? iter->second.get() : nullptr;
 }
 
 const chromeos::disks::DiskMountManager::MountPointMap&
@@ -99,12 +95,14 @@ void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
   MountPointMap::iterator iter = mount_points_.find(mount_path);
   if (iter == mount_points_.end())
     return;
+
   const MountPointInfo mount_point = iter->second;
   mount_points_.erase(iter);
   FOR_EACH_OBSERVER(DiskMountManager::Observer, observers_,
                     OnMountEvent(DiskMountManager::UNMOUNTING,
                                  chromeos::MOUNT_ERROR_NONE,
                                  mount_point));
+
   // Enqueue callback so that |FakeDiskMountManager::FinishAllUnmountRequest()|
   // can call them.
   pending_unmount_callbacks_.push(callback);
@@ -113,6 +111,7 @@ void FakeDiskMountManager::UnmountPath(const std::string& mount_path,
 bool FakeDiskMountManager::FinishAllUnmountPathRequests() {
   if (pending_unmount_callbacks_.empty())
     return false;
+
   while (!pending_unmount_callbacks_.empty()) {
     pending_unmount_callbacks_.front().Run(chromeos::MOUNT_ERROR_NONE);
     pending_unmount_callbacks_.pop();
