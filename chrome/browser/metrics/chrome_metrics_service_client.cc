@@ -237,6 +237,8 @@ ChromeMetricsServiceClient::ChromeMetricsServiceClient(
 #endif
 #if defined(OS_WIN)
       google_update_metrics_provider_(nullptr),
+      watcher_metrics_provider_(nullptr),
+      antivirus_metrics_provider_(nullptr),
 #endif
       drive_metrics_provider_(nullptr),
       start_time_(base::TimeTicks::Now()),
@@ -488,11 +490,19 @@ void ChromeMetricsServiceClient::Initialize() {
       std::unique_ptr<metrics::MetricsProvider>(
           google_update_metrics_provider_));
 
+  base::FilePath user_data_dir;
+  base::FilePath crash_dir;
+  if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir) ||
+      !base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir)) {
+    // If either call fails, then clear both.
+    user_data_dir = base::FilePath();
+    crash_dir = base::FilePath();
+  }
+  watcher_metrics_provider_ = new browser_watcher::WatcherMetricsProviderWin(
+      chrome::GetBrowserExitCodesRegistryPath(), user_data_dir, crash_dir,
+      content::BrowserThread::GetBlockingPool());
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new browser_watcher::WatcherMetricsProviderWin(
-              chrome::GetBrowserExitCodesRegistryPath(),
-              content::BrowserThread::GetBlockingPool())));
+      std::unique_ptr<metrics::MetricsProvider>(watcher_metrics_provider_));
 
   antivirus_metrics_provider_ = new AntiVirusMetricsProvider(
       content::BrowserThread::GetBlockingPool()
@@ -602,6 +612,16 @@ void ChromeMetricsServiceClient::OnInitTaskGotAntiVirusData() {
 }
 
 void ChromeMetricsServiceClient::OnInitTaskGotDriveMetrics() {
+#if defined(OS_WIN)
+  watcher_metrics_provider_->CollectPostmortemReports(base::Bind(
+      &ChromeMetricsServiceClient::OnInitTaskCollectedPostmortemReports,
+      weak_ptr_factory_.GetWeakPtr()));
+#else
+  OnInitTaskCollectedPostmortemReports();
+#endif  // defined(OS_WIN)
+}
+
+void ChromeMetricsServiceClient::OnInitTaskCollectedPostmortemReports() {
   finished_init_task_callback_.Run();
 }
 

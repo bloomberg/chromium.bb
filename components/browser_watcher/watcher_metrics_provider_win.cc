@@ -7,15 +7,25 @@
 #include <stddef.h>
 
 #include <limits>
+#include <memory>
+#include <set>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "base/metrics/histogram.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
+#include "components/browser_watcher/features.h"
+#include "components/browser_watcher/postmortem_report_collector.h"
+#include "components/browser_watcher/stability_debugging_win.h"
+#include "third_party/crashpad/crashpad/client/crash_report_database.h"
 
 namespace browser_watcher {
 
@@ -185,6 +195,19 @@ void DeleteExitCodeRegistryKey(const base::string16& registry_path) {
     DVLOG(1) << "Failed to delete exit code key " << registry_path;
 }
 
+enum CollectionInitializationStatus {
+  INIT_SUCCESS = 0,
+  UNKNOWN_DIR = 1,
+  GET_STABILITY_FILE_PATH_FAILED = 2,
+  CRASHPAD_DATABASE_INIT_FAILED = 3,
+  INIT_STATUS_MAX = 4
+};
+
+void LogCollectionInitStatus(CollectionInitializationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("ActivityTracker.Collect.InitStatus", status,
+                            INIT_STATUS_MAX);
+}
+
 }  // namespace
 
 const char WatcherMetricsProviderWin::kBrowserExitCodeHistogramName[] =
@@ -192,12 +215,17 @@ const char WatcherMetricsProviderWin::kBrowserExitCodeHistogramName[] =
 
 WatcherMetricsProviderWin::WatcherMetricsProviderWin(
     const base::string16& registry_path,
-    base::TaskRunner* cleanup_io_task_runner)
+    const base::FilePath& user_data_dir,
+    const base::FilePath& crash_dir,
+    base::TaskRunner* io_task_runner)
     : recording_enabled_(false),
       cleanup_scheduled_(false),
       registry_path_(registry_path),
-      cleanup_io_task_runner_(cleanup_io_task_runner) {
-  DCHECK(cleanup_io_task_runner_);
+      user_data_dir_(user_data_dir),
+      crash_dir_(crash_dir),
+      io_task_runner_(io_task_runner),
+      weak_ptr_factory_(this) {
+  DCHECK(io_task_runner_);
 }
 
 WatcherMetricsProviderWin::~WatcherMetricsProviderWin() {
@@ -212,7 +240,7 @@ void WatcherMetricsProviderWin::OnRecordingDisabled() {
     // When metrics reporting is disabled, the providers get an
     // OnRecordingDisabled notification at startup. Use that first notification
     // to issue the cleanup task.
-    cleanup_io_task_runner_->PostTask(
+    io_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DeleteExitCodeRegistryKey, registry_path_));
 
     cleanup_scheduled_ = true;
@@ -229,6 +257,67 @@ void WatcherMetricsProviderWin::ProvideStabilityMetrics(
   // here.
   RecordExitCodes(registry_path_);
   DeleteExitFunnels(registry_path_);
+}
+
+void WatcherMetricsProviderWin::CollectPostmortemReports(
+    const base::Closure& done_callback) {
+  io_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(
+          &WatcherMetricsProviderWin::CollectPostmortemReportsOnBlockingPool,
+          weak_ptr_factory_.GetWeakPtr()),
+      done_callback);
+}
+
+void WatcherMetricsProviderWin::CollectPostmortemReportsOnBlockingPool() {
+  // Note: the feature controls both instrumentation and collection.
+  bool is_stability_debugging_on =
+      base::FeatureList::IsEnabled(browser_watcher::kStabilityDebuggingFeature);
+  if (!is_stability_debugging_on) {
+    // TODO(manzagop): delete possible leftover data.
+    return;
+  }
+
+  SCOPED_UMA_HISTOGRAM_TIMER("ActivityTracker.Collect.TotalTime");
+
+  if (user_data_dir_.empty() || crash_dir_.empty()) {
+    LOG(ERROR) << "User data directory or crash directory is unknown.";
+    LogCollectionInitStatus(UNKNOWN_DIR);
+    return;
+  }
+
+  // Determine the stability directory and the stability file for the current
+  // process.
+  base::FilePath stability_dir = GetStabilityDir(user_data_dir_);
+  base::FilePath current_stability_file;
+  if (!GetStabilityFileForProcess(base::Process::Current(), user_data_dir_,
+                                  &current_stability_file)) {
+    LOG(ERROR) << "Failed to get the current stability file.";
+    LogCollectionInitStatus(GET_STABILITY_FILE_PATH_FAILED);
+    return;
+  }
+  const std::set<base::FilePath>& excluded_debug_files = {
+      current_stability_file};
+
+  // Create a database. Note: Chrome already has a g_database in crashpad.cc but
+  // it has internal linkage. Create a new one.
+  std::unique_ptr<crashpad::CrashReportDatabase> crashpad_database =
+      crashpad::CrashReportDatabase::InitializeWithoutCreating(crash_dir_);
+  if (!crashpad_database) {
+    LOG(ERROR) << "Failed to initialize a CrashPad database.";
+    LogCollectionInitStatus(CRASHPAD_DATABASE_INIT_FAILED);
+    return;
+  }
+
+  // Note: not caching the histogram pointer as this function isn't expected to
+  // be called multiple times.
+  LogCollectionInitStatus(INIT_SUCCESS);
+
+  // TODO(manzagop): fix incorrect version attribution on update.
+  PostmortemReportCollector collector;
+  collector.CollectAndSubmitForUpload(stability_dir, GetStabilityFilePattern(),
+                                      excluded_debug_files,
+                                      crashpad_database.get());
 }
 
 }  // namespace browser_watcher

@@ -36,8 +36,11 @@ static_library("browser_watcher_client") {
     "watcher_metrics_provider_win.h",
   ]
   deps = [
+    ":postmortem_report_collector",
+    ":stability",
     "//base",
     "//components/metrics",
+    "//third_party/crashpad/crashpad/client",
   ]
 }
 
@@ -68,6 +71,18 @@ static_library("postmortem_report_collector") {
     "//components/version_info",
     "//third_party/crashpad/crashpad/client",
     "//third_party/crashpad/crashpad/util",
+  ]
+}
+
+static_library("stability") {
+  sources = [
+    "features.cc",
+    "features.h",
+    "stability_debugging_win.cc",
+    "stability_debugging_win.h",
+  ]
+  deps = [
+    "//base",
   ]
 }
 

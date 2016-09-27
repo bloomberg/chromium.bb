@@ -5,9 +5,12 @@
 #ifndef COMPONENTS_BROWSER_WATCHER_WATCHER_METRICS_PROVIDER_WIN_H_
 #define COMPONENTS_BROWSER_WATCHER_WATCHER_METRICS_PROVIDER_WIN_H_
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "components/metrics/metrics_provider.h"
 
 namespace browser_watcher {
@@ -18,23 +21,47 @@ class WatcherMetricsProviderWin : public metrics::MetricsProvider {
  public:
   static const char kBrowserExitCodeHistogramName[];
 
-  // Initializes the reporter. |cleanup_io_task_runner| is used to clear
-  // leftover data in registry if metrics reporting is disabled.
+  // Initializes the reporter. |io_task_runner| is used for collecting
+  // postmortem reports and clearing leftover data in registry if metrics
+  // reporting is disabled.
   WatcherMetricsProviderWin(const base::string16& registry_path,
-                            base::TaskRunner* cleanup_io_task_runner);
+                            const base::FilePath& user_data_dir,
+                            const base::FilePath& crash_dir,
+                            base::TaskRunner* io_task_runner);
   ~WatcherMetricsProviderWin() override;
 
   // metrics::MetricsProvider implementation.
   void OnRecordingEnabled() override;
   void OnRecordingDisabled() override;
+  // Note: this function collects metrics, some of which are related to the
+  // previous run's version and some to the current version. Doing the correct
+  // attribution on upgrade is difficult, and currently ignored. Metrics
+  // clearing is one mechanism to avoid misattribution, but is not used in this
+  // case (ClearSavedStabilityMetrics is not overridden) as version
+  // misattribution is preferred to data loss. Metrics will likely be attributed
+  // to the previous run's version, unless no initial log is sent, in which case
+  // they should be attributed to the current version (though they may actually
+  // be attributed to still another following version).
+  // TODO(manzagop): proper metric version attribution on upgrade.
   void ProvideStabilityMetrics(
       metrics::SystemProfileProto* system_profile_proto) override;
 
+  // Collects postmortem reports asynchronously and calls |done_callback| when
+  // done.
+  void CollectPostmortemReports(const base::Closure& done_callback);
+
  private:
+  // TODO(manzagop): avoid collecting reports for clean exits from the fast exit
+  // path.
+  void CollectPostmortemReportsOnBlockingPool();
+
   bool recording_enabled_;
   bool cleanup_scheduled_;
   const base::string16 registry_path_;
-  scoped_refptr<base::TaskRunner> cleanup_io_task_runner_;
+  const base::FilePath user_data_dir_;
+  const base::FilePath crash_dir_;
+  scoped_refptr<base::TaskRunner> io_task_runner_;
+  base::WeakPtrFactory<WatcherMetricsProviderWin> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherMetricsProviderWin);
 };

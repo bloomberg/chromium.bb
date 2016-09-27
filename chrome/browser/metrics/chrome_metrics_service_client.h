@@ -33,6 +33,10 @@ class PrefService;
 class SigninStatusMetricsProvider;
 #endif
 
+namespace browser_watcher {
+class WatcherMetricsProviderWin;
+}  // namespace browser_watcher
+
 namespace metrics {
 class DriveMetricsProvider;
 class MetricsService;
@@ -109,9 +113,13 @@ class ChromeMetricsServiceClient
   // init task by loading drive metrics.
   void OnInitTaskGotAntiVirusData();
 
-  // Called after the drive metrics init task has been completed that continues
-  // the init task by loading profiler data.
+  // Called after the drive metrics init task has been completed to continue
+  // the init task by optionally collecting postmortem reports.
   void OnInitTaskGotDriveMetrics();
+
+  // Called after the postmortem report collection task has been completed to
+  // continue the init task by loading profiler data.
+  void OnInitTaskCollectedPostmortemReports();
 
   // Returns true iff profiler data should be included in the next metrics log.
   // NOTE: This method is probabilistic and also updates internal state as a
@@ -194,6 +202,10 @@ class ChromeMetricsServiceClient
   // The GoogleUpdateMetricsProviderWin instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.
   GoogleUpdateMetricsProviderWin* google_update_metrics_provider_;
+
+  // The WatcherMetricsProviderWin instance that was registered with
+  // MetricsService. Has the same lifetime as |metrics_service_|.
+  browser_watcher::WatcherMetricsProviderWin* watcher_metrics_provider_;
 
   // The AntiVirusMetricsProvider instance that was registered with
   // MetricsService. Has the same lifetime as |metrics_service_|.

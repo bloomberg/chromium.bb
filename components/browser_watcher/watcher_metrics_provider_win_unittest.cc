@@ -87,7 +87,8 @@ TEST_F(WatcherMetricsProviderWinTest, RecordsStabilityHistogram) {
   // Record a single failure.
   AddProcessExitCode(false, 100);
 
-  WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
+  WatcherMetricsProviderWin provider(kRegistryPath, base::FilePath(),
+                                     base::FilePath(), test_task_runner_.get());
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectBucketCount(
@@ -109,7 +110,8 @@ TEST_F(WatcherMetricsProviderWinTest, DoesNotReportOwnProcessId) {
   // Record own process as STILL_ACTIVE.
   AddProcessExitCode(true, STILL_ACTIVE);
 
-  WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
+  WatcherMetricsProviderWin provider(kRegistryPath, base::FilePath(),
+                                     base::FilePath(), test_task_runner_.get());
 
   provider.ProvideStabilityMetrics(NULL);
   histogram_tester_.ExpectUniqueSample(
@@ -129,7 +131,8 @@ TEST_F(WatcherMetricsProviderWinTest, DeletesRecordedExitFunnelEvents) {
   base::win::RegistryKeyIterator it(HKEY_CURRENT_USER, kRegistryPath);
   EXPECT_EQ(3u, it.SubkeyCount());
 
-  WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
+  WatcherMetricsProviderWin provider(kRegistryPath, base::FilePath(),
+                                     base::FilePath(), test_task_runner_.get());
 
   provider.ProvideStabilityMetrics(NULL);
   // Make sure the exit funnel events are no longer recorded in histograms.
@@ -163,7 +166,8 @@ TEST_F(WatcherMetricsProviderWinTest, DeletesExitcodeKeyWhenNotReporting) {
   AddExitFunnelEvent(102, L"Three", 990 * 1000);
 
   // Make like the user is opted out of reporting.
-  WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
+  WatcherMetricsProviderWin provider(kRegistryPath, base::FilePath(),
+                                     base::FilePath(), test_task_runner_.get());
   provider.OnRecordingDisabled();
 
   base::win::RegKey key;
@@ -194,7 +198,9 @@ TEST_F(WatcherMetricsProviderWinTest, DeletesOnly100FunnelsAtATime) {
 
   {
     // Make like the user is opted out of reporting.
-    WatcherMetricsProviderWin provider(kRegistryPath, test_task_runner_.get());
+    WatcherMetricsProviderWin provider(kRegistryPath, base::FilePath(),
+                                       base::FilePath(),
+                                       test_task_runner_.get());
     provider.OnRecordingDisabled();
     // Flush the task(s).
     test_task_runner_->RunPendingTasks();
