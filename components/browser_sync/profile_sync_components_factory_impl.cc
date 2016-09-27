@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -146,9 +147,12 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
 
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   if (base::FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
+    // Use an error callback that always uploads a stacktrace if it can to help
+    // get USS as stable as possible.
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<UIModelTypeController>(syncer::DEVICE_INFO,
-                                                error_callback, sync_client_));
+        base::MakeUnique<UIModelTypeController>(
+            syncer::DEVICE_INFO, base::Bind(&base::debug::DumpWithoutCrashing),
+            sync_client_));
   } else {
     sync_service->RegisterDataTypeController(
         base::MakeUnique<DeviceInfoDataTypeController>(
