@@ -2839,7 +2839,7 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(const Length& height) const
     }
     cb->addPercentHeightDescendant(const_cast<LayoutBox*>(this));
 
-    LayoutUnit availableHeight;
+    LayoutUnit availableHeight(-1);
     if (isHorizontalWritingMode() != cb->isHorizontalWritingMode()) {
         availableHeight = containingBlockChild->containingBlockLogicalWidthForContent();
     } else if (hasOverrideContainingBlockLogicalHeight()) {
