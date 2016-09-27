@@ -451,7 +451,7 @@ TEST_F(TabManagerTest, DiscardedTabKeepsLastActiveTime) {
 
 // Test to see if a tab can only be discarded once. On Windows and Mac, this
 // defaults to true unless overridden through a variation parameter. On other
-// platforms, it's always false
+// platforms, it's always false.
 #if defined(OS_WIN) || defined(OS_MACOSX)
 TEST_F(TabManagerTest, CanOnlyDiscardOnce) {
   TabManager tab_manager;

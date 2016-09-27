@@ -33,16 +33,6 @@ using content::OpenURLParams;
 namespace memory {
 
 class TabManagerTest : public InProcessBrowserTest {
- public:
-  // Tab discarding is enabled by default on CrOS. On other platforms, force it
-  // by turning on the corresponding experiment as some tests assume this
-  // behavior it turned on.
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-#if !defined(OS_LINUX)
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    features::kAutomaticTabDiscarding.name);
-#endif
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {

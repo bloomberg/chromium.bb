@@ -135,6 +135,7 @@ TabManager::TabManager()
     : discard_count_(0),
       recent_tab_discard_(false),
       discard_once_(false),
+      minimum_protection_time_(base::TimeDelta::FromMinutes(10)),
       browser_tab_strip_tracker_(this, nullptr, nullptr),
       test_tick_clock_(nullptr),
       under_memory_pressure_(false),
@@ -157,12 +158,15 @@ TabManager::~TabManager() {
 
 void TabManager::Start() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  // If the feature is not enabled, do nothing.
+  // Note that discarding is now enabled by default. This check is kept as a
+  // kill switch.
+  // TODO(georgesak): remote this when deemed not needed anymore.
   if (!base::FeatureList::IsEnabled(features::kAutomaticTabDiscarding))
     return;
 
   // Check the variation parameter to see if a tab is to be protected for an
-  // amount of time after being backgrounded. The value is in seconds.
+  // amount of time after being backgrounded. The value is in seconds. Default
+  // is 10 minutes if the variation is absent.
   std::string minimum_protection_time_string =
       variations::GetVariationParamValue(features::kAutomaticTabDiscarding.name,
                                          "MinimumProtectionTime");
