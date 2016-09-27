@@ -314,6 +314,7 @@ class ProtocolPerfTest
 
     std::unique_ptr<FakePortAllocatorFactory> port_allocator_factory(
         new FakePortAllocatorFactory(fake_network_dispatcher_));
+    client_socket_factory_ = port_allocator_factory->socket_factory();
     port_allocator_factory->socket_factory()->SetBandwidth(
         GetParam().bandwidth, GetParam().max_buffers);
     port_allocator_factory->socket_factory()->SetLatency(
@@ -370,6 +371,8 @@ class ProtocolPerfTest
   std::unique_ptr<ClientContext> client_context_;
   std::unique_ptr<SoftwareVideoRenderer> video_renderer_;
   std::unique_ptr<ChromotingClient> client_;
+
+  FakePacketSocketFactory* client_socket_factory_;
 
   std::unique_ptr<base::RunLoop> connecting_loop_;
   std::unique_ptr<base::RunLoop> waiting_frames_loop_;
@@ -517,6 +520,8 @@ void ProtocolPerfTest::MeasureScrollPerformance(bool use_webrtc) {
     ++warm_up_frames;
   }
 
+  client_socket_factory_->ResetStats();
+
   // Run the test for 2 seconds.
   const base::TimeDelta kTestTime = base::TimeDelta::FromSeconds(2);
 
@@ -547,6 +552,12 @@ void ProtocolPerfTest::MeasureScrollPerformance(bool use_webrtc) {
   VLOG(0) << "Bandwidth utilization: "
           << 100 * total_size / (total_time.InSecondsF() * GetParam().bandwidth)
           << "%";
+  VLOG(0) << "Network buffer delay (bufferbloat), average: "
+          << client_socket_factory_->average_buffer_delay().InMilliseconds()
+          << " ms,  max:"
+          << client_socket_factory_->max_buffer_delay().InMilliseconds()
+          << " ms";
+  VLOG(0) << "Packet drop rate: " << client_socket_factory_->drop_rate();
 }
 
 TEST_P(ProtocolPerfTest, ScrollPerformanceIce) {

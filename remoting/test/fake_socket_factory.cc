@@ -179,8 +179,7 @@ FakePacketSocketFactory::PendingPacket::PendingPacket(
 FakePacketSocketFactory::PendingPacket::PendingPacket(
     const PendingPacket& other) = default;
 
-FakePacketSocketFactory::PendingPacket::~PendingPacket() {
-}
+FakePacketSocketFactory::PendingPacket::~PendingPacket() {}
 
 FakePacketSocketFactory::FakePacketSocketFactory(
     FakeNetworkDispatcher* dispatcher)
@@ -299,10 +298,16 @@ void FakePacketSocketFactory::ReceivePacket(
   if (leaky_bucket_) {
     delay = leaky_bucket_->AddPacket(data_size);
     if (delay.is_max()) {
+      ++total_packets_dropped_;
       // Drop the packet.
       return;
     }
   }
+
+  total_buffer_delay_ += delay;
+  if (delay > max_buffer_delay_)
+    max_buffer_delay_ = delay;
+  ++total_packets_received_;
 
   if (latency_average_ > base::TimeDelta()) {
     delay += base::TimeDelta::FromMillisecondsD(
@@ -348,6 +353,13 @@ void FakePacketSocketFactory::DoReceivePacket() {
   }
 
   iter->second.Run(packet.from, packet.to, packet.data, packet.data_size);
+}
+
+void FakePacketSocketFactory::ResetStats() {
+  total_packets_dropped_ = 0;
+  total_packets_received_ = 0;
+  total_buffer_delay_ = base::TimeDelta();
+  max_buffer_delay_ = base::TimeDelta();
 }
 
 }  // namespace remoting

@@ -53,6 +53,19 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
     out_of_order_rate_ = out_of_order_rate;
   }
 
+  void ResetStats();
+
+  base::TimeDelta average_buffer_delay() {
+    return total_packets_received_ > 0
+               ? (total_buffer_delay_ / total_packets_received_)
+               : base::TimeDelta();
+  }
+  base::TimeDelta max_buffer_delay() { return max_buffer_delay_; }
+  double drop_rate() {
+    return static_cast<double>(total_packets_dropped_) /
+           (total_packets_received_ + total_packets_dropped_);
+  }
+
   // rtc::PacketSocketFactory interface.
   rtc::AsyncPacketSocket* CreateUdpSocket(
       const rtc::SocketAddress& local_address,
@@ -118,6 +131,11 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
   uint16_t next_port_;
 
   std::list<PendingPacket> pending_packets_;
+
+  int total_packets_received_ = 0;
+  int total_packets_dropped_ = 0;
+  base::TimeDelta total_buffer_delay_;
+  base::TimeDelta max_buffer_delay_;
 
   base::WeakPtrFactory<FakePacketSocketFactory> weak_factory_;
 
