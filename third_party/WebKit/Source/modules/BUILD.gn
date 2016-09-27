@@ -240,6 +240,7 @@ source_set("unit_tests") {
     "fetch/FetchDataLoaderTest.cpp",
     "fetch/FetchFormDataConsumerHandleTest.cpp",
     "fetch/FetchResponseDataTest.cpp",
+    "fetch/FormDataBytesConsumerTest.cpp",
     "fetch/ReadableStreamDataConsumerHandleTest.cpp",
     "fetch/RequestTest.cpp",
     "fetch/ResponseTest.cpp",

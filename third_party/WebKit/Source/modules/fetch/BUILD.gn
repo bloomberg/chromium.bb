@@ -37,6 +37,8 @@ blink_modules_sources("fetch") {
     "FetchRequestData.h",
     "FetchResponseData.cpp",
     "FetchResponseData.h",
+    "FormDataBytesConsumer.cpp",
+    "FormDataBytesConsumer.h",
     "GlobalFetch.cpp",
     "GlobalFetch.h",
     "Headers.cpp",
