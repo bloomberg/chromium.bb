@@ -20,10 +20,10 @@ public class PreferencesUtil {
     public static final String PREF_ASSIGNER_URL = "blimp_assigner_url";
 
     /**
-     * Default assigner URL.
+     * Default assigner URL, which is the production environment assigner.
      */
     public static final String DEFAULT_ASSIGNER_URL =
-            "https://dev-blimp-pa.sandbox.googleapis.com/v1/assignment";
+            "https://blimp-pa.googleapis.com/v1/assignment";
 
     /**
      * Reads the last used assigner from shared preference.
