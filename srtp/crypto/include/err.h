@@ -49,6 +49,40 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+/*
+ * Compatibility shim for v1->v2 transition.
+ */
+
+#define srtp_err_status_t err_status_t
+
+#define srtp_err_status_ok             err_status_ok
+#define srtp_err_status_fail           err_status_fail
+#define srtp_err_status_bad_param      err_status_bad_param
+#define srtp_err_status_alloc_fail     err_status_alloc_fail
+#define srtp_err_status_dealloc_fail   err_status_dealloc_fail
+#define srtp_err_status_init_fail      err_status_init_fail
+#define srtp_err_status_terminus       err_status_terminus
+#define srtp_err_status_auth_fail      err_status_auth_fail
+#define srtp_err_status_cipher_fail    err_status_cipher_fail
+#define srtp_err_status_replay_fail    err_status_replay_fail
+#define srtp_err_status_replay_old     err_status_replay_old
+#define srtp_err_status_algo_fail      err_status_algo_fail
+#define srtp_err_status_no_such_op     err_status_no_such_op
+#define srtp_err_status_no_ctx         err_status_no_ctx
+#define srtp_err_status_cant_check     err_status_cant_check
+#define srtp_err_status_key_expired    err_status_key_expired
+#define srtp_err_status_socket_err     err_status_socket_err
+#define srtp_err_status_signal_err     err_status_signal_err
+#define srtp_err_status_nonce_bad      err_status_nonce_bad
+#define srtp_err_status_read_fail      err_status_read_fail
+#define srtp_err_status_write_fail     err_status_write_fail
+#define srtp_err_status_parse_err      err_status_parse_err
+#define srtp_err_status_encode_err     err_status_encode_err
+#define srtp_err_status_semaphore_err  err_status_semaphore_err
+#define srtp_err_status_pfkey_err      err_status_pfkey_err
+
+#define srtp_debug_module_t debug_module_t
+
 /**
  * @defgroup Error Error Codes
  * 

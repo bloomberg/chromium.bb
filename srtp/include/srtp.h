@@ -55,6 +55,21 @@ extern "C" {
 #include "crypto_types.h"
 #include "err.h"
 
+/*
+ * Compatibility shim for v1->v2 transition.
+ */
+
+#define srtp_crypto_policy_set_aes_cm_128_hmac_sha1_32 \
+    crypto_policy_set_aes_cm_128_hmac_sha1_32
+#define srtp_crypto_policy_set_aes_cm_128_hmac_sha1_80 \
+    crypto_policy_set_aes_cm_128_hmac_sha1_80
+#define srtp_crypto_policy_set_aes_gcm_128_16_auth \
+    crypto_policy_set_aes_gcm_128_16_auth
+#define srtp_crypto_policy_set_aes_gcm_256_16_auth \
+    crypto_policy_set_aes_gcm_256_16_auth
+
+#define srtp_ssrc_type_t ssrc_type_t
+
 /**
  * @defgroup SRTP Secure RTP
  *

@@ -50,6 +50,12 @@
 #include "datatypes.h"
 #include "err.h"
 
+/**
+ * Compatibility shim for v1->v2 transition.
+ */
+
+#define srtp_rdbx_get_packet_index rdbx_get_packet_index
+
 /* #define ROC_TEST */  
 
 #ifndef ROC_TEST
