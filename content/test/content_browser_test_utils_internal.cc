@@ -20,6 +20,7 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/delegated_frame_host.h"
@@ -369,6 +370,31 @@ bool FrameTestNavigationManager::ShouldMonitorNavigation(
     NavigationHandle* handle) {
   return TestNavigationManager::ShouldMonitorNavigation(handle) &&
          handle->GetFrameTreeNodeId() == filtering_frame_tree_node_id_;
+}
+
+UrlCommitObserver::UrlCommitObserver(FrameTreeNode* frame_tree_node,
+                                     const GURL& url)
+    : content::WebContentsObserver(frame_tree_node->current_frame_host()
+                                       ->delegate()
+                                       ->GetAsWebContents()),
+      frame_tree_node_id_(frame_tree_node->frame_tree_node_id()),
+      url_(url),
+      message_loop_runner_(new MessageLoopRunner) {}
+
+UrlCommitObserver::~UrlCommitObserver() {}
+
+void UrlCommitObserver::Wait() {
+  message_loop_runner_->Run();
+}
+
+void UrlCommitObserver::DidFinishNavigation(
+    NavigationHandle* navigation_handle) {
+  if (navigation_handle->HasCommitted() &&
+      !navigation_handle->IsErrorPage() &&
+      navigation_handle->GetURL() == url_ &&
+      navigation_handle->GetFrameTreeNodeId() == frame_tree_node_id_) {
+    message_loop_runner_->Quit();
+  }
 }
 
 }  // namespace content

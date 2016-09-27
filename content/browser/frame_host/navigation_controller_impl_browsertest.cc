@@ -5968,17 +5968,29 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(start_url.GetOrigin().spec(), origin + "/");
 }
 
-// A BrowserMessageFilter that drops FrameHostMsg_DidCommitProvisionaLoad IPC
-// message for a specified URL and runs a callback on the UI thread.
-class CommitMessageFilter : public BrowserMessageFilter {
+// A BrowserMessageFilter that delays FrameHostMsg_DidCommitProvisionaLoad IPC
+// message for a specified URL, navigates the WebContents back and then
+// processes the commit message.
+class GoBackAndCommitFilter : public BrowserMessageFilter {
  public:
-  CommitMessageFilter(const GURL& url, base::Closure on_commit)
-      : BrowserMessageFilter(FrameMsgStart), url_(url), on_commit_(on_commit) {}
+  GoBackAndCommitFilter(const GURL& url, WebContentsImpl* web_contents)
+      : BrowserMessageFilter(FrameMsgStart),
+        url_(url),
+        web_contents_(web_contents) {}
 
  protected:
-  ~CommitMessageFilter() override {}
+  ~GoBackAndCommitFilter() override {}
 
  private:
+  static void NavigateBackAndCommit(const IPC::Message& message,
+                                    WebContentsImpl* web_contents) {
+    web_contents->GetController().GoBack();
+
+    RenderFrameHostImpl* rfh = web_contents->GetMainFrame();
+    DCHECK_EQ(rfh->routing_id(), message.routing_id());
+    rfh->OnMessageReceived(message);
+  }
+
   // BrowserMessageFilter:
   bool OnMessageReceived(const IPC::Message& message) override {
     if (message.type() != FrameHostMsg_DidCommitProvisionalLoad::ID)
@@ -5996,14 +6008,16 @@ class CommitMessageFilter : public BrowserMessageFilter {
     if (validated_params.url != url_)
       return false;
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, on_commit_);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&NavigateBackAndCommit, message, web_contents_));
     return true;
   }
 
   GURL url_;
-  base::Closure on_commit_;
+  WebContentsImpl* web_contents_;
 
-  DISALLOW_COPY_AND_ASSIGN(CommitMessageFilter);
+  DISALLOW_COPY_AND_ASSIGN(GoBackAndCommitFilter);
 };
 
 // Test which simulates a race condition between a cross-origin, same-process
@@ -6014,13 +6028,11 @@ class CommitMessageFilter : public BrowserMessageFilter {
 // the cross-origin navigation and updates the URL, but not the origin of the
 // document. This results in mismatch between the two and causes the renderer
 // process to be killed. See https://crbug.com/630103.
-// TODO(nasko): Investigate why this test is flaky, likely related to
-// https://crbug.com/638089, and enable once resolved.
-IN_PROC_BROWSER_TEST_F(
-    NavigationControllerBrowserTest,
-    DISABLED_RaceCrossOriginNavigationAndSamePageHistoryNavigation) {
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       RaceCrossOriginNavigationAndSamePageHistoryNavigation) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
 
   // Navigate to a simple page and then perform an in-page navigation.
   GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -6031,19 +6043,24 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(NavigateToURL(shell(), same_page_url));
   EXPECT_EQ(2, web_contents->GetController().GetEntryCount());
 
-  // Create a CommitMessageFilter, which will drop the commit IPC for a
+  // Create a GoBackAndCommitFilter, which will delay the commit IPC for a
   // cross-origin, same process navigation and will perform a GoBack.
   GURL cross_origin_url(
       embedded_test_server()->GetURL("suborigin.a.com", "/title2.html"));
-  scoped_refptr<CommitMessageFilter> filter = new CommitMessageFilter(
-      cross_origin_url,
-      base::Bind(&NavigationControllerImpl::GoBack,
-                 base::Unretained(&web_contents->GetController())));
+  scoped_refptr<GoBackAndCommitFilter> filter =
+      new GoBackAndCommitFilter(cross_origin_url, web_contents);
   web_contents->GetMainFrame()->GetProcess()->AddFilter(filter.get());
 
-  // Navigate cross-origin, which will fail and the back navigation should have
-  // succeeded.
-  EXPECT_FALSE(NavigateToURL(shell(), cross_origin_url));
+  // Navigate cross-origin, waiting for the commit to occur.
+  UrlCommitObserver cross_origin_commit_observer(root, cross_origin_url);
+  UrlCommitObserver history_commit_observer(root, start_url);
+  shell()->LoadURL(cross_origin_url);
+  cross_origin_commit_observer.Wait();
+  EXPECT_EQ(cross_origin_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(2, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Wait for the back navigation to commit as well.
+  history_commit_observer.Wait();
   EXPECT_EQ(start_url, web_contents->GetLastCommittedURL());
   EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
 

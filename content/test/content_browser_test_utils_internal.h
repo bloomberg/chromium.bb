@@ -174,6 +174,31 @@ class FrameTestNavigationManager : public TestNavigationManager {
   DISALLOW_COPY_AND_ASSIGN(FrameTestNavigationManager);
 };
 
+// An observer that can wait for a specific URL to be committed in a specific
+// frame.
+// Note: it does not track the start of a navigation, unlike other observers.
+class UrlCommitObserver : WebContentsObserver {
+ public:
+  explicit UrlCommitObserver(FrameTreeNode* frame_tree_node, const GURL& url);
+  ~UrlCommitObserver() override;
+
+  void Wait();
+
+ private:
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override;
+
+  // The id of the FrameTreeNode in which navigations are peformed.
+  int frame_tree_node_id_;
+
+  // The URL this observer is expecting to be committed.
+  GURL url_;
+
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(UrlCommitObserver);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_TEST_CONTENT_BROWSER_TEST_UTILS_INTERNAL_H_
