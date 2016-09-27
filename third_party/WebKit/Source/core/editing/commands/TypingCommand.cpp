@@ -520,7 +520,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
             return;
 
         // If the caret is at the start of a paragraph after a table, move content into the last table cell.
-        if (isStartOfParagraph(visibleStart) && tableElementJustBefore(previousPositionOf(visibleStart, CannotCrossEditingBoundary))) {
+        if (isStartOfParagraphDeprecated(visibleStart) && tableElementJustBefore(previousPositionOf(visibleStart, CannotCrossEditingBoundary))) {
             // Unless the caret is just before a table.  We don't want to move a table into the last table cell.
             if (tableElementJustAfter(visibleStart))
                 return;
@@ -609,7 +609,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         Node* enclosingTableCell = enclosingNodeOfType(visibleEnd.deepEquivalent(), &isTableCell);
         if (enclosingTableCell && visibleEnd.deepEquivalent() == VisiblePosition::lastPositionInNode(enclosingTableCell).deepEquivalent())
             return;
-        if (visibleEnd.deepEquivalent() == endOfParagraph(visibleEnd).deepEquivalent())
+        if (visibleEnd.deepEquivalent() == endOfParagraphDeprecated(visibleEnd).deepEquivalent())
             downstreamEnd = mostForwardCaretPosition(nextPositionOf(visibleEnd, CannotCrossEditingBoundary).deepEquivalent());
         // When deleting tables: Select the table first, then perform the deletion
         if (isDisplayInsideTable(downstreamEnd.computeContainerNode()) && downstreamEnd.computeOffsetInContainerNode() <= caretMinOffset(downstreamEnd.computeContainerNode())) {
@@ -619,7 +619,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         }
 
         // deleting to end of paragraph when at end of paragraph needs to merge the next paragraph (if any)
-        if (granularity == ParagraphBoundary && selectionModifier.selection().isCaret() && isEndOfParagraph(selectionModifier.selection().visibleEnd()))
+        if (granularity == ParagraphBoundary && selectionModifier.selection().isCaret() && isEndOfParagraphDeprecated(selectionModifier.selection().visibleEnd()))
             selectionModifier.modify(FrameSelection::AlterationExtend, DirectionForward, CharacterGranularity);
 
         selectionToDelete = selectionModifier.selection();

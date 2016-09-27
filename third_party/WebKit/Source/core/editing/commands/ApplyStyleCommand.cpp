@@ -271,9 +271,9 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editi
     int startIndex = TextIterator::rangeLength(startRange->startPosition(), startRange->endPosition(), true);
     int endIndex = TextIterator::rangeLength(endRange->startPosition(), endRange->endPosition(), true);
 
-    VisiblePosition paragraphStart(startOfParagraph(visibleStart));
-    VisiblePosition nextParagraphStart(nextPositionOf(endOfParagraph(paragraphStart)));
-    VisiblePosition beyondEnd(nextPositionOf(endOfParagraph(visibleEnd)));
+    VisiblePosition paragraphStart(startOfParagraphDeprecated(visibleStart));
+    VisiblePosition nextParagraphStart(nextPositionOf(endOfParagraphDeprecated(paragraphStart)));
+    VisiblePosition beyondEnd(nextPositionOf(endOfParagraphDeprecated(visibleEnd)));
     while (paragraphStart.isNotNull() && paragraphStart.deepEquivalent() != beyondEnd.deepEquivalent()) {
         DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
         StyleChange styleChange(style, paragraphStart.deepEquivalent());
@@ -304,12 +304,12 @@ void ApplyStyleCommand::applyBlockStyle(EditingStyle *style, EditingState* editi
 
             DCHECK(!paragraphStart.isOrphan()) << paragraphStart;
             if (nextParagraphStart.isOrphan())
-                nextParagraphStart = nextPositionOf(endOfParagraph(paragraphStart));
+                nextParagraphStart = nextPositionOf(endOfParagraphDeprecated(paragraphStart));
         }
 
         DCHECK(!nextParagraphStart.isOrphan()) << nextParagraphStart;
         paragraphStart = nextParagraphStart;
-        nextParagraphStart = nextPositionOf(endOfParagraph(paragraphStart));
+        nextParagraphStart = nextPositionOf(endOfParagraphDeprecated(paragraphStart));
     }
 
     // Update style and layout again, since added or removed styles could have

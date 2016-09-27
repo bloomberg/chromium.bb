@@ -203,7 +203,7 @@ void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
     // Sometimes they aren't (like when no merge is requested), so we must choose one position to hold the caret
     // and receive the placeholder after deletion.
     VisiblePosition visibleEnd = createVisiblePositionDeprecated(m_downstreamEnd);
-    if (m_mergeBlocksAfterDelete && !isEndOfParagraph(visibleEnd))
+    if (m_mergeBlocksAfterDelete && !isEndOfParagraphDeprecated(visibleEnd))
         m_endingPosition = m_downstreamEnd;
     else
         m_endingPosition = m_downstreamStart;
@@ -215,7 +215,7 @@ void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
     // Only apply this rule if the endingSelection is a range selection.  If it is a caret, then other operations have created
     // the selection we're deleting (like the process of creating a selection to delete during a backspace), and the user isn't in the situation described above.
     if (numEnclosingMailBlockquotes(start) != numEnclosingMailBlockquotes(end)
-        && isStartOfParagraph(visibleEnd) && isStartOfParagraph(createVisiblePositionDeprecated(start))
+        && isStartOfParagraphDeprecated(visibleEnd) && isStartOfParagraph(createVisiblePositionDeprecated(start))
         && endingSelection().isRange()) {
         m_mergeBlocksAfterDelete = false;
         m_pruneStartBlockIfNecessary = true;
@@ -667,7 +667,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
     if (mergeDestination.deepEquivalent() == startOfParagraphToMove.deepEquivalent())
         return;
 
-    VisiblePosition endOfParagraphToMove = endOfParagraph(startOfParagraphToMove, CanSkipOverEditingBoundary);
+    VisiblePosition endOfParagraphToMove = endOfParagraphDeprecated(startOfParagraphToMove, CanSkipOverEditingBoundary);
 
     if (mergeDestination.deepEquivalent() == endOfParagraphToMove.deepEquivalent())
         return;
@@ -687,7 +687,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
 
     // The rule for merging into an empty block is: only do so if its farther to the right.
     // FIXME: Consider RTL.
-    if (!m_startsAtEmptyLine && isStartOfParagraph(mergeDestination) && absoluteCaretBoundsOf(startOfParagraphToMove).x() > absoluteCaretBoundsOf(mergeDestination).x()) {
+    if (!m_startsAtEmptyLine && isStartOfParagraphDeprecated(mergeDestination) && absoluteCaretBoundsOf(startOfParagraphToMove).x() > absoluteCaretBoundsOf(mergeDestination).x()) {
         if (isHTMLBRElement(*mostForwardCaretPosition(mergeDestination.deepEquivalent()).anchorNode())) {
             removeNodeAndPruneAncestors(mostForwardCaretPosition(mergeDestination.deepEquivalent()).anchorNode(), editingState);
             if (editingState->isAborted())
@@ -698,9 +698,9 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
     }
 
     // Block images, tables and horizontal rules cannot be made inline with content at mergeDestination.  If there is
-    // any (!isStartOfParagraph(mergeDestination)), don't merge, just move the caret to just before the selection we deleted.
+    // any (!isStartOfParagraphDeprecated(mergeDestination)), don't merge, just move the caret to just before the selection we deleted.
     // See https://bugs.webkit.org/show_bug.cgi?id=25439
-    if (isRenderedAsNonInlineTableImageOrHR(startOfParagraphToMove.deepEquivalent().anchorNode()) && !isStartOfParagraph(mergeDestination)) {
+    if (isRenderedAsNonInlineTableImageOrHR(startOfParagraphToMove.deepEquivalent().anchorNode()) && !isStartOfParagraphDeprecated(mergeDestination)) {
         m_endingPosition = m_upstreamStart;
         return;
     }
@@ -846,8 +846,8 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
         || (downstreamEnd.computeContainerNode()->isTextNode() && downstreamEnd.computeContainerNode()->parentNode() == rootEditableElement(*downstreamEnd.computeContainerNode()));
     bool lineBreakAtEndOfSelectionToDelete = lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd());
     m_needPlaceholder = !rootWillStayOpenWithoutPlaceholder
-        && isStartOfParagraph(m_selectionToDelete.visibleStart(), CanCrossEditingBoundary)
-        && isEndOfParagraph(m_selectionToDelete.visibleEnd(), CanCrossEditingBoundary)
+        && isStartOfParagraphDeprecated(m_selectionToDelete.visibleStart(), CanCrossEditingBoundary)
+        && isEndOfParagraphDeprecated(m_selectionToDelete.visibleEnd(), CanCrossEditingBoundary)
         && !lineBreakAtEndOfSelectionToDelete;
     if (m_needPlaceholder) {
         // Don't need a placeholder when deleting a selection that starts just

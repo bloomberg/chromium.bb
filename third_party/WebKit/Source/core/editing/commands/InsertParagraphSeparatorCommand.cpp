@@ -78,7 +78,7 @@ void InsertParagraphSeparatorCommand::calculateStyleBeforeInsertion(const Positi
     // a paragraph. Otherwise, content that is moved as part of the work of the command
     // will lend their styles to the new paragraph without any extra work needed.
     VisiblePosition visiblePos = createVisiblePositionDeprecated(pos, VP_DEFAULT_AFFINITY);
-    if (!isStartOfParagraph(visiblePos) && !isEndOfParagraph(visiblePos))
+    if (!isStartOfParagraphDeprecated(visiblePos) && !isEndOfParagraphDeprecated(visiblePos))
         return;
 
     DCHECK(pos.isNotNull());
@@ -355,7 +355,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // about to be wrapped in a new paragraph element.  Add a br before
     // it if visiblePos is at the start of a paragraph so that the
     // content will move down a line.
-    if (isStartOfParagraph(visiblePos)) {
+    if (isStartOfParagraphDeprecated(visiblePos)) {
         HTMLBRElement* br = HTMLBRElement::create(document());
         insertNodeAt(br, insertionPosition, editingState);
         if (editingState->isAborted())
@@ -436,7 +436,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
     // If the paragraph separator was inserted at the end of a paragraph, an empty line must be
     // created.  All of the nodes, starting at visiblePos, are about to be added to the new paragraph
     // element.  If the first node to be inserted won't be one that will hold an empty line open, add a br.
-    if (isEndOfParagraph(visiblePos) && !lineBreakExistsAtVisiblePosition(visiblePos)) {
+    if (isEndOfParagraphDeprecated(visiblePos) && !lineBreakExistsAtVisiblePosition(visiblePos)) {
         appendNode(HTMLBRElement::create(document()), blockToInsert, editingState);
         if (editingState->isAborted())
             return;

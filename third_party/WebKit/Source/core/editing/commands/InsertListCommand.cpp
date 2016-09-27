@@ -99,12 +99,12 @@ bool InsertListCommand::selectionHasListOfType(const VisibleSelection& selection
     if (!enclosingList(start.deepEquivalent().anchorNode()))
         return false;
 
-    VisiblePosition end = startOfParagraph(selection.visibleEnd());
+    VisiblePosition end = startOfParagraphDeprecated(selection.visibleEnd());
     while (start.isNotNull() && start.deepEquivalent() != end.deepEquivalent()) {
         HTMLElement* listElement = enclosingList(start.deepEquivalent().anchorNode());
         if (!listElement || !listElement->hasTagName(listTag))
             return false;
-        start = startOfNextParagraph(start);
+        start = startOfNextParagraphDeprecated(start);
     }
 
     return true;
@@ -140,7 +140,7 @@ void InsertListCommand::doApply(EditingState* editingState)
     // FIXME: We paint the gap before some paragraphs that are indented with left
     // margin/padding, but not others.  We should make the gap painting more consistent and
     // then use a left margin/padding rule here.
-    if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraph(visibleEnd, CanSkipOverEditingBoundary)) {
+    if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraphDeprecated(visibleEnd, CanSkipOverEditingBoundary)) {
         setEndingSelection(VisibleSelection(visibleStart, previousPositionOf(visibleEnd, CannotCrossEditingBoundary), endingSelection().isDirectional()));
         if (!endingSelection().rootEditableElement())
             return;
@@ -153,7 +153,7 @@ void InsertListCommand::doApply(EditingState* editingState)
         DCHECK(selection.isRange());
         VisiblePosition startOfSelection = selection.visibleStart();
         VisiblePosition endOfSelection = selection.visibleEnd();
-        VisiblePosition startOfLastParagraph = startOfParagraph(endOfSelection, CanSkipOverEditingBoundary);
+        VisiblePosition startOfLastParagraph = startOfParagraphDeprecated(endOfSelection, CanSkipOverEditingBoundary);
 
         Range* currentSelection = firstRangeOf(endingSelection());
         ContainerNode* scopeForStartOfSelection = nullptr;
@@ -165,11 +165,11 @@ void InsertListCommand::doApply(EditingState* editingState)
         int indexForStartOfSelection = indexForVisiblePosition(startOfSelection, scopeForStartOfSelection);
         int indexForEndOfSelection = indexForVisiblePosition(endOfSelection, scopeForEndOfSelection);
 
-        if (startOfParagraph(startOfSelection, CanSkipOverEditingBoundary).deepEquivalent() != startOfLastParagraph.deepEquivalent()) {
+        if (startOfParagraphDeprecated(startOfSelection, CanSkipOverEditingBoundary).deepEquivalent() != startOfLastParagraph.deepEquivalent()) {
             forceListCreation = !selectionHasListOfType(selection, listTag);
 
             VisiblePosition startOfCurrentParagraph = startOfSelection;
-            while (inSameTreeAndOrdered(startOfCurrentParagraph, startOfLastParagraph) && !inSameParagraph(startOfCurrentParagraph, startOfLastParagraph, CanCrossEditingBoundary)) {
+            while (inSameTreeAndOrdered(startOfCurrentParagraph, startOfLastParagraph) && !inSameParagraphDeprecated(startOfCurrentParagraph, startOfLastParagraph, CanCrossEditingBoundary)) {
                 // doApply() may operate on and remove the last paragraph of the selection from the document
                 // if it's in the same list item as startOfCurrentParagraph.  Return early to avoid an
                 // infinite loop and because there is no more work to be done.
@@ -198,10 +198,10 @@ void InsertListCommand::doApply(EditingState* editingState)
                     DCHECK(endOfSelection.isNotNull());
                     if (endOfSelection.isNull() || !rootEditableElementOf(endOfSelection))
                         return;
-                    startOfLastParagraph = startOfParagraph(endOfSelection, CanSkipOverEditingBoundary);
+                    startOfLastParagraph = startOfParagraphDeprecated(endOfSelection, CanSkipOverEditingBoundary);
                 }
 
-                startOfCurrentParagraph = startOfNextParagraph(endingSelection().visibleStart());
+                startOfCurrentParagraph = startOfNextParagraphDeprecated(endingSelection().visibleStart());
             }
             setEndingSelection(endOfSelection);
         }
@@ -351,8 +351,8 @@ void InsertListCommand::unlistifyParagraph(const VisiblePosition& originalStart,
         previousListChild = listChildNode->previousSibling();
     } else {
         // A paragraph is visually a list item minus a list marker.  The paragraph will be moved.
-        start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
-        end = endOfParagraph(start, CanSkipOverEditingBoundary);
+        start = startOfParagraphDeprecated(originalStart, CanSkipOverEditingBoundary);
+        end = endOfParagraphDeprecated(start, CanSkipOverEditingBoundary);
         nextListChild = enclosingListChild(nextPositionOf(end).deepEquivalent().anchorNode(), listElement);
         DCHECK_NE(nextListChild, listChildNode);
         previousListChild = enclosingListChild(previousPositionOf(start).deepEquivalent().anchorNode(), listElement);
@@ -420,8 +420,8 @@ static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const Visi
 
 void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag, EditingState* editingState)
 {
-    const VisiblePosition& start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
-    const VisiblePosition& end = endOfParagraph(start, CanSkipOverEditingBoundary);
+    const VisiblePosition& start = startOfParagraphDeprecated(originalStart, CanSkipOverEditingBoundary);
+    const VisiblePosition& end = endOfParagraphDeprecated(start, CanSkipOverEditingBoundary);
 
     if (start.isNull() || end.isNull())
         return;
@@ -506,8 +506,8 @@ void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const Visible
     // Inserting list element and list item list may change start of pargraph
     // to move. We calculate start of paragraph again.
     document().updateStyleAndLayoutIgnorePendingStylesheets();
-    const VisiblePosition& start = startOfParagraph(pos, CanSkipOverEditingBoundary);
-    const VisiblePosition& end = endOfParagraph(pos, CanSkipOverEditingBoundary);
+    const VisiblePosition& start = startOfParagraphDeprecated(pos, CanSkipOverEditingBoundary);
+    const VisiblePosition& end = endOfParagraphDeprecated(pos, CanSkipOverEditingBoundary);
     moveParagraph(start, end, VisiblePosition::beforeNode(placeholder), editingState, PreserveSelection);
 }
 

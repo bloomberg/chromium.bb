@@ -158,8 +158,8 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
 
 void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
 {
-    VisiblePosition visibleStartOfParagraph = startOfParagraph(endingSelection().visibleStart());
-    VisiblePosition visibleEndOfParagraph = endOfParagraph(visibleStartOfParagraph);
+    VisiblePosition visibleStartOfParagraph = startOfParagraphDeprecated(endingSelection().visibleStart());
+    VisiblePosition visibleEndOfParagraph = endOfParagraphDeprecated(visibleStartOfParagraph);
 
     HTMLElement* enclosingElement = toHTMLElement(enclosingNodeOfType(visibleStartOfParagraph.deepEquivalent(), &isHTMLListOrBlockquoteElement));
     if (!enclosingElement || !hasEditableStyle(*enclosingElement->parentNode())) // We can't outdent if there is no place to go!
@@ -203,12 +203,12 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
         document().updateStyleAndLayoutIgnorePendingStylesheets();
         visibleStartOfParagraph = createVisiblePositionDeprecated(visibleStartOfParagraph.deepEquivalent());
         visibleEndOfParagraph = createVisiblePositionDeprecated(visibleEndOfParagraph.deepEquivalent());
-        if (visibleStartOfParagraph.isNotNull() && !isStartOfParagraph(visibleStartOfParagraph)) {
+        if (visibleStartOfParagraph.isNotNull() && !isStartOfParagraphDeprecated(visibleStartOfParagraph)) {
             insertNodeAt(HTMLBRElement::create(document()), visibleStartOfParagraph.deepEquivalent(), editingState);
             if (editingState->isAborted())
                 return;
         }
-        if (visibleEndOfParagraph.isNotNull() && !isEndOfParagraph(visibleEndOfParagraph))
+        if (visibleEndOfParagraph.isNotNull() && !isEndOfParagraphDeprecated(visibleEndOfParagraph))
             insertNodeAt(HTMLBRElement::create(document()), visibleEndOfParagraph.deepEquivalent(), editingState);
         return;
     }
@@ -222,8 +222,8 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
             splitElement(enclosingElement, highestInlineNode ? highestInlineNode : visibleStartOfParagraph.deepEquivalent().anchorNode());
         }
     }
-    VisiblePosition startOfParagraphToMove = startOfParagraph(visibleStartOfParagraph);
-    VisiblePosition endOfParagraphToMove = endOfParagraph(visibleEndOfParagraph);
+    VisiblePosition startOfParagraphToMove = startOfParagraphDeprecated(visibleStartOfParagraph);
+    VisiblePosition endOfParagraphToMove = endOfParagraphDeprecated(visibleEndOfParagraph);
     if (startOfParagraphToMove.isNull() || endOfParagraphToMove.isNull())
         return;
     HTMLBRElement* placeholder = HTMLBRElement::create(document());
@@ -236,8 +236,8 @@ void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
 // FIXME: We should merge this function with ApplyBlockElementCommand::formatSelection
 void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection, const VisiblePosition& endOfSelection, EditingState* editingState)
 {
-    VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
-    VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
+    VisiblePosition endOfCurrentParagraph = endOfParagraphDeprecated(startOfSelection);
+    VisiblePosition endOfLastParagraph = endOfParagraphDeprecated(endOfSelection);
 
     if (endOfCurrentParagraph.deepEquivalent() == endOfLastParagraph.deepEquivalent()) {
         outdentParagraph(editingState);
@@ -245,10 +245,10 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
     }
 
     Position originalSelectionEnd = endingSelection().end();
-    VisiblePosition endAfterSelection = endOfParagraph(nextPositionOf(endOfLastParagraph));
+    VisiblePosition endAfterSelection = endOfParagraphDeprecated(nextPositionOf(endOfLastParagraph));
 
     while (endOfCurrentParagraph.deepEquivalent() != endAfterSelection.deepEquivalent()) {
-        VisiblePosition endOfNextParagraph = endOfParagraph(nextPositionOf(endOfCurrentParagraph));
+        VisiblePosition endOfNextParagraph = endOfParagraphDeprecated(nextPositionOf(endOfCurrentParagraph));
         if (endOfCurrentParagraph.deepEquivalent() == endOfLastParagraph.deepEquivalent())
             setEndingSelection(VisibleSelection(originalSelectionEnd, TextAffinity::Downstream));
         else
@@ -266,7 +266,7 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
 
         if (endOfNextParagraph.isNotNull() && !endOfNextParagraph.deepEquivalent().isConnected()) {
             endOfCurrentParagraph = createVisiblePositionDeprecated(endingSelection().end());
-            endOfNextParagraph = endOfParagraph(nextPositionOf(endOfCurrentParagraph));
+            endOfNextParagraph = endOfParagraphDeprecated(nextPositionOf(endOfCurrentParagraph));
         }
         endOfCurrentParagraph = endOfNextParagraph;
     }

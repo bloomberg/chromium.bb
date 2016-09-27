@@ -95,7 +95,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
 
     // FIXME: Need to merge text nodes when inserting just after or before text.
 
-    if (isEndOfParagraph(caret) && !lineBreakExistsAtVisiblePosition(caret)) {
+    if (isEndOfParagraphDeprecated(caret) && !lineBreakExistsAtVisiblePosition(caret)) {
         bool needExtraLineBreak = !isHTMLHRElement(*pos.anchorNode()) && !isHTMLTableElement(*pos.anchorNode());
 
         insertNodeAt(nodeToInsert, pos, editingState);
@@ -127,7 +127,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
             return;
 
         // Insert an extra br or '\n' if the just inserted one collapsed.
-        if (!isStartOfParagraph(VisiblePosition::beforeNode(nodeToInsert))) {
+        if (!isStartOfParagraphDeprecated(VisiblePosition::beforeNode(nodeToInsert))) {
             insertNodeBefore(nodeToInsert->cloneNode(false), nodeToInsert, editingState);
             if (editingState->isAborted())
                 return;

@@ -208,6 +208,21 @@ CORE_EXPORT bool isEndOfParagraph(const VisiblePosition&, EditingBoundaryCrossin
 CORE_EXPORT bool isEndOfParagraph(const VisiblePositionInFlatTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 bool inSameParagraph(const VisiblePosition&, const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 
+// These deprecated functions perform synchronous layout, messing up the
+// rendering pipeline. They may also take invalid VisiblePositions as their
+// arguments. Callers should ensure clean layout and pass valid VisiblePositions
+// to the un-deprecated functions listed above.
+CORE_EXPORT VisiblePosition startOfParagraphDeprecated(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT VisiblePositionInFlatTree startOfParagraphDeprecated(const VisiblePositionInFlatTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT VisiblePosition endOfParagraphDeprecated(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT VisiblePositionInFlatTree endOfParagraphDeprecated(const VisiblePositionInFlatTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+VisiblePosition startOfNextParagraphDeprecated(const VisiblePosition&);
+CORE_EXPORT bool isStartOfParagraphDeprecated(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT bool isStartOfParagraphDeprecated(const VisiblePositionInFlatTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT bool isEndOfParagraphDeprecated(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+CORE_EXPORT bool isEndOfParagraphDeprecated(const VisiblePositionInFlatTree&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+bool inSameParagraphDeprecated(const VisiblePosition&, const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
+
 // blocks (true paragraphs; line break elements don't break blocks)
 VisiblePosition startOfBlock(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);
 VisiblePosition endOfBlock(const VisiblePosition&, EditingBoundaryCrossingRule = CannotCrossEditingBoundary);

@@ -72,7 +72,7 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
     // FIXME: We paint the gap before some paragraphs that are indented with left
     // margin/padding, but not others.  We should make the gap painting more
     // consistent and then use a left margin/padding rule here.
-    if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraph(visibleEnd)) {
+    if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraphDeprecated(visibleEnd)) {
         VisibleSelection newSelection(visibleStart, previousPositionOf(visibleEnd, CannotCrossEditingBoundary), endingSelection().isDirectional());
         if (newSelection.isNone())
             return;
@@ -131,9 +131,9 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
     }
 
     HTMLElement* blockquoteForNextIndent = nullptr;
-    VisiblePosition endOfCurrentParagraph = endOfParagraph(startOfSelection);
-    VisiblePosition endOfLastParagraph = endOfParagraph(endOfSelection);
-    VisiblePosition endAfterSelection = endOfParagraph(nextPositionOf(endOfLastParagraph));
+    VisiblePosition endOfCurrentParagraph = endOfParagraphDeprecated(startOfSelection);
+    VisiblePosition endOfLastParagraph = endOfParagraphDeprecated(endOfSelection);
+    VisiblePosition endAfterSelection = endOfParagraphDeprecated(nextPositionOf(endOfLastParagraph));
     m_endOfLastParagraph = endOfLastParagraph.deepEquivalent();
 
     bool atEnd = false;
@@ -194,7 +194,7 @@ static const ComputedStyle* computedStyleOfEnclosingTextNode(const Position& pos
 
 void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const VisiblePosition& endOfCurrentParagraph, Position& start, Position& end)
 {
-    start = startOfParagraph(endOfCurrentParagraph).deepEquivalent();
+    start = startOfParagraphDeprecated(endOfCurrentParagraph).deepEquivalent();
     end = endOfCurrentParagraph.deepEquivalent();
 
     document().updateStyleAndLayoutTree();
@@ -208,7 +208,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
         // TODO(yosin) We should use |PositionMoveType::CodePoint| for
         // |previousPositionOf()|.
         if (startStyle->preserveNewline() && isNewLineAtPosition(start) && !isNewLineAtPosition(previousPositionOf(start, PositionMoveType::CodeUnit)) && start.offsetInContainerNode() > 0)
-            start = startOfParagraph(createVisiblePositionDeprecated(previousPositionOf(end, PositionMoveType::CodeUnit))).deepEquivalent();
+            start = startOfParagraphDeprecated(createVisiblePositionDeprecated(previousPositionOf(end, PositionMoveType::CodeUnit))).deepEquivalent();
 
         // If start is in the middle of a text node, split.
         if (!startStyle->collapseWhiteSpace() && start.offsetInContainerNode() > 0) {
@@ -261,7 +261,7 @@ void ApplyBlockElementCommand::rangeForParagraphSplittingTextNodesIfNeeded(const
 
 VisiblePosition ApplyBlockElementCommand::endOfNextParagrahSplittingTextNodesIfNeeded(VisiblePosition& endOfCurrentParagraph, Position& start, Position& end)
 {
-    VisiblePosition endOfNextParagraph = endOfParagraph(nextPositionOf(endOfCurrentParagraph));
+    VisiblePosition endOfNextParagraph = endOfParagraphDeprecated(nextPositionOf(endOfCurrentParagraph));
     Position position = endOfNextParagraph.deepEquivalent();
     const ComputedStyle* style = computedStyleOfEnclosingTextNode(position);
     if (!style)

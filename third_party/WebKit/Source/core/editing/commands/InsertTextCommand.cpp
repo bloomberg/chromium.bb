@@ -170,7 +170,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
     if (lineBreakExistsAtPosition(downstream)) {
         // FIXME: This doesn't handle placeholders at the end of anonymous blocks.
         VisiblePosition caret = createVisiblePositionDeprecated(startPosition);
-        if (isEndOfBlock(caret) && isStartOfParagraph(caret))
+        if (isEndOfBlock(caret) && isStartOfParagraphDeprecated(caret))
             placeholder = downstream;
         // Don't remove the placeholder yet, otherwise the block we're inserting into would collapse before
         // we get a chance to insert into it.  We check for a placeholder now, though, because doing so requires

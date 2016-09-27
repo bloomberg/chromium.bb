@@ -744,9 +744,9 @@ void CompositeEditCommand::rebalanceWhitespaceOnTextSubstring(Text* textNode, in
     // See http://crbug.com/310149
     const bool nextSiblingIsTextNode = textNode->nextSibling() && textNode->nextSibling()->isTextNode()
         && toText(textNode->nextSibling())->data().length();
-    const bool shouldEmitNBSPbeforeEnd =(isEndOfParagraph(visibleDownstreamPos) || (unsigned)downstream == text.length()) && !nextSiblingIsTextNode;
+    const bool shouldEmitNBSPbeforeEnd =(isEndOfParagraphDeprecated(visibleDownstreamPos) || (unsigned)downstream == text.length()) && !nextSiblingIsTextNode;
     String rebalancedString = stringWithRebalancedWhitespace(string,
-        isStartOfParagraph(visibleUpstreamPos) || !upstream, shouldEmitNBSPbeforeEnd);
+        isStartOfParagraphDeprecated(visibleUpstreamPos) || !upstream, shouldEmitNBSPbeforeEnd);
 
     if (string != rebalancedString)
         replaceTextInNodePreservingMarkers(textNode, upstream, length, rebalancedString);
@@ -997,8 +997,8 @@ HTMLElement* CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(co
     // It's strange that this function is responsible for verifying that pos has not been invalidated
     // by an earlier call to this function.  The caller, applyBlockStyle, should do this.
     VisiblePosition visiblePos = createVisiblePositionDeprecated(pos, VP_DEFAULT_AFFINITY);
-    VisiblePosition visibleParagraphStart = startOfParagraph(visiblePos);
-    VisiblePosition visibleParagraphEnd = endOfParagraph(visiblePos);
+    VisiblePosition visibleParagraphStart = startOfParagraphDeprecated(visiblePos);
+    VisiblePosition visibleParagraphEnd = endOfParagraphDeprecated(visiblePos);
     VisiblePosition next = nextPositionOf(visibleParagraphEnd);
     VisiblePosition visibleEnd = next.isNotNull() ? next : visibleParagraphEnd;
 
@@ -1047,8 +1047,8 @@ HTMLElement* CompositeEditCommand::moveParagraphContentsToNewBlockIfNecessary(co
     // Inserting default paragraph element can change visible position. We
     // should update visible positions before use them.
     visiblePos = createVisiblePositionDeprecated(pos, VP_DEFAULT_AFFINITY);
-    visibleParagraphStart = startOfParagraph(visiblePos);
-    visibleParagraphEnd = endOfParagraph(visiblePos);
+    visibleParagraphStart = startOfParagraphDeprecated(visiblePos);
+    visibleParagraphEnd = endOfParagraphDeprecated(visiblePos);
     moveParagraphs(visibleParagraphStart, visibleParagraphEnd, VisiblePosition::firstPositionInNode(newBlock), editingState);
     if (editingState->isAborted())
         return nullptr;
@@ -1176,7 +1176,7 @@ void CompositeEditCommand::cleanupAfterDeletion(EditingState* editingState, Visi
 {
     VisiblePosition caretAfterDelete = endingSelection().visibleStart();
     Node* destinationNode = destination.deepEquivalent().anchorNode();
-    if (caretAfterDelete.deepEquivalent() != destination.deepEquivalent() && isStartOfParagraph(caretAfterDelete) && isEndOfParagraph(caretAfterDelete)) {
+    if (caretAfterDelete.deepEquivalent() != destination.deepEquivalent() && isStartOfParagraphDeprecated(caretAfterDelete) && isEndOfParagraphDeprecated(caretAfterDelete)) {
         // Note: We want the rightmost candidate.
         Position position = mostForwardCaretPosition(caretAfterDelete.deepEquivalent());
         Node* node = position.anchorNode();
@@ -1266,7 +1266,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
     afterParagraph = createVisiblePositionDeprecated(afterParagraph.deepEquivalent());
 
     if (beforeParagraph.isNotNull() && !isDisplayInsideTable(beforeParagraph.deepEquivalent().anchorNode())
-        && ((!isEndOfParagraph(beforeParagraph) && !isStartOfParagraph(beforeParagraph)) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
+        && ((!isEndOfParagraphDeprecated(beforeParagraph) && !isStartOfParagraphDeprecated(beforeParagraph)) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
         insertNodeAt(HTMLBRElement::create(document()), beforeParagraph.deepEquivalent(), editingState);
     }
@@ -1274,8 +1274,8 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
 
 void CompositeEditCommand::moveParagraph(const VisiblePosition& startOfParagraphToMove, const VisiblePosition& endOfParagraphToMove, const VisiblePosition& destination, EditingState* editingState, ShouldPreserveSelection shouldPreserveSelection, ShouldPreserveStyle shouldPreserveStyle, Node* constrainingAncestor)
 {
-    DCHECK(isStartOfParagraph(startOfParagraphToMove)) << startOfParagraphToMove;
-    DCHECK(isEndOfParagraph(endOfParagraphToMove)) << endOfParagraphToMove;
+    DCHECK(isStartOfParagraphDeprecated(startOfParagraphToMove)) << startOfParagraphToMove;
+    DCHECK(isEndOfParagraphDeprecated(endOfParagraphToMove)) << endOfParagraphToMove;
     moveParagraphs(startOfParagraphToMove, endOfParagraphToMove, destination, editingState, shouldPreserveSelection, shouldPreserveStyle, constrainingAncestor);
 }
 
@@ -1359,7 +1359,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     // Must recononicalize these two VisiblePositions after the pruning above.
     VisiblePosition beforeParagraph = createVisiblePositionDeprecated(beforeParagraphPosition.position());
     VisiblePosition afterParagraph = createVisiblePositionDeprecated(afterParagraphPosition.position());
-    if (beforeParagraph.isNotNull() && (!isEndOfParagraph(beforeParagraph) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
+    if (beforeParagraph.isNotNull() && (!isEndOfParagraphDeprecated(beforeParagraph) || beforeParagraph.deepEquivalent() == afterParagraph.deepEquivalent())) {
         // FIXME: Trim text between beforeParagraph and afterParagraph if they aren't equal.
         insertNodeAt(HTMLBRElement::create(document()), beforeParagraph.deepEquivalent(), editingState);
         if (editingState->isAborted())
@@ -1387,7 +1387,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     document().frame()->spellChecker().markMisspellingsAndBadGrammarForMovingParagraphs(endingSelection());
 
     // If the selection is in an empty paragraph, restore styles from the old empty paragraph to the new empty paragraph.
-    bool selectionIsEmptyParagraph = endingSelection().isCaret() && isStartOfParagraph(endingSelection().visibleStart()) && isEndOfParagraph(endingSelection().visibleStart());
+    bool selectionIsEmptyParagraph = endingSelection().isCaret() && isStartOfParagraphDeprecated(endingSelection().visibleStart()) && isEndOfParagraphDeprecated(endingSelection().visibleStart());
     if (styleInEmptyParagraph && selectionIsEmptyParagraph) {
         applyStyle(styleInEmptyParagraph, editingState);
         if (editingState->isAborted())
@@ -1511,7 +1511,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph(EditingState*
     if (!highestBlockquote)
         return false;
 
-    if (!isStartOfParagraph(caret) || !isEndOfParagraph(caret))
+    if (!isStartOfParagraphDeprecated(caret) || !isEndOfParagraphDeprecated(caret))
         return false;
 
     VisiblePosition previous = previousPositionOf(caret, CannotCrossEditingBoundary);
@@ -1528,7 +1528,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph(EditingState*
     VisiblePosition atBR = VisiblePosition::beforeNode(br);
     // If the br we inserted collapsed, for example foo<br><blockquote>...</blockquote>, insert
     // a second one.
-    if (!isStartOfParagraph(atBR)) {
+    if (!isStartOfParagraphDeprecated(atBR)) {
         insertNodeBefore(HTMLBRElement::create(document()), br, editingState);
         if (editingState->isAborted())
             return false;
