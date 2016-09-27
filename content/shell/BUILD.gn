@@ -485,8 +485,6 @@ if (is_android) {
     info_plist_target = ":content_shell_plist"
   }
 } else {
-  # TODO(brettw) when GYP is no longer necessary, delete
-  # content/shell/app/shell.exe.manifest. This file is not used in GN.
   executable("content_shell") {
     testonly = true
 
@@ -532,7 +530,6 @@ if (is_android) {
 }
 
 if (is_win) {
-  # GYP version: content/content_shell_and_tests.gyp:content_shell_crash_service
   executable("content_shell_crash_service") {
     sources = [
       "tools/content_shell_crash_service.cc",

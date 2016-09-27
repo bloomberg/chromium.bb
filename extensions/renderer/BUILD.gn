@@ -6,7 +6,6 @@ import("//build/config/features.gni")
 
 assert(enable_extensions)
 
-# GYP version: extensions/extensions.gyp:extensions_renderer
 source_set("renderer") {
   sources = [
     "activity_log_converter_strategy.cc",

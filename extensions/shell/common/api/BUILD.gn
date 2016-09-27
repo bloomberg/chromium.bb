@@ -8,7 +8,6 @@ import("//tools/json_schema_compiler/json_features.gni")
 schema_sources = [ "identity.idl" ]
 root_namespace = "extensions::shell::api::%(namespace)s"
 
-# GYP version: extensions/shell/common/api/api.gyp:shell_api
 json_schema_api("api") {
   sources = schema_sources
   schemas = true
@@ -16,7 +15,6 @@ json_schema_api("api") {
   bundle_name = "Shell"
 }
 
-# GYP version: extensions/shell/browser/api/api_registration.gyp:shell_api_registration
 json_schema_api("api_registration") {
   sources = schema_sources
   impl_dir = "//extensions/shell/browser/api"

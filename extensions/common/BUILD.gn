@@ -28,7 +28,6 @@ if (enable_extensions) {
     use_new_wrapper_types = false
   }
 
-  # GYP version: extensions/extensions.gyp:extensions_common
   # This must be a static library because extensions common depends on
   # GetTrustedICAPublicKey in extensions/browser which isn't always linked
   # in. TODO(brettw): This reverse dependency should be fixed.

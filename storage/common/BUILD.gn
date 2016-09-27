@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: storage/storage_common.gyp:storage_common
 component("common") {
   output_name = "storage_common"
   sources = [

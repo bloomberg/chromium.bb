@@ -11,7 +11,6 @@ if (enable_webrtc || !is_android) {
                                 "scope",
                                 [ "jingle.gypi" ])
 
-  # GYP version: jingle/jingle.gyp:jingle_glue
   static_library("jingle_glue") {
     sources = jingle_includes.jingle_glue_sources
     public_deps = [
@@ -35,7 +34,6 @@ if (enable_webrtc || !is_android) {
   }
 
   # A library for sending and receiving peer-issued notifications.
-  # GYP version: jingle/jingle.gyp:notifier
   static_library("notifier") {
     sources = [
       "notifier/base/const_communicator.h",
@@ -102,7 +100,6 @@ if (enable_webrtc || !is_android) {
     ]
   }
 
-  # GYP version: jingle/jingle.gyp:notifier_test_util
   static_library("notifier_test_util") {
     testonly = true
     sources = [
@@ -123,7 +120,6 @@ if (enable_webrtc || !is_android) {
     ]
   }
 
-  # GYP version: jingle/jingle.gyp:jingle_unittests
   test("jingle_unittests") {
     sources = [
       "glue/chrome_async_socket_unittest.cc",
@@ -190,7 +186,6 @@ if (enable_webrtc || !is_android) {
   source_set("jingle_glue_test_util") {
   }
 
-  # GYP version: jingle/jingle.gyp:notifier
   static_library("notifier") {
     sources = [
       "notifier/base/gaia_constants.cc",

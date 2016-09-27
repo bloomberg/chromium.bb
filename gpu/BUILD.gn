@@ -2,35 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP-to-GN project mappings:
-#
-#  gpu.gyp:command_buffer_client => //gpu/command_buffer/client
-#
-#  gpu.gyp:command_buffer_common => //gpu/command_buffer/common
-#
-#  gpu.gyp:command_buffer_service => //gpu/command_buffer/service
-
-#  gpu/gpu.gyp:gl_in_process_context =>
-#      //gpu/command_buffer/client:gl_in_process_context
-#
-#  gpu.gyp:gles2_cmd_helper => //gpu/command_buffer/client:gles2_cmd_helper
-#
-#  gpu.gyp:gles2_c_lib => //gpu/command_buffer/client:gles2_c_lib
-#
-#  gpu.gyp:gles2_implementation =>
-#      //gpu/command_buffer/client:gles2_implementation
-#
-#  gpu.gyp:gpu_config => //gpu/config
-#
-#  gpu.gyp:gpu_ipc => //gpu/ipc
-#
-#  gpu.gyp:disk_cache_proto => //gpu/command_buffer/service:disk_cache_proto
-#
-#  command_buffer/command_buffer.gyp:gles2_utils =>
-#     //gpu/command_buffer/common:gles2_utils
-#
-# gpu/skia_bindings/skia_bindings.gyp:gpu_skia_bindings => //gpu/skia_bindings
-
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//build/config/ui.gni")
@@ -52,7 +23,6 @@ component("gpu") {
   ]
 }
 
-# GYP version: //gpu/gpu.gyp:command_buffer_gles2
 shared_library("command_buffer_gles2") {
   sources = [
     # TODO(hendrikw): Move egl out of gles2_conform_support.
@@ -91,7 +61,6 @@ shared_library("command_buffer_gles2") {
   }
 }
 
-# GYP version: //gpu/gpu.gyp:command_buffer_gles2_tests
 test("command_buffer_gles2_tests") {
   sources = [
     "command_buffer/tests/command_buffer_gles2_tests_main.cc",

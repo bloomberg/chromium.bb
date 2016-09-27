@@ -6,20 +6,17 @@ import("//build/config/android/rules.gni")
 
 assert(is_android)
 
-# GYP target: chromecast.gyp:cast_shell_manifest
 jinja_template("cast_shell_manifest") {
   input = "apk/AndroidManifest.xml.jinja2"
   output = "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"
 }
 
-# GYP target: n/a
 android_resources("cast_shell_android_resources") {
   android_manifest = "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"
   android_manifest_dep = ":cast_shell_manifest"
   resource_dirs = [ "//chromecast/browser/android/apk/res" ]
 }
 
-# GYP target: chromecast.gyp:cast_shell_java
 android_library("cast_shell_java") {
   java_src_dir = "//chromecast/browser/android/apk/src"
   java_files = [

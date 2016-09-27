@@ -16,7 +16,6 @@ config("platform_support") {
   }
 }
 
-# GYP version: device/serial/serial.gyp:device_serial
 static_library("serial") {
   output_name = "device_serial"
 
@@ -84,7 +83,6 @@ static_library("serial") {
   }
 }
 
-# GYP version: device/serial/serial.gyp:device_serial_test_util
 static_library("test_support") {
   sources = [
     "test_serial_io_handler.cc",
@@ -96,7 +94,6 @@ static_library("test_support") {
   ]
 }
 
-# GYP version: device/serial/serial.gyp:device_serial_mojo
 mojom("serial_mojo") {
   visibility = [
     ":serial",

@@ -8,7 +8,6 @@ import("//build/config/features.gni")
 import("//remoting/webapp/build_template.gni")
 import("//remoting/webapp/files.gni")
 
-# GYP version: remoting/remoting_client:remoting_credits
 action("credits") {
   about_credits_file = "$target_gen_dir/credits.html"
   script = "//tools/licenses.py"
@@ -38,7 +37,6 @@ desktop_remoting_webapp("webapp") {
   extra_files = [ "crd/remoting_client_pnacl.nmf.jinja2" ]
 }
 
-# GYP version: remoting/remoting_tests.gypi:remoting_browser_test_resources
 copy("browser_test_resources") {
   sources = remoting_webapp_browsertest_main_html_extra_files
   outputs = [
@@ -59,8 +57,6 @@ group("unit_tests") {
 }
 
 copy("js_files") {
-  # This list corresponds to webapp_js_files in remoting_webapp_unittests
-  # target in GYP.
   sources = webapp_js_files + remoting_webapp_unittests_all_files
   outputs = [
     "$remoting_unit_test_out_dir/{{source_file_part}}",

@@ -4,7 +4,6 @@
 
 import("//tools/grit/grit_rule.gni")
 
-# GYP version: content/app/strings/content_strings.gyp:content_strings
 grit("strings") {
   use_qualified_include = true
   source = "content_strings.grd"

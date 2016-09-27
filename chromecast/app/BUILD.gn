@@ -74,7 +74,6 @@ test("cast_shell_unittests") {
   ]
 }
 
-# GYP target: chromecast.gyp:cast_shell_resources
 grit("resources") {
   source = "//chromecast/app/resources/shell_resources.grd"
 
@@ -86,7 +85,6 @@ grit("resources") {
   ]
 }
 
-# GYP target: chromecast_locales.gyp:chromecast_settings
 grit("chromecast_settings") {
   source = "//chromecast/app/resources/chromecast_settings.grd"
   resource_ids = "//chromecast/app/resources/resource_ids"

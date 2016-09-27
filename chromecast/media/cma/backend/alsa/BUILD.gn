@@ -17,7 +17,6 @@ declare_args() {
 # Alsa must be used for these targets to build.
 assert(use_alsa)
 
-# GYP target: chromecast/media/media.gyp:libcast_media_1.0_audio
 shared_library("libcast_media_1.0_audio") {
   sources = [
     "cast_media_shlib.cc",
@@ -33,7 +32,6 @@ shared_library("libcast_media_1.0_audio") {
   ]
 }
 
-# GYP target: chromecast/media/media.gyp:alsa_cma_backend
 source_set("alsa_cma_backend") {
   sources = [
     "alsa_wrapper.cc",
@@ -106,14 +104,12 @@ source_set("slew_volume") {
   ]
 }
 
-# GYP target: chromecast/media/media.gyp:chromecast_alsa_features
 buildflag_header("alsa_features") {
   header = "alsa_features.h"
 
   flags = [ "ALSA_MONOTONIC_RAW_TSTAMPS=$use_alsa_monotonic_raw_tstamps" ]
 }
 
-# GYP target: chromecast/media/media.gyp:cast_alsa_cma_backend_unittests
 test("cast_alsa_cma_backend_unittests") {
   sources = [
     "stream_mixer_alsa_unittest.cc",
@@ -132,7 +128,6 @@ test("cast_alsa_cma_backend_unittests") {
   ]
 }
 
-# GYP target: n/a
 source_set("test_support") {
   testonly = true
 

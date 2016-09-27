@@ -181,7 +181,6 @@ if (current_cpu != "x64") {
     android_manifest_dep = ":chromium_linker_test_manifest"
   }
 
-  # GYP: //content/content_tests.gypi:chromium_linker_test_apk
   android_apk("chromium_linker_test_apk") {
     testonly = true
     deps = [
@@ -205,7 +204,6 @@ if (current_cpu != "x64") {
     enable_chromium_linker_tests = true
   }
 
-  # GYP: //content/content_tests.gypi:chromium_android_linker_test
   shared_library("linker_test") {
     testonly = true
     sources = [
@@ -225,7 +223,6 @@ if (current_cpu != "x64") {
     ]
   }
 
-  # GYP: //content/content_tests.gypi:chromium_android_linker_test_jni_headers
   generate_jni("linker_test_jni_headers") {
     testonly = true
     jni_package = "content/shell"
@@ -235,7 +232,6 @@ if (current_cpu != "x64") {
   }
 }
 
-# GYP: //content/content_tests.gypi:content_shell_browsertests_java"
 android_library("content_shell_browsertests_java") {
   testonly = true
   deps = [

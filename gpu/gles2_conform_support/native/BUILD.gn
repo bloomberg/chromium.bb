@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: gpu/gles2_conform_support/gles2_conform_support.gyp:egl_main_native
 source_set("native") {
   output_name = "egl_main_native"
   sources = [
@@ -32,7 +31,6 @@ source_set("native") {
   }
 }
 
-# GYP version: gpu/gles2_conform_support/gles2_conform_support.gyp:egl_main_windowless
 source_set("windowless") {
   output_name = "egl_main_windowless"
   sources = [

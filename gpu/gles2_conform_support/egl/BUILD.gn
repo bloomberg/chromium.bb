@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# GYP version: gpu/gles2_conform_support/gles_conform_support.gyp:egl_native
 source_set("egl") {
   output_name = "egl_native"
   sources = [

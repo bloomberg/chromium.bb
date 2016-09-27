@@ -67,8 +67,6 @@ source_set("common") {
 
 if (!is_chromeos && enable_remoting_host) {
   if (is_win) {
-    # GYP version:
-    # //remoting/remoting_host_win.gypi:remoting_it2me_native_messaging_host
     executable("remote_assistance_host") {
       configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
@@ -93,8 +91,6 @@ if (!is_chromeos && enable_remoting_host) {
       ]
     }
 
-    # GYP version:
-    # //remoting/remoting_host_win.gypi:remoting_it2me_native_messaging_host_uiaccess
     executable("remote_assistance_host_uiaccess") {
       configs += [ "//build/config/compiler:wexit_time_destructors" ]
 

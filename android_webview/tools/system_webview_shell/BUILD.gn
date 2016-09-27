@@ -16,7 +16,6 @@ group("system_webview_shell") {
   ]
 }
 
-# GYP: //android_webview/android_webview_shell.gypi:system_webview_shell_apk
 android_apk("system_webview_shell_apk") {
   apk_name = "SystemWebViewShell"
   java_files = [
@@ -42,7 +41,6 @@ android_resources("system_webview_shell_apk_resources") {
   custom_package = "org.chromium.webview_shell"
 }
 
-# GYP: //android_webview/android_webview_shell.gypi:system_webview_shell_page_cycler_apk
 instrumentation_test_apk("system_webview_shell_page_cycler_apk") {
   apk_name = "SystemWebViewShellPageCycler"
   apk_under_test = ":system_webview_shell_apk"
@@ -60,7 +58,6 @@ instrumentation_test_apk("system_webview_shell_page_cycler_apk") {
   ]
 }
 
-# GYP: //android_webview/android_webview_shell.gypi:system_webview_shell_layout_test_apk
 instrumentation_test_apk("system_webview_shell_layout_test_apk") {
   apk_name = "SystemWebViewShellLayoutTest"
   apk_under_test = ":system_webview_shell_apk"

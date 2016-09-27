@@ -292,7 +292,6 @@ if (use_cups) {
 }
 
 if (is_android) {
-  # GYP: //printing/printing.gyp:printing_jni_headers
   generate_jni("printing_jni_headers") {
     sources = [
       "android/java/src/org/chromium/printing/PrintingContext.java",
@@ -300,7 +299,6 @@ if (is_android) {
     jni_package = "printing"
   }
 
-  # GYP: //printing/printing.gyp:printing_java
   android_library("printing_java") {
     deps = [
       "//base:base_java",

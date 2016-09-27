@@ -5,7 +5,6 @@
 import("//build/config/ui.gni")
 
 if (is_linux && !is_chromeos && current_cpu != "arm" && use_x11) {
-  # GYP version: //gpu/tools/tools.gyp:compositor_model_bench
   executable("compositor_model_bench") {
     sources = [
       "compositor_model_bench.cc",

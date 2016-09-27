@@ -73,11 +73,6 @@ if (host_os == "win") {
 
 _blink_gen_dir = "$root_gen_dir/blink"
 
-# The GYP target make_core_generated has some deps and a bunch of actions on
-# it, which means that the deps will be resolved before the actions run. Here
-# we have separate targets for each action. Its not clear which actions depend
-# on these deps, so for GYP compatibility, all of the below actions should
-# depend on the following deps.
 make_core_generated_deps = [
   "//third_party/WebKit/Source/core:generated_testing_idls",
   "//third_party/WebKit/Source/core:core_event_interfaces",
@@ -89,8 +84,7 @@ make_core_generated_deps = [
 #   other_inputs: (optional) other input files the script depends on
 #                 defaults to "scripts_for_in_files" (if specified, we assume
 #                 that the contents of "scripts_for_in_files" are included in
-#                 this list specified since this is how these lists are filled
-#                 from the GYP build.
+#                 this list).
 #   outputs: expected results. Note that the directory of the 0th item in this
 #            list will be taken to be the output path.
 #   other_args: (optional) other arguments to pass to the script.

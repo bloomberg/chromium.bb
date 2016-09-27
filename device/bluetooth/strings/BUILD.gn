@@ -4,7 +4,6 @@
 
 import("//tools/grit/grit_rule.gni")
 
-# GYP version: device/bluetooth/bluetooth_strings.gyp:bluetooth_strings
 grit("strings") {
   source = "../bluetooth_strings.grd"
   outputs = [

@@ -12,6 +12,4 @@ midl("isimpledom") {
     "ISimpleDOMNode.idl",
     "ISimpleDOMText.idl",
   ]
-  # Note: GYP version sets 'GenerateTypeLibrary': 'false'. It doesn't seem to
-  # be harmful to generate this, however.
 }

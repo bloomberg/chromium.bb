@@ -6,7 +6,6 @@ assert(is_android)
 
 import("//build/config/android/rules.gni")
 
-# GYP: //testing/android/junit_test.gyp:junit_test_support
 java_library("junit_test_support") {
   testonly = true
   java_files = [
@@ -37,7 +36,6 @@ java_library("junit_test_support") {
   ]
 }
 
-# GYP: //testing/android/junit_test.gyp:junit_unit_tests
 junit_binary("junit_unit_tests") {
   java_files = [
     "javatests/src/org/chromium/testing/local/GtestFilterTest.java",

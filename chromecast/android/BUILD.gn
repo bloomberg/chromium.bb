@@ -16,7 +16,6 @@ source_set("platform_jni_loader") {
   ]
 }
 
-# GYP target: chromecast.gyp:libcast_shell_android
 shared_library("libcast_shell_android") {
   sources = [
     "//chromecast/app/android/cast_jni_loader.cc",

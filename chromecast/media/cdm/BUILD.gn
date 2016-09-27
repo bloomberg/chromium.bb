@@ -4,7 +4,6 @@
 
 import("//chromecast/chromecast.gni")
 
-# GYP target: chromecast/media.gyp:media_cdm
 source_set("cdm") {
   sources = [
     "cast_cdm.cc",

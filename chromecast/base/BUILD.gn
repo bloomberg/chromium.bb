@@ -26,7 +26,6 @@ if (is_android) {
   assert(cast_product_type >= 0 && cast_product_type <= 3)
 }
 
-# GYP target: chromecast.gyp:cast_base
 source_set("base") {
   sources = [
     "android/dumpstate_writer.cc",
@@ -108,7 +107,6 @@ source_set("init_shlib") {
   ]
 }
 
-# GYP target: n/a
 source_set("test_support") {
   sources = [
     "scoped_temp_file.cc",
@@ -121,7 +119,6 @@ source_set("test_support") {
   ]
 }
 
-# GYP target: chromecast_tests.gypi:cast_base_unittests
 test("cast_base_unittests") {
   sources = [
     "bind_to_task_runner_unittest.cc",
@@ -228,7 +225,6 @@ process_version("cast_version") {
 }
 
 if (is_android) {
-  # GYP target: chromecast.gyp:jni_headers
   generate_jni("jni_headers") {
     sources = [
       "java/src/org/chromium/chromecast/base/ChromecastConfigAndroid.java",
@@ -239,7 +235,6 @@ if (is_android) {
     jni_package = "chromecast"
   }
 
-  # GYP target: chromecast.gyp:cast_base_java
   android_library("base_java") {
     java_src_dir = "//chromecast/base/java/src"
     java_files = [

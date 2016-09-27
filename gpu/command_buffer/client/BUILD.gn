@@ -4,9 +4,7 @@
 
 # The files here go into the "gpu" component in a component build (with
 # "command_buffer_client" and "gles2_cmd_helper" just forwarding) and goes into
-# separate static libraries in non-component build. This needs to match the
-# GYP build which was likely an attempt to make larger components to help with
-# loading.
+# separate static libraries in non-component build.
 group("client") {
   if (is_component_build) {
     public_deps = [
@@ -223,7 +221,6 @@ component("gles2_c_lib") {
   ]
 }
 
-# GYP version: gpu/gpu.gyp:gles2_c_lib_nocheck
 # Same as gles2_c_lib except with no parameter checking. Required for
 # OpenGL ES 2.0 conformance tests.
 component("gles2_c_lib_nocheck") {

@@ -5,7 +5,6 @@
 import("//chromecast/chromecast.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-# GYP target: chromecast.gyp:cast_shell_media
 source_set("media") {
   sources = [
     "cast_media_client.cc",

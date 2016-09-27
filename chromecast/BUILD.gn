@@ -352,7 +352,6 @@ repack("cast_shell_pak") {
   }
 }
 
-# GYP target: chromecast_locales.gyp:chromecast_locales_pak
 action("chromecast_locales_pak") {
   script = "//chromecast/tools/build/chromecast_repack_locales.py"
 
@@ -411,7 +410,6 @@ buildflag_header("chromecast_features") {
 }
 
 if (is_android) {
-  # GYP target: chromecast.gyp:cast_shell_icudata
   android_assets("cast_shell_apk_assets") {
     assert(v8_use_external_startup_data)
 
@@ -427,7 +425,6 @@ if (is_android) {
     disable_compression = true
   }
 
-  # GYP target: chromecast.gyp:cast_shell_apk
   android_apk("cast_shell_apk") {
     apk_name = "CastShell"
     android_manifest = "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"

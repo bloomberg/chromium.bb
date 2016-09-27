@@ -2208,7 +2208,6 @@ if (enable_nocompile_tests) {
 }
 
 if (is_android) {
-  # GYP: //base.gyp:base_jni_headers
   generate_jni("base_jni_headers") {
     sources = [
       "android/java/src/org/chromium/base/AnimationFrameTimeHistogram.java",
@@ -2247,13 +2246,11 @@ if (is_android) {
     jni_package = "base"
   }
 
-  # GYP: //base.gyp:android_runtime_jni_headers
   generate_jar_jni("android_runtime_jni_headers") {
     jni_package = "base"
     classes = [ "java/lang/Runtime.class" ]
   }
 
-  # GYP: //base.gyp:base_java
   android_library("base_java") {
     srcjar_deps = [
       ":base_android_java_enums_srcjar",
@@ -2341,7 +2338,6 @@ if (is_android) {
     ]
   }
 
-  # GYP: //base.gyp:base_javatests
   android_library("base_javatests") {
     testonly = true
     deps = [
@@ -2358,7 +2354,6 @@ if (is_android) {
     ]
   }
 
-  # GYP: //base.gyp:base_java_test_support
   android_library("base_java_test_support") {
     testonly = true
     deps = [
@@ -2403,7 +2398,6 @@ if (is_android) {
     ]
   }
 
-  # GYP: //base.gyp:base_junit_tests
   junit_binary("base_junit_tests") {
     java_files = [
       "android/junit/src/org/chromium/base/BaseChromiumApplicationTest.java",
@@ -2421,10 +2415,6 @@ if (is_android) {
     srcjar_deps = [ ":base_build_config_gen" ]
   }
 
-  # GYP: //base.gyp:base_java_application_state
-  # GYP: //base.gyp:base_java_library_load_from_apk_status_codes
-  # GYP: //base.gyp:base_java_library_process_type
-  # GYP: //base.gyp:base_java_memory_pressure_level
   java_cpp_enum("base_android_java_enums_srcjar") {
     sources = [
       "android/application_status_listener.h",
@@ -2434,7 +2424,6 @@ if (is_android) {
     ]
   }
 
-  # GYP: //base/base.gyp:base_build_config_gen
   java_cpp_template("base_build_config_gen") {
     sources = [
       "android/java/templates/BuildConfig.template",
@@ -2447,7 +2436,6 @@ if (is_android) {
     }
   }
 
-  # GYP: //base/base.gyp:base_native_libraries_gen
   java_cpp_template("base_native_libraries_gen") {
     sources = [
       "android/java/templates/NativeLibraries.template",
@@ -2455,7 +2443,6 @@ if (is_android) {
     package_name = "org/chromium/base/library_loader"
   }
 
-  # GYP: //base.gyp:base_java_unittest_support
   android_library("base_java_unittest_support") {
     testonly = true
     deps = [
