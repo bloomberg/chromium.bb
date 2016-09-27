@@ -120,7 +120,18 @@ void PaymentRequestUpdateEvent::updateWith(ScriptState* scriptState, ScriptPromi
         UpdatePaymentDetailsErrorFunction::createFunction(scriptState, m_updater));
 }
 
-void PaymentRequestUpdateEvent::onTimerFired(TimerBase*)
+DEFINE_TRACE(PaymentRequestUpdateEvent)
+{
+    visitor->trace(m_updater);
+    Event::trace(visitor);
+}
+
+void PaymentRequestUpdateEvent::onUpdateEventTimeoutForTesting()
+{
+    onUpdateEventTimeout(0);
+}
+
+void PaymentRequestUpdateEvent::onUpdateEventTimeout(TimerBase*)
 {
     if (!m_updater)
         return;
@@ -128,16 +139,10 @@ void PaymentRequestUpdateEvent::onTimerFired(TimerBase*)
     m_updater->onUpdatePaymentDetailsFailure("Timed out as the page didn't resolve the promise from change event");
 }
 
-DEFINE_TRACE(PaymentRequestUpdateEvent)
-{
-    visitor->trace(m_updater);
-    Event::trace(visitor);
-}
-
 PaymentRequestUpdateEvent::PaymentRequestUpdateEvent(const AtomicString& type, const PaymentRequestUpdateEventInit& init)
     : Event(type, init)
     , m_waitForUpdate(false)
-    , m_abortTimer(this, &PaymentRequestUpdateEvent::onTimerFired)
+    , m_abortTimer(this, &PaymentRequestUpdateEvent::onUpdateEventTimeout)
 {
 }
 

@@ -116,7 +116,7 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout)
     String errorMessage;
     request->show(scope.getScriptState()).then(funcs.expectNoCall(), funcs.expectCall(&errorMessage));
 
-    event->onTimerFired(0);
+    event->onUpdateEventTimeoutForTesting();
 
     v8::MicrotasksScope::PerformCheckpoint(scope.getScriptState()->isolate());
     EXPECT_EQ("AbortError: Timed out as the page didn't resolve the promise from change event", errorMessage);

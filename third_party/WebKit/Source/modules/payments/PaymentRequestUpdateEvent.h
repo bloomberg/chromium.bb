@@ -31,12 +31,14 @@ public:
 
     void updateWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-    void onTimerFired(TimerBase*);
-
     DECLARE_VIRTUAL_TRACE();
+
+    void onUpdateEventTimeoutForTesting();
 
 private:
     PaymentRequestUpdateEvent(const AtomicString& type, const PaymentRequestUpdateEventInit&);
+
+    void onUpdateEventTimeout(TimerBase*);
 
     Member<PaymentUpdater> m_updater;
     bool m_waitForUpdate;
