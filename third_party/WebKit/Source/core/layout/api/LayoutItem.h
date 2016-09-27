@@ -14,6 +14,7 @@ namespace blink {
 
 class FrameView;
 class LayoutAPIShim;
+class LocalFrame;
 class LayoutViewItem;
 class Node;
 class ObjectPaintProperties;
@@ -140,11 +141,6 @@ public:
         return m_layoutObject->needsLayout();
     }
 
-    void setNeedsLayout(LayoutInvalidationReasonForTracing reason, MarkingBehavior marking = MarkContainerChain, SubtreeLayoutScope* scope = nullptr)
-    {
-        m_layoutObject->setNeedsLayout(reason, marking, scope);
-    }
-
     void layout()
     {
         m_layoutObject->layout();
@@ -163,6 +159,11 @@ public:
     Document& document() const
     {
         return m_layoutObject->document();
+    }
+
+    LocalFrame* frame() const
+    {
+        return m_layoutObject->frame();
     }
 
     LayoutItem nextInPreOrder() const
@@ -207,11 +208,6 @@ public:
         return m_layoutObject->document().view();
     }
 
-    void setMayNeedPaintInvalidation()
-    {
-        m_layoutObject->setMayNeedPaintInvalidation();
-    }
-
     const ComputedStyle* style() const
     {
         return m_layoutObject->style();
@@ -225,6 +221,31 @@ public:
     bool hasLayer() const
     {
         return m_layoutObject->hasLayer();
+    }
+
+    void setNeedsLayout(LayoutInvalidationReasonForTracing reason, MarkingBehavior marking = MarkContainerChain, SubtreeLayoutScope* scope = nullptr)
+    {
+        m_layoutObject->setNeedsLayout(reason, marking, scope);
+    }
+
+    void setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReasonForTracing reason, MarkingBehavior behavior = MarkContainerChain, SubtreeLayoutScope* scope = nullptr)
+    {
+        m_layoutObject->setNeedsLayoutAndFullPaintInvalidation(reason, behavior, scope);
+    }
+
+    void setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReasonForTracing reason)
+    {
+        m_layoutObject->setNeedsLayoutAndPrefWidthsRecalc(reason);
+    }
+
+    void setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReasonForTracing reason)
+    {
+        m_layoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(reason);
+    }
+
+    void setMayNeedPaintInvalidation()
+    {
+        m_layoutObject->setMayNeedPaintInvalidation();
     }
 
     void setShouldDoFullPaintInvalidation(PaintInvalidationReason reason = PaintInvalidationFull)
@@ -250,16 +271,6 @@ public:
     FloatPoint absoluteToLocal(const FloatPoint& point, MapCoordinatesFlags mode = 0) const
     {
         return m_layoutObject->absoluteToLocal(point, mode);
-    }
-
-    void setNeedsLayoutAndFullPaintInvalidation(LayoutInvalidationReasonForTracing reason, MarkingBehavior behavior = MarkContainerChain, SubtreeLayoutScope* scope = nullptr)
-    {
-        m_layoutObject->setNeedsLayoutAndFullPaintInvalidation(reason, behavior, scope);
-    }
-
-    void setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReasonForTracing reason)
-    {
-        m_layoutObject->setNeedsLayoutAndPrefWidthsRecalc(reason);
     }
 
     bool wasNotifiedOfSubtreeChange() const

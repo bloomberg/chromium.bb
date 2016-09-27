@@ -777,8 +777,8 @@ void FrameView::countObjectsNeedingLayout(unsigned& needsLayoutObjects, unsigned
 
 inline void FrameView::forceLayoutParentViewIfNeeded()
 {
-    LayoutPart* ownerLayoutObject = m_frame->ownerLayoutObject();
-    if (!ownerLayoutObject || !ownerLayoutObject->frame())
+    LayoutPartItem ownerLayoutItem = m_frame->ownerLayoutItem();
+    if (ownerLayoutItem.isNull() || !ownerLayoutItem.frame())
         return;
 
     LayoutReplaced* contentBox = embeddedReplacedContent();
@@ -796,10 +796,10 @@ inline void FrameView::forceLayoutParentViewIfNeeded()
     // FrameView for a layout. After that the LayoutEmbeddedObject (ownerLayoutObject) carries the
     // correct size, which LayoutSVGRoot::computeReplacedLogicalWidth/Height rely on, when laying
     // out for the first time, or when the LayoutSVGRoot size has changed dynamically (eg. via <script>).
-    FrameView* frameView = ownerLayoutObject->frame()->view();
+    FrameView* frameView = ownerLayoutItem.frame()->view();
 
     // Mark the owner layoutObject as needing layout.
-    ownerLayoutObject->setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
+    ownerLayoutItem.setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(LayoutInvalidationReason::Unknown);
 
     // Synchronously enter layout, to layout the view containing the host object/embed/iframe.
     ASSERT(frameView);
