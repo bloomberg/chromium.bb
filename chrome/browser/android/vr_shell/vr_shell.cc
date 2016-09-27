@@ -162,7 +162,7 @@ void VrShell::InitializeGl(JNIEnv* env,
   std::vector<gvr::BufferSpec> specs;
   specs.push_back(gvr_api_->CreateBufferSpec());
   render_size_ = specs[0].GetSize();
-  swap_chain_.reset(new gvr::SwapChain(gvr_api_->CreateSwapChain(specs)));
+  swap_chain_.reset(new gvr::SwapChain(gvr_api_->CreateSwapchain(specs)));
 
   vr_shell_renderer_.reset(new VrShellRenderer());
   buffer_viewport_list_.reset(
@@ -236,14 +236,38 @@ void VrShell::UpdateController() {
   }
 }
 
+void ApplyNeckModel(gvr::Mat4f& mat_forward) {
+  // This assumes that the input matrix is a pure rotation matrix. The
+  // input object_from_reference matrix has the inverse rotation of
+  // the head rotation. Invert it (this is just a transpose).
+  gvr::Mat4f mat = MatrixTranspose(mat_forward);
+
+  // Position of the point between the eyes, relative to the neck pivot:
+  const float kNeckHorizontalOffset = -0.080f;  // meters in Z
+  const float kNeckVerticalOffset = 0.075f;     // meters in Y
+
+  std::array<float, 4> neckOffset = {
+      {0.0f, kNeckVerticalOffset, kNeckHorizontalOffset, 1.0f}};
+
+  // Rotate eyes around neck pivot point.
+  auto offset = MatrixVectorMul(mat, neckOffset);
+
+  // Measure new position relative to original center of head, because
+  // applying a neck model should not elevate the camera.
+  offset[1] -= kNeckVerticalOffset;
+
+  // Right-multiply the inverse translation onto the
+  // object_from_reference_matrix.
+  TranslateMRight(mat_forward, mat_forward, -offset[0], -offset[1], -offset[2]);
+}
+
 void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   buffer_viewport_list_->SetToRecommendedBufferViewports();
 
   gvr::Frame frame = swap_chain_->AcquireFrame();
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
-  head_pose_ = gvr_api_->GetHeadSpaceFromStartSpaceRotation(target_time);
-  head_pose_ = gvr_api_->ApplyNeckModel(head_pose_, 1.0f);
+  head_pose_ = gvr_api_->GetHeadPoseInStartSpace(target_time);
 
   // Bind back to the default framebuffer.
   frame.BindBuffer(0);
@@ -260,6 +284,16 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void VrShell::DrawVrShell(int64_t time) {
   float screen_tilt = desktop_screen_tilt_ * M_PI / 180.0f;
+
+  gvr::Vec3f headPos = getTranslation(head_pose_);
+  if (headPos.x == 0.0f && headPos.y == 0.0f && headPos.z == 0.0f) {
+    // This appears to be a 3DOF pose without a neck model. Add one.
+    // The head pose has redundant data. Assume we're only using the
+    // object_from_reference_matrix, we're not updating position_external.
+    // TODO: Not sure what object_from_reference_matrix is. The new api removed
+    // it. For now, removing it seems working fine.
+    ApplyNeckModel(head_pose_);
+  }
 
   forward_vector_ = getForwardVector(head_pose_);
 
@@ -401,7 +435,6 @@ void VrShell::DrawWebVr() {
   glDisable(GL_POLYGON_OFFSET_FILL);
 
   // Don't need to clear, since we're drawing over the entire render target.
-  glClear(GL_COLOR_BUFFER_BIT);
 
   glViewport(0, 0, render_size_.width, render_size_.height);
   vr_shell_renderer_->GetWebVrRenderer()->Draw(content_texture_id_);
