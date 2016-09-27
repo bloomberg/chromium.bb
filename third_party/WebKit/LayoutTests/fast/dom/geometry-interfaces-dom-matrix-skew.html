@@ -1,153 +1,58 @@
 <!DOCTYPE HTML>
-<html>
-<head>
-<title>Geometry Interfaces: DOMMatrix skew</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-</head>
-<body>
+<script src="./resources/geometry-interfaces-test-helpers.js"></script>
 <script>
-
 // TODO(hs1217.lee): create the DOMMatrix directly when the sequence constructor is supported.
 function initMatrix(values) {
   return new DOMMatrixReadOnly(values);
 }
 
 test(function() {
-    var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 3.1, 2, 1]));
-    matrix2d.skewXSelf();
-    assert_true(matrix2d.is2D);
-    assert_equals(matrix2d.a, 1);
-    assert_equals(matrix2d.b, 2);
-    assert_equals(matrix2d.c, 3);
-    assert_equals(matrix2d.d, 3.1);
-    assert_equals(matrix2d.e, 2);
-    assert_equals(matrix2d.f, 1);
+  var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 3.1, 2, 1]));
+  matrix2d.skewXSelf();
+  assert_2d_matrix_equals(matrix2d, [1, 2, 3, 3.1, 2, 1]);
 }, "DOMMatrix skewX() - 2D matrix");
 
 test(function() {
-    var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 3.1, 2, 1]));
-    matrix2d.skewXSelf(45);
-    assert_true(matrix2d.is2D);
-    assert_equals(matrix2d.a, 1);
-    assert_equals(matrix2d.b, 2);
-    assert_equals(matrix2d.c, 4);
-    assert_equals(matrix2d.d, 5.1);
-    assert_equals(matrix2d.e, 2);
-    assert_equals(matrix2d.f, 1);
+  var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 3.1, 2, 1]));
+  matrix2d.skewXSelf(45);
+  assert_2d_matrix_equals(matrix2d, [1, 2, 4, 5.1, 2, 1]);
 }, "DOMMatrix skewX(45) - 2D matrix");
 
 test(function() {
-    var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
-    matrix3d.skewXSelf();
-    assert_false(matrix3d.is2D);
-    assert_equals(matrix3d.m11, 1);
-    assert_equals(matrix3d.m12, 2);
-    assert_equals(matrix3d.m13, 3);
-    assert_equals(matrix3d.m14, 4);
-    assert_equals(matrix3d.m21, 5);
-    assert_equals(matrix3d.m22, 6);
-    assert_equals(matrix3d.m23, 7);
-    assert_equals(matrix3d.m24, 8);
-    assert_equals(matrix3d.m31, 9);
-    assert_equals(matrix3d.m32, 10.1);
-    assert_equals(matrix3d.m33, 11);
-    assert_equals(matrix3d.m34, 12);
-    assert_equals(matrix3d.m41, 13);
-    assert_equals(matrix3d.m42, 14);
-    assert_equals(matrix3d.m43, 15);
-    assert_equals(matrix3d.m44, 16.6);
+  var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
+  matrix3d.skewXSelf();
+  assert_3d_matrix_equals(matrix3d, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]);
 }, "DOMMatrix skewX() - 3D matrix");
 
 test(function() {
-    var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
-    matrix3d.skewXSelf(45);
-    assert_false(matrix3d.is2D);
-    assert_equals(matrix3d.m11, 1);
-    assert_equals(matrix3d.m12, 2);
-    assert_equals(matrix3d.m13, 3);
-    assert_equals(matrix3d.m14, 4);
-    assert_equals(matrix3d.m21, 6);
-    assert_equals(matrix3d.m22, 8);
-    assert_equals(matrix3d.m23, 10);
-    assert_equals(matrix3d.m24, 12);
-    assert_equals(matrix3d.m31, 9);
-    assert_equals(matrix3d.m32, 10.1);
-    assert_equals(matrix3d.m33, 11);
-    assert_equals(matrix3d.m34, 12);
-    assert_equals(matrix3d.m41, 13);
-    assert_equals(matrix3d.m42, 14);
-    assert_equals(matrix3d.m43, 15);
-    assert_equals(matrix3d.m44, 16.6);
+  var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
+  matrix3d.skewXSelf(45);
+  assert_3d_matrix_equals(matrix3d, [1, 2, 3, 4, 6, 8, 10, 12, 9, 10.1, 11, 12, 13, 14, 15, 16.6]);
 }, "DOMMatrix skewX(45) - 3D matrix");
 
 test(function() {
-    var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 3.1, 2, 1]));
-    matrix2d.skewYSelf();
-    assert_true(matrix2d.is2D);
-    assert_equals(matrix2d.a, 1);
-    assert_equals(matrix2d.b, 2);
-    assert_equals(matrix2d.c, 3);
-    assert_equals(matrix2d.d, 3.1);
-    assert_equals(matrix2d.e, 2);
-    assert_equals(matrix2d.f, 1);
+  var matrix2d = new DOMMatrix(initMatrix([1, 2, 3, 3.1, 2, 1]));
+  matrix2d.skewYSelf();
+  assert_2d_matrix_equals(matrix2d, [1, 2, 3, 3.1, 2, 1]);
 }, "DOMMatrix skewY() - 2D matrix");
 
 test(function() {
-    var matrix2d = new DOMMatrix(initMatrix([2, 2, 2, 2, 2, 2]));
-    matrix2d.skewYSelf(45);
-    assert_true(matrix2d.is2D);
-    assert_equals(matrix2d.a, 4);
-    assert_equals(matrix2d.b, 4);
-    assert_equals(matrix2d.c, 2);
-    assert_equals(matrix2d.d, 2);
-    assert_equals(matrix2d.e, 2);
-    assert_equals(matrix2d.f, 2);
+  var matrix2d = new DOMMatrix(initMatrix([2, 2, 2, 2, 2, 2]));
+  matrix2d.skewYSelf(45);
+  assert_2d_matrix_equals(matrix2d, [4, 4, 2, 2, 2, 2]);
 }, "DOMMatrix skewY(45) - 2D matrix");
 
 test(function() {
-    var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
-    matrix3d.skewYSelf();
-    assert_false(matrix3d.is2D);
-    assert_equals(matrix3d.m11, 1);
-    assert_equals(matrix3d.m12, 2);
-    assert_equals(matrix3d.m13, 3);
-    assert_equals(matrix3d.m14, 4);
-    assert_equals(matrix3d.m21, 5);
-    assert_equals(matrix3d.m22, 6);
-    assert_equals(matrix3d.m23, 7);
-    assert_equals(matrix3d.m24, 8);
-    assert_equals(matrix3d.m31, 9);
-    assert_equals(matrix3d.m32, 10.1);
-    assert_equals(matrix3d.m33, 11);
-    assert_equals(matrix3d.m34, 12);
-    assert_equals(matrix3d.m41, 13);
-    assert_equals(matrix3d.m42, 14);
-    assert_equals(matrix3d.m43, 15);
-    assert_equals(matrix3d.m44, 16.6);
+  var matrix3d = new DOMMatrix(initMatrix([1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]));
+  matrix3d.skewYSelf();
+  assert_3d_matrix_equals(matrix3d, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10.1, 11, 12, 13, 14, 15, 16.6]);
 }, "DOMMatrix skewY() - 3D matrix");
 
 test(function() {
-    var matrix3d = new DOMMatrix(initMatrix([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]));
-    matrix3d.skewYSelf(45);
-    assert_false(matrix3d.is2D);
-    assert_equals(matrix3d.m11, 2);
-    assert_equals(matrix3d.m12, 2);
-    assert_equals(matrix3d.m13, 2);
-    assert_equals(matrix3d.m14, 2);
-    assert_equals(matrix3d.m21, 1);
-    assert_equals(matrix3d.m22, 1);
-    assert_equals(matrix3d.m23, 1);
-    assert_equals(matrix3d.m24, 1);
-    assert_equals(matrix3d.m31, 1);
-    assert_equals(matrix3d.m32, 1);
-    assert_equals(matrix3d.m33, 1);
-    assert_equals(matrix3d.m34, 1);
-    assert_equals(matrix3d.m41, 1);
-    assert_equals(matrix3d.m42, 1);
-    assert_equals(matrix3d.m43, 1);
-    assert_equals(matrix3d.m44, 1);
+  var matrix3d = new DOMMatrix(initMatrix([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]));
+  matrix3d.skewYSelf(45);
+  assert_3d_matrix_equals(matrix3d, [2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
 }, "DOMMatrix skewY(45) - 3D matrix");
 </script>
-</body>
-</html>
