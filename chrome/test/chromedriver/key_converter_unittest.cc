@@ -14,8 +14,8 @@
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/chrome/ui_events.h"
 #include "chrome/test/chromedriver/key_converter.h"
-#include "chrome/test/chromedriver/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/test/keyboard_layout.h"
 
 namespace {
 
@@ -165,7 +165,6 @@ TEST(KeyConverter, FrenchKeyOnEnglishLayout) {
 
 #if defined(OS_WIN)
 TEST(KeyConverter, NeedsCtrlAndAlt) {
-  RestoreKeyboardLayoutOnDestruct restore;
   int ctrl_and_alt = kControlKeyModifierMask | kAltKeyModifierMask;
   KeyEvent event_array[] = {
       CreateKeyDownEvent(ui::VKEY_CONTROL, 0),
@@ -175,7 +174,7 @@ TEST(KeyConverter, NeedsCtrlAndAlt) {
       CreateKeyUpEvent(ui::VKEY_Q, ctrl_and_alt),
       CreateKeyUpEvent(ui::VKEY_MENU, 0),
       CreateKeyUpEvent(ui::VKEY_CONTROL, 0)};
-  ASSERT_TRUE(SwitchKeyboardLayout("00000407"));
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_GERMAN);
   CheckEventsReleaseModifiers("@", event_array, arraysize(event_array));
 }
 #endif
@@ -281,6 +280,7 @@ TEST(KeyConverter, MAYBE_AllShorthandKeys) {
 #endif
 
 TEST(KeyConverter, MAYBE_AllEnglishKeyboardSymbols) {
+  ui::ScopedKeyboardLayout keyboard_layout(ui::KEYBOARD_LAYOUT_ENGLISH_US);
   base::string16 keys;
   const ui::KeyboardCode kSymbolKeyCodes[] = {
       ui::VKEY_OEM_3,
