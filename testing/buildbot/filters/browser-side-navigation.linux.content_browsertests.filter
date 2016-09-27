@@ -3,5 +3,3 @@
 -IFrameZoomBrowserTest.SubframesDontZoomIndependently
 -NavigationControllerBrowserTest.EnsureSamePageNavigationUpdatesFrameNavigationEntry
 -RequestDataResourceDispatcherHostBrowserTest.*
--ServiceWorkerBrowserTest.FetchPageWithSaveData
--ServiceWorkerBrowserTest.FetchPageWithSaveDataPassThroughOnFetch
