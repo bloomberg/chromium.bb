@@ -110,11 +110,13 @@ class OzonePlatformGbm
   void AddInterfaces(shell::InterfaceRegistry* registry) override {
     registry->AddInterface<ozone::mojom::DeviceCursor>(this);
   }
-  // shell::InterfaceFactory<mojom::ozone::Cursor> implementation.
+  // shell::InterfaceFactory<ozone::mojom::DeviceCursor> implementation.
   void Create(const shell::Identity& remote_identity,
               ozone::mojom::DeviceCursorRequest request) override {
-    DCHECK(drm_thread_proxy_);
-    drm_thread_proxy_->AddBinding(std::move(request));
+    if (drm_thread_proxy_)
+      drm_thread_proxy_->AddBinding(std::move(request));
+    else
+      pending_cursor_requests_.push_back(std::move(request));
   }
   std::unique_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
@@ -235,6 +237,9 @@ class OzonePlatformGbm
     if (using_mojo_ || single_process_) {
       mus_thread_proxy_->StartDrmThread();
     }
+    for (auto& request : pending_cursor_requests_)
+      drm_thread_proxy_->AddBinding(std::move(request));
+    pending_cursor_requests_.clear();
   }
 
  private:
@@ -246,6 +251,8 @@ class OzonePlatformGbm
   std::unique_ptr<GlApiLoader> gl_api_loader_;
   std::unique_ptr<GbmSurfaceFactory> surface_factory_;
   scoped_refptr<IPC::MessageFilter> gpu_message_filter_;
+  // TODO(sad): Once the mus gpu process split happens, this can go away.
+  std::vector<ozone::mojom::DeviceCursorRequest> pending_cursor_requests_;
 
   // Objects in the Browser process.
   std::unique_ptr<DeviceManager> device_manager_;
