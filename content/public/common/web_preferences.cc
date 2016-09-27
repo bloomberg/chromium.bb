@@ -112,7 +112,7 @@ WebPreferences::WebPreferences()
       minimum_accelerated_2d_canvas_size(257 * 256),
       disable_2d_canvas_copy_on_write(false),
       antialiased_2d_canvas_disabled(false),
-      antialiased_clips_2d_canvas_enabled(false),
+      antialiased_clips_2d_canvas_enabled(true),
       accelerated_2d_canvas_msaa_sample_count(0),
       accelerated_filters_enabled(false),
       deferred_filters_enabled(false),

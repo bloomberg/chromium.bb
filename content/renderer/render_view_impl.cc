@@ -1014,7 +1014,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::forceDisable2dCanvasCopyOnWrite(
       prefs.disable_2d_canvas_copy_on_write);
 
-  // Enabled antialiasing of clips for 2d canvas if requested on the command
+  // Disable antialiasing of clips for 2d canvas if requested on the command
   // line.
   settings->setAntialiasedClips2dCanvasEnabled(
       prefs.antialiased_clips_2d_canvas_enabled);
