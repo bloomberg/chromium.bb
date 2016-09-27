@@ -672,6 +672,10 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     @Override
     public void onPauseWithNative() {
         RecordUserAction.record("MobileGoToBackground");
+        Tab tab = getActivityTab();
+        if (tab != null) {
+            getTabContentManager().cacheTabThumbnail(tab);
+        }
         markSessionEnd();
         super.onPauseWithNative();
     }
