@@ -390,7 +390,15 @@ void LabelButton::EnableCanvasFlippingForRTLUI(bool flip) {
 }
 
 std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
-  return PlatformStyle::CreateLabelButtonBorder(style());
+  if (!ui::MaterialDesignController::IsModeMaterial() ||
+      style_ != Button::STYLE_TEXTBUTTON) {
+    return base::MakeUnique<LabelButtonAssetBorder>(style_);
+  }
+  std::unique_ptr<LabelButtonBorder> border =
+      base::MakeUnique<LabelButtonBorder>();
+  border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
+      style_));
+  return border;
 }
 
 void LabelButton::SetBorder(std::unique_ptr<Border> border) {

@@ -19,7 +19,6 @@ class Border;
 class FocusableBorder;
 class Label;
 class LabelButton;
-class LabelButtonBorder;
 class ScrollBar;
 
 // Cross-platform API for providing platform-specific styling for toolkit-views.
@@ -69,11 +68,6 @@ class VIEWS_EXPORT PlatformStyle {
   // Creates the appropriate background for a Combobox.
   static std::unique_ptr<Background> CreateComboboxBackground(
       int shoulder_width);
-
-  // Creates the default label button border for the given |style|. Used when a
-  // custom default border is not provided for a particular LabelButton class.
-  static std::unique_ptr<LabelButtonBorder> CreateLabelButtonBorder(
-      Button::ButtonStyle style);
 
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);

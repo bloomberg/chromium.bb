@@ -64,20 +64,6 @@ std::unique_ptr<Background> PlatformStyle::CreateComboboxBackground(
 }
 
 // static
-std::unique_ptr<LabelButtonBorder> PlatformStyle::CreateLabelButtonBorder(
-    Button::ButtonStyle style) {
-  if (!ui::MaterialDesignController::IsModeMaterial() ||
-      style != Button::STYLE_TEXTBUTTON) {
-    return base::MakeUnique<LabelButtonAssetBorder>(style);
-  }
-
-  std::unique_ptr<LabelButtonBorder> border(new views::LabelButtonBorder());
-  border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
-      Button::STYLE_TEXTBUTTON));
-  return border;
-}
-
-// static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
   return base::MakeUnique<NativeScrollBar>(is_horizontal);
 }
