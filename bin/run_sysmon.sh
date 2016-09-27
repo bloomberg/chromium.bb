@@ -1,11 +1,12 @@
 #!/bin/bash
-
 # Copyright 2016 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 # this wrapper script ensures that the virtualenv and dependencies for sysmon
 # are installed, and then runs sysmon.  Arguments are passed to sysmon.
+
+set -e
 
 # TODO(ayatane): Unify this and venv/create_env.sh after it is stable.
 msg() {
