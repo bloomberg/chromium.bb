@@ -16,6 +16,7 @@ class HTMLDivElement;
 class ScriptState;
 class V8TestCallback;
 class V8TestInterfaceCallback;
+class V8TestReceiverObjectCallback;
 
 class CallbackFunctionTest final : public GarbageCollected<CallbackFunctionTest>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
@@ -26,6 +27,7 @@ public:
 
     String testCallback(ScriptState*, V8TestCallback*, const String&, const String&, ExceptionState&);
     void testInterfaceCallback(ScriptState*, V8TestInterfaceCallback*, HTMLDivElement*, ExceptionState&);
+    void testReceiverObjectCallback(ScriptState*, V8TestReceiverObjectCallback*, ExceptionState&);
 };
 
 } // namespace blink

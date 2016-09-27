@@ -18,11 +18,10 @@ namespace blink {
 
 V8PerformanceObserverCallback::V8PerformanceObserverCallback(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
     : ActiveDOMCallback(scriptState->getExecutionContext())
-    , m_callback(scriptState->isolate(), callback)
+    , m_callback(V8PerformanceObserverInnerCallback::create(scriptState->isolate(), callback))
     , m_scriptState(scriptState)
 {
-    V8PrivateProperty::getPerformanceObserverCallback(scriptState->isolate()).set(scriptState->context(), owner, callback);
-    m_callback.setPhantom();
+    V8PrivateProperty::getPerformanceObserverCallback(scriptState->isolate()).set(scriptState->context(), owner, m_callback->v8Value(scriptState->isolate()));
 }
 
 V8PerformanceObserverCallback::~V8PerformanceObserverCallback()
@@ -34,30 +33,12 @@ void V8PerformanceObserverCallback::handleEvent(PerformanceObserverEntryList* en
     if (!canInvokeCallback())
         return;
 
-    if (!m_scriptState->contextIsValid())
-        return;
-    ScriptState::Scope scope(m_scriptState.get());
-
-    if (m_callback.isEmpty())
-        return;
-    v8::Local<v8::Value> observerHandle = toV8(observer, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (!observerHandle->IsObject())
-        return;
-
-    v8::Local<v8::Object> thisObject = v8::Local<v8::Object>::Cast(observerHandle);
-    v8::Local<v8::Value> entriesHandle = toV8(entries, m_scriptState->context()->Global(), m_scriptState->isolate());
-    if (entriesHandle.IsEmpty()) {
-        return;
-    }
-    v8::Local<v8::Value> argv[] = { entriesHandle, observerHandle };
-
-    v8::TryCatch exceptionCatcher(m_scriptState->isolate());
-    exceptionCatcher.SetVerbose(true);
-    V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisObject, 2, argv, m_scriptState->isolate());
+    m_callback->call(m_scriptState.get(), observer, entries, observer);
 }
 
 DEFINE_TRACE(V8PerformanceObserverCallback)
 {
+    visitor->trace(m_callback);
     PerformanceObserverCallback::trace(visitor);
     ActiveDOMCallback::trace(visitor);
 }

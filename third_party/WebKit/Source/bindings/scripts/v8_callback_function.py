@@ -17,6 +17,7 @@ CALLBACK_FUNCTION_H_INCLUDES = frozenset([
 ])
 CALLBACK_FUNCTION_CPP_INCLUDES = frozenset([
     'bindings/core/v8/ScriptState.h',
+    'bindings/core/v8/ToV8.h',
     'bindings/core/v8/V8Binding.h',
     'wtf/Assertions.h',
 ])

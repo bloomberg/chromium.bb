@@ -8,6 +8,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8TestCallback.h"
 #include "bindings/core/v8/V8TestInterfaceCallback.h"
+#include "bindings/core/v8/V8TestReceiverObjectCallback.h"
 #include "core/html/HTMLDivElement.h"
 
 namespace blink {
@@ -32,6 +33,12 @@ void CallbackFunctionTest::testInterfaceCallback(ScriptState* scriptState, V8Tes
     ScriptWrappable* scriptWrappable;
 
     callback->call(scriptState, scriptWrappable = nullptr, divElement);
+    return;
+}
+
+void CallbackFunctionTest::testReceiverObjectCallback(ScriptState* scriptState, V8TestReceiverObjectCallback* callback, ExceptionState& exceptionState)
+{
+    callback->call(scriptState, this);
     return;
 }
 

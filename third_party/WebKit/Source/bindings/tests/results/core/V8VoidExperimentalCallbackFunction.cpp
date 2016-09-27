@@ -9,6 +9,7 @@
 #include "V8VoidExperimentalCallbackFunction.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "wtf/Assertions.h"
 
@@ -34,13 +35,15 @@ bool V8VoidExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWr
         return false;
     ScriptState::Scope scope(scriptState);
 
+    v8::Local<v8::Value> thisValue = toV8(scriptWrappable, scriptState->context()->Global(), scriptState->isolate());
+
     v8::Local<v8::Value> *argv = nullptr;
 
     v8::Local<v8::Value> v8ReturnValue;
     v8::TryCatch exceptionCatcher(scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
 
-    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), scriptState->context()->Global(), 0, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
+    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 0, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
     {
         return true;
     }

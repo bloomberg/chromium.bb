@@ -9,6 +9,7 @@
 #include "V8VoidCallbackFunctionInterfaceArg.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HTMLDivElement.h"
 #include "wtf/Assertions.h"
@@ -36,13 +37,16 @@ bool V8VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWr
     ScriptState::Scope scope(scriptState);
 
     v8::Local<v8::Value> divElementArgument = toV8(divElement, scriptState->context()->Global(), scriptState->isolate());
+
+    v8::Local<v8::Value> thisValue = toV8(scriptWrappable, scriptState->context()->Global(), scriptState->isolate());
+
     v8::Local<v8::Value> argv[] = { divElementArgument };
 
     v8::Local<v8::Value> v8ReturnValue;
     v8::TryCatch exceptionCatcher(scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
 
-    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), scriptState->context()->Global(), 1, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
+    if (V8ScriptRunner::callFunction(m_callback.newLocal(scriptState->isolate()), scriptState->getExecutionContext(), thisValue, 1, argv, scriptState->isolate()).ToLocal(&v8ReturnValue))
     {
         return true;
     }

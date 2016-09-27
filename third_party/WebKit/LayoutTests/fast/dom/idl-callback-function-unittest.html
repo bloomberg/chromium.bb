@@ -24,4 +24,11 @@ test(function() {
     callbackFunctionTest.testInterfaceCallback(addInnerHTML, divElement);
     assert_equals(divElement.innerHTML, 'hello');
 }, 'Callback function which takes a interface');
+
+test(function() {
+    var callback = function() {
+        assert_equals(this, callbackFunctionTest);
+    };
+    callbackFunctionTest.testReceiverObjectCallback(callback);
+}, 'Callback function which takes receiver object');
 </script>

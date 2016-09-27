@@ -4,6 +4,7 @@
 
 // http://w3c.github.io/performance-timeline/#idl-def-PerformanceObserverCallback
 callback PerformanceObserverCallback = void (PerformanceObserverEntryList entries, PerformanceObserver observer);
+[ExperimentalCallbackFunction] callback PerformanceObserverInnerCallback = void (PerformanceObserverEntryList entries, PerformanceObserver observer);
 
 // http://w3c.github.io/performance-timeline/#the-performance-observer-interface
 [

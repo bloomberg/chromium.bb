@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ActiveDOMCallback.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/V8PerformanceObserverInnerCallback.h"
 #include "core/CoreExport.h"
 #include "core/timing/PerformanceObserverCallback.h"
 
@@ -30,7 +31,7 @@ public:
 private:
     CORE_EXPORT V8PerformanceObserverCallback(v8::Local<v8::Function>, v8::Local<v8::Object>, ScriptState*);
 
-    ScopedPersistent<v8::Function> m_callback;
+    Member<V8PerformanceObserverInnerCallback> m_callback;
     RefPtr<ScriptState> m_scriptState;
 };
 
