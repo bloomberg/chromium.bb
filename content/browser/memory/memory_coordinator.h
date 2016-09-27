@@ -14,6 +14,9 @@
 
 namespace content {
 
+// NOTE: Memory coordinator is under development and not fully working.
+// TODO(bashi): Add more explanations when we implement memory coordinator V0.
+
 class MemoryCoordinatorHandleImpl;
 
 // MemoryCoordinator is responsible for the whole memory management accross the

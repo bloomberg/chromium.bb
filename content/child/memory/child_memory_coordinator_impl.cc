@@ -58,8 +58,7 @@ ChildMemoryCoordinatorImpl::~ChildMemoryCoordinatorImpl() {
 
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
   base::MemoryState base_state = ToBaseMemoryState(state);
-  base::MemoryCoordinatorClientRegistry::GetInstance()->clients()->Notify(
-      FROM_HERE, &base::MemoryCoordinatorClient::OnMemoryStateChange,
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
       base_state);
 }
 
