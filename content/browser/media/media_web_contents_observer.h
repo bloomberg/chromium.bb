@@ -106,9 +106,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   ActiveMediaPlayerMap active_video_players_;
   std::unique_ptr<device::PowerSaveBlocker> audio_power_save_blocker_;
   std::unique_ptr<device::PowerSaveBlocker> video_power_save_blocker_;
-#if defined(OS_ANDROID)
-  std::unique_ptr<base::WeakPtrFactory<ui::ViewAndroid>> view_weak_factory_;
-#endif
 
   MediaSessionControllersManager session_controllers_manager_;
 

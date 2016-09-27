@@ -689,10 +689,8 @@ void RenderFrameDevToolsAgentHost::CreatePowerSaveBlocker() {
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
   if (web_contents()->GetNativeView()) {
-    view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(
-        web_contents()->GetNativeView()));
     power_save_blocker_->InitDisplaySleepBlocker(
-        view_weak_factory_->GetWeakPtr());
+        web_contents()->GetNativeView());
   }
 #endif
 }
@@ -788,12 +786,6 @@ void RenderFrameDevToolsAgentHost::DidFailProvisionalLoad(
     return;
   if (pending_ && pending_->host() == render_frame_host)
     DiscardPending();
-}
-
-void RenderFrameDevToolsAgentHost::WebContentsDestroyed() {
-#if defined(OS_ANDROID)
-  view_weak_factory_.reset();
-#endif
 }
 
 void RenderFrameDevToolsAgentHost::WasShown() {

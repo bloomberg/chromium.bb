@@ -38,12 +38,6 @@ void WakeLockServiceContext::RenderFrameDeleted(
                  render_frame_host->GetRoutingID());
 }
 
-void WakeLockServiceContext::WebContentsDestroyed() {
-#if defined(OS_ANDROID)
-  view_weak_factory_.reset();
-#endif
-}
-
 void WakeLockServiceContext::RequestWakeLock(int render_process_id,
                                              int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -80,9 +74,7 @@ void WakeLockServiceContext::CreateWakeLock() {
   DCHECK(web_contents());
 
   if (web_contents()->GetNativeView()) {
-    view_weak_factory_.reset(new base::WeakPtrFactory<ui::ViewAndroid>(
-        web_contents()->GetNativeView()));
-    wake_lock_.get()->InitDisplaySleepBlocker(view_weak_factory_->GetWeakPtr());
+    wake_lock_.get()->InitDisplaySleepBlocker(web_contents()->GetNativeView());
   }
 #endif
 }

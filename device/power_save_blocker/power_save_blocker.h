@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "device/power_save_blocker/power_save_blocker_export.h"
@@ -65,9 +64,11 @@ class DEVICE_POWER_SAVE_BLOCKER_EXPORT PowerSaveBlocker {
 #if defined(OS_ANDROID)
   // On Android, the kPowerSaveBlockPreventDisplaySleep type of
   // PowerSaveBlocker should associated with a View, so the blocker can be
-  // removed by the platform.
+  // removed by the platform. Note that |view_android| is guaranteed to be
+  // valid only for the lifetime of this call; hence it should not be cached
+  // internally.
   DEVICE_POWER_SAVE_BLOCKER_EXPORT void InitDisplaySleepBlocker(
-      const base::WeakPtr<ui::ViewAndroid>& view_android);
+      ui::ViewAndroid* view_android);
 #endif
 
  private:

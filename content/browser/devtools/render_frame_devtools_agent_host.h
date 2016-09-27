@@ -134,7 +134,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       int error_code,
       const base::string16& error_description,
       bool was_ignored_by_handler) override;
-  void WebContentsDestroyed() override;
   void WasShown() override;
   void WasHidden() override;
 
@@ -190,7 +189,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   std::unique_ptr<DevToolsFrameTraceRecorder> frame_trace_recorder_;
 #if defined(OS_ANDROID)
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
-  std::unique_ptr<base::WeakPtrFactory<ui::ViewAndroid>> view_weak_factory_;
 #endif
   std::unique_ptr<DevToolsProtocolHandler> protocol_handler_;
   bool current_frame_crashed_;
