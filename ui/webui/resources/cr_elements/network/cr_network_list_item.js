@@ -113,8 +113,11 @@ Polymer({
     if (!this.isStateTextVisible_())
       return '';
     let network = this.networkState;
-    if (this.isListItem)
-      return this.i18n('networkListItemConnected');
+    if (this.isListItem) {
+      if (this.isConnected_())
+        return this.i18n('networkListItemConnected');
+      return '';
+    }
     if (network.Name && network.ConnectionState) {
       return this.getConnectionStateText_(
           network.ConnectionState, CrOnc.getNetworkName(network, this));
@@ -149,8 +152,7 @@ Polymer({
   /** @private */
   isConnected_: function() {
     return this.networkState &&
-        this.networkState.ConnectionState !=
-        CrOnc.ConnectionState.NOT_CONNECTED;
+        this.networkState.ConnectionState == CrOnc.ConnectionState.CONNECTED;
   },
 
   /**
