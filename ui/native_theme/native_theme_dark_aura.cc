@@ -39,7 +39,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
     // Button
     case kColorId_ButtonEnabledColor:
       return kButtonEnabledColor;
-    case kColorId_CallToActionColor:
+    case kColorId_ProminentButtonColor:
       return gfx::kGoogleBlue300;
 
     // Label
@@ -88,7 +88,7 @@ SkColor NativeThemeDarkAura::GetSystemColor(ColorId color_id) const {
 
     // Intentional pass-throughs to NativeThemeAura.
     case kColorId_LabelDisabledColor:
-    case kColorId_TextOnCallToActionColor:
+    case kColorId_TextOnProminentButtonColor:
     case kColorId_ButtonPressedShade:
     case kColorId_ResultsTableHoveredBackground:
     case kColorId_ResultsTableSelectedBackground:

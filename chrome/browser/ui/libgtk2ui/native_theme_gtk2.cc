@@ -325,9 +325,9 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_BlueButtonShadowColor:
       return SK_ColorTRANSPARENT;
       // return GetTextColor(GetButton(), NORMAL);
-    case kColorId_CallToActionColor:
+    case kColorId_ProminentButtonColor:
       return GetSystemColor(kColorId_LinkEnabled);
-    case kColorId_TextOnCallToActionColor:
+    case kColorId_TextOnProminentButtonColor:
       return GetTextColor(GetLabel(), SELECTED);
     case kColorId_ButtonPressedShade:
       return SK_ColorTRANSPARENT;

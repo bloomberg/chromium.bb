@@ -271,7 +271,7 @@ void MdTab::OnStateChanged() {
       Border::CreateSolidSidedBorder(0, 0, border_thickness, 0, border_color));
 
   SkColor font_color = selected()
-      ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
+      ? theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor)
       : theme->GetSystemColor(ui::NativeTheme::kColorId_ButtonEnabledColor);
   title()->SetEnabledColor(font_color);
 

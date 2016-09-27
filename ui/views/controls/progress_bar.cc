@@ -117,7 +117,7 @@ void ProgressBar::SetValue(double value) {
 
 SkColor ProgressBar::GetForegroundColor() const {
   return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_CallToActionColor);
+      ui::NativeTheme::kColorId_ProminentButtonColor);
 }
 
 SkColor ProgressBar::GetBackgroundColor() const {

@@ -188,7 +188,8 @@ void BubbleIconView::UpdateIcon() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor icon_color =
       active_
-          ? theme->GetSystemColor(ui::NativeTheme::kColorId_CallToActionColor)
+          ? theme->GetSystemColor(
+              ui::NativeTheme::kColorId_ProminentButtonColor)
           : GetInkDropBaseColor();
   image_->SetImage(gfx::CreateVectorIcon(
       GetVectorIcon(), LocationBarView::kLocationBarIconWidth, icon_color));

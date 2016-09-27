@@ -76,7 +76,7 @@ void ToggleButton::OnPaint(gfx::Canvas* canvas) {
   track_paint.setAntiAlias(true);
   const SkColor track_on_color =
       SkColorSetA(GetNativeTheme()->GetSystemColor(
-                      ui::NativeTheme::kColorId_CallToActionColor),
+                      ui::NativeTheme::kColorId_ProminentButtonColor),
                   0xFF / 2);
   track_paint.setColor(
       color_utils::AlphaBlend(track_on_color, kTrackOffColor, blend));
@@ -92,7 +92,7 @@ void ToggleButton::OnPaint(gfx::Canvas* canvas) {
   thumb_paint.setStyle(SkPaint::kFill_Style);
   thumb_paint.setAntiAlias(true);
   const SkColor thumb_on_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_CallToActionColor);
+      ui::NativeTheme::kColorId_ProminentButtonColor);
   // TODO(estade): get this color from the theme?
   const SkColor thumb_off_color = SK_ColorWHITE;
   thumb_paint.setColor(
@@ -117,7 +117,7 @@ std::unique_ptr<InkDropRipple> ToggleButton::CreateInkDropRipple() const {
 SkColor ToggleButton::GetInkDropBaseColor() const {
   return is_on()
              ? GetNativeTheme()->GetSystemColor(
-                   ui::NativeTheme::kColorId_CallToActionColor)
+                   ui::NativeTheme::kColorId_ProminentButtonColor)
              : kTrackOffColor;
 }
 

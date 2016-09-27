@@ -151,8 +151,8 @@ class Gtk2UI : public views::LinuxUI {
   // entry.
   void GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const;
 
-  // Gets a color for the background of the call to action button.
-  SkColor CallToActionBgColor(int gtk_state) const;
+  // Gets a color for the background of the prominent button.
+  SkColor GetProminentButtonBgColor(int gtk_state) const;
 
   // Updates |default_font_*|.
   void UpdateDefaultFont();

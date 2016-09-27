@@ -67,7 +67,7 @@ void ButtonExample::CreateExampleView(View* container) {
   container->AddChildView(md_button);
   md_button =
       MdTextButton::Create(nullptr, base::ASCIIToUTF16("Call to action"));
-  md_button->SetCallToAction(true);
+  md_button->SetProminent(true);
   container->AddChildView(md_button);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

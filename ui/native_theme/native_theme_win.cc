@@ -508,7 +508,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   const SkColor kButtonBackgroundColor = SkColorSetRGB(0xde, 0xde, 0xde);
   const SkColor kButtonHighlightColor = SkColorSetARGB(200, 255, 255, 255);
   const SkColor kButtonHoverColor = SkColorSetRGB(6, 45, 117);
-  const SkColor kCallToActionColorInvert = gfx::kGoogleBlue300;
+  const SkColor kProminentButtonColorInvert = gfx::kGoogleBlue300;
   // MenuItem:
   const SkColor kMenuSchemeHighlightBackgroundColorInvert =
       SkColorSetRGB(0x30, 0x30, 0x30);
@@ -678,8 +678,8 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
     switch (color_id) {
       case NativeTheme::kColorId_FocusedMenuItemBackgroundColor:
         return kMenuSchemeHighlightBackgroundColorInvert;
-      case NativeTheme::kColorId_CallToActionColor:
-        return kCallToActionColorInvert;
+      case NativeTheme::kColorId_ProminentButtonColor:
+        return kProminentButtonColorInvert;
       default:
         return color_utils::InvertColor(GetAuraColor(color_id, this));
     }

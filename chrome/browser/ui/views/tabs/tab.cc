@@ -1371,7 +1371,7 @@ void Tab::PaintPinnedTabTitleChangedIndicatorAndIcon(
   const int kIndicatorRadius = 3;
   SkPaint indicator_paint;
   indicator_paint.setColor(GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_CallToActionColor));
+      ui::NativeTheme::kColorId_ProminentButtonColor));
   indicator_paint.setAntiAlias(true);
   const int indicator_x = GetMirroredXWithWidthInView(
       favicon_bounds_.right() - kIndicatorRadius, kIndicatorRadius * 2);

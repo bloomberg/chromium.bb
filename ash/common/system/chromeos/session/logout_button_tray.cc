@@ -108,7 +108,7 @@ LogoutButtonTray::LogoutButtonTray(WmShelf* wm_shelf)
   if (MaterialDesignController::IsShelfMaterial()) {
     views::MdTextButton* button =
         views::MdTextButton::Create(this, base::string16());
-    button->SetCallToAction(true);
+    button->SetProminent(true);
     button->set_bg_color_override(gfx::kGoogleRed700);
     // Base font size + 2 = 14.
     // TODO(estade): should this 2 be shared with other tray views? See

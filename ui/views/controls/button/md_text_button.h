@@ -32,8 +32,8 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   static MdTextButton* Create(ButtonListener* listener,
                               const base::string16& text);
 
-  // See |is_cta_|.
-  void SetCallToAction(bool cta);
+  // See |is_prominent_|.
+  void SetProminent(bool is_prominent);
   void set_bg_color_override(SkColor color) { bg_color_override_ = color; }
 
   // LabelButton:
@@ -68,8 +68,8 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   // |this|.
   internal::MdFocusRing* focus_ring_;
 
-  // True if this button uses call-to-action styling.
-  bool is_cta_;
+  // True if this button uses prominent styling (blue fill, etc.).
+  bool is_prominent_;
 
   // When set, this provides the background color.
   base::Optional<SkColor> bg_color_override_;

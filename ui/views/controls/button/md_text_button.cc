@@ -107,7 +107,7 @@ LabelButton* MdTextButton::CreateSecondaryUiBlueButton(
     const base::string16& text) {
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     MdTextButton* md_button = MdTextButton::Create(listener, text);
-    md_button->SetCallToAction(true);
+    md_button->SetProminent(true);
     return md_button;
   }
 
@@ -123,11 +123,11 @@ MdTextButton* MdTextButton::Create(ButtonListener* listener,
   return button;
 }
 
-void MdTextButton::SetCallToAction(bool cta) {
-  if (is_cta_ == cta)
+void MdTextButton::SetProminent(bool is_prominent) {
+  if (is_prominent_ == is_prominent)
     return;
 
-  is_cta_ = cta;
+  is_prominent_ = is_prominent;
   UpdateColors();
 }
 
@@ -174,10 +174,10 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
     const {
   if (!ShouldShowInkDropHighlight())
     return nullptr;
-  if (!is_cta_)
+  if (!is_prominent_)
     return LabelButton::CreateInkDropHighlight();
 
-  // The call to action hover effect is a shadow.
+  // The prominent button hover effect is a shadow.
   const int kYOffset = 1;
   const int kSkiaBlurRadius = 1;
   std::vector<gfx::ShadowValue> shadows;
@@ -215,7 +215,7 @@ void MdTextButton::AdjustFontSize(int size_delta) {
 }
 
 void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
-  is_cta_ = is_cta_ || is_default();
+  is_prominent_ = is_prominent_ || is_default();
   UpdateColors();
 }
 
@@ -227,7 +227,7 @@ void MdTextButton::SetFontList(const gfx::FontList& font_list) {
 MdTextButton::MdTextButton(ButtonListener* listener)
     : LabelButton(listener, base::string16()),
       focus_ring_(new internal::MdFocusRing()),
-      is_cta_(false) {
+      is_prominent_(false) {
   SetInkDropMode(PlatformStyle::kUseRipples ? InkDropMode::ON
                                             : InkDropMode::OFF);
   set_has_ink_drop_action_on_click(true);
@@ -287,16 +287,16 @@ void MdTextButton::UpdatePadding() {
 
 void MdTextButton::UpdateColors() {
   ui::NativeTheme::ColorId fg_color_id =
-      is_cta_ ? ui::NativeTheme::kColorId_TextOnCallToActionColor
-              : ui::NativeTheme::kColorId_ButtonEnabledColor;
+      is_prominent_ ? ui::NativeTheme::kColorId_TextOnProminentButtonColor
+                    : ui::NativeTheme::kColorId_ButtonEnabledColor;
 
   ui::NativeTheme* theme = GetNativeTheme();
   if (!explicitly_set_normal_color())
     LabelButton::SetEnabledTextColors(theme->GetSystemColor(fg_color_id));
 
-  // CTA buttons keep their enabled text color; disabled state is conveyed by
-  // shading the background instead.
-  if (is_cta_)
+  // Prominent buttons keep their enabled text color; disabled state is conveyed
+  // by shading the background instead.
+  if (is_prominent_)
     SetTextColor(STATE_DISABLED, theme->GetSystemColor(fg_color_id));
 
   SkColor text_color = label()->enabled_color();
@@ -305,9 +305,9 @@ void MdTextButton::UpdateColors() {
 
   if (bg_color_override_) {
     bg_color = *bg_color_override_;
-  } else if (is_cta_) {
+  } else if (is_prominent_) {
     bg_color = theme->GetSystemColor(
-        ui::NativeTheme::kColorId_CallToActionColor);
+        ui::NativeTheme::kColorId_ProminentButtonColor);
     if (state() == STATE_DISABLED)
       bg_color = color_utils::BlendTowardOppositeLuma(
           bg_color, gfx::kDisabledControlAlpha);
@@ -320,7 +320,7 @@ void MdTextButton::UpdateColors() {
   }
 
   const SkAlpha kStrokeOpacity = 0x1A;
-  SkColor stroke_color = (is_cta_ || color_utils::IsDark(text_color))
+  SkColor stroke_color = (is_prominent_ || color_utils::IsDark(text_color))
                              ? SkColorSetA(SK_ColorBLACK, kStrokeOpacity)
                              : SkColorSetA(SK_ColorWHITE, 2 * kStrokeOpacity);
 

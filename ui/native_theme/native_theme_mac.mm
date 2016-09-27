@@ -191,7 +191,7 @@ SkColor NativeThemeMac::GetSystemColor(ColorId color_id) const {
     case kColorId_ButtonEnabledColor:
     case kColorId_EnabledMenuButtonBorderColor:
     case kColorId_LabelEnabledColor:
-    case kColorId_CallToActionColor:
+    case kColorId_ProminentButtonColor:
       return NSSystemColorToSkColor([NSColor controlTextColor]);
     case kColorId_ButtonDisabledColor:
     case kColorId_LabelDisabledColor:

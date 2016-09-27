@@ -74,7 +74,7 @@ void ConfirmInfoBar::ViewHierarchyChanged(
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
       ok_button_ = views::MdTextButton::Create(
           this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
-      ok_button_->SetCallToAction(true);
+      ok_button_->SetProminent(true);
       if (delegate->OKButtonTriggersUACPrompt()) {
         elevation_icon_setter_.reset(new ElevationIconSetter(
             ok_button_,
@@ -89,8 +89,8 @@ void ConfirmInfoBar::ViewHierarchyChanged(
           this,
           delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
       if (delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-        // Apply CTA only if the cancel button is the only button.
-        cancel_button_->SetCallToAction(true);
+        // Apply prominent styling only if the cancel button is the only button.
+        cancel_button_->SetProminent(true);
       } else {
         // Otherwise set the bg color to white and the text color to black.
         // TODO(estade): These should be removed and moved into the native
