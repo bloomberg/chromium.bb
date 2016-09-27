@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
+#include "chromecast/chromecast_features.h"
 #include "chromecast/net/net_switches.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
@@ -27,8 +28,13 @@ namespace chromecast {
 
 namespace {
 
-// How often connectivity checks are performed in seconds.
+// How often connectivity checks are performed in seconds while not connected.
 const unsigned int kConnectivityPeriodSeconds = 1;
+
+#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
+// How often connectivity checks are performed in seconds while connected.
+const unsigned int kConnectivitySuccessPeriodSeconds = 60;
+#endif
 
 // Number of consecutive connectivity check errors before status is changed
 // to offline.
@@ -183,6 +189,14 @@ void ConnectivityCheckerImpl::OnResponseStarted(net::URLRequest* request) {
     VLOG(1) << "Connectivity check succeeded";
     check_errors_ = 0;
     SetConnected(true);
+#if BUILDFLAG(IS_CAST_AUDIO_ONLY)
+    // Audio products do not have an idle screen that makes periodic network
+    // requests. Schedule another check for audio devices to make sure
+    // connectivity hasn't dropped.
+    task_runner_->PostDelayedTask(
+        FROM_HERE, base::Bind(&ConnectivityCheckerImpl::CheckInternal, this),
+        base::TimeDelta::FromSeconds(kConnectivitySuccessPeriodSeconds));
+#endif
     timeout_.Cancel();
     return;
   }
