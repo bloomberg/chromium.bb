@@ -899,6 +899,8 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
+                        "NTPArticleSuggestions",
+                        "NTPBookmarkSuggestions",
                         "NTPSnippets"
                     ]
                 }
