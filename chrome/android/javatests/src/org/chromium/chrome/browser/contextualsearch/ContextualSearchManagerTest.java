@@ -17,6 +17,7 @@ import android.graphics.Point;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.test.suitebuilder.annotation.SmallTest;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -37,6 +38,8 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchIconSpriteControl;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchImageControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeSlowResolveSearch;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -2653,4 +2656,47 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // Assert that the panel is closed.
         waitForPanelToClose();
     }
+
+    /**
+     * Tests that ContextualSearchImageControl correctly sets either the icon sprite or thumbnail
+     * as visible.
+     */
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testImageControl() throws InterruptedException, TimeoutException {
+        simulateTapSearch("search");
+
+        ContextualSearchImageControl imageControl = mPanel.getImageControl();
+        final ContextualSearchIconSpriteControl iconSpriteControl =
+                imageControl.getIconSpriteControl();
+
+        assertTrue(iconSpriteControl.isVisible());
+        assertFalse(imageControl.getThumbnailVisible());
+        assertTrue(TextUtils.isEmpty(imageControl.getThumbnailUrl()));
+
+        imageControl.setThumbnailUrl("http://someimageurl.com/image.png");
+        imageControl.onThumbnailFetched(true);
+
+        assertTrue(imageControl.getThumbnailVisible());
+        assertEquals(imageControl.getThumbnailUrl(), "http://someimageurl.com/image.png");
+
+        // The switch between the icon sprite and thumbnail is animated. Poll the UI thread to
+        // check that the icon sprite is hidden at the end of the animation.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !iconSpriteControl.isVisible();
+            }
+        });
+
+        imageControl.hideThumbnail(false);
+
+        assertTrue(iconSpriteControl.isVisible());
+        assertFalse(imageControl.getThumbnailVisible());
+        assertTrue(TextUtils.isEmpty(imageControl.getThumbnailUrl()));
+    }
+
+    // TODO(twellington): Add an end-to-end integration test for fetching a thumbnail based on a
+    //                    a URL that is included with the resolution response.
 }
