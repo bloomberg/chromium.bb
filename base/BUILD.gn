@@ -601,13 +601,6 @@ component("base") {
     "power_monitor/power_monitor.h",
     "power_monitor/power_monitor_device_source.cc",
     "power_monitor/power_monitor_device_source.h",
-    "power_monitor/power_monitor_device_source_android.cc",
-    "power_monitor/power_monitor_device_source_android.h",
-    "power_monitor/power_monitor_device_source_chromeos.cc",
-    "power_monitor/power_monitor_device_source_ios.mm",
-    "power_monitor/power_monitor_device_source_mac.mm",
-    "power_monitor/power_monitor_device_source_posix.cc",
-    "power_monitor/power_monitor_device_source_win.cc",
     "power_monitor/power_monitor_source.cc",
     "power_monitor/power_monitor_source.h",
     "power_monitor/power_observer.h",
@@ -1077,10 +1070,7 @@ component("base") {
 
   # Android.
   if (is_android) {
-    sources -= [
-      "debug/stack_trace_posix.cc",
-      "power_monitor/power_monitor_device_source_posix.cc",
-    ]
+    sources -= [ "debug/stack_trace_posix.cc" ]
 
     # Android uses some Linux sources, put those back.
     set_sources_assignment_filter([])
@@ -1088,6 +1078,8 @@ component("base") {
       "debug/proc_maps_linux.cc",
       "files/file_path_watcher_linux.cc",
       "posix/unix_domain_socket_linux.cc",
+      "power_monitor/power_monitor_device_source_android.cc",
+      "power_monitor/power_monitor_device_source_android.h",
       "process/internal_linux.cc",
       "process/memory_linux.cc",
       "process/process_handle_linux.cc",
@@ -1110,7 +1102,7 @@ component("base") {
 
   # Chromeos.
   if (is_chromeos) {
-    sources -= [ "power_monitor/power_monitor_device_source_posix.cc" ]
+    sources += [ "power_monitor/power_monitor_device_source_chromeos.cc" ]
   }
 
   # NaCl.
@@ -1203,6 +1195,7 @@ component("base") {
   # Windows.
   if (is_win) {
     sources += [
+      "power_monitor/power_monitor_device_source_win.cc",
       "profiler/win32_stack_frame_unwinder.cc",
       "profiler/win32_stack_frame_unwinder.h",
     ]
@@ -1311,6 +1304,8 @@ component("base") {
 
   # Desktop Mac.
   if (is_mac) {
+    sources += [ "power_monitor/power_monitor_device_source_mac.mm" ]
+
     libs = [
       "ApplicationServices.framework",
       "AppKit.framework",
@@ -1444,6 +1439,7 @@ component("base") {
       "memory/shared_memory_posix.cc",
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
+      "power_monitor/power_monitor_device_source_ios.mm",
       "process/memory_stubs.cc",
       "strings/sys_string_conversions_mac.mm",
       "threading/platform_thread_mac.mm",
@@ -1451,6 +1447,10 @@ component("base") {
     ]
 
     set_sources_assignment_filter(sources_assignment_filter)
+  }
+
+  if (is_posix && !is_mac && !is_ios && !is_android && !is_chromeos) {
+    sources += [ "power_monitor/power_monitor_device_source_posix.cc" ]
   }
 
   if (!use_glib) {
