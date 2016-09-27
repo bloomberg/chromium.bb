@@ -178,7 +178,6 @@ class WindowTreeClient : public mojom::WindowTreeClient,
 
   void PerformDragDrop(
       Window* window,
-      int drag_pointer,
       const std::map<std::string, std::vector<uint8_t>>& drag_data,
       int drag_operation,
       const gfx::Point& cursor_location,

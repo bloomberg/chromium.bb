@@ -4,6 +4,9 @@
 
 #include "ui/views/mus/native_widget_mus.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -32,10 +35,14 @@
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/views/drag_utils.h"
+#include "ui/views/mus/drag_drop_client_mus.h"
+#include "ui/views/mus/drop_target_mus.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/mus/window_manager_constants_converters.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/mus/window_tree_host_mus.h"
+#include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/custom_frame_view.h"
@@ -96,9 +103,9 @@ class FocusControllerMus : public wm::FocusController {
 
 class ContentWindowLayoutManager : public aura::LayoutManager {
  public:
-   ContentWindowLayoutManager(aura::Window* outer, aura::Window* inner)
+  ContentWindowLayoutManager(aura::Window* outer, aura::Window* inner)
       : outer_(outer), inner_(inner) {}
-   ~ContentWindowLayoutManager() override {}
+  ~ContentWindowLayoutManager() override {}
 
  private:
   // aura::LayoutManager:
@@ -523,14 +530,15 @@ NativeWidgetMus::NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
       show_state_before_fullscreen_(ui::mojom::ShowState::DEFAULT),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       content_(new aura::Window(this)),
+      last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
       close_widget_factory_(this) {
   window_->set_input_event_handler(this);
-  mus_window_observer_.reset(new MusWindowObserver(this));
+  mus_window_observer_ = base::MakeUnique<MusWindowObserver>(this);
 
   // TODO(fsamuel): Figure out lifetime of |window_|.
   aura::SetMusWindow(content_, window_);
   window->SetLocalProperty(kNativeWidgetMusKey, this);
-  window_tree_host_.reset(new WindowTreeHostMus(this, window_));
+  window_tree_host_ = base::MakeUnique<WindowTreeHostMus>(this, window_);
 }
 
 NativeWidgetMus::~NativeWidgetMus() {
@@ -695,29 +703,38 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
         WindowManagerConnection::Get()->connector());
   }
 
-  focus_client_.reset(
-      new FocusControllerMus(new FocusRulesImpl(hosted_window)));
+  focus_client_ =
+      base::MakeUnique<FocusControllerMus>(new FocusRulesImpl(hosted_window));
 
   aura::client::SetFocusClient(hosted_window, focus_client_.get());
   aura::client::SetActivationClient(hosted_window, focus_client_.get());
-  screen_position_client_.reset(new ScreenPositionClientMus(window_));
+  screen_position_client_ = base::MakeUnique<ScreenPositionClientMus>(window_);
   aura::client::SetScreenPositionClient(hosted_window,
                                         screen_position_client_.get());
+
+  drag_drop_client_ = base::MakeUnique<DragDropClientMus>(window_);
+  aura::client::SetDragDropClient(hosted_window, drag_drop_client_.get());
+  drop_target_ = base::MakeUnique<DropTargetMus>(content_);
+  window_->SetCanAcceptDrops(drop_target_.get());
+  drop_helper_ = base::MakeUnique<DropHelper>(GetWidget()->GetRootView());
+  aura::client::SetDragDropDelegate(content_, this);
 
   // TODO(erg): Remove this check when ash/mus/move_event_handler.cc's
   // direct usage of ui::Window::SetPredefinedCursor() is switched to a
   // private method on WindowManagerClient.
   if (!is_parallel_widget_in_window_manager()) {
-    cursor_manager_.reset(new wm::CursorManager(
-        base::MakeUnique<NativeCursorManagerMus>(window_)));
+    cursor_manager_ = base::MakeUnique<wm::CursorManager>(
+        base::MakeUnique<NativeCursorManagerMus>(window_));
     aura::client::SetCursorClient(hosted_window, cursor_manager_.get());
   }
 
-  window_tree_client_.reset(new NativeWidgetMusWindowTreeClient(hosted_window));
+  window_tree_client_ =
+      base::MakeUnique<NativeWidgetMusWindowTreeClient>(hosted_window);
   hosted_window->AddPreTargetHandler(focus_client_.get());
   hosted_window->SetLayoutManager(
       new ContentWindowLayoutManager(hosted_window, content_));
-  capture_client_.reset(new MusCaptureClient(hosted_window, content_, window_));
+  capture_client_ =
+      base::MakeUnique<MusCaptureClient>(hosted_window, content_, window_);
 
   content_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   content_->Init(params.layer_type);
@@ -1150,13 +1167,13 @@ void NativeWidgetMus::FlashFrame(bool flash_frame) {
   // NOTIMPLEMENTED();
 }
 
-void NativeWidgetMus::RunShellDrag(
-    View* view,
-    const ui::OSExchangeData& data,
-    const gfx::Point& location,
-    int operation,
-    ui::DragDropTypes::DragEventSource source) {
-  // NOTIMPLEMENTED();
+void NativeWidgetMus::RunShellDrag(View* view,
+                                   const ui::OSExchangeData& data,
+                                   const gfx::Point& location,
+                                   int drag_operations,
+                                   ui::DragDropTypes::DragEventSource source) {
+  if (window_)
+    views::RunShellDrag(content_, data, location, drag_operations, source);
 }
 
 void NativeWidgetMus::SchedulePaintInRect(const gfx::Rect& rect) {
@@ -1409,6 +1426,36 @@ void NativeWidgetMus::OnHostMoved(const aura::WindowTreeHost* host,
 void NativeWidgetMus::OnHostCloseRequested(const aura::WindowTreeHost* host) {
   GetWidget()->Close();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetMus, aura::WindowDragDropDelegate implementation:
+
+void NativeWidgetMus::OnDragEntered(const ui::DropTargetEvent& event) {
+  DCHECK(drop_helper_);
+  last_drop_operation_ = drop_helper_->OnDragOver(
+      event.data(), event.location(), event.source_operations());
+}
+
+int NativeWidgetMus::OnDragUpdated(const ui::DropTargetEvent& event) {
+  DCHECK(drop_helper_);
+  last_drop_operation_ = drop_helper_->OnDragOver(
+      event.data(), event.location(), event.source_operations());
+  return last_drop_operation_;
+}
+
+void NativeWidgetMus::OnDragExited() {
+  DCHECK(drop_helper_);
+  drop_helper_->OnDragExit();
+}
+
+int NativeWidgetMus::OnPerformDrop(const ui::DropTargetEvent& event) {
+  DCHECK(drop_helper_);
+  return drop_helper_->OnDrop(event.data(), event.location(),
+                              last_drop_operation_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NativeWidgetMus, ui::InputEventHandler implementation:
 
 void NativeWidgetMus::OnWindowInputEvent(
     ui::Window* view,

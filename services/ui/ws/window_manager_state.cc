@@ -165,9 +165,19 @@ void WindowManagerState::SetDragDropSourceWindow(
     DragSource* drag_source,
     ServerWindow* window,
     DragTargetConnection* source_connection,
-    int32_t drag_pointer,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
     uint32_t drag_operation) {
+  int32_t drag_pointer = PointerEvent::kMousePointerId;
+  if (event_awaiting_input_ack_ &&
+      event_awaiting_input_ack_->IsPointerEvent()) {
+    drag_pointer = event_awaiting_input_ack_->AsPointerEvent()->pointer_id();
+  } else {
+    NOTIMPLEMENTED() << "Set drag drop set up during something other than a "
+                     << "pointer event; rejecting drag.";
+    drag_source->OnDragCompleted(false, ui::mojom::kDropEffectNone);
+    return;
+  }
+
   event_dispatcher_.SetDragDropSourceWindow(
       drag_source, window, source_connection, drag_pointer,
       std::move(drag_data), drag_operation);
@@ -418,10 +428,10 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   DCHECK(tree);
   ScheduleInputEventTimeout(tree);
 
-  if (accelerator) {
-    event_awaiting_input_ack_ = ui::Event::Clone(event);
+  event_awaiting_input_ack_ = ui::Event::Clone(event);
+
+  if (accelerator)
     post_target_accelerator_ = accelerator;
-  }
 
   // Ignore |tree| because it will receive the event via normal dispatch.
   window_server()->SendToPointerWatchers(event, user_id(), target, tree);

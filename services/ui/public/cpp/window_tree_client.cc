@@ -641,7 +641,6 @@ void WindowTreeClient::StopPointerWatcher() {
 
 void WindowTreeClient::PerformDragDrop(
     Window* window,
-    int drag_pointer,
     const std::map<std::string, std::vector<uint8_t>>& drag_data,
     int drag_operation,
     const gfx::Point& cursor_location,
@@ -665,7 +664,7 @@ void WindowTreeClient::PerformDragDrop(
       current_drag_change, ui::mojom::kDropEffectNone, callback});
 
   tree_->PerformDragDrop(
-      current_drag_change, window->server_id(), drag_pointer,
+      current_drag_change, window->server_id(),
       mojo::Map<mojo::String, mojo::Array<uint8_t>>::From(drag_data),
       drag_operation);
 }

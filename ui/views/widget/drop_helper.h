@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 
+#include "ui/views/views_export.h"
+
 namespace gfx {
 class Point;
 }  // namespace gfx
@@ -26,7 +28,7 @@ class View;
 // DropHelper is intended to be used by a class that interacts with the system
 // drag and drop. The system class invokes OnDragOver as the mouse moves,
 // then either OnDragExit or OnDrop when the drop is done.
-class DropHelper {
+class VIEWS_EXPORT DropHelper {
  public:
   explicit DropHelper(View* root_view);
   ~DropHelper();

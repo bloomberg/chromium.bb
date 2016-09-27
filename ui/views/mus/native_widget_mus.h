@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -22,10 +23,12 @@
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/window_tree_host_mus.h"
 #include "ui/views/widget/native_widget_private.h"
+#include "ui/wm/public/drag_drop_delegate.h"
 
 namespace aura {
 namespace client {
 class DefaultCaptureClient;
+class DragDropClient;
 class ScreenPositionClient;
 class WindowTreeClient;
 }
@@ -51,6 +54,8 @@ class FocusController;
 }
 
 namespace views {
+class DropHelper;
+class DropTargetMus;
 class WidgetDelegate;
 
 // An implementation of NativeWidget that binds to a ui::Window. Because Aura
@@ -63,6 +68,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
     : public internal::NativeWidgetPrivate,
       public aura::WindowDelegate,
       public aura::WindowTreeHostObserver,
+      public aura::client::DragDropDelegate,
       public NON_EXPORTED_BASE(ui::InputEventHandler) {
  public:
   NativeWidgetMus(internal::NativeWidgetDelegate* delegate,
@@ -164,7 +170,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   void RunShellDrag(View* view,
                     const ui::OSExchangeData& data,
                     const gfx::Point& location,
-                    int operation,
+                    int drag_operations,
                     ui::DragDropTypes::DragEventSource source) override;
   void SchedulePaintInRect(const gfx::Rect& rect) override;
   void SetCursor(gfx::NativeCursor cursor) override;
@@ -219,6 +225,12 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
                    const gfx::Point& new_origin) override;
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
+  // Overridden from aura::client::DragDropDelegate:
+  void OnDragEntered(const ui::DropTargetEvent& event) override;
+  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  void OnDragExited() override;
+  int OnPerformDrop(const ui::DropTargetEvent& event) override;
+
   // Overridden from ui::InputEventHandler:
   void OnWindowInputEvent(
       ui::Window* view,
@@ -272,14 +284,21 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
   // and this is used to unsafely pass void* pointers around chrome.
   std::map<std::string, void*> native_window_properties_;
 
+  // Receives drop events for |window_|.
+  std::unique_ptr<DropTargetMus> drop_target_;
+
   // Aura configuration.
   std::unique_ptr<WindowTreeHostMus> window_tree_host_;
   aura::Window* content_;
   std::unique_ptr<wm::FocusController> focus_client_;
   std::unique_ptr<MusCaptureClient> capture_client_;
+  std::unique_ptr<aura::client::DragDropClient> drag_drop_client_;
   std::unique_ptr<aura::client::WindowTreeClient> window_tree_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
   std::unique_ptr<wm::CursorManager> cursor_manager_;
+
+  std::unique_ptr<DropHelper> drop_helper_;
+  int last_drop_operation_;
 
   base::WeakPtrFactory<NativeWidgetMus> close_widget_factory_;
 

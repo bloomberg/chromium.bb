@@ -1505,7 +1505,6 @@ void WindowTree::GetCursorLocationMemory(
 void WindowTree::PerformDragDrop(
     uint32_t change_id,
     Id source_window_id,
-    int32_t drag_pointer,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
     uint32_t drag_operation) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(source_window_id));
@@ -1542,8 +1541,8 @@ void WindowTree::PerformDragDrop(
   // normal.
   WindowManagerState* wms = display_root->window_manager_state();
   window_server_->StartDragLoop(change_id, window, this);
-  wms->SetDragDropSourceWindow(this, window, this, drag_pointer,
-                               std::move(drag_data), drag_operation);
+  wms->SetDragDropSourceWindow(this, window, this, std::move(drag_data),
+                               drag_operation);
 }
 
 void WindowTree::CancelDragDrop(Id window_id) {

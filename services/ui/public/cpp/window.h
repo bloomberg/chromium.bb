@@ -239,7 +239,6 @@ class Window {
   // is one of the ui::mojom::kDropEffect constants in
   // window_tree_constants.mojom.
   void PerformDragDrop(
-      int drag_pointer,
       const std::map<std::string, std::vector<uint8_t>>& drag_data,
       int drag_operation,
       const gfx::Point& cursor_location,

@@ -1393,6 +1393,12 @@ TEST_F(MenuControllerTest, RunWithoutWidgetDoesntCrash) {
 // MenuController becomes active, that the exiting of drag does not cause a
 // crash.
 TEST_F(MenuControllerTest, MenuControllerReplacedDuringDrag) {
+  // This test creates two native widgets, but expects the child native widget
+  // to be able to reach up and use the parent native widget's aura
+  // objects. https://crbug.com/614037
+  if (IsMus())
+    return;
+
   TestDragDropClient drag_drop_client(
       base::Bind(&MenuControllerTest::TestMenuControllerReplacementDuringDrag,
                  base::Unretained(this)));

@@ -7,6 +7,12 @@
 
 #include "ui/base/dragdrop/os_exchange_data.h"
 
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "mojo/public/cpp/bindings/map.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
@@ -26,6 +32,7 @@ class VIEWS_MUS_EXPORT OSExchangeDataProviderMus
   using Data = std::map<std::string, std::vector<uint8_t>>;
 
   OSExchangeDataProviderMus();
+  explicit OSExchangeDataProviderMus(Data data);
   ~OSExchangeDataProviderMus() override;
 
   // Returns the raw MIME type to data mapping.

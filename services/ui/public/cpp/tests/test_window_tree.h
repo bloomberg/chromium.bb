@@ -105,7 +105,6 @@ class TestWindowTree : public mojom::WindowTree {
       override;
   void PerformDragDrop(uint32_t change_id,
                        uint32_t source_window_id,
-                       int32_t drag_pointer,
                        mojo::Map<mojo::String, mojo::Array<uint8_t>> drag_data,
                        uint32_t drag_operation) override;
   void CancelDragDrop(uint32_t window_id) override;
