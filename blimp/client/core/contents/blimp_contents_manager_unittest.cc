@@ -31,23 +31,6 @@ namespace blimp {
 namespace client {
 namespace {
 
-class BlimpContentsManagerTest : public testing::Test {
- public:
-  BlimpContentsManagerTest() = default;
-
-#if defined(OS_ANDROID)
-  void SetUp() override { window_ = ui::WindowAndroid::CreateForTesting(); }
-
-  void TearDown() override { window_->DestroyForTesting(); }
-#endif  // defined(OS_ANDROID)
-
- protected:
-  gfx::NativeWindow window_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BlimpContentsManagerTest);
-};
-
 class MockTabControlFeature : public TabControlFeature {
  public:
   MockTabControlFeature() {}
@@ -60,94 +43,109 @@ class MockTabControlFeature : public TabControlFeature {
   DISALLOW_COPY_AND_ASSIGN(MockTabControlFeature);
 };
 
+class BlimpContentsManagerTest : public testing::Test {
+ public:
+  BlimpContentsManagerTest()
+      : compositor_deps_(base::MakeUnique<MockCompositorDependencies>()),
+        blimp_contents_manager_(&compositor_deps_,
+                                &ime_feature_,
+                                nullptr,
+                                &render_widget_feature_,
+                                &tab_control_feature_) {}
+
+#if defined(OS_ANDROID)
+  void SetUp() override { window_ = ui::WindowAndroid::CreateForTesting(); }
+
+  void TearDown() override { window_->DestroyForTesting(); }
+#endif  // defined(OS_ANDROID)
+
+ protected:
+  gfx::NativeWindow window_ = nullptr;
+
+  base::MessageLoop loop_;
+  ImeFeature ime_feature_;
+  RenderWidgetFeature render_widget_feature_;
+  MockTabControlFeature tab_control_feature_;
+  BlimpCompositorDependencies compositor_deps_;
+  BlimpContentsManager blimp_contents_manager_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BlimpContentsManagerTest);
+};
+
 TEST_F(BlimpContentsManagerTest, GetExistingBlimpContents) {
-  base::MessageLoop loop;
-  ImeFeature ime_feature;
-  RenderWidgetFeature render_widget_feature;
-  MockTabControlFeature tab_control_feature;
-
-  BlimpCompositorDependencies compositor_deps(
-      base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsManager blimp_contents_manager(&compositor_deps, &ime_feature,
-                                              nullptr, &render_widget_feature,
-                                              &tab_control_feature);
-
-  EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(1);
+  EXPECT_CALL(tab_control_feature_, CreateTab(_)).Times(1);
   std::unique_ptr<BlimpContentsImpl> blimp_contents =
-      blimp_contents_manager.CreateBlimpContents(window_);
+      blimp_contents_manager_.CreateBlimpContents(window_);
   int id = blimp_contents->id();
   BlimpContentsImpl* existing_contents =
-      blimp_contents_manager.GetBlimpContents(id);
+      blimp_contents_manager_.GetBlimpContents(id);
   EXPECT_EQ(blimp_contents.get(), existing_contents);
 }
 
 TEST_F(BlimpContentsManagerTest, GetNonExistingBlimpContents) {
-  ImeFeature ime_feature;
-  RenderWidgetFeature render_widget_feature;
-  MockTabControlFeature tab_control_feature;
-
-  BlimpCompositorDependencies compositor_deps(
-      base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsManager blimp_contents_manager(&compositor_deps, &ime_feature,
-                                              nullptr, &render_widget_feature,
-                                              &tab_control_feature);
-
   BlimpContentsImpl* existing_contents =
-      blimp_contents_manager.GetBlimpContents(kDummyBlimpContentsId);
+      blimp_contents_manager_.GetBlimpContents(kDummyBlimpContentsId);
   EXPECT_EQ(nullptr, existing_contents);
 }
 
 TEST_F(BlimpContentsManagerTest, GetDestroyedBlimpContents) {
-  base::MessageLoop loop;
-  ImeFeature ime_feature;
-  RenderWidgetFeature render_widget_feature;
-  MockTabControlFeature tab_control_feature;
-  BlimpCompositorDependencies compositor_deps(
-      base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsManager blimp_contents_manager(&compositor_deps, &ime_feature,
-                                              nullptr, &render_widget_feature,
-                                              &tab_control_feature);
-  int id;
-
-  EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(1);
+  EXPECT_CALL(tab_control_feature_, CreateTab(_)).Times(1);
   std::unique_ptr<BlimpContentsImpl> blimp_contents =
-      blimp_contents_manager.CreateBlimpContents(window_);
-  id = blimp_contents.get()->id();
+      blimp_contents_manager_.CreateBlimpContents(window_);
+  int id = blimp_contents.get()->id();
   BlimpContentsImpl* existing_contents =
-      blimp_contents_manager.GetBlimpContents(id);
+      blimp_contents_manager_.GetBlimpContents(id);
   EXPECT_EQ(blimp_contents.get(), existing_contents);
 
-  EXPECT_CALL(tab_control_feature, CloseTab(id)).Times(1);
+  EXPECT_CALL(tab_control_feature_, CloseTab(id)).Times(1);
   blimp_contents.reset();
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, blimp_contents_manager.GetBlimpContents(id));
+  EXPECT_EQ(nullptr, blimp_contents_manager_.GetBlimpContents(id));
+}
+
+// TODO(mlliu): Increase the number of BlimpContentsImpl in this test case.
+// (See http://crbug.com/642558)
+TEST_F(BlimpContentsManagerTest, RetrieveAllBlimpContents) {
+  EXPECT_CALL(tab_control_feature_, CreateTab(_)).Times(1);
+  std::unique_ptr<BlimpContentsImpl> blimp_contents =
+      blimp_contents_manager_.CreateBlimpContents(window_);
+  int created_id = blimp_contents->id();
+
+  std::vector<BlimpContentsImpl*> all_blimp_contents =
+      blimp_contents_manager_.GetAllActiveBlimpContents();
+  ASSERT_EQ(1U, all_blimp_contents.size());
+  EXPECT_EQ(created_id, (*all_blimp_contents.begin())->id());
+}
+
+// TODO(mlliu): Increase the number of BlimpContentsImpl in this test case.
+// (See http://crbug.com/642558)
+TEST_F(BlimpContentsManagerTest, NoRetrievedBlimpContentsAreDestroyed) {
+  EXPECT_CALL(tab_control_feature_, CreateTab(_)).Times(1);
+  std::unique_ptr<BlimpContentsImpl> blimp_contents =
+      blimp_contents_manager_.CreateBlimpContents(window_);
+  blimp_contents.reset();
+
+  std::vector<BlimpContentsImpl*> all_blimp_contents =
+      blimp_contents_manager_.GetAllActiveBlimpContents();
+  EXPECT_EQ(0U, all_blimp_contents.size());
 }
 
 // TODO(mlliu): remove this test case (http://crbug.com/642558)
 TEST_F(BlimpContentsManagerTest, CreateTwoBlimpContentsDestroyAndCreate) {
-  base::MessageLoop loop;
-  ImeFeature ime_feature;
-  RenderWidgetFeature render_widget_feature;
-  MockTabControlFeature tab_control_feature;
-  BlimpCompositorDependencies compositor_deps(
-      base::MakeUnique<MockCompositorDependencies>());
-  BlimpContentsManager blimp_contents_manager(&compositor_deps, &ime_feature,
-                                              nullptr, &render_widget_feature,
-                                              &tab_control_feature);
-
-  EXPECT_CALL(tab_control_feature, CreateTab(_)).Times(2);
+  EXPECT_CALL(tab_control_feature_, CreateTab(_)).Times(2);
   std::unique_ptr<BlimpContentsImpl> blimp_contents =
-      blimp_contents_manager.CreateBlimpContents(window_);
+      blimp_contents_manager_.CreateBlimpContents(window_);
   EXPECT_NE(blimp_contents, nullptr);
 
   std::unique_ptr<BlimpContentsImpl> second_blimp_contents =
-      blimp_contents_manager.CreateBlimpContents(window_);
+      blimp_contents_manager_.CreateBlimpContents(window_);
   EXPECT_EQ(second_blimp_contents, nullptr);
 
   blimp_contents.reset();
   std::unique_ptr<BlimpContentsImpl> third_blimp_contents =
-      blimp_contents_manager.CreateBlimpContents(window_);
+      blimp_contents_manager_.CreateBlimpContents(window_);
   EXPECT_NE(third_blimp_contents, nullptr);
 }
 

@@ -6,6 +6,7 @@
 #define BLIMP_CLIENT_CORE_CONTENTS_BLIMP_CONTENTS_MANAGER_H_
 
 #include <map>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "blimp/client/core/contents/blimp_contents_impl.h"
@@ -43,6 +44,10 @@ class BlimpContentsManager {
 
   // The caller can query the contents through its id.
   BlimpContentsImpl* GetBlimpContents(int id);
+
+  // Returns a vector of the currently active BlimpContentsImpls. There is no
+  // guarantee for the lifetime of these pointers after this stack frame.
+  std::vector<BlimpContentsImpl*> GetAllActiveBlimpContents();
 
  private:
   class BlimpContentsDeletionObserver;

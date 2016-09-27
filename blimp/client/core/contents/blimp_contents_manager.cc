@@ -97,6 +97,20 @@ BlimpContentsImpl* BlimpContentsManager::GetBlimpContents(int id) {
   return nullptr;
 }
 
+std::vector<BlimpContentsImpl*>
+BlimpContentsManager::GetAllActiveBlimpContents() {
+  std::vector<BlimpContentsImpl*> all_blimp_contents;
+  for (const auto& item : observer_map_) {
+    BlimpContentsImpl* blimp_contents =
+        static_cast<BlimpContentsImpl*>(item.second.get()->blimp_contents());
+    if (!blimp_contents) {
+      continue;
+    }
+    all_blimp_contents.push_back(blimp_contents);
+  }
+  return all_blimp_contents;
+}
+
 int BlimpContentsManager::CreateBlimpContentsId() {
   return next_blimp_contents_id_++;
 }

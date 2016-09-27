@@ -10,11 +10,16 @@
 
 namespace blimp {
 namespace client {
+class BlimpContentsManager;
+
 // Denotes whether Blimp is supported in the current.
 extern const char kFeedbackSupportedKey[];
+// Denotes whether there exists any visible BlimpContents.
+extern const char kFeedbackHasVisibleBlimpContents[];
 
 // Creates a data object containing data about Blimp to be used for feedback.
-std::unordered_map<std::string, std::string> CreateBlimpFeedbackData();
+std::unordered_map<std::string, std::string> CreateBlimpFeedbackData(
+    BlimpContentsManager* blimp_contents_manager);
 
 }  // namespace client
 }  // namespace blimp

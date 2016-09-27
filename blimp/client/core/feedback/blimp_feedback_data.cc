@@ -4,13 +4,33 @@
 
 #include "blimp/client/core/feedback/blimp_feedback_data.h"
 
+#include "blimp/client/core/contents/blimp_contents_manager.h"
+
 namespace blimp {
 namespace client {
 const char kFeedbackSupportedKey[] = "Blimp Supported";
+const char kFeedbackHasVisibleBlimpContents[] = "Blimp Visible";
 
-std::unordered_map<std::string, std::string> CreateBlimpFeedbackData() {
+namespace {
+std::string HasVisibleBlimpContents(
+    BlimpContentsManager* blimp_contents_manager) {
+  std::vector<BlimpContentsImpl*> all_blimp_contents =
+      blimp_contents_manager->GetAllActiveBlimpContents();
+  for (const auto& item : all_blimp_contents) {
+    if (item->compositor_manager()->visible()) {
+      return "true";
+    }
+  }
+  return "false";
+}
+}  // namespace
+
+std::unordered_map<std::string, std::string> CreateBlimpFeedbackData(
+    BlimpContentsManager* blimp_contents_manager) {
   std::unordered_map<std::string, std::string> data;
   data.insert(std::make_pair(kFeedbackSupportedKey, "true"));
+  data.insert(std::make_pair(kFeedbackHasVisibleBlimpContents,
+                             HasVisibleBlimpContents(blimp_contents_manager)));
   return data;
 }
 

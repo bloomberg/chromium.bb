@@ -17,6 +17,7 @@ source_set("feedback") {
 
   deps = [
     "//base",
+    "//blimp/client/core/contents",
   ]
 
   if (is_android) {
@@ -40,6 +41,12 @@ source_set("unit_tests") {
 
   deps = [
     ":feedback",
+    "//base",
+    "//blimp/client/core/compositor",
+    "//blimp/client/core/contents",
+    "//blimp/client/test/compositor",
+    "//skia",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

@@ -34,6 +34,7 @@ class BlimpCompositorManager
   ~BlimpCompositorManager() override;
 
   void SetVisible(bool visible);
+  bool visible() const { return visible_; }
 
   bool OnTouchEvent(const ui::MotionEvent& motion_event);
 

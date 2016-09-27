@@ -150,7 +150,7 @@ void BlimpClientContextImpl::ConnectWithAssignment(
 
 std::unordered_map<std::string, std::string>
 BlimpClientContextImpl::CreateFeedbackData() {
-  return CreateBlimpFeedbackData();
+  return CreateBlimpFeedbackData(blimp_contents_manager_.get());
 }
 
 void BlimpClientContextImpl::OnAuthTokenReceived(
