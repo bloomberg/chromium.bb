@@ -217,9 +217,13 @@ class NoGpuProcessSharedPageState(GpuProcessSharedPageState):
     options = finder_options.browser_options
 
     if options.browser_type.startswith('android'):
-      # Hit id 8 from kSoftwareRenderingListJson, which applies to any platform.
-      options.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x10de')
-      options.AppendExtraBrowserArgs('--gpu-testing-device-id=0x0324')
+      # Android doesn't support starting up the browser without any
+      # GPU process. This test is skipped on Android in
+      # gpu_process_expectations.py, but we must at least be able to
+      # bring up the browser in order to detect that the test
+      # shouldn't run. Faking a vendor and device ID can get the
+      # browser into a state where it won't launch.
+      pass
     elif sys.platform in ('cygwin', 'win32'):
       # Hit id 34 from kSoftwareRenderingListJson.
       options.AppendExtraBrowserArgs('--gpu-testing-vendor-id=0x5333')
