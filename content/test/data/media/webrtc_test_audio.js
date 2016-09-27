@@ -134,12 +134,15 @@ function identifyFakeDeviceSignal_(samples) {
  * @private
  */
 function identifySilence_(samples) {
+  // Look at the last 10K samples only to make detection a bit faster.
+  var window = samples.slice(-10000);
+
   var average = 0;
-  for (var i = 0; i < samples.length; ++i)
-    average += samples[i] / samples.length;
+  for (var i = 0; i < window.length; ++i)
+    average += window[i] / window.length;
 
   // If silent (like when muted), we should get very near zero audio level.
-  console.log('Average audio level: ' + average);
+  console.log('Average audio level (last 10k samples): ' + average);
 
   return average < 0.01 * MAX_AUDIO_OUTPUT_ENERGY;
 }
