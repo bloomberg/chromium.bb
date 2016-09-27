@@ -746,10 +746,8 @@ void HttpStreamFactoryImpl::JobController::OnJobSucceeded(Job* job) {
     ReportBrokenAlternativeService();
 
   if (!bound_job_) {
-    if (main_job_ && alternative_job_) {
-      job->ReportJobSucceededForRequest();
-      MaybeRecordAlternativeProxyServerUsage(job);
-    }
+    if (main_job_ && alternative_job_)
+      ReportAlternateProtocolUsage(job);
     BindJob(job);
     return;
   }
@@ -906,7 +904,7 @@ HttpStreamFactoryImpl::JobController::GetAlternativeServiceForInternal(
       quic_advertised = true;
     if (http_server_properties.IsAlternativeServiceBroken(
             alternative_service)) {
-      HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
+      HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false);
       continue;
     }
 
@@ -1054,37 +1052,28 @@ bool HttpStreamFactoryImpl::JobController::
   return true;
 }
 
-void HttpStreamFactoryImpl::JobController::
-    MaybeRecordAlternativeProxyServerUsage(Job* job) const {
-  if (is_preconnect_ ||
-      !alternative_job_->alternative_proxy_server().is_quic()) {
+void HttpStreamFactoryImpl::JobController::ReportAlternateProtocolUsage(
+    Job* job) const {
+  DCHECK(main_job_ && alternative_job_);
+
+  bool proxy_server_used =
+      alternative_job_->alternative_proxy_server().is_quic();
+
+  if (job == main_job_.get()) {
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_LOST_RACE,
+                                    proxy_server_used);
     return;
   }
-  DCHECK(main_job_.get() == job || alternative_job_.get() == job);
 
-  enum AlternativeProxyUsage {
-    ALTERNATIVE_PROXY_USAGE_NO_RACE = 0,
-    ALTERNATIVE_PROXY_USAGE_WON_RACE,
-    ALTERNATIVE_PROXY_USAGE_LOST_RACE,
-    ALTERNATIVE_PROXY_USAGE_MAX,
-  };
-  AlternativeProxyUsage alternative_proxy_usage = ALTERNATIVE_PROXY_USAGE_MAX;
-
-  if (alternative_job_->using_existing_quic_session()) {
-    // If an existing session was used, then no TCP connection was
-    // started.
-    alternative_proxy_usage = ALTERNATIVE_PROXY_USAGE_NO_RACE;
-  } else if (job->alternative_proxy_server().is_quic()) {
-    // |job| was the alternative Job, and hence won the race.
-    alternative_proxy_usage = ALTERNATIVE_PROXY_USAGE_WON_RACE;
-  } else {
-    // |job| was the normal Job, and hence the alternative Job lost the race.
-    alternative_proxy_usage = ALTERNATIVE_PROXY_USAGE_LOST_RACE;
+  DCHECK_EQ(alternative_job_.get(), job);
+  if (job->using_existing_quic_session()) {
+    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE,
+                                    proxy_server_used);
+    return;
   }
-  DCHECK_NE(ALTERNATIVE_PROXY_USAGE_MAX, alternative_proxy_usage);
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicAlternativeProxy.Usage",
-                            alternative_proxy_usage,
-                            ALTERNATIVE_PROXY_USAGE_MAX);
+
+  HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE,
+                                  proxy_server_used);
 }
 
 void HttpStreamFactoryImpl::JobController::StartAlternativeProxyServerJob() {

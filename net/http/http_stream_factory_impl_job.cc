@@ -1476,20 +1476,6 @@ int HttpStreamFactoryImpl::Job::HandleCertificateError(int error) {
   return error;
 }
 
-void HttpStreamFactoryImpl::Job::ReportJobSucceededForRequest() {
-  if (using_existing_quic_session_) {
-    // If an existing session was used, then no TCP connection was
-    // started.
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE);
-  } else if (IsSpdyAlternative() || IsQuicAlternative()) {
-    // This Job was the alternative Job, and hence won the race.
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE);
-  } else {
-    // This Job was the normal Job, and hence the alternative Job lost the race.
-    HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
-  }
-}
-
 ClientSocketPoolManager::SocketGroupType
 HttpStreamFactoryImpl::Job::GetSocketGroup() const {
   std::string scheme = origin_url_.scheme();

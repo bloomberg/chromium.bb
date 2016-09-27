@@ -12,11 +12,49 @@
 
 namespace net {
 
+namespace {
+
+enum AlternativeProxyUsage {
+  // Alternative Proxy was used without racing a normal connection.
+  ALTERNATIVE_PROXY_USAGE_NO_RACE = 0,
+  // Alternative Proxy was used by winning a race with a normal connection.
+  ALTERNATIVE_PROXY_USAGE_WON_RACE = 1,
+  // Alternative Proxy was not used by losing a race with a normal connection.
+  ALTERNATIVE_PROXY_USAGE_LOST_RACE = 2,
+  // Maximum value for the enum.
+  ALTERNATIVE_PROXY_USAGE_MAX,
+};
+
+AlternativeProxyUsage ConvertProtocolUsageToProxyUsage(
+    AlternateProtocolUsage usage) {
+  switch (usage) {
+    case ALTERNATE_PROTOCOL_USAGE_NO_RACE:
+      return ALTERNATIVE_PROXY_USAGE_NO_RACE;
+    case ALTERNATE_PROTOCOL_USAGE_WON_RACE:
+      return ALTERNATIVE_PROXY_USAGE_WON_RACE;
+    case ALTERNATE_PROTOCOL_USAGE_LOST_RACE:
+      return ALTERNATIVE_PROXY_USAGE_LOST_RACE;
+    default:
+      NOTREACHED();
+      return ALTERNATIVE_PROXY_USAGE_MAX;
+  }
+}
+
+}  // namespace anonymous
+
 const char kAlternativeServiceHeader[] = "Alt-Svc";
 
-void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage) {
-  UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage", usage,
-                            ALTERNATE_PROTOCOL_USAGE_MAX);
+void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage,
+                                     bool proxy_server_used) {
+  if (proxy_server_used) {
+    DCHECK_LE(usage, ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicAlternativeProxy.Usage",
+                              ConvertProtocolUsageToProxyUsage(usage),
+                              ALTERNATIVE_PROXY_USAGE_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage", usage,
+                              ALTERNATE_PROTOCOL_USAGE_MAX);
+  }
 }
 
 void HistogramBrokenAlternateProtocolLocation(

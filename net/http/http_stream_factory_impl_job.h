@@ -232,10 +232,6 @@ class HttpStreamFactoryImpl::Job {
   const SSLConfig& proxy_ssl_config() const;
   const ProxyInfo& proxy_info() const;
 
-  // Called to indicate that this job succeeded, and some other jobs
-  // will be orphaned.
-  void ReportJobSucceededForRequest();
-
   JobType job_type() const { return job_type_; }
 
   const AlternativeService alternative_service() const {
