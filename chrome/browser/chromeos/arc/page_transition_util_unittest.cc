@@ -43,8 +43,8 @@ TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithCoreTypes) {
       "Not all core transition types are covered here");
 }
 
-// Tests that ShouldIgnoreNavigation returns true when no qualifiers are
-// provided.
+// Tests that ShouldIgnoreNavigation returns true when no qualifiers except
+// server redirect are provided.
 TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithLinkWithQualifiers) {
   // The navigation is triggered by Forward or Back button.
   EXPECT_TRUE(ShouldIgnoreNavigation(
@@ -70,7 +70,11 @@ TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithLinkWithQualifiers) {
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_FROM_API),
       false));
-
+  // The navigation is triggered by a client side redirect.
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_CLIENT_REDIRECT),
+      false));
   // Also tests the case with 2+ qualifiers.
   EXPECT_TRUE(ShouldIgnoreNavigation(
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
@@ -107,6 +111,30 @@ TEST(PageTransitionUtilTest,
                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR |
                                 ui::PAGE_TRANSITION_CLIENT_REDIRECT),
       false));
+}
+
+// Tests that ShouldIgnoreNavigation returns false if SERVER_REDIRECT is the
+// only qualifier given.
+TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithServerRedirect) {
+  EXPECT_FALSE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_SERVER_REDIRECT),
+      false));
+  EXPECT_FALSE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FORM_SUBMIT |
+                                ui::PAGE_TRANSITION_SERVER_REDIRECT),
+      true));
+
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_SERVER_REDIRECT |
+                                ui::PAGE_TRANSITION_FROM_API),
+      false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FORM_SUBMIT |
+                                ui::PAGE_TRANSITION_SERVER_REDIRECT |
+                                ui::PAGE_TRANSITION_FROM_API),
+      true));
 }
 
 }  // namespace arc
