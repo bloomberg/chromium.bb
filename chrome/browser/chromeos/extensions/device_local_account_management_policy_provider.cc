@@ -124,18 +124,57 @@ const char* const kPublicSessionWhitelist[] = {
 // List of manifest entries from https://developer.chrome.com/apps/manifest.
 // Unsafe entries are commented out and special cases too.
 const char* const kSafeManifestEntries[] = {
-    // Special-cased in IsPlatformAppSafeForPublicSession().
+    emk::kAboutPage,
+
+    // Special-cased in IsSafeForPublicSession().
     // emk::kApp,
 
     // Documented in https://developer.chrome.com/extensions/manifest but not
     // implemented anywhere.  Still, a lot of apps use it.
     "author",
 
-    // TBD
-    // emk::kBluetooth,
+    // Allows inspection of page contents, not enabled on stable anyways except
+    // for whitelist.
+    // emk::kAutomation,
 
-    // TBD
-    // emk::kCommands,
+    // TODO(isandrk): Ask Mattias for comments on entries without a comment.
+    // See crbug.com/650672.
+    "background",
+
+    emk::kBackgroundPageLegacy,
+
+    emk::kBackgroundPersistent,
+
+    emk::kBluetooth,
+
+    emk::kBrowserAction,
+
+    // Allows to replace the search provider which is somewhat risky - need to
+    // double check how the search provider policy behaves in PS.
+    // emk::kSettingsOverride,
+
+    // Custom bookmark managers - I think this is fair game, bookmarks should be
+    // URLs only, and it's restricted to whitelist on stable.
+    emk::kUIOverride,
+
+    // Bookmark manager, history, new tab - should be safe.
+    emk::kChromeURLOverrides,
+
+    // General risk of capturing user input, but key combos must include Ctrl or
+    // Alt, so I think this is safe.
+    emk::kCommands,
+
+    // General risk of capturing user input, but key combos must include Ctrl or
+    // Alt, so I think this is safe.
+    emk::kContentCapabilities,
+
+    // Access to web content.
+    // emk::kContentScripts,
+
+    emk::kContentSecurityPolicy,
+
+    // Access to web content.
+    // emk::kConvertedFromUserScript,
 
     // An implementation detail (actually written by Chrome, not the app
     // author).
@@ -147,20 +186,38 @@ const char* const kSafeManifestEntries[] = {
     // Just a display string.
     emk::kDescription,
 
-    // TBD, looks unsafe
+    // Access to web content.
+    // emk::kDevToolsPage,
+
+    // Restricted to whitelist already.
+    emk::kDisplayInLauncher,
+
+    emk::kDisplayInNewTabPage,
+
+    // This allows to declaratively filter web requests and content, matching on
+    // content data. Doesn't allow direct access to request/content data. Can be
+    // used to brute-force e.g. cookies (reload with filter rules adjusted to
+    // match all possible cookie values) - but that's equivalent to an
+    // off-device brute-force attack.
+    // Looks safe in general with one exception: There's an action that allows
+    // to insert content scripts on matching content. We can't allow this, need
+    // to check whether there's also a host permission required for this case.
     // emk::kEventRules,
 
     // Shared Modules configuration: Allow other extensions to access resources.
     emk::kExport,
 
-    // TBD
-    // emk::kExternallyConnectable,
+    emk::kExternallyConnectable,
 
-    // TBD
-    // emk::kFileHandlers,
+    emk::kFileBrowserHandlers,
 
-    // TBD
-    // emk::kFileSystemProviderCapabilities,
+    // Extension file handlers are restricted to whitelist which only contains
+    // quickoffice.
+    emk::kFileHandlers,
+
+    emk::kFileSystemProviderCapabilities,
+
+    emk::kHomepageURL,
 
     // Just UX.
     emk::kIcons,
@@ -168,19 +225,37 @@ const char* const kSafeManifestEntries[] = {
     // Shared Modules configuration: Import resources from another extension.
     emk::kImport,
 
+    emk::kIncognito,
+
+    // Keylogging.
+    // emk::kInputComponents,
+
     // Shared Modules configuration: Specify extension id for development.
     emk::kKey,
 
-    // Descriptive statement about the app.
+    emk::kKiosk,
+
     emk::kKioskEnabled,
 
-    // Contradicts the purpose of running inside a Public Session.
-    // emk::kKioskOnly,
+    // Not useful since it will prevent app from running, but we don't care.
+    emk::kKioskOnly,
 
-    // Special-cased in IsPlatformAppSafeForPublicSession().
+    emk::kKioskRequiredPlatformVersion,
+
+    // Not useful since it will prevent app from running, but we don't care.
+    emk::kKioskSecondaryApps,
+
+    // Whitelisted to only allow Google Now.
+    emk::kLauncherPage,
+
+    // Special-cased in IsSafeForPublicSession().
     // emk::kManifestVersion,
 
-    // Descriptive statement about the app.
+    emk::kMIMETypes,
+
+    // Whitelisted to only allow browser tests and PDF viewer.
+    emk::kMimeTypesHandler,
+
     emk::kMinimumChromeVersion,
 
     // NaCl modules are bound to app permissions just like the rest of the app
@@ -190,22 +265,44 @@ const char* const kSafeManifestEntries[] = {
     // Just a display string.
     emk::kName,
 
-    // TBD, doc missing
-    // emk::kOAuth2,
+    // Used in conjunction with the identity API - not really used when there's
+    // no GAIA user signed in.
+    emk::kOAuth2,
 
-    // Descriptive statement about the app.
+    // Generally safe (i.e. only whitelist apps), except for the policy to
+    // whitelist apps for auto-approved token minting (we should just ignore
+    // this in public sessions). Risk is that admin mints OAuth tokens to access
+    // services on behalf of the user silently.
+    // emk::kOAuth2AutoApprove,
+
     emk::kOfflineEnabled,
 
-    // Special-cased in IsPlatformAppSafeForPublicSession().
+    // A bit risky as the extensions sees all keystrokes entered into the
+    // omnibox after the search key matches, but generally we deem URLs fair
+    // game.
+    emk::kOmnibox,
+
+    // Special-cased in IsSafeForPublicSession(). Subject to permission
+    // restrictions.
     // emk::kOptionalPermissions,
 
-    // Special-cased in IsPlatformAppSafeForPublicSession().
+    emk::kOptionsPage,
+
+    emk::kOptionsUI,
+
+    emk::kPageAction,
+
+    // Special-cased in IsSafeForPublicSession(). Subject to permission
+    // restrictions.
     // emk::kPermissions,
 
-    // No constant in manifest_constants.cc.
+    // No constant in manifest_constants.cc. Declared as a feature, but unused.
     // "platforms",
 
-    // Descriptive statement about the app.
+    // N/A on Chrome OS, so we don't care.
+    emk::kPlugins,
+
+    // Stated 3D/WebGL/plugin requirements of an app.
     emk::kRequirements,
 
     // Execute some pages in a separate sandbox.  (Note: Using string literal
@@ -215,18 +312,27 @@ const char* const kSafeManifestEntries[] = {
     // Just a display string.
     emk::kShortName,
 
-    // TBD, doc missing
+    // Doc missing. Declared as a feature, but unused.
     // emk::kSignature,
 
     // Network access.
     emk::kSockets,
 
-    // TBD.  (Note: Using string literal since extensions::manifest_keys only
-    // has constants for sub-keys.)
-    // "storage",
+    // Just provides dictionaries, no access to content.
+    emk::kSpellcheck,
 
-    // TBD, doc missing
-    // emk::kSystemIndicator,
+    // (Note: Using string literal since extensions::manifest_keys only has
+    // constants for sub-keys.)
+    "storage",
+
+    // Only Hangouts is whitelisted.
+    emk::kSystemIndicator,
+
+    emk::kTheme,
+
+    // Might need this for accessibilty, but has content access. Manual
+    // whitelisting might be reasonable here?
+    // emk::kTtsEngine,
 
     // TODO(tnagel): Ensure that extension updates query UserMayLoad().
     // https://crbug.com/549720
@@ -236,17 +342,18 @@ const char* const kSafeManifestEntries[] = {
     // app author has proven ownership of to the Web Store.  (Chrome starts the
     // app instead of fulfilling the navigation.)  This is only safe for apps
     // that have been loaded from the Web Store and thus is special-cased in
-    // IsPlatformAppSafeForPublicSession().
+    // IsSafeForPublicSession().
     // emk::kUrlHandlers,
 
-    // TBD
-    // emk::kUsbPrinters,
+    emk::kUsbPrinters,
 
     // Version string (for app updates).
     emk::kVersion,
 
     // Just a display string.
     emk::kVersionName,
+
+    emk::kWebAccessibleResources,
 
     // Webview has no special privileges or capabilities.
     emk::kWebview,
@@ -405,6 +512,16 @@ const char* const kSafePermissionDicts[] = {
     "socket",
 };
 
+// List of safe entries for the "app" dict in manifest.
+const char* const kSafeAppStrings[] = {
+    "background",
+    "content_security_policy",
+    "icon_color",
+    "isolation",
+    "launch",
+    "linked_icons",
+};
+
 // Return true iff |entry| is contained in |char_array|.
 bool ArrayContainsImpl(const char* const char_array[],
                        size_t entry_count,
@@ -425,15 +542,21 @@ bool ArrayContains(const char* const (&char_array)[N],
   return ArrayContainsImpl(char_array, N, entry);
 }
 
-// Returns true for platform apps that are considered safe for Public Sessions,
+// Returns true for extensions that are considered safe for Public Sessions,
 // which among other things requires the manifest top-level entries to be
 // contained in the |kSafeManifestEntries| whitelist and all permissions to be
 // contained in |kSafePermissionStrings| or |kSafePermissionDicts|.  Otherwise
 // returns false and logs all reasons for failure.
-bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
+bool IsSafeForPublicSession(const extensions::Extension* extension) {
   bool safe = true;
-  if (extension->GetType() != extensions::Manifest::TYPE_PLATFORM_APP) {
-    LOG(ERROR) << extension->id() << " is not a platform app.";
+  if (!extension->is_extension() &&
+      !extension->is_hosted_app() &&
+      !extension->is_platform_app() &&
+      !extension->is_shared_module() &&
+      !extension->is_theme()) {
+    LOG(ERROR) << extension->id()
+               << " is not of a supported type. Extension type: "
+               << extension->GetType();
     safe = false;
   }
 
@@ -503,8 +626,15 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
                    << permission_string;
         safe = false;
       }
-    // "app" may only contain "background".
     } else if (it.key() == emk::kApp) {
+      if (!extension->is_hosted_app() &&
+          !extension->is_platform_app()) {
+        LOG(ERROR) << extension->id()
+                   << ": app manifest entry is allowed only for hosted_app or "
+                       "platform_app extension type. Current extension type: "
+                   << extension->GetType();
+        safe = false;
+      }
       const base::DictionaryValue *dict_value;
       if (!it.value().GetAsDictionary(&dict_value)) {
         LOG(ERROR) << extension->id() << ": app is not a dictionary.";
@@ -513,7 +643,7 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
       }
       for (base::DictionaryValue::Iterator it2(*dict_value);
            !it2.IsAtEnd(); it2.Advance()) {
-        if (it2.key() != "background") {
+        if (!ArrayContains(kSafeAppStrings, it2.key())) {
           LOG(ERROR) << extension->id()
                      << " has non-whitelisted manifest entry: "
                      << it.key() << "." << it2.key();
@@ -597,11 +727,10 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
       return true;
     }
 
-    // Allow force-installed platform app if all manifest contents are
-    // whitelisted.
+    // Allow force-installed extension if all manifest contents are whitelisted.
     if ((extension->location() == extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD
          || extension->location() == extensions::Manifest::EXTERNAL_POLICY)
-        && IsPlatformAppSafeForPublicSession(extension)) {
+        && IsSafeForPublicSession(extension)) {
       return true;
     }
   } else if (account_type_ == policy::DeviceLocalAccount::TYPE_KIOSK_APP) {

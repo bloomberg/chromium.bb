@@ -214,7 +214,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // individually.
   {
     base::DictionaryValue values;
-    values.Set("commands", new base::DictionaryValue());
+    values.Set("chrome_settings_overrides", new base::DictionaryValue());
     extension = CreatePlatformAppWithExtraValues(
         &values,
         extensions::Manifest::EXTERNAL_POLICY,
