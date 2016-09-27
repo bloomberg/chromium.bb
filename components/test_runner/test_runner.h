@@ -542,11 +542,12 @@ class TestRunner : public WebTestRunner {
 
   // Credential Manager mock functions
   // TODO(mkwst): Support FederatedCredential.
-  void AddMockCredentialManagerResponse(const std::string& id,
+  void SetMockCredentialManagerResponse(const std::string& id,
                                         const std::string& name,
                                         const std::string& avatar,
                                         const std::string& password);
-  void AddMockCredentialManagerError(const std::string& error);
+  void ClearMockCredentialManagerResponse();
+  void SetMockCredentialManagerError(const std::string& error);
 
   // Takes care of notifying the delegate after a change to layout test runtime
   // flags.

@@ -257,11 +257,12 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void WaitForPolicyDelegate();
   void WaitUntilDone();
   void WaitUntilExternalURLLoad();
-  void AddMockCredentialManagerError(const std::string& error);
-  void AddMockCredentialManagerResponse(const std::string& id,
+  void SetMockCredentialManagerError(const std::string& error);
+  void SetMockCredentialManagerResponse(const std::string& id,
                                         const std::string& name,
                                         const std::string& avatar,
                                         const std::string& password);
+  void ClearMockCredentialManagerResponse();
   bool AnimationScheduled();
   bool CallShouldCloseOnWebView();
   bool DisableAutoResizeMode(int new_width, int new_height);
@@ -336,10 +337,12 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
   return gin::Wrappable<TestRunnerBindings>::GetObjectTemplateBuilder(isolate)
       .SetMethod("abortModal", &TestRunnerBindings::NotImplemented)
       .SetMethod("addDisallowedURL", &TestRunnerBindings::NotImplemented)
-      .SetMethod("addMockCredentialManagerError",
-                 &TestRunnerBindings::AddMockCredentialManagerError)
-      .SetMethod("addMockCredentialManagerResponse",
-                 &TestRunnerBindings::AddMockCredentialManagerResponse)
+      .SetMethod("setMockCredentialManagerError",
+                 &TestRunnerBindings::SetMockCredentialManagerError)
+      .SetMethod("setMockCredentialManagerResponse",
+                 &TestRunnerBindings::SetMockCredentialManagerResponse)
+      .SetMethod("clearMockCredentialManagerResponse",
+                 &TestRunnerBindings::ClearMockCredentialManagerResponse)
       .SetMethod("addMockSpeechRecognitionResult",
                  &TestRunnerBindings::AddMockSpeechRecognitionResult)
       .SetMethod("addOriginAccessWhitelistEntry",
@@ -1376,19 +1379,24 @@ void TestRunnerBindings::SetMockSpeechRecognitionError(
     runner_->SetMockSpeechRecognitionError(error, message);
 }
 
-void TestRunnerBindings::AddMockCredentialManagerResponse(
+void TestRunnerBindings::SetMockCredentialManagerResponse(
     const std::string& id,
     const std::string& name,
     const std::string& avatar,
     const std::string& password) {
   if (runner_)
-    runner_->AddMockCredentialManagerResponse(id, name, avatar, password);
+    runner_->SetMockCredentialManagerResponse(id, name, avatar, password);
 }
 
-void TestRunnerBindings::AddMockCredentialManagerError(
+void TestRunnerBindings::ClearMockCredentialManagerResponse() {
+  if (runner_)
+    runner_->ClearMockCredentialManagerResponse();
+}
+
+void TestRunnerBindings::SetMockCredentialManagerError(
     const std::string& error) {
   if (runner_)
-    runner_->AddMockCredentialManagerError(error);
+    runner_->SetMockCredentialManagerError(error);
 }
 
 void TestRunnerBindings::AddWebPageOverlay() {
@@ -2699,7 +2707,7 @@ void TestRunner::SetMockSpeechRecognitionError(const std::string& error,
                                          WebString::fromUTF8(message));
 }
 
-void TestRunner::AddMockCredentialManagerResponse(const std::string& id,
+void TestRunner::SetMockCredentialManagerResponse(const std::string& id,
                                                   const std::string& name,
                                                   const std::string& avatar,
                                                   const std::string& password) {
@@ -2708,7 +2716,11 @@ void TestRunner::AddMockCredentialManagerResponse(const std::string& id,
       WebString::fromUTF8(name), WebURL(GURL(avatar))));
 }
 
-void TestRunner::AddMockCredentialManagerError(const std::string& error) {
+void TestRunner::ClearMockCredentialManagerResponse() {
+  credential_manager_client_->SetResponse(nullptr);
+}
+
+void TestRunner::SetMockCredentialManagerError(const std::string& error) {
   credential_manager_client_->SetError(error);
 }
 
