@@ -91,9 +91,14 @@ struct CrossThreadCopier : public CrossThreadCopierBase<T, std::is_arithmetic<T>
 
 // CrossThreadCopier specializations follow.
 template <typename T>
-struct CrossThreadCopier<PassRefPtr<T>> : public CrossThreadCopierPassThrough<PassRefPtr<T>> {
+struct CrossThreadCopier<PassRefPtr<T>> {
     STATIC_ONLY(CrossThreadCopier);
+    typedef PassRefPtr<T> Type;
     static_assert(WTF::IsSubclassOfTemplate<T, ThreadSafeRefCounted>::value, "PassRefPtr<T> can be passed across threads only if T is ThreadSafeRefCounted.");
+    static PassRefPtr<T> copy(PassRefPtr<T>&& pointer)
+    {
+        return std::move(pointer);
+    }
 };
 template <typename T>
 struct CrossThreadCopier<RefPtr<T>> : public CrossThreadCopierPassThrough<RefPtr<T>> {
