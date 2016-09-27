@@ -15,7 +15,6 @@
 namespace {
 
 enum Milestone {
-    M53,
     M55,
     M56,
     M57,
@@ -29,8 +28,6 @@ const char* milestoneString(Milestone milestone)
     // https://www.chromium.org/developers/calendar
 
     switch (milestone) {
-    case M53:
-        return "M53, around September 2016";
     case M55:
         return "M55, around December 2016";
     case M56:
@@ -361,9 +358,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
 
     case UseCounter::EncryptedMediaAllSelectedContentTypesMissingCodecs:
         return String::format("EME requires that contentType strings accepted by requestMediaKeySystemAccess() include codecs. Non-standard support for contentType strings without codecs will be removed in %s. Please specify the desired codec(s) as part of the contentType.", milestoneString(M56));
-
-    case UseCounter::UntrustedEventDefaultHandled:
-        return String::format("A DOM event generated from JavaScript has triggered a default action inside the browser. This behavior is non-standard and will be removed in %s. See https://www.chromestatus.com/features/5718803933560832 for more details.", milestoneString(M53));
 
     case UseCounter::TouchStartUserGestureUtilized:
         return willBeRemoved("Performing operations that require explicit user interaction on touchstart events", M55, "5649871251963904");

@@ -253,8 +253,6 @@ inline void EventDispatcher::dispatchEventPostProcess(EventDispatchHandlingState
                     break;
             }
         }
-        if (m_event->defaultHandled() && !m_event->isTrusted() && !isClick)
-            Deprecation::countDeprecation(m_node->document(), UseCounter::UntrustedEventDefaultHandled);
     }
 
     // Track the usage of sending a mousedown event to a select element to force

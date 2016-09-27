@@ -1113,7 +1113,6 @@ public:
         DurableStoragePersist = 1369,
         DurableStoragePersisted = 1370,
         DurableStorageEstimate = 1371,
-        UntrustedEventDefaultHandled = 1372,
         CSSDeepCombinatorAndShadow = 1375,
         OpacityWithPreserve3DQuirk = 1376,
         CSSSelectorPseudoReadOnly = 1377,
