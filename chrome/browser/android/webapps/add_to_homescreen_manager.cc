@@ -14,6 +14,7 @@
 #include "chrome/browser/android/banners/app_banner_infobar_delegate_android.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
+#include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -173,7 +174,7 @@ void AddToHomescreenManager::CreateInfoBarForWebAPK(const ShortcutInfo& info,
       data_fetcher_->web_contents(), nullptr, info.user_title,
       base::MakeUnique<ShortcutInfo>(info), base::MakeUnique<SkBitmap>(icon),
       -1 /* event_request_id */, true /* is_webapk */,
-      true /* start_install_webapk */);
+      webapk::INSTALL_SOURCE_MENU);
 }
 
 SkBitmap AddToHomescreenManager::FinalizeLauncherIconInBackground(
