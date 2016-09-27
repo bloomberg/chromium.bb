@@ -99,6 +99,20 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
         super.onFinishInflate();
     }
 
+    @Override
+    public boolean gatherTransparentRegion(Region region) {
+        // Reset the translation on the control container before attempting to compute the
+        // transparent region.
+        float translateY = getTranslationY();
+        setTranslationY(0);
+
+        ViewUtils.gatherTransparentRegionsForOpaqueView(this, region);
+
+        setTranslationY(translateY);
+
+        return true;
+    }
+
     /**
      * Invalidate the entire capturing bitmap region.
      */
@@ -134,12 +148,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
         @Override
         protected boolean isReadyForCapture() {
             return mReadyForBitmapCapture;
-        }
-
-        @Override
-        public boolean gatherTransparentRegion(Region region) {
-            ViewUtils.gatherTransparentRegionsForOpaqueView(this, region);
-            return true;
         }
     }
 
