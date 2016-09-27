@@ -200,14 +200,11 @@ uint16_t GetUUID16(const BluetoothUUID& uuid) {
   return std::stoi(uuid.canonical_value().substr(4, 4), nullptr, 16);
 }
 
-mojo::Array<arc::mojom::BluetoothPropertyPtr> GetDiscoveryTimeoutProperty(
-    uint32_t timeout) {
+arc::mojom::BluetoothPropertyPtr GetDiscoveryTimeoutProperty(uint32_t timeout) {
   arc::mojom::BluetoothPropertyPtr property =
       arc::mojom::BluetoothProperty::New();
   property->set_discovery_timeout(timeout);
-  mojo::Array<arc::mojom::BluetoothPropertyPtr> properties;
-  properties.push_back(std::move(property));
-  return properties;
+  return property;
 }
 
 void OnCreateServiceRecordDone(const CreateSdpRecordCallback& callback,
@@ -690,20 +687,9 @@ void ArcBluetoothBridge::OnSetDiscoverable(bool discoverable,
                    weak_factory_.GetWeakPtr(), false, 0));
   }
 
-  auto* bluetooth_instance =
-      arc_bridge_service()->bluetooth()->GetInstanceForMethod(
-          "OnAdapterProperties");
-  if (!bluetooth_instance)
-    return;
-
-  if (success) {
-    bluetooth_instance->OnAdapterProperties(
-        mojom::BluetoothStatus::SUCCESS, GetDiscoveryTimeoutProperty(timeout));
-  } else {
-    bluetooth_instance->OnAdapterProperties(
-        mojom::BluetoothStatus::FAIL,
-        mojo::Array<arc::mojom::BluetoothPropertyPtr>::New(0));
-  }
+  auto status =
+      success ? mojom::BluetoothStatus::SUCCESS : mojom::BluetoothStatus::FAIL;
+  OnSetAdapterProperty(status, GetDiscoveryTimeoutProperty(timeout));
 }
 
 // Set discoverable state to on / off.
@@ -718,20 +704,15 @@ void ArcBluetoothBridge::SetDiscoverable(bool discoverable, uint32_t timeout) {
   if (!discoverable && !currently_discoverable)
     return;
 
-  auto* bluetooth_instance =
-      arc_bridge_service()->bluetooth()->GetInstanceForMethod(
-          "OnAdapterProperties");
-
   if (discoverable && currently_discoverable) {
     if (base::TimeDelta::FromSeconds(timeout) >
         discoverable_off_timer_.GetCurrentDelay()) {
       // Restart discoverable_off_timer_ if new timeout is greater
       OnSetDiscoverable(true, true, timeout);
-    } else if (bluetooth_instance) {
+    } else {
       // Just send message to Android if new timeout is lower.
-      bluetooth_instance->OnAdapterProperties(
-          mojom::BluetoothStatus::SUCCESS,
-          GetDiscoveryTimeoutProperty(timeout));
+      OnSetAdapterProperty(mojom::BluetoothStatus::SUCCESS,
+                           GetDiscoveryTimeoutProperty(timeout));
     }
     return;
   }
@@ -744,29 +725,56 @@ void ArcBluetoothBridge::SetDiscoverable(bool discoverable, uint32_t timeout) {
                  weak_factory_.GetWeakPtr(), discoverable, false, timeout));
 }
 
-void ArcBluetoothBridge::SetAdapterProperty(
+void ArcBluetoothBridge::OnSetAdapterProperty(
+    mojom::BluetoothStatus status,
     mojom::BluetoothPropertyPtr property) {
-  DCHECK(bluetooth_adapter_);
   auto* bluetooth_instance =
       arc_bridge_service()->bluetooth()->GetInstanceForMethod(
           "OnAdapterProperties");
-  if (!bluetooth_instance)
-    return;
+  DCHECK(bluetooth_instance);
+
+  auto properties = mojo::Array<arc::mojom::BluetoothPropertyPtr>::New(0);
+  properties.push_back(std::move(property));
+
+  bluetooth_instance->OnAdapterProperties(status, std::move(properties));
+}
+
+void ArcBluetoothBridge::SetAdapterProperty(
+    mojom::BluetoothPropertyPtr property) {
+  DCHECK(bluetooth_adapter_);
 
   if (property->is_discovery_timeout()) {
     uint32_t discovery_timeout = property->get_discovery_timeout();
     if (discovery_timeout > 0) {
       SetDiscoverable(true, discovery_timeout);
     } else {
-      bluetooth_instance->OnAdapterProperties(
-          mojom::BluetoothStatus::PARM_INVALID,
-          mojo::Array<arc::mojom::BluetoothPropertyPtr>::New(0));
+      OnSetAdapterProperty(mojom::BluetoothStatus::PARM_INVALID,
+                           std::move(property));
     }
+  } else if (property->is_bdname()) {
+    auto property_clone = property.Clone();
+    bluetooth_adapter_->SetName(
+        property->get_bdname(),
+        base::Bind(&ArcBluetoothBridge::OnSetAdapterProperty,
+                   weak_factory_.GetWeakPtr(), mojom::BluetoothStatus::SUCCESS,
+                   base::Passed(&property)),
+        base::Bind(&ArcBluetoothBridge::OnSetAdapterProperty,
+                   weak_factory_.GetWeakPtr(), mojom::BluetoothStatus::FAIL,
+                   base::Passed(&property_clone)));
+  } else if (property->is_adapter_scan_mode()) {
+    // Android will set adapter scan mode in these 3 situations.
+    // 1) Set to BT_SCAN_MODE_NONE just before turning BT off.
+    // 2) Set to BT_SCAN_MODE_CONNECTABLE just after turning on.
+    // 3) Set to BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE just before set the
+    //    discoverable timeout.
+    // Since turning BT off/on implied scan mode none/connectable and setting
+    // discovery timeout implied scan mode discoverable, we don't need to
+    // do anything here. We will just call success callback in this case.
+    OnSetAdapterProperty(mojom::BluetoothStatus::SUCCESS, std::move(property));
   } else {
-    // TODO(puthik) Implement other case.
-    bluetooth_instance->OnAdapterProperties(
-        mojom::BluetoothStatus::UNSUPPORTED,
-        mojo::Array<arc::mojom::BluetoothPropertyPtr>::New(0));
+    // Android does not set any other property type.
+    OnSetAdapterProperty(mojom::BluetoothStatus::UNSUPPORTED,
+                         std::move(property));
   }
 }
 

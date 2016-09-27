@@ -377,6 +377,9 @@ class ArcBluetoothBridge
       const device::BluetoothUUID& target_uuid,
       bluez::BluetoothServiceRecordBlueZ::ErrorCode error_code);
 
+  void OnSetAdapterProperty(mojom::BluetoothStatus success,
+                            mojom::BluetoothPropertyPtr property);
+
   bool CalledOnValidThread();
 
   mojo::Binding<mojom::BluetoothHost> binding_;
