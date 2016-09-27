@@ -17,8 +17,10 @@
 namespace blink {
 
 // A transform created by a css property such as "transform" or "perspective"
-// along with a reference to the parent TransformPaintPropertyNode, or nullptr
-// for the root.
+// along with a reference to the parent TransformPaintPropertyNode.
+//
+// The transform tree is rooted at a node with no parent. This root node should
+// not be modified.
 class PLATFORM_EXPORT TransformPaintPropertyNode : public RefCounted<TransformPaintPropertyNode> {
 public:
     static PassRefPtr<TransformPaintPropertyNode> create(
@@ -33,6 +35,7 @@ public:
 
     void update(PassRefPtr<const TransformPaintPropertyNode> parent, const TransformationMatrix& matrix, const FloatPoint3D& origin, bool flattensInheritedTransform = false, unsigned renderingContextID = 0)
     {
+        DCHECK(!isRoot());
         DCHECK(parent != this);
         m_parent = parent;
         m_matrix = matrix;

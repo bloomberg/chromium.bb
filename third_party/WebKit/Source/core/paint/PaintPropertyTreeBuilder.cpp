@@ -52,11 +52,6 @@ PaintPropertyTreeBuilderContext PaintPropertyTreeBuilder::setupInitialContext()
 
     context.current.clip = context.absolutePosition.clip = context.fixedPosition.clip = rootClipNode();
     context.currentEffect = rootEffectNode();
-
-    // TODO(pdr): Update the root layer scrolling paths to use the static root nodes for transform and scroll.
-    if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
-        return context;
-
     context.current.transform = context.absolutePosition.transform = context.fixedPosition.transform = rootTransformNode();
     context.current.scroll = context.absolutePosition.scroll = context.fixedPosition.scroll = rootScrollNode();
 
@@ -129,8 +124,6 @@ void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropert
             frameView.y() + layoutView->location().y() + context.current.paintOffset.y());
         context.current.transform = layoutView->getMutableForPainting().ensureObjectPaintProperties().createOrUpdatePaintOffsetTranslation(
             context.current.transform, frameTranslate, FloatPoint3D());
-        context.current.scroll = layoutView->getMutableForPainting().ensureObjectPaintProperties().createOrUpdateScroll(
-            context.current.scroll, context.current.transform, IntSize(), IntSize(), false, false);
         context.current.paintOffset = LayoutPoint();
         context.current.renderingContextID = 0;
         context.current.shouldFlattenInheritedTransform = true;
@@ -148,18 +141,18 @@ void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropert
     createOrUpdateFrameViewContentClip(frameView, context.current.clip, frameView.preTranslation(), contentClip);
 
     DoubleSize scrollOffset = frameView.scrollOffsetDouble();
-    TransformationMatrix frameScroll;
-    frameScroll.translate(-scrollOffset.width(), -scrollOffset.height());
-    // TODO(pdr): A scroll translation should not be needed when frameView.isScrollable() is false.
-    createOrUpdateFrameViewScrollTranslation(frameView, frameView.preTranslation(), frameScroll, FloatPoint3D());
+    if (frameView.isScrollable() || !scrollOffset.isZero()) {
+        TransformationMatrix frameScroll;
+        frameScroll.translate(-scrollOffset.width(), -scrollOffset.height());
+        createOrUpdateFrameViewScrollTranslation(frameView, frameView.preTranslation(), frameScroll, FloatPoint3D());
 
-    if (frameView.isScrollable()) {
         IntSize scrollClip = frameView.visibleContentSize();
         IntSize scrollBounds = frameView.contentsSize();
         bool userScrollableHorizontal = frameView.userInputScrollable(HorizontalScrollbar);
         bool userScrollableVertical = frameView.userInputScrollable(VerticalScrollbar);
         createOrUpdateFrameViewScroll(frameView, context.current.scroll, frameView.scrollTranslation(), scrollClip, scrollBounds, userScrollableHorizontal, userScrollableVertical);
     } else {
+        frameView.setScrollTranslation(nullptr);
         frameView.setScroll(nullptr);
     }
 
@@ -167,7 +160,7 @@ void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropert
     // They are the same, except that scroll translation does not apply to
     // fixed position descendants.
     ScrollPaintPropertyNode* initialScroll = context.current.scroll;
-    context.current.transform = frameView.scrollTranslation();
+    context.current.transform = frameView.scrollTranslation() ? frameView.scrollTranslation() : frameView.preTranslation();
     context.current.paintOffset = LayoutPoint();
     context.current.clip = frameView.contentClip();
     context.current.scroll = frameView.scroll() ? frameView.scroll() : initialScroll;
@@ -377,6 +370,8 @@ void PaintPropertyTreeBuilder::updateOverflowClip(const LayoutObject& object, Pa
         return;
     }
 
+    // TODO(pdr): We should create an entry in ObjectPaintProperties for border radius to ensure
+    // the owership model of properties is simple for incremental updates.
     // This need to be in top-level block to hold the reference until we finish creating the normal clip node.
     RefPtr<ClipPaintPropertyNode> borderRadiusClip;
     if (box.styleRef().hasBorderRadius()) {
@@ -447,8 +442,7 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(const LayoutObje
         PaintLayer* layer = toLayoutBoxModelObject(object).layer();
         DCHECK(layer);
         DoubleSize scrollOffset = layer->getScrollableArea()->scrollOffset();
-        bool forceScrollingForLayoutView = object.isLayoutView() && RuntimeEnabledFeatures::rootLayerScrollingEnabled();
-        if (forceScrollingForLayoutView || !scrollOffset.isZero() || layer->scrollsOverflow()) {
+        if (!scrollOffset.isZero() || layer->scrollsOverflow()) {
             TransformationMatrix matrix = TransformationMatrix().translate(-scrollOffset.width(), -scrollOffset.height());
             context.current.transform = object.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateScrollTranslation(
                 context.current.transform, matrix, FloatPoint3D(), context.current.shouldFlattenInheritedTransform, context.current.renderingContextID);
@@ -457,9 +451,8 @@ void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(const LayoutObje
             IntSize scrollBounds = layer->getScrollableArea()->contentsSize();
             bool userScrollableHorizontal = layer->getScrollableArea()->userInputScrollable(HorizontalScrollbar);
             bool userScrollableVertical = layer->getScrollableArea()->userInputScrollable(VerticalScrollbar);
-            ScrollPaintPropertyNode* parentScrollNode = forceScrollingForLayoutView ? nullptr : context.current.scroll;
             context.current.scroll = object.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateScroll(
-                parentScrollNode, context.current.transform, scrollClip, scrollBounds, userScrollableHorizontal, userScrollableVertical);
+                context.current.scroll, context.current.transform, scrollClip, scrollBounds, userScrollableHorizontal, userScrollableVertical);
 
             context.current.shouldFlattenInheritedTransform = false;
             return;
@@ -481,10 +474,14 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(const LayoutObject& object
 
     if (object.isLayoutView()) {
         if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+            const auto* initialFixedTransform = context.fixedPosition.transform;
+            auto* initialFixedScroll = context.fixedPosition.scroll;
+
             context.fixedPosition = context.current;
-            const TransformPaintPropertyNode* transform = object.objectPaintProperties()->paintOffsetTranslation();
-            DCHECK(transform);
-            context.fixedPosition.transform = transform;
+
+            // Fixed position transform and scroll nodes should not be affected.
+            context.fixedPosition.transform = initialFixedTransform;
+            context.fixedPosition.scroll = initialFixedScroll;
         }
     } else if (object.canContainFixedPositionObjects()) {
         context.fixedPosition = context.current;

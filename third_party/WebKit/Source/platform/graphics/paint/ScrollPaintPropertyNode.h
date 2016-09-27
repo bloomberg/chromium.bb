@@ -41,6 +41,7 @@ public:
 
     void update(PassRefPtr<ScrollPaintPropertyNode> parent, PassRefPtr<const TransformPaintPropertyNode> scrollOffsetTranslation, const IntSize& clip, const IntSize& bounds, bool userScrollableHorizontal, bool userScrollableVertical)
     {
+        DCHECK(!isRoot());
         DCHECK(parent != this);
         m_parent = parent;
         DCHECK(scrollOffsetTranslation->matrix().isIdentityOr2DTranslation());
