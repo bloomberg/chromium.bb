@@ -9,10 +9,9 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.android.gms.gcm.Task;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
@@ -83,6 +82,8 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        ContextUtils.initApplicationContext(getTargetContext().getApplicationContext());
+
         // This is a PrecacheLauncher with a stubbed out nativeShouldRun so we can change that on
         // the fly without needing to set up a sync backend.
         mLauncher = new PrecacheLauncherUnderTest();
@@ -120,7 +121,6 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
-    @RetryOnFailure
     public void testUpdateEnabled_SyncNotReady_ThenDisabled() {
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
@@ -138,7 +138,6 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
-    @RetryOnFailure
     public void testUpdateEnabled_SyncNotReady_ThenEnabled() {
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
@@ -157,7 +156,6 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
-    @RetryOnFailure
     public void testUpdateEnabled_Disabled_ThenEnabled() {
         setSyncInitialized(true);
         mLauncher.updateEnabled(getTargetContext());
@@ -173,7 +171,6 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
-    @RetryOnFailure
     public void testUpdateEnabled_Enabled_ThenDisabled() {
         mLauncher.setShouldRun(true);
         setSyncInitialized(true);
@@ -190,8 +187,6 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"Precache"})
-    @RetryOnFailure
-    @DisabledTest(message = "crbug.com/648749")
     public void testUpdateEnabledNullProfileSyncService() {
         ProfileSyncService.overrideForTests(null);
 
