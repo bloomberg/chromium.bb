@@ -53,7 +53,9 @@ namespace TestIntegerIndexedPrimaryGlobalV8Internal {
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::toImpl(holder);
+
     v8SetReturnValueInt(info, impl->length());
 }
 
@@ -65,17 +67,22 @@ void lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "length", "TestIntegerIndexedPrimaryGlobal", holder, info.GetIsolate());
     TestIntegerIndexedPrimaryGlobal* impl = V8TestIntegerIndexedPrimaryGlobal::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestIntegerIndexedPrimaryGlobal", "length");
+
+    // Prepare the value to be set.
     int cppValue = toInt8(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setLength(cppValue);
 }
 
 void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestIntegerIndexedPrimaryGlobalV8Internal::lengthAttributeSetter(v8Value, info);
 }
 

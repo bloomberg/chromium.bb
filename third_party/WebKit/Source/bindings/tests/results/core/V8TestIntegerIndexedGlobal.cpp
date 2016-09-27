@@ -53,7 +53,9 @@ namespace TestIntegerIndexedGlobalV8Internal {
 static void lengthAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(holder);
+
     v8SetReturnValue(info, static_cast<double>(impl->length()));
 }
 
@@ -65,17 +67,22 @@ void lengthAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& in
 static void lengthAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "length", "TestIntegerIndexedGlobal", holder, info.GetIsolate());
     TestIntegerIndexedGlobal* impl = V8TestIntegerIndexedGlobal::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestIntegerIndexedGlobal", "length");
+
+    // Prepare the value to be set.
     unsigned long long cppValue = toUInt64(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setLength(cppValue);
 }
 
 void lengthAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestIntegerIndexedGlobalV8Internal::lengthAttributeSetter(v8Value, info);
 }
 

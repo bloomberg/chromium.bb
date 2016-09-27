@@ -80,40 +80,53 @@ static void (*partial2StaticVoidMethodMethodForPartialInterface)(const v8::Funct
 static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceAttribute()), impl);
 }
 
 void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestInterface_TestInterfaceAttribute_AttributeGetter);
+
     TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeGetter(info);
 }
 
 static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "testInterfaceAttribute");
+
+    // Prepare the value to be set.
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
         return;
     }
+
     impl->setTestInterfaceAttribute(cppValue);
 }
 
 void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestInterface_TestInterfaceAttribute_AttributeSetter);
+
     TestInterfaceImplementationV8Internal::testInterfaceAttributeAttributeSetter(v8Value, info);
 }
 
 static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValue(info, impl->doubleAttribute());
 }
 
@@ -125,24 +138,31 @@ void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::V
 static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "doubleAttribute");
+
+    // Prepare the value to be set.
     double cppValue = toRestrictedDouble(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setDoubleAttribute(cppValue);
 }
 
 void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::doubleAttributeAttributeSetter(v8Value, info);
 }
 
 static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValue(info, impl->floatAttribute());
 }
 
@@ -154,24 +174,31 @@ void floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Va
 static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "floatAttribute");
+
+    // Prepare the value to be set.
     float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setFloatAttribute(cppValue);
 }
 
 void floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::floatAttributeAttributeSetter(v8Value, info);
 }
 
 static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValue(info, impl->unrestrictedDoubleAttribute());
 }
 
@@ -183,24 +210,31 @@ void unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallba
 static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedDoubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "unrestrictedDoubleAttribute");
+
+    // Prepare the value to be set.
     double cppValue = toDouble(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setUnrestrictedDoubleAttribute(cppValue);
 }
 
 void unrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::unrestrictedDoubleAttributeAttributeSetter(v8Value, info);
 }
 
 static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValue(info, impl->unrestrictedFloatAttribute());
 }
 
@@ -212,24 +246,31 @@ void unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbac
 static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedFloatAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "unrestrictedFloatAttribute");
+
+    // Prepare the value to be set.
     float cppValue = toFloat(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setUnrestrictedFloatAttribute(cppValue);
 }
 
 void unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::unrestrictedFloatAttributeAttributeSetter(v8Value, info);
 }
 
 static void testEnumAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueString(info, impl->testEnumAttribute(), info.GetIsolate());
 }
 
@@ -241,11 +282,15 @@ void testEnumAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8:
 static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "testEnumAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "testEnumAttribute");
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
     // Returns undefined without setting the value if the value is invalid.
     TrackExceptionState trackExceptionState;
@@ -259,21 +304,26 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
         currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, trackExceptionState.message()));
         return;
     }
+
     impl->setTestEnumAttribute(cppValue);
 }
 
 void testEnumAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::testEnumAttributeAttributeSetter(v8Value, info);
 }
 
 static void stringOrDoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     StringOrDouble result;
     impl->stringOrDoubleAttribute(result);
+
     v8SetReturnValue(info, result);
 }
 
@@ -285,25 +335,32 @@ void stringOrDoubleAttributeAttributeGetterCallback(const v8::FunctionCallbackIn
 static void stringOrDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "stringOrDoubleAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "stringOrDoubleAttribute");
+
+    // Prepare the value to be set.
     StringOrDouble cppValue;
     V8StringOrDouble::toImpl(info.GetIsolate(), v8Value, cppValue, UnionTypeConversionMode::NotNullable, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setStringOrDoubleAttribute(cppValue);
 }
 
 void stringOrDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::stringOrDoubleAttributeAttributeSetter(v8Value, info);
 }
 
 static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueInt(info, impl->conditionalLongAttribute());
 }
 
@@ -315,24 +372,31 @@ void conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackI
 static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "conditionalLongAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setConditionalLongAttribute(cppValue);
 }
 
 void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::conditionalLongAttributeAttributeSetter(v8Value, info);
 }
 
 static void conditionalReadOnlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueInt(info, impl->conditionalReadOnlyLongAttribute());
 }
 
@@ -353,15 +417,18 @@ void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo
 
 static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     TestInterfaceImplementation::setStaticStringAttribute(cppValue);
 }
 
 void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::staticStringAttributeAttributeSetter(v8Value, info);
 }
 
@@ -377,19 +444,24 @@ void staticReturnDOMWrapperAttributeAttributeGetterCallback(const v8::FunctionCa
 
 static void staticReturnDOMWrapperAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "staticReturnDOMWrapperAttribute", "TestInterface", holder, info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "staticReturnDOMWrapperAttribute");
+
+    // Prepare the value to be set.
     TestInterfaceImplementation* cppValue = V8TestInterface::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
         return;
     }
+
     TestInterfaceImplementation::setStaticReturnDOMWrapperAttribute(cppValue);
 }
 
 void staticReturnDOMWrapperAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::staticReturnDOMWrapperAttributeAttributeSetter(v8Value, info);
 }
 
@@ -406,10 +478,15 @@ void staticReadOnlyStringAttributeAttributeGetterCallback(const v8::FunctionCall
 static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestInterfaceImplementation* cppValue(WTF::getPtr(TestInterfaceImplementation::staticReadOnlyReturnDOMWrapperAttribute()));
+
+    // Keep the wrapper object for the return value alive as long as |this|
+    // object is alive in order to save creation time of the wrapper object.
     if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
         return;
     v8::Local<v8::Value> v8Value(toV8(cppValue, holder, info.GetIsolate()));
-    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "staticReadOnlyReturnDOMWrapperAttribute"), v8Value);
+    const char kKeepAliveKey[] = "KeepAlive#TestInterface#staticReadOnlyReturnDOMWrapperAttribute";
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
+
     v8SetReturnValue(info, v8Value);
 }
 
@@ -431,7 +508,9 @@ void staticConditionalReadOnlyLongAttributeAttributeGetterCallback(const v8::Fun
 static void legacyInterfaceTypeCheckingAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->legacyInterfaceTypeCheckingAttribute()), impl);
 }
 
@@ -444,20 +523,26 @@ static void legacyInterfaceTypeCheckingAttributeAttributeSetter(v8::Local<v8::Va
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    // Prepare the value to be set.
     TestInterfaceEmpty* cppValue = V8TestInterfaceEmpty::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
     impl->setLegacyInterfaceTypeCheckingAttribute(cppValue);
 }
 
 void legacyInterfaceTypeCheckingAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::legacyInterfaceTypeCheckingAttributeAttributeSetter(v8Value, info);
 }
 
 static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueInt(info, impl->alwaysExposedAttribute());
 }
 
@@ -469,24 +554,31 @@ void alwaysExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInf
 static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "alwaysExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "alwaysExposedAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setAlwaysExposedAttribute(cppValue);
 }
 
 void alwaysExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::alwaysExposedAttributeAttributeSetter(v8Value, info);
 }
 
 static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueInt(info, impl->workerExposedAttribute());
 }
 
@@ -498,24 +590,31 @@ void workerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInf
 static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "workerExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "workerExposedAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setWorkerExposedAttribute(cppValue);
 }
 
 void workerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::workerExposedAttributeAttributeSetter(v8Value, info);
 }
 
 static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueInt(info, impl->windowExposedAttribute());
 }
 
@@ -527,26 +626,36 @@ void windowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInf
 static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "windowExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "windowExposedAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setWindowExposedAttribute(cppValue);
 }
 
 void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::windowExposedAttributeAttributeSetter(v8Value, info);
 }
 
 static void lenientThisAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    // [LenientThis]
+    // Make sure that info.Holder() really points to an instance if [LenientThis].
     if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate()))
         return; // Return silently because of [LenientThis].
+
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValue(info, impl->lenientThisAttribute().v8Value());
 }
 
@@ -557,24 +666,33 @@ void lenientThisAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<
 
 static void lenientThisAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    // [LenientThis]
+    // Make sure that info.Holder() really points to an instance if [LenientThis].
     if (!V8TestInterface::hasInstance(info.Holder(), info.GetIsolate()))
         return; // Return silently because of [LenientThis].
+
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    // Prepare the value to be set.
     ScriptValue cppValue = ScriptValue(ScriptState::current(info.GetIsolate()), v8Value);
+
     impl->setLenientThisAttribute(cppValue);
 }
 
 void lenientThisAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::lenientThisAttributeAttributeSetter(v8Value, info);
 }
 
 static void secureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextAttribute()), impl);
 }
 
@@ -586,26 +704,35 @@ void secureContextAttributeAttributeGetterCallback(const v8::FunctionCallbackInf
 static void secureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "secureContextAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     impl->setSecureContextAttribute(cppValue);
 }
 
 void secureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::secureContextAttributeAttributeSetter(v8Value, info);
 }
 
 static void secureContextRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextRuntimeEnabledAttribute()), impl);
 }
 
@@ -617,26 +744,35 @@ void secureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8::Funct
 static void secureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "secureContextRuntimeEnabledAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextRuntimeEnabledAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     impl->setSecureContextRuntimeEnabledAttribute(cppValue);
 }
 
 void secureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::secureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 static void secureContextWindowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedAttribute()), impl);
 }
 
@@ -648,26 +784,35 @@ void secureContextWindowExposedAttributeAttributeGetterCallback(const v8::Functi
 static void secureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "secureContextWindowExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextWindowExposedAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     impl->setSecureContextWindowExposedAttribute(cppValue);
 }
 
 void secureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::secureContextWindowExposedAttributeAttributeSetter(v8Value, info);
 }
 
 static void secureContextWorkerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedAttribute()), impl);
 }
 
@@ -679,26 +824,35 @@ void secureContextWorkerExposedAttributeAttributeGetterCallback(const v8::Functi
 static void secureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "secureContextWorkerExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextWorkerExposedAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     impl->setSecureContextWorkerExposedAttribute(cppValue);
 }
 
 void secureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::secureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
 }
 
 static void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWindowExposedRuntimeEnabledAttribute()), impl);
 }
 
@@ -710,26 +864,35 @@ void secureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCallback(co
 static void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "secureContextWindowExposedRuntimeEnabledAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextWindowExposedRuntimeEnabledAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     impl->setSecureContextWindowExposedRuntimeEnabledAttribute(cppValue);
 }
 
 void secureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::secureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->secureContextWorkerExposedRuntimeEnabledAttribute()), impl);
 }
 
@@ -741,19 +904,26 @@ void secureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCallback(co
 static void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "secureContextWorkerExposedRuntimeEnabledAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "secureContextWorkerExposedRuntimeEnabledAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     impl->setSecureContextWorkerExposedRuntimeEnabledAttribute(cppValue);
 }
 
 void secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::secureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
@@ -779,22 +949,27 @@ void implementsStaticStringAttributeAttributeGetterCallback(const v8::FunctionCa
 
 static void implementsStaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     TestInterfaceImplementation::setImplementsStaticStringAttribute(cppValue);
 }
 
 void implementsStaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::implementsStaticStringAttributeAttributeSetter(v8Value, info);
 }
 
 static void implementsReadonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueString(info, impl->implementsReadonlyStringAttribute(), info.GetIsolate());
 }
 
@@ -806,7 +981,9 @@ void implementsReadonlyStringAttributeAttributeGetterCallback(const v8::Function
 static void implementsStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueString(info, impl->implementsStringAttribute(), info.GetIsolate());
 }
 
@@ -819,22 +996,28 @@ static void implementsStringAttributeAttributeSetter(v8::Local<v8::Value> v8Valu
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     impl->setImplementsStringAttribute(cppValue);
 }
 
 void implementsStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::implementsStringAttributeAttributeSetter(v8Value, info);
 }
 
 static void implementsNodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->implementsNodeAttribute()), impl);
 }
 
@@ -846,27 +1029,37 @@ void implementsNodeAttributeAttributeGetterCallback(const v8::FunctionCallbackIn
 static void implementsNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "implementsNodeAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "implementsNodeAttribute");
+
+    // Prepare the value to be set.
     Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         return;
     }
+
     impl->setImplementsNodeAttribute(cppValue);
 }
 
 void implementsNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::implementsNodeAttributeAttributeSetter(v8Value, info);
 }
 
 static void implementsEventHandlerAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     EventListener* cppValue(WTF::getPtr(impl->implementsEventHandlerAttribute()));
+
     v8SetReturnValue(info, cppValue ? V8AbstractEventListener::cast(cppValue)->getListenerOrNull(info.GetIsolate(), impl->getExecutionContext()) : v8::Null(info.GetIsolate()).As<v8::Value>());
 }
 
@@ -879,20 +1072,26 @@ static void implementsEventHandlerAttributeAttributeSetter(v8::Local<v8::Value> 
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    // Prepare the value to be set.
     moveEventListenerToNewWrapper(info.GetIsolate(), holder, impl->implementsEventHandlerAttribute(), v8Value, V8TestInterface::eventListenerCacheIndex);
+
     impl->setImplementsEventHandlerAttribute(V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate));
 }
 
 void implementsEventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::implementsEventHandlerAttributeAttributeSetter(v8Value, info);
 }
 
 static void implementsRuntimeEnabledNodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->implementsRuntimeEnabledNodeAttribute()), impl);
 }
 
@@ -904,19 +1103,26 @@ void implementsRuntimeEnabledNodeAttributeAttributeGetterCallback(const v8::Func
 static void implementsRuntimeEnabledNodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "implementsRuntimeEnabledNodeAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "implementsRuntimeEnabledNodeAttribute");
+
+    // Prepare the value to be set.
     Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'Node'.");
         return;
     }
+
     impl->setImplementsRuntimeEnabledNodeAttribute(cppValue);
 }
 
 void implementsRuntimeEnabledNodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::implementsRuntimeEnabledNodeAttributeAttributeSetter(v8Value, info);
 }
 
@@ -932,22 +1138,27 @@ void implements2StaticStringAttributeAttributeGetterCallback(const v8::FunctionC
 
 static void implements2StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     TestImplements2::setImplements2StaticStringAttribute(cppValue);
 }
 
 void implements2StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::implements2StaticStringAttributeAttributeSetter(v8Value, info);
 }
 
 static void implements2StringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueString(info, TestImplements2::implements2StringAttribute(*impl), info.GetIsolate());
 }
 
@@ -960,22 +1171,28 @@ static void implements2StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     TestImplements2::setImplements2StringAttribute(*impl, cppValue);
 }
 
 void implements2StringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::implements2StringAttributeAttributeSetter(v8Value, info);
 }
 
 static void implements3StringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueString(info, TestImplements3Implementation::implements3StringAttribute(*impl), info.GetIsolate());
 }
 
@@ -988,15 +1205,19 @@ static void implements3StringAttributeAttributeSetter(v8::Local<v8::Value> v8Val
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     TestImplements3Implementation::setImplements3StringAttribute(*impl, cppValue);
 }
 
 void implements3StringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::implements3StringAttributeAttributeSetter(v8Value, info);
 }
 
@@ -1012,22 +1233,27 @@ void implements3StaticStringAttributeAttributeGetterCallback(const v8::FunctionC
 
 static void implements3StaticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     TestImplements3Implementation::setImplements3StaticStringAttribute(cppValue);
 }
 
 void implements3StaticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::implements3StaticStringAttributeAttributeSetter(v8Value, info);
 }
 
 static void partialLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueInt(info, TestInterfacePartial::partialLongAttribute(*impl));
 }
 
@@ -1039,17 +1265,22 @@ void partialLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<
 static void partialLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialLongAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     TestInterfacePartial::setPartialLongAttribute(*impl, cppValue);
 }
 
 void partialLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialLongAttributeAttributeSetter(v8Value, info);
 }
 
@@ -1065,25 +1296,31 @@ void partialStaticLongAttributeAttributeGetterCallback(const v8::FunctionCallbac
 
 static void partialStaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialStaticLongAttribute", "TestInterface", holder, info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialStaticLongAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     TestInterfacePartial::setPartialStaticLongAttribute(cppValue);
 }
 
 void partialStaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialStaticLongAttributeAttributeSetter(v8Value, info);
 }
 
 static void partialCallWithExecutionContextLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+
     v8SetReturnValueInt(info, TestInterfacePartial::partialCallWithExecutionContextLongAttribute(executionContext, *impl));
 }
 
@@ -1095,25 +1332,33 @@ void partialCallWithExecutionContextLongAttributeAttributeGetterCallback(const v
 static void partialCallWithExecutionContextLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialCallWithExecutionContextLongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialCallWithExecutionContextLongAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+
     TestInterfacePartial::setPartialCallWithExecutionContextLongAttribute(executionContext, *impl, cppValue);
 }
 
 void partialCallWithExecutionContextLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialCallWithExecutionContextLongAttributeAttributeSetter(v8Value, info);
 }
 
 static void partialPartialEnumTypeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueString(info, TestInterfacePartial::partialPartialEnumTypeAttribute(*impl), info.GetIsolate());
 }
 
@@ -1125,11 +1370,15 @@ void partialPartialEnumTypeAttributeAttributeGetterCallback(const v8::FunctionCa
 static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialPartialEnumTypeAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialPartialEnumTypeAttribute");
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
     // Returns undefined without setting the value if the value is invalid.
     TrackExceptionState trackExceptionState;
@@ -1141,22 +1390,27 @@ static void partialPartialEnumTypeAttributeAttributeSetter(v8::Local<v8::Value> 
         currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, trackExceptionState.message()));
         return;
     }
+
     TestInterfacePartial::setPartialPartialEnumTypeAttribute(*impl, cppValue);
 }
 
 void partialPartialEnumTypeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialPartialEnumTypeAttributeAttributeSetter(v8Value, info);
 }
 
 static void stringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     String result;
     if (!V8TestInterface::PrivateScript::stringAttributeAttributeGetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, &result))
         return;
+
     v8SetReturnValueString(info, result, info.GetIsolate());
 }
 
@@ -1169,22 +1423,28 @@ static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     V8TestInterface::PrivateScript::stringAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
 }
 
 void stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::stringAttributeAttributeSetter(v8Value, info);
 }
 
 static void partial2LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueInt(info, TestInterfacePartial2Implementation::partial2LongAttribute(*impl));
 }
 
@@ -1196,17 +1456,22 @@ void partial2LongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo
 static void partial2LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partial2LongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial2LongAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     TestInterfacePartial2Implementation::setPartial2LongAttribute(*impl, cppValue);
 }
 
 void partial2LongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partial2LongAttributeAttributeSetter(v8Value, info);
 }
 
@@ -1222,24 +1487,29 @@ void partial2StaticLongAttributeAttributeGetterCallback(const v8::FunctionCallba
 
 static void partial2StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partial2StaticLongAttribute", "TestInterface", holder, info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial2StaticLongAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     TestInterfacePartial2Implementation::setPartial2StaticLongAttribute(cppValue);
 }
 
 void partial2StaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partial2StaticLongAttributeAttributeSetter(v8Value, info);
 }
 
 static void partial2SecureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, TestInterfacePartial2Implementation::partial2SecureContextAttribute(*impl), impl);
 }
 
@@ -1251,26 +1521,35 @@ void partial2SecureContextAttributeAttributeGetterCallback(const v8::FunctionCal
 static void partial2SecureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partial2SecureContextAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial2SecureContextAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     TestInterfacePartial2Implementation::setPartial2SecureContextAttribute(*impl, cppValue);
 }
 
 void partial2SecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partial2SecureContextAttributeAttributeSetter(v8Value, info);
 }
 
 static void partialSecureContextAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextAttribute(*impl), impl);
 }
 
@@ -1282,26 +1561,35 @@ void partialSecureContextAttributeAttributeGetterCallback(const v8::FunctionCall
 static void partialSecureContextAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     TestInterfacePartialSecureContext::setPartialSecureContextAttribute(*impl, cppValue);
 }
 
 void partialSecureContextAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialSecureContextAttributeAttributeSetter(v8Value, info);
 }
 
 static void partialSecureContextRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextRuntimeEnabledAttribute(*impl), impl);
 }
 
@@ -1313,26 +1601,35 @@ void partialSecureContextRuntimeEnabledAttributeAttributeGetterCallback(const v8
 static void partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextRuntimeEnabledAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextRuntimeEnabledAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     TestInterfacePartialSecureContext::setPartialSecureContextRuntimeEnabledAttribute(*impl, cppValue);
 }
 
 void partialSecureContextRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialSecureContextRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 static void partialSecureContextWindowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWindowExposedAttribute(*impl), impl);
 }
 
@@ -1344,26 +1641,35 @@ void partialSecureContextWindowExposedAttributeAttributeGetterCallback(const v8:
 static void partialSecureContextWindowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextWindowExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextWindowExposedAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     TestInterfacePartialSecureContext::setPartialSecureContextWindowExposedAttribute(*impl, cppValue);
 }
 
 void partialSecureContextWindowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedAttributeAttributeSetter(v8Value, info);
 }
 
 static void partialSecureContextWorkerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWorkerExposedAttribute(*impl), impl);
 }
 
@@ -1375,26 +1681,35 @@ void partialSecureContextWorkerExposedAttributeAttributeGetterCallback(const v8:
 static void partialSecureContextWorkerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextWorkerExposedAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextWorkerExposedAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     TestInterfacePartialSecureContext::setPartialSecureContextWorkerExposedAttribute(*impl, cppValue);
 }
 
 void partialSecureContextWorkerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedAttributeAttributeSetter(v8Value, info);
 }
 
 static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWindowExposedRuntimeEnabledAttribute(*impl), impl);
 }
 
@@ -1406,26 +1721,35 @@ void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeGetterCall
 static void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextWindowExposedRuntimeEnabledAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextWindowExposedRuntimeEnabledAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     TestInterfacePartialSecureContext::setPartialSecureContextWindowExposedRuntimeEnabledAttribute(*impl, cppValue);
 }
 
 void partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialSecureContextWindowExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 
 static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueFast(info, TestInterfacePartialSecureContext::partialSecureContextWorkerExposedRuntimeEnabledAttribute(*impl), impl);
 }
 
@@ -1437,19 +1761,26 @@ void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeGetterCall
 static void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partialSecureContextWorkerExposedRuntimeEnabledAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partialSecureContextWorkerExposedRuntimeEnabledAttribute");
+
+    // Prepare the value to be set.
     bool* cppValue = V8bool::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'bool'.");
         return;
     }
+
     TestInterfacePartialSecureContext::setPartialSecureContextWorkerExposedRuntimeEnabledAttribute(*impl, cppValue);
 }
 
 void partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationV8Internal::partialSecureContextWorkerExposedRuntimeEnabledAttributeAttributeSetter(v8Value, info);
 }
 

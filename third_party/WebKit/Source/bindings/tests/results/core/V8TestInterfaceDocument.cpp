@@ -57,7 +57,9 @@ namespace TestInterfaceDocumentV8Internal {
 static void locationAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceDocument* impl = V8TestInterfaceDocument::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->location()), impl);
 }
 
@@ -73,15 +75,19 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
     Location* impl = WTF::getPtr(proxyImpl->location());
     if (!impl)
         return;
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     impl->setHref(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceDocumentV8Internal::locationAttributeSetter(v8Value, info);
 }
 

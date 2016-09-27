@@ -53,7 +53,9 @@ namespace TestInterfaceEventInitConstructorV8Internal {
 static void readonlyStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceEventInitConstructor* impl = V8TestInterfaceEventInitConstructor::toImpl(holder);
+
     v8SetReturnValueString(info, impl->readonlyStringAttribute(), info.GetIsolate());
 }
 
@@ -65,7 +67,9 @@ void readonlyStringAttributeAttributeGetterCallback(const v8::FunctionCallbackIn
 static void isTrustedAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceEventInitConstructor* impl = V8TestInterfaceEventInitConstructor::toImpl(holder);
+
     v8SetReturnValueBool(info, impl->isTrusted());
 }
 

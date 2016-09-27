@@ -57,7 +57,9 @@ namespace TestInterface3V8Internal {
 static void readonlyStringifierAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterface3* impl = V8TestInterface3::toImpl(holder);
+
     v8SetReturnValueString(info, impl->readonlyStringifierAttribute(), info.GetIsolate());
 }
 

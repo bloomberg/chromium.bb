@@ -59,7 +59,9 @@ namespace TestInterface5ImplementationV8Internal {
 static void testInterfaceAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->testInterfaceAttribute()), impl);
 }
 
@@ -71,26 +73,35 @@ void testInterfaceAttributeAttributeGetterCallback(const v8::FunctionCallbackInf
 static void testInterfaceAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "testInterfaceAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "testInterfaceAttribute");
+
+    // Prepare the value to be set.
     TestInterface5Implementation* cppValue = V8TestInterface5::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterface5'.");
         return;
     }
+
     impl->setTestInterfaceAttribute(cppValue);
 }
 
 void testInterfaceAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterface5ImplementationV8Internal::testInterfaceAttributeAttributeSetter(v8Value, info);
 }
 
 static void doubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
     v8SetReturnValue(info, impl->doubleAttribute());
 }
 
@@ -102,24 +113,31 @@ void doubleAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::V
 static void doubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "doubleAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "doubleAttribute");
+
+    // Prepare the value to be set.
     double cppValue = toRestrictedDouble(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setDoubleAttribute(cppValue);
 }
 
 void doubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterface5ImplementationV8Internal::doubleAttributeAttributeSetter(v8Value, info);
 }
 
 static void floatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
     v8SetReturnValue(info, impl->floatAttribute());
 }
 
@@ -131,24 +149,31 @@ void floatAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Va
 static void floatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "floatAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "floatAttribute");
+
+    // Prepare the value to be set.
     float cppValue = toRestrictedFloat(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setFloatAttribute(cppValue);
 }
 
 void floatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterface5ImplementationV8Internal::floatAttributeAttributeSetter(v8Value, info);
 }
 
 static void unrestrictedDoubleAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
     v8SetReturnValue(info, impl->unrestrictedDoubleAttribute());
 }
 
@@ -160,24 +185,31 @@ void unrestrictedDoubleAttributeAttributeGetterCallback(const v8::FunctionCallba
 static void unrestrictedDoubleAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedDoubleAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "unrestrictedDoubleAttribute");
+
+    // Prepare the value to be set.
     double cppValue = toDouble(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setUnrestrictedDoubleAttribute(cppValue);
 }
 
 void unrestrictedDoubleAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterface5ImplementationV8Internal::unrestrictedDoubleAttributeAttributeSetter(v8Value, info);
 }
 
 static void unrestrictedFloatAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
     v8SetReturnValue(info, impl->unrestrictedFloatAttribute());
 }
 
@@ -189,17 +221,22 @@ void unrestrictedFloatAttributeAttributeGetterCallback(const v8::FunctionCallbac
 static void unrestrictedFloatAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "unrestrictedFloatAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "unrestrictedFloatAttribute");
+
+    // Prepare the value to be set.
     float cppValue = toFloat(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setUnrestrictedFloatAttribute(cppValue);
 }
 
 void unrestrictedFloatAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterface5ImplementationV8Internal::unrestrictedFloatAttributeAttributeSetter(v8Value, info);
 }
 
@@ -215,22 +252,27 @@ void staticStringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo
 
 static void staticStringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     TestInterface5Implementation::setStaticStringAttribute(cppValue);
 }
 
 void staticStringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterface5ImplementationV8Internal::staticStringAttributeAttributeSetter(v8Value, info);
 }
 
 static void alwaysExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
     v8SetReturnValueInt(info, impl->alwaysExposedAttribute());
 }
 
@@ -242,24 +284,31 @@ void alwaysExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInf
 static void alwaysExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "alwaysExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "alwaysExposedAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setAlwaysExposedAttribute(cppValue);
 }
 
 void alwaysExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterface5ImplementationV8Internal::alwaysExposedAttributeAttributeSetter(v8Value, info);
 }
 
 static void workerExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
     v8SetReturnValueInt(info, impl->workerExposedAttribute());
 }
 
@@ -271,24 +320,31 @@ void workerExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInf
 static void workerExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "workerExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "workerExposedAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setWorkerExposedAttribute(cppValue);
 }
 
 void workerExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterface5ImplementationV8Internal::workerExposedAttributeAttributeSetter(v8Value, info);
 }
 
 static void windowExposedAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
     v8SetReturnValueInt(info, impl->windowExposedAttribute());
 }
 
@@ -300,17 +356,22 @@ void windowExposedAttributeAttributeGetterCallback(const v8::FunctionCallbackInf
 static void windowExposedAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "windowExposedAttribute", "TestInterface5", holder, info.GetIsolate());
     TestInterface5Implementation* impl = V8TestInterface5::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface5", "windowExposedAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setWindowExposedAttribute(cppValue);
 }
 
 void windowExposedAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterface5ImplementationV8Internal::windowExposedAttributeAttributeSetter(v8Value, info);
 }
 

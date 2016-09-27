@@ -56,7 +56,9 @@ namespace TestInterfaceGarbageCollectedV8Internal {
 static void attr1AttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
+
     v8SetReturnValueFast(info, WTF::getPtr(impl->attr1()), impl);
 }
 
@@ -68,19 +70,26 @@ void attr1AttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& inf
 static void attr1AttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "attr1", "TestInterfaceGarbageCollected", holder, info.GetIsolate());
     TestInterfaceGarbageCollected* impl = V8TestInterfaceGarbageCollected::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceGarbageCollected", "attr1");
+
+    // Prepare the value to be set.
     TestInterfaceGarbageCollected* cppValue = V8TestInterfaceGarbageCollected::toImplWithTypeCheck(info.GetIsolate(), v8Value);
+
+    // Type check per: http://heycam.github.io/webidl/#es-interface
     if (!cppValue) {
         exceptionState.throwTypeError("The provided value is not of type 'TestInterfaceGarbageCollected'.");
         return;
     }
+
     impl->setAttr1(cppValue);
 }
 
 void attr1AttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceGarbageCollectedV8Internal::attr1AttributeSetter(v8Value, info);
 }
 

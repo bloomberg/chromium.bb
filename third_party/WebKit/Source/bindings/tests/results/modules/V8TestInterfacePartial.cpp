@@ -34,7 +34,9 @@ namespace TestInterfaceImplementationPartialV8Internal {
 static void partial4LongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
     v8SetReturnValueInt(info, TestInterfacePartial4::partial4LongAttribute(*impl));
 }
 
@@ -46,17 +48,22 @@ void partial4LongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo
 static void partial4LongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partial4LongAttribute", "TestInterface", holder, info.GetIsolate());
     TestInterfaceImplementation* impl = V8TestInterface::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial4LongAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     TestInterfacePartial4::setPartial4LongAttribute(*impl, cppValue);
 }
 
 void partial4LongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationPartialV8Internal::partial4LongAttributeAttributeSetter(v8Value, info);
 }
 
@@ -72,17 +79,20 @@ void partial4StaticLongAttributeAttributeGetterCallback(const v8::FunctionCallba
 
 static void partial4StaticLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "partial4StaticLongAttribute", "TestInterface", holder, info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterface", "partial4StaticLongAttribute");
+
+    // Prepare the value to be set.
     int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
     if (exceptionState.hadException())
         return;
+
     TestInterfacePartial4::setPartial4StaticLongAttribute(cppValue);
 }
 
 void partial4StaticLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestInterfaceImplementationPartialV8Internal::partial4StaticLongAttributeAttributeSetter(v8Value, info);
 }
 

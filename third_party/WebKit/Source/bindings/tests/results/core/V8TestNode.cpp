@@ -52,7 +52,9 @@ namespace TestNodeV8Internal {
 static void hrefAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestNode* impl = V8TestNode::toImpl(holder);
+
     v8SetReturnValueString(info, impl->href(), info.GetIsolate());
 }
 
@@ -65,22 +67,28 @@ static void hrefAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Function
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     impl->setHref(cppValue);
 }
 
 void hrefAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestNodeV8Internal::hrefAttributeSetter(v8Value, info);
 }
 
 static void hrefThrowsAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestNode* impl = V8TestNode::toImpl(holder);
+
     v8SetReturnValueString(info, impl->hrefThrows(), info.GetIsolate());
 }
 
@@ -92,24 +100,31 @@ void hrefThrowsAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>
 static void hrefThrowsAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "hrefThrows", "TestNode", holder, info.GetIsolate());
     TestNode* impl = V8TestNode::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestNode", "hrefThrows");
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     impl->setHrefThrows(cppValue, exceptionState);
 }
 
 void hrefThrowsAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestNodeV8Internal::hrefThrowsAttributeSetter(v8Value, info);
 }
 
 static void hrefCallWithAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestNode* impl = V8TestNode::toImpl(holder);
+
     v8SetReturnValueString(info, impl->hrefCallWith(), info.GetIsolate());
 }
 
@@ -122,23 +137,30 @@ static void hrefCallWithAttributeSetter(v8::Local<v8::Value> v8Value, const v8::
 {
     v8::Local<v8::Object> holder = info.Holder();
     TestNode* impl = V8TestNode::toImpl(holder);
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
+
     ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
+
     impl->setHrefCallWith(executionContext, currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
 }
 
 void hrefCallWithAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestNodeV8Internal::hrefCallWithAttributeSetter(v8Value, info);
 }
 
 static void hrefByteStringAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
+
     TestNode* impl = V8TestNode::toImpl(holder);
+
     v8SetReturnValueString(info, impl->hrefByteString(), info.GetIsolate());
 }
 
@@ -150,17 +172,22 @@ void hrefByteStringAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Va
 static void hrefByteStringAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "hrefByteString", "TestNode", holder, info.GetIsolate());
     TestNode* impl = V8TestNode::toImpl(holder);
+
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestNode", "hrefByteString");
+
+    // Prepare the value to be set.
     V8StringResource<> cppValue = toByteString(info.GetIsolate(), v8Value, exceptionState);
     if (exceptionState.hadException())
         return;
+
     impl->setHrefByteString(cppValue);
 }
 
 void hrefByteStringAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> v8Value = info[0];
+
     TestNodeV8Internal::hrefByteStringAttributeSetter(v8Value, info);
 }
 
