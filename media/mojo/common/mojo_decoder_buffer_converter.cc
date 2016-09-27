@@ -29,10 +29,10 @@ std::unique_ptr<mojo::DataPipe> CreateDataPipe(DemuxerStream::Type type) {
     // TODO(timav): Consider capacity calculation based on AudioDecoderConfig.
     options.capacity_num_bytes = 512 * 1024;
   } else if (type == DemuxerStream::VIDEO) {
-    // Video can get quite large; at 4K, VP9 delivers packets which are ~1MB in
-    // size; so allow for some head room.
+    // Video can get quite large; at 4K, VP9 delivers packets which could be
+    // larger than 2MB in size; so allow for some head room.
     // TODO(xhwang, sandersd): Provide a better way to customize this value.
-    options.capacity_num_bytes = 2 * (1024 * 1024);
+    options.capacity_num_bytes = 3 * (1024 * 1024);
   } else {
     NOTREACHED() << "Unsupported type: " << type;
     // Choose an arbitrary size.
