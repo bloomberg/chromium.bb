@@ -61,24 +61,24 @@ def _CreateTrial(study_name, experiment_configs, platform):
       platform_experiment_lists))
   return {
     'name': study_name,
-    'groups': [_CreateExperiment(experiment)
-               for experiment in platform_experiments],
+    'experiments': [_CreateExperiment(experiment)
+                    for experiment in platform_experiments],
   }
 
 def _GenerateTrials(config, platform):
   for study_name in sorted(config.keys()):
     study = _CreateTrial(study_name, config[study_name], platform)
-    # To avoid converting studies with empty groups (e.g. the study doesn't
+    # To avoid converting studies with empty experiments (e.g. the study doesn't
     # apply to the target platform), this generator only yields studies that
-    # have non-empty groups.
-    if study['groups']:
+    # have non-empty experiments.
+    if study['experiments']:
       yield study
 
 def _FieldTrialConfigToDescription(config, platform):
   return {
     'elements': {
       'kFieldTrialConfig': {
-        'trials': [study for study in _GenerateTrials(config, platform)]
+        'studies': [study for study in _GenerateTrials(config, platform)]
       }
     }
   }

@@ -48,10 +48,10 @@ class FieldTrialToStruct(unittest.TestCase):
     expected = {
       'elements': {
         'kFieldTrialConfig': {
-          'trials': [
+          'studies': [
             {
               'name': 'Trial1',
-              'groups': [
+              'experiments': [
                 {
                   'name': 'Group1',
                   'params': [
@@ -74,7 +74,7 @@ class FieldTrialToStruct(unittest.TestCase):
             },
             {
               'name': 'Trial2',
-              'groups': [{'name': 'OtherGroup'}]
+              'experiments': [{'name': 'OtherGroup'}]
             },
           ]
         }
@@ -131,10 +131,10 @@ class FieldTrialToStruct(unittest.TestCase):
     expected = {
       'elements': {
         'kFieldTrialConfig': {
-          'trials': [
+          'studies': [
             {
               'name': 'Trial1',
-              'groups': [
+              'experiments': [
                 {
                   'name': 'Group1',
                   'params': [
@@ -171,10 +171,10 @@ class FieldTrialToStruct(unittest.TestCase):
     expected = {
       'elements': {
         'kFieldTrialConfig': {
-          'trials': [
+          'studies': [
             {
               'name': 'Trial2',
-              'groups': [
+              'experiments': [
                 {
                   'name': 'OtherGroup',
                 },

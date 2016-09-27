@@ -58,20 +58,20 @@ TEST_F(VariationsUtilTest, AssociateParamsFromStringWithSameTrial) {
 }
 
 TEST_F(VariationsUtilTest, AssociateParamsFromFieldTrialConfig) {
-  const FieldTrialTestingGroupParams array_kFieldTrialConfig_params_0[] =
+  const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_0[] =
       {{"x", "1"}, {"y", "2"}};
-  const FieldTrialTestingGroup array_kFieldTrialConfig_groups_0[] = {
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
       {"TestGroup1", array_kFieldTrialConfig_params_0, 2, NULL, 0, NULL, 0},
   };
-  const FieldTrialTestingGroupParams array_kFieldTrialConfig_params_1[] =
+  const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_1[] =
       {{"x", "3"}, {"y", "4"}};
-  const FieldTrialTestingGroup array_kFieldTrialConfig_groups_1[] = {
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
       {"TestGroup2", array_kFieldTrialConfig_params_0, 2, NULL, 0, NULL, 0},
       {"TestGroup2-2", array_kFieldTrialConfig_params_1, 2, NULL, 0, NULL, 0},
   };
-  const FieldTrialTestingTrial array_kFieldTrialConfig_studies[] = {
-      {"TestTrial1", array_kFieldTrialConfig_groups_0, 1},
-      {"TestTrial2", array_kFieldTrialConfig_groups_1, 2},
+  const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
+      {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},
+      {"TestTrial2", array_kFieldTrialConfig_experiments_1, 2},
   };
   const FieldTrialTestingConfig kConfig = {
       array_kFieldTrialConfig_studies, 2
@@ -102,17 +102,17 @@ TEST_F(VariationsUtilTest, AssociateFeaturesFromFieldTrialConfig) {
   const char* enable_features[] = {"A", "B"};
   const char* disable_features[] = {"C", "D"};
 
-  const FieldTrialTestingGroup array_kFieldTrialConfig_groups_0[] = {
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
       {"TestGroup1", NULL, 0, enable_features, 2, NULL, 0},
   };
-  const FieldTrialTestingGroup array_kFieldTrialConfig_groups_1[] = {
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
       {"TestGroup2", NULL, 0, NULL, 0, disable_features, 2},
       {"TestGroup2-2", NULL, 0, NULL, 0, NULL, 0},
   };
 
-  const FieldTrialTestingTrial array_kFieldTrialConfig_studies[] = {
-      {"TestTrial1", array_kFieldTrialConfig_groups_0, 1},
-      {"TestTrial2", array_kFieldTrialConfig_groups_1, 2},
+  const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
+      {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},
+      {"TestTrial2", array_kFieldTrialConfig_experiments_1, 2},
   };
 
   const FieldTrialTestingConfig kConfig = {
