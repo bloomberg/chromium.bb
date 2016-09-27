@@ -10,7 +10,8 @@
 namespace arc {
 
 // Returns true if ARC should ignore the navigation with the |page_transition|.
-bool ShouldIgnoreNavigation(ui::PageTransition page_transition);
+bool ShouldIgnoreNavigation(ui::PageTransition page_transition,
+                            bool allow_form_submit);
 
 }  // namespace arc
 

@@ -6,13 +6,17 @@
 
 namespace arc {
 
-bool ShouldIgnoreNavigation(ui::PageTransition page_transition) {
+bool ShouldIgnoreNavigation(ui::PageTransition page_transition,
+                            bool allow_form_submit) {
   // Mask out server-sided redirects only.
   page_transition = ui::PageTransitionFromInt(
       page_transition & ~ui::PAGE_TRANSITION_SERVER_REDIRECT);
 
   if (!ui::PageTransitionCoreTypeIs(page_transition,
-                                    ui::PAGE_TRANSITION_LINK)) {
+                                    ui::PAGE_TRANSITION_LINK) &&
+      !(allow_form_submit &&
+        ui::PageTransitionCoreTypeIs(page_transition,
+                                     ui::PAGE_TRANSITION_FORM_SUBMIT))) {
     // Do not handle the |url| if this event wasn't spawned by the user clicking
     // on a link.
     return true;

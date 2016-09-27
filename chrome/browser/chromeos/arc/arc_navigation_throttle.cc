@@ -105,7 +105,15 @@ content::NavigationThrottle::ThrottleCheckResult
 ArcNavigationThrottle::HandleRequest() {
   const GURL& url = navigation_handle()->GetURL();
 
-  if (ShouldIgnoreNavigation(navigation_handle()->GetPageTransition()))
+  // Always handle http(s) <form> submissions in Chrome for two reasons: 1) we
+  // don't have a way to send POST data to ARC, and 2) intercepting http(s) form
+  // submissions is not very important because such submissions are usually
+  // done within the same domain. ShouldOverrideUrlLoading() below filters out
+  // such submissions anyway.
+  constexpr bool kAllowFormSubmit = false;
+
+  if (ShouldIgnoreNavigation(navigation_handle()->GetPageTransition(),
+                             kAllowFormSubmit))
     return content::NavigationThrottle::PROCEED;
 
   const GURL previous_url = navigation_handle()->GetReferrer().url;

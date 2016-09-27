@@ -11,17 +11,32 @@ namespace arc {
 // Tests that ShouldIgnoreNavigation returns false only for
 // PAGE_TRANSITION_LINK.
 TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithCoreTypes) {
-  EXPECT_FALSE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_LINK));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_TYPED));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_AUTO_BOOKMARK));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_AUTO_SUBFRAME));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_MANUAL_SUBFRAME));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_GENERATED));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_AUTO_TOPLEVEL));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_FORM_SUBMIT));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_RELOAD));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_KEYWORD));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_KEYWORD_GENERATED));
+  EXPECT_FALSE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_LINK, false));
+  EXPECT_FALSE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_LINK, true));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_TYPED, false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_TYPED, true));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_AUTO_BOOKMARK, false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_AUTO_BOOKMARK, true));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_AUTO_SUBFRAME, false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_AUTO_SUBFRAME, true));
+  EXPECT_TRUE(
+      ShouldIgnoreNavigation(ui::PAGE_TRANSITION_MANUAL_SUBFRAME, false));
+  EXPECT_TRUE(
+      ShouldIgnoreNavigation(ui::PAGE_TRANSITION_MANUAL_SUBFRAME, true));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_GENERATED, false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_GENERATED, true));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_FORM_SUBMIT, false));
+  EXPECT_FALSE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_FORM_SUBMIT, true));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_RELOAD, false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_RELOAD, true));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_KEYWORD, false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_KEYWORD, true));
+  EXPECT_TRUE(
+      ShouldIgnoreNavigation(ui::PAGE_TRANSITION_KEYWORD_GENERATED, false));
+  EXPECT_TRUE(
+      ShouldIgnoreNavigation(ui::PAGE_TRANSITION_KEYWORD_GENERATED, true));
 
   static_assert(
       ui::PAGE_TRANSITION_KEYWORD_GENERATED == ui::PAGE_TRANSITION_LAST_CORE,
@@ -32,38 +47,66 @@ TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithCoreTypes) {
 // provided.
 TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithLinkWithQualifiers) {
   // The navigation is triggered by Forward or Back button.
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FORWARD_BACK)));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_FORWARD_BACK),
+      false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FORM_SUBMIT |
+                                ui::PAGE_TRANSITION_FORWARD_BACK),
+      true));
   // The user used the address bar to triger the navigation.
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+      false));
   // The user pressed the Home button.
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_HOME_PAGE)));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_HOME_PAGE),
+      false));
   // ARC (for example) opened the link in Chrome.
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_API)));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_FROM_API),
+      false));
 
   // Also tests the case with 2+ qualifiers.
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR |
-      ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR |
+                                ui::PAGE_TRANSITION_CLIENT_REDIRECT),
+      false));
 }
 
 // Just in case, does the same with ui::PAGE_TRANSITION_TYPED.
 TEST(PageTransitionUtilTest,
      TestShouldIgnoreNavigationWithTypedWithQualifiers) {
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FORWARD_BACK)));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_HOME_PAGE)));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_API)));
-  EXPECT_TRUE(ShouldIgnoreNavigation(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR |
-      ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FORWARD_BACK),
+      false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FORWARD_BACK),
+      true));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+      false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_HOME_PAGE),
+      false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_API),
+      false));
+  EXPECT_TRUE(ShouldIgnoreNavigation(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR |
+                                ui::PAGE_TRANSITION_CLIENT_REDIRECT),
+      false));
 }
 
 }  // namespace arc
