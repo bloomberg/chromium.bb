@@ -30,6 +30,7 @@
 #include "core/html/HTMLDocument.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutIFrame.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -119,6 +120,11 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name, const AtomicSt
     } else if (name == permissionsAttr) {
         if (initializePermissionsAttribute())
             m_permissions->setValue(value);
+    } else if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() && name == cspAttr) {
+        AtomicString oldCSP = m_csp;
+        m_csp = value;
+        if (m_csp != oldCSP)
+            frameOwnerPropertiesChanged();
     } else {
         if (name == srcAttr)
             logUpdateAttributeIfIsolatedWorldAndInDocument("iframe", srcAttr, oldValue, value);

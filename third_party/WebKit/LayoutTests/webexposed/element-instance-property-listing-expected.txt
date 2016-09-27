@@ -558,6 +558,7 @@ html element iframe
     property allowFullscreen
     property contentDocument
     property contentWindow
+    property csp
     property frameBorder
     property getSVGDocument
     property height

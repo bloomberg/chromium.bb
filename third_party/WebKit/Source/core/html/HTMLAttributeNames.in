@@ -89,6 +89,7 @@ contextmenu
 controls
 coords
 crossorigin
+csp
 data
 datetime
 declare

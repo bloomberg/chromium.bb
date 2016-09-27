@@ -86,6 +86,7 @@ FontCacheScaling status=test
 ForceDisplayList2dCanvas
 // See crbug.com/585250.
 ForceDisable2dCanvasCopyOnWrite
+EmbedderCSPEnforcement status=experimental
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
 ExperimentalCanvasFeatures status=test

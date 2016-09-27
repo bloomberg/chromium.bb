@@ -71,6 +71,7 @@ private:
     bool initializePermissionsAttribute();
 
     AtomicString m_name;
+    AtomicString m_csp;
     bool m_didLoadNonEmptyDocument;
     bool m_allowFullscreen;
     Member<HTMLIFrameElementSandbox> m_sandbox;

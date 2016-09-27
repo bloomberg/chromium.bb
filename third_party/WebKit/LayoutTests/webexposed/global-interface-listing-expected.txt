@@ -2462,6 +2462,7 @@ interface HTMLIFrameElement : HTMLElement
     getter allowFullscreen
     getter contentDocument
     getter contentWindow
+    getter csp
     getter frameBorder
     getter height
     getter longDesc
@@ -2479,6 +2480,7 @@ interface HTMLIFrameElement : HTMLElement
     method getSVGDocument
     setter align
     setter allowFullscreen
+    setter csp
     setter frameBorder
     setter height
     setter longDesc
