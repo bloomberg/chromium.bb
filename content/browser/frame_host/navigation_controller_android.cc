@@ -9,6 +9,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -418,6 +419,34 @@ void NavigationControllerAndroid::CopyStateFromAndPrune(
       reinterpret_cast<NavigationControllerAndroid*>(
           source_navigation_controller_android)->navigation_controller_,
       replace_entry);
+}
+
+ScopedJavaLocalRef<jstring> NavigationControllerAndroid::GetEntryExtraData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint index,
+    const JavaParamRef<jstring>& jkey) {
+  if (index < 0 || index >= navigation_controller_->GetEntryCount())
+    return ScopedJavaLocalRef<jstring>();
+
+  std::string key = base::android::ConvertJavaStringToUTF8(env, jkey);
+  base::string16 value;
+  navigation_controller_->GetEntryAtIndex(index)->GetExtraData(key, &value);
+  return ConvertUTF16ToJavaString(env, value);
+}
+
+void NavigationControllerAndroid::SetEntryExtraData(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint index,
+    const JavaParamRef<jstring>& jkey,
+    const JavaParamRef<jstring>& jvalue) {
+  if (index < 0 || index >= navigation_controller_->GetEntryCount())
+    return;
+
+  std::string key = base::android::ConvertJavaStringToUTF8(env, jkey);
+  base::string16 value = base::android::ConvertJavaStringToUTF16(env, jvalue);
+  navigation_controller_->GetEntryAtIndex(index)->SetExtraData(key, value);
 }
 
 }  // namespace content

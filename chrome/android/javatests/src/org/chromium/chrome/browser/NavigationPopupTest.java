@@ -217,6 +217,14 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
         @Override
         public void copyStateFromAndPrune(NavigationController source, boolean replaceEntry) {
         }
+
+        @Override
+        public String getEntryExtraData(int index, String key) {
+            return null;
+        }
+
+        @Override
+        public void setEntryExtraData(int index, String key, String value) {}
     }
 
     @MediumTest

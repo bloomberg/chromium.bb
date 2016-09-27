@@ -301,9 +301,10 @@ public class NewTabPageView extends FrameLayout
      * @param manager NewTabPageManager used to perform various actions when the user interacts
      *                with the page.
      * @param searchProviderHasLogo Whether the search provider has a logo.
-     * @param snippetsBridge The optional bridge, that can be used to interact with the snippets.
+     * @param scrollPosition The adapter scroll position to initialize to.
      */
-    public void initialize(NewTabPageManager manager, boolean searchProviderHasLogo) {
+    public void initialize(
+            NewTabPageManager manager, boolean searchProviderHasLogo, int scrollPosition) {
         mManager = manager;
         mUiConfig = new UiConfig(this);
         ViewStub stub = (ViewStub) findViewById(R.id.new_tab_page_layout_stub);
@@ -359,6 +360,7 @@ public class NewTabPageView extends FrameLayout
             mNewTabPageAdapter =
                     new NewTabPageAdapter(mManager, mNewTabPageLayout, mUiConfig);
             mRecyclerView.setAdapter(mNewTabPageAdapter);
+            mRecyclerView.scrollToPosition(scrollPosition);
 
             // Set up swipe-to-dismiss
             ItemTouchHelper helper =
@@ -1184,5 +1186,12 @@ public class NewTabPageView extends FrameLayout
         } else {
             return mScrollView.getScrollY();
         }
+    }
+
+    /**
+     * @return The adapter position the user has scrolled to.
+     */
+    public int getScrollPosition() {
+        return mRecyclerView.getScrollPosition();
     }
 }
