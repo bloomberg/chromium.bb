@@ -144,6 +144,7 @@ class LogTesting(object):
         # with how the code being tested may have configured the root
         # logger.
         logger = LogTesting._getLogger()
+        logger.setLevel(logging_level)
         logger.addHandler(handler)
 
         return LogTesting(stream, handler)
