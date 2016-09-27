@@ -206,16 +206,13 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     if (lower_words.empty())
       continue;
     HistoryIDSet history_id_set = HistoryIDSetFromWords(lower_words);
+    pre_filter_item_count_ += history_id_set.size();
     // Trim the candidate pool if it is large. Note that we do not filter out
     // items that do not contain the search terms as proper substrings --
     // doing so is the performance-costly operation we are trying to avoid in
     // order to maintain omnibox responsiveness.
     const size_t kItemsToScoreLimit = 500;
-    pre_filter_item_count_ += history_id_set.size();
-    // If we trim the results set we do not want to cache the results for next
-    // time as the user's ultimately desired result could easily be eliminated
-    // in this early rough filter.
-    if (pre_filter_item_count_ > kItemsToScoreLimit) {
+    if (history_id_set.size() > kItemsToScoreLimit) {
       HistoryIDVector history_ids;
       std::copy(history_id_set.begin(), history_id_set.end(),
                 std::back_inserter(history_ids));
@@ -277,7 +274,10 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   }
   post_scoring_item_count_ = scored_items.size();
   if (pre_filter_item_count_ > post_filter_item_count_) {
-    search_term_cache_.clear();  // Invalidate the term cache.
+    // If we trim the results set we do not want to cache the results for next
+    // time as the user's ultimately desired result could easily be eliminated
+    // in the early rough filter.
+    search_term_cache_.clear();
   } else {
     // Remove any stale SearchTermCacheItems.
     for (SearchTermCacheMap::iterator cache_iter = search_term_cache_.begin();
