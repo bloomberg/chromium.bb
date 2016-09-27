@@ -41,10 +41,6 @@ enum LayoutConstant {
   // Space between the location bar edge and contents.
   LOCATION_BAR_VERTICAL_PADDING,
 
-  // The number of pixels in the omnibox dropdown border image interior to
-  // the actual border.
-  OMNIBOX_DROPDOWN_BORDER_INTERIOR,
-
   // The font size to use in the location bar and omnibox dropdown, in pixels.
   OMNIBOX_FONT_PIXEL_SIZE,
 

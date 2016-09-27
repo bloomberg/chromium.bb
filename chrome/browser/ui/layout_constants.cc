@@ -18,7 +18,6 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int kLocationBarHeight[] = {27, 28, 32};
   const int kLocationBarHorizontalPadding[] = {3, 6, 6};
   const int kLocationBarVerticalPadding[] = {0, 1, 1};
-  const int kOmniboxDropdownBorderInterior[] = {6, 0, 0};
   const int kOmniboxFontPixelSize[] = {16, 14, 14};
   const int kTabFaviconTitleSpacing[] = {4, 6, 6};
   const int kTabHeight[] = {29, 29, 33};
@@ -54,8 +53,6 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kLocationBarHorizontalPadding[mode];
     case LOCATION_BAR_VERTICAL_PADDING:
       return kLocationBarVerticalPadding[mode];
-    case OMNIBOX_DROPDOWN_BORDER_INTERIOR:
-      return kOmniboxDropdownBorderInterior[mode];
     case OMNIBOX_FONT_PIXEL_SIZE:
       return kOmniboxFontPixelSize[mode];
     case TABSTRIP_NEW_TAB_BUTTON_OVERLAP:
