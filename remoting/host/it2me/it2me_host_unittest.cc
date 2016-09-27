@@ -78,35 +78,6 @@ void FakeIt2MeConfirmationDialog::Show(const std::string& remote_user_email,
       FROM_HERE, base::Bind(callback, dialog_result_));
 }
 
-class FakeIt2MeConfirmationDialogFactory
-    : public It2MeConfirmationDialogFactory {
- public:
-  FakeIt2MeConfirmationDialogFactory();
-  ~FakeIt2MeConfirmationDialogFactory() override;
-
-  // It2MeConfirmationDialogFactory override.
-  std::unique_ptr<It2MeConfirmationDialog> Create() override;
-
-  void set_confirmation_dialog(
-      std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog) {
-    confirmation_dialog_ = std::move(confirmation_dialog);
-  }
-
- private:
-  std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeIt2MeConfirmationDialogFactory);
-};
-
-FakeIt2MeConfirmationDialogFactory::FakeIt2MeConfirmationDialogFactory() {}
-
-FakeIt2MeConfirmationDialogFactory::~FakeIt2MeConfirmationDialogFactory() {}
-
-std::unique_ptr<It2MeConfirmationDialog>
-FakeIt2MeConfirmationDialogFactory::Create() {
-  return std::move(confirmation_dialog_);
-}
-
 class It2MeHostTest : public testing::Test {
  public:
   It2MeHostTest() {}
@@ -145,18 +116,13 @@ void It2MeHostTest::SetUp() {
   message_loop_.reset(new base::MessageLoop());
   run_loop_.reset(new base::RunLoop());
 
-  std::unique_ptr<FakeIt2MeConfirmationDialogFactory> fake_dialog_factory(
-      new FakeIt2MeConfirmationDialogFactory());
-  dialog_ = new FakeIt2MeConfirmationDialog();
-  fake_dialog_factory->set_confirmation_dialog(base::WrapUnique(dialog_));
-
   scoped_refptr<AutoThreadTaskRunner> auto_thread_task_runner =
       new AutoThreadTaskRunner(base::ThreadTaskRunnerHandle::Get(),
                                run_loop_->QuitClosure());
-
+  dialog_ = new FakeIt2MeConfirmationDialog();
   it2me_host_ = new It2MeHost(
       ChromotingHostContext::Create(auto_thread_task_runner),
-      /*policy_watcher=*/nullptr, std::move(fake_dialog_factory),
+      /*policy_watcher=*/nullptr, base::WrapUnique(dialog_),
       /*observer=*/nullptr, xmpp_server_config_, directory_bot_jid_);
 }
 

@@ -68,8 +68,8 @@ void It2MeConfirmationDialogChromeOS::OnMessageBoxResult(
                                        Result::OK : Result::CANCEL);
 }
 
-std::unique_ptr<It2MeConfirmationDialog>
-It2MeConfirmationDialogFactory::Create() {
+// static
+std::unique_ptr<It2MeConfirmationDialog> It2MeConfirmationDialog::Create() {
   return base::MakeUnique<It2MeConfirmationDialogChromeOS>();
 }
 

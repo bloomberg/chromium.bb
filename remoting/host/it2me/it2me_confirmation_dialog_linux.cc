@@ -144,8 +144,8 @@ void It2MeConfirmationDialogLinux::OnResponse(GtkDialog* dialog,
 
 }  // namespace
 
-std::unique_ptr<It2MeConfirmationDialog>
-It2MeConfirmationDialogFactory::Create() {
+// static
+std::unique_ptr<It2MeConfirmationDialog> It2MeConfirmationDialog::Create() {
   return base::MakeUnique<It2MeConfirmationDialogLinux>();
 }
 

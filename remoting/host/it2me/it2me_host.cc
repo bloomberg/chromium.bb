@@ -59,7 +59,7 @@ typedef ValidatingAuthenticator::ValidationCallback ValidationCallback;
 It2MeHost::It2MeHost(
     std::unique_ptr<ChromotingHostContext> host_context,
     std::unique_ptr<PolicyWatcher> policy_watcher,
-    std::unique_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory,
+    std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog,
     base::WeakPtr<It2MeHost::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid)
@@ -69,7 +69,7 @@ It2MeHost::It2MeHost(
       xmpp_server_config_(xmpp_server_config),
       directory_bot_jid_(directory_bot_jid),
       policy_watcher_(std::move(policy_watcher)),
-      confirmation_dialog_factory_(std::move(confirmation_dialog_factory)) {
+      confirmation_dialog_(std::move(confirmation_dialog)) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
@@ -515,11 +515,8 @@ void It2MeHost::ValidateConnectionDetails(
   }
 
   // Show a confirmation dialog to the user to allow them to confirm/reject it.
-  std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog =
-      confirmation_dialog_factory_->Create();
-
   confirmation_dialog_proxy_.reset(new It2MeConfirmationDialogProxy(
-      host_context_->ui_task_runner(), std::move(confirmation_dialog)));
+      host_context_->ui_task_runner(), std::move(confirmation_dialog_)));
 
   confirmation_dialog_proxy_->Show(
       client_username, base::Bind(&It2MeHost::OnConfirmationResult,
@@ -552,12 +549,10 @@ scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
     const std::string& directory_bot_jid) {
   DCHECK(context->ui_task_runner()->BelongsToCurrentThread());
 
-  std::unique_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory(
-      new It2MeConfirmationDialogFactory());
   std::unique_ptr<PolicyWatcher> policy_watcher =
       PolicyWatcher::Create(policy_service, context->file_task_runner());
   return new It2MeHost(std::move(context), std::move(policy_watcher),
-                       std::move(confirmation_dialog_factory), observer,
+                       It2MeConfirmationDialog::Create(), observer,
                        xmpp_server_config, directory_bot_jid);
 }
 

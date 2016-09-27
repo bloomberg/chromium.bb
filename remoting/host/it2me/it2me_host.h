@@ -66,8 +66,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   It2MeHost(std::unique_ptr<ChromotingHostContext> context,
             std::unique_ptr<PolicyWatcher> policy_watcher,
-            std::unique_ptr<It2MeConfirmationDialogFactory>
-                confirmation_dialog_factory,
+            std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog,
             base::WeakPtr<It2MeHost::Observer> observer,
             const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
             const std::string& directory_bot_jid);
@@ -177,7 +176,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   int failed_login_attempts_ = 0;
 
   std::unique_ptr<PolicyWatcher> policy_watcher_;
-  std::unique_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory_;
+  std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog_;
   std::unique_ptr<It2MeConfirmationDialogProxy> confirmation_dialog_proxy_;
 
   // Host the current nat traversal policy setting.

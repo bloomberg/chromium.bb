@@ -17,7 +17,6 @@ if (is_mac) {
 
 source_set("common") {
   sources = [
-    "it2me_confirmation_dialog.cc",
     "it2me_confirmation_dialog.h",
     "it2me_confirmation_dialog_linux.cc",
     "it2me_confirmation_dialog_mac.mm",

@@ -110,8 +110,8 @@ void It2MeConfirmationDialogMac::OnDialogAction(Result result) {
   }
 }
 
-std::unique_ptr<It2MeConfirmationDialog>
-It2MeConfirmationDialogFactory::Create() {
+// static
+std::unique_ptr<It2MeConfirmationDialog> It2MeConfirmationDialog::Create() {
   return base::MakeUnique<It2MeConfirmationDialogMac>();
 }
 
