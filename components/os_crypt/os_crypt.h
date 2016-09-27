@@ -76,7 +76,8 @@ class OSCrypt {
 // |get_key_storage_mock| provides the desired |KeyStorage| implementation.
 // If the provider returns |nullptr|, a hardcoded password will be used.
 // |get_password_v11_mock| provides a password to derive the encryption key from
-// If both parameters are |nullptr|, the real implementation is restored.
+// If one parameter is |nullptr|, the function will be not be replaced.
+// If all parameters are |nullptr|, the real implementation is restored.
 void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
                                  std::string* (*get_password_v11_mock)());
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(UNIT_TEST)

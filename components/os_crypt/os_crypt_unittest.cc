@@ -5,14 +5,22 @@
 #include "components/os_crypt/os_crypt.h"
 
 #include <string>
+#include <vector>
 
+#include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "components/os_crypt/os_crypt_mocker_linux.h"
+#endif
 
 namespace {
 
@@ -138,6 +146,53 @@ TEST_F(OSCryptTest, DecryptError) {
   EXPECT_FALSE(OSCrypt::DecryptString(ciphertext, &result));
   EXPECT_NE(plaintext, result);
   EXPECT_TRUE(result.empty());
+}
+
+class OSCryptConcurrencyTest : public testing::Test {
+ public:
+  OSCryptConcurrencyTest() {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    // Mock the key storage, but not the process of getting the passwords.
+    UseMockKeyStorageForTesting(
+        []() -> KeyStorageLinux* { return OSCryptMockerLinux::GetInstance(); },
+        nullptr);
+#else
+    OSCryptMocker::SetUpWithSingleton();
+#endif
+  }
+
+  ~OSCryptConcurrencyTest() override { OSCryptMocker::TearDown(); };
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OSCryptConcurrencyTest);
+};
+
+TEST_F(OSCryptConcurrencyTest, ConcurrentInitialization) {
+  // Launch multiple threads
+  base::Thread thread1("thread1");
+  base::Thread thread2("thread2");
+  std::vector<base::Thread*> threads = {&thread1, &thread2};
+  for (base::Thread* thread : threads) {
+    ASSERT_TRUE(thread->Start());
+  }
+
+  // Make calls.
+  for (base::Thread* thread : threads) {
+    ASSERT_TRUE(thread->task_runner()->PostTask(
+        FROM_HERE, base::Bind([]() -> void {
+          std::string plaintext = "secrets";
+          std::string encrypted;
+          std::string decrypted;
+          ASSERT_TRUE(OSCrypt::EncryptString(plaintext, &encrypted));
+          ASSERT_TRUE(OSCrypt::DecryptString(encrypted, &decrypted));
+          ASSERT_EQ(plaintext, decrypted);
+        })));
+  }
+
+  // Cleanup
+  for (base::Thread* thread : threads) {
+    thread->Stop();
+  }
 }
 
 }  // namespace
