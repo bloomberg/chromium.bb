@@ -27,6 +27,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# pylint: disable=W0403
+
 """Compile an .idl file to Blink V8 bindings (.h and .cpp files).
 
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
@@ -38,9 +40,14 @@ import os
 import cPickle as pickle
 import sys
 
-from code_generator_v8 import CodeGeneratorDictionaryImpl, CodeGeneratorV8, CodeGeneratorUnionType, CodeGeneratorCallbackFunction  # pylint: disable=W0403
+from code_generator_v8 import CodeGeneratorDictionaryImpl
+from code_generator_v8 import CodeGeneratorV8
+from code_generator_v8 import CodeGeneratorUnionType
+from code_generator_v8 import CodeGeneratorCallbackFunction
 from idl_reader import IdlReader
-from utilities import create_component_info_provider, read_idl_files_list_from_file, write_file, idl_filename_to_component
+from utilities import create_component_info_provider
+from utilities import read_idl_files_list_from_file
+from utilities import write_file
 
 
 def parse_options():
@@ -56,6 +63,8 @@ def parse_options():
     # FIXME: We should always explicitly specify --target-component and
     # remove the default behavior.
     parser.add_option('--target-component',
+                      type='choice',
+                      choices=['core', 'modules'],
                       help='target component to generate code, defaults to '
                       'component of input idl file')
     # ensure output comes last, so command line easy to parse via regexes
@@ -111,8 +120,7 @@ class IdlCompiler(object):
     def compile_and_write(self, idl_filename):
         interface_name = idl_filename_to_interface_name(idl_filename)
         definitions = self.reader.read_idl_definitions(idl_filename)
-        target_component = self.target_component or idl_filename_to_component(idl_filename)
-        target_definitions = definitions[target_component]
+        target_definitions = definitions[self.target_component]
         output_code_list = self.code_generator.generate_code(
             target_definitions, interface_name)
         for output_path, output_code in output_code_list:
@@ -163,7 +171,8 @@ def generate_dictionary_impl(options, input_filename):
         options.impl_output_directory,
         cache_directory=options.cache_directory,
         info_provider=info_provider,
-        only_if_changed=options.write_file_only_if_changed)
+        only_if_changed=options.write_file_only_if_changed,
+        target_component=options.target_component)
 
     idl_filenames = read_idl_files_list_from_file(input_filename,
                                                   is_gyp_format=True)

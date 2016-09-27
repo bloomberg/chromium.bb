@@ -297,7 +297,8 @@ def bindings_tests(output_directory, verbose):
             idl_compiler = IdlCompilerV8(
                 output_dir,
                 info_provider=component_info_providers[component],
-                only_if_changed=True)
+                only_if_changed=True,
+                target_component=component)
             if component == 'core':
                 partial_interface_output_dir = os.path.join(output_directory,
                                                             'modules')
@@ -313,7 +314,7 @@ def bindings_tests(output_directory, verbose):
 
             dictionary_impl_compiler = IdlCompilerDictionaryImpl(
                 output_dir, info_provider=component_info_providers[component],
-                only_if_changed=True)
+                only_if_changed=True, target_component=component)
 
             idl_filenames = []
             input_directory = os.path.join(test_input_directory, component)
