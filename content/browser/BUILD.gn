@@ -872,6 +872,8 @@ source_set("browser") {
     "memory/memory_message_filter.h",
     "memory/memory_monitor.cc",
     "memory/memory_monitor.h",
+    "memory/memory_monitor_android.cc",
+    "memory/memory_monitor_android.h",
     "memory/memory_monitor_win.cc",
     "memory/memory_monitor_win.h",
     "memory/memory_pressure_controller_impl.cc",

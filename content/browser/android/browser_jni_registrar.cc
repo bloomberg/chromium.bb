@@ -26,6 +26,7 @@
 #include "content/browser/device_sensors/sensor_manager_android.h"
 #include "content/browser/frame_host/navigation_controller_android.h"
 #include "content/browser/media/session/media_session_delegate_android.h"
+#include "content/browser/memory/memory_monitor_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 #include "content/browser/web_contents/web_contents_android.h"
@@ -39,6 +40,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ContentVideoView", content::ContentVideoView::RegisterContentVideoView},
     {"CoreImpl", mojo::android::RegisterCoreImpl},
     {"MediaSessionDelegate", content::MediaSessionDelegateAndroid::Register},
+    {"MemoryMonitorAndroid", content::MemoryMonitorAndroid::Register},
     {"BackgroundSyncNetworkObserverAndroid",
      content::BackgroundSyncNetworkObserverAndroid::Observer::
          RegisterNetworkObserver},
