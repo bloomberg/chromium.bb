@@ -294,7 +294,7 @@ LayoutRect LayoutView::visualOverflowRect() const
     // In normal compositing mode, LayoutView doesn't actually apply clipping
     // on its descendants. Instead their visual overflow is propagated to
     // compositor()->m_rootContentLayer for accelerated scrolling.
-    return LayoutRect(documentRect());
+    return layoutOverflowRect();
 }
 
 LayoutRect LayoutView::localOverflowRectForPaintInvalidation() const
@@ -822,6 +822,7 @@ IntRect LayoutView::documentRect() const
 {
     LayoutRect overflowRect(layoutOverflowRect());
     flipForWritingMode(overflowRect);
+    // TODO(crbug.com/650768): The pixel snapping looks incorrect.
     return pixelSnappedIntRect(overflowRect);
 }
 

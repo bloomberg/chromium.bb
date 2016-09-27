@@ -418,11 +418,8 @@ static void slowMapToVisualRectInAncestorSpace(const LayoutObject& object, const
     // TODO(wkorman): The flip below is required because visual rects are
     // currently in "physical coordinates with flipped block-flow direction"
     // (see LayoutBoxModelObject.h) but we need them to be in physical
-    // coordinates. When we're mapping within exactly one object we keep the
-    // input rect flipped because we'd just have to re-flip in short order, as
-    // the output of this method must be in the "physical coordinates with
-    // flipped block-flow direction.
-    if (object.isBox() && object != ancestor)
+    // coordinates.
+    if (object.isBox())
         toLayoutBox(&object)->flipForWritingMode(rect);
 
     if (object.isLayoutView())
