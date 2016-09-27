@@ -36,6 +36,9 @@
 
 #include "wayland-util.h"
 
+/* Invalid memory address */
+#define WL_ARRAY_POISON_PTR (void *) 4
+
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 #define container_of(ptr, type, member) ({				\

@@ -102,6 +102,7 @@ WL_EXPORT void
 wl_array_release(struct wl_array *array)
 {
 	free(array->data);
+	array->data = WL_ARRAY_POISON_PTR;
 }
 
 WL_EXPORT void *
