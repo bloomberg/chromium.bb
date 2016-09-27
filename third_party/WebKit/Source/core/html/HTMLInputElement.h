@@ -119,7 +119,7 @@ public:
     // Checks if the specified string would be a valid value.
     // We should not call this for types with no string value such as CHECKBOX and RADIO.
     bool isValidValue(const String&) const;
-    bool hasDirtyValue() const { return !m_valueIfDirty.isNull(); }
+    bool hasDirtyValue() const;
 
     String sanitizeValue(const String&) const;
 
@@ -374,11 +374,15 @@ private:
     bool shouldDispatchFormControlChangeEvent(String&, String&) override;
 
     AtomicString m_name;
+    // A dirty value.  isNull() means the value is not dirty and we should refer
+    // to |value| content attribute value.
     String m_valueIfDirty;
     String m_suggestedValue;
     int m_size;
     int m_maxLength;
     int m_minLength;
+    // https://html.spec.whatwg.org/multipage/forms.html#concept-input-value-dirty-flag
+    unsigned m_hasDirtyValue : 1;
     // https://html.spec.whatwg.org/multipage/forms.html#concept-fe-checked
     unsigned m_isChecked : 1;
     // https://html.spec.whatwg.org/multipage/forms.html#concept-input-checked-dirty-flag

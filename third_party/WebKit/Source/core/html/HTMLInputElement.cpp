@@ -102,6 +102,7 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_size(defaultSize)
     , m_maxLength(maximumLength)
     , m_minLength(-1)
+    , m_hasDirtyValue(false)
     , m_isChecked(false)
     , m_dirtyCheckedness(false)
     , m_isIndeterminate(false)
@@ -454,11 +455,13 @@ void HTMLInputElement::updateType()
     if (didStoreValue && !willStoreValue && hasDirtyValue()) {
         setAttribute(valueAttr, AtomicString(m_valueIfDirty));
         m_valueIfDirty = String();
+        m_hasDirtyValue = false;
     }
     if (!didStoreValue && willStoreValue) {
         AtomicString valueString = fastGetAttribute(valueAttr);
         m_inputType->warnIfValueIsInvalid(valueString);
         m_valueIfDirty = sanitizeValue(valueString);
+        m_hasDirtyValue = !m_valueIfDirty.isNull();
     } else {
         if (!hasDirtyValue())
             m_inputType->warnIfValueIsInvalid(fastGetAttribute(valueAttr).getString());
@@ -931,6 +934,7 @@ void HTMLInputElement::copyNonAttributePropertiesFromElement(const Element& sour
     const HTMLInputElement& sourceElement = static_cast<const HTMLInputElement&>(source);
 
     m_valueIfDirty = sourceElement.m_valueIfDirty;
+    m_hasDirtyValue = sourceElement.m_hasDirtyValue;
     setChecked(sourceElement.m_isChecked);
     m_dirtyCheckedness = sourceElement.m_dirtyCheckedness;
     m_isIndeterminate = sourceElement.m_isIndeterminate;
@@ -947,9 +951,8 @@ String HTMLInputElement::value() const
     if (m_inputType->getTypeSpecificValue(value))
         return value;
 
-    value = m_valueIfDirty;
-    if (!value.isNull())
-        return value;
+    if (hasDirtyValue())
+        return m_valueIfDirty;
 
     AtomicString valueString = fastGetAttribute(valueAttr);
     value = sanitizeValue(valueString);
@@ -1046,6 +1049,7 @@ void HTMLInputElement::setValue(const String& value, TextFieldEventBehavior even
 void HTMLInputElement::setValueInternal(const String& sanitizedValue, TextFieldEventBehavior eventBehavior)
 {
     m_valueIfDirty = sanitizedValue;
+    m_hasDirtyValue = !m_valueIfDirty.isNull();
     setNeedsValidityCheck();
     if (m_inputType->isSteppable()) {
         pseudoStateChanged(CSSSelector::PseudoInRange);
@@ -1053,6 +1057,12 @@ void HTMLInputElement::setValueInternal(const String& sanitizedValue, TextFieldE
     }
     if (document().focusedElement() == this)
         document().frameHost()->chromeClient().didUpdateTextOfFocusedElementByNonUserInput(*document().frame());
+}
+
+bool HTMLInputElement::hasDirtyValue() const
+{
+    DCHECK_EQ(!m_hasDirtyValue, m_valueIfDirty.isNull());
+    return m_hasDirtyValue;
 }
 
 void HTMLInputElement::updateView()
@@ -1098,7 +1108,9 @@ void HTMLInputElement::setValueFromRenderer(const String& value)
     // Renderer and our event handler are responsible for sanitizing values.
     DCHECK(value == m_inputType->sanitizeUserInputValue(value) || m_inputType->sanitizeUserInputValue(value).isEmpty());
 
+    DCHECK(!value.isNull());
     m_valueIfDirty = value;
+    m_hasDirtyValue = true;
     m_needsToUpdateViewValue = false;
 
     // Input event is fired by the Node::defaultEventHandler for editable controls.
