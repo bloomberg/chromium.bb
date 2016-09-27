@@ -66,6 +66,7 @@ source_set("client_sources") {
   ]
   deps = [
     "//gpu/command_buffer/common:common_sources",
+    "//gpu/ipc/common:surface_handle_type",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]

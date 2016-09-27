@@ -87,6 +87,7 @@ source_set("ipc_common_sources") {
 
   public_deps = [
     ":command_buffer_traits_sources",
+    ":surface_handle_type",
     "//gpu/command_buffer/common:gles2_utils",
   ]
 
@@ -119,6 +120,17 @@ source_set("ipc_common_sources") {
   }
 }
 
+# Depend on this to use surface_handle.h without pulling in all of gpu ipc.
+source_set("surface_handle_type") {
+  public = [
+    "surface_handle.h",
+  ]
+
+  public_deps = [
+    "//ui/gfx:native_widget_types",
+  ]
+}
+
 mojom("interfaces") {
   sources = [
     "capabilities.mojom",
@@ -126,6 +138,7 @@ mojom("interfaces") {
     "gpu_info.mojom",
     "mailbox.mojom",
     "mailbox_holder.mojom",
+    "surface_handle.mojom",
     "sync_token.mojom",
   ]
 
@@ -150,10 +163,12 @@ source_set("struct_traits") {
   sources = [
     "mailbox_holder_struct_traits.h",
     "mailbox_struct_traits.h",
+    "surface_handle_struct_traits.h",
     "sync_token_struct_traits.h",
   ]
   deps = [
     ":interfaces_shared_cpp_sources",
+    ":surface_handle_type",
     "//gpu/command_buffer/common",
     "//mojo/public/cpp/bindings:bindings",
   ]

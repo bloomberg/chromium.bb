@@ -9,14 +9,14 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "services/ui/common/generic_shared_memory_id_generator.h"
-#include "services/ui/gpu/gpu_service_internal.h"
+#include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 
 namespace ui {
 
 namespace ws {
 
 MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
-    GpuServiceInternal* gpu_service,
+    mojom::GpuServiceInternal* gpu_service,
     int client_id)
     : gpu_service_(gpu_service), client_id_(client_id), weak_factory_(this) {}
 
@@ -32,8 +32,9 @@ MusGpuMemoryBufferManager::AllocateGpuMemoryBuffer(
   const bool is_native =
       gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
   if (is_native) {
-    gfx::GpuMemoryBufferHandle handle = gpu_service_->CreateGpuMemoryBuffer(
-        id, size, format, usage, client_id_, surface_handle);
+    gfx::GpuMemoryBufferHandle handle;
+    gpu_service_->CreateGpuMemoryBuffer(id, size, format, usage, client_id_,
+                                        surface_handle, &handle);
     if (handle.is_null())
       return nullptr;
     return gpu::GpuMemoryBufferImpl::CreateFromHandle(

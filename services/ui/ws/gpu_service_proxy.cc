@@ -65,7 +65,7 @@ void GpuServiceProxy::OnInternalGpuChannelEstablished(
   CHECK(io_thread_->StartWithOptions(thread_options));
 
   gpu_memory_buffer_manager_ = base::MakeUnique<MusGpuMemoryBufferManager>(
-      gpu_main_.gpu_service(), kInternalGpuChannelClientId);
+      gpu_service_.get(), kInternalGpuChannelClientId);
   gpu_channel_ = gpu::GpuChannelHost::Create(
       this, kInternalGpuChannelClientId, gpu_info_,
       IPC::ChannelHandle(channel_handle.release()), &shutdown_event_,

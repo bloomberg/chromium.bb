@@ -13,7 +13,9 @@
 
 namespace ui {
 
+namespace mojom {
 class GpuServiceInternal;
+}
 
 namespace ws {
 
@@ -21,7 +23,8 @@ namespace ws {
 // mus locally.
 class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
-  MusGpuMemoryBufferManager(GpuServiceInternal* gpu_service, int client_id);
+  MusGpuMemoryBufferManager(mojom::GpuServiceInternal* gpu_service,
+                            int client_id);
   ~MusGpuMemoryBufferManager() override;
 
   // Overridden from gpu::GpuMemoryBufferManager:
@@ -47,7 +50,7 @@ class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
                               bool is_native,
                               const gpu::SyncToken& sync_token);
 
-  GpuServiceInternal* gpu_service_;
+  mojom::GpuServiceInternal* gpu_service_;
   const int client_id_;
   base::WeakPtrFactory<MusGpuMemoryBufferManager> weak_factory_;
 };

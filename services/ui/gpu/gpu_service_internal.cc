@@ -61,16 +61,17 @@ void GpuServiceInternal::Add(mojom::GpuServiceInternalRequest request) {
   binding_.Bind(std::move(request));
 }
 
-gfx::GpuMemoryBufferHandle GpuServiceInternal::CreateGpuMemoryBuffer(
+void GpuServiceInternal::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     int client_id,
-    gpu::SurfaceHandle surface_handle) {
+    gpu::SurfaceHandle surface_handle,
+    const CreateGpuMemoryBufferCallback& callback) {
   DCHECK(CalledOnValidThread());
-  return gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
-      id, size, format, usage, client_id, surface_handle);
+  callback.Run(gpu_memory_buffer_factory_->CreateGpuMemoryBuffer(
+      id, size, format, usage, client_id, surface_handle));
 }
 
 void GpuServiceInternal::DestroyGpuMemoryBuffer(

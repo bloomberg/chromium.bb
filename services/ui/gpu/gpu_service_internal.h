@@ -47,18 +47,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   void Add(mojom::GpuServiceInternalRequest request);
 
-  // TODO(sad): These should be mojom API.
-  gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId id,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      gfx::BufferUsage usage,
-      int client_id,
-      gpu::SurfaceHandle surface_handle);
-  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                              int client_id,
-                              const gpu::SyncToken& sync_token);
-
  private:
   friend class GpuMain;
 
@@ -98,6 +86,17 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
       uint64_t client_tracing_id,
       bool is_gpu_host,
       const EstablishGpuChannelCallback& callback) override;
+  void CreateGpuMemoryBuffer(
+      gfx::GpuMemoryBufferId id,
+      const gfx::Size& size,
+      gfx::BufferFormat format,
+      gfx::BufferUsage usage,
+      int client_id,
+      gpu::SurfaceHandle surface_handle,
+      const CreateGpuMemoryBufferCallback& callback) override;
+  void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
+                              int client_id,
+                              const gpu::SyncToken& sync_token) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 

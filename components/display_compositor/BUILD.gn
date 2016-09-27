@@ -29,6 +29,7 @@ component("display_compositor") {
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
+    "//gpu/ipc/common:surface_handle_type",
     "//skia",
     "//ui/display/types",
     "//ui/gfx",
