@@ -894,6 +894,10 @@ void Browser::ShowModalSyncConfirmationWindow() {
   signin_view_controller_.ShowModalSyncConfirmationDialog(this);
 }
 
+void Browser::ShowModalSigninErrorWindow() {
+  signin_view_controller_.ShowModalSigninErrorDialog(this);
+}
+
 void Browser::RegisterKeepAlive() {
   keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::BROWSER,
                                         KeepAliveRestartOption::DISABLED));

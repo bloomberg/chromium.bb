@@ -59,6 +59,9 @@ class SigninViewControllerDelegateMac : public ConstrainedWindowMacDelegate,
   static std::unique_ptr<content::WebContents>
   CreateSyncConfirmationWebContents(Profile* profile);
 
+  static std::unique_ptr<content::WebContents> CreateSigninErrorWebContents(
+      Profile* profile);
+
  private:
   void PerformClose() override;
   void ResizeNativeView(int height) override;

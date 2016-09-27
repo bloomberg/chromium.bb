@@ -2078,7 +2078,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
 
 views::View* ProfileChooserView::CreateGaiaSigninView(
     views::View** signin_content_view) {
-  views::WebView* web_view =
+  std::unique_ptr<views::WebView> web_view =
       SigninViewControllerDelegateViews::CreateGaiaWebView(
           this, view_mode_, browser_, access_point_);
 
@@ -2100,13 +2100,13 @@ views::View* ProfileChooserView::CreateGaiaSigninView(
   }
 
   if (signin_content_view)
-    *signin_content_view = web_view;
+    *signin_content_view = web_view.get();
 
   TitleCard* title_card = new TitleCard(l10n_util::GetStringUTF16(message_id),
                                         this,
                                         &gaia_signin_cancel_button_);
   return TitleCard::AddPaddedTitleCard(
-      web_view, title_card, kPasswordCombinedFixedGaiaViewWidth);
+      web_view.release(), title_card, kPasswordCombinedFixedGaiaViewWidth);
 }
 
 views::View* ProfileChooserView::CreateAccountRemovalView() {

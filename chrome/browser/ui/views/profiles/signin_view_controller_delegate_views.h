@@ -37,20 +37,24 @@ class SigninViewControllerDelegateViews : public views::DialogDelegateView,
   // be called by the base class before displaying the constrained window.
   SigninViewControllerDelegateViews(
       SigninViewController* signin_view_controller,
-      views::WebView* content_view,
+      std::unique_ptr<views::WebView> content_view,
       Browser* browser,
       bool wait_for_size);
 
   // Creates the web view that contains the signin flow in |mode| using
   // |profile| as the web content's profile, then sets |delegate| as the created
   // web content's delegate.
-  static views::WebView* CreateGaiaWebView(
+  static std::unique_ptr<views::WebView> CreateGaiaWebView(
       content::WebContentsDelegate* delegate,
       profiles::BubbleViewMode mode,
       Browser* browser,
       signin_metrics::AccessPoint access_point);
 
-  static views::WebView* CreateSyncConfirmationWebView(Browser* browser);
+  static std::unique_ptr<views::WebView> CreateSyncConfirmationWebView(
+      Browser* browser);
+
+  static std::unique_ptr<views::WebView> CreateSigninErrorWebView(
+      Browser* browser);
 
   // views::DialogDelegateView:
   views::View* GetContentsView() override;

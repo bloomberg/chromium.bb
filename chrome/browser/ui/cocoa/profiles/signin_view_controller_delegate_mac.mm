@@ -35,8 +35,11 @@ const int kModalDialogWidth = 448;
 // flow. It matches the dimensions of the server content the dialog displays.
 const CGFloat kFixedGaiaViewHeight = 612;
 
-// Initial height of the sync confirmation t
+// Initial height of the sync confirmation modal dialog.
 const int kSyncConfirmationDialogHeight = 351;
+
+// Initial height of the signin error modal dialog.
+const int kSigninErrorDialogHeight = 164;
 
 }  // namespace
 
@@ -115,6 +118,24 @@ SigninViewControllerDelegateMac::CreateSyncConfirmationWebContents(
   return web_contents;
 }
 
+// static
+std::unique_ptr<content::WebContents>
+SigninViewControllerDelegateMac::CreateSigninErrorWebContents(
+    Profile* profile) {
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile)));
+  web_contents->GetController().LoadURL(
+      GURL(chrome::kChromeUISigninErrorURL), content::Referrer(),
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+
+  NSView* webview = web_contents->GetNativeView();
+  [webview
+      setFrameSize:NSMakeSize(kModalDialogWidth, kSigninErrorDialogHeight)];
+
+  return web_contents;
+}
+
 void SigninViewControllerDelegateMac::PerformClose() {
   if (constrained_window_.get())
     constrained_window_->CloseWebContentsModalDialog();
@@ -184,4 +205,17 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
       NSMakeRect(0, 0, kModalDialogWidth,
                  kSyncConfirmationDialogHeight),
       true);
+}
+
+// static
+SigninViewControllerDelegate*
+SigninViewControllerDelegate::CreateSigninErrorDelegate(
+    SigninViewController* signin_view_controller,
+    Browser* browser) {
+  return new SigninViewControllerDelegateMac(
+      signin_view_controller,
+      SigninViewControllerDelegateMac::CreateSigninErrorWebContents(
+          browser->profile()),
+      browser->tab_strip_model()->GetActiveWebContents(),
+      NSMakeRect(0, 0, kModalDialogWidth, kSigninErrorDialogHeight), true);
 }

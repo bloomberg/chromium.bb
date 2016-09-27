@@ -79,8 +79,12 @@ class LoginUIService : public KeyedService {
   // chrome://signin to ask the user to sign in to chrome.
   void ShowLoginPopup();
 
-  // Displays login results.
-  void DisplayLoginResult(Browser* browser, const base::string16& message);
+  // Displays login results. This is either the Modal Signin Error dialog if
+  // |error_message| is a non-empty string, or the User Menu with a blue header
+  // toast otherwise.
+  void DisplayLoginResult(Browser* browser,
+                          const base::string16& error_message,
+                          const base::string16& email);
 
   // Gets the last login result set through |DisplayLoginResult|.
   const base::string16& GetLastLoginResult() const;

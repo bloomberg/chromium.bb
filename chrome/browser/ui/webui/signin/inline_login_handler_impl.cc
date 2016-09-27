@@ -451,7 +451,7 @@ void InlineSigninHelper::ConfirmEmailAction(
 void InlineSigninHelper::OnClientOAuthFailure(
   const GoogleServiceAuthError& error) {
   if (handler_)
-    handler_->HandleLoginError(error.ToString());
+    handler_->HandleLoginError(error.ToString(), base::string16());
 
   AboutSigninInternals* about_signin_internals =
     AboutSigninInternalsFactory::GetForProfile(profile_);
@@ -778,7 +778,8 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
       if (params.handler) {
         params.handler->HandleLoginError(
             l10n_util::GetStringFUTF8(IDS_SYNC_WRONG_EMAIL,
-                                      base::UTF8ToUTF16(default_email)));
+                                      base::UTF8ToUTF16(default_email)),
+            base::UTF8ToUTF16(params.email));
       }
       return;
     }
@@ -820,8 +821,10 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   bool can_offer = CanOffer(profile, can_offer_for, params.gaia_id,
                             params.email, &error_msg);
   if (!can_offer) {
-    if (params.handler)
-      params.handler->HandleLoginError(error_msg);
+    if (params.handler) {
+      params.handler->HandleLoginError(error_msg,
+                                       base::UTF8ToUTF16(params.email));
+    }
     return;
   }
 
@@ -866,15 +869,16 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
         "inline.login.closeDialog");
 }
 
-void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {
+void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg,
+                                              const base::string16& email) {
   SyncStarterCallback(OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
   Browser* browser = GetDesktopBrowser();
   Profile* profile = Profile::FromWebUI(web_ui());
 
   CloseModalSigninIfNeeded(this);
   if (browser && !error_msg.empty()) {
-    LoginUIServiceFactory::GetForProfile(profile)->
-        DisplayLoginResult(browser, base::UTF8ToUTF16(error_msg));
+    LoginUIServiceFactory::GetForProfile(profile)->DisplayLoginResult(
+        browser, base::UTF8ToUTF16(error_msg), email);
   }
 }
 

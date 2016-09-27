@@ -522,8 +522,8 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
 void OneClickSigninSyncStarter::DisplayFinalConfirmationBubble(
     const base::string16& custom_message) {
   browser_ = EnsureBrowser(browser_, profile_);
-  LoginUIServiceFactory::GetForProfile(browser_->profile())->
-      DisplayLoginResult(browser_, custom_message);
+  LoginUIServiceFactory::GetForProfile(browser_->profile())
+      ->DisplayLoginResult(browser_, custom_message, base::string16());
 }
 
 void OneClickSigninSyncStarter::DisplayModalSyncConfirmationWindow() {

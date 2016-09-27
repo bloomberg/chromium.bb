@@ -416,6 +416,10 @@ class Browser : public TabStripModelObserver,
   // flow.
   void ShowModalSyncConfirmationWindow();
 
+  // Shows the tab modal signin error dialog that informs the user about
+  // signin errors.
+  void ShowModalSigninErrorWindow();
+
   // Used to register a KeepAlive to affect the Chrome lifetime. The KeepAlive
   // is registered when the browser is added to the browser list, and unregisted
   // when it is removed from it.

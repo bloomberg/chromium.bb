@@ -160,6 +160,7 @@
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_error_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 #include "chrome/browser/ui/webui/welcome_ui.h"
@@ -548,6 +549,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<UserManagerUI>;
   if (url.host() == chrome::kChromeUIMdUserManagerHost)
     return &NewWebUI<MDUserManagerUI>;
+  if (url.host() == chrome::kChromeUISigninErrorHost)
+    return &NewWebUI<SigninErrorUI>;
   if (url.host() == chrome::kChromeUISyncConfirmationHost)
     return &NewWebUI<SyncConfirmationUI>;
   if (url.host() == chrome::kChromeUIProfileSigninConfirmationHost)

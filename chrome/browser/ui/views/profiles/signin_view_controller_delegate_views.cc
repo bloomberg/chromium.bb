@@ -25,15 +25,16 @@ const int kPasswordCombinedFixedGaiaViewWidth = 360;
 const int kFixedGaiaViewHeight = 612;
 const int kModalDialogWidth = 448;
 const int kSyncConfirmationDialogHeight = 487;
+const int kSigninErrorDialogHeight = 164;
 
 SigninViewControllerDelegateViews::SigninViewControllerDelegateViews(
     SigninViewController* signin_view_controller,
-    views::WebView* content_view,
+    std::unique_ptr<views::WebView> content_view,
     Browser* browser,
     bool wait_for_size)
     : SigninViewControllerDelegate(signin_view_controller,
                                    content_view->GetWebContents()),
-      content_view_(content_view),
+      content_view_(content_view.release()),
       modal_signin_widget_(nullptr),
       wait_for_size_(wait_for_size),
       browser_(browser) {
@@ -101,7 +102,8 @@ void SigninViewControllerDelegateViews::DisplayModal() {
 }
 
 // static
-views::WebView* SigninViewControllerDelegateViews::CreateGaiaWebView(
+std::unique_ptr<views::WebView>
+SigninViewControllerDelegateViews::CreateGaiaWebView(
     content::WebContentsDelegate* delegate,
     profiles::BubbleViewMode mode,
     Browser* browser,
@@ -133,10 +135,10 @@ views::WebView* SigninViewControllerDelegateViews::CreateGaiaWebView(
   if (rwhv)
     rwhv->SetBackgroundColor(profiles::kAvatarBubbleGaiaBackgroundColor);
 
-  return web_view;
+  return std::unique_ptr<views::WebView>(web_view);
 }
 
-views::WebView*
+std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
     Browser* browser) {
   views::WebView* web_view = new views::WebView(browser->profile());
@@ -150,7 +152,22 @@ SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
       gfx::Size(kModalDialogWidth,
                 std::min(kSyncConfirmationDialogHeight, max_height)));
 
-  return web_view;
+  return std::unique_ptr<views::WebView>(web_view);
+}
+
+std::unique_ptr<views::WebView>
+SigninViewControllerDelegateViews::CreateSigninErrorWebView(Browser* browser) {
+  views::WebView* web_view = new views::WebView(browser->profile());
+  web_view->LoadInitialURL(GURL(chrome::kChromeUISigninErrorURL));
+
+  int max_height = browser->window()
+                       ->GetWebContentsModalDialogHost()
+                       ->GetMaximumDialogSize()
+                       .height();
+  web_view->SetPreferredSize(gfx::Size(
+      kModalDialogWidth, std::min(kSigninErrorDialogHeight, max_height)));
+
+  return std::unique_ptr<views::WebView>(web_view);
 }
 
 SigninViewControllerDelegate*
@@ -173,5 +190,15 @@ SigninViewControllerDelegate::CreateSyncConfirmationDelegate(
   return new SigninViewControllerDelegateViews(
       signin_view_controller,
       SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(browser),
+      browser, true);
+}
+
+SigninViewControllerDelegate*
+SigninViewControllerDelegate::CreateSigninErrorDelegate(
+    SigninViewController* signin_view_controller,
+    Browser* browser) {
+  return new SigninViewControllerDelegateViews(
+      signin_view_controller,
+      SigninViewControllerDelegateViews::CreateSigninErrorWebView(browser),
       browser, true);
 }

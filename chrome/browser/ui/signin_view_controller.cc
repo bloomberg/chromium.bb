@@ -35,6 +35,14 @@ void SigninViewController::ShowModalSyncConfirmationDialog(Browser* browser) {
                                                                    browser);
 }
 
+void SigninViewController::ShowModalSigninErrorDialog(Browser* browser) {
+  CloseModalSignin();
+  // The delegate will delete itself on request of the UI code when the widget
+  // is closed.
+  signin_view_controller_delegate_ =
+      SigninViewControllerDelegate::CreateSigninErrorDelegate(this, browser);
+}
+
 void SigninViewController::CloseModalSignin() {
   if (signin_view_controller_delegate_)
     signin_view_controller_delegate_->CloseModalSignin();
