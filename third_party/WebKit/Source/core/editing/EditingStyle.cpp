@@ -1335,6 +1335,14 @@ EditingStyle* EditingStyle::styleAtSelectionStart(const VisibleSelection& select
     if (selection.isNone())
         return nullptr;
 
+    Document& document = *selection.start().document();
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited. see http://crbug.com/590369 for more details.
+    document.updateStyleAndLayoutIgnorePendingStylesheets();
+
+    DocumentLifecycle::DisallowTransitionScope disallowTransition(document.lifecycle());
+
     Position position = adjustedSelectionStartForStyleComputation(selection);
 
     // If the pos is at the end of a text node, then this node is not fully selected.

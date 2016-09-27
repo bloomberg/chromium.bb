@@ -1836,7 +1836,7 @@ Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selec
     // It is important to skip certain irrelevant content at the start of the selection, so we do not wind up
     // with a spurious "mixed" style.
 
-    VisiblePosition visiblePosition = createVisiblePositionDeprecated(selection.start());
+    VisiblePosition visiblePosition = createVisiblePosition(selection.start());
     if (visiblePosition.isNull())
         return Position();
 
