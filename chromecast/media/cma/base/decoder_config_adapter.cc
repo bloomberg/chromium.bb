@@ -271,12 +271,6 @@ VideoConfig DecoderConfigAdapter::ToCastVideoConfig(
   return video_config;
 }
 
-MasteringMetadata::MasteringMetadata() {}
-MasteringMetadata::MasteringMetadata(const MasteringMetadata& rhs) = default;
-
-HDRMetadata::HDRMetadata() {}
-HDRMetadata::HDRMetadata(const HDRMetadata& rhs) = default;
-
 // Ensure that Chromecast enum values match enums in gfx::ColorSpace.
 #define STATIC_ASSERT_ENUM(a, b)                                             \
   static_assert(static_cast<int>(a) == static_cast<int>(gfx::ColorSpace::b), \

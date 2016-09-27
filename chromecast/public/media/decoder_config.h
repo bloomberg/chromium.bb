@@ -287,6 +287,13 @@ struct HDRMetadata {
   HDRMetadata();
   HDRMetadata(const HDRMetadata& rhs);
 };
+
+inline MasteringMetadata::MasteringMetadata() {}
+inline MasteringMetadata::MasteringMetadata(const MasteringMetadata& rhs) =
+    default;
+
+inline HDRMetadata::HDRMetadata() {}
+inline HDRMetadata::HDRMetadata(const HDRMetadata& rhs) = default;
 // ---- End copy/paste from media/base/hdr_metadata.h ----
 
 // TODO(erickung): Remove constructor once CMA backend implementation doesn't
