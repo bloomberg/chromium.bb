@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.crash;
 
 import static org.chromium.chrome.browser.crash.LogcatExtractionCallable.BEGIN_MICRODUMP;
 import static org.chromium.chrome.browser.crash.LogcatExtractionCallable.END_MICRODUMP;
+import static org.chromium.chrome.browser.crash.LogcatExtractionCallable.SNIPPED_MICRODUMP;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -149,46 +150,57 @@ public class LogcatExtractionCallableUnitTest {
 
     @Test
     public void testLogcatWithoutBeginOrEnd_largeLogcat() {
-        final List<String> original = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4",
-                "Line 5", "Redundant Line 1", "Redundant Line 2");
-        final List<String> expected = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4",
-                "Line 5");
+        final List<String> original = Arrays.asList("Trimmed Line 1", "Trimmed Line 2", "Line 3",
+                "Line 4", "Line 5", "Line 6", "Line 7");
+        final List<String> expected =
+                Arrays.asList("Line 3", "Line 4", "Line 5", "Line 6", "Line 7");
         assertLogcatLists(expected, original);
     }
 
     @Test
     public void testLogcatBeginsWithBegin() {
         final List<String> original = Arrays.asList(BEGIN_MICRODUMP, "a", "b", "c", "d", "e");
-        assertLogcatLists(new LinkedList<String>(), original);
+        final List<String> expected = Arrays.asList(SNIPPED_MICRODUMP);
+        assertLogcatLists(expected, original);
     }
 
     @Test
     public void testLogcatWithBegin() {
         final List<String> original = Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a",
                 "b", "c", "d", "e");
-        final List<String> expected = Arrays.asList("Line 1", "Line 2");
+        final List<String> expected = Arrays.asList("Line 1", "Line 2", SNIPPED_MICRODUMP);
         assertLogcatLists(expected, original);
     }
 
     @Test
     public void testLogcatWithEnd() {
         final List<String> original = Arrays.asList("Line 1", "Line 2", END_MICRODUMP);
-        assertLogcatLists(new LinkedList<String>(), original);
+        assertLogcatLists(original, original);
     }
 
     @Test
     public void testLogcatWithBeginAndEnd_smallLogcat() {
         final List<String> original = Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b",
                 "c", "d", "e", END_MICRODUMP);
-        final List<String> expected = Arrays.asList("Line 1", "Line 2");
+        final List<String> expected = Arrays.asList("Line 1", "Line 2", SNIPPED_MICRODUMP);
+        assertLogcatLists(expected, original);
+    }
+
+    @Test
+    public void testLogcatWithBeginAndEnd_splitLogcat() {
+        final List<String> original = Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b",
+                "c", "d", "e", END_MICRODUMP, "Trimmed Line 3", "Trimmed Line 4");
+        final List<String> expected = Arrays.asList("Line 1", "Line 2", SNIPPED_MICRODUMP);
         assertLogcatLists(expected, original);
     }
 
     @Test
     public void testLogcatWithBeginAndEnd_largeLogcat() {
-        final List<String> original = Arrays.asList("Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b",
-                "c", "d", "e", END_MICRODUMP, "Line 3", "Line 4");
-        final List<String> expected = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4");
+        final List<String> original = Arrays.asList("Trimmed Line 1", "Trimmed Line 2", "Line 3",
+                "Line 4", "Line 5", "Line 6", BEGIN_MICRODUMP, "a", "b", "c", "d", "e",
+                END_MICRODUMP, "Trimmed Line 7", "Trimmed Line 8");
+        final List<String> expected =
+                Arrays.asList("Line 3", "Line 4", "Line 5", "Line 6", SNIPPED_MICRODUMP);
         assertLogcatLists(expected, original);
     }
 
@@ -196,15 +208,18 @@ public class LogcatExtractionCallableUnitTest {
     public void testLogcatWithEndAndBegin_smallLogcat() {
         final List<String> original = Arrays.asList(END_MICRODUMP, "Line 1", "Line 2",
                 BEGIN_MICRODUMP, "a", "b", "c", "d", "e");
-        final List<String> expected = Arrays.asList("Line 1", "Line 2");
+        final List<String> expected =
+                Arrays.asList(END_MICRODUMP, "Line 1", "Line 2", SNIPPED_MICRODUMP);
         assertLogcatLists(expected, original);
     }
 
     @Test
     public void testLogcatWithEndAndBegin_largeLogcat() {
-        final List<String> original = Arrays.asList(END_MICRODUMP, "Line 1", "Line 2",
-                BEGIN_MICRODUMP, "a", "b", "c", "d", "e", END_MICRODUMP, "Line 3", "Line 4");
-        final List<String> expected = Arrays.asList("Line 1", "Line 2", "Line 3", "Line 4");
+        final List<String> original =
+                Arrays.asList(END_MICRODUMP, "Line 1", "Line 2", BEGIN_MICRODUMP, "a", "b", "c",
+                        "d", "e", END_MICRODUMP, "Trimmed Line 3", "Trimmed Line 4");
+        final List<String> expected =
+                Arrays.asList(END_MICRODUMP, "Line 1", "Line 2", SNIPPED_MICRODUMP);
         assertLogcatLists(expected, original);
     }
 
