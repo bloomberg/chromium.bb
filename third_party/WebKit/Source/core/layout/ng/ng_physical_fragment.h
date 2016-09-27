@@ -37,6 +37,8 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
   HeapVector<Member<const NGPhysicalFragmentBase>> children_;
 };
 
+WILL_NOT_BE_EAGERLY_TRACED_CLASS(NGPhysicalFragment);
+
 }  // namespace blink
 
 #endif  // NGPhysicalFragment_h
