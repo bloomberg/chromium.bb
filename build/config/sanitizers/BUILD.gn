@@ -109,7 +109,7 @@ if ((is_mac || is_win) && using_sanitizer) {
 }
 
 config("sanitizer_options_link_helper") {
-  if (is_mac) {
+  if (is_mac || is_ios) {
     ldflags = [ "-Wl,-U,_sanitizer_options_link_helper" ]
   } else if (!is_win) {
     ldflags = [ "-Wl,-u_sanitizer_options_link_helper" ]
