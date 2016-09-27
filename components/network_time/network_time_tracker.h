@@ -22,7 +22,7 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
-class MessageLoop;
+class RunLoop;
 class TickClock;
 }  // namespace base
 
@@ -144,7 +144,9 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   std::unique_ptr<net::URLFetcher> time_fetcher_;
   base::TimeTicks fetch_started_;
   std::unique_ptr<client_update_protocol::Ecdsa> query_signer_;
-  base::MessageLoop* loop_;  // For testing; quit on fetch complete.
+
+  // Run by WaitForFetchForTesting() and quit by OnURLFetchComplete().
+  base::RunLoop* run_loop_for_testing_ = nullptr;
 
   // The |Clock| and |TickClock| are used to sanity-check one another, allowing
   // the NetworkTimeTracker to notice e.g. suspend/resume events and clock

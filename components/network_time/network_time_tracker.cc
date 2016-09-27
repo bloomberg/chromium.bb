@@ -12,7 +12,6 @@
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
@@ -189,7 +188,6 @@ NetworkTimeTracker::NetworkTimeTracker(
       max_response_size_(1024),
       backoff_(base::TimeDelta::FromMinutes(kBackoffMinutes)),
       getter_(std::move(getter)),
-      loop_(nullptr),
       clock_(std::move(clock)),
       tick_clock_(std::move(tick_clock)),
       pref_service_(pref_service) {
@@ -292,13 +290,15 @@ void NetworkTimeTracker::SetPublicKeyForTesting(const base::StringPiece& key) {
 
 bool NetworkTimeTracker::QueryTimeServiceForTesting() {
   CheckTime();
-  loop_ = base::MessageLoop::current();  // Gets Quit on completion.
   return time_fetcher_ != nullptr;
 }
 
 void NetworkTimeTracker::WaitForFetchForTesting(uint32_t nonce) {
   query_signer_->OverrideNonceForTesting(kKeyVersion, nonce);
-  base::RunLoop().Run();
+  base::RunLoop run_loop;
+  run_loop_for_testing_ = &run_loop;
+  run_loop.Run();
+  run_loop_for_testing_ = nullptr;
 }
 
 base::TimeDelta NetworkTimeTracker::GetTimerDelayForTesting() const {
@@ -472,10 +472,8 @@ void NetworkTimeTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   }
   QueueCheckTime(backoff_);
   time_fetcher_.reset();
-  if (loop_ != nullptr) {
-    loop_->QuitWhenIdle();
-    loop_ = nullptr;
-  }
+  if (run_loop_for_testing_ != nullptr)
+    run_loop_for_testing_->QuitWhenIdle();
 }
 
 void NetworkTimeTracker::QueueCheckTime(base::TimeDelta delay) {
