@@ -43,7 +43,7 @@
         <template is="dom-repeat" items="[[sites]]">
           <div class="list-item">
             <div class="start layout horizontal center" on-tap="onOriginTap_"
-                actionable$="[[!isExceptionControlled_(item.source)]]">
+                actionable>
               <div class="favicon-image"
                   style$="[[computeSiteIcon(item.originForDisplay)]]">
               </div>
