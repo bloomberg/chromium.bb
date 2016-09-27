@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Environment;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
@@ -25,15 +24,12 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
-import org.chromium.chrome.test.util.browser.WebappTestPage;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Tests org.chromium.chrome.browser.webapps.AddToHomescreenManager and its C++ counterpart.
@@ -120,49 +116,6 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
             }
         }
     }
-
-    /**
-     * Test AddToHomescreenManager subclass which tracks whether the native callbacks
-     * (a proxy for the AddToHomescreenDataFetcher::Observer callbacks) have been called.
-     */
-    private static class AddToHomescreenManagerCallbackTracker extends AddToHomescreenManager {
-        public CallbackHelper mCallbackHelper;
-        public boolean mDialogShown = false;
-        public boolean mGotUserTitle = false;
-        public boolean mReadyToAdd = false;
-
-        public AddToHomescreenManagerCallbackTracker(Activity activity, Tab tab) {
-            super(activity, tab);
-
-            mCallbackHelper = new CallbackHelper();
-
-            AddToHomescreenManager.Observer observer = new AddToHomescreenManager.Observer() {
-                @Override
-                public void onUserTitleAvailable(String title) {
-                    mGotUserTitle = true;
-                    mCallbackHelper.notifyCalled();
-                }
-
-                @Override
-                public void onReadyToAdd(Bitmap icon) {
-                    mReadyToAdd = true;
-                    mCallbackHelper.notifyCalled();
-                }
-            };
-            setObserver(observer);
-        }
-
-        public void waitForCallbacks(int numCallbacks, int numSecondsTimeout) throws Exception {
-            mCallbackHelper.waitForCallback(0, numCallbacks, numSecondsTimeout, TimeUnit.SECONDS);
-        }
-
-        @Override
-        public void showDialog() {
-            mDialogShown = true;
-            mCallbackHelper.notifyCalled();
-        }
-    }
-
     /**
      * Test AddToHomescreenManager subclass which mocks showing the add-to-homescreen dialog and
      * adds the shortcut to the home screen once it is ready.
@@ -332,52 +285,6 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
         } finally {
             mTestServer.stopAndDestroyServer();
         }
-    }
-
-    @MediumTest
-    @Feature("{Webapp}")
-    public void testAddShortcutManifestFetchTimesOutWhenWebApkEnabled() throws Exception {
-        ChromeWebApkHost.initForTesting(true);
-        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
-                mTestServer, mTab, mTestServer.getURL("/slow?10000"));
-        checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
-    }
-
-    @MediumTest
-    @Feature("{Webapp}")
-    public void testAddShortcutManifestFetchTimesOutWhenWebApkDisabled() throws Exception {
-        WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
-                mTestServer, mTab, mTestServer.getURL("/slow?10000"));
-        checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
-    }
-
-    @MediumTest
-    @Feature("{Webapp}")
-    public void testAddShortcutManifestFetchTimesOutWhenNotPwa() throws Exception {
-        loadUrl(MANIFEST_TIMES_OUT_NO_SERVICE_WORKER_HTML, MANIFEST_TITLE);
-        checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut();
-    }
-
-    /**
-     * Checks that the add-to-homescreen native callbacks are called when the Web Manifest fetch
-     * times out.
-     */
-    public void checkCallbacksCalledWhenAddShortcutManifestFetchTimesOut() throws Exception {
-        AddToHomescreenManagerCallbackTracker manager =
-                new AddToHomescreenManagerCallbackTracker(mActivity, mTab);
-        startManagerOnUiThread(manager);
-
-        // The AddToHomescreenDataFetcher timeout fires after 4 seconds. Wait 10 seconds to ensure
-        // that we do not miss the AddToHomescreenDataFetcher timeout timer firing.
-        manager.waitForCallbacks(3, 10);
-
-        assertTrue(manager.mDialogShown);
-        // This callback enables the text field in the add-to-homescreen dialog.
-        assertTrue(manager.mGotUserTitle);
-        // This callback enables the "Add" button in the add-to-homescreen dialog.
-        assertTrue(manager.mReadyToAdd);
-
-        destroyManagerOnUiThread(manager);
     }
 
     private void loadUrl(String url, String expectedPageTitle) throws Exception {

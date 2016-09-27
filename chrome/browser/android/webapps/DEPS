@@ -1,0 +1,9 @@
+specific_include_rules = {
+  "add_to_homescreen_data_fetcher_unittest\.cc": [
+    "+content/browser/service_worker/embedded_worker_test_helper.h",
+    "+content/browser/service_worker/service_worker_context_core.h",
+    "+content/common/service_worker/service_worker_status_code.h",
+    "+content/test",
+  ],
+}
+
