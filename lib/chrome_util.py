@@ -373,10 +373,12 @@ _COPY_PATHS_CHROME = (
     # play well with the binutils stripping tools, so skip stripping.
     Path('libwidevinecdmadapter.so',
          exe=True,
+         optional=True,
          strip=False,
          cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG)),
     Path('libwidevinecdm.so',
          exe=True,
+         optional=True,
          strip=False,
          cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG)),
     Path('lib/*.so',
