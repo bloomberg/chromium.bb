@@ -145,11 +145,12 @@ SANDBOX_TEST(Credentials, CanDetectRoot) {
 
 // Disabled on ASAN because of crbug.com/451603.
 SANDBOX_TEST(Credentials, DISABLE_ON_ASAN(DropFileSystemAccessIsSafe)) {
+  CHECK(Credentials::HasFileSystemAccess());
   CHECK(Credentials::DropAllCapabilities());
   // Probably missing kernel support.
   if (!Credentials::MoveToNewUserNS()) return;
   CHECK(Credentials::DropFileSystemAccess(ProcUtil::OpenProc().get()));
-  CHECK(!base::DirectoryExists(base::FilePath("/proc")));
+  CHECK(!Credentials::HasFileSystemAccess());
   CHECK(WorkingDirectoryIsRoot());
   CHECK(base::IsDirectoryEmpty(base::FilePath("/")));
   // We want the chroot to never have a subdirectory. A subdirectory

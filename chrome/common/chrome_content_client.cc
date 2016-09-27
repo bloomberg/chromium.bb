@@ -52,6 +52,7 @@
 #if defined(OS_LINUX)
 #include <fcntl.h>
 #include "chrome/common/component_flash_hint_file_linux.h"
+#include "sandbox/linux/services/credentials.h"
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
@@ -299,13 +300,6 @@ void AddPepperFlashFromCommandLine(
 }
 
 #if defined(OS_LINUX)
-// This function tests if DIR_USER_DATA can be accessed, as a simple check to
-// see if the zygote has been sandboxed at this point.
-bool IsUserDataDirAvailable() {
-  base::FilePath user_data_dir;
-  return PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-}
-
 // This method is used on Linux only because of architectural differences in how
 // it loads the component updated flash plugin, and not because the other
 // platforms do not support component updated flash. On other platforms, the
@@ -493,7 +487,7 @@ void ChromeContentClient::AddPepperPlugins(
   // is not always available. If it is not available, do not try and load any
   // flash plugin. The flash player, if any, preloaded before the sandbox
   // initialization will continue to be used.
-  if (!IsUserDataDirAvailable()) {
+  if (!sandbox::Credentials::HasFileSystemAccess()) {
     return;
   }
 #endif  // defined(OS_LINUX)

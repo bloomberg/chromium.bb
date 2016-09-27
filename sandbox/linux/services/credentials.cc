@@ -315,10 +315,14 @@ bool Credentials::DropFileSystemAccess(int proc_fd) {
   CHECK_LE(0, proc_fd);
 
   CHECK(ChrootToSafeEmptyDir());
-  CHECK(!base::DirectoryExists(base::FilePath("/proc")));
+  CHECK(!HasFileSystemAccess());
   CHECK(!ProcUtil::HasOpenDirectory(proc_fd));
   // We never let this function fail.
   return true;
+}
+
+bool Credentials::HasFileSystemAccess() {
+  return base::DirectoryExists(base::FilePath("/proc"));
 }
 
 pid_t Credentials::ForkAndDropCapabilitiesInChild() {

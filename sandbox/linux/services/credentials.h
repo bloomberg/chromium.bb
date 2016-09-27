@@ -94,6 +94,9 @@ class SANDBOX_EXPORT Credentials {
   //   - DropAllCapabilities() must be called to prevent escapes.
   static bool DropFileSystemAccess(int proc_fd) WARN_UNUSED_RESULT;
 
+  // This function returns true if the process can still access the filesystem.
+  static bool HasFileSystemAccess();
+
   // Forks and drops capabilities in the child.
   static pid_t ForkAndDropCapabilitiesInChild();
 
