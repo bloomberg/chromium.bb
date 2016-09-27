@@ -272,18 +272,6 @@ void MessageLoop::RemoveNestingObserver(NestingObserver* observer) {
   nesting_observers_.RemoveObserver(observer);
 }
 
-void MessageLoop::Run() {
-  DCHECK(pump_);
-  RunLoop run_loop;
-  run_loop.Run();
-}
-
-void MessageLoop::RunUntilIdle() {
-  DCHECK(pump_);
-  RunLoop run_loop;
-  run_loop.RunUntilIdle();
-}
-
 void MessageLoop::QuitWhenIdle() {
   DCHECK_EQ(this, current());
   if (run_loop_) {

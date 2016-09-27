@@ -178,23 +178,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   void AddNestingObserver(NestingObserver* observer);
   void RemoveNestingObserver(NestingObserver* observer);
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
- protected:
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
-  // Deprecated: use RunLoop instead.
-  // Run the message loop.
-  void Run();
-
-  // Deprecated: use RunLoop instead.
-  // Process all pending tasks, windows messages, etc., but don't wait/sleep.
-  // Return as soon as all items that can be run are taken care of.
-  void RunUntilIdle();
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
- public:
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
-
   // Deprecated: use RunLoop instead.
   //
   // Signals the Run method to return when it becomes idle. It will continue to
@@ -506,9 +489,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 //
 class BASE_EXPORT MessageLoopForUI : public MessageLoop {
  public:
-  using MessageLoop::Run;
-  using MessageLoop::RunUntilIdle;
-
   MessageLoopForUI() : MessageLoop(TYPE_UI) {
   }
 
@@ -574,9 +554,6 @@ static_assert(sizeof(MessageLoop) == sizeof(MessageLoopForUI),
 //
 class BASE_EXPORT MessageLoopForIO : public MessageLoop {
  public:
-  using MessageLoop::Run;
-  using MessageLoop::RunUntilIdle;
-
   MessageLoopForIO() : MessageLoop(TYPE_IO) {
   }
 
