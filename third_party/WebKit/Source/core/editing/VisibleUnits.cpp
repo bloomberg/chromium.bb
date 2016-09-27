@@ -201,13 +201,14 @@ static PositionWithAffinityTemplate<Strategy> honorEditingBoundaryAtOrBefore(con
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrBefore(const VisiblePositionTemplate<Strategy>& pos, const PositionTemplate<Strategy>& anchor)
 {
-    DCHECK(pos.isValid());
+    DCHECK(pos.isValid()) << pos;
     return createVisiblePosition(honorEditingBoundaryAtOrBefore(pos.toPositionWithAffinity(), anchor));
 }
 
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> honorEditingBoundaryAtOrAfter(const VisiblePositionTemplate<Strategy>& pos, const PositionTemplate<Strategy>& anchor)
 {
+    DCHECK(pos.isValid()) << pos;
     if (pos.isNull())
         return pos;
 
@@ -314,7 +315,7 @@ static Node* nextLeafWithSameEditability(Node* node, EditableType editableType =
 // FIXME: consolidate with code in previousLinePosition.
 static Position previousRootInlineBoxCandidatePosition(Node* node, const VisiblePosition& visiblePosition, EditableType editableType)
 {
-    DCHECK(visiblePosition.isValid());
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     ContainerNode* highestRoot = highestEditableRoot(visiblePosition.deepEquivalent(), editableType);
     Node* previousNode = previousLeafWithSameEditability(node, editableType);
 
@@ -338,7 +339,7 @@ static Position previousRootInlineBoxCandidatePosition(Node* node, const Visible
 
 static Position nextRootInlineBoxCandidatePosition(Node* node, const VisiblePosition& visiblePosition, EditableType editableType)
 {
-    DCHECK(visiblePosition.isValid());
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     ContainerNode* highestRoot = highestEditableRoot(visiblePosition.deepEquivalent(), editableType);
     Node* nextNode = nextLeafWithSameEditability(node, editableType);
     while (nextNode && (!nextNode->layoutObject() || inSameLine(createVisiblePosition(firstPositionInOrBeforeNode(nextNode)), visiblePosition)))
@@ -442,6 +443,7 @@ int CachedLogicallyOrderedLeafBoxes::boxIndexInLeaves(const InlineTextBox* box) 
 static const InlineTextBox* logicallyPreviousBox(const VisiblePosition& visiblePosition, const InlineTextBox* textBox,
     bool& previousBoxInDifferentBlock, CachedLogicallyOrderedLeafBoxes& leafBoxes)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     const InlineBox* startBox = textBox;
 
     const InlineTextBox* previousBox = leafBoxes.previousTextBox(&startBox->root(), textBox);
@@ -483,6 +485,7 @@ static const InlineTextBox* logicallyPreviousBox(const VisiblePosition& visibleP
 static const InlineTextBox* logicallyNextBox(const VisiblePosition& visiblePosition, const InlineTextBox* textBox,
     bool& nextBoxInDifferentBlock, CachedLogicallyOrderedLeafBoxes& leafBoxes)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     const InlineBox* startBox = textBox;
 
     const InlineTextBox* nextBox = leafBoxes.nextTextBox(&startBox->root(), textBox);
@@ -523,6 +526,7 @@ static const InlineTextBox* logicallyNextBox(const VisiblePosition& visiblePosit
 static TextBreakIterator* wordBreakIteratorForMinOffsetBoundary(const VisiblePosition& visiblePosition, const InlineTextBox* textBox,
     int& previousBoxLength, bool& previousBoxInDifferentBlock, Vector<UChar, 1024>& string, CachedLogicallyOrderedLeafBoxes& leafBoxes)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     previousBoxInDifferentBlock = false;
 
     // FIXME: Handle the case when we don't have an inline text box.
@@ -544,6 +548,7 @@ static TextBreakIterator* wordBreakIteratorForMinOffsetBoundary(const VisiblePos
 static TextBreakIterator* wordBreakIteratorForMaxOffsetBoundary(const VisiblePosition& visiblePosition, const InlineTextBox* textBox,
     bool& nextBoxInDifferentBlock, Vector<UChar, 1024>& string, CachedLogicallyOrderedLeafBoxes& leafBoxes)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     nextBoxInDifferentBlock = false;
 
     // FIXME: Handle the case when we don't have an inline text box.
@@ -583,6 +588,7 @@ enum CursorMovementDirection { MoveLeft, MoveRight };
 static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition, CursorMovementDirection direction,
     bool skipsSpaceWhenMovingRight)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     if (visiblePosition.isNull())
         return VisiblePosition();
 
@@ -653,6 +659,7 @@ static VisiblePosition visualWordPosition(const VisiblePosition& visiblePosition
 
 VisiblePosition leftWordPosition(const VisiblePosition& visiblePosition, bool skipsSpaceWhenMovingRight)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     VisiblePosition leftWordBreak = visualWordPosition(visiblePosition, MoveLeft, skipsSpaceWhenMovingRight);
     leftWordBreak = honorEditingBoundaryAtOrBefore(leftWordBreak, visiblePosition.deepEquivalent());
 
@@ -666,6 +673,7 @@ VisiblePosition leftWordPosition(const VisiblePosition& visiblePosition, bool sk
 
 VisiblePosition rightWordPosition(const VisiblePosition& visiblePosition, bool skipsSpaceWhenMovingRight)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     VisiblePosition rightWordBreak = visualWordPosition(visiblePosition, MoveRight, skipsSpaceWhenMovingRight);
     rightWordBreak = honorEditingBoundaryAtOrBefore(rightWordBreak, visiblePosition.deepEquivalent());
 
@@ -709,7 +717,7 @@ typedef unsigned (*BoundarySearchFunction)(const UChar*, unsigned length, unsign
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionTemplate<Strategy>& c, BoundarySearchFunction searchFunction)
 {
-    DCHECK(c.isValid());
+    DCHECK(c.isValid()) << c;
     const PositionTemplate<Strategy> pos = c.deepEquivalent();
     Node* boundary = parentEditingBoundary(pos);
     if (!boundary)
@@ -795,7 +803,7 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTemplate<Strategy>& c, BoundarySearchFunction searchFunction)
 {
-    DCHECK(c.isValid());
+    DCHECK(c.isValid()) << c;
     PositionTemplate<Strategy> pos = c.deepEquivalent();
     Node* boundary = parentEditingBoundary(pos);
     if (!boundary)
@@ -910,6 +918,7 @@ static unsigned startWordBoundary(const UChar* characters, unsigned length, unsi
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> startOfWordAlgorithm(const VisiblePositionTemplate<Strategy>& c, EWordSide side)
 {
+    DCHECK(c.isValid()) << c;
     // TODO(yosin) This returns a null VP for c at the start of the document
     // and |side| == |LeftWordIfOnBoundary|
     VisiblePositionTemplate<Strategy> p = c;
@@ -949,6 +958,7 @@ static unsigned endWordBoundary(const UChar* characters, unsigned length, unsign
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> endOfWordAlgorithm(const VisiblePositionTemplate<Strategy>& c, EWordSide side)
 {
+    DCHECK(c.isValid()) << c;
     VisiblePositionTemplate<Strategy> p = c;
     if (side == LeftWordIfOnBoundary) {
         if (isStartOfParagraph(c))
@@ -986,6 +996,7 @@ static unsigned previousWordPositionBoundary(const UChar* characters, unsigned l
 
 VisiblePosition previousWordPosition(const VisiblePosition& c)
 {
+    DCHECK(c.isValid()) << c;
     VisiblePosition prev = previousBoundary(c, previousWordPositionBoundary);
     return honorEditingBoundaryAtOrBefore(prev, c.deepEquivalent());
 }
@@ -1002,6 +1013,7 @@ static unsigned nextWordPositionBoundary(const UChar* characters, unsigned lengt
 
 VisiblePosition nextWordPosition(const VisiblePosition& c)
 {
+    DCHECK(c.isValid()) << c;
     VisiblePosition next = nextBoundary(c, nextWordPositionBoundary);
     return honorEditingBoundaryAtOrAfter(next, c.deepEquivalent());
 }
@@ -1073,13 +1085,13 @@ static PositionInFlatTreeWithAffinity startOfLine(const PositionInFlatTreeWithAf
 // FIXME: Rename this function to reflect the fact it ignores bidi levels.
 VisiblePosition startOfLine(const VisiblePosition& currentPosition)
 {
-    DCHECK(currentPosition.isValid());
+    DCHECK(currentPosition.isValid()) << currentPosition;
     return createVisiblePosition(startOfLine(currentPosition.toPositionWithAffinity()));
 }
 
 VisiblePositionInFlatTree startOfLine(const VisiblePositionInFlatTree& currentPosition)
 {
-    DCHECK(currentPosition.isValid());
+    DCHECK(currentPosition.isValid()) << currentPosition;
     return createVisiblePosition(startOfLine(currentPosition.toPositionWithAffinity()));
 }
 
@@ -1100,20 +1112,20 @@ static PositionWithAffinityTemplate<Strategy> logicalStartOfLineAlgorithm(const 
 
 VisiblePosition logicalStartOfLine(const VisiblePosition& currentPosition)
 {
-    DCHECK(currentPosition.isValid());
+    DCHECK(currentPosition.isValid()) << currentPosition;
     return createVisiblePosition(logicalStartOfLineAlgorithm<EditingStrategy>(currentPosition.toPositionWithAffinity()));
 }
 
 VisiblePositionInFlatTree logicalStartOfLine(const VisiblePositionInFlatTree& currentPosition)
 {
-    DCHECK(currentPosition.isValid());
+    DCHECK(currentPosition.isValid()) << currentPosition;
     return createVisiblePosition(logicalStartOfLineAlgorithm<EditingInFlatTreeStrategy>(currentPosition.toPositionWithAffinity()));
 }
 
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> endPositionForLine(const VisiblePositionTemplate<Strategy>& c, LineEndpointComputationMode mode)
 {
-    DCHECK(c.isValid());
+    DCHECK(c.isValid()) << c;
     if (c.isNull())
         return VisiblePositionTemplate<Strategy>();
 
@@ -1170,6 +1182,7 @@ static VisiblePositionTemplate<Strategy> endPositionForLine(const VisiblePositio
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> endOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& currentPosition)
 {
+    DCHECK(currentPosition.isValid()) << currentPosition;
     // TODO(yosin) this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
     VisiblePositionTemplate<Strategy> visPos = endPositionForLine(currentPosition, UseInlineBoxOrdering);
@@ -1206,13 +1219,15 @@ VisiblePositionInFlatTree endOfLine(const VisiblePositionInFlatTree& currentPosi
 template <typename Strategy>
 static bool inSameLogicalLine(const VisiblePositionTemplate<Strategy>& a, const VisiblePositionTemplate<Strategy>& b)
 {
+    DCHECK(a.isValid()) << a;
+    DCHECK(b.isValid()) << b;
     return a.isNotNull() && logicalStartOfLine(a).deepEquivalent() == logicalStartOfLine(b).deepEquivalent();
 }
 
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> logicalEndOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& currentPosition)
 {
-    DCHECK(currentPosition.isValid());
+    DCHECK(currentPosition.isValid()) << currentPosition;
     // TODO(yosin) this is the current behavior that might need to be fixed.
     // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
     VisiblePositionTemplate<Strategy> visPos = endPositionForLine(currentPosition, UseLogicalOrdering);
@@ -1276,17 +1291,22 @@ bool inSameLine(const PositionInFlatTreeWithAffinity& position1, const PositionI
 
 bool inSameLine(const VisiblePosition& position1, const VisiblePosition& position2)
 {
+    DCHECK(position1.isValid()) << position1;
+    DCHECK(position2.isValid()) << position2;
     return inSameLine(position1.toPositionWithAffinity(), position2.toPositionWithAffinity());
 }
 
 bool inSameLine(const VisiblePositionInFlatTree& position1, const VisiblePositionInFlatTree& position2)
 {
+    DCHECK(position1.isValid()) << position1;
+    DCHECK(position2.isValid()) << position2;
     return inSameLine(position1.toPositionWithAffinity(), position2.toPositionWithAffinity());
 }
 
 template <typename Strategy>
 bool isStartOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& p)
 {
+    DCHECK(p.isValid()) << p;
     return p.isNotNull() && p.deepEquivalent() == startOfLine(p).deepEquivalent();
 }
 
@@ -1303,6 +1323,7 @@ bool isStartOfLine(const VisiblePositionInFlatTree& p)
 template <typename Strategy>
 bool isEndOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& p)
 {
+    DCHECK(p.isValid()) << p;
     return p.isNotNull() && p.deepEquivalent() == endOfLine(p).deepEquivalent();
 }
 
@@ -1319,6 +1340,7 @@ bool isEndOfLine(const VisiblePositionInFlatTree& p)
 template <typename Strategy>
 static bool isLogicalEndOfLineAlgorithm(const VisiblePositionTemplate<Strategy>& p)
 {
+    DCHECK(p.isValid()) << p;
     return p.isNotNull() && p.deepEquivalent() == logicalEndOfLine(p).deepEquivalent();
 }
 
@@ -1348,7 +1370,7 @@ static inline LayoutPoint absoluteLineDirectionPointToLocalPointInBlock(RootInli
 
 VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
-    DCHECK(visiblePosition.isValid());
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
 
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.anchorNode();
@@ -1401,7 +1423,7 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
 
 VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutUnit lineDirectionPoint, EditableType editableType)
 {
-    DCHECK(visiblePosition.isValid());
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
 
     Position p = visiblePosition.deepEquivalent();
     Node* node = p.anchorNode();
@@ -1467,6 +1489,7 @@ static unsigned startSentenceBoundary(const UChar* characters, unsigned length, 
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> startOfSentenceAlgorithm(const VisiblePositionTemplate<Strategy>& c)
 {
+    DCHECK(c.isValid()) << c;
     return previousBoundary(c, startSentenceBoundary);
 }
 
@@ -1491,6 +1514,7 @@ static unsigned endSentenceBoundary(const UChar* characters, unsigned length, un
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> endOfSentenceAlgorithm(const VisiblePositionTemplate<Strategy>& c)
 {
+    DCHECK(c.isValid()) << c;
     return nextBoundary(c, endSentenceBoundary);
 }
 
@@ -1514,6 +1538,7 @@ static unsigned previousSentencePositionBoundary(const UChar* characters, unsign
 
 VisiblePosition previousSentencePosition(const VisiblePosition& c)
 {
+    DCHECK(c.isValid()) << c;
     VisiblePosition prev = previousBoundary(c, previousSentencePositionBoundary);
     return honorEditingBoundaryAtOrBefore(prev, c.deepEquivalent());
 }
@@ -1528,6 +1553,7 @@ static unsigned nextSentencePositionBoundary(const UChar* characters, unsigned l
 
 VisiblePosition nextSentencePosition(const VisiblePosition& c)
 {
+    DCHECK(c.isValid()) << c;
     VisiblePosition next = nextBoundary(c, nextSentencePositionBoundary);
     return honorEditingBoundaryAtOrAfter(next, c.deepEquivalent());
 }
@@ -1853,6 +1879,7 @@ bool isEndOfParagraphDeprecated(const VisiblePositionInFlatTree& pos, EditingBou
 
 VisiblePosition previousParagraphPosition(const VisiblePosition& p, LayoutUnit x)
 {
+    DCHECK(p.isValid()) << p;
     VisiblePosition pos = p;
     do {
         VisiblePosition n = previousLinePosition(pos, x);
@@ -1865,6 +1892,7 @@ VisiblePosition previousParagraphPosition(const VisiblePosition& p, LayoutUnit x
 
 VisiblePosition nextParagraphPosition(const VisiblePosition& p, LayoutUnit x)
 {
+    DCHECK(p.isValid()) << p;
     VisiblePosition pos = p;
     do {
         VisiblePosition n = nextLinePosition(pos, x);
@@ -1879,6 +1907,7 @@ VisiblePosition nextParagraphPosition(const VisiblePosition& p, LayoutUnit x)
 
 VisiblePosition startOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     Position position = visiblePosition.deepEquivalent();
     Element* startBlock = position.computeContainerNode() ? enclosingBlock(position.computeContainerNode(), rule) : 0;
     return startBlock ? VisiblePosition::firstPositionInNode(startBlock) : VisiblePosition();
@@ -1886,6 +1915,7 @@ VisiblePosition startOfBlock(const VisiblePosition& visiblePosition, EditingBoun
 
 VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBoundaryCrossingRule rule)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     Position position = visiblePosition.deepEquivalent();
     Element* endBlock = position.computeContainerNode() ? enclosingBlock(position.computeContainerNode(), rule) : 0;
     return endBlock ? VisiblePosition::lastPositionInNode(endBlock) : VisiblePosition();
@@ -1893,16 +1923,20 @@ VisiblePosition endOfBlock(const VisiblePosition& visiblePosition, EditingBounda
 
 bool inSameBlock(const VisiblePosition& a, const VisiblePosition& b)
 {
+    // TODO(xiaochengh): Ensure that this function is called with valid |a| and
+    // |b|, and add |DCHECK(a.isValid())| and |DCHECK(b.isValid())|
     return !a.isNull() && enclosingBlock(a.deepEquivalent().computeContainerNode()) == enclosingBlock(b.deepEquivalent().computeContainerNode());
 }
 
 bool isStartOfBlock(const VisiblePosition& pos)
 {
+    DCHECK(pos.isValid()) << pos;
     return pos.isNotNull() && pos.deepEquivalent() == startOfBlock(pos, CanCrossEditingBoundary).deepEquivalent();
 }
 
 bool isEndOfBlock(const VisiblePosition& pos)
 {
+    DCHECK(pos.isValid()) << pos;
     return pos.isNotNull() && pos.deepEquivalent() == endOfBlock(pos, CanCrossEditingBoundary).deepEquivalent();
 }
 
@@ -1911,7 +1945,7 @@ bool isEndOfBlock(const VisiblePosition& pos)
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> startOfDocumentAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    DCHECK(visiblePosition.isValid());
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     Node* node = visiblePosition.deepEquivalent().anchorNode();
     if (!node || !node->document().documentElement())
         return VisiblePositionTemplate<Strategy>();
@@ -1932,7 +1966,7 @@ VisiblePositionInFlatTree startOfDocument(const VisiblePositionInFlatTree& c)
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> endOfDocumentAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    DCHECK(visiblePosition.isValid());
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     Node* node = visiblePosition.deepEquivalent().anchorNode();
     if (!node || !node->document().documentElement())
         return VisiblePositionTemplate<Strategy>();
@@ -1953,11 +1987,13 @@ VisiblePositionInFlatTree endOfDocument(const VisiblePositionInFlatTree& c)
 
 bool isStartOfDocument(const VisiblePosition& p)
 {
+    DCHECK(p.isValid()) << p;
     return p.isNotNull() && previousPositionOf(p, CanCrossEditingBoundary).isNull();
 }
 
 bool isEndOfDocument(const VisiblePosition& p)
 {
+    DCHECK(p.isValid()) << p;
     return p.isNotNull() && nextPositionOf(p, CanCrossEditingBoundary).isNull();
 }
 
@@ -1965,6 +2001,7 @@ bool isEndOfDocument(const VisiblePosition& p)
 
 VisiblePosition startOfEditableContent(const VisiblePosition& visiblePosition)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     ContainerNode* highestRoot = highestEditableRoot(visiblePosition.deepEquivalent());
     if (!highestRoot)
         return VisiblePosition();
@@ -1974,6 +2011,7 @@ VisiblePosition startOfEditableContent(const VisiblePosition& visiblePosition)
 
 VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     ContainerNode* highestRoot = highestEditableRoot(visiblePosition.deepEquivalent());
     if (!highestRoot)
         return VisiblePosition();
@@ -1983,6 +2021,7 @@ VisiblePosition endOfEditableContent(const VisiblePosition& visiblePosition)
 
 bool isEndOfEditableOrNonEditableContent(const VisiblePosition& position)
 {
+    DCHECK(position.isValid()) << position;
     return position.isNotNull() && nextPositionOf(position).isNull();
 }
 
@@ -1990,6 +2029,7 @@ bool isEndOfEditableOrNonEditableContent(const VisiblePosition& position)
 // this function does, e.g. |isLastVisiblePositionOrEndOfInnerEditor()|.
 bool isEndOfEditableOrNonEditableContent(const VisiblePositionInFlatTree& position)
 {
+    DCHECK(position.isValid()) << position;
     if (position.isNull())
         return false;
     const VisiblePositionInFlatTree nextPosition = nextPositionOf(position);
@@ -2005,11 +2045,13 @@ bool isEndOfEditableOrNonEditableContent(const VisiblePositionInFlatTree& positi
 
 VisiblePosition leftBoundaryOfLine(const VisiblePosition& c, TextDirection direction)
 {
+    DCHECK(c.isValid()) << c;
     return direction == LTR ? logicalStartOfLine(c) : logicalEndOfLine(c);
 }
 
 VisiblePosition rightBoundaryOfLine(const VisiblePosition& c, TextDirection direction)
 {
+    DCHECK(c.isValid()) << c;
     return direction == LTR ? logicalEndOfLine(c) : logicalStartOfLine(c);
 }
 
@@ -2271,11 +2313,13 @@ InlineBoxPosition computeInlineBoxPosition(const PositionInFlatTree& position, T
 
 InlineBoxPosition computeInlineBoxPosition(const VisiblePosition& position)
 {
+    DCHECK(position.isValid()) << position;
     return computeInlineBoxPosition(position.deepEquivalent(), position.affinity());
 }
 
 InlineBoxPosition computeInlineBoxPosition(const VisiblePositionInFlatTree& position)
 {
+    DCHECK(position.isValid()) << position;
     return computeInlineBoxPosition(position.deepEquivalent(), position.affinity());
 }
 
@@ -2892,6 +2936,8 @@ bool isVisuallyEquivalentCandidate(const PositionInFlatTree& position)
 template <typename Strategy>
 static IntRect absoluteCaretBoundsOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
+    // TODO(xiaochengh): Ensure that this function is called with a valid
+    // |visiblePosition|, and add |DCHECK(visiblePosition.isValid())|;
     LayoutObject* layoutObject;
     LayoutRect localRect = localCaretRectOfPosition(visiblePosition.toPositionWithAffinity(), layoutObject);
     if (localRect.isEmpty() || !layoutObject)
@@ -2913,7 +2959,7 @@ IntRect absoluteCaretBoundsOf(const VisiblePositionInFlatTree& visiblePosition)
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> skipToEndOfEditingBoundary(const VisiblePositionTemplate<Strategy>& pos, const PositionTemplate<Strategy>& anchor)
 {
-    DCHECK(pos.isValid());
+    DCHECK(pos.isValid()) << pos;
     if (pos.isNull())
         return pos;
 
@@ -2938,6 +2984,8 @@ static VisiblePositionTemplate<Strategy> skipToEndOfEditingBoundary(const Visibl
 template <typename Strategy>
 static UChar32 characterAfterAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
+    // TODO(xiaochengh): Ensure that this function is called with a valid
+    // |visiblePosition|, and add |DCHECK(visiblePosition.isValid())|
     // We canonicalize to the first of two equivalent candidates, but the second
     // of the two candidates is the one that will be inside the text node
     // containing the character after this visible position.
@@ -2969,6 +3017,8 @@ UChar32 characterAfter(const VisiblePositionInFlatTree& visiblePosition)
 template <typename Strategy>
 static UChar32 characterBeforeAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
+    // TODO(xiaochengh): Ensure that this function is called with a valid
+    // |visiblePosition|, and add |DCHECK(visiblePosition.isValid())|
     return characterAfter(previousPositionOf(visiblePosition));
 }
 
@@ -2985,6 +3035,7 @@ UChar32 characterBefore(const VisiblePositionInFlatTree& visiblePosition)
 template <typename Strategy>
 static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     const PositionTemplate<Strategy> deepPosition = visiblePosition.deepEquivalent();
     PositionTemplate<Strategy> p = deepPosition;
 
@@ -3137,7 +3188,7 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePos
 template <typename Strategy>
 VisiblePositionTemplate<Strategy> leftPositionOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    DCHECK(visiblePosition.isValid());
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     const PositionTemplate<Strategy> pos = leftVisuallyDistinctCandidate(visiblePosition);
     // TODO(yosin) Why can't we move left from the last position in a tree?
     if (pos.atStartOfTree() || pos.atEndOfTree())
@@ -3162,6 +3213,7 @@ VisiblePositionInFlatTree leftPositionOf(const VisiblePositionInFlatTree& visibl
 template <typename Strategy>
 static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     const PositionTemplate<Strategy> deepPosition = visiblePosition.deepEquivalent();
     PositionTemplate<Strategy> p = deepPosition;
     if (p.isNull())
@@ -3316,7 +3368,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> rightPositionOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    DCHECK(visiblePosition.isValid());
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     const PositionTemplate<Strategy> pos = rightVisuallyDistinctCandidate(visiblePosition);
     // FIXME: Why can't we move left from the last position in a tree?
     if (pos.atStartOfTree() || pos.atEndOfTree())
@@ -3370,7 +3422,7 @@ VisiblePositionInFlatTree nextPositionOf(const VisiblePositionInFlatTree& visibl
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> skipToStartOfEditingBoundary(const VisiblePositionTemplate<Strategy>& pos, const PositionTemplate<Strategy>& anchor)
 {
-    DCHECK(pos.isValid());
+    DCHECK(pos.isValid()) << pos;
     if (pos.isNull())
         return pos;
 
