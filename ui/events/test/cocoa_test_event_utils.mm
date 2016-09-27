@@ -153,7 +153,7 @@ NSEvent* TestScrollEvent(NSPoint window_point,
 
   // Always set event flags, otherwise +[NSEvent eventWithCGEvent:] populates
   // flags from current keyboard state which can make tests flaky.
-  CGEventSetFlags(scroll, 0);
+  CGEventSetFlags(scroll, static_cast<CGEventFlags>(0));
 
   if (has_precise_deltas) {
     // kCGScrollWheelEventIsContinuous is -[NSEvent hasPreciseScrollingDeltas].
