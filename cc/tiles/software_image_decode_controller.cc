@@ -860,9 +860,14 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
   // If we're not going to do a scale, we can use low filter quality. Note that
   // checking if the sizes are the same is better than checking if scale is 1.f,
   // because even non-1 scale can result in the same (rounded) width/height.
+  // If either dimension is a downscale, then use mipmaps (medium filter
+  // quality).
   if (target_size.width() == src_rect.width() &&
       target_size.height() == src_rect.height()) {
     quality = std::min(quality, kLow_SkFilterQuality);
+  } else if (target_size.width() < src_rect.width() ||
+             target_size.height() < src_rect.height()) {
+    quality = std::min(quality, kMedium_SkFilterQuality);
   }
 
   // Drop from high to medium if the the matrix we applied wasn't decomposable,

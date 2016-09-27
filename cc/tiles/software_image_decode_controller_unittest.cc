@@ -299,7 +299,8 @@ TEST(SoftwareImageDecodeControllerTest, ImageKeyMediumQualityAt0_01Scale) {
   EXPECT_EQ(7u * 3u * 4u, key.locked_bytes());
 }
 
-TEST(SoftwareImageDecodeControllerTest, ImageKeyHighQuality) {
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyPartialDowscalesDropsHighQualityToMedium) {
   sk_sp<SkImage> image = CreateImage(100, 100);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -310,11 +311,48 @@ TEST(SoftwareImageDecodeControllerTest, ImageKeyHighQuality) {
 
   auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
   EXPECT_EQ(image->uniqueID(), key.image_id());
-  EXPECT_EQ(quality, key.filter_quality());
+  EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
+  EXPECT_EQ(100, key.target_size().width());
+  EXPECT_EQ(100, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(100u * 100u * 4u, key.locked_bytes());
+}
+
+TEST(SoftwareImageDecodeControllerTest,
+     ImageKeyFullDowscalesDropsHighQualityToMedium) {
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(0.5f, 0.2f), is_decomposable));
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(50, key.target_size().width());
+  EXPECT_EQ(50, key.target_size().height());
+  EXPECT_FALSE(key.can_use_original_decode());
+  EXPECT_EQ(50u * 50u * 4u, key.locked_bytes());
+}
+
+TEST(SoftwareImageDecodeControllerTest, ImageKeyDowscalesHighQuality) {
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  DrawImage draw_image(image, SkIRect::MakeWH(image->width(), image->height()),
+                       quality,
+                       CreateMatrix(SkSize::Make(2.5f, 1.5f), is_decomposable));
+
+  auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
+  EXPECT_EQ(image->uniqueID(), key.image_id());
+  EXPECT_EQ(quality, key.filter_quality());
+  EXPECT_EQ(250, key.target_size().width());
   EXPECT_EQ(150, key.target_size().height());
   EXPECT_FALSE(key.can_use_original_decode());
-  EXPECT_EQ(50u * 150u * 4u, key.locked_bytes());
+  EXPECT_EQ(250u * 150u * 4u, key.locked_bytes());
 }
 
 TEST(SoftwareImageDecodeControllerTest,
@@ -478,7 +516,7 @@ TEST(SoftwareImageDecodeControllerTest,
 
   auto key = ImageDecodeControllerKey::FromDrawImage(draw_image);
   EXPECT_EQ(image->uniqueID(), key.image_id());
-  EXPECT_EQ(kHigh_SkFilterQuality, key.filter_quality());
+  EXPECT_EQ(kMedium_SkFilterQuality, key.filter_quality());
   EXPECT_EQ(40, key.target_size().width());
   EXPECT_EQ(35, key.target_size().height());
   EXPECT_EQ(gfx::Rect(20, 30, 80, 70), key.src_rect());
@@ -532,18 +570,6 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(high_quality_task);
 
-  DrawImage medium_quality_draw_image(
-      image, SkIRect::MakeWH(image->width(), image->height()),
-      kMedium_SkFilterQuality,
-      CreateMatrix(SkSize::Make(0.5f, 0.5f), is_decomposable));
-  scoped_refptr<TileTask> medium_quality_task;
-  need_unref = controller.GetTaskForImageAndRef(
-      medium_quality_draw_image, ImageDecodeController::TracingInfo(),
-      &medium_quality_task);
-  EXPECT_TRUE(need_unref);
-  EXPECT_TRUE(medium_quality_task);
-  EXPECT_TRUE(high_quality_task.get() != medium_quality_task.get());
-
   DrawImage low_quality_draw_image(
       image, SkIRect::MakeWH(image->width(), image->height()),
       kLow_SkFilterQuality,
@@ -555,14 +581,11 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(low_quality_task);
   EXPECT_TRUE(high_quality_task.get() != low_quality_task.get());
-  EXPECT_TRUE(medium_quality_task.get() != low_quality_task.get());
 
   TestTileTaskRunner::ProcessTask(high_quality_task.get());
-  TestTileTaskRunner::ProcessTask(medium_quality_task.get());
   TestTileTaskRunner::ProcessTask(low_quality_task.get());
 
   controller.UnrefImage(high_quality_draw_image);
-  controller.UnrefImage(medium_quality_draw_image);
   controller.UnrefImage(low_quality_draw_image);
 }
 
