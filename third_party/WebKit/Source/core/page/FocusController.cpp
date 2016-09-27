@@ -994,6 +994,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
     if (&newDocument != document) {
         // Focus is going away from this document, so clear the focused element.
         document->clearFocusedElement();
+        document->setSequentialFocusNavigationStartingPoint(nullptr);
     }
 
     setFocusedFrame(newDocument.frame());

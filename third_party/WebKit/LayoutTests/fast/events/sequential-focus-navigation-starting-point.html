@@ -92,5 +92,21 @@ test(function() {
     eventSender.keyDown('\t', ['shiftKey']);
     assert_equals(document.activeElement.id, 'sit');
 }, 'Find text should update sequential focus navigation starting point.');
+
+var t = async_test('Cross-frame sequential focus navigation should clear per-document starting point.');
+t.step(() => {
+    var container = document.querySelector('#container');
+    container.innerHTML = '<iframe tabindex=0 srcdoc="<input id=inner1><input id=inner2>"></iframe><input id=outer1>';
+    var iframe = container.firstChild;
+    document.querySelector('#outer1').addEventListener('focus', () => { iframe.focus() }, false);
+    iframe.addEventListener('load', t.step_func(() => {
+        var inner2 = iframe.contentDocument.querySelector('#inner2');
+        inner2.focus();
+        eventSender.keyDown('\t');
+        eventSender.keyDown('\t', ['shiftKey']);
+        assert_equals(iframe.contentDocument.activeElement, inner2);
+        t.done();
+    }), false);
+});
 </script>
 </body>
