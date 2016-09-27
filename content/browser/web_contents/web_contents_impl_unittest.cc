@@ -2933,7 +2933,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountNavigate) {
                                     std::string());
   int entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
   if (IsBrowserSideNavigationEnabled())
-    contents->GetMainFrame()->PrepareForCommit();
+    main_test_rfh()->PrepareForCommit();
   EXPECT_TRUE(contents->CrossProcessNavigationPending());
   EXPECT_EQ(1u, instance->GetRelatedActiveContentsCount());
   contents->GetPendingMainFrame()->SendNavigate(1, entry_id, true, kUrl);
@@ -2970,7 +2970,7 @@ TEST_F(WebContentsImplTest, ActiveContentsCountChangeBrowsingInstance) {
                                     ui::PAGE_TRANSITION_TYPED,
                                     std::string());
   int entry_id = contents->GetController().GetPendingEntry()->GetUniqueID();
-  contents->GetMainFrame()->PrepareForCommit();
+  main_test_rfh()->PrepareForCommit();
   EXPECT_TRUE(contents->CrossProcessNavigationPending());
   scoped_refptr<SiteInstance> instance_webui(
       contents->GetPendingMainFrame()->GetSiteInstance());
