@@ -327,6 +327,7 @@ public class TouchInputHandler {
         switch (inputMode) {
             case TRACKPAD:
                 setInputStrategy(new TrackpadInputStrategy(mRenderData, injector));
+                moveCursorToScreenCenter();
                 break;
 
             case TOUCH:
@@ -356,8 +357,6 @@ public class TouchInputHandler {
         } else {
             mDesktopCanvas.clearSystemUiOffsets();
         }
-
-        mDesktopCanvas.repositionImage(true);
     }
 
     private boolean handleTouchEvent(MotionEvent event) {
@@ -409,16 +408,24 @@ public class TouchInputHandler {
     }
 
     private void resizeImageToFitScreen() {
+        if (mRenderData.imageWidth == 0 || mRenderData.imageHeight == 0
+                || mRenderData.screenWidth == 0 || mRenderData.screenHeight == 0) {
+            return;
+        }
+
         mDesktopCanvas.resizeImageToFitScreen();
 
+        moveCursorToScreenCenter();
+    }
+
+    private void moveCursorToScreenCenter() {
         float screenCenterX = (float) mRenderData.screenWidth / 2;
         float screenCenterY = (float) mRenderData.screenHeight / 2;
 
         float[] imagePoint = mapScreenPointToImagePoint(screenCenterX, screenCenterY);
-        mDesktopCanvas.setViewportPosition(imagePoint[0], imagePoint[1]);
+        mDesktopCanvas.setCursorPosition(imagePoint[0], imagePoint[1]);
 
         moveCursorToScreenPoint(screenCenterX, screenCenterY);
-        mDesktopCanvas.repositionImage(true);
     }
 
     private void setInputStrategy(InputStrategyInterface inputStrategy) {
@@ -437,19 +444,17 @@ public class TouchInputHandler {
             deltaX = -deltaX;
             deltaY = -deltaY;
         }
+
         // Determine the center point from which to apply the delta.
         // For indirect input modes (i.e. trackpad), the view generally follows the cursor.
         // For direct input modes (i.e. touch) the should track the user's motion.
         // If the user is dragging, then the viewport should always follow the user's finger.
-        PointF newPos = mDesktopCanvas.moveViewportCenter(!followCursor, deltaX, deltaY);
-
-        // If we are in an indirect mode, then we want to keep the cursor centered, if possible, as
-        // the viewport moves.
         if (mInputStrategy.isIndirectInputMode()) {
-            moveCursor(newPos.x, newPos.y);
+            PointF newCursorPos = mDesktopCanvas.moveCursorPosition(deltaX, deltaY);
+            moveCursor(newCursorPos.x, newCursorPos.y);
+        } else {
+            mDesktopCanvas.moveViewportCenter(deltaX, deltaY);
         }
-
-        mDesktopCanvas.repositionImage(true);
     }
 
     /** Moves the cursor to the specified position on the screen. */
@@ -593,14 +598,8 @@ public class TouchInputHandler {
                 return false;
             }
 
-            float scaleFactor = detector.getScaleFactor();
-
-            mRenderData.transform.postScale(
-                    scaleFactor, scaleFactor, detector.getFocusX(), detector.getFocusY());
-
-            // For indirect input modes we want to zoom using the cursor as the focal point, for
-            // direct modes we use the actual focal point of the gesture.
-            mDesktopCanvas.repositionImageWithZoom(mInputStrategy.isIndirectInputMode());
+            mDesktopCanvas.scaleAndRepositionImage(detector.getScaleFactor(), detector.getFocusX(),
+                    detector.getFocusY(), mInputStrategy.isIndirectInputMode());
 
             return true;
         }
