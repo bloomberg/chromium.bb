@@ -108,8 +108,10 @@ class NTPSnippetsService : public ContentSuggestionsProvider,
     return snippets_fetcher_.get();
   }
 
-  // (Re)schedules the periodic fetching of snippets.
-  void RescheduleFetching();
+  // (Re)schedules the periodic fetching of snippets. If |force| is true, the
+  // tasks will be re-scheduled even if they already exist and have the correct
+  // periods.
+  void RescheduleFetching(bool force);
 
   // ContentSuggestionsProvider implementation
   CategoryStatus GetCategoryStatus(Category category) override;

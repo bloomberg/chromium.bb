@@ -11,6 +11,12 @@ const char kEnableSnippets[] = "ntp_snippets.enable";
 
 const char kSnippetHosts[] = "ntp_snippets.hosts";
 
+const char kSnippetBackgroundFetchingIntervalWifi[] =
+    "ntp_snippets.fetching_interval_wifi";
+
+const char kSnippetBackgroundFetchingIntervalFallback[] =
+    "ntp_snippets.fetching_interval_fallback";
+
 const char kSnippetFetcherRequestCount[] =
     "ntp.request_throttler.suggestion_fetcher.count";
 const char kSnippetFetcherInteractiveRequestCount[] =

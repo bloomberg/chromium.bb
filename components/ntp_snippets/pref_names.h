@@ -12,6 +12,13 @@ extern const char kEnableSnippets[];
 
 extern const char kSnippetHosts[];
 
+// The pref name for the currently-scheduled background fetching interval when
+// there is WiFi connectivity.
+extern const char kSnippetBackgroundFetchingIntervalWifi[];
+// The pref name for the currently-scheduled background fetching interval when
+// there is no WiFi connectivity.
+extern const char kSnippetBackgroundFetchingIntervalFallback[];
+
 // The pref name for today's count of NTPSnippetsFetcher requests, so far.
 extern const char kSnippetFetcherRequestCount[];
 // The pref name for today's count of NTPSnippetsFetcher interactive requests.
