@@ -1457,6 +1457,7 @@
                  'wfh+watch@chromium.org'],
     'battery_status': ['timvolodine@chromium.org'],
     'blimp' : ['anandc+watch-blimp@chromium.org',
+               'bgoldman+watch-blimp@chromium.org',
                'dtrainor+watch-blimp@chromium.org',
                'gcasto+watch-blimp@chromium.org',
                'jessicag+watch-blimp@chromium.org',
