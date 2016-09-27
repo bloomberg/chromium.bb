@@ -207,7 +207,7 @@ XhrAppIdChecker.prototype.fetchAllowedOriginsForAppId_ = function(appId) {
     return Promise.resolve([]);
   }
 
-  if (appId.indexOf('http://') == 0 && !this.allowHttp_) {
+  if (appId.startsWith('http://') && !this.allowHttp_) {
     console.log(UTIL_fmt('http app ids disallowed, ' + appId + ' requested'));
     return Promise.resolve([]);
   }

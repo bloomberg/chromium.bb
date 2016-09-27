@@ -894,7 +894,7 @@ function initKeyboardOverlayId(inputMethodId) {
   var inputMethodIdToOverlayId =
       keyboardOverlayData['inputMethodIdToOverlayId'];
   if (inputMethodId) {
-    if (inputMethodId.indexOf(IME_ID_PREFIX) == 0) {
+    if (inputMethodId.startsWith(IME_ID_PREFIX)) {
       // If the input method is a component extension IME, remove the prefix:
       //   _comp_ime_<ext_id>
       // The extension id is a hash value with 32 characters.

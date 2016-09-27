@@ -64,12 +64,12 @@ cr.define('hotword', function() {
     checkUrlPathIsEligible_: function(url, base) {
       if (url == base ||
           url == base + '/' ||
-          url.indexOf(base + '/_/chrome/newtab?') == 0 ||  // Appcache NTP.
-          url.indexOf(base + '/?') == 0 ||
-          url.indexOf(base + '/#') == 0 ||
-          url.indexOf(base + '/webhp') == 0 ||
-          url.indexOf(base + '/search') == 0 ||
-          url.indexOf(base + '/imghp') == 0) {
+          url.startsWith(base + '/_/chrome/newtab?') ||  // Appcache NTP.
+          url.startsWith(base + '/?') ||
+          url.startsWith(base + '/#') ||
+          url.startsWith(base + '/webhp') ||
+          url.startsWith(base + '/search') ||
+          url.startsWith(base + '/imghp')) {
         return true;
       }
       return false;

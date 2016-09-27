@@ -1474,7 +1474,7 @@ instrumented.gcm.onMessage.addListener(function(message) {
 
   var payload = message.data.payload;
   var tag = message.data.tag;
-  if (payload.indexOf('REQUEST_CARDS') == 0) {
+  if (payload.startsWith('REQUEST_CARDS')) {
     tasks.add(ON_PUSH_MESSAGE_START_TASK_NAME, function() {
       // Accept promise rejection on failure since it's safer to do nothing,
       // preventing polling the server when the payload really didn't change.

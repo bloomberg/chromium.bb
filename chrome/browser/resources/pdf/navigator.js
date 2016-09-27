@@ -180,11 +180,11 @@ Navigator.prototype = {
    */
   isValidUrl_: function(url) {
     // Make sure |url| starts with a valid scheme.
-    if (url.indexOf('http://') != 0 &&
-        url.indexOf('https://') != 0 &&
-        url.indexOf('ftp://') != 0 &&
-        url.indexOf('file://') != 0 &&
-        url.indexOf('mailto:') != 0) {
+    if (!url.startsWith('http://') &&
+        !url.startsWith('https://') &&
+        !url.startsWith('ftp://') &&
+        !url.startsWith('file://') &&
+        !url.startsWith('mailto:')) {
       return false;
     }
 

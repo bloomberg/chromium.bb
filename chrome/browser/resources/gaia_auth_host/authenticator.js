@@ -252,7 +252,7 @@ cr.define('cr.login', function() {
     // Don't block insecure content for desktop flow because it lands on
     // http. Otherwise, block insecure content as long as gaia is https.
     this.samlHandler_.blockInsecureContent = authMode != AuthMode.DESKTOP &&
-        this.idpOrigin_.indexOf('https://') == 0;
+        this.idpOrigin_.startsWith('https://');
     this.needPassword = !('needPassword' in data) || data.needPassword;
 
     if (this.isNewGaiaFlow) {
@@ -371,7 +371,7 @@ cr.define('cr.login', function() {
       return;
     }
 
-    if (currentUrl.indexOf('https') != 0)
+    if (!currentUrl.startsWith('https'))
       this.trusted_ = false;
 
     if (this.isConstrainedWindow_) {
@@ -468,11 +468,11 @@ cr.define('cr.login', function() {
       } else if (
           this.isNewGaiaFlow && headerName == SET_COOKIE_HEADER) {
         var headerValue = header.value;
-        if (headerValue.indexOf(OAUTH_CODE_COOKIE + '=', 0) == 0) {
+        if (headerValue.startsWith(OAUTH_CODE_COOKIE + '=')) {
           this.oauthCode_ =
               headerValue.substring(OAUTH_CODE_COOKIE.length + 1).split(';')[0];
         }
-        if (headerValue.indexOf(GAPS_COOKIE + '=', 0) == 0) {
+        if (headerValue.startsWith(GAPS_COOKIE + '=')) {
           this.newGapsCookie_ =
               headerValue.substring(GAPS_COOKIE.length + 1).split(';')[0];
         }
@@ -493,7 +493,7 @@ cr.define('cr.login', function() {
     var cookies = header_value.split(/\s*;\s*/);
     var found = false;
     for (var i = 0; i < cookies.length; ++i) {
-      if (cookies[i].indexOf(cookie_name + '=', 0) == 0) {
+      if (cookies[i].startsWith(cookie_name + '=')) {
         found = true;
         cookies[i] = cookie_name + '=' + cookie_value;
         break;

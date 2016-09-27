@@ -520,7 +520,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
       ((evtValue.length + 1) == value.length)) {
     // The user added text either to the beginning or the end.
     if (evtValue.length > value.length) {
-      if (evtValue.indexOf(value) == 0) {
+      if (evtValue.startsWith(value)) {
         this.speak(evtValue[evtValue.length - 1], evt.triggeredByUser,
                    personality);
         return;
@@ -531,7 +531,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
     }
     // The user deleted text either from the beginning or the end.
     if (evtValue.length < value.length) {
-      if (value.indexOf(evtValue) == 0) {
+      if (value.startsWith(evtValue)) {
         this.speak(value[value.length - 1], evt.triggeredByUser, personality);
         return;
       } else if (value.indexOf(evtValue) == 1) {

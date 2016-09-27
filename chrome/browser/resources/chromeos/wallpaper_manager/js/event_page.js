@@ -294,8 +294,8 @@ chrome.syncFileSystem.onFileStatusChanged.addListener(function(detail) {
       });
       // We only need to store the custom wallpaper if it was set by the
       // built-in wallpaper picker.
-      if (detail.fileEntry.name.indexOf(
-          Constants.ThirdPartyWallpaperPrefix) != 0) {
+      if (!detail.fileEntry.name.startsWith(
+          Constants.ThirdPartyWallpaperPrefix)) {
         WallpaperUtil.storeWallpaperFromSyncFSToLocalFS(detail.fileEntry);
       }
     } else if (detail.action == 'deleted') {

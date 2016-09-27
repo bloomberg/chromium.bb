@@ -130,15 +130,15 @@ Authenticator.prototype = {
     // message so we have to rely on 'load' event.
     // TODO(dzhioev): Do not rely on 'load' event after b/16313327 is fixed.
     this.assumeLoadedOnLoadEvent_ =
-        this.gaiaPath_.indexOf('ServiceLogin') !== 0 ||
+        !this.gaiaPath_.startsWith('ServiceLogin') ||
         this.service_ !== 'chromeoslogin' ||
         this.useEafe_;
   },
 
   isGaiaMessage_: function(msg) {
     // Not quite right, but good enough.
-    return this.gaiaUrl_.indexOf(msg.origin) == 0 ||
-           this.GAIA_URL.indexOf(msg.origin) == 0;
+    return this.gaiaUrl_.startsWith(msg.origin) ||
+           this.GAIA_URL.startsWith(msg.origin);
   },
 
   isParentMessage_: function(msg) {
@@ -299,7 +299,7 @@ Authenticator.prototype = {
       name: 'setGaiaUrl',
       gaiaUrl: this.gaiaUrl_
     });
-    if (!this.desktopMode_ && this.gaiaUrl_.indexOf('https://') == 0) {
+    if (!this.desktopMode_ && this.gaiaUrl_.startsWith('https://')) {
       // Abort the login flow when content served over an unencrypted connection
       // is detected on Chrome OS. This does not apply to tests that explicitly
       // set a non-https GAIA URL and want to perform all authentication over

@@ -74,7 +74,7 @@ function overrideGetMessage() {
    * @return {string} Translated resource.
    */
   chrome.i18n.getMessage = function(key) {
-    if (key.indexOf('@@') == 0)
+    if (key.startsWith('@@'))
       return originalGetMessage(key);
 
     // TODO(kevers): Add support for other locales.

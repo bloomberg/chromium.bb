@@ -9,7 +9,7 @@ var handleReply = function(reply) {
   // |reply| is the next command for the extension.
   if (reply == 'idle') {
     // Do nothing, wait for events.
-  } else if (reply.indexOf('get-policy-') == 0) {
+  } else if (reply.startsWith('get-policy-')) {
     // Send a policy value back.
     chrome.storage.managed.get(reply.substr(11), function(policy) {
       chrome.test.log('sending policy value: ' + JSON.stringify(policy));

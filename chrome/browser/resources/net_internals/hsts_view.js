@@ -147,7 +147,7 @@ var HSTSView = (function() {
 
         // If there are no static_hashes, do not make it seem like there is a
         // static PKP policy in place.
-        if (staticHashes.length == 0 && key.indexOf('static_pkp_') == 0) {
+        if (staticHashes.length == 0 && key.startsWith('static_pkp_')) {
           addNode(this.queryOutputDiv_, 'br');
           continue;
         }

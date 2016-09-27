@@ -316,7 +316,7 @@ cr.define('cr.login', function() {
      */
     isAuthExtMessage_: function(e) {
       return this.frame_.src &&
-          this.frame_.src.indexOf(e.origin) == 0 &&
+          this.frame_.src.startsWith(e.origin) &&
           e.source == this.frame_.contentWindow;
     },
 

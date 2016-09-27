@@ -352,7 +352,7 @@ BackgroundBridge.prototype = {
             var cookies = [{name: 'Set-Cookie',
                             value: 'google-accounts-saml-end=now'}];
             for (var j = 0; j < headers.length; ++j) {
-              if (headers[j].name.toLowerCase().indexOf('set-cookie') == 0) {
+              if (headers[j].name.toLowerCase().startsWith('set-cookie')) {
                 var header = headers[j];
                 header.value += ';';
                 cookies.push(header);
@@ -375,7 +375,7 @@ BackgroundBridge.prototype = {
    */
   onBeforeSendHeaders: function(details) {
     if (!this.isDesktopFlow_ && this.gaiaUrl_ &&
-        details.url.indexOf(this.gaiaUrl_) == 0) {
+        details.url.startsWith(this.gaiaUrl_)) {
       details.requestHeaders.push({
         name: 'X-Cros-Auth-Ext-Support',
         value: 'SAML'

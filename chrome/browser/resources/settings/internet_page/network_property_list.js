@@ -91,7 +91,7 @@ Polymer({
     var result = this.prefix + key;
     for (let entry in chrome.networkingPrivate.NetworkType) {
       let type = chrome.networkingPrivate.NetworkType[entry];
-      if (result.indexOf(type + '.') == 0) {
+      if (result.startsWith(type + '.')) {
         result = result.substr(type.length + 1);
         break;
       }

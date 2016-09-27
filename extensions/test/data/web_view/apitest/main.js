@@ -1701,11 +1701,11 @@ function testCaptureVisibleRegion() {
                 chrome.runtime.lastError.message);
             embedder.test.fail();
           } else {
-            if (imgdata.indexOf('data:image/jpeg;base64') != 0) {
-              console_log('imgdata = ' + imgdata);
-            }
+            if (!imgdata.startsWith('data:image/jpeg;base64'))
+              console.log('imgdata = ' + imgdata);
+
             embedder.test.assertTrue(
-                imgdata.indexOf('data:image/jpeg;base64') == 0);
+                imgdata.startsWith('data:image/jpeg;base64'));
             embedder.test.succeed();
           }
         });

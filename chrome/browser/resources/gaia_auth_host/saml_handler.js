@@ -272,10 +272,8 @@ cr.define('cr.login', function() {
       }
 
       // Skip for none http/https url.
-      if (e.url.indexOf('https://') != 0 &&
-          e.url.indexOf('http://') != 0) {
+      if (!e.url.startsWith('https://') && !e.url.startsWith('http://'))
         return;
-      }
 
       this.isSamlPage_ = this.pendingIsSamlPage_;
     },
@@ -349,7 +347,7 @@ cr.define('cr.login', function() {
             var cookies = [{name: 'Set-Cookie',
                             value: 'google-accounts-saml-end=now'}];
             for (var j = 0; j < headers.length; ++j) {
-              if (headers[j].name.toLowerCase().indexOf('set-cookie') == 0) {
+              if (headers[j].name.toLowerCase().startsWith('set-cookie')) {
                 var header = headers[j];
                 header.value += ';';
                 cookies.push(header);

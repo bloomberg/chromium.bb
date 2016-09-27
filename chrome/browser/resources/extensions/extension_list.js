@@ -868,7 +868,7 @@ cr.define('extensions', function() {
             return;
           }
           var displayName;
-          if (view.url.indexOf('chrome-extension://') == 0) {
+          if (view.url.startsWith('chrome-extension://')) {
             var pathOffset = 'chrome-extension://'.length + 32 + 1;
             displayName = view.url.substring(pathOffset);
             if (displayName == '_generated_background_page.html')

@@ -29,7 +29,7 @@ function siteFromUrl(url) {
  * @param {string} url The URL to check.
  */
 function isDisallowedUrl(url) {
-  return url.indexOf('chrome') == 0 || url.indexOf('about') == 0;
+  return url.startsWith('chrome') || url.startsWith('about');
 }
 
 

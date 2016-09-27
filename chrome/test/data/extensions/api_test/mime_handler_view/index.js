@@ -40,7 +40,7 @@ function expectSuccessfulRead(response) {
 
 function expectSuccessfulReadLong(response) {
   chrome.test.assertEq(200, response.status);
-  chrome.test.assertTrue(response.data.indexOf('content to read\n') === 0);
+  chrome.test.assertTrue(response.data.startsWith('content to read\n'));
 }
 
 function checkStreamDetails(name, embedded) {
@@ -167,7 +167,7 @@ chrome.mimeHandlerPrivate.getStreamInfo(function(streamInfo) {
   }
 
   // Run the test for data URLs.
-  if (streamInfo.originalUrl.indexOf("data:") === 0) {
+  if (streamInfo.originalUrl.startsWith("data:")) {
     window.removeEventListener('message', queueMessage);
     // Long data URLs get truncated.
     if (streamInfo.originalUrl == "data:")

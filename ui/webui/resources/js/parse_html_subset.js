@@ -18,8 +18,8 @@ var parseHtmlSubset = (function() {
   var allowedAttributes = {
     'href': function(node, value) {
       // Only allow a[href] starting with chrome:// and https://
-      return node.tagName == 'A' && (value.indexOf('chrome://') == 0 ||
-          value.indexOf('https://') == 0);
+      return node.tagName == 'A' && (value.startsWith('chrome://') ||
+          value.startsWith('https://'));
     },
     'target': function(node, value) {
       // Only allow a[target='_blank'].

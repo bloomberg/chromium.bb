@@ -29,7 +29,7 @@ function loadAuthUrlAndShowWindow(url, win) {
     urls: ['https://accounts.google.com/*'],
   }, ['blocking', 'requestHeaders']);
 
-  if (url.toLowerCase().indexOf('https://accounts.google.com/') != 0)
+  if (!url.toLowerCase().startsWith('https://accounts.google.com/'))
     document.querySelector('.titlebar').classList.add('titlebar-border');
 
   webview.src = url;

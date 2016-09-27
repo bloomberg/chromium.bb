@@ -101,7 +101,7 @@ function PDFViewer(browserApi) {
 
   this.delayedScriptingMessages_ = [];
 
-  this.isPrintPreview_ = this.originalUrl_.indexOf('chrome://print') == 0;
+  this.isPrintPreview_ = this.originalUrl_.startsWith('chrome://print');
 
   // Parse open pdf parameters.
   this.paramsParser_ =
@@ -233,7 +233,7 @@ function PDFViewer(browserApi) {
   document.addEventListener('mouseout', this.handleMouseEvent_.bind(this));
 
   var isInTab = this.browserApi_.getStreamInfo().tabId != -1;
-  var isSourceFileUrl = this.originalUrl_.indexOf('file://') == 0;
+  var isSourceFileUrl = this.originalUrl_.startsWith('file://');
   this.navigator_ = new Navigator(
       this.originalUrl_, this.viewport_, this.paramsParser_,
       new NavigatorDelegate(isInTab, isSourceFileUrl));

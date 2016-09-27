@@ -50,7 +50,7 @@ cr.define('uber', function() {
     // flicker on load.
     // HACK(csilv): Search URLs aren't overlays, special case them.
     if (params.id == 'settings' && params.path &&
-        params.path.indexOf('search') != 0) {
+        !params.path.startsWith('search')) {
       backgroundNavigation();
     }
 
@@ -156,7 +156,7 @@ cr.define('uber', function() {
    * @param {Event} e The posted object.
    */
   function handleWindowMessage(e) {
-    e = /** @type{!MessageEvent<!{method: string, params: *}>} */(e);
+    e = /** @type {!MessageEvent<!{method: string, params: *}>} */(e);
     if (e.data.method === 'beginInterceptingEvents') {
       backgroundNavigation();
     } else if (e.data.method === 'stopInterceptingEvents') {

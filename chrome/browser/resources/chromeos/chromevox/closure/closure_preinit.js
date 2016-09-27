@@ -34,7 +34,8 @@ window.queue_ = [];
 window.CLOSURE_IMPORT_SCRIPT = function(src) {
   // Only run our version of the import script
   // when trying to inject ChromeVox scripts.
-  if (src.indexOf('chrome-extension://') == 0) {
+  // TODO(lazyboy): Use URL instead.
+  if (src.startsWith('chrome-extension://')) {
     if (!goog.inHtmlDocument_() ||
         goog.dependencies_.written[src]) {
       return false;

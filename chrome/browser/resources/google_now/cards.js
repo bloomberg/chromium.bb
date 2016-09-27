@@ -344,7 +344,7 @@ function buildCardSet() {
   instrumented.alarms.onAlarm.addListener(function(alarm) {
     console.log('cardManager.onAlarm ' + JSON.stringify(alarm));
 
-    if (alarm.name.indexOf(alarmPrefix) == 0) {
+    if (alarm.name.startsWith(alarmPrefix)) {
       // Alarm to show the card.
       tasks.add(UPDATE_CARD_TASK_NAME, function() {
         /** @type {ChromeNotificationId} */

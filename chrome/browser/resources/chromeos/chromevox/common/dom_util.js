@@ -1068,7 +1068,7 @@ cvox.DomUtil.computeHasContent_ = function(node) {
   // get stuck.
   // TODO (clchen, dmazzoni): Manually inject ChromeVox for iframes without src.
   if ((node.tagName == 'IFRAME') && (node.src) &&
-      (node.src.indexOf('javascript:') != 0)) {
+      (!node.src.startsWith('javascript:'))) {
     return true;
   }
 
@@ -2555,6 +2555,7 @@ cvox.DomUtil.purgeNodes = function(nodes) {
 
 /**
  * Calculates a hit point for a given node.
+ * @param {Node} node The given node.
  * @return {{x:(number), y:(number)}} The position.
  */
 cvox.DomUtil.elementToPoint = function(node) {

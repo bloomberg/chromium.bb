@@ -357,7 +357,7 @@ cr.define('print_preview', function() {
         this.location_ = '';
         this.tags_.some(function(tag) {
           return Destination.LOCATION_TAG_PREFIXES.some(function(prefix) {
-            if (tag.indexOf(prefix) == 0) {
+            if (tag.startsWith(prefix)) {
               this.location_ = tag.substring(prefix.length) || '';
               return true;
             }

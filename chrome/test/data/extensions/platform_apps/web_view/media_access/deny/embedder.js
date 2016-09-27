@@ -63,7 +63,7 @@ embedder.registerAndWaitForPostMessage_ = function(webview, testName) {
 embedder.assertCorrectMediaEvent_ = function(e) {
   embedder.assertTrue('media' == e.permission, 'permission: ' + e.permission);
   embedder.assertTrue(!!e.url, 'e.url must be defined');
-  embedder.assertTrue(e.url.indexOf(embedder.baseGuestURL) == 0,
+  embedder.assertTrue(e.url.startsWith(embedder.baseGuestURL),
                       'wrong e.url, ' + e.url);
 };
 

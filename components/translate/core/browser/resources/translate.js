@@ -298,7 +298,7 @@ cr.googleTranslate = (function() {
      */
     onLoadJavascript: function(url) {
       // securityOrigin is predefined by translate_script.cc.
-      if (url.indexOf(securityOrigin) != 0) {
+      if (!url.startsWith(securityOrigin)) {
         console.error('Translate: ' + url + ' is not allowed to load.');
         errorCode = ERROR['BAD_ORIGIN'];
         return;
