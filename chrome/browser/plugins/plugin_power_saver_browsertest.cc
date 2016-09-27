@@ -436,13 +436,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
                               "medium_16_9_cross_origin");
 }
 
-// Flaky on WebKit Mac dbg bots: crbug.com/599484.
-#if defined(OS_MACOSX)
-#define MAYBE_SmallCrossOrigin DISABLED_SmallCrossOrigin
-#else
-#define MAYBE_SmallCrossOrigin SmallCrossOrigin
-#endif
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_SmallCrossOrigin) {
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallCrossOrigin) {
   LoadHTML(
       "<object id='plugin' data='http://otherorigin.com/fake.swf' "
       "    type='application/x-shockwave-flash' width='400' height='100'>"
@@ -483,13 +477,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallerThanPlayIcon) {
       VerifySnapshot(FILE_PATH_LITERAL("smaller_than_play_icon_expected.png")));
 }
 
-// Flaky on WebKit Mac dbg bots: crbug.com/599484.
-#if defined(OS_MACOSX)
-#define MAYBE_PosterTests DISABLED_PosterTests
-#else
-#define MAYBE_PosterTests PosterTests
-#endif
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_PosterTests) {
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, PosterTests) {
   // This test simultaneously verifies the varied supported poster syntaxes,
   // as well as verifies that the poster is rendered correctly with various
   // mismatched aspect ratios and sizes, following the same rules as VIDEO.
