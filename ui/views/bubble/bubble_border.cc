@@ -507,7 +507,8 @@ void BubbleBackground::Paint(gfx::Canvas* canvas, views::View* view) const {
   gfx::RectF bounds(view->GetLocalBounds());
   bounds.Inset(gfx::InsetsF(border_->GetInsets()));
   if (UseMd()) {
-    // The border is 1px at all scale factors. Leave room for it.
+    // The border is 1px at all scale factors. Leave room for it. It's partially
+    // transparent, so we don't want to draw any background underneath it.
     const SkScalar one_pixel = SkFloatToScalar(1 / canvas->image_scale());
     bounds.Inset(gfx::InsetsF(one_pixel));
   }
