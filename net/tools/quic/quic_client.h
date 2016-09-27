@@ -38,9 +38,7 @@ class QuicClientPeer;
 
 class QuicClient : public QuicClientBase,
                    public EpollCallbackInterface,
-                   public QuicSpdyStream::Visitor,
-                   public ProcessPacketInterface,
-                   public QuicClientPushPromiseIndex::Delegate {
+                   public ProcessPacketInterface {
  public:
   class ResponseListener {
    public:
@@ -87,7 +85,7 @@ class QuicClient : public QuicClientBase,
   // Sends an HTTP request and does not wait for response before returning.
   void SendRequest(const SpdyHeaderBlock& headers,
                    base::StringPiece body,
-                   bool fin);
+                   bool fin) override;
 
   // Sends an HTTP request and waits for response before returning.
   void SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
@@ -113,17 +111,6 @@ class QuicClient : public QuicClientBase,
 
   // QuicSpdyStream::Visitor
   void OnClose(QuicSpdyStream* stream) override;
-
-  bool CheckVary(const SpdyHeaderBlock& client_request,
-                 const SpdyHeaderBlock& promise_request,
-                 const SpdyHeaderBlock& promise_response) override;
-  void OnRendezvousResult(QuicSpdyStream*) override;
-
-  // If the crypto handshake has not yet been confirmed, adds the data to the
-  // queue of data to resend if the client receives a stateless reject.
-  // Otherwise, deletes the data.
-  void MaybeAddQuicDataToResend(
-      std::unique_ptr<QuicDataToResend> data_to_resend);
 
   // If the client has at least one UDP socket, return address of the latest
   // created one. Otherwise, return an empty socket address.
@@ -185,28 +172,6 @@ class QuicClient : public QuicClientBase,
  private:
   friend class net::test::QuicClientPeer;
 
-  // Specific QuicClient class for storing data to resend.
-  class ClientQuicDataToResend : public QuicDataToResend {
-   public:
-    ClientQuicDataToResend(std::unique_ptr<SpdyHeaderBlock> headers,
-                           base::StringPiece body,
-                           bool fin,
-                           QuicClient* client)
-        : QuicDataToResend(std::move(headers), body, fin), client_(client) {
-      DCHECK(headers_);
-      DCHECK(client);
-    }
-
-    ~ClientQuicDataToResend() override {}
-
-    void Resend() override;
-
-   private:
-    QuicClient* client_;
-
-    DISALLOW_COPY_AND_ASSIGN(ClientQuicDataToResend);
-  };
-
   // Used during initialization: creates the UDP socket FD, sets socket options,
   // and binds the socket to our address.
   bool CreateUDPSocketAndBind();
@@ -257,18 +222,12 @@ class QuicClient : public QuicClientBase,
   // HTTP/2 trailers from most recent response.
   std::string latest_response_trailers_;
 
-  // Keeps track of any data that must be resent upon a subsequent successful
-  // connection, in case the client receives a stateless reject.
-  std::vector<std::unique_ptr<QuicDataToResend>> data_to_resend_on_connect_;
-
   // Point to a QuicPacketReader object on the heap. The reader allocates more
   // space than allowed on the stack.
   //
   // TODO(rtenneti): Chromium code doesn't use |packet_reader_|. Add support for
   // QuicPacketReader
   std::unique_ptr<QuicPacketReader> packet_reader_;
-
-  std::unique_ptr<ClientQuicDataToResend> push_promise_data_to_resend_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };

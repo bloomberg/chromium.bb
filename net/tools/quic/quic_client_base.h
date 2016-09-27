@@ -31,7 +31,8 @@ namespace net {
 class ProofVerifier;
 class QuicServerId;
 
-class QuicClientBase {
+class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
+                       public QuicSpdyStream::Visitor {
  public:
   // The client uses these objects to keep track of any data to resend upon
   // receipt of a stateless reject.  Recall that the client API allows callers
@@ -69,7 +70,7 @@ class QuicClientBase {
                  QuicAlarmFactory* alarm_factory,
                  std::unique_ptr<ProofVerifier> proof_verifier);
 
-  ~QuicClientBase();
+  ~QuicClientBase() override;
 
   // Initializes the client to create a connection. Should be called exactly
   // once before calling StartConnect or Connect. Returns true if the
@@ -90,6 +91,11 @@ class QuicClientBase {
 
   // Wait for events until the handshake is confirmed.
   void WaitForCryptoHandshakeConfirmed();
+
+  // Sends an HTTP request and does not wait for response before returning.
+  virtual void SendRequest(const SpdyHeaderBlock& headers,
+                           base::StringPiece body,
+                           bool fin) = 0;
 
   // Wait up to 50ms, and handle any events which occur.
   // Returns true if there are any outstanding requests.
@@ -204,6 +210,17 @@ class QuicClientBase {
     return &push_promise_index_;
   }
 
+  bool CheckVary(const SpdyHeaderBlock& client_request,
+                 const SpdyHeaderBlock& promise_request,
+                 const SpdyHeaderBlock& promise_response) override;
+  void OnRendezvousResult(QuicSpdyStream*) override;
+
+  // If the crypto handshake has not yet been confirmed, adds the data to the
+  // queue of data to resend if the client receives a stateless reject.
+  // Otherwise, deletes the data.
+  void MaybeAddQuicDataToResend(
+      std::unique_ptr<QuicDataToResend> data_to_resend);
+
  protected:
   // Takes ownership of |connection|.
   virtual QuicClientSession* CreateQuicClientSession(
@@ -222,6 +239,21 @@ class QuicClientBase {
   // connection ID).
   virtual QuicConnectionId GenerateNewConnectionId();
 
+  // If the crypto handshake has not yet been confirmed, adds the data to the
+  // queue of data to resend if the client receives a stateless reject.
+  // Otherwise, deletes the data.
+  void MaybeAddDataToResend(const SpdyHeaderBlock& headers,
+                            base::StringPiece body,
+                            bool fin);
+
+  void ClearDataToResend();
+
+  void ResendSavedData();
+
+  void AddPromiseDataToResend(const SpdyHeaderBlock& headers,
+                              base::StringPiece body,
+                              bool fin);
+
   QuicConnectionHelperInterface* helper() { return helper_.get(); }
 
   QuicAlarmFactory* alarm_factory() { return alarm_factory_.get(); }
@@ -235,6 +267,28 @@ class QuicClientBase {
   }
 
  private:
+  // Specific QuicClient class for storing data to resend.
+  class ClientQuicDataToResend : public QuicDataToResend {
+   public:
+    ClientQuicDataToResend(std::unique_ptr<SpdyHeaderBlock> headers,
+                           base::StringPiece body,
+                           bool fin,
+                           QuicClientBase* client)
+        : QuicDataToResend(std::move(headers), body, fin), client_(client) {
+      DCHECK(headers_);
+      DCHECK(client);
+    }
+
+    ~ClientQuicDataToResend() override {}
+
+    void Resend() override;
+
+   private:
+    QuicClientBase* client_;
+
+    DISALLOW_COPY_AND_ASSIGN(ClientQuicDataToResend);
+  };
+
   // |server_id_| is a tuple (hostname, port, is_https) of the server.
   QuicServerId server_id_;
 
@@ -289,6 +343,12 @@ class QuicClientBase {
   bool connected_or_attempting_connect_;
 
   QuicClientPushPromiseIndex push_promise_index_;
+
+  // Keeps track of any data that must be resent upon a subsequent successful
+  // connection, in case the client receives a stateless reject.
+  std::vector<std::unique_ptr<QuicDataToResend>> data_to_resend_on_connect_;
+
+  std::unique_ptr<ClientQuicDataToResend> push_promise_data_to_resend_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientBase);
 };

@@ -32,11 +32,6 @@ using base::StringPiece;
 
 namespace net {
 
-void QuicSimpleClient::ClientQuicDataToResend::Resend() {
-  client_->SendRequest(*headers_, body_, fin_);
-  headers_ = nullptr;
-}
-
 QuicSimpleClient::QuicSimpleClient(
     IPEndPoint server_address,
     const QuicServerId& server_id,
@@ -161,16 +156,9 @@ bool QuicSimpleClient::Connect() {
     while (EncryptionBeingEstablished()) {
       WaitForEvents();
     }
-    if (FLAGS_enable_quic_stateless_reject_support && connected() &&
-        !data_to_resend_on_connect_.empty()) {
-      // A connection has been established and there was previously queued data
-      // to resend.  Resend it and empty the queue.
-      std::vector<std::unique_ptr<QuicDataToResend>> old_data;
-      old_data.swap(data_to_resend_on_connect_);
-      for (const auto& data : old_data) {
-        data->Resend();
-      }
-      data_to_resend_on_connect_.clear();
+    if (FLAGS_enable_quic_stateless_reject_support && connected()) {
+      // Resend any previously queued data.
+      ResendSavedData();
     }
     if (session() != nullptr &&
         session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
@@ -199,7 +187,7 @@ void QuicSimpleClient::StartConnect() {
     // If the last error was not a stateless reject, then the queued up data
     // does not need to be resent.
     if (session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-      data_to_resend_on_connect_.clear();
+      ClearDataToResend();
     }
     // Before we destroy the last session and create a new one, gather its stats
     // and update the stats for the overall connection.
@@ -224,7 +212,7 @@ void QuicSimpleClient::Disconnect() {
         QUIC_PEER_GOING_AWAY, "Client disconnecting",
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
   }
-  data_to_resend_on_connect_.clear();
+  ClearDataToResend();
 
   reset_writer();
   packet_reader_.reset();
@@ -236,36 +224,26 @@ void QuicSimpleClient::Disconnect() {
 void QuicSimpleClient::SendRequest(const SpdyHeaderBlock& headers,
                                    StringPiece body,
                                    bool fin) {
+  QuicClientPushPromiseIndex::TryHandle* handle;
+  QuicAsyncStatus rv = push_promise_index()->Try(headers, this, &handle);
+  if (rv == QUIC_SUCCESS)
+    return;
+
+  if (rv == QUIC_PENDING) {
+    // May need to retry request if asynchronous rendezvous fails.
+    AddPromiseDataToResend(headers, body, fin);
+    return;
+  }
+
   QuicSpdyClientStream* stream = CreateReliableClientStream();
   if (stream == nullptr) {
-    LOG(DFATAL) << "stream creation failed!";
+    QUIC_BUG << "stream creation failed!";
     return;
   }
   stream->set_visitor(this);
   stream->SendRequest(headers.Clone(), body, fin);
-  if (FLAGS_enable_quic_stateless_reject_support) {
-    // Record this in case we need to resend.
-    std::unique_ptr<SpdyHeaderBlock> new_headers(
-        new SpdyHeaderBlock(headers.Clone()));
-    auto data_to_resend =
-        new ClientQuicDataToResend(std::move(new_headers), body, fin, this);
-    MaybeAddQuicDataToResend(std::unique_ptr<QuicDataToResend>(data_to_resend));
-  }
-}
-
-void QuicSimpleClient::MaybeAddQuicDataToResend(
-    std::unique_ptr<QuicDataToResend> data_to_resend) {
-  DCHECK(FLAGS_enable_quic_stateless_reject_support);
-  if (session()->IsCryptoHandshakeConfirmed()) {
-    // The handshake is confirmed.  No need to continue saving requests to
-    // resend.
-    data_to_resend_on_connect_.clear();
-    return;
-  }
-
-  // The handshake is not confirmed.  Push the data onto the queue of data to
-  // resend if statelessly rejected.
-  data_to_resend_on_connect_.push_back(std::move(data_to_resend));
+  // Record this in case we need to resend.
+  MaybeAddDataToResend(headers, body, fin);
 }
 
 void QuicSimpleClient::SendRequestAndWaitForResponse(

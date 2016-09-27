@@ -11,6 +11,11 @@ using base::StringPiece;
 
 namespace net {
 
+void QuicClientBase::ClientQuicDataToResend::Resend() {
+  client_->SendRequest(*headers_, body_, fin_);
+  headers_ = nullptr;
+}
+
 QuicClientBase::QuicDataToResend::QuicDataToResend(
     std::unique_ptr<SpdyHeaderBlock> headers,
     StringPiece body,
@@ -158,6 +163,71 @@ QuicConnectionId QuicClientBase::GetNextServerDesignatedConnectionId() {
 
 QuicConnectionId QuicClientBase::GenerateNewConnectionId() {
   return QuicRandom::GetInstance()->RandUint64();
+}
+
+void QuicClientBase::MaybeAddDataToResend(const SpdyHeaderBlock& headers,
+                                          StringPiece body,
+                                          bool fin) {
+  if (!FLAGS_enable_quic_stateless_reject_support) {
+    return;
+  }
+
+  if (session()->IsCryptoHandshakeConfirmed()) {
+    // The handshake is confirmed.  No need to continue saving requests to
+    // resend.
+    data_to_resend_on_connect_.clear();
+    return;
+  }
+
+  // The handshake is not confirmed.  Push the data onto the queue of data to
+  // resend if statelessly rejected.
+  std::unique_ptr<SpdyHeaderBlock> new_headers(
+      new SpdyHeaderBlock(headers.Clone()));
+  std::unique_ptr<QuicDataToResend> data_to_resend(
+      new ClientQuicDataToResend(std::move(new_headers), body, fin, this));
+  MaybeAddQuicDataToResend(std::move(data_to_resend));
+}
+
+void QuicClientBase::MaybeAddQuicDataToResend(
+    std::unique_ptr<QuicDataToResend> data_to_resend) {
+  data_to_resend_on_connect_.push_back(std::move(data_to_resend));
+}
+
+void QuicClientBase::ClearDataToResend() {
+  data_to_resend_on_connect_.clear();
+}
+
+void QuicClientBase::ResendSavedData() {
+  for (const auto& data : data_to_resend_on_connect_) {
+    data->Resend();
+  }
+  data_to_resend_on_connect_.clear();
+}
+
+void QuicClientBase::AddPromiseDataToResend(const SpdyHeaderBlock& headers,
+                                            StringPiece body,
+                                            bool fin) {
+  std::unique_ptr<SpdyHeaderBlock> new_headers(
+      new SpdyHeaderBlock(headers.Clone()));
+  push_promise_data_to_resend_.reset(
+      new ClientQuicDataToResend(std::move(new_headers), body, fin, this));
+}
+
+bool QuicClientBase::CheckVary(const SpdyHeaderBlock& client_request,
+                               const SpdyHeaderBlock& promise_request,
+                               const SpdyHeaderBlock& promise_response) {
+  return true;
+}
+
+void QuicClientBase::OnRendezvousResult(QuicSpdyStream* stream) {
+  std::unique_ptr<ClientQuicDataToResend> data_to_resend =
+      std::move(push_promise_data_to_resend_);
+  if (stream) {
+    stream->set_visitor(this);
+    stream->OnDataAvailable();
+  } else if (data_to_resend.get()) {
+    data_to_resend->Resend();
+  }
 }
 
 }  // namespace net

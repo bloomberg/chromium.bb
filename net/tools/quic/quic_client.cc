@@ -44,11 +44,6 @@ namespace net {
 
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 
-void QuicClient::ClientQuicDataToResend::Resend() {
-  client_->SendRequest(*headers_, body_, fin_);
-  headers_ = nullptr;
-}
-
 QuicClient::QuicClient(IPEndPoint server_address,
                        const QuicServerId& server_id,
                        const QuicVersionVector& supported_versions,
@@ -174,15 +169,9 @@ bool QuicClient::Connect() {
     while (EncryptionBeingEstablished()) {
       WaitForEvents();
     }
-    if (FLAGS_enable_quic_stateless_reject_support && connected() &&
-        !data_to_resend_on_connect_.empty()) {
-      // A connection has been established and there was previously queued data
-      // to resend.  Resend it and empty the queue.
-      std::vector<std::unique_ptr<QuicDataToResend>> old_data;
-      old_data.swap(data_to_resend_on_connect_);
-      for (const auto& data : old_data) {
-        data->Resend();
-      }
+    if (FLAGS_enable_quic_stateless_reject_support && connected()) {
+      // Resend any previously queued data.
+      ResendSavedData();
     }
     if (session() != nullptr &&
         session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
@@ -211,7 +200,7 @@ void QuicClient::StartConnect() {
     // If the last error was not a stateless reject, then the queued up data
     // does not need to be resent.
     if (session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-      data_to_resend_on_connect_.clear();
+      ClearDataToResend();
     }
     // Before we destroy the last session and create a new one, gather its stats
     // and update the stats for the overall connection.
@@ -239,7 +228,7 @@ void QuicClient::Disconnect() {
         ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
   }
 
-  data_to_resend_on_connect_.clear();
+  ClearDataToResend();
 
   CleanUpAllUDPSockets();
 
@@ -276,10 +265,7 @@ void QuicClient::SendRequest(const SpdyHeaderBlock& headers,
 
   if (rv == QUIC_PENDING) {
     // May need to retry request if asynchronous rendezvous fails.
-    std::unique_ptr<SpdyHeaderBlock> new_headers(
-        new SpdyHeaderBlock(headers.Clone()));
-    push_promise_data_to_resend_.reset(
-        new ClientQuicDataToResend(std::move(new_headers), body, fin, this));
+    AddPromiseDataToResend(headers, body, fin);
     return;
   }
 
@@ -289,29 +275,8 @@ void QuicClient::SendRequest(const SpdyHeaderBlock& headers,
     return;
   }
   stream->SendRequest(headers.Clone(), body, fin);
-  if (FLAGS_enable_quic_stateless_reject_support) {
-    // Record this in case we need to resend.
-    std::unique_ptr<SpdyHeaderBlock> new_headers(
-        new SpdyHeaderBlock(headers.Clone()));
-    auto data_to_resend =
-        new ClientQuicDataToResend(std::move(new_headers), body, fin, this);
-    MaybeAddQuicDataToResend(std::unique_ptr<QuicDataToResend>(data_to_resend));
-  }
-}
-
-void QuicClient::MaybeAddQuicDataToResend(
-    std::unique_ptr<QuicDataToResend> data_to_resend) {
-  DCHECK(FLAGS_enable_quic_stateless_reject_support);
-  if (session()->IsCryptoHandshakeConfirmed()) {
-    // The handshake is confirmed.  No need to continue saving requests to
-    // resend.
-    data_to_resend_on_connect_.clear();
-    return;
-  }
-
-  // The handshake is not confirmed.  Push the data onto the queue of data to
-  // resend if statelessly rejected.
-  data_to_resend_on_connect_.push_back(std::move(data_to_resend));
+  // Record this in case we need to resend.
+  MaybeAddDataToResend(headers, body, fin);
 }
 
 void QuicClient::SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
@@ -428,23 +393,6 @@ void QuicClient::OnClose(QuicSpdyStream* stream) {
     latest_response_body_ = client_stream->data();
     latest_response_trailers_ =
         client_stream->received_trailers().DebugString();
-  }
-}
-
-bool QuicClient::CheckVary(const SpdyHeaderBlock& client_request,
-                           const SpdyHeaderBlock& promise_request,
-                           const SpdyHeaderBlock& promise_response) {
-  return true;
-}
-
-void QuicClient::OnRendezvousResult(QuicSpdyStream* stream) {
-  std::unique_ptr<ClientQuicDataToResend> data_to_resend =
-      std::move(push_promise_data_to_resend_);
-  if (stream) {
-    stream->set_visitor(this);
-    stream->OnDataAvailable();
-  } else if (data_to_resend.get()) {
-    data_to_resend->Resend();
   }
 }
 
