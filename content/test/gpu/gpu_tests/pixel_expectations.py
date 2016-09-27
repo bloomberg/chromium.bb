@@ -31,12 +31,5 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel.CSSFilterEffects', ['mac'], bug=581526)
     self.Fail('Pixel.CSSFilterEffects.NoOverlays', ['mac'], bug=581526)
 
-    # TODO(xidachen) check / generate reference images
-    self.Fail('Pixel.OffscreenCanvasWebGLGreenBox', bug=563852)
-    self.Fail('Pixel.OffscreenCanvasWebGLRedBoxWorker', bug=563852)
-
-    self.Fail('Pixel.OffscreenCanvasTransferToImageBitmap', bug=563852)
-    self.Fail('Pixel.OffscreenCanvasTransferToImageBitmapWorker', bug=563852)
-
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
