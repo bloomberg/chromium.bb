@@ -372,8 +372,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, SHA1Broken) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
 }
@@ -432,8 +431,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::NO_DEPRECATED_SHA1,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
       SecurityStateModel::CONTENT_STATUS_RAN, false,
       false /* expect cert status error */);
 
@@ -445,8 +443,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::NO_DEPRECATED_SHA1,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
       SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
       false /* expect cert status error */);
 
@@ -466,8 +463,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, MixedContent) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::NO_DEPRECATED_SHA1,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
       SecurityStateModel::CONTENT_STATUS_RAN, false,
       false /* expect cert status error */);
 }
@@ -496,7 +492,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   model_client->GetSecurityInfo(&security_info);
 
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+  EXPECT_EQ(SecurityStateModel::DANGEROUS, security_info.security_level);
   EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_RAN,
             security_info.content_with_cert_errors_status);
 }
@@ -556,7 +552,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   model_client->GetSecurityInfo(&security_info);
 
   EXPECT_FALSE(net::IsCertStatusError(security_info.cert_status));
-  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+  EXPECT_EQ(SecurityStateModel::DANGEROUS, security_info.security_level);
   EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
             security_info.content_with_cert_errors_status);
 }
@@ -587,8 +583,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
@@ -600,8 +595,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::CONTENT_STATUS_NONE, false,
       false /* expect cert status error */);
   // Load the insecure image.
@@ -612,8 +606,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
   EXPECT_TRUE(js_result);
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
       false /* expect cert status error */);
 
@@ -625,8 +618,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::CONTENT_STATUS_RAN, false,
       false /* expect cert status error */);
 
@@ -638,8 +630,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest,
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::DEPRECATED_SHA1_MAJOR,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::DEPRECATED_SHA1_MAJOR,
       SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN, false,
       false /* expect cert status error */);
 }
@@ -681,8 +672,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
                                https_server_.GetURL("/ssl/google.html"));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::NO_DEPRECATED_SHA1,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
       SecurityStateModel::CONTENT_STATUS_NONE, false,
       true /* expect cert status error */);
 
@@ -691,8 +681,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
 
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::NO_DEPRECATED_SHA1,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
       SecurityStateModel::CONTENT_STATUS_NONE, false,
       true /* expect cert status error */);
 
@@ -705,8 +694,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSecurityStateModelClientTest, BrokenHTTPS) {
                                https_server_.GetURL(replacement_path));
   CheckSecurityInfoForSecure(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      SecurityStateModel::SECURITY_ERROR,
-      SecurityStateModel::NO_DEPRECATED_SHA1,
+      SecurityStateModel::DANGEROUS, SecurityStateModel::NO_DEPRECATED_SHA1,
       SecurityStateModel::CONTENT_STATUS_DISPLAYED, false,
       true /* expect cert status error */);
 }

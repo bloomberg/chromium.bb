@@ -694,7 +694,7 @@ bool LocationBarViewMac::ShouldShowSecurityState() const {
   security_state::SecurityStateModel::SecurityLevel security =
       GetToolbarModel()->GetSecurityLevel(false);
   bool has_verbose_for_security =
-      security == security_state::SecurityStateModel::SECURITY_ERROR ||
+      security == security_state::SecurityStateModel::DANGEROUS ||
       (IsSecureConnection(security) && should_show_secure_verbose_);
 
   return ui::MaterialDesignController::IsModeMaterial() &&

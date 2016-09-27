@@ -624,7 +624,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
     SkColor security_color =
         location_bar_view_->GetSecureTextColor(security_level_);
     const bool strike =
-        (security_level_ == security_state::SecurityStateModel::SECURITY_ERROR);
+        (security_level_ == security_state::SecurityStateModel::DANGEROUS);
     const gfx::Range scheme_range(scheme.begin, scheme.end());
     ApplyColor(security_color, scheme_range);
     ApplyStyle(gfx::DIAGONAL_STRIKE, strike, scheme_range);

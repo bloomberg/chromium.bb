@@ -433,7 +433,7 @@ void WebsiteSettings::Init(
        net::IsCertStatusMinorError(security_info.cert_status))) {
     // There are no major errors. Check for minor errors.
     if (security_info.security_level ==
-        SecurityStateModel::SECURITY_POLICY_WARNING) {
+        SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT) {
       site_identity_status_ = SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
       site_identity_details_ = l10n_util::GetStringFUTF16(
           IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE, UTF8ToUTF16(url.host()));

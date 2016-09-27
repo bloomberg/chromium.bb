@@ -133,7 +133,7 @@ class CustomTabObserver extends EmptyTabObserver {
 
     @Override
     public void onDidAttachInterstitialPage(Tab tab) {
-        if (tab.getSecurityLevel() != ConnectionSecurityLevel.SECURITY_ERROR) return;
+        if (tab.getSecurityLevel() != ConnectionSecurityLevel.DANGEROUS) return;
         resetPageLoadTracking();
         if (mCustomTabsConnection != null) {
             mCustomTabsConnection.notifyNavigationEvent(

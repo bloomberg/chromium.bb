@@ -38,7 +38,7 @@ public class TopControlsVisibilityDelegate {
         enableHidingTopControls &= !url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
 
         int securityState = mTab.getSecurityLevel();
-        enableHidingTopControls &= (securityState != ConnectionSecurityLevel.SECURITY_ERROR
+        enableHidingTopControls &= (securityState != ConnectionSecurityLevel.DANGEROUS
                 && securityState != ConnectionSecurityLevel.SECURITY_WARNING);
 
         enableHidingTopControls &=

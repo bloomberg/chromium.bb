@@ -182,7 +182,7 @@ NSColor* OmniboxViewMac::GetSecureTextColor(
     return SecureSchemeColor(in_dark_mode);
   }
 
-  if (security_level == security_state::SecurityStateModel::SECURITY_ERROR)
+  if (security_level == security_state::SecurityStateModel::DANGEROUS)
     return SecurityErrorSchemeColor(in_dark_mode);
 
   DCHECK_EQ(security_state::SecurityStateModel::SECURITY_WARNING,
@@ -605,7 +605,7 @@ void OmniboxViewMac::ApplyTextAttributes(
   if (!model()->user_input_in_progress() && model()->CurrentTextIsURL() &&
       scheme.is_nonempty() &&
       (security_level != security_state::SecurityStateModel::NONE)) {
-    if (security_level == security_state::SecurityStateModel::SECURITY_ERROR) {
+    if (security_level == security_state::SecurityStateModel::DANGEROUS) {
       // Add a strikethrough through the scheme.
       [attributedString addAttribute:NSStrikethroughStyleAttributeName
                  value:[NSNumber numberWithInt:NSUnderlineStyleSingle]

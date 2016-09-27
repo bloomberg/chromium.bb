@@ -154,7 +154,7 @@ public class OmniboxUrlEmphasizer {
                     // Intentional fall-through:
                     case ConnectionSecurityLevel.SECURITY_WARNING:
                         break;
-                    case ConnectionSecurityLevel.SECURITY_ERROR:
+                    case ConnectionSecurityLevel.DANGEROUS:
                         if (emphasizeHttpsScheme) colorId = R.color.google_red_700;
                         strikeThroughScheme = true;
                         break;

@@ -577,7 +577,7 @@ class SafeBrowsingBlockingPageBrowserTest
     ASSERT_TRUE(model_client);
     security_state::SecurityStateModel::SecurityInfo security_info;
     model_client->GetSecurityInfo(&security_info);
-    EXPECT_EQ(security_state::SecurityStateModel::SECURITY_ERROR,
+    EXPECT_EQ(security_state::SecurityStateModel::DANGEROUS,
               security_info.security_level);
     EXPECT_TRUE(security_info.fails_malware_check);
     // TODO(felt): Restore this check when https://crbug.com/641187 is fixed.

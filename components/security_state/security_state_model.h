@@ -58,12 +58,12 @@ class SecurityStateModel {
 
     // HTTPS, but the certificate verification chain is anchored on a
     // certificate that was installed by the system administrator.
-    SECURITY_POLICY_WARNING,
+    SECURE_WITH_POLICY_INSTALLED_CERT,
 
     // Attempted HTTPS and failed, page not authenticated, HTTPS with
     // insecure active content on the page, malware, phishing, or any other
-    // serious security issue.
-    SECURITY_ERROR,
+    // serious security issue that could be dangerous.
+    DANGEROUS,
   };
 
   // Describes how the SHA1 deprecation policy applies to an HTTPS

@@ -384,32 +384,31 @@ TEST_F(WebsiteSettingsTest, InsecureContent) {
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive mixed content with a cert error on the main resource.
-      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+      {SecurityStateModel::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
        SecurityStateModel::CONTENT_STATUS_DISPLAYED,
        SecurityStateModel::CONTENT_STATUS_NONE,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_WARNING_MINOR},
       // Active and passive mixed content.
-      {SecurityStateModel::SECURITY_ERROR, 0,
+      {SecurityStateModel::DANGEROUS, 0,
        SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
        SecurityStateModel::CONTENT_STATUS_NONE,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active and passive mixed content with a cert error on the main
       // resource.
-      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+      {SecurityStateModel::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
        SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
        SecurityStateModel::CONTENT_STATUS_NONE,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_BAD},
       // Active mixed content.
-      {SecurityStateModel::SECURITY_ERROR, 0,
-       SecurityStateModel::CONTENT_STATUS_RAN,
+      {SecurityStateModel::DANGEROUS, 0, SecurityStateModel::CONTENT_STATUS_RAN,
        SecurityStateModel::CONTENT_STATUS_NONE,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active mixed content with a cert error on the main resource.
-      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+      {SecurityStateModel::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
        SecurityStateModel::CONTENT_STATUS_RAN,
        SecurityStateModel::CONTENT_STATUS_NONE,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
@@ -425,33 +424,33 @@ TEST_F(WebsiteSettingsTest, InsecureContent) {
       // certificate errors are ignored: if the main resource had a cert
       // error, it's not that useful to warn about subresources with cert
       // errors as well.
-      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+      {SecurityStateModel::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
        SecurityStateModel::CONTENT_STATUS_NONE,
        SecurityStateModel::CONTENT_STATUS_DISPLAYED,
        WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
        WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
       // Passive and active subresources with cert errors.
-      {SecurityStateModel::SECURITY_ERROR, 0,
+      {SecurityStateModel::DANGEROUS, 0,
        SecurityStateModel::CONTENT_STATUS_NONE,
        SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive and active subresources with cert errors, with a cert
       // error on the main resource also.
-      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+      {SecurityStateModel::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
        SecurityStateModel::CONTENT_STATUS_NONE,
        SecurityStateModel::CONTENT_STATUS_DISPLAYED_AND_RAN,
        WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
        WebsiteSettings::SITE_IDENTITY_STATUS_ERROR, IDR_PAGEINFO_GOOD},
       // Active subresources with cert errors.
-      {SecurityStateModel::SECURITY_ERROR, 0,
+      {SecurityStateModel::DANGEROUS, 0,
        SecurityStateModel::CONTENT_STATUS_NONE,
        SecurityStateModel::CONTENT_STATUS_RAN,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active subresources with cert errors, with a cert error on the main
       // resource also.
-      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+      {SecurityStateModel::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
        SecurityStateModel::CONTENT_STATUS_NONE,
        SecurityStateModel::CONTENT_STATUS_RAN,
        WebsiteSettings::SITE_CONNECTION_STATUS_ENCRYPTED,
@@ -464,20 +463,19 @@ TEST_F(WebsiteSettingsTest, InsecureContent) {
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_WARNING_MINOR},
       // Passive mixed content and active subresources with cert errors.
-      {SecurityStateModel::SECURITY_ERROR, 0,
+      {SecurityStateModel::DANGEROUS, 0,
        SecurityStateModel::CONTENT_STATUS_DISPLAYED,
        SecurityStateModel::CONTENT_STATUS_RAN,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Active mixed content and passive subresources with cert errors.
-      {SecurityStateModel::SECURITY_ERROR, 0,
-       SecurityStateModel::CONTENT_STATUS_RAN,
+      {SecurityStateModel::DANGEROUS, 0, SecurityStateModel::CONTENT_STATUS_RAN,
        SecurityStateModel::CONTENT_STATUS_DISPLAYED,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE,
        WebsiteSettings::SITE_IDENTITY_STATUS_CERT, IDR_PAGEINFO_BAD},
       // Passive mixed content, active subresources with cert errors, and a cert
       // error on the main resource.
-      {SecurityStateModel::SECURITY_ERROR, net::CERT_STATUS_DATE_INVALID,
+      {SecurityStateModel::DANGEROUS, net::CERT_STATUS_DATE_INVALID,
        SecurityStateModel::CONTENT_STATUS_DISPLAYED,
        SecurityStateModel::CONTENT_STATUS_RAN,
        WebsiteSettings::SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE,
@@ -589,7 +587,8 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
 }
 
 TEST_F(WebsiteSettingsTest, HTTPSPolicyCertConnection) {
-  security_info_.security_level = SecurityStateModel::SECURITY_POLICY_WARNING;
+  security_info_.security_level =
+      SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT;
   security_info_.scheme_is_cryptographic = true;
   security_info_.certificate = cert();
   security_info_.cert_status = 0;

@@ -37,7 +37,7 @@ bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
   }
 
   if (switch_or_field_trial_group == switches::kMarkHttpAsDangerous) {
-    *level = SecurityStateModel::SECURITY_ERROR;
+    *level = SecurityStateModel::DANGEROUS;
     *histogram_status = NON_SECURE;
     return true;
   }
@@ -129,7 +129,7 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
   // Override the connection security information if the website failed the
   // browser's malware checks.
   if (visible_security_state.fails_malware_check)
-    return SecurityStateModel::SECURITY_ERROR;
+    return SecurityStateModel::DANGEROUS;
 
   GURL url = visible_security_state.url;
   switch (visible_security_state.initial_security_level) {
@@ -143,22 +143,22 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
       return SecurityStateModel::NONE;
     }
 
-    case SecurityStateModel::SECURITY_ERROR:
-      return SecurityStateModel::SECURITY_ERROR;
+    case SecurityStateModel::DANGEROUS:
+      return SecurityStateModel::DANGEROUS;
 
     case SecurityStateModel::SECURITY_WARNING:
-    case SecurityStateModel::SECURITY_POLICY_WARNING:
+    case SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT:
       return visible_security_state.initial_security_level;
 
     case SecurityStateModel::SECURE:
     case SecurityStateModel::EV_SECURE: {
       // Major cert errors and active mixed content will generally be
-      // downgraded by the embedder to SECURITY_ERROR and handled above,
+      // downgraded by the embedder to DANGEROUS and handled above,
       // but downgrade here just in case.
       net::CertStatus cert_status = visible_security_state.cert_status;
       if (net::IsCertStatusError(cert_status) &&
           !net::IsCertStatusMinorError(cert_status)) {
-        return SecurityStateModel::SECURITY_ERROR;
+        return SecurityStateModel::DANGEROUS;
       }
       if (mixed_content_status == SecurityStateModel::CONTENT_STATUS_RAN ||
           mixed_content_status ==
@@ -176,10 +176,10 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForRequest(
       // other authenticated-but-with-errors indicate something may
       // be wrong, or may be wrong in the future, but is unclear now.
       if (client->UsedPolicyInstalledCertificate())
-        return SecurityStateModel::SECURITY_POLICY_WARNING;
+        return SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT;
 
       if (sha1_status == SecurityStateModel::DEPRECATED_SHA1_MAJOR)
-        return SecurityStateModel::SECURITY_ERROR;
+        return SecurityStateModel::DANGEROUS;
       if (sha1_status == SecurityStateModel::DEPRECATED_SHA1_MINOR)
         return SecurityStateModel::NONE;
 
@@ -271,7 +271,7 @@ const SecurityStateModel::SecurityLevel
         SecurityStateModel::NONE;
 const SecurityStateModel::SecurityLevel
     SecurityStateModel::kRanInsecureContentLevel =
-        SecurityStateModel::SECURITY_ERROR;
+        SecurityStateModel::DANGEROUS;
 
 SecurityStateModel::SecurityInfo::SecurityInfo()
     : security_level(SecurityStateModel::NONE),

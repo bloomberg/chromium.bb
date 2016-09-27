@@ -339,7 +339,7 @@ SkColor LocationBarView::GetColor(
 SkColor LocationBarView::GetSecureTextColor(
     security_state::SecurityStateModel::SecurityLevel security_level) const {
   if (security_level ==
-      security_state::SecurityStateModel::SECURITY_POLICY_WARNING) {
+      security_state::SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT) {
     return GetColor(DEEMPHASIZED_TEXT);
   }
 
@@ -349,7 +349,7 @@ SkColor LocationBarView::GetSecureTextColor(
         (security_level == security_state::SecurityStateModel::SECURE)) {
       text_color = gfx::kGoogleGreen700;
     } else if (security_level ==
-               security_state::SecurityStateModel::SECURITY_ERROR) {
+               security_state::SecurityStateModel::DANGEROUS) {
       text_color = gfx::kGoogleRed700;
     }
   }
@@ -1016,7 +1016,7 @@ bool LocationBarView::ShouldShowSecurityChip() const {
   return ((level == SecurityLevel::SECURE ||
            level == SecurityLevel::EV_SECURE) &&
           should_show_secure_state_) ||
-         level == SecurityLevel::SECURITY_ERROR;
+         level == SecurityLevel::DANGEROUS;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -88,7 +88,7 @@ public class WebappDelegateFactory extends FullScreenDelegateFactory {
 
             boolean isSameWebsite =
                     UrlUtilities.sameDomainOrHost(webappStartUrl, url, true);
-            visible = !isSameWebsite || securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+            visible = !isSameWebsite || securityLevel == ConnectionSecurityLevel.DANGEROUS
                     || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING;
             return visible;
         }

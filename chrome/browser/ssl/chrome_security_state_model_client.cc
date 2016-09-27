@@ -54,7 +54,7 @@ SecurityStateModel::SecurityLevel GetSecurityLevelForSecurityStyle(
     case content::SECURITY_STYLE_UNAUTHENTICATED:
       return SecurityStateModel::NONE;
     case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      return SecurityStateModel::SECURITY_ERROR;
+      return SecurityStateModel::DANGEROUS;
     case content::SECURITY_STYLE_WARNING:
       // content currently doesn't use this style.
       NOTREACHED();
@@ -75,12 +75,12 @@ content::SecurityStyle SecurityLevelToSecurityStyle(
     case SecurityStateModel::HTTP_SHOW_WARNING:
       return content::SECURITY_STYLE_UNAUTHENTICATED;
     case SecurityStateModel::SECURITY_WARNING:
-    case SecurityStateModel::SECURITY_POLICY_WARNING:
+    case SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT:
       return content::SECURITY_STYLE_WARNING;
     case SecurityStateModel::EV_SECURE:
     case SecurityStateModel::SECURE:
       return content::SECURITY_STYLE_AUTHENTICATED;
-    case SecurityStateModel::SECURITY_ERROR:
+    case SecurityStateModel::DANGEROUS:
       return content::SECURITY_STYLE_AUTHENTICATION_BROKEN;
   }
 
@@ -182,7 +182,7 @@ void CheckSafeBrowsingStatus(content::NavigationEntry* entry,
   if (sb_ui_manager->IsUrlWhitelistedOrPendingForWebContents(
           entry->GetURL(), false, entry, web_contents, false)) {
     state->fails_malware_check = true;
-    state->initial_security_level = SecurityStateModel::SECURITY_ERROR;
+    state->initial_security_level = SecurityStateModel::DANGEROUS;
   }
 }
 

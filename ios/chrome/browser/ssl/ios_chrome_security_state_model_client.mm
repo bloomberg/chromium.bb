@@ -33,7 +33,7 @@ GetSecurityLevelForSecurityStyle(web::SecurityStyle style) {
     case web::SECURITY_STYLE_UNAUTHENTICATED:
       return security_state::SecurityStateModel::NONE;
     case web::SECURITY_STYLE_AUTHENTICATION_BROKEN:
-      return security_state::SecurityStateModel::SECURITY_ERROR;
+      return security_state::SecurityStateModel::DANGEROUS;
     case web::SECURITY_STYLE_WARNING:
       // //ios/web currently doesn't use this style.
       NOTREACHED();

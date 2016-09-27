@@ -1227,7 +1227,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 return isSmallDevice ? 0 : R.drawable.omnibox_info;
             case ConnectionSecurityLevel.SECURITY_WARNING:
                 return R.drawable.omnibox_info;
-            case ConnectionSecurityLevel.SECURITY_ERROR:
+            case ConnectionSecurityLevel.DANGEROUS:
                 return R.drawable.omnibox_https_invalid;
             case ConnectionSecurityLevel.SECURE:
             case ConnectionSecurityLevel.EV_SECURE:
@@ -1260,7 +1260,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             list = ApiCompatibilityUtils.getColorStateList(resources, R.color.dark_mode_tint);
         } else {
             // For the default toolbar color, use a green or red icon.
-            if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR) {
+            if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
                 list = ApiCompatibilityUtils.getColorStateList(resources, R.color.google_red_700);
             } else if (securityLevel == ConnectionSecurityLevel.SECURE
                     || securityLevel == ConnectionSecurityLevel.EV_SECURE) {

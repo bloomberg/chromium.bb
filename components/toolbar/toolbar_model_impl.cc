@@ -81,9 +81,9 @@ int ToolbarModelImpl::GetIcon() const {
     case SecurityStateModel::SECURITY_WARNING:
       // Surface Dubious as Neutral.
       return IDR_LOCATION_BAR_HTTP;
-    case SecurityStateModel::SECURITY_POLICY_WARNING:
+    case SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT:
       return IDR_OMNIBOX_HTTPS_POLICY_WARNING;
-    case SecurityStateModel::SECURITY_ERROR:
+    case SecurityStateModel::DANGEROUS:
       return IDR_OMNIBOX_HTTPS_INVALID;
   }
 
@@ -103,9 +103,9 @@ gfx::VectorIconId ToolbarModelImpl::GetVectorIcon() const {
     case SecurityStateModel::SECURITY_WARNING:
       // Surface Dubious as Neutral.
       return gfx::VectorIconId::LOCATION_BAR_HTTP;
-    case SecurityStateModel::SECURITY_POLICY_WARNING:
+    case SecurityStateModel::SECURE_WITH_POLICY_INSTALLED_CERT:
       return gfx::VectorIconId::BUSINESS;
-    case SecurityStateModel::SECURITY_ERROR:
+    case SecurityStateModel::DANGEROUS:
       return gfx::VectorIconId::LOCATION_BAR_HTTPS_INVALID;
   }
 #endif
@@ -135,7 +135,7 @@ base::string16 ToolbarModelImpl::GetSecureVerboseText() const {
   switch (GetSecurityLevel(false)) {
     case SecurityStateModel::SECURE:
       return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
-    case SecurityStateModel::SECURITY_ERROR:
+    case SecurityStateModel::DANGEROUS:
       return l10n_util::GetStringUTF16(delegate_->FailsMalwareCheck()
                                            ? IDS_DANGEROUS_VERBOSE_STATE
                                            : IDS_NOT_SECURE_VERBOSE_STATE);

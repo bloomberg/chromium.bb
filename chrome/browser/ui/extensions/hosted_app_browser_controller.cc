@@ -101,7 +101,7 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
   model_client->GetSecurityInfo(&security_info);
   if (model_client &&
       security_info.security_level ==
-          security_state::SecurityStateModel::SECURITY_ERROR)
+          security_state::SecurityStateModel::DANGEROUS)
     return true;
 
   GURL launch_url = AppLaunchInfo::GetLaunchWebURL(extension);

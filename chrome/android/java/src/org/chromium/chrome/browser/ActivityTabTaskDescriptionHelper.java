@@ -120,9 +120,10 @@ public class ActivityTabTaskDescriptionHelper {
 
             private boolean hasSecurityWarningOrError(Tab tab) {
                 int securityLevel = tab.getSecurityLevel();
-                return securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                return securityLevel == ConnectionSecurityLevel.DANGEROUS
                         || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
-                        || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING;
+                        || securityLevel
+                        == ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT;
             }
         };
 

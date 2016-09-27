@@ -144,7 +144,7 @@ TEST(SecurityStateModelTest, SHA1WarningMixedContent) {
             security_info1.mixed_content_status);
   EXPECT_EQ(SecurityStateModel::NONE, security_info1.security_level);
 
-  client.set_initial_security_level(SecurityStateModel::SECURITY_ERROR);
+  client.set_initial_security_level(SecurityStateModel::DANGEROUS);
   client.SetDisplayedMixedContent(false);
   client.SetRanMixedContent(true);
   SecurityStateModel::SecurityInfo security_info2;
@@ -153,7 +153,7 @@ TEST(SecurityStateModelTest, SHA1WarningMixedContent) {
             security_info2.sha1_deprecation_status);
   EXPECT_EQ(SecurityStateModel::CONTENT_STATUS_RAN,
             security_info2.mixed_content_status);
-  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info2.security_level);
+  EXPECT_EQ(SecurityStateModel::DANGEROUS, security_info2.security_level);
 }
 
 // Tests that SHA1 warnings don't interfere with the handling of major
@@ -162,13 +162,13 @@ TEST(SecurityStateModelTest, SHA1WarningBrokenHTTPS) {
   TestSecurityStateModelClient client;
   SecurityStateModel model;
   model.SetClient(&client);
-  client.set_initial_security_level(SecurityStateModel::SECURITY_ERROR);
+  client.set_initial_security_level(SecurityStateModel::DANGEROUS);
   client.AddCertStatus(net::CERT_STATUS_DATE_INVALID);
   SecurityStateModel::SecurityInfo security_info;
   model.GetSecurityInfo(&security_info);
   EXPECT_EQ(SecurityStateModel::DEPRECATED_SHA1_MINOR,
             security_info.sha1_deprecation_status);
-  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+  EXPECT_EQ(SecurityStateModel::DANGEROUS, security_info.security_level);
 }
 
 // Tests that |security_info.is_secure_protocol_and_ciphersuite| is
@@ -234,7 +234,7 @@ TEST(SecurityStateModelTest, MalwareOverride) {
   SecurityStateModel::SecurityInfo security_info;
   model.GetSecurityInfo(&security_info);
   EXPECT_TRUE(security_info.fails_malware_check);
-  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+  EXPECT_EQ(SecurityStateModel::DANGEROUS, security_info.security_level);
 }
 
 // Tests that the malware/phishing status is set, even if other connection info
@@ -247,7 +247,7 @@ TEST(SecurityStateModelTest, MalwareWithoutCOnnectionState) {
   SecurityStateModel::SecurityInfo security_info;
   model.GetSecurityInfo(&security_info);
   EXPECT_TRUE(security_info.fails_malware_check);
-  EXPECT_EQ(SecurityStateModel::SECURITY_ERROR, security_info.security_level);
+  EXPECT_EQ(SecurityStateModel::DANGEROUS, security_info.security_level);
 }
 
 // Tests that password fields cause the security level to be downgraded

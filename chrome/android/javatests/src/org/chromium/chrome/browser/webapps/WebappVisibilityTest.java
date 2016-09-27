@@ -48,12 +48,12 @@ public class WebappVisibilityTest extends NativeLibraryTestBase {
         // Show top controls for non secure URLs.
         assertTrue(shouldShowTopControls(WEBAPP_URL, "http://sub.originalwebsite.com",
                 ConnectionSecurityLevel.SECURITY_WARNING));
-        assertTrue(shouldShowTopControls(WEBAPP_URL, "http://notoriginalwebsite.com",
-                ConnectionSecurityLevel.SECURITY_ERROR));
         assertTrue(shouldShowTopControls(
-                WEBAPP_URL, "http://otherwebsite.com", ConnectionSecurityLevel.SECURITY_ERROR));
-        assertTrue(shouldShowTopControls(WEBAPP_URL, "http://thing.originalwebsite.com",
-                ConnectionSecurityLevel.SECURITY_ERROR));
+                WEBAPP_URL, "http://notoriginalwebsite.com", ConnectionSecurityLevel.DANGEROUS));
+        assertTrue(shouldShowTopControls(
+                WEBAPP_URL, "http://otherwebsite.com", ConnectionSecurityLevel.DANGEROUS));
+        assertTrue(shouldShowTopControls(
+                WEBAPP_URL, "http://thing.originalwebsite.com", ConnectionSecurityLevel.DANGEROUS));
         assertTrue(shouldShowTopControls(
                 WEBAPP_URL, WEBAPP_URL, ConnectionSecurityLevel.SECURITY_WARNING));
         assertTrue(shouldShowTopControls(

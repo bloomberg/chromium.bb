@@ -494,7 +494,8 @@ public class WebsiteSettingsPopup implements OnClickListener {
 
     /**
      * Gets the message to display in the connection message box for the given security level. Does
-     * not apply to SECURITY_ERROR pages, since these have their own coloured/formatted message.
+     * not apply to DANGEROUS pages, since these have their own coloured/formatted
+     * message.
      *
      * @param securityLevel A valid ConnectionSecurityLevel, which is the security
      *                      level of the page.
@@ -546,9 +547,9 @@ public class WebsiteSettingsPopup implements OnClickListener {
             messageBuilder.append(String.format(
                     mContext.getString(R.string.page_info_connection_offline),
                     mOfflinePageCreationDate));
-        } else if (mSecurityLevel != ConnectionSecurityLevel.SECURITY_ERROR
+        } else if (mSecurityLevel != ConnectionSecurityLevel.DANGEROUS
                 && mSecurityLevel != ConnectionSecurityLevel.SECURITY_WARNING
-                && mSecurityLevel != ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
+                && mSecurityLevel != ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT) {
             messageBuilder.append(
                     mContext.getString(getConnectionMessageId(mSecurityLevel, mIsInternalPage)));
         } else {
