@@ -26,7 +26,6 @@
 #ifndef HTMLTreeBuilderSimulator_h
 #define HTMLTreeBuilderSimulator_h
 
-#include "core/CoreExport.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "wtf/Vector.h"
 
@@ -36,23 +35,13 @@ class CompactHTMLToken;
 class HTMLTokenizer;
 class HTMLTreeBuilder;
 
-class CORE_EXPORT HTMLTreeBuilderSimulator {
+class HTMLTreeBuilderSimulator {
     USING_FAST_MALLOC(HTMLTreeBuilderSimulator);
 private:
     enum Namespace {
         HTML,
         SVG,
         MathML
-    };
-
-    struct StateFlags {
-        unsigned ns : 2; // Namespace
-        unsigned isHTMLIntegrationPoint : 1;
-
-        bool operator==(const StateFlags& other) const
-        {
-            return ns == other.ns && isHTMLIntegrationPoint == other.isHTMLIntegrationPoint;
-        }
     };
 
 public:
@@ -62,35 +51,24 @@ public:
         OtherToken
     };
 
-    // The state of the tree builder simulator is an abbreviated stack
-    // of open elements that only contains entries for namespace
-    // changes, or elements which may change whether the current node
-    // is a HTML integration point.
-    typedef Vector<StateFlags, 1> State;
+    typedef Vector<Namespace, 1> State;
 
     explicit HTMLTreeBuilderSimulator(const HTMLParserOptions&);
 
     static State stateFor(HTMLTreeBuilder*);
 
-    const State& state() const { return m_stack; }
-    void setState(const State& state) { m_stack = state; }
+    const State& state() const { return m_namespaceStack; }
+    void setState(const State& state) { m_namespaceStack = state; }
 
     SimulatedToken simulate(const CompactHTMLToken&, HTMLTokenizer*);
 
 private:
-    bool inForeignContent() const { return currentNamespace() != HTML; }
-    Namespace currentNamespace() const { return static_cast<Namespace>(m_stack.last().ns); }
-    bool stackContainsNamespace(Namespace namespaceOfInterest) const
-    {
-        for (const auto& entry : m_stack) {
-            if (static_cast<Namespace>(entry.ns) == namespaceOfInterest)
-                return true;
-        }
-        return false;
-    }
+    explicit HTMLTreeBuilderSimulator(HTMLTreeBuilder*);
+
+    bool inForeignContent() const { return m_namespaceStack.last() != HTML; }
 
     HTMLParserOptions m_options;
-    State m_stack;
+    State m_namespaceStack;
 };
 
 } // namespace blink
