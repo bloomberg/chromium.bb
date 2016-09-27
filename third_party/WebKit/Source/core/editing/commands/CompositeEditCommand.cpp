@@ -770,12 +770,15 @@ void CompositeEditCommand::prepareWhitespaceAtPositionForSplit(Position& positio
     // Delete collapsed whitespace so that inserting nbsps doesn't uncollapse it.
     Position upstreamPos = mostBackwardCaretPosition(position);
     deleteInsignificantText(upstreamPos, mostForwardCaretPosition(position));
-    position = mostForwardCaretPosition(upstreamPos);
 
-    VisiblePosition visiblePos = createVisiblePositionDeprecated(position);
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    position = mostForwardCaretPosition(upstreamPos);
+    VisiblePosition visiblePos = createVisiblePosition(position);
     VisiblePosition previousVisiblePos = previousPositionOf(visiblePos);
     replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(previousVisiblePos);
-    replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(visiblePos);
+
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+    replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(createVisiblePosition(position));
 }
 
 void CompositeEditCommand::replaceCollapsibleWhitespaceWithNonBreakingSpaceIfNeeded(const VisiblePosition& visiblePosition)

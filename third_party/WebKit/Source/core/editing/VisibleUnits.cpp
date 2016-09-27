@@ -2984,8 +2984,7 @@ static VisiblePositionTemplate<Strategy> skipToEndOfEditingBoundary(const Visibl
 template <typename Strategy>
 static UChar32 characterAfterAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    // TODO(xiaochengh): Ensure that this function is called with a valid
-    // |visiblePosition|, and add |DCHECK(visiblePosition.isValid())|
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     // We canonicalize to the first of two equivalent candidates, but the second
     // of the two candidates is the one that will be inside the text node
     // containing the character after this visible position.
@@ -3017,8 +3016,7 @@ UChar32 characterAfter(const VisiblePositionInFlatTree& visiblePosition)
 template <typename Strategy>
 static UChar32 characterBeforeAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    // TODO(xiaochengh): Ensure that this function is called with a valid
-    // |visiblePosition|, and add |DCHECK(visiblePosition.isValid())|
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     return characterAfter(previousPositionOf(visiblePosition));
 }
 

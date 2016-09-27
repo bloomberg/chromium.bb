@@ -1469,9 +1469,7 @@ static bool isCharacterSmartReplaceExemptConsideringNonBreakingSpace(UChar32 cha
 
 void ReplaceSelectionCommand::addSpacesForSmartReplace(EditingState* editingState)
 {
-    VisiblePosition startOfInsertedContent = positionAtStartOfInsertedContent();
     VisiblePosition endOfInsertedContent = positionAtEndOfInsertedContent();
-
     Position endUpstream = mostBackwardCaretPosition(endOfInsertedContent.deepEquivalent());
     Node* endNode = endUpstream.computeNodeBeforePosition();
     int endOffset = endNode && endNode->isTextNode() ? toText(endNode)->length() : 0;
@@ -1492,12 +1490,16 @@ void ReplaceSelectionCommand::addSpacesForSmartReplace(EditingState* editingStat
             insertNodeAfter(node, endNode, editingState);
             if (editingState->isAborted())
                 return;
+            // Make sure that |updateNodesInserted| does not change
+            // |m_startOfInsertedContent|.
+            DCHECK(m_startOfInsertedContent.isNotNull());
             updateNodesInserted(node);
         }
     }
 
     document().updateStyleAndLayout();
 
+    VisiblePosition startOfInsertedContent = positionAtStartOfInsertedContent();
     Position startDownstream = mostForwardCaretPosition(startOfInsertedContent.deepEquivalent());
     Node* startNode = startDownstream.computeNodeAfterPosition();
     unsigned startOffset = 0;
