@@ -10,14 +10,12 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/render_frame_impl.h"
-#include "media/audio/null_audio_sink.h"
-#include "media/base/media_switches.h"
+#include "content/renderer/render_thread_impl.h"
+#include "media/base/silent_sink_suspender.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -28,10 +26,6 @@ using blink::WebView;
 
 namespace content {
 
-#if defined(OS_ANDROID)
-static const int kSilenceInSecondsToEnterIdleMode = 30;
-#endif
-
 RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     const media::AudioParameters& params,
     WebAudioDevice::RenderCallback* callback,
@@ -39,17 +33,9 @@ RendererWebAudioDeviceImpl::RendererWebAudioDeviceImpl(
     const url::Origin& security_origin)
     : params_(params),
       client_callback_(callback),
-      sink_is_running_(static_cast<base::AtomicRefCount>(0)),
       session_id_(session_id),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      null_audio_sink_(new media::NullAudioSink(task_runner_)),
-      is_using_null_audio_sink_(false),
-      first_buffer_after_silence_(media::AudioBus::Create(params_)),
-      is_first_buffer_after_silence_(false),
       security_origin_(security_origin) {
   DCHECK(client_callback_);
-  null_audio_sink_->Initialize(params_, this);
-  null_audio_sink_->Start();
 }
 
 RendererWebAudioDeviceImpl::~RendererWebAudioDeviceImpl() {
@@ -82,36 +68,32 @@ void RendererWebAudioDeviceImpl::start() {
   sink_params.set_latency_tag(AudioDeviceFactory::GetSourceLatencyType(
       AudioDeviceFactory::kSourceWebAudioInteractive));
 
+#if defined(OS_ANDROID)
+  // Use the media thread instead of the render thread for fake Render() calls
+  // since it has special connotations for Blink and garbage collection. Timeout
+  // value chosen to be highly unlikely in the normal case.
+  webaudio_suspender_.reset(new media::SilentSinkSuspender(
+      this, base::TimeDelta::FromSeconds(30), sink_params, sink_,
+      RenderThreadImpl::current()->GetMediaThreadTaskRunner()));
+  sink_->Initialize(sink_params, webaudio_suspender_.get());
+#else
   sink_->Initialize(sink_params, this);
-  // TODO(miu): Remove this temporary instrumentation to root-cause a memory
-  // use-after-free issue. http://crbug.com/619463
-  {
-    CHECK(base::AtomicRefCountIsZero(&sink_is_running_))
-        << "Illegal state: sink_is_running_ should be 0.";
-    base::AtomicRefCountInc(&sink_is_running_);
-  }
+#endif
+
   sink_->Start();
   sink_->Play();
-  start_null_audio_sink_callback_.Reset(
-      base::Bind(&media::NullAudioSink::Play, null_audio_sink_));
-  // Note: Default behavior is to auto-play on start.
 }
 
 void RendererWebAudioDeviceImpl::stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   if (sink_) {
     sink_->Stop();
-    // TODO(miu): Remove this temporary instrumentation to root-cause a memory
-    // use-after-free issue. http://crbug.com/619463
-    CHECK(!base::AtomicRefCountDec(&sink_is_running_))
-        << "Illegal state: sink_is_running_ should have been 1.";
-    sink_ = NULL;
+    sink_ = nullptr;
   }
-  null_audio_sink_->Stop();
-  is_using_null_audio_sink_ = false;
-  is_first_buffer_after_silence_ = false;
-  start_null_audio_sink_callback_.Cancel();
+
+#if defined(OS_ANDROID)
+  webaudio_suspender_.reset();
+#endif
 }
 
 double RendererWebAudioDeviceImpl::sampleRate() {
@@ -121,74 +103,16 @@ double RendererWebAudioDeviceImpl::sampleRate() {
 int RendererWebAudioDeviceImpl::Render(media::AudioBus* dest,
                                        uint32_t frames_delayed,
                                        uint32_t frames_skipped) {
-  // TODO(miu): Remove this temporary instrumentation to root-cause a memory
-  // use-after-free issue. http://crbug.com/619463
-  CHECK(base::AtomicRefCountIsOne(&sink_is_running_))
-      << "Contract violation: Render() being called after stop().";
-
-#if defined(OS_ANDROID)
-  if (is_first_buffer_after_silence_) {
-    DCHECK(!is_using_null_audio_sink_);
-    first_buffer_after_silence_->CopyTo(dest);
-    is_first_buffer_after_silence_ = false;
-    return dest->frames();
-  }
-#endif
   // Wrap the output pointers using WebVector.
-  WebVector<float*> web_audio_dest_data(
-      static_cast<size_t>(dest->channels()));
+  WebVector<float*> web_audio_dest_data(static_cast<size_t>(dest->channels()));
   for (int i = 0; i < dest->channels(); ++i)
     web_audio_dest_data[i] = dest->channel(i);
 
   // TODO(xians): Remove the following |web_audio_source_data| after
   // changing the blink interface.
   WebVector<float*> web_audio_source_data(static_cast<size_t>(0));
-  client_callback_->render(web_audio_source_data,
-                           web_audio_dest_data,
+  client_callback_->render(web_audio_source_data, web_audio_dest_data,
                            dest->frames());
-
-#if defined(OS_ANDROID)
-  const bool is_zero = dest->AreFramesZero();
-  if (!is_zero) {
-    first_silence_time_ = base::TimeTicks();
-    if (is_using_null_audio_sink_) {
-      // This is called on the main render thread when audio is detected.
-      DCHECK(thread_checker_.CalledOnValidThread());
-      is_using_null_audio_sink_ = false;
-      is_first_buffer_after_silence_ = true;
-      dest->CopyTo(first_buffer_after_silence_.get());
-      task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&media::NullAudioSink::Pause, null_audio_sink_));
-      // Calling sink_->Play() may trigger reentrancy into this
-      // function, so this should be called at the end.
-      sink_->Play();
-      return dest->frames();
-    }
-  } else if (!is_using_null_audio_sink_) {
-    // Called on the audio device thread.
-    const base::TimeTicks now = base::TimeTicks::Now();
-    if (first_silence_time_.is_null())
-      first_silence_time_ = now;
-    if (now - first_silence_time_
-        > base::TimeDelta::FromSeconds(kSilenceInSecondsToEnterIdleMode)) {
-      sink_->Pause();
-      is_using_null_audio_sink_ = true;
-      // If Stop() is called right after the task is posted, need to cancel
-      // this task.
-      task_runner_->PostDelayedTask(
-          FROM_HERE,
-          start_null_audio_sink_callback_.callback(),
-          params_.GetBufferDuration());
-    }
-  }
-#endif
-
-  // TODO(miu): Remove this temporary instrumentation to root-cause a memory
-  // use-after-free issue. http://crbug.com/619463
-  CHECK(base::AtomicRefCountIsOne(&sink_is_running_))
-      << "Race condition: stop() was called during Render() operation.";
-
   return dest->frames();
 }
 

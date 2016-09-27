@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/atomic_ref_count.h"
-#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -23,11 +21,10 @@ class SingleThreadTaskRunner;
 }
 
 namespace media {
-class NullAudioSink;
+class SilentSinkSuspender;
 }
 
 namespace content {
-
 class RendererWebAudioDeviceImpl
     : public blink::WebAudioDevice,
       public media::AudioRendererSink::RenderCallback {
@@ -63,39 +60,14 @@ class RendererWebAudioDeviceImpl
   // When non-NULL, we are started.  When NULL, we are stopped.
   scoped_refptr<media::AudioRendererSink> sink_;
 
-  // TODO(miu): Remove this temporary instrumentation to root-cause a memory
-  // use-after-free issue. http://crbug.com/619463
-  base::AtomicRefCount sink_is_running_;
-
   // ID to allow browser to select the correct input device for unified IO.
   int session_id_;
 
-  // Timeticks when the silence starts.
-  base::TimeTicks first_silence_time_ ;
-
-  // TaskRunner to post callbacks to the render thread.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-
-  // A fake audio sink object that consumes data when long period of silence
-  // audio is detected. This object lives on the render thread.
-  scoped_refptr<media::NullAudioSink> null_audio_sink_;
-
-  // Whether audio output is directed to |null_audio_sink_|.
-  bool is_using_null_audio_sink_;
-
-  // First audio buffer after silence finishes. We store this buffer so that
-  // it can be sent to the |output_device_| later after switching from
-  // |null_audio_sink_|.
-  std::unique_ptr<media::AudioBus> first_buffer_after_silence_;
-
-  bool is_first_buffer_after_silence_;
-
-  // A cancelable task that is posted to start the |null_audio_sink_| after a
-  // period of silence. We do this on android to save battery consumption.
-  base::CancelableClosure start_null_audio_sink_callback_;
-
   // Security origin, used to check permissions for |output_device_|.
   url::Origin security_origin_;
+
+  // Used to suspend |sink_| usage when silence has been detected for too long.
+  std::unique_ptr<media::SilentSinkSuspender> webaudio_suspender_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebAudioDeviceImpl);
 };

@@ -53,6 +53,10 @@ class FakeAudioRenderCallback
   int last_channel_count() const { return last_channel_count_; }
 
  private:
+  int RenderInternal(AudioBus* audio_bus,
+                     uint32_t frames_delayed,
+                     double volume);
+
   bool half_fill_;
   double x_;
   double step_;
