@@ -58,6 +58,7 @@ class DocStringChecker(BaseChecker):
   class _MessageCP014(object): pass
   class _MessageCP015(object): pass
   class _MessageCP016(object): pass
+  class _MessageCP017(object): pass
   # pylint: enable=class-missing-docstring,multiple-statements
 
   name = 'doc_string_checker'
@@ -101,6 +102,9 @@ class DocStringChecker(BaseChecker):
       'C9016': ('Closing triple quotes should be indented with %(want_indent)s '
                 'spaces, not %(curr_indent)s',
                 ('docstring-trailing-quotes'), _MessageCP016),
+      'C9017': ('Section %(section)s shows up more than once; previous at '
+                '%(line_old)i',
+                ('docstring-duplicate-section'), _MessageCP017),
   }
   options = ()
 
@@ -271,8 +275,19 @@ class DocStringChecker(BaseChecker):
         if section.lower() in invalid_sections:
           self.add_message('C9007', node=node, line=node.fromlineno, args=margs)
         else:
-          # Gather the order of the sections.
-          lineno_sections[self.VALID_SECTIONS.index(section)] = i
+          line_old = lineno_sections[self.VALID_SECTIONS.index(section)]
+          if line_old != -1:
+            # We got the same section more than once?
+            margs_copy = margs.copy()
+            margs_copy.update({
+                'line_old': line_old,
+                'section': section,
+            })
+            self.add_message('C9017', node=node, line=node.fromlineno,
+                             args=margs_copy)
+          else:
+            # Gather the order of the sections.
+            lineno_sections[self.VALID_SECTIONS.index(section)] = i
 
         # Verify blank line before it.
         if last != '':

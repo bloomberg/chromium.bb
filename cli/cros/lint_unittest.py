@@ -132,7 +132,18 @@ class DocStringCheckerTest(CheckerTestCase):
       """section order is wrong here
 
       Raises:
+        It raised.
+
       Returns:
+        It returned
+      """,
+      """sections are duplicated
+
+      Returns:
+        True
+
+      Returns:
+        or was it false
       """,
       """sections lack whitespace between them
 
