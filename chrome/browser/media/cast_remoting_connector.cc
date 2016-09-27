@@ -127,7 +127,9 @@ class CastRemotingConnector::FrameRemoterFactory
 class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
  public:
   // Constructs a "bridge" to delegate calls between the given |source| and
-  // |connector|. |connector| must outlive this instance.
+  // |connector|. |connector| must be valid at the time of construction, but is
+  // otherwise a weak pointer that can become invalid during the lifetime of a
+  // RemotingBridge.
   RemotingBridge(media::mojom::RemotingSourcePtr source,
                  CastRemotingConnector* connector)
       : source_(std::move(source)), connector_(connector) {
@@ -139,7 +141,8 @@ class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
   }
 
   ~RemotingBridge() final {
-    connector_->DeregisterBridge(this, RemotingStopReason::SOURCE_GONE);
+    if (connector_)
+      connector_->DeregisterBridge(this, RemotingStopReason::SOURCE_GONE);
   }
 
   // The CastRemotingConnector calls these to call back to the RemotingSource.
@@ -154,13 +157,19 @@ class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
   }
   void OnStopped(RemotingStopReason reason) { source_->OnStopped(reason); }
 
+  // The CastRemotingConnector calls this when it is no longer valid.
+  void OnCastRemotingConnectorDestroyed() {
+    connector_ = nullptr;
+  }
+
   // media::mojom::Remoter implementation. The source calls these to start/stop
   // media remoting and send messages to the sink. These simply delegate to the
   // CastRemotingConnector, which mediates to establish only one remoting
   // session among possibly multiple requests. The connector will respond to
   // this request by calling one of: OnStarted() or OnStartFailed().
   void Start() final {
-    connector_->StartRemoting(this);
+    if (connector_)
+      connector_->StartRemoting(this);
   }
   void StartDataStreams(
       mojo::ScopedDataPipeConsumerHandle audio_pipe,
@@ -168,20 +177,27 @@ class CastRemotingConnector::RemotingBridge : public media::mojom::Remoter {
       media::mojom::RemotingDataStreamSenderRequest audio_sender_request,
       media::mojom::RemotingDataStreamSenderRequest video_sender_request)
       final {
-    connector_->StartRemotingDataStreams(
-        this, std::move(audio_pipe), std::move(video_pipe),
-        std::move(audio_sender_request), std::move(video_sender_request));
+    if (connector_) {
+      connector_->StartRemotingDataStreams(
+          this, std::move(audio_pipe), std::move(video_pipe),
+          std::move(audio_sender_request), std::move(video_sender_request));
+    }
   }
   void Stop(RemotingStopReason reason) final {
-    connector_->StopRemoting(this, reason);
+    if (connector_)
+      connector_->StopRemoting(this, reason);
   }
   void SendMessageToSink(const std::vector<uint8_t>& message) final {
-    connector_->SendMessageToSink(this, message);
+    if (connector_)
+      connector_->SendMessageToSink(this, message);
   }
 
  private:
   media::mojom::RemotingSourcePtr source_;
-  CastRemotingConnector* const connector_;
+
+  // Weak pointer. Will be set to nullptr if the CastRemotingConnector is
+  // destroyed before this RemotingBridge.
+  CastRemotingConnector* connector_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingBridge);
 };
@@ -241,22 +257,19 @@ CastRemotingConnector::CastRemotingConnector(
       weak_factory_(this) {}
 
 CastRemotingConnector::~CastRemotingConnector() {
-  // Remoting should not be active at this point, and this instance is expected
-  // to outlive all bridges. See comment in CreateBridge().
-  DCHECK(!active_bridge_);
-  DCHECK(bridges_.empty());
+  // Assume nothing about destruction/shutdown sequence of a tab. For example,
+  // it's possible the owning WebContents will be destroyed before the Mojo
+  // message pipes to the RemotingBridges have been closed.
+  if (active_bridge_)
+    StopRemoting(active_bridge_, RemotingStopReason::ROUTE_TERMINATED);
+  for (RemotingBridge* notifyee : bridges_) {
+    notifyee->OnSinkGone();
+    notifyee->OnCastRemotingConnectorDestroyed();
+  }
 }
 
 void CastRemotingConnector::CreateBridge(media::mojom::RemotingSourcePtr source,
                                          media::mojom::RemoterRequest request) {
-  // Create a new RemotingBridge, which will become owned by the message pipe
-  // associated with |request|. |this| CastRemotingConnector should be valid
-  // for the full lifetime of the bridge because it can be deduced that the
-  // connector will always outlive the mojo message pipe: A single WebContents
-  // will destroy the render frame tree (which destroys all associated mojo
-  // message pipes) before CastRemotingConnector. To ensure this assumption is
-  // not broken by future design changes in external modules, a DCHECK() has
-  // been placed in the CastRemotingConnector destructor as a sanity-check.
   mojo::MakeStrongBinding(
       base::MakeUnique<RemotingBridge>(std::move(source), this),
       std::move(request));
