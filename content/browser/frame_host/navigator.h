@@ -27,6 +27,7 @@ class FrameNavigationEntry;
 class FrameTreeNode;
 class NavigationControllerImpl;
 class NavigationEntryImpl;
+class NavigationHandleImpl;
 class NavigationRequest;
 class RenderFrameHostImpl;
 class ResourceRequestBodyImpl;
@@ -178,6 +179,14 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   virtual void LogBeforeUnloadTime(
       const base::TimeTicks& renderer_before_unload_start_time,
       const base::TimeTicks& renderer_before_unload_end_time) {}
+
+  // Returns the NavigationHandle associated with a navigation in
+  // |render_frame_host|. Normally, each frame can have its own
+  // NavigationHandle. However, in the case of a navigation to an interstitial
+  // page, there's just one NavigationHandle for the whole page (since it's
+  // assumed to only have one RenderFrameHost and navigate once).
+  virtual NavigationHandleImpl* GetNavigationHandleForFrameHost(
+      RenderFrameHostImpl* render_frame_host);
 
  protected:
   friend class base::RefCounted<Navigator>;

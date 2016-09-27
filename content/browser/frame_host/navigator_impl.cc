@@ -1004,6 +1004,11 @@ void NavigatorImpl::LogBeforeUnloadTime(
   }
 }
 
+NavigationHandleImpl* NavigatorImpl::GetNavigationHandleForFrameHost(
+    RenderFrameHostImpl* render_frame_host) {
+  return render_frame_host->navigation_handle();
+}
+
 // PlzNavigate
 void NavigatorImpl::RequestNavigation(FrameTreeNode* frame_tree_node,
                                       const GURL& dest_url,

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/common/content_export.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/request_context_type.h"
@@ -35,6 +36,11 @@ class NavigationResourceThrottle : public ResourceThrottle {
                            bool* defer) override;
   void WillProcessResponse(bool* defer) override;
   const char* GetNameForLogging() const override;
+
+  // Used in unit tests to make UI checks pass when they would fail due to no
+  // NavigationHandle being present in the RenderFrameHost.
+  CONTENT_EXPORT static void set_ui_checks_always_succeed_for_testing(
+      bool ui_checks_always_succeed);
 
  private:
   void OnUIChecksPerformed(NavigationThrottle::ThrottleCheckResult result);

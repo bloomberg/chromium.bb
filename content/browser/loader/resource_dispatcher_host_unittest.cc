@@ -29,6 +29,7 @@
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/cross_site_resource_handler.h"
 #include "content/browser/loader/detachable_resource_handler.h"
+#include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_loader.h"
@@ -2477,6 +2478,7 @@ TEST_P(ResourceDispatcherHostTest, MimeSniffEmpty) {
 
 // Tests for crbug.com/31266 (Non-2xx + application/octet-stream).
 TEST_P(ResourceDispatcherHostTest, ForbiddenDownload) {
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   std::string raw_headers("HTTP/1.1 403 Forbidden\n"
                           "Content-disposition: attachment; filename=blah\n"
                           "Content-type: application/octet-stream\n\n");
@@ -2503,6 +2505,8 @@ TEST_P(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
     SUCCEED() << "Not applicable with --enable-browser-side-navigation.";
     return;
   }
+
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
 
   EXPECT_EQ(0, host_.pending_requests());
 
@@ -2547,6 +2551,7 @@ TEST_P(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
 
 TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
   EXPECT_EQ(0, host_.pending_requests());
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
 
   int render_view_id = 0;
   int request_id = 1;
@@ -2663,6 +2668,8 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   if (IsBrowserSideNavigationEnabled())
     return;
 
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
+
   EXPECT_EQ(0, host_.pending_requests());
 
   int request_id = 1;
@@ -2711,6 +2718,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
   CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
 
   EXPECT_EQ(0, host_.pending_requests());
+
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
 
   int render_view_id = 0;
   int request_id = 1;
@@ -2782,6 +2791,8 @@ TEST_P(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
   // This test expects the cross site request to be leaked, so it can transfer
   // the request directly.
   CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
+
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
 
   EXPECT_EQ(0, host_.pending_requests());
 
@@ -2868,6 +2879,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationText) {
   // the request directly.
   CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
 
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
+
   EXPECT_EQ(0, host_.pending_requests());
 
   int render_view_id = 0;
@@ -2941,6 +2954,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
   // This test expects the cross site request to be leaked, so it can transfer
   // the request directly.
   CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
+
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
 
   EXPECT_EQ(0, host_.pending_requests());
 
@@ -3030,6 +3045,8 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   // the request directly.
   CrossSiteResourceHandler::SetLeakRequestsForTesting(true);
 
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
+
   EXPECT_EQ(0, host_.pending_requests());
 
   int render_view_id = 0;
@@ -3116,6 +3133,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
 }
 
 TEST_P(ResourceDispatcherHostTest, UnknownURLScheme) {
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   EXPECT_EQ(0, host_.pending_requests());
 
   HandleScheme("http");

@@ -19,6 +19,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "content/browser/loader/mojo_async_resource_handler.h"
+#include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/test_url_loader_client.h"
@@ -129,6 +130,7 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
 };
 
 TEST_P(URLLoaderFactoryImplTest, GetResponse) {
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   mojom::URLLoaderPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
@@ -184,6 +186,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
 }
 
 TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
   mojom::URLLoaderPtr loader;
   ResourceRequest request;
   TestURLLoaderClient client;

@@ -611,6 +611,8 @@ class CONTENT_EXPORT WebContentsImpl
                        bool to_different_document) override;
   void DidStopLoading() override;
   void DidChangeLoadProgress() override;
+  ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
+      NavigationHandle* navigation_handle) override;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 

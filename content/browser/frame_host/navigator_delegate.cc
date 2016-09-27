@@ -18,4 +18,10 @@ bool NavigatorDelegate::ShouldPreserveAbortedURLs() {
   return false;
 }
 
+ScopedVector<NavigationThrottle>
+NavigatorDelegate::CreateThrottlesForNavigation(
+    NavigationHandle* navigation_handle) {
+  return ScopedVector<NavigationThrottle>();
+}
+
 }  // namespace content

@@ -37,4 +37,9 @@ void Navigator::OnBeginNavigation(FrameTreeNode* frame_tree_node,
                                   const CommonNavigationParams& common_params,
                                   const BeginNavigationParams& begin_params) {}
 
+NavigationHandleImpl* Navigator::GetNavigationHandleForFrameHost(
+    RenderFrameHostImpl* render_frame_host) {
+  return nullptr;
+}
+
 }  // namespace content

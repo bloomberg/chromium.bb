@@ -4488,6 +4488,12 @@ void WebContentsImpl::DidChangeLoadProgress() {
       min_delay);
 }
 
+ScopedVector<NavigationThrottle> WebContentsImpl::CreateThrottlesForNavigation(
+    NavigationHandle* navigation_handle) {
+  return GetContentClient()->browser()->CreateThrottlesForNavigation(
+      navigation_handle);
+}
+
 void WebContentsImpl::DidCancelLoading() {
   controller_.DiscardNonCommittedEntries();
 

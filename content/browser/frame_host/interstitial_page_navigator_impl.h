@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/common/content_export.h"
 
@@ -25,12 +26,18 @@ class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
 
   NavigatorDelegate* GetDelegate() override;
   NavigationController* GetController() override;
+  void DidStartProvisionalLoad(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& url,
+      const base::TimeTicks& navigation_start) override;
   void DidNavigate(RenderFrameHostImpl* render_frame_host,
                    const FrameHostMsg_DidCommitProvisionalLoad_Params&
                        input_params) override;
+  NavigationHandleImpl* GetNavigationHandleForFrameHost(
+      RenderFrameHostImpl* render_frame_host) override;
 
  private:
-  ~InterstitialPageNavigatorImpl() override {}
+  ~InterstitialPageNavigatorImpl() override;
 
   // The InterstitialPage with which this navigator object is associated.
   // Non owned pointer.
@@ -38,6 +45,15 @@ class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
 
   // The NavigationController associated with this navigator.
   NavigationControllerImpl* controller_;
+
+  // The NavigationHandle associated with the interstitial navigation.
+  // Interstitials are assumed to only have a single RenderFrameHost, so it's ok
+  // to track the NavigationHandle here rather than per-frame.
+  //
+  // Note: this NavigationHandleImpl will not send DidStartNavigation or
+  // DidFinishNavigation events to the WebContentsObserver, since those will go
+  // through InterstitialPageImpl as the NavigatorDelegate and get dropped.
+  std::unique_ptr<NavigationHandleImpl> navigation_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(InterstitialPageNavigatorImpl);
 };

@@ -596,7 +596,7 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   // would overwrite any throttle previously added with
   // RegisterThrottleForTesting.
   ScopedVector<NavigationThrottle> throttles_to_register =
-      GetContentClient()->browser()->CreateThrottlesForNavigation(this);
+      GetDelegate()->CreateThrottlesForNavigation(this);
   std::unique_ptr<NavigationThrottle> devtools_throttle =
       RenderFrameDevToolsAgentHost::CreateThrottleForNavigation(this);
   if (devtools_throttle)

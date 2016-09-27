@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -32,6 +33,11 @@
 namespace content {
 
 namespace {
+
+// Used in unit tests to make UI thread checks succeed even if there is no
+// NavigationHandle.
+bool g_ui_checks_always_succeed = false;
+
 typedef base::Callback<void(NavigationThrottle::ThrottleCheckResult)>
     UIChecksPerformedCallback;
 
@@ -41,6 +47,43 @@ void SendCheckResultToIOThread(UIChecksPerformedCallback callback,
   DCHECK_NE(result, NavigationThrottle::DEFER);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(callback, result));
+}
+
+// Returns the NavigationHandle to use for a navigation in the frame specified
+// by |render_process_id| and |render_frame_host_id|. If not found, |callback|
+// will be invoked to cancel the request.
+//
+// Note: in unit test |callback| may be invoked with a value of proceed if no
+// handle is found. This happens when
+// NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing is
+// called with a value of true.
+NavigationHandleImpl* FindNavigationHandle(
+    int render_process_id,
+    int render_frame_host_id,
+    const UIChecksPerformedCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (g_ui_checks_always_succeed) {
+    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+    return nullptr;
+  }
+
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
+  if (!render_frame_host) {
+    SendCheckResultToIOThread(callback, NavigationThrottle::CANCEL);
+    return nullptr;
+  }
+
+  NavigationHandleImpl* navigation_handle =
+      render_frame_host->frame_tree_node()
+          ->navigator()
+          ->GetNavigationHandleForFrameHost(render_frame_host);
+  if (!navigation_handle) {
+    SendCheckResultToIOThread(callback, NavigationThrottle::CANCEL);
+    return nullptr;
+  }
+  return navigation_handle;
 }
 
 void CheckWillStartRequestOnUIThread(
@@ -56,19 +99,10 @@ void CheckWillStartRequestOnUIThread(
     bool is_external_protocol,
     RequestContextType request_context_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
-  if (!render_frame_host) {
-    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
-    return;
-  }
-
   NavigationHandleImpl* navigation_handle =
-      render_frame_host->navigation_handle();
-  if (!navigation_handle) {
-    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+      FindNavigationHandle(render_process_id, render_frame_host_id, callback);
+  if (!navigation_handle)
     return;
-  }
 
   navigation_handle->WillStartRequest(
       method, resource_request_body, sanitized_referrer, has_user_gesture,
@@ -86,19 +120,10 @@ void CheckWillRedirectRequestOnUIThread(
     bool new_is_external_protocol,
     scoped_refptr<net::HttpResponseHeaders> headers) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
-  if (!render_frame_host) {
-    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
-    return;
-  }
-
   NavigationHandleImpl* navigation_handle =
-      render_frame_host->navigation_handle();
-  if (!navigation_handle) {
-    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+      FindNavigationHandle(render_process_id, render_frame_host_id, callback);
+  if (!navigation_handle)
     return;
-  }
 
   GURL new_validated_url(new_url);
   RenderProcessHost::FromID(render_process_id)
@@ -116,23 +141,17 @@ void WillProcessResponseOnUIThread(
     const SSLStatus& ssl_status,
     std::unique_ptr<NavigationData> navigation_data) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RenderFrameHostImpl* render_frame_host =
-      RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
-  if (!render_frame_host) {
-    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
-    return;
-  }
-
   NavigationHandleImpl* navigation_handle =
-      render_frame_host->navigation_handle();
-  if (!navigation_handle) {
-    SendCheckResultToIOThread(callback, NavigationThrottle::PROCEED);
+      FindNavigationHandle(render_process_id, render_frame_host_id, callback);
+  if (!navigation_handle)
     return;
-  }
 
   if (navigation_data)
     navigation_handle->set_navigation_data(std::move(navigation_data));
 
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
+  DCHECK(render_frame_host);
   navigation_handle->WillProcessResponse(
       render_frame_host, headers, ssl_status,
       base::Bind(&SendCheckResultToIOThread, callback));
@@ -272,6 +291,11 @@ void NavigationResourceThrottle::WillProcessResponse(bool* defer) {
 
 const char* NavigationResourceThrottle::GetNameForLogging() const {
   return "NavigationResourceThrottle";
+}
+
+void NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(
+    bool ui_checks_always_succeed) {
+  g_ui_checks_always_succeed = ui_checks_always_succeed;
 }
 
 void NavigationResourceThrottle::OnUIChecksPerformed(
