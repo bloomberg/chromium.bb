@@ -59,7 +59,7 @@ class PerfBenchmark(benchmark.Benchmark):
       return []
 
     return fieldtrial_util.GenerateArgs(
-        os.path.join(variations_dir, 'fieldtrial_testing_config.json'),
+        os.path.join(variations_dir, 'fieldtrial_testing_config_.json'),
         self._FixupTargetOS(possible_browser.target_os))
 
   @staticmethod
