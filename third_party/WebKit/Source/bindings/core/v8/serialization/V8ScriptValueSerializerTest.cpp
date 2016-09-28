@@ -9,6 +9,7 @@
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8Blob.h"
+#include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8DOMException.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
@@ -16,12 +17,14 @@
 #include "bindings/core/v8/V8OffscreenCanvas.h"
 #include "bindings/core/v8/V8StringResource.h"
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
+#include "core/dom/CompositorProxy.h"
 #include "core/dom/MessagePort.h"
 #include "core/fileapi/Blob.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "public/platform/WebBlobInfo.h"
 #include "public/platform/WebMessagePortChannel.h"
@@ -597,6 +600,44 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndexOutOfRange)
         ASSERT_TRUE(deserializer.deserialize()->IsNull());
     }
 }
+
+class ScopedEnableCompositorWorker {
+public:
+    ScopedEnableCompositorWorker()
+        : m_wasEnabled(RuntimeEnabledFeatures::compositorWorkerEnabled())
+    {
+        RuntimeEnabledFeatures::setCompositorWorkerEnabled(true);
+    }
+    ~ScopedEnableCompositorWorker()
+    {
+        RuntimeEnabledFeatures::setCompositorWorkerEnabled(m_wasEnabled);
+    }
+private:
+    bool m_wasEnabled;
+};
+
+TEST(V8ScriptValueSerializerTest, RoundTripCompositorProxy)
+{
+    ScopedEnableCompositorWorker enableCompositorWorker;
+    ScopedEnableV8BasedStructuredClone enable;
+    V8TestingScope scope;
+    HTMLElement* element = scope.document().body();
+    Vector<String> properties{"transform"};
+    CompositorProxy* proxy = CompositorProxy::create(scope.getExecutionContext(), element, properties, ASSERT_NO_EXCEPTION);
+    uint64_t elementId = proxy->elementId();
+
+    v8::Local<v8::Value> wrapper = toV8(proxy, scope.getScriptState());
+    v8::Local<v8::Value> result = roundTrip(wrapper, scope);
+    ASSERT_TRUE(V8CompositorProxy::hasInstance(result, scope.isolate()));
+    CompositorProxy* newProxy = V8CompositorProxy::toImpl(result.As<v8::Object>());
+    EXPECT_EQ(elementId, newProxy->elementId());
+    EXPECT_EQ(CompositorMutableProperty::kTransform, newProxy->compositorMutableProperties());
+}
+
+// Decode tests aren't included here because they're slightly non-trivial (an
+// element with the right ID must actually exist) and this feature is both
+// unshipped and likely to not use this mechanism when it does.
+// TODO(jbroman): Update this if that turns out not to be the case.
 
 } // namespace
 } // namespace blink

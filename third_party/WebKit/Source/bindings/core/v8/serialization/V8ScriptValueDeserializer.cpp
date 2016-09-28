@@ -5,6 +5,7 @@
 #include "bindings/core/v8/serialization/V8ScriptValueDeserializer.h"
 
 #include "bindings/core/v8/ToV8.h"
+#include "core/dom/CompositorProxy.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMSharedArrayBuffer.h"
 #include "core/dom/MessagePort.h"
@@ -13,6 +14,7 @@
 #include "core/html/ImageData.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/CompositorMutableProperties.h"
 #include "public/platform/WebBlobInfo.h"
 #include "wtf/CheckedNumeric.h"
 
@@ -123,6 +125,18 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(SerializationTag tag)
             return nullptr;
         const WebBlobInfo& info = (*m_blobInfoArray)[index];
         return Blob::create(getOrCreateBlobDataHandle(info.uuid(), info.type(), info.size()));
+    }
+    case CompositorProxyTag: {
+        uint64_t element;
+        uint32_t properties;
+        const uint32_t validPropertiesMask = static_cast<uint32_t>(
+            (1u << CompositorMutableProperty::kNumProperties) - 1);
+        if (!RuntimeEnabledFeatures::compositorWorkerEnabled()
+            || !readUint64(&element)
+            || !readUint32(&properties)
+            || (properties & ~validPropertiesMask))
+            return nullptr;
+        return CompositorProxy::create(m_scriptState->getExecutionContext(), element, properties);
     }
     case ImageBitmapTag: {
         uint32_t originClean = 0, isPremultiplied = 0, width = 0, height = 0, pixelLength = 0;

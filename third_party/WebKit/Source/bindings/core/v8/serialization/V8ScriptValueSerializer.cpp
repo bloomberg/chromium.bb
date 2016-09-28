@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Blob.h"
+#include "bindings/core/v8/V8CompositorProxy.h"
 #include "bindings/core/v8/V8ImageBitmap.h"
 #include "bindings/core/v8/V8ImageData.h"
 #include "bindings/core/v8/V8MessagePort.h"
@@ -145,6 +146,22 @@ bool V8ScriptValueSerializer::writeDOMObject(ScriptWrappable* wrappable, Excepti
             writeUTF8String(blob->type());
             writeUint64(blob->size());
         }
+        return true;
+    }
+    if (wrapperTypeInfo == &V8CompositorProxy::wrapperTypeInfo) {
+        DCHECK(RuntimeEnabledFeatures::compositorWorkerEnabled());
+        CompositorProxy* proxy = wrappable->toImpl<CompositorProxy>();
+        if (!proxy->connected()) {
+            exceptionState.throwDOMException(DataCloneError,
+                "A CompositorProxy object has been disconnected, and could therefore not be cloned.");
+            return false;
+        }
+        // TODO(jbroman): This seems likely to break in cross-process or
+        // persistent scenarios. Keeping as-is for now because the successor
+        // does not use this approach (and this feature is unshipped).
+        writeTag(CompositorProxyTag);
+        writeUint64(proxy->elementId());
+        writeUint32(proxy->compositorMutableProperties());
         return true;
     }
     if (wrapperTypeInfo == &V8ImageBitmap::wrapperTypeInfo) {
