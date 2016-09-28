@@ -5,6 +5,9 @@
 #ifndef SERVICES_UI_WS_DRAG_CONTROLLER_H_
 #define SERVICES_UI_WS_DRAG_CONTROLLER_H_
 
+#include <map>
+#include <set>
+
 #include "base/memory/weak_ptr.h"
 #include "services/ui/common/types.h"
 #include "services/ui/ws/ids.h"
@@ -17,8 +20,15 @@ namespace test {
 class DragControllerTestApi;
 }
 
+class DragCursorUpdater;
 class DragSource;
 class DragTargetConnection;
+
+// A single ui::mojom::kDropEffect operation.
+using DropEffect = uint32_t;
+
+// A bitmask of ui::mojom::kDropEffect operations.
+using DropEffectBitmask = uint32_t;
 
 // Represents all the data around the current ongoing drag operation.
 //
@@ -26,13 +36,16 @@ class DragTargetConnection;
 // WindowManagerState's EventDispatcher creates and owns this instance.
 class DragController : public ServerWindowObserver {
  public:
-  DragController(DragSource* source,
+  DragController(DragCursorUpdater* cursor_updater,
+                 DragSource* source,
                  ServerWindow* source_window,
                  DragTargetConnection* source_connection,
                  int32_t drag_pointer,
                  mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data,
-                 uint32_t drag_operations);
+                 DropEffectBitmask drag_operations);
   ~DragController() override;
+
+  int32_t current_cursor() const { return current_cursor_; }
 
   // Cancels the current drag, ie, due to the user pressing Escape.
   void Cancel();
@@ -52,7 +65,7 @@ class DragController : public ServerWindowObserver {
 
   // Notifies all windows we messaged that the drag is finished, and then tell
   // |source| the result.
-  void MessageDragCompleted(bool success, uint32_t action_taken);
+  void MessageDragCompleted(bool success, DropEffect action_taken);
 
   // Returns the number of events on |window|. A value of 1 means that there's
   // a single event outstanding that we're waiting for a response from the
@@ -63,6 +76,14 @@ class DragController : public ServerWindowObserver {
   // Sets |current_target_window_| to |current_target|, making sure that we add
   // and release ServerWindow observers correctly.
   void SetCurrentTargetWindow(ServerWindow* current_target);
+
+  // Updates the possible cursor effects for |window|. |bitmask| is a
+  // bitmask of the current valid drag operations.
+  void SetWindowDropOperations(ServerWindow* window, DropEffectBitmask bitmask);
+
+  // Returns the ui::mojom::Cursor for the window |bitmask|, adjusted for types
+  // that the drag source allows.
+  int32_t CursorForEffectBitmask(DropEffectBitmask bitmask);
 
   // Ensure that |window| has an entry in |window_state_| and that we're an
   // observer.
@@ -76,8 +97,8 @@ class DragController : public ServerWindowObserver {
   void OnRespondToOperation(ServerWindow* window);
 
   // Callback methods.
-  void OnDragStatusCompleted(const WindowId& id, uint32_t bitmask);
-  void OnDragDropCompleted(const WindowId& id, uint32_t action);
+  void OnDragStatusCompleted(const WindowId& id, DropEffectBitmask bitmask);
+  void OnDragDropCompleted(const WindowId& id, DropEffect action);
 
   // ServerWindowObserver:
   void OnWindowDestroying(ServerWindow* window) override;
@@ -85,11 +106,17 @@ class DragController : public ServerWindowObserver {
   // Our owner.
   DragSource* source_;
 
+  // Object to notify about all cursor changes.
+  DragCursorUpdater* cursor_updater_;
+
   // A bit-field of acceptable drag operations offered by the source.
-  const uint32_t drag_operations_;
+  const DropEffectBitmask drag_operations_;
 
   // Only act on pointer events that meet this id.
   const int32_t drag_pointer_id_;
+
+  // The current mouse cursor during the drag.
+  int32_t current_cursor_;
 
   // Sending OnDragOver() to our |source_| destroys us; there is a period where
   // we have to continue to exist, but not process any more pointer events.

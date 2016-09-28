@@ -28,6 +28,7 @@ static_library("lib") {
     "display_manager.h",
     "drag_controller.cc",
     "drag_controller.h",
+    "drag_cursor_updater.h",
     "drag_source.h",
     "drag_target_connection.h",
     "event_dispatcher.cc",

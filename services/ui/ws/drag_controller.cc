@@ -4,7 +4,11 @@
 
 #include "services/ui/ws/drag_controller.h"
 
+#include <utility>
+
 #include "base/logging.h"
+#include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/ws/drag_cursor_updater.h"
 #include "services/ui/ws/drag_source.h"
 #include "services/ui/ws/drag_target_connection.h"
 #include "services/ui/ws/event_dispatcher.h"
@@ -22,30 +26,38 @@ struct DragController::Operation {
 struct DragController::WindowState {
   // Set to true once we've observed the ServerWindow* that is the key to this
   // instance in |window_state_|.
-  bool observed;
+  bool observed = false;
 
-  // If we're waiting for a response, this is the type of message. TYPE_NONE
-  // means there's no outstanding
-  OperationType waiting_on_reply;
+  // If we're waiting for a response, this is the type of message. NONE means
+  // there's no outstanding
+  OperationType waiting_on_reply = OperationType::NONE;
 
-  // The operation that we'll send off if |waiting_on_reply| isn't TYPE_NONE.
-  Operation queued_operation;
+  // The operation that we'll send off if |waiting_on_reply| isn't NONE.
+  Operation queued_operation = {OperationType::NONE, 0, gfx::Point()};
+
+  // The current set of operations that this window accepts. This gets updated
+  // on each return message.
+  DropEffectBitmask bitmask = 0u;
 };
 
 DragController::DragController(
+    DragCursorUpdater* cursor_updater,
     DragSource* source,
     ServerWindow* source_window,
     DragTargetConnection* source_connection,
     int32_t drag_pointer,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> mime_data,
-    uint32_t drag_operations)
+    DropEffectBitmask drag_operations)
     : source_(source),
+      cursor_updater_(cursor_updater),
       drag_operations_(drag_operations),
       drag_pointer_id_(drag_pointer),
+      current_cursor_(static_cast<int32_t>(ui::mojom::Cursor::NO_DROP)),
       source_window_(source_window),
       source_connection_(source_connection),
       mime_data_(std::move(mime_data)),
       weak_factory_(this) {
+  SetCurrentTargetWindow(nullptr);
   EnsureWindowObserved(source_window_);
 }
 
@@ -129,7 +141,8 @@ void DragController::OnWillDestroyDragTargetConnection(
   called_on_drag_mime_types_.erase(connection);
 }
 
-void DragController::MessageDragCompleted(bool success, uint32_t action_taken) {
+void DragController::MessageDragCompleted(bool success,
+                                          DropEffect action_taken) {
   for (DragTargetConnection* connection : called_on_drag_mime_types_)
     connection->PerformOnDragDropDone();
   called_on_drag_mime_types_.clear();
@@ -149,8 +162,38 @@ size_t DragController::GetSizeOfQueueForWindow(ServerWindow* window) {
   return 2u;
 }
 
+void DragController::SetWindowDropOperations(ServerWindow* window,
+                                             DropEffectBitmask bitmask) {
+  WindowState& state = window_state_[window];
+  state.bitmask = bitmask;
+
+  if (current_target_window_ == window) {
+    current_cursor_ = CursorForEffectBitmask(bitmask);
+    cursor_updater_->OnDragCursorUpdated();
+  }
+}
+
+int32_t DragController::CursorForEffectBitmask(DropEffectBitmask bitmask) {
+  DropEffectBitmask combined = bitmask & drag_operations_;
+  return combined == ui::mojom::kDropEffectNone
+             ? static_cast<int32_t>(ui::mojom::Cursor::NO_DROP)
+             : static_cast<int32_t>(ui::mojom::Cursor::COPY);
+}
+
 void DragController::SetCurrentTargetWindow(ServerWindow* current_target) {
   current_target_window_ = current_target;
+
+  if (current_target_window_) {
+    // Immediately set the cursor to the last known set of operations (which
+    // could be none).
+    WindowState& state = window_state_[current_target_window_];
+    current_cursor_ = CursorForEffectBitmask(state.bitmask);
+  } else {
+    // Can't drop in empty areas.
+    current_cursor_ = static_cast<int32_t>(ui::mojom::Cursor::NO_DROP);
+  }
+
+  cursor_updater_->OnDragCursorUpdated();
 }
 
 void DragController::EnsureWindowObserved(ServerWindow* window) {
@@ -241,7 +284,7 @@ void DragController::OnRespondToOperation(ServerWindow* window) {
 }
 
 void DragController::OnDragStatusCompleted(const WindowId& id,
-                                           uint32_t bitmask) {
+                                           DropEffectBitmask bitmask) {
   ServerWindow* window = source_->GetWindowById(id);
   if (!window) {
     // The window has been deleted and its queue is empty.
@@ -250,12 +293,11 @@ void DragController::OnDragStatusCompleted(const WindowId& id,
 
   // We must remove the completed item.
   OnRespondToOperation(window);
-
-  // TODO(erg): |bitmask| is the allowed drag actions at the mouse location. We
-  // should use this data to change the cursor.
+  SetWindowDropOperations(window, bitmask);
 }
 
-void DragController::OnDragDropCompleted(const WindowId& id, uint32_t action) {
+void DragController::OnDragDropCompleted(const WindowId& id,
+                                         DropEffect action) {
   ServerWindow* window = source_->GetWindowById(id);
   if (!window) {
     // The window has been deleted after we sent the drop message. It's really
@@ -277,7 +319,7 @@ void DragController::OnWindowDestroying(ServerWindow* window) {
   }
 
   if (current_target_window_ == window)
-    current_target_window_ = nullptr;
+    SetCurrentTargetWindow(nullptr);
 
   if (source_window_ == window) {
     source_window_ = nullptr;

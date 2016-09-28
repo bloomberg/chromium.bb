@@ -46,6 +46,10 @@ class EventDispatcherDelegate {
   // longer a ServerWindow holding capture.
   virtual void ReleaseNativeCapture() = 0;
 
+  // Called when EventDispatcher has a new value for the cursor and our
+  // delegate should perform the native updates.
+  virtual void UpdateNativeCursorFromDispatcher() = 0;
+
   // Called when |window| has lost capture. The native display may still be
   // holding capture. The delegate should not change native display capture.
   // ReleaseNativeCapture() is invoked if appropriate.

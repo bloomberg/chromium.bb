@@ -189,6 +189,7 @@ void WindowManagerState::CancelDragDrop() {
 
 void WindowManagerState::EndDragDrop() {
   event_dispatcher_.EndDragDrop();
+  UpdateNativeCursorFromDispatcher();
 }
 
 void WindowManagerState::AddSystemModalWindow(ServerWindow* window) {
@@ -413,13 +414,7 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
 
   if (event.IsMousePointerEvent()) {
     DCHECK(event_dispatcher_.mouse_cursor_source_window());
-
-    int32_t cursor_id = 0;
-    if (event_dispatcher_.GetCurrentMouseCursor(&cursor_id)) {
-      WindowManagerDisplayRoot* display_root =
-          display_manager()->GetWindowManagerDisplayRoot(target);
-      display_root->display()->UpdateNativeCursor(cursor_id);
-    }
+    UpdateNativeCursorFromDispatcher();
   }
 
   event_dispatch_phase_ = EventDispatchPhase::TARGET;
@@ -529,6 +524,14 @@ void WindowManagerState::ReleaseNativeCapture() {
 
   platform_display_with_capture_->ReleaseCapture();
   platform_display_with_capture_ = nullptr;
+}
+
+void WindowManagerState::UpdateNativeCursorFromDispatcher() {
+  int32_t cursor_id = 0;
+  if (event_dispatcher_.GetCurrentMouseCursor(&cursor_id)) {
+    for (Display* display : display_manager()->displays())
+      display->UpdateNativeCursor(cursor_id);
+  }
 }
 
 void WindowManagerState::OnCaptureChanged(ServerWindow* new_capture,
