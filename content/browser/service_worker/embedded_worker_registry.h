@@ -18,7 +18,6 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 
-struct EmbeddedWorkerMsg_StartWorker_Params;
 class GURL;
 
 namespace IPC {
@@ -29,6 +28,7 @@ class Sender;
 namespace content {
 
 class EmbeddedWorkerInstance;
+struct EmbeddedWorkerStartParams;
 class MessagePortMessageFilter;
 class ServiceWorkerContextCore;
 
@@ -59,7 +59,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
 
   // Called from EmbeddedWorkerInstance, relayed to the child process.
   ServiceWorkerStatusCode SendStartWorker(
-      std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+      std::unique_ptr<EmbeddedWorkerStartParams> params,
       int process_id);
   ServiceWorkerStatusCode StopWorker(int process_id,
                                      int embedded_worker_id);
@@ -114,10 +114,10 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   FRIEND_TEST_ALL_PREFIXES(EmbeddedWorkerInstanceTest,
                            RemoveWorkerInSharedProcess);
 
-  typedef std::map<int, EmbeddedWorkerInstance*> WorkerInstanceMap;
-  typedef std::map<int, IPC::Sender*> ProcessToSenderMap;
-  typedef std::map<int, MessagePortMessageFilter*>
-      ProcessToMessagePortMessageFilterMap;
+  using WorkerInstanceMap = std::map<int, EmbeddedWorkerInstance*>;
+  using ProcessToSenderMap = std::map<int, IPC::Sender*>;
+  using ProcessToMessagePortMessageFilterMap =
+      std::map<int, MessagePortMessageFilter*>;
 
   EmbeddedWorkerRegistry(
       const base::WeakPtr<ServiceWorkerContextCore>& context,
@@ -125,6 +125,11 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   ~EmbeddedWorkerRegistry();
 
   ServiceWorkerStatusCode Send(int process_id, IPC::Message* message);
+
+  // Called when EmbeddedWorkerInstance is ready for IPC. This function
+  // prepares a route to the child worker thread.
+  // TODO(shimazu): Remove this function once mojofication is completed.
+  void BindWorkerToProcess(int process_id, int embedded_worker_id);
 
   // RemoveWorker is called when EmbeddedWorkerInstance is destructed.
   // |process_id| could be invalid (i.e. ChildProcessHost::kInvalidUniqueID)

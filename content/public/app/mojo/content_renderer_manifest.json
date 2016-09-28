@@ -6,6 +6,7 @@
     "provided": {
       "all_interfaces": [ "*" ],
       "browser": [
+        "content::mojom::EmbeddedWorkerInstanceClient",
         "content::mojom::EmbeddedWorkerSetup",
         "content::mojom::FrameFactory",
         "content::mojom::TestMojoService",

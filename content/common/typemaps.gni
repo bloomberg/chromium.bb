@@ -6,4 +6,5 @@ typemaps = [
   "//content/common/url_loader_status.typemap",
   "//content/common/url_request.typemap",
   "//content/common/url_response_head.typemap",
+  "//content/common/service_worker/embedded_worker.typemap",
 ]
