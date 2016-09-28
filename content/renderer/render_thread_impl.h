@@ -163,6 +163,10 @@ class CONTENT_EXPORT RenderThreadImpl
       std::unique_ptr<base::MessageLoop> main_message_loop,
       std::unique_ptr<blink::scheduler::RendererScheduler> renderer_scheduler);
   static RenderThreadImpl* current();
+  static mojom::RenderMessageFilter* current_render_message_filter();
+
+  static void SetRenderMessageFilterForTesting(
+      mojom::RenderMessageFilter* render_message_filter);
 
   ~RenderThreadImpl() override;
   void Shutdown() override;

@@ -5,28 +5,26 @@
 #ifndef CONTENT_PUBLIC_COMMON_WINDOW_CONTAINER_TYPE_H_
 #define CONTENT_PUBLIC_COMMON_WINDOW_CONTAINER_TYPE_H_
 
+#include "content/common/content_export.h"
+#include "content/public/common/window_container_type.mojom.h"
+
 namespace blink {
 
 struct WebWindowFeatures;
 
 }
 
-// "Container" types which can be requested via the window.open feature
-// string.
-enum WindowContainerType {
-  // A window shown in popup or tab.
-  WINDOW_CONTAINER_TYPE_NORMAL = 0,
+using WindowContainerType = content::mojom::WindowContainerType;
 
-  // A window run as a hidden "background" page.
-  WINDOW_CONTAINER_TYPE_BACKGROUND,
+// TODO(rockot): Remove these duplicate definitions by updating all references
+// to point directly to the mojom enum values.
+extern const WindowContainerType CONTENT_EXPORT WINDOW_CONTAINER_TYPE_NORMAL;
 
-  // A window run as a hidden "background" page that wishes to be started
-  // upon browser launch and run beyond the lifetime of the pages that
-  // reference it.
-  WINDOW_CONTAINER_TYPE_PERSISTENT,
+extern const WindowContainerType CONTENT_EXPORT
+WINDOW_CONTAINER_TYPE_BACKGROUND;
 
-  WINDOW_CONTAINER_TYPE_MAX_VALUE = WINDOW_CONTAINER_TYPE_PERSISTENT,
-};
+extern const WindowContainerType CONTENT_EXPORT
+WINDOW_CONTAINER_TYPE_PERSISTENT;
 
 // Conversion function:
 WindowContainerType WindowFeaturesToContainerType(

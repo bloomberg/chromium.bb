@@ -671,6 +671,8 @@ mojom("new_wrapper_types_mojo_bindings") {
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
     "platform/modules/websockets/websocket.mojom",
+    "platform/referrer.mojom",
+    "web/window_features.mojom",
   ]
   public_deps = [
     "//url/mojo:url_mojom_gurl",
@@ -730,5 +732,18 @@ group("generate_mojo_bindings") {
   deps = [
     ":mojo_bindings_blink__generator",
     ":offscreen_canvas_mojo_bindings_blink__generator",
+  ]
+}
+
+# Some mojom typemaps are shared between Chromium and Blink variants and
+# therefore require some shared traits implementation. These definitions are
+# relegated to a separate target to avoid duplication between the variants.
+source_set("shared_typemap_traits") {
+  visibility = [ ":*" ]
+  sources = [
+    "web/WindowFeaturesStructTraits.cpp",
+  ]
+  deps = [
+    ":new_wrapper_types_mojo_bindings__generator",
   ]
 }

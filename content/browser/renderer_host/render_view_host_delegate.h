@@ -20,7 +20,6 @@
 
 class GURL;
 class SkBitmap;
-struct ViewHostMsg_CreateWindow_Params;
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace base {
@@ -55,6 +54,10 @@ struct NativeWebKeyboardEvent;
 struct Referrer;
 struct RendererPreferences;
 struct WebPreferences;
+
+namespace mojom {
+class CreateNewWindowParams;
+}
 
 //
 // RenderViewHostDelegate
@@ -165,7 +168,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
       int32_t route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,
-      const ViewHostMsg_CreateWindow_Params& params,
+      const mojom::CreateNewWindowParams& params,
       SessionStorageNamespace* session_storage_namespace) {}
 
   // The page is trying to open a new widget (e.g. a select popup). The

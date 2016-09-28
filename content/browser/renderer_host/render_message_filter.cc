@@ -45,6 +45,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/host_shared_bitmap_manager.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -167,7 +168,6 @@ RenderMessageFilter::~RenderMessageFilter() {
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateFullscreenWidget,
                         OnCreateFullscreenWidget)
@@ -241,50 +241,6 @@ void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
     *thread = BrowserThread::UI;
 }
 
-void RenderMessageFilter::OnCreateWindow(
-    const ViewHostMsg_CreateWindow_Params& params,
-    ViewHostMsg_CreateWindow_Reply* reply) {
-  bool no_javascript_access;
-
-  bool can_create_window =
-      GetContentClient()->browser()->CanCreateWindow(
-          params.opener_url,
-          params.opener_top_level_frame_url,
-          params.opener_security_origin,
-          params.window_container_type,
-          params.target_url,
-          params.referrer,
-          params.frame_name,
-          params.disposition,
-          params.features,
-          params.user_gesture,
-          params.opener_suppressed,
-          resource_context_,
-          render_process_id_,
-          params.opener_id,
-          params.opener_render_frame_id,
-          &no_javascript_access);
-
-  if (!can_create_window) {
-    reply->route_id = MSG_ROUTING_NONE;
-    reply->main_frame_route_id = MSG_ROUTING_NONE;
-    reply->main_frame_widget_route_id = MSG_ROUTING_NONE;
-    reply->cloned_session_storage_namespace_id = 0;
-    return;
-  }
-
-  // This will clone the sessionStorage for namespace_id_to_clone.
-  scoped_refptr<SessionStorageNamespaceImpl> cloned_namespace =
-      new SessionStorageNamespaceImpl(dom_storage_context_.get(),
-                                      params.session_storage_namespace_id);
-  reply->cloned_session_storage_namespace_id = cloned_namespace->id();
-
-  render_widget_helper_->CreateNewWindow(
-      params, no_javascript_access, PeerHandle(), &reply->route_id,
-      &reply->main_frame_route_id, &reply->main_frame_widget_route_id,
-      cloned_namespace.get());
-}
-
 void RenderMessageFilter::OnCreateWidget(int opener_id,
                                          blink::WebPopupType popup_type,
                                          int* route_id) {
@@ -299,6 +255,51 @@ void RenderMessageFilter::OnCreateFullscreenWidget(int opener_id,
 void RenderMessageFilter::GenerateRoutingID(
     const GenerateRoutingIDCallback& callback) {
   callback.Run(render_widget_helper_->GetNextRoutingID());
+}
+
+void RenderMessageFilter::CreateNewWindow(
+    mojom::CreateNewWindowParamsPtr params,
+    const CreateNewWindowCallback& callback) {
+  bool no_javascript_access;
+  bool can_create_window =
+      GetContentClient()->browser()->CanCreateWindow(
+          params->opener_url,
+          params->opener_top_level_frame_url,
+          params->opener_security_origin,
+          params->window_container_type,
+          params->target_url,
+          params->referrer,
+          params->frame_name,
+          params->disposition,
+          params->features,
+          params->user_gesture,
+          params->opener_suppressed,
+          resource_context_,
+          render_process_id_,
+          params->opener_id,
+          params->opener_render_frame_id,
+          &no_javascript_access);
+
+  mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New();
+  if (!can_create_window) {
+    reply->route_id = MSG_ROUTING_NONE;
+    reply->main_frame_route_id = MSG_ROUTING_NONE;
+    reply->main_frame_widget_route_id = MSG_ROUTING_NONE;
+    reply->cloned_session_storage_namespace_id = 0;
+    return callback.Run(std::move(reply));
+  }
+
+  // This will clone the sessionStorage for namespace_id_to_clone.
+  scoped_refptr<SessionStorageNamespaceImpl> cloned_namespace =
+      new SessionStorageNamespaceImpl(dom_storage_context_.get(),
+                                      params->session_storage_namespace_id);
+  reply->cloned_session_storage_namespace_id = cloned_namespace->id();
+
+  render_widget_helper_->CreateNewWindow(
+      std::move(params), no_javascript_access, PeerHandle(), &reply->route_id,
+      &reply->main_frame_route_id, &reply->main_frame_widget_route_id,
+      cloned_namespace.get());
+  callback.Run(std::move(reply));
 }
 
 #if defined(OS_MACOSX)

@@ -22,7 +22,7 @@ def _CheckForNonBlinkVariantMojomIncludes(input_api, output_api):
     for f in input_api.AffectedFiles():
         for line_num, line in f.ChangedContents():
             m = pattern.match(line)
-            if m and m.group(1) != '-blink':
+            if m and m.group(1) != '-blink' and m.group(1) != '-shared':
                 errors.append('    %s:%d %s' % (
                     f.LocalPath(), line_num, line))
 

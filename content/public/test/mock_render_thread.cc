@@ -9,8 +9,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/frame_messages.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_thread_observer.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sync_message.h"
@@ -22,13 +24,54 @@
 
 namespace content {
 
+namespace {
+
+class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
+ public:
+  explicit MockRenderMessageFilterImpl(MockRenderThread* thread)
+      : thread_(thread) {}
+  ~MockRenderMessageFilterImpl() override {}
+
+  // mojom::RenderMessageFilter:
+  void GenerateRoutingID(const GenerateRoutingIDCallback& callback) override {
+    NOTREACHED();
+    callback.Run(MSG_ROUTING_NONE);
+  }
+
+  void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
+                       const CreateNewWindowCallback& callback) override {
+    // NOTE: This implementation of mojom::RenderMessageFilter is used client-
+    // side only. Because sync mojom methods have a different interface for
+    // bindings- and client-side, we only implement the client-side interface
+    // on this object.
+    NOTREACHED();
+  }
+
+  // Note that
+  bool CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
+                       mojom::CreateNewWindowReplyPtr* reply) override {
+    *reply = mojom::CreateNewWindowReply::New();
+    thread_->OnCreateWindow(*params, reply->get());
+    return true;
+  }
+
+ private:
+  MockRenderThread* const thread_;
+};
+
+}  // namespace
+
 MockRenderThread::MockRenderThread()
     : routing_id_(0),
       opener_id_(0),
       new_window_routing_id_(0),
       new_window_main_frame_routing_id_(0),
       new_window_main_frame_widget_routing_id_(0),
-      new_frame_routing_id_(0) {}
+      new_frame_routing_id_(0),
+      mock_render_message_filter_(new MockRenderMessageFilterImpl(this)) {
+  RenderThreadImpl::SetRenderMessageFilterForTesting(
+      mock_render_message_filter_.get());
+}
 
 MockRenderThread::~MockRenderThread() {
   while (!filters_.empty()) {
@@ -218,16 +261,6 @@ void MockRenderThread::OnCreateWidget(int opener_id,
   *route_id = routing_id_;
 }
 
-// The View expects to be returned a valid route_id different from its own.
-void MockRenderThread::OnCreateWindow(
-    const ViewHostMsg_CreateWindow_Params& params,
-    ViewHostMsg_CreateWindow_Reply* reply) {
-  reply->route_id = new_window_routing_id_;
-  reply->main_frame_route_id = new_window_main_frame_routing_id_;
-  reply->main_frame_widget_route_id = new_window_main_frame_widget_routing_id_;
-  reply->cloned_session_storage_namespace_id = 0;
-}
-
 // The Frame expects to be returned a valid route_id different from its own.
 void MockRenderThread::OnCreateChildFrame(
     const FrameHostMsg_CreateChildFrame_Params& params,
@@ -252,7 +285,6 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(MockRenderThread, msg)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
     IPC_MESSAGE_HANDLER(FrameHostMsg_CreateChildFrame, OnCreateChildFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -268,5 +300,15 @@ void MockRenderThread::OnDuplicateSection(
   *browser_handle = renderer_handle;
 }
 #endif  // defined(OS_WIN)
+
+// The View expects to be returned a valid route_id different from its own.
+void MockRenderThread::OnCreateWindow(
+    const mojom::CreateNewWindowParams& params,
+    mojom::CreateNewWindowReply* reply) {
+  reply->route_id = new_window_routing_id_;
+  reply->main_frame_route_id = new_window_main_frame_routing_id_;
+  reply->main_frame_widget_route_id = new_window_main_frame_widget_routing_id_;
+  reply->cloned_session_storage_namespace_id = 0;
+}
 
 }  // namespace content

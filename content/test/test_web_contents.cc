@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/notification_registrar.h"
@@ -325,7 +326,7 @@ void TestWebContents::CreateNewWindow(
     int32_t route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
-    const ViewHostMsg_CreateWindow_Params& params,
+    const mojom::CreateNewWindowParams& params,
     SessionStorageNamespace* session_storage_namespace) {}
 
 void TestWebContents::CreateNewWidget(int32_t render_process_id,

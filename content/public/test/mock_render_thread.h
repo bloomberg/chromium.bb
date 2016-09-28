@@ -20,8 +20,6 @@
 #include "third_party/WebKit/public/web/WebPopupType.h"
 
 struct FrameHostMsg_CreateChildFrame_Params;
-struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_CreateWindow_Reply;
 
 namespace IPC {
 class MessageFilter;
@@ -35,10 +33,15 @@ enum class WebTreeScopeType;
 
 namespace content {
 
+namespace mojom {
+class CreateNewWindowParams;
+class CreateNewWindowReply;
+class RenderMessageFilter;
+}
+
 // This class is a very simple mock of RenderThread. It simulates an IPC channel
 // which supports only three messages:
 // ViewHostMsg_CreateWidget : sync message sent by the Widget.
-// ViewHostMsg_CreateWindow : sync message sent by the Widget.
 // ViewMsg_Close : async, send to the Widget.
 class MockRenderThread : public RenderThread {
  public:
@@ -111,6 +114,12 @@ class MockRenderThread : public RenderThread {
 
   base::ObserverList<RenderThreadObserver>& observers() { return observers_; }
 
+  // The View expects to be returned a valid |reply.route_id| different from its
+  // own. We do not keep track of the newly created widget in MockRenderThread,
+  // so it must be cleaned up on its own.
+  void OnCreateWindow(const mojom::CreateNewWindowParams& params,
+                      mojom::CreateNewWindowReply* reply);
+
  protected:
   // This function operates as a regular IPC listener. Subclasses
   // overriding this should first delegate to this implementation.
@@ -120,12 +129,6 @@ class MockRenderThread : public RenderThread {
   void OnCreateWidget(int opener_id,
                       blink::WebPopupType popup_type,
                       int* route_id);
-
-  // The View expects to be returned a valid |reply.route_id| different from its
-  // own. We do not keep track of the newly created widget in MockRenderThread,
-  // so it must be cleaned up on its own.
-  void OnCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
-                      ViewHostMsg_CreateWindow_Reply* reply);
 
   // The Frame expects to be returned a valid route_id different from its own.
   void OnCreateChildFrame(const FrameHostMsg_CreateChildFrame_Params& params,
@@ -164,6 +167,8 @@ class MockRenderThread : public RenderThread {
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
   shell::mojom::InterfaceProviderRequest
       pending_remote_interface_provider_request_;
+
+  std::unique_ptr<mojom::RenderMessageFilter> mock_render_message_filter_;
 };
 
 }  // namespace content

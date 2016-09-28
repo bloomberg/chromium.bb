@@ -52,6 +52,7 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
 #include "content/common/page_messages.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/bindings_policy.h"
@@ -1503,18 +1504,18 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
                                     const WebString& frame_name,
                                     WebNavigationPolicy policy,
                                     bool suppress_opener) {
-  ViewHostMsg_CreateWindow_Params params;
-  params.opener_id = GetRoutingID();
-  params.user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
+  mojom::CreateNewWindowParamsPtr params = mojom::CreateNewWindowParams::New();
+  params->opener_id = GetRoutingID();
+  params->user_gesture = WebUserGestureIndicator::isProcessingUserGesture();
   if (GetContentClient()->renderer()->AllowPopup())
-    params.user_gesture = true;
-  params.window_container_type = WindowFeaturesToContainerType(features);
-  params.session_storage_namespace_id = session_storage_namespace_id_;
+    params->user_gesture = true;
+  params->window_container_type = WindowFeaturesToContainerType(features);
+  params->session_storage_namespace_id = session_storage_namespace_id_;
   if (frame_name != "_blank")
-    params.frame_name = base::UTF16ToUTF8(base::StringPiece16(frame_name));
-  params.opener_render_frame_id =
+    params->frame_name = base::UTF16ToUTF8(base::StringPiece16(frame_name));
+  params->opener_render_frame_id =
       RenderFrameImpl::FromWebFrame(creator)->GetRoutingID();
-  params.opener_url = creator->document().url();
+  params->opener_url = creator->document().url();
 
   // The browser process uses the top frame's URL for a content settings check
   // to determine whether the popup is allowed.  If the top frame is remote,
@@ -1526,9 +1527,9 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   // path-based matching for file URLs from content settings.  See
   // https://crbug.com/466297.
   if (creator->top()->isWebLocalFrame()) {
-    params.opener_top_level_frame_url = creator->top()->document().url();
+    params->opener_top_level_frame_url = creator->top()->document().url();
   } else {
-    params.opener_top_level_frame_url =
+    params->opener_top_level_frame_url =
         blink::WebStringToGURL(creator->top()->getSecurityOrigin().toString());
   }
 
@@ -1536,22 +1537,26 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
       creator->document().getSecurityOrigin().toString()));
   if (!security_url.is_valid())
     security_url = GURL();
-  params.opener_security_origin = security_url;
-  params.opener_suppressed = suppress_opener;
-  params.disposition = NavigationPolicyToDisposition(policy);
+  params->opener_security_origin = security_url;
+  params->opener_suppressed = suppress_opener;
+  params->disposition = NavigationPolicyToDisposition(policy);
   if (!request.isNull()) {
-    params.target_url = request.url();
-    params.referrer = GetReferrerFromRequest(creator, request);
+    params->target_url = request.url();
+    params->referrer = GetReferrerFromRequest(creator, request);
   }
-  params.features = features;
+  params->features = features;
 
-  for (size_t i = 0; i < features.additionalFeatures.size(); ++i)
-    params.additional_features.push_back(features.additionalFeatures[i]);
+  // We preserve this information before sending the message since |params| is
+  // moved on send.
+  bool is_background_tab =
+      params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
+  bool opened_by_user_gesture = params->user_gesture;
 
-  ViewHostMsg_CreateWindow_Reply reply;
-  RenderThread::Get()->Send(new ViewHostMsg_CreateWindow(params, &reply));
-  if (reply.route_id == MSG_ROUTING_NONE)
-    return NULL;
+  mojom::CreateNewWindowReplyPtr reply;
+  RenderThreadImpl::current_render_message_filter()->CreateNewWindow(
+      std::move(params), &reply);
+  if (reply->route_id == MSG_ROUTING_NONE)
+    return nullptr;
 
   WebUserGestureIndicator::consumeUserGesture();
 
@@ -1578,16 +1583,15 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   view_params.window_was_created_with_opener = true;
   view_params.renderer_preferences = renderer_preferences_;
   view_params.web_preferences = webkit_preferences_;
-  view_params.view_id = reply.route_id;
-  view_params.main_frame_routing_id = reply.main_frame_route_id;
-  view_params.main_frame_widget_routing_id = reply.main_frame_widget_route_id;
+  view_params.view_id = reply->route_id;
+  view_params.main_frame_routing_id = reply->main_frame_route_id;
+  view_params.main_frame_widget_routing_id = reply->main_frame_widget_route_id;
   view_params.session_storage_namespace_id =
-      reply.cloned_session_storage_namespace_id;
+      reply->cloned_session_storage_namespace_id;
   view_params.swapped_out = false;
   // WebCore will take care of setting the correct name.
   view_params.replicated_frame_state = FrameReplicationState();
-  view_params.hidden =
-      (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  view_params.hidden = is_background_tab;
   view_params.never_visible = never_visible;
   view_params.next_page_id = 1;
   view_params.initial_size = initial_size;
@@ -1598,7 +1602,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
 
   RenderViewImpl* view =
       RenderViewImpl::Create(compositor_deps_, view_params, true);
-  view->opened_by_user_gesture_ = params.user_gesture;
+  view->opened_by_user_gesture_ = opened_by_user_gesture;
 
   return view->webview();
 }

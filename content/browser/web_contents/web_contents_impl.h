@@ -92,6 +92,10 @@ struct MHTMLGenerationParams;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
 
+namespace mojom {
+class CreateNewWindowParams;
+}
+
 #if defined(OS_ANDROID)
 class WebContentsAndroid;
 #endif
@@ -536,7 +540,7 @@ class CONTENT_EXPORT WebContentsImpl
       int32_t route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,
-      const ViewHostMsg_CreateWindow_Params& params,
+      const mojom::CreateNewWindowParams& params,
       SessionStorageNamespace* session_storage_namespace) override;
   void CreateNewWidget(int32_t render_process_id,
                        int32_t route_id,

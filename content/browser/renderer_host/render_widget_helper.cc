@@ -88,14 +88,14 @@ void RenderWidgetHelper::OnResumeDeferredNavigation(
 }
 
 void RenderWidgetHelper::CreateNewWindow(
-    const ViewHostMsg_CreateWindow_Params& params,
+    mojom::CreateNewWindowParamsPtr params,
     bool no_javascript_access,
     base::ProcessHandle render_process,
     int32_t* route_id,
     int32_t* main_frame_route_id,
     int32_t* main_frame_widget_route_id,
     SessionStorageNamespace* session_storage_namespace) {
-  if (params.opener_suppressed || no_javascript_access) {
+  if (params->opener_suppressed || no_javascript_access) {
     // If the opener is supppressed or script access is disallowed, we should
     // open the window in a new BrowsingInstance, and thus a new process. That
     // means the current renderer process will not be able to route messages to
@@ -121,23 +121,25 @@ void RenderWidgetHelper::CreateNewWindow(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&RenderWidgetHelper::OnCreateWindowOnUI, this, params,
-                 *route_id, *main_frame_route_id, *main_frame_widget_route_id,
+      base::Bind(&RenderWidgetHelper::OnCreateWindowOnUI, this,
+                 base::Passed(&params), *route_id, *main_frame_route_id,
+                 *main_frame_widget_route_id,
                  base::RetainedRef(session_storage_namespace)));
 }
 
 void RenderWidgetHelper::OnCreateWindowOnUI(
-    const ViewHostMsg_CreateWindow_Params& params,
+    mojom::CreateNewWindowParamsPtr params,
     int32_t route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
     SessionStorageNamespace* session_storage_namespace) {
   RenderViewHostImpl* host =
-      RenderViewHostImpl::FromID(render_process_id_, params.opener_id);
-  if (host)
+      RenderViewHostImpl::FromID(render_process_id_, params->opener_id);
+  if (host) {
     host->CreateNewWindow(route_id, main_frame_route_id,
-                          main_frame_widget_route_id, params,
+                          main_frame_widget_route_id, *params,
                           session_storage_namespace);
+  }
 }
 
 void RenderWidgetHelper::CreateNewWidget(int opener_id,

@@ -48,6 +48,7 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
+#include "content/common/render_message_filter.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/common/swapped_out_messages.h"
@@ -886,15 +887,15 @@ void RenderViewHostImpl::CreateNewWindow(
     int32_t route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
-    const ViewHostMsg_CreateWindow_Params& params,
+    const mojom::CreateNewWindowParams& params,
     SessionStorageNamespace* session_storage_namespace) {
-  ViewHostMsg_CreateWindow_Params validated_params(params);
-  GetProcess()->FilterURL(false, &validated_params.target_url);
-  GetProcess()->FilterURL(false, &validated_params.opener_url);
-  GetProcess()->FilterURL(true, &validated_params.opener_security_origin);
+  mojom::CreateNewWindowParamsPtr validated_params(params.Clone());
+  GetProcess()->FilterURL(false, &validated_params->target_url);
+  GetProcess()->FilterURL(false, &validated_params->opener_url);
+  GetProcess()->FilterURL(true, &validated_params->opener_security_origin);
 
   delegate_->CreateNewWindow(GetSiteInstance(), route_id, main_frame_route_id,
-                             main_frame_widget_route_id, validated_params,
+                             main_frame_widget_route_id, *validated_params,
                              session_storage_namespace);
 }
 

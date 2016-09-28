@@ -248,6 +248,10 @@ const size_t kImageCacheSingleAllocationByteLimit = 64 * 1024 * 1024;
 // Unique identifier for each output surface created.
 uint32_t g_next_compositor_frame_sink_id = 1;
 
+// An implementation of mojom::RenderMessageFilter which can be mocked out
+// for tests which may indirectly send messages over this interface.
+mojom::RenderMessageFilter* g_render_message_filter_for_testing;
+
 // Keep the global RenderThreadImpl in a TLS slot so it is impossible to access
 // incorrectly from the wrong thread.
 base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
@@ -570,8 +574,23 @@ RenderThreadImpl* RenderThreadImpl::Create(
                               std::move(renderer_scheduler));
 }
 
+// static
 RenderThreadImpl* RenderThreadImpl::current() {
   return lazy_tls.Pointer()->Get();
+}
+
+// static
+mojom::RenderMessageFilter* RenderThreadImpl::current_render_message_filter() {
+  if (g_render_message_filter_for_testing)
+    return g_render_message_filter_for_testing;
+  DCHECK(current());
+  return current()->render_message_filter();
+}
+
+// static
+void RenderThreadImpl::SetRenderMessageFilterForTesting(
+    mojom::RenderMessageFilter* render_message_filter) {
+  g_render_message_filter_for_testing = render_message_filter;
 }
 
 RenderThreadImpl::RenderThreadImpl(

@@ -94,7 +94,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTextDirection,
                           blink::WebTextDirection::WebTextDirectionLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDisplayMode,
                           blink::WebDisplayMode::WebDisplayModeLast)
-IPC_ENUM_TRAITS_MAX_VALUE(WindowContainerType, WINDOW_CONTAINER_TYPE_MAX_VALUE)
 IPC_ENUM_TRAITS(content::FaviconURL::IconType)
 IPC_ENUM_TRAITS(content::MenuItem::Type)
 IPC_ENUM_TRAITS_MAX_VALUE(content::NavigationGesture,
@@ -287,74 +286,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::TextInputState)
   IPC_STRUCT_TRAITS_MEMBER(is_non_ime_change)
   IPC_STRUCT_TRAITS_MEMBER(batch_edit)
 IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Params)
-  // Routing ID of the view initiating the open.
-  IPC_STRUCT_MEMBER(int, opener_id)
-
-  // True if this open request came in the context of a user gesture.
-  IPC_STRUCT_MEMBER(bool, user_gesture)
-
-  // Type of window requested.
-  IPC_STRUCT_MEMBER(WindowContainerType, window_container_type)
-
-  // The session storage namespace ID this view should use.
-  IPC_STRUCT_MEMBER(int64_t, session_storage_namespace_id)
-
-  // The name of the resulting frame that should be created (empty if none
-  // has been specified). UTF8 encoded string.
-  IPC_STRUCT_MEMBER(std::string, frame_name)
-
-  // The routing id of the frame initiating the open.
-  IPC_STRUCT_MEMBER(int, opener_render_frame_id)
-
-  // The URL of the frame initiating the open.
-  IPC_STRUCT_MEMBER(GURL, opener_url)
-
-  // The URL of the top frame containing the opener.
-  IPC_STRUCT_MEMBER(GURL, opener_top_level_frame_url)
-
-  // The security origin of the frame initiating the open.
-  IPC_STRUCT_MEMBER(GURL, opener_security_origin)
-
-  // Whether the opener will be suppressed in the new window, in which case
-  // scripting the new window is not allowed.
-  IPC_STRUCT_MEMBER(bool, opener_suppressed)
-
-  // Whether the window should be opened in the foreground, background, etc.
-  IPC_STRUCT_MEMBER(WindowOpenDisposition, disposition)
-
-  // The URL that will be loaded in the new window (empty if none has been
-  // sepcified).
-  IPC_STRUCT_MEMBER(GURL, target_url)
-
-  // The referrer that will be used to load |target_url| (empty if none has
-  // been specified).
-  IPC_STRUCT_MEMBER(content::Referrer, referrer)
-
-  // The window features to use for the new view.
-  IPC_STRUCT_MEMBER(blink::WebWindowFeatures, features)
-
-  // The additional window features to use for the new view. We pass these
-  // separately from |features| above because we cannot serialize WebStrings
-  // over IPC.
-  IPC_STRUCT_MEMBER(std::vector<base::string16>, additional_features)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(ViewHostMsg_CreateWindow_Reply)
-  // The ID of the view to be created. If the ID is MSG_ROUTING_NONE, then the
-  // view couldn't be created.
-  IPC_STRUCT_MEMBER(int32_t, route_id, MSG_ROUTING_NONE)
-
-  // The ID of the main frame hosted in the view.
-  IPC_STRUCT_MEMBER(int32_t, main_frame_route_id, MSG_ROUTING_NONE)
-
-  // The ID of the widget for the main frame.
-  IPC_STRUCT_MEMBER(int32_t, main_frame_widget_route_id, MSG_ROUTING_NONE)
-
-  // TODO(dcheng): No clue. This is kind of duplicated from ViewMsg_New_Params.
-  IPC_STRUCT_MEMBER(int64_t, cloned_session_storage_namespace_id)
-IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
   // URL for the worker script.
@@ -824,13 +755,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_HandleCompositorProto,
 // to be be delivered until the notification is disabled.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrames,
                     bool /* enabled */)
-
-// Sent by the renderer when it is creating a new window.  The browser creates a
-// tab for it.  If |reply.route_id| is MSG_ROUTING_NONE, the view couldn't be
-// created.
-IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_CreateWindow,
-                            ViewHostMsg_CreateWindow_Params,
-                            ViewHostMsg_CreateWindow_Reply)
 
 // Similar to ViewHostMsg_CreateWindow, except used for sub-widgets, like
 // <select> dropdowns.  This message is sent to the WebContentsImpl that

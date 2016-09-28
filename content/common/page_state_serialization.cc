@@ -514,7 +514,7 @@ void WriteFrameState(
   WriteReal(state.page_scale_factor, obj);
   WriteInteger64(state.item_sequence_number, obj);
   WriteInteger64(state.document_sequence_number, obj);
-  WriteInteger(state.referrer_policy, obj);
+  WriteInteger(static_cast<int>(state.referrer_policy), obj);
   WriteReal(state.visual_viewport_scroll_offset.x(), obj);
   WriteReal(state.visual_viewport_scroll_offset.y(), obj);
 

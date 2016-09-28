@@ -49,8 +49,6 @@
 
 class GURL;
 struct FontDescriptor;
-struct ViewHostMsg_CreateWindow_Params;
-struct ViewHostMsg_CreateWindow_Reply;
 
 namespace base {
 class ProcessMetrics;
@@ -123,8 +121,6 @@ class CONTENT_EXPORT RenderMessageFilter
   friend class base::DeleteHelper<RenderMessageFilter>;
 
   void OnGetProcessMemorySizes(size_t* private_bytes, size_t* shared_bytes);
-  void OnCreateWindow(const ViewHostMsg_CreateWindow_Params& params,
-                      ViewHostMsg_CreateWindow_Reply* reply);
   void OnCreateWidget(int opener_id,
                       blink::WebPopupType popup_type,
                       int* route_id);
@@ -138,6 +134,8 @@ class CONTENT_EXPORT RenderMessageFilter
 
   // mojom::RenderMessageFilter:
   void GenerateRoutingID(const GenerateRoutingIDCallback& routing_id) override;
+  void CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
+                       const CreateNewWindowCallback& callback) override;
 
   // Message handlers called on the browser IO thread:
   void OnEstablishGpuChannel(IPC::Message* reply);
