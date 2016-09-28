@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/lazy_instance.h"
@@ -103,10 +105,9 @@ bool ActivityLogPrivateGetExtensionActivitiesFunction::RunAsync() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   // Get the arguments in the right format.
-  std::unique_ptr<Filter> filter;
-  filter.reset(&params.release()->filter);
+  Filter filter = std::move(params->filter);
   Action::ActionType action_type = Action::ACTION_API_CALL;
-  switch (filter->activity_type) {
+  switch (filter.activity_type) {
     case activity_log_private::EXTENSION_ACTIVITY_FILTER_API_CALL:
       action_type = Action::ACTION_API_CALL;
       break;
@@ -130,16 +131,13 @@ bool ActivityLogPrivateGetExtensionActivitiesFunction::RunAsync() {
       action_type = Action::ACTION_ANY;
   }
   std::string extension_id =
-      filter->extension_id.get() ? *filter->extension_id : std::string();
-  std::string api_call =
-      filter->api_call.get() ? *filter->api_call : std::string();
-  std::string page_url =
-      filter->page_url.get() ? *filter->page_url : std::string();
-  std::string arg_url =
-      filter->arg_url.get() ? *filter->arg_url : std::string();
+      filter.extension_id ? *filter.extension_id : std::string();
+  std::string api_call = filter.api_call ? *filter.api_call : std::string();
+  std::string page_url = filter.page_url ? *filter.page_url : std::string();
+  std::string arg_url = filter.arg_url ? *filter.arg_url : std::string();
   int days_ago = -1;
-  if (filter->days_ago.get())
-    days_ago = *filter->days_ago;
+  if (filter.days_ago)
+    days_ago = *filter.days_ago;
 
   // Call the ActivityLog.
   ActivityLog* activity_log = ActivityLog::GetInstance(GetProfile());

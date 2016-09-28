@@ -4,6 +4,9 @@
 
 #include "chrome/browser/extensions/sync_bundle.h"
 
+#include <utility>
+#include <vector>
+
 #include "base/location.h"
 #include "chrome/browser/extensions/extension_sync_data.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
@@ -18,7 +21,7 @@ SyncBundle::~SyncBundle() {}
 
 void SyncBundle::StartSyncing(
     std::unique_ptr<syncer::SyncChangeProcessor> sync_processor) {
-  sync_processor_.reset(sync_processor.release());
+  sync_processor_ = std::move(sync_processor);
 }
 
 void SyncBundle::Reset() {

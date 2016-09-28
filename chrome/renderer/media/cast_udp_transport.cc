@@ -5,6 +5,7 @@
 #include "chrome/renderer/media/cast_udp_transport.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
@@ -32,5 +33,5 @@ void CastUdpTransport::SetDestination(
 
 void CastUdpTransport::SetOptions(
     std::unique_ptr<base::DictionaryValue> options) {
-  options_.reset(options.release());
+  options_ = std::move(options);
 }

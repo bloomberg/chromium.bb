@@ -187,9 +187,7 @@ ExternalRegistryLoader::LoadPrefsOnFileThread() {
 
 void ExternalRegistryLoader::LoadOnFileThread() {
   base::TimeTicks start_time = base::TimeTicks::Now();
-  std::unique_ptr<base::DictionaryValue> initial_prefs =
-      LoadPrefsOnFileThread();
-  prefs_.reset(initial_prefs.release());
+  prefs_ = LoadPrefsOnFileThread();
   LOCAL_HISTOGRAM_TIMES("Extensions.ExternalRegistryLoaderWin",
                         base::TimeTicks::Now() - start_time);
   BrowserThread::PostTask(

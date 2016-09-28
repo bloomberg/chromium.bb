@@ -129,7 +129,7 @@ void PicasaDataProvider::InvalidateData() {
 void PicasaDataProvider::OnTempDirWatchStarted(
     std::unique_ptr<base::FilePathWatcher> temp_dir_watcher) {
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
-  temp_dir_watcher_.reset(temp_dir_watcher.release());
+  temp_dir_watcher_ = std::move(temp_dir_watcher);
 }
 
 void PicasaDataProvider::OnTempDirChanged(const base::FilePath& temp_dir_path,

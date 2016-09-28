@@ -113,7 +113,7 @@ class NetworkPortalDetectorImplTest
     if (base::HistogramBase* histogram =
             base::StatisticsRecorder::FindHistogram(
                 "CaptivePortal.OOBE.DetectionResult")) {
-      original_samples_.reset(histogram->SnapshotSamples().release());
+      original_samples_ = histogram->SnapshotSamples();
     }
   }
 

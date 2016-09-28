@@ -395,7 +395,7 @@ void ServiceDiscoveryClientMdns::StartNewClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ++restart_attempts_;
   DestroyMdns();
-  mdns_.reset(net::MDnsClient::CreateDefault().release());
+  mdns_ = net::MDnsClient::CreateDefault();
   client_.reset(new ServiceDiscoveryClientImpl(mdns_.get()));
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,

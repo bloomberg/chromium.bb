@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -420,7 +421,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
   if (web_contents() != resource.web_contents_getter.Run())
     return;
 
-  NavigationEntry *entry = resource.GetNavigationEntryForResource();
+  NavigationEntry* entry = resource.GetNavigationEntryForResource();
   if (!entry)
     return;
 
@@ -529,7 +530,7 @@ void ClientSideDetectionHost::OnPhishingDetectionDone(
     // through.
     if (verdict->is_phishing() || DidShowSBInterstitial()) {
       if (DidShowSBInterstitial()) {
-        browse_info_->unsafe_resource.reset(unsafe_resource_.release());
+        browse_info_->unsafe_resource = std::move(unsafe_resource_);
       }
       // Start browser-side feature extraction.  Once we're done it will send
       // the client verdict request.

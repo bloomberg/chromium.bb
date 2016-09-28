@@ -230,21 +230,25 @@ bool CustomizationDocument::LoadManifestFromString(
       manifest, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error);
   if (error_code != base::JSONReader::JSON_NO_ERROR)
     LOG(ERROR) << error;
-  DCHECK(root.get() != NULL);
-  if (root.get() == NULL)
+  if (!root) {
+    NOTREACHED();
     return false;
-  DCHECK(root->GetType() == base::Value::TYPE_DICTIONARY);
-  if (root->GetType() == base::Value::TYPE_DICTIONARY) {
-    root_.reset(static_cast<base::DictionaryValue*>(root.release()));
-    std::string result;
-    if (root_->GetString(kVersionAttr, &result) &&
-        result == accepted_version_)
-      return true;
-
-    LOG(ERROR) << "Wrong customization manifest version";
-    root_.reset(NULL);
   }
-  return false;
+
+  root_ = base::DictionaryValue::From(std::move(root));
+  if (!root_) {
+    NOTREACHED();
+    return false;
+  }
+
+  std::string result;
+  if (!root_->GetString(kVersionAttr, &result) || result != accepted_version_) {
+    LOG(ERROR) << "Wrong customization manifest version";
+    root_.reset();
+    return false;
+  }
+
+  return true;
 }
 
 std::string CustomizationDocument::GetLocaleSpecificString(

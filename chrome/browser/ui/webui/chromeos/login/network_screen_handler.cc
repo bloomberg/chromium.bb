@@ -187,7 +187,6 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("spokenFeedbackOptionOn", IDS_SPOKEN_FEEDBACK_OPTION_ON);
   builder->Add("virtualKeyboardOptionOff", IDS_VIRTUAL_KEYBOARD_OPTION_OFF);
   builder->Add("virtualKeyboardOptionOn", IDS_VIRTUAL_KEYBOARD_OPTION_ON);
-
 }
 
 void NetworkScreenHandler::GetAdditionalParameters(
@@ -210,8 +209,8 @@ void NetworkScreenHandler::GetAdditionalParameters(
     }
   }
 
-  if (!language_list.get())
-    language_list.reset(GetMinimalUILanguageList().release());
+  if (!language_list)
+    language_list = GetMinimalUILanguageList();
 
   // GetAdditionalParameters() is called when OOBE language is updated.
   // This happens in three different cases:

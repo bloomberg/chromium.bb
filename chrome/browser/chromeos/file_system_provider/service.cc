@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -109,7 +111,7 @@ void Service::SetFileSystemFactoryForTesting(
 void Service::SetRegistryForTesting(
     std::unique_ptr<RegistryInterface> registry) {
   DCHECK(registry);
-  registry_.reset(registry.release());
+  registry_ = std::move(registry);
 }
 
 base::File::Error Service::MountFileSystem(const std::string& extension_id,

@@ -111,7 +111,7 @@ void MergeSuggestedKeyPrefs(
                                             &current_prefs)) {
     std::unique_ptr<base::DictionaryValue> new_prefs(current_prefs->DeepCopy());
     new_prefs->MergeDictionary(suggested_key_prefs.get());
-    suggested_key_prefs.reset(new_prefs.release());
+    suggested_key_prefs = std::move(new_prefs);
   }
 
   extension_prefs->UpdateExtensionPref(extension_id,

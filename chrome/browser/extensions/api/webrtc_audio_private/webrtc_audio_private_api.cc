@@ -244,7 +244,7 @@ void WebrtcAudioPrivateGetSinksFunction::OnOutputDeviceNames(
   // object run strictly in sequence; first RunAsync on the UI thread,
   // then DoQuery on the audio IO thread, then DoneOnUIThread on the
   // UI thread.
-  results_.reset(wap::GetSinks::Results::Create(results).release());
+  results_ = wap::GetSinks::Results::Create(results);
 
   BrowserThread::PostTask(
       BrowserThread::UI,
@@ -300,7 +300,7 @@ void WebrtcAudioPrivateGetActiveSinkFunction::OnHMACCalculated(
     DVLOG(2) << "Received empty ID, replacing with default ID.";
     result = media::AudioDeviceDescription::kDefaultDeviceId;
   }
-  results_.reset(wap::GetActiveSink::Results::Create(result).release());
+  results_ = wap::GetActiveSink::Results::Create(result);
   SendResponse(true);
 }
 
@@ -494,10 +494,9 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::OnHMACCalculated(
 
   if (associated_sink_id == media::AudioDeviceDescription::kDefaultDeviceId) {
     DVLOG(2) << "Got default ID, replacing with empty ID.";
-    results_.reset(wap::GetAssociatedSink::Results::Create("").release());
+    results_ = wap::GetAssociatedSink::Results::Create("");
   } else {
-    results_.reset(
-        wap::GetAssociatedSink::Results::Create(associated_sink_id).release());
+    results_ = wap::GetAssociatedSink::Results::Create(associated_sink_id);
   }
 
   SendResponse(true);

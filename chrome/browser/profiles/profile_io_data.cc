@@ -473,7 +473,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
 #endif
 
   params->profile = profile;
-  profile_params_.reset(params.release());
+  profile_params_ = std::move(params);
 
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
       &enable_referrers_,

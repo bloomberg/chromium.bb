@@ -181,7 +181,7 @@ testing::AssertionResult RequestContentScriptAPITest::CreateAndLoadExtension(
   if (!extension)
     return testing::AssertionFailure() << "Failed to load extension.";
 
-  test_extension_dir_.reset(dir.release());
+  test_extension_dir_ = std::move(dir);
   extension_ = extension;
 
   // Wait for rules to be setup before navigating to trigger script injection.

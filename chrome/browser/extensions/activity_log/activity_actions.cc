@@ -4,7 +4,9 @@
 
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/format_macros.h"
 #include "base/json/json_string_value_serializer.h"
@@ -77,7 +79,7 @@ scoped_refptr<Action> Action::Clone() const {
 }
 
 void Action::set_args(std::unique_ptr<base::ListValue> args) {
-  args_.reset(args.release());
+  args_ = std::move(args);
 }
 
 base::ListValue* Action::mutable_args() {
@@ -96,7 +98,7 @@ void Action::set_arg_url(const GURL& arg_url) {
 }
 
 void Action::set_other(std::unique_ptr<base::DictionaryValue> other) {
-  other_.reset(other.release());
+  other_ = std::move(other);
 }
 
 base::DictionaryValue* Action::mutable_other() {
@@ -238,7 +240,7 @@ ExtensionActivity Action::ConvertToExtensionActivity() {
     } else {
       other_field->dom_verb = activity_log::EXTENSION_ACTIVITY_DOM_VERB_NONE;
     }
-    result.other.reset(other_field.release());
+    result.other = std::move(other_field);
   }
 
   return result;

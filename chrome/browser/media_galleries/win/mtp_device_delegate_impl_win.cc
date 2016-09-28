@@ -9,6 +9,7 @@
 #include <portabledevice.h>
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -654,7 +655,7 @@ void MTPDeviceDelegateImplWin::OnGetFileStream(
   }
   DCHECK(file_details->file_info().size == 0 ||
          file_details->device_file_stream());
-  current_snapshot_details_.reset(file_details.release());
+  current_snapshot_details_ = std::move(file_details);
   WriteDataChunkIntoSnapshotFile();
 }
 

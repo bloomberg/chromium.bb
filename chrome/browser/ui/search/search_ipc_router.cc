@@ -283,6 +283,6 @@ void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
 }
 
 void SearchIPCRouter::set_policy_for_testing(std::unique_ptr<Policy> policy) {
-  DCHECK(policy.get());
-  policy_.reset(policy.release());
+  DCHECK(policy);
+  policy_ = std::move(policy);
 }

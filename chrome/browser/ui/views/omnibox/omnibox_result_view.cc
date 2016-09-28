@@ -335,7 +335,7 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
   if (!separator_rendertext_) {
     const base::string16& separator =
         l10n_util::GetStringUTF16(IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
-    separator_rendertext_.reset(CreateRenderText(separator).release());
+    separator_rendertext_ = CreateRenderText(separator);
     separator_rendertext_->SetColor(GetColor(GetState(), DIMMED_TEXT));
     separator_width_ = separator_rendertext_->GetContentWidth();
   }

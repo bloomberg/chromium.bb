@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
@@ -275,7 +276,7 @@ bool ServiceProcessState::CreateSharedData() {
          version_info::GetVersionNumber().c_str(),
          version_info::GetVersionNumber().length());
   shared_data->service_process_pid = base::GetCurrentProcId();
-  shared_mem_service_data_.reset(shared_mem_service_data.release());
+  shared_mem_service_data_ = std::move(shared_mem_service_data);
   return true;
 }
 

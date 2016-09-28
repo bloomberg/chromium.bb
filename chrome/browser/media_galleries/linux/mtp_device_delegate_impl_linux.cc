@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -1476,7 +1477,7 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToCreateSnapshotFile(
   // verfication in LocalFileStreamReader.
   snapshot_file_info.last_modified = base::Time();
 
-  current_snapshot_request_info_.reset(snapshot_request_info.release());
+  current_snapshot_request_info_ = std::move(snapshot_request_info);
   if (file_info.size == 0) {
     // Empty snapshot file.
     return OnDidWriteDataIntoSnapshotFile(

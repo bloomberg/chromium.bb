@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -339,18 +340,18 @@ void MobileConfig::ProcessConfig(const std::string& global_config,
     global_initialized = LoadManifestFromString(global_config);
     // Backup global config root as it might be
     // owerwritten while loading local config.
-    global_config_root.reset(root_.release());
+    global_config_root = std::move(root_);
   }
   if (!local_config.empty())
     local_initialized = LoadManifestFromString(local_config);
 
   // Treat any parser errors as fatal.
   if (!global_initialized || !local_initialized) {
-    root_.reset(NULL);
-    local_config_root_.reset(NULL);
+    root_.reset();
+    local_config_root_.reset();
   } else {
-    local_config_root_.reset(root_.release());
-    root_.reset(global_config_root.release());
+    local_config_root_ = std::move(root_);
+    root_ = std::move(global_config_root);
   }
 }
 

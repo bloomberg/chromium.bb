@@ -7,6 +7,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -1197,7 +1198,7 @@ void BrowsingDataRemover::OverrideStoragePartitionForTesting(
 #if BUILDFLAG(ANDROID_JAVA_UI)
 void BrowsingDataRemover::OverrideWebappRegistryForTesting(
     std::unique_ptr<WebappRegistry> webapp_registry) {
-  webapp_registry_.reset(webapp_registry.release());
+  webapp_registry_ = std::move(webapp_registry);
 }
 #endif
 

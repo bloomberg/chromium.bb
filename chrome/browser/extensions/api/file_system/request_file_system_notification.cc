@@ -113,10 +113,10 @@ RequestFileSystemNotification::~RequestFileSystemNotification() {
 
 void RequestFileSystemNotification::Show(
     std::unique_ptr<Notification> notification) {
-  pending_notification_.reset(notification.release());
+  pending_notification_ = std::move(notification);
   // If the extension icon is not known yet, then defer showing the notification
   // until it is (from SetAppImage).
-  if (!extension_icon_.get())
+  if (!extension_icon_)
     return;
 
   pending_notification_->set_icon(*extension_icon_.get());

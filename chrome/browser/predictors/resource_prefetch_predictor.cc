@@ -609,8 +609,8 @@ void ResourcePrefetchPredictor::CreateCaches(
   DCHECK(!host_table_cache_);
   DCHECK(inflight_navigations_.empty());
 
-  url_table_cache_.reset(url_data_map.release());
-  host_table_cache_.reset(host_data_map.release());
+  url_table_cache_ = std::move(url_data_map);
+  host_table_cache_ = std::move(host_data_map);
 
   UMA_HISTOGRAM_COUNTS("ResourcePrefetchPredictor.UrlTableMainFrameUrlCount",
                        url_table_cache_->size());

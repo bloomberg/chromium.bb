@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/iapps_data_provider.h"
 
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -68,7 +69,7 @@ const base::FilePath& IAppsDataProvider::library_path() const {
 void IAppsDataProvider::OnLibraryWatchStarted(
     std::unique_ptr<base::FilePathWatcher> library_watcher) {
   MediaFileSystemBackend::AssertCurrentlyOnMediaSequence();
-  library_watcher_.reset(library_watcher.release());
+  library_watcher_ = std::move(library_watcher);
 }
 
 void IAppsDataProvider::OnLibraryChanged(const base::FilePath& path,

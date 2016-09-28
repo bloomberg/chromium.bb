@@ -293,9 +293,8 @@ std::unique_ptr<Automation> AutomationInfo::AsManifestType(
   Automation::Object* as_object = new Automation::Object;
   as_object->desktop.reset(new bool(info.desktop));
   as_object->interact.reset(new bool(info.interact));
-  if (info.matches.size() > 0) {
-    as_object->matches.reset(info.matches.ToStringVector().release());
-  }
+  if (info.matches.size() > 0)
+    as_object->matches = info.matches.ToStringVector();
   automation->as_object.reset(as_object);
   return automation;
 }

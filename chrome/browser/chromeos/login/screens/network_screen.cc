@@ -431,7 +431,7 @@ void NetworkScreen::OnLanguageListResolved(
     const std::string& new_selected_language) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  language_list_.reset(new_language_list.release());
+  language_list_ = std::move(new_language_list);
   language_list_locale_ = new_language_list_locale;
   selected_language_code_ = new_selected_language;
 

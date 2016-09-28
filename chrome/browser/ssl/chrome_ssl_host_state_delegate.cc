@@ -8,6 +8,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -491,5 +492,5 @@ bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
   return false;
 }
 void ChromeSSLHostStateDelegate::SetClock(std::unique_ptr<base::Clock> clock) {
-  clock_.reset(clock.release());
+  clock_ = std::move(clock);
 }
