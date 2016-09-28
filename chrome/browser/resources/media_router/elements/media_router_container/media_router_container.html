@@ -57,7 +57,8 @@
     </media-router-header>
     <div id="content">
       <template is="dom-if" if="[[!computeCastModeListHidden_(currentView_)]]">
-        <paper-menu id="cast-mode-list" role="presentation">
+        <paper-menu id="cast-mode-list" role="presentation"
+            selectable="paper-item">
           <template is="dom-repeat" id="defaultCastModeList"
               items="[[computeDefaultCastModeList_(castModeList)]]">
             <paper-item on-tap="onCastModeClick_">
