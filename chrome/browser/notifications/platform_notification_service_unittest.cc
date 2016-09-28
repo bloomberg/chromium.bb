@@ -77,6 +77,8 @@ class MockDesktopNotificationDelegate
  private:
   bool displayed_;
   bool clicked_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDesktopNotificationDelegate);
 };
 
 }  // namespace
@@ -84,14 +86,14 @@ class MockDesktopNotificationDelegate
 class PlatformNotificationServiceTest : public testing::Test {
  public:
   void SetUp() override {
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    profile_manager_ = base::MakeUnique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_ = profile_manager_->CreateTestingProfile("Miguel");
-    std::unique_ptr<NotificationUIManager> ui_manager(
-        new StubNotificationUIManager);
-    std::unique_ptr<NotificationPlatformBridge> notification_bridge(
-        new StubNotificationPlatformBridge());
+    std::unique_ptr<NotificationUIManager> ui_manager =
+        base::MakeUnique<StubNotificationUIManager>();
+    std::unique_ptr<NotificationPlatformBridge> notification_bridge =
+        base::MakeUnique<StubNotificationPlatformBridge>();
 
     TestingBrowserProcess::GetGlobal()->SetNotificationUIManager(
         std::move(ui_manager));
@@ -254,7 +256,11 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
   notification_data.vibration_pattern = vibration_pattern;
   notification_data.silent = true;
   notification_data.actions.resize(2);
+  notification_data.actions[0].type =
+      content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
   notification_data.actions[0].title = base::ASCIIToUTF16("Button 1");
+  notification_data.actions[1].type =
+      content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
   notification_data.actions[1].title = base::ASCIIToUTF16("Button 2");
 
   NotificationResources notification_resources;

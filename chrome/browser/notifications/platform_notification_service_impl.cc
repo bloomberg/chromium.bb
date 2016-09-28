@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,19 +22,16 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_service.h"
-#include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_notification_delegate.h"
 #include "content/public/browser/notification_event_dispatcher.h"
 #include "content/public/browser/permission_type.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
@@ -45,6 +41,11 @@
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/url_constants.h"
+
+#if BUILDFLAG(ENABLE_BACKGROUND)
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
+#endif
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/notifications/notifier_state_tracker.h"
@@ -56,16 +57,9 @@
 #include "extensions/common/permissions/permissions_data.h"
 #endif
 
-#if BUILDFLAG(ENABLE_BACKGROUND)
-#include "chrome/browser/lifetime/keep_alive_types.h"
-#include "chrome/browser/lifetime/scoped_keep_alive.h"
-#endif
-
 using content::BrowserContext;
 using content::BrowserThread;
 using message_center::NotifierId;
-
-class ProfileAttributesEntry;
 
 namespace {
 
@@ -445,8 +439,8 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
 
   // Developer supplied action buttons.
   std::vector<message_center::ButtonInfo> buttons;
-  for (size_t i = 0; i < notification_data.actions.size(); i++) {
-    content::PlatformNotificationAction const& action =
+  for (size_t i = 0; i < notification_data.actions.size(); ++i) {
+    const content::PlatformNotificationAction& action =
         notification_data.actions[i];
     message_center::ButtonInfo button(action.title);
     // TODO(peter): Handle different screen densities instead of always using
@@ -481,9 +475,9 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
 NotificationDisplayService*
 PlatformNotificationServiceImpl::GetNotificationDisplayService(
     Profile* profile) {
-  if (test_display_service_ != nullptr)
-    return test_display_service_;
-  return NotificationDisplayServiceFactory::GetForProfile(profile);
+  return test_display_service_
+             ? test_display_service_
+             : NotificationDisplayServiceFactory::GetForProfile(profile);
 }
 
 base::string16 PlatformNotificationServiceImpl::DisplayNameForContextMessage(
