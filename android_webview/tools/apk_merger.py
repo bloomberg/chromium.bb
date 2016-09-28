@@ -5,6 +5,18 @@
 
 """ Merges a 64-bit and a 32-bit APK into a single APK
 
+This script is used to merge two APKs which have only 32-bit or 64-bit
+binaries respectively into a APK that has both 32-bit and 64-bit binaries
+for 64-bit Android platform.
+
+You normally don't need this script because GN 64-bit build generates
+such APK for you.
+
+To use this script, you need to
+1. Build 32-bit APK as usual.
+2. Build 64-bit APK with GN variable build_apk_secondary_abi=false.
+3. Use this script to merge 2 APKs.
+
 """
 
 import argparse
@@ -202,6 +214,9 @@ def MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64):
   ignores = ['META-INF', 'AndroidManifest.xml']
   if args.ignore_classes_dex:
     ignores += ['classes.dex', 'classes2.dex']
+  if args.debug:
+    # see http://crbug.com/648720
+    ignores += ['webview_licenses.notice']
 
   dcmp = filecmp.dircmp(
       tmp_dir_64,
