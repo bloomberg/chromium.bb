@@ -1133,8 +1133,9 @@ void ChromeLauncherControllerImpl::DoUnpinAppWithID(const std::string& app_id,
     UnpinAndUpdatePrefs(shelf_id, update_prefs);
 }
 
-int ChromeLauncherControllerImpl::PinRunningAppInternal(int index,
-                                                        ash::ShelfID shelf_id) {
+void ChromeLauncherControllerImpl::PinRunningAppInternal(
+    int index,
+    ash::ShelfID shelf_id) {
   int running_index = model_->ItemIndexByID(shelf_id);
   ash::ShelfItem item = model_->items()[running_index];
   DCHECK(item.type == ash::TYPE_WINDOWED_APP ||
@@ -1148,7 +1149,6 @@ int ChromeLauncherControllerImpl::PinRunningAppInternal(int index,
     --index;
   if (running_index != index)
     model_->Move(running_index, index);
-  return index;
 }
 
 void ChromeLauncherControllerImpl::UnpinRunningAppInternal(int index) {
@@ -1220,119 +1220,79 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
   // into the pref state. Therefore we tell |persistPinnedState| to ignore any
   // invocations while we are running.
   base::AutoReset<bool> auto_reset(&ignore_persist_pinned_state_change_, true);
-  std::vector<std::string> pinned_apps = ash::launcher::GetPinnedAppsFromPrefs(
-      profile_->GetPrefs(), launcher_controller_helper_.get());
+  const std::vector<std::string> pinned_apps =
+      ash::launcher::GetPinnedAppsFromPrefs(profile_->GetPrefs(),
+                                            launcher_controller_helper_.get());
 
   int index = 0;
-  int max_index = model_->item_count();
-  int seen_chrome_index = -1;
-
-  // At least chrome browser shortcut should exist.
-  DCHECK_GT(max_index, 0);
-
   // Skip app list items if it exists.
   if (model_->items()[0].type == ash::TYPE_APP_LIST)
     ++index;
 
-  // Walk the model and |pinned_apps| from the pref lockstep, adding and
-  // removing items as necessary. NB: This code uses plain old indexing instead
-  // of iterators because of model mutations as part of the loop.
-  std::vector<std::string>::const_iterator pref_app_id(pinned_apps.begin());
-  for (; index < max_index && pref_app_id != pinned_apps.end(); ++index) {
+  // Apply pins in two steps. At the first step, go through the list of apps to
+  // pin, move existing pin to current position specified by |index| or create
+  // the new pin at that position.
+  for (const auto& pref_app_id : pinned_apps) {
+    // Filter out apps that may be mapped wrongly.
+    // TODO(khmel):  b/31703859 is to refactore shelf mapping.
+    const std::string shelf_app_id =
+        ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(pref_app_id);
+    if (shelf_app_id != pref_app_id)
+      continue;
+
     // Update apps icon if applicable.
-    OnAppUpdated(profile_, *pref_app_id);
-    // Check if we have an item which we need to handle.
-    if (IsAppPinned(*pref_app_id)) {
-      if (seen_chrome_index >= 0 &&
-          *pref_app_id == extension_misc::kChromeAppId) {
-        // Current item is Chrome browser and we saw it before.
-        model_->Move(seen_chrome_index, index);
-        ++pref_app_id;
-        --index;
-        continue;
+    OnAppUpdated(profile_, pref_app_id);
+
+    // Find existing pin or app from the right of current |index|.
+    int app_index = index;
+    for (; app_index < model_->item_count(); ++app_index) {
+      const ash::ShelfItem& item = model_->items()[app_index];
+      const IDToItemControllerMap::iterator it =
+          id_to_item_controller_map_.find(item.id);
+      if (it != id_to_item_controller_map_.end() &&
+          it->second->app_id() == pref_app_id) {
+        break;
       }
-      for (; index < max_index; ++index) {
-        const ash::ShelfItem& item(model_->items()[index]);
-        if (item.type != ash::TYPE_APP_SHORTCUT &&
-            item.type != ash::TYPE_BROWSER_SHORTCUT) {
-          continue;
-        }
-        LauncherItemController* controller = GetLauncherItemController(item.id);
-        if (controller && controller->app_id() == *pref_app_id) {
-          ++pref_app_id;
-          break;
-        } else if (item.type == ash::TYPE_BROWSER_SHORTCUT) {
-          // We cannot close browser shortcut. Remember its position.
-          seen_chrome_index = index;
-        } else {
-          // Check if this is a platform or a windowed app.
-          if (item.type == ash::TYPE_APP_SHORTCUT && controller &&
-              (controller->locked() ||
-               controller->type() == LauncherItemController::TYPE_APP)) {
-            // Note: This will not change the amount of items (|max_index|).
-            // Even changes to the actual |index| due to item weighting
-            // changes should be fine.
-            UnpinRunningAppInternal(index);
-          } else {
-            if (controller)
-              LauncherItemClosed(item.id);
-            --max_index;
-          }
-          --index;
-        }
-      }
-      // If the item wasn't found, that means id_to_item_controller_map_
-      // is out of sync.
-      DCHECK(index <= max_index);
-    } else {
-      // Check if the item was already running but not yet pinned.
-      ash::ShelfID shelf_id = GetShelfIDForAppID(*pref_app_id);
-      if (shelf_id) {
-        // This app is running but not yet pinned. So pin and move it.
-        index = PinRunningAppInternal(index, shelf_id);
+    }
+    if (app_index < model_->item_count()) {
+      // Found existing pin or running app.
+      const ash::ShelfItem item = model_->items()[app_index];
+      if (item.type == ash::TYPE_APP_SHORTCUT ||
+          item.type == ash::TYPE_BROWSER_SHORTCUT) {
+        // Just move to required position or keep it inplace.
+        model_->Move(app_index, index);
       } else {
-        // This app wasn't pinned before, insert a new entry.
-        shelf_id = CreateAppShortcutLauncherItem(*pref_app_id, index);
-        ++max_index;
-        index = model_->ItemIndexByID(shelf_id);
+        PinRunningAppInternal(index, item.id);
       }
-      ++pref_app_id;
+      DCHECK_EQ(model_->ItemIndexByID(item.id), index);
+    } else {
+      // This is fresh pin. Create new one.
+      DCHECK_NE(pref_app_id, extension_misc::kChromeAppId);
+      CreateAppShortcutLauncherItem(pref_app_id, index);
     }
+    ++index;
   }
 
-  // Remove any trailing existing items.
+  // At second step remove any pin to the right from the current index.
   while (index < model_->item_count()) {
-    const ash::ShelfItem& item(model_->items()[index]);
-    if (item.type == ash::TYPE_APP_SHORTCUT) {
-      LauncherItemController* controller = GetLauncherItemController(item.id);
-      if (controller) {
-        if (controller->locked() ||
-            controller->type() == LauncherItemController::TYPE_APP) {
-          UnpinRunningAppInternal(index);
-        } else {
-          LauncherItemClosed(item.id);
-        }
-      }
-    } else {
+    const ash::ShelfItem item = model_->items()[index];
+    if (item.type != ash::TYPE_APP_SHORTCUT) {
       ++index;
+      continue;
     }
-  }
 
-  // Append unprocessed items from the pref to the end of the model.
-  for (; pref_app_id != pinned_apps.end(); ++pref_app_id) {
-    // Update apps icon if applicable.
-    OnAppUpdated(profile_, *pref_app_id);
-    if (*pref_app_id == extension_misc::kChromeAppId) {
-      int target_index = FindInsertionPoint();
-      DCHECK(seen_chrome_index >= 0 && seen_chrome_index < target_index);
-      model_->Move(seen_chrome_index, target_index);
+    const LauncherItemController* controller =
+        GetLauncherItemController(item.id);
+    DCHECK(controller);
+    DCHECK_NE(controller->app_id(), extension_misc::kChromeAppId);
+
+    if (controller->locked() ||
+        controller->type() == LauncherItemController::TYPE_APP) {
+      UnpinRunningAppInternal(index);
+      // Note, item can be moved to the right due weighting in shelf model.
+      DCHECK_GE(model_->ItemIndexByID(item.id), index);
     } else {
-      DoPinAppWithID(*pref_app_id);
-      int target_index = FindInsertionPoint();
-      ash::ShelfID id = GetShelfIDForAppID(*pref_app_id);
-      int source_index = model_->ItemIndexByID(id);
-      if (source_index != target_index)
-        model_->Move(source_index, target_index);
+      LauncherItemClosed(item.id);
     }
   }
 }

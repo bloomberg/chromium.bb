@@ -219,9 +219,8 @@ class ChromeLauncherControllerImpl
   void DoPinAppWithID(const std::string& app_id);
   void DoUnpinAppWithID(const std::string& app_id, bool update_prefs);
 
-  // Pin a running app with |shelf_id| internally to |index|. It returns
-  // the index where the item was pinned.
-  int PinRunningAppInternal(int index, ash::ShelfID shelf_id);
+  // Pin a running app with |shelf_id| internally to |index|.
+  void PinRunningAppInternal(int index, ash::ShelfID shelf_id);
 
   // Unpin a locked application. This is an internal call which converts the
   // model type of the given app index from a shortcut into an unpinned running

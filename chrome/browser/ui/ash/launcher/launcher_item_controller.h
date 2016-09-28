@@ -61,7 +61,7 @@ class LauncherItemController : public ash::ShelfItemDelegate {
     DCHECK(locked_);
     locked_--;
   }
-  bool locked() { return locked_ > 0; }
+  bool locked() const { return locked_ > 0; }
 
   bool image_set_by_controller() const { return image_set_by_controller_; }
   void set_image_set_by_controller(bool image_set_by_controller) {
