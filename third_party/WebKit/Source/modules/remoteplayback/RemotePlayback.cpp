@@ -5,6 +5,7 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/HTMLNames.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
@@ -82,10 +83,15 @@ ScriptPromise RemotePlayback::getAvailability(ScriptState* scriptState)
 
 ScriptPromise RemotePlayback::prompt(ScriptState* scriptState)
 {
-    // TODO(avayvod): implement steps 3, 4, 5, 8, 9 of the algorithm.
+    // TODO(avayvod): implement steps 4, 5, 8, 9 of the algorithm.
     // https://crbug.com/647441
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
+
+    if (m_mediaElement->fastHasAttribute(HTMLNames::disableremoteplaybackAttr)) {
+        resolver->reject(DOMException::create(InvalidStateError, "disableRemotePlayback attribute is present."));
+        return promise;
+    }
 
     // TODO(avayvod): should we have a separate flag to disable the user gesture
     // requirement (for tests) or reuse the one for the PresentationRequest::start()?
