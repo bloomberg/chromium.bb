@@ -1,0 +1,19 @@
+Tests timeline support in WebInspector Extensions API
+
+ Started extension.
+Running tests...
+RUNNING TEST: extension_testTimeline
+{
+    onRecordingStarted : {
+        addListener : <function>
+        removeListener : <function>
+    }
+    onRecordingStopped : {
+        addListener : <function>
+        removeListener : <function>
+    }
+}
+traceProvider.onRecordingStarted fired.
+traceProvider.onRecordingStopped fired.
+All tests done.
+

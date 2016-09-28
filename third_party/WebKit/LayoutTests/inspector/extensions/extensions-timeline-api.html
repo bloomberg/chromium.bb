@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/extensions-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+
+<script type="text/javascript">
+function extension_testTimeline(nextTest)
+{
+    function onRecordingStarted()
+    {
+        output("traceProvider.onRecordingStarted fired.");
+    }
+    function onRecordingStopped()
+    {
+        output("traceProvider.onRecordingStopped fired.");
+        nextTest();
+    }
+    var traceProvider = webInspector.timeline.addTraceProvider("extension trace provider", "tooltip");
+    dumpObject(traceProvider);
+    traceProvider.onRecordingStarted.addListener(onRecordingStarted);
+    traceProvider.onRecordingStopped.addListener(onRecordingStopped);
+    extension_startTimeline(() => extension_stopTimeline(() => {}));
+}
+
+function extension_startTimeline(callback)
+{
+    evaluateOnFrontend("InspectorTest.startTimeline(reply);", callback);
+}
+
+function extension_stopTimeline(callback)
+{
+    evaluateOnFrontend("InspectorTest.stopTimeline(reply);", callback);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests timeline support in WebInspector Extensions API</p>
+<span id="test-element"><b></b></span>
+</body>
+</html>
