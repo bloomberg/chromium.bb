@@ -19,3 +19,4 @@ crbug.com/648769 paint/invalidation/svg/js-late-gradient-and-object-creation.svg
 crbug.com/648769 paint/invalidation/svg/js-late-pattern-and-object-creation.svg [ Failure ]
 crbug.com/648769 paint/invalidation/svg/tabgroup.svg [ Failure ]
 crbug.com/648769 paint/invalidation/svg/window.svg [ Failure ]
+crbug.com/648769 paint/invalidation/transform-layout-repaint.html [ Failure ]

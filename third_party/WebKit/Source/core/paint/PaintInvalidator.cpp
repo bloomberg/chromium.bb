@@ -44,8 +44,17 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(GeometryMapper& geometr
     // (see LayoutBoxModelObject.h) but we need them to be in physical
     // coordinates.
     FloatRect rect = localRect;
-    if (object.isBox())
+    if (object.isBox()) {
         toLayoutBox(object).flipForWritingMode(rect);
+    } else if (!(context.forcedSubtreeInvalidationFlags & PaintInvalidatorContext::ForcedSubtreeSlowPathRect)) {
+        // For SPv2 and the GeometryMapper path, we also need to convert the rect
+        // for non-boxes into physical coordinates before applying paint offset.
+        // (Otherwise we'll call mapToVisualrectInAncestorSpace() which requires
+        // physical coordinates for boxes, but "physical coordinates with flipped
+        // block-flow direction" for non-boxes for which we don't need to flip.)
+        // TODO(wangxianzhu): Avoid containingBlock().
+        object.containingBlock()->flipForWritingMode(rect);
+    }
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         // In SPv2, visual rects are in the space of their local transform node.
@@ -190,8 +199,7 @@ void PaintInvalidator::updateContext(const LayoutObject& object, PaintInvalidato
 
     // TODO(crbug.com/637313): This is temporary before we support filters in paint property tree.
     // TODO(crbug.com/648274): This is a workaround for multi-column contents.
-    // TODO(crbug.com/648409): This is a workaround for inline contents in vertical-rl container.
-    if (object.hasFilterInducingProperty() || object.isLayoutFlowThread() || object.hasFlippedBlocksWritingMode())
+    if (object.hasFilterInducingProperty() || object.isLayoutFlowThread())
         context.forcedSubtreeInvalidationFlags |= PaintInvalidatorContext::ForcedSubtreeSlowPathRect;
 
     context.oldBounds = object.previousPaintInvalidationRect();
