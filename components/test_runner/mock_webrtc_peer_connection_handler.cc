@@ -108,6 +108,130 @@ class MockWebRTCLegacyStats : public blink::WebRTCLegacyStats {
   std::vector<std::pair<std::string, std::string>> values_;
 };
 
+template<typename T>
+WebVector<T> sequenceWithValue(T value) {
+  return WebVector<T>(&value, 1);
+}
+
+class MockWebRTCStatsMember : public blink::WebRTCStatsMember {
+ public:
+  MockWebRTCStatsMember(
+      const std::string& name, blink::WebRTCStatsMemberType type)
+      : name_(name), type_(type) {}
+
+  // blink::WebRTCStatsMember overrides.
+  blink::WebString name() const override {
+    return blink::WebString::fromUTF8(name_);
+  }
+  blink::WebRTCStatsMemberType type() const override {
+    return type_;
+  }
+  bool isDefined() const override { return true; }
+  int32_t valueInt32() const override { return 42; }
+  uint32_t valueUint32() const override { return 42; }
+  int64_t valueInt64() const override { return 42; }
+  uint64_t valueUint64() const override { return 42; }
+  double valueDouble() const override { return 42.0; }
+  blink::WebString valueString() const override {
+    return blink::WebString::fromUTF8("42");
+  }
+  WebVector<int32_t> valueSequenceInt32() const override {
+    return sequenceWithValue<int32_t>(42);
+  }
+  WebVector<uint32_t> valueSequenceUint32() const override {
+    return sequenceWithValue<uint32_t>(42);
+  }
+  WebVector<int64_t> valueSequenceInt64() const override {
+    return sequenceWithValue<int64_t>(42);
+  }
+  WebVector<uint64_t> valueSequenceUint64() const override {
+    return sequenceWithValue<uint64_t>(42);
+  }
+  WebVector<double> valueSequenceDouble() const override {
+    return sequenceWithValue<double>(42.0);
+  }
+  blink::WebVector<blink::WebString> valueSequenceString() const override {
+    return sequenceWithValue<blink::WebString>(
+        blink::WebString::fromUTF8("42"));
+  }
+
+ private:
+  std::string name_;
+  blink::WebRTCStatsMemberType type_;
+};
+
+class MockWebRTCStats : public blink::WebRTCStats {
+ public:
+  MockWebRTCStats(
+      const std::string& id, const std::string& type, double timestamp)
+      : id_(id), type_(type), timestamp_(timestamp) {
+  }
+
+  void addMember(const std::string& name, blink::WebRTCStatsMemberType type) {
+    members_.push_back(std::make_pair(name, type));
+  }
+
+  // blink::WebRTCStats overrides.
+  blink::WebString id() const override {
+    return blink::WebString::fromUTF8(id_);
+  }
+  blink::WebString type() const override {
+    return blink::WebString::fromUTF8(type_);
+  }
+  double timestamp() const override {
+    return timestamp_;
+  }
+  size_t membersCount() const override {
+    return members_.size();
+  }
+  std::unique_ptr<WebRTCStatsMember> getMember(size_t i) const override {
+    return std::unique_ptr<WebRTCStatsMember>(new MockWebRTCStatsMember(
+        members_[i].first, members_[i].second));
+  }
+
+ private:
+  std::string id_;
+  std::string type_;
+  double timestamp_;
+  std::vector<std::pair<std::string, blink::WebRTCStatsMemberType>> members_;
+};
+
+class MockWebRTCStatsReport : public blink::WebRTCStatsReport {
+ public:
+  MockWebRTCStatsReport() : i_(0) {}
+  MockWebRTCStatsReport(const MockWebRTCStatsReport& other)
+      : stats_(other.stats_), i_(0) {}
+
+  void AddStats(const MockWebRTCStats& stats) {
+    stats_.push_back(stats);
+  }
+
+  // blink::WebRTCStatsReport overrides.
+  std::unique_ptr<blink::WebRTCStatsReport> copyHandle() const override {
+    // Because this is just a mock, we copy the underlying stats instead of
+    // referencing the same stats as the original report.
+    return std::unique_ptr<blink::WebRTCStatsReport>(
+        new MockWebRTCStatsReport(*this));
+  }
+  std::unique_ptr<WebRTCStats> getStats(WebString id) const override {
+    for (const MockWebRTCStats& stats : stats_) {
+      if (stats.id() == id)
+        return std::unique_ptr<blink::WebRTCStats>(new MockWebRTCStats(stats));
+    }
+    return nullptr;
+  }
+  std::unique_ptr<blink::WebRTCStats> next() override {
+    if (i_ >= stats_.size())
+      return nullptr;
+    return std::unique_ptr<blink::WebRTCStats>(
+        new MockWebRTCStats(stats_[i_++]));
+  }
+
+ private:
+  std::vector<MockWebRTCStats> stats_;
+  size_t i_;
+};
+
 }  // namespace
 
 MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler()
@@ -393,9 +517,23 @@ void MockWebRTCPeerConnectionHandler::getStats(
 
 void MockWebRTCPeerConnectionHandler::getStats(
     std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
-  // TODO(hbos): When blink::RTCPeerConnection starts using the new |getStats|
-  // this needs to be implemented. crbug.com/627816.
-  NOTREACHED();
+  std::unique_ptr<MockWebRTCStatsReport> report(new MockWebRTCStatsReport());
+  MockWebRTCStats stats("mock-stats-01", "mock-stats", 1234.0);
+  stats.addMember("int32", blink::WebRTCStatsMemberTypeInt32);
+  stats.addMember("uint32", blink::WebRTCStatsMemberTypeUint32);
+  stats.addMember("int64", blink::WebRTCStatsMemberTypeInt64);
+  stats.addMember("uint64", blink::WebRTCStatsMemberTypeUint64);
+  stats.addMember("double", blink::WebRTCStatsMemberTypeDouble);
+  stats.addMember("string", blink::WebRTCStatsMemberTypeString);
+  stats.addMember("sequenceInt32", blink::WebRTCStatsMemberTypeSequenceInt32);
+  stats.addMember("sequenceUint32", blink::WebRTCStatsMemberTypeSequenceUint32);
+  stats.addMember("sequenceInt64", blink::WebRTCStatsMemberTypeSequenceInt64);
+  stats.addMember("sequenceUint64", blink::WebRTCStatsMemberTypeSequenceUint64);
+  stats.addMember("sequenceDouble", blink::WebRTCStatsMemberTypeSequenceDouble);
+  stats.addMember("sequenceString", blink::WebRTCStatsMemberTypeSequenceString);
+  report->AddStats(stats);
+  callback->OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport>(
+      report.release()));
 }
 
 void MockWebRTCPeerConnectionHandler::ReportCreationOfDataChannel() {

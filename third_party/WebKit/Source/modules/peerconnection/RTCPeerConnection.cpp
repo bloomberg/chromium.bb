@@ -69,6 +69,7 @@
 #include "modules/peerconnection/RTCSessionDescriptionRequestImpl.h"
 #include "modules/peerconnection/RTCSessionDescriptionRequestPromiseImpl.h"
 #include "modules/peerconnection/RTCStatsCallback.h"
+#include "modules/peerconnection/RTCStatsReport.h"
 #include "modules/peerconnection/RTCStatsRequestImpl.h"
 #include "modules/peerconnection/RTCVoidRequestImpl.h"
 #include "modules/peerconnection/RTCVoidRequestPromiseImpl.h"
@@ -372,6 +373,29 @@ RTCOfferOptionsPlatform* parseOfferOptions(const Dictionary& options)
     RTCOfferOptionsPlatform* rtcOfferOptions = RTCOfferOptionsPlatform::create(offerToReceiveVideo, offerToReceiveAudio, voiceActivityDetection, iceRestart);
     return rtcOfferOptions;
 }
+
+// Helper class for |RTCPeerConnection::getStats(ScriptState*, MediaStreamTrack*)|
+class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
+public:
+    // Takes ownership of |resolver|.
+    static std::unique_ptr<WebRTCStatsReportCallback> create(ScriptPromiseResolver* resolver)
+    {
+        return std::unique_ptr<WebRTCStatsReportCallback>(new WebRTCStatsReportCallbackResolver(resolver));
+    }
+
+    ~WebRTCStatsReportCallbackResolver() override {}
+
+private:
+    WebRTCStatsReportCallbackResolver(ScriptPromiseResolver* resolver)
+        : m_resolver(resolver) {}
+
+    void OnStatsDelivered(std::unique_ptr<WebRTCStatsReport> report) override
+    {
+        m_resolver->resolve(new RTCStatsReport(std::move(report)));
+    }
+
+    Persistent<ScriptPromiseResolver> m_resolver;
+};
 
 } // namespace
 
@@ -973,8 +997,12 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* scriptState, MediaStreamT
 {
     ExecutionContext* context = scriptState->getExecutionContext();
     UseCounter::count(context, UseCounter::RTCPeerConnectionGetStats);
-    // TODO(hbos): Implement new |getStats| function. crbug.com/627816
-    return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "getStats(optional MediaStreamTrack?) has not been implemented yet."));
+
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+    m_peerHandler->getStats(WebRTCStatsReportCallbackResolver::create(resolver));
+
+    return promise;
 }
 
 RTCDataChannel* RTCPeerConnection::createDataChannel(String label, const Dictionary& options, ExceptionState& exceptionState)

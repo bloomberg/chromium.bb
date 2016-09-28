@@ -455,8 +455,15 @@ void WebRtcTestBase::GenerateAndCloneCertificate(
   EXPECT_EQ("ok-generated-and-cloned", ExecuteJavascript(javascript, tab));
 }
 
-void WebRtcTestBase::VerifyStatsGenerated(content::WebContents* tab) const {
+void WebRtcTestBase::VerifyStatsGeneratedCallback(
+    content::WebContents* tab) const {
   EXPECT_EQ("ok-got-stats", ExecuteJavascript("verifyStatsGenerated()", tab));
+}
+
+void WebRtcTestBase::VerifyStatsGeneratedPromise(
+    content::WebContents* tab) const {
+  EXPECT_EQ("ok-got-stats",
+            ExecuteJavascript("verifyStatsGeneratedPromise()", tab));
 }
 
 void WebRtcTestBase::SetDefaultVideoCodec(

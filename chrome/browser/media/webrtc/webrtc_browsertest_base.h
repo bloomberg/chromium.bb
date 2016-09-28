@@ -161,7 +161,8 @@ class WebRtcTestBase : public InProcessBrowserTest {
   void GenerateAndCloneCertificate(content::WebContents* tab,
                                    const std::string& keygen_algorithm) const;
 
-  void VerifyStatsGenerated(content::WebContents* tab) const;
+  void VerifyStatsGeneratedCallback(content::WebContents* tab) const;
+  void VerifyStatsGeneratedPromise(content::WebContents* tab) const;
 
   // Change the default video codec in the offer SDP.
   void SetDefaultVideoCodec(content::WebContents* tab,

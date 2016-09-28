@@ -4711,6 +4711,16 @@ interface RTCSessionDescription
     method toJSON
     setter sdp
     setter type
+interface RTCStatsReport
+    attribute @@toStringTag
+    method @@iterator
+    method constructor
+    method entries
+    method forEach
+    method get
+    method has
+    method keys
+    method values
 interface RadioNodeList : NodeList
     attribute @@toStringTag
     getter value

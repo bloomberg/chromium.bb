@@ -185,6 +185,7 @@ modules_idl_files =
                     "peerconnection/RTCSessionDescription.idl",
                     "peerconnection/RTCSessionDescriptionCallback.idl",
                     "peerconnection/RTCStatsCallback.idl",
+                    "peerconnection/RTCStatsReport.idl",
                     "peerconnection/RTCStatsResponse.idl",
                     "permissions/Permissions.idl",
                     "permissions/PermissionStatus.idl",

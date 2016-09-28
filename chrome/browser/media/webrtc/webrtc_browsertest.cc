@@ -49,6 +49,12 @@ class WebRtcBrowserTest : public WebRtcTestBase {
 
     // Flag used by TestWebAudioMediaStream to force garbage collection.
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+
+    // Flag used by |RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise|.
+    // TODO(hbos): Remove this when bug crbug.com/627816 is resolved (when this
+    // flag is removed).
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "RTCPeerConnectionNewGetStats");
   }
 
   void RunsAudioVideoWebRTCCallInTwoTabs(
@@ -198,13 +204,25 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
-                       RunsAudioVideoWebRTCCallInTwoTabsGetStats) {
+                       RunsAudioVideoWebRTCCallInTwoTabsGetStatsCallback) {
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
   SetupPeerconnectionWithLocalStream(right_tab_);
   NegotiateCall(left_tab_, right_tab_);
 
-  VerifyStatsGenerated(left_tab_);
+  VerifyStatsGeneratedCallback(left_tab_);
+
+  DetectVideoAndHangUp();
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
+                       RunsAudioVideoWebRTCCallInTwoTabsGetStatsPromise) {
+  StartServerAndOpenTabs();
+  SetupPeerconnectionWithLocalStream(left_tab_);
+  SetupPeerconnectionWithLocalStream(right_tab_);
+  NegotiateCall(left_tab_, right_tab_);
+
+  VerifyStatsGeneratedPromise(left_tab_);
 
   DetectVideoAndHangUp();
 }
