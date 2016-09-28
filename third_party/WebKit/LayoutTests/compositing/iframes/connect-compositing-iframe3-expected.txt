@@ -11,13 +11,13 @@
       "children": [
         {
           "name": "LayoutIFrame IFRAME id='iframe' class='composited'",
-          "position": [8, 8],
-          "bounds": [370, 220],
+          "position": [9, 9],
+          "bounds": [368, 218],
           "drawsContent": true,
           "children": [
             {
               "name": "Frame Overflow Controls Host Layer",
-              "position": [35, 35],
+              "position": [34, 34],
               "bounds": [300, 150],
               "children": [
                 {

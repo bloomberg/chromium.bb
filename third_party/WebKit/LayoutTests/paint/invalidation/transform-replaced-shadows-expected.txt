@@ -10,7 +10,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutImage IMG id='box' class='smaller'",
-          "rect": [-12, 28, 280, 280],
+          "rect": [-10, 28, 276, 278],
           "reason": "subtree"
         }
       ]

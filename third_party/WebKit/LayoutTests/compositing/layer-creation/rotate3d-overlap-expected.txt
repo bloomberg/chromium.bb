@@ -12,22 +12,34 @@
       "children": [
         {
           "name": "LayoutBlockFlow (relative positioned) DIV class='box translateZ'",
-          "position": [25, 25],
-          "bounds": [106, 106],
+          "position": [23, 23],
+          "bounds": [110, 110],
           "drawsContent": true,
           "backgroundColor": "#0000FF"
         },
         {
-          "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate15'",
-          "position": [169, 25],
-          "bounds": [106, 106],
-          "drawsContent": true,
-          "backgroundColor": "#0000FF",
-          "transform": [
-            [0.965925826289068, 0.258819045102521, 0, 0],
-            [-0.258819045102521, 0.965925826289068, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
+          "name": "Squashing Containment Layer",
+          "shouldFlattenTransform": false,
+          "children": [
+            {
+              "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate15'",
+              "position": [167, 23],
+              "bounds": [110, 110],
+              "drawsContent": true,
+              "backgroundColor": "#0000FF",
+              "transform": [
+                [0.965925826289068, 0.258819045102521, 0, 0],
+                [-0.258819045102521, 0.965925826289068, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1]
+              ]
+            },
+            {
+              "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
+              "position": [167, 143],
+              "bounds": [110, 110],
+              "drawsContent": true
+            }
           ]
         },
         {
@@ -36,8 +48,8 @@
           "children": [
             {
               "name": "LayoutBlockFlow (relative positioned) DIV class='composited box rotate45'",
-              "position": [313, 25],
-              "bounds": [106, 106],
+              "position": [311, 23],
+              "bounds": [110, 110],
               "drawsContent": true,
               "backgroundColor": "#0000FF",
               "transform": [
@@ -49,8 +61,8 @@
             },
             {
               "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (relative positioned) DIV class='box')",
-              "position": [313, 145],
-              "bounds": [106, 106],
+              "position": [311, 143],
+              "bounds": [110, 110],
               "drawsContent": true
             }
           ]
