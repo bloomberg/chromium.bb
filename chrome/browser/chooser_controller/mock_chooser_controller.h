@@ -58,6 +58,8 @@ class MockChooserController : public ChooserController {
   static const int kSignalStrengthLevel2Bar;
   static const int kSignalStrengthLevel3Bar;
   static const int kSignalStrengthLevel4Bar;
+  static const int kImageColorUnselected;
+  static const int kImageColorSelected;
 
  private:
   void ClearAllOptions();
