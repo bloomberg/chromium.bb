@@ -67,52 +67,10 @@ jinja_template("chrome_sync_shell_android_manifest") {
 }
 
 locale_pak_resources("chrome_locale_paks") {
-  sources = [
-    "$root_out_dir/locales/am.pak",
-    "$root_out_dir/locales/ar.pak",
-    "$root_out_dir/locales/bg.pak",
-    "$root_out_dir/locales/ca.pak",
-    "$root_out_dir/locales/cs.pak",
-    "$root_out_dir/locales/da.pak",
-    "$root_out_dir/locales/de.pak",
-    "$root_out_dir/locales/el.pak",
-    "$root_out_dir/locales/en-GB.pak",
-    "$root_out_dir/locales/en-US.pak",
-    "$root_out_dir/locales/es-419.pak",
-    "$root_out_dir/locales/es.pak",
-    "$root_out_dir/locales/fa.pak",
-    "$root_out_dir/locales/fi.pak",
-    "$root_out_dir/locales/fil.pak",
-    "$root_out_dir/locales/fr.pak",
-    "$root_out_dir/locales/he.pak",
-    "$root_out_dir/locales/hi.pak",
-    "$root_out_dir/locales/hr.pak",
-    "$root_out_dir/locales/hu.pak",
-    "$root_out_dir/locales/id.pak",
-    "$root_out_dir/locales/it.pak",
-    "$root_out_dir/locales/ja.pak",
-    "$root_out_dir/locales/ko.pak",
-    "$root_out_dir/locales/lt.pak",
-    "$root_out_dir/locales/lv.pak",
-    "$root_out_dir/locales/nb.pak",
-    "$root_out_dir/locales/nl.pak",
-    "$root_out_dir/locales/pl.pak",
-    "$root_out_dir/locales/pt-BR.pak",
-    "$root_out_dir/locales/pt-PT.pak",
-    "$root_out_dir/locales/ro.pak",
-    "$root_out_dir/locales/ru.pak",
-    "$root_out_dir/locales/sk.pak",
-    "$root_out_dir/locales/sl.pak",
-    "$root_out_dir/locales/sr.pak",
-    "$root_out_dir/locales/sv.pak",
-    "$root_out_dir/locales/sw.pak",
-    "$root_out_dir/locales/th.pak",
-    "$root_out_dir/locales/tr.pak",
-    "$root_out_dir/locales/uk.pak",
-    "$root_out_dir/locales/vi.pak",
-    "$root_out_dir/locales/zh-CN.pak",
-    "$root_out_dir/locales/zh-TW.pak",
-  ]
+  sources = []
+  foreach(_locale, locales - android_chrome_omitted_locales) {
+    sources += [ "$root_out_dir/locales/$_locale.pak" ]
+  }
 
   deps = [
     "//chrome:packed_resources",
