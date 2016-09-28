@@ -229,7 +229,13 @@ ios_framework_bundle("ochamcrest") {
     "UIKit.framework",
   ]
 
-  configs += [ "//build/config/compiler:enable_arc" ]
-  configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-  configs += [ "//build/config/gcc:symbol_visibility_default" ]
+  configs -= [
+    "//build/config/compiler:chromium_code",
+    "//build/config/gcc:symbol_visibility_hidden",
+  ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/compiler:no_chromium_code",
+    "//build/config/gcc:symbol_visibility_default",
+  ]
 }

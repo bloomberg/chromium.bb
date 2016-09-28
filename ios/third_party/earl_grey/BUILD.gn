@@ -254,8 +254,12 @@ ios_framework_bundle("earl_grey") {
 
   public_configs = [ ":config" ]
 
-  configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+  configs -= [
+    "//build/config/gcc:symbol_visibility_hidden",
+    "//build/config/compiler:chromium_code",
+  ]
   configs += [
+    "//build/config/compiler:no_chromium_code",
     "//build/config/compiler:enable_arc",
     "//build/config/gcc:symbol_visibility_default",
   ]
