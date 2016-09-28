@@ -18,17 +18,6 @@
 // Returns singleton instance.
 + (DeferredInitializationRunner*)sharedInstance;
 
-// Deprecated, use |enqueueBlockNamed:block:| instead.
-// Schedules |block| to be run after |delaySeconds| on the current queue.
-// This |block| is stored as |name| so code can force this initialization to
-// be run synchronously if necessary. This method may be called more than
-// once with the same |name| parameter. Any block with the same |name|
-// cancels a previously scheduled block of the same |name| if the block has
-// not been run yet.
-- (void)runBlockNamed:(NSString*)name
-                after:(NSTimeInterval)delaySeconds
-                block:(ProceduralBlock)block;
-
 // Stores |block| under |name| to a queue of blocks to run. All blocks are run
 // sequentially with a small delay before the first block and between each
 // successive block. If a block is already registered under |name|, it is

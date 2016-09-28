@@ -26,10 +26,6 @@
 - (instancetype)initWithName:(NSString*)name
                        block:(ProceduralBlock)block NS_DESIGNATED_INITIALIZER;
 
-// Dispatches the deferred execution the block after |delaySeconds|.
-// Deprecated.
-- (void)dispatch:(NSTimeInterval)delaySeconds;
-
 // Executes the deferred block now.
 - (void)run;
 
@@ -44,15 +40,6 @@
 - (instancetype)init {
   NOTREACHED();
   return nil;
-}
-
-- (void)dispatch:(NSTimeInterval)delaySeconds {
-  int64_t nanoseconds = delaySeconds * NSEC_PER_SEC;
-  DCHECK([NSThread isMainThread]);
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, nanoseconds),
-                 dispatch_get_main_queue(), ^() {
-                   [self run];
-                 });
 }
 
 - (instancetype)initWithName:(NSString*)name block:(ProceduralBlock)block {
@@ -112,7 +99,7 @@
   return instance;
 }
 
-- (id)init {
+- (instancetype)init {
   self = [super init];
   if (self) {
     _blocksNameQueue.reset([[NSMutableArray array] retain]);
@@ -161,22 +148,6 @@
 
   _isBlockScheduled = YES;
   [_blocksNameQueue removeObjectAtIndex:0];
-}
-
-- (void)runBlockNamed:(NSString*)name
-                after:(NSTimeInterval)delaySeconds
-                block:(ProceduralBlock)block {
-  DCHECK(name);
-  // Safety check in case this function is called with a nanosecond or
-  // microsecond parameter by mistake.
-  DCHECK(delaySeconds < 3600.0);
-  // Cancels the previously scheduled block, if there is one, so this
-  // |name| block will not be run more than once.
-  [[_runBlocks objectForKey:name] cancel];
-  base::scoped_nsobject<DeferredInitializationBlock> deferredBlock(
-      [[DeferredInitializationBlock alloc] initWithName:name block:block]);
-  [_runBlocks setObject:deferredBlock forKey:name];
-  [deferredBlock dispatch:delaySeconds];
 }
 
 - (void)runBlockIfNecessary:(NSString*)name {
