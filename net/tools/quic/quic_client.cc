@@ -70,7 +70,6 @@ QuicClient::QuicClient(IPEndPoint server_address,
           new QuicEpollAlarmFactory(epoll_server),
           std::move(proof_verifier)),
       epoll_server_(epoll_server),
-      initialized_(false),
       packets_dropped_(0),
       overflow_supported_(false),
       packet_reader_(new QuicPacketReader()) {
@@ -87,39 +86,9 @@ QuicClient::~QuicClient() {
   CleanUpAllUDPSockets();
 }
 
-bool QuicClient::Initialize() {
-  QuicClientBase::Initialize();
-
-  set_num_sent_client_hellos(0);
-  set_num_stateless_rejects_received(0);
-  set_connection_error(QUIC_NO_ERROR);
-
-  // If an initial flow control window has not explicitly been set, then use the
-  // same values that Chrome uses.
-  const uint32_t kSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
-  const uint32_t kStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
-  if (config()->GetInitialStreamFlowControlWindowToSend() ==
-      kMinimumFlowControlSendWindow) {
-    config()->SetInitialStreamFlowControlWindowToSend(kStreamMaxRecvWindowSize);
-  }
-  if (config()->GetInitialSessionFlowControlWindowToSend() ==
-      kMinimumFlowControlSendWindow) {
-    config()->SetInitialSessionFlowControlWindowToSend(
-        kSessionMaxRecvWindowSize);
-  }
-
+bool QuicClient::CreateUDPSocketAndBind() {
   epoll_server_->set_timeout_in_us(50 * 1000);
 
-  if (!CreateUDPSocketAndBind()) {
-    return false;
-  }
-
-  epoll_server_->RegisterFD(GetLatestFD(), this, kEpollFlags);
-  initialized_ = true;
-  return true;
-}
-
-bool QuicClient::CreateUDPSocketAndBind() {
   int fd =
       QuicSocketUtils::CreateUDPSocket(server_address(), &overflow_supported_);
   if (fd < 0) {
@@ -155,83 +124,8 @@ bool QuicClient::CreateUDPSocketAndBind() {
 
   fd_address_map_[fd] = client_address;
 
+  epoll_server_->RegisterFD(fd, this, kEpollFlags);
   return true;
-}
-
-bool QuicClient::Connect() {
-  // Attempt multiple connects until the maximum number of client hellos have
-  // been sent.
-  while (!connected() &&
-         GetNumSentClientHellos() <= QuicCryptoClientStream::kMaxClientHellos) {
-    StartConnect();
-    while (EncryptionBeingEstablished()) {
-      WaitForEvents();
-    }
-    if (FLAGS_enable_quic_stateless_reject_support && connected()) {
-      // Resend any previously queued data.
-      ResendSavedData();
-    }
-    if (session() != nullptr &&
-        session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-      // We've successfully created a session but we're not connected, and there
-      // is no stateless reject to recover from.  Give up trying.
-      break;
-    }
-  }
-  if (!connected() &&
-      GetNumSentClientHellos() > QuicCryptoClientStream::kMaxClientHellos &&
-      session() != nullptr &&
-      session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-    // The overall connection failed due too many stateless rejects.
-    set_connection_error(QUIC_CRYPTO_TOO_MANY_REJECTS);
-  }
-  return session()->connection()->connected();
-}
-
-void QuicClient::StartConnect() {
-  DCHECK(initialized_);
-  DCHECK(!connected());
-
-  QuicPacketWriter* writer = CreateQuicPacketWriter();
-
-  if (connected_or_attempting_connect()) {
-    // If the last error was not a stateless reject, then the queued up data
-    // does not need to be resent.
-    if (session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-      ClearDataToResend();
-    }
-    // Before we destroy the last session and create a new one, gather its stats
-    // and update the stats for the overall connection.
-    UpdateStats();
-  }
-
-  CreateQuicClientSession(new QuicConnection(
-      GetNextConnectionId(), server_address(), helper(), alarm_factory(),
-      writer,
-      /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
-
-  // Reset |writer()| after |session()| so that the old writer outlives the old
-  // session.
-  set_writer(writer);
-  session()->Initialize();
-  session()->CryptoConnect();
-  set_connected_or_attempting_connect(true);
-}
-
-void QuicClient::Disconnect() {
-  DCHECK(initialized_);
-
-  if (connected()) {
-    session()->connection()->CloseConnection(
-        QUIC_PEER_GOING_AWAY, "Client disconnecting",
-        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-  }
-
-  ClearDataToResend();
-
-  CleanUpAllUDPSockets();
-
-  initialized_ = false;
 }
 
 void QuicClient::CleanUpUDPSocket(int fd) {
@@ -251,52 +145,6 @@ void QuicClient::CleanUpUDPSocketImpl(int fd) {
     epoll_server_->UnregisterFD(fd);
     int rc = close(fd);
     DCHECK_EQ(0, rc);
-  }
-}
-
-void QuicClient::SendRequest(const SpdyHeaderBlock& headers,
-                             StringPiece body,
-                             bool fin) {
-  QuicClientPushPromiseIndex::TryHandle* handle;
-  QuicAsyncStatus rv = push_promise_index()->Try(headers, this, &handle);
-  if (rv == QUIC_SUCCESS)
-    return;
-
-  if (rv == QUIC_PENDING) {
-    // May need to retry request if asynchronous rendezvous fails.
-    AddPromiseDataToResend(headers, body, fin);
-    return;
-  }
-
-  QuicSpdyClientStream* stream = CreateReliableClientStream();
-  if (stream == nullptr) {
-    QUIC_BUG << "stream creation failed!";
-    return;
-  }
-  stream->SendRequest(headers.Clone(), body, fin);
-  // Record this in case we need to resend.
-  MaybeAddDataToResend(headers, body, fin);
-}
-
-void QuicClient::SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
-                                               StringPiece body,
-                                               bool fin) {
-  SendRequest(headers, body, fin);
-  while (WaitForEvents()) {
-  }
-}
-
-void QuicClient::SendRequestsAndWaitForResponse(
-    const vector<string>& url_list) {
-  for (size_t i = 0; i < url_list.size(); ++i) {
-    SpdyHeaderBlock headers;
-    if (!SpdyUtils::PopulateHeaderBlockFromUrl(url_list[i], &headers)) {
-      QUIC_BUG << "Unable to create request";
-      continue;
-    }
-    SendRequest(headers, "", true);
-  }
-  while (WaitForEvents()) {
   }
 }
 
@@ -330,7 +178,6 @@ bool QuicClient::MigrateSocket(const IPAddress& new_host) {
     return false;
   }
 
-  epoll_server_->RegisterFD(GetLatestFD(), this, kEpollFlags);
   session()->connection()->SetSelfAddress(GetLatestClientAddress());
 
   QuicPacketWriter* writer = CreateQuicPacketWriter();
@@ -384,7 +231,7 @@ int QuicClient::GetLatestFD() const {
 void QuicClient::ProcessPacket(const IPEndPoint& self_address,
                                const IPEndPoint& peer_address,
                                const QuicReceivedPacket& packet) {
-  session()->connection()->ProcessUdpPacket(self_address, peer_address, packet);
+  session()->ProcessUdpPacket(self_address, peer_address, packet);
 }
 
 }  // namespace net

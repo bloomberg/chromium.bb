@@ -90,10 +90,36 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   // initialization succeeds, false otherwise.
   virtual bool Initialize();
 
+  // "Connect" to the QUIC server, including performing synchronous crypto
+  // handshake.
+  bool Connect();
+
+  // Start the crypto handshake.  This can be done in place of the synchronous
+  // Connect(), but callers are responsible for making sure the crypto handshake
+  // completes.
+  void StartConnect();
+
+  // Disconnects from the QUIC server.
+  void Disconnect();
+
   // Returns true if the crypto handshake has yet to establish encryption.
   // Returns false if encryption is active (even if the server hasn't confirmed
   // the handshake) or if the connection has been closed.
   bool EncryptionBeingEstablished();
+
+  // Sends an HTTP request and does not wait for response before returning.
+  void SendRequest(const SpdyHeaderBlock& headers,
+                   base::StringPiece body,
+                   bool fin);
+
+  // Sends an HTTP request and waits for response before returning.
+  void SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
+                                     base::StringPiece body,
+                                     bool fin);
+
+  // Sends a request simple GET for each URL in |url_list|, and then waits for
+  // each to complete.
+  void SendRequestsAndWaitForResponse(const std::vector<std::string>& url_list);
 
   // Returns a newly created QuicSpdyClientStream, owned by the
   // QuicSimpleClient.
@@ -104,11 +130,6 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
 
   // Wait for events until the handshake is confirmed.
   void WaitForCryptoHandshakeConfirmed();
-
-  // Sends an HTTP request and does not wait for response before returning.
-  virtual void SendRequest(const SpdyHeaderBlock& headers,
-                           base::StringPiece body,
-                           bool fin) = 0;
 
   // Wait up to 50ms, and handle any events which occur.
   // Returns true if there are any outstanding requests.
@@ -261,6 +282,16 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   }
 
  protected:
+  // Creates a packet writer to be used for the next connection.
+  virtual QuicPacketWriter* CreateQuicPacketWriter() = 0;
+
+  // Used during initialization: creates the UDP socket FD, sets socket options,
+  // and binds the socket to our address.
+  virtual bool CreateUDPSocketAndBind() = 0;
+
+  // Unregister and close all open UDP sockets.
+  virtual void CleanUpAllUDPSockets() = 0;
+
   // Takes ownership of |connection|.
   virtual QuicClientSession* CreateQuicClientSession(
       QuicConnection* connection);
@@ -331,6 +362,9 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   // |server_id_| is a tuple (hostname, port, is_https) of the server.
   QuicServerId server_id_;
 
+  // Tracks if the client is initialized to connect.
+  bool initialized_;
+
   // Address of the server.
   IPEndPoint server_address_;
 
@@ -345,15 +379,17 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   QuicConfig config_;
   QuicCryptoClientConfig crypto_config_;
 
-  // Helper to be used by created connections. Needs to outlive |session_|.
+  // Helper to be used by created connections. Must outlive |session_|.
   std::unique_ptr<QuicConnectionHelperInterface> helper_;
 
-  // Helper to be used by created connections. Needs to outlive |session_|.
+  // Alarm factory to be used by created connections. Must outlive |session_|.
   std::unique_ptr<QuicAlarmFactory> alarm_factory_;
 
-  // Writer used to actually send packets to the wire. Needs to outlive
-  // |session_|.
+  // Writer used to actually send packets to the wire. Must outlive |session_|.
   std::unique_ptr<QuicPacketWriter> writer_;
+
+  // Index of pending promised streams. Must outlive |session_|.
+  QuicClientPushPromiseIndex push_promise_index_;
 
   // Session which manages streams.
   std::unique_ptr<QuicClientSession> session_;
@@ -389,8 +425,6 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   // connected_or_attempting_connect_ is false, the session object corresponds
   // to the previous client-level connection.
   bool connected_or_attempting_connect_;
-
-  QuicClientPushPromiseIndex push_promise_index_;
 
   // If true, store the latest response code, headers, and body.
   bool store_response_;

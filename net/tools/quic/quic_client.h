@@ -57,34 +57,7 @@ class QuicClient : public QuicClientBase,
   ~QuicClient() override;
 
   // From QuicClientBase
-  bool Initialize() override;
   bool WaitForEvents() override;
-
-  // "Connect" to the QUIC server, including performing synchronous crypto
-  // handshake.
-  bool Connect();
-
-  // Start the crypto handshake.  This can be done in place of the synchronous
-  // Connect(), but callers are responsible for making sure the crypto handshake
-  // completes.
-  void StartConnect();
-
-  // Disconnects from the QUIC server.
-  void Disconnect();
-
-  // Sends an HTTP request and does not wait for response before returning.
-  void SendRequest(const SpdyHeaderBlock& headers,
-                   base::StringPiece body,
-                   bool fin) override;
-
-  // Sends an HTTP request and waits for response before returning.
-  void SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
-                                     base::StringPiece body,
-                                     bool fin);
-
-  // Sends a request simple GET for each URL in |url_list|, and then waits for
-  // each to complete.
-  void SendRequestsAndWaitForResponse(const std::vector<std::string>& url_list);
 
   // Migrate to a new socket during an active connection.
   bool MigrateSocket(const IPAddress& new_host);
@@ -107,21 +80,20 @@ class QuicClient : public QuicClientBase,
   // Otherwise, return -1.
   int GetLatestFD() const;
 
- protected:
   // Implements ProcessPacketInterface. This will be called for each received
   // packet.
   void ProcessPacket(const IPEndPoint& self_address,
                      const IPEndPoint& peer_address,
                      const QuicReceivedPacket& packet) override;
 
-  virtual QuicPacketWriter* CreateQuicPacketWriter();
+ protected:
+  QuicPacketWriter* CreateQuicPacketWriter() override;
+  bool CreateUDPSocketAndBind() override;
+  void CleanUpAllUDPSockets() override;
 
   // If |fd| is an open UDP socket, unregister and close it. Otherwise, do
   // nothing.
   virtual void CleanUpUDPSocket(int fd);
-
-  // Unregister and close all open UDP sockets.
-  virtual void CleanUpAllUDPSockets();
 
   EpollServer* epoll_server() { return epoll_server_; }
 
@@ -131,10 +103,6 @@ class QuicClient : public QuicClientBase,
 
  private:
   friend class net::test::QuicClientPeer;
-
-  // Used during initialization: creates the UDP socket FD, sets socket options,
-  // and binds the socket to our address.
-  bool CreateUDPSocketAndBind();
 
   // Actually clean up |fd|.
   void CleanUpUDPSocketImpl(int fd);
@@ -146,9 +114,6 @@ class QuicClient : public QuicClientBase,
   // map, the order of socket creation can be recorded.
   linked_hash_map<int, IPEndPoint> fd_address_map_;
 
-  // Tracks if the client is initialized to connect.
-  bool initialized_;
-
   // If overflow_supported_ is true, this will be the number of packets dropped
   // during the lifetime of the server.
   QuicPacketCount packets_dropped_;
@@ -159,9 +124,6 @@ class QuicClient : public QuicClientBase,
 
   // Point to a QuicPacketReader object on the heap. The reader allocates more
   // space than allowed on the stack.
-  //
-  // TODO(rtenneti): Chromium code doesn't use |packet_reader_|. Add support for
-  // QuicPacketReader
   std::unique_ptr<QuicPacketReader> packet_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);

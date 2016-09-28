@@ -7,10 +7,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_server_id.h"
+#include "net/quic/core/spdy_utils.h"
 
 using base::StringPiece;
 using base::StringToInt;
 using std::string;
+using std::vector;
 
 namespace net {
 
@@ -34,6 +36,7 @@ QuicClientBase::QuicClientBase(const QuicServerId& server_id,
                                QuicAlarmFactory* alarm_factory,
                                std::unique_ptr<ProofVerifier> proof_verifier)
     : server_id_(server_id),
+      initialized_(false),
       local_port_(0),
       config_(config),
       crypto_config_(std::move(proof_verifier)),
@@ -69,6 +72,7 @@ void QuicClientBase::OnClose(QuicSpdyStream* stream) {
       LOG(ERROR) << "Invalid response headers";
     }
     latest_response_headers_ = response_headers.DebugString();
+    latest_response_header_block_ = response_headers.Clone();
     latest_response_body_ = client_stream->data();
     latest_response_trailers_ =
         client_stream->received_trailers().DebugString();
@@ -80,7 +84,103 @@ bool QuicClientBase::Initialize() {
   num_stateless_rejects_received_ = 0;
   connection_error_ = QUIC_NO_ERROR;
   connected_or_attempting_connect_ = false;
+
+  // If an initial flow control window has not explicitly been set, then use the
+  // same values that Chrome uses.
+  const uint32_t kSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
+  const uint32_t kStreamMaxRecvWindowSize = 6 * 1024 * 1024;    //  6 MB
+  if (config()->GetInitialStreamFlowControlWindowToSend() ==
+      kMinimumFlowControlSendWindow) {
+    config()->SetInitialStreamFlowControlWindowToSend(kStreamMaxRecvWindowSize);
+  }
+  if (config()->GetInitialSessionFlowControlWindowToSend() ==
+      kMinimumFlowControlSendWindow) {
+    config()->SetInitialSessionFlowControlWindowToSend(
+        kSessionMaxRecvWindowSize);
+  }
+
+  if (!CreateUDPSocketAndBind()) {
+    return false;
+  }
+
+  initialized_ = true;
   return true;
+}
+
+bool QuicClientBase::Connect() {
+  // Attempt multiple connects until the maximum number of client hellos have
+  // been sent.
+  while (!connected() &&
+         GetNumSentClientHellos() <= QuicCryptoClientStream::kMaxClientHellos) {
+    StartConnect();
+    while (EncryptionBeingEstablished()) {
+      WaitForEvents();
+    }
+    if (FLAGS_enable_quic_stateless_reject_support && connected()) {
+      // Resend any previously queued data.
+      ResendSavedData();
+    }
+    if (session() != nullptr &&
+        session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+      // We've successfully created a session but we're not connected, and there
+      // is no stateless reject to recover from.  Give up trying.
+      break;
+    }
+  }
+  if (!connected() &&
+      GetNumSentClientHellos() > QuicCryptoClientStream::kMaxClientHellos &&
+      session() != nullptr &&
+      session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+    // The overall connection failed due too many stateless rejects.
+    set_connection_error(QUIC_CRYPTO_TOO_MANY_REJECTS);
+  }
+  return session()->connection()->connected();
+}
+
+void QuicClientBase::StartConnect() {
+  DCHECK(initialized_);
+  DCHECK(!connected());
+
+  QuicPacketWriter* writer = CreateQuicPacketWriter();
+
+  if (connected_or_attempting_connect()) {
+    // If the last error was not a stateless reject, then the queued up data
+    // does not need to be resent.
+    if (session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
+      ClearDataToResend();
+    }
+    // Before we destroy the last session and create a new one, gather its stats
+    // and update the stats for the overall connection.
+    UpdateStats();
+  }
+
+  CreateQuicClientSession(new QuicConnection(
+      GetNextConnectionId(), server_address(), helper(), alarm_factory(),
+      writer,
+      /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
+
+  // Reset |writer()| after |session()| so that the old writer outlives the old
+  // session.
+  set_writer(writer);
+  session()->Initialize();
+  session()->CryptoConnect();
+  set_connected_or_attempting_connect(true);
+}
+
+void QuicClientBase::Disconnect() {
+  DCHECK(initialized_);
+
+  if (connected()) {
+    session()->connection()->CloseConnection(
+        QUIC_PEER_GOING_AWAY, "Client disconnecting",
+        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
+  }
+
+  ClearDataToResend();
+
+  CleanUpAllUDPSockets();
+
+  initialized_ = false;
 }
 
 ProofVerifier* QuicClientBase::proof_verifier() const {
@@ -100,6 +200,53 @@ QuicClientSession* QuicClientBase::CreateQuicClientSession(
 bool QuicClientBase::EncryptionBeingEstablished() {
   return !session_->IsEncryptionEstablished() &&
          session_->connection()->connected();
+}
+
+void QuicClientBase::SendRequest(const SpdyHeaderBlock& headers,
+                                 StringPiece body,
+                                 bool fin) {
+  QuicClientPushPromiseIndex::TryHandle* handle;
+  QuicAsyncStatus rv = push_promise_index()->Try(headers, this, &handle);
+  if (rv == QUIC_SUCCESS)
+    return;
+
+  if (rv == QUIC_PENDING) {
+    // May need to retry request if asynchronous rendezvous fails.
+    AddPromiseDataToResend(headers, body, fin);
+    return;
+  }
+
+  QuicSpdyClientStream* stream = CreateReliableClientStream();
+  if (stream == nullptr) {
+    QUIC_BUG << "stream creation failed!";
+    return;
+  }
+  stream->SendRequest(headers.Clone(), body, fin);
+  // Record this in case we need to resend.
+  MaybeAddDataToResend(headers, body, fin);
+}
+
+void QuicClientBase::SendRequestAndWaitForResponse(
+    const SpdyHeaderBlock& headers,
+    StringPiece body,
+    bool fin) {
+  SendRequest(headers, body, fin);
+  while (WaitForEvents()) {
+  }
+}
+
+void QuicClientBase::SendRequestsAndWaitForResponse(
+    const vector<string>& url_list) {
+  for (size_t i = 0; i < url_list.size(); ++i) {
+    SpdyHeaderBlock headers;
+    if (!SpdyUtils::PopulateHeaderBlockFromUrl(url_list[i], &headers)) {
+      QUIC_BUG << "Unable to create request";
+      continue;
+    }
+    SendRequest(headers, "", true);
+  }
+  while (WaitForEvents()) {
+  }
 }
 
 QuicSpdyClientStream* QuicClientBase::CreateReliableClientStream() {
@@ -173,7 +320,7 @@ QuicErrorCode QuicClientBase::connection_error() const {
   if (connection_error_ != QUIC_NO_ERROR) {
     return connection_error_;
   }
-  if (session_.get() == nullptr) {
+  if (session_ == nullptr) {
     return QUIC_NO_ERROR;
   }
   return session_->error();
@@ -236,12 +383,11 @@ void QuicClientBase::ClearDataToResend() {
 void QuicClientBase::ResendSavedData() {
   // Calling Resend will re-enqueue the data, so swap out
   //  data_to_resend_on_connect_ before iterating.
-  std::vector<std::unique_ptr<QuicDataToResend>> old_data;
+  vector<std::unique_ptr<QuicDataToResend>> old_data;
   old_data.swap(data_to_resend_on_connect_);
   for (const auto& data : old_data) {
     data->Resend();
   }
-  data_to_resend_on_connect_.clear();
 }
 
 void QuicClientBase::AddPromiseDataToResend(const SpdyHeaderBlock& headers,

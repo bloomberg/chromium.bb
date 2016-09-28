@@ -55,36 +55,7 @@ class QuicSimpleClient : public QuicClientBase,
   ~QuicSimpleClient() override;
 
   // From QuicClientBase
-  bool Initialize() override;
   bool WaitForEvents() override;
-  QuicConnectionId GenerateNewConnectionId() override;
-
-  // "Connect" to the QUIC server, including performing synchronous crypto
-  // handshake.
-  bool Connect();
-
-  // Start the crypto handshake.  This can be done in place of the synchronous
-  // Connect(), but callers are responsible for making sure the crypto handshake
-  // completes.
-  void StartConnect();
-
-  // Disconnects from the QUIC server.
-  void Disconnect();
-
-  // Sends an HTTP request and does not wait for response before returning.
-  void SendRequest(const SpdyHeaderBlock& headers,
-                   base::StringPiece body,
-                   bool fin) override;
-
-  // Sends an HTTP request and waits for response before returning.
-  void SendRequestAndWaitForResponse(const SpdyHeaderBlock& headers,
-                                     base::StringPiece body,
-                                     bool fin);
-
-  // Sends a request simple GET for each URL in |args|, and then waits for
-  // each to complete.
-  void SendRequestsAndWaitForResponse(
-      const base::CommandLine::StringVector& url_list);
 
   // Migrate to a new socket during an active connection.
   bool MigrateSocket(const IPAddress& new_host);
@@ -96,16 +67,15 @@ class QuicSimpleClient : public QuicClientBase,
                 IPEndPoint peer_address) override;
 
  protected:
-  virtual QuicChromiumAlarmFactory* CreateQuicAlarmFactory();
-  virtual QuicChromiumConnectionHelper* CreateQuicConnectionHelper();
-  virtual QuicPacketWriter* CreateQuicPacketWriter();
+  QuicPacketWriter* CreateQuicPacketWriter() override;
+  bool CreateUDPSocketAndBind() override;
+  void CleanUpAllUDPSockets() override;
 
  private:
   friend class net::test::QuicClientPeer;
 
-  // Used during initialization: creates the UDP socket FD, sets socket options,
-  // and binds the socket to our address.
-  bool CreateUDPSocket();
+  QuicChromiumAlarmFactory* CreateQuicAlarmFactory();
+  QuicChromiumConnectionHelper* CreateQuicConnectionHelper();
 
   // Read a UDP packet and hand it to the framer.
   bool ReadAndProcessPacket();
@@ -123,14 +93,6 @@ class QuicSimpleClient : public QuicClientBase,
 
   // Tracks if the client is initialized to connect.
   bool initialized_;
-
-  // If overflow_supported_ is true, this will be the number of packets dropped
-  // during the lifetime of the server.
-  QuicPacketCount packets_dropped_;
-
-  // True if the kernel supports SO_RXQ_OVFL, the number of packets dropped
-  // because the socket would otherwise overflow.
-  bool overflow_supported_;
 
   // The log used for the sockets.
   NetLog net_log_;

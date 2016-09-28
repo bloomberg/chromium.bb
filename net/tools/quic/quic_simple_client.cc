@@ -37,17 +37,11 @@ QuicSimpleClient::QuicSimpleClient(
     const QuicServerId& server_id,
     const QuicVersionVector& supported_versions,
     std::unique_ptr<ProofVerifier> proof_verifier)
-    : QuicClientBase(server_id,
-                     supported_versions,
-                     QuicConfig(),
-                     CreateQuicConnectionHelper(),
-                     CreateQuicAlarmFactory(),
-                     std::move(proof_verifier)),
-      initialized_(false),
-      packet_reader_started_(false),
-      weak_factory_(this) {
-  set_server_address(server_address);
-}
+    : QuicSimpleClient(server_address,
+                       server_id,
+                       supported_versions,
+                       QuicConfig(),
+                       std::move(proof_verifier)) {}
 
 QuicSimpleClient::QuicSimpleClient(
     IPEndPoint server_address,
@@ -75,20 +69,7 @@ QuicSimpleClient::~QuicSimpleClient() {
   }
 }
 
-bool QuicSimpleClient::Initialize() {
-  DCHECK(!initialized_);
-
-  QuicClientBase::Initialize();
-
-  if (!CreateUDPSocket()) {
-    return false;
-  }
-
-  initialized_ = true;
-  return true;
-}
-
-bool QuicSimpleClient::CreateUDPSocket() {
+bool QuicSimpleClient::CreateUDPSocketAndBind() {
   std::unique_ptr<UDPClientSocket> socket(
       new UDPClientSocket(DatagramSocket::DEFAULT_BIND, RandIntCallback(),
                           &net_log_, NetLog::Source()));
@@ -139,6 +120,13 @@ bool QuicSimpleClient::CreateUDPSocket() {
   return true;
 }
 
+void QuicSimpleClient::CleanUpAllUDPSockets() {
+  reset_writer();
+  packet_reader_.reset();
+  packet_reader_started_ = false;
+
+}
+
 void QuicSimpleClient::StartPacketReaderIfNotStarted() {
   if (!packet_reader_started_) {
     packet_reader_->StartReading();
@@ -146,134 +134,10 @@ void QuicSimpleClient::StartPacketReaderIfNotStarted() {
   }
 }
 
-bool QuicSimpleClient::Connect() {
-  // Attempt multiple connects until the maximum number of client hellos have
-  // been sent.
-  while (!connected() &&
-         GetNumSentClientHellos() <= QuicCryptoClientStream::kMaxClientHellos) {
-    StartConnect();
-    StartPacketReaderIfNotStarted();
-    while (EncryptionBeingEstablished()) {
-      WaitForEvents();
-    }
-    if (FLAGS_enable_quic_stateless_reject_support && connected()) {
-      // Resend any previously queued data.
-      ResendSavedData();
-    }
-    if (session() != nullptr &&
-        session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-      // We've successfully created a session but we're not connected, and there
-      // is no stateless reject to recover from.  Give up trying.
-      break;
-    }
-  }
-  if (!connected() &&
-      GetNumSentClientHellos() > QuicCryptoClientStream::kMaxClientHellos &&
-      session() != nullptr &&
-      session()->error() == QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-    // The overall connection failed due too many stateless rejects.
-    set_connection_error(QUIC_CRYPTO_TOO_MANY_REJECTS);
-  }
-  return session()->connection()->connected();
-}
-
-void QuicSimpleClient::StartConnect() {
-  DCHECK(initialized_);
-  DCHECK(!connected());
-
-  set_writer(CreateQuicPacketWriter());
-
-  if (connected_or_attempting_connect()) {
-    // If the last error was not a stateless reject, then the queued up data
-    // does not need to be resent.
-    if (session()->error() != QUIC_CRYPTO_HANDSHAKE_STATELESS_REJECT) {
-      ClearDataToResend();
-    }
-    // Before we destroy the last session and create a new one, gather its stats
-    // and update the stats for the overall connection.
-    UpdateStats();
-  }
-
-  CreateQuicClientSession(new QuicConnection(
-      GetNextConnectionId(), server_address(), helper(), alarm_factory(),
-      writer(),
-      /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
-
-  session()->Initialize();
-  session()->CryptoConnect();
-  set_connected_or_attempting_connect(true);
-}
-
-void QuicSimpleClient::Disconnect() {
-  DCHECK(initialized_);
-
-  if (connected()) {
-    session()->connection()->CloseConnection(
-        QUIC_PEER_GOING_AWAY, "Client disconnecting",
-        ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-  }
-  ClearDataToResend();
-
-  reset_writer();
-  packet_reader_.reset();
-  packet_reader_started_ = false;
-
-  initialized_ = false;
-}
-
-void QuicSimpleClient::SendRequest(const SpdyHeaderBlock& headers,
-                                   StringPiece body,
-                                   bool fin) {
-  QuicClientPushPromiseIndex::TryHandle* handle;
-  QuicAsyncStatus rv = push_promise_index()->Try(headers, this, &handle);
-  if (rv == QUIC_SUCCESS)
-    return;
-
-  if (rv == QUIC_PENDING) {
-    // May need to retry request if asynchronous rendezvous fails.
-    AddPromiseDataToResend(headers, body, fin);
-    return;
-  }
-
-  QuicSpdyClientStream* stream = CreateReliableClientStream();
-  if (stream == nullptr) {
-    QUIC_BUG << "stream creation failed!";
-    return;
-  }
-  stream->set_visitor(this);
-  stream->SendRequest(headers.Clone(), body, fin);
-  // Record this in case we need to resend.
-  MaybeAddDataToResend(headers, body, fin);
-}
-
-void QuicSimpleClient::SendRequestAndWaitForResponse(
-    const SpdyHeaderBlock& headers,
-    base::StringPiece body,
-    bool fin) {
-  SendRequest(headers, body, fin);
-  while (WaitForEvents()) {
-  }
-}
-
-void QuicSimpleClient::SendRequestsAndWaitForResponse(
-    const base::CommandLine::StringVector& url_list) {
-  for (size_t i = 0; i < url_list.size(); ++i) {
-    string url = GURL(url_list[i]).spec();
-    SpdyHeaderBlock headers;
-    if (!SpdyUtils::PopulateHeaderBlockFromUrl(url, &headers)) {
-      QUIC_BUG << "Unable to create request";
-      continue;
-    }
-    SendRequest(headers, "", true);
-  }
-
-  while (WaitForEvents()) {
-  }
-}
-
 bool QuicSimpleClient::WaitForEvents() {
   DCHECK(connected());
 
+  StartPacketReaderIfNotStarted();
   base::RunLoop().RunUntilIdle();
 
   DCHECK(session() != nullptr);
@@ -294,7 +158,7 @@ bool QuicSimpleClient::MigrateSocket(const IPAddress& new_host) {
   }
 
   set_bind_to_address(new_host);
-  if (!CreateUDPSocket()) {
+  if (!CreateUDPSocketAndBind()) {
     return false;
   }
 
@@ -305,10 +169,6 @@ bool QuicSimpleClient::MigrateSocket(const IPAddress& new_host) {
   session()->connection()->SetQuicPacketWriter(writer, false);
 
   return true;
-}
-
-QuicConnectionId QuicSimpleClient::GenerateNewConnectionId() {
-  return helper()->GetRandomGenerator()->RandUint64();
 }
 
 QuicChromiumConnectionHelper* QuicSimpleClient::CreateQuicConnectionHelper() {
