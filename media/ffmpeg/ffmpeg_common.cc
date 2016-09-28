@@ -653,16 +653,22 @@ VideoPixelFormat AVPixelFormatToVideoPixelFormat(AVPixelFormat pixel_format) {
       return PIXEL_FORMAT_YUV420P9;
     case AV_PIX_FMT_YUV420P10LE:
       return PIXEL_FORMAT_YUV420P10;
+    case AV_PIX_FMT_YUV420P12LE:
+      return PIXEL_FORMAT_YUV420P12;
 
     case AV_PIX_FMT_YUV422P9LE:
       return PIXEL_FORMAT_YUV422P9;
     case AV_PIX_FMT_YUV422P10LE:
       return PIXEL_FORMAT_YUV422P10;
+    case AV_PIX_FMT_YUV422P12LE:
+      return PIXEL_FORMAT_YUV422P12;
 
     case AV_PIX_FMT_YUV444P9LE:
       return PIXEL_FORMAT_YUV444P9;
     case AV_PIX_FMT_YUV444P10LE:
       return PIXEL_FORMAT_YUV444P10;
+    case AV_PIX_FMT_YUV444P12LE:
+      return PIXEL_FORMAT_YUV444P12;
 
     default:
       DVLOG(1) << "Unsupported AVPixelFormat: " << pixel_format;
@@ -684,14 +690,20 @@ AVPixelFormat VideoPixelFormatToAVPixelFormat(VideoPixelFormat video_format) {
       return AV_PIX_FMT_YUV420P9LE;
     case PIXEL_FORMAT_YUV420P10:
       return AV_PIX_FMT_YUV420P10LE;
+    case PIXEL_FORMAT_YUV420P12:
+      return AV_PIX_FMT_YUV420P12LE;
     case PIXEL_FORMAT_YUV422P9:
       return AV_PIX_FMT_YUV422P9LE;
     case PIXEL_FORMAT_YUV422P10:
       return AV_PIX_FMT_YUV422P10LE;
+    case PIXEL_FORMAT_YUV422P12:
+      return AV_PIX_FMT_YUV422P12LE;
     case PIXEL_FORMAT_YUV444P9:
       return AV_PIX_FMT_YUV444P9LE;
     case PIXEL_FORMAT_YUV444P10:
       return AV_PIX_FMT_YUV444P10LE;
+    case PIXEL_FORMAT_YUV444P12:
+      return AV_PIX_FMT_YUV444P12LE;
 
     default:
       DVLOG(1) << "Unsupported Format: " << video_format;

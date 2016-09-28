@@ -1450,6 +1450,14 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackHi10PVP9) {
 
   ASSERT_TRUE(WaitUntilOnEnded());
 }
+
+TEST_F(PipelineIntegrationTest, BasicPlaybackHi12PVP9) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x180-hi12p-vp9.webm", kClockless));
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
 #endif
 
 #if defined(USE_PROPRIETARY_CODECS)

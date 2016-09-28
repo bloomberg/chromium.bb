@@ -451,19 +451,48 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
   VideoPixelFormat format;
   int shift = 1;
   switch (video_frame->format()) {
-    case PIXEL_FORMAT_YUV420P10:
-      shift = 2;
-    case PIXEL_FORMAT_YUV420P9:
+    case PIXEL_FORMAT_YUV420P12:
+      shift = 4;
       format = PIXEL_FORMAT_I420;
       break;
-    case PIXEL_FORMAT_YUV422P10:
+
+    case PIXEL_FORMAT_YUV420P10:
       shift = 2;
-    case PIXEL_FORMAT_YUV422P9:
+      format = PIXEL_FORMAT_I420;
+      break;
+
+    case PIXEL_FORMAT_YUV420P9:
+      shift = 1;
+      format = PIXEL_FORMAT_I420;
+      break;
+
+    case PIXEL_FORMAT_YUV422P12:
+      shift = 4;
       format = PIXEL_FORMAT_YV16;
       break;
+
+    case PIXEL_FORMAT_YUV422P10:
+      shift = 2;
+      format = PIXEL_FORMAT_YV16;
+      break;
+
+    case PIXEL_FORMAT_YUV422P9:
+      shift = 1;
+      format = PIXEL_FORMAT_YV16;
+      break;
+
+    case PIXEL_FORMAT_YUV444P12:
+      shift = 4;
+      format = PIXEL_FORMAT_YV24;
+      break;
+
     case PIXEL_FORMAT_YUV444P10:
       shift = 2;
+      format = PIXEL_FORMAT_YV24;
+      break;
+
     case PIXEL_FORMAT_YUV444P9:
+      shift = 1;
       format = PIXEL_FORMAT_YV24;
       break;
 
@@ -592,7 +621,10 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_YUV444P9:
     case PIXEL_FORMAT_YUV420P10:
     case PIXEL_FORMAT_YUV422P10:
-    case PIXEL_FORMAT_YUV444P10: {
+    case PIXEL_FORMAT_YUV444P10:
+    case PIXEL_FORMAT_YUV420P12:
+    case PIXEL_FORMAT_YUV422P12:
+    case PIXEL_FORMAT_YUV444P12: {
       scoped_refptr<VideoFrame> temporary_frame =
           DownShiftHighbitVideoFrame(video_frame);
       ConvertVideoFrameToRGBPixels(temporary_frame.get(), rgb_pixels,

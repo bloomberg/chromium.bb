@@ -185,6 +185,15 @@ ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
 ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
                    PIXEL_FORMAT_YUV444P10,
                    VideoFormat::YUV444P10);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
+                   PIXEL_FORMAT_YUV420P12,
+                   VideoFormat::YUV420P12);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
+                   PIXEL_FORMAT_YUV422P12,
+                   VideoFormat::YUV422P12);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
+                   PIXEL_FORMAT_YUV444P12,
+                   VideoFormat::YUV444P12);
 ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MAX, VideoFormat::FORMAT_MAX);
 
 // ColorSpace.

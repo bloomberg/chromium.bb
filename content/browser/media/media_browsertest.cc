@@ -133,6 +133,10 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentWebm) {
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthVP9) {
   PlayVideo("bear-320x180-hi10p-vp9.webm", GetParam());
 }
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear12DepthVP9) {
+  PlayVideo("bear-320x180-hi12p-vp9.webm", GetParam());
+}
 #endif
 
 #if defined(USE_PROPRIETARY_CODECS)

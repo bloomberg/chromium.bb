@@ -80,6 +80,15 @@ class CC_EXPORT VideoResourceUpdater
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
       scoped_refptr<media::VideoFrame> video_frame);
 
+  // Convert an array of short integers into an array of half-floats.
+  // |src| is an array of integers in range 0 .. 2^{bits_per_channel} - 1
+  // |num| is number of entries in input and output array.
+  // The numbers stored in |dst| will be half floats in range 0.0..1.0
+  static void MakeHalfFloats(const uint16_t* src,
+                             int bits_per_channel,
+                             size_t num,
+                             uint16_t* dst);
+
  private:
   class PlaneResource {
    public:

@@ -123,7 +123,10 @@ enum VideoFormat {
   YUV422P10,
   YUV444P9,
   YUV444P10,
-  FORMAT_MAX = YUV444P10,
+  YUV420P12,
+  YUV422P12,
+  YUV444P12,
+  FORMAT_MAX = YUV444P12,
 };
 
 // Kept in sync with media::ColorSpace via static_asserts.

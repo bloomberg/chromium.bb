@@ -84,6 +84,9 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
     case media::PIXEL_FORMAT_YUV420P10:
     case media::PIXEL_FORMAT_YUV422P10:
     case media::PIXEL_FORMAT_YUV444P10:
+    case media::PIXEL_FORMAT_YUV420P12:
+    case media::PIXEL_FORMAT_YUV422P12:
+    case media::PIXEL_FORMAT_YUV444P12:
     case media::PIXEL_FORMAT_UNKNOWN:
       break;
   }
@@ -289,6 +292,25 @@ static gfx::Size SoftwarePlaneDimension(media::VideoFrame* input_frame,
   return gfx::Size(plane_width, plane_height);
 }
 
+void VideoResourceUpdater::MakeHalfFloats(const uint16_t* src,
+                                          int bits_per_channel,
+                                          size_t num,
+                                          uint16_t* dst) {
+  // TODO(hubbe): Make AVX and neon versions of this code.
+
+  // This magic constant is 2^-112. Multiplying by this
+  // is the same as subtracting 112 from the exponent, which
+  // is the difference in exponent bias between 32-bit and
+  // 16-bit floats. Once we've done this subtraction, we can
+  // simply extract the low bits of the exponent and the high
+  // bits of the mantissa from our float and we're done.
+  float mult = 1.9259299444e-34f / ((1 << bits_per_channel) - 1);
+  for (size_t i = 0; i < num; i++) {
+    float value = src[i] * mult;
+    dst[i] = (*(uint32_t*)&value) >> 13;
+  }
+}
+
 VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     scoped_refptr<media::VideoFrame> video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForSoftwarePlanes");
@@ -326,6 +348,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     case media::PIXEL_FORMAT_YUV422P10:
     case media::PIXEL_FORMAT_YUV444P10:
       bits_per_channel = 10;
+      break;
+    case media::PIXEL_FORMAT_YUV420P12:
+    case media::PIXEL_FORMAT_YUV422P12:
+    case media::PIXEL_FORMAT_YUV444P12:
+      bits_per_channel = 12;
       break;
   }
 
@@ -482,9 +509,34 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       // LUMINANCE_F16 uses half-floats, so we always need a conversion step.
       if (plane_resource.resource_format() == LUMINANCE_F16) {
         needs_conversion = true;
-        // Note that the current method of converting integers to half-floats
-        // stops working if you have more than 10 bits of data.
-        DCHECK_LE(bits_per_channel, 10);
+
+        // If the input data was 9 or 10 bit, and we output to half-floats,
+        // then we used the OR path below, which means that we need to
+        // adjust the resource offset and multiplier accordingly. If the
+        // input data uses more than 10 bits, it will already be normalized
+        // to 0.0..1.0, so there is no need to do anything.
+        if (bits_per_channel <= 10) {
+          // By OR-ing with 0x3800, 10-bit numbers become half-floats in the
+          // range [0.5..1) and 9-bit numbers get the range [0.5..0.75).
+          //
+          // Half-floats are evaluated as:
+          // float value = pow(2.0, exponent - 25) * (0x400 + fraction);
+          //
+          // In our case the exponent is 14 (since we or with 0x3800) and
+          // pow(2.0, 14-25) * 0x400 evaluates to 0.5 (our offset) and
+          // pow(2.0, 14-25) * fraction is [0..0.49951171875] for 10-bit and
+          // [0..0.24951171875] for 9-bit.
+          //
+          // https://en.wikipedia.org/wiki/Half-precision_floating-point_format
+          //
+          // PLEASE NOTE:
+          // All planes are assumed to use the same multiplier/offset.
+          external_resources.offset = 0.5f;
+          // Max value from input data.
+          int max_input_value = (1 << bits_per_channel) - 1;
+          // 2 << 11 = 2048 would be 1.0 with our exponent.
+          external_resources.multiplier = 2048.0 / max_input_value;
+        }
       } else if (bits_per_channel > 8) {
         // If bits_per_channel > 8 and we can't use LUMINANCE_F16, we need to
         // shift the data down and create an 8-bit texture.
@@ -508,13 +560,17 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
                 &upload_pixels_[upload_image_stride * row]);
             const uint16_t* src = reinterpret_cast<uint16_t*>(
                 video_frame->data(i) + (video_stride_bytes * row));
-            // Micro-benchmarking indicates that the compiler does
-            // a good enough job of optimizing this loop that trying
-            // to manually operate on one uint64 at a time is not
-            // actually helpful.
-            // Note to future optimizers: Benchmark your optimizations!
-            for (size_t i = 0; i < bytes_per_row / 2; i++)
-              dst[i] = src[i] | 0x3800;
+            if (bits_per_channel <= 10) {
+              // Micro-benchmarking indicates that the compiler does
+              // a good enough job of optimizing this loop that trying
+              // to manually operate on one uint64 at a time is not
+              // actually helpful.
+              // Note to future optimizers: Benchmark your optimizations!
+              for (size_t i = 0; i < bytes_per_row / 2; i++)
+                dst[i] = src[i] | 0x3800;
+            } else {
+              MakeHalfFloats(src, bits_per_channel, bytes_per_row / 2, dst);
+            }
           } else if (shift != 0) {
             // We have more-than-8-bit input which we need to shift
             // down to fit it into an 8-bit texture.
@@ -540,28 +596,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       plane_resource.SetUniqueId(video_frame->unique_id(), i);
     }
 
-    if (plane_resource.resource_format() == LUMINANCE_F16) {
-      // By OR-ing with 0x3800, 10-bit numbers become half-floats in the
-      // range [0.5..1) and 9-bit numbers get the range [0.5..0.75).
-      //
-      // Half-floats are evaluated as:
-      // float value = pow(2.0, exponent - 25) * (0x400 + fraction);
-      //
-      // In our case the exponent is 14 (since we or with 0x3800) and
-      // pow(2.0, 14-25) * 0x400 evaluates to 0.5 (our offset) and
-      // pow(2.0, 14-25) * fraction is [0..0.49951171875] for 10-bit and
-      // [0..0.24951171875] for 9-bit.
-      //
-      // (https://en.wikipedia.org/wiki/Half-precision_floating-point_format)
-      //
-      // PLEASE NOTE: This doesn't work if bits_per_channel is > 10.
-      // PLEASE NOTE: All planes are assumed to use the same multiplier/offset.
-      external_resources.offset = 0.5f;
-      // Max value from input data.
-      int max_input_value = (1 << bits_per_channel) - 1;
-      // 2 << 11 = 2048 would be 1.0 with our exponent.
-      external_resources.multiplier = 2048.0 / max_input_value;
-    }
 
     // VideoResourceUpdater shares a context with the compositor so a
     // sync token is not required.
