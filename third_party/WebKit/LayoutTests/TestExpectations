@@ -1254,6 +1254,9 @@ crbug.com/629711 [ Linux Debug ] virtual/sharedarraybuffer/fast/workers/shared-w
 
 crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
 
+# Skip this test because it causes the next text to fail though the test itself passes.
+crbug.com/648785 paint/invalidation/fixed-right-bottom-in-page-scale.html [ Skip ]
+
 crbug.com/637245 [ Mac10.11 Retina ] fast/html/details-add-summary-5-and-click.html [ Pass Failure ]
 crbug.com/637245 [ Mac10.11 Retina ] fast/html/details-add-summary-8-and-click.html [ Pass Failure ]
 crbug.com/637245 [ Mac10.11 Retina ] fast/html/details-add-summary-1-and-click.html [ Pass Failure ]
