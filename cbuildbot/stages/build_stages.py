@@ -90,7 +90,7 @@ class CleanUpStage(generic_stages.BuilderStage):
 
   def _DeleteAutotestSitePackages(self):
     """Clears any previously downloaded site-packages."""
-    logging.info('Deteing autotest site packages.')
+    logging.info('Deleting autotest site packages.')
     site_packages_dir = os.path.join(self._build_root, 'src', 'third_party',
                                      'autotest', 'files', 'site-packages')
     # Note that these shouldn't be recreated but might be around from stale
