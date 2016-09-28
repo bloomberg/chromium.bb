@@ -1004,6 +1004,22 @@ component("ash_with_content") {
   ]
 }
 
+# Used to test ash with an aura backend.
+source_set("ash_with_aura_test_support") {
+  testonly = true
+  sources = [
+    "test/ash_test_impl_aura.cc",
+    "test/ash_test_impl_aura.h",
+  ]
+  deps = [
+    ":ash",
+    ":test_support_common",
+    "//base",
+    "//skia",
+    "//ui/display",
+  ]
+}
+
 # Internal target consumed by |test_support_with_content| and
 # |test_support_without_content|. This target contains all the test support
 # files, with the exception of an implementation of AshTestEnvironment.
@@ -1013,6 +1029,9 @@ static_library("test_support_common") {
   testonly = true
   visibility = [ ":*" ]
   sources = [
+    "common/test/ash_test.cc",
+    "common/test/ash_test.h",
+    "common/test/ash_test_impl.h",
     "common/test/material_design_controller_test_api.cc",
     "common/test/material_design_controller_test_api.h",
     "common/test/test_palette_delegate.cc",
@@ -1317,6 +1336,7 @@ test("ash_content_unittests") {
 
   deps = [
     ":ash",
+    ":ash_with_aura_test_support",
     ":ash_with_content",
     ":test_support_with_content",
     "//base",
@@ -1517,6 +1537,7 @@ test("ash_unittests") {
 
   deps = [
     ":ash",
+    ":ash_with_aura_test_support",
     ":test_support_without_content",
     "//ash/autoclick/common:autoclick",
     "//ash/common/strings",

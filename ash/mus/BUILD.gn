@@ -221,6 +221,8 @@ source_set("unittests") {
     "bridge/wm_window_mus_test_api.h",
     "layout_manager_unittest.cc",
     "root_window_controller_unittest.cc",
+    "test/ash_test_impl_mus.cc",
+    "test/ash_test_impl_mus.h",
     "test/wm_test_base.cc",
     "test/wm_test_base.h",
     "test/wm_test_helper.cc",

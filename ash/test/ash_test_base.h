@@ -46,6 +46,7 @@ class WidgetDelegate;
 }
 
 namespace ash {
+class AshTestImplAura;
 class DisplayManager;
 class SystemTray;
 class WmShelf;
@@ -168,6 +169,8 @@ class AshTestBase : public testing::Test {
   void DisableIME();
 
  private:
+  friend class ash::AshTestImplAura;
+
   bool setup_called_;
   bool teardown_called_;
   // |SetUp()| doesn't activate session if this is set to false.

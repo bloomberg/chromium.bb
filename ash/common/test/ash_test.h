@@ -1,0 +1,96 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ASH_COMMON_TEST_ASH_TEST_H_
+#define ASH_COMMON_TEST_ASH_TEST_H_
+
+#include <memory>
+#include <string>
+
+#include "ash/common/shell_window_ids.h"
+#include "base/macros.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/manager/display_layout.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/wm/public/window_types.h"
+
+namespace display {
+class Display;
+}
+
+namespace ash {
+
+class AshTestImpl;
+class WmWindow;
+
+// Wraps a WmWindow calling WmWindow::Destroy() from the destructor. WmWindow is
+// owned by the corresponding window implementation. The only way to delete
+// WmWindow is to call WmWindow::Destroy(), which deletes the corresponding
+// window, then the WmWindow. This class calls WmWindow::Destroy() from its
+// destructor.
+class WindowOwner {
+ public:
+  explicit WindowOwner(WmWindow* window);
+  ~WindowOwner();
+
+  WmWindow* window() { return window_; }
+
+ private:
+  WmWindow* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowOwner);
+};
+
+// Base class for ash tests. This class calls through to AshTestImpl for the
+// real implementation. This class exists so that tests can be written to
+// ash/common and run in both mus and aura.
+//
+// The implementation of AshTestImpl that is used depends upon gn targets. To
+// use the aura backend depend on "//ash:ash_with_aura_test_support." The mus
+// backend is not provided as a separate link target.
+class AshTest : public testing::Test {
+ public:
+  AshTest();
+  ~AshTest() override;
+
+  bool SupportsMultipleDisplays() const;
+
+  // Update the display configuration as given in |display_spec|.
+  // See test::DisplayManagerTestApi::UpdateDisplay for more details.
+  void UpdateDisplay(const std::string& display_spec);
+
+  // Creates a top level visible window in the appropriate container. If
+  // |bounds_in_screen| is empty the window is added to the primary root window,
+  // otherwise the window is added to the display matching |bounds_in_screen|.
+  // |shell_window_id| is the shell window id to give to the new window.
+  std::unique_ptr<WindowOwner> CreateTestWindow(
+      const gfx::Rect& bounds_in_screen = gfx::Rect(),
+      ui::wm::WindowType type = ui::wm::WINDOW_TYPE_NORMAL,
+      int shell_window_id = kShellWindowId_Invalid);
+
+  // Returns the Display for the secondary display. It's assumed there is two
+  // displays.
+  display::Display GetSecondaryDisplay();
+
+  // Sets the placement of the secondary display. Returns true if the secondary
+  // display can be moved, false otherwise. The false return value is temporary
+  // until mus fully supports this.
+  bool SetSecondaryDisplayPlacement(
+      display::DisplayPlacement::Position position,
+      int offset);
+
+ protected:
+  // testing::Test:
+  void SetUp() override;
+  void TearDown() override;
+
+ private:
+  std::unique_ptr<AshTestImpl> test_impl_;
+
+  DISALLOW_COPY_AND_ASSIGN(AshTest);
+};
+
+}  // namespace ash
+
+#endif  // ASH_COMMON_TEST_ASH_TEST_H_
