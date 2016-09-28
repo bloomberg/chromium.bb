@@ -320,6 +320,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   bool LockMouse() override;
   void UnlockMouse() override;
+  void OnSetNeedsFlushInput() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
 
@@ -500,6 +501,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Get the focused view that should be used for retrieving the text selection.
   RenderWidgetHostViewBase* GetFocusedViewForTextSelection();
 
+  // Adds/Removes frame observer based on state.
+  void UpdateNeedsBeginFramesInternal();
+
   // The associated view. This is weak and is inserted into the view hierarchy
   // to own this RenderWidgetHostViewMac object. Set to nil at the start of the
   // destructor.
@@ -544,6 +548,12 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The current composition character range and its bounds.
   gfx::Range composition_range_;
   std::vector<gfx::Rect> composition_bounds_;
+
+  // Whether a request for begin frames has been issued.
+  bool needs_begin_frames_;
+
+  // Whether a request to flush input has been issued.
+  bool needs_flush_input_;
 
   // Factory used to safely scope delayed calls to ShutdownHost().
   base::WeakPtrFactory<RenderWidgetHostViewMac> weak_factory_;
