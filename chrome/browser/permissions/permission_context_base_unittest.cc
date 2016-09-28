@@ -4,10 +4,12 @@
 
 #include "chrome/browser/permissions/permission_context_base.h"
 
+#include <map>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -36,18 +38,16 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
-#include "chrome/browser/permissions/permission_queue_controller.h"
-#else
+#if !defined(OS_ANDROID)
 #include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
-const char* kPermissionsKillSwitchFieldStudy =
+const char* const kPermissionsKillSwitchFieldStudy =
     PermissionContextBase::kPermissionsKillSwitchFieldStudy;
-const char* kPermissionsKillSwitchBlockedValue =
+const char* const kPermissionsKillSwitchBlockedValue =
     PermissionContextBase::kPermissionsKillSwitchBlockedValue;
 const char kPermissionsKillSwitchTestGroup[] = "TestGroup";
-const char* kPromptGroupName = kPermissionsKillSwitchTestGroup;
+const char* const kPromptGroupName = kPermissionsKillSwitchTestGroup;
 const char kPromptTrialName[] = "PermissionPromptsUX";
 
 class TestPermissionContext : public PermissionContextBase {
@@ -66,11 +66,9 @@ class TestPermissionContext : public PermissionContextBase {
   }
 #endif
 
-  const std::vector<ContentSetting>& decisions() { return decisions_; }
+  const std::vector<ContentSetting>& decisions() const { return decisions_; }
 
-  bool tab_context_updated() {
-    return tab_context_updated_;
-  }
+  bool tab_context_updated() const { return tab_context_updated_; }
 
   void TrackPermissionDecision(ContentSetting content_setting) {
     decisions_.push_back(content_setting);
@@ -78,9 +76,9 @@ class TestPermissionContext : public PermissionContextBase {
 
   ContentSetting GetContentSettingFromMap(const GURL& url_a,
                                           const GURL& url_b) {
-    return HostContentSettingsMapFactory::GetForProfile(profile())
-        ->GetContentSetting(url_a.GetOrigin(), url_b.GetOrigin(),
-                            content_settings_type(), std::string());
+    auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+    return map->GetContentSetting(url_a.GetOrigin(), url_b.GetOrigin(),
+                                  content_settings_type(), std::string());
   }
 
  protected:
@@ -97,6 +95,8 @@ class TestPermissionContext : public PermissionContextBase {
  private:
   std::vector<ContentSetting> decisions_;
   bool tab_context_updated_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPermissionContext);
 };
 
 class TestKillSwitchPermissionContext : public TestPermissionContext {
@@ -106,26 +106,28 @@ class TestKillSwitchPermissionContext : public TestPermissionContext {
       const content::PermissionType permission_type,
       const ContentSettingsType content_settings_type)
       : TestPermissionContext(profile, permission_type, content_settings_type),
-        field_trial_list_(
-            new base::FieldTrialList(
-                base::MakeUnique<base::MockEntropyProvider>())) {}
+        field_trial_list_(base::MakeUnique<base::FieldTrialList>(
+            base::MakeUnique<base::MockEntropyProvider>())) {}
 
   void ResetFieldTrialList() {
     // Destroy the existing FieldTrialList before creating a new one to avoid
     // a DCHECK.
     field_trial_list_.reset();
-    field_trial_list_.reset(new base::FieldTrialList(
-        base::MakeUnique<base::MockEntropyProvider>()));
+    field_trial_list_ = base::MakeUnique<base::FieldTrialList>(
+        base::MakeUnique<base::MockEntropyProvider>());
     variations::testing::ClearAllVariationParams();
   }
 
  private:
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestKillSwitchPermissionContext);
 };
 
 class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
  protected:
   PermissionContextBaseTests() {}
+  ~PermissionContextBaseTests() override {}
 
   // Accept or dismiss the permission bubble or infobar.
   void RespondToPermission(TestPermissionContext* context,
@@ -185,11 +187,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                    base::Unretained(&permission_context)));
 
     RespondToPermission(&permission_context, id, url, persist, decision);
-    EXPECT_EQ(1u, permission_context.decisions().size());
+    ASSERT_EQ(1u, permission_context.decisions().size());
     EXPECT_EQ(decision, permission_context.decisions()[0]);
     EXPECT_TRUE(permission_context.tab_context_updated());
 
-    std::string decision_string = "";
+    std::string decision_string;
     if (decision == CONTENT_SETTING_ALLOW)
       decision_string = "Accepted";
     else if (decision == CONTENT_SETTING_BLOCK)
@@ -251,7 +253,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
               PermissionUtil::GetPermissionString(permission_type),
           i, 1);
 
-      EXPECT_EQ(1u, permission_context.decisions().size());
+      ASSERT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(expected, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
       EXPECT_EQ(expected,
@@ -291,7 +293,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           i + 1);
       histograms.ExpectBucketCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation", i, 1);
-      EXPECT_EQ(1u, permission_context.decisions().size());
+      ASSERT_EQ(1u, permission_context.decisions().size());
       EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
       EXPECT_EQ(CONTENT_SETTING_ASK,
@@ -300,9 +302,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     // Flush the dismissal counts. Enable the block on too many dismissals
     // feature, which is disabled by default.
-    HostContentSettingsMapFactory::GetForProfile(profile())
-        ->ClearSettingsForOneType(
-            CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT);
+    auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+    map->ClearSettingsForOneType(
+        CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT);
 
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kBlockPromptsIfDismissedOften);
@@ -325,7 +327,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     base::HistogramTester histograms;
 
     // Set up the custom parameter and custom value.
-    base::FieldTrialList field_trials_(nullptr);
+    base::FieldTrialList field_trials(nullptr);
     base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
         kPromptTrialName, kPromptGroupName);
     std::map<std::string, std::string> params;
@@ -333,20 +335,25 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     ASSERT_TRUE(variations::AssociateVariationParams(
         kPromptTrialName, kPromptGroupName, params));
 
-    base::FeatureList::ClearInstanceForTesting();
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    std::unique_ptr<base::FeatureList> feature_list =
+        base::MakeUnique<base::FeatureList>();
     feature_list->RegisterFieldTrialOverride(
         features::kBlockPromptsIfDismissedOften.name,
         base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
-    base::FeatureList::SetInstance(std::move(feature_list));
+
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+
     EXPECT_EQ(base::FeatureList::GetFieldTrial(
                   features::kBlockPromptsIfDismissedOften),
               trial);
 
-    std::map<std::string, std::string> actualParams;
-    EXPECT_TRUE(variations::GetVariationParamsByFeature(
-        features::kBlockPromptsIfDismissedOften, &actualParams));
-    EXPECT_EQ(params, actualParams);
+    {
+      std::map<std::string, std::string> actual_params;
+      EXPECT_TRUE(variations::GetVariationParamsByFeature(
+          features::kBlockPromptsIfDismissedOften, &actual_params));
+      EXPECT_EQ(params, actual_params);
+    }
 
     for (uint32_t i = 0; i < 5; ++i) {
       TestPermissionContext permission_context(
@@ -366,7 +373,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
       RespondToPermission(&permission_context, id, url, false, /* persist */
                           CONTENT_SETTING_ASK);
       EXPECT_EQ(1u, permission_context.decisions().size());
-      EXPECT_EQ(expected, permission_context.decisions()[0]);
+      ASSERT_EQ(expected, permission_context.decisions()[0]);
       EXPECT_TRUE(permission_context.tab_context_updated());
       EXPECT_EQ(expected,
                 permission_context.GetContentSettingFromMap(url, url));
@@ -383,7 +390,6 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
     EXPECT_EQ(CONTENT_SETTING_BLOCK,
               permission_context.GetContentSettingFromMap(url, url));
-    base::FeatureList::ClearInstanceForTesting();
     variations::testing::ClearAllVariationParams();
   }
 
@@ -406,7 +412,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
         base::Bind(&TestPermissionContext::TrackPermissionDecision,
                    base::Unretained(&permission_context)));
 
-    EXPECT_EQ(1u, permission_context.decisions().size());
+    ASSERT_EQ(1u, permission_context.decisions().size());
     EXPECT_EQ(CONTENT_SETTING_BLOCK, permission_context.decisions()[0]);
     EXPECT_TRUE(permission_context.tab_context_updated());
     EXPECT_EQ(CONTENT_SETTING_ASK,
@@ -433,7 +439,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     RespondToPermission(&permission_context, id, url, true, /* persist */
                         CONTENT_SETTING_ALLOW);
-    EXPECT_EQ(1u, permission_context.decisions().size());
+    ASSERT_EQ(1u, permission_context.decisions().size());
     EXPECT_EQ(CONTENT_SETTING_ALLOW, permission_context.decisions()[0]);
     EXPECT_TRUE(permission_context.tab_context_updated());
     EXPECT_EQ(CONTENT_SETTING_ALLOW,
@@ -499,7 +505,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                     response == CONTENT_SETTING_BLOCK);
     RespondToPermission(&permission_context, id0, url, persist, response);
 
-    EXPECT_EQ(2u, permission_context.decisions().size());
+    ASSERT_EQ(2u, permission_context.decisions().size());
     EXPECT_EQ(response, permission_context.decisions()[0]);
     EXPECT_EQ(response, permission_context.decisions()[1]);
     EXPECT_TRUE(permission_context.tab_context_updated());
