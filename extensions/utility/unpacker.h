@@ -35,15 +35,7 @@ class Unpacker {
   ~Unpacker();
 
   // Returns true if the given base::FilePath should be unzipped.
-  static bool ShouldExtractFile(bool is_theme, const base::FilePath& file_path);
-
-  // Returns true for manifest.json only.
-  static bool IsManifestFile(const base::FilePath& file_path);
-
-  // Parse the manifest.json file inside the extension (not in the header).
-  static std::unique_ptr<base::DictionaryValue> ReadManifest(
-      const base::FilePath& extension_dir,
-      std::string* error);
+  static bool ShouldExtractFile(const base::FilePath& file_path);
 
   // Runs the processing steps for the extension. On success, this returns true
   // and the decoded images will be in a file at
@@ -65,6 +57,9 @@ class Unpacker {
   // instead of sending them over IPC, since they are so large.  Returns true on
   // success.
   bool DumpMessageCatalogsToFile();
+
+  // Parse the manifest.json file inside the extension (not in the header).
+  std::unique_ptr<base::DictionaryValue> ReadManifest();
 
   // Parse all _locales/*/messages.json files inside the extension.
   bool ReadAllMessageCatalogs(const std::string& default_locale);
