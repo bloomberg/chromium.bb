@@ -62,7 +62,6 @@ source_set("browser") {
     "//device/generic_sensor",
     "//device/geolocation",
     "//device/geolocation/public/interfaces",
-    "//device/nfc:mojo_bindings",
     "//device/power_save_blocker",
     "//device/time_zone_monitor",
     "//device/vibration",

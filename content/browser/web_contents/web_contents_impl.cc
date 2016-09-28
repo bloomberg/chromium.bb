@@ -119,7 +119,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "device/geolocation/geolocation_service_context.h"
-#include "device/nfc/nfc.mojom.h"
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
@@ -4090,10 +4089,6 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
     render_frame_host->Send(
         new FrameMsg_EnableViewSourceMode(render_frame_host->GetRoutingID()));
   }
-#if defined(OS_ANDROID)
-  render_frame_host->GetInterfaceRegistry()->AddInterface(
-      GetJavaInterfaces()->CreateInterfaceFactory<device::nfc::mojom::NFC>());
-#endif
 }
 
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {

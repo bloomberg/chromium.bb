@@ -2,6 +2,5 @@ include_rules = [
   "+chromeos",
   "+components/device_event_log",
   "+mojo/public",
-  "+services/shell/public",
   "+third_party/ocmock",
 ]

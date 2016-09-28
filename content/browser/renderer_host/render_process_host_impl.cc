@@ -196,7 +196,6 @@
 #include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/mojo/interface_registrar_android.h"
 #include "content/browser/screen_orientation/screen_orientation_message_filter_android.h"
-#include "content/public/browser/android/java_interfaces.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/audio/android/audio_manager_android.h"
 #endif
@@ -1230,11 +1229,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       base::Bind(&RenderProcessHostImpl::OnRouteProviderRequest,
                  base::Unretained(this)));
 
-#if defined(OS_ANDROID)
-  AddUIThreadInterface(registry.get(),
-                       GetGlobalJavaInterfaces()
-                           ->CreateInterfaceFactory<device::BatteryMonitor>());
-#else
+#if !defined(OS_ANDROID)
   AddUIThreadInterface(
       registry.get(), base::Bind(&device::BatteryMonitorImpl::Create));
 #endif

@@ -13,7 +13,6 @@ import android.util.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.device.VibrationManager;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.services.shell.InterfaceFactory;
 
 /**
  * Android implementation of the vibration manager service defined in
@@ -91,20 +90,5 @@ public class VibrationManagerImpl implements VibrationManager {
     public void cancel(CancelResponse callback) {
         if (mHasVibratePermission) sVibratorWrapper.cancel(mVibrator);
         callback.call();
-    }
-
-    /**
-     * A factory for implementations of the VibrationManager interface.
-     */
-    public static class Factory implements InterfaceFactory<VibrationManager> {
-        private Context mContext;
-        public Factory(Context context) {
-            mContext = context;
-        }
-
-        @Override
-        public VibrationManager createImpl() {
-            return new VibrationManagerImpl(mContext);
-        }
     }
 }
