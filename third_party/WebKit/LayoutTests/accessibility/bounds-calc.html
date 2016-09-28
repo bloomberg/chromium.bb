@@ -51,6 +51,7 @@ interface.
     <svg id="svg" width="60" height="60">
       <circle role="button" id="svg_circle" r="25" cx="30" cy="30" stroke="blue" stroke-width="1"/>
     </svg>
+    <p id="twolines">First line<br>Second line</p>
 </div>
 
 <script>
@@ -71,22 +72,23 @@ function assertDOMRectSameAsAXRect(id) {
     assert_approx_equals(axObject.boundsHeight, bounds.height, epsilon, id + " height");
 }
 
-function assertStaticTextChildDOMRectSameAsAXRect(id) {
+function assertStaticTextChildDOMRectSameAsAXRect(id, index) {
     var element = document.getElementById(id);
     var axObject = accessibilityController.accessibleElementById(id);
     var text = element.firstChild;
-    var axText = axObject.childAtIndex(0);
-    assert_equals(text.nodeType, Node.TEXT_NODE, id + " firstChild nodeType");
-    assert_equals(axText.role, "AXRole: AXStaticText", id + " AX first child role");
+    for (var i = 0; i < index; i++)
+        text = text.nextSibling;
+    var axText = axObject.childAtIndex(index);
+    assert_equals(text.nodeType, Node.TEXT_NODE, id + " child " + index + " nodeType");
+    assert_equals(axText.role, "AXRole: AXStaticText", id + " AX child " + index + " role");
     var range = document.createRange();
     range.selectNode(text);
     var bounds = range.getBoundingClientRect();
-    var axObject = accessibilityController.accessibleElementById(id);
     var epsilon = 1;
-    assert_approx_equals(axText.boundsX, bounds.left, epsilon, id + " left");
-    assert_approx_equals(axText.boundsY, bounds.top, epsilon, id + " left");
-    assert_approx_equals(axText.boundsWidth, bounds.width, epsilon, id + " left");
-    assert_approx_equals(axText.boundsHeight, bounds.height, epsilon, id + " left");
+    assert_approx_equals(axText.boundsX, bounds.left, epsilon, id + " child " + index + " left");
+    assert_approx_equals(axText.boundsY, bounds.top, epsilon, id + " child " + index + " top");
+    assert_approx_equals(axText.boundsWidth, bounds.width, epsilon, id + " child " + index + " width");
+    assert_approx_equals(axText.boundsHeight, bounds.height, epsilon, id + " child " + index + " height");
 }
 
 function assertOffsetContainerIs(id, containerId, opt_expectedResult) {
@@ -111,26 +113,31 @@ test(function(t) {
     assertDOMRectSameAsAXRect("radio");
     assertDOMRectSameAsAXRect("button");
     assertDOMRectSameAsAXRect("heading");
-    assertStaticTextChildDOMRectSameAsAXRect("heading");
+    assertStaticTextChildDOMRectSameAsAXRect("heading", 0);
     assertDOMRectSameAsAXRect("para");
-    assertStaticTextChildDOMRectSameAsAXRect("para");
+    assertStaticTextChildDOMRectSameAsAXRect("para", 0);
     assertDOMRectSameAsAXRect("span");
-    assertStaticTextChildDOMRectSameAsAXRect("span");
+    assertStaticTextChildDOMRectSameAsAXRect("span", 0);
     assertDOMRectSameAsAXRect("ul");
     assertDOMRectSameAsAXRect("li1");
     assertDOMRectSameAsAXRect("li2");
     assertDOMRectSameAsAXRect("div");
-    assertStaticTextChildDOMRectSameAsAXRect("div");
+    assertStaticTextChildDOMRectSameAsAXRect("div", 0);
     assertDOMRectSameAsAXRect("border");
-    assertStaticTextChildDOMRectSameAsAXRect("border");
+    assertStaticTextChildDOMRectSameAsAXRect("border", 0);
     assertDOMRectSameAsAXRect("padding");
-    assertStaticTextChildDOMRectSameAsAXRect("padding");
+    assertStaticTextChildDOMRectSameAsAXRect("padding", 0);
     assertDOMRectSameAsAXRect("margin");
-    assertStaticTextChildDOMRectSameAsAXRect("margin");
-    assertDOMRectSameAsAXRect("border_padding_margin");
-    assertStaticTextChildDOMRectSameAsAXRect("border_padding_margin");
+    assertStaticTextChildDOMRectSameAsAXRect("margin", 0);
+    assertDOMRectSameAsAXRect("border_padding_margin", 0);
+    assertStaticTextChildDOMRectSameAsAXRect("border_padding_margin", 0);
     assertDOMRectSameAsAXRect("svg");
     assertDOMRectSameAsAXRect("svg_circle");
+
+    // Test both static text elements in <p>First line<br>Second line</p>.
+    // We don't care about the bounding box of the <br> element in-between.
+    assertStaticTextChildDOMRectSameAsAXRect("twolines", 0);
+    assertStaticTextChildDOMRectSameAsAXRect("twolines", 2);
 }, "Test computed AX rect for some common objects");
 </script>
 

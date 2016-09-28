@@ -66,11 +66,17 @@ void AXInlineTextBox::getRelativeBounds(AXObject** outContainer, FloatRect& outB
     outBoundsInContainer = FloatRect();
     outContainerTransform.setIdentity();
 
-    if (!m_inlineTextBox)
+    if (!m_inlineTextBox || !parentObject() || !parentObject()->getLayoutObject())
         return;
 
     *outContainer = parentObject();
     outBoundsInContainer = FloatRect(m_inlineTextBox->localBounds());
+
+    // Subtract the local bounding box of the parent because they're
+    // both in the same coordinate system.
+    LayoutObject* parentLayoutObject = parentObject()->getLayoutObject();
+    FloatRect parentBoundingBox = parentLayoutObject->localBoundingBoxRectForAccessibility();
+    outBoundsInContainer.moveBy(-parentBoundingBox.location());
 }
 
 bool AXInlineTextBox::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReasons) const

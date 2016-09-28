@@ -414,7 +414,7 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
       else
         start = 0;
     }
-    return RelativeToAbsoluteBounds(gfx::RectF(bounds), false);
+    return bounds;
   }
 
   int end = start + len;
@@ -457,7 +457,7 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
     int end_pixel_offset =
         local_end > 0 ? character_offsets[local_end - 1] : 0;
 
-    gfx::Rect child_rect = gfx::ToEnclosingRect(child->GetLocation());
+    gfx::Rect child_rect = child->GetPageBoundsRect();
     auto text_direction = static_cast<ui::AXTextDirection>(
         child->GetIntAttribute(ui::AX_ATTR_TEXT_DIRECTION));
     gfx::Rect child_overlap_rect;
@@ -501,7 +501,7 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
       bounds.Union(child_overlap_rect);
   }
 
-  return RelativeToAbsoluteBounds(gfx::RectF(bounds), false);
+  return bounds;
 }
 
 gfx::Rect BrowserAccessibility::GetScreenBoundsForRange(int start, int len)
