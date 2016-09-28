@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
@@ -22,8 +21,6 @@ import android.text.TextUtils;
 import android.util.LongSparseArray;
 import android.util.Pair;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -33,7 +30,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryAdapter;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
@@ -1063,17 +1059,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param context Application context
      */
     protected static void openDownloadsPage(Context context) {
-        // Try to open Download Home.
-        Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (lastActivity instanceof ChromeActivity) {
-            int state = ApplicationStatus.getStateForActivity(lastActivity);
-            if (state >= ActivityState.CREATED && state <= ActivityState.RESUMED) {
-                ChromeActivity chromeActivity = (ChromeActivity) lastActivity;
-                DownloadUtils.showDownloadManager(
-                        lastActivity, chromeActivity.getActivityTab());
-                return;
-            }
-        }
+        if (DownloadUtils.showDownloadManager(null, null)) return;
 
         // Open the Android Download Manager.
         Intent pageView = new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);

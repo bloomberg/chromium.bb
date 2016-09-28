@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -110,7 +109,7 @@ public class AppMenuPropertiesDelegate {
 
                 MenuItem offlineMenuItem = menu.findItem(R.id.offline_page_id);
                 if (offlineMenuItem != null) {
-                    if (ChromeFeatureList.isEnabled("DownloadsUi")) {
+                    if (DownloadUtils.isDownloadHomeEnabled()) {
                         offlineMenuItem.setEnabled(
                                 DownloadUtils.isAllowedToDownloadPage(currentTab));
 
@@ -128,7 +127,7 @@ public class AppMenuPropertiesDelegate {
             }
 
             menu.findItem(R.id.downloads_menu_id)
-                    .setVisible(ChromeFeatureList.isEnabled("DownloadsUi"));
+                    .setVisible(DownloadUtils.isDownloadHomeEnabled());
 
             menu.findItem(R.id.update_menu_id).setVisible(
                     UpdateMenuItemHelper.getInstance().shouldShowMenuItem(mActivity));

@@ -7,17 +7,21 @@ package org.chromium.chrome.browser.download;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.StrictMode;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
@@ -50,27 +54,72 @@ public class DownloadUtils {
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
 
+    private static final String PREF_IS_DOWNLOAD_HOME_ENABLED =
+            "org.chromium.chrome.browser.download.IS_DOWNLOAD_HOME_ENABLED";
+
+    /**
+     * @return Whether or not the Download Home is enabled.
+     */
+    public static boolean isDownloadHomeEnabled() {
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        return preferences.getBoolean(PREF_IS_DOWNLOAD_HOME_ENABLED, false);
+    }
+
+    /**
+     * Caches the native flag that enables the Download Home in SharedPreferences.
+     * This is necessary because the DownloadActivity can be opened before native has been loaded.
+     */
+    public static void cacheIsDownloadHomeEnabled() {
+        boolean isEnabled = ChromeFeatureList.isEnabled("DownloadsUi");
+        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+        preferences.edit().putBoolean(PREF_IS_DOWNLOAD_HOME_ENABLED, isEnabled).apply();
+    }
+
     /**
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
+     * @return Whether the UI was shown.
      */
-    public static void showDownloadManager(Activity activity, Tab tab) {
-        if (DeviceFormFactor.isTablet(activity) && activity instanceof ChromeTabbedActivity) {
-            // Download Home shows up inside a tab in the browser.
+    public static boolean showDownloadManager(@Nullable Activity activity, @Nullable Tab tab) {
+        if (!isDownloadHomeEnabled()) return false;
+
+        // Figure out what tab was last being viewed by the user.
+        if (activity == null) activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (tab == null && activity instanceof ChromeActivity) {
+            tab = ((ChromeActivity) activity).getActivityTab();
+        }
+
+        Context appContext = ContextUtils.getApplicationContext();
+        if (DeviceFormFactor.isTablet(appContext)) {
+            // Download Home shows up as a tab on tablets.
             LoadUrlParams params = new LoadUrlParams(UrlConstants.DOWNLOADS_URL);
             if (tab == null || !tab.isInitialized()) {
+                // Open a new tab, which pops Chrome into the foreground.
                 TabDelegate delegate = new TabDelegate(false);
                 delegate.createNewTab(params, TabLaunchType.FROM_CHROME_UI, null);
             } else {
+                // Download Home shows up inside an existing tab.  Manually foreground Chrome.
                 tab.loadUrl(params);
+                Intent intent = Tab.createBringTabToFrontIntent(tab.getId());
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                IntentUtils.safeStartActivity(appContext, intent);
             }
         } else {
-            // Download Home sits on top as a new Activity.
+            // Download Home shows up as a new Activity on phones.
             Intent intent = new Intent();
-            intent.setClass(activity, DownloadActivity.class);
-            intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
+            intent.setClass(appContext, DownloadActivity.class);
             if (tab != null) intent.putExtra(EXTRA_IS_OFF_THE_RECORD, tab.isIncognito());
-            activity.startActivity(intent);
+            if (activity == null) {
+                // Stands alone in its own task.
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                appContext.startActivity(intent);
+            } else {
+                // Sits on top of another Activity.
+                intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
+                activity.startActivity(intent);
+            }
         }
+
+        return true;
     }
 
     /**

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.util;
 
+import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
@@ -295,6 +297,21 @@ public class IntentUtils {
             Log.e(TAG, "putBinder failed on bundle " + bundle);
         }
         intent.putExtras(bundle);
+    }
+
+    /**
+     * Catches any failures to start an Activity.
+     * @param context Context to use when starting the Activity.
+     * @param intent  Intent to fire.
+     * @return Whether or not Android accepted the Intent.
+     */
+    public static boolean safeStartActivity(Context context, Intent intent) {
+        try {
+            context.startActivity(intent);
+            return true;
+        } catch (ActivityNotFoundException e) {
+            return false;
+        }
     }
 
     /**

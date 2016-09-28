@@ -18,7 +18,6 @@ import android.view.WindowManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
@@ -562,7 +561,7 @@ public class LocationBarTablet extends LocationBarLayout {
         if (tab == null) return false;
         // The save offline button should not be shown on native pages. Currently, trying to
         // save an offline page in incognito crashes, so don't show it on incognito either.
-        return ChromeFeatureList.isEnabled("DownloadsUi") && shouldShowPageActionButtons()
+        return DownloadUtils.isDownloadHomeEnabled() && shouldShowPageActionButtons()
                 && !tab.isIncognito();
     }
 
@@ -578,7 +577,7 @@ public class LocationBarTablet extends LocationBarLayout {
         // should be shown if the delete button isn't showing. If the download UI is enabled, there
         // are two actions, bookmark and save offline, and they should be shown if the omnibox isn't
         // focused.
-        return (!shouldShowDeleteButton() && !ChromeFeatureList.isEnabled("DownloadsUi"))
+        return (!shouldShowDeleteButton() && !DownloadUtils.isDownloadHomeEnabled())
                 || !(mUrlBar.hasFocus() || mUrlFocusChangeInProgress);
     }
 
@@ -586,7 +585,7 @@ public class LocationBarTablet extends LocationBarLayout {
         // If the download UI is enabled, the mic button should be only be shown when the url bar
         // is focused.
         return isVoiceSearchEnabled() && mNativeInitialized
-                && (!ChromeFeatureList.isEnabled("DownloadsUi")
+                && (!DownloadUtils.isDownloadHomeEnabled()
                         || (mUrlBar.hasFocus() || mUrlFocusChangeInProgress));
     }
 }
