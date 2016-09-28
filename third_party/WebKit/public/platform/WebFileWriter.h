@@ -45,7 +45,6 @@ public:
 
     // Only one write or one truncate operation can be in progress at a time.
     // These functions are asynchronous and will report results through the WebFileWriter's associated WebFileWriterClient.
-    virtual void write(long long position, const WebURL& blobURL) { } // DEPRECATED
     virtual void write(long long position, const WebString& blobUUID) { }
     virtual void truncate(long long length) = 0;
 
