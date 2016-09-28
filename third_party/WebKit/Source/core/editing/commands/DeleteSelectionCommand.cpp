@@ -129,7 +129,7 @@ void DeleteSelectionCommand::initializeStartEnd(Position& start, Position& end)
         if (!startSpecialContainer && !endSpecialContainer)
             break;
 
-        if (createVisiblePositionDeprecated(start).deepEquivalent() != m_selectionToDelete.visibleStart().deepEquivalent() || createVisiblePositionDeprecated(end).deepEquivalent() != m_selectionToDelete.visibleEnd().deepEquivalent())
+        if (createVisiblePositionDeprecated(start).deepEquivalent() != m_selectionToDelete.visibleStartDeprecated().deepEquivalent() || createVisiblePositionDeprecated(end).deepEquivalent() != m_selectionToDelete.visibleEndDeprecated().deepEquivalent())
             break;
 
         // If we're going to expand to include the startSpecialContainer, it must be fully selected.
@@ -844,16 +844,16 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
     Position downstreamEnd = mostForwardCaretPosition(m_selectionToDelete.end());
     bool rootWillStayOpenWithoutPlaceholder = downstreamEnd.computeContainerNode() == rootEditableElement(*downstreamEnd.computeContainerNode())
         || (downstreamEnd.computeContainerNode()->isTextNode() && downstreamEnd.computeContainerNode()->parentNode() == rootEditableElement(*downstreamEnd.computeContainerNode()));
-    bool lineBreakAtEndOfSelectionToDelete = lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd());
+    bool lineBreakAtEndOfSelectionToDelete = lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEndDeprecated());
     m_needPlaceholder = !rootWillStayOpenWithoutPlaceholder
-        && isStartOfParagraphDeprecated(m_selectionToDelete.visibleStart(), CanCrossEditingBoundary)
-        && isEndOfParagraphDeprecated(m_selectionToDelete.visibleEnd(), CanCrossEditingBoundary)
+        && isStartOfParagraphDeprecated(m_selectionToDelete.visibleStartDeprecated(), CanCrossEditingBoundary)
+        && isEndOfParagraphDeprecated(m_selectionToDelete.visibleEndDeprecated(), CanCrossEditingBoundary)
         && !lineBreakAtEndOfSelectionToDelete;
     if (m_needPlaceholder) {
         // Don't need a placeholder when deleting a selection that starts just
         // before a table and ends inside it (we do need placeholders to hold
         // open empty cells, but that's handled elsewhere).
-        if (Element* table = tableElementJustAfter(m_selectionToDelete.visibleStart())) {
+        if (Element* table = tableElementJustAfter(m_selectionToDelete.visibleStartDeprecated())) {
             if (m_selectionToDelete.end().anchorNode()->isDescendantOf(table))
                 m_needPlaceholder = false;
         }

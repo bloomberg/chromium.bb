@@ -158,7 +158,7 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
 
 void IndentOutdentCommand::outdentParagraph(EditingState* editingState)
 {
-    VisiblePosition visibleStartOfParagraph = startOfParagraphDeprecated(endingSelection().visibleStart());
+    VisiblePosition visibleStartOfParagraph = startOfParagraphDeprecated(endingSelection().visibleStartDeprecated());
     VisiblePosition visibleEndOfParagraph = endOfParagraphDeprecated(visibleStartOfParagraph);
 
     HTMLElement* enclosingElement = toHTMLElement(enclosingNodeOfType(visibleStartOfParagraph.deepEquivalent(), &isHTMLListOrBlockquoteElement));

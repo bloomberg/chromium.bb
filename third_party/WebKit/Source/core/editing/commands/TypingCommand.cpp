@@ -495,7 +495,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
         if (killRing && selectionModifier.selection().isCaret() && granularity != CharacterGranularity)
             selectionModifier.modify(FrameSelection::AlterationExtend, DirectionBackward, CharacterGranularity);
 
-        VisiblePosition visibleStart(endingSelection().visibleStart());
+        VisiblePosition visibleStart(endingSelection().visibleStartDeprecated());
         if (previousPositionOf(visibleStart, CannotCrossEditingBoundary).isNull()) {
             // When the caret is at the start of the editable area in an empty list item, break out of the list item.
             bool breakOutOfEmptyListItemResult = breakOutOfEmptyListItem(editingState);
@@ -605,7 +605,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
             selectionModifier.modify(FrameSelection::AlterationExtend, DirectionForward, CharacterGranularity);
 
         Position downstreamEnd = mostForwardCaretPosition(endingSelection().end());
-        VisiblePosition visibleEnd = endingSelection().visibleEnd();
+        VisiblePosition visibleEnd = endingSelection().visibleEndDeprecated();
         Node* enclosingTableCell = enclosingNodeOfType(visibleEnd.deepEquivalent(), &isTableCell);
         if (enclosingTableCell && visibleEnd.deepEquivalent() == VisiblePosition::lastPositionInNode(enclosingTableCell).deepEquivalent())
             return;
@@ -619,7 +619,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
         }
 
         // deleting to end of paragraph when at end of paragraph needs to merge the next paragraph (if any)
-        if (granularity == ParagraphBoundary && selectionModifier.selection().isCaret() && isEndOfParagraphDeprecated(selectionModifier.selection().visibleEnd()))
+        if (granularity == ParagraphBoundary && selectionModifier.selection().isCaret() && isEndOfParagraphDeprecated(selectionModifier.selection().visibleEndDeprecated()))
             selectionModifier.modify(FrameSelection::AlterationExtend, DirectionForward, CharacterGranularity);
 
         selectionToDelete = selectionModifier.selection();

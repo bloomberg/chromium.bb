@@ -957,8 +957,8 @@ void ReplaceSelectionCommand::mergeEndIfNeeded(EditingState* editingState)
     // Merging forward will remove m_endOfInsertedContent from the document.
     if (mergeForward) {
         if (m_startOfInsertedContent.isOrphan())
-            m_startOfInsertedContent = endingSelection().visibleStart().deepEquivalent();
-        m_endOfInsertedContent = endingSelection().visibleEnd().deepEquivalent();
+            m_startOfInsertedContent = endingSelection().visibleStartDeprecated().deepEquivalent();
+        m_endOfInsertedContent = endingSelection().visibleEndDeprecated().deepEquivalent();
         // If we merged text nodes, m_endOfInsertedContent could be null. If
         // this is the case, we use m_startOfInsertedContent.
         if (m_endOfInsertedContent.isNull())
@@ -1045,8 +1045,8 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         m_insertionStyle->mergeTypingStyle(&document());
     }
 
-    const VisiblePosition visibleStart = selection.visibleStart();
-    const VisiblePosition visibleEnd = selection.visibleEnd();
+    const VisiblePosition visibleStart = selection.visibleStartDeprecated();
+    const VisiblePosition visibleEnd = selection.visibleEndDeprecated();
 
     const bool selectionEndWasEndOfParagraph = isEndOfParagraphDeprecated(visibleEnd);
     const bool selectionStartWasStartOfParagraph = isStartOfParagraphDeprecated(visibleStart);
@@ -1078,7 +1078,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         if (editingState->isAborted())
             return;
         if (fragment.hasInterchangeNewlineAtStart()) {
-            VisiblePosition startAfterDelete = endingSelection().visibleStart();
+            VisiblePosition startAfterDelete = endingSelection().visibleStartDeprecated();
             if (isEndOfParagraphDeprecated(startAfterDelete) && !isStartOfParagraphDeprecated(startAfterDelete) && !isEndOfEditableOrNonEditableContent(startAfterDelete))
                 setEndingSelection(nextPositionOf(startAfterDelete));
             else
@@ -1102,11 +1102,11 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         // As long as the  div styles are the same, visually you'd expect: <div>xbar</div><div>bar</div><div>bazx</div>,
         // not <div>xbar<div>bar</div><div>bazx</div></div>.
         // Don't do this if the selection started in a Mail blockquote.
-        if (m_preventNesting && !startIsInsideMailBlockquote && !isEndOfParagraphDeprecated(endingSelection().visibleStart()) && !isStartOfParagraphDeprecated(endingSelection().visibleStart())) {
+        if (m_preventNesting && !startIsInsideMailBlockquote && !isEndOfParagraphDeprecated(endingSelection().visibleStartDeprecated()) && !isStartOfParagraphDeprecated(endingSelection().visibleStartDeprecated())) {
             insertParagraphSeparator(editingState);
             if (editingState->isAborted())
                 return;
-            setEndingSelection(previousPositionOf(endingSelection().visibleStart()));
+            setEndingSelection(previousPositionOf(endingSelection().visibleStartDeprecated()));
         }
     }
 
@@ -1361,9 +1361,9 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
         moveParagraph(startOfParagraphToMove, endOfParagraphDeprecated(startOfParagraphToMove), destination, editingState);
         if (editingState->isAborted())
             return;
-        m_startOfInsertedContent = mostForwardCaretPosition(endingSelection().visibleStart().deepEquivalent());
+        m_startOfInsertedContent = mostForwardCaretPosition(endingSelection().visibleStartDeprecated().deepEquivalent());
         if (m_endOfInsertedContent.isOrphan())
-            m_endOfInsertedContent = mostBackwardCaretPosition(endingSelection().visibleEnd().deepEquivalent());
+            m_endOfInsertedContent = mostBackwardCaretPosition(endingSelection().visibleEndDeprecated().deepEquivalent());
     }
 
     Position lastPositionToSelect;
@@ -1380,7 +1380,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                 }
                 setEndingSelection(VisiblePosition::afterNode(insertedNodes.lastLeafInserted()));
                 // Select up to the paragraph separator that was added.
-                lastPositionToSelect = endingSelection().visibleStart().deepEquivalent();
+                lastPositionToSelect = endingSelection().visibleStartDeprecated().deepEquivalent();
             } else if (!isStartOfParagraphDeprecated(endOfInsertedContent)) {
                 setEndingSelection(endOfInsertedContent);
                 Element* enclosingBlockElement = enclosingBlock(endOfInsertedContent.deepEquivalent().anchorNode());
@@ -1400,7 +1400,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState)
                 }
 
                 // Select up to the paragraph separator that was added.
-                lastPositionToSelect = endingSelection().visibleStart().deepEquivalent();
+                lastPositionToSelect = endingSelection().visibleStartDeprecated().deepEquivalent();
                 updateNodesInserted(lastPositionToSelect.anchorNode());
             }
         } else {

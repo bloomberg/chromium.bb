@@ -92,7 +92,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState)
     if (endingSelection().isNone())
         return;
 
-    VisiblePosition visiblePos = endingSelection().visibleStart();
+    VisiblePosition visiblePos = endingSelection().visibleStartDeprecated();
 
     // pos is a position equivalent to the caret.  We use downstream() so that pos will
     // be in the first node that we need to move (there are a few exceptions to this, see below).

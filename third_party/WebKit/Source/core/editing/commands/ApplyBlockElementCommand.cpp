@@ -59,8 +59,8 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
     if (!endingSelection().rootEditableElement())
         return;
 
-    VisiblePosition visibleEnd = endingSelection().visibleEnd();
-    VisiblePosition visibleStart = endingSelection().visibleStart();
+    VisiblePosition visibleEnd = endingSelection().visibleEndDeprecated();
+    VisiblePosition visibleStart = endingSelection().visibleStartDeprecated();
     if (visibleStart.isNull() || visibleStart.isOrphan() || visibleEnd.isNull() || visibleEnd.isOrphan())
         return;
 
@@ -80,8 +80,8 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
     }
 
     VisibleSelection selection = selectionForParagraphIteration(endingSelection());
-    VisiblePosition startOfSelection = selection.visibleStart();
-    VisiblePosition endOfSelection = selection.visibleEnd();
+    VisiblePosition startOfSelection = selection.visibleStartDeprecated();
+    VisiblePosition endOfSelection = selection.visibleEndDeprecated();
     DCHECK(!startOfSelection.isNull());
     DCHECK(!endOfSelection.isNull());
     ContainerNode* startScope = nullptr;

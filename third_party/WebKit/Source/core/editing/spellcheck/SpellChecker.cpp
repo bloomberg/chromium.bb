@@ -592,6 +592,13 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     if (!isSpellCheckingEnabledFor(frame().selection().selection()))
         return;
 
+    Document* document = frame().document();
+    DCHECK(document);
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    document->updateStyleAndLayoutIgnorePendingStylesheets();
+
     // We want to remove the markers from a word if an editing command will change the word. This can happen in one of
     // several scenarios:
     // 1. Insert in the middle of a word.
@@ -661,13 +668,6 @@ void SpellChecker::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSele
     // garde", we will have CorrectionIndicator marker on both words and on the whitespace between them. If we then edit garde,
     // we would like to remove the marker from word "avant" and whitespace as well. So we need to get the continous range of
     // of marker that contains the word in question, and remove marker on that whole range.
-    Document* document = frame().document();
-    DCHECK(document);
-
-    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-    // needs to be audited.  See http://crbug.com/590369 for more details.
-    document->updateStyleAndLayoutIgnorePendingStylesheets();
-
     const EphemeralRange wordRange(removeMarkerStart, removeMarkerEnd);
     document->markers().removeMarkers(wordRange, DocumentMarker::MisspellingMarkers(), DocumentMarkerController::RemovePartiallyOverlappingMarker);
 }

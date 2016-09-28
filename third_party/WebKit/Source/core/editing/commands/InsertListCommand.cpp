@@ -94,12 +94,12 @@ HTMLElement* InsertListCommand::mergeWithNeighboringLists(HTMLElement* passedLis
 
 bool InsertListCommand::selectionHasListOfType(const VisibleSelection& selection, const HTMLQualifiedName& listTag)
 {
-    VisiblePosition start = selection.visibleStart();
+    VisiblePosition start = selection.visibleStartDeprecated();
 
     if (!enclosingList(start.deepEquivalent().anchorNode()))
         return false;
 
-    VisiblePosition end = startOfParagraphDeprecated(selection.visibleEnd());
+    VisiblePosition end = startOfParagraphDeprecated(selection.visibleEndDeprecated());
     while (start.isNotNull() && start.deepEquivalent() != end.deepEquivalent()) {
         HTMLElement* listElement = enclosingList(start.deepEquivalent().anchorNode());
         if (!listElement || !listElement->hasTagName(listTag))
@@ -130,8 +130,8 @@ void InsertListCommand::doApply(EditingState* editingState)
     if (!endingSelection().rootEditableElement())
         return;
 
-    VisiblePosition visibleEnd = endingSelection().visibleEnd();
-    VisiblePosition visibleStart = endingSelection().visibleStart();
+    VisiblePosition visibleEnd = endingSelection().visibleEndDeprecated();
+    VisiblePosition visibleStart = endingSelection().visibleStartDeprecated();
     // When a selection ends at the start of a paragraph, we rarely paint
     // the selection gap before that paragraph, because there often is no gap.
     // In a case like this, it's not obvious to the user that the selection
@@ -151,8 +151,8 @@ void InsertListCommand::doApply(EditingState* editingState)
         bool forceListCreation = false;
         VisibleSelection selection = selectionForParagraphIteration(endingSelection());
         DCHECK(selection.isRange());
-        VisiblePosition startOfSelection = selection.visibleStart();
-        VisiblePosition endOfSelection = selection.visibleEnd();
+        VisiblePosition startOfSelection = selection.visibleStartDeprecated();
+        VisiblePosition endOfSelection = selection.visibleEndDeprecated();
         VisiblePosition startOfLastParagraph = startOfParagraphDeprecated(endOfSelection, CanSkipOverEditingBoundary);
 
         Range* currentSelection = firstRangeOf(endingSelection());
@@ -201,7 +201,7 @@ void InsertListCommand::doApply(EditingState* editingState)
                     startOfLastParagraph = startOfParagraphDeprecated(endOfSelection, CanSkipOverEditingBoundary);
                 }
 
-                startOfCurrentParagraph = startOfNextParagraphDeprecated(endingSelection().visibleStart());
+                startOfCurrentParagraph = startOfNextParagraphDeprecated(endingSelection().visibleStartDeprecated());
             }
             setEndingSelection(endOfSelection);
         }
@@ -323,13 +323,13 @@ bool InsertListCommand::doApplyForSingleParagraph(bool forceCreateList, const HT
             return true;
         }
 
-        unlistifyParagraph(endingSelection().visibleStart(), listElement, listChildNode, editingState);
+        unlistifyParagraph(endingSelection().visibleStartDeprecated(), listElement, listChildNode, editingState);
         if (editingState->isAborted())
             return false;
     }
 
     if (!listChildNode || switchListType || forceCreateList)
-        listifyParagraph(endingSelection().visibleStart(), listTag, editingState);
+        listifyParagraph(endingSelection().visibleStartDeprecated(), listTag, editingState);
 
     return true;
 }

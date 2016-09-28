@@ -78,10 +78,16 @@ public:
     PositionTemplate<Strategy> start() const { return m_start; }
     PositionTemplate<Strategy> end() const { return m_end; }
 
-    VisiblePositionTemplate<Strategy> visibleStart() const { return createVisiblePositionDeprecated(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
-    VisiblePositionTemplate<Strategy> visibleEnd() const { return createVisiblePositionDeprecated(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
+    VisiblePositionTemplate<Strategy> visibleStart() const { return createVisiblePosition(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
+    VisiblePositionTemplate<Strategy> visibleEnd() const { return createVisiblePosition(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
     VisiblePositionTemplate<Strategy> visibleBase() const { return createVisiblePosition(m_base, isRange() ? (isBaseFirst() ? TextAffinity::Upstream : TextAffinity::Downstream) : affinity()); }
     VisiblePositionTemplate<Strategy> visibleExtent() const { return createVisiblePosition(m_extent, isRange() ? (isBaseFirst() ? TextAffinity::Downstream : TextAffinity::Upstream) : affinity()); }
+
+    // These deprecated functions perform synchronous layout, messing up the
+    // pipeline. Callers should ensure clean layout and then switch to the
+    // un-deprecated functions above.
+    VisiblePositionTemplate<Strategy> visibleStartDeprecated() const { return createVisiblePositionDeprecated(m_start, isRange() ? TextAffinity::Downstream : affinity()); }
+    VisiblePositionTemplate<Strategy> visibleEndDeprecated() const { return createVisiblePositionDeprecated(m_end, isRange() ? TextAffinity::Upstream : affinity()); }
 
     bool operator==(const VisibleSelectionTemplate&) const;
     bool operator!=(const VisibleSelectionTemplate& other) const { return !operator==(other); }

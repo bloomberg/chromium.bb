@@ -396,6 +396,8 @@ static String valueStyle(LocalFrame& frame, CSSPropertyID propertyID)
 
 static TriState stateTextWritingDirection(LocalFrame& frame, WritingDirection direction)
 {
+    frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     bool hasNestedOrMultipleEmbeddings;
     WritingDirection selectionDirection = EditingStyle::textDirectionForSelection(frame.selection().selection(),
         frame.selection().typingStyle(), hasNestedOrMultipleEmbeddings);

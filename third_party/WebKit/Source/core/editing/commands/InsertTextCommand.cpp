@@ -101,7 +101,7 @@ bool InsertTextCommand::performTrivialReplace(const String& text, bool selectIns
 
     setEndingSelectionWithoutValidation(start, endPosition);
     if (!selectInsertedText)
-        setEndingSelection(VisibleSelection(endingSelection().visibleEnd(), endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(endingSelection().visibleEndDeprecated(), endingSelection().isDirectional()));
 
     return true;
 }
@@ -124,7 +124,7 @@ bool InsertTextCommand::performOverwrite(const String& text, bool selectInserted
     Position endPosition = Position(textNode, start.offsetInContainerNode() + text.length());
     setEndingSelectionWithoutValidation(start, endPosition);
     if (!selectInsertedText)
-        setEndingSelection(VisibleSelection(endingSelection().visibleEnd(), endingSelection().isDirectional()));
+        setEndingSelection(VisibleSelection(endingSelection().visibleEndDeprecated(), endingSelection().isDirectional()));
 
     return true;
 }
@@ -141,7 +141,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
     if (endingSelection().isRange()) {
         if (performTrivialReplace(m_text, m_selectInsertedText))
             return;
-        bool endOfSelectionWasAtStartOfBlock = isStartOfBlock(endingSelection().visibleEnd());
+        bool endOfSelectionWasAtStartOfBlock = isStartOfBlock(endingSelection().visibleEndDeprecated());
         deleteSelection(editingState, false, true, false, false);
         if (editingState->isAborted())
             return;

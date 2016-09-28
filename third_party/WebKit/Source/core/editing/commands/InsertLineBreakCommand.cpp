@@ -73,7 +73,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
     if (!selection.isNonOrphanedCaretOrRange())
         return;
 
-    VisiblePosition caret(selection.visibleStart());
+    VisiblePosition caret(selection.visibleStartDeprecated());
     // FIXME: If the node is hidden, we should still be able to insert text.
     // For now, we return to avoid a crash.  https://bugs.webkit.org/show_bug.cgi?id=40342
     if (caret.isNull())
@@ -192,7 +192,7 @@ void InsertLineBreakCommand::doApply(EditingState* editingState)
         // before the line break (if the line break is at the end of a block it isn't selectable).
         // So, this next call sets the endingSelection() to a caret just after the line break
         // that we inserted, or just before it if it's at the end of a block.
-        setEndingSelection(endingSelection().visibleEnd());
+        setEndingSelection(endingSelection().visibleEndDeprecated());
     }
 
     rebalanceWhitespace();

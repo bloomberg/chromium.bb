@@ -112,7 +112,7 @@ bool InsertParagraphSeparatorCommand::shouldUseDefaultParagraphElement(Element* 
         return true;
 
     // Assumes that if there was a range selection, it was already deleted.
-    if (!isEndOfBlock(endingSelection().visibleStart()))
+    if (!isEndOfBlock(endingSelection().visibleStartDeprecated()))
         return false;
 
     return enclosingBlock->hasTagName(h1Tag)

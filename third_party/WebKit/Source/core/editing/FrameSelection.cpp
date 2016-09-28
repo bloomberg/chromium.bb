@@ -786,6 +786,11 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
     // Check if the selection contains the entire frame contents; if not, then there is nothing to do.
     if (!isRange())
         return;
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    document().updateStyleAndLayoutIgnorePendingStylesheets();
+
     if (!isStartOfDocument(selection().visibleStart()))
         return;
     if (!isEndOfDocument(selection().visibleEnd()))
