@@ -1360,7 +1360,6 @@ test("browser_tests") {
       "../browser/extensions/api/autofill_private/autofill_private_apitest.cc",
       "../browser/extensions/api/automation/automation_apitest.cc",
       "../browser/extensions/api/autotest_private/autotest_private_apitest.cc",
-      "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc",
       "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest_chromeos.cc",
       "../browser/extensions/api/bookmark_manager_private/bookmark_manager_private_apitest.cc",
       "../browser/extensions/api/bookmarks/bookmark_apitest.cc",
@@ -2658,6 +2657,10 @@ test("browser_tests") {
           "../browser/extensions/api/display_source/display_source_wifi_display_apitest.cc",
         ]
       }
+    }
+
+    if (is_chromeos || (is_linux && use_dbus)) {
+      sources += [ "../browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc" ]
     }
   }
 }
