@@ -549,3 +549,21 @@ TEST_F(ChromePasswordManagerClientTest, AnnotateNavigationEntryTrueToFalse) {
       SerializedNavigationEntry::HAS_PASSWORD_FIELD,
       GetPasswordStateFromNavigation(*controller().GetLastCommittedEntry()));
 }
+
+// Handle missing ChromePasswordManagerClient instance in BindCredentialManager
+// gracefully.
+TEST_F(ChromePasswordManagerClientTest, BindCredentialManager_MissingInstance) {
+  // Create a WebContent without tab helpers.
+  std::unique_ptr<content::WebContents> web_contents(
+      content::WebContents::Create(
+          content::WebContents::CreateParams(profile())));
+  // In particular, this WebContent should not have the
+  // ChromePasswordManagerClient.
+  ASSERT_FALSE(
+      ChromePasswordManagerClient::FromWebContents(web_contents.get()));
+
+  // This call should not crash.
+  ChromePasswordManagerClient::BindCredentialManager(
+      web_contents->GetMainFrame(),
+      password_manager::mojom::CredentialManagerRequest());
+}

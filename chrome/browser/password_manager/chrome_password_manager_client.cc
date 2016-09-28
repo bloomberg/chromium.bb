@@ -636,6 +636,12 @@ void ChromePasswordManagerClient::BindCredentialManager(
 
   ChromePasswordManagerClient* instance =
       ChromePasswordManagerClient::FromWebContents(web_contents);
-  DCHECK(instance);
+
+  // Try to bind to the driver, but if driver is not available for this render
+  // frame host, the request will be just dropped. This will cause the message
+  // pipe to be closed, which will raise a connection error on the peer side.
+  if (!instance)
+    return;
+
   instance->credential_manager_impl_.BindRequest(std::move(request));
 }
