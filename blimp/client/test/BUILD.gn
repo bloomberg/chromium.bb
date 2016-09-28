@@ -6,6 +6,8 @@ source_set("test") {
   testonly = true
 
   sources = [
+    "contents/mock_blimp_contents_observer.cc",
+    "contents/mock_blimp_contents_observer.h",
     "test_blimp_client_context_delegate.cc",
     "test_blimp_client_context_delegate.h",
   ]

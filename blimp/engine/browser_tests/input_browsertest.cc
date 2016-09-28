@@ -8,7 +8,6 @@
 #include "blimp/client/core/contents/mock_navigation_feature_delegate.h"
 #include "blimp/client/core/contents/navigation_feature.h"
 #include "blimp/client/core/contents/tab_control_feature.h"
-#include "blimp/client/core/render_widget/mock_render_widget_feature_delegate.h"
 #include "blimp/client/core/render_widget/render_widget_feature.h"
 #include "blimp/client/core/session/assignment_source.h"
 #include "blimp/client/public/session/assignment.h"
@@ -33,16 +32,12 @@ namespace blimp {
 namespace {
 
 const int kDummyTabId = 0;
-const char kPage1Path[] = "/page1.html";
-const char kPage2Path[] = "/page2.html";
 const char kInputPagePath[] = "/input.html";
-const char kPage1Title[] = "page1";
-const char kPage2Title[] = "page2";
 
-// Uses a headless client session to test a full engine.
-class EngineBrowserTest : public BlimpBrowserTest {
+// TODO(bgoldman): Convert to v0.6 as in the rendering and navigation tests.
+class InputBrowserTest : public BlimpBrowserTest {
  public:
-  EngineBrowserTest() {}
+  InputBrowserTest() {}
 
  protected:
   void SetUpOnMainThread() override {
@@ -54,8 +49,6 @@ class EngineBrowserTest : public BlimpBrowserTest {
     // Set feature delegates.
     client_session_->GetNavigationFeature()->SetDelegate(
         kDummyTabId, &client_nav_feature_delegate_);
-    client_session_->GetRenderWidgetFeature()->SetDelegate(
-        kDummyTabId, &client_rw_feature_delegate_);
     client_session_->GetImeFeature()->set_delegate(
         &client_ime_feature_delegate_);
 
@@ -96,13 +89,11 @@ class EngineBrowserTest : public BlimpBrowserTest {
         .Times(AtLeast(1));
     EXPECT_CALL(client_nav_feature_delegate_,
                 OnLoadingChanged(kDummyTabId, false))
-        .WillOnce(
-            InvokeWithoutArgs(this, &EngineBrowserTest::SignalCompletion));
+        .WillOnce(InvokeWithoutArgs(this, &InputBrowserTest::SignalCompletion));
   }
 
   void RunAndVerify() {
     RunUntilCompletion();
-    testing::Mock::VerifyAndClearExpectations(&client_rw_feature_delegate_);
     testing::Mock::VerifyAndClearExpectations(&client_nav_feature_delegate_);
     testing::Mock::VerifyAndClearExpectations(&client_ime_feature_delegate_);
   }
@@ -116,77 +107,15 @@ class EngineBrowserTest : public BlimpBrowserTest {
   }
 
   client::MockNavigationFeatureDelegate client_nav_feature_delegate_;
-  client::MockRenderWidgetFeatureDelegate client_rw_feature_delegate_;
   client::MockImeFeatureDelegate client_ime_feature_delegate_;
   std::unique_ptr<client::TestClientSession> client_session_;
   std::string last_page_title_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(EngineBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(InputBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(EngineBrowserTest, LoadUrl) {
-  EXPECT_CALL(client_rw_feature_delegate_, OnRenderWidgetCreated(1));
-  ExpectPageLoad();
-  NavigateToLocalUrl(kPage1Path);
-  RunAndVerify();
-  EXPECT_EQ(kPage1Title, last_page_title_);
-}
-
-IN_PROC_BROWSER_TEST_F(EngineBrowserTest, Reload) {
-  LoadPage(kPage1Path);
-  EXPECT_EQ(kPage1Title, last_page_title_);
-
-  ExpectPageLoad();
-  client_session_->GetNavigationFeature()->Reload(kDummyTabId);
-  RunAndVerify();
-  EXPECT_EQ(kPage1Title, last_page_title_);
-}
-
-IN_PROC_BROWSER_TEST_F(EngineBrowserTest, GoBackAndGoForward) {
-  LoadPage(kPage1Path);
-  EXPECT_EQ(kPage1Title, last_page_title_);
-
-  ExpectPageLoad();
-  NavigateToLocalUrl(kPage2Path);
-  RunAndVerify();
-  EXPECT_EQ(kPage2Title, last_page_title_);
-
-  ExpectPageLoad();
-  client_session_->GetNavigationFeature()->GoBack(kDummyTabId);
-  RunAndVerify();
-  EXPECT_EQ(kPage1Title, last_page_title_);
-
-  ExpectPageLoad();
-  client_session_->GetNavigationFeature()->GoForward(kDummyTabId);
-  RunAndVerify();
-  EXPECT_EQ(kPage2Title, last_page_title_);
-}
-
-IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InvalidGoBack) {
-  // Try an invalid GoBack before loading a page, and assert that the page still
-  // loads correctly.
-  ExpectPageLoad();
-  client_session_->GetNavigationFeature()->GoBack(kDummyTabId);
-  NavigateToLocalUrl(kPage1Path);
-  RunAndVerify();
-  EXPECT_EQ(kPage1Title, last_page_title_);
-}
-
-IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InvalidGoForward) {
-  LoadPage(kPage1Path);
-  EXPECT_EQ(kPage1Title, last_page_title_);
-
-  // Try an invalid GoForward before loading a different page, and
-  // assert that the page still loads correctly.
-  ExpectPageLoad();
-  client_session_->GetNavigationFeature()->GoForward(kDummyTabId);
-  NavigateToLocalUrl(kPage2Path);
-  RunAndVerify();
-  EXPECT_EQ(kPage2Title, last_page_title_);
-}
-
-IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InputText) {
+IN_PROC_BROWSER_TEST_F(InputBrowserTest, InputText) {
   LoadPage(kInputPagePath);
 
   blink::WebGestureEvent event;
@@ -197,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InputText) {
   EXPECT_CALL(client_ime_feature_delegate_, OnShowImeRequested(_, "", _))
       .Times(AtLeast(1))
       .WillOnce(
-          DoAll(InvokeWithoutArgs(this, &EngineBrowserTest::SignalCompletion),
+          DoAll(InvokeWithoutArgs(this, &InputBrowserTest::SignalCompletion),
                 SaveArg<2>(&callback)));
   client_session_->GetRenderWidgetFeature()->SendWebGestureEvent(kDummyTabId, 1,
                                                                  event);
@@ -206,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(EngineBrowserTest, InputText) {
   // Enter text from the client and expect the input.html JavaScript to update
   // the page title.
   EXPECT_CALL(client_nav_feature_delegate_, OnTitleChanged(kDummyTabId, "test"))
-      .WillOnce(InvokeWithoutArgs(this, &EngineBrowserTest::SignalCompletion));
+      .WillOnce(InvokeWithoutArgs(this, &InputBrowserTest::SignalCompletion));
   callback.Run("test");
   RunAndVerify();
 }

@@ -36,7 +36,7 @@ class BlimpNavigationControllerImpl
   void GoBack() override;
   void GoForward() override;
   const GURL& GetURL() override;
-  const std::string& GetTitle();
+  const std::string& GetTitle() override;
 
  private:
   // NavigationFeatureDelegate implementation.

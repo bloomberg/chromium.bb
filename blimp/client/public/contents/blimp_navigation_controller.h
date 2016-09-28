@@ -38,6 +38,9 @@ class BlimpNavigationController {
   // Retrieves the URL of the currently selected item in the navigation list.
   virtual const GURL& GetURL() = 0;
 
+  // Gets the current page title.
+  virtual const std::string& GetTitle() = 0;
+
  protected:
   BlimpNavigationController() {}
 

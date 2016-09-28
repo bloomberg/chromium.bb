@@ -690,8 +690,9 @@ source_set("browser_tests") {
     "browser_tests/blimp_contents_view_readback_helper.cc",
     "browser_tests/blimp_contents_view_readback_helper.h",
     "browser_tests/blimp_test_launcher.cc",
-    "browser_tests/engine_browsertest.cc",
+    "browser_tests/input_browsertest.cc",
     "browser_tests/integration_test.cc",
+    "browser_tests/navigation_browsertest.cc",
     "browser_tests/waitable_content_pump.cc",
     "browser_tests/waitable_content_pump.h",
   ]
@@ -702,6 +703,7 @@ source_set("browser_tests") {
     "//base",
     "//blimp/client:session",
     "//blimp/client:test_support",
+    "//blimp/client/core:context",
     "//blimp/client/core:switches",
     "//blimp/client/core/contents:test_support",
     "//blimp/client/core/render_widget:test_support",
