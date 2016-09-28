@@ -14,6 +14,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 
+import javax.annotation.Nullable;
+
 /**
  * The view for a downloaded item displayed in the Downloads list.
  */
@@ -50,13 +52,15 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
      *
      * @param item      The item represented by this DownloadItemView.
      * @param iconResId The drawable resource ID to use for the icon ImageView.
+     * @param thumbnail The Bitmap to use for the thumbnail or null.
      */
-    public void initialize(DownloadHistoryItemWrapper item, int iconResId) {
+    public void initialize(DownloadHistoryItemWrapper item, int iconResId,
+            @Nullable Bitmap thumbnail) {
         mItem = item;
         setItem(item);
 
         mIconResId = iconResId;
-        mThumbnailBitmap = null;
+        mThumbnailBitmap = thumbnail;
         updateIconView();
     }
 

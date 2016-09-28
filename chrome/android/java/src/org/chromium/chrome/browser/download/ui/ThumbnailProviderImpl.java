@@ -67,12 +67,16 @@ public class ThumbnailProviderImpl implements ThumbnailProvider {
     }
 
     @Override
-    public void getThumbnail(ThumbnailRequest request) {
+    public Bitmap getThumbnail(ThumbnailRequest request) {
         String filePath = request.getFilePath();
-        if (TextUtils.isEmpty(filePath)) return;
+        if (TextUtils.isEmpty(filePath)) return null;
+
+        Bitmap cachedBitmap = getBitmapCache().get(filePath);
+        if (cachedBitmap != null) return cachedBitmap;
 
         mRequestQueue.offer(request);
         processQueue();
+        return null;
     }
 
     /** Removes a particular file from the pending queue. */

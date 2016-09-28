@@ -21,10 +21,11 @@ public interface ThumbnailProvider {
     void destroy();
 
     /**
-     * Asynchronously returns a thumbnail via {@link ThumbnailRequest#onThumbnailRetrieved}.
+     * Synchronously returns a thumbnail if it is cached. Otherwise, asynchronously returns a
+     * thumbnail via {@link ThumbnailRequest#onThumbnailRetrieved}.
      * @param request Parameters that describe the thumbnail being retrieved.
      */
-    void getThumbnail(ThumbnailRequest request);
+    Bitmap getThumbnail(ThumbnailRequest request);
 
     /** Removes a particular request from the pending queue. */
     void cancelRetrieval(ThumbnailRequest request);

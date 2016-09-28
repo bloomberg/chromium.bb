@@ -66,8 +66,9 @@ public class DownloadHistoryItemViewHolder
 
         // Asynchronously grab a thumbnail for the file if it might have one.
         int fileType = item.getFilterType();
+        Bitmap thumbnail = null;
         if (fileType == DownloadFilter.FILTER_IMAGE) {
-            thumbnailProvider.getThumbnail(this);
+            thumbnail = thumbnailProvider.getThumbnail(this);
         } else {
             // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
         }
@@ -94,7 +95,7 @@ public class DownloadHistoryItemViewHolder
         }
 
         // Initialize the DownloadItemView.
-        mItemView.initialize(item, iconResource);
+        mItemView.initialize(item, iconResource, thumbnail);
     }
 
     @VisibleForTesting
