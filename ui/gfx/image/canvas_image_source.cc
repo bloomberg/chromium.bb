@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace gfx {
 

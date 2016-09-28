@@ -10,6 +10,7 @@
 #include "base/i18n/rtl.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -596,8 +597,8 @@ ImageSkia CreateVectorIconWithBadge(const VectorIcon& icon,
 ImageSkia CreateVectorIconFromSource(const std::string& source,
                                      int dip_size,
                                      SkColor color) {
-  return ImageSkia(new VectorIconSourceLegacy(source, dip_size, color),
-                   gfx::Size(dip_size, dip_size));
+  return CanvasImageSource::MakeImageSkia<VectorIconSourceLegacy>(
+      source, dip_size, color);
 }
 
 }  // namespace gfx

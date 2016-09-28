@@ -7,8 +7,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
 
 namespace gfx {
@@ -21,7 +23,18 @@ class ImageSkiaRep;
 // completed.
 class GFX_EXPORT CanvasImageSource : public gfx::ImageSkiaSource {
  public:
+  // Factory function to create an ImageSkia from a CanvasImageSource. Example:
+  //   gfx::ImageSkia my_image =
+  //       CanvasImageSource::MakeImageSkia<MySource>(param1, param2);
+  template <typename T, typename... Args>
+  static ImageSkia MakeImageSkia(Args&&... args) {
+    auto source = base::MakeUnique<T>(std::forward<Args>(args)...);
+    gfx::Size size = source->size();
+    return gfx::ImageSkia(source.release(), size);
+  }
+
   CanvasImageSource(const gfx::Size& size, bool is_opaque);
+  ~CanvasImageSource() override {}
 
   // Called when a new image needs to be drawn for a scale factor.
   virtual void Draw(gfx::Canvas* canvas) = 0;
@@ -33,8 +46,6 @@ class GFX_EXPORT CanvasImageSource : public gfx::ImageSkiaSource {
   gfx::ImageSkiaRep GetImageForScale(float scale) override;
 
  protected:
-  ~CanvasImageSource() override {}
-
   const gfx::Size size_;
   const bool is_opaque_;
   DISALLOW_COPY_AND_ASSIGN(CanvasImageSource);
