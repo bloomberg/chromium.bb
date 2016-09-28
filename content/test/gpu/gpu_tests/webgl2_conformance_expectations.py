@@ -511,7 +511,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
                'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
                ['linux'], bug=627525)
 
-    # Multi-vendor failures.
+    # Linux Multi-vendor failures.
 
     self.Fail('deqp/data/gles3/shaders/functions.html',
         ['linux', 'amd', 'intel'], bug=483282)
@@ -524,12 +524,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'intel'], bug=483282)
     self.Fail('deqp/data/gles3/shaders/linkage.html',
         ['linux', 'amd', 'intel'], bug=483282)
-
-    # Linux with ANGLE only
-    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
-        ['linux', 'opengl'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
-        ['linux', 'opengl'], bug=483282)
 
     # Linux without ANGLE only
     self.Flaky('conformance2/buffers/getBufferSubData.html',
