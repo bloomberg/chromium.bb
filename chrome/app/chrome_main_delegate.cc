@@ -764,10 +764,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
                                           chrome::DIR_INTERNAL_PLUGINS,
                                           chrome::DIR_USER_DATA);
 
-  // Enable Message Loop related state asap.
-  if (command_line.HasSwitch(switches::kMessageLoopHistogrammer))
-    base::MessageLoop::EnableHistogrammer(true);
-
 #if !defined(OS_ANDROID) && !defined(OS_WIN)
   // Android does InitLogging when library is loaded. Skip here.
   // For windows we call InitLogging when the sandbox is initialized.

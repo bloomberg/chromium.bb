@@ -121,11 +121,6 @@ class BASE_EXPORT HistogramBase {
     // MemoryAllocator, and that loaded into the Histogram module before this
     // histogram is created.
     kIsPersistent = 0x40,
-
-    // TODO(rkaplow): Look into this, but looks like this is unused and can
-    // be removed.
-    // Only for Histogram and its sub classes: fancy bucket-naming support.
-    kHexRangePrintingFlag = 0x8000,
   };
 
   // Histogram data inconsistency types.

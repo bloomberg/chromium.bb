@@ -46,7 +46,6 @@ class JavaMessageHandlerFactory;
 
 namespace base {
 
-class HistogramBase;
 class RunLoop;
 class ThreadTaskRunnerHandle;
 class WaitableEvent;
@@ -128,8 +127,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
 
   // Returns the MessageLoop object for the current thread, or null if none.
   static MessageLoop* current();
-
-  static void EnableHistogrammer(bool enable_histogrammer);
 
   typedef std::unique_ptr<MessagePump>(MessagePumpFactory)();
   // Uses the given base::MessagePumpForUIFactory to override the default
@@ -397,15 +394,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // responsible for synchronizing ScheduleWork() calls.
   void ScheduleWork();
 
-  // Start recording histogram info about events and action IF it was enabled
-  // and IF the statistics recorder can accept a registration of our histogram.
-  void StartHistogrammer();
-
-  // Add occurrence of event to our histogram, so that we can see what is being
-  // done in a specific MessageLoop instance (i.e., specific thread).
-  // If message_histogram_ is NULL, this is a no-op.
-  void HistogramEvent(int event);
-
   // Notify observers that a nested message loop is starting.
   void NotifyBeginNestedLoop();
 
@@ -452,9 +440,6 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // pump_factory_.Run() is called to create a message pump for this loop
   // if type_ is TYPE_CUSTOM and pump_ is null.
   MessagePumpFactoryCallback pump_factory_;
-
-  // A profiling histogram showing the counts of various messages and events.
-  HistogramBase* message_histogram_;
 
   RunLoop* run_loop_;
 

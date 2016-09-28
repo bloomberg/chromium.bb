@@ -190,7 +190,6 @@ extern const char kMaterialSecurityVerboseShowNonSecureAnimated[];
 extern const char kMaterialSecurityVerboseShowNonSecureNonAnimated[];
 extern const char kMediaCacheSize[];
 extern const char kMediaRouter[];
-extern const char kMessageLoopHistogrammer[];
 extern const char kMetricsRecordingOnly[];
 extern const char kMonitoringDestinationID[];
 extern const char kNetLogCaptureMode[];
