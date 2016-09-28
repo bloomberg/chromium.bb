@@ -142,10 +142,10 @@ class V4GetHashProtocolManagerFactoryImpl
   ~V4GetHashProtocolManagerFactoryImpl() override {}
   std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const std::unordered_set<ListIdentifier>& stores_to_request,
+      const StoresToCheck& stores_to_check,
       const V4ProtocolConfig& config) override {
     return base::WrapUnique(new V4GetHashProtocolManager(
-        request_context_getter, stores_to_request, config));
+        request_context_getter, stores_to_check, config));
   }
 
  private:
@@ -211,12 +211,12 @@ V4GetHashProtocolManagerFactory* V4GetHashProtocolManager::factory_ = NULL;
 // static
 std::unique_ptr<V4GetHashProtocolManager> V4GetHashProtocolManager::Create(
     net::URLRequestContextGetter* request_context_getter,
-    const std::unordered_set<ListIdentifier>& stores_to_request,
+    const StoresToCheck& stores_to_check,
     const V4ProtocolConfig& config) {
   if (!factory_)
     factory_ = new V4GetHashProtocolManagerFactoryImpl();
   return factory_->CreateProtocolManager(request_context_getter,
-                                         stores_to_request, config);
+                                         stores_to_check, config);
 }
 
 // static
@@ -229,7 +229,7 @@ void V4GetHashProtocolManager::RegisterFactory(
 
 V4GetHashProtocolManager::V4GetHashProtocolManager(
     net::URLRequestContextGetter* request_context_getter,
-    const std::unordered_set<ListIdentifier>& stores_to_request,
+    const StoresToCheck& stores_to_check,
     const V4ProtocolConfig& config)
     : gethash_error_count_(0),
       gethash_back_off_mult_(1),
@@ -238,8 +238,8 @@ V4GetHashProtocolManager::V4GetHashProtocolManager(
       request_context_getter_(request_context_getter),
       url_fetcher_id_(0),
       clock_(new base::DefaultClock()) {
-  DCHECK(!stores_to_request.empty());
-  for (const ListIdentifier& store : stores_to_request) {
+  DCHECK(!stores_to_check.empty());
+  for (const ListIdentifier& store : stores_to_check) {
     platform_types_.insert(store.platform_type());
     threat_entry_types_.insert(store.threat_entry_type());
     threat_types_.insert(store.threat_type());

@@ -67,9 +67,8 @@ SafeBrowsingDatabaseManager::FindClientApiCheck(Client* client) {
   return api_checks_.end();
 }
 
-std::unordered_set<ListIdentifier>
-SafeBrowsingDatabaseManager::GetStoresForFullHashRequests() {
-  return std::unordered_set<ListIdentifier>({GetChromeUrlApiId()});
+StoresToCheck SafeBrowsingDatabaseManager::GetStoresForFullHashRequests() {
+  return StoresToCheck({GetChromeUrlApiId()});
 }
 
 void SafeBrowsingDatabaseManager::OnThreatMetadataResponse(

@@ -80,9 +80,8 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
     config.client_name = kClient;
     config.version = kAppVer;
     config.key_param = kKeyParam;
-    std::unordered_set<ListIdentifier> stores_to_look(
-        {GetUrlMalwareId(), GetChromeUrlApiId()});
-    return V4GetHashProtocolManager::Create(NULL, stores_to_look, config);
+    StoresToCheck stores_to_check({GetUrlMalwareId(), GetChromeUrlApiId()});
+    return V4GetHashProtocolManager::Create(NULL, stores_to_check, config);
   }
 
   static void SetupFetcherToReturnOKResponse(

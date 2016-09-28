@@ -174,11 +174,11 @@ std::unique_ptr<StoreStateMap> V4Database::GetStoreStateMap() {
 
 void V4Database::GetStoresMatchingFullHash(
     const FullHash& full_hash,
-    const std::unordered_set<ListIdentifier>& stores_to_look,
+    const StoresToCheck& stores_to_check,
     StoreAndHashPrefixes* matched_store_and_hash_prefixes) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   matched_store_and_hash_prefixes->clear();
-  for (const ListIdentifier& identifier : stores_to_look) {
+  for (const ListIdentifier& identifier : stores_to_check) {
     const auto& store_pair = store_map_->find(identifier);
     DCHECK(store_pair != store_map_->end());
     const std::unique_ptr<V4Store>& store = store_pair->second;

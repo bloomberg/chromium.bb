@@ -172,7 +172,7 @@ class SafeBrowsingDatabaseManager
   //
 
   // Returns the lists that this DatabaseManager should get full hashes for.
-  virtual std::unordered_set<ListIdentifier> GetStoresForFullHashRequests();
+  virtual StoresToCheck GetStoresForFullHashRequests();
 
   // Returns the ThreatSource for this implementation.
   virtual ThreatSource GetThreatSource() const = 0;

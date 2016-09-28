@@ -109,11 +109,11 @@ class V4Database {
   std::unique_ptr<StoreStateMap> GetStoreStateMap();
 
   // Searches for a hash prefix matching the |full_hash| in stores in the
-  // database, filtered by |stores_to_look|, and returns the identifier of the
+  // database, filtered by |stores_to_check|, and returns the identifier of the
   // store along with the matching hash prefix in |matched_hash_prefix_map|.
   virtual void GetStoresMatchingFullHash(
       const FullHash& full_hash,
-      const std::unordered_set<ListIdentifier>& stores_to_look,
+      const StoresToCheck& stores_to_check,
       StoreAndHashPrefixes* matched_store_and_full_hashes);
 
   // Deletes the current database and creates a new one.

@@ -147,7 +147,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   // Create an instance of the safe browsing v4 protocol manager.
   static std::unique_ptr<V4GetHashProtocolManager> Create(
       net::URLRequestContextGetter* request_context_getter,
-      const std::unordered_set<ListIdentifier>& stores_to_request,
+      const StoresToCheck& stores_to_check,
       const V4ProtocolConfig& config);
 
   // Makes the passed |factory| the factory used to instantiate
@@ -183,12 +183,11 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  protected:
-  // Constructs a V4GetHashProtocolManager that issues
-  // network requests using |request_context_getter|.
-  V4GetHashProtocolManager(
-      net::URLRequestContextGetter* request_context_getter,
-      const std::unordered_set<ListIdentifier>& stores_to_request,
-      const V4ProtocolConfig& config);
+  // Constructs a V4GetHashProtocolManager that issues network requests using
+  // |request_context_getter|.
+  V4GetHashProtocolManager(net::URLRequestContextGetter* request_context_getter,
+                           const StoresToCheck& stores_to_check,
+                           const V4ProtocolConfig& config);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(V4GetHashProtocolManagerTest, TestGetHashRequest);
@@ -345,7 +344,7 @@ class V4GetHashProtocolManagerFactory {
   virtual ~V4GetHashProtocolManagerFactory() {}
   virtual std::unique_ptr<V4GetHashProtocolManager> CreateProtocolManager(
       net::URLRequestContextGetter* request_context_getter,
-      const std::unordered_set<ListIdentifier>& stores_to_request,
+      const StoresToCheck& stores_to_check,
       const V4ProtocolConfig& config) = 0;
 
  private:

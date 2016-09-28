@@ -37,36 +37,6 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
     CHECK_MAX
   };
 
-  // The information we need to return the response to the SafeBrowsing client
-  // that asked for the safety reputation of a URL if we can't determine that
-  // synchronously.
-  // TODO(vakh): In its current form, it only includes information for
-  // |CheckBrowseUrl| method. Extend it to serve other methods on |client|.
-  struct PendingCheck {
-    PendingCheck(Client* client,
-                 ClientCallbackType client_callback_type,
-                 const GURL& url);
-
-    ~PendingCheck();
-
-    // The SafeBrowsing client that's waiting for the safe/unsafe verdict.
-    Client* client;
-
-    // Determines which funtion from the |client| needs to be called once we
-    // know whether the URL in |url| is safe or unsafe.
-    ClientCallbackType client_callback_type;
-
-    // The threat verdict for the URL being checked.
-    SBThreatType result_threat_type;
-
-    // The URL that is being checked for being unsafe.
-    GURL url;
-
-    // The metadata associated with the full hash of the severest match found
-    // for that URL.
-    ThreatMetadata url_metadata;
-  };
-
   // Construct V4LocalDatabaseManager.
   // Must be initialized by calling StartOnIOThread() before using.
   V4LocalDatabaseManager(const base::FilePath& base_path);
@@ -104,7 +74,44 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   //
 
  protected:
-  std::unordered_set<ListIdentifier> GetStoresForFullHashRequests() override;
+  // The information we need to process a URL safety reputation request and
+  // respond to the SafeBrowsing client that asked for it.
+  // TODO(vakh): In its current form, it only includes information for
+  // |CheckBrowseUrl| method. Extend it to serve other methods on |client|.
+  struct PendingCheck {
+    PendingCheck(Client* client,
+                 ClientCallbackType client_callback_type,
+                 const StoresToCheck& stores_to_check,
+                 const GURL& url);
+
+    ~PendingCheck();
+
+    // The SafeBrowsing client that's waiting for the safe/unsafe verdict.
+    Client* client;
+
+    // Determines which funtion from the |client| needs to be called once we
+    // know whether the URL in |url| is safe or unsafe.
+    ClientCallbackType client_callback_type;
+
+    // The threat verdict for the URL being checked.
+    SBThreatType result_threat_type;
+
+    // The SafeBrowsing lists to check hash prefixes in.
+    StoresToCheck stores_to_check;
+
+    // The URL that is being checked for being unsafe.
+    GURL url;
+
+    // The metadata associated with the full hash of the severest match found
+    // for that URL.
+    ThreatMetadata url_metadata;
+  };
+
+  typedef std::vector<std::unique_ptr<PendingCheck>> QueuedChecks;
+
+  // The stores/lists to always get full hashes for, regardless of which store
+  // the hash prefix matched.
+  StoresToCheck GetStoresForFullHashRequests() override;
 
  private:
   friend class V4LocalDatabaseManagerTest;
@@ -128,6 +135,12 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // Called when the database has been updated and schedules the next update.
   void DatabaseUpdated();
 
+  // Return the prefixes and the store they matched in, for a given URL. Returns
+  // true if a hash prefix match is found; false otherwise.
+  bool GetPrefixMatches(
+      const std::unique_ptr<PendingCheck>& check,
+      FullHashToStoreAndHashPrefixesMap* full_hash_to_store_and_hash_prefixes);
+
   // Finds the most severe |SBThreatType| and the corresponding |metadata| from
   // |full_hash_infos|.
   void GetSeverestThreatTypeAndMetadata(
@@ -143,6 +156,19 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // threat type and responds to the |client| with that information.
   void OnFullHashResponse(std::unique_ptr<PendingCheck> pending_check,
                           const std::vector<FullHashInfo>& full_hash_infos);
+
+  // Performs the full hash checking of the URL in |check|.
+  void PerformFullHashCheck(std::unique_ptr<PendingCheck> check,
+                            const FullHashToStoreAndHashPrefixesMap&
+                                full_hash_to_store_and_hash_prefixes);
+
+  // When the database is ready to use, process the checks that were queued
+  // while the database was loading from disk.
+  void ProcessQueuedChecks();
+
+  // Called on StopOnIOThread, it responds to the clients that are waiting for
+  // the database to become available with the verdict as SAFE.
+  void RespondSafeToQueuedChecks();
 
   // Calls the appopriate method on the |client| object, based on the contents
   // of |pending_check|.
@@ -181,6 +207,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // The set of clients that are waiting for a full hash response from the
   // SafeBrowsing service.
   PendingClients pending_clients_;
+
+  // The checks that need to be scheduled when the database becomes ready for
+  // use.
+  QueuedChecks queued_checks_;
 
   // The sequenced task runner for running safe browsing database operations.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;

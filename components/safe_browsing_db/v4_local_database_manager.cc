@@ -52,11 +52,15 @@ ThreatSeverity GetThreatSeverity(const ListIdentifier& list_id) {
 V4LocalDatabaseManager::PendingCheck::PendingCheck(
     Client* client,
     ClientCallbackType client_callback_type,
+    const StoresToCheck& stores_to_check,
     const GURL& url)
     : client(client),
       client_callback_type(client_callback_type),
       result_threat_type(SB_THREAT_TYPE_SAFE),
-      url(url) {}
+      stores_to_check(stores_to_check),
+      url(url) {
+  DCHECK_GT(ClientCallbackType::CHECK_MAX, client_callback_type);
+}
 
 V4LocalDatabaseManager::PendingCheck::~PendingCheck() {}
 
@@ -86,7 +90,14 @@ void V4LocalDatabaseManager::CancelCheck(Client* client) {
     pending_clients_.erase(it);
   }
 
-  // TODO(vakh): Handle the case of queued checks.
+  auto queued_it =
+      std::find_if(std::begin(queued_checks_), std::end(queued_checks_),
+                   [&client](const std::unique_ptr<PendingCheck>& check) {
+                     return check->client == client;
+                   });
+  if (queued_it != queued_checks_.end()) {
+    queued_checks_.erase(queued_it);
+  }
 }
 
 bool V4LocalDatabaseManager::CanCheckResourceType(
@@ -111,47 +122,21 @@ bool V4LocalDatabaseManager::CheckBrowseUrl(const GURL& url, Client* client) {
     return true;
   }
 
-  if (v4_database_) {
-    std::unordered_set<FullHash> full_hashes;
-    V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
-
-    std::unordered_set<ListIdentifier> stores_to_look(
-        {GetUrlMalwareId(), GetUrlSocEngId()});
-    std::unordered_set<HashPrefix> matched_hash_prefixes;
-    std::unordered_set<ListIdentifier> matched_stores;
-    StoreAndHashPrefixes matched_store_and_hash_prefixes;
-    FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
-    for (const auto& full_hash : full_hashes) {
-      matched_store_and_hash_prefixes.clear();
-      v4_database_->GetStoresMatchingFullHash(full_hash, stores_to_look,
-                                              &matched_store_and_hash_prefixes);
-      if (!matched_store_and_hash_prefixes.empty()) {
-        full_hash_to_store_and_hash_prefixes[full_hash] =
-            matched_store_and_hash_prefixes;
-      }
-    }
-
-    if (full_hash_to_store_and_hash_prefixes.empty()) {
-      return true;
-    } else {
-      std::unique_ptr<PendingCheck> pending_check =
-          base::MakeUnique<PendingCheck>(
-              client, ClientCallbackType::CHECK_BROWSE_URL, url);
-
-      pending_clients_.insert(client);
-
-      v4_get_hash_protocol_manager_->GetFullHashes(
-          full_hash_to_store_and_hash_prefixes,
-          base::Bind(&V4LocalDatabaseManager::OnFullHashResponse,
-                     base::Unretained(this), base::Passed(&pending_check)));
-
-      return false;
-    }
-  } else {
-    // TODO(vakh): Queue the check and process it when the database becomes
-    // ready.
+  std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
+      client, ClientCallbackType::CHECK_BROWSE_URL,
+      StoresToCheck({GetUrlMalwareId(), GetUrlSocEngId()}), url);
+  if (!v4_database_) {
+    queued_checks_.push_back(std::move(check));
     return false;
   }
+
+  FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
+  if (!GetPrefixMatches(check, &full_hash_to_store_and_hash_prefixes)) {
+    return true;
+  }
+
+  PerformFullHashCheck(std::move(check), full_hash_to_store_and_hash_prefixes);
+  return false;
 }
 
 bool V4LocalDatabaseManager::CheckDownloadUrl(
@@ -255,6 +240,8 @@ void V4LocalDatabaseManager::StopOnIOThread(bool shutdown) {
 
   pending_clients_.clear();
 
+  RespondSafeToQueuedChecks();
+
   // Delete the V4Database. Any pending writes to disk are completed.
   // This operation happens on the task_runner on which v4_database_ operates
   // and doesn't block the IO thread.
@@ -285,6 +272,8 @@ void V4LocalDatabaseManager::DatabaseReady(
     // The database is in place. Start fetching updates now.
     v4_update_protocol_manager_->ScheduleNextUpdate(
         v4_database_->GetStoreStateMap());
+
+    ProcessQueuedChecks();
   } else {
     // Schedule the deletion of v4_database off IO thread.
     V4Database::Destroy(std::move(v4_database));
@@ -296,6 +285,39 @@ void V4LocalDatabaseManager::DatabaseUpdated() {
     v4_update_protocol_manager_->ScheduleNextUpdate(
         v4_database_->GetStoreStateMap());
   }
+}
+
+bool V4LocalDatabaseManager::GetPrefixMatches(
+    const std::unique_ptr<PendingCheck>& check,
+    FullHashToStoreAndHashPrefixesMap* full_hash_to_store_and_hash_prefixes) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(enabled_);
+  DCHECK(v4_database_);
+  DCHECK_GT(ClientCallbackType::CHECK_MAX, check->client_callback_type);
+
+  if (check->client_callback_type == ClientCallbackType::CHECK_BROWSE_URL) {
+    std::unordered_set<FullHash> full_hashes;
+    V4ProtocolManagerUtil::UrlToFullHashes(check->url, &full_hashes);
+
+    StoreAndHashPrefixes matched_store_and_hash_prefixes;
+    for (const auto& full_hash : full_hashes) {
+      matched_store_and_hash_prefixes.clear();
+      v4_database_->GetStoresMatchingFullHash(full_hash, check->stores_to_check,
+                                              &matched_store_and_hash_prefixes);
+      if (!matched_store_and_hash_prefixes.empty()) {
+        (*full_hash_to_store_and_hash_prefixes)[full_hash] =
+            matched_store_and_hash_prefixes;
+      }
+    }
+
+    // No hash prefixes found in the local database so that resource must be
+    // safe.
+    return !full_hash_to_store_and_hash_prefixes->empty();
+  }
+
+  NOTREACHED() << "Unexpected client_callback_type encountered";
+  return false;
 }
 
 void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
@@ -316,6 +338,14 @@ void V4LocalDatabaseManager::GetSeverestThreatTypeAndMetadata(
   }
 }
 
+StoresToCheck V4LocalDatabaseManager::GetStoresForFullHashRequests() {
+  StoresToCheck stores_for_full_hash;
+  for (auto it : list_infos_) {
+    stores_for_full_hash.insert(it.list_id());
+  }
+  return stores_for_full_hash;
+}
+
 // Returns the SBThreatType corresponding to a given SafeBrowsing list.
 SBThreatType V4LocalDatabaseManager::GetSBThreatTypeForList(
     const ListIdentifier& list_id) {
@@ -325,15 +355,6 @@ SBThreatType V4LocalDatabaseManager::GetSBThreatTypeForList(
   DCHECK(list_infos_.end() != it);
   DCHECK_NE(SB_THREAT_TYPE_SAFE, it->sb_threat_type());
   return it->sb_threat_type();
-}
-
-std::unordered_set<ListIdentifier>
-V4LocalDatabaseManager::GetStoresForFullHashRequests() {
-  std::unordered_set<ListIdentifier> stores_for_full_hash;
-  for (auto it : list_infos_) {
-    stores_for_full_hash.insert(it.list_id());
-  }
-  return stores_for_full_hash;
 }
 
 void V4LocalDatabaseManager::OnFullHashResponse(
@@ -356,8 +377,46 @@ void V4LocalDatabaseManager::OnFullHashResponse(
   GetSeverestThreatTypeAndMetadata(&pending_check->result_threat_type,
                                    &pending_check->url_metadata,
                                    full_hash_infos);
-  RespondToClient(std::move(pending_check));
   pending_clients_.erase(it);
+  RespondToClient(std::move(pending_check));
+}
+
+void V4LocalDatabaseManager::PerformFullHashCheck(
+    std::unique_ptr<PendingCheck> check,
+    const FullHashToStoreAndHashPrefixesMap&
+        full_hash_to_store_and_hash_prefixes) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  DCHECK(enabled_);
+  DCHECK(!full_hash_to_store_and_hash_prefixes.empty());
+
+  pending_clients_.insert(check->client);
+
+  v4_get_hash_protocol_manager_->GetFullHashes(
+      full_hash_to_store_and_hash_prefixes,
+      base::Bind(&V4LocalDatabaseManager::OnFullHashResponse,
+                 base::Unretained(this), base::Passed(std::move(check))));
+}
+
+void V4LocalDatabaseManager::ProcessQueuedChecks() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (auto& it : queued_checks_) {
+    FullHashToStoreAndHashPrefixesMap full_hash_to_store_and_hash_prefixes;
+    if (!GetPrefixMatches(it, &full_hash_to_store_and_hash_prefixes)) {
+      RespondToClient(std::move(it));
+    } else {
+      PerformFullHashCheck(std::move(it), full_hash_to_store_and_hash_prefixes);
+    }
+  }
+  queued_checks_.clear();
+}
+
+void V4LocalDatabaseManager::RespondSafeToQueuedChecks() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (std::unique_ptr<PendingCheck>& it : queued_checks_) {
+    RespondToClient(std::move(it));
+  }
+  queued_checks_.clear();
 }
 
 void V4LocalDatabaseManager::RespondToClient(

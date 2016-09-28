@@ -380,17 +380,16 @@ TEST_F(V4DatabaseTest, TestAllStoresMatchFullHash) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
 
-  std::unordered_set<ListIdentifier> stores_to_look(
-      {linux_malware_id_, win_malware_id_});
+  StoresToCheck stores_to_check({linux_malware_id_, win_malware_id_});
   StoreAndHashPrefixes store_and_hash_prefixes;
-  v4_database_->GetStoresMatchingFullHash("anything", stores_to_look,
+  v4_database_->GetStoresMatchingFullHash("anything", stores_to_check,
                                           &store_and_hash_prefixes);
   EXPECT_EQ(2u, store_and_hash_prefixes.size());
-  std::unordered_set<ListIdentifier> stores_found;
+  StoresToCheck stores_found;
   for (const auto& it : store_and_hash_prefixes) {
     stores_found.insert(it.list_id);
   }
-  EXPECT_EQ(stores_to_look, stores_found);
+  EXPECT_EQ(stores_to_check, stores_found);
 }
 
 // Test to ensure the case that no stores match a given full hash.
@@ -407,11 +406,10 @@ TEST_F(V4DatabaseTest, TestNoStoreMatchesFullHash) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
 
-  std::unordered_set<ListIdentifier> stores_to_look(
-      {linux_malware_id_, win_malware_id_});
   StoreAndHashPrefixes store_and_hash_prefixes;
-  v4_database_->GetStoresMatchingFullHash("anything", stores_to_look,
-                                          &store_and_hash_prefixes);
+  v4_database_->GetStoresMatchingFullHash(
+      "anything", StoresToCheck({linux_malware_id_, win_malware_id_}),
+      &store_and_hash_prefixes);
   EXPECT_TRUE(store_and_hash_prefixes.empty());
 }
 
@@ -435,18 +433,17 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHash) {
       v4_database_->store_map_->at(win_malware_id_).get());
   store->set_hash_prefix_matches(true);
 
-  std::unordered_set<ListIdentifier> stores_to_look(
-      {linux_malware_id_, win_malware_id_});
   StoreAndHashPrefixes store_and_hash_prefixes;
-  v4_database_->GetStoresMatchingFullHash("anything", stores_to_look,
-                                          &store_and_hash_prefixes);
+  v4_database_->GetStoresMatchingFullHash(
+      "anything", StoresToCheck({linux_malware_id_, win_malware_id_}),
+      &store_and_hash_prefixes);
   EXPECT_EQ(1u, store_and_hash_prefixes.size());
   EXPECT_EQ(store_and_hash_prefixes.begin()->list_id, win_malware_id_);
   EXPECT_FALSE(store_and_hash_prefixes.begin()->hash_prefix.empty());
 }
 
 // Test to ensure the case that only some stores are reported to match a given
-// full hash because of stores_to_look.
+// full hash because of StoresToCheck.
 TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHashBecauseOfStoresToMatch) {
   // Setup all stores to match the full hash.
   bool hash_prefix_matches = true;
@@ -461,11 +458,10 @@ TEST_F(V4DatabaseTest, TestSomeStoresMatchFullHashBecauseOfStoresToMatch) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(true, created_and_called_back_);
 
-  std::unordered_set<ListIdentifier> stores_to_look({linux_malware_id_});
-  // Don't add win_malware_id_ to the stores_to_look.
+  // Don't add win_malware_id_ to the StoresToCheck.
   StoreAndHashPrefixes store_and_hash_prefixes;
-  v4_database_->GetStoresMatchingFullHash("anything", stores_to_look,
-                                          &store_and_hash_prefixes);
+  v4_database_->GetStoresMatchingFullHash(
+      "anything", StoresToCheck({linux_malware_id_}), &store_and_hash_prefixes);
   EXPECT_EQ(1u, store_and_hash_prefixes.size());
   EXPECT_EQ(store_and_hash_prefixes.begin()->list_id, linux_malware_id_);
   EXPECT_FALSE(store_and_hash_prefixes.begin()->hash_prefix.empty());

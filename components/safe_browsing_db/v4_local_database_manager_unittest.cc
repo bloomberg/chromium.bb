@@ -25,13 +25,29 @@ class FakeV4Database : public V4Database {
 
   void GetStoresMatchingFullHash(
       const FullHash& full_hash,
-      const std::unordered_set<ListIdentifier>& stores_to_look,
+      const StoresToCheck& stores_to_check,
       StoreAndHashPrefixes* store_and_hash_prefixes) override {
     *store_and_hash_prefixes = store_and_hash_prefixes_;
   }
 
  private:
   const StoreAndHashPrefixes& store_and_hash_prefixes_;
+};
+
+class TestClient : public SafeBrowsingDatabaseManager::Client {
+ public:
+  TestClient(SBThreatType sb_threat_type, const GURL& url)
+      : expected_sb_threat_type(sb_threat_type), expected_url(url) {}
+
+  void OnCheckBrowseUrlResult(const GURL& url,
+                              SBThreatType threat_type,
+                              const ThreatMetadata& metadata) override {
+    DCHECK_EQ(expected_url, url);
+    DCHECK_EQ(expected_sb_threat_type, threat_type);
+  }
+
+  SBThreatType expected_sb_threat_type;
+  GURL expected_url;
 };
 
 class V4LocalDatabaseManagerTest : public PlatformTest {
@@ -48,15 +64,11 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
         make_scoped_refptr(new V4LocalDatabaseManager(base_dir_.GetPath()));
     v4_local_database_manager_->SetTaskRunnerForTest(task_runner_);
 
-    SetupLocalDatabaseManager();
+    StartLocalDatabaseManager();
   }
 
   void TearDown() override {
-    v4_local_database_manager_->StopOnIOThread(true);
-
-    // Force destruction of the database.
-    task_runner_->RunPendingTasks();
-    base::RunLoop().RunUntilIdle();
+    StopLocalDatabaseManager();
 
     PlatformTest::TearDown();
   }
@@ -65,14 +77,28 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     v4_local_database_manager_->enabled_ = false;
   }
 
+  const V4LocalDatabaseManager::QueuedChecks& GetQueuedChecks() {
+    return v4_local_database_manager_->queued_checks_;
+  }
+
   void ReplaceV4Database(const StoreAndHashPrefixes& store_and_hash_prefixes) {
     v4_local_database_manager_->v4_database_.reset(new FakeV4Database(
         task_runner_, base::MakeUnique<StoreMap>(), store_and_hash_prefixes));
   }
 
-  void SetupLocalDatabaseManager() {
+  void ResetV4Database() { v4_local_database_manager_->v4_database_.reset(); }
+
+  void StartLocalDatabaseManager() {
     v4_local_database_manager_->StartOnIOThread(NULL, V4ProtocolConfig());
 
+    task_runner_->RunPendingTasks();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void StopLocalDatabaseManager() {
+    v4_local_database_manager_->StopOnIOThread(true);
+
+    // Force destruction of the database.
     task_runner_->RunPendingTasks();
     base::RunLoop().RunUntilIdle();
   }
@@ -160,6 +186,33 @@ TEST_F(V4LocalDatabaseManagerTest, TestGetSeverestThreatTypeAndMetadata) {
       &result_threat_type, &metadata, fhis);
   EXPECT_EQ(SB_THREAT_TYPE_URL_MALWARE, result_threat_type);
   EXPECT_EQ("malware_popid", metadata.population_id);
+}
+
+TEST_F(V4LocalDatabaseManagerTest, TestChecksAreQueued) {
+  const GURL url("https://www.example.com/");
+  TestClient client(SB_THREAT_TYPE_SAFE, url);
+  EXPECT_TRUE(GetQueuedChecks().empty());
+  v4_local_database_manager_->CheckBrowseUrl(url, &client);
+  // The database is available so the check shouldn't get queued.
+  EXPECT_TRUE(GetQueuedChecks().empty());
+
+  ResetV4Database();
+  v4_local_database_manager_->CheckBrowseUrl(url, &client);
+  // The database is unavailable so the check should get queued.
+  EXPECT_EQ(1ul, GetQueuedChecks().size());
+
+  // The following function calls StartOnIOThread which should load the
+  // database from disk and cause the queued check to be performed.
+  StartLocalDatabaseManager();
+  EXPECT_TRUE(GetQueuedChecks().empty());
+
+  ResetV4Database();
+  v4_local_database_manager_->CheckBrowseUrl(url, &client);
+  // The database is unavailable so the check should get queued.
+  EXPECT_EQ(1ul, GetQueuedChecks().size());
+
+  StopLocalDatabaseManager();
+  EXPECT_TRUE(GetQueuedChecks().empty());
 }
 
 }  // namespace safe_browsing

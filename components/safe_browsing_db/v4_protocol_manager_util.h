@@ -297,6 +297,8 @@ class V4ProtocolManagerUtil {
   DISALLOW_COPY_AND_ASSIGN(V4ProtocolManagerUtil);
 };
 
+typedef std::unordered_set<ListIdentifier> StoresToCheck;
+
 }  // namespace safe_browsing
 
 namespace std {
