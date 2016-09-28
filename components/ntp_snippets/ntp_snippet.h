@@ -17,7 +17,7 @@
 
 namespace base {
 class DictionaryValue;
-}
+}  // namespace base
 
 namespace ntp_snippets {
 
@@ -40,7 +40,7 @@ class NTPSnippet {
   // Creates a new snippet with the given |id|.
   // Public for testing only - create snippets using the Create* methods below.
   // TODO(treib): Make this private and add a CreateSnippetForTest?
-  NTPSnippet(const std::string& id);
+  explicit NTPSnippet(const std::string& id);
 
   ~NTPSnippet();
 

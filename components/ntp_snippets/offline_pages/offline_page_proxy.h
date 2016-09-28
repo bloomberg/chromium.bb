@@ -37,10 +37,11 @@ class OfflinePageProxy : public offline_pages::OfflinePageModel::Observer,
         const offline_pages::ClientId& client_id) = 0;
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
   };
 
-  OfflinePageProxy(offline_pages::OfflinePageModel* offline_page_model);
+  explicit OfflinePageProxy(
+      offline_pages::OfflinePageModel* offline_page_model);
 
   // TODO(vitaliii): Remove this function and provide a better way for providers
   // to get data at the start up, while querying OfflinePagesModel only once.

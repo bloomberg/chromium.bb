@@ -48,7 +48,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     base::string16 localized_title;  // Ignored for non-server categories.
     NTPSnippet::PtrVector snippets;
 
-    FetchedCategory(Category c);
+    explicit FetchedCategory(Category c);
     FetchedCategory(FetchedCategory&&);             // = default, in .cc
     ~FetchedCategory();                             // = default, in .cc
     FetchedCategory& operator=(FetchedCategory&&);  // = default, in .cc

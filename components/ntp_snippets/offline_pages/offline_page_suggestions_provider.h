@@ -23,7 +23,7 @@ class PrefService;
 
 namespace gfx {
 class Image;
-}
+}  // namespace gfx
 
 namespace ntp_snippets {
 

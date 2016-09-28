@@ -20,7 +20,7 @@
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace ntp_snippets {
 

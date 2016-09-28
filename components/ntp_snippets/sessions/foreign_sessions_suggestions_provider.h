@@ -26,7 +26,7 @@ namespace ntp_snippets {
 // Simple interface to get foreign tab data on demand and on change.
 class ForeignSessionsProvider {
  public:
-  virtual ~ForeignSessionsProvider() {}
+  virtual ~ForeignSessionsProvider() = default;
   virtual bool HasSessionsData() = 0;
   virtual std::vector<const sync_sessions::SyncedSession*>
   GetAllForeignSessions() = 0;

@@ -5,8 +5,7 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SERVICE_H_
 #define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SERVICE_H_
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <set>
@@ -34,16 +33,16 @@ class PrefService;
 
 namespace gfx {
 class Image;
-}
+}  // namespace gfx
 
 namespace image_fetcher {
 class ImageDecoder;
 class ImageFetcher;
-}
+}  // namespace image_fetcher
 
 namespace suggestions {
 class SuggestionsProfile;
-}
+}  // namespace suggestions
 
 namespace ntp_snippets {
 
@@ -51,6 +50,9 @@ class NTPSnippetsDatabase;
 
 // Retrieves fresh content data (articles) from the server, stores them and
 // provides them as content suggestions.
+// This class is final because it does things in its constructor which make it
+// unsafe to derive from it.
+// TODO(treib): Introduce two-phase initialization and make the class not final?
 // TODO(pke): Rename this service to ArticleSuggestionsProvider and move to
 // a subdirectory.
 // TODO(jkrcal): this class grows really, really large. The fact that
@@ -59,8 +61,8 @@ class NTPSnippetsDatabase;
 // ImagerFetcherDeletage ;-)). Instead, the cleaner solution would  be to define
 // a CachedImageFetcher class that handles the caching aspects and looks like an
 // image fetcher to the NTPSnippetService.
-class NTPSnippetsService : public ContentSuggestionsProvider,
-                           public image_fetcher::ImageFetcherDelegate {
+class NTPSnippetsService final : public ContentSuggestionsProvider,
+                                 public image_fetcher::ImageFetcherDelegate {
  public:
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not

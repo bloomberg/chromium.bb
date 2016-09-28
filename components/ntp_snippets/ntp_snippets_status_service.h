@@ -29,7 +29,7 @@ enum class DisabledReason : int {
 // relevant changes in their states.
 class NTPSnippetsStatusService : public SigninManagerBase::Observer {
  public:
-  typedef base::Callback<void(DisabledReason)> DisabledReasonChangeCallback;
+  using DisabledReasonChangeCallback = base::Callback<void(DisabledReason)>;
 
   NTPSnippetsStatusService(SigninManagerBase* signin_manager,
                            PrefService* pref_service);

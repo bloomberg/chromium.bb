@@ -352,8 +352,7 @@ void OfflinePageSuggestionsProvider::InvalidateSuggestion(Category category,
                                       MakeUniqueID(category, offline_page_id));
 
   std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs(category);
-  auto it =
-      std::find(dismissed_ids.begin(), dismissed_ids.end(), offline_page_id);
+  auto it = dismissed_ids.find(offline_page_id);
   if (it != dismissed_ids.end()) {
     dismissed_ids.erase(it);
     StoreDismissedIDsToPrefs(category, dismissed_ids);

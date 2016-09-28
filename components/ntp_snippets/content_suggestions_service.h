@@ -28,7 +28,7 @@ class PrefService;
 
 namespace gfx {
 class Image;
-}
+}  // namespace gfx
 
 namespace ntp_snippets {
 
@@ -76,7 +76,7 @@ class ContentSuggestionsService : public KeyedService,
     virtual void ContentSuggestionsServiceShutdown() = 0;
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Observer() = default;
   };
 
   enum State {
