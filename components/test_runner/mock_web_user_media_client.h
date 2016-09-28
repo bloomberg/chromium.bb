@@ -22,7 +22,6 @@ class MockWebUserMediaClient : public blink::WebUserMediaClient {
   void requestUserMedia(const blink::WebUserMediaRequest&) override;
   void cancelUserMediaRequest(const blink::WebUserMediaRequest&) override;
   void requestMediaDevices(const blink::WebMediaDevicesRequest&) override;
-  void cancelMediaDevicesRequest(const blink::WebMediaDevicesRequest&) override;
   void requestSources(const blink::WebMediaStreamTrackSourcesRequest&) override;
   void setMediaDeviceChangeObserver(
       const blink::WebMediaDeviceChangeObserver&) override;

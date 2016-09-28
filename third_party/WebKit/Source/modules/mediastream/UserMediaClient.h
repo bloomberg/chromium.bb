@@ -48,7 +48,6 @@ public:
     virtual void requestUserMedia(UserMediaRequest*) = 0;
     virtual void cancelUserMediaRequest(UserMediaRequest*) = 0;
     virtual void requestMediaDevices(MediaDevicesRequest*) = 0;
-    virtual void cancelMediaDevicesRequest(MediaDevicesRequest*) = 0;
     virtual void requestSources(MediaStreamTrackSourcesRequest*) = 0;
     virtual void setMediaDeviceChangeObserver(MediaDevices*) = 0;
     virtual ~UserMediaClient() { }

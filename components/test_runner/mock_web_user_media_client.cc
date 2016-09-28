@@ -151,10 +151,6 @@ void MockWebUserMediaClient::requestMediaDevices(
     media_device_change_observer_.didChangeMediaDevices();
 }
 
-void MockWebUserMediaClient::cancelMediaDevicesRequest(
-    const WebMediaDevicesRequest&) {
-}
-
 void MockWebUserMediaClient::requestSources(
     const blink::WebMediaStreamTrackSourcesRequest& request) {
   struct {

@@ -64,8 +64,6 @@ class CONTENT_EXPORT UserMediaClientImpl
       const blink::WebUserMediaRequest& user_media_request) override;
   void requestMediaDevices(
       const blink::WebMediaDevicesRequest& media_devices_request) override;
-  void cancelMediaDevicesRequest(
-      const blink::WebMediaDevicesRequest& media_devices_request) override;
   void requestSources(
       const blink::WebMediaStreamTrackSourcesRequest& sources_request) override;
   void setMediaDeviceChangeObserver(

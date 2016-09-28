@@ -330,16 +330,6 @@ void UserMediaClientImpl::requestMediaDevices(
       security_origin);
 }
 
-void UserMediaClientImpl::cancelMediaDevicesRequest(
-    const blink::WebMediaDevicesRequest& media_devices_request) {
-  DCHECK(CalledOnValidThread());
-  MediaDevicesRequestInfo* request =
-      FindMediaDevicesRequestInfo(media_devices_request);
-  if (!request)
-    return;
-  CancelAndDeleteMediaDevicesRequest(request);
-}
-
 void UserMediaClientImpl::requestSources(
     const blink::WebMediaStreamTrackSourcesRequest& sources_request) {
   // We don't call UpdateWebRTCMethodCount() here to track the API count in UMA

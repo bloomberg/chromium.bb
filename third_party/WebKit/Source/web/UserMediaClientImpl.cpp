@@ -64,12 +64,6 @@ void UserMediaClientImpl::requestMediaDevices(MediaDevicesRequest* request)
         m_client->requestMediaDevices(request);
 }
 
-void UserMediaClientImpl::cancelMediaDevicesRequest(MediaDevicesRequest* request)
-{
-    if (m_client)
-        m_client->cancelMediaDevicesRequest(WebMediaDevicesRequest(request));
-}
-
 void UserMediaClientImpl::requestSources(MediaStreamTrackSourcesRequest* request)
 {
     if (m_client)

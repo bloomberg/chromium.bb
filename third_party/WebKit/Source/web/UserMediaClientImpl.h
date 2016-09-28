@@ -53,7 +53,6 @@ public:
     void requestUserMedia(UserMediaRequest*) override;
     void cancelUserMediaRequest(UserMediaRequest*) override;
     void requestMediaDevices(MediaDevicesRequest*) override;
-    void cancelMediaDevicesRequest(MediaDevicesRequest*) override;
     void requestSources(MediaStreamTrackSourcesRequest*) override;
     void setMediaDeviceChangeObserver(MediaDevices*) override;
 private:

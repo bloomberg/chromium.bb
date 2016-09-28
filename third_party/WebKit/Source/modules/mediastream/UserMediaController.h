@@ -45,12 +45,8 @@ public:
 
     void requestUserMedia(UserMediaRequest*);
     void cancelUserMediaRequest(UserMediaRequest*);
-
     void requestMediaDevices(MediaDevicesRequest*);
-    void cancelMediaDevicesRequest(MediaDevicesRequest*);
-
     void requestSources(MediaStreamTrackSourcesRequest*);
-
     void setMediaDeviceChangeObserver(MediaDevices*);
 
     static const char* supplementName();
@@ -75,11 +71,6 @@ inline void UserMediaController::cancelUserMediaRequest(UserMediaRequest* reques
 inline void UserMediaController::requestMediaDevices(MediaDevicesRequest* request)
 {
     m_client->requestMediaDevices(request);
-}
-
-inline void UserMediaController::cancelMediaDevicesRequest(MediaDevicesRequest* request)
-{
-    m_client->cancelMediaDevicesRequest(request);
 }
 
 inline void UserMediaController::requestSources(MediaStreamTrackSourcesRequest* request)
