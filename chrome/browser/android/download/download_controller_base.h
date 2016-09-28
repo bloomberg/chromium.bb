@@ -88,10 +88,6 @@ class DownloadControllerBase : public content::DownloadItem::Observer {
   // Called by unit test to approve or disapprove file access request.
   virtual void SetApproveFileAccessRequestForTesting(bool approve) {}
 
-  // Called to set the default download file name if it cannot be resolved
-  // from url and content disposition
-  virtual void SetDefaultDownloadFileName(const std::string& file_name) {}
-
  protected:
   ~DownloadControllerBase() override {}
   static DownloadControllerBase* download_controller_;

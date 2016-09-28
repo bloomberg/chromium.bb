@@ -48,7 +48,6 @@ class DownloadController : public DownloadControllerBase {
   void AcquireFileAccessPermission(
       content::WebContents* web_contents,
       const AcquireFileAccessPermissionCallback& callback) override;
-  void SetDefaultDownloadFileName(const std::string& file_name) override;
 
   // UMA histogram enum for download cancellation reasons. Keep this
   // in sync with MobileDownloadCancelReason in histograms.xml. This should be

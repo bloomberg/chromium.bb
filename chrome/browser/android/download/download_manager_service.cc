@@ -111,8 +111,6 @@ void DownloadManagerService::Init(
     JNIEnv* env,
     jobject obj) {
   java_ref_.Reset(env, obj);
-  DownloadControllerBase::Get()->SetDefaultDownloadFileName(
-      l10n_util::GetStringUTF8(IDS_DEFAULT_DOWNLOAD_FILENAME));
 }
 
 void DownloadManagerService::ResumeDownload(

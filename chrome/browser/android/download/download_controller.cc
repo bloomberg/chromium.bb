@@ -217,11 +217,6 @@ void DownloadController::AcquireFileAccessPermission(
       RequestFileAccess(callback_id);
 }
 
-void DownloadController::SetDefaultDownloadFileName(
-    const std::string& file_name) {
-  default_file_name_ = file_name;
-}
-
 bool DownloadController::HasFileAccessPermission(
     ui::WindowAndroid* window_android) {
   ScopedJavaLocalRef<jobject> jwindow_android = window_android->GetJavaObject();
