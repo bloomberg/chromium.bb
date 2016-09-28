@@ -1620,7 +1620,7 @@ TEST_F(ServiceWorkerJobTest, Update_PauseAfterDownload) {
     ASSERT_TRUE(start_msg);
     EmbeddedWorkerMsg_StartWorker::Param param;
     EmbeddedWorkerMsg_StartWorker::Read(start_msg, &param);
-    EmbeddedWorkerMsg_StartWorker_Params start_params = std::get<0>(param);
+    const EmbeddedWorkerStartParams& start_params = std::get<0>(param);
     EXPECT_FALSE(start_params.pause_after_download);
     sink->ClearMessages();
   }
@@ -1635,7 +1635,7 @@ TEST_F(ServiceWorkerJobTest, Update_PauseAfterDownload) {
     ASSERT_TRUE(start_msg);
     EmbeddedWorkerMsg_StartWorker::Param param;
     EmbeddedWorkerMsg_StartWorker::Read(start_msg, &param);
-    EmbeddedWorkerMsg_StartWorker_Params start_params = std::get<0>(param);
+    const EmbeddedWorkerStartParams& start_params = std::get<0>(param);
     EXPECT_TRUE(start_params.pause_after_download);
     sink->ClearMessages();
   }

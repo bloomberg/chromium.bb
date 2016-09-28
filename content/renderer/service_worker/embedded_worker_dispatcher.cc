@@ -10,7 +10,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/child_process.h"
-#include "content/child/scoped_child_process_reference.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_registry.h"
 #include "content/common/devtools_messages.h"
@@ -27,23 +26,14 @@
 
 namespace content {
 
-// A thin wrapper of WebEmbeddedWorker which also adds and releases process
-// references automatically.
-class EmbeddedWorkerDispatcher::WorkerWrapper {
- public:
-  WorkerWrapper(blink::WebEmbeddedWorker* worker, int devtools_agent_route_id)
-      : worker_(worker),
-        dev_tools_agent_(
-            new EmbeddedWorkerDevToolsAgent(worker, devtools_agent_route_id)) {}
-  ~WorkerWrapper() {}
+EmbeddedWorkerDispatcher::WorkerWrapper::WorkerWrapper(
+    blink::WebEmbeddedWorker* worker,
+    int devtools_agent_route_id)
+    : worker_(worker),
+      dev_tools_agent_(
+          new EmbeddedWorkerDevToolsAgent(worker, devtools_agent_route_id)) {}
 
-  blink::WebEmbeddedWorker* worker() { return worker_.get(); }
-
- private:
-  ScopedChildProcessReference process_ref_;
-  std::unique_ptr<blink::WebEmbeddedWorker> worker_;
-  std::unique_ptr<EmbeddedWorkerDevToolsAgent> dev_tools_agent_;
-};
+EmbeddedWorkerDispatcher::WorkerWrapper::~WorkerWrapper() {}
 
 EmbeddedWorkerDispatcher::EmbeddedWorkerDispatcher() : weak_factory_(this) {}
 
@@ -79,35 +69,15 @@ void EmbeddedWorkerDispatcher::WorkerContextDestroyed(
 }
 
 void EmbeddedWorkerDispatcher::OnStartWorker(
-    const EmbeddedWorkerMsg_StartWorker_Params& params) {
+    const EmbeddedWorkerStartParams& params) {
   DCHECK(!workers_.Lookup(params.embedded_worker_id));
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerDispatcher::OnStartWorker");
-  std::unique_ptr<WorkerWrapper> wrapper(new WorkerWrapper(
-      blink::WebEmbeddedWorker::create(
-          new ServiceWorkerContextClient(params.embedded_worker_id,
-                                         params.service_worker_version_id,
-                                         params.scope, params.script_url,
-                                         params.worker_devtools_agent_route_id),
-          NULL),
-      params.worker_devtools_agent_route_id));
-
-  blink::WebEmbeddedWorkerStartData start_data;
-  start_data.scriptURL = params.script_url;
-  start_data.userAgent = base::UTF8ToUTF16(GetContentClient()->GetUserAgent());
-  start_data.waitForDebuggerMode =
-      params.wait_for_debugger ?
-          blink::WebEmbeddedWorkerStartData::WaitForDebugger :
-          blink::WebEmbeddedWorkerStartData::DontWaitForDebugger;
-  start_data.v8CacheOptions = static_cast<blink::WebSettings::V8CacheOptions>(
-      params.settings.v8_cache_options);
-  start_data.dataSaverEnabled = params.settings.data_saver_enabled;
-  start_data.pauseAfterDownloadMode =
-      params.pause_after_download
-          ? blink::WebEmbeddedWorkerStartData::PauseAfterDownload
-          : blink::WebEmbeddedWorkerStartData::DontPauseAfterDownload;
-
-  wrapper->worker()->startWorkerContext(start_data);
-  workers_.AddWithID(wrapper.release(), params.embedded_worker_id);
+  std::unique_ptr<WorkerWrapper> wrapper = StartWorkerContext(
+      params, base::MakeUnique<ServiceWorkerContextClient>(
+                  params.embedded_worker_id, params.service_worker_version_id,
+                  params.scope, params.script_url,
+                  params.worker_devtools_agent_route_id));
+  RegisterWorker(params.embedded_worker_id, std::move(wrapper));
 }
 
 void EmbeddedWorkerDispatcher::OnStopWorker(int embedded_worker_id) {
@@ -161,6 +131,39 @@ void EmbeddedWorkerDispatcher::OnAddMessageToConsole(
   }
   wrapper->worker()->addMessageToConsole(blink::WebConsoleMessage(
       target_level, blink::WebString::fromUTF8(message)));
+}
+
+std::unique_ptr<EmbeddedWorkerDispatcher::WorkerWrapper>
+EmbeddedWorkerDispatcher::StartWorkerContext(
+    const EmbeddedWorkerStartParams& params,
+    std::unique_ptr<ServiceWorkerContextClient> context_client) {
+  std::unique_ptr<WorkerWrapper> wrapper(new WorkerWrapper(
+      blink::WebEmbeddedWorker::create(context_client.release(), nullptr),
+      params.worker_devtools_agent_route_id));
+
+  blink::WebEmbeddedWorkerStartData start_data;
+  start_data.scriptURL = params.script_url;
+  start_data.userAgent = base::UTF8ToUTF16(GetContentClient()->GetUserAgent());
+  start_data.waitForDebuggerMode =
+      params.wait_for_debugger
+          ? blink::WebEmbeddedWorkerStartData::WaitForDebugger
+          : blink::WebEmbeddedWorkerStartData::DontWaitForDebugger;
+  start_data.v8CacheOptions = static_cast<blink::WebSettings::V8CacheOptions>(
+      params.settings.v8_cache_options);
+  start_data.dataSaverEnabled = params.settings.data_saver_enabled;
+  start_data.pauseAfterDownloadMode =
+      params.pause_after_download
+          ? blink::WebEmbeddedWorkerStartData::PauseAfterDownload
+          : blink::WebEmbeddedWorkerStartData::DontPauseAfterDownload;
+
+  wrapper->worker()->startWorkerContext(start_data);
+  return wrapper;
+}
+
+void EmbeddedWorkerDispatcher::RegisterWorker(
+    int embedded_worker_id,
+    std::unique_ptr<WorkerWrapper> wrapper) {
+  workers_.AddWithID(wrapper.release(), embedded_worker_id);
 }
 
 }  // namespace content
