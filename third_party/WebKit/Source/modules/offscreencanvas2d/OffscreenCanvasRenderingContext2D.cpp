@@ -94,18 +94,13 @@ bool OffscreenCanvasRenderingContext2D::hasImageBuffer() const
     return !!m_imageBuffer;
 }
 
-static bool shouldAccelerate(IntSize surfaceSize)
-{
-    return RuntimeEnabledFeatures::accelerated2dCanvasEnabled();
-}
-
 ImageBuffer* OffscreenCanvasRenderingContext2D::imageBuffer() const
 {
     if (!m_imageBuffer) {
         IntSize surfaceSize(width(), height());
         OpacityMode opacityMode = hasAlpha() ? NonOpaque : Opaque;
         std::unique_ptr<ImageBufferSurface> surface;
-        if (shouldAccelerate(surfaceSize)) {
+        if (RuntimeEnabledFeatures::accelerated2dCanvasEnabled()) {
             surface.reset(new AcceleratedImageBufferSurface(surfaceSize, opacityMode));
         }
 
