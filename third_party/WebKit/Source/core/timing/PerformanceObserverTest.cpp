@@ -20,7 +20,6 @@ public:
     ~MockPerformanceObserverCallback() override {}
 
     void handleEvent(PerformanceObserverEntryList*, PerformanceObserver*) override {}
-    ExecutionContext* getExecutionContext() const override { return nullptr; }
 };
 
 class MockPerformanceBase : public PerformanceBase {

@@ -42,7 +42,6 @@ public:
     ~MockPerformanceObserverCallback() {}
 
     void handleEvent(PerformanceObserverEntryList*, PerformanceObserver*) override {}
-    ExecutionContext* getExecutionContext() const override { return nullptr; }
 
     DEFINE_INLINE_TRACE()
     {

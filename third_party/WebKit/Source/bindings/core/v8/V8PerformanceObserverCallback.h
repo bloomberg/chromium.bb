@@ -26,13 +26,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void handleEvent(PerformanceObserverEntryList*, PerformanceObserver*) override;
-
-    // TODO(lkawai,bashi): This function should be removed.
-    ExecutionContext* getExecutionContext() const override
-    {
-        NOTREACHED();
-        return nullptr;
-    }
 private:
     CORE_EXPORT V8PerformanceObserverCallback(v8::Local<v8::Function>, v8::Local<v8::Object>, ScriptState*);
 

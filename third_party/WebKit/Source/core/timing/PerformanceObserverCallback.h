@@ -19,7 +19,6 @@ public:
     virtual ~PerformanceObserverCallback() { }
 
     virtual void handleEvent(PerformanceObserverEntryList*, PerformanceObserver*) = 0;
-    virtual ExecutionContext* getExecutionContext() const = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
