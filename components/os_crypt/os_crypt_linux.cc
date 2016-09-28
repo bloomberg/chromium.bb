@@ -72,6 +72,10 @@ KeyStorageLinux* GetKeyStorage() {
   return g_cache.Get().key_storage_cache.get();
 }
 
+// Pointer to a function that creates and returns the |KeyStorage| instance to
+// be used. The function maintains ownership of the pointer.
+KeyStorageLinux* (*g_key_storage_provider)() = &GetKeyStorage;
+
 // Returns a cached string of "peanuts". Is thread-safe.
 std::string* GetPasswordV10() {
   base::AutoLock auto_lock(g_cache.Get().lock);
@@ -87,15 +91,13 @@ std::string* GetPasswordV11() {
   base::AutoLock auto_lock(g_cache.Get().lock);
   if (!g_cache.Get().is_password_v11_cached) {
     g_cache.Get().password_v11_cache.reset(
-        GetKeyStorage() ? new std::string(GetKeyStorage()->GetKey()) : nullptr);
+        g_key_storage_provider()
+            ? new std::string(g_key_storage_provider()->GetKey())
+            : nullptr);
     g_cache.Get().is_password_v11_cached = true;
   }
   return g_cache.Get().password_v11_cache.get();
 }
-
-// Pointer to a function that creates and returns the |KeyStorage| instance to
-// be used. The function maintains ownership of the pointer.
-KeyStorageLinux* (*g_key_storage_provider)() = &GetKeyStorage;
 
 // Pointers to functions that return a password for deriving the encryption key.
 // One function for each supported password version (see Version enum).
@@ -150,12 +152,16 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
     return true;
   }
 
-  // If a |KeyStorage| is available, use a password backed by the |KeyStorage|.
-  // Otherwise use the hardcoded password.
-  Version version = g_key_storage_provider() ? Version::V11 : Version::V10;
-
+  // If we are able to create a V11 key (i.e. a KeyStorage was available), then
+  // we'll use it. If not, we'll use V10.
+  Version version = Version::V11;
   std::unique_ptr<crypto::SymmetricKey> encryption_key(
       GetEncryptionKey(version));
+  if (!encryption_key) {
+    version = Version::V10;
+    encryption_key = GetEncryptionKey(version);
+  }
+
   if (!encryption_key)
     return false;
 
