@@ -896,11 +896,8 @@ void ChildThreadImpl::GetAssociatedInterface(
   int32_t routing_id = static_cast<int32_t>(reinterpret_cast<uintptr_t>(
       associated_interface_provider_bindings_.dispatch_context()));
   Listener* route = router_.GetRoute(routing_id);
-  base::debug::Alias(&name);
-  base::debug::Alias(&request);
-  base::debug::Alias(&routing_id);
-  base::debug::Alias(&route);
-  route->OnAssociatedInterfaceRequest(name, request.PassHandle());
+  if (route)
+    route->OnAssociatedInterfaceRequest(name, request.PassHandle());
 }
 
 bool ChildThreadImpl::IsInBrowserProcess() const {
