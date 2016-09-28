@@ -32,6 +32,7 @@
 
 #include <linux/input.h>
 #include <cairo.h>
+#include <wayland-util.h>
 
 #include "shared/helpers.h"
 #include "window.h"
@@ -184,7 +185,7 @@ fullscreen_handler(struct window *window, void *data)
 
 static void
 draw_string(cairo_t *cr,
-            const char *fmt, ...) __attribute__((format (gnu_printf, 2, 3)));
+            const char *fmt, ...) WL_PRINTF(2, 3);
 
 static void
 draw_string(cairo_t *cr,
