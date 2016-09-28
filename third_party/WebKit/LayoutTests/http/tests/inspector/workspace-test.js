@@ -12,7 +12,7 @@ InspectorTest.createWorkspace = function(ignoreEvents)
     InspectorTest.testWorkspace = new WebInspector.Workspace();
     InspectorTest.testFileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, InspectorTest.testWorkspace);
     InspectorTest.testNetworkMapping = new WebInspector.NetworkMapping(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testFileSystemWorkspaceBinding, WebInspector.fileSystemMapping);
-    InspectorTest.testNetworkProjectManager = new WebInspector.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
+    InspectorTest.testNetworkProjectManager = new WebInspector.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
     InspectorTest.testDebuggerWorkspaceBinding = new WebInspector.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
     InspectorTest.testCSSWorkspaceBinding = new WebInspector.CSSWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace, InspectorTest.testNetworkMapping);
 
@@ -132,9 +132,6 @@ InspectorTest.addMockUISourceCodeViaNetwork = function(url, type, content, targe
 InspectorTest._defaultWorkspaceEventHandler = function(event)
 {
     var uiSourceCode = event.data;
-    var networkURL = WebInspector.networkMapping.networkURL(uiSourceCode);
-    if (uiSourceCode.project().type() === WebInspector.projectTypes.Debugger && !networkURL)
-        return;
     if (uiSourceCode.project().type() === WebInspector.projectTypes.Service)
         return;
     InspectorTest.addResult(`Workspace event: ${event.type.toString()}: ${uiSourceCode.url()}.`);

@@ -25,10 +25,9 @@ function test()
     {
         var header = cssModel.styleSheetHeaderForId(styleSheetId);
         var uiLocation = InspectorTest.testCSSWorkspaceBinding.rawLocationToUILocation(new WebInspector.CSSLocation(header, 2, 3));
-        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiLocation.uiSourceCode);
-        if (networkURL.indexOf(".scss") === -1)
+        if (uiLocation.uiSourceCode.url().indexOf(".scss") === -1)
             return;
-        finalMappedLocation = networkURL + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
+        finalMappedLocation = uiLocation.uiSourceCode.url() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber;
         join();
     }
 

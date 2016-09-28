@@ -98,8 +98,7 @@ function initialize_extensionsPanelTest()
 
         function showUILocationHook(uiLocation)
         {
-            var networkURL = WebInspector.networkMapping.networkURL(uiLocation.uiSourceCode);
-            showURL("sources", networkURL, uiLocation.lineNumber);
+            showURL("sources", uiLocation.uiSourceCode.url(), uiLocation.lineNumber);
         }
 
         function showResourceHook(resource, lineNumber)

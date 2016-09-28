@@ -54,8 +54,7 @@ function test()
             InspectorTest.addResult("Null uiLocation");
             return;
         }
-        var networkURL = WebInspector.networkMapping.networkURL(uiLocation.uiSourceCode);
-        InspectorTest.addResult(networkURL + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
+        InspectorTest.addResult(uiLocation.uiSourceCode.url() + ":" + uiLocation.lineNumber + ":" + uiLocation.columnNumber);
     }
 };
 </script>

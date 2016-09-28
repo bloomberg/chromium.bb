@@ -14,10 +14,9 @@ InspectorTest.initializeDefaultMappingOnTarget = function(target)
 
         uiLocationToRawLocation: function(uiSourceCode, lineNumber)
         {
-            var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-            if (!InspectorTest.uiSourceCodes[networkURL])
+            if (!InspectorTest.uiSourceCodes[uiSourceCode.url()])
                 return null;
-            return new WebInspector.DebuggerModel.Location(target.debuggerModel, networkURL, lineNumber, 0);
+            return new WebInspector.DebuggerModel.Location(target.debuggerModel, uiSourceCode.url(), lineNumber, 0);
         },
 
         isIdentity: function()
@@ -207,8 +206,7 @@ InspectorTest.addScript = function(target, breakpointManager, url)
     var uiSourceCodes = breakpointManager._workspace.uiSourceCodesForProjectType(WebInspector.projectTypes.Debugger);
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         var uiSourceCode = uiSourceCodes[i];
-        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-        if (networkURL === url) {
+        if (uiSourceCode.url() === url) {
             breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target, uiSourceCode, breakpointManager.defaultMapping);
             InspectorTest.uiSourceCodes[url] = uiSourceCode;
             return uiSourceCode;
@@ -275,7 +273,7 @@ InspectorTest.createBreakpointManager = function(targetManager, debuggerWorkspac
             mappingForManager = targets[i].defaultMapping;
     }
 
-    var breakpointManager = new WebInspector.BreakpointManager(setting, debuggerWorkspaceBinding._workspace, debuggerWorkspaceBinding._networkMapping, targetManager, debuggerWorkspaceBinding);
+    var breakpointManager = new WebInspector.BreakpointManager(setting, debuggerWorkspaceBinding._workspace, targetManager, debuggerWorkspaceBinding);
     breakpointManager.defaultMapping = mappingForManager;
     breakpointManager.addEventListener(WebInspector.BreakpointManager.Events.BreakpointAdded, breakpointAdded);
     breakpointManager.addEventListener(WebInspector.BreakpointManager.Events.BreakpointRemoved, breakpointRemoved);
@@ -318,8 +316,7 @@ InspectorTest.dumpBreakpointLocations = function(breakpointManager)
         locations.sort(function(a, b) {
             return a.lineNumber - b.lineNumber;
         });
-        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-        InspectorTest.addResult("    UISourceCode (url='" + networkURL + "', uri='" + uiSourceCode.url() + "')");
+        InspectorTest.addResult("    UISourceCode (url='" + uiSourceCode.url() + "', uri='" + uiSourceCode.url() + "')");
         for (var i = 0; i < locations.length; ++i)
             InspectorTest.addResult("      Location: (" + locations[i].lineNumber + ", " + locations[i].columnNumber + ")");
     }

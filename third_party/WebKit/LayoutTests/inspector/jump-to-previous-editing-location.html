@@ -221,7 +221,7 @@ function test()
             function onScriptSource(uiSourceCode)
             {
                 var linkifier = new WebInspector.Linkifier();
-                var anchorURI = WebInspector.networkMapping.networkURL(uiSourceCode);
+                var anchorURI = uiSourceCode.url();
                 var anchor = linkifier.linkifyScriptLocation(WebInspector.targetManager.mainTarget(), null, anchorURI, 10, 1);
                 WebInspector.Revealer.revealPromise(anchor[WebInspector.Linkifier._uiLocationSymbol]).then(function() {
                     InspectorTest.addResult("Selection: " + panel.visibleView.textEditor.selection().toString());

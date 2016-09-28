@@ -52,15 +52,13 @@ function test()
     function uiSourceCodeAdded(event)
     {
         var uiSourceCode = event.data;
-        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-        InspectorTest.addResult("UISourceCodeAdded: [" + uiSourceCode.project().type() + "] " + networkURL);
+        InspectorTest.addResult("UISourceCodeAdded: [" + uiSourceCode.project().type() + "] " + uiSourceCode.url());
     }
 
     function uiSourceCodeRemoved(event)
     {
         var uiSourceCode = event.data;
-        var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-        InspectorTest.addResult("UISourceCodeRemoved: [" + uiSourceCode.project().type() + "] " + networkURL);
+        InspectorTest.addResult("UISourceCodeRemoved: [" + uiSourceCode.project().type() + "] " + uiSourceCode.url());
     }
 
     InspectorTest.runTestSuite([
@@ -254,21 +252,11 @@ function test()
 
             function firstUISourceCodeAdded(uiSourceCode)
             {
-                var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-                if (!networkURL) {
-                    InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(firstUISourceCodeAdded);
-                    return;
-                }
                 InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(secondUISourceCodeAdded);
             }
 
             function secondUISourceCodeAdded(uiSourceCode)
             {
-                var networkURL = InspectorTest.testNetworkMapping.networkURL(uiSourceCode);
-                if (!networkURL) {
-                    InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(secondUISourceCodeAdded);
-                    return;
-                }
                 afterScriptAdded();
             }
 
@@ -330,12 +318,7 @@ function test()
 
             function firstUISourceCodeAdded(uiSourceCode)
             {
-                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(secondUISourceCodeAdded);
-            }
-
-            function secondUISourceCodeAdded(uiSourceCode)
-            {
-                afterScriptAdded();
+                InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(afterScriptAdded);
             }
 
             function afterScriptAdded(uiSourceCode)

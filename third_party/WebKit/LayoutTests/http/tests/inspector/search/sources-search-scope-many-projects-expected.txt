@@ -30,9 +30,9 @@ Search result #5: uiSourceCode.url = file:///var/www/search.js
   search match #5: lineNumber = 11, lineContent = '    // SEARCHTestUniqueString();'
 
 Running: testDirtyFiles
-Search result #1: uiSourceCode.url = http://localhost/search.js
+Search result #1: uiSourceCode.url = file:///var/www/search.js
   search match #1: lineNumber = 0, lineContent = 'FOO searchTestUniqueString BAR'
-Search result #2: uiSourceCode.url = file:///var/www/search.js
+Search result #2: uiSourceCode.url = http://localhost/search.js
   search match #1: lineNumber = 0, lineContent = 'FOO searchTestUniqueString BAR'
 Search result #3: uiSourceCode.url = http://localhost/search.html
   search match #1: lineNumber = 4, lineContent = '<script>window.eval("function searchTestUniqueString() {}");</script>'

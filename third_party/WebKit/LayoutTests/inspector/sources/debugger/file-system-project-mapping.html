@@ -33,8 +33,8 @@ function test()
         InspectorTest.addResult("UISourceCode uri to url mappings:");
         for (var uiSourceCode of uiSourceCodes) {
             var binding = persistence.binding(uiSourceCode);
-            var networkURL = binding ? binding.network.url() : "";
-            InspectorTest.addResult("    " + uiSourceCode.url() + " -> " + networkURL);
+            var url = binding ? binding.network.url() : "";
+            InspectorTest.addResult("    " + uiSourceCode.url() + " -> " + url);
         }
     }
 
@@ -94,8 +94,7 @@ function test()
                 InspectorTest.addMockUISourceCodeViaNetwork("http://localhost/bar.js", WebInspector.resourceTypes.Script, "<foo content>", target);
                 dumpFileSystemUISourceCodesMappings();
 
-                var networkURL = InspectorTest.testNetworkMapping.networkURL(networkUISourceCode);
-                WebInspector.fileSystemMapping.removeMappingForURL(networkURL);
+                WebInspector.fileSystemMapping.removeMappingForURL(networkUISourceCode.url());
                 fs.reportRemoved();
                 next();
             }
