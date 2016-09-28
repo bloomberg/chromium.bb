@@ -55,7 +55,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': '86f7e41d9424b9d8faf66c601b129855217f9a08',
+  'buildtools_revision': '5fd66957f08bb752dca714a591c84587c9d70762',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1018,6 +1018,8 @@ hooks = [
 ]
 
 recursedeps = [
+  # buildtools provides clang_format, libc++, and libc++abi
+  'src/buildtools',
   # android_tools manages the NDK.
   'src/third_party/android_tools',
   # ANGLE manages DEPS that it also owns the build files for, such as dEQP.
