@@ -45,8 +45,12 @@ static inline void collectElementIdentifierHashes(const Element& element, Vector
     if (element.isStyledElement() && element.hasClass()) {
         const SpaceSplitString& classNames = element.classNames();
         size_t count = classNames.size();
-        for (size_t i = 0; i < count; ++i)
-            identifierHashes.append(classNames[i].impl()->existingHash() * ClassAttributeSalt);
+        for (size_t i = 0; i < count; ++i) {
+            DCHECK(classNames[i].impl());
+            // Speculative fix for https://crbug.com/646026
+            if (classNames[i].impl())
+                identifierHashes.append(classNames[i].impl()->existingHash() * ClassAttributeSalt);
+        }
     }
 }
 
