@@ -1854,25 +1854,8 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       if (!av1_read_sync_code(rb))
         aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                            "Invalid frame sync code");
-#if CONFIG_MISC_FIXES
+
       read_bitdepth_colorspace_sampling(cm, rb);
-#else
-      if (cm->profile > PROFILE_0) {
-        read_bitdepth_colorspace_sampling(cm, rb);
-      } else {
-        // NOTE: The intra-only frame header does not include the specification
-        // of either the color format or color sub-sampling in profile 0. AV1
-        // specifies that the default color format should be YUV 4:2:0 in this
-        // case (normative).
-        cm->color_space = AOM_CS_BT_601;
-        cm->color_range = 0;
-        cm->subsampling_y = cm->subsampling_x = 1;
-        cm->bit_depth = AOM_BITS_8;
-#if CONFIG_AOM_HIGHBITDEPTH
-        cm->use_highbitdepth = 0;
-#endif
-      }
-#endif
 
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
       setup_frame_size(cm, rb);

@@ -2087,15 +2087,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 
     if (cm->intra_only) {
       write_sync_code(wb);
-
-#if CONFIG_MISC_FIXES
       write_bitdepth_colorspace_sampling(cm, wb);
-#else
-      // Note for profile 0, 420 8bpp is assumed.
-      if (cm->profile > PROFILE_0) {
-        write_bitdepth_colorspace_sampling(cm, wb);
-      }
-#endif
 
 #if CONFIG_EXT_REFS
       aom_wb_write_literal(wb, cpi->refresh_frame_mask, REF_FRAMES);
