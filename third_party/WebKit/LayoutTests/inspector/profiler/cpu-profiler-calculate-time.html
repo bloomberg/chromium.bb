@@ -93,6 +93,8 @@ function test()
         "endTime": 1375445601.070847,
         "samples": [ 1, 2 ]
     };
+    profileAndExpectations.root = profileAndExpectations.head;
+    WebInspector.ProfileTreeModel.prototype._assignDepthsAndParents.call(profileAndExpectations);
     WebInspector.ProfileTreeModel.prototype._calculateTotals(profileAndExpectations.head);
     function checkExpectations(node)
     {
