@@ -116,6 +116,7 @@ cr.define('md_history.history_toolbar_focus_test', function() {
       ;
 
       setup(function() {
+        window.resultsRendered = false;
         app = replaceApp();
 
         element = app.$['history'].$['infinite-list'];
@@ -123,8 +124,7 @@ cr.define('md_history.history_toolbar_focus_test', function() {
       });
 
       test('search bar is focused on load in wide mode', function() {
-        window.resultsRendered = false;
-        app.hasDrawer_ = false;
+        toolbar.$['main-toolbar'].narrow_ = false;
 
         historyResult(createHistoryInfo(), []);
         return flush().then(() => {
@@ -137,15 +137,17 @@ cr.define('md_history.history_toolbar_focus_test', function() {
       });
 
       test('search bar is not focused on load in narrow mode', function() {
-        app.hasDrawer_ = true;
+        toolbar.$['main-toolbar'].narrow_ = true;
 
         historyResult(createHistoryInfo(), []);
-        // Ensure the search bar is focused on load.
-        assertFalse(
-            $('history-app')
-                .$.toolbar.$['main-toolbar']
-                .getSearchField()
-                .isSearchFocused());
+        return flush().then(() => {
+          // Ensure the search bar is focused on load.
+          assertFalse(
+              $('history-app')
+                  .$.toolbar.$['main-toolbar']
+                  .getSearchField()
+                  .isSearchFocused());
+        });
       });
     });
   };

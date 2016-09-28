@@ -5401,8 +5401,9 @@ Polymer({
     setTimeout(function() {
       chrome.send('metricsHandler:recordTime', [ 'History.ResultsRenderedTime', window.performance.now() ]);
     });
-    if (!this.hasDrawer_) {
-      this.focusToolbarSearchField();
+    var searchField = this.$.toolbar.searchField;
+    if (!searchField.narrow) {
+      searchField.getSearchInput().focus();
     }
     md_history.ensureLazyLoaded();
   },
