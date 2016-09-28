@@ -208,10 +208,11 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
     //  main frame origin). The intended behavior is that Flash is advertised
     // only if a Flash embed hosted on the same origin as the main frame origin
     // is allowed to run.
+    bool is_managed = false;
     HostContentSettingsMap* settings_map =
         context_info_it->second->host_content_settings_map.get();
     ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-        settings_map, main_url, plugin_content_url);
+        settings_map, main_url, plugin_content_url, &is_managed);
     flash_setting = PluginsFieldTrial::EffectiveContentSetting(
         CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
     if (flash_setting == CONTENT_SETTING_ALLOW)
@@ -221,8 +222,11 @@ bool ChromePluginServiceFilter::IsPluginAvailable(
 
     // The content setting is neither ALLOW or BLOCK. Check whether the site
     // meets the engagement cutoff for making Flash available without a prompt.
-    if (SiteEngagementService::GetScoreFromSettings(settings_map, main_url) <
-        PluginsFieldTrial::GetSiteEngagementThresholdForFlash()) {
+    // This should only happen if the setting isn't being enforced by an
+    // enterprise policy.
+    if (is_managed ||
+        SiteEngagementService::GetScoreFromSettings(settings_map, main_url) <
+            PluginsFieldTrial::GetSiteEngagementThresholdForFlash()) {
       return false;
     }
   }

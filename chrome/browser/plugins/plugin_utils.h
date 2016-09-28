@@ -34,7 +34,8 @@ class PluginUtils {
   static ContentSetting GetFlashPluginContentSetting(
       const HostContentSettingsMap* host_content_settings_map,
       const GURL& policy_url,
-      const GURL& plugin_url);
+      const GURL& plugin_url,
+      bool* is_managed);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PluginUtils);

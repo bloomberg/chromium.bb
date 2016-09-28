@@ -27,6 +27,8 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/pref_names.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
@@ -201,13 +203,12 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsCustomEngagement) {
   base::FieldTrialList field_trials_(nullptr);
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-
-  base::FeatureList::ClearInstanceForTesting();
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->RegisterFieldTrialOverride(
       features::kPreferHtmlOverPlugins.name,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
-  base::FeatureList::SetInstance(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
   EXPECT_EQ(
       base::FeatureList::GetFieldTrial(features::kPreferHtmlOverPlugins),
       trial);
@@ -248,7 +249,6 @@ TEST_F(ChromePluginServiceFilterTest, PreferHtmlOverPluginsCustomEngagement) {
   EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
                                  flash_plugin));
 
-  base::FeatureList::ClearInstanceForTesting();
   variations::testing::ClearAllVariationParams();
 }
 
@@ -335,4 +335,34 @@ TEST_F(ChromePluginServiceFilterTest,
   // Ensure we pass the engagement check in the incognito profile.
   EXPECT_TRUE(IsPluginAvailable(url, url, incognito->GetResourceContext(),
                                 flash_plugin));
+}
+
+TEST_F(ChromePluginServiceFilterTest, BlockIfManagedSetting) {
+  content::WebPluginInfo flash_plugin(
+      base::ASCIIToUTF16(content::kFlashPluginName), flash_plugin_path_,
+      base::ASCIIToUTF16("1"), base::ASCIIToUTF16("The Flash plugin."));
+
+  // Activate PreferHtmlOverPlugins.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile());
+  map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
+  // Reaching 1.0 engagement should allow Flash.
+  GURL url("http://www.google.com");
+  service->ResetScoreForURL(url, 1.0);
+  EXPECT_TRUE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
+                                flash_plugin));
+
+  // Enterprise ASK setting should block flash from being advertised.
+  syncable_prefs::TestingPrefServiceSyncable* prefs =
+      profile()->GetTestingPrefService();
+  prefs->SetManagedPref(prefs::kManagedDefaultPluginsSetting,
+                        new base::FundamentalValue(CONTENT_SETTING_ASK));
+  EXPECT_FALSE(IsPluginAvailable(url, url, profile()->GetResourceContext(),
+                                 flash_plugin));
 }

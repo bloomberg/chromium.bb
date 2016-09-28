@@ -64,7 +64,7 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
   }
 
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-      host_content_settings_map, source_url, source_url);
+      host_content_settings_map, source_url, source_url, nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 

@@ -87,10 +87,11 @@ void PluginUtils::GetPluginContentSetting(
 ContentSetting PluginUtils::GetFlashPluginContentSetting(
     const HostContentSettingsMap* host_content_settings_map,
     const GURL& policy_url,
-    const GURL& plugin_url) {
+    const GURL& plugin_url,
+    bool* is_managed) {
   ContentSetting plugin_setting = CONTENT_SETTING_DEFAULT;
   GetPluginContentSettingInternal(
       host_content_settings_map, false /* use_javascript_setting */, policy_url,
-      plugin_url, kFlashPluginID, &plugin_setting, nullptr, nullptr);
+      plugin_url, kFlashPluginID, &plugin_setting, nullptr, is_managed);
   return plugin_setting;
 }

@@ -25,7 +25,7 @@ ContentSetting FlashPermissionContext::GetPermissionStatus(
     const GURL& embedding_origin) const {
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
       HostContentSettingsMapFactory::GetForProfile(profile()), embedding_origin,
-      requesting_origin);
+      requesting_origin, nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
   if (flash_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT)
