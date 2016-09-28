@@ -470,9 +470,6 @@ static void pack_mb_tokens(aom_writer *w, TOKENEXTRA **tp,
   const av1_extra_bit *const extra_bits_table = av1_extra_bits;
   (void)bit_depth;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-#if !CONFIG_MISC_FIXES
-  (void)tx;
-#endif
 
   while (p < stop && p->token != EOSB_TOKEN) {
     const uint8_t token = p->token;
@@ -532,12 +529,8 @@ static void pack_mb_tokens(aom_writer *w, TOKENEXTRA **tp,
       const int bit_string_length = extra_bits->len;  // Length of extra bits to
                                                       // be written excluding
                                                       // the sign bit.
-#if CONFIG_MISC_FIXES
       int skip_bits =
           (extra_bits->base_val == CAT6_MIN_VAL) ? TX_SIZES - 1 - tx : 0;
-#else
-      int skip_bits = 0;
-#endif
 
       if (bit_string_length > 0) {
         const unsigned char *pb = extra_bits->prob;
