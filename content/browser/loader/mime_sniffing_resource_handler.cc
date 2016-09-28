@@ -414,7 +414,8 @@ bool MimeSniffingResourceHandler::MaybeStartInterception(bool* defer) {
   std::unique_ptr<ResourceHandler> handler(
       host_->CreateResourceHandlerForDownload(request(),
                                               true,  // is_content_initiated
-                                              must_download));
+                                              must_download,
+                                              false /* is_new_request */));
   intercepting_handler_->UseNewHandler(std::move(handler), std::string());
   return true;
 }

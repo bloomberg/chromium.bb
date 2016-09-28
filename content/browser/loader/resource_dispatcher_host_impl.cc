@@ -648,15 +648,17 @@ std::unique_ptr<ResourceHandler>
 ResourceDispatcherHostImpl::CreateResourceHandlerForDownload(
     net::URLRequest* request,
     bool is_content_initiated,
-    bool must_download) {
+    bool must_download,
+    bool is_new_request) {
   DCHECK(!create_download_handler_intercept_.is_null());
   // TODO(ananta)
   // Find a better way to create the download handler and notifying the
   // delegate of the download start.
   std::unique_ptr<ResourceHandler> handler =
       create_download_handler_intercept_.Run(request);
-  handler = HandleDownloadStarted(request, std::move(handler),
-                                  is_content_initiated, must_download);
+  handler =
+      HandleDownloadStarted(request, std::move(handler), is_content_initiated,
+                            must_download, is_new_request);
   return handler;
 }
 
@@ -2353,8 +2355,9 @@ void ResourceDispatcherHostImpl::BeginURLRequest(
           blob_context->context()->GetBlobDataFromPublicURL(
               request->original_url()));
     }
-    handler = HandleDownloadStarted(request.get(), std::move(handler),
-                                    is_content_initiated, true);
+    handler = HandleDownloadStarted(
+        request.get(), std::move(handler), is_content_initiated,
+        true /* force_download */, true /* is_new_request */);
   }
   BeginRequestInternal(std::move(request), std::move(handler));
 }
@@ -2684,14 +2687,15 @@ ResourceDispatcherHostImpl::HandleDownloadStarted(
     net::URLRequest* request,
     std::unique_ptr<ResourceHandler> handler,
     bool is_content_initiated,
-    bool must_download) {
+    bool must_download,
+    bool is_new_request) {
   if (delegate()) {
     const ResourceRequestInfoImpl* request_info(
         ResourceRequestInfoImpl::ForRequest(request));
     ScopedVector<ResourceThrottle> throttles;
-    delegate()->DownloadStarting(
-        request, request_info->GetContext(), is_content_initiated, true,
-        &throttles);
+    delegate()->DownloadStarting(request, request_info->GetContext(),
+                                 is_content_initiated, true, is_new_request,
+                                 &throttles);
     if (!throttles.empty()) {
       handler.reset(new ThrottlingResourceHandler(std::move(handler), request,
                                                   std::move(throttles)));

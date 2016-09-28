@@ -84,6 +84,7 @@ class TestResourceDispatcherHostDelegate final
                         ResourceContext* resource_context,
                         bool is_content_initiated,
                         bool must_download,
+                        bool is_new_request,
                         ScopedVector<ResourceThrottle>* throttles) override {
     ADD_FAILURE() << "DownloadStarting should not be called.";
   }

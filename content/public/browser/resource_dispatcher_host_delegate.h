@@ -55,10 +55,14 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
 
   // Allows an embedder to add additional resource handlers for a download.
   // |must_download| is set if the request must be handled as a download.
+  // |is_new_request| is true if this is a call for a new, unstarted request
+  // which also means that RequestBeginning has not been and will not be
+  // called for this request.
   virtual void DownloadStarting(net::URLRequest* request,
                                 ResourceContext* resource_context,
                                 bool is_content_initiated,
                                 bool must_download,
+                                bool is_new_request,
                                 ScopedVector<ResourceThrottle>* throttles);
 
   // Creates a ResourceDispatcherHostLoginDelegate that asks the user for a

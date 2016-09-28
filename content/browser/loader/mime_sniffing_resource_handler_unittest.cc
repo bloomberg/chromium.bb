@@ -151,7 +151,8 @@ class TestResourceDispatcherHost : public ResourceDispatcherHostImpl {
   std::unique_ptr<ResourceHandler> CreateResourceHandlerForDownload(
       net::URLRequest* request,
       bool is_content_initiated,
-      bool must_download) override {
+      bool must_download,
+      bool is_new_request) override {
     return CreateNewResourceHandler();
   }
 

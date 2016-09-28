@@ -501,6 +501,7 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
     content::ResourceContext* resource_context,
     bool is_content_initiated,
     bool must_download,
+    bool is_new_request,
     ScopedVector<content::ResourceThrottle>* throttles) {
   const content::ResourceRequestInfo* info =
         content::ResourceRequestInfo::ForRequest(request);
@@ -516,9 +517,9 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
         request->url(), request->method()));
   }
 
-  // If this isn't a new request, we've seen this before and added the standard
-  //  resource throttles already so no need to add it again.
-  if (!request->is_pending()) {
+  // If this isn't a new request, the standard resource throttles have already
+  // been added, so no need to add them again.
+  if (is_new_request) {
     AppendStandardResourceThrottles(request,
                                     resource_context,
                                     content::RESOURCE_TYPE_MAIN_FRAME,

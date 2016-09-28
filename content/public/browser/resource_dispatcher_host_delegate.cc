@@ -32,8 +32,8 @@ void ResourceDispatcherHostDelegate::DownloadStarting(
     ResourceContext* resource_context,
     bool is_content_initiated,
     bool must_download,
-    ScopedVector<ResourceThrottle>* throttles) {
-}
+    bool is_new_request,
+    ScopedVector<ResourceThrottle>* throttles) {}
 
 ResourceDispatcherHostLoginDelegate*
     ResourceDispatcherHostDelegate::CreateLoginDelegate(

@@ -58,6 +58,7 @@ class ChromeResourceDispatcherHostDelegate
       content::ResourceContext* resource_context,
       bool is_content_initiated,
       bool must_download,
+      bool is_new_request,
       ScopedVector<content::ResourceThrottle>* throttles) override;
   content::ResourceDispatcherHostLoginDelegate* CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,
@@ -103,6 +104,14 @@ class ChromeResourceDispatcherHostDelegate
   static void SetExternalProtocolHandlerDelegateForTesting(
       ExternalProtocolHandler::Delegate* delegate);
 
+ protected:
+  // Virtual for testing.
+  virtual void AppendStandardResourceThrottles(
+      net::URLRequest* request,
+      content::ResourceContext* resource_context,
+      content::ResourceType resource_type,
+      ScopedVector<content::ResourceThrottle>* throttles);
+
  private:
 #if defined(ENABLE_EXTENSIONS)
   struct StreamTargetInfo {
@@ -110,12 +119,6 @@ class ChromeResourceDispatcherHostDelegate
     std::string view_id;
   };
 #endif
-
-  void AppendStandardResourceThrottles(
-      net::URLRequest* request,
-      content::ResourceContext* resource_context,
-      content::ResourceType resource_type,
-      ScopedVector<content::ResourceThrottle>* throttles);
 
   scoped_refptr<DownloadRequestLimiter> download_request_limiter_;
   scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_;
