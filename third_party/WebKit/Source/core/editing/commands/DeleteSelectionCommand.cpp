@@ -662,7 +662,8 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState)
         insertNodeAt(HTMLBRElement::create(document()), m_upstreamStart, editingState);
         if (editingState->isAborted())
             return;
-        mergeDestination = createVisiblePositionDeprecated(m_upstreamStart);
+        document().updateStyleAndLayoutIgnorePendingStylesheets();
+        mergeDestination = createVisiblePosition(m_upstreamStart);
         startOfParagraphToMove = createVisiblePosition(storedStartOfParagraphToMove);
     }
 
