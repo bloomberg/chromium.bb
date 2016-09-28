@@ -297,6 +297,7 @@ class DepsUpdater(object):
             True if successfully committed, False otherwise.
         """
         self._upload_cl()
+        self.print_('## ' + self.git_cl.run(['issue']).strip())
 
         # First try: if there are failures, update expectations.
         self.print_('## Triggering try jobs.')
