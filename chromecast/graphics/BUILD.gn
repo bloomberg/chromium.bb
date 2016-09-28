@@ -5,14 +5,23 @@
 import("//chromecast/chromecast.gni")
 import("//build/config/ui.gni")
 
-if (use_aura) {
-  source_set("graphics") {
-    sources = [
+source_set("graphics") {
+  sources = [
+    "cast_vsync_settings.cc",
+    "cast_vsync_settings.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+
+  if (use_aura) {
+    sources += [
       "cast_screen.cc",
       "cast_screen.h",
     ]
 
-    deps = [
+    deps += [
       ":libcast_graphics_1.0",
       "//chromecast/public",
       "//ui/aura",

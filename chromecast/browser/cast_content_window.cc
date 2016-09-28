@@ -9,6 +9,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/browser/cast_browser_process.h"
+#include "chromecast/graphics/cast_vsync_settings.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -64,6 +65,7 @@ CastContentWindow::CastContentWindow() : transparent_(false) {
 
 CastContentWindow::~CastContentWindow() {
 #if defined(USE_AURA)
+  CastVSyncSettings::GetInstance()->RemoveObserver(this);
   window_tree_host_.reset();
   // We don't delete the screen here to avoid a CHECK failure when
   // the screen size is queried periodically for metric gathering. b/18101124
@@ -89,6 +91,11 @@ void CastContentWindow::CreateWindowTree(content::WebContents* web_contents) {
   } else {
     window_tree_host_->compositor()->SetBackgroundColor(SK_ColorBLACK);
   }
+
+  CastVSyncSettings::GetInstance()->AddObserver(this);
+  window_tree_host_->compositor()->SetAuthoritativeVSyncInterval(
+      CastVSyncSettings::GetInstance()->GetVSyncInterval());
+
   window_tree_host_->Show();
 
   // Add and show content's view/window
@@ -135,6 +142,13 @@ void CastContentWindow::RenderViewCreated(
   if (view)
     view->SetBackgroundColor(transparent_ ? SK_ColorTRANSPARENT
                                           : SK_ColorBLACK);
+}
+
+void CastContentWindow::OnVSyncIntervalChanged(base::TimeDelta interval) {
+#if defined(USE_AURA)
+  window_tree_host_->compositor()->SetAuthoritativeVSyncInterval(
+      interval);
+#endif
 }
 
 }  // namespace shell

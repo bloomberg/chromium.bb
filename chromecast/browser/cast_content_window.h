@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chromecast/graphics/cast_vsync_settings.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace aura {
@@ -26,7 +27,8 @@ class Size;
 namespace chromecast {
 namespace shell {
 
-class CastContentWindow : public content::WebContentsObserver {
+class CastContentWindow : public content::WebContentsObserver,
+                          public CastVSyncSettings::Observer {
  public:
   CastContentWindow();
 
@@ -48,6 +50,9 @@ class CastContentWindow : public content::WebContentsObserver {
   void MediaStoppedPlaying(const MediaPlayerId& id) override;
   void MediaStartedPlaying(const MediaPlayerId& id) override;
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;
+
+  // CastVSyncSettings::Observer implementation:
+  void OnVSyncIntervalChanged(base::TimeDelta interval) override;
 
  private:
 #if defined(USE_AURA)

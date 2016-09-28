@@ -87,6 +87,7 @@ source_set("browser") {
     "//chromecast/base:cast_version",
     "//chromecast/common",
     "//chromecast/common/media",
+    "//chromecast/graphics",
     "//chromecast/media",
     "//chromecast/net",
     "//chromecast/service",
@@ -127,7 +128,6 @@ source_set("browser") {
 
     deps += [
       "//build/linux:fontconfig",
-      "//chromecast/graphics",
       "//components/metrics:serialization",
       "//ui/aura",
     ]
