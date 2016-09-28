@@ -177,8 +177,11 @@
 #include "net/cookies/cookie_options.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "ppapi/host/ppapi_host.h"
+#include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/service.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
+#include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -231,10 +234,10 @@
 #endif
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-#include "chrome/browser/android/mojo/chrome_interface_registrar_android.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/service_tab_launcher.h"
 #include "chrome/browser/android/webapps/single_tab_mode_tab_helper.h"
+#include "content/public/browser/android/java_interfaces.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -2963,8 +2966,16 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
                  render_frame_host));
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
-  ChromeInterfaceRegistrarAndroid::ExposeInterfacesToFrame(
-      registry, render_frame_host);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (web_contents) {
+    registry->AddInterface(
+        web_contents->GetJavaInterfaces()
+            ->CreateInterfaceFactory<blink::mojom::PaymentRequest>());
+    registry->AddInterface(
+        web_contents->GetJavaInterfaces()
+            ->CreateInterfaceFactory<blink::mojom::ShareService>());
+  }
 #endif
 
 #if defined(ENABLE_MEDIA_ROUTER)

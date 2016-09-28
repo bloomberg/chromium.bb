@@ -5,25 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_MOJO_CHROME_INTERFACE_REGISTRAR_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_MOJO_CHROME_INTERFACE_REGISTRAR_ANDROID_H_
 
-#include <jni.h>
-
-namespace content {
-class RenderFrameHost;
-}
-
-namespace shell {
-class InterfaceRegistry;
-}
-
-class ChromeInterfaceRegistrarAndroid {
- public:
-  static void ExposeInterfacesToFrame(
-      shell::InterfaceRegistry* registry,
-      content::RenderFrameHost* render_frame_host);
-
- private:
-  ChromeInterfaceRegistrarAndroid() {}
-  ~ChromeInterfaceRegistrarAndroid() {}
-};
+void RegisterChromeJavaMojoInterfaces();
 
 #endif  // CHROME_BROWSER_ANDROID_MOJO_CHROME_INTERFACE_REGISTRAR_ANDROID_H_

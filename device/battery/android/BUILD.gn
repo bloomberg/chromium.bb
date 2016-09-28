@@ -17,6 +17,7 @@ android_library("battery_monitor_android") {
     "//device/battery:mojo_bindings_java",
     "//mojo/public/java:bindings",
     "//mojo/public/java:system",
+    "//services/shell/public/java:shell_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
 }
