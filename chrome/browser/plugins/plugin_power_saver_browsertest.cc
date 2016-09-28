@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -20,6 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -312,6 +314,14 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
         GetActiveWebContents()->GetMainFrame()));
   }
 
+  // Loads a peripheral plugin (small cross origin) named 'plugin'.
+  void LoadPeripheralPlugin() {
+    LoadHTML(
+        "<object id='plugin' data='http://otherorigin.com/fake.swf' "
+        "    type='application/x-shockwave-flash' width='400' height='100'>"
+        "</object>");
+  }
+
   // Returns the background WebContents.
   content::WebContents* LoadHTMLInBackgroundTab(const std::string& html) {
     embedded_test_server()->RegisterRequestHandler(
@@ -455,6 +465,23 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallCrossOrigin) {
 
   SimulateClickAndAwaitMarkedEssential("plugin", gfx::Point(50, 50));
   SimulateClickAndAwaitMarkedEssential("plugin_poster", gfx::Point(50, 150));
+}
+
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ContentSettings) {
+  HostContentSettingsMap* content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+
+  // Throttle on DETECT.
+  content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_DETECT_IMPORTANT_CONTENT);
+  LoadPeripheralPlugin();
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
+
+  // Don't throttle on ALLOW.
+  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                 CONTENT_SETTING_ALLOW);
+  LoadPeripheralPlugin();
+  VerifyPluginMarkedEssential(GetActiveWebContents(), "plugin");
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallerThanPlayIcon) {
@@ -622,10 +649,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, ExpandingSmallPlugin) {
-  LoadHTML(
-      "<object id='plugin' data='http://otherorigin.com/fake.swf' "
-      "    type='application/x-shockwave-flash' width='400' height='80'>"
-      "</object>");
+  LoadPeripheralPlugin();
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 
   std::string script = "window.document.getElementById('plugin').height = 400;";
@@ -737,4 +761,28 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverAllowTinyBrowserTest,
 
   VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_1");
   VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_cross_origin_2");
+}
+
+// Separate test case with HTML By Default feature flag on.
+class PluginPowerSaverPreferHtmlBrowserTest
+    : public PluginPowerSaverBrowserTest {
+ public:
+  void SetUpInProcessBrowserTestFixture() override {
+    PluginPowerSaverBrowserTest::SetUpInProcessBrowserTestFixture();
+    feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list;
+};
+
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverPreferHtmlBrowserTest,
+                       ThrottlePluginsOnAllowContentSetting) {
+  HostContentSettingsMap* content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+
+  content_settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                                 CONTENT_SETTING_ALLOW);
+  LoadPeripheralPlugin();
+  VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
 }
