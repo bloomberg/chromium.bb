@@ -34,7 +34,7 @@
 
 namespace blink {
 
-static const double animationFrameDelay = 0.025;
+static const double animationFrameDelay = 1.0 / 60;
 
 SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
     : m_image(image)
