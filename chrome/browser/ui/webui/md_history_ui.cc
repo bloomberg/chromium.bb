@@ -35,6 +35,8 @@
 
 namespace {
 
+constexpr char kShowMenuPromoKey[] = "showMenuPromo";
+
 content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
                                                       bool use_test_title) {
   content::WebUIDataSource* source =
@@ -117,7 +119,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
       prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
 
-  source->AddBoolean("showMenuPromo",
+  source->AddBoolean(kShowMenuPromoKey,
       !prefs->GetBoolean(prefs::kMdHistoryMenuPromoShown));
 
   bool group_by_domain = base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -267,5 +269,5 @@ void MdHistoryUI::RegisterProfilePrefs(
 void MdHistoryUI::HandleMenuPromoShown(const base::ListValue* args) {
   Profile::FromWebUI(web_ui())->GetPrefs()->SetBoolean(
       prefs::kMdHistoryMenuPromoShown, true);
-  data_source_->AddBoolean("showMenuPromo", false);
+  data_source_->AddBoolean(kShowMenuPromoKey, false);
 }
