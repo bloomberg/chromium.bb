@@ -53,7 +53,6 @@
 #endif
 
 #if defined(ENABLE_PEPPER_CDMS)
-#include "chrome/browser/media/pepper_cdm_test_constants.h"
 #include "chrome/browser/media/pepper_cdm_test_helper.h"
 #endif
 
@@ -356,14 +355,16 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
 #endif
   }
 
-#if defined(ENABLE_PEPPER_CDMS)
+#if defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
+  // Since the CDM is bundled and registered through the component updater,
+  // we must re-enable the component updater.
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
     InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
     test_launcher_utils::RemoveCommandLineSwitch(
         default_command_line, switches::kDisableComponentUpdate, command_line);
   }
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_PEPPER_CDMS) && defined(WIDEVINE_CDM_AVAILABLE)
 
   void SetUpInProcessBrowserTestFixture() override {
     ContentSettingsTest::SetUpInProcessBrowserTestFixture();
