@@ -199,6 +199,9 @@ struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
   static int32_t offset(const gfx::NativePixmapPlane& plane) {
     return plane.offset;
   }
+  static uint64_t size(const gfx::NativePixmapPlane& plane) {
+    return plane.size;
+  }
   static uint64_t modifier(const gfx::NativePixmapPlane& plane) {
     return plane.modifier;
   }
@@ -206,6 +209,7 @@ struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
                    gfx::NativePixmapPlane* out) {
     out->stride = data.stride();
     out->offset = data.offset();
+    out->size = data.size();
     out->modifier = data.modifier();
     return true;
   }

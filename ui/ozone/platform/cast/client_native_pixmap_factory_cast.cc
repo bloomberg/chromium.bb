@@ -19,12 +19,19 @@ namespace {
 class ClientNativePixmapCast : public ClientNativePixmap {
  public:
   // ClientNativePixmap implementation:
-  void* Map() override {
+  bool Map() override {
+    NOTREACHED();
+    return false;
+  }
+  void* GetMemoryAddress(size_t plane) const override {
     NOTREACHED();
     return nullptr;
-  }
+  };
   void Unmap() override { NOTREACHED(); }
-  void GetStride(int* stride) const override { NOTREACHED(); }
+  int GetStride(size_t plane) const override {
+    NOTREACHED();
+    return 0;
+  }
 };
 
 class ClientNativePixmapFactoryCast : public ClientNativePixmapFactory {

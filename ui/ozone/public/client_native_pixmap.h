@@ -16,9 +16,13 @@ class OZONE_EXPORT ClientNativePixmap {
  public:
   virtual ~ClientNativePixmap() {}
 
-  virtual void* Map() = 0;
+  // Map each plane in the client address space.
+  // Return false on error.
+  virtual bool Map() = 0;
   virtual void Unmap() = 0;
-  virtual void GetStride(int* stride) const = 0;
+
+  virtual void* GetMemoryAddress(size_t plane) const = 0;
+  virtual int GetStride(size_t plane) const = 0;
 };
 
 }  // namespace ui

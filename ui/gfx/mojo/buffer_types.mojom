@@ -53,6 +53,7 @@ struct GpuMemoryBufferId {
 struct NativePixmapPlane {
   uint32 stride;
   int32 offset;
+  uint64 size;
   uint64 modifier;
 };
 

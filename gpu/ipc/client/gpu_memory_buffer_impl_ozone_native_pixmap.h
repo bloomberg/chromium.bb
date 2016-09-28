@@ -60,7 +60,6 @@ class GPU_EXPORT GpuMemoryBufferImplOzoneNativePixmap
   std::unique_ptr<ui::ClientNativePixmap> pixmap_;
   std::vector<gfx::NativePixmapPlane> planes_;
   base::ScopedFD fd_;
-  void* data_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImplOzoneNativePixmap);
 };

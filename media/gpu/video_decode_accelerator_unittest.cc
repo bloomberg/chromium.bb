@@ -372,7 +372,7 @@ gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
   handle.native_pixmap_handle.fds.emplace_back(
       base::FileDescriptor(duped_fd, true));
   handle.native_pixmap_handle.planes.emplace_back(
-      pixmap_->GetDmaBufPitch(0), pixmap_->GetDmaBufOffset(0),
+      pixmap_->GetDmaBufPitch(0), pixmap_->GetDmaBufOffset(0), 0,
       pixmap_->GetDmaBufModifier(0));
 #endif
   return handle;
