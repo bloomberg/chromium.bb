@@ -897,7 +897,7 @@ void DXVAVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
       main_thread_task_runner_->PostTask(
           FROM_HERE,
           base::Bind(&DXVAVideoDecodeAccelerator::DeferredDismissStaleBuffer,
-                     weak_this_factory_.GetWeakPtr(), picture_buffer_id));
+                     weak_ptr_, picture_buffer_id));
     }
     return;
   }
@@ -946,8 +946,7 @@ void DXVAVideoDecodeAccelerator::WaitForOutputBuffer(int32_t picture_buffer_id,
   if (count <= kMaxIterationsForANGLEReuseFlush && !fence->HasCompleted()) {
     main_thread_task_runner_->PostDelayedTask(
         FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::WaitForOutputBuffer,
-                              weak_this_factory_.GetWeakPtr(),
-                              picture_buffer_id, count + 1),
+                              weak_ptr_, picture_buffer_id, count + 1),
         base::TimeDelta::FromMilliseconds(kFlushDecoderSurfaceTimeoutMs));
     return;
   }
@@ -1033,8 +1032,8 @@ void DXVAVideoDecodeAccelerator::Reset() {
                                PLATFORM_FAILURE, );
 
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::NotifyResetDone,
-                            weak_this_factory_.GetWeakPtr()));
+      FROM_HERE,
+      base::Bind(&DXVAVideoDecodeAccelerator::NotifyResetDone, weak_ptr_));
 
   StartDecoderThread();
   SetState(kNormal);
@@ -1672,7 +1671,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
     main_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&DXVAVideoDecodeAccelerator::ProcessPendingSamples,
-                   weak_this_factory_.GetWeakPtr()));
+                   weak_ptr_));
     return true;
   }
 
@@ -1686,7 +1685,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
   // Go ahead and request picture buffers.
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::RequestPictureBuffers,
-                            weak_this_factory_.GetWeakPtr(), width, height));
+                            weak_ptr_, width, height));
 
   pictures_requested_ = true;
   return true;
@@ -1739,8 +1738,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
         main_thread_task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&DXVAVideoDecodeAccelerator::BindPictureBufferToSample,
-                       weak_this_factory_.GetWeakPtr(),
-                       pending_sample->output_sample,
+                       weak_ptr_, pending_sample->output_sample,
                        pending_sample->picture_buffer_id,
                        pending_sample->input_buffer_id));
         continue;
@@ -1784,8 +1782,8 @@ void DXVAVideoDecodeAccelerator::StopOnError(
     VideoDecodeAccelerator::Error error) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::StopOnError,
-                              weak_this_factory_.GetWeakPtr(), error));
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::StopOnError, weak_ptr_, error));
     return;
   }
 
@@ -1807,6 +1805,7 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
 
   decoder_thread_.Stop();
   weak_this_factory_.InvalidateWeakPtrs();
+  weak_ptr_ = weak_this_factory_.GetWeakPtr();
   pending_output_samples_.clear();
   decoder_.Release();
   config_change_detector_.reset();
@@ -1982,13 +1981,13 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
     SetState(kFlushing);
 
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::NotifyFlushDone,
-                              weak_this_factory_.GetWeakPtr()));
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::NotifyFlushDone, weak_ptr_));
   } else {
     processing_config_changed_ = false;
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::ConfigChanged,
-                              weak_this_factory_.GetWeakPtr(), config_));
+                              weak_ptr_, config_));
   }
 
   SetState(kNormal);
@@ -2096,7 +2095,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   // http://code.google.com/p/chromium/issues/detail?id=150925
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::NotifyInputBufferRead,
-                            weak_this_factory_.GetWeakPtr(), input_buffer_id));
+                            weak_ptr_, input_buffer_id));
 }
 
 void DXVAVideoDecodeAccelerator::HandleResolutionChanged(int width,
@@ -2105,11 +2104,11 @@ void DXVAVideoDecodeAccelerator::HandleResolutionChanged(int width,
 
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::DismissStaleBuffers,
-                            weak_this_factory_.GetWeakPtr(), false));
+                            weak_ptr_, false));
 
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::RequestPictureBuffers,
-                            weak_this_factory_.GetWeakPtr(), width, height));
+                            weak_ptr_, width, height));
 }
 
 void DXVAVideoDecodeAccelerator::DismissStaleBuffers(bool force) {
@@ -2158,8 +2157,8 @@ DXVAVideoDecodeAccelerator::State DXVAVideoDecodeAccelerator::GetState() {
 void DXVAVideoDecodeAccelerator::SetState(State new_state) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::SetState,
-                              weak_this_factory_.GetWeakPtr(), new_state));
+        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::SetState, weak_ptr_,
+                              new_state));
     return;
   }
 
@@ -2205,10 +2204,9 @@ void DXVAVideoDecodeAccelerator::CopySurface(IDirect3DSurface9* src_surface,
   // complete.
   if (using_angle_device_) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
-                   weak_this_factory_.GetWeakPtr(), src_surface, dest_surface,
-                   picture_buffer_id, input_buffer_id));
+        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
+                              weak_ptr_, src_surface, dest_surface,
+                              picture_buffer_id, input_buffer_id));
     return;
   }
 
@@ -2451,9 +2449,9 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
                                  PLATFORM_FAILURE, );
 
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
-                              weak_this_factory_.GetWeakPtr(), nullptr, nullptr,
-                              picture_buffer_id, input_buffer_id));
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete, weak_ptr_,
+                   nullptr, nullptr, picture_buffer_id, input_buffer_id));
   } else {
     d3d11_device_context_->Flush();
     d3d11_device_context_->End(d3d11_query_.get());
@@ -2512,8 +2510,8 @@ void DXVAVideoDecodeAccelerator::FlushDecoder(int iterations,
 
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::CopySurfaceComplete,
-                            weak_this_factory_.GetWeakPtr(), src_surface,
-                            dest_surface, picture_buffer_id, input_buffer_id));
+                            weak_ptr_, src_surface, dest_surface,
+                            picture_buffer_id, input_buffer_id));
 }
 
 bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
