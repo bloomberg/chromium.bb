@@ -176,58 +176,9 @@ void StatusUploader::OnRequestUpdate(int render_process_id,
 }
 
 void StatusUploader::UploadStatus() {
-  // Submit the responses of the asynchronous calls to collector_
-  // in a small ref-counted state tracker class, so that we can
-  //   a) track that both responses fired and
-  //   b) quick subsequent calls to UploadStatus() won't mess up state.
-  scoped_refptr<StatusGetter> getter(
-      new StatusGetter(weak_factory_.GetWeakPtr()));
-
-  // Note that the two base::Binds keep references to getter,
-  // so getter stays alive until both callbacks are called.
-  collector_->GetDeviceStatusAsync(
-      base::Bind(&StatusGetter::OnDeviceStatusReceived, getter));
-
-  collector_->GetDeviceSessionStatusAsync(
-      base::Bind(&StatusGetter::OnSessionStatusReceived, getter));
-}
-
-StatusUploader::StatusGetter::StatusGetter(
-    const base::WeakPtr<StatusUploader>& uploader)
-    : uploader_(uploader),
-      device_status_response_received_(false),
-      session_status_response_received_(false) {}
-
-StatusUploader::StatusGetter::~StatusGetter() {}
-
-void StatusUploader::StatusGetter::OnDeviceStatusReceived(
-    std::unique_ptr<em::DeviceStatusReportRequest> device_status) {
-  DCHECK(!device_status_response_received_);
-  device_status_ = std::move(device_status);
-  device_status_response_received_ = true;
-  CheckDone();
-}
-
-void StatusUploader::StatusGetter::OnSessionStatusReceived(
-    std::unique_ptr<em::SessionStatusReportRequest> session_status) {
-  DCHECK(!session_status_response_received_);
-  session_status_ = std::move(session_status);
-  session_status_response_received_ = true;
-  CheckDone();
-}
-
-void StatusUploader::StatusGetter::CheckDone() {
-  // Did we receive BOTH responses?
-  if (device_status_response_received_ && session_status_response_received_) {
-    // Notify the uploader if it's still alive
-    StatusUploader* uploader = uploader_.get();
-    if (uploader) {
-      uploader->OnStatusReceived(std::move(device_status_),
-                                 std::move(session_status_));
-      // Reset just to make sure this doesn't get called multiple times
-      uploader_.reset();
-    }
-  }
+  // Gather status in the background.
+  collector_->GetDeviceAndSessionStatusAsync(base::Bind(
+      &StatusUploader::OnStatusReceived, weak_factory_.GetWeakPtr()));
 }
 
 void StatusUploader::OnStatusReceived(

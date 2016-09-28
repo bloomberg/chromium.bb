@@ -378,7 +378,6 @@ void DeviceCloudPolicyManagerChromeOS::CreateStatusUploader() {
       client(),
       base::MakeUnique<DeviceStatusCollector>(
           local_state_, chromeos::system::StatisticsProvider::GetInstance(),
-          DeviceStatusCollector::LocationUpdateRequester(),
           DeviceStatusCollector::VolumeInfoFetcher(),
           DeviceStatusCollector::CPUStatisticsFetcher(),
           DeviceStatusCollector::CPUTempFetcher()),

@@ -54,7 +54,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
-#include "device/geolocation/geolocation_provider.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/mount_points.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
@@ -79,42 +78,17 @@ const char kKioskAppId[] = "kiosk_app_id";
 const char kExternalMountPoint[] = "/a/b/c";
 const char kPublicAccountId[] = "public_user@localhost";
 
-std::unique_ptr<device::Geoposition> mock_position_to_return_next;
-
-void SetMockPositionToReturnNext(const device::Geoposition& position) {
-  mock_position_to_return_next.reset(new device::Geoposition(position));
-}
-
-void MockPositionUpdateRequester(
-    const device::GeolocationProvider::LocationUpdateCallback& callback) {
-  if (!mock_position_to_return_next.get())
-    return;
-
-  // If the fix is invalid, the DeviceStatusCollector will immediately request
-  // another update when it receives the callback. This is desirable and safe in
-  // real life where geolocation updates arrive asynchronously. In this testing
-  // harness, the callback is invoked synchronously upon request, leading to a
-  // request-callback loop. The loop is broken by returning the mock position
-  // only once.
-  std::unique_ptr<device::Geoposition> position(
-      mock_position_to_return_next.release());
-  callback.Run(*position);
-}
-
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
  public:
   TestingDeviceStatusCollector(
       PrefService* local_state,
       chromeos::system::StatisticsProvider* provider,
-      const policy::DeviceStatusCollector::LocationUpdateRequester&
-          location_update_requester,
       const policy::DeviceStatusCollector::VolumeInfoFetcher&
           volume_info_fetcher,
       const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_fetcher,
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher)
       : policy::DeviceStatusCollector(local_state,
                                       provider,
-                                      location_update_requester,
                                       volume_info_fetcher,
                                       cpu_fetcher,
                                       cpu_temp_fetcher) {
@@ -160,7 +134,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
   }
 
   void RefreshSampleResourceUsage() {
-    SampleHardwareStatus();
+    SampleResourceUsage();
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
   }
 
@@ -353,89 +327,33 @@ class DeviceStatusCollectorTest : public testing::Test {
       const policy::DeviceStatusCollector::VolumeInfoFetcher& volume_info,
       const policy::DeviceStatusCollector::CPUStatisticsFetcher& cpu_stats,
       const policy::DeviceStatusCollector::CPUTempFetcher& cpu_temp_fetcher) {
-    policy::DeviceStatusCollector::LocationUpdateRequester callback =
-        base::Bind(&MockPositionUpdateRequester);
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_.reset(new TestingDeviceStatusCollector(
-        &prefs_, &fake_statistics_provider_, callback, volume_info, cpu_stats,
+        &prefs_, &fake_statistics_provider_, volume_info, cpu_stats,
         cpu_temp_fetcher));
   }
 
-  void GetDeviceStatus() {
+  void GetStatus() {
     device_status_.Clear();
-    run_loop_.reset(new base::RunLoop());
-    status_collector_->GetDeviceStatusAsync(
-        base::Bind(&DeviceStatusCollectorTest::OnDeviceStatusReceived,
-                   base::Unretained(this)));
-    run_loop_->Run();
-    run_loop_.reset();
-  }
-
-  void OnDeviceStatusReceived(
-      std::unique_ptr<em::DeviceStatusReportRequest> status) {
-    if (status)
-      device_status_ = *status;
-    EXPECT_TRUE(run_loop_);
-    run_loop_->Quit();
-  }
-
-  void GetSessionStatus() {
     session_status_.Clear();
     got_session_status_ = false;
     run_loop_.reset(new base::RunLoop());
-    status_collector_->GetDeviceSessionStatusAsync(
-        base::Bind(&DeviceStatusCollectorTest::OnSessionStatusReceived,
-                   base::Unretained(this)));
+    status_collector_->GetDeviceAndSessionStatusAsync(base::Bind(
+        &DeviceStatusCollectorTest::OnStatusReceived, base::Unretained(this)));
     run_loop_->Run();
     run_loop_.reset();
   }
 
-  void OnSessionStatusReceived(
-      std::unique_ptr<em::SessionStatusReportRequest> status) {
-    got_session_status_ = status != nullptr;
+  void OnStatusReceived(
+      std::unique_ptr<em::DeviceStatusReportRequest> device_status,
+      std::unique_ptr<em::SessionStatusReportRequest> session_status) {
+    if (device_status)
+      device_status_ = *device_status;
+    got_session_status_ = session_status != nullptr;
     if (got_session_status_)
-      session_status_ = *status;
+      session_status_ = *session_status;
     EXPECT_TRUE(run_loop_);
     run_loop_->Quit();
-  }
-
-  void CheckThatNoLocationIsReported() {
-    GetDeviceStatus();
-    EXPECT_FALSE(device_status_.has_device_location());
-  }
-
-  void CheckThatAValidLocationIsReported() {
-    // Checks that a location is being reported which matches the valid fix
-    // set using SetMockPositionToReturnNext().
-    GetDeviceStatus();
-    EXPECT_TRUE(device_status_.has_device_location());
-    em::DeviceLocation location = device_status_.device_location();
-    if (location.has_error_code())
-      EXPECT_EQ(em::DeviceLocation::ERROR_CODE_NONE, location.error_code());
-    EXPECT_TRUE(location.has_latitude());
-    EXPECT_TRUE(location.has_longitude());
-    EXPECT_TRUE(location.has_accuracy());
-    EXPECT_TRUE(location.has_timestamp());
-    EXPECT_FALSE(location.has_altitude());
-    EXPECT_FALSE(location.has_altitude_accuracy());
-    EXPECT_FALSE(location.has_heading());
-    EXPECT_FALSE(location.has_speed());
-    EXPECT_FALSE(location.has_error_message());
-    EXPECT_DOUBLE_EQ(4.3, location.latitude());
-    EXPECT_DOUBLE_EQ(-7.8, location.longitude());
-    EXPECT_DOUBLE_EQ(3., location.accuracy());
-    // Check that the timestamp is not older than ten minutes.
-    EXPECT_TRUE(Time::Now() - Time::FromDoubleT(location.timestamp() / 1000.) <
-                TimeDelta::FromMinutes(10));
-  }
-
-  void CheckThatALocationErrorIsReported() {
-    GetDeviceStatus();
-    EXPECT_TRUE(device_status_.has_device_location());
-    em::DeviceLocation location = device_status_.device_location();
-    EXPECT_TRUE(location.has_error_code());
-    EXPECT_EQ(em::DeviceLocation::ERROR_CODE_POSITION_UNAVAILABLE,
-              location.error_code());
   }
 
   void MockRunningKioskApp(const DeviceLocalAccount& account) {
@@ -524,20 +442,20 @@ TEST_F(DeviceStatusCollectorTest, AllIdle) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
   // Test reporting with no data.
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(0, device_status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(device_status_));
 
   // Test reporting with a single idle sample.
   status_collector_->Simulate(test_states, 1);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(0, device_status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(device_status_));
 
   // Test reporting with multiple consecutive idle samples.
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(0, device_status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(device_status_));
 }
@@ -552,7 +470,7 @@ TEST_F(DeviceStatusCollectorTest, AllActive) {
 
   // Test a single active sample.
   status_collector_->Simulate(test_states, 1);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(1 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
@@ -561,7 +479,7 @@ TEST_F(DeviceStatusCollectorTest, AllActive) {
   // Test multiple consecutive active samples.
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(4 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
@@ -580,7 +498,7 @@ TEST_F(DeviceStatusCollectorTest, MixedStates) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(4 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
 }
@@ -607,7 +525,7 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
 
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(6 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
 }
@@ -624,7 +542,7 @@ TEST_F(DeviceStatusCollectorTest, Times) {
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(3 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
 }
@@ -651,7 +569,7 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   }
 
   // Check that we don't exceed the max number of periods.
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(kMaxDays - 1, device_status_.active_period_size());
 
   // Simulate some future times.
@@ -671,7 +589,7 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
 
   // Check that we don't exceed the max number of periods.
   device_status_.clear_active_period();
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_LT(device_status_.active_period_size(), kMaxDays);
 }
 
@@ -684,7 +602,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesEnabledByDefault) {
   };
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(1, device_status_.active_period_size());
   EXPECT_EQ(3 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
@@ -701,7 +619,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesOff) {
   };
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(0, device_status_.active_period_size());
   EXPECT_EQ(0, GetActiveMilliseconds(device_status_));
 }
@@ -717,7 +635,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityCrossingMidnight) {
       Time::Now().LocalMidnight() + TimeDelta::FromSeconds(10));
 
   status_collector_->Simulate(test_states, 1);
-  GetDeviceStatus();
+  GetStatus();
   ASSERT_EQ(2, device_status_.active_period_size());
 
   em::ActiveTimePeriod period0 = device_status_.active_period(0);
@@ -742,17 +660,21 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
     ui::IDLE_STATE_ACTIVE,
     ui::IDLE_STATE_ACTIVE,
   };
+  // Make sure CPU stats get reported in time. If we don't run this, the second
+  // call to |GetStatus()| will contain these stats, but the first call won't
+  // and the EXPECT_EQ test below fails.
   base::RunLoop().RunUntilIdle();
+
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
 
   status_collector_->Simulate(test_states, 2);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(2 * ActivePeriodMilliseconds(),
             GetActiveMilliseconds(device_status_));
   em::DeviceStatusReportRequest first_status(device_status_);
 
   // The collector returns the same status again.
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(first_status.SerializeAsString(),
             device_status_.SerializeAsString());
 
@@ -760,7 +682,7 @@ TEST_F(DeviceStatusCollectorTest, ActivityTimesKeptUntilSubmittedSuccessfully) {
   // but what got collected meanwhile sticks around.
   status_collector_->Simulate(test_states, 1);
   status_collector_->OnSubmittedSuccessfully();
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(ActivePeriodMilliseconds(), GetActiveMilliseconds(device_status_));
 }
 
@@ -769,13 +691,13 @@ TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
   fake_statistics_provider_.SetMachineStatistic(
       chromeos::system::kDevSwitchBootKey,
       chromeos::system::kDevSwitchBootValueVerified);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ("Verified", device_status_.boot_mode());
 
   // Test that boot mode data is not reported if the pref turned off.
   settings_helper_.SetBoolean(chromeos::kReportDeviceBootMode, false);
 
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_FALSE(device_status_.has_boot_mode());
 
   // Turn the pref on, and check that the status is reported iff the
@@ -784,30 +706,30 @@ TEST_F(DeviceStatusCollectorTest, DevSwitchBootMode) {
 
   fake_statistics_provider_.SetMachineStatistic(
       chromeos::system::kDevSwitchBootKey, "(error)");
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_FALSE(device_status_.has_boot_mode());
 
   fake_statistics_provider_.SetMachineStatistic(
       chromeos::system::kDevSwitchBootKey, " ");
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_FALSE(device_status_.has_boot_mode());
 
   fake_statistics_provider_.SetMachineStatistic(
       chromeos::system::kDevSwitchBootKey,
       chromeos::system::kDevSwitchBootValueVerified);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ("Verified", device_status_.boot_mode());
 
   fake_statistics_provider_.SetMachineStatistic(
       chromeos::system::kDevSwitchBootKey,
       chromeos::system::kDevSwitchBootValueDev);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ("Dev", device_status_.boot_mode());
 }
 
 TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   // Expect the version info to be reported by default.
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_TRUE(device_status_.has_browser_version());
   EXPECT_TRUE(device_status_.has_os_version());
   EXPECT_TRUE(device_status_.has_firmware_version());
@@ -815,13 +737,13 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   // When the pref to collect this data is not enabled, expect that none of
   // the fields are present in the protobuf.
   settings_helper_.SetBoolean(chromeos::kReportDeviceVersionInfo, false);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_FALSE(device_status_.has_browser_version());
   EXPECT_FALSE(device_status_.has_os_version());
   EXPECT_FALSE(device_status_.has_firmware_version());
 
   settings_helper_.SetBoolean(chromeos::kReportDeviceVersionInfo, true);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_TRUE(device_status_.has_browser_version());
   EXPECT_TRUE(device_status_.has_os_version());
   EXPECT_TRUE(device_status_.has_firmware_version());
@@ -830,56 +752,6 @@ TEST_F(DeviceStatusCollectorTest, VersionInfo) {
   // don't have any reasonable values inside the unit test, so those
   // aren't checked.
   EXPECT_NE("", device_status_.browser_version());
-}
-
-TEST_F(DeviceStatusCollectorTest, Location) {
-  device::Geoposition valid_fix;
-  valid_fix.latitude = 4.3;
-  valid_fix.longitude = -7.8;
-  valid_fix.accuracy = 3.;
-  valid_fix.timestamp = Time::Now();
-
-  device::Geoposition invalid_fix;
-  invalid_fix.error_code = device::Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
-  invalid_fix.timestamp = Time::Now();
-
-  // Check that when device location reporting is disabled, no location is
-  // reported.
-  SetMockPositionToReturnNext(valid_fix);
-  CheckThatNoLocationIsReported();
-
-  // Check that when device location reporting is enabled and a valid fix is
-  // available, the location is reported and is stored in local state.
-  SetMockPositionToReturnNext(valid_fix);
-  settings_helper_.SetBoolean(chromeos::kReportDeviceLocation, true);
-  EXPECT_FALSE(prefs_.GetDictionary(prefs::kDeviceLocation)->empty());
-  CheckThatAValidLocationIsReported();
-
-  // Restart the status collector. Check that the last known location has been
-  // retrieved from local state without requesting a geolocation update.
-  SetMockPositionToReturnNext(valid_fix);
-  RestartStatusCollector(base::Bind(&GetEmptyVolumeInfo),
-                         base::Bind(&GetEmptyCPUStatistics),
-                         base::Bind(&GetEmptyCPUTempInfo));
-  CheckThatAValidLocationIsReported();
-  EXPECT_TRUE(mock_position_to_return_next.get());
-
-  // Check that after disabling location reporting again, the last known
-  // location has been cleared from local state and is no longer reported.
-  SetMockPositionToReturnNext(valid_fix);
-  settings_helper_.SetBoolean(chromeos::kReportDeviceLocation, false);
-  // Allow the new pref to propagate to the status collector.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(prefs_.GetDictionary(prefs::kDeviceLocation)->empty());
-  CheckThatNoLocationIsReported();
-
-  // Check that after enabling location reporting again, an error is reported
-  // if no valid fix is available.
-  SetMockPositionToReturnNext(invalid_fix);
-  settings_helper_.SetBoolean(chromeos::kReportDeviceLocation, true);
-  // Allow the new pref to propagate to the status collector.
-  base::RunLoop().RunUntilIdle();
-  CheckThatALocationErrorIsReported();
 }
 
 TEST_F(DeviceStatusCollectorTest, ReportUsers) {
@@ -901,12 +773,12 @@ TEST_F(DeviceStatusCollectorTest, ReportUsers) {
   user_manager_->AddUserWithAffiliation(account_id5, true);
 
   // Verify that users are reported by default.
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(6, device_status_.user_size());
 
   // Verify that users are reported after enabling the setting.
   settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, true);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(6, device_status_.user_size());
   EXPECT_EQ(em::DeviceUser::USER_TYPE_MANAGED, device_status_.user(0).type());
   EXPECT_EQ(account_id0.GetUserEmail(), device_status_.user(0).email());
@@ -923,7 +795,7 @@ TEST_F(DeviceStatusCollectorTest, ReportUsers) {
 
   // Verify that users are no longer reported if setting is disabled.
   settings_helper_.SetBoolean(chromeos::kReportDeviceUsers, false);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(0, device_status_.user_size());
 }
 
@@ -954,7 +826,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(expected_mount_points.size(),
             static_cast<size_t>(device_status_.volume_info_size()));
 
@@ -975,7 +847,7 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
 
   // Now turn off hardware status reporting - should have no data.
   settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(0, device_status_.volume_info_size());
 }
 
@@ -988,7 +860,7 @@ TEST_F(DeviceStatusCollectorTest, TestAvailableMemory) {
     status_collector_->RefreshSampleResourceUsage();
     base::RunLoop().RunUntilIdle();
   }
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(static_cast<int>(DeviceStatusCollector::kMaxResourceUsageSamples),
             device_status_.system_ram_free().size());
   EXPECT_TRUE(device_status_.has_system_ram_total());
@@ -1006,7 +878,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
-  GetDeviceStatus();
+  GetStatus();
   ASSERT_EQ(1, device_status_.cpu_utilization_pct().size());
   EXPECT_EQ(100, device_status_.cpu_utilization_pct(0));
 
@@ -1014,7 +886,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
   // so should show 0% cpu usage).
   status_collector_->RefreshSampleResourceUsage();
   base::RunLoop().RunUntilIdle();
-  GetDeviceStatus();
+  GetStatus();
   ASSERT_EQ(2, device_status_.cpu_utilization_pct().size());
   EXPECT_EQ(0, device_status_.cpu_utilization_pct(1));
 
@@ -1026,7 +898,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
     status_collector_->RefreshSampleResourceUsage();
     base::RunLoop().RunUntilIdle();
   }
-  GetDeviceStatus();
+  GetStatus();
 
   // Should not be more than kMaxResourceUsageSamples, and they should all show
   // the CPU is idle.
@@ -1037,7 +909,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
 
   // Turning off hardware reporting should not report CPU utilization.
   settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(0, device_status_.cpu_utilization_pct().size());
 }
 
@@ -1058,7 +930,7 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
   content::BrowserThread::GetBlockingPool()->FlushForTesting();
   base::RunLoop().RunUntilIdle();
 
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(expected_temp_info.size(),
             static_cast<size_t>(device_status_.cpu_temp_info_size()));
 
@@ -1078,14 +950,14 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
 
   // Now turn off hardware status reporting - should have no data.
   settings_helper_.SetBoolean(chromeos::kReportDeviceHardwareStatus, false);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(0, device_status_.cpu_temp_info_size());
 }
 
 TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfNotKioskMode) {
   // Should not report session status if we don't have an active kiosk app.
   settings_helper_.SetBoolean(chromeos::kReportDeviceSessionStatus, true);
-  GetSessionStatus();
+  GetStatus();
   EXPECT_FALSE(got_session_status_);
 }
 
@@ -1097,7 +969,7 @@ TEST_F(DeviceStatusCollectorTest, NoSessionStatusIfSessionReportingDisabled) {
   // Set up a device-local account for single-app kiosk mode.
   MockRunningKioskApp(fake_device_local_account_);
 
-  GetSessionStatus();
+  GetStatus();
   EXPECT_FALSE(got_session_status_);
 }
 
@@ -1109,7 +981,7 @@ TEST_F(DeviceStatusCollectorTest, ReportSessionStatus) {
   // Set up a device-local account for single-app kiosk mode.
   MockRunningKioskApp(fake_device_local_account_);
 
-  GetSessionStatus();
+  GetStatus();
   EXPECT_TRUE(got_session_status_);
   ASSERT_EQ(1, session_status_.installed_apps_size());
   EXPECT_EQ(kKioskAccountId, session_status_.device_local_account_id());
@@ -1126,7 +998,7 @@ TEST_F(DeviceStatusCollectorTest, NoOsUpdateStatusByDefault) {
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(fake_device_local_account_,
                                                     "1234.0.0");
 
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_FALSE(device_status_.has_os_update_status());
 }
 
@@ -1140,7 +1012,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatusUpToDate) {
     MockAutoLaunchKioskAppWithRequiredPlatformVersion(
         fake_device_local_account_, kRequiredPlatformVersions[i]);
 
-    GetDeviceStatus();
+    GetStatus();
     ASSERT_TRUE(device_status_.has_os_update_status())
         << "Required platform version=" << kRequiredPlatformVersions[i];
     EXPECT_EQ(em::OsUpdateStatus::OS_UP_TO_DATE,
@@ -1161,7 +1033,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
   chromeos::UpdateEngineClient::Status update_status;
   update_status.status = chromeos::UpdateEngineClient::UPDATE_STATUS_IDLE;
 
-  GetDeviceStatus();
+  GetStatus();
   ASSERT_TRUE(device_status_.has_os_update_status());
   EXPECT_EQ(em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_NOT_STARTED,
             device_status_.os_update_status().update_status());
@@ -1178,7 +1050,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
     update_status.new_version = "1235.1.2";
     update_engine_client_->PushLastStatus(update_status);
 
-    GetDeviceStatus();
+    GetStatus();
     ASSERT_TRUE(device_status_.has_os_update_status());
     EXPECT_EQ(em::OsUpdateStatus::OS_IMAGE_DOWNLOAD_IN_PROGRESS,
               device_status_.os_update_status().update_status());
@@ -1192,7 +1064,7 @@ TEST_F(DeviceStatusCollectorTest, ReportOsUpdateStatus) {
   update_status.status =
       chromeos::UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT;
   update_engine_client_->PushLastStatus(update_status);
-  GetDeviceStatus();
+  GetStatus();
   ASSERT_TRUE(device_status_.has_os_update_status());
   EXPECT_EQ(em::OsUpdateStatus::OS_UPDATE_NEED_REBOOT,
             device_status_.os_update_status().update_status());
@@ -1206,7 +1078,7 @@ TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppByDefault) {
       base::MakeUnique<policy::DeviceLocalAccount>(fake_device_local_account_));
   MockRunningKioskApp(fake_device_local_account_);
 
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_FALSE(device_status_.has_running_kiosk_app());
 }
 
@@ -1216,7 +1088,7 @@ TEST_F(DeviceStatusCollectorTest, NoRunningKioskAppWhenNotInKioskSession) {
   MockAutoLaunchKioskAppWithRequiredPlatformVersion(fake_device_local_account_,
                                                     "1234.0.0");
 
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_FALSE(device_status_.has_running_kiosk_app());
 }
 
@@ -1229,7 +1101,7 @@ TEST_F(DeviceStatusCollectorTest, ReportRunningKioskApp) {
   status_collector_->set_kiosk_account(
       base::MakeUnique<policy::DeviceLocalAccount>(fake_device_local_account_));
 
-  GetDeviceStatus();
+  GetStatus();
   ASSERT_TRUE(device_status_.has_running_kiosk_app());
   const em::AppStatus app = device_status_.running_kiosk_app();
   EXPECT_EQ(kKioskAppId, app.app_id());
@@ -1501,7 +1373,7 @@ class DeviceStatusCollectorNetworkInterfacesTest
 TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NoNetworkStateIfNotKiosk) {
   // If not in an active kiosk session, there should be network interfaces
   // reported, but no network state.
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_LT(0, device_status_.network_interface_size());
   EXPECT_EQ(0, device_status_.network_state_size());
 }
@@ -1512,19 +1384,19 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, NetworkInterfaces) {
       base::MakeUnique<policy::DeviceLocalAccount>(fake_device_local_account_));
 
   // Interfaces should be reported by default.
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_LT(0, device_status_.network_interface_size());
   EXPECT_LT(0, device_status_.network_state_size());
 
   // No interfaces should be reported if the policy is off.
   settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces, false);
-  GetDeviceStatus();
+  GetStatus();
   EXPECT_EQ(0, device_status_.network_interface_size());
   EXPECT_EQ(0, device_status_.network_state_size());
 
   // Switch the policy on and verify the interface list is present.
   settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces, true);
-  GetDeviceStatus();
+  GetStatus();
 
   VerifyNetworkReporting();
 }
@@ -1537,7 +1409,7 @@ TEST_F(DeviceStatusCollectorNetworkInterfacesTest, ReportIfPublicSession) {
       .WillRepeatedly(Return(true));
 
   settings_helper_.SetBoolean(chromeos::kReportDeviceNetworkInterfaces, true);
-  GetDeviceStatus();
+  GetStatus();
   VerifyNetworkReporting();
 }
 

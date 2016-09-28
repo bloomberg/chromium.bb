@@ -16,17 +16,16 @@
 #include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/system/version_loader.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "content/public/browser/browser_thread.h"
-#include "device/geolocation/geolocation_provider.h"
-#include "device/geolocation/geoposition.h"
 #include "ui/base/idle/idle.h"
 
 namespace chromeos {
@@ -47,16 +46,11 @@ class PrefService;
 namespace policy {
 
 struct DeviceLocalAccount;
+class GetStatusState;
 
 // Collects and summarizes the status of an enterprised-managed ChromeOS device.
 class DeviceStatusCollector {
  public:
-  // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
-  // way to mock geolocation exists.
-  typedef base::Callback<void(
-      const device::GeolocationProvider::LocationUpdateCallback& callback)>
-      LocationUpdateRequester;
-
   using VolumeInfoFetcher = base::Callback<
     std::vector<enterprise_management::VolumeInfo>(
         const std::vector<std::string>& mount_points)>;
@@ -74,14 +68,11 @@ class DeviceStatusCollector {
   using CPUTempFetcher =
       base::Callback<std::vector<enterprise_management::CPUTempInfo>()>;
 
-  // Called in the UI thread after the device status has been collected
-  // asynchronously in GetDeviceStatusAsync.
-  using DeviceStatusCallback = base::Callback<void(
-      std::unique_ptr<enterprise_management::DeviceStatusReportRequest>)>;
-
-  // Called in the UI thread after the device session status has been collected
-  // asynchronously in GetDeviceSessionStatusAsync.
-  using DeviceSessionStatusCallback = base::Callback<void(
+  // Called in the UI thread after the device and session status have been
+  // collected asynchronously in GetDeviceAndSessionStatusAsync. Null pointers
+  // indicate errors or that device or session status reporting is disabled.
+  using StatusCallback = base::Callback<void(
+      std::unique_ptr<enterprise_management::DeviceStatusReportRequest>,
       std::unique_ptr<enterprise_management::SessionStatusReportRequest>)>;
 
   // Constructor. Callers can inject their own VolumeInfoFetcher,
@@ -91,24 +82,15 @@ class DeviceStatusCollector {
   DeviceStatusCollector(
       PrefService* local_state,
       chromeos::system::StatisticsProvider* provider,
-      const LocationUpdateRequester& location_update_requester,
       const VolumeInfoFetcher& volume_info_fetcher,
       const CPUStatisticsFetcher& cpu_statistics_fetcher,
       const CPUTempFetcher& cpu_temp_fetcher);
   virtual ~DeviceStatusCollector();
 
-  // Gathers device status information and calls the passed response callback.
-  // A null pointer passed into the response indicates an error or that
-  // device status reporting is disabled.
-  virtual void GetDeviceStatusAsync(
-      const DeviceStatusCallback& response);
-
-  // Gathers device session status information and calls the passed response
-  // callback. A null pointer passed into the response indicates an error or
-  // that device session status reporting is disabled or that the active
-  // session is not a kiosk session.
-  virtual void GetDeviceSessionStatusAsync(
-      const DeviceSessionStatusCallback& response);
+  // Gathers device and session status information and calls the passed response
+  // callback. Null pointers passed into the response indicate errors or that
+  // device or session status reporting is disabled.
+  virtual void GetDeviceAndSessionStatusAsync(const StatusCallback& response);
 
   // Called after the status information has successfully been submitted to
   // the server.
@@ -141,9 +123,9 @@ class DeviceStatusCollector {
   // Gets the version of the passed app. Virtual to allow mocking.
   virtual std::string GetAppVersion(const std::string& app_id);
 
-  // Samples the current hardware status to be sent up with the next device
-  // status update.
-  void SampleHardwareStatus();
+  // Samples the current hardware resource usage to be sent up with the
+  // next device status update.
+  void SampleResourceUsage();
 
   // The number of days in the past to store device activity.
   // This is kept in case device status uploads fail for a number of days.
@@ -168,52 +150,45 @@ class DeviceStatusCollector {
 
   void AddActivePeriod(base::Time start, base::Time end);
 
-  // Clears the cached hardware status.
-  void ClearCachedHardwareStatus();
+  // Clears the cached hardware resource usage.
+  void ClearCachedResourceUsage();
 
   // Callbacks from chromeos::VersionLoader.
   void OnOSVersion(const std::string& version);
   void OnOSFirmware(const std::string& version);
 
-  // Helpers for the various portions of the status. Return true if they
-  // actually report any status.
+  void GetDeviceStatus(scoped_refptr<GetStatusState> state);
+  void GetSessionStatus(scoped_refptr<GetStatusState> state);
+
+  // Helpers for the various portions of DEVICE STATUS. Return true if they
+  // actually report any status. Functions that queue async queries take
+  // a |GetStatusState| instance.
   bool GetActivityTimes(
-      enterprise_management::DeviceStatusReportRequest* request);
-  bool GetVersionInfo(
-      enterprise_management::DeviceStatusReportRequest* request);
-  bool GetBootMode(
-      enterprise_management::DeviceStatusReportRequest* request);
-  bool GetLocation(
-      enterprise_management::DeviceStatusReportRequest* request);
+      enterprise_management::DeviceStatusReportRequest* status);
+  bool GetVersionInfo(enterprise_management::DeviceStatusReportRequest* status);
+  bool GetBootMode(enterprise_management::DeviceStatusReportRequest* status);
   bool GetNetworkInterfaces(
-      enterprise_management::DeviceStatusReportRequest* request);
-  bool GetUsers(
-      enterprise_management::DeviceStatusReportRequest* request);
+      enterprise_management::DeviceStatusReportRequest* status);
+  bool GetUsers(enterprise_management::DeviceStatusReportRequest* status);
   bool GetHardwareStatus(
-      enterprise_management::DeviceStatusReportRequest* request);
+      enterprise_management::DeviceStatusReportRequest* status,
+      scoped_refptr<GetStatusState> state);  // Queues async queries!
   bool GetOsUpdateStatus(
-      enterprise_management::DeviceStatusReportRequest* request);
+      enterprise_management::DeviceStatusReportRequest* status);
   bool GetRunningKioskApp(
-      enterprise_management::DeviceStatusReportRequest* request);
+      enterprise_management::DeviceStatusReportRequest* status);
+
+  // Helpers for the various portions of SESSION STATUS. Return true if they
+  // actually report any status. Functions that queue async queries take
+  // a |GetStatusState| instance.
+  bool GetAccountStatus(
+      enterprise_management::SessionStatusReportRequest* status);
 
   // Update the cached values of the reporting settings.
   void UpdateReportingSettings();
 
-  void ScheduleGeolocationUpdateRequest();
-
-  // device::GeolocationUpdateCallback implementation.
-  void ReceiveGeolocationUpdate(const device::Geoposition&);
-
-  // Callback invoked to update our cached disk information.
-  void ReceiveVolumeInfo(
-      const std::vector<enterprise_management::VolumeInfo>& info);
-
   // Callback invoked to update our cpu usage information.
   void ReceiveCPUStatistics(const std::string& statistics);
-
-  // Callback invoked to update our CPU temp information.
-  void StoreCPUTempInfo(
-      const std::vector<enterprise_management::CPUTempInfo>& info);
 
   PrefService* const local_state_;
 
@@ -227,23 +202,11 @@ class DeviceStatusCollector {
   int64_t last_reported_day_ = 0;
   int duration_for_last_reported_day_ = 0;
 
-  // Whether a geolocation update is currently in progress.
-  bool geolocation_update_in_progress_ = false;
-
   base::RepeatingTimer idle_poll_timer_;
-  base::RepeatingTimer hardware_status_sampling_timer_;
-  base::OneShotTimer geolocation_update_timer_;
+  base::RepeatingTimer resource_usage_sampling_timer_;
 
   std::string os_version_;
   std::string firmware_version_;
-
-  device::Geoposition position_;
-
-  // Cached disk volume information.
-  std::vector<enterprise_management::VolumeInfo> volume_info_;
-
-  // Cached CPU temp information.
-  std::vector<enterprise_management::CPUTempInfo> cpu_temp_info_;
 
   struct ResourceUsage {
     // Sample of percentage-of-CPU-used.
@@ -275,18 +238,10 @@ class DeviceStatusCollector {
   uint64_t last_cpu_active_ = 0;
   uint64_t last_cpu_idle_ = 0;
 
-  // TODO(bartfab): Remove this once crbug.com/125931 is addressed and a proper
-  // way to mock geolocation exists.
-  LocationUpdateRequester location_update_requester_;
-
-  std::unique_ptr<device::GeolocationProvider::Subscription>
-      geolocation_subscription_;
-
   // Cached values of the reporting settings from the device policy.
   bool report_version_info_ = false;
   bool report_activity_times_ = false;
   bool report_boot_mode_ = false;
-  bool report_location_ = false;
   bool report_network_interfaces_ = false;
   bool report_users_ = false;
   bool report_hardware_status_ = false;
@@ -301,8 +256,6 @@ class DeviceStatusCollector {
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       boot_mode_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      location_subscription_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       network_interfaces_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       users_subscription_;
@@ -315,7 +268,9 @@ class DeviceStatusCollector {
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       running_kiosk_app_subscription_;
 
-  content::BrowserThread::ID creation_thread_;
+  // Task runner in the creation thread where responses are sent to.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<DeviceStatusCollector> weak_factory_;
 

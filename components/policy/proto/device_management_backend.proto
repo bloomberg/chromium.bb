@@ -668,7 +668,7 @@ message DeviceStatusReportRequest {
   repeated ActiveTimePeriod active_period = 6;
 
   // The device location.
-  optional DeviceLocation device_location = 7;
+  optional DeviceLocation deprecated_device_location = 7 [deprecated = true];
 
   // List of network interfaces.
   repeated NetworkInterface network_interface = 8;

@@ -111,37 +111,6 @@ class StatusUploader : public MediaCaptureDevicesDispatcher::Observer {
   // invalidate the weak pointers before any other members are destroyed.
   base::WeakPtrFactory<StatusUploader> weak_factory_;
 
-  // Small helper class for state tracking. Necessary because
-  // DeviceStatusCollector has two independent async calls for getting device
-  // and session status, but we need BOTH results before we can upload data.
-  class StatusGetter : public base::RefCountedThreadSafe<StatusGetter> {
-   public:
-    explicit StatusGetter(const base::WeakPtr<StatusUploader>& uploader);
-
-    void OnDeviceStatusReceived(
-        std::unique_ptr<enterprise_management::DeviceStatusReportRequest>
-            device_status);
-    void OnSessionStatusReceived(
-        std::unique_ptr<enterprise_management::SessionStatusReportRequest>
-            session_status);
-
-   private:
-    friend class RefCountedThreadSafe<StatusGetter>;
-    ~StatusGetter();
-
-    void CheckDone();
-
-    std::unique_ptr<enterprise_management::DeviceStatusReportRequest>
-        device_status_;
-    std::unique_ptr<enterprise_management::SessionStatusReportRequest>
-        session_status_;
-
-    base::WeakPtr<StatusUploader> uploader_;
-
-    bool device_status_response_received_;
-    bool session_status_response_received_;
-  };
-
   DISALLOW_COPY_AND_ASSIGN(StatusUploader);
 };
 

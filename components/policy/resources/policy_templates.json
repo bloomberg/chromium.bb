@@ -4943,7 +4943,7 @@
       'features': {
         'dynamic_refresh': True,
       },
-      'example_value': 180000,
+      'example_value': 10800000,
       'id': 292,
       'caption': '''Frequency of device status report uploads''',
       'tags': ['admin-sharing'],

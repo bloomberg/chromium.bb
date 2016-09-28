@@ -1736,10 +1736,6 @@ const char kAutoEnrollmentPowerLimit[] = "AutoEnrollmentPowerLimit";
 // them to the policy server.
 const char kDeviceActivityTimes[] = "device_status.activity_times";
 
-// A pref holding the last known location when device location reporting is
-// enabled.
-const char kDeviceLocation[] = "device_status.location";
-
 // A pref holding the value of the policy used to disable mounting of external
 // storage for the user.
 const char kExternalStorageDisabled[] = "hardware.external_storage_disabled";

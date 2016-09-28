@@ -53,17 +53,12 @@ class MockDeviceStatusCollector : public policy::DeviceStatusCollector {
       : DeviceStatusCollector(
             local_state,
             nullptr,
-            policy::DeviceStatusCollector::LocationUpdateRequester(),
             policy::DeviceStatusCollector::VolumeInfoFetcher(),
             policy::DeviceStatusCollector::CPUStatisticsFetcher(),
             policy::DeviceStatusCollector::CPUTempFetcher()) {}
 
-  MOCK_METHOD1(
-      GetDeviceStatusAsync,
-      void(const policy::DeviceStatusCollector::DeviceStatusCallback&));
-  MOCK_METHOD1(
-      GetDeviceSessionStatusAsync,
-      void(const policy::DeviceStatusCollector::DeviceSessionStatusCallback&));
+  MOCK_METHOD1(GetDeviceAndSessionStatusAsync,
+               void(const policy::DeviceStatusCollector::StatusCallback&));
 
   // Explicit mock implementation declared here, since gmock::Invoke can't
   // handle returning non-moveable types like scoped_ptr.
@@ -107,12 +102,9 @@ class StatusUploaderTest : public testing::Test {
     // Running the task should pass two callbacks into GetDeviceStatusAsync
     // and GetDeviceSessionStatusAsync. We'll grab these two callbacks.
     EXPECT_TRUE(task_runner_->HasPendingTask());
-    DeviceStatusCollector::DeviceStatusCallback ds_callback;
-    DeviceStatusCollector::DeviceSessionStatusCallback ss_callback;
-    EXPECT_CALL(*collector_ptr_, GetDeviceStatusAsync(_))
-        .WillOnce(SaveArg<0>(&ds_callback));
-    EXPECT_CALL(*collector_ptr_, GetDeviceSessionStatusAsync(_))
-        .WillOnce(SaveArg<0>(&ss_callback));
+    DeviceStatusCollector::StatusCallback status_callback;
+    EXPECT_CALL(*collector_ptr_, GetDeviceAndSessionStatusAsync(_))
+        .WillOnce(SaveArg<0>(&status_callback));
     task_runner_->RunPendingTasks();
     testing::Mock::VerifyAndClearExpectations(&device_management_service_);
 
@@ -128,8 +120,7 @@ class StatusUploaderTest : public testing::Test {
     CloudPolicyClient::StatusCallback callback;
     EXPECT_CALL(client_, UploadDeviceStatus(_, _, _))
         .WillOnce(SaveArg<2>(&callback));
-    ds_callback.Run(std::move(device_status));
-    ss_callback.Run(std::move(session_status));
+    status_callback.Run(std::move(device_status), std::move(session_status));
     testing::Mock::VerifyAndClearExpectations(&device_management_service_);
 
     // Make sure no status upload is queued up yet (since an upload is in
@@ -214,12 +205,9 @@ TEST_F(StatusUploaderTest, ResetTimerAfterFailedStatusCollection) {
   // and GetDeviceSessionStatusAsync. We'll grab these two callbacks and send
   // nullptrs to them in order to simulate failure to get status.
   EXPECT_EQ(1U, task_runner_->NumPendingTasks());
-  DeviceStatusCollector::DeviceStatusCallback ds_callback;
-  DeviceStatusCollector::DeviceSessionStatusCallback ss_callback;
-  EXPECT_CALL(*collector_ptr_, GetDeviceStatusAsync(_))
-      .WillOnce(SaveArg<0>(&ds_callback));
-  EXPECT_CALL(*collector_ptr_, GetDeviceSessionStatusAsync(_))
-      .WillOnce(SaveArg<0>(&ss_callback));
+  DeviceStatusCollector::StatusCallback status_callback;
+  EXPECT_CALL(*collector_ptr_, GetDeviceAndSessionStatusAsync(_))
+      .WillOnce(SaveArg<0>(&status_callback));
   task_runner_->RunPendingTasks();
   testing::Mock::VerifyAndClearExpectations(&device_management_service_);
 
@@ -227,12 +215,10 @@ TEST_F(StatusUploaderTest, ResetTimerAfterFailedStatusCollection) {
   // StatusUploader::OnStatusReceived, which in turn should recognize the
   // failure to get status and queue another status upload.
   std::unique_ptr<em::DeviceStatusReportRequest> invalid_device_status;
-  ds_callback.Run(std::move(invalid_device_status));
-  EXPECT_EQ(0U, task_runner_->NumPendingTasks());  // Not yet...
-
   std::unique_ptr<em::SessionStatusReportRequest> invalid_session_status;
-  ss_callback.Run(std::move(invalid_session_status));
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());  // but now!
+  status_callback.Run(std::move(invalid_device_status),
+                      std::move(invalid_session_status));
+  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 
   // Check the delay of the queued upload
   const base::TimeDelta expected_delay = base::TimeDelta::FromMilliseconds(
