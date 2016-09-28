@@ -101,7 +101,9 @@ class Canvas2DLayerBridgeTest : public Test {
 public:
     PassRefPtr<Canvas2DLayerBridge> makeBridge(std::unique_ptr<FakeWebGraphicsContext3DProvider> provider, const IntSize& size, Canvas2DLayerBridge::AccelerationMode accelerationMode)
     {
-        return adoptRef(new Canvas2DLayerBridge(std::move(provider), size, 0, NonOpaque, accelerationMode, nullptr));
+        RefPtr<Canvas2DLayerBridge> bridge = adoptRef(new Canvas2DLayerBridge(std::move(provider), size, 0, NonOpaque, accelerationMode, nullptr));
+        bridge->dontUseIdleSchedulingForTesting();
+        return bridge.release();
     }
 
 protected:
@@ -462,7 +464,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_HibernationReEntry)
     EXPECT_CALL(*mockLoggerPtr, didStartHibernating())
         .WillOnce(testing::Invoke(hibernationStartedEvent.get(), &WaitableEvent::signal));
     postSetIsHiddenTask(BLINK_FROM_HERE, testThread.get(), bridge.get(), true);
-    // Toggle visibility before the idle tasks that enters hibernation gets a
+    // Toggle visibility before the task that enters hibernation gets a
     // chance to run.
     postSetIsHiddenTask(BLINK_FROM_HERE, testThread.get(), bridge.get(), false);
     postSetIsHiddenTask(BLINK_FROM_HERE, testThread.get(), bridge.get(), true);
@@ -816,23 +818,6 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
     postAndWaitDestroyBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge);
 }
 
-class IdleFenceTask : public WebThread::IdleTask {
-public:
-    IdleFenceTask(WaitableEvent* doneEvent)
-        : m_doneEvent(doneEvent)
-    { }
-
-    virtual ~IdleFenceTask() { }
-
-    void run(double /*deadline*/) override
-    {
-        m_doneEvent->signal();
-    }
-
-private:
-    WaitableEvent* m_doneEvent;
-};
-
 #if CANVAS2D_HIBERNATION_ENABLED
 TEST_F(Canvas2DLayerBridgeTest, TeardownWhileHibernationIsPending)
 #else
@@ -863,13 +848,13 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_TeardownWhileHibernationIsPending)
     // a bridge to hold the mockLogger.
     hibernationScheduledEvent->wait();
     // Once we know the hibernation task is scheduled, we can schedule a fence.
-    // Assuming Idle tasks are guaranteed to run in the order they were
+    // Assuming tasks are guaranteed to run in the order they were
     // submitted, this fence will guarantee the attempt to hibernate runs to
     // completion before the thread is destroyed.
     // This test passes by not crashing, which proves that the WeakPtr logic
     // is sound.
     std::unique_ptr<WaitableEvent> fenceEvent = wrapUnique(new WaitableEvent());
-    testThread->scheduler()->postIdleTask(BLINK_FROM_HERE, new IdleFenceTask(fenceEvent.get()));
+    testThread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&WaitableEvent::signal, unretained(fenceEvent.get())));
     fenceEvent->wait();
 }
 

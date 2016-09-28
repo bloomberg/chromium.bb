@@ -380,6 +380,11 @@ static void hibernateWrapper(WeakPtr<Canvas2DLayerBridge> bridge, double /*idleD
     }
 }
 
+static void hibernateWrapperForTesting(WeakPtr<Canvas2DLayerBridge> bridge)
+{
+    hibernateWrapper(bridge, 0);
+}
+
 void Canvas2DLayerBridge::hibernate()
 {
     DCHECK(!isHibernating());
@@ -606,7 +611,11 @@ void Canvas2DLayerBridge::setIsHidden(bool hidden)
             m_layer->clearTexture();
         m_logger->reportHibernationEvent(HibernationScheduled);
         m_hibernationScheduled = true;
-        Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind(&hibernateWrapper, m_weakPtrFactory.createWeakPtr()));
+        if (m_dontUseIdleSchedulingForTesting) {
+            Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, WTF::bind(&hibernateWrapperForTesting, m_weakPtrFactory.createWeakPtr()));
+        } else {
+            Platform::current()->currentThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind(&hibernateWrapper, m_weakPtrFactory.createWeakPtr()));
+        }
     }
     if (!isHidden() && m_softwareRenderingWhileHidden) {
         flushRecordingOnly();

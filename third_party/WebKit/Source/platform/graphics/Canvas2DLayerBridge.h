@@ -120,6 +120,7 @@ public:
     void prepareSurfaceForPaintingIfNeeded();
     bool isHidden() { return m_isHidden; }
     OpacityMode opacityMode() { return m_opacityMode; }
+    void dontUseIdleSchedulingForTesting() { m_dontUseIdleSchedulingForTesting = true; }
 
     void beginDestruction();
     void hibernate();
@@ -259,6 +260,7 @@ private:
     bool m_softwareRenderingWhileHidden;
     bool m_surfaceCreationFailedAtLeastOnce = false;
     bool m_hibernationScheduled = false;
+    bool m_dontUseIdleSchedulingForTesting = false;
 
     friend class Canvas2DLayerBridgeTest;
     friend class CanvasRenderingContext2DTest;
