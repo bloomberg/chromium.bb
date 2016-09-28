@@ -1040,10 +1040,8 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
       YV12_BUFFER_CONFIG *const buf = cm->frame_refs[i].buf;
       width = buf->y_crop_width;
       height = buf->y_crop_height;
-#if CONFIG_MISC_FIXES
       cm->render_width = buf->render_width;
       cm->render_height = buf->render_height;
-#endif
       found = 1;
       break;
     }
@@ -1051,9 +1049,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 
   if (!found) {
     av1_read_frame_size(rb, &width, &height);
-#if CONFIG_MISC_FIXES
     setup_render_size(cm, rb);
-#endif
   }
 
   if (width <= 0 || height <= 0)
@@ -1082,10 +1078,6 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   }
 
   resize_context_buffers(cm, width, height);
-#if !CONFIG_MISC_FIXES
-  setup_render_size(cm, rb);
-#endif
-
   lock_buffer_pool(pool);
   if (aom_realloc_frame_buffer(
           get_frame_new_buffer(cm), cm->width, cm->height, cm->subsampling_x,
