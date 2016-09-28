@@ -613,7 +613,7 @@ def GetReview(host, change, revision):
   return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
-def AddReviewers(host, change, add=None):
+def AddReviewers(host, change, add=None, is_reviewer=True):
   """Add reviewers to a change."""
   if not add:
     return
@@ -621,7 +621,10 @@ def AddReviewers(host, change, add=None):
     add = (add,)
   path = 'changes/%s/reviewers' % change
   for r in add:
-    body = {'reviewer': r}
+    body = {
+      'reviewer': r,
+      'state': 'REVIEWER' if is_reviewer else 'CC',
+    }
     conn = CreateHttpConn(host, path, reqtype='POST', body=body)
     jmsg = ReadHttpJsonResponse(conn, ignore_404=False)
   return jmsg

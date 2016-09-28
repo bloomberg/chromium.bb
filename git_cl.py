@@ -2618,13 +2618,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     else:
       refspec_opts.append('notify=NONE')
 
-    cc = self.GetCCList().split(',')
-    if options.cc:
-      cc.extend(options.cc)
-    cc = filter(None, cc)
-    if cc:
-      refspec_opts.extend('cc=' + email.strip() for email in cc)
-
     reviewers = change_desc.get_reviewers()
     if reviewers:
       refspec_opts.extend('r=' + email.strip() for email in reviewers)
@@ -2662,6 +2655,16 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
            'Change-Id: %s') % (len(change_numbers), change_id))
       self.SetIssue(change_numbers[0])
       self._GitSetBranchConfigValue('gerritsquashhash', ref_to_push)
+
+    # Add cc's from the CC_LIST and --cc flag (if any).
+    cc = self.GetCCList().split(',')
+    if options.cc:
+      cc.extend(options.cc)
+    cc = filter(None, cc)
+    if cc:
+      gerrit_util.AddReviewers(
+          self._GetGerritHost(), self.GetIssue(), cc, is_reviewer=False)
+
     return 0
 
   def _AddChangeIdToCommitMessage(self, options, args):
