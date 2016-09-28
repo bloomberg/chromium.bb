@@ -17,7 +17,7 @@ bool SkipImageCanvas::onFilter(SkTCopyOnFirstWrite<SkPaint>* paint,
     return false;
 
   SkShader* shader = (*paint) ? (*paint)->getShader() : nullptr;
-  return !shader || !shader->isABitmap();
+  return !shader || !shader->isAImage();
 }
 
 void SkipImageCanvas::onDrawPicture(const SkPicture* picture,
