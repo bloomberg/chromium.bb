@@ -154,11 +154,13 @@ const MitigationFlags MITIGATION_DEP_NO_ATL_THUNK                 = 0x00000002;
 // PROCESS_CREATION_MITIGATION_POLICY_SEHOP_ENABLE.
 const MitigationFlags MITIGATION_SEHOP                            = 0x00000004;
 
-// Forces ASLR on all images in the child process. Corresponds to
+// Forces ASLR on all images in the child process. In debug builds, must be
+// enabled after startup. Corresponds to
 // PROCESS_CREATION_MITIGATION_POLICY_FORCE_RELOCATE_IMAGES_ALWAYS_ON .
 const MitigationFlags MITIGATION_RELOCATE_IMAGE                   = 0x00000008;
 
-// Refuses to load DLLs that cannot support ASLR. Corresponds to
+// Refuses to load DLLs that cannot support ASLR. In debug builds, must be
+// enabled after startup. Corresponds to
 // PROCESS_CREATION_MITIGATION_POLICY_FORCE_RELOCATE_IMAGES_ALWAYS_ON_REQ_RELOCS.
 const MitigationFlags MITIGATION_RELOCATE_IMAGE_REQUIRED          = 0x00000010;
 
@@ -185,6 +187,11 @@ const MitigationFlags MITIGATION_STRICT_HANDLE_CHECKS             = 0x00000100;
 
 // Prevents the process from making Win32k calls. Corresponds to
 // PROCESS_CREATION_MITIGATION_POLICY_WIN32K_SYSTEM_CALL_DISABLE_ALWAYS_ON.
+//
+// Applications linked to user32.dll or gdi32.dll make Win32k calls during
+// setup, even if Win32k is not otherwise used. So they also need to add a rule
+// with SUBSYS_WIN32K_LOCKDOWN and semantics FAKE_USER_GDI_INIT to allow the
+// initialization to succeed.
 const MitigationFlags MITIGATION_WIN32K_DISABLE                   = 0x00000200;
 
 // Prevents certain built-in third party extension points from being used.

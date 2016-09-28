@@ -70,7 +70,6 @@ bool CheckWin8DepPolicy() {
 }
 #endif  // !defined(_WIN64)
 
-#if defined(NDEBUG)
 bool CheckWin8AslrPolicy() {
   PROCESS_MITIGATION_ASLR_POLICY policy = {};
   if (!get_process_mitigation_policy(::GetCurrentProcess(), ProcessASLRPolicy,
@@ -79,7 +78,6 @@ bool CheckWin8AslrPolicy() {
   }
   return policy.EnableForceRelocateImages && policy.DisallowStrippedImages;
 }
-#endif  // defined(NDEBUG)
 
 bool CheckWin8StrictHandlePolicy() {
   PROCESS_MITIGATION_STRICT_HANDLE_CHECK_POLICY policy = {};
@@ -843,7 +841,7 @@ SBOX_TESTS_COMMAND int TestChildProcess(int argc, wchar_t** argv) {
 //------------------------------------------------------------------------------
 // Win8 Checks:
 // MITIGATION_DEP(_NO_ATL_THUNK)
-// MITIGATION_RELOCATE_IMAGE(_REQUIRED) - ASLR, release only
+// MITIGATION_RELOCATE_IMAGE(_REQUIRED) - ASLR
 // MITIGATION_STRICT_HANDLE_CHECKS
 // >= Win8
 //------------------------------------------------------------------------------
@@ -860,10 +858,8 @@ SBOX_TESTS_COMMAND int CheckWin8(int argc, wchar_t** argv) {
     return SBOX_TEST_FIRST_ERROR;
 #endif
 
-#if defined(NDEBUG)  // ASLR cannot be forced in debug builds.
   if (!CheckWin8AslrPolicy())
     return SBOX_TEST_SECOND_ERROR;
-#endif
 
   if (!CheckWin8StrictHandlePolicy())
     return SBOX_TEST_THIRD_ERROR;
@@ -878,15 +874,23 @@ TEST(ProcessMitigationsTest, CheckWin8) {
   TestRunner runner;
   sandbox::TargetPolicy* policy = runner.GetPolicy();
 
+  // ASLR cannot be forced on start in debug builds.
+  constexpr sandbox::MitigationFlags kDebugDelayedMitigations =
+      MITIGATION_RELOCATE_IMAGE | MITIGATION_RELOCATE_IMAGE_REQUIRED;
+
   sandbox::MitigationFlags mitigations =
       MITIGATION_DEP | MITIGATION_DEP_NO_ATL_THUNK;
-#if defined(NDEBUG)  // ASLR cannot be forced in debug builds.
-  mitigations |= MITIGATION_RELOCATE_IMAGE | MITIGATION_RELOCATE_IMAGE_REQUIRED;
+#if defined(NDEBUG)
+  mitigations |= kDebugDelayedMitigations;
 #endif
 
   EXPECT_EQ(policy->SetProcessMitigations(mitigations), SBOX_ALL_OK);
 
   mitigations |= MITIGATION_STRICT_HANDLE_CHECKS;
+
+#if !defined(NDEBUG)
+  mitigations |= kDebugDelayedMitigations;
+#endif
 
   EXPECT_EQ(policy->SetDelayedProcessMitigations(mitigations), SBOX_ALL_OK);
 
