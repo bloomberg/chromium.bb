@@ -197,7 +197,14 @@ std::string DetermineTextLanguage(const base::string16& text,
     *is_cld_reliable = prediction_reliable;
   }
 
+  // Ignore unreliable, "unknown", and xx-Latn predictions that are currently
+  // not supported.
   if (prediction_reliable &&
+      predicted_language != "bg-Latn" &&
+      predicted_language != "el-Latn" &&
+      predicted_language != "ja-Latn" &&
+      predicted_language != "ru-Latn" &&
+      predicted_language != "zh-Latn" &&
       predicted_language !=
           chrome_lang_id::NNetLanguageIdentifier::kUnknown) {
     // CLD3 returns 'zh' for Chinese but Translate doesn't accept it. Thus,

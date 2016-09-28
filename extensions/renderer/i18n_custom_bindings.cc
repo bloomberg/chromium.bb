@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -135,6 +136,7 @@ void InitDetectedLanguages(
     LanguageDetectionResult* result) {
   std::vector<std::unique_ptr<DetectedLanguage>>* detected_languages =
       &result->languages;
+  DCHECK(detected_languages->empty());
   bool* is_reliable = &result->is_reliable;
 
   // is_reliable is set to "true", so that the reliability can be calculated by
@@ -144,19 +146,32 @@ void InitDetectedLanguages(
     const chrome_lang_id::NNetLanguageIdentifier::Result& lang_result =
         lang_results.at(i);
     const std::string& language_code = lang_result.language;
+
+    // If a language is kUnknown, then the remaining ones are also kUnknown.
     if (language_code == chrome_lang_id::NNetLanguageIdentifier::kUnknown) {
-      // If the first language is kUnknown, then all languages are kUnknown.
-      // Thus, is_reliable is set to "false".
-      if (i == 0) {
-        *is_reliable = false;
-      }
       break;
+    }
+
+    // The list of languages supported by CLD3 is saved in kLanguageNames
+    // in the following file:
+    // //src/third_party/cld_3/src/src/task_context_params.cc
+    // Among the entries in this list are transliterated languages
+    // (called xx-Latn) which don't belong to the spec ISO639-1 used by
+    // the previous model, CLD2. Thus, to maintain backwards compatibility,
+    // xx-Latn predictions are ignored for now.
+    if (base::EndsWith(language_code, "-Latn",
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+      continue;
     }
 
     *is_reliable = *is_reliable && lang_result.is_reliable;
     const int percent = static_cast<int>(100 * lang_result.proportion);
     detected_languages->push_back(
         base::MakeUnique<DetectedLanguage>(language_code, percent));
+  }
+
+  if (detected_languages->empty()) {
+    *is_reliable = false;
   }
 }
 #else
