@@ -11,8 +11,8 @@
 #include "build/build_config.h"
 #include "components/storage_monitor/storage_info.h"
 
-#if defined(OS_LINUX)
-#include "components/storage_monitor/test_media_transfer_protocol_manager_linux.h"
+#if defined(OS_CHROMEOS)
+#include "components/storage_monitor/test_media_transfer_protocol_manager_chromeos.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"  // nogncheck
 #endif
 
@@ -21,9 +21,9 @@ namespace storage_monitor {
 TestStorageMonitor::TestStorageMonitor()
     : StorageMonitor(),
       init_called_(false) {
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
   media_transfer_protocol_manager_.reset(
-      new TestMediaTransferProtocolManagerLinux());
+      new TestMediaTransferProtocolManagerChromeOS());
 #endif
 }
 
@@ -115,7 +115,7 @@ bool TestStorageMonitor::GetMTPStorageInfoFromDeviceId(
 }
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 device::MediaTransferProtocolManager*
 TestStorageMonitor::media_transfer_protocol_manager() {
   return media_transfer_protocol_manager_.get();

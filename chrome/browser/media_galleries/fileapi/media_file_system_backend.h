@@ -31,8 +31,8 @@ namespace net {
 class URLRequest;
 }
 
-class MediaPathFilter;
 class DeviceMediaAsyncFileUtil;
+class MediaPathFilter;
 
 class MediaFileSystemBackend : public storage::FileSystemBackend {
  public:
@@ -110,7 +110,11 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
       media_copy_or_move_file_validator_factory_;
 
   std::unique_ptr<storage::AsyncFileUtil> native_media_file_util_;
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   std::unique_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
+#endif
+
 #if defined(OS_WIN) || defined(OS_MACOSX)
   std::unique_ptr<storage::AsyncFileUtil> picasa_file_util_;
   std::unique_ptr<storage::AsyncFileUtil> itunes_file_util_;
@@ -118,7 +122,7 @@ class MediaFileSystemBackend : public storage::FileSystemBackend {
   // Used for usage UMA tracking.
   bool picasa_file_util_used_;
   bool itunes_file_util_used_;
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemBackend);
 };

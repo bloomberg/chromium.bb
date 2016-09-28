@@ -25,7 +25,6 @@
 #include "components/storage_monitor/removable_device_constants.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/storage_monitor.h"
-#include "components/storage_monitor/test_media_transfer_protocol_manager_linux.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -126,8 +125,6 @@ class TestStorageMonitorLinux : public StorageMonitorLinux {
  public:
   explicit TestStorageMonitorLinux(const base::FilePath& path)
       : StorageMonitorLinux(path) {
-    SetMediaTransferProtocolManagerForTest(
-        new TestMediaTransferProtocolManagerLinux());
     SetGetDeviceInfoCallbackForTest(base::Bind(&GetDeviceInfo));
   }
   ~TestStorageMonitorLinux() override {}

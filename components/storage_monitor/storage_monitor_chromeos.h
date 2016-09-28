@@ -26,7 +26,7 @@
 
 namespace storage_monitor {
 
-class MediaTransferProtocolDeviceObserverLinux;
+class MediaTransferProtocolDeviceObserverChromeOS;
 
 class StorageMonitorCros : public StorageMonitor,
                            public chromeos::disks::DiskMountManager::Observer {
@@ -86,7 +86,7 @@ class StorageMonitorCros : public StorageMonitor,
 
   std::unique_ptr<device::MediaTransferProtocolManager>
       media_transfer_protocol_manager_;
-  std::unique_ptr<MediaTransferProtocolDeviceObserverLinux>
+  std::unique_ptr<MediaTransferProtocolDeviceObserverChromeOS>
       media_transfer_protocol_device_observer_;
 
   base::WeakPtrFactory<StorageMonitorCros> weak_ptr_factory_;

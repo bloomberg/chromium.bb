@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
-#define CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_CHROMEOS_MTP_DEVICE_DELEGATE_IMPL_CHROMEOS_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_CHROMEOS_MTP_DEVICE_DELEGATE_IMPL_CHROMEOS_H_
 
 #include <stdint.h>
 
@@ -19,8 +19,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/media_galleries/chromeos/mtp_device_task_helper.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
-#include "chrome/browser/media_galleries/linux/mtp_device_task_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
@@ -528,4 +528,4 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceDelegateImplLinux);
 };
 
-#endif  // CHROME_BROWSER_MEDIA_GALLERIES_LINUX_MTP_DEVICE_DELEGATE_IMPL_LINUX_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_CHROMEOS_MTP_DEVICE_DELEGATE_IMPL_CHROMEOS_H_

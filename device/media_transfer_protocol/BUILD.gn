@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 
+assert(is_chromeos)
 assert(use_dbus)
 
 proto_library("mtp_file_entry_proto") {
@@ -34,13 +35,8 @@ static_library("media_transfer_protocol") {
     ":mtp_storage_info_proto",
     "//base",
   ]
-  if (use_dbus) {
-    deps = [
-      "//dbus",
-    ]
-  }
-
-  if (is_chromeos) {
-    deps += [ "//chromeos" ]
-  }
+  deps = [
+    "//chromeos",
+    "//dbus",
+  ]
 }

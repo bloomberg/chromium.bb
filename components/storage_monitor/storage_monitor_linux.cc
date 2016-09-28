@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/media_storage_util.h"
-#include "components/storage_monitor/media_transfer_protocol_device_observer_linux.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/udev_util_linux.h"
@@ -264,16 +263,6 @@ void StorageMonitorLinux::Init() {
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&StorageMonitorLinux::OnMtabWatcherCreated,
                  weak_ptr_factory_.GetWeakPtr()));
-
-  if (!media_transfer_protocol_manager_) {
-    media_transfer_protocol_manager_.reset(
-        device::MediaTransferProtocolManager::Initialize(
-            BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
-  }
-
-  media_transfer_protocol_device_observer_.reset(
-      new MediaTransferProtocolDeviceObserverLinux(
-          receiver(), media_transfer_protocol_manager_.get()));
 }
 
 bool StorageMonitorLinux::GetStorageInfoForPath(
@@ -281,14 +270,6 @@ bool StorageMonitorLinux::GetStorageInfoForPath(
     StorageInfo* device_info) const {
   DCHECK(device_info);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // TODO(thestig) |media_transfer_protocol_device_observer_| should always be
-  // valid.
-  if (media_transfer_protocol_device_observer_ &&
-      media_transfer_protocol_device_observer_->GetStorageInfoForPath(
-          path, device_info)) {
-    return true;
-  }
 
   if (!path.IsAbsolute())
     return false;
@@ -305,20 +286,9 @@ bool StorageMonitorLinux::GetStorageInfoForPath(
   return true;
 }
 
-device::MediaTransferProtocolManager*
-StorageMonitorLinux::media_transfer_protocol_manager() {
-  return media_transfer_protocol_manager_.get();
-}
-
 void StorageMonitorLinux::SetGetDeviceInfoCallbackForTest(
     const GetDeviceInfoCallback& get_device_info_callback) {
   get_device_info_callback_ = get_device_info_callback;
-}
-
-void StorageMonitorLinux::SetMediaTransferProtocolManagerForTest(
-    device::MediaTransferProtocolManager* test_manager) {
-  DCHECK(!media_transfer_protocol_manager_);
-  media_transfer_protocol_manager_.reset(test_manager);
 }
 
 void StorageMonitorLinux::EjectDevice(
@@ -330,10 +300,7 @@ void StorageMonitorLinux::EjectDevice(
     return;
   }
 
-  if (type == StorageInfo::MTP_OR_PTP) {
-    media_transfer_protocol_device_observer_->EjectDevice(device_id, callback);
-    return;
-  }
+  DCHECK_NE(type, StorageInfo::MTP_OR_PTP);
 
   // Find the mount point for the given device ID.
   base::FilePath path;

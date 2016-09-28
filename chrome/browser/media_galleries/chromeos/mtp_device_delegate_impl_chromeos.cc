@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_galleries/linux/mtp_device_delegate_impl_linux.h"
+#include "chrome/browser/media_galleries/chromeos/mtp_device_delegate_impl_chromeos.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -22,8 +22,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/media_galleries/linux/mtp_device_task_helper_map_service.h"
-#include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
+#include "chrome/browser/media_galleries/chromeos/mtp_device_task_helper_map_service.h"
+#include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
 #include "net/base/io_buffer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 

@@ -19,7 +19,7 @@
 #include "components/storage_monitor/mock_removable_storage_observer.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "components/storage_monitor/storage_info.h"
-#include "components/storage_monitor/test_media_transfer_protocol_manager_linux.h"
+#include "components/storage_monitor/test_media_transfer_protocol_manager_chromeos.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -68,7 +68,7 @@ class TestStorageMonitorCros : public StorageMonitorCros {
 
   void Init() override {
     SetMediaTransferProtocolManagerForTest(
-        new TestMediaTransferProtocolManagerLinux());
+        new TestMediaTransferProtocolManagerChromeOS());
     StorageMonitorCros::Init();
   }
 

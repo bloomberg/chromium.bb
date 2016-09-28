@@ -2081,8 +2081,20 @@ split_static_library("browser") {
     defines += [ "ENABLE_HOTWORDING" ]
   }
 
-  if (is_linux && use_dbus) {
+  if (is_chromeos && use_dbus) {
     deps += [ "//device/media_transfer_protocol" ]
+  }
+  if (is_win || is_mac || (is_chromeos && use_dbus)) {
+    sources += [
+      "media_galleries/fileapi/device_media_async_file_util.cc",
+      "media_galleries/fileapi/device_media_async_file_util.h",
+      "media_galleries/fileapi/mtp_device_async_delegate.cc",
+      "media_galleries/fileapi/mtp_device_async_delegate.h",
+      "media_galleries/fileapi/mtp_device_map_service.cc",
+      "media_galleries/fileapi/mtp_device_map_service.h",
+      "media_galleries/fileapi/mtp_file_stream_reader.cc",
+      "media_galleries/fileapi/mtp_file_stream_reader.h",
+    ]
   }
 
   if (use_udev) {
@@ -2649,10 +2661,20 @@ split_static_library("browser") {
       "lifetime/scoped_keep_alive.h",
       "media/webrtc/tab_desktop_media_list.cc",
       "media/webrtc/tab_desktop_media_list.h",
+      "media_galleries/chromeos/mtp_device_delegate_impl_chromeos.cc",
+      "media_galleries/chromeos/mtp_device_delegate_impl_chromeos.h",
+      "media_galleries/chromeos/mtp_device_object_enumerator.cc",
+      "media_galleries/chromeos/mtp_device_object_enumerator.h",
+      "media_galleries/chromeos/mtp_device_task_helper.cc",
+      "media_galleries/chromeos/mtp_device_task_helper.h",
+      "media_galleries/chromeos/mtp_device_task_helper_map_service.cc",
+      "media_galleries/chromeos/mtp_device_task_helper_map_service.h",
+      "media_galleries/chromeos/mtp_read_file_worker.cc",
+      "media_galleries/chromeos/mtp_read_file_worker.h",
+      "media_galleries/chromeos/snapshot_file_details.cc",
+      "media_galleries/chromeos/snapshot_file_details.h",
       "media_galleries/fileapi/av_scanning_file_validator.cc",
       "media_galleries/fileapi/av_scanning_file_validator.h",
-      "media_galleries/fileapi/device_media_async_file_util.cc",
-      "media_galleries/fileapi/device_media_async_file_util.h",
       "media_galleries/fileapi/iapps_finder.h",
       "media_galleries/fileapi/iapps_finder_impl.cc",
       "media_galleries/fileapi/iapps_finder_impl.h",
@@ -2664,12 +2686,6 @@ split_static_library("browser") {
       "media_galleries/fileapi/media_file_validator_factory.h",
       "media_galleries/fileapi/media_path_filter.cc",
       "media_galleries/fileapi/media_path_filter.h",
-      "media_galleries/fileapi/mtp_device_async_delegate.cc",
-      "media_galleries/fileapi/mtp_device_async_delegate.h",
-      "media_galleries/fileapi/mtp_device_map_service.cc",
-      "media_galleries/fileapi/mtp_device_map_service.h",
-      "media_galleries/fileapi/mtp_file_stream_reader.cc",
-      "media_galleries/fileapi/mtp_file_stream_reader.h",
       "media_galleries/fileapi/native_media_file_util.cc",
       "media_galleries/fileapi/native_media_file_util.h",
       "media_galleries/fileapi/picasa_finder.cc",
@@ -2690,18 +2706,6 @@ split_static_library("browser") {
       "media_galleries/gallery_watch_manager_observer.h",
       "media_galleries/imported_media_gallery_registry.cc",
       "media_galleries/imported_media_gallery_registry.h",
-      "media_galleries/linux/mtp_device_delegate_impl_linux.cc",
-      "media_galleries/linux/mtp_device_delegate_impl_linux.h",
-      "media_galleries/linux/mtp_device_object_enumerator.cc",
-      "media_galleries/linux/mtp_device_object_enumerator.h",
-      "media_galleries/linux/mtp_device_task_helper.cc",
-      "media_galleries/linux/mtp_device_task_helper.h",
-      "media_galleries/linux/mtp_device_task_helper_map_service.cc",
-      "media_galleries/linux/mtp_device_task_helper_map_service.h",
-      "media_galleries/linux/mtp_read_file_worker.cc",
-      "media_galleries/linux/mtp_read_file_worker.h",
-      "media_galleries/linux/snapshot_file_details.cc",
-      "media_galleries/linux/snapshot_file_details.h",
       "media_galleries/mac/mtp_device_delegate_impl_mac.h",
       "media_galleries/mac/mtp_device_delegate_impl_mac.mm",
       "media_galleries/media_file_system_registry.cc",

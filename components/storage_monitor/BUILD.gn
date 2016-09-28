@@ -12,8 +12,6 @@ static_library("storage_monitor") {
     "image_capture_device_manager.mm",
     "media_storage_util.cc",
     "media_storage_util.h",
-    "media_transfer_protocol_device_observer_linux.cc",
-    "media_transfer_protocol_device_observer_linux.h",
     "mtab_watcher_linux.cc",
     "mtab_watcher_linux.h",
     "portable_device_watcher_win.cc",
@@ -55,11 +53,15 @@ static_library("storage_monitor") {
     ]
   }
 
-  if (is_linux && use_dbus) {
+  if (is_chromeos && use_dbus) {
     deps += [
       "//device/media_transfer_protocol",
       "//device/media_transfer_protocol:mtp_file_entry_proto",
       "//device/media_transfer_protocol:mtp_storage_info_proto",
+    ]
+    sources += [
+      "media_transfer_protocol_device_observer_chromeos.cc",
+      "media_transfer_protocol_device_observer_chromeos.h",
     ]
   }
 
@@ -91,8 +93,8 @@ static_library("test_support") {
   sources = [
     "mock_removable_storage_observer.cc",
     "mock_removable_storage_observer.h",
-    "test_media_transfer_protocol_manager_linux.cc",
-    "test_media_transfer_protocol_manager_linux.h",
+    "test_media_transfer_protocol_manager_chromeos.cc",
+    "test_media_transfer_protocol_manager_chromeos.h",
     "test_portable_device_watcher_win.cc",
     "test_portable_device_watcher_win.h",
     "test_storage_monitor.cc",
@@ -109,7 +111,7 @@ static_library("test_support") {
     "//content/public/browser",
   ]
 
-  if (is_linux && use_dbus) {
+  if (is_chromeos && use_dbus) {
     deps = [
       "//device/media_transfer_protocol",
       "//device/media_transfer_protocol:mtp_file_entry_proto",
@@ -129,7 +131,7 @@ source_set("unit_tests") {
   sources = [
     "image_capture_device_manager_unittest.mm",
     "media_storage_util_unittest.cc",
-    "media_transfer_protocol_device_observer_linux_unittest.cc",
+    "media_transfer_protocol_device_observer_chromeos_unittest.cc",
     "storage_info_unittest.cc",
     "storage_monitor_mac_unittest.mm",
     "storage_monitor_unittest.cc",
@@ -144,17 +146,20 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 
-  if (is_linux && use_dbus) {
-    deps += [ "//device/media_transfer_protocol" ]
-    if (!is_chromeos) {
+  if (use_dbus) {
+    if (is_chromeos) {
+      deps += [
+        "//device/media_transfer_protocol",
+        "//device/media_transfer_protocol:mtp_file_entry_proto",
+        "//device/media_transfer_protocol:mtp_storage_info_proto",
+        "//testing/gmock",
+      ]
+      sources += [ "storage_monitor_chromeos_unittest.cc" ]
+    } else if (is_linux) {
       sources += [ "storage_monitor_linux_unittest.cc" ]
     }
   }
   if (is_chromeos) {
-    sources += [ "storage_monitor_chromeos_unittest.cc" ]
-    deps += [
-      "//chromeos:test_support",
-      "//testing/gmock",
-    ]
+    deps += [ "//chromeos:test_support" ]
   }
 }

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_STORAGE_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_LINUX_H_
-#define COMPONENTS_STORAGE_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_LINUX_H_
+#ifndef COMPONENTS_STORAGE_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_CHROMEOS_H_
+#define COMPONENTS_STORAGE_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_CHROMEOS_H_
 
 #include <map>
 #include <string>
@@ -32,13 +32,13 @@ typedef void (*GetStorageInfoFunc)(
 
 // Helper class to send MTP storage attachment and detachment events to
 // StorageMonitor.
-class MediaTransferProtocolDeviceObserverLinux
+class MediaTransferProtocolDeviceObserverChromeOS
     : public device::MediaTransferProtocolManager::Observer {
  public:
-  MediaTransferProtocolDeviceObserverLinux(
+  MediaTransferProtocolDeviceObserverChromeOS(
       StorageMonitor::Receiver* receiver,
       device::MediaTransferProtocolManager* mtp_manager);
-  ~MediaTransferProtocolDeviceObserverLinux() override;
+  ~MediaTransferProtocolDeviceObserverChromeOS() override;
 
   // Finds the storage that contains |path| and populates |storage_info|.
   // Returns false if unable to find the storage.
@@ -50,7 +50,7 @@ class MediaTransferProtocolDeviceObserverLinux
 
  protected:
   // Only used in unit tests.
-  MediaTransferProtocolDeviceObserverLinux(
+  MediaTransferProtocolDeviceObserverChromeOS(
       StorageMonitor::Receiver* receiver,
       device::MediaTransferProtocolManager* mtp_manager,
       GetStorageInfoFunc get_storage_info_func);
@@ -87,9 +87,9 @@ class MediaTransferProtocolDeviceObserverLinux
   // Guaranteed to outlive this class.
   StorageMonitor::Receiver* const notifications_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverLinux);
+  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverChromeOS);
 };
 
 }  // namespace storage_monitor
 
-#endif  // COMPONENTS_STORAGE_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_LINUX_H_
+#endif  // COMPONENTS_STORAGE_MONITOR_MEDIA_TRANSFER_PROTOCOL_DEVICE_OBSERVER_CHROMEOS_H_

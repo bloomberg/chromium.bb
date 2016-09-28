@@ -31,8 +31,6 @@
 
 namespace storage_monitor {
 
-class MediaTransferProtocolDeviceObserverLinux;
-
 class StorageMonitorLinux : public StorageMonitor,
                             public MtabWatcherLinux::Delegate {
  public:
@@ -53,9 +51,6 @@ class StorageMonitorLinux : public StorageMonitor,
 
   void SetGetDeviceInfoCallbackForTest(
       const GetDeviceInfoCallback& get_device_info_callback);
-
-  void SetMediaTransferProtocolManagerForTest(
-      device::MediaTransferProtocolManager* test_manager);
 
   // MtabWatcherLinux::Delegate implementation.
   void UpdateMtab(
@@ -95,8 +90,6 @@ class StorageMonitorLinux : public StorageMonitor,
                              StorageInfo* device_info) const override;
   void EjectDevice(const std::string& device_id,
                    base::Callback<void(EjectStatus)> callback) override;
-  device::MediaTransferProtocolManager* media_transfer_protocol_manager()
-      override;
 
   // Called when the MtabWatcher has been created.
   void OnMtabWatcherCreated(MtabWatcherLinux* watcher);
@@ -129,11 +122,6 @@ class StorageMonitorLinux : public StorageMonitor,
   // to notify about it's departure and notify about another one of it's mount
   // points.
   MountPriorityMap mount_priority_map_;
-
-  std::unique_ptr<device::MediaTransferProtocolManager>
-      media_transfer_protocol_manager_;
-  std::unique_ptr<MediaTransferProtocolDeviceObserverLinux>
-      media_transfer_protocol_device_observer_;
 
   std::unique_ptr<MtabWatcherLinux, MtabWatcherLinuxDeleter> mtab_watcher_;
 

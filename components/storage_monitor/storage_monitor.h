@@ -120,7 +120,7 @@ class StorageMonitor {
       base::string16* storage_object_id) const = 0;
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
   virtual device::MediaTransferProtocolManager*
       media_transfer_protocol_manager() = 0;
 #endif

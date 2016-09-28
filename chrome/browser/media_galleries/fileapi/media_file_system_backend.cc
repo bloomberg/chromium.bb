@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_validator_factory.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
@@ -50,6 +49,10 @@
 #include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_file_util.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
+#endif
 
 using storage::FileSystemContext;
 using storage::FileSystemURL;
@@ -137,18 +140,20 @@ MediaFileSystemBackend::MediaFileSystemBackend(
       media_task_runner_(media_task_runner),
       media_path_filter_(new MediaPathFilter),
       media_copy_or_move_file_validator_factory_(new MediaFileValidatorFactory),
-      native_media_file_util_(
-          new NativeMediaFileUtil(media_path_filter_.get())),
+      native_media_file_util_(new NativeMediaFileUtil(media_path_filter_.get()))
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+      ,
       device_media_async_file_util_(
           DeviceMediaAsyncFileUtil::Create(profile_path_,
                                            APPLY_MEDIA_FILE_VALIDATION))
+#endif
 #if defined(OS_WIN) || defined(OS_MACOSX)
       ,
       picasa_file_util_(new picasa::PicasaFileUtil(media_path_filter_.get())),
       itunes_file_util_(new itunes::ITunesFileUtil(media_path_filter_.get())),
       picasa_file_util_used_(false),
       itunes_file_util_used_(false)
-#endif  // defined(OS_WIN) || defined(OS_MACOSX)
+#endif
 {
 }
 
@@ -261,8 +266,10 @@ storage::AsyncFileUtil* MediaFileSystemBackend::GetAsyncFileUtil(
   switch (type) {
     case storage::kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
     case storage::kFileSystemTypeDeviceMedia:
       return device_media_async_file_util_.get();
+#endif
 #if defined(OS_WIN) || defined(OS_MACOSX)
     case storage::kFileSystemTypeItunes:
       if (!itunes_file_util_used_) {
@@ -322,10 +329,10 @@ storage::FileSystemOperation* MediaFileSystemBackend::CreateFileSystemOperation(
 
 bool MediaFileSystemBackend::SupportsStreaming(
     const storage::FileSystemURL& url) const {
-  if (url.type() == storage::kFileSystemTypeDeviceMedia) {
-    DCHECK(device_media_async_file_util_);
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  if (url.type() == storage::kFileSystemTypeDeviceMedia)
     return device_media_async_file_util_->SupportsStreaming(url);
-  }
+#endif
 
   return false;
 }
@@ -346,14 +353,15 @@ MediaFileSystemBackend::CreateFileStreamReader(
     int64_t max_bytes_to_read,
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
   if (url.type() == storage::kFileSystemTypeDeviceMedia) {
-    DCHECK(device_media_async_file_util_);
     std::unique_ptr<storage::FileStreamReader> reader =
         device_media_async_file_util_->GetFileStreamReader(
             url, offset, expected_modification_time, context);
     DCHECK(reader);
     return reader;
   }
+#endif
 
   return std::unique_ptr<storage::FileStreamReader>(
       storage::FileStreamReader::CreateForLocalFile(

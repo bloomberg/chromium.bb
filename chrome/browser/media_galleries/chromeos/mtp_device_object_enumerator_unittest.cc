@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "chrome/browser/media_galleries/linux/mtp_device_object_enumerator.h"
+#include "chrome/browser/media_galleries/chromeos/mtp_device_object_enumerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

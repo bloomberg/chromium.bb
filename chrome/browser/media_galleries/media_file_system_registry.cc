@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
-#include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/browser/media_galleries/media_file_system_context.h"
@@ -42,6 +41,10 @@
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/common/fileapi/file_system_mount_option.h"
 #include "storage/common/fileapi/file_system_types.h"
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
+#endif
 
 using content::BrowserThread;
 using content::NavigationController;
@@ -663,11 +666,9 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   bool RegisterFileSystem(const std::string& device_id,
                           const std::string& fs_name,
                           const base::FilePath& path) override {
-    if (StorageInfo::IsMassStorageDevice(device_id)) {
+    if (StorageInfo::IsMassStorageDevice(device_id))
       return RegisterFileSystemForMassStorage(device_id, fs_name, path);
-    } else {
-      return RegisterFileSystemForMTPDevice(device_id, fs_name, path);
-    }
+    return RegisterFileSystemForMTPDevice(device_id, fs_name, path);
   }
 
   void RevokeFileSystem(const std::string& fs_name) override {
@@ -678,10 +679,12 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
 
     ExternalMountPoints::GetSystemInstance()->RevokeFileSystem(fs_name);
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
         &MTPDeviceMapService::RevokeMTPFileSystem,
         base::Unretained(MTPDeviceMapService::GetInstance()),
         fs_name));
+#endif
   }
 
   base::FilePath GetRegisteredPath(const std::string& fs_name) const override {
@@ -732,6 +735,7 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
   bool RegisterFileSystemForMTPDevice(const std::string& device_id,
                                       const std::string fs_name,
                                       const base::FilePath& path) {
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(!StorageInfo::IsMassStorageDevice(device_id));
 
@@ -749,6 +753,10 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
                    base::Unretained(MTPDeviceMapService::GetInstance()),
                    path.value(), fs_name, true /* read only */));
     return result;
+#else
+    NOTREACHED();
+    return false;
+#endif
   }
 
   DISALLOW_COPY_AND_ASSIGN(MediaFileSystemContextImpl);

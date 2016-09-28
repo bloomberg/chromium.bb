@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_LINUX_H_
-#define COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_LINUX_H_
+#ifndef COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_CHROMEOS_H_
+#define COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_CHROMEOS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,11 +14,11 @@
 namespace storage_monitor {
 
 // A dummy MediaTransferProtocolManager implementation.
-class TestMediaTransferProtocolManagerLinux
+class TestMediaTransferProtocolManagerChromeOS
     : public device::MediaTransferProtocolManager {
  public:
-  TestMediaTransferProtocolManagerLinux();
-  ~TestMediaTransferProtocolManagerLinux() override;
+  TestMediaTransferProtocolManagerChromeOS();
+  ~TestMediaTransferProtocolManagerChromeOS() override;
 
  private:
   // device::MediaTransferProtocolManager implementation.
@@ -64,9 +64,9 @@ class TestMediaTransferProtocolManagerLinux
                     const uint32_t object_id,
                     const DeleteObjectCallback& callback) override;
 
-  DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerLinux);
+  DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerChromeOS);
 };
 
 }  // namespace storage_monitor
 
-#endif  // COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_LINUX_H_
+#endif  // COMPONENTS_STORAGE_MONITOR_TEST_MEDIA_TRANSFER_PROTOCOL_MANAGER_CHROMEOS_H_

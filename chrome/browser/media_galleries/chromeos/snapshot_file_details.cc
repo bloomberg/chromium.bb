@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
+#include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
 
 #include <limits>
 

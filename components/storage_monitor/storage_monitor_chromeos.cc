@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/storage_monitor/media_storage_util.h"
-#include "components/storage_monitor/media_transfer_protocol_device_observer_linux.h"
+#include "components/storage_monitor/media_transfer_protocol_device_observer_chromeos.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
@@ -111,7 +111,7 @@ void StorageMonitorCros::Init() {
   }
 
   media_transfer_protocol_device_observer_.reset(
-      new MediaTransferProtocolDeviceObserverLinux(
+      new MediaTransferProtocolDeviceObserverChromeOS(
           receiver(), media_transfer_protocol_manager_.get()));
 }
 

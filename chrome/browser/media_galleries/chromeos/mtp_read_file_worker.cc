@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media_galleries/linux/mtp_read_file_worker.h"
+#include "chrome/browser/media_galleries/chromeos/mtp_read_file_worker.h"
 
 #include <utility>
 
@@ -11,7 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "chrome/browser/media_galleries/linux/snapshot_file_details.h"
+#include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/media_transfer_protocol/media_transfer_protocol_manager.h"

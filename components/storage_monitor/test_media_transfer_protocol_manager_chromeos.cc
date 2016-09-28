@@ -2,54 +2,55 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/storage_monitor/test_media_transfer_protocol_manager_linux.h"
+#include "components/storage_monitor/test_media_transfer_protocol_manager_chromeos.h"
 
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "device/media_transfer_protocol/mtp_storage_info.pb.h"
 
 namespace storage_monitor {
 
-TestMediaTransferProtocolManagerLinux::
-TestMediaTransferProtocolManagerLinux() {}
+TestMediaTransferProtocolManagerChromeOS::
+    TestMediaTransferProtocolManagerChromeOS() {}
 
-TestMediaTransferProtocolManagerLinux::
-~TestMediaTransferProtocolManagerLinux() {}
+TestMediaTransferProtocolManagerChromeOS::
+    ~TestMediaTransferProtocolManagerChromeOS() {}
 
-void TestMediaTransferProtocolManagerLinux::AddObserver(Observer* observer) {}
+void TestMediaTransferProtocolManagerChromeOS::AddObserver(Observer* observer) {
+}
 
-void TestMediaTransferProtocolManagerLinux::RemoveObserver(
+void TestMediaTransferProtocolManagerChromeOS::RemoveObserver(
     Observer* observer) {}
 
 const std::vector<std::string>
-TestMediaTransferProtocolManagerLinux::GetStorages() const {
-    return std::vector<std::string>();
+TestMediaTransferProtocolManagerChromeOS::GetStorages() const {
+  return std::vector<std::string>();
 }
-const MtpStorageInfo* TestMediaTransferProtocolManagerLinux::GetStorageInfo(
+const MtpStorageInfo* TestMediaTransferProtocolManagerChromeOS::GetStorageInfo(
     const std::string& storage_name) const {
   return NULL;
 }
 
-void TestMediaTransferProtocolManagerLinux::GetStorageInfoFromDevice(
+void TestMediaTransferProtocolManagerChromeOS::GetStorageInfoFromDevice(
     const std::string& storage_name,
     const GetStorageInfoFromDeviceCallback& callback) {
   MtpStorageInfo mtp_storage_info;
   callback.Run(mtp_storage_info, true /* error */);
 }
 
-void TestMediaTransferProtocolManagerLinux::OpenStorage(
+void TestMediaTransferProtocolManagerChromeOS::OpenStorage(
     const std::string& storage_name,
     const std::string& mode,
     const OpenStorageCallback& callback) {
   callback.Run("", true);
 }
 
-void TestMediaTransferProtocolManagerLinux::CloseStorage(
+void TestMediaTransferProtocolManagerChromeOS::CloseStorage(
     const std::string& storage_handle,
     const CloseStorageCallback& callback) {
   callback.Run(true);
 }
 
-void TestMediaTransferProtocolManagerLinux::CreateDirectory(
+void TestMediaTransferProtocolManagerChromeOS::CreateDirectory(
     const std::string& storage_handle,
     const uint32_t parent_id,
     const std::string& directory_name,
@@ -57,17 +58,16 @@ void TestMediaTransferProtocolManagerLinux::CreateDirectory(
   callback.Run(true /* error */);
 }
 
-void TestMediaTransferProtocolManagerLinux::ReadDirectory(
+void TestMediaTransferProtocolManagerChromeOS::ReadDirectory(
     const std::string& storage_handle,
     const uint32_t file_id,
     const size_t max_size,
     const ReadDirectoryCallback& callback) {
-  callback.Run(std::vector<MtpFileEntry>(),
-               false /* no more entries*/,
+  callback.Run(std::vector<MtpFileEntry>(), false /* no more entries*/,
                true /* error */);
 }
 
-void TestMediaTransferProtocolManagerLinux::ReadFileChunk(
+void TestMediaTransferProtocolManagerChromeOS::ReadFileChunk(
     const std::string& storage_handle,
     uint32_t file_id,
     uint32_t offset,
@@ -76,14 +76,14 @@ void TestMediaTransferProtocolManagerLinux::ReadFileChunk(
   callback.Run(std::string(), true);
 }
 
-void TestMediaTransferProtocolManagerLinux::GetFileInfo(
+void TestMediaTransferProtocolManagerChromeOS::GetFileInfo(
     const std::string& storage_handle,
     uint32_t file_id,
     const GetFileInfoCallback& callback) {
   callback.Run(MtpFileEntry(), true);
 }
 
-void TestMediaTransferProtocolManagerLinux::RenameObject(
+void TestMediaTransferProtocolManagerChromeOS::RenameObject(
     const std::string& storage_handle,
     const uint32_t object_id,
     const std::string& new_name,
@@ -91,7 +91,7 @@ void TestMediaTransferProtocolManagerLinux::RenameObject(
   callback.Run(true /* error */);
 }
 
-void TestMediaTransferProtocolManagerLinux::CopyFileFromLocal(
+void TestMediaTransferProtocolManagerChromeOS::CopyFileFromLocal(
     const std::string& storage_handle,
     const int source_file_descriptor,
     const uint32_t parent_id,
@@ -100,7 +100,7 @@ void TestMediaTransferProtocolManagerLinux::CopyFileFromLocal(
   callback.Run(true /* error */);
 }
 
-void TestMediaTransferProtocolManagerLinux::DeleteObject(
+void TestMediaTransferProtocolManagerChromeOS::DeleteObject(
     const std::string& storage_handle,
     const uint32_t object_id,
     const DeleteObjectCallback& callback) {
