@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DATA_USE_MEASUREMENT_CHROME_DATA_USE_ASCRIBER_SERVICE_H_
 #define CHROME_BROWSER_DATA_USE_MEASUREMENT_CHROME_DATA_USE_ASCRIBER_SERVICE_H_
 
+#include <list>
+
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -25,8 +27,7 @@ class ChromeDataUseAscriber;
 // WebContentsObservers to propagate events to itself because each
 // WebContents instance requires its own WebContentsObserver instance.
 //
-// Created and destroyed on the UI thread. Public methods should only be called
-// on the UI thread.
+// Created, destroyed, and used only on the UI thread.
 class ChromeDataUseAscriberService : public KeyedService {
  public:
   ChromeDataUseAscriberService();
@@ -66,6 +67,19 @@ class ChromeDataUseAscriberService : public KeyedService {
 
   // |ascriber_| outlives this instance.
   ChromeDataUseAscriber* ascriber_;
+
+  // Tracks whether |ascriber_| was set. This field is required because tests
+  // might set |ascriber_| to nullptr.
+  bool is_initialized_;
+
+  // Frame and navigation events might arrive from the UI thread before
+  // |ascriber_| is set. A queue of frame and navigation events that arrive
+  // before |ascriber_| is set are maintained in these fields so that they can
+  // be propagated immediately after |ascriber_| is set. The RenderFrameHost
+  // and NavigationHandle pointers in the queues are valid for the duration that
+  // they are in the queue.
+  std::list<content::RenderFrameHost*> pending_frames_queue_;
+  std::list<content::NavigationHandle*> pending_navigations_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseAscriberService);
 };

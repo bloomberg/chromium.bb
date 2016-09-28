@@ -30,14 +30,16 @@ data_use_measurement::ChromeDataUseAscriber* InitOnIOThread(
 namespace data_use_measurement {
 
 ChromeDataUseAscriberService::ChromeDataUseAscriberService()
-    : ascriber_(nullptr) {
+    : ascriber_(nullptr), is_initialized_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Skip IO thread initialization if there is no IO thread. This check is
   // required because unit tests that do no set up an IO thread can cause this
   // code to execute.
-  if (!g_browser_process->io_thread())
+  if (!g_browser_process->io_thread()) {
+    is_initialized_ = true;
     return;
+  }
 
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::IO, FROM_HERE,
@@ -53,6 +55,11 @@ ChromeDataUseAscriberService::~ChromeDataUseAscriberService() {
 void ChromeDataUseAscriberService::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!is_initialized_) {
+    pending_frames_queue_.push_back(render_frame_host);
+    return;
+  }
 
   if (!ascriber_)
     return;
@@ -76,6 +83,14 @@ void ChromeDataUseAscriberService::RenderFrameCreated(
 void ChromeDataUseAscriberService::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!is_initialized_) {
+    // While remove() is a O(n) operation, the pending queue is not expected
+    // to have a significant number of elements.
+    DCHECK_GE(50u, pending_frames_queue_.size());
+    pending_frames_queue_.remove(render_frame_host);
+    return;
+  }
 
   if (!ascriber_)
     return;
@@ -101,7 +116,15 @@ void ChromeDataUseAscriberService::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!ascriber_ || !navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  if (!is_initialized_) {
+    pending_navigations_queue_.push_back(navigation_handle);
+    return;
+  }
+
+  if (!ascriber_)
     return;
 
   content::WebContents* web_contents = navigation_handle->GetWebContents();
@@ -118,7 +141,18 @@ void ChromeDataUseAscriberService::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!ascriber_ || !navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  if (!is_initialized_) {
+    // While remove() is a O(n) operation, the pending queue is not expected
+    // to have a significant number of elements.
+    DCHECK_GE(50u, pending_navigations_queue_.size());
+    pending_navigations_queue_.remove(navigation_handle);
+    return;
+  }
+
+  if (!ascriber_)
     return;
 
   content::WebContents* web_contents = navigation_handle->GetWebContents();
@@ -137,7 +171,10 @@ void ChromeDataUseAscriberService::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!ascriber_ || !navigation_handle->IsInMainFrame())
+  if (!is_initialized_ || !navigation_handle->IsInMainFrame())
+    return;
+
+  if (!ascriber_)
     return;
 
   content::WebContents* web_contents = navigation_handle->GetWebContents();
@@ -152,9 +189,21 @@ void ChromeDataUseAscriberService::DidRedirectNavigation(
 
 void ChromeDataUseAscriberService::SetDataUseAscriber(
     ChromeDataUseAscriber* ascriber) {
+  DCHECK(!is_initialized_);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   ascriber_ = ascriber;
+  is_initialized_ = true;
+
+  for (auto& it : pending_frames_queue_) {
+    RenderFrameCreated(it);
+  }
+  pending_frames_queue_.clear();
+
+  for (auto& it : pending_navigations_queue_) {
+    DidStartNavigation(it);
+  }
+  pending_navigations_queue_.clear();
 }
 
 }  // namespace data_use_measurement
