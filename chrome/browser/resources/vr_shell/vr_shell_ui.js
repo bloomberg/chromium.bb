@@ -14,10 +14,9 @@ var vrShellUi = (function() {
    * @const
    */
   var XAnchoring = Object.freeze({
-    'XLEFT': 0,
-    'XRIGHT': 1,
-    'XCENTER': 2,
-    'XNONE': 3
+    'XNONE': 0,
+    'XLEFT': 1,
+    'XRIGHT': 2
   });
 
   /**
@@ -26,10 +25,9 @@ var vrShellUi = (function() {
    * @const
    */
   var YAnchoring = Object.freeze({
-    'YTOP': 0,
-    'YBOTTOM': 1,
-    'YCENTER': 2,
-    'YNONE': 3
+    'YNONE': 0,
+    'YTOP': 1,
+    'YBOTTOM': 2
   });
 
   /**
@@ -58,6 +56,19 @@ var vrShellUi = (function() {
   });
 
   /**
+   * Enumeration of scene update commands.
+   * @enum {number}
+   * @const
+   */
+  var Command = Object.freeze({
+    'ADD_ELEMENT': 0,
+    'UPDATE_ELEMENT': 1,
+    'REMOVE_ELEMENT': 2,
+    'ADD_ANIMATION': 3,
+    'REMOVE_ANIMATION': 4
+  });
+
+  /**
    * @type {number} Id generator.
    */
   var idIndex = 1;
@@ -80,7 +91,6 @@ var vrShellUi = (function() {
       this.size = { x: metersX, y: metersY };
       this.xAnchoring = XAnchoring.XNONE;
       this.yAnchoring = YAnchoring.YNONE;
-      this.anchorZ = false;
       this.translation = { x: 0, y: 0, z: 0 };
       this.orientationAxisAngle = { x: 0, y: 0, z: 0, a: 0 };
       this.rotationAxisAngle = { x: 0, y: 0, z: 0, a: 0 };
@@ -104,15 +114,13 @@ var vrShellUi = (function() {
     }
 
     /**
-     * Anchoring allows a rectangle to be positioned relative to the content
-     * window.  X and Y values should be XAnchoring and YAnchoring elements.
-     * anchorZ is a boolean.
-     * Example: rect.setAnchoring(XAnchoring.XCENTER, YAnchoring.YBOTTOM, true);
+     * Anchoring allows a rectangle to be positioned relative to the edge of
+     * content window.  Values should be XAnchoring and YAnchoring elements.
+     * Example: rect.setAnchoring(XAnchoring.XNONE, YAnchoring.YBOTTOM);
      */
     setAnchoring(x, y, z) {
       this.xAnchoring = x;
       this.yAnchoring = y;
-      this.anchorZ = z;
     }
   };
 
@@ -191,7 +199,8 @@ var vrShellUi = (function() {
 
       // Add a UI rectangle for the button.
       var el = new UiElement(50 * i, 200, 50, 50, buttonWidth, buttonHeight);
-      el.setAnchoring(XAnchoring.XCENTER, YAnchoring.YBOTTOM, true);
+      el.parentId = 0;
+      el.setAnchoring(XAnchoring.XNONE, YAnchoring.YBOTTOM);
       el.setTranslation(buttonStartPosition + buttonSpacing * i, -0.3, 0.0);
       var id = idIndex++;
       addMesh(id, el);
@@ -216,12 +225,30 @@ var vrShellUi = (function() {
     chrome.send('domLoaded', [window.innerWidth, window.innerHeight]);
   }
 
-  function addAnimations(animations) {
-    chrome.send('addAnimations', animations);
+  function addMesh(id, mesh) {
+    mesh.id = id;
+    chrome.send('updateScene', [{
+      'type': Command.ADD_ELEMENT,
+      'data': mesh
+    }]);
   }
 
-  function addMesh(id, mesh) {
-    chrome.send('addMesh', [id, mesh]);
+  function removeMesh(id) {
+    chrome.send('updateScene', [{
+      'type': Command.REMOVE_ELEMENT,
+      'data': {'id': id}
+    }]);
+  }
+
+  function addAnimations(animations) {
+    var commands = [];
+    for (var i = 0; i < animations.length; i++) {
+      commands.push({
+        'type': Command.ADD_ANIMATION,
+        'data': animations[i]
+      });
+    }
+    chrome.send('updateScene', commands);
   }
 
   return {

@@ -29,9 +29,7 @@ class VrShellUIMessageHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override;
 
   void HandleDomLoaded(const base::ListValue* args);
-  void HandleAddMesh(const base::ListValue* args);
-  void HandleRemoveMesh(const base::ListValue* args);
-  void HandleAddAnimations(const base::ListValue* args);
+  void HandleUpdateScene(const base::ListValue* args);
   void HandleDoAction(const base::ListValue* args);
 
   base::WeakPtr<vr_shell::VrShell> vr_shell_;

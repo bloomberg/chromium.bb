@@ -217,7 +217,7 @@ void UiScene::AddAnimation(int element_id,
 }
 
 void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
-                                   int64_t time) {
+                                   int64_t time_in_micro) {
   int animation_id;
   int element_id;
   Animation::Property property;
@@ -249,7 +249,7 @@ void UiScene::AddAnimationFromDict(const base::DictionaryValue& dict,
     ParseEndpointToFloats(property, *from_dict, &from);
   }
 
-  int64_t start = time + (long)(start_time_ms * 1000.0);
+  int64_t start = time_in_micro + (long)(start_time_ms * 1000.0);
   int64_t duration = duration_ms * 1000.0;
 
   ContentRectangle* element = GetUiElementById(element_id);
@@ -273,8 +273,9 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
   }
 }
 
-void UiScene::HandleCommands(const base::ListValue& commands, int64_t time) {
-  for (auto& item : commands) {
+void UiScene::HandleCommands(const base::ListValue* commands,
+                             int64_t time_in_micro) {
+  for (auto& item : *commands) {
     base::DictionaryValue* dict;
     CHECK(item->GetAsDictionary(&dict));
 
@@ -297,7 +298,7 @@ void UiScene::HandleCommands(const base::ListValue& commands, int64_t time) {
         break;
       }
       case Command::ADD_ANIMATION:
-        AddAnimationFromDict(*data, time);
+        AddAnimationFromDict(*data, time_in_micro);
         break;
       case Command::REMOVE_ANIMATION: {
         int element_id, animation_id;
@@ -310,10 +311,10 @@ void UiScene::HandleCommands(const base::ListValue& commands, int64_t time) {
   }
 }
 
-void UiScene::UpdateTransforms(float screen_tilt, int64_t time) {
+void UiScene::UpdateTransforms(float screen_tilt, int64_t time_in_micro) {
   // Process all animations before calculating object transforms.
   for (auto& element : ui_elements_) {
-    element->Animate(time);
+    element->Animate(time_in_micro);
   }
   for (auto& element : ui_elements_) {
     element->transform.MakeIdentity();
@@ -340,6 +341,11 @@ UiScene::GetUiElements() const {
 UiScene::UiScene() = default;
 
 UiScene::~UiScene() = default;
+
+int64_t UiScene::TimeInMicroseconds() {
+  return std::chrono::duration_cast<std::chrono::microseconds>(
+      std::chrono::steady_clock::now().time_since_epoch()).count();
+}
 
 void UiScene::ApplyRecursiveTransforms(const ContentRectangle& element,
                                        ReversibleTransform* transform) {

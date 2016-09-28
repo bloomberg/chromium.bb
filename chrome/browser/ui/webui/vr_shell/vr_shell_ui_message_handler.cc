@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "content/public/browser/web_ui.h"
@@ -23,17 +24,11 @@ void VrShellUIMessageHandler::RegisterMessages() {
       "domLoaded", base::Bind(&VrShellUIMessageHandler::HandleDomLoaded,
                               base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "addMesh", base::Bind(&VrShellUIMessageHandler::HandleAddMesh,
+      "updateScene", base::Bind(&VrShellUIMessageHandler::HandleUpdateScene,
                             base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "removeMesh", base::Bind(&VrShellUIMessageHandler::HandleRemoveMesh,
-                               base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "doAction", base::Bind(&VrShellUIMessageHandler::HandleDoAction,
                              base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
-      "addAnimations", base::Bind(&VrShellUIMessageHandler::HandleAddAnimations,
-                                  base::Unretained(this)));
 }
 
 void VrShellUIMessageHandler::HandleDomLoaded(const base::ListValue* args) {
@@ -50,16 +45,16 @@ void VrShellUIMessageHandler::HandleDomLoaded(const base::ListValue* args) {
   vr_shell_->SetUiTextureSize(width, height);
 }
 
-void VrShellUIMessageHandler::HandleAddMesh(const base::ListValue* args) {
-  NOTIMPLEMENTED();
-}
+void VrShellUIMessageHandler::HandleUpdateScene(const base::ListValue* args) {
+  if (!vr_shell_)
+    return;
 
-void VrShellUIMessageHandler::HandleRemoveMesh(const base::ListValue* args) {
-  NOTIMPLEMENTED();
-}
-
-void VrShellUIMessageHandler::HandleAddAnimations(const base::ListValue* args) {
-  NOTIMPLEMENTED();
+  // Copy the update instructions and handle them on the render thread.
+  auto cb = base::Bind(&vr_shell::UiScene::HandleCommands,
+                       base::Unretained(vr_shell_->GetScene()),
+                       base::Owned(args->CreateDeepCopy().release()),
+                       vr_shell::UiScene::TimeInMicroseconds());
+  vr_shell_->QueueTask(cb);
 }
 
 void VrShellUIMessageHandler::HandleDoAction(const base::ListValue* args) {

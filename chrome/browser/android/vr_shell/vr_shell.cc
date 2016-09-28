@@ -275,14 +275,14 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (webvr_mode_) {
     DrawWebVr();
   } else {
-    DrawVrShell(target_time.monotonic_system_time_nanos);
+    DrawVrShell();
   }
 
   frame.Unbind();
   frame.Submit(*buffer_viewport_list_, head_pose_);
 }
 
-void VrShell::DrawVrShell(int64_t time) {
+void VrShell::DrawVrShell() {
   float screen_tilt = desktop_screen_tilt_ * M_PI / 180.0f;
 
   gvr::Vec3f headPos = getTranslation(head_pose_);
@@ -299,8 +299,10 @@ void VrShell::DrawVrShell(int64_t time) {
 
   desktop_plane_->translation = desktop_position_;
 
+  HandleQueuedTasks();
+
   // Update the render position of all UI elements (including desktop).
-  scene_.UpdateTransforms(screen_tilt, time);
+  scene_.UpdateTransforms(screen_tilt, UiScene::TimeInMicroseconds());
 
   UpdateController();
 
@@ -366,8 +368,13 @@ void VrShell::DrawUI() {
       copy_rect = {0, 0, 1, 1};
       texture_handle = content_texture_id_;
     } else {
-      // TODO(cjgrant): Populate UI texture and allow rendering.
-      continue;
+      copy_rect.x = static_cast<float>(rect->copy_rect.x) / ui_tex_width_;
+      copy_rect.y = static_cast<float>(rect->copy_rect.y) / ui_tex_height_;
+      copy_rect.width = static_cast<float>(rect->copy_rect.width) /
+          ui_tex_width_;
+      copy_rect.height = static_cast<float>(rect->copy_rect.height) /
+          ui_tex_height_;
+      texture_handle = ui_texture_id_;
     }
 
     vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
@@ -505,6 +512,32 @@ void VrShell::UiSurfaceChanged(JNIEnv* env,
                                jint height,
                                const JavaParamRef<jobject>& surface) {
   ui_compositor_->SurfaceChanged((int)width, (int)height, surface);
+}
+
+UiScene* VrShell::GetScene() {
+  return &scene_;
+}
+
+void VrShell::QueueTask(base::Callback<void()>& callback) {
+  base::AutoLock lock(task_queue_lock_);
+  task_queue_.push(callback);
+}
+
+void VrShell::HandleQueuedTasks() {
+  // To protect a stream of tasks from blocking rendering indefinitely,
+  // process only the number of tasks present when first checked.
+  std::vector<base::Callback<void()>> tasks;
+  {
+    base::AutoLock lock(task_queue_lock_);
+    const size_t count = task_queue_.size();
+    for (size_t i = 0; i < count; i++) {
+      tasks.push_back(task_queue_.front());
+      task_queue_.pop();
+    }
+  }
+  for (auto &task : tasks) {
+    task.Run();
+  }
 }
 
 // ----------------------------------------------------------------------------

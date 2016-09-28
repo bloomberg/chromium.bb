@@ -41,7 +41,8 @@ class UiScene {
   void AddAnimation(int element_id, std::unique_ptr<Animation>& animation);
 
   // Add an animation according to a dictionary passed from the UI HTML.
-  void AddAnimationFromDict(const base::DictionaryValue& dict, int64_t time);
+  void AddAnimationFromDict(const base::DictionaryValue& dict,
+                            int64_t time_in_micro);
 
   // Remove |animation_id| from element |element_id|.
   void RemoveAnimation(int element_id, int animation_id);
@@ -49,14 +50,17 @@ class UiScene {
   // Update the positions of all elements in the scene, according to active
   // animations, desired screen tilt and time.  The units of time are
   // arbitrary, but must match the unit used in animations.
-  void UpdateTransforms(float screen_tilt, int64_t time);
+  void UpdateTransforms(float screen_tilt, int64_t time_in_micro);
 
   // Handle a batch of commands passed from the UI HTML.
-  void HandleCommands(const base::ListValue& commands, int64_t time);
+  void HandleCommands(const base::ListValue* commands, int64_t time_in_micro);
 
   const std::vector<std::unique_ptr<ContentRectangle>>& GetUiElements() const;
 
   ContentRectangle* GetUiElementById(int element_id);
+
+  // Return a monotonic time in microseconds for coordinating animations.
+  static int64_t TimeInMicroseconds();
 
  private:
   void ApplyRecursiveTransforms(const ContentRectangle& element,
