@@ -69,7 +69,14 @@ class AshTest : public testing::Test {
       ui::wm::WindowType type = ui::wm::WINDOW_TYPE_NORMAL,
       int shell_window_id = kShellWindowId_Invalid);
 
-  // Returns the Display for the secondary display. It's assumed there is two
+  // Creates a visible window parented to |parent| with the specified bounds and
+  // id.
+  std::unique_ptr<WindowOwner> CreateChildWindow(
+      WmWindow* parent,
+      const gfx::Rect& bounds = gfx::Rect(),
+      int shell_window_id = kShellWindowId_Invalid);
+
+  // Returns the Display for the secondary display. It's assumed there are two
   // displays.
   display::Display GetSecondaryDisplay();
 

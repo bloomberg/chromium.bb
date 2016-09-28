@@ -922,6 +922,17 @@ void WmWindowMus::OnWindowDestroyed(ui::Window* window) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowDestroyed(this));
 }
 
+void WmWindowMus::OnWindowVisibilityChanging(ui::Window* window) {
+  DCHECK_EQ(window_, window);
+  FOR_EACH_OBSERVER(WmWindowObserver, observers_,
+                    OnWindowVisibilityChanging(this, !window->visible()));
+}
+
+void WmWindowMus::OnWindowVisibilityChanged(ui::Window* window) {
+  FOR_EACH_OBSERVER(WmWindowObserver, observers_,
+                    OnWindowVisibilityChanged(Get(window), window->visible()));
+}
+
 void WmWindowMus::OnTransientChildAdded(ui::Window* window,
                                         ui::Window* transient) {
   FOR_EACH_OBSERVER(WmTransientWindowObserver, transient_observers_,

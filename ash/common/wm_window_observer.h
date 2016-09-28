@@ -46,6 +46,9 @@ class ASH_EXPORT WmWindowObserver {
                                      const gfx::Rect& new_bounds) {}
 
   virtual void OnWindowVisibilityChanging(WmWindow* window, bool visible) {}
+
+  // Behavior of this function matches that of
+  // aura::WindowObserver::OnWindowVisibilityChanged(), see it for details.
   virtual void OnWindowVisibilityChanged(WmWindow* window, bool visible) {}
 
   virtual void OnWindowTitleChanged(WmWindow* window) {}

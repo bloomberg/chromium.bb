@@ -5,7 +5,9 @@
 #include "ash/common/test/ash_test.h"
 
 #include "ash/common/test/ash_test_impl.h"
+#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
 
 namespace ash {
@@ -32,6 +34,19 @@ std::unique_ptr<WindowOwner> AshTest::CreateTestWindow(const gfx::Rect& bounds,
                                                        ui::wm::WindowType type,
                                                        int shell_window_id) {
   return test_impl_->CreateTestWindow(bounds, type, shell_window_id);
+}
+
+std::unique_ptr<WindowOwner> AshTest::CreateChildWindow(WmWindow* parent,
+                                                        const gfx::Rect& bounds,
+                                                        int shell_window_id) {
+  std::unique_ptr<WindowOwner> window_owner =
+      base::MakeUnique<WindowOwner>(WmShell::Get()->NewWindow(
+          ui::wm::WINDOW_TYPE_NORMAL, ui::LAYER_NOT_DRAWN));
+  window_owner->window()->SetBounds(bounds);
+  window_owner->window()->SetShellWindowId(shell_window_id);
+  parent->AddChild(window_owner->window());
+  window_owner->window()->Show();
+  return window_owner;
 }
 
 display::Display AshTest::GetSecondaryDisplay() {

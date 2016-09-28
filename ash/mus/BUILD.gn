@@ -212,6 +212,7 @@ source_set("unittests") {
   testonly = true
 
   sources = [
+    "../common/wm_window_unittest.cc",
     "accelerators/accelerator_controller_registrar_test_api.cc",
     "accelerators/accelerator_controller_registrar_test_api.h",
     "accelerators/accelerator_controller_unittest.cc",

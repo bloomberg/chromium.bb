@@ -1429,6 +1429,7 @@ test("ash_unittests") {
     "common/wm/overview/cleanup_animation_observer_unittest.cc",
     "common/wm/workspace/workspace_event_handler_test_helper.cc",
     "common/wm/workspace/workspace_event_handler_test_helper.h",
+    "common/wm_window_unittest.cc",
     "common/wm_window_user_data_unittest.cc",
     "dip_unittest.cc",
     "display/cursor_window_controller_unittest.cc",
