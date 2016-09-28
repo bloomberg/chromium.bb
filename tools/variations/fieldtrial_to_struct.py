@@ -74,11 +74,15 @@ def _GenerateTrials(config, platform):
     if study['experiments']:
       yield study
 
+def ConfigToStudies(config, platform):
+  """Returns the applicable studies from config for the platform."""
+  return [study for study in _GenerateTrials(config, platform)]
+
 def _FieldTrialConfigToDescription(config, platform):
   return {
     'elements': {
       'kFieldTrialConfig': {
-        'studies': [study for study in _GenerateTrials(config, platform)]
+        'studies': ConfigToStudies(config, platform)
       }
     }
   }
