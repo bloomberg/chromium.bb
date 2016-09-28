@@ -5,6 +5,7 @@
 import("//android_webview/webview_repack_locales_list.gni")
 import("//chrome/chrome_repack_locales.gni")
 
+#TODO(agrieve): Delete once unreferenced downstream.
 template("monochrome_repack_locales") {
   chrome_repack_locales(target_name) {
     forward_variables_from(invoker, "*")

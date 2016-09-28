@@ -77,3 +77,46 @@ template("chrome_public_apk_tmpl") {
     }
   }
 }
+
+template("monochrome_public_apk_tmpl") {
+  chrome_public_apk_tmpl(target_name) {
+    # Always build 64-bit //android_webview:monochrome because Chrome runs
+    # in 32-bit mode.
+    if (android_64bit_target_cpu) {
+      shared_libraries = [ "//android_webview:monochrome" ]
+    } else {
+      shared_libraries = [ "//chrome/android:monochrome" ]
+    }
+    if (android_64bit_target_cpu && build_apk_secondary_abi) {
+      secondary_abi_shared_libraries =
+          [ "//chrome/android:monochrome_secondary_abi_lib" ]
+    }
+
+    alternative_locale_resource_dep = "//chrome/android:monochrome_locale_paks"
+
+    alternative_android_sdk_jar = webview_framework_jar
+    app_as_shared_lib = true
+    use_chromium_linker = false
+    requires_sdk_api_level_23 = true
+    enable_relocation_packing = true
+    extensions_to_not_compress = ".lpak,.pak,.bin,.dat"
+
+    # Configrations to make android load shared library from APK.
+    uncompress_shared_libraries = true
+    page_align_shared_libraries = true
+
+    forward_variables_from(invoker, "*")
+
+    if (!defined(deps)) {
+      deps = []
+    }
+    deps += [ "//android_webview/glue" ]
+
+    if (!is_java_debug) {
+      if (!defined(proguard_configs)) {
+        proguard_configs = []
+      }
+      proguard_configs += [ "//android_webview/apk/java/proguard.flags" ]
+    }
+  }
+}

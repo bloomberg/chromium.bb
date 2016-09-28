@@ -169,6 +169,8 @@ template("chrome_extra_paks") {
 #   output_dir [required]: Directory to output .pak files. Locale .pak files
 #       will always be place in $output_dir/locales
 #   additional_extra_paks: List of extra .pak sources for resources.pak.
+#   additional_locale_source_patterns: additional_source_patterns for
+#       chrome_repack_locales().
 #   copy_data_to_bundle:
 #   deps:
 #   output_dir:
@@ -227,6 +229,9 @@ template("chrome_paks") {
                              "visibility",
                            ])
 
+    if (defined(invoker.additional_locale_source_patterns)) {
+      additional_source_patterns = invoker.additional_locale_source_patterns
+    }
     input_locales = locales
     output_dir = "${invoker.output_dir}/locales"
 

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//android_webview/webview_repack_locales_list.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/util/process_version.gni")
@@ -554,19 +555,26 @@ if (current_toolchain == default_toolchain) {
       "//android_webview:generate_aw_resources",
     ]
 
+    additional_locale_source_patterns = webview_repack_locales_source_patterns
+    deps += webview_repack_locales_deps
+
     if (enable_resource_whitelist_generation) {
       repack_whitelist = monochrome_resource_whitelist
       deps += [ ":monochrome_resource_whitelist" ]
     }
   }
-}  # current_toolchain == host_toolchain
 
-java_group("monochrome_assets") {
-  deps = [
-    ":monochrome_pak_assets",
-    "//android_webview:monochrome_webview_assets",
-  ]
-}
+  locale_pak_resources("monochrome_locale_paks") {
+    sources = []
+    foreach(_locale, locales) {
+      sources += [ "$target_gen_dir/monochrome_paks/locales/$_locale.pak" ]
+    }
+
+    deps = [
+      ":monochrome_paks",
+    ]
+  }
+}  # current_toolchain == host_toolchain
 
 android_assets("monochrome_pak_assets") {
   sources = [
