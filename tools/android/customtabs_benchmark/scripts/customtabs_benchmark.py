@@ -10,6 +10,7 @@ import logging
 import optparse
 import os
 import re
+import subprocess
 import sys
 import time
 
@@ -24,6 +25,20 @@ from devil.android.sdk import intent
 
 sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
 import devil_chromium
+
+
+# Local build of Chrome (not Chromium).
+_CHROME_PACKAGE = 'com.google.android.apps.chrome'
+
+
+def ResetChromeLocalState(device):
+  """Remove the Chrome Profile and the various disk caches."""
+  profile_dirs = ['app_chrome/Default', 'cache', 'app_chrome/ShaderCache',
+                  'app_tabs']
+  cmd = ['rm', '-rf']
+  cmd.extend(
+      '/data/data/{}/{}'.format(_CHROME_PACKAGE, d) for d in profile_dirs)
+  device.adb.Shell(subprocess.list2cmdline(cmd))
 
 
 def RunOnce(device, url, warmup, no_prerendering, delay_to_may_launch_url,
@@ -54,8 +69,10 @@ def RunOnce(device, url, warmup, no_prerendering, delay_to_may_launch_url,
   result_line_re = re.compile(r'CUSTOMTABSBENCH.*: (.*)')
   logcat_monitor = device.GetLogcatMonitor(clear=True)
   logcat_monitor.Start()
-  device.ForceStop('com.google.android.apps.chrome')
+  device.ForceStop(_CHROME_PACKAGE)
   device.ForceStop('org.chromium.customtabsclient.test')
+  ResetChromeLocalState(device)
+
   if cold:
     if not device.HasRoot():
       device.EnableRoot()
