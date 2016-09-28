@@ -1,0 +1,31 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef DEVICE_GENERIC_SENSOR_FAKE_PLATFORM_SENSOR_PROVIDER_H_
+#define DEVICE_GENERIC_SENSOR_FAKE_PLATFORM_SENSOR_PROVIDER_H_
+
+#include "device/generic_sensor/platform_sensor_provider.h"
+
+namespace device {
+
+class FakePlatformSensorProvider : public PlatformSensorProvider {
+ public:
+  FakePlatformSensorProvider();
+  ~FakePlatformSensorProvider() override;
+
+  static FakePlatformSensorProvider* GetInstance();
+
+ protected:
+  scoped_refptr<PlatformSensor> CreateSensorInternal(
+      mojom::SensorType type,
+      mojo::ScopedSharedBufferMapping mapping,
+      uint64_t buffer_size) override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakePlatformSensorProvider);
+};
+
+}  // namespace device
+
+#endif  // DEVICE_GENERIC_SENSOR_MOCK_PLATFORM_SENSOR_PROVIDER_H_

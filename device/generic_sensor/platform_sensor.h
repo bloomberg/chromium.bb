@@ -69,6 +69,9 @@ class PlatformSensor : public base::RefCountedThreadSafe<PlatformSensor> {
 
   mojo::ScopedSharedBufferMapping shared_buffer_mapping_;
 
+  // For testing purposes.
+  const ConfigMap& config_map() const { return config_map_; }
+
  private:
   friend class base::RefCountedThreadSafe<PlatformSensor>;
 

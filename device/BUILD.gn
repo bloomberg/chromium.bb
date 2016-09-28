@@ -60,6 +60,7 @@ test("device_unittests") {
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.cc",
     "bluetooth/test/test_bluetooth_local_gatt_service_delegate.h",
     "gamepad/gamepad_provider_unittest.cc",
+    "generic_sensor/platform_sensor_provider_unittest.cc",
     "test/run_all_unittests.cc",
   ]
 
@@ -71,6 +72,8 @@ test("device_unittests") {
     "//device/bluetooth:mocks",
     "//device/gamepad",
     "//device/gamepad:test_helpers",
+    "//device/generic_sensor",
+    "//device/generic_sensor:testing",
     "//device/geolocation:unittests",
     "//device/power_save_blocker",
     "//mojo/common",
