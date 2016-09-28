@@ -203,6 +203,117 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     @LargeTest
+    public void testPairButtonDisabledOrEnabledAfterSelectedItemDisabledOrEnabled()
+            throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        final Button button = (Button) dialog.findViewById(R.id.positive);
+
+        mChooserDialog.addOrUpdateItem(new ItemChooserDialog.ItemChooserRow("key1", "desc1"));
+        mChooserDialog.addOrUpdateItem(new ItemChooserDialog.ItemChooserRow("key2", "desc2"));
+
+        selectItem(dialog, 1, "key1", true);
+        assertTrue(button.isEnabled());
+
+        mChooserDialog.setEnabled("key1", false);
+        assertFalse(button.isEnabled());
+
+        mChooserDialog.setEnabled("key1", true);
+        assertTrue(button.isEnabled());
+
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    public void testPairButtonDisabledAfterSelectedItemRemoved() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        final Button button = (Button) dialog.findViewById(R.id.positive);
+
+        ItemChooserDialog.ItemChooserRow item1 =
+                new ItemChooserDialog.ItemChooserRow("key1", "desc1");
+        ItemChooserDialog.ItemChooserRow item2 =
+                new ItemChooserDialog.ItemChooserRow("key2", "desc2");
+        mChooserDialog.addOrUpdateItem(item1);
+        mChooserDialog.addOrUpdateItem(item2);
+
+        selectItem(dialog, 1, "key1", true);
+        assertTrue(button.isEnabled());
+
+        mChooserDialog.removeItemFromList(item1);
+        assertFalse(button.isEnabled());
+
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    public void testSelectAnItemAndRemoveAnotherItem() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        final Button button = (Button) dialog.findViewById(R.id.positive);
+        ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+
+        ItemChooserDialog.ItemChooserRow item1 =
+                new ItemChooserDialog.ItemChooserRow("key1", "desc1");
+        ItemChooserDialog.ItemChooserRow item2 =
+                new ItemChooserDialog.ItemChooserRow("key2", "desc2");
+        ItemChooserDialog.ItemChooserRow item3 =
+                new ItemChooserDialog.ItemChooserRow("key3", "desc3");
+
+        mChooserDialog.addOrUpdateItem(item1);
+        mChooserDialog.addOrUpdateItem(item2);
+        mChooserDialog.addOrUpdateItem(item3);
+
+        selectItem(dialog, 2, "key2", true);
+        assertTrue(button.isEnabled());
+
+        // Remove the item before the currently selected item.
+        mChooserDialog.removeItemFromList(item1);
+        assertTrue(button.isEnabled());
+        assertEquals("key2", itemAdapter.getSelectedItemKey());
+
+        // Remove the item after the currently selected item.
+        mChooserDialog.removeItemFromList(item3);
+        assertTrue(button.isEnabled());
+        assertEquals("key2", itemAdapter.getSelectedItemKey());
+
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
+    public void testSelectAnItemAndRemoveTheSelectedItem() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        final Button button = (Button) dialog.findViewById(R.id.positive);
+        ItemChooserDialog.ItemAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+
+        ItemChooserDialog.ItemChooserRow item1 =
+                new ItemChooserDialog.ItemChooserRow("key1", "desc1");
+        ItemChooserDialog.ItemChooserRow item2 =
+                new ItemChooserDialog.ItemChooserRow("key2", "desc2");
+        ItemChooserDialog.ItemChooserRow item3 =
+                new ItemChooserDialog.ItemChooserRow("key3", "desc3");
+
+        mChooserDialog.addOrUpdateItem(item1);
+        mChooserDialog.addOrUpdateItem(item2);
+        mChooserDialog.addOrUpdateItem(item3);
+
+        selectItem(dialog, 2, "key2", true);
+        assertTrue(button.isEnabled());
+
+        // Remove the selected item.
+        mChooserDialog.removeItemFromList(item2);
+        assertFalse(button.isEnabled());
+        assertEquals("", itemAdapter.getSelectedItemKey());
+
+        mChooserDialog.dismiss();
+    }
+
+    @LargeTest
     public void testAddOrUpdateItemAndRemoveItemFromList() throws InterruptedException {
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());

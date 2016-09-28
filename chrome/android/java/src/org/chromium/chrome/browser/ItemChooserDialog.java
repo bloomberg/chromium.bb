@@ -202,6 +202,17 @@ public class ItemChooserDialog {
         public void remove(ItemChooserRow item) {
             ItemChooserRow oldItem = mKeyToItemMap.remove(item.mKey);
             if (oldItem == null) return;
+            int oldItemPosition = getPosition(oldItem);
+            // If the removed item is the item that is currently selected, deselect it
+            // and disable the confirm button. Otherwise if the removed item is before
+            // the currently selected item, the currently selected item's index needs
+            // to be adjusted by one.
+            if (oldItemPosition == mSelectedItem) {
+                mSelectedItem = ListView.INVALID_POSITION;
+                mConfirmButton.setEnabled(false);
+            } else if (oldItemPosition < mSelectedItem) {
+                --mSelectedItem;
+            }
             removeFromDescriptionsMap(oldItem.mDescription);
             super.remove(oldItem);
         }
@@ -221,6 +232,7 @@ public class ItemChooserDialog {
          * selected.
          */
         public String getSelectedItemKey() {
+            if (mSelectedItem == ListView.INVALID_POSITION) return "";
             ItemChooserRow row = getItem(mSelectedItem);
             if (row == null) return "";
             return row.mKey;
@@ -241,7 +253,7 @@ public class ItemChooserDialog {
         }
 
         /**
-         * Sets whether the itam is enabled. Disabled items are grayed out.
+         * Sets whether the item is enabled. Disabled items are grayed out.
          * @param id The id of the item to affect.
          * @param enabled Whether the item should be enabled or not.
          */
@@ -251,6 +263,14 @@ public class ItemChooserDialog {
             } else {
                 mDisabledEntries.add(id);
             }
+
+            if (mSelectedItem != ListView.INVALID_POSITION) {
+                ItemChooserRow selectedRow = getItem(mSelectedItem);
+                if (id.equals(selectedRow.mKey)) {
+                    mConfirmButton.setEnabled(enabled);
+                }
+            }
+
             notifyDataSetChanged();
         }
 
@@ -399,6 +419,7 @@ public class ItemChooserDialog {
         });
 
         mItemAdapter = new ItemAdapter(mActivity, R.layout.item_chooser_dialog_row);
+        mItemAdapter.setNotifyOnChange(true);
         mListView.setAdapter(mItemAdapter);
         mListView.setEmptyView(mEmptyMessage);
         mListView.setOnItemClickListener(mItemAdapter);
