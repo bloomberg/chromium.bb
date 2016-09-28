@@ -80,12 +80,12 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTextControl INPUT id='root'",
-      "reason": "subtree"
-    },
-    {
       "object": "Caret",
       "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutTextControl INPUT id='root'",
+      "reason": "subtree"
     }
   ]
 }

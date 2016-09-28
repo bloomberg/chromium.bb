@@ -86,6 +86,10 @@
     },
     {
       "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
       "reason": "location change"
     },
     {
@@ -95,10 +99,6 @@
     {
       "object": "LayoutBlockFlow BODY",
       "reason": "location change"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
     }
   ]
 }

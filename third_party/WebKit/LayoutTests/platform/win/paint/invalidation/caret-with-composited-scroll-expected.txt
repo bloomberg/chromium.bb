@@ -39,6 +39,16 @@
                       "object": "LayoutBlockFlow DIV id='inner-editor'",
                       "rect": [2, 1002, 3, 18],
                       "reason": "invalidate paint rectangle"
+                    },
+                    {
+                      "object": "LayoutBlockFlow DIV id='inner-editor'",
+                      "rect": [2, 1002, 3, 18],
+                      "reason": "invalidate paint rectangle"
+                    },
+                    {
+                      "object": "LayoutBlockFlow DIV id='inner-editor'",
+                      "rect": [2, 1002, 3, 18],
+                      "reason": "invalidate paint rectangle"
                     }
                   ]
                 }
@@ -69,12 +79,20 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
       "object": "LayoutTextControl INPUT id='text'",
       "reason": "subtree"
     },
     {
       "object": "LayoutBlockFlow DIV id='inner-editor'",
       "reason": "subtree"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
     },
     {
       "object": "Caret",

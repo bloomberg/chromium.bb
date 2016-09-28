@@ -65,6 +65,10 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
       "reason": "bounds change"
     },
     {
@@ -134,10 +138,6 @@
     {
       "object": "InlineTextBox 'NNNN'",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
     }
   ]
 }
@@ -201,6 +201,10 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
     {
       "object": "LayoutView #document",
       "reason": "bounds change"
@@ -268,10 +272,6 @@
     {
       "object": "InlineTextBox 'NNNN'",
       "reason": "bounds change"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
     }
   ]
 }
@@ -341,6 +341,10 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
       "reason": "bounds change"
     },
     {
@@ -378,10 +382,6 @@
     {
       "object": "InlineTextBox 'NNNN'",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
     }
   ]
 }

@@ -22,6 +22,16 @@
           "object": "LayoutBR BR",
           "rect": [38, 78, 3, 21],
           "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [38, 78, 3, 21],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [38, 78, 3, 21],
+          "reason": "invalidate paint rectangle"
         }
       ]
     }
@@ -32,12 +42,20 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
       "object": "LayoutBlockFlow DIV id='test'",
       "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
       "reason": "forced by layout"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
     },
     {
       "object": "Caret",

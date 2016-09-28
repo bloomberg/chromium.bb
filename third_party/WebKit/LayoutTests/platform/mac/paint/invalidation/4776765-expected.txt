@@ -25,6 +25,16 @@
         },
         {
           "object": "LayoutBR BR",
+          "rect": [7, 77, 3, 20],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBR BR",
+          "rect": [7, 77, 3, 20],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutBR BR",
           "rect": [7, 59, 3, 20],
           "reason": "invalidate paint rectangle"
         }
@@ -32,6 +42,14 @@
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
     {
       "object": "LayoutBlockFlow DIV",
       "reason": "outline"

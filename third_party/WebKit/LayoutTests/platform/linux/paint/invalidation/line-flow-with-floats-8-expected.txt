@@ -117,6 +117,10 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
       "object": "LayoutBlockFlow HTML",
       "reason": "forced by layout"
     },
@@ -355,10 +359,6 @@
     {
       "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
       "reason": "forced by layout"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
     }
   ]
 }

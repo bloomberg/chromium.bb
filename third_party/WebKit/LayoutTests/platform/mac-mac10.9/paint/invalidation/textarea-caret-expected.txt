@@ -42,11 +42,25 @@
           "object": "LayoutText #text",
           "rect": [151, 10, 2, 14],
           "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [151, 10, 2, 14],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [151, 10, 2, 14],
+          "reason": "invalidate paint rectangle"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
     {
       "object": "LayoutTextControl TEXTAREA id='editor'",
       "reason": "subtree"
@@ -74,6 +88,10 @@
     {
       "object": "RootInlineBox",
       "reason": "subtree"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
     },
     {
       "object": "Caret",

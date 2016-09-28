@@ -71,6 +71,14 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
       "reason": "style change"
     },
     {
@@ -92,14 +100,6 @@
     {
       "object": "InlineTextBox 'test1'",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
     }
   ]
 }

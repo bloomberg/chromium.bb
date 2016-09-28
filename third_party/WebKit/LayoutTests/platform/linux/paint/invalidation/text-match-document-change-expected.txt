@@ -42,6 +42,10 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
       "object": "LayoutBlockFlow HTML",
       "reason": "forced by layout"
     },
@@ -60,10 +64,6 @@
     {
       "object": "InlineTextBox 'After change'",
       "reason": "layoutObject insertion"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
     }
   ]
 }

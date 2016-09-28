@@ -73,6 +73,14 @@
       "reason": "invalidate paint rectangle"
     },
     {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
       "object": "LayoutView #document",
       "reason": "subtree"
     },
@@ -95,14 +103,6 @@
     {
       "object": "InlineTextBox 'scroll me'",
       "reason": "subtree"
-    },
-    {
-      "object": "HorizontalScrollbar",
-      "reason": "scroll"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
     }
   ]
 }

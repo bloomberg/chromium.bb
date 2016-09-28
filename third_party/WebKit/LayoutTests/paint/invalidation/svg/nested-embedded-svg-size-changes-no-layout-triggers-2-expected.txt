@@ -108,6 +108,14 @@
       "reason": "scroll"
     },
     {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
       "object": "LayoutBlockFlow HTML",
       "reason": "location change"
     },
@@ -126,14 +134,6 @@
     {
       "object": "LayoutText #text",
       "reason": "location change"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
     },
     {
       "object": "LayoutView #document",

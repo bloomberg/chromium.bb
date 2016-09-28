@@ -10,27 +10,27 @@
       "paintInvalidations": [
         {
           "object": "LayoutTextControl INPUT id='target'",
-          "rect": [8, 8, 225, 19],
+          "rect": [8, 8, 224, 22],
           "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [11, 11, 201, 13],
+          "rect": [10, 11, 201, 16],
           "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [209, 10, 4, 15],
+          "rect": [208, 10, 4, 18],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [209, 10, 4, 15],
+          "rect": [208, 10, 4, 18],
           "reason": "invalidate paint rectangle"
         },
         {
           "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [209, 10, 4, 15],
+          "rect": [208, 10, 4, 18],
           "reason": "invalidate paint rectangle"
         }
       ]

@@ -113,6 +113,14 @@
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
       "object": "LayoutBlockFlow HTML",
       "reason": "forced by layout"
     },
@@ -311,14 +319,6 @@
     {
       "object": "InlineTextBox 'wonder is, that there\u2018s any one left alive!\u2019'",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
-    },
-    {
-      "object": "VerticalScrollbar",
-      "reason": "scroll"
     }
   ]
 }

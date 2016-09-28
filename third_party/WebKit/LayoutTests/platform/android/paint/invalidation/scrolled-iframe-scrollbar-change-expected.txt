@@ -6,10 +6,6 @@
     },
     {
       "object": "LayoutView #document",
-      "reason": "scroll"
-    },
-    {
-      "object": "LayoutView #document",
       "reason": "style change"
     },
     {
@@ -27,6 +23,10 @@
     {
       "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
       "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
     }
   ]
 }

@@ -69,6 +69,14 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
       "reason": "style change"
     },
     {
@@ -122,14 +130,6 @@
     {
       "object": "InlineTextBox '.'",
       "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
-    },
-    {
-      "object": "LayoutView #document",
-      "reason": "scroll"
     }
   ]
 }

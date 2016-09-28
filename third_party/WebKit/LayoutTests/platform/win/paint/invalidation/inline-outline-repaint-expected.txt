@@ -27,6 +27,16 @@
           "object": "LayoutText #text",
           "rect": [45, 182, 3, 20],
           "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [45, 182, 3, 20],
+          "reason": "invalidate paint rectangle"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [45, 182, 3, 20],
+          "reason": "invalidate paint rectangle"
         }
       ]
     }
@@ -37,12 +47,20 @@
       "reason": "layoutObject removal"
     },
     {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
+    },
+    {
       "object": "LayoutBlockFlow DIV",
       "reason": "forced by layout"
     },
     {
       "object": "RootInlineBox",
       "reason": "forced by layout"
+    },
+    {
+      "object": "Caret",
+      "reason": "invalidate paint rectangle"
     },
     {
       "object": "Caret",
