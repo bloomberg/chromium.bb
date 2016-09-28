@@ -32,10 +32,4 @@
 
 partial interface Navigator {
     readonly attribute long maxTouchPoints;
-
-    // TODO(mustaq): This is a non-standard attribute, added behind the
-    // PointerEvent flag only to estimate potential risks. This returns |false|
-    // even though PointerEvent support is there. The attribute will be removed
-    // once we have the UseCounter data. See crbug.com/631897.
-    [RuntimeEnabled=PointerEvent,DeprecateAs=NavigatorPointerEnabled,NotEnumerable] readonly attribute boolean pointerEnabled;
 };

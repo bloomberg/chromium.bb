@@ -4075,7 +4075,6 @@ interface Navigator
     getter permissions
     getter platform
     getter plugins
-    getter pointerEnabled
     getter presentation
     getter product
     getter productSub

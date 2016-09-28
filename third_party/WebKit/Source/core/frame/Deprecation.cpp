@@ -380,9 +380,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::V8SVGViewElement_ViewTarget_AttributeGetter:
         return willBeRemoved("SVGViewElement.viewTarget", M56, "5665473114931200");
 
-    case UseCounter::NavigatorPointerEnabled:
-        return "Navigator.pointerEnabled is a non-standard API added for experiments only. It will be removed in near future.";
-
     case UseCounter::WebAudioAutoplayCrossOriginIframe:
         return willBeRemoved("Web Audio autoplay (without user gesture) from cross-origin iframes", M55, "6406908126691328");
 

@@ -597,21 +597,10 @@ bool EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
             if (event->isPointerEvent() && static_cast<PointerEvent*>(event)->pointerType() == "touch")
                 UseCounter::count(executingWindow->document(), UseCounter::PointerDownFiredForTouch);
         }
-    } else if (checkTypeThenUseCount(event, EventTypeNames::pointerenter, UseCounter::PointerEnterLeaveFired)
-        || checkTypeThenUseCount(event, EventTypeNames::pointerleave, UseCounter::PointerEnterLeaveFired)
-        || checkTypeThenUseCount(event, EventTypeNames::pointerover, UseCounter::PointerOverOutFired)
-        || checkTypeThenUseCount(event, EventTypeNames::pointerout, UseCounter::PointerOverOutFired)) {
-        LocalDOMWindow* executingWindow = this->executingWindow();
-        Node* node = toNode();
-        if (executingWindow && node && node->getNodeType() == Node::kElementNode && event->isPointerEvent()) {
-            const Element* element = static_cast<Element*>(node);
-            const PointerEvent* pointerEvent = static_cast<PointerEvent*>(event);
-            const UseCounter::Feature feature = (event->type() == EventTypeNames::pointerenter || event->type() == EventTypeNames::pointerleave)
-                ? UseCounter::PointerEnterLeaveFiredWhileCaptured
-                : UseCounter::PointerOverOutFiredWhileCaptured;
-            if (element->hasPointerCapture(pointerEvent->pointerId()) && element->hasProcessedPointerCapture(pointerEvent->pointerId()))
-                UseCounter::count(executingWindow->document(), feature);
-        }
+    } else if (checkTypeThenUseCount(event, EventTypeNames::pointerenter, UseCounter::PointerEnterLeaveFired)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::pointerleave, UseCounter::PointerEnterLeaveFired)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::pointerover, UseCounter::PointerOverOutFired)) {
+    } else if (checkTypeThenUseCount(event, EventTypeNames::pointerout, UseCounter::PointerOverOutFired)) {
     }
 
     ExecutionContext* context = getExecutionContext();

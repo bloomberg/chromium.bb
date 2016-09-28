@@ -1254,7 +1254,6 @@ public:
         RadioNameMatchingStrict = 1513,
         RadioNameMatchingASCIICaseless = 1514,
         RadioNameMatchingCaseFolding = 1515,
-        NavigatorPointerEnabled = 1516,
         InputSelectionGettersThrow = 1517,
         UsbGetDevices = 1519,
         UsbRequestDevice = 1520,
@@ -1276,8 +1275,6 @@ public:
 
         PointerEnterLeaveFired = 1535,
         PointerOverOutFired = 1536,
-        PointerEnterLeaveFiredWhileCaptured = 1537,
-        PointerOverOutFiredWhileCaptured = 1538,
         DraggableAttribute = 1539,
         CleanScriptElementWithNonce = 1540,
         PotentiallyInjectedScriptElementWithNonce = 1541,
