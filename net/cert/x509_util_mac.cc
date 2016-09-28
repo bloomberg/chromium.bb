@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/mac/scoped_cftyperef.h"
+#include "base/strings/sys_string_conversions.h"
 #include "third_party/apple_apsl/cssmapplePriv.h"
 
 namespace net {
@@ -52,33 +54,26 @@ OSStatus CreatePolicy(const CSSM_OID* policy_oid,
 
 
 OSStatus CreateSSLClientPolicy(SecPolicyRef* policy) {
-  CSSM_APPLE_TP_SSL_OPTIONS tp_ssl_options;
-  memset(&tp_ssl_options, 0, sizeof(tp_ssl_options));
-  tp_ssl_options.Version = CSSM_APPLE_TP_SSL_OPTS_VERSION;
-  tp_ssl_options.Flags |= CSSM_APPLE_TP_SSL_CLIENT;
-
-  return CreatePolicy(&CSSMOID_APPLE_TP_SSL, &tp_ssl_options,
-                      sizeof(tp_ssl_options), policy);
+  *policy = SecPolicyCreateSSL(false /* server */, nullptr);
+  return *policy ? noErr : errSecNoPolicyModule;
 }
 
 OSStatus CreateSSLServerPolicy(const std::string& hostname,
                                SecPolicyRef* policy) {
+  base::ScopedCFTypeRef<CFStringRef> hostname_cfstring;
   if (!hostname.empty()) {
-    CSSM_APPLE_TP_SSL_OPTIONS tp_ssl_options;
-    memset(&tp_ssl_options, 0, sizeof(tp_ssl_options));
-    tp_ssl_options.Version = CSSM_APPLE_TP_SSL_OPTS_VERSION;
-    tp_ssl_options.ServerName = hostname.data();
-    tp_ssl_options.ServerNameLen = hostname.size();
-
-    return CreatePolicy(&CSSMOID_APPLE_TP_SSL, &tp_ssl_options,
-                        sizeof(tp_ssl_options), policy);
+    hostname_cfstring.reset(base::SysUTF8ToCFStringRef(hostname));
+    if (!hostname_cfstring)
+      return errSecNoPolicyModule;
   }
 
-  return CreatePolicy(&CSSMOID_APPLE_TP_SSL, nullptr, 0U, policy);
+  *policy = SecPolicyCreateSSL(true /* server */, hostname_cfstring.get());
+  return *policy ? noErr : errSecNoPolicyModule;
 }
 
 OSStatus CreateBasicX509Policy(SecPolicyRef* policy) {
-  return CreatePolicy(&CSSMOID_APPLE_X509_BASIC, NULL, 0, policy);
+  *policy = SecPolicyCreateBasicX509();
+  return *policy ? noErr : errSecNoPolicyModule;
 }
 
 OSStatus CreateRevocationPolicies(bool enable_revocation_checking,
