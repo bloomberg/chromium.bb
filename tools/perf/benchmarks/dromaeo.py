@@ -195,7 +195,6 @@ class DromaeoJslibAttrJquery(_DromaeoBenchmark):
     # http://crbug.com/634055 (Android One).
     return cls.IsSvelte(possible_browser)
 
-@benchmark.Disabled('all')  # crbug.com/650317
 class DromaeoJslibAttrPrototype(_DromaeoBenchmark):
   """Dromaeo JSLib attr prototype JavaScript benchmark.
 
