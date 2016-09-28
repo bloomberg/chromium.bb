@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
-import org.chromium.chrome.browser.ntp.cards.NewTabPageItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
@@ -510,21 +509,6 @@ public class NewTabPageView extends FrameLayout
 
     private ViewGroup getWrapperView() {
         return mUseCardsUi ? mRecyclerView : mScrollView;
-    }
-
-    /**
-     * Get the number of listed items (visible or not) for the given type.
-     * @param newTabPageItemViewType the item type to count.
-     */
-    public int getViewCountMatchingViewType(@NewTabPageItem.ViewType int newTabPageItemViewType) {
-        int viewCount = 0;
-        int adapterSize = mNewTabPageAdapter.getItemCount();
-        for (int i = 0; i < adapterSize; i++) {
-            if (mNewTabPageAdapter.getItemViewType(i) == newTabPageItemViewType) {
-                viewCount++;
-            }
-        }
-        return viewCount;
     }
 
     /**
