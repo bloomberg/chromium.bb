@@ -30,7 +30,7 @@ class AudioPipeReaderTest : public testing::Test,
 
   void SetUp() override {
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-    pipe_path_ = test_dir_.path().AppendASCII("test_pipe");
+    pipe_path_ = test_dir_.GetPath().AppendASCII("test_pipe");
     audio_thread_.reset(new base::Thread("TestAudioThread"));
     audio_thread_->StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));

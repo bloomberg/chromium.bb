@@ -477,7 +477,7 @@ void TestWin10ImageLoadLowLabel(bool is_success_test) {
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath new_path = temp_dir.path();
+  base::FilePath new_path = temp_dir.GetPath();
   new_path = new_path.Append(L"lowIL_calc.exe");
 
   // Test file will be cleaned up by the ScopedTempDir.

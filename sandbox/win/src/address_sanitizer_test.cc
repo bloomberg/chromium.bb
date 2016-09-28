@@ -62,7 +62,8 @@ TEST_F(AddressSanitizerTests, TestAddressSanitizer) {
   base::ScopedTempDir temp_directory;
   base::FilePath temp_file_name;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
-  ASSERT_TRUE(CreateTemporaryFileInDir(temp_directory.path(), &temp_file_name));
+  ASSERT_TRUE(
+      CreateTemporaryFileInDir(temp_directory.GetPath(), &temp_file_name));
 
   SECURITY_ATTRIBUTES attrs = {};
   attrs.nLength = sizeof(attrs);

@@ -372,7 +372,7 @@ class ResourceBundleImageTest : public ResourceBundleTest {
   }
 
   // Returns the path of temporary directory to write test data packs into.
-  const base::FilePath& dir_path() { return dir_.path(); }
+  const base::FilePath& dir_path() { return dir_.GetPath(); }
 
   // Returns the number of DataPacks managed by |resource_bundle|.
   size_t NumDataPacksInResourceBundle(ResourceBundle* resource_bundle) {

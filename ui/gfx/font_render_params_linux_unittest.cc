@@ -72,40 +72,44 @@ class FontRenderParamsTest : public testing::Test {
 
 TEST_F(FontRenderParamsTest, Default) {
   ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
-  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(
+      temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) +
-      // Specify the desired defaults via a font match rather than a pattern
-      // match (since this is the style generally used in /etc/fonts/conf.d).
-      kFontconfigMatchFontHeader +
-      CreateFontconfigEditStanza("antialias", "bool", "true") +
-      CreateFontconfigEditStanza("autohint", "bool", "true") +
-      CreateFontconfigEditStanza("hinting", "bool", "true") +
-      CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
-      CreateFontconfigEditStanza("rgba", "const", "rgb") +
-      kFontconfigMatchFooter +
-      // Add a font match for Arial. Since it specifies a family, it shouldn't
-      // take effect when querying default settings.
-      kFontconfigMatchFontHeader +
-      CreateFontconfigTestStanza("family", "eq", "string", "Arial") +
-      CreateFontconfigEditStanza("antialias", "bool", "true") +
-      CreateFontconfigEditStanza("autohint", "bool", "false") +
-      CreateFontconfigEditStanza("hinting", "bool", "true") +
-      CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
-      CreateFontconfigEditStanza("rgba", "const", "none") +
-      kFontconfigMatchFooter +
-      // Add font matches for fonts between 10 and 20 points or pixels. Since
-      // they specify sizes, they also should not affect the defaults.
-      kFontconfigMatchFontHeader +
-      CreateFontconfigTestStanza("size", "more_eq", "double", "10.0") +
-      CreateFontconfigTestStanza("size", "less_eq", "double", "20.0") +
-      CreateFontconfigEditStanza("antialias", "bool", "false") +
-      kFontconfigMatchFooter +
-      kFontconfigMatchFontHeader +
-      CreateFontconfigTestStanza("pixel_size", "more_eq", "double", "10.0") +
-      CreateFontconfigTestStanza("pixel_size", "less_eq", "double", "20.0") +
-      CreateFontconfigEditStanza("antialias", "bool", "false") +
-      kFontconfigMatchFooter +
-      kFontconfigFileFooter));
+          // Specify the desired defaults via a font match rather than a pattern
+          // match (since this is the style generally used in
+          // /etc/fonts/conf.d).
+          kFontconfigMatchFontHeader +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigEditStanza("autohint", "bool", "true") +
+          CreateFontconfigEditStanza("hinting", "bool", "true") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
+          CreateFontconfigEditStanza("rgba", "const", "rgb") +
+          kFontconfigMatchFooter +
+          // Add a font match for Arial. Since it specifies a family, it
+          // shouldn't
+          // take effect when querying default settings.
+          kFontconfigMatchFontHeader +
+          CreateFontconfigTestStanza("family", "eq", "string", "Arial") +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigEditStanza("autohint", "bool", "false") +
+          CreateFontconfigEditStanza("hinting", "bool", "true") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
+          CreateFontconfigEditStanza("rgba", "const", "none") +
+          kFontconfigMatchFooter +
+          // Add font matches for fonts between 10 and 20 points or pixels.
+          // Since
+          // they specify sizes, they also should not affect the defaults.
+          kFontconfigMatchFontHeader +
+          CreateFontconfigTestStanza("size", "more_eq", "double", "10.0") +
+          CreateFontconfigTestStanza("size", "less_eq", "double", "20.0") +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
+          kFontconfigMatchFooter + kFontconfigMatchFontHeader +
+          CreateFontconfigTestStanza("pixel_size", "more_eq", "double",
+                                     "10.0") +
+          CreateFontconfigTestStanza("pixel_size", "less_eq", "double",
+                                     "20.0") +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
+          kFontconfigMatchFooter + kFontconfigFileFooter));
 
   FontRenderParams params = GetFontRenderParams(
       FontRenderParamsQuery(), NULL);
@@ -120,24 +124,21 @@ TEST_F(FontRenderParamsTest, Default) {
 
 TEST_F(FontRenderParamsTest, Size) {
   ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
-  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
-      std::string(kFontconfigFileHeader) +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigEditStanza("antialias", "bool", "true") +
-      CreateFontconfigEditStanza("hinting", "bool", "true") +
-      CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
-      CreateFontconfigEditStanza("rgba", "const", "none") +
-      kFontconfigMatchFooter +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigTestStanza("pixelsize", "less_eq", "double", "10") +
-      CreateFontconfigEditStanza("antialias", "bool", "false") +
-      kFontconfigMatchFooter +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigTestStanza("size", "more_eq", "double", "20") +
-      CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
-      CreateFontconfigEditStanza("rgba", "const", "rgb") +
-      kFontconfigMatchFooter +
-      kFontconfigFileFooter));
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(
+      temp_dir_.GetPath(),
+      std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigEditStanza("hinting", "bool", "true") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintfull") +
+          CreateFontconfigEditStanza("rgba", "const", "none") +
+          kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
+          CreateFontconfigTestStanza("pixelsize", "less_eq", "double", "10") +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
+          kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
+          CreateFontconfigTestStanza("size", "more_eq", "double", "20") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
+          CreateFontconfigEditStanza("rgba", "const", "rgb") +
+          kFontconfigMatchFooter + kFontconfigFileFooter));
 
   // The defaults should be used when the supplied size isn't matched by the
   // second or third blocks.
@@ -169,23 +170,20 @@ TEST_F(FontRenderParamsTest, Style) {
   ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
   // Load a config that disables subpixel rendering for bold text and disables
   // hinting for italic text.
-  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
-      std::string(kFontconfigFileHeader) +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigEditStanza("antialias", "bool", "true") +
-      CreateFontconfigEditStanza("hinting", "bool", "true") +
-      CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
-      CreateFontconfigEditStanza("rgba", "const", "rgb") +
-      kFontconfigMatchFooter +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigTestStanza("weight", "eq", "const", "bold") +
-      CreateFontconfigEditStanza("rgba", "const", "none") +
-      kFontconfigMatchFooter +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigTestStanza("slant", "eq", "const", "italic") +
-      CreateFontconfigEditStanza("hinting", "bool", "false") +
-      kFontconfigMatchFooter +
-      kFontconfigFileFooter));
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(
+      temp_dir_.GetPath(),
+      std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          CreateFontconfigEditStanza("hinting", "bool", "true") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintslight") +
+          CreateFontconfigEditStanza("rgba", "const", "rgb") +
+          kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
+          CreateFontconfigTestStanza("weight", "eq", "const", "bold") +
+          CreateFontconfigEditStanza("rgba", "const", "none") +
+          kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
+          CreateFontconfigTestStanza("slant", "eq", "const", "italic") +
+          CreateFontconfigEditStanza("hinting", "bool", "false") +
+          kFontconfigMatchFooter + kFontconfigFileFooter));
 
   FontRenderParamsQuery query;
   query.style = Font::NORMAL;
@@ -217,16 +215,14 @@ TEST_F(FontRenderParamsTest, Style) {
 
 TEST_F(FontRenderParamsTest, Scalable) {
   // Load a config that only enables antialiasing for scalable fonts.
-  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
-      std::string(kFontconfigFileHeader) +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigEditStanza("antialias", "bool", "false") +
-      kFontconfigMatchFooter +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigTestStanza("scalable", "eq", "bool", "true") +
-      CreateFontconfigEditStanza("antialias", "bool", "true") +
-      kFontconfigMatchFooter +
-      kFontconfigFileFooter));
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(
+      temp_dir_.GetPath(),
+      std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
+          kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
+          CreateFontconfigTestStanza("scalable", "eq", "bool", "true") +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          kFontconfigMatchFooter + kFontconfigFileFooter));
 
   // Check that we specifically ask how scalable fonts should be rendered.
   FontRenderParams params = GetFontRenderParams(
@@ -237,16 +233,14 @@ TEST_F(FontRenderParamsTest, Scalable) {
 TEST_F(FontRenderParamsTest, UseBitmaps) {
   ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
   // Load a config that enables embedded bitmaps for fonts <= 10 pixels.
-  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
-      std::string(kFontconfigFileHeader) +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigEditStanza("embeddedbitmap", "bool", "false") +
-      kFontconfigMatchFooter +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigTestStanza("pixelsize", "less_eq", "double", "10") +
-      CreateFontconfigEditStanza("embeddedbitmap", "bool", "true") +
-      kFontconfigMatchFooter +
-      kFontconfigFileFooter));
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(
+      temp_dir_.GetPath(),
+      std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
+          CreateFontconfigEditStanza("embeddedbitmap", "bool", "false") +
+          kFontconfigMatchFooter + kFontconfigMatchPatternHeader +
+          CreateFontconfigTestStanza("pixelsize", "less_eq", "double", "10") +
+          CreateFontconfigEditStanza("embeddedbitmap", "bool", "true") +
+          kFontconfigMatchFooter + kFontconfigFileFooter));
 
   FontRenderParamsQuery query;
   FontRenderParams params = GetFontRenderParams(query, NULL);
@@ -260,15 +254,14 @@ TEST_F(FontRenderParamsTest, UseBitmaps) {
 TEST_F(FontRenderParamsTest, ForceFullHintingWhenAntialiasingIsDisabled) {
   // Load a config that disables antialiasing and hinting while requesting
   // subpixel rendering.
-  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
-      std::string(kFontconfigFileHeader) +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigEditStanza("antialias", "bool", "false") +
-      CreateFontconfigEditStanza("hinting", "bool", "false") +
-      CreateFontconfigEditStanza("hintstyle", "const", "hintnone") +
-      CreateFontconfigEditStanza("rgba", "const", "rgb") +
-      kFontconfigMatchFooter +
-      kFontconfigFileFooter));
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(
+      temp_dir_.GetPath(),
+      std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
+          CreateFontconfigEditStanza("antialias", "bool", "false") +
+          CreateFontconfigEditStanza("hinting", "bool", "false") +
+          CreateFontconfigEditStanza("hintstyle", "const", "hintnone") +
+          CreateFontconfigEditStanza("rgba", "const", "rgb") +
+          kFontconfigMatchFooter + kFontconfigFileFooter));
 
   // Full hinting should be forced. See the comment in GetFontRenderParams() for
   // more information.
@@ -310,12 +303,11 @@ TEST_F(FontRenderParamsTest, OnlySetConfiguredValues) {
 
   // Load a Fontconfig config that enables antialiasing but doesn't say anything
   // about subpixel rendering.
-  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
-      std::string(kFontconfigFileHeader) +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigEditStanza("antialias", "bool", "true") +
-      kFontconfigMatchFooter +
-      kFontconfigFileFooter));
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(
+      temp_dir_.GetPath(),
+      std::string(kFontconfigFileHeader) + kFontconfigMatchPatternHeader +
+          CreateFontconfigEditStanza("antialias", "bool", "true") +
+          kFontconfigMatchFooter + kFontconfigFileFooter));
 
   // The subpixel rendering setting from the delegate should make it through.
   FontRenderParams params = GetFontRenderParams(
@@ -363,14 +355,14 @@ TEST_F(FontRenderParamsTest, SubstituteFamily) {
   // Configure Fontconfig to use Verdana for both Helvetica and Arial.
   ASSERT_TRUE(LoadSystemFontIntoFontconfig("arial.ttf"));
   ASSERT_TRUE(LoadSystemFontIntoFontconfig("verdana.ttf"));
-  ASSERT_TRUE(LoadConfigDataIntoFontconfig(temp_dir_.path(),
+  ASSERT_TRUE(LoadConfigDataIntoFontconfig(
+      temp_dir_.GetPath(),
       std::string(kFontconfigFileHeader) +
-      CreateFontconfigAliasStanza("Helvetica", "Verdana") +
-      kFontconfigMatchPatternHeader +
-      CreateFontconfigTestStanza("family", "eq", "string", "Arial") +
-      CreateFontconfigEditStanza("family", "string", "Verdana") +
-      kFontconfigMatchFooter +
-      kFontconfigFileFooter));
+          CreateFontconfigAliasStanza("Helvetica", "Verdana") +
+          kFontconfigMatchPatternHeader +
+          CreateFontconfigTestStanza("family", "eq", "string", "Arial") +
+          CreateFontconfigEditStanza("family", "string", "Verdana") +
+          kFontconfigMatchFooter + kFontconfigFileFooter));
 
   FontRenderParamsQuery query;
   query.families.push_back("Helvetica");

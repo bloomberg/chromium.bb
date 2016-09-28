@@ -44,13 +44,13 @@ class HostConfigTest : public testing::Test {
 TEST_F(HostConfigTest, InvalidFile) {
   ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
   base::FilePath non_existent_file =
-      test_dir_.path().AppendASCII("non_existent.json");
+      test_dir_.GetPath().AppendASCII("non_existent.json");
   EXPECT_FALSE(HostConfigFromJsonFile(non_existent_file));
 }
 
 TEST_F(HostConfigTest, Read) {
   ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
-  base::FilePath test_file = test_dir_.path().AppendASCII("read.json");
+  base::FilePath test_file = test_dir_.GetPath().AppendASCII("read.json");
   WriteTestFile(test_file);
   std::unique_ptr<base::DictionaryValue> target(
       HostConfigFromJsonFile(test_file));
@@ -74,7 +74,7 @@ TEST_F(HostConfigTest, Read) {
 TEST_F(HostConfigTest, Write) {
   ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
 
-  base::FilePath test_file = test_dir_.path().AppendASCII("write.json");
+  base::FilePath test_file = test_dir_.GetPath().AppendASCII("write.json");
   WriteTestFile(test_file);
   std::unique_ptr<base::DictionaryValue> target(
       HostConfigFromJsonFile(test_file));

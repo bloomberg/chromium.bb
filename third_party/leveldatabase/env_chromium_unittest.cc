@@ -99,7 +99,7 @@ TEST(ChromiumEnv, DeleteBackupTables) {
 
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
-  base::FilePath dir = scoped_temp_dir.path();
+  base::FilePath dir = scoped_temp_dir.GetPath();
 
   DB* db;
   Status status = DB::Open(options, dir.AsUTF8Unsafe(), &db);
@@ -136,7 +136,7 @@ TEST(ChromiumEnv, DeleteBackupTables) {
 TEST(ChromiumEnv, GetChildrenEmptyDir) {
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
-  base::FilePath dir = scoped_temp_dir.path();
+  base::FilePath dir = scoped_temp_dir.GetPath();
 
   Env* env = Env::Default();
   std::vector<std::string> result;
@@ -148,7 +148,7 @@ TEST(ChromiumEnv, GetChildrenEmptyDir) {
 TEST(ChromiumEnv, GetChildrenPriorResults) {
   base::ScopedTempDir scoped_temp_dir;
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
-  base::FilePath dir = scoped_temp_dir.path();
+  base::FilePath dir = scoped_temp_dir.GetPath();
 
   base::FilePath new_file_dir = dir.Append(FPL("tmp_file"));
   FILE* f = fopen(new_file_dir.AsUTF8Unsafe().c_str(), "w");

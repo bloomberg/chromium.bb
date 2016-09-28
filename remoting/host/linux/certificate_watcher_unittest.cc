@@ -32,7 +32,7 @@ class CertificateWatcherTest : public testing::Test {
         base::Unretained(this)),
         task_runner_));
     watcher_->SetDelayForTests(base::TimeDelta::FromSeconds(0));
-    watcher_->SetWatchPathForTests(temp_dir_.path());
+    watcher_->SetWatchPathForTests(temp_dir_.GetPath());
   }
 
   ~CertificateWatcherTest() override {
@@ -84,7 +84,7 @@ class CertificateWatcherTest : public testing::Test {
 
   void TouchFileTask(const char* filename) {
     std::string testWriteString = std::to_string(rand());
-    base::FilePath path = temp_dir_.path().AppendASCII(filename);
+    base::FilePath path = temp_dir_.GetPath().AppendASCII(filename);
 
     if (base::PathExists(path)) {
       EXPECT_TRUE(base::AppendToFile(path, testWriteString.c_str(),

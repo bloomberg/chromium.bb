@@ -58,7 +58,7 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
       : run_loop_(new base::RunLoop()),
         file_thread_("SecurityKeyAuthHandlerPosixTest_FileThread") {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    socket_path_ = temp_dir_.path().Append(kSocketFilename);
+    socket_path_ = temp_dir_.GetPath().Append(kSocketFilename);
     remoting::SecurityKeyAuthHandler::SetSecurityKeySocketName(socket_path_);
 
     EXPECT_TRUE(file_thread_.StartWithOptions(

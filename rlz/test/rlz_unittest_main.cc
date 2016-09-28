@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
     // creates and owns RlzValueStore object for its lifetime.
     base::ScopedTempDir temp_dir;
     if (temp_dir.CreateUniqueTempDir())
-      rlz_lib::testing::SetRlzStoreDirectory(temp_dir.path());
+      rlz_lib::testing::SetRlzStoreDirectory(temp_dir.GetPath());
 #endif
     rlz_lib::SupplementaryBranding branding("TEST");
     ret = RUN_ALL_TESTS();

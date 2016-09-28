@@ -35,7 +35,8 @@ extern const size_t kSampleCorruptPakSize;
 TEST(DataPackTest, LoadFromPath) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+  base::FilePath data_path =
+      dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
   ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
@@ -67,7 +68,8 @@ TEST(DataPackTest, LoadFromPath) {
 TEST(DataPackTest, LoadFromFile) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+  base::FilePath data_path =
+      dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
   ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents, kSamplePakSize),
@@ -102,7 +104,8 @@ TEST(DataPackTest, LoadFromFile) {
 TEST(DataPackTest, LoadFromFileRegion) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+  base::FilePath data_path =
+      dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Construct a file which has a non page-aligned zero-filled header followed
   // by the actual pak file content.
@@ -158,7 +161,7 @@ TEST(DataPackTest, LoadFileWithTruncatedHeader) {
 TEST_P(DataPackTest, Write) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath file = dir.path().Append(FILE_PATH_LITERAL("data.pak"));
+  base::FilePath file = dir.GetPath().Append(FILE_PATH_LITERAL("data.pak"));
 
   std::string one("one");
   std::string two("two");
@@ -196,7 +199,8 @@ TEST_P(DataPackTest, Write) {
 TEST(DataPackTest, ModifiedWhileUsed) {
   base::ScopedTempDir dir;
   ASSERT_TRUE(dir.CreateUniqueTempDir());
-  base::FilePath data_path = dir.path().Append(FILE_PATH_LITERAL("sample.pak"));
+  base::FilePath data_path =
+      dir.GetPath().Append(FILE_PATH_LITERAL("sample.pak"));
 
   // Dump contents into the pak file.
   ASSERT_EQ(base::WriteFile(data_path, kSamplePakContents, kSamplePakSize),

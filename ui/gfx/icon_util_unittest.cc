@@ -200,10 +200,10 @@ TEST_F(IconUtilTest, TestBitmapToIconInvalidParameters) {
 TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
   std::unique_ptr<SkBitmap> bitmap;
   gfx::ImageFamily image_family;
-  base::FilePath valid_icon_filename = temp_directory_.path().AppendASCII(
-      kTempIconFilename);
-  base::FilePath invalid_icon_filename = temp_directory_.path().AppendASCII(
-      "<>?.ico");
+  base::FilePath valid_icon_filename =
+      temp_directory_.GetPath().AppendASCII(kTempIconFilename);
+  base::FilePath invalid_icon_filename =
+      temp_directory_.GetPath().AppendASCII("<>?.ico");
 
   // Wrong bitmap format.
   bitmap.reset(new SkBitmap);
@@ -252,8 +252,8 @@ TEST_F(IconUtilTest, TestCreateIconFileInvalidParameters) {
 // This test case makes sure IconUtil::CreateIconFileFromImageFamily fails if
 // the image family is empty or invalid.
 TEST_F(IconUtilTest, TestCreateIconFileEmptyImageFamily) {
-  base::FilePath icon_filename = temp_directory_.path().AppendASCII(
-      kTempIconFilename);
+  base::FilePath icon_filename =
+      temp_directory_.GetPath().AppendASCII(kTempIconFilename);
 
   // Empty image family.
   EXPECT_FALSE(IconUtil::CreateIconFileFromImageFamily(gfx::ImageFamily(),
@@ -342,7 +342,7 @@ TEST_F(IconUtilTest, TestBasicCreateHICONFromSkBitmap) {
 TEST_F(IconUtilTest, TestCreateIconFileFromImageFamily) {
   gfx::ImageFamily image_family;
   base::FilePath icon_filename =
-      temp_directory_.path().AppendASCII(kTempIconFilename);
+      temp_directory_.GetPath().AppendASCII(kTempIconFilename);
 
   // Test with only a 16x16 icon. Should only scale up to 48x48.
   image_family.Add(gfx::Image::CreateFrom1xBitmap(

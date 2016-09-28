@@ -53,7 +53,7 @@ class HistoryDataStoreTest : public testing::Test {
   }
 
   void OpenStore(const std::string& file_name) {
-    data_file_ = temp_dir_.path().AppendASCII(file_name);
+    data_file_ = temp_dir_.GetPath().AppendASCII(file_name);
     store_ = new HistoryDataStore(scoped_refptr<DictionaryDataStore>(
         new DictionaryDataStore(data_file_, worker_pool_owner_.pool().get())));
     Load();
@@ -70,8 +70,8 @@ class HistoryDataStoreTest : public testing::Test {
   }
 
   void WriteDataFile(const std::string& file_name, const std::string& data) {
-    base::WriteFile(
-        temp_dir_.path().AppendASCII(file_name), data.c_str(), data.size());
+    base::WriteFile(temp_dir_.GetPath().AppendASCII(file_name), data.c_str(),
+                    data.size());
   }
 
   HistoryDataStore* store() { return store_.get(); }

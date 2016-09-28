@@ -137,7 +137,7 @@ void RlzLibTestNoMachineStateHelper::SetUp() {
 #endif  // defined(OS_WIN)
 #if defined(OS_POSIX)
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  rlz_lib::testing::SetRlzStoreDirectory(temp_dir_.path());
+  rlz_lib::testing::SetRlzStoreDirectory(temp_dir_.GetPath());
 #endif  // defined(OS_POSIX)
 }
 
