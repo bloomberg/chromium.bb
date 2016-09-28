@@ -1005,6 +1005,7 @@ test("content_unittests") {
     "../browser/download/download_item_impl_unittest.cc",
     "../browser/download/download_manager_impl_unittest.cc",
     "../browser/download/quarantine_linux_unittest.cc",
+    "../browser/download/quarantine_mac_unittest.mm",
     "../browser/download/quarantine_win_unittest.cc",
     "../browser/download/rate_estimator_unittest.cc",
     "../browser/download/save_package_unittest.cc",
