@@ -481,7 +481,7 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
     DVLOG(3) << "No bitstream buffers.";
     // We need to copy the output so that encoding can continue.
     std::unique_ptr<EncodeOutput> encode_output(
-        new EncodeOutput(size, keyframe, base::TimeDelta()));
+        new EncodeOutput(size, keyframe, base::Time::Now() - base::Time()));
     {
       MediaBufferScopedPointer scoped_buffer(output_buffer.get());
       memcpy(encode_output->memory(), scoped_buffer.get(), size);
@@ -500,8 +500,9 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
   }
 
   client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::BitstreamBufferReady, client_,
-                            buffer_ref->id, size, keyframe, base::TimeDelta()));
+      FROM_HERE,
+      base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id, size,
+                 keyframe, base::Time::Now() - base::Time()));
 
   // Keep calling ProcessOutput recursively until MF_E_TRANSFORM_NEED_MORE_INPUT
   // is returned to flush out all the output.
