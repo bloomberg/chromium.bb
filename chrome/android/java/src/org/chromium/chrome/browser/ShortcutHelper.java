@@ -168,7 +168,7 @@ public class ShortcutHelper {
                 // process is complete, call back to native code to start the splash image
                 // download.
                 WebappRegistry.registerWebapp(
-                        context, id, new WebappRegistry.FetchWebappDataStorageCallback() {
+                        id, new WebappRegistry.FetchWebappDataStorageCallback() {
                             @Override
                             public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                                 storage.updateFromShortcutIntent(resultIntent);
@@ -235,8 +235,8 @@ public class ShortcutHelper {
     @SuppressWarnings("unused")
     @CalledByNative
     private static void storeWebappSplashImage(final String id, final Bitmap splashImage) {
-        WebappRegistry.getWebappDataStorage(ContextUtils.getApplicationContext(), id,
-                new WebappRegistry.FetchWebappDataStorageCallback() {
+        WebappRegistry.getWebappDataStorage(
+                id, new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                         if (storage == null) return;

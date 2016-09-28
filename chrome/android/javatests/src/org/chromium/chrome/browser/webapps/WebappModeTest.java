@@ -97,24 +97,22 @@ public class WebappModeTest extends MultiActivityTestBase {
         // Register the webapps so when the data storage is opened, the test doesn't crash. There is
         // no race condition with the retrieval as AsyncTasks are run sequentially on the background
         // thread.
-        WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_1_ID,
-                new WebappRegistry.FetchWebappDataStorageCallback() {
+        WebappRegistry.registerWebapp(
+                WEBAPP_1_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                         storage.updateFromShortcutIntent(createIntent(
                                 WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
                     }
-                }
-        );
-        WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_2_ID,
-                new WebappRegistry.FetchWebappDataStorageCallback() {
+                });
+        WebappRegistry.registerWebapp(
+                WEBAPP_2_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                         storage.updateFromShortcutIntent(createIntent(
                                 WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
                     }
-                }
-        );
+                });
     }
 
     /**

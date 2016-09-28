@@ -13,11 +13,13 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,13 +73,19 @@ public class WebappDataStorageTest {
 
     @Before
     public void setUp() throws Exception {
-        mSharedPreferences = RuntimeEnvironment.application
-                .getSharedPreferences("webapp_test", Context.MODE_PRIVATE);
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+        mSharedPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
+                "webapp_test", Context.MODE_PRIVATE);
 
         // Set the last_used as if the web app had been registered by WebappRegistry.
         mSharedPreferences.edit().putLong("last_used", 0).apply();
 
         mCallbackCalled = false;
+    }
+
+    @After
+    public void tearDown() {
+        mSharedPreferences.edit().clear().apply();
     }
 
     @Test
@@ -105,8 +113,7 @@ public class WebappDataStorageTest {
     public void testLastUsedRetrieval() throws Exception {
         mSharedPreferences.edit().putLong(WebappDataStorage.KEY_LAST_USED, 100L).apply();
 
-        WebappDataStorage.getLastUsedTime(RuntimeEnvironment.application, "test",
-                new FetchCallback<Long>(new Long(100L)));
+        WebappDataStorage.getLastUsedTime("test", new FetchCallback<Long>(new Long(100L)));
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
 
@@ -121,7 +128,7 @@ public class WebappDataStorageTest {
                 .putString(WebappDataStorage.KEY_SPLASH_ICON,
                         ShortcutHelper.encodeBitmapAsString(expected))
                 .commit();
-        WebappDataStorage.open(RuntimeEnvironment.application, "test")
+        WebappDataStorage.open("test")
                 .getSplashScreenImage(new WebappDataStorage.FetchCallback<Bitmap>() {
                     @Override
                     public void onDataRetrieved(Bitmap actual) {
@@ -143,8 +150,7 @@ public class WebappDataStorageTest {
     @Feature({"Webapp"})
     public void testSplashImageUpdate() throws Exception {
         final Bitmap expectedImage = createBitmap();
-        WebappDataStorage.open(RuntimeEnvironment.application, "test")
-                .updateSplashScreenImage(expectedImage);
+        WebappDataStorage.open("test").updateSplashScreenImage(expectedImage);
         BackgroundShadowAsyncTask.runBackgroundTasks();
 
         assertEquals(ShortcutHelper.encodeBitmapAsString(expectedImage),
@@ -157,8 +163,7 @@ public class WebappDataStorageTest {
         final String scope = "http://drive.google.com";
         mSharedPreferences.edit().putString(WebappDataStorage.KEY_SCOPE, scope).apply();
 
-        WebappDataStorage.getScope(RuntimeEnvironment.application, "test",
-                new FetchCallback<String>(scope));
+        WebappDataStorage.getScope("test", new FetchCallback<String>(scope));
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
 
@@ -171,8 +176,7 @@ public class WebappDataStorageTest {
         final String url = "https://www.google.com";
         mSharedPreferences.edit().putString(WebappDataStorage.KEY_URL, url).apply();
 
-        WebappDataStorage.getUrl(RuntimeEnvironment.application, "test",
-                new FetchCallback<String>(url));
+        WebappDataStorage.getUrl("test", new FetchCallback<String>(url));
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
 
@@ -186,7 +190,7 @@ public class WebappDataStorageTest {
         WebappDataStorage.setClockForTests(clock);
 
         // Opening a data storage doesn't count as a launch.
-        WebappDataStorage storage = WebappDataStorage.open(RuntimeEnvironment.application, "test");
+        WebappDataStorage storage = WebappDataStorage.open("test");
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();
         assertTrue(!storage.wasLaunchedRecently());
@@ -257,7 +261,7 @@ public class WebappDataStorageTest {
         };
         Intent shortcutIntent = shortcutIntentTask.execute().get();
 
-        WebappDataStorage storage = WebappDataStorage.open(RuntimeEnvironment.application, "test");
+        WebappDataStorage storage = WebappDataStorage.open("test");
         storage.updateFromShortcutIntent(shortcutIntent);
         BackgroundShadowAsyncTask.runBackgroundTasks();
         ShadowLooper.runUiThreadTasks();

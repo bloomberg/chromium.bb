@@ -92,8 +92,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
                         }
                     }
         };
-        WebappRegistry.getWebappDataStorage(
-                ContextUtils.getApplicationContext(), info.id(), callback);
+        WebappRegistry.getWebappDataStorage(info.id(), callback);
     }
 
     @Override
@@ -161,8 +160,7 @@ public class WebApkUpdateManager implements ManifestUpgradeDetector.Callback {
      */
     @CalledByNative
     private static void onBuiltWebApk(final boolean success, String webapkPackage) {
-        WebappRegistry.getWebappDataStorage(ContextUtils.getApplicationContext(),
-                WebApkConstants.WEBAPK_ID_PREFIX + webapkPackage,
+        WebappRegistry.getWebappDataStorage(WebApkConstants.WEBAPK_ID_PREFIX + webapkPackage,
                 new FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {

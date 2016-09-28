@@ -70,7 +70,7 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         final Intent shortcutIntent = shortcutIntentTask.execute().get();
 
         WebappRegistry.registerWebapp(
-                getActivity(), webappId, new WebappRegistry.FetchWebappDataStorageCallback() {
+                webappId, new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                         storage.updateFromShortcutIntent(shortcutIntent);
@@ -100,7 +100,7 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         }
 
         // Wait for the registration to finish.
-        WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
                 assertEquals(apps.keySet(), ids);
@@ -131,7 +131,7 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // The last two webapps should have been unregistered.
-        WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
                 assertEquals(new HashSet<String>(Arrays.asList("webapp1")), ids);
@@ -158,7 +158,7 @@ public class BrowsingDataRemoverIntegrationTest extends ChromeActivityTestCaseBa
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // All webapps should have been unregistered.
-        WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
                 assertTrue(ids.isEmpty());

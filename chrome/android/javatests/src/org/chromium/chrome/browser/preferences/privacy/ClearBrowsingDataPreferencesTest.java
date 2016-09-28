@@ -104,8 +104,8 @@ public class ClearBrowsingDataPreferencesTest
      */
     @MediumTest
     public void testClearingSiteDataClearsWebapps() throws Exception {
-        WebappRegistry.registerWebapp(getActivity(), "first", null);
-        WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
+        WebappRegistry.registerWebapp("first", null);
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
                 assertEquals(new HashSet<String>(Arrays.asList("first")), ids);
@@ -131,7 +131,7 @@ public class ClearBrowsingDataPreferencesTest
         });
         waitForProgressToComplete(preferences);
 
-        WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
                 assertTrue(ids.isEmpty());
@@ -155,18 +155,16 @@ public class ClearBrowsingDataPreferencesTest
         };
         final Intent shortcutIntent = shortcutIntentTask.execute().get();
 
-        WebappRegistry.registerWebapp(getActivity(), "first",
-                new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        storage.updateFromShortcutIntent(shortcutIntent);
-                        mCallbackCalled = true;
-                    }
-                }
-        );
+        WebappRegistry.registerWebapp("first", new WebappRegistry.FetchWebappDataStorageCallback() {
+            @Override
+            public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
+                storage.updateFromShortcutIntent(shortcutIntent);
+                mCallbackCalled = true;
+            }
+        });
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
-        WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
                 assertEquals(new HashSet<String>(Arrays.asList("first")), ids);
@@ -193,7 +191,7 @@ public class ClearBrowsingDataPreferencesTest
         waitForProgressToComplete(preferences);
 
         // The web app should still exist in the registry.
-        WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
+        WebappRegistry.getRegisteredWebappIds(new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
                 assertEquals(new HashSet<String>(Arrays.asList("first")), ids);
@@ -203,39 +201,33 @@ public class ClearBrowsingDataPreferencesTest
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // URL and scope should be empty.
-        WebappDataStorage.getScope(getActivity(), "first",
-                new WebappDataStorage.FetchCallback<String>() {
-                    @Override
-                    public void onDataRetrieved(String readObject) {
-                        assertEquals(readObject, "");
-                        mCallbackCalled = true;
-                    }
-                }
-        );
+        WebappDataStorage.getScope("first", new WebappDataStorage.FetchCallback<String>() {
+            @Override
+            public void onDataRetrieved(String readObject) {
+                assertEquals(readObject, "");
+                mCallbackCalled = true;
+            }
+        });
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
-        WebappDataStorage.getUrl(getActivity(), "first",
-                new WebappDataStorage.FetchCallback<String>() {
-                    @Override
-                    public void onDataRetrieved(String readObject) {
-                        assertEquals(readObject, "");
-                        mCallbackCalled = true;
-                    }
-                }
-        );
+        WebappDataStorage.getUrl("first", new WebappDataStorage.FetchCallback<String>() {
+            @Override
+            public void onDataRetrieved(String readObject) {
+                assertEquals(readObject, "");
+                mCallbackCalled = true;
+            }
+        });
         CriteriaHelper.pollUiThread(new CallbackCriteria());
 
         // The last used time should be 0.
-        WebappDataStorage.getLastUsedTime(getActivity(), "first",
-                new WebappDataStorage.FetchCallback<Long>() {
-                    @Override
-                    public void onDataRetrieved(Long readObject) {
-                        long lastUsed = readObject;
-                        assertEquals(lastUsed, 0);
-                        mCallbackCalled = true;
-                    }
-                }
-        );
+        WebappDataStorage.getLastUsedTime("first", new WebappDataStorage.FetchCallback<Long>() {
+            @Override
+            public void onDataRetrieved(Long readObject) {
+                long lastUsed = readObject;
+                assertEquals(lastUsed, 0);
+                mCallbackCalled = true;
+            }
+        });
         CriteriaHelper.pollUiThread(new CallbackCriteria());
     }
 

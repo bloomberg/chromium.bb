@@ -199,7 +199,7 @@ public class WebappActivity extends FullScreenActivity {
         // Kick off the old web app cleanup (if we haven't already) now that we have queued the
         // current web app's storage to be opened.
         if (!mOldWebappCleanupStarted) {
-            WebappRegistry.unregisterOldWebapps(this, System.currentTimeMillis());
+            WebappRegistry.unregisterOldWebapps(System.currentTimeMillis());
             mOldWebappCleanupStarted = true;
         }
     }
@@ -262,8 +262,8 @@ public class WebappActivity extends FullScreenActivity {
     }
 
     protected void initializeSplashScreenWidgets(final int backgroundColor) {
-        WebappRegistry.getWebappDataStorage(this, mWebappInfo.id(),
-                new WebappRegistry.FetchWebappDataStorageCallback() {
+        WebappRegistry.getWebappDataStorage(
+                mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
                     @Override
                     public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                         if (storage == null) {
@@ -280,8 +280,7 @@ public class WebappActivity extends FullScreenActivity {
                             }
                         });
                     }
-                }
-        );
+                });
     }
 
     protected void onStorageIsNull(int backgroundColor) {}

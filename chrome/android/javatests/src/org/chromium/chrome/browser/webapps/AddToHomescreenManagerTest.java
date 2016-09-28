@@ -99,14 +99,14 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
         public Bitmap mSplashImage;
 
         @Override
-        public WebappDataStorage create(final Context context, final String webappId) {
-            return new WebappDataStorageWrapper(context, webappId);
+        public WebappDataStorage create(final String webappId) {
+            return new WebappDataStorageWrapper(webappId);
         }
 
         private class WebappDataStorageWrapper extends WebappDataStorage {
 
-            public WebappDataStorageWrapper(Context context, String webappId) {
-                super(context, webappId);
+            public WebappDataStorageWrapper(String webappId) {
+                super(webappId);
             }
 
             @Override

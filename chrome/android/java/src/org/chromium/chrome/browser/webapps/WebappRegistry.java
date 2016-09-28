@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.AsyncTask;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -58,19 +59,18 @@ public class WebappRegistry {
     }
 
     /**
-     * Registers the existence of a web app, creates the SharedPreference for it, and runs the
+     * Registers the existence of a web app, creates a SharedPreference entry for it, and runs the
      * supplied callback (if not null) on the UI thread with the resulting WebappDataStorage object.
-     * @param context  Context to open the registry with.
      * @param webappId The id of the web app to register.
      * @param callback The callback to run with the WebappDataStorage argument.
      * @return The storage object for the web app.
      */
-    public static void registerWebapp(final Context context, final String webappId,
+    public static void registerWebapp(final String webappId,
             final FetchWebappDataStorageCallback callback) {
         new AsyncTask<Void, Void, WebappDataStorage>() {
             @Override
             protected final WebappDataStorage doInBackground(Void... nothing) {
-                SharedPreferences preferences = openSharedPreferences(context);
+                SharedPreferences preferences = openSharedPreferences();
                 // The set returned by getRegisteredWebappIds must be treated as immutable, so we
                 // make a copy to edit and save.
                 Set<String> webapps = new HashSet<>(getRegisteredWebappIds(preferences));
@@ -82,7 +82,7 @@ public class WebappRegistry {
                 // Create the WebappDataStorage and update the last used time, so we can guarantee
                 // that a web app which appears in the registry will have a
                 // last used time != WebappDataStorage.LAST_USED_INVALID.
-                WebappDataStorage storage = new WebappDataStorage(context, webappId);
+                WebappDataStorage storage = new WebappDataStorage(webappId);
                 storage.updateLastUsedTime();
                 return storage;
             }
@@ -97,18 +97,17 @@ public class WebappRegistry {
     /**
      * Runs the callback, supplying the WebappDataStorage object for webappId, or null if the web
      * app has not been registered.
-     * @param context  Context to open the registry with.
      * @param webappId The id of the web app to register.
      * @return The storage object for the web app, or null if webappId is not registered.
      */
-    public static void getWebappDataStorage(final Context context, final String webappId,
+    public static void getWebappDataStorage(final String webappId,
             final FetchWebappDataStorageCallback callback) {
         new AsyncTask<Void, Void, WebappDataStorage>() {
             @Override
             protected final WebappDataStorage doInBackground(Void... nothing) {
-                SharedPreferences preferences = openSharedPreferences(context);
+                SharedPreferences preferences = openSharedPreferences();
                 if (getRegisteredWebappIds(preferences).contains(webappId)) {
-                    WebappDataStorage storage = WebappDataStorage.open(context, webappId);
+                    WebappDataStorage storage = WebappDataStorage.open(webappId);
                     return storage;
                 }
                 return null;
@@ -126,20 +125,19 @@ public class WebappRegistry {
      * Runs the callback, supplying the WebappDataStorage object whose scope most closely matches
      * the provided URL, or null if a matching web app cannot be found. The most closely matching
      * scope is the longest scope which has the same prefix as the URL to open.
-     * @param context  Context to open the registry with.
      * @param url      The URL to search for.
      * @return The storage object for the web app, or null if webappId is not registered.
      */
-    public static void getWebappDataStorageForUrl(final Context context, final String url,
+    public static void getWebappDataStorageForUrl(final String url,
             final FetchWebappDataStorageCallback callback) {
         new AsyncTask<Void, Void, WebappDataStorage>() {
             @Override
             protected final WebappDataStorage doInBackground(Void... nothing) {
-                SharedPreferences preferences = openSharedPreferences(context);
+                SharedPreferences preferences = openSharedPreferences();
                 WebappDataStorage bestMatch = null;
                 int largestOverlap = 0;
                 for (String id : getRegisteredWebappIds(preferences)) {
-                    WebappDataStorage storage = WebappDataStorage.open(context, id);
+                    WebappDataStorage storage = WebappDataStorage.open(id);
                     String scope = storage.getScope();
                     if (url.startsWith(scope) && scope.length() > largestOverlap) {
                         bestMatch = storage;
@@ -158,15 +156,14 @@ public class WebappRegistry {
 
     /**
      * Asynchronously retrieves the list of web app IDs which this registry is aware of.
-     * @param context  Context to open the registry with.
      * @param callback Called when the set has been retrieved. The set may be empty.
      */
     @VisibleForTesting
-    public static void getRegisteredWebappIds(final Context context, final FetchCallback callback) {
+    public static void getRegisteredWebappIds(final FetchCallback callback) {
         new AsyncTask<Void, Void, Set<String>>() {
             @Override
             protected final Set<String> doInBackground(Void... nothing) {
-                return getRegisteredWebappIds(openSharedPreferences(context));
+                return getRegisteredWebappIds(openSharedPreferences());
             }
 
             @Override
@@ -183,23 +180,22 @@ public class WebappRegistry {
      * used time set to 0 by the user clearing their history. Cleanup is run, at most, once a month.
      * 2. Deletes the data for all WebAPKs that have been uninstalled in the last month.
      *
-     * @param context     Context to open the registry with.
      * @param currentTime The current time which will be checked to decide if the task should be run
      *                    and if a web app should be cleaned up.
      */
-    static void unregisterOldWebapps(final Context context, final long currentTime) {
+    static void unregisterOldWebapps(final long currentTime) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected final Void doInBackground(Void... nothing) {
-                SharedPreferences preferences = openSharedPreferences(context);
+                SharedPreferences preferences = openSharedPreferences();
                 long lastCleanup = preferences.getLong(KEY_LAST_CLEANUP, 0);
                 if ((currentTime - lastCleanup) < FULL_CLEANUP_DURATION) return null;
 
                 Set<String> currentWebapps = getRegisteredWebappIds(preferences);
                 Set<String> retainedWebapps = new HashSet<>(currentWebapps);
-                PackageManager pm = context.getPackageManager();
+                PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
                 for (String id : currentWebapps) {
-                    WebappDataStorage storage = new WebappDataStorage(context, id);
+                    WebappDataStorage storage = new WebappDataStorage(id);
                     String webApkPackage = storage.getWebApkPackageName();
                     if (webApkPackage != null) {
                         if (isWebApkInstalled(pm, webApkPackage)) continue;
@@ -207,7 +203,7 @@ public class WebappRegistry {
                         long lastUsed = storage.getLastUsedTime();
                         if ((currentTime - lastUsed) < WEBAPP_UNOPENED_CLEANUP_DURATION) continue;
                     }
-                    WebappDataStorage.deleteDataForWebapp(context, id);
+                    WebappDataStorage.deleteDataForWebapp(id);
                     retainedWebapps.remove(id);
                 }
 
@@ -238,18 +234,17 @@ public class WebappRegistry {
      * tracking those web apps.
      */
     @VisibleForTesting
-    static void unregisterWebappsForUrls(
-            final Context context, final UrlFilter urlFilter, final Runnable callback) {
+    static void unregisterWebappsForUrls(final UrlFilter urlFilter, final Runnable callback) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected final Void doInBackground(Void... nothing) {
-                SharedPreferences preferences = openSharedPreferences(context);
+                SharedPreferences preferences = openSharedPreferences();
                 Set<String> registeredWebapps =
                         new HashSet<>(getRegisteredWebappIds(preferences));
                 Set<String> webappsToUnregister = new HashSet<>();
                 for (String id : registeredWebapps) {
-                    if (urlFilter.matchesUrl(WebappDataStorage.open(context, id).getUrl())) {
-                        WebappDataStorage.deleteDataForWebapp(context, id);
+                    if (urlFilter.matchesUrl(WebappDataStorage.open(id).getUrl())) {
+                        WebappDataStorage.deleteDataForWebapp(id);
                         webappsToUnregister.add(id);
                     }
                 }
@@ -277,8 +272,8 @@ public class WebappRegistry {
 
     @CalledByNative
     static void unregisterWebappsForUrls(
-            Context context, final UrlFilterBridge urlFilter, final long callbackPointer) {
-        unregisterWebappsForUrls(context, urlFilter, new Runnable() {
+            final UrlFilterBridge urlFilter, final long callbackPointer) {
+        unregisterWebappsForUrls(urlFilter, new Runnable() {
             @Override
             public void run() {
                 urlFilter.destroy();
@@ -292,15 +287,14 @@ public class WebappRegistry {
      * matches |urlFilter|.
      */
     @VisibleForTesting
-    static void clearWebappHistoryForUrls(
-            final Context context, final UrlFilter urlFilter, final Runnable callback) {
+    static void clearWebappHistoryForUrls(final UrlFilter urlFilter, final Runnable callback) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected final Void doInBackground(Void... nothing) {
-                SharedPreferences preferences = openSharedPreferences(context);
+                SharedPreferences preferences = openSharedPreferences();
                 for (String id : getRegisteredWebappIds(preferences)) {
-                    if (urlFilter.matchesUrl(WebappDataStorage.open(context, id).getUrl())) {
-                        WebappDataStorage.clearHistory(context, id);
+                    if (urlFilter.matchesUrl(WebappDataStorage.open(id).getUrl())) {
+                        WebappDataStorage.clearHistory(id);
                     }
                 }
                 return null;
@@ -316,8 +310,8 @@ public class WebappRegistry {
 
     @CalledByNative
     static void clearWebappHistoryForUrls(
-            Context context, final UrlFilterBridge urlFilter, final long callbackPointer) {
-        clearWebappHistoryForUrls(context, urlFilter, new Runnable() {
+            final UrlFilterBridge urlFilter, final long callbackPointer) {
+        clearWebappHistoryForUrls(urlFilter, new Runnable() {
             @Override
             public void run() {
                 urlFilter.destroy();
@@ -326,8 +320,9 @@ public class WebappRegistry {
         });
     }
 
-    private static SharedPreferences openSharedPreferences(Context context) {
-        return context.getSharedPreferences(REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
+    private static SharedPreferences openSharedPreferences() {
+        return ContextUtils.getApplicationContext().getSharedPreferences(
+                REGISTRY_FILE_NAME, Context.MODE_PRIVATE);
     }
 
     private static Set<String> getRegisteredWebappIds(SharedPreferences preferences) {

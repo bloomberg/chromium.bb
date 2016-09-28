@@ -116,7 +116,7 @@ public class ServiceTabLauncher {
                 }
             }
         };
-        WebappRegistry.getWebappDataStorageForUrl(context, url, callback);
+        WebappRegistry.getWebappDataStorageForUrl(url, callback);
     }
 
     /**

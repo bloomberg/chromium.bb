@@ -237,7 +237,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
                 R.dimen.webapp_splash_image_size_threshold);
         int bitmapSize = thresholdSize + 1;
         Bitmap splashBitmap = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888);
-        WebappDataStorage.open(context, WEBAPP_ID).updateSplashScreenImage(splashBitmap);
+        WebappDataStorage.open(WEBAPP_ID).updateSplashScreenImage(splashBitmap);
 
         startWebappActivity(createIntent());
         ViewGroup splashScreen = waitUntilSplashScreenAppears();
@@ -265,7 +265,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         int bitmapSize = context.getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size_minimum);
         Bitmap splashBitmap = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888);
-        WebappDataStorage.open(context, WEBAPP_ID).updateSplashScreenImage(splashBitmap);
+        WebappDataStorage.open(WEBAPP_ID).updateSplashScreenImage(splashBitmap);
 
         startWebappActivity(createIntent());
         ViewGroup splashScreen = waitUntilSplashScreenAppears();
@@ -292,7 +292,7 @@ public class WebappSplashScreenTest extends WebappActivityTestBase {
         int bitmapSize = context.getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size_minimum) - 1;
         Bitmap splashBitmap = Bitmap.createBitmap(bitmapSize, bitmapSize, Bitmap.Config.ARGB_8888);
-        WebappDataStorage.open(context, WEBAPP_ID).updateSplashScreenImage(splashBitmap);
+        WebappDataStorage.open(WEBAPP_ID).updateSplashScreenImage(splashBitmap);
 
         Intent intent = createIntent();
         intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, true);
