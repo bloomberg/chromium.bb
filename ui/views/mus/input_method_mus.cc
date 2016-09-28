@@ -114,7 +114,7 @@ void InputMethodMus::OnDidChangeFocusedClient(
   InputMethodBase::OnDidChangeFocusedClient(focused_before, focused);
   UpdateTextInputType();
 
-  text_input_client_.reset(new TextInputClientImpl(focused, this));
+  text_input_client_ = base::MakeUnique<TextInputClientImpl>(focused, this);
   ime_server_->StartSession(text_input_client_->CreateInterfacePtrAndBind(),
                             GetProxy(&input_method_));
 }

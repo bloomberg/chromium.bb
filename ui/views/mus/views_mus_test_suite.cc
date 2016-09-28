@@ -5,6 +5,7 @@
 #include "ui/views/mus/views_mus_test_suite.h"
 
 #include <memory>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -33,7 +34,7 @@ void EnsureCommandLineSwitch(const std::string& name) {
 
 class DefaultService : public shell::Service {
  public:
-   DefaultService() {}
+  DefaultService() {}
   ~DefaultService() override {}
 
  private:
@@ -114,12 +115,11 @@ class ShellConnection {
   }
 
   void SetUpConnections(base::WaitableEvent* wait) {
-    background_shell_.reset(new shell::BackgroundShell);
+    background_shell_ = base::MakeUnique<shell::BackgroundShell>();
     background_shell_->Init(nullptr);
-    service_.reset(new DefaultService);
-    shell_connection_.reset(new shell::ServiceContext(
-        service_.get(),
-        background_shell_->CreateServiceRequest(GetTestName())));
+    service_ = base::MakeUnique<DefaultService>();
+    shell_connection_ = base::MakeUnique<shell::ServiceContext>(
+        service_.get(), background_shell_->CreateServiceRequest(GetTestName()));
 
     // ui/views/mus requires a WindowManager running, so launch test_wm.
     shell::Connector* connector = shell_connection_->connector();
@@ -166,7 +166,7 @@ void ViewsMusTestSuite::Initialize() {
   EnsureCommandLineSwitch(ui::switches::kUseTestConfig);
 
   ViewsTestSuite::Initialize();
-  shell_connections_.reset(new ShellConnection);
+  shell_connections_ = base::MakeUnique<ShellConnection>();
 }
 
 void ViewsMusTestSuite::Shutdown() {

@@ -4,6 +4,10 @@
 
 #include "ui/views/mus/clipboard_mus.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -256,7 +260,8 @@ void ClipboardMus::ReadData(const FormatType& format,
 
 void ClipboardMus::WriteObjects(ui::ClipboardType type,
                                 const ObjectMap& objects) {
-  current_clipboard_.reset(new mojo::Map<mojo::String, mojo::Array<uint8_t>>);
+  current_clipboard_ =
+      base::MakeUnique<mojo::Map<mojo::String, mojo::Array<uint8_t>>>();
   for (const auto& p : objects)
     DispatchObject(static_cast<ObjectType>(p.first), p.second);
 

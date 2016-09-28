@@ -4,6 +4,8 @@
 
 #include "ui/views/mus/input_method_mus.h"
 
+#include <memory>
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +39,7 @@ class TestTextInputClient : public ui::DummyTextInputClient {
   ~TestTextInputClient() override {}
 
   ui::KeyEvent* WaitUntilInputReceieved() {
-    run_loop_.reset(new base::RunLoop);
+    run_loop_ = base::MakeUnique<base::RunLoop>();
     run_loop_->Run();
     run_loop_.reset();
 

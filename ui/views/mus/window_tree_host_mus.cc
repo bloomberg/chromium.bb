@@ -54,7 +54,7 @@ WindowTreeHostMus::WindowTreeHostMus(NativeWidgetMus* native_widget,
   dispatcher()->set_transform_events(false);
   compositor()->SetHostHasTransparentBackground(true);
 
-  input_method_.reset(new InputMethodMus(this, window));
+  input_method_ = base::MakeUnique<InputMethodMus>(this, window);
   SetSharedInputMethod(input_method_.get());
 }
 
