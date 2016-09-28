@@ -9,7 +9,7 @@
 #include "device/bluetooth/bluetooth_uuid.h"
 
 int main(int argc, char** argv) {
-  if (argc <= 1) {
+  if (argc <= 2) {
     std::cout << "Generates hash values given UUIDs using the same method\n"
               << "as in bluetooth_metrics.cc.\n"
               << "\n"
@@ -17,21 +17,22 @@ int main(int argc, char** argv) {
               << "Note that tools/metrics/histograms/pretty_print.py will\n"
               << "sort enum entries for you.\n"
               << "\n"
-              << "Usage: " << argv[0] << " <uuid> [uuid2 ...]\n"
+              << "Usage: " << argv[0] << " <uuid> <label> [uuid2 label2...]\n"
               << "       The UUIDs may be short UUIDs, and will be made\n"
               << "       canonical before being hashed.\n"
               << "\n"
-              << "Example: " << argv[0] << " FEFF FEFE\n"
+              << "Example: " << argv[0] << " FEFF foo FEFE bar\n"
               << "  <int value=\"62669585\" "
-                 "label=\"0000feff-0000-1000-8000-00805f9b34fb\"/>\n"
+                 "label=\"foo; 0000feff-0000-1000-8000-00805f9b34fb\"/>\n"
               << "  <int value=\"643543662\" "
-                 "label=\"0000fefe-0000-1000-8000-00805f9b34fb\"/>\n";
+                 "label=\"bar; 0000fefe-0000-1000-8000-00805f9b34fb\"/>\n";
     return 1;
   }
 
-  for (int i = 1; i < argc; i++) {
-    std::string input_string(argv[i]);
-    device::BluetoothUUID uuid(input_string);
+  for (int i = 1; i < argc; i = i + 2) {
+    std::string uuid_string(argv[i]);
+    std::string label_string((i + 1 < argc) ? argv[i + 1] : "");
+    device::BluetoothUUID uuid(uuid_string);
     std::string uuid_canonical_string = uuid.canonical_value();
     uint32_t hash = base::SuperFastHash(uuid_canonical_string.data(),
                                         uuid_canonical_string.size());
@@ -40,8 +41,8 @@ int main(int argc, char** argv) {
     // but takes a signed int as input.
     hash &= 0x7fffffff;
 
-    std::cout << "  <int value=\"" << hash << "\" label=\""
-              << uuid_canonical_string << "\"/>\n";
+    std::cout << "  <int value=\"" << hash << "\" label=\"" << label_string
+              << "; " << uuid_canonical_string << "\"/>\n";
   }
   return 0;
 }
