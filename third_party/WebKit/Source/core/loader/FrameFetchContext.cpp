@@ -346,6 +346,8 @@ void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, Resour
     // That call doesn't exist for redirects, so call preareRequest() here.
     if (!redirectResponse.isNull())
         prepareRequest(request);
+    else
+        frame()->loader().progress().willStartLoading(identifier, request.priority());
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSendRequestEvent::data(identifier, frame(), request));
     InspectorInstrumentation::willSendRequest(frame(), identifier, masterDocumentLoader(), request, redirectResponse, initiatorInfo);
     if (frame()->frameScheduler())
@@ -431,7 +433,6 @@ static std::unique_ptr<TracedValue> loadResourceTraceData(unsigned long identifi
 void FrameFetchContext::willStartLoadingResource(unsigned long identifier, ResourceRequest& request, Resource::Type type)
 {
     TRACE_EVENT_ASYNC_BEGIN1("blink.net", "Resource", identifier, "data", loadResourceTraceData(identifier, request.url(), request.priority()));
-    frame()->loader().progress().willStartLoading(identifier, request.priority());
     prepareRequest(request);
 
     if (!m_documentLoader || m_documentLoader->fetcher()->archive() || !request.url().isValid())

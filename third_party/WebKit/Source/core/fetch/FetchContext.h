@@ -79,6 +79,7 @@ public:
     virtual WebCachePolicy resourceRequestCachePolicy(const ResourceRequest&, Resource::Type, FetchRequest::DeferOption) const;
 
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, ResourceLoadPriority, int intraPriorityValue);
+    // The last callback before a request is actually sent to the browser process.
     virtual void dispatchWillSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& = FetchInitiatorInfo());
     virtual void dispatchDidLoadResourceFromMemoryCache(unsigned long identifier, Resource*, WebURLRequest::FrameType, WebURLRequest::RequestContext);
     virtual void dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse&, WebURLRequest::FrameType, WebURLRequest::RequestContext, Resource*);
@@ -88,6 +89,7 @@ public:
     virtual void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest);
 
     virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
+    // Called when a resource load is first requested, which may not be when the load actually begins.
     virtual void willStartLoadingResource(unsigned long identifier, ResourceRequest&, Resource::Type);
     virtual void didLoadResource(Resource*);
 
