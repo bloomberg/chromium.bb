@@ -1585,6 +1585,11 @@ void RenderFrameHostImpl::OnRunJavaScriptMessage(
     const GURL& frame_url,
     JavaScriptMessageType type,
     IPC::Message* reply_msg) {
+  if (!is_active()) {
+    JavaScriptDialogClosed(reply_msg, true, base::string16(), true);
+    return;
+  }
+
   int32_t message_length = static_cast<int32_t>(message.length());
   if (GetParent()) {
     UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.Subframe", message_length);

@@ -27,6 +27,7 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -5968,7 +5969,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(start_url.GetOrigin().spec(), origin + "/");
 }
 
-// A BrowserMessageFilter that delays FrameHostMsg_DidCommitProvisionaLoad IPC
+// A BrowserMessageFilter that delays FrameHostMsg_DidCommitProvisionalLoad IPC
 // message for a specified URL, navigates the WebContents back and then
 // processes the commit message.
 class GoBackAndCommitFilter : public BrowserMessageFilter {
@@ -5996,7 +5997,7 @@ class GoBackAndCommitFilter : public BrowserMessageFilter {
     if (message.type() != FrameHostMsg_DidCommitProvisionalLoad::ID)
       return false;
 
-    // Parse the IPC message so the URL can be checked agains the expected one.
+    // Parse the IPC message so the URL can be checked against the expected one.
     base::PickleIterator iter(message);
     FrameHostMsg_DidCommitProvisionalLoad_Params validated_params;
     if (!IPC::ParamTraits<FrameHostMsg_DidCommitProvisionalLoad_Params>::Read(
@@ -6135,6 +6136,102 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   entry = controller.GetLastCommittedEntry();
   content::FaviconStatus& favicon_status3 = entry->GetFavicon();
   EXPECT_FALSE(favicon_status3.valid);
+}
+
+namespace {
+
+// A BrowserMessageFilter that delays the FrameHostMsg_RunJavaScriptMessage IPC
+// message until a commit happens on a given WebContents. This allows testing a
+// race condition.
+class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
+                                     public WebContentsDelegate {
+ public:
+  AllowDialogIPCOnCommitFilter(WebContents* web_contents)
+      : BrowserMessageFilter(FrameMsgStart),
+        render_frame_host_(web_contents->GetMainFrame()) {
+    web_contents_observer_.Observe(web_contents);
+  }
+
+ protected:
+  ~AllowDialogIPCOnCommitFilter() override {}
+
+ private:
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    if (message.type() != FrameHostMsg_RunJavaScriptMessage::ID)
+      return false;
+
+    // Suspend the message.
+    web_contents_observer_.SetCallback(
+        base::Bind(&RenderFrameHost::OnMessageReceived,
+                   base::Unretained(render_frame_host_), message));
+    return true;
+  }
+
+  // WebContentsDelegate:
+  JavaScriptDialogManager* GetJavaScriptDialogManager(
+      WebContents* source) override {
+    CHECK(false);
+    return nullptr;  // agh compiler
+  }
+
+  // Separate because WebContentsObserver and BrowserMessageFilter each have an
+  // OnMessageReceived function; this is the simplest way to disambiguate.
+  class : public WebContentsObserver {
+   public:
+    using Callback = base::Callback<bool()>;
+
+    using WebContentsObserver::Observe;
+
+    void SetCallback(Callback callback) { callback_ = callback; }
+
+   private:
+    void DidNavigateAnyFrame(RenderFrameHost* render_frame_host,
+                             const LoadCommittedDetails& details,
+                             const FrameNavigateParams& params) override {
+      DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+      // Resume the message.
+      callback_.Run();
+    }
+
+    Callback callback_;
+  } web_contents_observer_;
+
+  RenderFrameHost* render_frame_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(AllowDialogIPCOnCommitFilter);
+};
+
+}  // namespace
+
+// Check that swapped out frames cannot spawn JavaScript dialogs.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       NoDialogsFromSwappedOutFrames) {
+  // Start on a normal page.
+  GURL url1 = embedded_test_server()->GetURL(
+      "/navigation_controller/beforeunload_dialog.html");
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+
+  // Add a filter to allow us to force an IPC race.
+  WebContents* web_contents = shell()->web_contents();
+  scoped_refptr<AllowDialogIPCOnCommitFilter> filter =
+      new AllowDialogIPCOnCommitFilter(web_contents);
+  web_contents->SetDelegate(filter.get());
+  web_contents->GetMainFrame()->GetProcess()->AddFilter(filter.get());
+
+  // Use a chrome:// url to force the second page to be in a different process.
+  GURL url2(std::string(kChromeUIScheme) + url::kStandardSchemeSeparator +
+            kChromeUIGpuHost);
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+
+  // What happens now is that attempting to unload the first page will trigger a
+  // JavaScript alert but allow navigation. The alert IPC will be suspended by
+  // the message filter. The commit of the second page will unblock the IPC. If
+  // the dialog IPC is allowed to spawn a dialog, the call by the WebContents to
+  // its delegate to get the JavaScriptDialogManager will cause a CHECK and the
+  // test will fail.
 }
 
 }  // namespace content
