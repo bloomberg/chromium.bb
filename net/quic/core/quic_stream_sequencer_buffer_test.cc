@@ -66,7 +66,11 @@ class QuicStreamSequencerBufferPeer {
   size_t Read(char* dest_buffer, size_t size) {
     iovec dest;
     dest.iov_base = dest_buffer, dest.iov_len = size;
-    return buffer_->Readv(&dest, 1);
+    size_t bytes_read;
+    string error_details;
+    EXPECT_EQ(QUIC_NO_ERROR,
+              buffer_->Readv(&dest, 1, &bytes_read, &error_details));
+    return bytes_read;
   }
 
   // If buffer is empty, the blocks_ array must be empty, which means all
@@ -186,6 +190,7 @@ class QuicStreamSequencerBufferTest : public testing::Test {
   MockClock clock_;
   std::unique_ptr<QuicStreamSequencerBuffer> buffer_;
   std::unique_ptr<QuicStreamSequencerBufferPeer> helper_;
+  QuicFlagSaver flag_saver_;
   string error_details_;
 };
 
@@ -238,6 +243,22 @@ TEST_F(QuicStreamSequencerBufferTest, OnStreamDataWithinBlock) {
   EXPECT_EQ(t, (*frame_map)[800].timestamp);
   EXPECT_TRUE(helper_->CheckBufferInvariants());
   EXPECT_TRUE(helper_->IsBufferAllocated());
+}
+
+TEST_F(QuicStreamSequencerBufferTest, OnStreamDataInvalidSource) {
+  FLAGS_quic_stream_sequencer_buffer_debug = true;
+  // Pass in an invalid source, expects to return error.
+  StringPiece source;
+  source.set(nullptr, 1024);
+  size_t written;
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
+  QuicTime t = clock_.ApproximateNow();
+  EXPECT_EQ(QUIC_STREAM_SEQUENCER_INVALID_STATE,
+            buffer_->OnStreamData(800, source, t, &written, &error_details_));
+  EXPECT_EQ(
+      0u, error_details_.find("QuicStreamSequencerBuffer error: OnStreamData()"
+                              " dest == nullptr: false"
+                              " source == nullptr: true"));
 }
 
 TEST_F(QuicStreamSequencerBufferTest, OnStreamDataWithOverlap) {
@@ -411,7 +432,9 @@ TEST_F(QuicStreamSequencerBufferTest, Readv100Bytes) {
   // Read into a iovec array with total capacity of 120 bytes.
   char dest[120];
   iovec iovecs[3]{iovec{dest, 40}, iovec{dest + 40, 40}, iovec{dest + 80, 40}};
-  size_t read = buffer_->Readv(iovecs, 3);
+  size_t read;
+  EXPECT_EQ(QUIC_NO_ERROR, buffer_->Readv(iovecs, 3, &read, &error_details_));
+  LOG(ERROR) << error_details_;
   EXPECT_EQ(100u, read);
   EXPECT_EQ(100u, buffer_->BytesConsumed());
   EXPECT_EQ(source, string(dest, read));
@@ -419,6 +442,27 @@ TEST_F(QuicStreamSequencerBufferTest, Readv100Bytes) {
   // The first block should be released as its data has been read out.
   EXPECT_EQ(nullptr, helper_->GetBlock(0));
   EXPECT_TRUE(helper_->CheckBufferInvariants());
+}
+
+TEST_F(QuicStreamSequencerBufferTest, ReadvError) {
+  FLAGS_quic_stream_sequencer_buffer_debug = true;
+  string source = string(100, 'b');
+  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
+  QuicTime t1 = clock_.ApproximateNow();
+  // Write something into [0, 100).
+  size_t written;
+  buffer_->OnStreamData(0, source, t1, &written, &error_details_);
+  EXPECT_TRUE(helper_->GetBlock(0) != nullptr);
+  EXPECT_TRUE(buffer_->HasBytesToRead());
+  // Read into a iovec array with total capacity of 120 bytes.
+  iovec iov{nullptr, 120};
+  size_t read;
+  EXPECT_EQ(QUIC_STREAM_SEQUENCER_INVALID_STATE,
+            buffer_->Readv(&iov, 1, &read, &error_details_));
+  EXPECT_EQ(0u,
+            error_details_.find(
+                "QuicStreamSequencerBuffer error: Readv() dest == nullptr: true"
+                " blocks_[0] == nullptr: false"));
 }
 
 TEST_F(QuicStreamSequencerBufferTest, ReadvAcrossBlocks) {
@@ -433,7 +477,8 @@ TEST_F(QuicStreamSequencerBufferTest, ReadvAcrossBlocks) {
   while (helper_->ReadableBytes()) {
     std::fill(dest, dest + 512, 0);
     iovec iovecs[2]{iovec{dest, 256}, iovec{dest + 256, 256}};
-    buffer_->Readv(iovecs, 2);
+    size_t read;
+    EXPECT_EQ(QUIC_NO_ERROR, buffer_->Readv(iovecs, 2, &read, &error_details_));
   }
   // The last read only reads the rest 50 bytes in 2nd block.
   EXPECT_EQ(string(50, 'a'), string(dest, 50));
@@ -452,7 +497,8 @@ TEST_F(QuicStreamSequencerBufferTest, ClearAfterRead) {
   // Read first 512 bytes from buffer to make space at the beginning.
   char dest[512]{0};
   const iovec iov{dest, 512};
-  buffer_->Readv(&iov, 1);
+  size_t read;
+  EXPECT_EQ(QUIC_NO_ERROR, buffer_->Readv(&iov, 1, &read, &error_details_));
   // Clear() should make buffer empty while preserving BytesConsumed()
   buffer_->Clear();
   EXPECT_TRUE(buffer_->Empty());
@@ -469,7 +515,8 @@ TEST_F(QuicStreamSequencerBufferTest,
   // Read first 512 bytes from buffer to make space at the beginning.
   char dest[512]{0};
   const iovec iov{dest, 512};
-  buffer_->Readv(&iov, 1);
+  size_t read;
+  EXPECT_EQ(QUIC_NO_ERROR, buffer_->Readv(&iov, 1, &read, &error_details_));
   EXPECT_EQ(source.size(), written);
 
   // Write more than half block size of bytes in the last block with 'b', which
@@ -492,7 +539,8 @@ TEST_F(QuicStreamSequencerBufferTest,
   // Read first 512 bytes from buffer to make space at the beginning.
   char dest[512]{0};
   const iovec iov{dest, 512};
-  buffer_->Readv(&iov, 1);
+  size_t read;
+  EXPECT_EQ(QUIC_NO_ERROR, buffer_->Readv(&iov, 1, &read, &error_details_));
 
   // Try to write from [max_capacity_bytes_ - 0.5 * kBlockSizeBytes,
   // max_capacity_bytes_ +  512 + 1). But last bytes exceeds current capacity.
@@ -514,7 +562,8 @@ TEST_F(QuicStreamSequencerBufferTest, ReadvAcrossLastBlock) {
   buffer_->OnStreamData(0, source, t, &written, &error_details_);
   char dest[512]{0};
   const iovec iov{dest, 512};
-  buffer_->Readv(&iov, 1);
+  size_t read;
+  EXPECT_EQ(QUIC_NO_ERROR, buffer_->Readv(&iov, 1, &read, &error_details_));
   source = string(256, 'b');
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
   QuicTime t2 = clock_.ApproximateNow();
@@ -527,7 +576,8 @@ TEST_F(QuicStreamSequencerBufferTest, ReadvAcrossLastBlock) {
   std::unique_ptr<char[]> dest1{new char[max_capacity_bytes_]};
   dest1[0] = 0;
   const iovec iov1{dest1.get(), max_capacity_bytes_};
-  EXPECT_EQ(max_capacity_bytes_ - 512 + 256, buffer_->Readv(&iov1, 1));
+  EXPECT_EQ(QUIC_NO_ERROR, buffer_->Readv(&iov1, 1, &read, &error_details_));
+  EXPECT_EQ(max_capacity_bytes_ - 512 + 256, read);
   EXPECT_EQ(max_capacity_bytes_ + 256, buffer_->BytesConsumed());
   EXPECT_TRUE(buffer_->Empty());
   EXPECT_TRUE(helper_->CheckBufferInvariants());
@@ -537,7 +587,8 @@ TEST_F(QuicStreamSequencerBufferTest, ReadvAcrossLastBlock) {
 TEST_F(QuicStreamSequencerBufferTest, ReadvEmpty) {
   char dest[512]{0};
   iovec iov{dest, 512};
-  size_t read = buffer_->Readv(&iov, 1);
+  size_t read;
+  EXPECT_EQ(QUIC_NO_ERROR, buffer_->Readv(&iov, 1, &read, &error_details_));
   EXPECT_EQ(0u, read);
   EXPECT_TRUE(helper_->CheckBufferInvariants());
 }
@@ -566,7 +617,8 @@ TEST_F(QuicStreamSequencerBufferTest, ReleaseWholeBuffer) {
   EXPECT_TRUE(buffer_->HasBytesToRead());
   char dest[120];
   iovec iovecs[3]{iovec{dest, 40}, iovec{dest + 40, 40}, iovec{dest + 80, 40}};
-  size_t read = buffer_->Readv(iovecs, 3);
+  size_t read;
+  EXPECT_EQ(QUIC_NO_ERROR, buffer_->Readv(iovecs, 3, &read, &error_details_));
   EXPECT_EQ(100u, read);
   EXPECT_EQ(100u, buffer_->BytesConsumed());
   EXPECT_TRUE(helper_->CheckBufferInvariants());
@@ -1013,7 +1065,10 @@ TEST_F(QuicStreamSequencerBufferRandomIOTest, RandomWriteAndReadv) {
           dest_iov[i].iov_len = rng_.RandUint64() % kMaxReadSize;
           num_to_read += dest_iov[i].iov_len;
         }
-        size_t actually_read = buffer_->Readv(dest_iov, kNumReads);
+        size_t actually_read;
+        EXPECT_EQ(QUIC_NO_ERROR,
+                  buffer_->Readv(dest_iov, kNumReads, &actually_read,
+                                 &error_details_));
         ASSERT_LE(actually_read, num_to_read);
         DVLOG(1) << " read from offset: " << total_bytes_read_
                  << " size: " << num_to_read

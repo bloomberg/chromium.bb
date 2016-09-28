@@ -128,6 +128,20 @@ class BuildServerConfigUpdateMessageResultCallback {
   DISALLOW_COPY_AND_ASSIGN(BuildServerConfigUpdateMessageResultCallback);
 };
 
+// Object that is interested in built rejections (which include REJ, SREJ and
+// cheap SREJ).
+class RejectionObserver {
+ public:
+  RejectionObserver() = default;
+  virtual ~RejectionObserver() {}
+  // Called after a rejection is built.
+  virtual void OnRejectionBuilt(const std::vector<uint32_t>& reasons,
+                                CryptoHandshakeMessage* out) const = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RejectionObserver);
+};
+
 // QuicCryptoServerConfig contains the crypto configuration of a QUIC server.
 // Unlike a client, a QUIC server can have multiple configurations active in
 // order to support clients resuming with a previous configuration.
@@ -426,6 +440,12 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // Returns the number of configs this object owns.
   int NumberOfConfigs() const;
+
+  // Callers retain the ownership of |rejection_observer| which must outlive the
+  // config.
+  void set_rejection_observer(RejectionObserver* rejection_observer) {
+    rejection_observer_ = rejection_observer;
+  }
 
  private:
   friend class test::QuicCryptoServerConfigPeer;
@@ -783,6 +803,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // Enable serving SCT or not.
   bool enable_serving_sct_;
+
+  // Does not own this observer.
+  RejectionObserver* rejection_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerConfig);
 };

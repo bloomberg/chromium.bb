@@ -72,10 +72,6 @@ QUIC_FLAG(bool, FLAGS_enable_async_get_proof, false)
 // versions less than 33.
 QUIC_FLAG(bool, FLAGS_quic_require_handshake_confirmation_pre33, false)
 
-// If true, use the CHLO packet size, not message size when determining how
-// large a REJ can be.
-QUIC_FLAG(bool, FLAGS_quic_use_chlo_packet_size, true)
-
 // If true, defer creation of new connection till its CHLO arrives.
 QUIC_FLAG(bool, FLAGS_quic_buffer_packet_till_chlo, true)
 
@@ -102,7 +98,7 @@ QUIC_FLAG(bool, FLAGS_quic_send_scfg_ttl, true)
 // If true, only open limited number of quic sessions per epoll event. Leave the
 // rest to next event. This flag can be turned on only if
 // --quic_buffer_packet_till_chlo is true.
-QUIC_FLAG(bool, FLAGS_quic_limit_num_new_sessions_per_epoll_loop, false)
+QUIC_FLAG(bool, FLAGS_quic_limit_num_new_sessions_per_epoll_loop, true)
 
 // If true, lazy allocate and early release memeory used in
 // QuicStreamSequencerBuffer to buffer incoming data.
@@ -136,3 +132,17 @@ QUIC_FLAG(bool, FLAGS_quic_close_connection_on_huge_frames, true)
 // As the Linux kernel does, limit QUIC's Cubic congestion control to
 // only increase the CWND 1 packet for every two packets acked.
 QUIC_FLAG(bool, FLAGS_quic_limit_cubic_cwnd_increase, true)
+
+// If true, export reject reasons for all rejects, i.e., rejects,
+// stateless rejects and cheap stateless rejects.
+QUIC_FLAG(bool, FLAGS_quic_export_rej_for_all_rejects, true)
+
+// Allow large send deltas to be used as RTT samples.
+QUIC_FLAG(bool, FLAGS_quic_allow_large_send_deltas, true)
+
+// Engage early retransmit anytime the largest acked is greater than
+// or equal to the largest retransmittable packet.
+QUIC_FLAG(bool, FLAGS_quic_largest_sent_retransmittable, true)
+
+// If true, close connection when sequencer buffer enter into unexpected state.
+QUIC_FLAG(bool, FLAGS_quic_stream_sequencer_buffer_debug, true)

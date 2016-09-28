@@ -1298,6 +1298,15 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
   stats_.bytes_received += packet.length();
   ++stats_.packets_received;
 
+  // Ensure the time coming from the packet reader is within a minute of now.
+  if (FLAGS_quic_allow_large_send_deltas &&
+      std::abs((packet.receipt_time() - clock_->ApproximateNow()).ToSeconds()) >
+          60) {
+    QUIC_BUG << "Packet receipt time:"
+             << packet.receipt_time().ToDebuggingValue()
+             << " too far from current time:"
+             << clock_->ApproximateNow().ToDebuggingValue();
+  }
   time_of_last_received_packet_ = packet.receipt_time();
   DVLOG(1) << ENDPOINT << "time of last received packet: "
            << time_of_last_received_packet_.ToDebuggingValue();

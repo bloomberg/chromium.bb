@@ -231,7 +231,8 @@ QuicCryptoServerConfig::QuicCryptoServerConfig(
       source_address_token_lifetime_secs_(86400),
       server_nonce_strike_register_max_entries_(1 << 10),
       server_nonce_strike_register_window_secs_(120),
-      enable_serving_sct_(false) {
+      enable_serving_sct_(false),
+      rejection_observer_(nullptr) {
   DCHECK(proof_source_.get());
   source_address_token_boxer_.SetKeys(
       {DeriveSourceAddressTokenKey(source_address_token_secret)});
@@ -645,6 +646,10 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
                    use_stateless_rejects, server_designated_connection_id, rand,
                    compressed_certs_cache, params, *crypto_proof,
                    total_framing_overhead, chlo_packet_size, out);
+    if (FLAGS_quic_export_rej_for_all_rejects &&
+        rejection_observer_ != nullptr) {
+      rejection_observer_->OnRejectionBuilt(info.reject_reasons, out);
+    }
     return QUIC_NO_ERROR;
   }
 
@@ -1518,14 +1523,9 @@ void QuicCryptoServerConfig::BuildRejection(
   // max_unverified_size is the number of bytes that the certificate chain,
   // signature, and (optionally) signed certificate timestamp can consume before
   // we will demand a valid source-address token.
-  const size_t old_max_unverified_size =
-      client_hello.size() * chlo_multiplier_ - kREJOverheadBytes;
-  const size_t new_max_unverified_size =
+  const size_t max_unverified_size =
       chlo_multiplier_ * (chlo_packet_size - total_framing_overhead) -
       kREJOverheadBytes;
-  const size_t max_unverified_size = FLAGS_quic_use_chlo_packet_size
-                                         ? new_max_unverified_size
-                                         : old_max_unverified_size;
   static_assert(kClientHelloMinimumSize * kMultiplier >= kREJOverheadBytes,
                 "overhead calculation may underflow");
   bool should_return_sct =
@@ -1544,13 +1544,11 @@ void QuicCryptoServerConfig::BuildRejection(
       }
     }
   } else {
-    if (FLAGS_quic_use_chlo_packet_size) {
-      DLOG(WARNING) << "Sending inchoate REJ for hostname: " << info.sni
-                    << " signature: " << crypto_proof.signature.size()
-                    << " cert: " << compressed.size() << " sct:" << sct_size
-                    << " total: " << total_size
-                    << " max: " << max_unverified_size;
-    }
+    DLOG(WARNING) << "Sending inchoate REJ for hostname: " << info.sni
+                  << " signature: " << crypto_proof.signature.size()
+                  << " cert: " << compressed.size() << " sct:" << sct_size
+                  << " total: " << total_size
+                  << " max: " << max_unverified_size;
   }
 }
 

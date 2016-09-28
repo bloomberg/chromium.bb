@@ -242,6 +242,10 @@ const struct QuicErrorMapping {
   // has too many gaps.
   { net::QUIC_TOO_MANY_FRAME_GAPS,
     "quic.too_many_frame_gaps" },
+  // Sequencer buffer get into weird state where continuing read/write
+  // will lead to crash.
+  { net::QUIC_STREAM_SEQUENCER_INVALID_STATE,
+    "quic.stream_sequencer_invalid_state" },
 
   // No error. Used as bound while iterating.
   { net::QUIC_LAST_ERROR, "quic.last_error"}

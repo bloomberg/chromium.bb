@@ -480,7 +480,6 @@ TEST_P(CryptoServerTest, RejectTooLarge) {
 }
 
 TEST_P(CryptoServerTest, RejectNotTooLarge) {
-  FLAGS_quic_use_chlo_packet_size = true;
   // When the CHLO packet is large enough, ensure that a full REJ is sent.
   chlo_packet_size_ *= 2;
 

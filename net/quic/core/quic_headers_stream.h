@@ -167,9 +167,6 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   SpdyFramer spdy_framer_;
   std::unique_ptr<SpdyFramerVisitor> spdy_framer_visitor_;
 
-  // Either empty, or contains the complete list of headers.
-  QuicHeaderList header_list_;
-
   DISALLOW_COPY_AND_ASSIGN(QuicHeadersStream);
 };
 
