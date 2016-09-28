@@ -1817,12 +1817,12 @@ static void updateClipParentForGraphicsLayer(GraphicsLayer* layer, GraphicsLayer
 
 void CompositedLayerMapping::updateClipParent(const PaintLayer* scrollParent)
 {
-    if (owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent))
-        return;
-
-    const PaintLayer* clipParent = m_owningLayer.clipParent();
-    if (clipParent)
-        clipParent = clipParent->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
+    const PaintLayer* clipParent = nullptr;
+    if (!owningLayerClippedByLayerNotAboveCompositedAncestor(scrollParent)) {
+        clipParent = m_owningLayer.clipParent();
+        if (clipParent)
+            clipParent = clipParent->enclosingLayerWithCompositedLayerMapping(IncludeSelf);
+    }
 
     if (ScrollingCoordinator* scrollingCoordinator = scrollingCoordinatorFromLayer(m_owningLayer)) {
         GraphicsLayer* topmostLayer = childForSuperlayers();
