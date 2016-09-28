@@ -1,0 +1,51 @@
+CONSOLE MESSAGE: line 13: function simple() {}
+CONSOLE MESSAGE: line 14: function simple() {}
+CONSOLE MESSAGE: line 15: async function asyncSimple() {}
+CONSOLE MESSAGE: line 16: async function asyncSimple() {}
+CONSOLE MESSAGE: line 17: function* genSimple() {}
+CONSOLE MESSAGE: line 18: function* genSimple() {}
+CONSOLE MESSAGE: line 21: [object Object]
+CONSOLE MESSAGE: line 22: [object Object]
+Tests that console logging different types of functions correctly.
+
+console-functions.html:13 function simple() {}
+console-functions.html:14 function simple()
+    arguments: null
+    caller: null
+    length: 0
+    name: "simple"
+    prototype: Object
+    __proto__: ()
+    [[FunctionLocation]]: console-functions.html:9
+    [[Scopes]]: Scopes[1]
+console-functions.html:15 async function asyncSimple() {}
+console-functions.html:16 async function asyncSimple()
+    arguments: (...)
+    caller: (...)
+    length: 0
+    name: "asyncSimple"
+    __proto__: AsyncFunction
+    [[FunctionLocation]]: console-functions.html:10
+    [[Scopes]]: Scopes[1]
+console-functions.html:17 function* genSimple() {}
+console-functions.html:18 function* genSimple()
+    arguments: (...)
+    caller: (...)
+    length: 0
+    name: "genSimple"
+    prototype: Generator
+    __proto__: GeneratorFunction
+    [[FunctionLocation]]: console-functions.html:11
+    [[IsGenerator]]: true
+    [[Scopes]]: Scopes[1]
+console-functions.html:21 Object
+    func1: simple()
+    func2: asyncSimple()
+    func3: genSimple()
+    __proto__: Object
+console-functions.html:22 Object
+    func1: simple()
+    func2: asyncSimple()
+    func3: genSimple()
+    __proto__: Object
+

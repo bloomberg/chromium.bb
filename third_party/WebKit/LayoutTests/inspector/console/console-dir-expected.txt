@@ -33,7 +33,7 @@ console-dir.html:16 Object
     c d: "c d"
     negZero: -0
     __proto__: Object
-console-dir.html:19 anonymous()
+console-dir.html:19 function anonymous()
     arguments: null
     caller: null
     length: 0
@@ -50,7 +50,7 @@ console-dir.html:27 Object
     foo: Object
         No Properties
     __proto__: Object
-console-dir.html:29 get __proto__()
+console-dir.html:29 function get __proto__()
     arguments: null
     caller: null
     length: 0

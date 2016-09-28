@@ -1,0 +1,44 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/console-test.js"></script>
+<script>
+
+function onload()
+{
+    function simple() {}
+    async function asyncSimple() {}
+    function* genSimple() {}
+
+    console.log(simple);
+    console.dir(simple);
+    console.log(asyncSimple);
+    console.dir(asyncSimple);
+    console.log(genSimple);
+    console.dir(genSimple);
+
+    var obj = { func1: simple, func2: asyncSimple, func3: genSimple };
+    console.log(obj);
+    console.dir(obj);
+
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.expandConsoleMessages(dumpConsoleMessages);
+
+    function dumpConsoleMessages()
+    {
+        InspectorTest.dumpConsoleMessages(false, false, InspectorTest.textContentWithLineBreaks);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<p>Tests that console logging different types of functions correctly.</p>
+</body>
+</html>

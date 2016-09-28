@@ -145,16 +145,16 @@ console-format.html:7
 console-format.html:8 [p#p]
 globals[7]
     <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:7 () { return 1; }
+console-format.html:7 function () { return 1; }
 console-format.html:8 [function]
 globals[8]
-() { return 1; }
-console-format.html:7 () {
+function () { return 1; }
+console-format.html:7 function () {
         return 2;
     }
 console-format.html:8 [function]
 globals[9]
-() {
+function () {
         return 2;
     }
 console-format.html:7 0.12
@@ -237,19 +237,19 @@ console-format.html:7 Object {}
 console-format.html:8 [Object]
 globals[28]
 Object {}
-console-format.html:7 Object() { [native code] }
+console-format.html:7 function Object() { [native code] }
 console-format.html:8 [function]
 globals[29]
-Object() { [native code] }
+function Object() { [native code] }
 console-format.html:7 Object {}
 console-format.html:8 [Object]
 globals[30]
 Object {}
-console-format.html:7 ( /**/ foo/**/, /*/**/bar,
+console-format.html:7 function ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:8 [function]
 globals[31]
-( /**/ foo/**/, /*/**/bar,
+function ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:7 Number {[[PrimitiveValue]]: 42}
 console-format.html:8 [Number]
@@ -368,14 +368,14 @@ console-format.html:8 Array[1]
     __proto__: Array[0]
 globals[7]
     <p id="p">Tests that console logging dumps proper messages.</p>
-console-format.html:7 () { return 1; }
+console-format.html:7 function () { return 1; }
 console-format.html:8 Array[1]
     0: ()
     length: 1
     __proto__: Array[0]
 globals[8]
-() { return 1; }
-console-format.html:7 () {
+function () { return 1; }
+console-format.html:7 function () {
         return 2;
     }
 console-format.html:8 Array[1]
@@ -383,7 +383,7 @@ console-format.html:8 Array[1]
     length: 1
     __proto__: Array[0]
 globals[9]
-() {
+function () {
         return 2;
     }
 console-format.html:7 0.12
@@ -565,13 +565,13 @@ console-format.html:8 Array[1]
 globals[28]
 Object
     No Properties
-console-format.html:7 Object() { [native code] }
+console-format.html:7 function Object() { [native code] }
 console-format.html:8 Array[1]
     0: Object()
     length: 1
     __proto__: Array[0]
 globals[29]
-Object() { [native code] }
+function Object() { [native code] }
 console-format.html:7 Object
     __defineGetter__: __defineGetter__()
     __defineSetter__: __defineSetter__()
@@ -605,14 +605,14 @@ Object
     valueOf: valueOf()
     get __proto__: __proto__()
     set __proto__: __proto__()
-console-format.html:7 ( /**/ foo/**/, /*/**/bar,
+console-format.html:7 function ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:8 Array[1]
     0: ( /**/ foo/**/, /*/**/bar,     /**/baz)
     length: 1
     __proto__: Array[0]
 globals[31]
-( /**/ foo/**/, /*/**/bar,
+function ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:7 Number
     __proto__: Number

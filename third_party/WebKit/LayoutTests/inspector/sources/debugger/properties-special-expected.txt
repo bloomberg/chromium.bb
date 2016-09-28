@@ -7,7 +7,7 @@ Tests how debugger presents special properties of closures, bound functions and 
 properties-special.html:10 Boolean
     __proto__: Boolean
     [[PrimitiveValue]]: true
-properties-special.html:11 anonymous(a, b)
+properties-special.html:11 function anonymous(a, b)
     arguments: null
     caller: null
     length: 2
@@ -16,7 +16,7 @@ properties-special.html:11 anonymous(a, b)
     __proto__: ()
     [[FunctionLocation]]: properties-special.html:11
     [[Scopes]]: Scopes[1]
-properties-special.html:12 bound ()
+properties-special.html:12 function bound ()
     arguments: (...)
     caller: (...)
     length: 1
@@ -25,7 +25,7 @@ properties-special.html:12 bound ()
     [[TargetFunction]]: (a,b)
     [[BoundThis]]: Object
     [[BoundArgs]]: Array[1]
-properties-special.html:13 anonymous()
+properties-special.html:13 function* anonymous()
     arguments: (...)
     caller: (...)
     length: 0

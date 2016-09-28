@@ -6,7 +6,7 @@ Function location revealed: [7:18]
 
 Running: testDumpFunctionDefinition
 jumpToMe
-jumpToMe()
+function jumpToMe()
 {
     var result = 12345;
     return window.foo || result;
