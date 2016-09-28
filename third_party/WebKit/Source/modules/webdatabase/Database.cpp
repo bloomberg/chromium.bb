@@ -897,11 +897,13 @@ Vector<String> Database::tableNames()
 
 SecurityOrigin* Database::getSecurityOrigin() const
 {
+    if (!getExecutionContext())
+        return nullptr;
     if (getExecutionContext()->isContextThread())
         return m_contextThreadSecurityOrigin.get();
     if (getDatabaseContext()->databaseThread()->isDatabaseThread())
         return m_databaseThreadSecurityOrigin.get();
-    return 0;
+    return nullptr;
 }
 
 bool Database::opened()

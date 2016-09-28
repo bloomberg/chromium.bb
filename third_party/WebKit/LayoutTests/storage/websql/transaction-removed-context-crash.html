@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<title>Transaction from removed execution context</title>
+<script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+var script = `
+var db = openDatabase('db' + Math.random() + Date.now(), '1.0', 'test database', 2*1024);
+db.transaction(tx => {
+    tx.executeSql('DROP TABLE IF EXISTS TestTable');
+    tx.executeSql('CREATE TABLE IF NOT EXISTS TestTable (id unique,text)');
+    tx.executeSql('DELETE FROM TestTable WHERE id=?', [1]);
+    frameElement.parentNode.removeChild(frameElement);
+});
+`;
+
+window.addEventListener('DOMContentLoaded', e => {
+    var blob = new Blob(['<script>' + script +  '<\/script>'], {'type': 'text/html'});
+    var iframe = document.createElement('iframe');
+    document.body.appendChild(iframe);
+    iframe.src = URL.createObjectURL(blob);
+    if (window.testRunner)
+        window.setTimeout(() => { testRunner.notifyDone() }, 250);
+});
+</script>
+<body>
+If it doesn't crash, this test has passed.
+</body>
