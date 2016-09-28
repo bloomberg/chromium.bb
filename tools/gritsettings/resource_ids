@@ -286,6 +286,9 @@
   "headless/lib/resources/headless_lib_resources.grd": {
     "includes": [30670],
   },
+  "blimp/engine/app/blimp_browser_resources.grd": {
+    "includes": [30680],
+  },
 
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
 }

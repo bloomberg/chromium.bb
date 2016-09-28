@@ -1,0 +1,10 @@
+{
+  "name": "exe:content_browser",
+  "capabilities": {
+    "provided": {
+      "web": [
+        "blimp::engine::mojom::BlobChannel"
+      ]
+    }
+  }
+}

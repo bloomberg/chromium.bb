@@ -12,6 +12,7 @@ import("//tools/grit/grit_rule.gni")
 
 repack("pak") {
   sources = [
+    "$root_gen_dir/blimp/engine/blimp_browser_resources.pak",
     "$root_gen_dir/blink/public/resources/blink_image_resources_100_percent.pak",
     "$root_gen_dir/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
@@ -26,6 +27,7 @@ repack("pak") {
   ]
 
   deps = [
+    ":resources",
     "//content:resources",
     "//content/app/resources",
     "//content/app/strings",
@@ -44,6 +46,17 @@ repack("pak") {
   }
 
   output = "$root_out_dir/blimp_engine.pak"
+}
+
+grit("resources") {
+  visibility = [ ":*" ]
+  source = "app/blimp_browser_resources.grd"
+  use_qualified_include = true
+  output_dir = "$root_gen_dir/blimp/engine"
+  outputs = [
+    "grit/blimp_browser_resources.h",
+    "blimp_browser_resources.pak",
+  ]
 }
 
 source_set("app") {
@@ -73,6 +86,7 @@ source_set("app") {
     ":crash",
     ":feature",
     ":renderer",
+    ":resources",
     ":session",
     "//base",
     "//blimp/common",
@@ -88,6 +102,7 @@ source_set("app") {
     "//content/public/utility",
     "//device/geolocation",
     "//net",
+    "//ui/base:base",
   ]
 }
 

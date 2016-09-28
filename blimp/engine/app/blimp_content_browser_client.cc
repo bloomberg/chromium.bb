@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/json/json_reader.h"
 #include "blimp/engine/app/blimp_browser_main_parts.h"
 #include "blimp/engine/app/blimp_content_browser_client.h"
 #include "blimp/engine/app/settings_manager.h"
+#include "blimp/engine/grit/blimp_browser_resources.h"
 #include "blimp/engine/mojo/blob_channel_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_names.h"
 #include "services/shell/public/cpp/interface_registry.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace blimp {
 namespace engine {
@@ -46,6 +50,23 @@ void BlimpContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface<mojom::BlobChannel>(base::Bind(
       &BlobChannelService::BindRequest,
       base::Unretained(blimp_browser_main_parts_->GetBlobChannelService())));
+}
+
+std::unique_ptr<base::Value>
+BlimpContentBrowserClient::GetServiceManifestOverlay(
+    const std::string& name) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  int id = -1;
+  if (name == content::kBrowserMojoApplicationName) {
+    id = IDR_BLIMP_CONTENT_BROWSER_MANIFEST_OVERLAY;
+  }
+  if (id == -1) {
+    return nullptr;
+  }
+
+  base::StringPiece manifest_contents =
+      rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
+  return base::JSONReader::Read(manifest_contents);
 }
 
 }  // namespace engine

@@ -35,6 +35,8 @@ class BlimpContentBrowserClient : public content::ContentBrowserClient {
   void ExposeInterfacesToRenderer(
       shell::InterfaceRegistry* registry,
       content::RenderProcessHost* render_process_host) override;
+  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+      const std::string& name) override;
 
   BlimpBrowserContext* GetBrowserContext();
 
