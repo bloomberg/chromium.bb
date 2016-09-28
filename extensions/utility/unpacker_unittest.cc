@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
@@ -196,38 +197,67 @@ TEST_F(UnpackerTest, ImageDecodingError) {
       << unpacker_->error_message() << "\"";
 }
 
-base::FilePath CreateEmptyTestFile(const base::FilePath& test_dir,
-                                   const base::FilePath& file_path) {
-  base::FilePath test_file(test_dir.Append(file_path));
-  base::FilePath temp_file;
-  EXPECT_TRUE(base::CreateTemporaryFileInDir(test_dir, &temp_file));
-  EXPECT_TRUE(base::Move(temp_file, test_file));
-  return test_file;
+struct UnzipFileFilterTestCase {
+  const base::FilePath::CharType* input;
+  const bool should_unzip;
+};
+
+void RunZipFileFilterTest(const std::vector<UnzipFileFilterTestCase>& cases,
+                          base::Callback<bool(const base::FilePath&)>& filter) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  for (size_t i = 0; i < cases.size(); ++i) {
+    base::FilePath input(cases[i].input);
+    bool observed = filter.Run(input);
+    EXPECT_EQ(cases[i].should_unzip, observed) << "i: " << i
+                                               << ", input: " << input.value();
+  }
 }
 
-TEST_F(UnpackerTest, BlockedFileTypes) {
-  const struct {
-    const base::FilePath::CharType* input;
-    bool expected;
-  } cases[] = {
+TEST_F(UnpackerTest, NonTheme_FileExtractionFilter) {
+  const std::vector<UnzipFileFilterTestCase> cases = {
       {FILE_PATH_LITERAL("foo"), true},
       {FILE_PATH_LITERAL("foo.nexe"), true},
       {FILE_PATH_LITERAL("foo.dll"), true},
       {FILE_PATH_LITERAL("foo.jpg.exe"), false},
       {FILE_PATH_LITERAL("foo.exe"), false},
       {FILE_PATH_LITERAL("foo.EXE"), false},
+      {FILE_PATH_LITERAL("file_without_extension"), true},
   };
+  base::Callback<bool(const base::FilePath&)> filter =
+      base::Bind(&Unpacker::ShouldExtractFile, false);
+  RunZipFileFilterTest(cases, filter);
+}
 
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+TEST_F(UnpackerTest, Theme_FileExtractionFilter) {
+  const std::vector<UnzipFileFilterTestCase> cases = {
+      {FILE_PATH_LITERAL("image.jpg"), true},
+      {FILE_PATH_LITERAL("IMAGE.JPEG"), true},
+      {FILE_PATH_LITERAL("test/image.bmp"), true},
+      {FILE_PATH_LITERAL("test/IMAGE.gif"), true},
+      {FILE_PATH_LITERAL("test/image.WEBP"), true},
+      {FILE_PATH_LITERAL("test/dir/file.image.png"), true},
+      {FILE_PATH_LITERAL("manifest.json"), true},
+      {FILE_PATH_LITERAL("other.html"), false},
+      {FILE_PATH_LITERAL("file_without_extension"), true},
+  };
+  base::Callback<bool(const base::FilePath&)> filter =
+      base::Bind(&Unpacker::ShouldExtractFile, true);
+  RunZipFileFilterTest(cases, filter);
+}
 
-  for (size_t i = 0; i < arraysize(cases); ++i) {
-    base::FilePath input(cases[i].input);
-    base::FilePath test_file(CreateEmptyTestFile(temp_dir.path(), input));
-    bool observed = Unpacker::ShouldExtractFile(test_file);
-    EXPECT_EQ(cases[i].expected, observed) << "i: " << i
-                                           << ", input: " << test_file.value();
-  }
+TEST_F(UnpackerTest, ManifestExtractionFilter) {
+  const std::vector<UnzipFileFilterTestCase> cases = {
+      {FILE_PATH_LITERAL("manifest.json"), true},
+      {FILE_PATH_LITERAL("MANIFEST.JSON"), true},
+      {FILE_PATH_LITERAL("test/manifest.json"), false},
+      {FILE_PATH_LITERAL("manifest.json/test"), false},
+      {FILE_PATH_LITERAL("other.file"), false},
+  };
+  base::Callback<bool(const base::FilePath&)> filter =
+      base::Bind(&Unpacker::IsManifestFile);
+  RunZipFileFilterTest(cases, filter);
 }
 
 }  // namespace extensions
