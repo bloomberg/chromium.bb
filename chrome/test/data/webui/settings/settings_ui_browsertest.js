@@ -31,8 +31,7 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
     var ui;
 
     suiteSetup(function() {
-      var settings = assert(document.querySelector('cr-settings'));
-      ui = assert(settings.$$('settings-ui'));
+      ui = assert(document.querySelector('settings-ui'));
     });
 
     test('basic', function() {

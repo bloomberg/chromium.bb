@@ -62,7 +62,7 @@ TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {
       self.getPage('basic').set('pageVisibility.onStartup', true);
       Polymer.dom.flush();
 
-      settingsPrefs = document.querySelector('cr-settings').$$(
+      settingsPrefs = document.querySelector('settings-ui').$$(
           'settings-prefs');
       assertTrue(!!settingsPrefs);
       return CrSettingsPrefs.initialized;

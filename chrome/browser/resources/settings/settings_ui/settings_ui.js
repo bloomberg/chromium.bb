@@ -10,6 +10,12 @@
  *
  *    <settings-ui prefs="{{prefs}}"></settings-ui>
  */
+cr.exportPath('settings');
+assert(!settings.defaultResourceLoaded,
+       'settings_ui.js run twice. You probably have an invalid import.');
+/** Global defined when the main Settings script runs. */
+settings.defaultResourceLoaded = true;
+
 Polymer({
   is: 'settings-ui',
 
@@ -23,6 +29,7 @@ Polymer({
     directionDelegate: {
       observer: 'directionDelegateChanged_',
       type: Object,
+      value: new settings.DirectionDelegateImpl(),
     },
 
     /** @private {boolean} */
@@ -36,6 +43,11 @@ Polymer({
      * @private {!GuestModePageVisibility}
      */
     pageVisibility_: Object,
+  },
+
+  /** @override */
+  created: function() {
+    settings.initializeRouteFromUrl();
   },
 
   /**

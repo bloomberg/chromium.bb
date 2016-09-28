@@ -10,6 +10,9 @@
 <link rel="import" href="/settings_main/settings_main.html">
 <link rel="import" href="/settings_menu/settings_menu.html">
 <link rel="import" href="/settings_shared_css.html">
+<link rel="import" href="/prefs/prefs.html">
+<link rel="import" href="/route.html">
+<link rel="import" href="/settings_vars_css.html">
 
 <dom-module id="settings-ui">
   <template>
@@ -21,6 +24,7 @@
         };
         -webkit-user-select: none;
         background-color: var(--settings-background-color);
+        color: var(--paper-grey-800);
         display: flex;
         flex-direction: column;
         overflow: hidden;  /* Prevent double scroll bar bugs. */
@@ -78,6 +82,7 @@
         overflow: auto;
       }
     </style>
+    <settings-prefs id="prefs" prefs="{{prefs}}"></settings-prefs>
     <cr-toolbar page-name="$i18n{settings}" clear-label="$i18n{clearSearch}"
         search-prompt="$i18n{searchPrompt}" on-cr-menu-tap="onMenuButtonTap_"
         spinner-active="[[toolbarSpinnerActive_]]" show-menu

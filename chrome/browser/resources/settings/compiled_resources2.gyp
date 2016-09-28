@@ -72,15 +72,5 @@
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
-    {
-      'target_name': 'settings',
-      'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        'direction_delegate',
-        'route',
-      ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
   ],
 }

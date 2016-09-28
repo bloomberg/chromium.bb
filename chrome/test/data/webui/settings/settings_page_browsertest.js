@@ -55,9 +55,7 @@ SettingsPageBrowserTest.prototype = {
    * @return {!PolymerElement} The PolymerElement for the page.
    */
   getPage: function(type) {
-    var settings = document.querySelector('cr-settings');
-    assertTrue(!!settings);
-    var settingsUi = settings.$$('settings-ui');
+    var settingsUi = document.querySelector('settings-ui');
     assertTrue(!!settingsUi);
     var settingsMain = settingsUi.$$('settings-main');
     assertTrue(!!settingsMain);

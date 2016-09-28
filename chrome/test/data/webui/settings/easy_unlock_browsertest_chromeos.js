@@ -134,7 +134,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
 
       // Before clearing the body, save a copy of the real prefs so we can
       // cleanly re-create the People page element.
-      prefs = document.querySelector('cr-settings').$$('settings-prefs').prefs;
+      prefs = document.querySelector('settings-ui').$$('settings-prefs').prefs;
     });
 
     setup(function() {
