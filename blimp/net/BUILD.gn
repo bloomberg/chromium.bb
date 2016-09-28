@@ -77,12 +77,28 @@ component("net") {
   defines = [ "BLIMP_NET_IMPLEMENTATION=1" ]
 
   deps = [
+    ":helium",
     "//base",
     "//blimp/common",
     "//net",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/zlib",
     "//ui/base/ime:text_input_types",
+  ]
+
+  public_deps = [
+    "//blimp/common/proto",
+  ]
+}
+
+source_set("helium") {
+  sources = [
+    "helium/vector_clock.cc",
+    "helium/vector_clock.h",
+  ]
+  deps = [
+    "//base",
+    "//blimp/common",
   ]
 
   public_deps = [
@@ -134,6 +150,7 @@ source_set("unit_tests") {
     "compressed_packet_unittest.cc",
     "engine_authentication_handler_unittest.cc",
     "engine_connection_manager_unittest.cc",
+    "helium/vector_clock_unittest.cc",
     "input_message_unittest.cc",
     "ssl_client_transport_unittest.cc",
     "stream_packet_reader_unittest.cc",
@@ -143,6 +160,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":helium",
     ":net",
     ":test_support",
     "//base",
