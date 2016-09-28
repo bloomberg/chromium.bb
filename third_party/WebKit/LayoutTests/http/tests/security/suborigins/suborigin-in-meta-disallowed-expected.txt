@@ -1,0 +1,5 @@
+CONSOLE ERROR: line 5: Error with Suborigin header: Suborigin header with value 'foobar' was delivered via a <meta> element and not an HTTP header, which is disallowed. The Suborigin has been ignored.
+This is a testharness.js-based test.
+PASS The <meta> tag does not allow a page to enter a suborigin. 
+Harness: the test ran to completion.
+

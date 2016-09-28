@@ -5,29 +5,24 @@ header("Suborigin: foobar");
 <html>
 <head>
 <meta charset="utf-8">
+<title>Crossorigin access to window.event should throw a SecurityError</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 </head>
 <body>
-<iframe src="http://127.0.0.1:8000/"></iframe>
-<script src="/js-test-resources/js-test.js"></script>
 <script>
-window.jsTestIsAsync = true;
-description(
-  'Cross-origin access to \'window.event\' should throw a SecurityError.');
-
-var frame = document.querySelector('iframe');
-window.onload = function () {
-  shouldThrow(
-    'frame.contentWindow.event',
-    '"SecurityError: Blocked a frame with origin ' +
-    '\\"http-so://foobar.127.0.0.1:8000\\" from accessing a ' +
-    'cross-origin frame."');
-  shouldThrow(
-    'frame.contentWindow.event = 1;',
-    '"SecurityError: Blocked a frame with origin ' +
-    '\\"http-so://foobar.127.0.0.1:8000\\" from accessing a ' +
-    'cross-origin frame."');
-  finishJSTest();
+var iframe = document.createElement('iframe');
+iframe.src = 'http://127.0.0.1:8000/';
+iframe.onload = function() {
+  assert_throws('SecurityError', function() {
+      var e = iframe.contentWindow.event;
+    });
+  assert_throws('SecurityError', function() {
+      iframe.contentWindow.event = 1;
+    });
+  done();
 };
+document.body.appendChild(iframe);
 </script>
 </body>
 </html>

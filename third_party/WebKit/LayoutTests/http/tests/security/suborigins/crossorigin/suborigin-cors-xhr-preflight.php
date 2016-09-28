@@ -19,28 +19,28 @@ var SuboriginXHRTest = function(pass, name, src, crossorigin_value) {
 }
 
 SuboriginXHRTest.prototype.execute = function() {
-    var settings = this;
-    async_test(test => {
-        var xhr = new XMLHttpRequest();
+  var settings = this;
+  async_test(test => {
+      var xhr = new XMLHttpRequest();
 
-        if (settings.crossorigin_value === 'use-credentials') {
-          xhr.withCredentials = true;
-        }
+      if (settings.crossorigin_value === 'use-credentials') {
+        xhr.withCredentials = true;
+      }
 
-        if (settings.pass) {
-          xhr.onload = test.step_func_done();
-          xhr.onerror = test.unreached_func('Good XHR fired error handler.');
-        } else {
-          xhr.onload = test.unreached_func('Bad XHR successful.');
-          xhr.onerror = test.step_func_done();
-        }
+      if (settings.pass) {
+        xhr.onload = test.step_func_done();
+        xhr.onerror = test.unreached_func('Good XHR fired error handler.');
+      } else {
+        xhr.onload = test.unreached_func('Bad XHR successful.');
+        xhr.onerror = test.step_func_done();
+      }
 
-        xhr.open('GET', settings.src);
-        // Set a custom header to force a preflight. Even though the
-        // scheme/host/port of the source and destination origins are the same, the
-        // Suborigin should cause the request to be treated as cross-origin.
-        xhr.setRequestHeader('x-custom-header', 'foobar');
-        xhr.send();
+      xhr.open('GET', settings.src);
+      // Set a custom header to force a preflight. Even though the
+      // scheme/host/port of the source and destination origins are the same, the
+      // Suborigin should cause the request to be treated as cross-origin.
+      xhr.setRequestHeader('x-custom-header', 'foobar');
+      xhr.send();
     }, settings.name);
 };
 

@@ -5,32 +5,13 @@ header("Suborigin: foobar");
 <html>
 <head>
 <meta charset="utf-8">
+<title>Fetches from suborigins require responses with valid Access-Control-Allow-Suborigin header</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
 </head>
 <body>
 <script>
-if (window.testRunner) {
-  testRunner.waitUntilDone();
-  testRunner.dumpAsText();
-}
-console.log(
-  'If a Suborigin makes a request, a response without an ' +
-  'Access-Control-Allow-Suborigin header should fail and should output a ' +
-  'reasonable error message.');
-
-function success() {
-  console.log("PASS: Fetch correctly failed");
-  next();
-}
-
-function failure() {
-  console.log("FAIL: Fetch incorrectly succeeded");
-  next();
-}
-
-// First one should fail with preflight failure. Second one should
-// fail with access control header failure.
-var tests = [
-  function() {
+async_test(t => {
     var headers = new Headers();
     headers.append("x-custom-header", "foobar");
     var options = {
@@ -39,26 +20,16 @@ var tests = [
     fetch(
         "http://127.0.0.1:8000/security/resources/cors-script.php?cors=false",
         options)
-      .then(failure)
-      .catch(success);
-  },
-  function() {
+      .then(t.unreached_func('Fetch succeeded'))
+      .catch(t.step_func_done());
+  }, 'Custom headers causes preflight failure');
+
+async_test(t => {
       fetch(
         "http://127.0.0.1:8000/security/resources/cors-script.php?cors=false")
-      .then(failure)
-      .catch(success);
-  }
-];
-
-function next() {
-  if (tests.length !== 0) {
-    tests.shift()();
-  } else if (window.testRunner) {
-    testRunner.notifyDone();
-  }
-}
-
-next();
+      .then(t.unreached_func('Fetch succeeded'))
+      .catch(t.step_func_done());
+  }, 'Lack of Access-Control-Allow-Suborigin on response causes failure');
 </script>
 </body>
 </html>
