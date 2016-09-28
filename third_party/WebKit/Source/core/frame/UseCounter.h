@@ -1323,6 +1323,8 @@ public:
         XSSAuditorEnabledFilter = 1584,
         XSSAuditorEnabledBlock = 1585,
         XSSAuditorInvalid = 1586,
+        SVGCursorElement = 1587,
+        SVGCursorElementHasClient = 1588,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

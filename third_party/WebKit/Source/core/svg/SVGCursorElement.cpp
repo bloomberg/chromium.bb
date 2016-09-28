@@ -22,6 +22,7 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -34,6 +35,8 @@ inline SVGCursorElement::SVGCursorElement(Document& document)
 {
     addToPropertyMap(m_x);
     addToPropertyMap(m_y);
+
+    UseCounter::count(document, UseCounter::SVGCursorElement);
 }
 
 DEFINE_NODE_FACTORY(SVGCursorElement)
@@ -44,6 +47,8 @@ SVGCursorElement::~SVGCursorElement()
 
 void SVGCursorElement::addClient(SVGElement* element)
 {
+    UseCounter::count(document(), UseCounter::SVGCursorElementHasClient);
+
     m_clients.add(element);
     element->setCursorElement(this);
 }
