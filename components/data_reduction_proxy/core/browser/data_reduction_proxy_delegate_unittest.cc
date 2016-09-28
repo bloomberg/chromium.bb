@@ -726,6 +726,7 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
           "http=" + data_reduction_proxy + ",direct://;");
       data_reduction_proxy_config.set_id(1);
     }
+    EXPECT_NE(test.use_direct_proxy, data_reduction_proxy_config.is_valid());
     config()->SetStateForTest(test.enabled_by_user /* enabled */,
                               false /* at_startup */);
 
@@ -752,6 +753,7 @@ TEST_F(DataReductionProxyDelegateTest, HTTPRequests) {
 }
 
 TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
+  base::HistogramTester histogram_tester;
   int64_t baseline_received_bytes = total_received_bytes();
   int64_t baseline_original_received_bytes = total_original_received_bytes();
 
@@ -778,6 +780,9 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
   EXPECT_EQ(static_cast<int64_t>(raw_headers.size() +
                                  10000 /* original_response_body */),
             total_original_received_bytes() - baseline_original_received_bytes);
+
+  histogram_tester.ExpectUniqueSample(
+      "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
 }
 
 TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
@@ -912,6 +917,7 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
   };
 
   for (const auto& test : test_cases) {
+    base::HistogramTester histogram_tester;
     int64_t baseline_received_bytes = total_received_bytes();
     int64_t baseline_original_received_bytes = total_original_received_bytes();
 
@@ -944,6 +950,8 @@ TEST_F(DataReductionProxyDelegateTest, PartialRangeSavings) {
     EXPECT_EQ(expected_original_size, total_original_received_bytes() -
                                           baseline_original_received_bytes)
         << (&test - test_cases);
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
   }
 }
 

@@ -114,7 +114,7 @@ void RecordAuthExpiredSessionKey(bool matches) {
                                         : AUTH_EXPIRED_SESSION_KEY_MISMATCH;
 
   UMA_HISTOGRAM_ENUMERATION(
-      "DataReductionProxy.ClientConfig.AuthExpiredSessionKey", state,
+      "DataReductionProxy.ConfigService.AuthExpiredSessionKey", state,
       AUTH_EXPIRED_SESSION_KEY_BOUNDARY);
 }
 

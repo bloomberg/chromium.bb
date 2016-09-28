@@ -448,10 +448,12 @@ TEST_F(DataReductionProxyConfigServiceClientTest, RemoteConfigSuccess) {
   Init(true);
   AddMockSuccess();
   SetDataReductionProxyEnabled(true, true);
+  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
   EXPECT_EQ(std::vector<net::ProxyServer>(), GetConfiguredProxiesForHttp());
   config_client()->RetrieveConfig();
   RunUntilIdle();
   VerifyRemoteSuccess(true);
+  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
 #if defined(OS_ANDROID)
   EXPECT_FALSE(config_client()->foreground_fetch_pending());
 #endif
@@ -672,12 +674,14 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   AddMockPreviousSuccess();
 
   SetDataReductionProxyEnabled(true, true);
+  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
   histogram_tester.ExpectTotalCount(
       "DataReductionProxy.ConfigService.AuthExpired", 0);
   config_client()->RetrieveConfig();
   RunUntilIdle();
   // First remote config should be fetched.
   VerifyRemoteSuccessWithOldConfig();
+  EXPECT_TRUE(configurator()->GetProxyConfig().is_valid());
   EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
   EXPECT_EQ(0, config_client()->GetBackoffErrorCount());
   histogram_tester.ExpectUniqueSample(
@@ -698,6 +702,8 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
       request_headers, parsed.get(), origin.host_port_pair(),
       load_timing_info));
   EXPECT_EQ(1, config_client()->GetBackoffErrorCount());
+  EXPECT_FALSE(configurator()->GetProxyConfig().is_valid());
+
   // Persisted config on pref should be cleared.
   EXPECT_TRUE(persisted_config().empty());
   histogram_tester.ExpectBucketCount(
@@ -736,7 +742,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest, AuthFailure) {
   VerifyRemoteSuccessWithOldConfig();
 
   histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.ClientConfig.AuthExpiredSessionKey",
+      "DataReductionProxy.ConfigService.AuthExpiredSessionKey",
       1 /* AUTH_EXPIRED_SESSION_KEY_MATCH */, 2);
 }
 
@@ -793,7 +799,7 @@ TEST_F(DataReductionProxyConfigServiceClientTest,
   EXPECT_EQ(kOldSuccessSessionKey, request_options()->GetSecureSession());
 
   histogram_tester.ExpectUniqueSample(
-      "DataReductionProxy.ClientConfig.AuthExpiredSessionKey",
+      "DataReductionProxy.ConfigService.AuthExpiredSessionKey",
       0 /* AUTH_EXPIRED_SESSION_KEY_MISMATCH */, 1);
 }
 

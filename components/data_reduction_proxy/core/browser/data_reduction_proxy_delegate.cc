@@ -180,8 +180,14 @@ void OnResolveProxyHandler(const GURL& url,
       &data_reduction_proxy_info);
   if (data_saver_proxy_used)
     result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
+
+  // The |data_reduction_proxy_config| must be valid otherwise the proxy
+  // cannot be used.
+  DCHECK(data_reduction_proxy_config.is_valid() || !data_saver_proxy_used);
+
   if (config->enabled_by_user_and_reachable() && url.SchemeIsHTTPOrHTTPS() &&
-      !url.SchemeIsCryptographic() && !net::IsLocalhost(url.host())) {
+      !url.SchemeIsCryptographic() && !net::IsLocalhost(url.host()) &&
+      (!data_reduction_proxy_config.is_valid() || data_saver_proxy_used)) {
     UMA_HISTOGRAM_BOOLEAN("DataReductionProxy.ConfigService.HTTPRequests",
                           data_saver_proxy_used);
   }

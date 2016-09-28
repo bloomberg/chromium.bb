@@ -895,6 +895,10 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
     CreateAndExecuteRequest(
         GURL("http://foo.com"), test_case.initial_response_headers,
         kErrorBody.c_str(), "HTTP/1.1 200 OK\r\n\r\n", kBody.c_str());
+
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
+
     // The first request caused the proxy to be marked as bad, so this second
     // request should not come through the proxy.
     CreateAndExecuteRequest(GURL("http://bar.com"), "HTTP/1.1 200 OK\r\n\r\n",
@@ -907,6 +911,11 @@ TEST_F(DataReductionProxyBypassStatsEndToEndTest,
                                        kNextBody.size(), 1);
     ExpectOtherBypassedBytesHistogramsEmpty(histogram_tester,
                                             test_case.histogram_name);
+
+    // "DataReductionProxy.ConfigService.HTTPRequests" should not be recorded
+    // for bypassed requests.
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
   }
 }
 
