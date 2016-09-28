@@ -54,4 +54,9 @@ public class NotificationConstants {
      * developer specified tag.
      */
     public static final String NOTIFICATION_TAG_SEPARATOR = ";";
+
+    /**
+     * Key for retrieving the results of user input from notification text action intents.
+     */
+    static final String KEY_TEXT_REPLY = "key_text_reply";
 }

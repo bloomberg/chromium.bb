@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -16,6 +17,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.text.SpannableStringBuilder;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -76,8 +78,8 @@ public class StandardNotificationBuilderTest extends NativeLibraryTestBase {
                 .setVibrate(new long[] {100L})
                 .setContentIntent(outContentAndDeleteIntents[0])
                 .setDeleteIntent(outContentAndDeleteIntents[1])
-                .addAction(actionIcon, "button 1", null /* intent */)
-                .addAction(actionIcon, "button 2", null /* intent */)
+                .addButtonAction(actionIcon, "button 1", null /* intent */)
+                .addButtonAction(actionIcon, "button 2", null /* intent */)
                 .addSettingsAction(0 /* iconId */, "settings", null /* intent */);
     }
 
@@ -183,5 +185,23 @@ public class StandardNotificationBuilderTest extends NativeLibraryTestBase {
                     BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_chrome);
             assertTrue(expected.sameAs(result));
         }
+    }
+
+    @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testAddTextActionSetsRemoteInput() {
+        Context context = getInstrumentation().getTargetContext();
+        NotificationBuilderBase notificationBuilder = new StandardNotificationBuilder(
+                context).addTextAction(null, "Action Title", null, "Placeholder");
+
+        Notification notification = notificationBuilder.build();
+
+        assertEquals(1, notification.actions.length);
+        assertEquals("Action Title", notification.actions[0].title);
+        assertNotNull(notification.actions[0].getRemoteInputs());
+        assertEquals(1, notification.actions[0].getRemoteInputs().length);
+        assertEquals("Placeholder", notification.actions[0].getRemoteInputs()[0].getLabel());
     }
 }

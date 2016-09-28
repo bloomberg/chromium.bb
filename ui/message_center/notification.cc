@@ -26,6 +26,12 @@ ButtonInfo::ButtonInfo(const base::string16& title)
     : title(title) {
 }
 
+ButtonInfo::ButtonInfo(const ButtonInfo& other) = default;
+
+ButtonInfo::~ButtonInfo() = default;
+
+ButtonInfo& ButtonInfo::operator=(const ButtonInfo& other) = default;
+
 RichNotificationData::RichNotificationData()
     : priority(DEFAULT_PRIORITY),
       never_timeout(false),

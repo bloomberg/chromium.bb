@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -23,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 
@@ -59,23 +61,24 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
                 new int[] {Color.WHITE}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
         actionIcon = actionIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
 
-        Notification notification =
-                new CustomNotificationBuilder(context)
-                        .setSmallIcon(R.drawable.ic_chrome)
-                        .setLargeIcon(largeIcon)
-                        .setTitle("title")
-                        .setBody("body")
-                        .setOrigin("origin")
-                        .setTicker("ticker")
-                        .setDefaults(Notification.DEFAULT_ALL)
-                        .setVibrate(new long[] {100L})
-                        .setContentIntent(contentIntent)
-                        .setDeleteIntent(deleteIntent)
-                        .addAction(actionIcon, "button", createIntent(context, "ActionButtonOne"))
-                        .addAction(actionIcon, "button", createIntent(context, "ActionButtonTwo"))
-                        .addSettingsAction(
-                                0 /* iconId */, "settings", createIntent(context, "SettingsButton"))
-                        .build();
+        Notification notification = new CustomNotificationBuilder(context)
+                                            .setSmallIcon(R.drawable.ic_chrome)
+                                            .setLargeIcon(largeIcon)
+                                            .setTitle("title")
+                                            .setBody("body")
+                                            .setOrigin("origin")
+                                            .setTicker("ticker")
+                                            .setDefaults(Notification.DEFAULT_ALL)
+                                            .setVibrate(new long[] {100L})
+                                            .setContentIntent(contentIntent)
+                                            .setDeleteIntent(deleteIntent)
+                                            .addButtonAction(actionIcon, "button",
+                                                    createIntent(context, "ActionButtonOne"))
+                                            .addButtonAction(actionIcon, "button",
+                                                    createIntent(context, "ActionButtonTwo"))
+                                            .addSettingsAction(0 /* iconId */, "settings",
+                                                    createIntent(context, "SettingsButton"))
+                                            .build();
 
         assertSmallNotificationIconAsExpected(context, notification, smallIcon);
         assertLargeNotificationIconAsExpected(context, notification, largeIcon);
@@ -137,12 +140,12 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
     public void testMaxActionButtons() {
         Context context = getInstrumentation().getTargetContext();
         NotificationBuilderBase builder = new CustomNotificationBuilder(context)
-                                                  .addAction(null /* iconBitmap */, "button",
+                                                  .addButtonAction(null /* iconBitmap */, "button",
                                                           createIntent(context, "ActionButtonOne"))
-                                                  .addAction(null /* iconBitmap */, "button",
+                                                  .addButtonAction(null /* iconBitmap */, "button",
                                                           createIntent(context, "ActionButtonTwo"));
         try {
-            builder.addAction(
+            builder.addButtonAction(
                     null /* iconBitmap */, "button", createIntent(context, "ActionButtonThree"));
             fail("This statement should not be reached as the previous statement should throw.");
         } catch (IllegalStateException e) {
@@ -173,12 +176,12 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
         actionIcon = actionIcon.copy(Bitmap.Config.ARGB_8888, true /* isMutable */);
 
-        Notification notification =
-                new CustomNotificationBuilder(context)
-                        .setLargeIcon(largeIcon)
-                        .setSmallIcon(smallIcon)
-                        .addAction(actionIcon, "button", createIntent(context, "ActionButton"))
-                        .build();
+        Notification notification = new CustomNotificationBuilder(context)
+                                            .setLargeIcon(largeIcon)
+                                            .setSmallIcon(smallIcon)
+                                            .addButtonAction(actionIcon, "button",
+                                                    createIntent(context, "ActionButton"))
+                                            .build();
 
         // The large icon should be unchanged.
         assertLargeNotificationIconAsExpected(context, notification, largeIcon);
@@ -207,7 +210,7 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
                         .setBody(createString('b', maxLength + 1))
                         .setOrigin(createString('c', maxLength + 1))
                         .setTicker(createString('d', maxLength + 1))
-                        .addAction(null /* iconBitmap */, createString('e', maxLength + 1),
+                        .addButtonAction(null /* iconBitmap */, createString('e', maxLength + 1),
                                 createIntent(context, "ActionButtonOne"))
                         .build();
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
@@ -277,6 +280,30 @@ public class CustomNotificationBuilderTest extends NativeLibraryTestBase {
                                       .generateIconForUrl("https://www.chromium.org");
 
         assertLargeNotificationIconAsExpected(context, notification, expectedIcon);
+    }
+
+    /**
+     * Tests that adding a text action results in a notification action with a RemoteInput attached.
+     *
+     * Note that the action buttons in custom layouts will not trigger an inline reply, but we can
+     * still check the notification's action properties since these are used on Android Wear.
+     */
+    @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
+    @SmallTest
+    @Feature({"Browser", "Notifications"})
+    public void testAddTextActionSetsRemoteInput() {
+        Context context = getInstrumentation().getTargetContext();
+        NotificationBuilderBase notificationBuilder = new CustomNotificationBuilder(
+                context).addTextAction(null, "Action Title", null, "Placeholder");
+
+        Notification notification = notificationBuilder.build();
+
+        assertEquals(1, notification.actions.length);
+        assertEquals("Action Title", notification.actions[0].title);
+        assertNotNull(notification.actions[0].getRemoteInputs());
+        assertEquals(1, notification.actions[0].getRemoteInputs().length);
+        assertEquals("Placeholder", notification.actions[0].getRemoteInputs()[0].getLabel());
     }
 
     private static void assertLargeNotificationIconAsExpected(

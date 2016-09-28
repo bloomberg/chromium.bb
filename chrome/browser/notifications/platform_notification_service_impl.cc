@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -38,7 +39,9 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
 #include "url/url_constants.h"
@@ -443,11 +446,25 @@ Notification PlatformNotificationServiceImpl::CreateNotificationFromData(
   // Developer supplied action buttons.
   std::vector<message_center::ButtonInfo> buttons;
   for (size_t i = 0; i < notification_data.actions.size(); i++) {
-    message_center::ButtonInfo button(notification_data.actions[i].title);
+    content::PlatformNotificationAction const& action =
+        notification_data.actions[i];
+    message_center::ButtonInfo button(action.title);
     // TODO(peter): Handle different screen densities instead of always using
     // the 1x bitmap - crbug.com/585815.
     button.icon =
         gfx::Image::CreateFrom1xBitmap(notification_resources.action_icons[i]);
+    button.placeholder =
+        action.placeholder.is_null()
+            ? l10n_util::GetStringUTF16(IDS_NOTIFICATION_REPLY_PLACEHOLDER)
+            : action.placeholder.string();
+    switch (action.type) {
+      case content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON:
+        button.type = message_center::ButtonType::BUTTON;
+        break;
+      case content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT:
+        button.type = message_center::ButtonType::TEXT;
+        break;
+    }
     buttons.push_back(button);
   }
   notification.set_buttons(buttons);

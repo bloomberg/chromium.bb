@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.notifications;
 import android.annotation.TargetApi;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.app.RemoteInput;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -32,21 +33,46 @@ import javax.annotation.Nullable;
  */
 public abstract class NotificationBuilderBase {
     protected static class Action {
+        enum Type {
+            /**
+             * Regular action that triggers the provided intent when tapped.
+             */
+            BUTTON,
+
+            /**
+             * Action that triggers a remote input when tapped, for Android Wear input and inline
+             * replies from Android N.
+             */
+            TEXT
+        }
+
         public int iconId;
         public Bitmap iconBitmap;
         public CharSequence title;
         public PendingIntent intent;
+        public Type type;
 
-        Action(int iconId, CharSequence title, PendingIntent intent) {
+        /**
+         * If the action.type is TEXT, this corresponds to the placeholder text for the input.
+         */
+        public String placeholder;
+
+        Action(int iconId, CharSequence title, PendingIntent intent, Type type,
+                String placeholder) {
             this.iconId = iconId;
             this.title = title;
             this.intent = intent;
+            this.type = type;
+            this.placeholder = placeholder;
         }
 
-        Action(Bitmap iconBitmap, CharSequence title, PendingIntent intent) {
+        Action(Bitmap iconBitmap, CharSequence title, PendingIntent intent, Type type,
+                String placeholder) {
             this.iconBitmap = iconBitmap;
             this.title = title;
             this.intent = intent;
+            this.type = type;
+            this.placeholder = placeholder;
         }
     }
 
@@ -202,11 +228,28 @@ public abstract class NotificationBuilderBase {
     }
 
     /**
-     * Adds an action to the notification. Actions are typically displayed as a button adjacent to
-     * the notification content.
+     * Adds an action to the notification, displayed as a button adjacent to the notification
+     * content.
      */
-    public NotificationBuilderBase addAction(@Nullable Bitmap iconBitmap,
+    public NotificationBuilderBase addButtonAction(@Nullable Bitmap iconBitmap,
             @Nullable CharSequence title, @Nullable PendingIntent intent) {
+        addAuthorProvidedAction(iconBitmap, title, intent, Action.Type.BUTTON, null);
+        return this;
+    }
+
+    /**
+     * Adds an action to the notification, displayed as a button adjacent to the notification
+     * content, which when tapped will trigger a remote input. This enables Android Wear input and,
+     * from Android N, displays a text box within the notification for inline replies.
+     */
+    public NotificationBuilderBase addTextAction(@Nullable Bitmap iconBitmap,
+            @Nullable CharSequence title, @Nullable PendingIntent intent, String placeholder) {
+        addAuthorProvidedAction(iconBitmap, title, intent, Action.Type.TEXT, placeholder);
+        return this;
+    }
+
+    private void addAuthorProvidedAction(@Nullable Bitmap iconBitmap, @Nullable CharSequence title,
+            @Nullable PendingIntent intent, Action.Type actionType, @Nullable String placeholder) {
         if (mActions.size() == MAX_AUTHOR_PROVIDED_ACTION_BUTTONS) {
             throw new IllegalStateException(
                     "Cannot add more than " + MAX_AUTHOR_PROVIDED_ACTION_BUTTONS + " actions.");
@@ -214,8 +257,7 @@ public abstract class NotificationBuilderBase {
         if (iconBitmap != null) {
             applyWhiteOverlayToBitmap(iconBitmap);
         }
-        mActions.add(new Action(iconBitmap, limitLength(title), intent));
-        return this;
+        mActions.add(new Action(iconBitmap, limitLength(title), intent, actionType, placeholder));
     }
 
     /**
@@ -223,7 +265,7 @@ public abstract class NotificationBuilderBase {
      */
     public NotificationBuilderBase addSettingsAction(
             int iconId, @Nullable CharSequence title, @Nullable PendingIntent intent) {
-        mSettingsAction = new Action(iconId, limitLength(title), intent);
+        mSettingsAction = new Action(iconId, limitLength(title), intent, Action.Type.BUTTON, null);
         return this;
     }
 
@@ -369,15 +411,36 @@ public abstract class NotificationBuilderBase {
      * level is high enough, otherwise a resource id is used.
      */
     @SuppressWarnings("deprecation") // For addAction(int, CharSequence, PendingIntent)
-    @TargetApi(Build.VERSION_CODES.M) // For the Icon class.
     protected static void addActionToBuilder(Notification.Builder builder, Action action) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && action.iconBitmap != null) {
-            Icon icon = Icon.createWithBitmap(action.iconBitmap);
-            builder.addAction(
-                    new Notification.Action.Builder(icon, action.title, action.intent).build());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+            // Notification.Action.Builder and RemoteInput were added in KITKAT_WATCH.
+            Notification.Action.Builder actionBuilder = getActionBuilder(action);
+            if (action.type == Action.Type.TEXT) {
+                assert action.placeholder != null;
+                actionBuilder.addRemoteInput(
+                        new RemoteInput.Builder(NotificationConstants.KEY_TEXT_REPLY)
+                                .setLabel(action.placeholder)
+                                .build());
+            }
+            builder.addAction(actionBuilder.build());
         } else {
             builder.addAction(action.iconId, action.title, action.intent);
         }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // For Notification.Action.Builder
+    @SuppressWarnings("deprecation") // For Builder(int, CharSequence, PendingIntent)
+    private static Notification.Action.Builder getActionBuilder(Action action) {
+        Notification.Action.Builder actionBuilder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && action.iconBitmap != null) {
+            // Icon was added in Android M.
+            Icon icon = Icon.createWithBitmap(action.iconBitmap);
+            actionBuilder = new Notification.Action.Builder(icon, action.title, action.intent);
+        } else {
+            actionBuilder =
+                    new Notification.Action.Builder(action.iconId, action.title, action.intent);
+        }
+        return actionBuilder;
     }
 
     /**

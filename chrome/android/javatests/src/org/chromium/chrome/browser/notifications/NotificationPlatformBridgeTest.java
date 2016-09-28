@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.notifications;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
+import android.annotation.TargetApi;
 import android.app.Notification;
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -17,7 +18,9 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -225,6 +228,32 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         // Validate the notification's behavior.
         assertEquals(Notification.DEFAULT_ALL, notification.defaults);
         assertEquals(Notification.PRIORITY_DEFAULT, notification.priority);
+    }
+
+    /**
+     * Verifies that specifying a notification action with type: 'text' results in a notification
+     * with a remote input on the action.
+     */
+    @CommandLineFlags.Add("enable-experimental-web-platform-features")
+    @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT_WATCH)
+    @TargetApi(Build.VERSION_CODES.KITKAT_WATCH) // RemoteInputs were only added in KITKAT_WATCH.
+    @MediumTest
+    @Feature({"Browser", "Notifications"})
+    public void testNotificationWithTextAction() throws Exception {
+        setNotificationContentSettingForCurrentOrigin(ContentSetting.ALLOW);
+
+        Notification notification = showAndGetNotification("MyNotification", "{ "
+                        + " actions: [{action: 'myAction', title: 'reply', type: 'text',"
+                        + " placeholder: 'hi' }]}");
+
+        // The specified action should be present, as well as a default settings action.
+        assertEquals(2, notification.actions.length);
+
+        Notification.Action action = notification.actions[0];
+        assertEquals("reply", action.title);
+        assertNotNull(notification.actions[0].getRemoteInputs());
+        assertEquals(1, action.getRemoteInputs().length);
+        assertEquals("hi", action.getRemoteInputs()[0].getLabel());
     }
 
     /**

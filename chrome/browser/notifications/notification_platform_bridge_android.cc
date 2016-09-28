@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/native_notification_display_service.h"
 #include "chrome/browser/notifications/notification.h"
@@ -218,11 +219,33 @@ void NotificationPlatformBridgeAndroid::Display(
   if (!badge_bitmap.drawsNothing())
     badge = gfx::ConvertToJavaBitmap(&badge_bitmap);
 
+  // TODO(crbug.com/650302): Combine these action_* vectors into a single vector
+  // of objects.
   std::vector<base::string16> action_titles_vector;
-  for (const message_center::ButtonInfo& button : notification.buttons())
+  std::vector<base::string16> action_types_vector;
+  std::vector<base::string16> action_placeholders_vector;
+  for (const message_center::ButtonInfo& button : notification.buttons()) {
     action_titles_vector.push_back(button.title);
+    action_placeholders_vector.push_back(button.placeholder);
+    base::string16 type;
+    switch (button.type) {
+      case message_center::ButtonType::BUTTON:
+        type = base::ASCIIToUTF16("button");
+        break;
+      case message_center::ButtonType::TEXT:
+        type = base::ASCIIToUTF16("text");
+        break;
+    }
+    action_types_vector.push_back(std::move(type));
+  }
   ScopedJavaLocalRef<jobjectArray> action_titles =
       base::android::ToJavaArrayOfStrings(env, action_titles_vector);
+
+  ScopedJavaLocalRef<jobjectArray> action_types =
+      base::android::ToJavaArrayOfStrings(env, action_types_vector);
+
+  ScopedJavaLocalRef<jobjectArray> action_placeholders =
+      base::android::ToJavaArrayOfStrings(env, action_placeholders_vector);
 
   ScopedJavaLocalRef<jobjectArray> action_icons =
       ConvertToJavaBitmaps(notification.buttons());
@@ -238,7 +261,7 @@ void NotificationPlatformBridgeAndroid::Display(
       tag, webapk_package, title, body, image, notification_icon, badge,
       vibration_pattern, notification.timestamp().ToJavaTime(),
       notification.renotify(), notification.silent(), action_titles,
-      action_icons);
+      action_icons, action_types, action_placeholders);
 
   regenerated_notification_infos_[notification_id] =
       RegeneratedNotificationInfo(origin_url.spec(), notification.tag(),

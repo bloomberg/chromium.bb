@@ -441,6 +441,7 @@ public class NotificationPlatformBridge {
     /**
      * Displays a notification with the given details.
      *
+     * TODO(crbug.com/650302): Combine the 'action*' parameters into a single array of objects.
      * @param notificationId The id of the notification.
      * @param origin Full text of the origin, including the protocol, owning this notification.
      * @param profileId Id of the profile that showed the notification.
@@ -466,13 +467,16 @@ public class NotificationPlatformBridge {
      * @param silent Whether the default sound, vibration and lights should be suppressed.
      * @param actionTitles Titles of actions to display alongside the notification.
      * @param actionIcons Icons of actions to display alongside the notification.
+     * @param actionTypes Types of actions to display alongside the notification.
+     * @param actionPlaceholders Placeholders of actions to display alongside the notification.
      * @see https://developer.android.com/reference/android/app/Notification.html
      */
     @CalledByNative
     private void displayNotification(String notificationId, String origin, String profileId,
             boolean incognito, String tag, String webApkPackage, String title, String body,
             Bitmap image, Bitmap icon, Bitmap badge, int[] vibrationPattern, long timestamp,
-            boolean renotify, boolean silent, String[] actionTitles, Bitmap[] actionIcons) {
+            boolean renotify, boolean silent, String[] actionTitles, Bitmap[] actionIcons,
+            String[] actionTypes, String[] actionPlaceholders) {
         if (actionTitles.length != actionIcons.length) {
             throw new IllegalArgumentException("The number of action titles and icons must match.");
         }
@@ -519,10 +523,17 @@ public class NotificationPlatformBridge {
                                 origin, false /* showScheme */));
 
         for (int actionIndex = 0; actionIndex < actionTitles.length; actionIndex++) {
-            notificationBuilder.addAction(actionIcons[actionIndex], actionTitles[actionIndex],
-                    makePendingIntent(NotificationConstants.ACTION_CLICK_NOTIFICATION,
-                                                  notificationId, origin, profileId, incognito, tag,
-                                                  webApkPackage, actionIndex));
+            PendingIntent intent = makePendingIntent(
+                    NotificationConstants.ACTION_CLICK_NOTIFICATION, notificationId, origin,
+                    profileId, incognito, tag, webApkPackage, actionIndex);
+            // TODO(crbug.com/650302): Encode actionTypes with an enum, not a magic string!
+            if (actionTypes[actionIndex].equals("text")) {
+                notificationBuilder.addTextAction(actionIcons[actionIndex],
+                        actionTitles[actionIndex], intent, actionPlaceholders[actionIndex]);
+            } else {
+                notificationBuilder.addButtonAction(
+                        actionIcons[actionIndex], actionTitles[actionIndex], intent);
+            }
         }
 
         // If action buttons are displayed, there isn't room for the full Site Settings button

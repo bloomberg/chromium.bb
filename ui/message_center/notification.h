@@ -29,11 +29,18 @@ struct MESSAGE_CENTER_EXPORT NotificationItem {
   NotificationItem(const base::string16& title, const base::string16& message);
 };
 
+enum class ButtonType { BUTTON, TEXT };
+
 struct MESSAGE_CENTER_EXPORT ButtonInfo {
   base::string16 title;
   gfx::Image icon;
+  ButtonType type = ButtonType::BUTTON;
+  base::string16 placeholder;
 
-  ButtonInfo(const base::string16& title);
+  explicit ButtonInfo(const base::string16& title);
+  ButtonInfo(const ButtonInfo& other);
+  ~ButtonInfo();
+  ButtonInfo& operator=(const ButtonInfo& other);
 };
 
 class MESSAGE_CENTER_EXPORT RichNotificationData {
