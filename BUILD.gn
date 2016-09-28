@@ -823,6 +823,12 @@ group("gn_only") {
       "//testing/libfuzzer/tests:libfuzzer_tests",
       "//third_party/icu/fuzzers",
     ]
+
+    # TODO(miu): Remove this dependency once the build configuration in
+    # chrome/browser/BUILD.gn is migrated to chrome/browser/media/BUILD.gn.
+    # This dependency here only exists to allow GN to discover the
+    # fuzzer_test target there.
+    deps += [ "//chrome/browser/media:cast_remoting_connector_fuzzer" ]
   }
 
   if (enable_nacl) {

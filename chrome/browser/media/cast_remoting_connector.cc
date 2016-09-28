@@ -4,16 +4,13 @@
 
 #include "chrome/browser/media/cast_remoting_connector.h"
 
-#include <stdio.h>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/media/cast_remoting_connector_messaging.h"
 #include "chrome/browser/media/cast_remoting_sender.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -28,79 +25,7 @@ using content::BrowserThread;
 using media::mojom::RemotingStartFailReason;
 using media::mojom::RemotingStopReason;
 
-namespace {
-
-// Simple command messages sent from/to the connector to/from the Media Router
-// Cast Provider to start/stop media remoting to a Cast device.
-//
-// Field separator (for tokenizing parts of messages).
-constexpr char kMessageFieldSeparator = ':';
-// Message sent by CastRemotingConnector to Cast provider to start remoting.
-// Example:
-//   "START_CAST_REMOTING:session=1f"
-constexpr char kStartRemotingMessageFormat[] =
-    "START_CAST_REMOTING:session=%x";
-// Message sent by CastRemotingConnector to Cast provider to start the remoting
-// RTP stream(s). Example:
-//   "START_CAST_REMOTING_STREAMS:session=1f:audio=N:video=Y"
-constexpr char kStartStreamsMessageFormat[] =
-    "START_CAST_REMOTING_STREAMS:session=%x:audio=%c:video=%c";
-// Start acknowledgement message sent by Cast provider to CastRemotingConnector
-// once remoting RTP streams have been set up. Examples:
-//   "STARTED_CAST_REMOTING_STREAMS:session=1f:audio_stream_id=2e:"
-//                                                         "video_stream_id=3d"
-//   "STARTED_CAST_REMOTING_STREAMS:session=1f:video_stream_id=b33f"
-constexpr char kStartedStreamsMessageFormatPartial[] =
-    "STARTED_CAST_REMOTING_STREAMS:session=%x";
-constexpr char kStartedStreamsMessageAudioIdSpecifier[] = ":audio_stream_id=";
-constexpr char kStartedStreamsMessageVideoIdSpecifier[] = ":video_stream_id=";
-// Stop message sent by CastRemotingConnector to Cast provider. Example:
-//   "STOP_CAST_REMOTING:session=1f"
-constexpr char kStopRemotingMessageFormat[] =
-    "STOP_CAST_REMOTING:session=%x";
-// Stop acknowledgement message sent by Cast provider to CastRemotingConnector
-// once remoting is available again after the last session ended. Example:
-//   "STOPPED_CAST_REMOTING:session=1f"
-constexpr char kStoppedMessageFormat[] =
-    "STOPPED_CAST_REMOTING:session=%x";
-// Failure message sent by Cast provider to CastRemotingConnector any time there
-// was a fatal error (e.g., the Cast provider failed to set up the RTP streams,
-// or there was some unexpected external event). Example:
-//   "FAILED_CAST_REMOTING:session=1f"
-constexpr char kFailedMessageFormat[] = "FAILED_CAST_REMOTING:session=%x";
-
-// Returns true if the given |message| matches the given |format| and the
-// session ID in the |message| is equal to the |expected_session_id|.
-bool IsMessageForSession(const std::string& message, const char* format,
-                         unsigned int expected_session_id) {
-  unsigned int session_id;
-  if (sscanf(message.c_str(), format, &session_id) == 1)
-    return session_id == expected_session_id;
-  return false;
-}
-
-// Scans |message| for |specifier| and extracts the remoting stream ID that
-// follows the specifier. Returns a negative value on error.
-int32_t GetStreamIdFromStartedMessage(base::StringPiece message,
-                                      base::StringPiece specifier) {
-  auto start = message.find(specifier);
-  if (start == std::string::npos)
-    return -1;
-  start += specifier.size();
-  if (start + 1 >= message.size())
-    return -1; // Must be at least one hex digit following the specifier.
-  int parsed_value;
-  if (!base::HexStringToInt(
-          message.substr(start, message.find(kMessageFieldSeparator, start)),
-          &parsed_value) ||
-      parsed_value < 0 ||
-      parsed_value > std::numeric_limits<int32_t>::max()) {
-    return -1; // Non-hex digits, or outside valid range.
-  }
-  return static_cast<int32_t>(parsed_value);
-}
-
-}  // namespace
+using Messaging = CastRemotingConnectorMessaging;
 
 class CastRemotingConnector::FrameRemoterFactory
     : public media::mojom::RemoterFactory {
@@ -323,8 +248,8 @@ void CastRemotingConnector::StartRemoting(RemotingBridge* bridge) {
 
   // Send a start message to the Cast Provider.
   ++session_counter_;  // New remoting session ID.
-  SendMessageToProvider(
-      base::StringPrintf(kStartRemotingMessageFormat, session_counter_));
+  SendMessageToProvider(base::StringPrintf(
+      Messaging::kStartRemotingMessageFormat, session_counter_));
 
   bridge->OnStarted();
 }
@@ -362,7 +287,7 @@ void CastRemotingConnector::StartRemotingDataStreams(
   // that will result in new CastRemotingSender instances being created here in
   // the browser process.
   SendMessageToProvider(base::StringPrintf(
-      kStartStreamsMessageFormat, session_counter_,
+      Messaging::kStartStreamsMessageFormat, session_counter_,
       pending_audio_sender_request_.is_pending() ? 'Y' : 'N',
       pending_video_sender_request_.is_pending() ? 'Y' : 'N'));
 }
@@ -391,8 +316,8 @@ void CastRemotingConnector::StopRemoting(RemotingBridge* bridge,
   bridge->OnSinkGone();
   // Note: At this point, all sources should think the sink is gone.
 
-  SendMessageToProvider(
-      base::StringPrintf(kStopRemotingMessageFormat, session_counter_));
+  SendMessageToProvider(base::StringPrintf(
+      Messaging::kStopRemotingMessageFormat, session_counter_));
   // Note: Once the Cast Provider sends back an acknowledgement message, all
   // sources will be notified that the remoting sink is available again.
 
@@ -439,6 +364,9 @@ void CastRemotingConnector::ProcessMessagesFromRoute(
     const std::vector<media_router::RouteMessage>& messages) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Note: If any calls to message parsing functions are added/changed here,
+  // please update cast_remoting_connector_fuzzertest.cc as well!
+
   for (const media_router::RouteMessage& message : messages) {
     switch (message.type) {
       case media_router::RouteMessage::TEXT:
@@ -451,13 +379,15 @@ void CastRemotingConnector::ProcessMessagesFromRoute(
         // CastRemotingSenders should now be available to begin consuming from
         // the data pipes.
         if (active_bridge_ &&
-            IsMessageForSession(*message.text,
-                                kStartedStreamsMessageFormatPartial,
-                                session_counter_)) {
+            Messaging::IsMessageForSession(
+                *message.text,
+                Messaging::kStartedStreamsMessageFormatPartial,
+                session_counter_)) {
           if (pending_audio_sender_request_.is_pending()) {
             cast::CastRemotingSender::FindAndBind(
-                GetStreamIdFromStartedMessage(
-                    *message.text, kStartedStreamsMessageAudioIdSpecifier),
+                Messaging::GetStreamIdFromStartedMessage(
+                    *message.text,
+                    Messaging::kStartedStreamsMessageAudioIdSpecifier),
                 std::move(pending_audio_pipe_),
                 std::move(pending_audio_sender_request_),
                 base::Bind(&CastRemotingConnector::OnDataSendFailed,
@@ -465,8 +395,9 @@ void CastRemotingConnector::ProcessMessagesFromRoute(
           }
           if (pending_video_sender_request_.is_pending()) {
             cast::CastRemotingSender::FindAndBind(
-                GetStreamIdFromStartedMessage(
-                    *message.text, kStartedStreamsMessageVideoIdSpecifier),
+                Messaging::GetStreamIdFromStartedMessage(
+                    *message.text,
+                    Messaging::kStartedStreamsMessageVideoIdSpecifier),
                 std::move(pending_video_pipe_),
                 std::move(pending_video_sender_request_),
                 base::Bind(&CastRemotingConnector::OnDataSendFailed,
@@ -477,8 +408,9 @@ void CastRemotingConnector::ProcessMessagesFromRoute(
 
         // If this is a failure message, call StopRemoting().
         if (active_bridge_ &&
-            IsMessageForSession(*message.text, kFailedMessageFormat,
-                                session_counter_)) {
+            Messaging::IsMessageForSession(*message.text,
+                                           Messaging::kFailedMessageFormat,
+                                           session_counter_)) {
           StopRemoting(active_bridge_, RemotingStopReason::UNEXPECTED_FAILURE);
           break;
         }
@@ -486,8 +418,9 @@ void CastRemotingConnector::ProcessMessagesFromRoute(
         // If this is a stop acknowledgement message, indicating that the last
         // session was stopped, notify all sources that the sink is once again
         // available.
-        if (IsMessageForSession(*message.text, kStoppedMessageFormat,
-                                session_counter_)) {
+        if (Messaging::IsMessageForSession(*message.text,
+                                           Messaging::kStoppedMessageFormat,
+                                           session_counter_)) {
           if (active_bridge_) {
             // Hmm...The Cast Provider was in a state that disagrees with this
             // connector. Attempt to resolve this by shutting everything down to
