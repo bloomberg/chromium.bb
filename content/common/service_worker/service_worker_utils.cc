@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/origin_util.h"
@@ -117,12 +116,6 @@ bool ServiceWorkerUtils::CanRegisterServiceWorker(const GURL& context_url,
          OriginCanAccessServiceWorkers(context_url) &&
          OriginCanAccessServiceWorkers(pattern) &&
          OriginCanAccessServiceWorkers(script_url);
-}
-
-// static
-bool ServiceWorkerUtils::IsMojoForServiceWorkerEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kMojoServiceWorker);
 }
 
 bool LongestScopeMatcher::MatchLongest(const GURL& scope) {

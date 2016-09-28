@@ -21,7 +21,6 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
-#include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -83,66 +82,13 @@ class EmbeddedWorkerTestHelper::MockEmbeddedWorkerSetup
   base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
 };
 
-EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
-    MockEmbeddedWorkerInstanceClient(
-        base::WeakPtr<EmbeddedWorkerTestHelper> helper)
-    : helper_(helper), binding_(this) {}
-
-EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::
-    ~MockEmbeddedWorkerInstanceClient() {}
-
-void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::StartWorker(
-    const EmbeddedWorkerStartParams& params) {
-  if (!helper_)
-    return;
-
-  embedded_worker_id_ = params.embedded_worker_id;
-
-  EmbeddedWorkerInstance* worker =
-      helper_->registry()->GetWorker(params.embedded_worker_id);
-  ASSERT_TRUE(worker != NULL);
-  EXPECT_EQ(EmbeddedWorkerStatus::STARTING, worker->status());
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnStartWorker,
-                 helper_->weak_factory_.GetWeakPtr(), params.embedded_worker_id,
-                 params.service_worker_version_id, params.scope,
-                 params.script_url, params.pause_after_download));
-}
-
-// static
-void EmbeddedWorkerTestHelper::MockEmbeddedWorkerInstanceClient::Bind(
-    const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-    mojom::EmbeddedWorkerInstanceClientRequest request) {
-  std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>* clients =
-      helper->mock_instance_clients();
-  size_t next_client_index = helper->mock_instance_clients_next_index_;
-
-  ASSERT_GE(clients->size(), next_client_index);
-  if (clients->size() == next_client_index) {
-    clients->push_back(
-        base::MakeUnique<MockEmbeddedWorkerInstanceClient>(helper));
-  }
-
-  std::unique_ptr<MockEmbeddedWorkerInstanceClient>& client =
-      clients->at(next_client_index);
-  helper->mock_instance_clients_next_index_ = next_client_index + 1;
-  if (client)
-    client->binding_.Bind(std::move(request));
-}
-
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
     const base::FilePath& user_data_directory)
     : browser_context_(new TestBrowserContext),
       render_process_host_(new MockRenderProcessHost(browser_context_.get())),
-      new_render_process_host_(
-          new MockRenderProcessHost(browser_context_.get())),
       wrapper_(new ServiceWorkerContextWrapper(browser_context_.get())),
-      mock_instance_clients_next_index_(0),
       next_thread_id_(0),
       mock_render_process_id_(render_process_host_->GetID()),
-      new_mock_render_process_id_(new_render_process_host_->GetID()),
       weak_factory_(this) {
   std::unique_ptr<MockServiceWorkerDatabaseTaskManager> database_task_manager(
       new MockServiceWorkerDatabaseTaskManager(
@@ -155,10 +101,16 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
                                     NewMessagePortMessageFilter());
 
   // Setup process level interface registry.
-  render_process_interface_registry_ =
-      CreateInterfaceRegistry(render_process_host_.get());
-  new_render_process_interface_registry_ =
-      CreateInterfaceRegistry(new_render_process_host_.get());
+  render_process_interface_registry_.reset(new shell::InterfaceRegistry);
+  render_process_interface_registry_->AddInterface(
+      base::Bind(&MockEmbeddedWorkerSetup::Create, weak_factory_.GetWeakPtr()));
+  shell::mojom::InterfaceProviderPtr interfaces;
+  render_process_interface_registry_->Bind(mojo::GetProxy(&interfaces));
+
+  std::unique_ptr<shell::InterfaceProvider> host_remote_interfaces(
+      new shell::InterfaceProvider);
+  host_remote_interfaces->Bind(std::move(interfaces));
+  render_process_host_->SetRemoteInterfaces(std::move(host_remote_interfaces));
 }
 
 EmbeddedWorkerTestHelper::~EmbeddedWorkerTestHelper() {
@@ -375,7 +327,7 @@ void EmbeddedWorkerTestHelper::SimulateSend(IPC::Message* message) {
 }
 
 void EmbeddedWorkerTestHelper::OnStartWorkerStub(
-    const EmbeddedWorkerStartParams& params) {
+    const EmbeddedWorkerMsg_StartWorker_Params& params) {
   EmbeddedWorkerInstance* worker =
       registry()->GetWorker(params.embedded_worker_id);
   ASSERT_TRUE(worker != NULL);
@@ -490,25 +442,6 @@ EmbeddedWorkerTestHelper::NewMessagePortMessageFilter() {
       new MockMessagePortMessageFilter);
   message_port_message_filters_.push_back(filter);
   return filter.get();
-}
-
-std::unique_ptr<shell::InterfaceRegistry>
-EmbeddedWorkerTestHelper::CreateInterfaceRegistry(MockRenderProcessHost* rph) {
-  std::unique_ptr<shell::InterfaceRegistry> registry(
-      new shell::InterfaceRegistry);
-  registry->AddInterface(
-      base::Bind(&MockEmbeddedWorkerSetup::Create, weak_factory_.GetWeakPtr()));
-  registry->AddInterface(base::Bind(&MockEmbeddedWorkerInstanceClient::Bind,
-                                    weak_factory_.GetWeakPtr()));
-
-  shell::mojom::InterfaceProviderPtr interfaces;
-  registry->Bind(mojo::GetProxy(&interfaces));
-
-  std::unique_ptr<shell::InterfaceProvider> remote_interfaces(
-      new shell::InterfaceProvider);
-  remote_interfaces->Bind(std::move(interfaces));
-  rph->SetRemoteInterfaces(std::move(remote_interfaces));
-  return registry;
 }
 
 }  // namespace content

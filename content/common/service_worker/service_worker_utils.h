@@ -46,8 +46,6 @@ class ServiceWorkerUtils {
                                        const GURL& pattern,
                                        const GURL& script_url);
 
-  static bool IsMojoForServiceWorkerEnabled();
-
   // Returns true when '--disable-web-security' flag is set. Otherwise returns
   // whether the all origins of |urls| are same as the origin of |url|.
   template <typename... Args>

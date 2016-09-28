@@ -20,14 +20,11 @@
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/embedded_worker_settings.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
-#include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
 #include "services/shell/public/cpp/interface_provider.h"
 #include "services/shell/public/cpp/interface_registry.h"
@@ -72,7 +69,7 @@ void NotifyWorkerVersionDoomedOnUI(int worker_process_id, int worker_route_id) {
       worker_process_id, worker_route_id);
 }
 
-void SetupOnUI(
+void RegisterToWorkerDevToolsManagerOnUI(
     int process_id,
     const ServiceWorkerContextCore* service_worker_context,
     const base::WeakPtr<ServiceWorkerContextCore>& service_worker_context_weak,
@@ -80,7 +77,6 @@ void SetupOnUI(
     const GURL& url,
     const GURL& scope,
     bool is_installed,
-    mojom::EmbeddedWorkerInstanceClientRequest request,
     const base::Callback<void(int worker_devtools_agent_route_id,
                               bool wait_for_debugger)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -96,8 +92,6 @@ void SetupOnUI(
                 service_worker_context, service_worker_context_weak,
                 service_worker_version_id, url, scope),
             is_installed);
-    if (request.is_pending())
-      rph->GetRemoteInterfaces()->GetInterface(std::move(request));
   }
   BrowserThread::PostTask(
       BrowserThread::IO,
@@ -217,11 +211,8 @@ class EmbeddedWorkerInstance::StartTask {
  public:
   enum class ProcessAllocationState { NOT_ALLOCATED, ALLOCATING, ALLOCATED };
 
-  StartTask(EmbeddedWorkerInstance* instance,
-            const GURL& script_url,
-            mojom::EmbeddedWorkerInstanceClientRequest request)
+  StartTask(EmbeddedWorkerInstance* instance, const GURL& script_url)
       : instance_(instance),
-        request_(std::move(request)),
         state_(ProcessAllocationState::NOT_ALLOCATED),
         is_installed_(false),
         started_during_browser_startup_(false),
@@ -263,7 +254,7 @@ class EmbeddedWorkerInstance::StartTask {
     // TODO(nhiroki): Reconsider this bizarre layering.
   }
 
-  void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
+  void Start(std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
              const StatusCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     state_ = ProcessAllocationState::ALLOCATING;
@@ -298,11 +289,12 @@ class EmbeddedWorkerInstance::StartTask {
   bool is_installed() const { return is_installed_; }
 
  private:
-  void OnProcessAllocated(std::unique_ptr<EmbeddedWorkerStartParams> params,
-                          ServiceWorkerStatusCode status,
-                          int process_id,
-                          bool is_new_process,
-                          const EmbeddedWorkerSettings& settings) {
+  void OnProcessAllocated(
+      std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+      ServiceWorkerStatusCode status,
+      int process_id,
+      bool is_new_process,
+      const EmbeddedWorkerSettings& settings) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     if (status != SERVICE_WORKER_OK) {
@@ -350,22 +342,23 @@ class EmbeddedWorkerInstance::StartTask {
     GURL script_url(params->script_url);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&SetupOnUI, process_id, instance_->context_.get(),
-                   instance_->context_, service_worker_version_id, script_url,
-                   scope, is_installed_, base::Passed(&request_),
-                   base::Bind(&StartTask::OnSetupOnUICompleted,
+        base::Bind(RegisterToWorkerDevToolsManagerOnUI, process_id,
+                   instance_->context_.get(), instance_->context_,
+                   service_worker_version_id, script_url, scope, is_installed_,
+                   base::Bind(&StartTask::OnRegisteredToDevToolsManager,
                               weak_factory_.GetWeakPtr(), base::Passed(&params),
                               is_new_process)));
   }
 
-  void OnSetupOnUICompleted(std::unique_ptr<EmbeddedWorkerStartParams> params,
-                            bool is_new_process,
-                            int worker_devtools_agent_route_id,
-                            bool wait_for_debugger) {
+  void OnRegisteredToDevToolsManager(
+      std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+      bool is_new_process,
+      int worker_devtools_agent_route_id,
+      bool wait_for_debugger) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_ASYNC_STEP_PAST0("ServiceWorker",
                                  "EmbeddedWorkerInstance::Start", this,
-                                 "OnSetupOnUICompleted");
+                                 "OnRegisteredToDevToolsManager");
 
     // Notify the instance that it is registered to the devtools manager.
     instance_->OnRegisteredToDevToolsManager(
@@ -373,14 +366,11 @@ class EmbeddedWorkerInstance::StartTask {
 
     params->worker_devtools_agent_route_id = worker_devtools_agent_route_id;
     params->wait_for_debugger = wait_for_debugger;
-
-    if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled())
-      instance_->SendMojoStartWorker(std::move(params));
-    else
-      SendStartWorker(std::move(params));
+    SendStartWorker(std::move(params));
   }
 
-  void SendStartWorker(std::unique_ptr<EmbeddedWorkerStartParams> params) {
+  void SendStartWorker(
+      std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     ServiceWorkerStatusCode status = instance_->registry_->SendStartWorker(
         std::move(params), instance_->process_id());
@@ -402,10 +392,6 @@ class EmbeddedWorkerInstance::StartTask {
 
   // |instance_| must outlive |this|.
   EmbeddedWorkerInstance* instance_;
-
-  // Ownership is transferred by base::Passed() to a task after process
-  // allocation.
-  mojom::EmbeddedWorkerInstanceClientRequest request_;
 
   StatusCallback start_callback_;
   ProcessAllocationState state_;
@@ -435,7 +421,7 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
 }
 
 void EmbeddedWorkerInstance::Start(
-    std::unique_ptr<EmbeddedWorkerStartParams> params,
+    std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
     const StatusCallback& callback) {
   if (!context_) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
@@ -459,12 +445,7 @@ void EmbeddedWorkerInstance::Start(
   params->wait_for_debugger = false;
   params->settings.v8_cache_options = GetV8CacheOptions();
 
-  mojom::EmbeddedWorkerInstanceClientRequest request;
-  if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled())
-    request = mojo::GetProxy(&client_);
-
-  inflight_start_task_.reset(
-      new StartTask(this, params->script_url, std::move(request)));
+  inflight_start_task_.reset(new StartTask(this, params->script_url));
   inflight_start_task_->Start(std::move(params), callback);
 }
 
@@ -585,15 +566,6 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
   FOR_EACH_OBSERVER(Listener, listener_list_, OnRegisteredToDevToolsManager());
 }
 
-void EmbeddedWorkerInstance::SendMojoStartWorker(
-    std::unique_ptr<EmbeddedWorkerStartParams> params) {
-  client_->StartWorker(*params);
-  registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
-  TRACE_EVENT_ASYNC_STEP_PAST1("ServiceWorker", "EmbeddedWorkerInstance::Start",
-                               this, "SendStartWorker", "Status", "mojo");
-  OnStartWorkerMessageSent();
-}
-
 void EmbeddedWorkerInstance::OnStartWorkerMessageSent() {
   if (!step_time_.is_null()) {
     base::TimeDelta duration = UpdateStepTime();
@@ -688,10 +660,9 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
   FOR_EACH_OBSERVER(Listener, listener_list_, OnThreadStarted());
 
   shell::mojom::InterfaceProviderPtr exposed_interfaces;
-  interface_registry_->Bind(mojo::GetProxy(&exposed_interfaces));
+  interface_registry_->Bind(GetProxy(&exposed_interfaces));
   shell::mojom::InterfaceProviderPtr remote_interfaces;
-  shell::mojom::InterfaceProviderRequest request =
-      mojo::GetProxy(&remote_interfaces);
+  shell::mojom::InterfaceProviderRequest request = GetProxy(&remote_interfaces);
   remote_interfaces_->Bind(std::move(remote_interfaces));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
