@@ -288,8 +288,8 @@ class Git(SCM):
     # These methods are git specific and are meant to provide support for the Git oriented workflow
     # that Blink is moving towards, hence there are no equivalent methods in the SVN class.
 
-    def pull(self):
-        self._run_git(['pull'])
+    def pull(self, timeout_seconds=None):
+        self._run_git(['pull'], timeout_seconds=timeout_seconds)
 
     def latest_git_commit(self):
         return self._run_git(['log', '-1', '--format=%H']).strip()

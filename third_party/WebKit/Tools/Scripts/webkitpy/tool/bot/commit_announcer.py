@@ -39,6 +39,7 @@ PORT = 6667
 CHANNEL = "#blink"
 NICKNAME = "commit-bot"
 
+PULL_TIMEOUT_SECONDS = 60 * 5
 UPDATE_WAIT_SECONDS = 10
 RETRY_ATTEMPTS = 8
 
@@ -136,7 +137,7 @@ class CommitAnnouncer(SingleServerIRCBot):
                 time.sleep(wait)
                 _log.info('Pull attempt %s out of %s', attempts, RETRY_ATTEMPTS)
             try:
-                self.git.pull()
+                self.git.pull(timeout_seconds=PULL_TIMEOUT_SECONDS)
                 return True
             except ScriptError as e:
                 _log.error('Error pulling from server: %s', e)

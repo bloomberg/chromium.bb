@@ -167,6 +167,22 @@ class ExecutiveTest(unittest.TestCase):
         # Killing again should fail silently.
         executive.kill_process(process.pid)
 
+    def test_timeout_exceeded(self):
+        executive = Executive()
+
+        def timeout():
+            executive.run_command(command_line('sleep', 'infinity'), timeout_seconds=0.01)
+        self.assertRaises(ScriptError, timeout)
+
+    def test_timeout_exceeded_exit_code(self):
+        executive = Executive()
+        exit_code = executive.run_command(command_line('sleep', 'infinity'), timeout_seconds=0.01, return_exit_code=True)
+        self.assertNotEqual(exit_code, 0)
+
+    def test_timeout_satisfied(self):
+        executive = Executive()
+        executive.run_command(command_line('sleep', '0'), timeout_seconds=1000)
+
     def _assert_windows_image_name(self, name, expected_windows_name):
         executive = Executive()
         windows_name = executive._windows_image_name(name)

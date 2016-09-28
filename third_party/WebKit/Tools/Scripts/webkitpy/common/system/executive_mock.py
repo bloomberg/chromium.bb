@@ -95,6 +95,9 @@ class MockExecutive(object):
                     args,
                     cwd=None,
                     input=None,
+                    # pylint: disable=W0613
+                    # unused argument
+                    timeout_seconds=None,
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,

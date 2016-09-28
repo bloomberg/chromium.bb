@@ -36,6 +36,7 @@ import signal
 import subprocess
 import sys
 import time
+import threading
 
 from webkitpy.common.system.outputtee import Tee
 from webkitpy.common.system.filesystem import FileSystem
@@ -350,6 +351,7 @@ class Executive(object):
                     cwd=None,
                     env=None,
                     input=None,
+                    timeout_seconds=None,
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,
@@ -368,6 +370,11 @@ class Executive(object):
                              cwd=cwd,
                              env=env,
                              close_fds=self._should_close_fds())
+
+        if timeout_seconds:
+            timer = threading.Timer(timeout_seconds, process.kill)
+            timer.start()
+
         output = process.communicate(string_to_communicate)[0]
 
         # run_command automatically decodes to unicode() unless explicitly told not to.
@@ -377,6 +384,9 @@ class Executive(object):
         # wait() is not threadsafe and can throw OSError due to:
         # http://bugs.python.org/issue1731717
         exit_code = process.wait()
+
+        if timeout_seconds:
+            timer.cancel()
 
         if debug_logging:
             _log.debug('"%s" took %.2fs', self.command_for_printing(args), time.time() - start_time)
