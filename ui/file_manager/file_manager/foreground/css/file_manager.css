@@ -803,7 +803,6 @@ body.check-select #search-box {
 }
 
 #search-box input {
-  cursor: default;
   display: inline-block;
   transition: width 0.2s ease;
   width: 0;
