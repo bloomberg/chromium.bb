@@ -116,15 +116,10 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddResourcePath("downloads.js", IDR_MD_DOWNLOADS_DOWNLOADS_JS);
   source->AddResourcePath("i18n_setup.html", IDR_MD_DOWNLOADS_I18N_SETUP_HTML);
   source->AddResourcePath("icons.html", IDR_MD_DOWNLOADS_ICONS_HTML);
-  source->AddResourcePath("item.css", IDR_MD_DOWNLOADS_ITEM_CSS);
   source->AddResourcePath("item.html", IDR_MD_DOWNLOADS_ITEM_HTML);
   source->AddResourcePath("item.js", IDR_MD_DOWNLOADS_ITEM_JS);
-  source->AddResourcePath("manager.css", IDR_MD_DOWNLOADS_MANAGER_CSS);
   source->AddResourcePath("manager.html", IDR_MD_DOWNLOADS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_DOWNLOADS_MANAGER_JS);
-  source->AddResourcePath("shared_style.css",
-                          IDR_MD_DOWNLOADS_SHARED_STYLE_CSS);
-  source->AddResourcePath("toolbar.css", IDR_MD_DOWNLOADS_TOOLBAR_CSS);
   source->AddResourcePath("toolbar.html", IDR_MD_DOWNLOADS_TOOLBAR_HTML);
   source->AddResourcePath("toolbar.js", IDR_MD_DOWNLOADS_TOOLBAR_JS);
   source->SetDefaultResource(IDR_MD_DOWNLOADS_DOWNLOADS_HTML);
