@@ -303,11 +303,13 @@ def read_pickle_files(pickle_filenames):
             yield pickle.load(pickle_file)
 
 
-def write_file(new_text, destination_filename, only_if_changed):
-    if only_if_changed and os.path.isfile(destination_filename):
+def write_file(new_text, destination_filename):
+    # If |new_text| is same with the file content, we skip updating.
+    if os.path.isfile(destination_filename):
         with open(destination_filename) as destination_file:
             if destination_file.read() == new_text:
                 return
+
     destination_dirname = os.path.dirname(destination_filename)
     if not os.path.exists(destination_dirname):
         os.makedirs(destination_dirname)
@@ -315,8 +317,9 @@ def write_file(new_text, destination_filename, only_if_changed):
         destination_file.write(new_text)
 
 
-def write_pickle_file(pickle_filename, data, only_if_changed):
-    if only_if_changed and os.path.isfile(pickle_filename):
+def write_pickle_file(pickle_filename, data):
+    # If |data| is same with the file content, we skip updating.
+    if os.path.isfile(pickle_filename):
         with open(pickle_filename) as pickle_file:
             try:
                 if pickle.load(pickle_file) == data:

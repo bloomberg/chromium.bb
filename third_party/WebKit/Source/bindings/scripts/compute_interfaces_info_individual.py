@@ -75,16 +75,12 @@ def parse_options():
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--interfaces-info-file', help='interface info pickle file')
     parser.add_option('--component-info-file', help='component wide info pickle file')
-    parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
 
     options, args = parser.parse_args()
     if options.interfaces_info_file is None:
         parser.error('Must specify an output file using --interfaces-info-file.')
     if options.idl_files_list is None:
         parser.error('Must specify a file listing IDL files using --idl-files-list.')
-    if options.write_file_only_if_changed is None:
-        parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
-    options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
     return options, args
 
 
@@ -360,11 +356,9 @@ def main():
         info_collector.collect_info(idl_filename)
 
     write_pickle_file(options.interfaces_info_file,
-                      info_collector.get_info_as_dict(),
-                      options.write_file_only_if_changed)
+                      info_collector.get_info_as_dict())
     write_pickle_file(options.component_info_file,
-                      info_collector.get_component_info_as_dict(),
-                      options.write_file_only_if_changed)
+                      info_collector.get_component_info_as_dict())
 
 if __name__ == '__main__':
     sys.exit(main())

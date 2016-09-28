@@ -59,7 +59,6 @@ def parse_options():
     parser.add_option('--output-directory')
     parser.add_option('--impl-output-directory')
     parser.add_option('--info-dir')
-    parser.add_option('--write-file-only-if-changed', type='int')
     # FIXME: We should always explicitly specify --target-component and
     # remove the default behavior.
     parser.add_option('--target-component',
@@ -73,7 +72,6 @@ def parse_options():
     options, args = parser.parse_args()
     if options.output_directory is None:
         parser.error('Must specify output directory using --output-directory.')
-    options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
     if len(args) != 1:
         parser.error('Must specify exactly 1 input file as argument, but %d given.' % len(args))
     idl_filename = os.path.realpath(args[0])
@@ -98,21 +96,18 @@ class IdlCompiler(object):
 
     def __init__(self, output_directory, cache_directory=None,
                  code_generator=None, info_provider=None,
-                 only_if_changed=False, target_component=None):
+                 target_component=None):
         """
         Args:
           output_directory: directory to put output files.
           cache_directory: directory which contains PLY caches.
           code_generator: code generator to be used.
           info_provider: component-specific information provider.
-          only_if_changed: True when the compiler should only write output files
-            when the contents are changed.
           target_component: component to be processed.
         """
         self.cache_directory = cache_directory
         self.code_generator = code_generator
         self.info_provider = info_provider
-        self.only_if_changed = only_if_changed
         self.output_directory = output_directory
         self.target_component = target_component
         self.reader = IdlReader(info_provider.interfaces_info, cache_directory)
@@ -124,7 +119,7 @@ class IdlCompiler(object):
         output_code_list = self.code_generator.generate_code(
             target_definitions, interface_name)
         for output_path, output_code in output_code_list:
-            write_file(output_code, output_path, self.only_if_changed)
+            write_file(output_code, output_path)
 
     @abc.abstractmethod
     def compile_file(self, idl_filename):
@@ -159,7 +154,6 @@ def generate_bindings(options, input_filename):
         options.output_directory,
         cache_directory=options.cache_directory,
         info_provider=info_provider,
-        only_if_changed=options.write_file_only_if_changed,
         target_component=options.target_component)
     idl_compiler.compile_file(input_filename)
 
@@ -171,7 +165,6 @@ def generate_dictionary_impl(options, input_filename):
         options.impl_output_directory,
         cache_directory=options.cache_directory,
         info_provider=info_provider,
-        only_if_changed=options.write_file_only_if_changed,
         target_component=options.target_component)
 
     idl_filenames = read_idl_files_list_from_file(input_filename,
@@ -193,7 +186,7 @@ def generate_union_type_containers(options):
         options.target_component)
     output_code_list = generator.generate_code()
     for output_path, output_code in output_code_list:
-        write_file(output_code, output_path, options.write_file_only_if_changed)
+        write_file(output_code, output_path)
 
 
 def generate_callback_function_impl(options):
@@ -206,7 +199,7 @@ def generate_callback_function_impl(options):
         options.target_component)
     output_code_list = generator.generate_code()
     for output_path, output_code in output_code_list:
-        write_file(output_code, output_path, options.write_file_only_if_changed)
+        write_file(output_code, output_path)
 
 
 def main():

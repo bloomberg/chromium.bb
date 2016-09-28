@@ -84,7 +84,6 @@ template("compute_interfaces_info_individual") {
       rebase_path(invoker.interfaces_info_file, root_build_dir),
       "--component-info-file",
       rebase_path(invoker.component_info_file, root_build_dir),
-      "--write-file-only-if-changed=1",
     ]
 
     deps = [ "//third_party/WebKit/Source/bindings/scripts:cached_lex_yacc_tables" ] + invoker.deps
@@ -120,7 +119,6 @@ template("generate_event_interfaces") {
       rebase_path(idl_files_list, root_build_dir),
       "--event-interfaces-file",
       rebase_path(output_file, root_build_dir),
-      "--write-file-only-if-changed=1",  # Always true for Ninja.
     ]
 
     if (defined(invoker.suffix)) {
@@ -185,7 +183,6 @@ template("idl_compiler") {
       rebase_path(output_dir, root_build_dir),
       "--info-dir",
       rebase_path("$bindings_output_dir", root_build_dir),
-      "--write-file-only-if-changed=1",  # Always true for Ninja.
       "--target-component",
       invoker.target_component,
       "{{source}}",
@@ -242,7 +239,6 @@ template("idl_impl") {
       rebase_path("$bindings_output_dir", root_build_dir),
       "--target-component",
       invoker.target_component,
-      "--write-file-only-if-changed=1",
       "--generate-impl",
       rebase_path(idl_files_list, root_build_dir),
     ]
@@ -313,7 +309,6 @@ template("compute_global_objects") {
     args = [
       "--idl-files-list",
       rebase_path(idl_files_list, root_build_dir),
-      "--write-file-only-if-changed=1",  # Always true for Ninja.
       "--",
     ]
     args += rebase_path(invoker.sources_generated, root_build_dir)
@@ -353,7 +348,6 @@ template("generate_global_constructors") {
       rebase_path(idl_files_list, root_build_dir),
       "--global-objects-file",
       rebase_path(invoker.global_objects_file, root_build_dir),
-      "--write-file-only-if-changed=1",  # Always true for Ninja.
       "--",
     ]
 

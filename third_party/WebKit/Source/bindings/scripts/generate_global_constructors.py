@@ -42,17 +42,12 @@ def parse_options():
     parser = optparse.OptionParser()
     parser.add_option('--idl-files-list', help='file listing IDL files')
     parser.add_option('--global-objects-file', help='pickle file of global objects')
-    parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
-
     options, args = parser.parse_args()
 
     if options.idl_files_list is None:
         parser.error('Must specify a file listing IDL files using --idl-files-list.')
     if options.global_objects_file is None:
         parser.error('Must specify a pickle file of global objects using --global-objects-file.')
-    if options.write_file_only_if_changed is None:
-        parser.error('Must specify whether output files are only written if changed using --write-file-only-if-changed.')
-    options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
 
     return options, args
 
@@ -131,18 +126,17 @@ def generate_global_constructors_list(interface_name, extended_attributes):
     return attributes_list
 
 
-def write_global_constructors_partial_interface(interface_name, idl_filename, constructor_attributes_list, only_if_changed):
+def write_global_constructors_partial_interface(interface_name, idl_filename, constructor_attributes_list):
     # FIXME: replace this with a simple Jinja template
     lines = (['partial interface %s {\n' % interface_name] +
              ['    %s;\n' % constructor_attribute
               # FIXME: sort by interface name (not first by extended attributes)
               for constructor_attribute in sorted(constructor_attributes_list)] +
              ['};\n'])
-    write_file(''.join(lines), idl_filename, only_if_changed)
+    write_file(''.join(lines), idl_filename)
     header_filename = os.path.splitext(idl_filename)[0] + '.h'
     idl_basename = os.path.basename(idl_filename)
-    write_file(HEADER_FORMAT.format(idl_basename=idl_basename),
-               header_filename, only_if_changed)
+    write_file(HEADER_FORMAT.format(idl_basename=idl_basename), header_filename)
 
 
 ################################################################################
@@ -182,10 +176,7 @@ def main():
     for interface_name, idl_filename in interface_name_idl_filename:
         constructors = interface_name_to_constructors(interface_name)
         write_global_constructors_partial_interface(
-            interface_name,
-            idl_filename,
-            constructors,
-            options.write_file_only_if_changed)
+            interface_name, idl_filename, constructors)
 
 
 if __name__ == '__main__':

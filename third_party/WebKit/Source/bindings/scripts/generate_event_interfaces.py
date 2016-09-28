@@ -59,7 +59,6 @@ def parse_options():
     parser = OptionParser()
     parser.add_option('--event-idl-files-list', help='file listing event IDL files')
     parser.add_option('--event-interfaces-file', help='output file')
-    parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
     parser.add_option('--suffix', help='specify a suffix to the namespace, i.e., "Modules". Default is None.')
 
     options, args = parser.parse_args()
@@ -67,15 +66,12 @@ def parse_options():
         parser.error('Must specify a file listing event IDL files using --event-idl-files-list.')
     if options.event_interfaces_file is None:
         parser.error('Must specify an output file using --event-interfaces-file.')
-    if options.write_file_only_if_changed is None:
-        parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
-    options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
     if args:
         parser.error('No arguments allowed, but %d given.' % len(args))
     return options
 
 
-def write_event_interfaces_file(event_idl_files, destination_filename, only_if_changed, suffix):
+def write_event_interfaces_file(event_idl_files, destination_filename, suffix):
     def extended_attribute_string(name, value):
         if name == 'RuntimeEnabled':
             value += 'Enabled'
@@ -106,7 +102,7 @@ def write_event_interfaces_file(event_idl_files, destination_filename, only_if_c
                        for event_idl_file in event_idl_files]
     interface_lines.sort()
     lines.extend(interface_lines)
-    write_file(''.join(lines), destination_filename, only_if_changed)
+    write_file(''.join(lines), destination_filename)
 
 
 ################################################################################
@@ -116,7 +112,6 @@ def main():
     event_idl_files = read_file_to_list(options.event_idl_files_list)
     write_event_interfaces_file(event_idl_files,
                                 options.event_interfaces_file,
-                                options.write_file_only_if_changed,
                                 options.suffix)
 
 

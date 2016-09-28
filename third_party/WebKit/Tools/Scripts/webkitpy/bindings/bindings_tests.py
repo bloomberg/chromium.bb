@@ -274,7 +274,7 @@ def bindings_tests(output_directory, verbose):
             output_dir=output_directory, target_component=component)
         outputs = generator.generate_code()
         for output_path, output_code in outputs:
-            write_file(output_code, output_path, only_if_changed=True)
+            write_file(output_code, output_path)
 
     def generate_callback_function_impl(output_directory, component):
         generator = CodeGeneratorCallbackFunction(
@@ -282,7 +282,7 @@ def bindings_tests(output_directory, verbose):
             output_dir=output_directory, target_component=component)
         outputs = generator.generate_code()
         for output_path, output_code in outputs:
-            write_file(output_code, output_path, only_if_changed=True)
+            write_file(output_code, output_path)
 
     try:
         generate_interface_dependencies()
@@ -297,7 +297,6 @@ def bindings_tests(output_directory, verbose):
             idl_compiler = IdlCompilerV8(
                 output_dir,
                 info_provider=component_info_providers[component],
-                only_if_changed=True,
                 target_component=component)
             if component == 'core':
                 partial_interface_output_dir = os.path.join(output_directory,
@@ -307,14 +306,13 @@ def bindings_tests(output_directory, verbose):
                 idl_partial_interface_compiler = IdlCompilerV8(
                     partial_interface_output_dir,
                     info_provider=component_info_providers['modules'],
-                    only_if_changed=True,
                     target_component='modules')
             else:
                 idl_partial_interface_compiler = None
 
             dictionary_impl_compiler = IdlCompilerDictionaryImpl(
                 output_dir, info_provider=component_info_providers[component],
-                only_if_changed=True, target_component=component)
+                target_component=component)
 
             idl_filenames = []
             input_directory = os.path.join(test_input_directory, component)

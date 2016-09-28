@@ -113,13 +113,8 @@ class IdlInterfaceFileNotFoundError(Exception):
 def parse_options():
     usage = 'Usage: %prog [InfoIndividual.pickle]... [Info.pickle]'
     parser = optparse.OptionParser(usage=usage)
-    parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
 
-    options, args = parser.parse_args()
-    if options.write_file_only_if_changed is None:
-        parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
-    options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
-    return options, args
+    return parser.parse_args()
 
 
 def dict_of_dicts_of_lists_update_or_append(existing, other):
@@ -315,15 +310,13 @@ def compute_interfaces_info_overall(info_individuals):
 ################################################################################
 
 def main():
-    options, args = parse_options()
+    _, args = parse_options()
     # args = Input1, Input2, ..., Output
     interfaces_info_filename = args.pop()
     info_individuals = read_pickle_files(args)
 
     compute_interfaces_info_overall(info_individuals)
-    write_pickle_file(interfaces_info_filename,
-                      interfaces_info,
-                      options.write_file_only_if_changed)
+    write_pickle_file(interfaces_info_filename, interfaces_info)
 
 
 if __name__ == '__main__':

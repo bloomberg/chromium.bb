@@ -61,7 +61,6 @@ action("bindings_modules_v8_generated_init_partial") {
     "--output",
     rebase_path(bindings_modules_generated_init_partial_interfaces_file,
                 root_build_dir),
-    "--write-file-only-if-changed=1",
   ]
 
   deps = [

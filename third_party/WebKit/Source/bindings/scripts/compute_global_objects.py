@@ -29,15 +29,11 @@ def parse_options():
     usage = 'Usage: %prog [options] [GlobalObjectsComponent.pickle]... [GlobalObjects.pickle]'
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('--idl-files-list', help='file listing IDL files')
-    parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
 
     options, args = parser.parse_args()
 
     if options.idl_files_list is None:
         parser.error('Must specify a file listing IDL files using --idl-files-list.')
-    if options.write_file_only_if_changed is None:
-        parser.error('Must specify whether output files are only written if changed using --write-file-only-if-changed.')
-    options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
     if not args:
         parser.error('Must specify an output pickle filename as argument, '
                      'optionally preceeded by input pickle filenames.')
@@ -103,8 +99,7 @@ def main():
             idl_files_to_interface_name_global_names(idl_files))
 
     write_pickle_file(output_global_objects_filename,
-                      interface_name_global_names,
-                      options.write_file_only_if_changed)
+                      interface_name_global_names)
 
 
 if __name__ == '__main__':

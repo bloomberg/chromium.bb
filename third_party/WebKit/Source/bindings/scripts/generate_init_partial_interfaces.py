@@ -42,7 +42,6 @@ def parse_options():
     parser = OptionParser(usage=usage)
     parser.add_option('--idl-files-list', help="a text file containing the IDL file paths, so the command line doesn't exceed OS length limits.")
     parser.add_option('--gyp-format-list', default=False, action='store_true', help="if specified, idl-files-list is newline separated. When unspecified, it's formatted as a Posix command line.")
-    parser.add_option('--write-file-only-if-changed', type='int', help='if true, do not write an output file if it would be identical to the existing one, which avoids unnecessary rebuilds in ninja')
     parser.add_option('--output')
 
     options, args = parser.parse_args()
@@ -50,9 +49,6 @@ def parse_options():
         parser.error('Must specify output file using --output.')
     if options.idl_files_list is None:
         parser.error('Must specify a list of IDL files using --idl-files-list.')
-    if options.write_file_only_if_changed is None:
-        parser.error('Must specify whether file is only written if changed using --write-file-only-if-changed.')
-    options.write_file_only_if_changed = bool(options.write_file_only_if_changed)
     return options
 
 
@@ -103,8 +99,7 @@ def main():
         '\n'.join(includes),
         '\n'.join(initialize_calls))
 
-    write_file(content, options.output,
-               only_if_changed=options.write_file_only_if_changed)
+    write_file(content, options.output)
 
 
 if __name__ == '__main__':

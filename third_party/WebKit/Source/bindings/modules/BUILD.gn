@@ -95,7 +95,7 @@ make_names("event_target_modules_names") {
 
 compute_interfaces_info_individual("interfaces_info_individual_modules") {
   sources = modules_definition_idl_files + modules_static_dependency_idl_files +
-      modules_generated_dependency_idl_files
+            modules_generated_dependency_idl_files
   interfaces_info_file =
       "$bindings_modules_output_dir/InterfacesInfoOverallIndividual.pickle"
   component_info_file =
@@ -118,7 +118,6 @@ action("interfaces_info") {
   ]
 
   args = [
-    "--write-file-only-if-changed=1",
     "--",
     rebase_path("$bindings_core_output_dir/InterfacesInfoCoreIndividual.pickle",
                 root_build_dir),
