@@ -12,9 +12,9 @@
 #include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -39,7 +39,7 @@ namespace {
 
 void DecodeFinished(std::unique_ptr<base::SharedMemory> shm) {
   // Do nothing. Because VideoFrame is backed by |shm|, the purpose of this
-  // function is to just keep reference of |shm| to make sure it lives util
+  // function is to just keep reference of |shm| to make sure it lives until
   // decode finishes.
 }
 
@@ -158,7 +158,8 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
     DCHECK(client_map_.count(route_id) == 0);
 
-    client_map_[route_id] = client;
+    // See the comment on GpuJpegDecodeAccelerator::AddClient.
+    client_map_[route_id] = base::WrapUnique(client);
     response.Run(true);
   }
 
@@ -166,19 +167,20 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
     DCHECK(io_task_runner_->BelongsToCurrentThread());
     const auto& it = client_map_.find(*route_id);
     DCHECK(it != client_map_.end());
-    Client* client = it->second;
+    std::unique_ptr<Client> client = std::move(it->second);
     DCHECK(client);
     client_map_.erase(it);
 
     child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&MessageFilter::DestroyClient, this, client));
+        FROM_HERE,
+        base::Bind(&MessageFilter::DestroyClient, this, base::Passed(&client)));
   }
 
-  void DestroyClient(Client* client) {
+  void DestroyClient(std::unique_ptr<Client> client) {
     DCHECK(child_task_runner_->BelongsToCurrentThread());
-    delete client;
     if (owner_)
       owner_->ClientRemoved();
+    // |client| is destroyed when the scope of this function is left.
   }
 
   void NotifyDecodeStatusOnIOThread(int32_t route_id,
@@ -241,7 +243,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
         base::Bind(DecodeFinished, base::Passed(&output_shm)));
 
     DCHECK_GT(client_map_.count(*route_id), 0u);
-    Client* client = client_map_[*route_id];
+    Client* client = client_map_[*route_id].get();
     client->Decode(params.input_buffer, frame);
   }
 
@@ -251,7 +253,7 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
       return;
 
     if (child_task_runner_->BelongsToCurrentThread()) {
-      base::STLDeleteValues(&client_map_);
+      client_map_.clear();
     } else {
       // Make sure |Client| are deleted on child thread.
       std::unique_ptr<ClientMap> client_map(new ClientMap);
@@ -264,12 +266,12 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
   }
 
  private:
-  using ClientMap = base::hash_map<int32_t, Client*>;
+  using ClientMap = base::hash_map<int32_t, std::unique_ptr<Client>>;
 
   // Must be static because this method runs after destructor.
   static void DeleteClientMapOnChildThread(
       std::unique_ptr<ClientMap> client_map) {
-    base::STLDeleteValues(client_map.get());
+    // |client_map| is cleared when the scope of this function is left.
   }
 
   base::WeakPtr<GpuJpegDecodeAccelerator> owner_;
@@ -348,7 +350,7 @@ void GpuJpegDecodeAccelerator::AddClient(int32_t route_id,
   // to protect it because |client| can only be deleted on child thread. The IO
   // thread is destroyed at termination, at which point it's ok to leak since
   // we're going to tear down the process anyway. So we just crossed fingers
-  // here instead of making the code unnecessary complicated.
+  // here instead of making the code unnecessarily complicated.
   io_task_runner_->PostTask(
       FROM_HERE, base::Bind(&MessageFilter::AddClientOnIOThread, filter_,
                             route_id, client.release(), response));

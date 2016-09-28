@@ -194,9 +194,7 @@ class MEDIA_EXPORT MediaSourceState {
   using DemuxerStreamMap = std::map<StreamParser::TrackId, ChunkDemuxerStream*>;
   DemuxerStreamMap audio_streams_;
   DemuxerStreamMap video_streams_;
-
-  typedef std::map<StreamParser::TrackId, ChunkDemuxerStream*> TextStreamMap;
-  TextStreamMap text_stream_map_;  // |this| owns the map's stream pointers.
+  DemuxerStreamMap text_streams_;
 
   std::unique_ptr<FrameProcessor> frame_processor_;
   scoped_refptr<MediaLog> media_log_;

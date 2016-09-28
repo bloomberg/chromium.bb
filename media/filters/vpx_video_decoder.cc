@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -18,8 +19,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
@@ -223,7 +224,7 @@ class VpxVideoDecoder::MemoryPool
   void OnVideoFrameDestroyed(VP9FrameBuffer* frame_buffer);
 
   // Frame buffers to be used by libvpx for VP9 Decoding.
-  std::vector<VP9FrameBuffer*> frame_buffers_;
+  std::vector<std::unique_ptr<VP9FrameBuffer>> frame_buffers_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPool);
 };
@@ -234,7 +235,6 @@ VpxVideoDecoder::MemoryPool::MemoryPool() {
 }
 
 VpxVideoDecoder::MemoryPool::~MemoryPool() {
-  base::STLDeleteElements(&frame_buffers_);
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
@@ -250,13 +250,13 @@ VpxVideoDecoder::MemoryPool::GetFreeFrameBuffer(size_t min_size) {
 
   if (i == frame_buffers_.size()) {
     // Create a new frame buffer.
-    frame_buffers_.push_back(new VP9FrameBuffer());
+    frame_buffers_.push_back(base::MakeUnique<VP9FrameBuffer>());
   }
 
   // Resize the frame buffer if necessary.
   if (frame_buffers_[i]->data.size() < min_size)
     frame_buffers_[i]->data.resize(min_size);
-  return frame_buffers_[i];
+  return frame_buffers_[i].get();
 }
 
 int32_t VpxVideoDecoder::MemoryPool::GetVP9FrameBuffer(
@@ -317,7 +317,7 @@ bool VpxVideoDecoder::MemoryPool::OnMemoryDump(
                             ->system_allocator_pool_name());
   size_t bytes_used = 0;
   size_t bytes_reserved = 0;
-  for (const VP9FrameBuffer* frame_buffer : frame_buffers_) {
+  for (const auto& frame_buffer : frame_buffers_) {
     if (frame_buffer->ref_cnt)
       bytes_used += frame_buffer->data.size();
     bytes_reserved += frame_buffer->data.size();

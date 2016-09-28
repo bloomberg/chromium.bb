@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
@@ -38,11 +37,12 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
   // Use a std::list to actually hold the data. Insertion is always done
   // at the front, so the "latest" decryption key is always the first one
   // in the list.
-  typedef std::list<std::pair<std::string, DecryptionKey*> > KeyList;
+  using KeyList =
+      std::list<std::pair<std::string, std::unique_ptr<DecryptionKey>>>;
 
  public:
   SessionIdDecryptionKeyMap() {}
-  ~SessionIdDecryptionKeyMap() { base::STLDeleteValues(&key_list_); }
+  ~SessionIdDecryptionKeyMap() {}
 
   // Replaces value if |session_id| is already present, or adds it if not.
   // This |decryption_key| becomes the latest until another insertion or
@@ -59,7 +59,7 @@ class AesDecryptor::SessionIdDecryptionKeyMap {
   // Returns the last inserted DecryptionKey.
   DecryptionKey* LatestDecryptionKey() {
     DCHECK(!key_list_.empty());
-    return key_list_.begin()->second;
+    return key_list_.begin()->second.get();
   }
 
   bool Contains(const std::string& session_id) {
@@ -84,8 +84,7 @@ void AesDecryptor::SessionIdDecryptionKeyMap::Insert(
   KeyList::iterator it = Find(session_id);
   if (it != key_list_.end())
     Erase(it);
-  DecryptionKey* raw_ptr = decryption_key.release();
-  key_list_.push_front(std::make_pair(session_id, raw_ptr));
+  key_list_.push_front(std::make_pair(session_id, std::move(decryption_key)));
 }
 
 void AesDecryptor::SessionIdDecryptionKeyMap::Erase(
@@ -108,7 +107,6 @@ AesDecryptor::SessionIdDecryptionKeyMap::Find(const std::string& session_id) {
 void AesDecryptor::SessionIdDecryptionKeyMap::Erase(
     KeyList::iterator position) {
   DCHECK(position->second);
-  delete position->second;
   key_list_.erase(position);
 }
 

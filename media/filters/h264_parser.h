@@ -12,6 +12,7 @@
 #include <sys/types.h>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -486,10 +487,8 @@ class MEDIA_EXPORT H264Parser {
   H264BitReader br_;
 
   // PPSes and SPSes stored for future reference.
-  typedef std::map<int, H264SPS*> SPSById;
-  typedef std::map<int, H264PPS*> PPSById;
-  SPSById active_SPSes_;
-  PPSById active_PPSes_;
+  std::map<int, std::unique_ptr<H264SPS>> active_SPSes_;
+  std::map<int, std::unique_ptr<H264PPS>> active_PPSes_;
 
   // Ranges of encrypted bytes in the buffer passed to
   // SetEncryptedStream().

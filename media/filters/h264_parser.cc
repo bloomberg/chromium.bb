@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
-#include "base/stl_util.h"
 #include "media/base/decrypt_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -206,8 +205,6 @@ H264Parser::H264Parser() {
 }
 
 H264Parser::~H264Parser() {
-  base::STLDeleteValues(&active_SPSes_);
-  base::STLDeleteValues(&active_PPSes_);
 }
 
 void H264Parser::Reset() {
@@ -251,7 +248,7 @@ const H264PPS* H264Parser::GetPPS(int pps_id) const {
     return nullptr;
   }
 
-  return it->second;
+  return it->second.get();
 }
 
 const H264SPS* H264Parser::GetSPS(int sps_id) const {
@@ -261,7 +258,7 @@ const H264SPS* H264Parser::GetSPS(int sps_id) const {
     return nullptr;
   }
 
-  return it->second;
+  return it->second.get();
 }
 
 static inline bool IsStartCode(const uint8_t* data) {
@@ -999,8 +996,7 @@ H264Parser::Result H264Parser::ParseSPS(int* sps_id) {
 
   // If an SPS with the same id already exists, replace it.
   *sps_id = sps->seq_parameter_set_id;
-  delete active_SPSes_[*sps_id];
-  active_SPSes_[*sps_id] = sps.release();
+  active_SPSes_[*sps_id] = std::move(sps);
 
   return kOk;
 }
@@ -1075,8 +1071,7 @@ H264Parser::Result H264Parser::ParsePPS(int* pps_id) {
 
   // If a PPS with the same id already exists, replace it.
   *pps_id = pps->pic_parameter_set_id;
-  delete active_PPSes_[*pps_id];
-  active_PPSes_[*pps_id] = pps.release();
+  active_PPSes_[*pps_id] = std::move(pps);
 
   return kOk;
 }

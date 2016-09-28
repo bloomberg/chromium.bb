@@ -121,8 +121,8 @@ class MEDIA_EXPORT TextRenderer {
   };
   State state_;
 
-  typedef std::map<DemuxerStream*, TextTrackState*> TextTrackStateMap;
-  TextTrackStateMap text_track_state_map_;
+  std::map<DemuxerStream*, std::unique_ptr<TextTrackState>>
+      text_track_state_map_;
 
   // Indicates how many read requests are in flight.
   int pending_read_count_;

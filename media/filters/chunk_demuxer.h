@@ -413,8 +413,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // http://crbug.com/308226
   PipelineStatusCB seek_cb_;
 
-  std::vector<std::unique_ptr<ChunkDemuxerStream>> audio_streams_;
-  std::vector<std::unique_ptr<ChunkDemuxerStream>> video_streams_;
+  using OwnedChunkDemuxerStreamVector =
+      std::vector<std::unique_ptr<ChunkDemuxerStream>>;
+  OwnedChunkDemuxerStreamVector audio_streams_;
+  OwnedChunkDemuxerStreamVector video_streams_;
+  OwnedChunkDemuxerStreamVector text_streams_;
 
   // Keep track of which ids still remain uninitialized so that we transition
   // into the INITIALIZED only after all ids/SourceBuffers got init segment.
@@ -432,8 +435,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::Time timeline_offset_;
   DemuxerStream::Liveness liveness_;
 
-  typedef std::map<std::string, MediaSourceState*> MediaSourceStateMap;
-  MediaSourceStateMap source_state_map_;
+  std::map<std::string, std::unique_ptr<MediaSourceState>> source_state_map_;
 
   std::map<std::string, std::vector<ChunkDemuxerStream*>> id_to_streams_map_;
   // Used to hold alive the demuxer streams that were created for removed /

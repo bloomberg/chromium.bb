@@ -5,7 +5,6 @@
 #include "media/formats/webm/webm_content_encodings_client.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "media/formats/webm/webm_constants.h"
 
 namespace media {
@@ -18,7 +17,6 @@ WebMContentEncodingsClient::WebMContentEncodingsClient(
 }
 
 WebMContentEncodingsClient::~WebMContentEncodingsClient() {
-  base::STLDeleteElements(&content_encodings_);
 }
 
 const ContentEncodings& WebMContentEncodingsClient::content_encodings() const {
@@ -30,7 +28,7 @@ WebMParserClient* WebMContentEncodingsClient::OnListStart(int id) {
   if (id == kWebMIdContentEncodings) {
     DCHECK(!cur_content_encoding_.get());
     DCHECK(!content_encryption_encountered_);
-    base::STLDeleteElements(&content_encodings_);
+    content_encodings_.clear();
     content_encodings_ready_ = false;
     return this;
   }
@@ -112,7 +110,7 @@ bool WebMContentEncodingsClient::OnListEnd(int id) {
       return false;
     }
 
-    content_encodings_.push_back(cur_content_encoding_.release());
+    content_encodings_.push_back(std::move(cur_content_encoding_));
     content_encryption_encountered_ = false;
     return true;
   }

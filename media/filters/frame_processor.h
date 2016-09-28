@@ -6,6 +6,7 @@
 #define MEDIA_FILTERS_FRAME_PROCESSOR_H_
 
 #include <map>
+#include <memory>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -80,8 +81,6 @@ class MEDIA_EXPORT FrameProcessor {
  private:
   friend class FrameProcessorTest;
 
-  typedef std::map<StreamParser::TrackId, MseTrackBuffer*> TrackBufferMap;
-
   // If |track_buffers_| contains |id|, returns a pointer to the associated
   // MseTrackBuffer. Otherwise, returns NULL.
   MseTrackBuffer* FindTrack(StreamParser::TrackId id);
@@ -124,7 +123,8 @@ class MEDIA_EXPORT FrameProcessor {
                     base::TimeDelta* timestamp_offset);
 
   // TrackId-indexed map of each track's stream.
-  TrackBufferMap track_buffers_;
+  std::map<StreamParser::TrackId, std::unique_ptr<MseTrackBuffer>>
+      track_buffers_;
 
   // The last audio buffer seen by the frame processor that was removed because
   // it was entirely before the start of the append window.

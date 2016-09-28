@@ -20,7 +20,7 @@
 
 namespace media {
 
-typedef std::vector<ContentEncoding*> ContentEncodings;
+typedef std::vector<std::unique_ptr<ContentEncoding>> ContentEncodings;
 
 // Parser for WebM ContentEncodings element.
 class MEDIA_EXPORT WebMContentEncodingsClient : public WebMParserClient {

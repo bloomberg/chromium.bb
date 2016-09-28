@@ -8,7 +8,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_track.h"
@@ -66,7 +65,7 @@ Ranges<TimeDelta> MediaSourceState::ComputeRangesIntersection(
   // TODO(servolk): Perhaps this can be removed in favor of blink implementation
   // (MediaSource::buffered)? Currently this is only used on Android and for
   // updating DemuxerHost's buffered ranges during AppendData() as well as
-  // SourceBuffer.buffered property implemetation.
+  // SourceBuffer.buffered property implementation.
   // Implementation of HTMLMediaElement.buffered algorithm in MSE spec.
   // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#dom-htmlmediaelement.buffered
 
@@ -135,8 +134,6 @@ MediaSourceState::MediaSourceState(
 
 MediaSourceState::~MediaSourceState() {
   Shutdown();
-
-  base::STLDeleteValues(&text_stream_map_);
 }
 
 void MediaSourceState::Init(
@@ -254,9 +251,8 @@ void MediaSourceState::Remove(TimeDelta start,
     it.second->Remove(start, end, duration);
   }
 
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->Remove(start, end, duration);
+  for (const auto& it : text_streams_) {
+    it.second->Remove(start, end, duration);
   }
 }
 
@@ -267,7 +263,7 @@ bool MediaSourceState::EvictCodedFrames(DecodeTimestamp media_time,
     total_buffered_size += it.second->GetBufferedSize();
   for (const auto& it : video_streams_)
     total_buffered_size += it.second->GetBufferedSize();
-  for (const auto& it : text_stream_map_)
+  for (const auto& it : text_streams_)
     total_buffered_size += it.second->GetBufferedSize();
 
   DVLOG(3) << __func__ << " media_time=" << media_time.InSecondsF()
@@ -296,7 +292,7 @@ bool MediaSourceState::EvictCodedFrames(DecodeTimestamp media_time,
     success &= it.second->EvictCodedFrames(
         media_time, static_cast<size_t>(estimated_new_size));
   }
-  for (const auto& it : text_stream_map_) {
+  for (const auto& it : text_streams_) {
     uint64_t curr_size = it.second->GetBufferedSize();
     if (curr_size == 0)
       continue;
@@ -319,10 +315,8 @@ Ranges<TimeDelta> MediaSourceState::GetBufferedRanges(TimeDelta duration,
   for (const auto& it : video_streams_)
     ranges_list.push_back(it.second->GetBufferedRanges(duration));
 
-  for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    ranges_list.push_back(itr->second->GetBufferedRanges(duration));
-  }
+  for (const auto& it : text_streams_)
+    ranges_list.push_back(it.second->GetBufferedRanges(duration));
 
   return ComputeRangesIntersection(ranges_list, ended);
 }
@@ -338,9 +332,8 @@ TimeDelta MediaSourceState::GetHighestPresentationTimestamp() const {
     max_pts = std::max(max_pts, it.second->GetHighestPresentationTimestamp());
   }
 
-  for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    max_pts = std::max(max_pts, itr->second->GetHighestPresentationTimestamp());
+  for (const auto& it : text_streams_) {
+    max_pts = std::max(max_pts, it.second->GetHighestPresentationTimestamp());
   }
 
   return max_pts;
@@ -357,9 +350,8 @@ TimeDelta MediaSourceState::GetMaxBufferedDuration() const {
     max_duration = std::max(max_duration, it.second->GetBufferedDuration());
   }
 
-  for (TextStreamMap::const_iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    max_duration = std::max(max_duration, itr->second->GetBufferedDuration());
+  for (const auto& it : text_streams_) {
+    max_duration = std::max(max_duration, it.second->GetBufferedDuration());
   }
 
   return max_duration;
@@ -374,9 +366,8 @@ void MediaSourceState::StartReturningData() {
     it.second->StartReturningData();
   }
 
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->StartReturningData();
+  for (const auto& it : text_streams_) {
+    it.second->StartReturningData();
   }
 }
 
@@ -389,9 +380,8 @@ void MediaSourceState::AbortReads() {
     it.second->AbortReads();
   }
 
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->AbortReads();
+  for (const auto& it : text_streams_) {
+    it.second->AbortReads();
   }
 }
 
@@ -404,9 +394,8 @@ void MediaSourceState::Seek(TimeDelta seek_time) {
     it.second->Seek(seek_time);
   }
 
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->Seek(seek_time);
+  for (const auto& it : text_streams_) {
+    it.second->Seek(seek_time);
   }
 }
 
@@ -419,9 +408,8 @@ void MediaSourceState::CompletePendingReadIfPossible() {
     it.second->CompletePendingReadIfPossible();
   }
 
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->CompletePendingReadIfPossible();
+  for (const auto& it : text_streams_) {
+    it.second->CompletePendingReadIfPossible();
   }
 }
 
@@ -434,9 +422,8 @@ void MediaSourceState::OnSetDuration(TimeDelta duration) {
     it.second->OnSetDuration(duration);
   }
 
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->OnSetDuration(duration);
+  for (const auto& it : text_streams_) {
+    it.second->OnSetDuration(duration);
   }
 }
 
@@ -449,9 +436,8 @@ void MediaSourceState::MarkEndOfStream() {
     it.second->MarkEndOfStream();
   }
 
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->MarkEndOfStream();
+  for (const auto& it : text_streams_) {
+    it.second->MarkEndOfStream();
   }
 }
 
@@ -464,9 +450,8 @@ void MediaSourceState::UnmarkEndOfStream() {
     it.second->UnmarkEndOfStream();
   }
 
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->UnmarkEndOfStream();
+  for (const auto& it : text_streams_) {
+    it.second->UnmarkEndOfStream();
   }
 }
 
@@ -479,9 +464,8 @@ void MediaSourceState::Shutdown() {
     it.second->Shutdown();
   }
 
-  for (TextStreamMap::iterator itr = text_stream_map_.begin();
-       itr != text_stream_map_.end(); ++itr) {
-    itr->second->Shutdown();
+  for (const auto& it : text_streams_) {
+    it.second->Shutdown();
   }
 }
 
@@ -499,9 +483,8 @@ void MediaSourceState::SetMemoryLimits(DemuxerStream::Type type,
       }
       break;
     case DemuxerStream::TEXT:
-      for (TextStreamMap::iterator itr = text_stream_map_.begin();
-           itr != text_stream_map_.end(); ++itr) {
-        itr->second->SetStreamMemoryLimit(memory_limit);
+      for (const auto& it : text_streams_) {
+        it.second->SetStreamMemoryLimit(memory_limit);
       }
       break;
     case DemuxerStream::UNKNOWN:
@@ -601,7 +584,7 @@ bool MediaSourceState::OnNewConfigs(
             stream = it->second;
         } else {
           // If there is only one audio track then bytestream id might change in
-          // a new init segment. So update our state and nofity frame processor.
+          // a new init segment. So update our state and notify frame processor.
           const auto& it = audio_streams_.begin();
           if (it != audio_streams_.end()) {
             stream = it->second;
@@ -657,7 +640,7 @@ bool MediaSourceState::OnNewConfigs(
             stream = it->second;
         } else {
           // If there is only one video track then bytestream id might change in
-          // a new init segment. So update our state and nofity frame processor.
+          // a new init segment. So update our state and notify frame processor.
           const auto& it = video_streams_.begin();
           if (it != video_streams_.end()) {
             stream = it->second;
@@ -696,10 +679,8 @@ bool MediaSourceState::OnNewConfigs(
     return false;
   }
 
-  typedef StreamParser::TextTrackConfigMap::const_iterator TextConfigItr;
-  if (text_stream_map_.empty()) {
-    for (TextConfigItr itr = text_configs.begin(); itr != text_configs.end();
-         ++itr) {
+  if (text_streams_.empty()) {
+    for (auto itr = text_configs.begin(); itr != text_configs.end(); ++itr) {
       ChunkDemuxerStream* const text_stream =
           create_demuxer_stream_cb_.Run(DemuxerStream::TEXT);
       if (!frame_processor_->AddTrack(itr->first, text_stream)) {
@@ -709,18 +690,18 @@ bool MediaSourceState::OnNewConfigs(
         break;
       }
       text_stream->UpdateTextConfig(itr->second, media_log_);
-      text_stream_map_[itr->first] = text_stream;
+      text_streams_[itr->first] = text_stream;
       new_text_track_cb_.Run(text_stream, itr->second);
     }
   } else {
-    const size_t text_count = text_stream_map_.size();
+    const size_t text_count = text_streams_.size();
     if (text_configs.size() != text_count) {
       success &= false;
       MEDIA_LOG(ERROR, media_log_)
           << "The number of text track configs changed.";
     } else if (text_count == 1) {
-      TextConfigItr config_itr = text_configs.begin();
-      TextStreamMap::iterator stream_itr = text_stream_map_.begin();
+      auto config_itr = text_configs.begin();
+      auto stream_itr = text_streams_.begin();
       ChunkDemuxerStream* text_stream = stream_itr->second;
       TextTrackConfig old_config = text_stream->text_track_config();
       TextTrackConfig new_config(
@@ -735,8 +716,8 @@ bool MediaSourceState::OnNewConfigs(
         StreamParser::TrackId new_id = config_itr->first;
         if (new_id != old_id) {
           if (frame_processor_->UpdateTrack(old_id, new_id)) {
-            text_stream_map_.clear();
-            text_stream_map_[config_itr->first] = text_stream;
+            text_streams_.clear();
+            text_streams_[config_itr->first] = text_stream;
           } else {
             success &= false;
             MEDIA_LOG(ERROR, media_log_)
@@ -745,11 +726,10 @@ bool MediaSourceState::OnNewConfigs(
         }
       }
     } else {
-      for (TextConfigItr config_itr = text_configs.begin();
+      for (auto config_itr = text_configs.begin();
            config_itr != text_configs.end(); ++config_itr) {
-        TextStreamMap::iterator stream_itr =
-            text_stream_map_.find(config_itr->first);
-        if (stream_itr == text_stream_map_.end()) {
+        auto stream_itr = text_streams_.find(config_itr->first);
+        if (stream_itr == text_streams_.end()) {
           success &= false;
           MEDIA_LOG(ERROR, media_log_)
               << "Unexpected text track configuration for track ID "

@@ -46,8 +46,6 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   bool Parse(const uint8_t* buf, int size) override;
 
  private:
-  typedef std::map<int, PidState*> PidMap;
-
   struct BufferQueueWithConfig {
     BufferQueueWithConfig(bool is_cfg_sent,
                           const AudioDecoderConfig& audio_cfg,
@@ -114,7 +112,7 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
   ByteQueue ts_byte_queue_;
 
   // List of PIDs and their state.
-  PidMap pids_;
+  std::map<int, std::unique_ptr<PidState>> pids_;
 
   // Selected audio and video PIDs.
   int selected_audio_pid_;

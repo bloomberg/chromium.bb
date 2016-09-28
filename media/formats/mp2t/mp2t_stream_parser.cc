@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/stl_util.h"
 #include "media/base/media_tracks.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/text_track_config.h"
@@ -45,7 +44,7 @@ class PidState {
   };
 
   PidState(int pid,
-           PidType pid_tyoe,
+           PidType pid_type,
            std::unique_ptr<TsSection> section_parser);
 
   // Extract the content of the TS packet and parse it.
@@ -168,7 +167,6 @@ Mp2tStreamParser::Mp2tStreamParser(bool sbr_in_mimetype)
 }
 
 Mp2tStreamParser::~Mp2tStreamParser() {
-  base::STLDeleteValues(&pids_);
 }
 
 void Mp2tStreamParser::Init(
@@ -202,12 +200,9 @@ void Mp2tStreamParser::Flush() {
   DVLOG(1) << "Mp2tStreamParser::Flush";
 
   // Flush the buffers and reset the pids.
-  for (std::map<int, PidState*>::iterator it = pids_.begin();
-       it != pids_.end(); ++it) {
-    DVLOG(1) << "Flushing PID: " << it->first;
-    PidState* pid_state = it->second;
-    pid_state->Flush();
-    delete pid_state;
+  for (const auto& pid_pair : pids_) {
+    DVLOG(1) << "Flushing PID: " << pid_pair.first;
+    pid_pair.second->Flush();
   }
   pids_.clear();
 
@@ -284,7 +279,7 @@ bool Mp2tStreamParser::Parse(const uint8_t* buf, int size) {
         << " start_unit=" << ts_packet->payload_unit_start_indicator();
 
     // Parse the section.
-    std::map<int, PidState*>::iterator it = pids_.find(ts_packet->pid());
+    auto it = pids_.find(ts_packet->pid());
     if (it == pids_.end() &&
         ts_packet->pid() == TsSection::kPidPat) {
       // Create the PAT state here if needed.
@@ -293,9 +288,10 @@ bool Mp2tStreamParser::Parse(const uint8_t* buf, int size) {
       std::unique_ptr<PidState> pat_pid_state(new PidState(
           ts_packet->pid(), PidState::kPidPat, std::move(pat_section_parser)));
       pat_pid_state->Enable();
-      it = pids_.insert(
-          std::pair<int, PidState*>(ts_packet->pid(),
-                                    pat_pid_state.release())).first;
+      it = pids_
+               .insert(
+                   std::make_pair(ts_packet->pid(), std::move(pat_pid_state)))
+               .first;
     }
 
     if (it != pids_.end()) {
@@ -322,11 +318,11 @@ void Mp2tStreamParser::RegisterPmt(int program_number, int pmt_pid) {
 
   // Only one TS program is allowed. Ignore the incoming program map table,
   // if there is already one registered.
-  for (std::map<int, PidState*>::iterator it = pids_.begin();
-       it != pids_.end(); ++it) {
-    PidState* pid_state = it->second;
+  for (const auto& pid_pair : pids_) {
+    PidState* pid_state = pid_pair.second.get();
     if (pid_state->pid_type() == PidState::kPidPmt) {
-      DVLOG_IF(1, pmt_pid != it->first) << "More than one program is defined";
+      DVLOG_IF(1, pmt_pid != pid_pair.first)
+          << "More than one program is defined";
       return;
     }
   }
@@ -338,7 +334,7 @@ void Mp2tStreamParser::RegisterPmt(int program_number, int pmt_pid) {
   std::unique_ptr<PidState> pmt_pid_state(
       new PidState(pmt_pid, PidState::kPidPmt, std::move(pmt_section_parser)));
   pmt_pid_state->Enable();
-  pids_.insert(std::pair<int, PidState*>(pmt_pid, pmt_pid_state.release()));
+  pids_.insert(std::make_pair(pmt_pid, std::move(pmt_pid_state)));
 }
 
 void Mp2tStreamParser::RegisterPes(int pmt_pid,
@@ -348,7 +344,7 @@ void Mp2tStreamParser::RegisterPes(int pmt_pid,
   DVLOG(1) << "RegisterPes:"
            << " pes_pid=" << pes_pid
            << " stream_type=" << std::hex << stream_type << std::dec;
-  std::map<int, PidState*>::iterator it = pids_.find(pes_pid);
+  auto it = pids_.find(pes_pid);
   if (it != pids_.end())
     return;
 
@@ -395,7 +391,7 @@ void Mp2tStreamParser::RegisterPes(int pmt_pid,
       is_audio ? PidState::kPidAudioPes : PidState::kPidVideoPes;
   std::unique_ptr<PidState> pes_pid_state(
       new PidState(pes_pid, pid_type, std::move(pes_section_parser)));
-  pids_.insert(std::pair<int, PidState*>(pes_pid, pes_pid_state.release()));
+  pids_.insert(std::make_pair(pes_pid, std::move(pes_pid_state)));
 
   // A new PES pid has been added, the PID filter might change.
   UpdatePidFilter();
@@ -406,11 +402,11 @@ void Mp2tStreamParser::UpdatePidFilter() {
   // select the audio/video streams with the lowest PID.
   // TODO(damienv): this can be changed when the StreamParser interface
   // supports multiple audio/video streams.
-  PidMap::iterator lowest_audio_pid = pids_.end();
-  PidMap::iterator lowest_video_pid = pids_.end();
-  for (PidMap::iterator it = pids_.begin(); it != pids_.end(); ++it) {
+  auto lowest_audio_pid = pids_.end();
+  auto lowest_video_pid = pids_.end();
+  for (auto it = pids_.begin(); it != pids_.end(); ++it) {
     int pid = it->first;
-    PidState* pid_state = it->second;
+    PidState* pid_state = it->second.get();
     if (pid_state->pid_type() == PidState::kPidAudioPes &&
         (lowest_audio_pid == pids_.end() || pid < lowest_audio_pid->first))
       lowest_audio_pid = it;
@@ -432,8 +428,8 @@ void Mp2tStreamParser::UpdatePidFilter() {
   }
 
   // Disable all the other audio and video PIDs.
-  for (PidMap::iterator it = pids_.begin(); it != pids_.end(); ++it) {
-    PidState* pid_state = it->second;
+  for (auto it = pids_.begin(); it != pids_.end(); ++it) {
+    PidState* pid_state = it->second.get();
     if (it != lowest_audio_pid && it != lowest_video_pid &&
         (pid_state->pid_type() == PidState::kPidAudioPes ||
          pid_state->pid_type() == PidState::kPidVideoPes))
