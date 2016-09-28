@@ -1745,7 +1745,7 @@ template <typename Strategy>
 static VisiblePositionTemplate<Strategy> endOfParagraphAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition, EditingBoundaryCrossingRule boundaryCrossingRule)
 {
     DCHECK(visiblePosition.isValid()) << visiblePosition;
-    return createVisiblePositionDeprecated(endOfParagraphAlgorithm(visiblePosition.deepEquivalent(), boundaryCrossingRule));
+    return createVisiblePosition(endOfParagraphAlgorithm(visiblePosition.deepEquivalent(), boundaryCrossingRule));
 }
 
 VisiblePosition endOfParagraph(const VisiblePosition& c, EditingBoundaryCrossingRule boundaryCrossingRule)
