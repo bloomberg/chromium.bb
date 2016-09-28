@@ -154,8 +154,6 @@ const int MockChooserController::kSignalStrengthLevel1Bar = 1;
 const int MockChooserController::kSignalStrengthLevel2Bar = 2;
 const int MockChooserController::kSignalStrengthLevel3Bar = 3;
 const int MockChooserController::kSignalStrengthLevel4Bar = 4;
-const int MockChooserController::kImageColorUnselected = 0;
-const int MockChooserController::kImageColorSelected = 1;
 
 void MockChooserController::ClearAllOptions() {
   options_.clear();

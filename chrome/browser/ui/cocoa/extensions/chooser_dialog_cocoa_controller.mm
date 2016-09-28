@@ -62,7 +62,6 @@ initWithChooserDialogCocoa:(ChooserDialogCocoa*)chooserDialogCocoa
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
-  [chooserContentView_ updateContentRowColor];
   [connectButton_ setEnabled:[tableView_ numberOfSelectedRows] > 0];
 }
 
