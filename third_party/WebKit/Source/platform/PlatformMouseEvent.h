@@ -46,7 +46,12 @@ public:
     };
 
     PlatformMouseEvent()
-        : PlatformEvent(PlatformEvent::MouseMoved)
+        : PlatformMouseEvent(PlatformEvent::MouseMoved)
+    {
+    }
+
+    explicit PlatformMouseEvent(EventType type)
+        : PlatformEvent(type)
         , m_clickCount(0)
         , m_synthesized(RealOrIndistinguishable)
     {

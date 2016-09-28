@@ -27,6 +27,7 @@
 #define PlatformWheelEvent_h
 
 #include "platform/PlatformEvent.h"
+#include "platform/PlatformMouseEvent.h"
 #include "platform/geometry/IntPoint.h"
 
 namespace blink {
@@ -53,10 +54,10 @@ enum PlatformWheelEventPhase {
 };
 #endif
 
-class PlatformWheelEvent : public PlatformEvent {
+class PlatformWheelEvent : public PlatformMouseEvent {
 public:
     PlatformWheelEvent()
-        : PlatformEvent(PlatformEvent::Wheel)
+        : PlatformMouseEvent(PlatformEvent::Wheel)
         , m_deltaX(0)
         , m_deltaY(0)
         , m_wheelTicksX(0)
@@ -72,9 +73,6 @@ public:
 #endif
     {
     }
-
-    const IntPoint& position() const { return m_position; } // PlatformWindow coordinates.
-    const IntPoint& globalPosition() const { return m_globalPosition; } // Screen coordinates.
 
     float deltaX() const { return m_deltaX; }
     float deltaY() const { return m_deltaY; }
@@ -96,8 +94,6 @@ public:
 #endif
 
 protected:
-    IntPoint m_position;
-    IntPoint m_globalPosition;
     float m_deltaX;
     float m_deltaY;
     float m_wheelTicksX;
