@@ -74,6 +74,10 @@ void ClearDidRun(const base::FilePath& dll_path) {
 
 typedef int (*InitMetro)();
 
+bool ProcessTypeUsesMainDll(const std::string& process_type) {
+  return process_type.empty() || process_type == switches::kServiceProcess;
+}
+
 }  // namespace
 
 //=============================================================================
@@ -87,7 +91,7 @@ MainDllLoader::~MainDllLoader() {
 
 HMODULE MainDllLoader::Load(base::FilePath* module) {
   const base::char16* dll_name = nullptr;
-  if (process_type_ == switches::kServiceProcess || process_type_.empty()) {
+  if (ProcessTypeUsesMainDll(process_type_)) {
     dll_name = installer::kChromeDll;
   } else if (process_type_ == switches::kWatcherProcess) {
     dll_name = kChromeWatcherDll;
@@ -181,12 +185,12 @@ void MainDllLoader::RelaunchChromeBrowserWithNewCommandLineIfNeeded() {
       reinterpret_cast<RelaunchChromeBrowserWithNewCommandLineIfNeededFunc>(
           ::GetProcAddress(dll_,
                            "RelaunchChromeBrowserWithNewCommandLineIfNeeded"));
-  if (!relaunch_function) {
-    LOG(ERROR) << "Could not find exported function "
-               << "RelaunchChromeBrowserWithNewCommandLineIfNeeded "
-               << "(" << process_type_ << " process)";
-  } else {
+  if (relaunch_function) {
     relaunch_function();
+  } else if (ProcessTypeUsesMainDll(process_type_)) {
+    LOG(DFATAL) << "Could not find exported function "
+                << "RelaunchChromeBrowserWithNewCommandLineIfNeeded "
+                << "(" << process_type_ << " process)";
   }
 }
 
