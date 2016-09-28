@@ -11,6 +11,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/security_state/security_state_model.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -32,7 +33,8 @@ class WebsiteSettingsUI;
 // information and allows users to change the permissions. |WebsiteSettings|
 // objects must be created on the heap. They destroy themselves after the UI is
 // closed.
-class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
+class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver,
+                        public content::WebContentsObserver {
  public:
   // TODO(palmer): Figure out if it is possible to unify SiteConnectionStatus
   // and SiteIdentityStatus.
@@ -176,11 +178,6 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // permissions (location, pop-up, plugin, etc. permissions) and site-specific
   // information (identity, connection status, etc.).
   WebsiteSettingsUI* ui_;
-
-#if !defined(OS_ANDROID)
-  // The WebContents of the active tab.
-  content::WebContents* web_contents_;
-#endif
 
   // The flag that controls whether an infobar is displayed after the website
   // settings UI is closed or not.

@@ -256,10 +256,8 @@ WebsiteSettings::WebsiteSettings(
     const SecurityStateModel::SecurityInfo& security_info)
     : TabSpecificContentSettings::SiteDataObserver(
           tab_specific_content_settings),
+      content::WebContentsObserver(web_contents),
       ui_(ui),
-#if !defined(OS_ANDROID)
-      web_contents_(web_contents),
-#endif
       show_info_bar_(false),
       site_url_(url),
       site_identity_status_(SITE_IDENTITY_STATUS_UNKNOWN),
@@ -371,9 +369,9 @@ void WebsiteSettings::OnUIClosing() {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  if (show_info_bar_ && web_contents_) {
+  if (show_info_bar_ && web_contents() && !web_contents()->IsBeingDestroyed()) {
     InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents_);
+        InfoBarService::FromWebContents(web_contents());
     if (infobar_service)
       WebsiteSettingsInfoBarDelegate::Create(infobar_service);
   }
