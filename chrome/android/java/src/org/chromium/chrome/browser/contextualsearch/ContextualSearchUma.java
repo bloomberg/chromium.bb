@@ -906,6 +906,28 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs whether results were seen when the selected text consisted of all capital letters.
+     * @param wasSearchContentViewSeen If the panel was opened.
+     */
+    public static void logAllCapsResultsSeen(boolean wasSearchContentViewSeen) {
+        RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchAllCapsResultsSeen",
+                wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN,
+                RESULTS_SEEN_BOUNDARY);
+    }
+
+    /**
+     * Logs whether results were seen when the selected text started with a capital letter but was
+     * not all capital letters.
+     * @param wasSearchContentViewSeen If the panel was opened.
+     */
+    public static void logStartedWithCapitalResultsSeen(boolean wasSearchContentViewSeen) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Search.ContextualSearchStartedWithCapitalResultsSeen",
+                wasSearchContentViewSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN,
+                RESULTS_SEEN_BOUNDARY);
+    }
+
+    /**
      * Logs whether results were seen and whether any tap suppression heuristics were satisfied.
      * @param wasSearchContentViewSeen If the panel was opened.
      * @param wasAnySuppressionHeuristicSatisfied Whether any of the implemented suppression
@@ -1013,6 +1035,24 @@ public class ContextualSearchUma {
     public static void logRecentScrollSuppression(boolean wasSuppressed) {
         RecordHistogram.recordEnumeratedHistogram("Search.ContextualSearchRecentScrollSuppression",
                 wasSuppressed ? TAP_SUPPRESSED : NOT_TAP_SUPPRESSED, TAP_SUPPRESSED_BOUNDARY);
+    }
+
+    /**
+     * Logs the duration between the panel being triggered due to a tap or long-press and the
+     * panel being dismissed due to a scroll.
+     * @param durationSincePanelTriggerMs The amount of time between the panel getting triggered and
+     *                                    the panel being dismissed due to a scroll.
+     * @param wasSearchContentViewSeen If the panel was opened.
+     */
+    public static void logDurationBetweenTriggerAndScroll(
+            long durationSincePanelTriggerMs, boolean wasSearchContentViewSeen) {
+        String histogram = wasSearchContentViewSeen
+                ? "Search.ContextualSearchDurationBetweenTriggerAndScrollSeen"
+                : "Search.ContextualSearchDurationBetweenTriggerAndScrollNotSeen";
+        if (durationSincePanelTriggerMs < 2000) {
+            RecordHistogram.recordCustomCountHistogram(
+                    histogram, (int) durationSincePanelTriggerMs, 1, 2000, 200);
+        }
     }
 
     /**

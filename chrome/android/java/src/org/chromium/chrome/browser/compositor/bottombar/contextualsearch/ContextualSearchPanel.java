@@ -460,6 +460,8 @@ public class ContextualSearchPanel extends OverlayPanel {
         if (getPanelState() == PanelState.CLOSED || getPanelState() == PanelState.PEEKED) {
             mHasContentBeenTouched = false;
         }
+
+        if (getPanelState() == PanelState.CLOSED) mPanelMetrics.onPanelTriggered();
     }
 
     @Override
