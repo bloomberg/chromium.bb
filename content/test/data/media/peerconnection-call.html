@@ -134,7 +134,7 @@
 
     detectVideoPlaying('remote-view-2', function() {
       // Construct a new media stream with remote tracks.
-      var newStream = new webkitMediaStream();
+      var newStream = new MediaStream();
       newStream.addTrack(
           gSecondConnection.getRemoteStreams()[0].getAudioTracks()[0]);
       newStream.addTrack(
@@ -447,7 +447,7 @@
     if (typeof localStream.clone === "function") {
       clonedStream = localStream.clone();
     } else {
-      clonedStream = new webkitMediaStream(localStream);
+      clonedStream = new MediaStream(localStream);
     }
 
     gFirstConnection.addStream(localStream);
@@ -481,7 +481,7 @@
   // added to both peer connections.
   function createNewVideoStreamAndAddToBothConnections(localStream) {
     displayAndRemember(localStream);
-    var newStream = new webkitMediaStream();
+    var newStream = new MediaStream();
     newStream.addTrack(localStream.getVideoTracks()[0]);
     gFirstConnection.addStream(newStream);
     gSecondConnection.addStream(newStream);

@@ -32,7 +32,7 @@ function streamActive() {
 }
 
 function gotStream2(s) {
-    stream = new webkitMediaStream();
+    stream = new MediaStream();
     shouldBeFalse('stream.active');
     stream.onactive = streamActive;
     stream.addTrack(s.getAudioTracks()[0]);

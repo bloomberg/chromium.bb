@@ -3237,6 +3237,26 @@ interface MediaSource : EventTarget
     setter onsourceclose
     setter onsourceended
     setter onsourceopen
+interface MediaStream : EventTarget
+    attribute @@toStringTag
+    getter active
+    getter id
+    getter onactive
+    getter onaddtrack
+    getter oninactive
+    getter onremovetrack
+    method addTrack
+    method clone
+    method constructor
+    method getAudioTracks
+    method getTrackById
+    method getTracks
+    method getVideoTracks
+    method removeTrack
+    setter onactive
+    setter onaddtrack
+    setter oninactive
+    setter onremovetrack
 interface MediaStreamAudioDestinationNode : AudioNode
     attribute @@toStringTag
     getter stream

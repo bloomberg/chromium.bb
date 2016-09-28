@@ -22,15 +22,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-mediastream
+// https://w3c.github.io/mediacapture-main/#idl-def-mediastream
 
-// TODO(foolip): Unprefix the MediaStream interface. https://crbug.com/649331
 [
     Constructor,
     Constructor(MediaStream stream),
     Constructor(sequence<MediaStreamTrack> tracks),
     ConstructorCallWith=ExecutionContext,
-    NoInterfaceObject,
 ] interface MediaStream : EventTarget {
     readonly attribute DOMString id;
     sequence<MediaStreamTrack> getAudioTracks();

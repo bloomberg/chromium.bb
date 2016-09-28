@@ -7,7 +7,7 @@
 <p id="description"></p>
 <div id="console"></div>
 <script>
-description("Tests webkitMediaStream.");
+description("Tests MediaStream constructor.");
 
 var undefined;
 var stream;
@@ -45,6 +45,16 @@ function error() {
     finishJSTest();
 }
 
+function testInterfaces() {
+  debug('Interface tests.');
+  shouldBe('typeof MediaStream', "'function'");
+  shouldBe('MediaStream.length', '0');
+  shouldBe('MediaStream.name', "'MediaStream'");
+  shouldBe('Object.getPrototypeOf(MediaStream.prototype)', 'EventTarget.prototype');
+  // webkitMediaStream is an alias of MediaStream
+  shouldBe('window.MediaStream', 'window.webkitMediaStream');
+}
+
 function getUserMedia(dictionary, callback) {
     try {
         navigator.webkitGetUserMedia(dictionary, callback, error);
@@ -56,40 +66,39 @@ function getUserMedia(dictionary, callback) {
 
 function gotStream(s) {
     localStream = s;
-    testPassed('Got local stream.');
+    debug('Got local stream.');
     shouldBe('localStream.getAudioTracks().length', '1');
     shouldBe('localStream.getVideoTracks().length', '1');
 
-    shouldBeTrue("typeof webkitMediaStream === 'function'");
     shouldBeTrue('checkIdAttribute(localStream.id)');
     testConstructor(localStream);
 }
 
 function testConstructor(s) {
     stream = s;
-    shouldThrow('new webkitMediaStream(document)');
-    shouldThrow('new webkitMediaStream([document])');
-    shouldThrow('new webkitMediaStream([stream.getAudioTracks()[0], document])');
-    shouldThrow('new webkitMediaStream([null])');
-    shouldThrow('new webkitMediaStream([undefined])');
-    shouldThrow('new webkitMediaStream(null)');
-    shouldThrow('new webkitMediaStream(undefined)');
+    shouldThrow('new MediaStream(document)');
+    shouldThrow('new MediaStream([document])');
+    shouldThrow('new MediaStream([stream.getAudioTracks()[0], document])');
+    shouldThrow('new MediaStream([null])');
+    shouldThrow('new MediaStream([undefined])');
+    shouldThrow('new MediaStream(null)');
+    shouldThrow('new MediaStream(undefined)');
 
-    verifyStream(new webkitMediaStream(), 0, 0);
-    verifyStream(new webkitMediaStream([]), 0, 0);
+    verifyStream(new MediaStream(), 0, 0);
+    verifyStream(new MediaStream([]), 0, 0);
 
-    verifyStream(new webkitMediaStream(s), s.getAudioTracks().length, s.getVideoTracks().length);
+    verifyStream(new MediaStream(s), s.getAudioTracks().length, s.getVideoTracks().length);
 
-    verifyStream(new webkitMediaStream([s.getAudioTracks()[0]]), 1, 0);
-    verifyStream(new webkitMediaStream([s.getVideoTracks()[0]]), 0, 1);
-    verifyStream(new webkitMediaStream([s.getAudioTracks()[0], s.getVideoTracks()[0]]), 1, 1);
-    verifyStream(new webkitMediaStream([s.getVideoTracks()[0], s.getAudioTracks()[0], s.getVideoTracks()[0]]), 1, 1);
+    verifyStream(new MediaStream([s.getAudioTracks()[0]]), 1, 0);
+    verifyStream(new MediaStream([s.getVideoTracks()[0]]), 0, 1);
+    verifyStream(new MediaStream([s.getAudioTracks()[0], s.getVideoTracks()[0]]), 1, 1);
+    verifyStream(new MediaStream([s.getVideoTracks()[0], s.getAudioTracks()[0], s.getVideoTracks()[0]]), 1, 1);
 
     s.oninactive = function () {
-        verifyStream(new webkitMediaStream([s.getAudioTracks()[0]]), 0, 0);
-        verifyStream(new webkitMediaStream([s.getVideoTracks()[0]]), 0, 0);
-        verifyStream(new webkitMediaStream([s.getAudioTracks()[0], s.getVideoTracks()[0]]), 0, 0);
-        verifyStream(new webkitMediaStream(s), 0, 0);
+        verifyStream(new MediaStream([s.getAudioTracks()[0]]), 0, 0);
+        verifyStream(new MediaStream([s.getVideoTracks()[0]]), 0, 0);
+        verifyStream(new MediaStream([s.getAudioTracks()[0], s.getVideoTracks()[0]]), 0, 0);
+        verifyStream(new MediaStream(s), 0, 0);
 
         finishJSTest();
     };
@@ -103,10 +112,10 @@ function verifyStream(s, numAudioTracks, numVideoTracks) {
     nAudio = numAudioTracks;
     nVideo = numVideoTracks;
 
-    testPassed('Stream constructed');
+    debug('Stream constructed');
     shouldBeNonNull(newStream);
     shouldBeDefined(newStream);
-    shouldBe("newStream.constructor.name", "'MediaStream'");
+    shouldBe('newStream.constructor.name', "'MediaStream'");
     shouldBe('newStream.getAudioTracks().length', 'nAudio');
     shouldBe('newStream.getVideoTracks().length', 'nVideo');
 
@@ -118,6 +127,7 @@ function verifyStream(s, numAudioTracks, numVideoTracks) {
     shouldBeTrue('checkIdAttribute(newStream.id)');
 }
 
+testInterfaces();
 getUserMedia({video:true, audio:true}, gotStream);
 
 window.jsTestIsAsync = true;
