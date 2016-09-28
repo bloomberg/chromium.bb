@@ -37,11 +37,12 @@ public interface ContextualSearchNetworkCommunicator {
      *        the search term.
      * @param contextLanguage The language of the context, or the empty string if unknown.
      * @param thumbnailUrl The URL of the thumbnail to display in our UX.
+     * @param caption The caption to display.
      */
     void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
-            String contextLanguage, String thumbnailUrl);
+            String contextLanguage, String thumbnailUrl, String caption);
 
     // --------------------------------------------------------------------------------------------
     // These are non-network actions that need to be stubbed out for testing.

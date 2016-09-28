@@ -143,24 +143,16 @@ void ContextualSearchManager::OnSearchTermResolutionResponse(
       base::android::ConvertUTF8ToJavaString(
           env,
           resolved_search_term.thumbnail_url.c_str());
+  base::android::ScopedJavaLocalRef<jstring> j_caption =
+      base::android::ConvertUTF8ToJavaString(
+          env, resolved_search_term.caption.c_str());
   Java_ContextualSearchManager_onSearchTermResolutionResponse(
       env, java_manager_, resolved_search_term.is_invalid,
       resolved_search_term.response_code, j_search_term, j_display_text,
       j_alternate_term, j_mid, resolved_search_term.prevent_preload,
       resolved_search_term.selection_start_adjust,
       resolved_search_term.selection_end_adjust, j_context_language,
-      j_thumbnail_url);
-
-  // Call onSetCaption to set the caption. Empty captions will be ignored.
-  // For entities, the caption should not be regarded as an answer. In the
-  // future, when quick actions are added, doesAnswer will need to be
-  // determined rather than always set to false.
-  bool doesAnswer = false;
-  base::android::ScopedJavaLocalRef<jstring> j_caption =
-      base::android::ConvertUTF8ToJavaString(
-          env, resolved_search_term.caption.c_str());
-  Java_ContextualSearchManager_onSetCaption(env, java_manager_, j_caption,
-                                            doesAnswer);
+      j_thumbnail_url, j_caption);
 }
 
 void ContextualSearchManager::OnSurroundingTextAvailable(

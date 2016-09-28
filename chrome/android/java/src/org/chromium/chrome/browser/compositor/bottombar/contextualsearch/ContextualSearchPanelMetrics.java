@@ -32,6 +32,7 @@ public class ContextualSearchPanelMetrics {
     private boolean mWasIconSpriteAnimated;
     private boolean mWasPanelOpenedBeyondPeek;
     private boolean mWasSelectionPartOfUrl;
+    private boolean mWasContextualCardsDataShown;
     // Whether any Tap suppression heuristic was satisfied when the panel was shown.
     private boolean mWasAnyHeuristicSatisfiedOnPanelShow;
     // Time when the panel peeks into view (not reset by a chained search).
@@ -95,6 +96,10 @@ public class ContextualSearchPanelMetrics {
             if (mWasSelectionPartOfUrl) {
                 ContextualSearchUma.logResultsSeenSelectionIsUrl(mWasSearchContentViewSeen,
                         mWasActivatedByTap);
+            }
+
+            if (mWasContextualCardsDataShown) {
+                ContextualSearchUma.logContextualCardsResultsSeen(mWasSearchContentViewSeen);
             }
 
             ContextualSearchUma.logBlacklistSeen(mBlacklistReason, mWasSearchContentViewSeen);
@@ -196,6 +201,7 @@ public class ContextualSearchPanelMetrics {
             mHasExitedMaximized = false;
             mIsSerpNavigation = false;
             mWasSelectionPartOfUrl = false;
+            mWasContextualCardsDataShown = false;
         }
     }
 
@@ -242,6 +248,14 @@ public class ContextualSearchPanelMetrics {
      */
     public void setWasSelectionPartOfUrl(boolean wasPartOfUrl) {
         mWasSelectionPartOfUrl = wasPartOfUrl;
+    }
+
+    /**
+     * @param wasContextualCardsDataShown Whether Contextual Cards data was shown in the Contextual
+     *                                    Search Bar.
+     */
+    public void setWasContextualCardsDataShown(boolean wasContextualCardsDataShown) {
+        mWasContextualCardsDataShown = wasContextualCardsDataShown;
     }
 
     /**

@@ -1236,6 +1236,26 @@ public class ContextualSearchUma {
     }
 
     /**
+     * Logs whether Contextual Cards data was shown. Should be logged on tap if Contextual
+     * Cards integration is enabled.
+     * @param shown Whether Contextual Cards data was shown in the Bar.
+     */
+    public static void logContextualCardsDataShown(boolean shown) {
+        RecordHistogram.recordBooleanHistogram(
+                "Search.ContextualSearchContextualCardsIntegration.DataShown", shown);
+    }
+
+    /**
+     * Logs whether results were seen when Contextual Cards data was shown.
+     * @param wasSeen Whether the search results were seen.
+     */
+    public static void logContextualCardsResultsSeen(boolean wasSeen) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Search.ContextualSearchContextualCardsIntegration.ResultsSeen",
+                wasSeen ? RESULTS_SEEN : RESULTS_NOT_SEEN, RESULTS_SEEN_BOUNDARY);
+    }
+
+    /**
      * Gets the state-change code for the given parameters by doing a lookup in the given map.
      * @param state The panel state.
      * @param reason The reason the state changed.

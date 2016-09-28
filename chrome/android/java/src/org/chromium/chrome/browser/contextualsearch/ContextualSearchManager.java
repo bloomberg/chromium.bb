@@ -654,22 +654,24 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      *        selection should be expanded by.
      * @param contextLanguage The language of the original search term, or an empty string.
      * @param thumbnailUrl The URL of the thumbnail to display in our UX.
+     * @param caption The caption to display.
      */
     @CalledByNative
     public void onSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             final String searchTerm, final String displayText, final String alternateTerm,
             final String mid, boolean doPreventPreload, int selectionStartAdjust,
-            int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl) {
+            int selectionEndAdjust, final String contextLanguage, final String thumbnailUrl,
+            final String caption) {
         mNetworkCommunicator.handleSearchTermResolutionResponse(isNetworkUnavailable, responseCode,
                 searchTerm, displayText, alternateTerm, mid, doPreventPreload, selectionStartAdjust,
-                selectionEndAdjust, contextLanguage, thumbnailUrl);
+                selectionEndAdjust, contextLanguage, thumbnailUrl, caption);
     }
 
     @Override
     public void handleSearchTermResolutionResponse(boolean isNetworkUnavailable, int responseCode,
             String searchTerm, String displayText, String alternateTerm, String mid,
             boolean doPreventPreload, int selectionStartAdjust, int selectionEndAdjust,
-            String contextLanguage, String thumbnailUrl) {
+            String contextLanguage, String thumbnailUrl, String caption) {
         // Show an appropriate message for what to search for.
         String message;
         boolean doLiteralSearch = false;
@@ -689,6 +691,21 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
         }
 
         mSearchPanel.onSearchTermResolved(message, thumbnailUrl);
+        if (!TextUtils.isEmpty(caption)) {
+            // Call #onSetCaption() to set the caption. For entities, the caption should not be
+            // regarded as an answer. In the future, when quick actions are added, doesAnswer will
+            // need to be determined rather than always set to false.
+            boolean doesAnswer = false;
+            onSetCaption(caption, doesAnswer);
+        }
+
+        if (ContextualSearchFieldTrial.isContextualCardsBarIntegrationEnabled()) {
+            boolean receivedContextualCardsData = !TextUtils.isEmpty(caption)
+                    || !TextUtils.isEmpty(thumbnailUrl);
+            ContextualSearchUma.logContextualCardsDataShown(receivedContextualCardsData);
+            mSearchPanel.getPanelMetrics().setWasContextualCardsDataShown(
+                    receivedContextualCardsData);
+        }
 
         // If there was an error, fall back onto a literal search for the selection.
         // Since we're showing the panel, there must be a selection.
@@ -752,7 +769,8 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     }
 
     /**
-     * Called by the page through the CS JavaScript API to notify CS that there is
+     * Called to set a caption. The caption may either be included with the search term resolution
+     * response or set by the page through the CS JavaScript API used to notify CS that there is
      * a caption available on the current overlay.
      * @param caption The caption to display.
      * @param doesAnswer Whether the caption should be regarded as an answer such
