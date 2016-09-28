@@ -578,7 +578,7 @@ void PipelineImpl::RendererWrapper::OnEnabledAudioTracksChanged(
   }
 
   DCHECK(demuxer_);
-  DCHECK(shared_state_.renderer);
+  DCHECK(shared_state_.renderer || (state_ != kPlaying));
 
   base::TimeDelta currTime = (state_ == kPlaying)
                                  ? shared_state_.renderer->GetMediaTime()
@@ -597,7 +597,7 @@ void PipelineImpl::RendererWrapper::OnSelectedVideoTrackChanged(
   }
 
   DCHECK(demuxer_);
-  DCHECK(shared_state_.renderer);
+  DCHECK(shared_state_.renderer || (state_ != kPlaying));
 
   base::TimeDelta currTime = (state_ == kPlaying)
                                  ? shared_state_.renderer->GetMediaTime()
