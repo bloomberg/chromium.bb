@@ -442,6 +442,26 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
                      return_value=slave_config_map)
     stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
 
+  def testPostSlaveBuildToBuildbucketWithExternalBuilds(self):
+    """Test PostSlaveBuildToBuildbucket with external builds."""
+    stage = self.ConstructStage()
+    mock_b = self.PatchObject(buildbucket_lib, 'PutBuildBucket')
+    slave_config = config_lib.BuildConfig(
+        important=True, active_waterfall=constants.WATERFALL_EXTERNAL)
+    stage.PostSlaveBuildToBuildbucket(
+        'fake_build_name', slave_config, 'fake_build_id', False)
+    mock_b.assert_called_with(mock.ANY, mock.ANY, mock.ANY, False)
+
+  def testPostSlaveBuildToBuildbucketWithInternalBuilds(self):
+    """test PostSlaveBuildToBuildbucket with internal builds."""
+    stage = self.ConstructStage()
+    mock_b = self.PatchObject(buildbucket_lib, 'PutBuildBucket')
+    slave_config = config_lib.BuildConfig(
+        important=True, active_waterfall=constants.WATERFALL_INTERNAL)
+    stage.PostSlaveBuildToBuildbucket(
+        'fake_build_name', slave_config, 'fake_build_id', False)
+    mock_b.assert_called_with(mock.ANY, mock.ANY, mock.ANY, True)
+
 
 class BaseCQTestCase(generic_stages_unittest.StageTestCase):
   """Helper class for testing the CommitQueueSync stage"""
