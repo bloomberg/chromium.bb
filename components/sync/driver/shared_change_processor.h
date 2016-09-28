@@ -106,6 +106,8 @@ class SharedChangeProcessor
       syncer::ModelType type,
       syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context);
+  virtual void AddLocalChangeObserver(syncer::LocalChangeObserver* observer);
+  virtual void RemoveLocalChangeObserver(syncer::LocalChangeObserver* observer);
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 

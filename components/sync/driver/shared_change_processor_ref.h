@@ -33,6 +33,9 @@ class SharedChangeProcessorRef : public syncer::SyncChangeProcessor,
       syncer::ModelType type,
       syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context) override;
+  void AddLocalChangeObserver(syncer::LocalChangeObserver* observer) override;
+  void RemoveLocalChangeObserver(
+      syncer::LocalChangeObserver* observer) override;
 
   // syncer::SyncErrorFactory implementation.
   syncer::SyncError CreateAndUploadError(

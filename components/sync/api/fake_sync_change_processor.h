@@ -36,6 +36,9 @@ class FakeSyncChangeProcessor : public SyncChangeProcessor {
   syncer::SyncError UpdateDataTypeContext(ModelType type,
                                           ContextRefreshStatus refresh_status,
                                           const std::string& context) override;
+  void AddLocalChangeObserver(syncer::LocalChangeObserver* observer) override;
+  void RemoveLocalChangeObserver(
+      syncer::LocalChangeObserver* observer) override;
 
   virtual const syncer::SyncChangeList& changes() const;
   virtual syncer::SyncChangeList& changes();

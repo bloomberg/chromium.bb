@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -16,6 +17,7 @@
 #include "components/sync/api/time.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/syncable/syncable_util.h"
+#include "components/sync_sessions/lost_navigations_recorder.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "components/sync_sessions/synced_window_delegate.h"
@@ -77,7 +79,7 @@ std::string TagFromSpecifics(const sync_pb::SessionSpecifics& specifics) {
 // |local_device| is owned by ProfileSyncService, its lifetime exceeds
 // lifetime of SessionSyncManager.
 SessionsSyncManager::SessionsSyncManager(
-    SyncSessionsClient* sessions_client,
+    sync_sessions::SyncSessionsClient* sessions_client,
     sync_driver::SyncPrefs* sync_prefs,
     LocalDeviceInfoProvider* local_device,
     std::unique_ptr<LocalSessionEventRouter> router,
@@ -119,6 +121,10 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
 
   error_handler_ = std::move(error_handler);
   sync_processor_ = std::move(sync_processor);
+
+  lost_navigations_recorder_ =
+      base::MakeUnique<sync_sessions::LostNavigationsRecorder>();
+  sync_processor_->AddLocalChangeObserver(lost_navigations_recorder_.get());
 
   local_session_header_node_id_ = TabNodePool::kInvalidTabNodeID;
 
@@ -436,8 +442,13 @@ void SessionsSyncManager::OnFaviconsChanged(const std::set<GURL>& page_urls,
 
 void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
   local_event_router_->Stop();
+  if (sync_processor_.get() && lost_navigations_recorder_.get()) {
+    sync_processor_->RemoveLocalChangeObserver(
+        lost_navigations_recorder_.get());
+  }
   sync_processor_.reset(NULL);
   error_handler_.reset();
+  lost_navigations_recorder_.reset();
   session_tracker_.Clear();
   local_tab_map_.clear();
   local_tab_pool_.Clear();

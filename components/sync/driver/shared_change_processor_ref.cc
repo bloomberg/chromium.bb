@@ -33,6 +33,16 @@ syncer::SyncError SharedChangeProcessorRef::UpdateDataTypeContext(
                                                   context);
 }
 
+void SharedChangeProcessorRef::AddLocalChangeObserver(
+    syncer::LocalChangeObserver* observer) {
+  change_processor_->AddLocalChangeObserver(observer);
+}
+
+void SharedChangeProcessorRef::RemoveLocalChangeObserver(
+    syncer::LocalChangeObserver* observer) {
+  change_processor_->RemoveLocalChangeObserver(observer);
+}
+
 syncer::SyncError SharedChangeProcessorRef::CreateAndUploadError(
     const tracked_objects::Location& from_here,
     const std::string& message) {

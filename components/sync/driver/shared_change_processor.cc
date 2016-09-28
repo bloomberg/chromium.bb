@@ -21,7 +21,7 @@ using base::AutoLock;
 
 namespace syncer {
 class AttachmentService;
-}
+}  // namespace syncer
 
 namespace sync_driver {
 
@@ -257,6 +257,22 @@ syncer::SyncError SharedChangeProcessor::UpdateDataTypeContext(
   }
   return generic_change_processor_->UpdateDataTypeContext(type, refresh_status,
                                                           context);
+}
+
+void SharedChangeProcessor::AddLocalChangeObserver(
+    syncer::LocalChangeObserver* observer) {
+  DCHECK(backend_task_runner_.get());
+  DCHECK(backend_task_runner_->BelongsToCurrentThread());
+
+  generic_change_processor_->AddLocalChangeObserver(observer);
+}
+
+void SharedChangeProcessor::RemoveLocalChangeObserver(
+    syncer::LocalChangeObserver* observer) {
+  DCHECK(backend_task_runner_.get());
+  DCHECK(backend_task_runner_->BelongsToCurrentThread());
+
+  generic_change_processor_->RemoveLocalChangeObserver(observer);
 }
 
 bool SharedChangeProcessor::SyncModelHasUserCreatedNodes(bool* has_nodes) {

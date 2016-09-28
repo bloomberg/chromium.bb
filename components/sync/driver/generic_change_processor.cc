@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/api/data_type_error_handler.h"
+#include "components/sync/api/local_change_observer.h"
 #include "components/sync/api/sync_change.h"
 #include "components/sync/api/sync_error.h"
 #include "components/sync/api/syncable_service.h"
@@ -244,6 +245,16 @@ syncer::SyncError GenericChangeProcessor::UpdateDataTypeContext(
   return syncer::SyncError();
 }
 
+void GenericChangeProcessor::AddLocalChangeObserver(
+    syncer::LocalChangeObserver* observer) {
+  local_change_observers_.AddObserver(observer);
+}
+
+void GenericChangeProcessor::RemoveLocalChangeObserver(
+    syncer::LocalChangeObserver* observer) {
+  local_change_observers_.RemoveObserver(observer);
+}
+
 void GenericChangeProcessor::OnAttachmentUploaded(
     const syncer::AttachmentId& attachment_id) {
   syncer::WriteTransaction trans(FROM_HERE, share_handle());
@@ -366,11 +377,14 @@ syncer::SyncError LogLookupFailure(
   }
 }
 
-syncer::SyncError AttemptDelete(const syncer::SyncChange& change,
-                                syncer::ModelType type,
-                                const std::string& type_str,
-                                syncer::WriteNode* node,
-                                syncer::DataTypeErrorHandler* error_handler) {
+}  // namespace
+
+syncer::SyncError GenericChangeProcessor::AttemptDelete(
+    const syncer::SyncChange& change,
+    syncer::ModelType type,
+    const std::string& type_str,
+    syncer::WriteNode* node,
+    syncer::DataTypeErrorHandler* error_handler) {
   DCHECK_EQ(change.change_type(), syncer::SyncChange::ACTION_DELETE);
   if (change.sync_data().IsLocal()) {
     const std::string& tag = syncer::SyncDataLocal(change.sync_data()).GetTag();
@@ -405,14 +419,13 @@ syncer::SyncError AttemptDelete(const syncer::SyncChange& change,
                               type, error_handler);
     }
   }
+  NotifyLocalChangeObservers(node->GetEntry(), change);
   if (IsActOnceDataType(type))
     node->Drop();
   else
     node->Tombstone();
   return syncer::SyncError();
 }
-
-}  // namespace
 
 syncer::SyncError GenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
@@ -553,6 +566,8 @@ syncer::SyncError GenericChangeProcessor::HandleActionAdd(
       }
     }
   }
+  NotifyLocalChangeObservers(sync_node->GetEntry(), change);
+
   sync_node->SetTitle(change.sync_data().GetTitle());
   SetNodeSpecifics(sync_data_local.GetSpecifics(), sync_node);
 
@@ -616,6 +631,8 @@ syncer::SyncError GenericChangeProcessor::HandleActionUpdate(
       return error;
     }
   }
+
+  NotifyLocalChangeObservers(sync_node->GetEntry(), change);
 
   sync_node->SetTitle(change.sync_data().GetTitle());
   SetNodeSpecifics(sync_data_local.GetSpecifics(), sync_node);
@@ -681,6 +698,13 @@ void GenericChangeProcessor::UploadAllAttachmentsNotOnServer() {
   if (!ids.empty()) {
     attachment_service_->UploadAttachments(ids);
   }
+}
+
+void GenericChangeProcessor::NotifyLocalChangeObservers(
+    const syncer::syncable::Entry* current_entry,
+    const syncer::SyncChange& change) {
+  FOR_EACH_OBSERVER(syncer::LocalChangeObserver, local_change_observers_,
+                    OnLocalChange(current_entry, change));
 }
 
 std::unique_ptr<syncer::AttachmentService>

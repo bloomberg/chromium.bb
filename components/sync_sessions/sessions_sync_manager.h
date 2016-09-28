@@ -25,6 +25,7 @@
 #include "components/sync/driver/sync_prefs.h"
 #include "components/sync_sessions/favicon_cache.h"
 #include "components/sync_sessions/local_session_event_router.h"
+#include "components/sync_sessions/lost_navigations_recorder.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "components/sync_sessions/revisit/page_revisit_broadcaster.h"
 #include "components/sync_sessions/synced_session.h"
@@ -369,6 +370,9 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   // Owns revisiting instrumentation logic for page visit events.
   PageRevisitBroadcaster page_revisit_broadcaster_;
+
+  std::unique_ptr<sync_sessions::LostNavigationsRecorder>
+      lost_navigations_recorder_;
 
   // Callback to inform interested observer that new sessions data has arrived.
   base::Closure sessions_updated_callback_;

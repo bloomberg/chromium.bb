@@ -18,4 +18,14 @@ syncer::SyncError SyncChangeProcessor::UpdateDataTypeContext(
   return syncer::SyncError();
 }
 
+void SyncChangeProcessor::AddLocalChangeObserver(
+    LocalChangeObserver* observer) {
+  NOTREACHED();
+}
+
+void SyncChangeProcessor::RemoveLocalChangeObserver(
+    LocalChangeObserver* observer) {
+  NOTREACHED();
+}
+
 }  // namespace syncer

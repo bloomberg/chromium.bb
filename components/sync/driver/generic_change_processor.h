@@ -30,6 +30,10 @@ class WriteNode;
 class WriteTransaction;
 
 typedef std::vector<syncer::SyncData> SyncDataList;
+
+namespace syncable {
+class Entry;
+}  // namespace syncable
 }  // namespace syncer
 
 namespace sync_driver {
@@ -82,6 +86,9 @@ class GenericChangeProcessor : public ChangeProcessor,
       syncer::ModelType type,
       syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context) override;
+  void AddLocalChangeObserver(syncer::LocalChangeObserver* observer) override;
+  void RemoveLocalChangeObserver(
+      syncer::LocalChangeObserver* observer) override;
 
   // syncer::AttachmentService::Delegate implementation.
   void OnAttachmentUploaded(const syncer::AttachmentId& attachment_id) override;
@@ -113,6 +120,11 @@ class GenericChangeProcessor : public ChangeProcessor,
   syncer::UserShare* share_handle() const override;
 
  private:
+  syncer::SyncError AttemptDelete(const syncer::SyncChange& change,
+                                  syncer::ModelType type,
+                                  const std::string& type_str,
+                                  syncer::WriteNode* node,
+                                  syncer::DataTypeErrorHandler* error_handler);
   // Logically part of ProcessSyncChanges.
   //
   // |new_attachments| is an output parameter containing newly added attachments
@@ -137,6 +149,11 @@ class GenericChangeProcessor : public ChangeProcessor,
   // Begin uploading attachments that have not yet been uploaded to the sync
   // server.
   void UploadAllAttachmentsNotOnServer();
+
+  // Notify every registered local change observer that |change| is about to be
+  // applied to |current_entry|.
+  void NotifyLocalChangeObservers(const syncer::syncable::Entry* current_entry,
+                                  const syncer::SyncChange& change);
 
   const syncer::ModelType type_;
 
@@ -165,6 +182,9 @@ class GenericChangeProcessor : public ChangeProcessor,
   // AttachmentService for datatype. Can be NULL if datatype doesn't use
   // attachments.
   std::unique_ptr<syncer::AttachmentService> attachment_service_;
+
+  // List of observers that want to be notified of local changes being written.
+  base::ObserverList<syncer::LocalChangeObserver> local_change_observers_;
 
   // Must be destroyed before attachment_service_ to ensure WeakPtrs are
   // invalidated before attachment_service_ is destroyed.

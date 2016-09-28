@@ -180,6 +180,10 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
     return sync_data_to_return_;
   }
 
+  void AddLocalChangeObserver(syncer::LocalChangeObserver* observer) override {}
+  void RemoveLocalChangeObserver(
+      syncer::LocalChangeObserver* observer) override {}
+
   void FailProcessSyncChangesWith(const syncer::SyncError& error) {
     error_ = error;
   }

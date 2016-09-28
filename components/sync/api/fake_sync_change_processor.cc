@@ -33,6 +33,12 @@ syncer::SyncError FakeSyncChangeProcessor::UpdateDataTypeContext(
   return syncer::SyncError();
 }
 
+void FakeSyncChangeProcessor::AddLocalChangeObserver(
+    syncer::LocalChangeObserver* observer) {}
+
+void FakeSyncChangeProcessor::RemoveLocalChangeObserver(
+    syncer::LocalChangeObserver* observer) {}
+
 const syncer::SyncChangeList& FakeSyncChangeProcessor::changes() const {
   return changes_;
 }
