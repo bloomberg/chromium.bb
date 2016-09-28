@@ -272,8 +272,6 @@ Node::~Node()
     // this condition (we cannot directly access it here.)
     RELEASE_ASSERT(hasRareData() || !layoutObject());
     InstanceCounters::decrementCounter(InstanceCounters::NodeCounter);
-    if (!hasRareData() && m_data.m_computedStyle)
-        m_data.m_computedStyle->deref();
 }
 
 NodeRareData* Node::rareData() const
@@ -288,9 +286,9 @@ NodeRareData& Node::ensureRareData()
         return *rareData();
 
     if (isElementNode())
-        m_data.m_rareData = ElementRareData::create(layoutObject());
+        m_data.m_rareData = ElementRareData::create(m_data.m_layoutObject);
     else
-        m_data.m_rareData = NodeRareData::create(layoutObject());
+        m_data.m_rareData = NodeRareData::create(m_data.m_layoutObject);
 
     DCHECK(m_data.m_rareData);
 

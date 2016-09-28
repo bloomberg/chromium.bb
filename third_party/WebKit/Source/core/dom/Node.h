@@ -481,19 +481,13 @@ public:
 
     // As layoutObject() includes a branch you should avoid calling it repeatedly in hot code paths.
     // Note that if a Node has a layoutObject, it's parentNode is guaranteed to have one as well.
-    LayoutObject* layoutObject() const
-    {
-        if (hasRareData())
-            return m_data.m_rareData->layoutObject();
-        return hasLayoutObject() ? m_data.m_layoutObject : nullptr;
-    }
+    LayoutObject* layoutObject() const { return hasRareData() ? m_data.m_rareData->layoutObject() : m_data.m_layoutObject; }
     void setLayoutObject(LayoutObject* layoutObject)
     {
         if (hasRareData())
             m_data.m_rareData->setLayoutObject(layoutObject);
         else
             m_data.m_layoutObject = layoutObject;
-        setFlag(static_cast<bool>(layoutObject), HasLayoutObjectFlag);
     }
 
     // Use these two methods with caution.
@@ -706,12 +700,10 @@ private:
         V0CustomElementFlag = 1 << 28,
         V0CustomElementUpgradedFlag = 1 << 29,
 
-        HasLayoutObjectFlag = 1 << 30,
-
         DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
     };
 
-    // 1 bit remaining.
+    // 3 bits remaining.
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }
@@ -743,7 +735,6 @@ protected:
 
     static void reattachWhitespaceSiblingsIfNeeded(Text* start);
 
-    bool hasLayoutObject() const { return getFlag(HasLayoutObjectFlag); }
     bool hasRareData() const { return getFlag(HasRareDataFlag); }
 
     NodeRareData* rareData() const;
@@ -798,7 +789,6 @@ private:
     // When a node has rare data we move the layoutObject into the rare data.
     union DataUnion {
         DataUnion() : m_layoutObject(nullptr) { }
-        ComputedStyle* m_computedStyle;
         // LayoutObjects are fully owned by their DOM node. See LayoutObject's
         // LIFETIME documentation section.
         LayoutObject* m_layoutObject;

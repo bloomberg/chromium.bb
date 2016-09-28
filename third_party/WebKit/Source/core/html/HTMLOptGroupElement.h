@@ -65,7 +65,6 @@ private:
 
     void updateGroupLabel();
 
-    // TODO(bugsnash): Use Node's ComputedStyle instead
     RefPtr<ComputedStyle> m_style;
 };
 

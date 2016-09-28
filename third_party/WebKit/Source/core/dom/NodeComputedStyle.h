@@ -25,10 +25,8 @@
 #ifndef NodeComputedStyle_h
 #define NodeComputedStyle_h
 
-#include "core/dom/ElementRareData.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
-#include "core/dom/NodeRareData.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
@@ -43,20 +41,14 @@ inline const ComputedStyle* Node::computedStyle() const
 
 inline ComputedStyle* Node::mutableComputedStyle() const
 {
-    if (hasLayoutObject())
-        return layoutObject()->mutableStyle();
+    if (LayoutObject* layoutObject = this->layoutObject())
+        return layoutObject->mutableStyle();
     // <option> and <optgroup> can be styled even if they don't get layout objects,
     // so they store their style internally and return it through nonLayoutObjectComputedStyle().
     // We check here explicitly to avoid the virtual call in the common case.
     if (isHTMLOptGroupElement(*this) || isHTMLOptionElement(this))
         return nonLayoutObjectComputedStyle();
-    if (hasRareData()) {
-        NodeRareData* rareData = this->rareData();
-        if (!rareData->isElementRareData())
-            return nullptr;
-        return static_cast<ElementRareData*>(rareData)->computedStyle();
-    }
-    return m_data.m_computedStyle;
+    return 0;
 }
 
 inline const ComputedStyle* Node::parentComputedStyle() const
