@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/sensor-helpers.js"></script>
+<script>
+
+'use strict';
+
+if (!window.testRunner)
+    debug('This test cannot be run without the TestRunner');
+
+const kDefaultReadingValue = 3.1415;
+
+function update_sensor_reading(buffer) {
+  buffer[0] = window.performance.now();
+  buffer[1] = kDefaultReadingValue;
+}
+
+sensor_test(sensor => {
+  let ambientLightSensor = new AmbientLightSensor({frequency: 60});
+  ambientLightSensor.start();
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then((mockSensor) => {
+        return new Promise((resolve, reject) => {
+          ambientLightSensor.onstatechange = event => {
+            if (ambientLightSensor.state === 'idle') {
+              resolve(mockSensor);
+            }
+
+            if (ambientLightSensor.state === 'active') {
+              ambientLightSensor.stop();
+            }
+          };
+          ambientLightSensor.onerror = reject;
+        });
+      })
+      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+  return testPromise;
+}, 'Test that sensor can be successfully created if sensor is supported.');
+
+sensor_test(sensor => {
+  let ambientLightSensor = new AmbientLightSensor();
+  ambientLightSensor.start();
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then((mockSensor) => {
+        return new Promise((resolve, reject) => {
+          ambientLightSensor.onstatechange = event => {
+            if (ambientLightSensor.state === 'idle') {
+              resolve(mockSensor);
+            }
+
+            if (ambientLightSensor.state === 'active') {
+              ambientLightSensor.stop();
+            }
+          };
+
+          ambientLightSensor.onerror = reject;
+        });
+      })
+      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+  return testPromise;
+}, 'Test that sensor can be constructed with default configuration.');
+
+sensor_test(sensor => {
+  let ambientLightSensor = new AmbientLightSensor({frequency: 60});
+  ambientLightSensor.start();
+
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then(mockSensor => { return mockSensor.addConfigurationCalled(); })
+      .then(mockSensor => {
+         return new Promise((resolve, reject) => {
+          ambientLightSensor.onstatechange = event => {
+            if (ambientLightSensor.state === 'idle') {
+              resolve(mockSensor);
+            }
+
+            if (ambientLightSensor.state === 'active') {
+              ambientLightSensor.stop();
+            }
+          };
+         });
+      })
+      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+  return testPromise;
+}, 'Test that addConfiguration and removeConfiguration is called.');
+
+sensor_test(sensor => {
+  let ambientLightSensor = new AmbientLightSensor({frequency: 60});
+  ambientLightSensor.start();
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then(mockSensor => {
+        return mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
+      })
+      .then((mockSensor) => {
+        return new Promise((resolve, reject) => {
+          ambientLightSensor.onstatechange = event => {
+            if (ambientLightSensor.state === 'idle') {
+              resolve(mockSensor);
+            }
+          };
+
+          ambientLightSensor.onchange = e => {
+            assert_equals(e.reading.illuminance, kDefaultReadingValue);
+            ambientLightSensor.stop();
+          };
+
+          ambientLightSensor.onerror = reject;
+        });
+      })
+      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+  return testPromise;
+}, 'Test that onChange is called and sensor reading is valid.');
+
+sensor_test(sensor => {
+  let ambientLightSensor = new AmbientLightSensor({frequency: 60});
+  ambientLightSensor.start();
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then(mockSensor => {
+        return mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
+      })
+      .then((mockSensor) => {
+        return new Promise((resolve, reject) => {
+          ambientLightSensor.onstatechange = () => {
+            if (ambientLightSensor.state === 'idle') {
+              assert_equals(ambientLightSensor.reading, null);
+              resolve(mockSensor);
+            }
+          }
+
+          ambientLightSensor.onchange = e => {
+            assert_equals(e.reading.illuminance, kDefaultReadingValue);
+            ambientLightSensor.stop();
+          }
+          ambientLightSensor.onerror = reject;
+        });
+      })
+      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+  return testPromise;
+}, 'Test that sensor reading is not updated when sensor is stopped.');
+
+sensor_test(sensor => {
+  let ambientLightSensor = new AmbientLightSensor();
+  ambientLightSensor.start();
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then(mockSensor => {
+        return mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
+      })
+      .then((mockSensor) => {
+        return new Promise((resolve, reject) => {
+          ambientLightSensor.onchange = e => {
+            if (e.reading.illuminance == kDefaultReadingValue) {
+              resolve(mockSensor);
+            }
+          }
+        ambientLightSensor.onerror = reject;
+        });
+      })
+      .then((mockSensor) => {
+        testRunner.setPageVisibility("hidden");
+        return mockSensor.suspendCalled();
+      })
+      .then((mockSensor) => {
+        testRunner.setPageVisibility("visible");
+        return mockSensor.resumeCalled();
+      })
+      .then((mockSensor) => {
+        return new Promise((resolve, reject) => {
+          ambientLightSensor.onstatechange = () => {
+            if (ambientLightSensor.state === 'idle') {
+              resolve(mockSensor);
+            }
+          }
+          ambientLightSensor.stop();
+          ambientLightSensor.onerror = reject;
+        });
+      })
+      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+  return testPromise;
+}, 'Test that sensor receives suspend / resume notifications when page'
+    +' visibility changes.');
+
+</script>

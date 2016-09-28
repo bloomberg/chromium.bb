@@ -16,7 +16,7 @@ class ExecutionContext;
 class ScriptState;
 
 class SensorReading
-    : public GarbageCollected<SensorReading>
+    : public GarbageCollectedFinalized<SensorReading>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -27,6 +27,8 @@ public:
     // Returns 'true' if the current reading value is different than the given
     // previous one; otherwise returns 'false'.
     virtual bool isReadingUpdated(const SensorProxy::Reading& previous) const = 0;
+
+    virtual ~SensorReading();
 
 protected:
     explicit SensorReading(SensorProxy*);

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/sensor-helpers.js"></script>
+<script>
+
+'use strict';
+
+sensor_test(sensor => {
+  assert_true(sensor instanceof Object);
+  assert_true(sensor.mockSensorProvider instanceof Object);
+}, 'Sensor Mojo bindings and mock interfaces are available to tests.')
+</script>
