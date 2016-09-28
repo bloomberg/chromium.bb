@@ -102,13 +102,11 @@ class QuicEndpoint : public Endpoint,
                             const IPAddress& self_address,
                             const IPEndPoint& peer_address,
                             PerPacketOptions* options) override;
-    bool IsWriteBlockedDataBuffered() const override { return false; }
-    bool IsWriteBlocked() const override { return is_blocked_; }
-    void SetWritable() override { is_blocked_ = false; }
+    bool IsWriteBlockedDataBuffered() const override;
+    bool IsWriteBlocked() const override;
+    void SetWritable() override;
     QuicByteCount GetMaxPacketSize(
-        const IPEndPoint& /*peer_address*/) const override {
-      return kMaxPacketSize;
-    }
+        const IPEndPoint& peer_address) const override;
 
    private:
     QuicEndpoint* endpoint_;

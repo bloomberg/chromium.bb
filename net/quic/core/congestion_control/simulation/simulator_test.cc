@@ -209,7 +209,7 @@ TEST(SimulatorTest, DirectLinkSaturation) {
   const QuicTime end_time = simulator.GetClock()->Now();
   const QuicBandwidth observed_bandwidth = QuicBandwidth::FromBytesAndTimeDelta(
       saturator_a.bytes_transmitted(), end_time - start_time);
-  test::ExpectApproxEq(link.bandwidth(), observed_bandwidth, 0.01);
+  test::ExpectApproxEq(link.bandwidth(), observed_bandwidth, 0.01f);
 }
 
 // Accepts packets and stores them internally.

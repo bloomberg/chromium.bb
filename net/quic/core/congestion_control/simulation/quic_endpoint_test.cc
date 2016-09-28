@@ -37,7 +37,7 @@ class QuicEndpointTest : public ::testing::Test {
 };
 
 // Test transmission from one host to another.
-TEST_F(QuicEndpointTest, DISABLED_OneWayTransmission) {
+TEST_F(QuicEndpointTest, OneWayTransmission) {
   QuicEndpoint endpoint_a(&simulator_, "Endpoint A", "Endpoint B",
                           Perspective::IS_CLIENT, 42);
   QuicEndpoint endpoint_b(&simulator_, "Endpoint B", "Endpoint A",
@@ -72,7 +72,7 @@ TEST_F(QuicEndpointTest, DISABLED_OneWayTransmission) {
 
 // Test transmission of 1 MiB of data between two hosts simultaneously in both
 // directions.
-TEST_F(QuicEndpointTest, DISABLED_TwoWayTransmission) {
+TEST_F(QuicEndpointTest, TwoWayTransmission) {
   QuicEndpoint endpoint_a(&simulator_, "Endpoint A", "Endpoint B",
                           Perspective::IS_CLIENT, 42);
   QuicEndpoint endpoint_b(&simulator_, "Endpoint B", "Endpoint A",
@@ -96,7 +96,7 @@ TEST_F(QuicEndpointTest, DISABLED_TwoWayTransmission) {
 }
 
 // Simulate three hosts trying to send data to a fourth one simultaneously.
-TEST_F(QuicEndpointTest, DISABLED_Competition) {
+TEST_F(QuicEndpointTest, Competition) {
   auto endpoint_a = base::MakeUnique<QuicEndpoint>(
       &simulator_, "Endpoint A", "Endpoint D (A)", Perspective::IS_CLIENT, 42);
   auto endpoint_b = base::MakeUnique<QuicEndpoint>(

@@ -128,7 +128,7 @@ void QuicEndpoint::SetTxPort(ConstrainedPortInterface* port) {
 }
 
 // Return the data that |kDataStream| is supposed to have at offset |offset|.
-inline static uint8_t DataAtOffset(QuicStreamOffset offset) {
+inline static char DataAtOffset(QuicStreamOffset offset) {
   return offset % 256;
 }
 
@@ -199,6 +199,20 @@ WriteResult QuicEndpoint::Writer::WritePacket(const char* buffer,
   endpoint_->nic_tx_queue_.AcceptPacket(std::move(packet));
 
   return WriteResult(WRITE_STATUS_OK, buf_len);
+}
+
+bool QuicEndpoint::Writer::IsWriteBlockedDataBuffered() const {
+  return false;
+}
+bool QuicEndpoint::Writer::IsWriteBlocked() const {
+  return is_blocked_;
+}
+void QuicEndpoint::Writer::SetWritable() {
+  is_blocked_ = false;
+}
+QuicByteCount QuicEndpoint::Writer::GetMaxPacketSize(
+    const IPEndPoint& /*peer_address*/) const {
+  return kMaxPacketSize;
 }
 
 void QuicEndpoint::WriteStreamData() {
