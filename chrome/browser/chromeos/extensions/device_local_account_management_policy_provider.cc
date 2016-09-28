@@ -370,45 +370,31 @@ const char* const kSafeManifestEntries[] = {
 // [1] https://developer.chrome.com/apps/declare_permissions
 // [2] https://developer.chrome.com/apps/api_other
 const char* const kSafePermissionStrings[] = {
-    // Risky: Reading accessibility settings could allow to infer health
-    // information.
-    // "accessibilityFeatures.read",
-
     // Modifying accessibility settings seems safe (at most a user could be
     // confused by it).
     "accessibilityFeatures.modify",
 
+    // Originally blocked due to concerns about leaking user health information,
+    // but it seems this does more harm than good as it would likely prevent the
+    // extension from enabling assistive features. If the concerns prevail, we
+    // should probably not block, but adjust the API to pretend accessibility is
+    // off, so we don't punish apps that try to be helpful.
+    "accessibilityFeatures.read",
+
+    // Allows access to web contents in response to user gesture. Note that this
+    // doesn't trigger a permission warning on install though, so blocking is
+    // somewhat at odds with the spirit of the API - however I presume the API
+    // design assumes user-installed extensions, which we don't have here.
+    // "activeTab",
+
     // Schedule code to run at future times.
     "alarms",
 
-    // Risk of listening attack.
-    // "audio",
+    // Allow, but keep PS UX on top regardless.
+    // "app.window.alwaysOnTop",
 
-    // Risk of listening attack.
-    // "audioCapture",
-
-    // Just resource management, probably doesn't even apply to Chrome OS.
-    "background",
-
-    // Open a new tab with a given URL.
-    "browser",
-
-    // Risky: Reading from clipboard could expose private information.
-    // "clipboardRead",
-
-    // Writing to clipboard is safe.
-    "clipboardWrite",
-
-    // Potentially risky: Could be used to spoof system UI.
-    // "contextMenus",
-
-    // Placing a document on the scanner implies user consent.
-    "documentScan",
-
-    // Possibly risky due to its experimental nature: not vetted for security,
-    // potentially buggy, subject to change without notice.
-    // "experimental",
-
+    // TODO(isandrk): The following permissions need to be adjusted
+    // (crbug/651071).
     // Fullscreen is a no-op for Public Session.  Whitelisting nevertheless to
     // broaden the range of supported apps.  (The recommended permission names
     // are "app.window.*" but their unprefixed counterparts are still
@@ -418,88 +404,284 @@ const char* const kSafePermissionStrings[] = {
     "fullscreen",
     "overrideEscFullscreen",
 
-    // TBD
-    // "fileSystemProvider",
+    "app.window.shape",
+
+    // The embedded app is subject to the restrictions as well obviously.
+    "appview",
+
+    // Risk of listening attack.
+    // "audio",
+
+    // Need to surface notification to the user. Check what existing UI we have
+    // and whether that's sufficient for PS.
+    // "audioCapture",
+
+    // Just resource management, probably doesn't even apply to Chrome OS.
+    "background",
+
+    // Access to URLs only, no content.
+    "bookmarks",
+
+    // Open a new tab with a given URL.
+    "browser",
+
+    // This allows to read the current browsing data removal dialog settings,
+    // but I don't see why this would be problematic.
+    "browsingData",
+
+    "certificateProvider",
+
+    // This is risky, but blocking extensions just because they declare
+    // clipboardRead is unfortunate. Options: (1) Make clipboardRead return
+    // empty string (2) confirmation dialog.
+    // "clipboardRead",
+
+    // Writing to clipboard is safe.
+    "clipboardWrite",
+
+    "contentSettings",
+
+    // Provides access to URLs.
+    "contextMenus",
+
+    // This would provie access to auth cookies, so needs to be blocked.
+    // "cookies",
+
+    // Provides access to the DOM, so block.
+    // "debugger",
+
+    // This is mostly fine, but has a RequestContentScript action that'd allow
+    // access to page content, which we can't allow.
+    // "declarativeContent",
+
+    // Allow, but either (1) ask user for confirmation or (2) return blank
+    // capture.
+    // "desktopCapture",
+
+    // Haven't checked in detail what this does, but messing with devtools
+    // usually comes with the ability to access page content.
+    // "devtools",
+
+    // I think it's fine to allow this as it should be obvious to users that
+    // scanning a document on the scanner will make it available to the
+    // organization (placing a document in the scanner implies user consent).
+    "documentScan",
+
+    // Doesn't allow access to file contents AFAICT, so should be fine.
+    "downloads",
+
+    // Triggers a file open for the download.
+    "downloads.open",
+
+    // Controls shelf visibility.
+    "downloads.shelf",
+
+    "enterprise.deviceAttributes",
+
+    "enterprise.platformKeys",
+
+    // Possibly risky due to its experimental nature: not vetted for security,
+    // potentially buggy, subject to change without notice (shouldn't
+    // blanket-allow experimental stuff).
+    // "experimental",
+
+    "fileBrowserHandler",
+
+    // Allow: (1) session state is ephemeral anyways, so no leaks across users.
+    // (2) a user that stores data on an org-owned machine won't be surprised if
+    // the org can see it.
+    "fileSystem",
+
+    "fileSystem.directory",
+
+    "fileSystem.requestFileSystem",
+
+    "fileSystem.retainEntries",
+
+    "fileSystem.write",
+
+    "fileSystemProvider",
+
+    "fontSettings",
 
     // Just another type of connectivity.  On the system side, no user data is
     // involved, implicitly or explicity.
     "gcm",
 
-    // Risky: Accessing location without explicit user consent.
-    // "geolocation",
+    // It's fair game for a kiosk device owner to locate their device. Could
+    // just as well do this via IP-geolocation mechanism, so little difference.
+    "geolocation",
 
-    // Risky: Potentially allows keylogging.
-    // "hid",
+    // Somewhat risky as this opens up the ability to intercept user input.
+    // However, keyboards and mice are apparently not surfaced via this API.
+    "hid",
+
+    // Just URLs and meta data.
+    "history",
+
+    // Not really useful as there's no signed-in user, so OK to allow.
+    "identity",
+
+    "identity.email",
 
     // Detection of idle state.
     "idle",
 
-    // Dev channel only.  Not evaluated.
-    // "location",
+    // IME extensions see keystrokes. This might be useful though, might rely on
+    // manual whitelisting (assuming the number of useful IME extensions is
+    // relatively limited).
+    // "input",
+
+    // Fair game - admin can manipulate extensions via policy anyways.
+    "management",
 
     // Just another type of connectivity.
     "mdns",
 
-    // Risky: The "allAutoDectected" option could allow access to user data
-    // without their consent.
-    // "mediaGalleries",
+    // Storage is ephemeral, so user needs to get their content onto the Kiosk
+    // device (download or plug in media), both of which seem sufficient consent
+    // actions.
+    "mediaGalleries",
 
-    // Potentially risky: Could be used to spoof system UI.
-    // "notifications",
+    "mediaGalleries.allAutoDetected",
 
-    // TBD.  Could allow UX spoofing.
-    // "pointerLock",
+    "mediaGalleries.copyTo",
+
+    "mediaGalleries.delete",
+
+    "mediaGalleries.read",
+
+    // Probably doesn't work on Chrome OS anyways.
+    "nativeMessaging",
+
+    // Admin controls network connectivity anyways.
+    "networking.config",
+
+    // Status quo considers this risky due to the ability to fake system UI -
+    // low risk IMHO however since notifications are already badged with app
+    // icon and won't extract any data.
+    "notifications",
+
+    // Captures page content, so block. Alternatively: Allow, but either (1)
+    // prompt user or (2) return blank content.
+    // "pageCapture",
+
+    // Allows to use machine crypto keys - these would be provisioned by the
+    // admin anyways.
+    "platformKeys",
+
+    // No plugins on Chrome OS anyways.
+    "plugin",
+
+    // Status quo notes concern about UX spoofing - not an issue IMHO.
+    "pointerLock",
 
     // Potentiall risky: chrome.power.requestKeepAwake can inhibit idle time
     // detection and prevent idle time logout and that way reduce isolation
     // between subsequent Public Session users.
+    // OK to allow as long as it doesn't affect PS idle time detection.
     // "power",
 
-    // Risky: Could be used to siphon printed documents.
-    // "printerProvider",
+    // Printing initiated by user anyways, which provides consent gesture.
+    "printerProvider",
+
+    // The settings exposed via the API are under admin policy control anyways.
+    "privacy",
+
+    // Admin controls network anyways.
+    "proxy",
+
+    "runtime",
+
+    // Looking at the code, this feature is declared but used nowhere.
+    // "screensaver",
 
     // Access serial port.  It's hard to conceive a case in which private data
     // is stored on a serial device and being read without the user's consent.
+    // Minor risk of intercepting input events from serial input devices - given
+    // that serial input devices are exceedingly rare, OK to allow.
     "serial",
+
+    // Access to URLs.
+    "sessions",
+
+    "socket",
 
     // Per-app sandbox.  User cannot log into Public Session, thus storage
     // cannot be sync'ed to the cloud.
     "storage",
 
-    // Access system parameters.
+    // Not very useful since no signed-in user.
+    "syncFileSystem",
+
+    // Returns CPU parameters.
     "system.cpu",
 
-    // Access system parameters.
+    // Display parameters query/manipulation.
     "system.display",
 
-    // Access system parameters.
+    // Memory parameters access.
     "system.memory",
 
-    // Access system parameters.
+    // Enumerates network interfaces.
     "system.network",
 
-    // Risky: Could leak the name of a user-supplied storage medium.
-    // "system.storage",
+    // Enumerates removable storage.
+    "system.storage",
 
-    // Just UX.
+    // Provides access to screen contents, so block. Alternatively, (1) prompt
+    // for user consent or (2) return blank capture.
+    // "tabCapture",
+
+    // URLs and page titles.
+    "tabs",
+
+    // URLs and page titles.
+    "topSites",
+
+    // Allows to generate TTS, but no content access. Just UX.
     "tts",
+
+    // Might need this, but has content access. Manual whitelisting?
+    // "ttsEngine",
 
     // Excessive resource usage is not a risk.
     "unlimitedStorage",
 
-    // Risky: Raw peripheral access could allow an app to read user data from
-    // USB storage devices that have been plugged in by the user.  Not sure if
-    // that can happen though, because the system might claim storage devices
-    // for itself.  Still, leaving disallowed for now to be on the safe side.
-    // "usb",
+    // Plugging the USB device is sufficient as consent gesture.
+    "usb",
 
-    // TBD: What if one user connects and the next one is unaware of that?
-    // "vpnProvider",
+    // Belongs to the USB API.
+    "usbDevices",
+
+    // Need to surface notification to the user. Check what existing UI we have
+    // and whether that's sufficient for PS.
+    // "videoCapture",
+
+    // Admin controls network config anyways.
+    "vpnProvider",
 
     // Just UX.
     "wallpaper",
 
-    // Web capabilities are safe.
+    // Access to URLs.
+    "webNavigation",
+
+    // Provides access to cookies and form upload data. Options: (1) block,
+    // (2) strip all content in events.
+    // "webRequest",
+
+    // Fine once webRequest is adjusted.
+    // "webRequestBlocking",
+
+    // This allows content scripts and capturing. However, the webview runs
+    // within a separate storage partition, i.e. doesn't share cookies and other
+    // storage with the browsing session. Furthermore, the embedding app could
+    // just as well proxy 3rd-party origin content through its own web origin
+    // server-side or via chrome.socket. Finally, web security doesn't make a
+    // lot of sense when there's no URL bar or HTTPS padlock providing trusted
+    // UI. Bottom line: Risks are mitigated, further restrictions don't make
+    // sense, so OK to allow.
     "webview",
 };
 
@@ -717,6 +899,7 @@ bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
       return true;
     }
 
+    // TODO(isandrk): Remove when whitelisting work is done (crbug/651027).
     // Allow extension if its type is whitelisted for use in public sessions.
     if (extension->GetType() == extensions::Manifest::TYPE_HOSTED_APP) {
       return true;
