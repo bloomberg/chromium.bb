@@ -12,6 +12,7 @@
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8HTMLDivElement.h"
+#include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -30,6 +31,11 @@ DEFINE_TRACE(V8VoidCallbackFunctionInterfaceArg)
 bool V8VoidCallbackFunctionInterfaceArg::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, HTMLDivElement* divElement)
 {
     if (!scriptState->contextIsValid())
+        return false;
+
+    ExecutionContext* context = scriptState->getExecutionContext();
+    DCHECK(context);
+    if (context->activeDOMObjectsAreSuspended() || context->activeDOMObjectsAreStopped())
         return false;
 
     if (m_callback.isEmpty())

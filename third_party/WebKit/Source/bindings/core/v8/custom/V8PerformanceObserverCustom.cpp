@@ -41,7 +41,7 @@ void V8PerformanceObserver::constructorCustom(const v8::FunctionCallbackInfo<v8:
         }
         callback = V8PerformanceObserverCallback::create(v8::Local<v8::Function>::Cast(info[0]), wrapper, ScriptState::current(info.GetIsolate()));
     }
-    PerformanceObserver* observer = PerformanceObserver::create(performance, callback);
+    PerformanceObserver* observer = PerformanceObserver::create(ScriptState::forReceiverObject(info), performance, callback);
 
     v8SetReturnValue(info, V8DOMWrapper::associateObjectWithWrapper(info.GetIsolate(), observer, &wrapperTypeInfo, wrapper));
 }

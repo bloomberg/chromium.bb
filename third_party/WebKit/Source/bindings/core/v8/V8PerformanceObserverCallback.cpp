@@ -17,8 +17,7 @@
 namespace blink {
 
 V8PerformanceObserverCallback::V8PerformanceObserverCallback(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
-    : ActiveDOMCallback(scriptState->getExecutionContext())
-    , m_callback(V8PerformanceObserverInnerCallback::create(scriptState->isolate(), callback))
+    : m_callback(V8PerformanceObserverInnerCallback::create(scriptState->isolate(), callback))
     , m_scriptState(scriptState)
 {
     V8PrivateProperty::getPerformanceObserverCallback(scriptState->isolate()).set(scriptState->context(), owner, m_callback->v8Value(scriptState->isolate()));
@@ -30,9 +29,6 @@ V8PerformanceObserverCallback::~V8PerformanceObserverCallback()
 
 void V8PerformanceObserverCallback::handleEvent(PerformanceObserverEntryList* entries, PerformanceObserver* observer)
 {
-    if (!canInvokeCallback())
-        return;
-
     TrackExceptionState exceptionState;
     m_callback->call(m_scriptState.get(), observer, exceptionState, entries, observer);
 }
@@ -41,7 +37,6 @@ DEFINE_TRACE(V8PerformanceObserverCallback)
 {
     visitor->trace(m_callback);
     PerformanceObserverCallback::trace(visitor);
-    ActiveDOMCallback::trace(visitor);
 }
 
 } // namespace blink

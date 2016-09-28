@@ -4,6 +4,7 @@
 
 #include "core/timing/PerformanceObserver.h"
 
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceMark.h"
@@ -35,11 +36,11 @@ public:
 
 class PerformanceObserverTest : public ::testing::Test {
 protected:
-    void SetUp() override
+    void initialize(ScriptState* scriptState)
     {
         m_base = new MockPerformanceBase();
         m_cb = new MockPerformanceObserverCallback();
-        m_observer = PerformanceObserver::create(m_base, m_cb);
+        m_observer = PerformanceObserver::create(scriptState, m_base, m_cb);
     }
 
     bool isRegistered()
@@ -62,6 +63,9 @@ protected:
 
 TEST_F(PerformanceObserverTest, Observe)
 {
+    V8TestingScope scope;
+    initialize(scope.getScriptState());
+
     NonThrowableExceptionState exceptionState;
     PerformanceObserverInit options;
     Vector<String> entryTypeVec;
@@ -74,6 +78,9 @@ TEST_F(PerformanceObserverTest, Observe)
 
 TEST_F(PerformanceObserverTest, Enqueue)
 {
+    V8TestingScope scope;
+    initialize(scope.getScriptState());
+
     Persistent<PerformanceEntry> entry = PerformanceMark::create("m", 1234);
     EXPECT_EQ(0, numPerformanceEntries());
 
@@ -83,6 +90,9 @@ TEST_F(PerformanceObserverTest, Enqueue)
 
 TEST_F(PerformanceObserverTest, Deliver)
 {
+    V8TestingScope scope;
+    initialize(scope.getScriptState());
+
     Persistent<PerformanceEntry> entry = PerformanceMark::create("m", 1234);
     EXPECT_EQ(0, numPerformanceEntries());
 
@@ -95,6 +105,9 @@ TEST_F(PerformanceObserverTest, Deliver)
 
 TEST_F(PerformanceObserverTest, Disconnect)
 {
+    V8TestingScope scope;
+    initialize(scope.getScriptState());
+
     Persistent<PerformanceEntry> entry = PerformanceMark::create("m", 1234);
     EXPECT_EQ(0, numPerformanceEntries());
 

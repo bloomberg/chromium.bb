@@ -14,8 +14,7 @@
 
 namespace blink {
 
-class V8PerformanceObserverCallback final : public PerformanceObserverCallback, public ActiveDOMCallback {
-    USING_GARBAGE_COLLECTED_MIXIN(V8PerformanceObserverCallback);
+class V8PerformanceObserverCallback final : public PerformanceObserverCallback {
 public:
     static V8PerformanceObserverCallback* create(v8::Local<v8::Function> callback, v8::Local<v8::Object> owner, ScriptState* scriptState)
     {
@@ -27,7 +26,13 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
     void handleEvent(PerformanceObserverEntryList*, PerformanceObserver*) override;
-    ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
+
+    // TODO(lkawai,bashi): This function should be removed.
+    ExecutionContext* getExecutionContext() const override
+    {
+        NOTREACHED();
+        return nullptr;
+    }
 private:
     CORE_EXPORT V8PerformanceObserverCallback(v8::Local<v8::Function>, v8::Local<v8::Object>, ScriptState*);
 

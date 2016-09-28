@@ -18,15 +18,16 @@ class PerformanceBase;
 class PerformanceObserverCallback;
 class PerformanceObserver;
 class PerformanceObserverInit;
+class ScriptState;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
-class CORE_EXPORT PerformanceObserver final : public GarbageCollected<PerformanceObserver>, public ScriptWrappable {
+class CORE_EXPORT PerformanceObserver final : public GarbageCollectedFinalized<PerformanceObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     friend class PerformanceBase;
     friend class PerformanceObserverTest;
 public:
-    static PerformanceObserver* create(PerformanceBase*, PerformanceObserverCallback*);
+    static PerformanceObserver* create(ScriptState*, PerformanceBase*, PerformanceObserverCallback*);
     static void resumeSuspendedObservers();
 
     void observe(const PerformanceObserverInit&, ExceptionState&);
@@ -37,10 +38,11 @@ public:
     DECLARE_TRACE();
 
 private:
-    explicit PerformanceObserver(PerformanceBase*, PerformanceObserverCallback*);
+    PerformanceObserver(ScriptState*, PerformanceBase*, PerformanceObserverCallback*);
     void deliver();
     bool shouldBeSuspended() const;
 
+    RefPtr<ScriptState> m_scriptState;
     Member<PerformanceObserverCallback> m_callback;
     WeakMember<PerformanceBase> m_performance;
     PerformanceEntryVector m_performanceEntries;

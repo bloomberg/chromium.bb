@@ -11,6 +11,7 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -29,6 +30,11 @@ DEFINE_TRACE(V8LongExperimentalCallbackFunction)
 bool V8LongExperimentalCallbackFunction::call(ScriptState* scriptState, ScriptWrappable* scriptWrappable, ExceptionState& exceptionState, int num1, int num2, int& returnValue)
 {
     if (!scriptState->contextIsValid())
+        return false;
+
+    ExecutionContext* context = scriptState->getExecutionContext();
+    DCHECK(context);
+    if (context->activeDOMObjectsAreSuspended() || context->activeDOMObjectsAreStopped())
         return false;
 
     if (m_callback.isEmpty())

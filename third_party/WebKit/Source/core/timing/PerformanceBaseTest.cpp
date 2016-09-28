@@ -4,6 +4,7 @@
 
 #include "core/timing/Performance.h"
 
+#include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
@@ -51,11 +52,11 @@ public:
 
 class PerformanceBaseTest : public ::testing::Test {
 protected:
-    void SetUp() override
+    void initialize(ScriptState* scriptState)
     {
         m_base = new TestPerformanceBase();
         m_cb = new MockPerformanceObserverCallback();
-        m_observer = PerformanceObserver::create(m_base, m_cb);
+        m_observer = PerformanceObserver::create(scriptState, m_base, m_cb);
     }
 
     Persistent<TestPerformanceBase> m_base;
@@ -65,6 +66,9 @@ protected:
 
 TEST_F(PerformanceBaseTest, Register)
 {
+    V8TestingScope scope;
+    initialize(scope.getScriptState());
+
     EXPECT_EQ(0, m_base->numObservers());
     EXPECT_EQ(0, m_base->numActiveObservers());
 
@@ -79,6 +83,9 @@ TEST_F(PerformanceBaseTest, Register)
 
 TEST_F(PerformanceBaseTest, Activate)
 {
+    V8TestingScope scope;
+    initialize(scope.getScriptState());
+
     EXPECT_EQ(0, m_base->numObservers());
     EXPECT_EQ(0, m_base->numActiveObservers());
 
@@ -97,6 +104,9 @@ TEST_F(PerformanceBaseTest, Activate)
 
 TEST_F(PerformanceBaseTest, AddLongTaskTiming)
 {
+    V8TestingScope scope;
+    initialize(scope.getScriptState());
+
     // Add a long task entry, but no observer registered.
     m_base->addLongTaskTiming(1234, 5678, "www.foo.com/bar");
     EXPECT_EQ(0, m_base->numLongTaskTimingEntries()); // has no effect

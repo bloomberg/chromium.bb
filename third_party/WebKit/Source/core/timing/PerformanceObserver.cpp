@@ -16,14 +16,15 @@
 
 namespace blink {
 
-PerformanceObserver* PerformanceObserver::create(PerformanceBase* performance, PerformanceObserverCallback* callback)
+PerformanceObserver* PerformanceObserver::create(ScriptState* scriptState, PerformanceBase* performance, PerformanceObserverCallback* callback)
 {
     ASSERT(isMainThread());
-    return new PerformanceObserver(performance, callback);
+    return new PerformanceObserver(scriptState, performance, callback);
 }
 
-PerformanceObserver::PerformanceObserver(PerformanceBase* performance, PerformanceObserverCallback* callback)
-    : m_callback(callback)
+PerformanceObserver::PerformanceObserver(ScriptState* scriptState, PerformanceBase* performance, PerformanceObserverCallback* callback)
+    : m_scriptState(scriptState)
+    , m_callback(callback)
     , m_performance(performance)
     , m_filterOptions(PerformanceEntry::Invalid)
     , m_isRegistered(false)
@@ -74,7 +75,7 @@ void PerformanceObserver::enqueuePerformanceEntry(PerformanceEntry& entry)
 
 bool PerformanceObserver::shouldBeSuspended() const
 {
-    return m_callback->getExecutionContext() && m_callback->getExecutionContext()->activeDOMObjectsAreSuspended();
+    return m_scriptState->getExecutionContext() && m_scriptState->getExecutionContext()->activeDOMObjectsAreSuspended();
 }
 
 void PerformanceObserver::deliver()

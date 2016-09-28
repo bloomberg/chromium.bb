@@ -27,6 +27,11 @@ bool {{v8_class}}::call({{argument_declarations | join(', ')}})
     if (!scriptState->contextIsValid())
         return false;
 
+    ExecutionContext* context = scriptState->getExecutionContext();
+    DCHECK(context);
+    if (context->activeDOMObjectsAreSuspended() || context->activeDOMObjectsAreStopped())
+        return false;
+
     if (m_callback.isEmpty())
         return false;
 
