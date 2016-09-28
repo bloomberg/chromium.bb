@@ -145,6 +145,7 @@ const wchar_t kScanTimesSubKey[] = L"ScanTimes";
 const wchar_t kFoundUwsValueName[] = L"FoundUws";
 const wchar_t kMemoryUsedValueName[] = L"MemoryUsed";
 const wchar_t kLogsUploadResultValueName[] = L"LogsUploadResult";
+const wchar_t kExitCodeValueName[] = L"ExitCode";
 
 const char kFoundUwsMetricName[] = "SoftwareReporter.FoundUwS";
 const char kFoundUwsReadErrorMetricName[] =
@@ -157,6 +158,7 @@ const char kLogsUploadEnabledMetricName[] =
 const char kLogsUploadResultMetricName[] = "SoftwareReporter.LogsUploadResult";
 const char kLogsUploadResultRegistryErrorMetricName[] =
     "SoftwareReporter.LogsUploadResultRegistryError";
+const char kExitCodeMetricName[] = "SoftwareReporter.ExitCodeFromRegistry";
 
 // The max value for histogram SoftwareReporter.LogsUploadResult, which is used
 // to send UMA information about the result of Software Reporter's attempt to
@@ -208,6 +210,19 @@ class UMAHistogramReporter {
 
   void ReportExitCode(int exit_code) const {
     RecordSparseHistogram("SoftwareReporter.ExitCode", exit_code);
+
+    // Also report the exit code that the reporter writes to the registry.
+    base::win::RegKey reporter_key;
+    DWORD exit_code_in_registry;
+    if (reporter_key.Open(HKEY_CURRENT_USER, registry_key_.c_str(),
+                          KEY_QUERY_VALUE | KEY_SET_VALUE) != ERROR_SUCCESS ||
+        reporter_key.ReadValueDW(kExitCodeValueName, &exit_code_in_registry) !=
+            ERROR_SUCCESS) {
+      return;
+    }
+
+    RecordSparseHistogram(kExitCodeMetricName, exit_code_in_registry);
+    reporter_key.DeleteValue(kExitCodeValueName);
   }
 
   // Reports UwS found by the software reporter tool via UMA and RAPPOR.
