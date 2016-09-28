@@ -33,13 +33,21 @@ ResourceData CreateResourceData(const std::string& resource_url,
   return resource;
 }
 
-void PrintTo(const ResourceData& resource, ::std::ostream* os) {
-  *os << "[" << resource.resource_url() << "," << resource.resource_type()
-      << "," << resource.number_of_hits() << "," << resource.number_of_misses()
-      << "," << resource.consecutive_misses() << ","
-      << resource.average_position() << "," << resource.priority() << ","
-      << resource.has_validators() << "," << resource.always_revalidate()
-      << "]";
+void InitializeRedirectStat(RedirectStat* redirect,
+                            const std::string& url,
+                            int number_of_hits,
+                            int number_of_misses,
+                            int consecutive_misses) {
+  redirect->set_url(url);
+  redirect->set_number_of_hits(number_of_hits);
+  redirect->set_number_of_misses(number_of_misses);
+  redirect->set_consecutive_misses(consecutive_misses);
+}
+
+RedirectData CreateRedirectData(const std::string& primary_key) {
+  RedirectData data;
+  data.set_primary_key(primary_key);
+  return data;
 }
 
 void PrintTo(const PrefetchData& data, ::std::ostream* os) {
@@ -50,6 +58,44 @@ void PrintTo(const PrefetchData& data, ::std::ostream* os) {
     PrintTo(resource, os);
     *os << "\n";
   }
+}
+
+void PrintTo(const ResourceData& resource, ::std::ostream* os) {
+  *os << "[" << resource.resource_url() << "," << resource.resource_type()
+      << "," << resource.number_of_hits() << "," << resource.number_of_misses()
+      << "," << resource.consecutive_misses() << ","
+      << resource.average_position() << "," << resource.priority() << ","
+      << resource.has_validators() << "," << resource.always_revalidate()
+      << "]";
+}
+
+void PrintTo(const RedirectStat& redirect, ::std::ostream* os) {
+  *os << "[" << redirect.url() << "," << redirect.number_of_hits() << ","
+      << redirect.number_of_misses() << "," << redirect.consecutive_misses()
+      << "]";
+}
+
+void PrintTo(const RedirectData& data, ::std::ostream* os) {
+  *os << "[" << data.primary_key() << "," << data.last_visit_time() << "]\n";
+  for (const RedirectStat& redirect : data.redirect_endpoints()) {
+    *os << "\t\t";
+    PrintTo(redirect, os);
+    *os << "\n";
+  }
+}
+
+bool operator==(const PrefetchData& lhs, const PrefetchData& rhs) {
+  bool equal = lhs.key_type == rhs.key_type &&
+               lhs.primary_key == rhs.primary_key &&
+               lhs.resources.size() == rhs.resources.size();
+
+  if (!equal)
+    return false;
+
+  for (size_t i = 0; i < lhs.resources.size(); ++i)
+    equal = equal && lhs.resources[i] == rhs.resources[i];
+
+  return equal;
 }
 
 bool operator==(const ResourceData& lhs, const ResourceData& rhs) {
@@ -64,16 +110,22 @@ bool operator==(const ResourceData& lhs, const ResourceData& rhs) {
          lhs.always_revalidate() == rhs.always_revalidate();
 }
 
-bool operator==(const PrefetchData& lhs, const PrefetchData& rhs) {
-  bool equal = lhs.key_type == rhs.key_type &&
-               lhs.primary_key == rhs.primary_key &&
-               lhs.resources.size() == rhs.resources.size();
+bool operator==(const RedirectStat& lhs, const RedirectStat& rhs) {
+  return lhs.url() == rhs.url() &&
+         lhs.number_of_hits() == rhs.number_of_hits() &&
+         lhs.number_of_misses() == rhs.number_of_misses() &&
+         lhs.consecutive_misses() == rhs.consecutive_misses();
+}
+
+bool operator==(const RedirectData& lhs, const RedirectData& rhs) {
+  bool equal = lhs.primary_key() == rhs.primary_key() &&
+               lhs.redirect_endpoints_size() == rhs.redirect_endpoints_size();
 
   if (!equal)
     return false;
 
-  for (size_t i = 0; i < lhs.resources.size(); ++i)
-    equal = equal && lhs.resources[i] == rhs.resources[i];
+  for (int i = 0; i < lhs.redirect_endpoints_size(); ++i)
+    equal = equal && lhs.redirect_endpoints(i) == rhs.redirect_endpoints(i);
 
   return equal;
 }

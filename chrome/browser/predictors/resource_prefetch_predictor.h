@@ -9,12 +9,12 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -22,6 +22,7 @@
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/browser/predictors/resource_prefetcher.h"
+#include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -146,6 +147,8 @@ class ResourcePrefetchPredictor
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, NavigationUrlNotInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
                            NavigationUrlNotInDBAndDBFull);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, RedirectUrlNotInDB);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, RedirectUrlInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRequest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRedirect);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -159,9 +162,53 @@ class ResourcePrefetchPredictor
     INITIALIZED = 2
   };
 
+  // Stores information about inflight navigations.
+  struct PageRequestSummary {
+    explicit PageRequestSummary(const GURL& initial_url);
+    ~PageRequestSummary();
+
+    GURL initial_url;
+
+    // Stores all subresources requests within a single navigation, from initial
+    // main frame request to navigation completion.
+    std::vector<URLRequestSummary> subresource_requests;
+  };
+
+  // Used to fetch the visit count for a URL from the History database.
+  class GetUrlVisitCountTask : public history::HistoryDBTask {
+   public:
+    typedef ResourcePrefetchPredictor::URLRequestSummary URLRequestSummary;
+    typedef ResourcePrefetchPredictor::PageRequestSummary PageRequestSummary;
+    typedef base::Callback<void(size_t,  // Visit count.
+                                const NavigationID&,
+                                const PageRequestSummary&)>
+        VisitInfoCallback;
+
+    GetUrlVisitCountTask(const NavigationID& navigation_id,
+                         std::unique_ptr<PageRequestSummary> summary,
+                         VisitInfoCallback callback);
+
+    bool RunOnDBThread(history::HistoryBackend* backend,
+                       history::HistoryDatabase* db) override;
+
+    void DoneRunOnMainThread() override;
+
+   private:
+    ~GetUrlVisitCountTask() override;
+
+    int visit_count_;
+    NavigationID navigation_id_;
+    std::unique_ptr<PageRequestSummary> summary_;
+    VisitInfoCallback callback_;
+
+    DISALLOW_COPY_AND_ASSIGN(GetUrlVisitCountTask);
+  };
+
   typedef ResourcePrefetchPredictorTables::PrefetchData PrefetchData;
   typedef ResourcePrefetchPredictorTables::PrefetchDataMap PrefetchDataMap;
-  typedef std::map<NavigationID, linked_ptr<std::vector<URLRequestSummary> > >
+  typedef ResourcePrefetchPredictorTables::RedirectDataMap RedirectDataMap;
+
+  typedef std::map<NavigationID, std::unique_ptr<PageRequestSummary>>
       NavigationMap;
 
   // Returns true if the main page request is supported for prediction.
@@ -216,9 +263,11 @@ class ResourcePrefetchPredictor
   void StartInitialization();
 
   // Callback for task to read predictor database. Takes ownership of
-  // |url_data_map| and |host_data_map|.
+  // all arguments.
   void CreateCaches(std::unique_ptr<PrefetchDataMap> url_data_map,
-                    std::unique_ptr<PrefetchDataMap> host_data_map);
+                    std::unique_ptr<PrefetchDataMap> host_data_map,
+                    std::unique_ptr<RedirectDataMap> url_redirect_data_map,
+                    std::unique_ptr<RedirectDataMap> host_redirect_data_map);
 
   // Called during initialization when history is read and the predictor
   // database has been read.
@@ -239,25 +288,38 @@ class ResourcePrefetchPredictor
   // Callback for GetUrlVisitCountTask.
   void OnVisitCountLookup(size_t visit_count,
                           const NavigationID& navigation_id,
-                          const std::vector<URLRequestSummary>& requests);
+                          const PageRequestSummary& summary);
 
   // Removes the oldest entry in the input |data_map|, also deleting it from the
   // predictor database.
   void RemoveOldestEntryInPrefetchDataMap(PrefetchKeyType key_type,
                                           PrefetchDataMap* data_map);
 
+  void RemoveOldestEntryInRedirectDataMap(PrefetchKeyType key_type,
+                                          RedirectDataMap* data_map);
+
   // Merges resources in |new_resources| into the |data_map| and correspondingly
-  // updates the predictor database.
+  // updates the predictor database. Also calls LearnRedirect if relevant.
   void LearnNavigation(const std::string& key,
                        PrefetchKeyType key_type,
                        const std::vector<URLRequestSummary>& new_resources,
                        size_t max_data_map_size,
-                       PrefetchDataMap* data_map);
+                       PrefetchDataMap* data_map,
+                       const std::string& key_before_redirects,
+                       RedirectDataMap* redirect_map);
+
+  // Updates information about final redirect destination for |key| in
+  // |redirect_map| and correspondingly updates the predictor database.
+  void LearnRedirect(const std::string& key,
+                     PrefetchKeyType key_type,
+                     const std::string& final_redirect,
+                     size_t max_redirect_map_size,
+                     RedirectDataMap* redirect_map);
 
   // Reports overall page load time.
   void ReportPageLoadTimeStats(base::TimeDelta plt) const;
 
-  // Reports page load time for prefetched and not prefetched pages
+  // Reports page load time for prefetched and not prefetched pages.
   void ReportPageLoadTimePrefetchStats(
       base::TimeDelta plt,
       bool prefetched,
@@ -289,12 +351,13 @@ class ResourcePrefetchPredictor
   scoped_refptr<ResourcePrefetcherManager> prefetch_manager_;
   base::CancelableTaskTracker history_lookup_consumer_;
 
-  // Map of all the navigations in flight to their resource requests.
-  NavigationMap inflight_navigations_;
-
   // Copy of the data in the predictor tables.
   std::unique_ptr<PrefetchDataMap> url_table_cache_;
   std::unique_ptr<PrefetchDataMap> host_table_cache_;
+  std::unique_ptr<RedirectDataMap> url_redirect_table_cache_;
+  std::unique_ptr<RedirectDataMap> host_redirect_table_cache_;
+
+  NavigationMap inflight_navigations_;
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;

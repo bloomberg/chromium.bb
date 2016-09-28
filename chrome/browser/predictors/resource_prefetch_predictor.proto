@@ -4,11 +4,11 @@
 
 // Protocol buffers used for storing in SQLite.
 // CAUTION: When any change is done here, bump kDatabaseVersion in
-//          resource_prefetch_predictor.h.
+//          resource_prefetch_predictor_tables.h.
 
 syntax = "proto2";
 
-package chrome_browser_predictors;
+package predictors;
 
 // Required in Chrome.
 option optimize_for = LITE_RUNTIME;
@@ -60,4 +60,21 @@ message ResourceData {
   optional Priority priority = 7;
   optional bool has_validators = 8;
   optional bool always_revalidate = 9;
+}
+
+// Represents a mapping from URL or host to a list of redirect endpoints.
+message RedirectData {
+  // Represents a single redirect chain endpoint.
+  message RedirectStat {
+    // Represents the host for RedirectData in a host-based table.
+    optional string url = 1;
+    optional uint32 number_of_hits = 2;
+    optional uint32 number_of_misses = 3;
+    optional uint32 consecutive_misses = 4;
+  }
+
+  // Represents main frame URL or host.
+  optional string primary_key = 1;
+  optional uint64 last_visit_time = 2;
+  repeated RedirectStat redirect_endpoints = 3;
 }

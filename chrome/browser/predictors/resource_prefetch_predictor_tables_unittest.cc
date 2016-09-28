@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -41,6 +42,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
 
   using PrefetchDataMap = ResourcePrefetchPredictorTables::PrefetchDataMap;
+  using RedirectDataMap = ResourcePrefetchPredictorTables::RedirectDataMap;
 
  private:
   using PrefetchData = ResourcePrefetchPredictorTables::PrefetchData;
@@ -55,10 +57,20 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   void TestResourcesAreEqual(const std::vector<ResourceData>& lhs,
                              const std::vector<ResourceData>& rhs) const;
 
+  // Checks that the input RedirectData are the same, although the redirects
+  // can be in different order.
+  void TestRedirectDataAreEqual(const RedirectDataMap& lhs,
+                                const RedirectDataMap& rhs) const;
+  void TestRedirectsAreEqual(const std::vector<RedirectStat>& lhs,
+                             const std::vector<RedirectStat>& rhs) const;
+
   void AddKey(PrefetchDataMap* m, const std::string& key) const;
+  void AddKey(RedirectDataMap* m, const std::string& key) const;
 
   PrefetchDataMap test_url_data_;
   PrefetchDataMap test_host_data_;
+  RedirectDataMap test_url_redirect_data_;
+  RedirectDataMap test_host_redirect_data_;
 };
 
 class ResourcePrefetchPredictorTablesReopenTest
@@ -95,38 +107,57 @@ void ResourcePrefetchPredictorTablesTest::TearDown() {
 
 void ResourcePrefetchPredictorTablesTest::TestGetAllData() {
   PrefetchDataMap actual_url_data, actual_host_data;
-  tables_->GetAllData(&actual_url_data, &actual_host_data);
+  RedirectDataMap actual_url_redirect_data, actual_host_redirect_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data,
+                      &actual_url_redirect_data, &actual_host_redirect_data);
 
   TestPrefetchDataAreEqual(test_url_data_, actual_url_data);
   TestPrefetchDataAreEqual(test_host_data_, actual_host_data);
+  TestRedirectDataAreEqual(test_url_redirect_data_, actual_url_redirect_data);
+  TestRedirectDataAreEqual(test_host_redirect_data_, actual_host_redirect_data);
 }
 
 void ResourcePrefetchPredictorTablesTest::TestDeleteData() {
-  std::vector<std::string> urls_to_delete, hosts_to_delete;
-  urls_to_delete.push_back("http://www.google.com");
-  urls_to_delete.push_back("http://www.yahoo.com");
-  hosts_to_delete.push_back("www.yahoo.com");
+  std::vector<std::string> urls_to_delete = {"http://www.google.com",
+                                             "http://www.yahoo.com"};
+  std::vector<std::string> hosts_to_delete = {"www.yahoo.com"};
 
-  tables_->DeleteData(urls_to_delete, hosts_to_delete);
+  tables_->DeleteResourceData(urls_to_delete, hosts_to_delete);
+
+  urls_to_delete = {"http://fb.com/google", "http://google.com"};
+  hosts_to_delete = {"microsoft.com"};
+
+  tables_->DeleteRedirectData(urls_to_delete, hosts_to_delete);
 
   PrefetchDataMap actual_url_data, actual_host_data;
-  tables_->GetAllData(&actual_url_data, &actual_host_data);
+  RedirectDataMap actual_url_redirect_data, actual_host_redirect_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data,
+                      &actual_url_redirect_data, &actual_host_redirect_data);
 
   PrefetchDataMap expected_url_data, expected_host_data;
+  RedirectDataMap expected_url_redirect_data, expected_host_redirect_data;
   AddKey(&expected_url_data, "http://www.reddit.com");
   AddKey(&expected_host_data, "www.facebook.com");
+  AddKey(&expected_url_redirect_data, "http://nyt.com");
+  AddKey(&expected_host_redirect_data, "bbc.com");
 
   TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
   TestPrefetchDataAreEqual(expected_host_data, actual_host_data);
+  TestRedirectDataAreEqual(expected_url_redirect_data,
+                           actual_url_redirect_data);
+  TestRedirectDataAreEqual(expected_host_redirect_data,
+                           actual_host_redirect_data);
 }
 
 void ResourcePrefetchPredictorTablesTest::TestDeleteSingleDataPoint() {
   // Delete a URL.
-  tables_->DeleteSingleDataPoint("http://www.reddit.com",
-                                 PREFETCH_KEY_TYPE_URL);
+  tables_->DeleteSingleResourceDataPoint("http://www.reddit.com",
+                                         PREFETCH_KEY_TYPE_URL);
 
   PrefetchDataMap actual_url_data, actual_host_data;
-  tables_->GetAllData(&actual_url_data, &actual_host_data);
+  RedirectDataMap actual_url_redirect_data, actual_host_redirect_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data,
+                      &actual_url_redirect_data, &actual_host_redirect_data);
 
   PrefetchDataMap expected_url_data;
   AddKey(&expected_url_data, "http://www.google.com");
@@ -134,18 +165,65 @@ void ResourcePrefetchPredictorTablesTest::TestDeleteSingleDataPoint() {
 
   TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
   TestPrefetchDataAreEqual(test_host_data_, actual_host_data);
+  TestRedirectDataAreEqual(test_url_redirect_data_, actual_url_redirect_data);
+  TestRedirectDataAreEqual(test_host_redirect_data_, actual_host_redirect_data);
 
   // Delete a host.
-  tables_->DeleteSingleDataPoint("www.facebook.com", PREFETCH_KEY_TYPE_HOST);
+  tables_->DeleteSingleResourceDataPoint("www.facebook.com",
+                                         PREFETCH_KEY_TYPE_HOST);
   actual_url_data.clear();
   actual_host_data.clear();
-  tables_->GetAllData(&actual_url_data, &actual_host_data);
+  actual_url_redirect_data.clear();
+  actual_host_redirect_data.clear();
+  tables_->GetAllData(&actual_url_data, &actual_host_data,
+                      &actual_url_redirect_data, &actual_host_redirect_data);
 
   PrefetchDataMap expected_host_data;
   AddKey(&expected_host_data, "www.yahoo.com");
 
   TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
   TestPrefetchDataAreEqual(expected_host_data, actual_host_data);
+  TestRedirectDataAreEqual(test_url_redirect_data_, actual_url_redirect_data);
+  TestRedirectDataAreEqual(test_host_redirect_data_, actual_host_redirect_data);
+
+  // Delete a URL redirect.
+  tables_->DeleteSingleRedirectDataPoint("http://nyt.com",
+                                         PREFETCH_KEY_TYPE_URL);
+  actual_url_data.clear();
+  actual_host_data.clear();
+  actual_url_redirect_data.clear();
+  actual_host_redirect_data.clear();
+  tables_->GetAllData(&actual_url_data, &actual_host_data,
+                      &actual_url_redirect_data, &actual_host_redirect_data);
+
+  RedirectDataMap expected_url_redirect_data;
+  AddKey(&expected_url_redirect_data, "http://fb.com/google");
+  AddKey(&expected_url_redirect_data, "http://google.com");
+
+  TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
+  TestPrefetchDataAreEqual(expected_host_data, actual_host_data);
+  TestRedirectDataAreEqual(expected_url_redirect_data,
+                           actual_url_redirect_data);
+  TestRedirectDataAreEqual(test_host_redirect_data_, actual_host_redirect_data);
+
+  // Delete a host redirect.
+  tables_->DeleteSingleRedirectDataPoint("bbc.com", PREFETCH_KEY_TYPE_HOST);
+  actual_url_data.clear();
+  actual_host_data.clear();
+  actual_url_redirect_data.clear();
+  actual_host_redirect_data.clear();
+  tables_->GetAllData(&actual_url_data, &actual_host_data,
+                      &actual_url_redirect_data, &actual_host_redirect_data);
+
+  RedirectDataMap expected_host_redirect_data;
+  AddKey(&expected_host_redirect_data, "microsoft.com");
+
+  TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
+  TestPrefetchDataAreEqual(expected_host_data, actual_host_data);
+  TestRedirectDataAreEqual(expected_url_redirect_data,
+                           actual_url_redirect_data);
+  TestRedirectDataAreEqual(expected_host_redirect_data,
+                           actual_host_redirect_data);
 }
 
 void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
@@ -170,12 +248,29 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
       "http://www.yahoo.com/image.png", content::RESOURCE_TYPE_IMAGE, 120, 1, 1,
       10.0, net::MEDIUM, true, false));
 
-  tables_->UpdateData(google, yahoo);
+  RedirectData facebook;
+  facebook.set_primary_key("http://fb.com/google");
+  facebook.set_last_visit_time(20);
+  InitializeRedirectStat(facebook.add_redirect_endpoints(),
+                         "https://facebook.fr/google", 4, 2, 1);
+
+  RedirectData microsoft;
+  microsoft.set_primary_key("microsoft.com");
+  microsoft.set_last_visit_time(21);
+  InitializeRedirectStat(microsoft.add_redirect_endpoints(), "m.microsoft.com",
+                         5, 7, 1);
+  InitializeRedirectStat(microsoft.add_redirect_endpoints(), "microsoft.org", 7,
+                         2, 0);
+
+  tables_->UpdateData(google, yahoo, facebook, microsoft);
 
   PrefetchDataMap actual_url_data, actual_host_data;
-  tables_->GetAllData(&actual_url_data, &actual_host_data);
+  RedirectDataMap actual_url_redirect_data, actual_host_redirect_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data,
+                      &actual_url_redirect_data, &actual_host_redirect_data);
 
   PrefetchDataMap expected_url_data, expected_host_data;
+  RedirectDataMap expected_url_redirect_data, expected_host_redirect_data;
   AddKey(&expected_url_data, "http://www.reddit.com");
   AddKey(&expected_url_data, "http://www.yahoo.com");
   expected_url_data.insert(std::make_pair("http://www.google.com", google));
@@ -183,17 +278,34 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
   AddKey(&expected_host_data, "www.facebook.com");
   expected_host_data.insert(std::make_pair("www.yahoo.com", yahoo));
 
+  AddKey(&expected_url_redirect_data, "http://nyt.com");
+  AddKey(&expected_url_redirect_data, "http://google.com");
+  expected_url_redirect_data.insert(
+      std::make_pair("http://fb.com/google", facebook));
+
+  AddKey(&expected_host_redirect_data, "bbc.com");
+  expected_host_redirect_data.insert(
+      std::make_pair("microsoft.com", microsoft));
+
   TestPrefetchDataAreEqual(expected_url_data, actual_url_data);
   TestPrefetchDataAreEqual(expected_host_data, actual_host_data);
+  TestRedirectDataAreEqual(expected_url_redirect_data,
+                           actual_url_redirect_data);
+  TestRedirectDataAreEqual(expected_host_redirect_data,
+                           actual_host_redirect_data);
 }
 
 void ResourcePrefetchPredictorTablesTest::TestDeleteAllData() {
   tables_->DeleteAllData();
 
   PrefetchDataMap actual_url_data, actual_host_data;
-  tables_->GetAllData(&actual_url_data, &actual_host_data);
+  RedirectDataMap actual_url_redirect_data, actual_host_redirect_data;
+  tables_->GetAllData(&actual_url_data, &actual_host_data,
+                      &actual_url_redirect_data, &actual_host_redirect_data);
   EXPECT_TRUE(actual_url_data.empty());
   EXPECT_TRUE(actual_host_data.empty());
+  EXPECT_TRUE(actual_url_redirect_data.empty());
+  EXPECT_TRUE(actual_host_redirect_data.empty());
 }
 
 void ResourcePrefetchPredictorTablesTest::TestPrefetchDataAreEqual(
@@ -202,8 +314,10 @@ void ResourcePrefetchPredictorTablesTest::TestPrefetchDataAreEqual(
   EXPECT_EQ(lhs.size(), rhs.size());
 
   for (const std::pair<std::string, PrefetchData>& p : rhs) {
-    PrefetchDataMap::const_iterator lhs_it = lhs.find(p.first);
+    const auto lhs_it = lhs.find(p.first);
     ASSERT_TRUE(lhs_it != lhs.end()) << p.first;
+    EXPECT_TRUE(lhs_it->second.key_type == p.second.key_type);
+    EXPECT_TRUE(lhs_it->second.last_visit == p.second.last_visit);
 
     TestResourcesAreEqual(lhs_it->second.resources, p.second.resources);
   }
@@ -230,19 +344,81 @@ void ResourcePrefetchPredictorTablesTest::TestResourcesAreEqual(
   EXPECT_EQ(lhs.size(), resources_seen.size());
 }
 
+void ResourcePrefetchPredictorTablesTest::TestRedirectDataAreEqual(
+    const RedirectDataMap& lhs,
+    const RedirectDataMap& rhs) const {
+  EXPECT_EQ(lhs.size(), rhs.size());
+
+  for (const auto& p : rhs) {
+    const auto lhs_it = lhs.find(p.first);
+    ASSERT_TRUE(lhs_it != lhs.end()) << p.first;
+    EXPECT_EQ(lhs_it->second.primary_key(), p.second.primary_key());
+    EXPECT_EQ(lhs_it->second.last_visit_time(), p.second.last_visit_time());
+
+    std::vector<RedirectStat> lhs_redirects(
+        lhs_it->second.redirect_endpoints().begin(),
+        lhs_it->second.redirect_endpoints().end());
+    std::vector<RedirectStat> rhs_redirects(
+        p.second.redirect_endpoints().begin(),
+        p.second.redirect_endpoints().end());
+
+    TestRedirectsAreEqual(lhs_redirects, rhs_redirects);
+  }
+}
+
+void ResourcePrefetchPredictorTablesTest::TestRedirectsAreEqual(
+    const std::vector<RedirectStat>& lhs,
+    const std::vector<RedirectStat>& rhs) const {
+  EXPECT_EQ(lhs.size(), rhs.size());
+
+  std::map<std::string, RedirectStat> lhs_index;
+  // Repeated redirects are not allowed.
+  for (const auto& r : lhs)
+    EXPECT_TRUE(lhs_index.insert(std::make_pair(r.url(), r)).second);
+
+  for (const auto& r : rhs) {
+    auto lhs_it = lhs_index.find(r.url());
+    if (lhs_it != lhs_index.end()) {
+      EXPECT_EQ(r, lhs_it->second);
+      lhs_index.erase(lhs_it);
+    } else {
+      ADD_FAILURE() << r.url();
+    }
+  }
+
+  EXPECT_TRUE(lhs_index.empty());
+}
+
 void ResourcePrefetchPredictorTablesTest::AddKey(PrefetchDataMap* m,
                                                  const std::string& key) const {
   PrefetchDataMap::const_iterator it = test_url_data_.find(key);
   if (it != test_url_data_.end()) {
-    m->insert(std::make_pair(it->first, it->second));
+    m->insert(*it);
     return;
   }
   it = test_host_data_.find(key);
   ASSERT_TRUE(it != test_host_data_.end());
-  m->insert(std::make_pair(it->first, it->second));
+  m->insert(*it);
+}
+
+void ResourcePrefetchPredictorTablesTest::AddKey(RedirectDataMap* m,
+                                                 const std::string& key) const {
+  auto it = test_url_redirect_data_.find(key);
+  if (it != test_url_redirect_data_.end()) {
+    m->insert(*it);
+    return;
+  }
+  it = test_host_redirect_data_.find(key);
+  ASSERT_TRUE(it != test_host_redirect_data_.end());
+  m->insert(*it);
 }
 
 void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
+  PrefetchData empty_url_data(PREFETCH_KEY_TYPE_URL, std::string());
+  PrefetchData empty_host_data(PREFETCH_KEY_TYPE_HOST, std::string());
+  RedirectData empty_url_redirect_data;
+  RedirectData empty_host_redirect_data;
+
   {  // Url data.
     PrefetchData google(PREFETCH_KEY_TYPE_URL, "http://www.google.com");
     google.last_visit = base::Time::FromInternalValue(1);
@@ -283,10 +459,12 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_url_data_.insert(std::make_pair("http://www.reddit.com", reddit));
     test_url_data_.insert(std::make_pair("http://www.yahoo.com", yahoo));
 
-    PrefetchData empty_host_data(PREFETCH_KEY_TYPE_HOST, std::string());
-    tables_->UpdateData(google, empty_host_data);
-    tables_->UpdateData(reddit, empty_host_data);
-    tables_->UpdateData(yahoo, empty_host_data);
+    tables_->UpdateData(google, empty_host_data, empty_url_redirect_data,
+                        empty_host_redirect_data);
+    tables_->UpdateData(reddit, empty_host_data, empty_url_redirect_data,
+                        empty_host_redirect_data);
+    tables_->UpdateData(yahoo, empty_host_data, empty_url_redirect_data,
+                        empty_host_redirect_data);
   }
 
   {  // Host data.
@@ -319,9 +497,72 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_host_data_.insert(std::make_pair("www.facebook.com", facebook));
     test_host_data_.insert(std::make_pair("www.yahoo.com", yahoo));
 
-    PrefetchData empty_url_data(PREFETCH_KEY_TYPE_URL, std::string());
-    tables_->UpdateData(empty_url_data, facebook);
-    tables_->UpdateData(empty_url_data, yahoo);
+    tables_->UpdateData(empty_url_data, facebook, empty_url_redirect_data,
+                        empty_host_redirect_data);
+    tables_->UpdateData(empty_url_data, yahoo, empty_url_redirect_data,
+                        empty_host_redirect_data);
+  }
+
+  {  // Url redirect data.
+    RedirectData facebook;
+    facebook.set_primary_key("http://fb.com/google");
+    facebook.set_last_visit_time(6);
+    InitializeRedirectStat(facebook.add_redirect_endpoints(),
+                           "https://facebook.com/google", 5, 1, 0);
+    InitializeRedirectStat(facebook.add_redirect_endpoints(),
+                           "https://facebook.com/login", 3, 5, 1);
+
+    RedirectData nytimes;
+    nytimes.set_primary_key("http://nyt.com");
+    nytimes.set_last_visit_time(7);
+    InitializeRedirectStat(nytimes.add_redirect_endpoints(),
+                           "https://nytimes.com", 2, 0, 0);
+
+    RedirectData google;
+    google.set_primary_key("http://google.com");
+    google.set_last_visit_time(8);
+    InitializeRedirectStat(google.add_redirect_endpoints(),
+                           "https://google.com", 3, 0, 0);
+
+    test_url_redirect_data_.clear();
+    test_url_redirect_data_.insert(
+        std::make_pair(facebook.primary_key(), facebook));
+    test_url_redirect_data_.insert(
+        std::make_pair(nytimes.primary_key(), nytimes));
+    test_url_redirect_data_.insert(
+        std::make_pair(google.primary_key(), google));
+
+    tables_->UpdateData(empty_url_data, empty_host_data, facebook,
+                        empty_host_redirect_data);
+    tables_->UpdateData(empty_url_data, empty_host_data, nytimes,
+                        empty_host_redirect_data);
+    tables_->UpdateData(empty_url_data, empty_host_data, google,
+                        empty_host_redirect_data);
+  }
+
+  {  // Host redirect data.
+    RedirectData bbc;
+    bbc.set_primary_key("bbc.com");
+    bbc.set_last_visit_time(9);
+    InitializeRedirectStat(bbc.add_redirect_endpoints(), "www.bbc.com", 8, 4,
+                           1);
+    InitializeRedirectStat(bbc.add_redirect_endpoints(), "m.bbc.com", 5, 8, 0);
+    InitializeRedirectStat(bbc.add_redirect_endpoints(), "bbc.co.uk", 1, 3, 0);
+
+    RedirectData microsoft;
+    microsoft.set_primary_key("microsoft.com");
+    microsoft.set_last_visit_time(10);
+    InitializeRedirectStat(microsoft.add_redirect_endpoints(),
+                           "www.microsoft.com", 10, 0, 0);
+
+    test_host_redirect_data_.clear();
+    test_host_redirect_data_.insert(std::make_pair(bbc.primary_key(), bbc));
+    test_host_redirect_data_.insert(
+        std::make_pair(microsoft.primary_key(), microsoft));
+    tables_->UpdateData(empty_url_data, empty_host_data,
+                        empty_url_redirect_data, bbc);
+    tables_->UpdateData(empty_url_data, empty_host_data,
+                        empty_url_redirect_data, microsoft);
   }
 }
 
@@ -333,7 +574,7 @@ void ResourcePrefetchPredictorTablesTest::ReopenDatabase() {
 
 // Test cases.
 
-TEST_F(ResourcePrefetchPredictorTablesTest, ComputeScore) {
+TEST_F(ResourcePrefetchPredictorTablesTest, ComputeResourceScore) {
   ResourceData js_resource = CreateResourceData(
       "http://www.resources.google.com/script.js",
       content::RESOURCE_TYPE_SCRIPT, 11, 0, 0, 1., net::MEDIUM, false, false);
@@ -349,13 +590,13 @@ TEST_F(ResourcePrefetchPredictorTablesTest, ComputeScore) {
                          content::RESOURCE_TYPE_FONT_RESOURCE, 11, 0, 0, 1.,
                          net::MEDIUM, false, false);
   float js_resource_score =
-      ResourcePrefetchPredictorTables::ComputeScore(js_resource);
+      ResourcePrefetchPredictorTables::ComputeResourceScore(js_resource);
   float css_resource_score =
-      ResourcePrefetchPredictorTables::ComputeScore(css_resource);
+      ResourcePrefetchPredictorTables::ComputeResourceScore(css_resource);
   float font_resource_score =
-      ResourcePrefetchPredictorTables::ComputeScore(font_resource);
+      ResourcePrefetchPredictorTables::ComputeResourceScore(font_resource);
   float image_resource_score =
-      ResourcePrefetchPredictorTables::ComputeScore(image_resource);
+      ResourcePrefetchPredictorTables::ComputeResourceScore(image_resource);
 
   EXPECT_TRUE(js_resource_score == css_resource_score);
   EXPECT_TRUE(js_resource_score == font_resource_score);
@@ -403,7 +644,9 @@ TEST_F(ResourcePrefetchPredictorTablesTest, DatabaseIsResetWhenIncompatible) {
   ASSERT_EQ(version, ResourcePrefetchPredictorTables::GetDatabaseVersion(db));
 
   PrefetchDataMap url_data, host_data;
-  tables_->GetAllData(&url_data, &host_data);
+  RedirectDataMap url_redirect_data, host_redirect_data;
+  tables_->GetAllData(&url_data, &host_data, &url_redirect_data,
+                      &host_redirect_data);
   EXPECT_TRUE(url_data.empty());
   EXPECT_TRUE(host_data.empty());
 }
