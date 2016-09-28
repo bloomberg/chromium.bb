@@ -1315,8 +1315,8 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
         }
     }
 
-    RelocatablePosition beforeParagraphPosition(previousPositionOf(startOfParagraphToMove, CannotCrossEditingBoundary).deepEquivalent());
-    RelocatablePosition afterParagraphPosition(nextPositionOf(endOfParagraphToMove, CannotCrossEditingBoundary).deepEquivalent());
+    RelocatablePosition beforeParagraphPosition(previousPositionOfDeprecated(startOfParagraphToMove, CannotCrossEditingBoundary).deepEquivalent());
+    RelocatablePosition afterParagraphPosition(nextPositionOfDeprecated(endOfParagraphToMove, CannotCrossEditingBoundary).deepEquivalent());
 
     // We upstream() the end and downstream() the start so that we don't include collapsed whitespace in the move.
     // When we paste a fragment, spaces after the end and before the start are treated as though they were rendered.

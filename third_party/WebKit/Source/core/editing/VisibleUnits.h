@@ -138,6 +138,15 @@ CORE_EXPORT VisiblePositionInFlatTree nextPositionOf(const VisiblePositionInFlat
 CORE_EXPORT VisiblePosition previousPositionOf(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 CORE_EXPORT VisiblePositionInFlatTree previousPositionOf(const VisiblePositionInFlatTree&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
 
+// These deprecated functions perform synchronous layout, messing up the
+// rendering pipeline. They may also take invalid VisiblePositions as their
+// arguments. Callers should ensure clean layout and pass valid VisiblePositions
+// to the un-deprecated functions listed above.
+CORE_EXPORT VisiblePosition nextPositionOfDeprecated(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
+CORE_EXPORT VisiblePositionInFlatTree nextPositionOfDeprecated(const VisiblePositionInFlatTree&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
+CORE_EXPORT VisiblePosition previousPositionOfDeprecated(const VisiblePosition&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
+CORE_EXPORT VisiblePositionInFlatTree previousPositionOfDeprecated(const VisiblePositionInFlatTree&, EditingBoundaryCrossingRule = CanCrossEditingBoundary);
+
 // words
 CORE_EXPORT VisiblePosition startOfWord(const VisiblePosition&, EWordSide = RightWordIfOnBoundary);
 CORE_EXPORT VisiblePositionInFlatTree startOfWord(const VisiblePositionInFlatTree&, EWordSide = RightWordIfOnBoundary);
