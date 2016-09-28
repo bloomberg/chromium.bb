@@ -36,6 +36,7 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   bool has_window_dimmer() const { return window_dimmer_ != nullptr; }
 
   // Overridden from WmSnapToPixelLayoutManager:
+  void OnChildWindowVisibilityChanged(WmWindow* child, bool visible) override;
   void OnWindowResized() override;
   void OnWindowAddedToLayout(WmWindow* child) override;
   void OnWillRemoveWindowFromLayout(WmWindow* child) override;
@@ -45,7 +46,6 @@ class ASH_EXPORT SystemModalContainerLayoutManager
   // Overridden from WmWindowObserver:
   void OnWindowPropertyChanged(WmWindow* window,
                                WmWindowProperty property) override;
-  void OnWindowVisibilityChanged(WmWindow* window, bool visible) override;
 
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) override;

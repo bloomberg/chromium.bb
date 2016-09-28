@@ -52,6 +52,21 @@ SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
 ////////////////////////////////////////////////////////////////////////////////
 // SystemModalContainerLayoutManager, WmLayoutManager implementation:
 
+void SystemModalContainerLayoutManager::OnChildWindowVisibilityChanged(
+    WmWindow* window,
+    bool visible) {
+  if (GetModalType(window) != ui::MODAL_TYPE_SYSTEM)
+    return;
+
+  if (window->IsVisible()) {
+    DCHECK(!base::ContainsValue(modal_windows_, window));
+    AddModalWindow(window);
+  } else {
+    if (RemoveModalWindow(window))
+      WmShell::Get()->OnModalWindowRemoved(window);
+  }
+}
+
 void SystemModalContainerLayoutManager::OnWindowResized() {
   PositionDialogsAfterWorkAreaResize();
 }
@@ -107,20 +122,6 @@ void SystemModalContainerLayoutManager::OnWindowPropertyChanged(
   } else {
     if (RemoveModalWindow(window))
       WmShell::Get()->OnModalWindowRemoved(window);
-  }
-}
-
-void SystemModalContainerLayoutManager::OnWindowVisibilityChanged(
-    WmWindow* window,
-    bool visible) {
-  if (GetModalType(window) != ui::MODAL_TYPE_SYSTEM)
-    return;
-
-  if (window->IsVisible()) {
-    AddModalWindow(window);
-  } else {
-    RemoveModalWindow(window);
-    WmShell::Get()->OnModalWindowRemoved(window);
   }
 }
 

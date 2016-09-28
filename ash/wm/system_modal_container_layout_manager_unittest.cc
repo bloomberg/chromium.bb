@@ -784,6 +784,16 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
   EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
   EXPECT_TRUE(layout_manager->has_window_dimmer());
 
+  // Make sure that a child visibility change should not cause
+  // inconsistent state.
+  std::unique_ptr<aura::Window> child = base::MakeUnique<aura::Window>(nullptr);
+  child->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  child->Init(ui::LAYER_TEXTURED);
+  modal_window->AddChild(child.get());
+  child->Show();
+  EXPECT_TRUE(WmShell::Get()->IsSystemModalWindowOpen());
+  EXPECT_TRUE(layout_manager->has_window_dimmer());
+
   modal_window->Hide();
   EXPECT_FALSE(WmShell::Get()->IsSystemModalWindowOpen());
   EXPECT_FALSE(layout_manager->has_window_dimmer());
