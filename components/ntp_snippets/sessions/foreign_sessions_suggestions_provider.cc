@@ -125,21 +125,21 @@ CategoryInfo ForeignSessionsSuggestionsProvider::GetCategoryInfo(
 }
 
 void ForeignSessionsSuggestionsProvider::DismissSuggestion(
-    const std::string& suggestion_id) {
+    const ContentSuggestion::ID& suggestion_id) {
   // TODO(skym): Right now this continuously grows, without clearing out old and
   // irrelevant entries. Could either use a timestamp and expire after a
   // threshold, or compare with current foreign tabs and remove anything that
   // isn't actively blockign a foreign_sessions tab.
   std::set<std::string> dismissed_ids = prefs::ReadDismissedIDsFromPrefs(
       *pref_service_, prefs::kDismissedForeignSessionsSuggestions);
-  dismissed_ids.insert(suggestion_id);
+  dismissed_ids.insert(suggestion_id.id_within_category());
   prefs::StoreDismissedIDsToPrefs(pref_service_,
                                   prefs::kDismissedForeignSessionsSuggestions,
                                   dismissed_ids);
 }
 
 void ForeignSessionsSuggestionsProvider::FetchSuggestionImage(
-    const std::string& suggestion_id,
+    const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, gfx::Image()));
@@ -152,7 +152,7 @@ void ForeignSessionsSuggestionsProvider::ClearHistory(
   std::set<std::string> dismissed_ids = prefs::ReadDismissedIDsFromPrefs(
       *pref_service_, prefs::kDismissedForeignSessionsSuggestions);
   for (auto iter = dismissed_ids.begin(); iter != dismissed_ids.end();) {
-    if (filter.Run(GURL(base::StringPiece(*iter)))) {
+    if (filter.Run(GURL(*iter))) {
       iter = dismissed_ids.erase(iter);
     } else {
       ++iter;
@@ -277,13 +277,12 @@ ForeignSessionsSuggestionsProvider::GetSuggestionCandidates() {
           continue;
 
         const SerializedNavigationEntry& navigation = tab->navigations.back();
-        const std::string unique_id =
-            MakeUniqueID(provided_category_, navigation.virtual_url().spec());
+        const std::string id = navigation.virtual_url().spec();
         // TODO(skym): Filter out internal pages. Tabs that contain only
         // non-syncable content should never reach the local client, but
         // sometimes the most recent navigation may be internal while one
         // of the previous ones was more valid.
-        if (dismissed_ids.find(unique_id) == dismissed_ids.end() &&
+        if (dismissed_ids.find(id) == dismissed_ids.end() &&
             (base::Time::Now() - tab->timestamp) < max_foreign_tab_age) {
           suggestion_candidates.push_back(
               SessionData{session, tab.get(), &navigation});
@@ -296,9 +295,9 @@ ForeignSessionsSuggestionsProvider::GetSuggestionCandidates() {
 
 ContentSuggestion ForeignSessionsSuggestionsProvider::BuildSuggestion(
     const SessionData& data) {
-  ContentSuggestion suggestion(
-      MakeUniqueID(provided_category_, data.navigation->virtual_url().spec()),
-      data.navigation->virtual_url());
+  ContentSuggestion suggestion(provided_category_,
+                               data.navigation->virtual_url().spec(),
+                               data.navigation->virtual_url());
   suggestion.set_title(data.navigation->title());
   suggestion.set_publish_date(data.tab->timestamp);
   // TODO(skym): It's unclear if this simple approach is sufficient for

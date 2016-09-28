@@ -201,7 +201,8 @@ ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
       Java_SnippetsBridge_createSuggestionList(env);
   for (const ContentSuggestion& suggestion : suggestions) {
     Java_SnippetsBridge_addSuggestion(
-        env, result, category, ConvertUTF8ToJavaString(env, suggestion.id()),
+        env, result, category,
+        ConvertUTF8ToJavaString(env, suggestion.id().id_within_category()),
         ConvertUTF16ToJavaString(env, suggestion.title()),
         ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
         ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
@@ -216,11 +217,13 @@ ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetSuggestionsForCategory(
 void NTPSnippetsBridge::FetchSuggestionImage(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& suggestion_id,
+    jint category,
+    const JavaParamRef<jstring>& id_within_category,
     const JavaParamRef<jobject>& j_callback) {
   base::android::ScopedJavaGlobalRef<jobject> callback(j_callback);
   content_suggestions_service_->FetchSuggestionImage(
-      ConvertJavaStringToUTF8(env, suggestion_id),
+      ContentSuggestion::ID(CategoryFromIDValue(category),
+                            ConvertJavaStringToUTF8(env, id_within_category)),
       base::Bind(&NTPSnippetsBridge::OnImageFetched,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -228,9 +231,11 @@ void NTPSnippetsBridge::FetchSuggestionImage(
 void NTPSnippetsBridge::DismissSuggestion(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& suggestion_id) {
+    jint category,
+    const JavaParamRef<jstring>& id_within_category) {
   content_suggestions_service_->DismissSuggestion(
-      ConvertJavaStringToUTF8(env, suggestion_id));
+      ContentSuggestion::ID(CategoryFromIDValue(category),
+                            ConvertJavaStringToUTF8(env, id_within_category)));
 }
 
 void NTPSnippetsBridge::DismissCategory(JNIEnv* env,
@@ -357,15 +362,14 @@ void NTPSnippetsBridge::OnCategoryStatusChanged(Category category,
 }
 
 void NTPSnippetsBridge::OnSuggestionInvalidated(
-    Category category,
-    const std::string& suggestion_id) {
+    const ContentSuggestion::ID& suggestion_id) {
   if (observer_.is_null())
     return;
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_SnippetsBridge_onSuggestionInvalidated(
-      env, observer_.obj(), static_cast<int>(category.id()),
-      ConvertUTF8ToJavaString(env, suggestion_id).obj());
+      env, observer_.obj(), static_cast<int>(suggestion_id.category().id()),
+      ConvertUTF8ToJavaString(env, suggestion_id.id_within_category()).obj());
 }
 
 void NTPSnippetsBridge::ContentSuggestionsServiceShutdown() {

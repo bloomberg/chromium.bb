@@ -15,20 +15,4 @@ ContentSuggestionsProvider::ContentSuggestionsProvider(
 
 ContentSuggestionsProvider::~ContentSuggestionsProvider() = default;
 
-std::string ContentSuggestionsProvider::MakeUniqueID(
-    Category category,
-    const std::string& within_category_id) const {
-  return category_factory()->MakeUniqueID(category, within_category_id);
-}
-
-Category ContentSuggestionsProvider::GetCategoryFromUniqueID(
-    const std::string& unique_id) const {
-  return category_factory()->GetCategoryFromUniqueID(unique_id);
-}
-
-std::string ContentSuggestionsProvider::GetWithinCategoryIDFromUniqueID(
-    const std::string& unique_id) const {
-  return category_factory()->GetWithinCategoryIDFromUniqueID(unique_id);
-}
-
 }  // namespace ntp_snippets

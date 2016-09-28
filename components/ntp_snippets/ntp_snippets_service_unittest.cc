@@ -299,9 +299,9 @@ class FakeContentSuggestionsProviderObserver
     statuses_[category] = new_status;
   }
 
-  void OnSuggestionInvalidated(ContentSuggestionsProvider* provider,
-                               Category category,
-                               const std::string& suggestion_id) override {}
+  void OnSuggestionInvalidated(
+      ContentSuggestionsProvider* provider,
+      const ContentSuggestion::ID& suggestion_id) override {}
 
   const std::map<Category, CategoryStatus, Category::CompareByID>& statuses()
       const {
@@ -423,18 +423,16 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     *service = MakeSnippetsService();
   }
 
-  std::string MakeArticleID(const NTPSnippetsService& service,
-                            const std::string& within_category_id) {
-    return service.MakeUniqueID(articles_category(), within_category_id);
+  ContentSuggestion::ID MakeArticleID(const std::string& id_within_category) {
+    return ContentSuggestion::ID(articles_category(), id_within_category);
   }
 
   Category articles_category() {
     return category_factory_.FromKnownCategory(KnownCategories::ARTICLES);
   }
 
-  std::string MakeOtherID(const NTPSnippetsService& service,
-                          const std::string& within_category_id) {
-    return service.MakeUniqueID(other_category(), within_category_id);
+  ContentSuggestion::ID MakeOtherID(const std::string& id_within_category) {
+    return ContentSuggestion::ID(other_category(), id_within_category);
   }
 
   Category other_category() { return category_factory_.FromRemoteCategory(2); }
@@ -610,7 +608,7 @@ TEST_F(NTPSnippetsServiceTest, Full) {
   const ContentSuggestion& suggestion =
       observer().SuggestionsForCategory(articles_category()).front();
 
-  EXPECT_EQ(MakeArticleID(*service, kSnippetUrl), suggestion.id());
+  EXPECT_EQ(MakeArticleID(kSnippetUrl), suggestion.id());
   EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
   EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
   EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
@@ -644,8 +642,7 @@ TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
   {
     const ContentSuggestion& suggestion =
         observer().SuggestionsForCategory(articles_category()).front();
-    EXPECT_EQ(MakeArticleID(*service, std::string(kSnippetUrl) + "/0"),
-              suggestion.id());
+    EXPECT_EQ(MakeArticleID(std::string(kSnippetUrl) + "/0"), suggestion.id());
     EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
     EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
     EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
@@ -657,8 +654,7 @@ TEST_F(NTPSnippetsServiceTest, MultipleCategories) {
   {
     const ContentSuggestion& suggestion =
         observer().SuggestionsForCategory(other_category()).front();
-    EXPECT_EQ(MakeOtherID(*service, std::string(kSnippetUrl) + "/1"),
-              suggestion.id());
+    EXPECT_EQ(MakeOtherID(std::string(kSnippetUrl) + "/1"), suggestion.id());
     EXPECT_EQ(kSnippetTitle, base::UTF16ToUTF8(suggestion.title()));
     EXPECT_EQ(kSnippetText, base::UTF16ToUTF8(suggestion.snippet_text()));
     EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
@@ -751,11 +747,11 @@ TEST_F(NTPSnippetsServiceTest, Dismiss) {
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 
   // Dismissing a non-existent snippet shouldn't do anything.
-  service->DismissSuggestion(MakeArticleID(*service, "http://othersite.com"));
+  service->DismissSuggestion(MakeArticleID("http://othersite.com"));
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
 
   // Dismiss the snippet.
-  service->DismissSuggestion(MakeArticleID(*service, kSnippetUrl));
+  service->DismissSuggestion(MakeArticleID(kSnippetUrl));
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 
   // Make sure that fetching the same snippet again does not re-add it.
@@ -779,7 +775,7 @@ TEST_F(NTPSnippetsServiceTest, GetDismissed) {
 
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
 
-  service->DismissSuggestion(MakeArticleID(*service, kSnippetUrl));
+  service->DismissSuggestion(MakeArticleID(kSnippetUrl));
 
   service->GetDismissedSuggestionsForDebugging(
       articles_category(),
@@ -788,8 +784,7 @@ TEST_F(NTPSnippetsServiceTest, GetDismissed) {
              std::vector<ContentSuggestion> dismissed_suggestions) {
             EXPECT_EQ(1u, dismissed_suggestions.size());
             for (auto& suggestion : dismissed_suggestions) {
-              EXPECT_EQ(test->MakeArticleID(*service, kSnippetUrl),
-                        suggestion.id());
+              EXPECT_EQ(test->MakeArticleID(kSnippetUrl), suggestion.id());
             }
           },
           service.get(), this));
@@ -829,7 +824,7 @@ TEST_F(NTPSnippetsServiceTest, RemoveExpiredDismissedContent) {
   LoadFromJSONString(service.get(), json_str1);
   // Dismiss the suggestion
   service->DismissSuggestion(
-      service->MakeUniqueID(service->articles_category_, kSnippetUrl));
+      ContentSuggestion::ID(articles_category(), kSnippetUrl));
 
   // Load a different snippet - this will clear the expired dismissed ones.
   std::string json_str2(GetTestJson({GetSnippetWithUrl(kSnippetUrl2)}));
@@ -928,7 +923,7 @@ TEST_F(NTPSnippetsServiceTest, LogNumArticlesHistogram) {
 
   // Dismissing a snippet should decrease the list size. This will only be
   // logged after the next fetch.
-  service->DismissSuggestion(MakeArticleID(*service, kSnippetUrl));
+  service->DismissSuggestion(MakeArticleID(kSnippetUrl));
   LoadFromJSONString(service.get(), GetTestJson({GetSnippet()}));
   EXPECT_THAT(tester.GetAllSamples("NewTabPage.Snippets.NumArticles"),
               ElementsAre(base::Bucket(/*min=*/0, /*count=*/3),
@@ -982,7 +977,7 @@ TEST_F(NTPSnippetsServiceTest, DismissShouldRespectAllKnownUrls) {
                          publishers[0], amp_urls[0])}));
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
   // Dismiss the snippet via the mashable source corpus ID.
-  service->DismissSuggestion(MakeArticleID(*service, source_urls[0]));
+  service->DismissSuggestion(MakeArticleID(source_urls[0]));
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 
   // The same article from the AOL domain should now be detected as dismissed.
@@ -1035,7 +1030,7 @@ TEST_F(NTPSnippetsServiceTest, ImageReturnedWithTheSameId) {
   }
 
   service->FetchSuggestionImage(
-      MakeArticleID(*service, kSnippetUrl),
+      MakeArticleID(kSnippetUrl),
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
   base::RunLoop().RunUntilIdle();
@@ -1052,7 +1047,7 @@ TEST_F(NTPSnippetsServiceTest, EmptyImageReturnedForNonExistentId) {
   EXPECT_CALL(image_fetched, Call(_)).WillOnce(SaveArg<0>(&image));
 
   service->FetchSuggestionImage(
-      MakeArticleID(*service, kSnippetUrl2),
+      MakeArticleID(kSnippetUrl2),
       base::Bind(&MockFunction<void(const gfx::Image&)>::Call,
                  base::Unretained(&image_fetched)));
 
@@ -1069,7 +1064,7 @@ TEST_F(NTPSnippetsServiceTest, ClearHistoryRemovesAllSuggestions) {
   LoadFromJSONString(service.get(), json_str);
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(2));
 
-  service->DismissSuggestion(MakeArticleID(*service, "http://url1.com"));
+  service->DismissSuggestion(MakeArticleID("http://url1.com"));
   ASSERT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(1));
   ASSERT_THAT(service->GetDismissedSnippetsForTesting(articles_category()),
               SizeIs(1));

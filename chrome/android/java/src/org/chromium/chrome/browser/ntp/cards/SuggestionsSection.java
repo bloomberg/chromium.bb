@@ -67,9 +67,9 @@ public class SuggestionsSection implements ItemGroup {
         if (mMoreButton != null) mMoreButton.setDismissable(!hasSuggestions());
     }
 
-    public void removeSuggestionById(String suggestionId) {
+    public void removeSuggestionById(String idWithinCategory) {
         for (SnippetArticle suggestion : mSuggestions) {
-            if (suggestion.mId.equals(suggestionId)) {
+            if (suggestion.mIdWithinCategory.equals(idWithinCategory)) {
                 removeSuggestion(suggestion);
                 return;
             }

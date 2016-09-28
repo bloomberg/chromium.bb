@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
@@ -321,39 +322,36 @@ CategoryInfo NTPSnippetsService::GetCategoryInfo(Category category) {
                       /* show_if_empty */ true);
 }
 
-void NTPSnippetsService::DismissSuggestion(const std::string& suggestion_id) {
+void NTPSnippetsService::DismissSuggestion(
+    const ContentSuggestion::ID& suggestion_id) {
   if (!ready())
     return;
 
-  Category category = GetCategoryFromUniqueID(suggestion_id);
-  std::string snippet_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
+  DCHECK(base::ContainsKey(categories_, suggestion_id.category()));
 
-  DCHECK(categories_.find(category) != categories_.end());
-
-  CategoryContent* content = &categories_[category];
-  auto it =
-      std::find_if(content->snippets.begin(), content->snippets.end(),
-                   [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
-                     return snippet->id() == snippet_id;
-                   });
+  CategoryContent* content = &categories_[suggestion_id.category()];
+  auto it = std::find_if(
+      content->snippets.begin(), content->snippets.end(),
+      [&suggestion_id](const std::unique_ptr<NTPSnippet>& snippet) {
+        return snippet->id() == suggestion_id.id_within_category();
+      });
   if (it == content->snippets.end())
     return;
 
   (*it)->set_dismissed(true);
 
   database_->SaveSnippet(**it);
-  database_->DeleteImage(snippet_id);
+  database_->DeleteImage(suggestion_id.id_within_category());
 
   content->dismissed.push_back(std::move(*it));
   content->snippets.erase(it);
 }
 
 void NTPSnippetsService::FetchSuggestionImage(
-    const std::string& suggestion_id,
+    const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
-  std::string snippet_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
   database_->LoadImage(
-      snippet_id,
+      suggestion_id.id_within_category(),
       base::Bind(&NTPSnippetsService::OnSnippetImageFetchedFromDatabase,
                  base::Unretained(this), callback, suggestion_id));
 }
@@ -400,7 +398,7 @@ void NTPSnippetsService::GetDismissedSuggestionsForDebugging(
   for (const std::unique_ptr<NTPSnippet>& snippet : content.dismissed) {
     if (!snippet->is_complete())
       continue;
-    ContentSuggestion suggestion(MakeUniqueID(category, snippet->id()),
+    ContentSuggestion suggestion(category, snippet->id(),
                                  snippet->best_source().url);
     suggestion.set_amp_url(snippet->best_source().amp_url);
     suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
@@ -451,49 +449,38 @@ int NTPSnippetsService::GetMaxSnippetCountForTesting() {
 // Private methods
 
 GURL NTPSnippetsService::FindSnippetImageUrl(
-    Category category,
-    const std::string& snippet_id) const {
-  DCHECK(categories_.find(category) != categories_.end());
+    const ContentSuggestion::ID& suggestion_id) const {
+  DCHECK(categories_.find(suggestion_id.category()) != categories_.end());
 
-  const CategoryContent& content = categories_.at(category);
-  // Search for the snippet in current and archived snippets.
-  auto it =
-      std::find_if(content.snippets.begin(), content.snippets.end(),
-                   [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
-                     return snippet->id() == snippet_id;
-                   });
-  if (it != content.snippets.end())
-    return (*it)->salient_image_url();
-
-  it = std::find_if(content.archived.begin(), content.archived.end(),
-                    [&snippet_id](const std::unique_ptr<NTPSnippet>& snippet) {
-                      return snippet->id() == snippet_id;
-                    });
-  if (it != content.archived.end())
-    return (*it)->salient_image_url();
-
-  return GURL();
+  const CategoryContent& content = categories_.at(suggestion_id.category());
+  const NTPSnippet* snippet =
+      content.FindSnippet(suggestion_id.id_within_category());
+  if (!snippet)
+    return GURL();
+  return snippet->salient_image_url();
 }
 
 // image_fetcher::ImageFetcherDelegate implementation.
-void NTPSnippetsService::OnImageDataFetched(const std::string& suggestion_id,
-                                            const std::string& image_data) {
+void NTPSnippetsService::OnImageDataFetched(
+    const std::string& id_within_category,
+    const std::string& image_data) {
   if (image_data.empty())
     return;
 
-  Category category = GetCategoryFromUniqueID(suggestion_id);
-  std::string snippet_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
-
-  if (categories_.find(category) == categories_.end())
-    return;
-
   // Only save the image if the corresponding snippet still exists.
-  if (FindSnippetImageUrl(category, snippet_id).is_empty())
+  bool found = false;
+  for (const std::pair<const Category, CategoryContent>& entry : categories_) {
+    if (entry.second.FindSnippet(id_within_category)) {
+      found = true;
+      break;
+    }
+  }
+  if (!found)
     return;
 
   // Only cache the data in the DB, the actual serving is done in the callback
   // provided to |image_fetcher_| (OnSnippetImageDecodedFromNetwork()).
-  database_->SaveImage(snippet_id, image_data);
+  database_->SaveImage(id_within_category, image_data);
 }
 
 void NTPSnippetsService::OnDatabaseLoaded(NTPSnippet::PtrVector snippets) {
@@ -819,7 +806,7 @@ void NTPSnippetsService::NukeAllSnippets() {
 
 void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
     const ImageFetchedCallback& callback,
-    const std::string& suggestion_id,
+    const ContentSuggestion::ID& suggestion_id,
     std::string data) {
   // |image_decoder_| is null in tests.
   if (image_decoder_ && !data.empty()) {
@@ -835,7 +822,7 @@ void NTPSnippetsService::OnSnippetImageFetchedFromDatabase(
 
 void NTPSnippetsService::OnSnippetImageDecodedFromDatabase(
     const ImageFetchedCallback& callback,
-    const std::string& suggestion_id,
+    const ContentSuggestion::ID& suggestion_id,
     const gfx::Image& image) {
   if (!image.IsEmpty()) {
     callback.Run(image);
@@ -843,24 +830,21 @@ void NTPSnippetsService::OnSnippetImageDecodedFromDatabase(
   }
 
   // If decoding the image failed, delete the DB entry.
-  std::string snippet_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
-  database_->DeleteImage(snippet_id);
+  database_->DeleteImage(suggestion_id.id_within_category());
 
   FetchSnippetImageFromNetwork(suggestion_id, callback);
 }
 
 void NTPSnippetsService::FetchSnippetImageFromNetwork(
-    const std::string& suggestion_id,
+    const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
-  Category category = GetCategoryFromUniqueID(suggestion_id);
-  std::string snippet_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
-
-  if (categories_.find(category) == categories_.end()) {
-    OnSnippetImageDecodedFromNetwork(callback, suggestion_id, gfx::Image());
+  if (categories_.find(suggestion_id.category()) == categories_.end()) {
+    OnSnippetImageDecodedFromNetwork(
+        callback, suggestion_id.id_within_category(), gfx::Image());
     return;
   }
 
-  GURL image_url = FindSnippetImageUrl(category, snippet_id);
+  GURL image_url = FindSnippetImageUrl(suggestion_id);
 
   if (image_url.is_empty() ||
       !thumbnail_requests_throttler_.DemandQuotaForRequest(
@@ -868,19 +852,20 @@ void NTPSnippetsService::FetchSnippetImageFromNetwork(
     // Return an empty image. Directly, this is never synchronous with the
     // original FetchSuggestionImage() call - an asynchronous database query has
     // happened in the meantime.
-    OnSnippetImageDecodedFromNetwork(callback, suggestion_id, gfx::Image());
+    OnSnippetImageDecodedFromNetwork(
+        callback, suggestion_id.id_within_category(), gfx::Image());
     return;
   }
 
   image_fetcher_->StartOrQueueNetworkRequest(
-      suggestion_id, image_url,
+      suggestion_id.id_within_category(), image_url,
       base::Bind(&NTPSnippetsService::OnSnippetImageDecodedFromNetwork,
                  base::Unretained(this), callback));
 }
 
 void NTPSnippetsService::OnSnippetImageDecodedFromNetwork(
     const ImageFetchedCallback& callback,
-    const std::string& suggestion_id,
+    const std::string& id_within_category,
     const gfx::Image& image) {
   callback.Run(image);
 }
@@ -1026,7 +1011,7 @@ void NTPSnippetsService::NotifyNewSuggestions() {
       // incomplete ones we kept.
       if (!snippet->is_complete())
         continue;
-      ContentSuggestion suggestion(MakeUniqueID(category, snippet->id()),
+      ContentSuggestion suggestion(category, snippet->id(),
                                    snippet->best_source().url);
       suggestion.set_amp_url(snippet->best_source().amp_url);
       suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
@@ -1062,6 +1047,28 @@ void NTPSnippetsService::UpdateAllCategoryStatus(CategoryStatus status) {
   for (const auto& category : categories_) {
     UpdateCategoryStatus(category.first, status);
   }
+}
+
+const NTPSnippet* NTPSnippetsService::CategoryContent::FindSnippet(
+    const std::string& id_within_category) const {
+  // Search for the snippet in current and archived snippets.
+  auto it = std::find_if(
+      snippets.begin(), snippets.end(),
+      [&id_within_category](const std::unique_ptr<NTPSnippet>& snippet) {
+        return snippet->id() == id_within_category;
+      });
+  if (it != snippets.end())
+    return it->get();
+
+  it = std::find_if(
+      archived.begin(), archived.end(),
+      [&id_within_category](const std::unique_ptr<NTPSnippet>& snippet) {
+        return snippet->id() == id_within_category;
+      });
+  if (it != archived.end())
+    return it->get();
+
+  return nullptr;
 }
 
 NTPSnippetsService::CategoryContent::CategoryContent() = default;

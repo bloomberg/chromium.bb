@@ -149,8 +149,8 @@ class ForeignSessionsSuggestionsProviderTest : public Test {
   }
 
   void Dismiss(const std::string& url) {
-    // The url of a given suggestion is used as the |within_category_id|.
-    provider_->DismissSuggestion(provider_->MakeUniqueID(category(), url));
+    // The url of a given suggestion is used as the |id_within_category|.
+    provider_->DismissSuggestion(ContentSuggestion::ID(category(), url));
   }
 
   Category category() {

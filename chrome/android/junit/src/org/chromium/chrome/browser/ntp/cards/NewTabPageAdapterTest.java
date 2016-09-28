@@ -580,7 +580,7 @@ public class NewTabPageAdapterTest {
         assertArticlesEqual(articles, 2, 5);
 
         SnippetArticle removed = articles.remove(1);
-        mSource.fireSuggestionInvalidated(KnownCategories.ARTICLES, removed.mId);
+        mSource.fireSuggestionInvalidated(KnownCategories.ARTICLES, removed.mIdWithinCategory);
         assertArticlesEqual(articles, 2, 4);
     }
 

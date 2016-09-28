@@ -154,14 +154,14 @@ CategoryInfo BookmarkSuggestionsProvider::GetCategoryInfo(Category category) {
 }
 
 void BookmarkSuggestionsProvider::DismissSuggestion(
-    const std::string& suggestion_id) {
+    const ContentSuggestion::ID& suggestion_id) {
   DCHECK(bookmark_model_->loaded());
-  GURL url(GetWithinCategoryIDFromUniqueID(suggestion_id));
+  GURL url(suggestion_id.id_within_category());
   MarkBookmarksDismissed(bookmark_model_, url);
 }
 
 void BookmarkSuggestionsProvider::FetchSuggestionImage(
-    const std::string& suggestion_id,
+    const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, gfx::Image()));
@@ -260,9 +260,8 @@ void BookmarkSuggestionsProvider::BookmarkNodeRemoved(
 
 ContentSuggestion BookmarkSuggestionsProvider::ConvertBookmark(
     const BookmarkNode* bookmark) {
-  ContentSuggestion suggestion(
-      MakeUniqueID(provided_category_, bookmark->url().spec()),
-      bookmark->url());
+  ContentSuggestion suggestion(provided_category_, bookmark->url().spec(),
+                               bookmark->url());
 
   suggestion.set_title(bookmark->GetTitle());
   suggestion.set_snippet_text(base::string16());

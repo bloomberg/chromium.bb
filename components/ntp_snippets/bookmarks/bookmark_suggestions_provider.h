@@ -39,8 +39,8 @@ class BookmarkSuggestionsProvider : public ContentSuggestionsProvider,
   // ContentSuggestionsProvider implementation.
   CategoryStatus GetCategoryStatus(Category category) override;
   CategoryInfo GetCategoryInfo(Category category) override;
-  void DismissSuggestion(const std::string& suggestion_id) override;
-  void FetchSuggestionImage(const std::string& suggestion_id,
+  void DismissSuggestion(const ContentSuggestion::ID& suggestion_id) override;
+  void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
                             const ImageFetchedCallback& callback) override;
   void ClearHistory(
       base::Time begin,

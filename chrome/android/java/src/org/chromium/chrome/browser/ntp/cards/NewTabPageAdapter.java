@@ -230,9 +230,9 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     @Override
-    public void onSuggestionInvalidated(@CategoryInt int category, String suggestionId) {
+    public void onSuggestionInvalidated(@CategoryInt int category, String idWithinCategory) {
         if (!mSections.containsKey(category)) return;
-        mSections.get(category).removeSuggestionById(suggestionId);
+        mSections.get(category).removeSuggestionById(idWithinCategory);
         updateGroups();
     }
 
@@ -318,14 +318,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return getGroupPositionOffset(mBottomSpacer);
     }
 
-    public int getSuggestionPosition(String suggestionId) {
+    public int getSuggestionPosition(SnippetArticle article) {
         List<NewTabPageItem> items = getItems();
         for (int i = 0; i < items.size(); i++) {
             NewTabPageItem item = items.get(i);
-            if (item instanceof SnippetArticle
-                    && ((SnippetArticle) item).mId.equals(suggestionId)) {
-                return i;
-            }
+            if (article.equals(item)) return i;
         }
         return RecyclerView.NO_POSITION;
     }

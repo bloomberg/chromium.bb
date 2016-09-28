@@ -72,18 +72,17 @@ ContentSuggestionsService::GetSuggestionsForCategory(Category category) const {
 }
 
 void ContentSuggestionsService::FetchSuggestionImage(
-    const std::string& suggestion_id,
+    const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
-  Category category = category_factory_.GetCategoryFromUniqueID(suggestion_id);
-  if (!providers_by_category_.count(category)) {
+  if (!providers_by_category_.count(suggestion_id.category())) {
     LOG(WARNING) << "Requested image for suggestion " << suggestion_id
-                 << " for unavailable category " << category;
+                 << " for unavailable category " << suggestion_id.category();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, gfx::Image()));
     return;
   }
-  providers_by_category_[category]->FetchSuggestionImage(suggestion_id,
-                                                         callback);
+  providers_by_category_[suggestion_id.category()]->FetchSuggestionImage(
+      suggestion_id, callback);
 }
 
 void ContentSuggestionsService::ClearHistory(
@@ -130,17 +129,17 @@ void ContentSuggestionsService::ClearDismissedSuggestionsForDebugging(
 }
 
 void ContentSuggestionsService::DismissSuggestion(
-    const std::string& suggestion_id) {
-  Category category = category_factory_.GetCategoryFromUniqueID(suggestion_id);
-  if (!providers_by_category_.count(category)) {
+    const ContentSuggestion::ID& suggestion_id) {
+  if (!providers_by_category_.count(suggestion_id.category())) {
     LOG(WARNING) << "Dismissed suggestion " << suggestion_id
-                 << " for unavailable category " << category;
+                 << " for unavailable category " << suggestion_id.category();
     return;
   }
-  providers_by_category_[category]->DismissSuggestion(suggestion_id);
+  providers_by_category_[suggestion_id.category()]->DismissSuggestion(
+      suggestion_id);
 
   // Remove the suggestion locally.
-  bool removed = RemoveSuggestionByID(category, suggestion_id);
+  bool removed = RemoveSuggestionByID(suggestion_id);
   DCHECK(removed) << "The dismissed suggestion " << suggestion_id
                   << " has already been removed. Providers must not call"
                   << " OnNewSuggestions in response to DismissSuggestion.";
@@ -214,11 +213,10 @@ void ContentSuggestionsService::OnCategoryStatusChanged(
 
 void ContentSuggestionsService::OnSuggestionInvalidated(
     ContentSuggestionsProvider* provider,
-    Category category,
-    const std::string& suggestion_id) {
-  RemoveSuggestionByID(category, suggestion_id);
+    const ContentSuggestion::ID& suggestion_id) {
+  RemoveSuggestionByID(suggestion_id);
   FOR_EACH_OBSERVER(Observer, observers_,
-                    OnSuggestionInvalidated(category, suggestion_id));
+                    OnSuggestionInvalidated(suggestion_id));
 }
 
 // history::HistoryServiceObserver implementation.
@@ -287,10 +285,9 @@ bool ContentSuggestionsService::RegisterCategoryIfRequired(
 }
 
 bool ContentSuggestionsService::RemoveSuggestionByID(
-    Category category,
-    const std::string& suggestion_id) {
+    const ContentSuggestion::ID& suggestion_id) {
   std::vector<ContentSuggestion>* suggestions =
-      &suggestions_by_category_[category];
+      &suggestions_by_category_[suggestion_id.category()];
   auto position =
       std::find_if(suggestions->begin(), suggestions->end(),
                    [&suggestion_id](const ContentSuggestion& suggestion) {
@@ -302,7 +299,7 @@ bool ContentSuggestionsService::RemoveSuggestionByID(
 
   // The positioning of the bookmarks category depends on whether it's empty.
   // TODO(treib): Remove this temporary hack, crbug.com/640568.
-  if (category.IsKnownCategory(KnownCategories::BOOKMARKS))
+  if (suggestion_id.category().IsKnownCategory(KnownCategories::BOOKMARKS))
     SortCategories();
 
   return true;

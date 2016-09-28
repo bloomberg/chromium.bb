@@ -429,7 +429,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
      */
     public void dismissItemWithAnimation(SnippetArticle suggestion) {
         // We need to recompute the position, as it might have changed.
-        final int position = getNewTabPageAdapter().getSuggestionPosition(suggestion.mId);
+        final int position = getNewTabPageAdapter().getSuggestionPosition(suggestion);
         if (position == RecyclerView.NO_POSITION) {
             // The item does not exist anymore, so ignore.
             return;

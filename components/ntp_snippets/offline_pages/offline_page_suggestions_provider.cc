@@ -135,16 +135,15 @@ CategoryInfo OfflinePageSuggestionsProvider::GetCategoryInfo(
 }
 
 void OfflinePageSuggestionsProvider::DismissSuggestion(
-    const std::string& suggestion_id) {
-  Category category = GetCategoryFromUniqueID(suggestion_id);
-  std::string offline_page_id = GetWithinCategoryIDFromUniqueID(suggestion_id);
-  std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs(category);
-  dismissed_ids.insert(offline_page_id);
-  StoreDismissedIDsToPrefs(category, dismissed_ids);
+    const ContentSuggestion::ID& suggestion_id) {
+  std::set<std::string> dismissed_ids =
+      ReadDismissedIDsFromPrefs(suggestion_id.category());
+  dismissed_ids.insert(suggestion_id.id_within_category());
+  StoreDismissedIDsToPrefs(suggestion_id.category(), dismissed_ids);
 }
 
 void OfflinePageSuggestionsProvider::FetchSuggestionImage(
-    const std::string& suggestion_id,
+    const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
   // TODO(pke): Fetch proper thumbnail from OfflinePageModel once it's available
   // there.
@@ -314,9 +313,9 @@ ContentSuggestion OfflinePageSuggestionsProvider::ConvertOfflinePage(
   // TODO(pke): Make sure the URL is actually opened as an offline URL.
   // Currently, the browser opens the offline URL and then immediately
   // redirects to the online URL if the device is online.
-  ContentSuggestion suggestion(
-      MakeUniqueID(category, base::IntToString(offline_page.offline_id)),
-      offline_page.GetOfflineURL());
+  ContentSuggestion suggestion(category,
+                               base::IntToString(offline_page.offline_id),
+                               offline_page.GetOfflineURL());
 
   if (offline_page.title.empty()) {
     // TODO(pke): Remove this fallback once the OfflinePageModel provides titles
@@ -348,8 +347,8 @@ OfflinePageSuggestionsProvider::GetMostRecentlyVisited(
 void OfflinePageSuggestionsProvider::InvalidateSuggestion(Category category,
                                                           int64_t offline_id) {
   std::string offline_page_id = base::IntToString(offline_id);
-  observer()->OnSuggestionInvalidated(this, category,
-                                      MakeUniqueID(category, offline_page_id));
+  observer()->OnSuggestionInvalidated(
+      this, ContentSuggestion::ID(category, offline_page_id));
 
   std::set<std::string> dismissed_ids = ReadDismissedIDsFromPrefs(category);
   auto it = dismissed_ids.find(offline_page_id);

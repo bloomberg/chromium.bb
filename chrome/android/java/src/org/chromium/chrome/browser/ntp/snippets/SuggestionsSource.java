@@ -31,7 +31,7 @@ public interface SuggestionsSource {
          * immediately. This event may be fired for a category or suggestion that does not
          * currently exist or has never existed and should be ignored in that case.
          */
-        void onSuggestionInvalidated(@CategoryInt int category, String suggestionId);
+        void onSuggestionInvalidated(@CategoryInt int category, String idWithinCategory);
     }
 
     /**

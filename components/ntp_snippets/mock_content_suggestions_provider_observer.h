@@ -37,10 +37,9 @@ class MockContentSuggestionsProviderObserver
                void(ContentSuggestionsProvider* provider,
                     Category category,
                     CategoryStatus new_status));
-  MOCK_METHOD3(OnSuggestionInvalidated,
+  MOCK_METHOD2(OnSuggestionInvalidated,
                void(ContentSuggestionsProvider* provider,
-                    Category category,
-                    const std::string& suggestion_id));
+                    const ContentSuggestion::ID& suggestion_id));
 };
 
 }  // namespace ntp_snippets

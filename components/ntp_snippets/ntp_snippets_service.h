@@ -118,8 +118,8 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // ContentSuggestionsProvider implementation
   CategoryStatus GetCategoryStatus(Category category) override;
   CategoryInfo GetCategoryInfo(Category category) override;
-  void DismissSuggestion(const std::string& suggestion_id) override;
-  void FetchSuggestionImage(const std::string& suggestion_id,
+  void DismissSuggestion(const ContentSuggestion::ID& suggestion_id) override;
+  void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
                             const ImageFetchedCallback& callback) override;
   void ClearHistory(
       base::Time begin,
@@ -199,12 +199,12 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   };
 
   // Returns the URL of the image of a snippet if it is among the current or
-  // among the archived snippets in |category|. Returns an empty URL, otherwise.
-  GURL FindSnippetImageUrl(Category category,
-                           const std::string& snippet_id) const;
+  // among the archived snippets in the matching category. Returns an empty URL
+  // otherwise.
+  GURL FindSnippetImageUrl(const ContentSuggestion::ID& suggestion_id) const;
 
   // image_fetcher::ImageFetcherDelegate implementation.
-  void OnImageDataFetched(const std::string& suggestion_id,
+  void OnImageDataFetched(const std::string& id_within_category,
                           const std::string& image_data) override;
 
   // Callbacks for the NTPSnippetsDatabase.
@@ -242,19 +242,21 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
   // observers. This is done after construction, once the database is loaded.
   void FinishInitialization();
 
-  void OnSnippetImageFetchedFromDatabase(const ImageFetchedCallback& callback,
-                                         const std::string& suggestion_id,
-                                         std::string data);
+  void OnSnippetImageFetchedFromDatabase(
+      const ImageFetchedCallback& callback,
+      const ContentSuggestion::ID& suggestion_id,
+      std::string data);
 
-  void OnSnippetImageDecodedFromDatabase(const ImageFetchedCallback& callback,
-                                         const std::string& suggestion_id,
-                                         const gfx::Image& image);
+  void OnSnippetImageDecodedFromDatabase(
+      const ImageFetchedCallback& callback,
+      const ContentSuggestion::ID& suggestion_id,
+      const gfx::Image& image);
 
-  void FetchSnippetImageFromNetwork(const std::string& suggestion_id,
+  void FetchSnippetImageFromNetwork(const ContentSuggestion::ID& suggestion_id,
                                     const ImageFetchedCallback& callback);
 
   void OnSnippetImageDecodedFromNetwork(const ImageFetchedCallback& callback,
-                                        const std::string& suggestion_id,
+                                        const std::string& id_within_category,
                                         const gfx::Image& image);
 
   // Triggers a state transition depending on the provided reason to be
@@ -319,6 +321,10 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
     // Suggestions that the user dismissed. We keep these around until they
     // expire so we won't re-add them to |snippets| on the next fetch.
     NTPSnippet::PtrVector dismissed;
+
+    // Returns a non-dismissed snippet with the given |id_within_category|, or
+    // null if none exist.
+    const NTPSnippet* FindSnippet(const std::string& id_within_category) const;
 
     CategoryContent();
     CategoryContent(CategoryContent&&);

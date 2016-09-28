@@ -70,13 +70,13 @@ class ContentSuggestionsProvider {
     // |FetchSuggestionImage| or |DismissSuggestion| anymore, and should
     // immediately be cleared from the UI and caches. This happens, for example,
     // when the content that the suggestion refers to is gone.
-    // Note that this event may be fired even if the corresponding |category| is
+    // Note that this event may be fired even if the corresponding category is
     // not currently AVAILABLE, because open UIs may still be showing the
     // suggestion that is to be removed. This event may also be fired for
     // |suggestion_id|s that never existed and should be ignored in that case.
-    virtual void OnSuggestionInvalidated(ContentSuggestionsProvider* provider,
-                                         Category category,
-                                         const std::string& suggestion_id) = 0;
+    virtual void OnSuggestionInvalidated(
+        ContentSuggestionsProvider* provider,
+        const ContentSuggestion::ID& suggestion_id) = 0;
   };
 
   virtual ~ContentSuggestionsProvider();
@@ -91,14 +91,15 @@ class ContentSuggestionsProvider {
   // a once-dismissed suggestion is never delivered again (through the
   // Observer). The provider must not call Observer::OnSuggestionsChanged if the
   // removal of the dismissed suggestion is the only change.
-  virtual void DismissSuggestion(const std::string& suggestion_id) = 0;
+  virtual void DismissSuggestion(
+      const ContentSuggestion::ID& suggestion_id) = 0;
 
   // Fetches the image for the suggestion with the given ID and returns it
   // through the callback. This fetch may occur locally or from the internet.
   // If that suggestion doesn't exist, doesn't have an image or if the fetch
   // fails, the callback gets a null image. The callback will not be called
   // synchronously.
-  virtual void FetchSuggestionImage(const std::string& suggestion_id,
+  virtual void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
                                     const ImageFetchedCallback& callback) = 0;
 
   // Removes history from the specified time range where the URL matches the
@@ -135,19 +136,6 @@ class ContentSuggestionsProvider {
  protected:
   ContentSuggestionsProvider(Observer* observer,
                              CategoryFactory* category_factory);
-
-  // Creates a unique ID. The given |within_category_id| must be unique among
-  // all suggestion IDs from this provider for the given |category|. This method
-  // combines it with the |category| to form an ID that is unique
-  // application-wide, because this provider is the only one that provides
-  // suggestions for that category.
-  std::string MakeUniqueID(Category category,
-                           const std::string& within_category_id) const;
-
-  // Reverse functions for MakeUniqueID()
-  Category GetCategoryFromUniqueID(const std::string& unique_id) const;
-  std::string GetWithinCategoryIDFromUniqueID(
-      const std::string& unique_id) const;
 
   Observer* observer() const { return observer_; }
   CategoryFactory* category_factory() const { return category_factory_; }

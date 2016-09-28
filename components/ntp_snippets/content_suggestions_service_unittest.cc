@@ -77,9 +77,8 @@ class MockProvider : public ContentSuggestionsProvider {
                                         statuses_[category.id()]);
   }
 
-  void FireSuggestionInvalidated(Category category,
-                                 const std::string& suggestion_id) {
-    observer()->OnSuggestionInvalidated(this, category, suggestion_id);
+  void FireSuggestionInvalidated(const ContentSuggestion::ID& suggestion_id) {
+    observer()->OnSuggestionInvalidated(this, suggestion_id);
   }
 
   MOCK_METHOD3(ClearHistory,
@@ -91,9 +90,10 @@ class MockProvider : public ContentSuggestionsProvider {
                void(Category category,
                     const DismissedSuggestionsCallback& callback));
   MOCK_METHOD1(ClearDismissedSuggestionsForDebugging, void(Category category));
-  MOCK_METHOD1(DismissSuggestion, void(const std::string& suggestion_id));
+  MOCK_METHOD1(DismissSuggestion,
+               void(const ContentSuggestion::ID& suggestion_id));
   MOCK_METHOD2(FetchSuggestionImage,
-               void(const std::string& suggestion_id,
+               void(const ContentSuggestion::ID& suggestion_id,
                     const ImageFetchedCallback& callback));
 
  private:
@@ -109,8 +109,8 @@ class MockServiceObserver : public ContentSuggestionsService::Observer {
   MOCK_METHOD1(OnNewSuggestions, void(Category category));
   MOCK_METHOD2(OnCategoryStatusChanged,
                void(Category changed_category, CategoryStatus new_status));
-  MOCK_METHOD2(OnSuggestionInvalidated,
-               void(Category category, const std::string& suggestion_id));
+  MOCK_METHOD1(OnSuggestionInvalidated,
+               void(const ContentSuggestion::ID& suggestion_id));
   MOCK_METHOD0(ContentSuggestionsServiceShutdown, void());
 
  private:
@@ -143,11 +143,9 @@ class ContentSuggestionsServiceTest : public testing::Test {
 
     for (const auto& suggestion :
          service()->GetSuggestionsForCategory(category)) {
-      std::string within_category_id =
-          service()->category_factory()->GetWithinCategoryIDFromUniqueID(
-              suggestion.id());
+      std::string id_within_category = suggestion.id().id_within_category();
       int id;
-      ASSERT_TRUE(base::StringToInt(within_category_id, &id));
+      ASSERT_TRUE(base::StringToInt(id_within_category, &id));
       auto position = std::find(numbers.begin(), numbers.end(), id);
       if (position == numbers.end()) {
         ADD_FAILURE() << "Unexpected suggestion with ID " << id;
@@ -205,8 +203,7 @@ class ContentSuggestionsServiceTest : public testing::Test {
   // Returns a suggestion instance for testing.
   ContentSuggestion CreateSuggestion(Category category, int number) {
     return ContentSuggestion(
-        service()->category_factory()->MakeUniqueID(category,
-                                                    base::IntToString(number)),
+        category, base::IntToString(number),
         GURL("http://testsuggestion/" + base::IntToString(number)));
   }
 
@@ -299,7 +296,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectFetchSuggestionImage) {
 
   provider1->FireSuggestionsChanged(articles_category,
                                     CreateSuggestions(articles_category, {1}));
-  std::string suggestion_id = CreateSuggestion(articles_category, 1).id();
+  ContentSuggestion::ID suggestion_id(articles_category, "1");
 
   EXPECT_CALL(*provider1, FetchSuggestionImage(suggestion_id, _));
   EXPECT_CALL(*provider2, FetchSuggestionImage(_, _)).Times(0);
@@ -315,7 +312,8 @@ TEST_F(ContentSuggestionsServiceTest,
 
   base::RunLoop run_loop;
   // Assuming there will never be a category with the id below.
-  std::string suggestion_id = "21563|TestID";
+  ContentSuggestion::ID suggestion_id(category_factory()->FromIDValue(21563),
+                                      "TestID");
   EXPECT_CALL(*this, OnImageFetched(Property(&gfx::Image::IsEmpty, Eq(true))))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   service()->FetchSuggestionImage(
@@ -333,7 +331,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectDismissSuggestion) {
 
   provider2->FireSuggestionsChanged(
       offline_pages_category, CreateSuggestions(offline_pages_category, {11}));
-  std::string suggestion_id = CreateSuggestion(offline_pages_category, 11).id();
+  ContentSuggestion::ID suggestion_id(offline_pages_category, "11");
 
   EXPECT_CALL(*provider1, DismissSuggestion(_)).Times(0);
   EXPECT_CALL(*provider2, DismissSuggestion(suggestion_id));
@@ -351,19 +349,18 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRedirectSuggestionInvalidated) {
       articles_category, CreateSuggestions(articles_category, {11, 12, 13}));
   ExpectThatSuggestionsAre(articles_category, {11, 12, 13});
 
-  std::string suggestion_id = CreateSuggestion(articles_category, 12).id();
-  EXPECT_CALL(observer,
-              OnSuggestionInvalidated(articles_category, suggestion_id));
-  provider->FireSuggestionInvalidated(articles_category, suggestion_id);
+  ContentSuggestion::ID suggestion_id(articles_category, "12");
+  EXPECT_CALL(observer, OnSuggestionInvalidated(suggestion_id));
+  provider->FireSuggestionInvalidated(suggestion_id);
   ExpectThatSuggestionsAre(articles_category, {11, 13});
   Mock::VerifyAndClearExpectations(&observer);
 
   // Unknown IDs must be forwarded (though no change happens to the service's
   // internal data structures) because previously opened UIs, which can still
   // show the invalidated suggestion, must be notified.
-  std::string unknown_id = CreateSuggestion(articles_category, 1234).id();
-  EXPECT_CALL(observer, OnSuggestionInvalidated(articles_category, unknown_id));
-  provider->FireSuggestionInvalidated(articles_category, unknown_id);
+  ContentSuggestion::ID unknown_id(articles_category, "1234");
+  EXPECT_CALL(observer, OnSuggestionInvalidated(unknown_id));
+  provider->FireSuggestionInvalidated(unknown_id);
   ExpectThatSuggestionsAre(articles_category, {11, 13});
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -576,10 +573,10 @@ TEST_F(ContentSuggestionsServiceTest, ShouldPutBookmarksAtEndIfEmpty) {
       bookmarks, CreateSuggestions(bookmarks, {1, 2}));
   EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
   bookmarks_provider->FireSuggestionInvalidated(
-      bookmarks, CreateSuggestion(bookmarks, 1).id());
+      ContentSuggestion::ID(bookmarks, "1"));
   EXPECT_THAT(service()->GetCategories(), ElementsAre(bookmarks, remote));
   bookmarks_provider->FireSuggestionInvalidated(
-      bookmarks, CreateSuggestion(bookmarks, 2).id());
+      ContentSuggestion::ID(bookmarks, "2"));
   EXPECT_THAT(service()->GetCategories(), ElementsAre(remote, bookmarks));
 
   // Same thing, but now the bookmarks category updates "naturally".

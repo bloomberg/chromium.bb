@@ -107,13 +107,15 @@ public class SnippetsBridge implements SuggestionsSource {
     @Override
     public void fetchSuggestionImage(SnippetArticle suggestion, Callback<Bitmap> callback) {
         assert mNativeSnippetsBridge != 0;
-        nativeFetchSuggestionImage(mNativeSnippetsBridge, suggestion.mId, callback);
+        nativeFetchSuggestionImage(mNativeSnippetsBridge, suggestion.mCategory,
+                suggestion.mIdWithinCategory, callback);
     }
 
     @Override
     public void dismissSuggestion(SnippetArticle suggestion) {
         assert mNativeSnippetsBridge != 0;
-        nativeDismissSuggestion(mNativeSnippetsBridge, suggestion.mId);
+        nativeDismissSuggestion(
+                mNativeSnippetsBridge, suggestion.mCategory, suggestion.mIdWithinCategory);
     }
 
     @Override
@@ -219,8 +221,8 @@ public class SnippetsBridge implements SuggestionsSource {
     }
 
     @CalledByNative
-    private void onSuggestionInvalidated(@CategoryInt int category, String suggestionId) {
-        if (mObserver != null) mObserver.onSuggestionInvalidated(category, suggestionId);
+    private void onSuggestionInvalidated(@CategoryInt int category, String idWithinCategory) {
+        if (mObserver != null) mObserver.onSuggestionInvalidated(category, idWithinCategory);
     }
 
     private native long nativeInit(Profile profile);
@@ -233,9 +235,10 @@ public class SnippetsBridge implements SuggestionsSource {
             long nativeNTPSnippetsBridge, int category);
     private native List<SnippetArticle> nativeGetSuggestionsForCategory(
             long nativeNTPSnippetsBridge, int category);
-    private native void nativeFetchSuggestionImage(
-            long nativeNTPSnippetsBridge, String suggestionId, Callback<Bitmap> callback);
-    private native void nativeDismissSuggestion(long nativeNTPSnippetsBridge, String suggestionId);
+    private native void nativeFetchSuggestionImage(long nativeNTPSnippetsBridge, int category,
+            String idWithinCategory, Callback<Bitmap> callback);
+    private native void nativeDismissSuggestion(
+            long nativeNTPSnippetsBridge, int category, String idWithinCategory);
     private native void nativeDismissCategory(long nativeNTPSnippetsBridge, int category);
     private native void nativeGetURLVisited(
             long nativeNTPSnippetsBridge, Callback<Boolean> callback, String url);

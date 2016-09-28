@@ -5,13 +5,12 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTION_H_
 #define COMPONENTS_NTP_SNIPPETS_CONTENT_SUGGESTION_H_
 
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "components/ntp_snippets/category.h"
 #include "url/gurl.h"
 
 namespace ntp_snippets {
@@ -20,9 +19,32 @@ namespace ntp_snippets {
 // offline page, for example.
 class ContentSuggestion {
  public:
+  class ID {
+   public:
+    ID(Category category, const std::string& id_within_category)
+        : category_(category), id_within_category_(id_within_category) {}
+
+    Category category() const { return category_; }
+
+    const std::string& id_within_category() const {
+      return id_within_category_;
+    }
+
+    bool operator==(const ID& rhs) const;
+    bool operator!=(const ID& rhs) const;
+
+   private:
+    Category category_;
+    std::string id_within_category_;
+
+    // Allow copy and assignment.
+  };
+
   // Creates a new ContentSuggestion. The caller must ensure that the |id|
   // passed in here is unique application-wide.
-  ContentSuggestion(const std::string& id,
+  ContentSuggestion(ID id, const GURL& url);
+  ContentSuggestion(Category category,
+                    const std::string& id_within_category,
                     const GURL& url);
   ContentSuggestion(ContentSuggestion&&);
   ContentSuggestion& operator=(ContentSuggestion&&);
@@ -30,7 +52,7 @@ class ContentSuggestion {
   ~ContentSuggestion();
 
   // An ID for identifying the suggestion. The ID is unique application-wide.
-  const std::string& id() const { return id_; }
+  const ID& id() const { return id_; }
 
   // The normal content URL where the content referenced by the suggestion can
   // be accessed.
@@ -72,7 +94,7 @@ class ContentSuggestion {
   void set_score(float score) { score_ = score; }
 
  private:
-  std::string id_;
+  ID id_;
   GURL url_;
   GURL amp_url_;
   base::string16 title_;
@@ -83,6 +105,8 @@ class ContentSuggestion {
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestion);
 };
+
+std::ostream& operator<<(std::ostream& os, ContentSuggestion::ID id);
 
 }  // namespace ntp_snippets
 

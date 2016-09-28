@@ -134,8 +134,8 @@ class OfflinePageSuggestionsProviderTest : public testing::Test {
     return category_factory_.FromKnownCategory(KnownCategories::DOWNLOADS);
   }
 
-  std::string GetDummySuggestionId(Category category, int id) {
-    return provider_->MakeUniqueID(category, base::IntToString(id));
+  ContentSuggestion::ID GetDummySuggestionId(Category category, int id) {
+    return ContentSuggestion::ID(category, base::IntToString(id));
   }
 
   ContentSuggestion CreateDummySuggestion(Category category, int id) {
@@ -348,10 +348,9 @@ TEST_F(OfflinePageSuggestionsProviderTest,
   FireOfflinePageModelChanged();
 
   // Invalidation of suggestion 2 should be forwarded.
-  EXPECT_CALL(
-      *observer(),
-      OnSuggestionInvalidated(_, recent_tabs_category(),
-                              GetDummySuggestionId(recent_tabs_category(), 2)));
+  EXPECT_CALL(*observer(),
+              OnSuggestionInvalidated(
+                  _, GetDummySuggestionId(recent_tabs_category(), 2)));
   FireOfflinePageDeleted(model()->items().at(1));
 }
 

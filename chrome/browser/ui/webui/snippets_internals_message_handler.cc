@@ -41,7 +41,7 @@ std::unique_ptr<base::DictionaryValue> PrepareSuggestion(
     const ContentSuggestion& suggestion,
     int index) {
   auto entry = base::MakeUnique<base::DictionaryValue>();
-  entry->SetString("suggestionId", suggestion.id());
+  entry->SetString("idWithinCategory", suggestion.id().id_within_category());
   entry->SetString("url", suggestion.url().spec());
   entry->SetString("ampUrl", suggestion.amp_url().spec());
   entry->SetString("title", suggestion.title());
@@ -144,8 +144,7 @@ void SnippetsInternalsMessageHandler::OnCategoryStatusChanged(
 }
 
 void SnippetsInternalsMessageHandler::OnSuggestionInvalidated(
-    ntp_snippets::Category category,
-    const std::string& suggestion_id) {
+    const ntp_snippets::ContentSuggestion::ID& suggestion_id) {
   if (!dom_loaded_)
     return;
   SendContentSuggestions();

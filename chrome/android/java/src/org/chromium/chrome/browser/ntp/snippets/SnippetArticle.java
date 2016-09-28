@@ -18,8 +18,8 @@ public class SnippetArticle implements NewTabPageItem {
     /** The category of this article. */
     public final int mCategory;
 
-    /** The unique identifier for this article. */
-    public final String mId;
+    /** The identifier for this article within the category - not necessarily unique globally. */
+    public final String mIdWithinCategory;
 
     /** The title of this article. */
     public final String mTitle;
@@ -64,11 +64,11 @@ public class SnippetArticle implements NewTabPageItem {
     /**
      * Creates a SnippetArticleListItem object that will hold the data.
      */
-    public SnippetArticle(int category, String id, String title, String publisher,
+    public SnippetArticle(int category, String idWithinCategory, String title, String publisher,
             String previewText, String url, String ampUrl, long timestamp, float score,
             int position, @ContentSuggestionsCardLayoutEnum int cardLayout) {
         mCategory = category;
-        mId = id;
+        mIdWithinCategory = idWithinCategory;
         mTitle = title;
         mPublisher = publisher;
         mPreviewText = previewText;
@@ -83,12 +83,13 @@ public class SnippetArticle implements NewTabPageItem {
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof SnippetArticle)) return false;
-        return mId.equals(((SnippetArticle) other).mId);
+        SnippetArticle rhs = (SnippetArticle) other;
+        return mCategory == rhs.mCategory && mIdWithinCategory.equals(rhs.mIdWithinCategory);
     }
 
     @Override
     public int hashCode() {
-        return mId.hashCode();
+        return mCategory ^ mIdWithinCategory.hashCode();
     }
 
     @Override
