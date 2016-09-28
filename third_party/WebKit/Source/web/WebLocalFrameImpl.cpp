@@ -1197,6 +1197,11 @@ void WebLocalFrameImpl::moveRangeSelectionExtent(const WebPoint& point)
 void WebLocalFrameImpl::moveRangeSelection(const WebPoint& baseInViewport, const WebPoint& extentInViewport, WebFrame::TextGranularity granularity)
 {
     TRACE_EVENT0("blink", "WebLocalFrameImpl::moveRangeSelection");
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited.  See http://crbug.com/590369 for more details.
+    frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
     blink::TextGranularity blinkGranularity = blink::CharacterGranularity;
     if (granularity == WebFrame::WordGranularity)
         blinkGranularity = blink::WordGranularity;

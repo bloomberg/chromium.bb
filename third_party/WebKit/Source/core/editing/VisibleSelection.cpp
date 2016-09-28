@@ -67,6 +67,12 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionTempl
     , m_granularity(CharacterGranularity)
     , m_hasTrailingWhitespace(false)
 {
+    Document* document = m_base.document() ? m_base.document() : m_extent.document();
+    if (document) {
+        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+        // needs to be audited. see http://crbug.com/590369 for more details.
+        document->updateStyleAndLayoutIgnorePendingStylesheets();
+    }
     validate();
 }
 
@@ -154,6 +160,7 @@ VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::selection
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setBase(const PositionTemplate<Strategy>& position)
 {
+    DCHECK(!needsLayoutTreeUpdate(position));
     m_base = position;
     validate();
 }
@@ -161,6 +168,7 @@ void VisibleSelectionTemplate<Strategy>::setBase(const PositionTemplate<Strategy
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setBase(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
+    DCHECK(visiblePosition.isValid());
     m_base = visiblePosition.deepEquivalent();
     validate();
 }
@@ -168,6 +176,7 @@ void VisibleSelectionTemplate<Strategy>::setBase(const VisiblePositionTemplate<S
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setExtent(const PositionTemplate<Strategy>& position)
 {
+    DCHECK(!needsLayoutTreeUpdate(position));
     m_extent = position;
     validate();
 }
@@ -175,6 +184,7 @@ void VisibleSelectionTemplate<Strategy>::setExtent(const PositionTemplate<Strate
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setExtent(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
+    DCHECK(visiblePosition.isValid());
     m_extent = visiblePosition.deepEquivalent();
     validate();
 }
@@ -492,13 +502,8 @@ void VisibleSelectionTemplate<Strategy>::updateSelectionType()
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::validate(TextGranularity granularity)
 {
-    Document* document = m_base.isNotNull() ? m_base.document() : m_extent.document();
-    if (document) {
-        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-        // needs to be audited. see http://crbug.com/590369 for more details.
-        document->updateStyleAndLayoutIgnorePendingStylesheets();
-    }
-
+    DCHECK(!needsLayoutTreeUpdate(m_base));
+    DCHECK(!needsLayoutTreeUpdate(m_extent));
     // TODO(xiaochengh): Add a DocumentLifecycle::DisallowTransitionScope here.
 
     m_granularity = granularity;

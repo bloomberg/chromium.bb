@@ -37,6 +37,7 @@ void SurroundingTextTest::SetUp()
 void SurroundingTextTest::setHTML(const String& content)
 {
     document().body()->setInnerHTML(content, ASSERT_NO_EXCEPTION);
+    document().updateStyleAndLayout();
 }
 
 VisibleSelection SurroundingTextTest::select(int start, int end)
