@@ -907,7 +907,7 @@ if (!is_ios) {
         "//breakpad:minidump_dump",
         "//breakpad:minidump_stackwalk",
         "//breakpad:symupload",
-        "//tools/android/forwarder",
+        "//tools/android/forwarder2",
       ]
     }
 

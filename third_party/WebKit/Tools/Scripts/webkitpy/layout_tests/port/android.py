@@ -156,7 +156,7 @@ class ContentShellDriverDetails():
         return self.device_directory() + 'fonts/'
 
     def device_forwarder_path(self):
-        return self.device_directory() + 'forwarder'
+        return self.device_directory() + 'device_forwarder'
 
     def device_fifo_directory(self):
         return '/data/data/' + self.package_name() + '/files/'
@@ -461,7 +461,10 @@ class AndroidPort(base.Port):
 
     # Local public methods.
     def path_to_forwarder(self):
-        return self._build_path('forwarder')
+        return self._build_path('device_forwarder')
+
+    def path_to_forwarder_host(self):
+        return self._build_path('host_forwarder')
 
     def path_to_md5sum(self):
         return self._build_path(MD5SUM_DEVICE_FILE_NAME)
@@ -506,6 +509,7 @@ class AndroidPort(base.Port):
         result = self._check_file_exists(self.path_to_md5sum(), 'md5sum utility')
         result = self._check_file_exists(self.path_to_md5sum_host(), 'md5sum host utility') and result
         result = self._check_file_exists(self.path_to_forwarder(), 'forwarder utility') and result
+        result = self._check_file_exists(self.path_to_forwarder_host(), 'forwarder host utility') and result
 
         if not result:
             # There is a race condition in adb at least <= 4.3 on Linux that causes it to go offline periodically
@@ -815,7 +819,6 @@ class ChromiumAndroidDriver(driver.Driver):
         self._err_fifo_path = driver_details.device_fifo_directory() + 'stderr.fifo'
         self._read_stdout_process = None
         self._read_stderr_process = None
-        self._forwarder_process = None
         self._original_governors = {}
         self._original_kptr_restrict = None
 
@@ -965,7 +968,10 @@ class ChromiumAndroidDriver(driver.Driver):
             self._android_commands.push(host_file, device_file)
 
     def _push_executable(self, log_callback):
-        self._push_file_if_needed(self._port.path_to_forwarder(), self._driver_details.device_forwarder_path(), log_callback)
+        self._push_file_if_needed(
+            self._port.path_to_forwarder(),
+            self._driver_details.device_forwarder_path(),
+            log_callback)
         for resource in self._driver_details.additional_resources():
             self._push_file_if_needed(self._port._build_path(
                 resource), self._driver_details.device_directory() + resource, log_callback)
@@ -1145,14 +1151,13 @@ class ChromiumAndroidDriver(driver.Driver):
         super(ChromiumAndroidDriver, self)._start(pixel_tests, per_test_args, wait_for_ready=False)
 
         self._log_debug('Starting forwarder')
-        self._forwarder_process = self._port._server_process_constructor(
-            self._port, 'Forwarder', self._android_commands.adb_command() +
-            ['shell', '%s -no-spawn-daemon %s' % (self._driver_details.device_forwarder_path(), FORWARD_PORTS)])
-        self._forwarder_process.start()
-
-        deadline = time.time() + DRIVER_START_STOP_TIMEOUT_SECS
-        if not self._wait_for_server_process_output(self._forwarder_process, deadline, 'Forwarding device port'):
-            return False
+        self._android_commands.run(['shell', self._driver_details.device_forwarder_path()])
+        for forward_port in FORWARD_PORTS.split():
+            self._port.host.executive.run_command([
+                self._port.path_to_forwarder_host(),
+                '--adb=%s' % AndroidCommands.adb_command_path(self._port.host.executive, self._debug_logging),
+                '--serial-id=%s' % self._android_commands.get_serial(),
+                '--map', forward_port, forward_port])
 
         self._android_commands.run(['logcat', '-c'])
 
@@ -1261,11 +1266,16 @@ class ChromiumAndroidDriver(driver.Driver):
             self._read_stderr_process.kill()
             self._read_stderr_process = None
 
-        super(ChromiumAndroidDriver, self).stop()
+        self._android_commands.run([
+            'shell',
+            self._driver_details.device_forwarder_path(),
+            '--kill-server'])
 
-        if self._forwarder_process:
-            self._forwarder_process.kill()
-            self._forwarder_process = None
+        self._port.host.executive.run_command([
+            self._port.path_to_forwarder_host(),
+            '--kill-server'])
+
+        super(ChromiumAndroidDriver, self).stop()
 
         if self._android_devices.is_device_prepared(self._android_commands.get_serial()):
             if not ChromiumAndroidDriver._loop_with_timeout(self._remove_all_pipes, DRIVER_START_STOP_TIMEOUT_SECS):
