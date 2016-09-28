@@ -2161,8 +2161,9 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     LayoutBox* tableRowContainer = nullptr;
     // Skip table row because cells and rows are in the same coordinate space
     // (see below, however for more comments about when |ancestor| is the table row).
-    if (container->isTableRow()) {
-        DCHECK(isTableCell() && parentBox() == container);
+    // The second and third conditionals below are to skip cases where content has display: table-row or display: table-cell but is not
+    // parented like a cell/row combo.
+    if (container->isTableRow() && isTableCell() && parentBox() == container) {
         if (container != ancestor)
             container = container->parent();
         else
