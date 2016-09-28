@@ -6,11 +6,13 @@
 
 #include <wininet.h>
 
-#include "content/browser/download/quarantine.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/test_file_util.h"
+#include "content/browser/download/quarantine.h"
 #include "net/base/filename_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -26,6 +28,8 @@ const char kDummyClientGuid[] = "A1B69307-8FA2-4B6F-9181-EA06051A48A7";
 const char kMotwForInternetZone[] = "[ZoneTransfer]\r\nZoneId=3\r\n";
 const base::FilePath::CharType kMotwStreamSuffix[] =
     FILE_PATH_LITERAL(":Zone.Identifier");
+
+const char kTestData[] = "Hello world!";
 
 const char* const kUntrustedURLs[] = {
     "http://example.com/foo",
@@ -68,7 +72,8 @@ TEST(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
 
   for (const auto source_url : kLocalSourceURLs) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);
-    ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+    ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
+              base::WriteFile(test_file, kTestData, arraysize(kTestData)));
 
     EXPECT_EQ(
         QuarantineFileResult::OK,
@@ -107,7 +112,8 @@ TEST(QuarantineWinTest, DownloadedFile_DependsOnLocalConfig) {
 
   for (const auto source_url : kUntrustedURLs) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);
-    ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+    ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
+              base::WriteFile(test_file, kTestData, arraysize(kTestData)));
     EXPECT_EQ(
         QuarantineFileResult::OK,
         QuarantineFile(test_file, GURL(source_url), GURL(), kDummyClientGuid));
@@ -145,7 +151,8 @@ TEST(QuarantineWinTest, UnsafeReferrer_DependsOnLocalConfig) {
 
   for (const auto referrer_url : unsafe_referrers) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << referrer_url);
-    ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+    ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
+              base::WriteFile(test_file, kTestData, arraysize(kTestData)));
     EXPECT_EQ(QuarantineFileResult::OK,
               QuarantineFile(test_file, GURL("http://example.com/good"),
                              GURL(referrer_url), kDummyClientGuid));
@@ -175,7 +182,8 @@ TEST(QuarantineWinTest, EmptySource_DependsOnLocalConfig) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
-  ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+  ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
+            base::WriteFile(test_file, kTestData, arraysize(kTestData)));
 
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, GURL(), GURL(), kDummyClientGuid));
@@ -195,6 +203,7 @@ TEST(QuarantineWinTest, EmptySource_DependsOnLocalConfig) {
 // the file is passed to AVScanFile, then there wouldn't be a MOTW attached to
 // it and the test would fail.
 TEST(QuarantineWinTest, EmptyFile) {
+  base::HistogramTester histogram_tester;
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
@@ -207,6 +216,9 @@ TEST(QuarantineWinTest, EmptyFile) {
   ASSERT_TRUE(base::ReadFileToString(
       base::FilePath(test_file.value() + kMotwStreamSuffix), &motw_contents));
   EXPECT_STREQ(kMotwForInternetZone, motw_contents.c_str());
+
+  // Attachment services shouldn't have been invoked at all.
+  histogram_tester.ExpectTotalCount("Download.AttachmentServices.Result", 0);
 }
 
 // If there is no client GUID supplied to the QuarantineFile() call, then rather
@@ -217,7 +229,8 @@ TEST(QuarantineWinTest, NoClientGuid) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
-  ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+  ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
+            base::WriteFile(test_file, kTestData, arraysize(kTestData)));
 
   EXPECT_EQ(QuarantineFileResult::OK,
             QuarantineFile(test_file, net::FilePathToFileURL(test_file), GURL(),
@@ -235,7 +248,8 @@ TEST(QuarantineWinTest, SuperLongURL) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
   base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
-  ASSERT_EQ(5, base::WriteFile(test_file, "Hello", 5u));
+  ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
+            base::WriteFile(test_file, kTestData, arraysize(kTestData)));
 
   std::string source_url("http://example.com/");
   source_url.append(INTERNET_MAX_URL_LENGTH * 2, 'a');

@@ -82,16 +82,6 @@ bool ZoneIdentifierPresentForFile(const base::FilePath& path) {
 void RecordAttachmentServicesSaveResult(const base::FilePath& file,
                                         HRESULT hr) {
   bool file_exists = base::PathExists(file);
-  if (SUCCEEDED(hr)) {
-    bool motw_exists = file_exists && ZoneIdentifierPresentForFile(file);
-    RecordAttachmentServicesResult(
-        file_exists
-            ? motw_exists ? AttachmentServicesResult::SUCCESS_WITH_MOTW
-                          : AttachmentServicesResult::SUCCESS_WITHOUT_MOTW
-            : AttachmentServicesResult::SUCCESS_WITHOUT_FILE);
-    return;
-  }
-
   switch (hr) {
     case INET_E_SECURITY_PROBLEM:
       RecordAttachmentServicesResult(
@@ -107,12 +97,26 @@ void RecordAttachmentServicesSaveResult(const base::FilePath& file,
 
     case E_ACCESSDENIED:
     case ERROR_ACCESS_DENIED:
+      // ERROR_ACCESS_DENIED is not a valid HRESULT. However,
+      // IAttachmentExecute::Save() is known to return it and other system error
+      // codes in practice.
       RecordAttachmentServicesResult(
           file_exists ? AttachmentServicesResult::ACCESS_DENIED_WITH_FILE
                       : AttachmentServicesResult::ACCESS_DENIED_WITHOUT_FILE);
       break;
 
     default:
+      if (SUCCEEDED(hr)) {
+        bool motw_exists = file_exists && ZoneIdentifierPresentForFile(file);
+        RecordAttachmentServicesResult(
+            file_exists
+                ? motw_exists ? AttachmentServicesResult::SUCCESS_WITH_MOTW
+                              : AttachmentServicesResult::SUCCESS_WITHOUT_MOTW
+                : AttachmentServicesResult::SUCCESS_WITHOUT_FILE);
+        return;
+      }
+
+      // Failure codes.
       RecordAttachmentServicesResult(
           file_exists ? AttachmentServicesResult::OTHER_WITH_FILE
                       : AttachmentServicesResult::OTHER_WITHOUT_FILE);
