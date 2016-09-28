@@ -47,7 +47,7 @@ public class PhysicalWebDiagnosticsPage extends BasicNativePage {
     }
 
     @Override
-    protected void initialize(Activity activity, Tab tab) {
+    protected void initialize(final Activity activity, Tab tab) {
         Resources resources = activity.getResources();
         mSuccessColor = colorToHexValue(ApiCompatibilityUtils.getColor(resources,
                 R.color.physical_web_diags_success_color));
@@ -63,7 +63,7 @@ public class PhysicalWebDiagnosticsPage extends BasicNativePage {
         mLaunchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ContextUtils.getApplicationContext().startActivity(createListUrlsIntent());
+                activity.startActivity(createListUrlsIntent());
             }
         });
 
