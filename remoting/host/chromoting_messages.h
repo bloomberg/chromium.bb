@@ -9,7 +9,6 @@
 
 #include "base/memory/shared_memory_handle.h"
 #include "ipc/ipc_platform_file.h"
-#include "net/base/ip_endpoint.h"
 #include "remoting/host/chromoting_param_traits.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/errors.h"
@@ -89,8 +88,10 @@ IPC_MESSAGE_CONTROL2(ChromotingNetworkDaemonMsg_SetScreenResolution,
 // Serialized remoting::protocol::TransportRoute structure.
 IPC_STRUCT_BEGIN(SerializedTransportRoute)
   IPC_STRUCT_MEMBER(remoting::protocol::TransportRoute::RouteType, type)
-  IPC_STRUCT_MEMBER(net::IPEndPoint, remote_address)
-  IPC_STRUCT_MEMBER(net::IPEndPoint, local_address)
+  IPC_STRUCT_MEMBER(std::vector<uint8_t>, remote_ip)
+  IPC_STRUCT_MEMBER(uint16_t, remote_port)
+  IPC_STRUCT_MEMBER(std::vector<uint8_t>, local_ip)
+  IPC_STRUCT_MEMBER(uint16_t, local_port)
 IPC_STRUCT_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(remoting::protocol::TransportRoute::RouteType,

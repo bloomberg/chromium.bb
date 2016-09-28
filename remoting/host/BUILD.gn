@@ -302,7 +302,6 @@ static_library("host") {
   deps = [
     "//base:i18n",
     "//components/policy/core/common",
-    "//content/public/common",
     "//crypto",
     "//device/power_save_blocker",
     "//google_apis",

@@ -334,8 +334,15 @@ void DaemonProcess::OnClientRouteChange(const std::string& jid,
 
   protocol::TransportRoute parsed_route;
   parsed_route.type = route.type;
-  parsed_route.remote_address = route.remote_address;
-  parsed_route.local_address = route.local_address;
+
+  net::IPAddress remote_ip(route.remote_ip);
+  CHECK(remote_ip.empty() || remote_ip.IsValid());
+  parsed_route.remote_address = net::IPEndPoint(remote_ip, route.remote_port);
+
+  net::IPAddress local_ip(route.local_ip);
+  CHECK(local_ip.empty() || local_ip.IsValid());
+  parsed_route.local_address = net::IPEndPoint(local_ip, route.local_port);
+
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_,
                     OnClientRouteChange(jid, channel_name, parsed_route));
 }
