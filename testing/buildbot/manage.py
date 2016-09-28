@@ -174,7 +174,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'webapk_shell_apk_junit_tests',
 
   # These tests are only run on WebRTC CI.
-  'AppRTCDemoTest',
+  'AppRTCMobileTest',
   'android_junit_tests',
   'audio_decoder_unittests',
   'common_audio_unittests',

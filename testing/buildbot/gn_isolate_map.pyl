@@ -74,8 +74,8 @@
     "label": "//:All_syzygy",
     "type": "additional_compile_target",
   },
-  "AppRTCDemoTest": {
-    "label": "//webrtc/examples:AppRTCDemoTest",
+  "AppRTCMobileTest": {
+    "label": "//webrtc/examples:AppRTCMobileTest",
     "type": "additional_compile_target",
   },
   "accessibility_unittests":  {
