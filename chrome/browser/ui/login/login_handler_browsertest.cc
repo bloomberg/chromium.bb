@@ -361,8 +361,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnNavigation) {
   observer.Register(content::Source<NavigationController>(controller));
 
   // One LOAD_STOP event for LoginInterstitial, second for kAuthURL and third
-  // for kNoAuthURL.
-  const int kLoadStopEvents = 3;
+  // for kNoAuthURL, unless PlzNavigate is active, in which case the
+  // interrupted ongoing navigation does not receive LOAD_STOP.
+  const int kLoadStopEvents = content::IsBrowserSideNavigationEnabled() ? 2 : 3;
   WindowedLoadStopObserver load_stop_waiter(controller, kLoadStopEvents);
   WindowedAuthNeededObserver auth_needed_waiter(controller);
   browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(),
