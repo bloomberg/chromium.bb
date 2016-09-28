@@ -401,6 +401,17 @@ AudioManagerMac::~AudioManagerMac() {
     // Avoids hitting CHECK in dtor of AudioManagerBase.
     stream->Close();
   }
+  // Perform same type of cleanup as above but for high-latency input streams.
+  auto basic_input_streams_copy = basic_input_streams_;
+  for (auto* stream : basic_input_streams_copy) {
+    LOG(WARNING)
+        << "Closing existing high-latency audio input stream at destruction";
+    // Prevents active AudioQueue callbacks to use possibly invalid objects
+    // in its OnData() callback.
+    stream->Stop();
+    // Avoids hitting CHECK in dtor of AudioManagerBase.
+    stream->Close();
+  }
   Shutdown();
 }
 
