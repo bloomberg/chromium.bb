@@ -60,22 +60,15 @@ using namespace HTMLNames;
 static const unsigned defaultRows = 2;
 static const unsigned defaultCols = 20;
 
-// On submission, LF characters are converted into CRLF.
-// This function returns number of characters considering this.
-static unsigned numberOfLineBreaks(const String& text)
+static inline unsigned computeLengthForAPIValue(const String& text)
 {
     unsigned length = text.length();
-    unsigned count = 0;
-    for (unsigned i = 0; i < length; i++) {
-        if (text[i] == '\n')
-            count++;
+    unsigned crlfCount = 0;
+    for (unsigned i = 0; i < length; ++i) {
+        if (text[i] == '\r' && i + 1 < length && text[i + 1] == '\n')
+            crlfCount++;
     }
-    return count;
-}
-
-static inline unsigned computeLengthForSubmission(const String& text)
-{
-    return text.length() + numberOfLineBreaks(text);
+    return text.length() - crlfCount;
 }
 
 HTMLTextAreaElement::HTMLTextAreaElement(Document& document, HTMLFormElement* form)
@@ -320,8 +313,8 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
     unsigned unsignedMaxLength = static_cast<unsigned>(signedMaxLength);
 
     const String& currentValue = innerEditorValue();
-    unsigned currentLength = computeLengthForSubmission(currentValue);
-    if (currentLength + computeLengthForSubmission(event->text()) < unsignedMaxLength)
+    unsigned currentLength = computeLengthForAPIValue(currentValue);
+    if (currentLength + computeLengthForAPIValue(event->text()) < unsignedMaxLength)
         return;
 
     // selectionLength represents the selection length of this text field to be
@@ -335,7 +328,7 @@ void HTMLTextAreaElement::handleBeforeTextInsertedEvent(BeforeTextInsertedEvent*
         // needs to be audited.  See http://crbug.com/590369 for more details.
         document().updateStyleAndLayoutIgnorePendingStylesheets();
 
-        selectionLength = computeLengthForSubmission(document().frame()->selection().selectedText());
+        selectionLength = computeLengthForAPIValue(document().frame()->selection().selectedText());
     }
     DCHECK_GE(currentLength, selectionLength);
     unsigned baseLength = currentLength - selectionLength;
@@ -348,7 +341,9 @@ String HTMLTextAreaElement::sanitizeUserInputValue(const String& proposedValue, 
     unsigned submissionLength = 0;
     unsigned i = 0;
     for (; i < proposedValue.length(); ++i) {
-        submissionLength += proposedValue[i] == '\n' ? 2 : 1;
+        if (proposedValue[i] == '\r' && i + 1 < proposedValue.length() && proposedValue[i + 1] == '\n')
+            continue;
+        ++submissionLength;
         if (submissionLength == maxLength) {
             ++i;
             break;
@@ -550,10 +545,10 @@ String HTMLTextAreaElement::validationMessage() const
         return locale().queryString(WebLocalizedString::ValidationValueMissing);
 
     if (tooLong())
-        return locale().validationMessageTooLongText(computeLengthForSubmission(value()), maxLength());
+        return locale().validationMessageTooLongText(value().length(), maxLength());
 
     if (tooShort())
-        return locale().validationMessageTooShortText(computeLengthForSubmission(value()), minLength());
+        return locale().validationMessageTooShortText(value().length(), minLength());
 
     return String();
 }
@@ -591,7 +586,8 @@ bool HTMLTextAreaElement::tooLong(const String* value, NeedsToCheckDirtyFlag che
     int max = maxLength();
     if (max < 0)
         return false;
-    return computeLengthForSubmission(value ? *value : this->value()) > static_cast<unsigned>(max);
+    unsigned len = value ? computeLengthForAPIValue(*value) : this->value().length();
+    return len > static_cast<unsigned>(max);
 }
 
 bool HTMLTextAreaElement::tooShort(const String* value, NeedsToCheckDirtyFlag check) const
@@ -605,7 +601,7 @@ bool HTMLTextAreaElement::tooShort(const String* value, NeedsToCheckDirtyFlag ch
     if (min <= 0)
         return false;
     // An empty string is excluded from minlength check.
-    unsigned len = computeLengthForSubmission(value ? *value : this->value());
+    unsigned len = value ? computeLengthForAPIValue(*value) : this->value().length();
     return len > 0 && len < static_cast<unsigned>(min);
 }
 

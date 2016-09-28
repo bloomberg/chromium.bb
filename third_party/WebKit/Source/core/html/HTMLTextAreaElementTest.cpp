@@ -22,11 +22,13 @@ TEST(HTMLTextAreaElementTest, SanitizeUserInputValue)
     EXPECT_EQ("", HTMLTextAreaElement::sanitizeUserInputValue("", 1));
     EXPECT_EQ("", HTMLTextAreaElement::sanitizeUserInputValue(leadSurrogate, 1));
     EXPECT_EQ("a", HTMLTextAreaElement::sanitizeUserInputValue("a", 1));
-    EXPECT_EQ("", HTMLTextAreaElement::sanitizeUserInputValue("\n", 1));
+    EXPECT_EQ("\n", HTMLTextAreaElement::sanitizeUserInputValue("\n", 1));
     EXPECT_EQ("\n", HTMLTextAreaElement::sanitizeUserInputValue("\n", 2));
 
     EXPECT_EQ("abc", HTMLTextAreaElement::sanitizeUserInputValue(String("abc") + leadSurrogate, 4));
-    EXPECT_EQ("a\nc", HTMLTextAreaElement::sanitizeUserInputValue("a\ncdef", 4));
+    EXPECT_EQ("a\ncd", HTMLTextAreaElement::sanitizeUserInputValue("a\ncdef", 4));
+    EXPECT_EQ("a\rcd", HTMLTextAreaElement::sanitizeUserInputValue("a\rcdef", 4));
+    EXPECT_EQ("a\r\ncd", HTMLTextAreaElement::sanitizeUserInputValue("a\r\ncdef", 4));
 }
 
 } // namespace blink

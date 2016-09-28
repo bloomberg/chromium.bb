@@ -28,7 +28,7 @@ PASS textArea.value is "abcdef"
 PASS textArea.value is "abcde"
 PASS textArea.value is "A\nB"
 PASS textArea.value is "a\n\n"
-PASS textArea.value is "\n\n\n"
+PASS textArea.value is "\n\n\n\n\n\n"
 Inserts 2 normal characters + a combining letter with 3 code points into a maxlength=3 element.
 PASS textArea.value is "ABx"
 PASS textArea.value.length is 3

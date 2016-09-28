@@ -122,7 +122,10 @@ document.execCommand('insertLineBreak');
 document.execCommand('insertLineBreak');
 document.execCommand('insertLineBreak');
 document.execCommand('insertLineBreak');
-shouldBe('textArea.value', '"\\n\\n\\n"');
+document.execCommand('insertLineBreak');
+document.execCommand('insertLineBreak');
+document.execCommand('insertLineBreak');
+shouldBeEqualToString('textArea.value', '\n\n\n\n\n\n');
 
 // According to the HTML5 specification, maxLength is code-point length.
 // Blink follows it though WebKit handles it as grapheme length.
