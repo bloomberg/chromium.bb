@@ -61,7 +61,7 @@ class FilePathWatcherKQueue : public FilePathWatcher::PlatformDelegate,
   typedef std::vector<struct kevent> EventVector;
 
   // Can only be called on |io_task_runner_|'s thread.
-  void CancelOnMessageLoopThread() override;
+  void CancelOnMessageLoopThread();
 
   // Returns true if the kevent values are error free.
   bool AreKeventValuesValid(struct kevent* kevents, int count);
