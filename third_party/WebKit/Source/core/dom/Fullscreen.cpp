@@ -27,10 +27,8 @@
 
 #include "core/dom/Fullscreen.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
@@ -39,7 +37,6 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLIFrameElement.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -50,8 +47,6 @@
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 namespace {
 
@@ -65,7 +60,7 @@ bool allowedToUseFullscreen(const Frame* frame)
     if (!frame)
         return false;
 
-    // 2. If |document|'s browsing context has no browsing context container, then
+    // 2. If |document|'s browsing context is a top-level browsing context, then
     // return true.
     if (frame->isMainFrame())
         return true;
@@ -121,7 +116,7 @@ bool fullscreenElementReady(const Element& element)
         return false;
 
     // |element|'s node document is allowed to use the feature indicated by
-    // |attribute name allowfullscreen.
+    // attribute name allowfullscreen.
     if (!allowedToUseFullscreen(element.document().frame()))
         return false;
 
