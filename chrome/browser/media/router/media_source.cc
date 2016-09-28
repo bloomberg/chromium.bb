@@ -11,21 +11,14 @@ namespace media_router {
 MediaSource::MediaSource(const MediaSource::Id& source_id) : id_(source_id) {
 }
 
-MediaSource::MediaSource() {
-}
-
 MediaSource::~MediaSource() {}
 
 MediaSource::Id MediaSource::id() const {
   return id_;
 }
 
-bool MediaSource::Equals(const MediaSource& other) const {
+bool MediaSource::operator==(const MediaSource& other) const {
   return id_ == other.id();
-}
-
-bool MediaSource::Empty() const {
-  return id_.empty();
 }
 
 std::string MediaSource::ToString() const {

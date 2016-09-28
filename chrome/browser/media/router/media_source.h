@@ -20,17 +20,13 @@ class MediaSource {
   using Id = std::string;
 
   explicit MediaSource(const MediaSource::Id& id);
-  MediaSource();
   ~MediaSource();
 
   // Gets the ID of the media source.
   MediaSource::Id id() const;
 
   // Returns true if two MediaSource objects use the same media ID.
-  bool Equals(const MediaSource& other) const;
-
-  // Returns true if a MediaSource is empty or uninitialized.
-  bool Empty() const;
+  bool operator==(const MediaSource& other) const;
 
   // Used for logging.
   std::string ToString() const;

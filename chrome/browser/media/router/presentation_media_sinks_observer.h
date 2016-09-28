@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_ROUTER_PRESENTATION_MEDIA_SINKS_OBSERVER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "chrome/browser/media/router/media_sinks_observer.h"

@@ -20,7 +20,6 @@ PresentationMediaSinksObserver::PresentationMediaSinksObserver(
       previous_availablity_(UNKNOWN) {
   DCHECK(router);
   DCHECK(listener_);
-  DCHECK(!source.Empty());
 }
 
 PresentationMediaSinksObserver::~PresentationMediaSinksObserver() {

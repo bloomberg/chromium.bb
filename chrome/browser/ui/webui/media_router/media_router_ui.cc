@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "base/guid.h"
@@ -284,14 +285,14 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   GURL origin(chrome::kChromeUIMediaRouterURL);
 
   // Desktop mirror mode is always available.
-  query_result_manager_->StartSinksQuery(MediaCastMode::DESKTOP_MIRROR,
-                                         MediaSourceForDesktop(), origin);
+  query_result_manager_->SetSourcesForCastMode(
+      MediaCastMode::DESKTOP_MIRROR, {MediaSourceForDesktop()}, origin);
   initiator_ = initiator;
   SessionID::id_type tab_id = SessionTabHelper::IdForTab(initiator);
   if (tab_id != -1) {
     MediaSource mirroring_source(MediaSourceForTab(tab_id));
-    query_result_manager_->StartSinksQuery(MediaCastMode::TAB_MIRROR,
-                                           mirroring_source, origin);
+    query_result_manager_->SetSourcesForCastMode(MediaCastMode::TAB_MIRROR,
+                                                 {mirroring_source}, origin);
   }
   UpdateCastModes();
 }
@@ -314,14 +315,15 @@ void MediaRouterUI::InitForTest(
 
 void MediaRouterUI::OnDefaultPresentationChanged(
     const PresentationRequest& presentation_request) {
-  MediaSource source = presentation_request.GetMediaSource();
+  std::vector<MediaSource> sources = presentation_request.GetMediaSources();
   presentation_request_.reset(new PresentationRequest(presentation_request));
-  query_result_manager_->StartSinksQuery(
-      MediaCastMode::DEFAULT, source,
+  query_result_manager_->SetSourcesForCastMode(
+      MediaCastMode::DEFAULT, sources,
       presentation_request_->frame_url().GetOrigin());
   // Register for MediaRoute updates.
+  // TODO(crbug.com/627655): Use multiple URLs.
   routes_observer_.reset(new UIMediaRoutesObserver(
-      router_, source.id(),
+      router_, sources[0].id(),
       base::Bind(&MediaRouterUI::OnRoutesUpdated, base::Unretained(this))));
 
   UpdateCastModes();
@@ -329,7 +331,7 @@ void MediaRouterUI::OnDefaultPresentationChanged(
 
 void MediaRouterUI::OnDefaultPresentationRemoved() {
   presentation_request_.reset();
-  query_result_manager_->StopSinksQuery(MediaCastMode::DEFAULT);
+  query_result_manager_->RemoveSourcesForCastMode(MediaCastMode::DEFAULT);
   // Register for MediaRoute updates without a media source.
   routes_observer_.reset(new UIMediaRoutesObserver(
       router_, MediaSource::Id(),
@@ -397,13 +399,14 @@ bool MediaRouterUI::SetRouteParameters(
   // called. However, since the user does not have visibility into the
   // MediaSource, and that it occurs very rarely in practice, we leave it as-is
   // for now.
-  MediaSource source = query_result_manager_->GetSourceForCastMode(cast_mode);
-  if (source.Empty()) {
+  std::unique_ptr<MediaSource> source =
+      query_result_manager_->GetSourceForCastModeAndSink(cast_mode, sink_id);
+  if (!source) {
     LOG(ERROR) << "No corresponding MediaSource for cast mode "
-               << static_cast<int>(cast_mode);
+               << static_cast<int>(cast_mode) << " and sink " << sink_id;
     return false;
   }
-  *source_id = source.id();
+  *source_id = source->id();
 
   bool for_default_source = cast_mode == MediaCastMode::DEFAULT;
   if (for_default_source && !presentation_request_) {
@@ -491,7 +494,10 @@ void MediaRouterUI::SearchSinksAndCreateRoute(
     const std::string& search_criteria,
     const std::string& domain,
     MediaCastMode cast_mode) {
-  auto source_id = query_result_manager_->GetSourceForCastMode(cast_mode).id();
+  std::unique_ptr<MediaSource> source =
+      query_result_manager_->GetSourceForCastModeAndSink(cast_mode, sink_id);
+  const std::string source_id = source ? source->id() : "";
+
   // The CreateRoute() part of the function is accomplished in the callback
   // OnSearchSinkResponseReceived().
   router_->SearchSinks(
@@ -542,9 +548,10 @@ void MediaRouterUI::OnRoutesUpdated(
 
   std::unordered_map<MediaSource::Id, MediaCastMode> available_source_map;
   for (const auto& cast_mode : cast_modes_) {
-    available_source_map.insert(std::make_pair(
-        query_result_manager_->GetSourceForCastMode(cast_mode).id(),
-        cast_mode));
+    for (const auto& source :
+         query_result_manager_->GetSourcesForCastMode(cast_mode)) {
+      available_source_map.insert(std::make_pair(source.id(), cast_mode));
+    }
   }
 
   current_cast_modes_.clear();

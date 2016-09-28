@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_set>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/media/router/media_routes_observer.h"
 #include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/media_source.h"
+#include "chrome/browser/ui/webui/media_router/cast_modes_with_media_sources.h"
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
 
@@ -28,9 +30,9 @@ struct SinksQueryResult;
 
 // The Media Router dialog allows the user to initiate casting using one of
 // several actions (each represented by a cast mode).  Each cast mode is
-// associated with a media source.  This class allows the dialog to receive
-// lists of MediaSinks compatible with the cast modes available through the
-// dialog.
+// associated with a vector of media sources.  This class allows the dialog to
+// receive lists of MediaSinks compatible with the cast modes available through
+// the dialog.
 //
 // Typical use:
 //
@@ -38,19 +40,20 @@ struct SinksQueryResult;
 //   QueryResultManager::Observer* observer = ...;
 //   QueryResultManager result_manager(router);
 //   result_manager.AddObserver(observer);
-//   result_manager.StartSinksQuery(MediaCastMode::DEFAULT,
-//       MediaSourceForPresentationUrl("http://google.com"), origin);
-//   result_manager.StartSinksQuery(MediaCastMode::TAB_MIRROR,
-//       MediaSourceForTab(123), origin);
+//   result_manager.SetSourcesForCastMode(MediaCastMode::DEFAULT,
+//       {MediaSourceForPresentationUrl("http://google.com")}, origin);
+//   result_manager.SetSourcesForCastMode(MediaCastMode::TAB_MIRROR,
+//       {MediaSourceForTab(123)}, origin);
 //   ...
 //   [Updates will be received by observer via OnResultsUpdated()]
 //   ...
 //   [When info on MediaSource is needed, i.e. when requesting route for a mode]
 //   CastModeSet cast_modes = result_manager.GetSupportedCastModes();
 //   [Logic to select a MediaCastMode from the set]
-//   MediaSource source = result_manager.GetSourceForCastMode(
-//       MediaCastMode::TAB_MIRROR);
-//   if (!source.Empty()) {
+//   std::unique_ptr<MediaSource> source =
+//       result_manager.GetSourceForCastModeAndSink(
+//           MediaCastMode::TAB_MIRROR, sink_of_interest);
+//   if (source) {
 //     ...
 //   }
 //
@@ -74,64 +77,93 @@ class QueryResultManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Requests a list of MediaSinks compatible with |source| for |cast_mode|
-  // from |origin|.
+  // Requests a list of MediaSinks compatible with |sources| for |cast_mode|
+  // from |origin|. |sources| should be in descending order of priority.
   // Results are sent to all observers registered with AddObserver().
   //
-  // May start a new query in the Media Router for the registered source if
-  // there is no existing query for it.  If there is an existing query for
-  // |cast_mode|, it is stopped.
+  // Starts new queries in the Media Router for sources that we have no existing
+  // queries for, and stops queries for sources no longer associated with any
+  // cast mode.
   //
-  // If |source| is empty, no new queries are begun.
-  void StartSinksQuery(MediaCastMode cast_mode,
-                       const MediaSource& source,
-                       const GURL& origin);
+  // If |sources| is empty or contains a source that has already been registered
+  // with another cast mode, no new queries are begun.
+  void SetSourcesForCastMode(MediaCastMode cast_mode,
+                             const std::vector<MediaSource>& sources,
+                             const GURL& origin);
 
-  // Stops notifying observers for |cast_mode|.
-  void StopSinksQuery(MediaCastMode cast_mode);
+  // Stops notifying observers for |cast_mode|, and removes it from the set of
+  // supported cast modes.
+  void RemoveSourcesForCastMode(MediaCastMode cast_mode);
 
   // Gets the set of cast modes that are being actively queried.
   CastModeSet GetSupportedCastModes() const;
 
-  // Returns the MediaSource registered for |cast_mode|.  Returns an empty
-  // MediaSource if there is none.
-  MediaSource GetSourceForCastMode(MediaCastMode cast_mode) const;
+  // Gets the highest-priority source for the cast mode that is supported by
+  // the sink. Returns an empty unique_ptr if there isn't any.
+  std::unique_ptr<MediaSource> GetSourceForCastModeAndSink(
+      MediaCastMode cast_mode,
+      MediaSink::Id sink_id) const;
+
+  // Returns all the sources registered for |cast_mode|.  Returns an empty
+  // vector if there is none.
+  std::vector<MediaSource> GetSourcesForCastMode(MediaCastMode cast_mode) const;
 
  private:
-  class CastModeMediaSinksObserver;
+  class MediaSourceMediaSinksObserver;
 
   FRIEND_TEST_ALL_PREFIXES(QueryResultManagerTest, Observers);
   FRIEND_TEST_ALL_PREFIXES(QueryResultManagerTest, StartRoutesDiscovery);
   FRIEND_TEST_ALL_PREFIXES(QueryResultManagerTest, MultipleQueries);
+  FRIEND_TEST_ALL_PREFIXES(QueryResultManagerTest, MultipleUrls);
+  FRIEND_TEST_ALL_PREFIXES(QueryResultManagerTest, AddInvalidSource);
 
-  // Sets the media source for |cast_mode|.
-  void SetSourceForCastMode(MediaCastMode cast_mode, const MediaSource& source);
+  // Stops and destroys the MediaSinksObservers for media sources that
+  // |cast_mode| used to support, but isn't in |new_sources|, and disassociates
+  // them from sinks.
+  void RemoveOldSourcesForCastMode(MediaCastMode cast_mode,
+                                   const std::vector<MediaSource>& new_sources);
 
-  // Stops and destroys the MediaSinksObserver for |cast_mode|.
-  void RemoveObserverForCastMode(MediaCastMode cast_mode);
+  // Creates observers and starts queries for each source in |sources| that
+  // doesn't already have an associated observer.
+  void AddObserversForCastMode(MediaCastMode cast_mode,
+                               const std::vector<MediaSource>& sources,
+                               const GURL& origin);
 
-  // Returns true if the |entry|'s sink is compatible with at least one cast
-  // mode.
-  bool IsValid(const MediaSinkWithCastModes& entry) const;
+  // Modifies the set of sinks compatible with |cast_mode| and |source|
+  // to |new_sinks|.
+  void SetSinksCompatibleWithSource(MediaCastMode cast_mode,
+                                    const MediaSource& source,
+                                    const std::vector<MediaSink>& new_sinks);
 
-  // Modifies the current set of results with |result| associated with
-  // |cast_mode|.
-  void UpdateWithSinksQueryResult(MediaCastMode cast_mode,
-                                  const std::vector<MediaSink>& result);
+  // Returns the highest-priority source for |cast_mode| contained in
+  // |sources_for_sink|. Returns an empty unique_ptr if none exists.
+  std::unique_ptr<MediaSource> GetHighestPrioritySourceForCastModeAndSink(
+      MediaCastMode cast_mode,
+      const CastModesWithMediaSources& sources_for_sink) const;
+
+  // Returns true if every source in |sources| is either not registered yet, or
+  // associated with |cast_mode|. This check prevents a source from being
+  // associated with two cast modes.
+  bool AreSourcesValidForCastMode(
+      MediaCastMode cast_mode,
+      const std::vector<MediaSource>& sources) const;
 
   // Notifies observers that results have been updated.
   void NotifyOnResultsUpdated();
 
-  // MediaSinksObservers that listens for compatible MediaSink updates.
-  // Each observer is associated with a MediaCastMode. Results received by
+  // MediaSinksObservers that listen for compatible MediaSink updates.
+  // Each observer is associated with a MediaSource. Results received by
   // observers are propagated back to this class.
-  std::map<MediaCastMode, std::unique_ptr<MediaSinksObserver>> sinks_observers_;
+  std::unordered_map<MediaSource,
+                     std::unique_ptr<MediaSinksObserver>,
+                     MediaSource::Hash>
+      sinks_observers_;
 
   // Holds registrations of MediaSources for cast modes.
-  std::map<MediaCastMode, MediaSource> cast_mode_sources_;
+  std::map<MediaCastMode, std::vector<MediaSource>> cast_mode_sources_;
 
-  // Holds all known sinks and their associated cast modes.
-  std::map<MediaSink::Id, MediaSinkWithCastModes> all_sinks_;
+  // Holds all known sinks along with the cast modes and sources they support.
+  std::map<MediaSink, CastModesWithMediaSources, MediaSink::Compare> all_sinks_;
 
   // Registered observers.
   base::ObserverList<Observer> observers_;

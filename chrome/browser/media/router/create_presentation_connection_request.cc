@@ -18,7 +18,9 @@ CreatePresentationConnectionRequest::CreatePresentationConnectionRequest(
     const GURL& frame_url,
     const PresentationSessionSuccessCallback& success_cb,
     const PresentationSessionErrorCallback& error_cb)
-    : presentation_request_(render_frame_host_id, presentation_url, frame_url),
+    : presentation_request_(render_frame_host_id,
+                            {presentation_url},
+                            frame_url),
       success_cb_(success_cb),
       error_cb_(error_cb),
       cb_invoked_(false) {

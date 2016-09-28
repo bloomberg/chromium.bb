@@ -548,8 +548,8 @@ void PresentationFrameManager::SetDefaultPresentationUrl(
   } else {
     DCHECK(!callback.is_null());
     GURL frame_url(GetLastCommittedURLForFrame(render_frame_host_id));
-    PresentationRequest request(render_frame_host_id, default_presentation_url,
-                                frame_url);
+    PresentationRequest request(render_frame_host_id,
+                                {default_presentation_url}, frame_url);
     default_presentation_started_callback_ = callback;
     SetDefaultPresentationRequest(request);
   }

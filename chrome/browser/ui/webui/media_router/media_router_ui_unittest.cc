@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,7 +39,7 @@ using testing::Return;
 namespace media_router {
 
 class PresentationRequestCallbacks {
-public:
+ public:
   explicit PresentationRequestCallbacks(
       const content::PresentationError& expected_error)
       : expected_error_(expected_error) {}
@@ -50,7 +52,7 @@ public:
     EXPECT_EQ(expected_error_.message, error.message);
   }
 
-private:
+ private:
   content::PresentationError expected_error_;
 };
 
@@ -93,6 +95,13 @@ class MediaRouterUITest : public ::testing::Test {
     message_handler_->SetWebUIForTest(&web_ui_);
   }
 
+  MediaSink CreateSinkCompatibleWithAllSources() {
+    MediaSink sink("sinkId", "sinkName", MediaSink::GENERIC);
+    for (auto* observer : media_sinks_observers_)
+      observer->OnSinksUpdated({sink}, std::vector<GURL>());
+    return sink;
+  }
+
  protected:
   MockMediaRouter mock_router_;
   content::TestBrowserThreadBundle thread_bundle_;
@@ -113,7 +122,8 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
       mock_router_,
       CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(60), false))
       .WillOnce(SaveArg<4>(&callbacks));
-  media_router_ui_->CreateRoute("sinkId", MediaCastMode::TAB_MIRROR);
+  media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
+                                MediaCastMode::TAB_MIRROR);
 
   std::string expected_title = l10n_util::GetStringUTF8(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
@@ -131,7 +141,8 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
       mock_router_,
       CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(120), false))
       .WillOnce(SaveArg<4>(&callbacks));
-  media_router_ui_->CreateRoute("sinkId", MediaCastMode::DESKTOP_MIRROR);
+  media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
+                                MediaCastMode::DESKTOP_MIRROR);
 
   std::string expected_title = l10n_util::GetStringUTF8(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_DESKTOP);
@@ -145,7 +156,7 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
   CreateMediaRouterUI(&profile_);
   PresentationRequest presentation_request(RenderFrameHostId(0, 0),
-                                           "https://presentationurl.fakeurl",
+                                           {"https://presentationurl.fakeurl"},
                                            GURL("https://frameurl.fakeurl"));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
   std::vector<MediaRouteResponseCallback> callbacks;
@@ -153,7 +164,8 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
       mock_router_,
       CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), false))
       .WillOnce(SaveArg<4>(&callbacks));
-  media_router_ui_->CreateRoute("sinkId", MediaCastMode::DEFAULT);
+  media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
+                                MediaCastMode::DEFAULT);
 
   std::string expected_title =
       l10n_util::GetStringFUTF8(IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT,
@@ -184,13 +196,14 @@ TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {
   CreateMediaRouterUI(profile_.GetOffTheRecordProfile());
 
   PresentationRequest presentation_request(
-      RenderFrameHostId(0, 0), "https://fooUrl", GURL("https://frameUrl"));
+      RenderFrameHostId(0, 0), {"https://fooUrl"}, GURL("https://frameUrl"));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
 
   EXPECT_CALL(
       mock_router_,
       CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), true));
-  media_router_ui_->CreateRoute("sinkId", MediaCastMode::DEFAULT);
+  media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
+                                MediaCastMode::DEFAULT);
 }
 
 TEST_F(MediaRouterUITest, SortedSinks) {

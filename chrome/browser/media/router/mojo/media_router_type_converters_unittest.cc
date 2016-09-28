@@ -91,8 +91,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
   EXPECT_TRUE(expected_media_route.Equals(media_route));
   EXPECT_EQ(expected_media_route.media_sink_id(), media_route.media_sink_id());
   EXPECT_EQ(expected_media_route.description(), media_route.description());
-  EXPECT_TRUE(
-      expected_media_route.media_source().Equals(media_route.media_source()));
+  EXPECT_EQ(expected_media_route.media_source(), media_route.media_source());
   EXPECT_EQ(expected_media_route.media_source().id(),
             media_route.media_source().id());
   EXPECT_EQ(expected_media_route.is_local(), media_route.is_local());
@@ -103,7 +102,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
 }
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaRouteWithoutOptionalFields) {
-  MediaRoute expected_media_route("routeId1", MediaSource(), "sinkId",
+  MediaRoute expected_media_route("routeId1", MediaSource("sourceId"), "sinkId",
                                   "Description", false, "", false);
   mojom::MediaRoutePtr mojo_route(mojom::MediaRoute::New());
   // MediaRoute::media_source is omitted.

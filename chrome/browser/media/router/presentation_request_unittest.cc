@@ -9,29 +9,29 @@ namespace media_router {
 
 TEST(PresentationRequestTest, Equals) {
   PresentationRequest request1(RenderFrameHostId(1, 2),
-                               "http://presentationUrl",
+                               {"http://presentationUrl"},
                                GURL("http://frameUrl"));
 
   // Frame IDs are different.
   PresentationRequest request2(RenderFrameHostId(3, 4),
-                               "http://presentationUrl",
+                               {"http://presentationUrl"},
                                GURL("http://frameUrl"));
   EXPECT_FALSE(request1.Equals(request2));
 
   // Presentation URLs are different.
   PresentationRequest request3(RenderFrameHostId(1, 2),
-                               "http://anotherPresentationUrl",
+                               {"http://anotherPresentationUrl"},
                                GURL("http://frameUrl"));
   EXPECT_FALSE(request1.Equals(request3));
 
   // Frame URLs are different.
   PresentationRequest request4(RenderFrameHostId(1, 2),
-                               "http://presentationUrl",
+                               {"http://presentationUrl"},
                                GURL("http://anotherFrameUrl"));
   EXPECT_FALSE(request1.Equals(request4));
 
   PresentationRequest request5(RenderFrameHostId(1, 2),
-                               "http://presentationUrl",
+                               {"http://presentationUrl"},
                                GURL("http://frameUrl"));
   EXPECT_TRUE(request1.Equals(request5));
 }

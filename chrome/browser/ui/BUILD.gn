@@ -3282,6 +3282,8 @@ split_static_library("ui") {
       "toolbar/media_router_contextual_menu.h",
       "views/toolbar/media_router_action_platform_delegate_views.cc",
       "views/toolbar/media_router_action_platform_delegate_views.h",
+      "webui/media_router/cast_modes_with_media_sources.cc",
+      "webui/media_router/cast_modes_with_media_sources.h",
       "webui/media_router/media_cast_mode.cc",
       "webui/media_router/media_cast_mode.h",
       "webui/media_router/media_router_dialog_controller_impl.cc",

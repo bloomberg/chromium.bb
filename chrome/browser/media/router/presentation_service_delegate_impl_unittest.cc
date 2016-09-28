@@ -107,7 +107,7 @@ class PresentationServiceDelegateImplTest
 
     // Should not trigger callback since request doesn't match.
     PresentationRequest different_request(RenderFrameHostId(100, 200),
-                                          kPresentationUrl2, GURL(kFrameUrl));
+                                          {kPresentationUrl2}, GURL(kFrameUrl));
     MediaRoute* media_route = new MediaRoute(
         "differentRouteId", MediaSourceForPresentationUrl(kPresentationUrl2),
         "mediaSinkId", "", true, "", true);
@@ -329,7 +329,7 @@ TEST_F(PresentationServiceDelegateImplTest,
   int routing_id = main_frame->GetRoutingID();
 
   PresentationRequest observed_request1(
-      RenderFrameHostId(render_process_id, routing_id), kPresentationUrl1,
+      RenderFrameHostId(render_process_id, routing_id), {kPresentationUrl1},
       frame_url);
   EXPECT_CALL(observer, OnDefaultPresentationChanged(Equals(observed_request1)))
       .Times(1);
@@ -345,7 +345,7 @@ TEST_F(PresentationServiceDelegateImplTest,
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&observer));
 
   PresentationRequest observed_request2(
-      RenderFrameHostId(render_process_id, routing_id), kPresentationUrl2,
+      RenderFrameHostId(render_process_id, routing_id), {kPresentationUrl2},
       frame_url);
   EXPECT_CALL(observer, OnDefaultPresentationChanged(Equals(observed_request2)))
       .Times(1);

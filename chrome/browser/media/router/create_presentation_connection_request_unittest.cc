@@ -66,7 +66,7 @@ TEST_F(CreatePresentationConnectionRequestTest, Getters) {
                  base::Unretained(this), error));
 
   PresentationRequest presentation_request(render_frame_host_id_,
-                                           kPresentationUrl, GURL(kFrameUrl));
+                                           {kPresentationUrl}, GURL(kFrameUrl));
   EXPECT_TRUE(request.presentation_request().Equals(presentation_request));
   // Since we didn't explicitly call Invoke*, the error callback will be
   // invoked when |request| is destroyed.
