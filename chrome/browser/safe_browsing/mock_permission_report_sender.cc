@@ -18,9 +18,11 @@ MockPermissionReportSender::~MockPermissionReportSender() {
 }
 
 void MockPermissionReportSender::Send(const GURL& report_uri,
-                                      const std::string& report) {
+                                      base::StringPiece content_type,
+                                      base::StringPiece report) {
   latest_report_uri_ = report_uri;
-  latest_report_ = report;
+  report.CopyToString(&latest_report_);
+  content_type.CopyToString(&latest_content_type_);
   number_of_reports_++;
 
   // BrowserThreads aren't initialized in the unittest, so don't post tasks
@@ -54,6 +56,10 @@ const GURL& MockPermissionReportSender::latest_report_uri() {
 
 const std::string& MockPermissionReportSender::latest_report() {
   return latest_report_;
+}
+
+const std::string& MockPermissionReportSender::latest_content_type() {
+  return latest_content_type_;
 }
 
 int MockPermissionReportSender::GetAndResetNumberOfReportsSent() {

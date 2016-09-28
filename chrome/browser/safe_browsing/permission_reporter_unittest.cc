@@ -118,6 +118,8 @@ TEST_F(PermissionReporterTest, SendReport) {
 
   EXPECT_EQ(GURL(kPermissionActionReportingUploadUrl),
             mock_report_sender_->latest_report_uri());
+  EXPECT_EQ("application/octet-stream",
+            mock_report_sender_->latest_content_type());
 }
 
 // Test that PermissionReporter::SendReport sends a serialized report string
@@ -152,6 +154,9 @@ TEST_F(PermissionReporterTest, SendReportWithFieldTrials) {
   EXPECT_TRUE(base::FieldTrialList::IsTrialActive(trial_two->trial_name()));
 
   permission_reporter_->SendReport(BuildDummyReportInfo());
+
+  EXPECT_EQ("application/octet-stream",
+            mock_report_sender_->latest_content_type());
 
   PermissionReport permission_report;
   ASSERT_TRUE(

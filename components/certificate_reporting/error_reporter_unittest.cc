@@ -42,18 +42,24 @@ class MockCertificateReportSender : public net::ReportSender {
       : net::ReportSender(nullptr, DO_NOT_SEND_COOKIES) {}
   ~MockCertificateReportSender() override {}
 
-  void Send(const GURL& report_uri, const std::string& report) override {
+  void Send(const GURL& report_uri,
+            base::StringPiece content_type,
+            base::StringPiece report) override {
     latest_report_uri_ = report_uri;
-    latest_report_ = report;
+    report.CopyToString(&latest_report_);
+    content_type.CopyToString(&latest_content_type_);
   }
 
   const GURL& latest_report_uri() { return latest_report_uri_; }
 
   const std::string& latest_report() { return latest_report_; }
 
+  const std::string& latest_content_type() { return latest_content_type_; }
+
  private:
   GURL latest_report_uri_;
   std::string latest_report_;
+  std::string latest_content_type_;
 
   DISALLOW_COPY_AND_ASSIGN(MockCertificateReportSender);
 };
@@ -121,6 +127,8 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
   http_reporter.SendExtendedReportingReport(kDummyReport);
 
   EXPECT_EQ(http_mock_report_sender->latest_report_uri(), http_url);
+  EXPECT_EQ("application/octet-stream",
+            http_mock_report_sender->latest_content_type());
 
   std::string uploaded_report;
   EncryptedCertLoggerRequest encrypted_request;

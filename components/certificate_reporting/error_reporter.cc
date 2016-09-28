@@ -139,7 +139,8 @@ ErrorReporter::~ErrorReporter() {}
 void ErrorReporter::SendExtendedReportingReport(
     const std::string& serialized_report) {
   if (upload_url_.SchemeIsCryptographic()) {
-    certificate_report_sender_->Send(upload_url_, serialized_report);
+    certificate_report_sender_->Send(upload_url_, "application/octet-stream",
+                                     serialized_report);
   } else {
     EncryptedCertLoggerRequest encrypted_report;
     if (!EncryptSerializedReport(server_public_key_, server_public_key_version_,
@@ -149,7 +150,8 @@ void ErrorReporter::SendExtendedReportingReport(
     }
     std::string serialized_encrypted_report;
     encrypted_report.SerializeToString(&serialized_encrypted_report);
-    certificate_report_sender_->Send(upload_url_, serialized_encrypted_report);
+    certificate_report_sender_->Send(upload_url_, "application/octet-stream",
+                                     serialized_encrypted_report);
   }
 }
 

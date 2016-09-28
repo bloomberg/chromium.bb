@@ -39,12 +39,16 @@ class TestCertificateReportSender : public net::ReportSender {
   ~TestCertificateReportSender() override {}
 
   void Send(const GURL& report_uri,
-            const std::string& serialized_report) override {
+            base::StringPiece content_type,
+            base::StringPiece serialized_report) override {
     latest_report_uri_ = report_uri;
-    latest_serialized_report_ = serialized_report;
+    serialized_report.CopyToString(&latest_serialized_report_);
+    content_type.CopyToString(&latest_content_type_);
   }
 
   const GURL& latest_report_uri() { return latest_report_uri_; }
+
+  const std::string& latest_content_type() { return latest_content_type_; }
 
   const std::string& latest_serialized_report() {
     return latest_serialized_report_;
@@ -52,6 +56,7 @@ class TestCertificateReportSender : public net::ReportSender {
 
  private:
   GURL latest_report_uri_;
+  std::string latest_content_type_;
   std::string latest_serialized_report_;
 };
 
@@ -478,6 +483,7 @@ TEST(ChromeExpectCTReporterTest, SendReport) {
   reporter.OnExpectCTFailed(host_port, report_uri, ssl_info);
   EXPECT_EQ(report_uri, sender->latest_report_uri());
   EXPECT_FALSE(sender->latest_serialized_report().empty());
+  EXPECT_EQ("application/json; charset=utf-8", sender->latest_content_type());
   ASSERT_NO_FATAL_FAILURE(CheckExpectCTReport(
       sender->latest_serialized_report(), host_port, ssl_info));
 

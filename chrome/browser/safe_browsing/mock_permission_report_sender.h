@@ -17,11 +17,15 @@ class MockPermissionReportSender : public net::ReportSender {
 
   ~MockPermissionReportSender() override;
 
-  void Send(const GURL& report_uri, const std::string& report) override;
+  void Send(const GURL& report_uri,
+            base::StringPiece content_type,
+            base::StringPiece report) override;
 
   const GURL& latest_report_uri();
 
   const std::string& latest_report();
+
+  const std::string& latest_content_type();
 
   int GetAndResetNumberOfReportsSent();
 
@@ -30,6 +34,7 @@ class MockPermissionReportSender : public net::ReportSender {
  private:
   GURL latest_report_uri_;
   std::string latest_report_;
+  std::string latest_content_type_;
   int number_of_reports_;
   base::Closure quit_closure_;
 
