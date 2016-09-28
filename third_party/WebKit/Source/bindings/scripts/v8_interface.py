@@ -132,7 +132,18 @@ def origin_trial_features(interface, constants, attributes, methods):
     return sorted(features)
 
 
-def interface_context(interface):
+def interface_context(interface, interfaces):
+    """Creates a Jinja template context for an interface.
+
+    Args:
+        interface: An interface to create the context for
+        interfaces: A dict which maps an interface name to the definition
+            which can be referred if needed
+
+    Returns:
+        A Jinja template context for |interface|
+    """
+
     includes.clear()
     includes.update(INTERFACE_CPP_INCLUDES)
     header_includes = set(INTERFACE_H_INCLUDES)
@@ -333,7 +344,7 @@ def interface_context(interface):
     })
 
     # Attributes
-    attributes = [v8_attributes.attribute_context(interface, attribute)
+    attributes = [v8_attributes.attribute_context(interface, attribute, interfaces)
                   for attribute in interface.attributes]
 
     has_conditional_attributes = any(attribute['exposed_test'] for attribute in attributes)

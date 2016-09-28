@@ -54,7 +54,7 @@ from idl_types import IdlType
 import v8_callback_function
 import v8_callback_interface
 import v8_dictionary
-from v8_globals import includes, interfaces
+from v8_globals import includes
 import v8_interface
 import v8_types
 import v8_union
@@ -170,9 +170,6 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         raise ValueError('%s is not in IDL definitions' % definition_name)
 
     def generate_interface_code(self, definitions, interface_name, interface):
-        # Store other interfaces for introspection
-        interfaces.update(definitions.interfaces)
-
         interface_info = self.info_provider.interfaces_info[interface_name]
         full_path = interface_info.get('full_path')
         component = idl_filename_to_component(full_path)
@@ -196,7 +193,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
             cpp_template_filename = 'interface.cpp.tmpl'
             interface_context = v8_interface.interface_context
 
-        template_context = interface_context(interface)
+        template_context = interface_context(interface, definitions.interfaces)
         includes.update(interface_info.get('cpp_includes', {}).get(component, set()))
         if not interface.is_partial and not is_testing_target(full_path):
             template_context['header_includes'].add(self.info_provider.include_path_for_export)

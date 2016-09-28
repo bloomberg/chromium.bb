@@ -71,7 +71,7 @@ def cpp_type(idl_type):
 IdlTypeBase.callback_cpp_type = property(cpp_type)
 
 
-def callback_interface_context(callback_interface):
+def callback_interface_context(callback_interface, _):
     includes.clear()
     includes.update(CALLBACK_INTERFACE_CPP_INCLUDES)
     return {

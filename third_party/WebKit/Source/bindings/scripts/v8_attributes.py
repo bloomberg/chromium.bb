@@ -26,6 +26,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# pylint: disable=relative-import
+
 """Generate template values for attributes.
 
 Extends IdlType with property |constructor_type_name|.
@@ -35,7 +37,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 
 import idl_types
 from idl_types import inherits_interface
-from v8_globals import includes, interfaces
+from v8_globals import includes
 import v8_types
 import v8_utilities
 from v8_utilities import (cpp_name_or_partial, capitalize, cpp_name, has_extended_attribute,
@@ -44,7 +46,19 @@ from v8_utilities import (cpp_name_or_partial, capitalize, cpp_name, has_extende
                           is_legacy_interface_type_checking)
 
 
-def attribute_context(interface, attribute):
+def attribute_context(interface, attribute, interfaces):
+    """Creates a Jinja template context for an attribute of an interface.
+
+    Args:
+        interface: An interface which |attribute| belongs to
+        attribute: An attribute to create the context for
+        interfaces: A dict which maps an interface name to the definition
+            which can be referred if needed
+
+    Returns:
+        A Jinja template context for |attribute|
+    """
+
     idl_type = attribute.idl_type
     base_idl_type = idl_type.base_type
     extended_attributes = attribute.extended_attributes
@@ -181,7 +195,7 @@ def attribute_context(interface, attribute):
     if not has_custom_getter(attribute):
         getter_context(interface, attribute, context)
     if not has_custom_setter(attribute) and has_setter(interface, attribute):
-        setter_context(interface, attribute, context)
+        setter_context(interface, attribute, interfaces, context)
 
     return context
 
@@ -365,7 +379,7 @@ def is_keep_alive_for_gc(interface, attribute):
 # Setter
 ################################################################################
 
-def setter_context(interface, attribute, context):
+def setter_context(interface, attribute, interfaces, context):
     if 'PutForwards' in attribute.extended_attributes:
         # Use target interface and attribute in place of original interface and
         # attribute from this point onwards.
