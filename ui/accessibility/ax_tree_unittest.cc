@@ -508,4 +508,24 @@ TEST(AXTreeTest, BogusAXTree2) {
   tree.Unserialize(initial_state);
 }
 
+// UAF caught by ax_tree_fuzzer
+TEST(AXTreeTest, BogusAXTree3) {
+  AXTreeUpdate initial_state;
+  AXNodeData node;
+  node.id = 0;
+  node.state = 0;
+  node.child_ids.push_back(1);
+  initial_state.nodes.push_back(node);
+
+  AXNodeData node2;
+  node2.id = 1;
+  node2.state = 0;
+  node2.child_ids.push_back(1);
+  node2.child_ids.push_back(1);
+  initial_state.nodes.push_back(node2);
+
+  ui::AXTree tree;
+  tree.Unserialize(initial_state);
+}
+
 }  // namespace ui

@@ -243,12 +243,19 @@ bool AXTree::UpdateNode(const AXNodeData& src,
   // First, delete nodes that used to be children of this node but aren't
   // anymore.
   if (!DeleteOldChildren(node, src.child_ids, update_state)) {
+    // If DeleteOldChildren failed, we need to carefully clean up before
+    // returning false as well. In particular, if this node was a new root,
+    // we need to safely destroy the whole tree.
     if (update_state->new_root) {
       AXNode* old_root = root_;
       root_ = nullptr;
 
       DestroySubtree(old_root, update_state);
-      if (node != old_root &&
+
+      // Delete |node|'s subtree too as long as it wasn't already removed
+      // or added elsewhere in the tree.
+      if (update_state->removed_node_ids.find(src.id) ==
+              update_state->removed_node_ids.end() &&
           update_state->new_nodes.find(node) != update_state->new_nodes.end()) {
         DestroySubtree(node, update_state);
       }
