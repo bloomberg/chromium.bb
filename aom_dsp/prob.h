@@ -53,13 +53,14 @@ typedef int8_t aom_tree_index;
 
 typedef const aom_tree_index aom_tree[];
 
-static INLINE aom_prob clip_prob(int p) {
-  return (p > 255) ? 255 : (p < 1) ? 1 : p;
-}
-
 static INLINE aom_prob get_prob(unsigned int num, unsigned int den) {
   if (den == 0) return 128u;
-  return clip_prob((int)(((int64_t)num * 256 + (den >> 1)) / den));
+  {
+    const int p = (int)(((int64_t)num * 256 + (den >> 1)) / den);
+    // (p > 255) ? 255 : (p < 1) ? 1 : p;
+    const int clipped_prob = p | ((255 - p) >> 23) | (p == 0);
+    return (aom_prob)clipped_prob;
+  }
 }
 
 static INLINE aom_prob get_binary_prob(unsigned int n0, unsigned int n1) {
