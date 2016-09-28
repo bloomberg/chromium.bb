@@ -1779,6 +1779,8 @@ void Document::updateStyle()
 {
     DCHECK(!view()->shouldThrottleRendering());
     TRACE_EVENT_BEGIN0("blink,blink_style", "Document::updateStyle");
+    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Style.UpdateTime");
+
     unsigned initialElementCount = styleEngine().styleForElementCount();
 
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;

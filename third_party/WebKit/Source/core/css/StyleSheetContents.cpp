@@ -32,6 +32,7 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/InspectorTraceEvents.h"
+#include "platform/Histogram.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -319,6 +320,7 @@ const AtomicString& StyleSheetContents::namespaceURIFromPrefix(const AtomicStrin
 void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cachedStyleSheet, const SecurityOrigin* securityOrigin)
 {
     TRACE_EVENT1("blink,devtools.timeline", "ParseAuthorStyleSheet", "data", InspectorParseAuthorStyleSheetEvent::data(cachedStyleSheet));
+    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Style.AuthorStyleSheet.ParseTime");
 
     bool isSameOriginRequest = securityOrigin && securityOrigin->canRequest(baseURL());
 
