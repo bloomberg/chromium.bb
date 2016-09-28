@@ -72,6 +72,18 @@ class CheckerTestCase(cros_test_lib.TestCase):
     self.checker = self.CHECKER()
     self.checker.add_message = self.add_message
 
+  def assertLintPassed(self, msg='Checks failed'):
+    """Assert that no lint results have been queued."""
+    msg += '\nChecks failed: %s' % ([x[0] for x in self.results],)
+    self.assertEqual(self.results, [], msg=msg)
+
+  def assertLintFailed(self, msg='Checks incorrectly passed', expected=()):
+    """Assert that failed results matching |expected| have been queued."""
+    if expected:
+      self.assertEqual(list(expected), [x[0] for x in self.results])
+    else:
+      self.assertNotEqual(len(self.results), 0, msg=msg)
+
 
 class DocStringCheckerTest(CheckerTestCase):
   """Tests for DocStringChecker module"""
@@ -211,8 +223,7 @@ class DocStringCheckerTest(CheckerTestCase):
       self.results = []
       node = TestNode(doc=dc, display_type=None, col_offset=4)
       self.checker.visit_function(node)
-      self.assertEqual(self.results, [],
-                       msg='docstring was not accepted:\n"""%s"""' % dc)
+      self.assertLintPassed(msg='docstring was not accepted:\n"""%s"""' % dc)
 
   def testBad_visit_function(self):
     """Reject known bad docstrings"""
@@ -220,15 +231,14 @@ class DocStringCheckerTest(CheckerTestCase):
       self.results = []
       node = TestNode(doc=dc, display_type=None, col_offset=4)
       self.checker.visit_function(node)
-      self.assertNotEqual(self.results, [],
-                          msg='docstring was not rejected:\n"""%s"""' % dc)
+      self.assertLintFailed(msg='docstring was not rejected:\n"""%s"""' % dc)
 
   def testSmoke_visit_module(self):
     """Smoke test for modules"""
     self.checker.visit_module(TestNode(doc='foo'))
-    self.assertEqual(self.results, [])
+    self.assertLintPassed()
     self.checker.visit_module(TestNode(doc='', path='/foo/__init__.py'))
-    self.assertEqual(self.results, [])
+    self.assertLintPassed()
 
   def testSmoke_visit_class(self):
     """Smoke test for classes"""
@@ -243,8 +253,7 @@ class DocStringCheckerTest(CheckerTestCase):
       self.results = []
       node = TestNode(doc=dc)
       self.checker._check_first_line(node, node.lines)
-      self.assertEqual(self.results, [],
-                       msg='docstring was not accepted:\n"""%s"""' % dc)
+      self.assertLintPassed(msg='docstring was not accepted:\n"""%s"""' % dc)
 
   def testBad_check_first_line(self):
     """Verify _check_first_line rejects bad inputs"""
@@ -255,7 +264,7 @@ class DocStringCheckerTest(CheckerTestCase):
       self.results = []
       node = TestNode(doc=dc)
       self.checker._check_first_line(node, node.lines)
-      self.assertEqual(len(self.results), 1)
+      self.assertLintFailed(expected=('C9009',))
 
   def testGood_check_second_line_blank(self):
     """Verify _check_second_line_blank accepts good inputs"""
@@ -267,8 +276,7 @@ class DocStringCheckerTest(CheckerTestCase):
       self.results = []
       node = TestNode(doc=dc)
       self.checker._check_second_line_blank(node, node.lines)
-      self.assertEqual(self.results, [],
-                       msg='docstring was not accepted:\n"""%s"""' % dc)
+      self.assertLintPassed(msg='docstring was not accepted:\n"""%s"""' % dc)
 
   def testBad_check_second_line_blank(self):
     """Verify _check_second_line_blank rejects bad inputs"""
@@ -279,7 +287,7 @@ class DocStringCheckerTest(CheckerTestCase):
       self.results = []
       node = TestNode(doc=dc)
       self.checker._check_second_line_blank(node, node.lines)
-      self.assertEqual(len(self.results), 1)
+      self.assertLintFailed(expected=('C9014',))
 
   def testGoodFuncVarKwArg(self):
     """Check valid inputs for *args and **kwargs"""
@@ -288,7 +296,7 @@ class DocStringCheckerTest(CheckerTestCase):
         self.results = []
         node = TestNode(vararg=vararg, kwarg=kwarg)
         self.checker._check_func_signature(node)
-        self.assertEqual(len(self.results), 0)
+        self.assertLintPassed()
 
   def testMisnamedFuncVarKwArg(self):
     """Reject anything but *args and **kwargs"""
@@ -296,13 +304,13 @@ class DocStringCheckerTest(CheckerTestCase):
       self.results = []
       node = TestNode(vararg=vararg)
       self.checker._check_func_signature(node)
-      self.assertEqual(len(self.results), 1)
+      self.assertLintFailed(expected=('C9011',))
 
     for kwarg in ('kwds', '_kwds', 'args', '_moo'):
       self.results = []
       node = TestNode(kwarg=kwarg)
       self.checker._check_func_signature(node)
-      self.assertEqual(len(self.results), 1)
+      self.assertLintFailed(expected=('C9011',))
 
   def testGoodFuncArgs(self):
     """Verify normal args in Args are allowed"""
@@ -337,7 +345,7 @@ class DocStringCheckerTest(CheckerTestCase):
       self.results = []
       node = TestNode(doc=dc, args=args, vararg=vararg, kwarg=kwarg)
       self.checker._check_all_args_in_doc(node, node.lines)
-      self.assertEqual(len(self.results), 0)
+      self.assertLintPassed()
 
   def testBadFuncArgs(self):
     """Verify bad/missing args in Args are caught"""
@@ -375,7 +383,7 @@ class DocStringCheckerTest(CheckerTestCase):
       self.results = []
       node = TestNode(doc=dc, args=args)
       self.checker._check_all_args_in_doc(node, node.lines)
-      self.assertEqual(len(self.results), 1)
+      self.assertLintFailed()
 
 
 class ChromiteLoggingCheckerTest(CheckerTestCase):
@@ -393,7 +401,7 @@ class ChromiteLoggingCheckerTest(CheckerTestCase):
     """Test that importing something else (not logging) is not flagged."""
     node = TestNode(names=[('myModule', None)], lineno=15)
     self.checker.visit_import(node)
-    self.assertEqual(self.results, [])
+    self.assertLintPassed()
 
 
 class SourceCheckerTest(CheckerTestCase):
@@ -409,8 +417,11 @@ class SourceCheckerTest(CheckerTestCase):
       stream = StringIO.StringIO(shebang)
       st = StatStub(size=len(shebang), mode=mode)
       self.checker._check_shebang(node, stream, st)
-      self.assertEqual(len(self.results), exp,
-                       msg='processing shebang failed: %r' % shebang)
+      msg = 'processing shebang failed: %r' % shebang
+      if not exp:
+        self.assertLintPassed(msg=msg)
+      else:
+        self.assertLintFailed(msg=msg, expected=exp)
 
   def testBadShebang(self):
     """Verify _check_shebang rejects bad shebangs"""
@@ -421,7 +432,7 @@ class SourceCheckerTest(CheckerTestCase):
         '#! /usr/bin/env python2 \n',
         '#!/usr/bin/python2\n',
     )
-    self._testShebang(shebangs, 1, 0o755)
+    self._testShebang(shebangs, ('R9200',), 0o755)
 
   def testGoodShebangNoExec(self):
     """Verify _check_shebang rejects shebangs on non-exec files"""
@@ -429,7 +440,7 @@ class SourceCheckerTest(CheckerTestCase):
         '#!/usr/bin/env python2\n',
         '#!/usr/bin/env python3\n',
     )
-    self._testShebang(shebangs, 1, 0o644)
+    self._testShebang(shebangs, ('R9202',), 0o644)
 
   def testGoodShebang(self):
     """Verify _check_shebang accepts good shebangs"""
@@ -438,7 +449,7 @@ class SourceCheckerTest(CheckerTestCase):
         '#!/usr/bin/env python3\n',
         '#!/usr/bin/env python2\t\n',
     )
-    self._testShebang(shebangs, 0, 0o755)
+    self._testShebang(shebangs, (), 0o755)
 
   def testGoodUnittestName(self):
     """Verify _check_module_name accepts good unittest names"""
@@ -449,10 +460,10 @@ class SourceCheckerTest(CheckerTestCase):
       node = TestNode(name=name)
       self.results = []
       self.checker._check_module_name(node)
-      self.assertEqual(len(self.results), 0)
+      self.assertLintPassed()
 
   def testBadUnittestName(self):
-    """Verify _check_module_name accepts good unittest names"""
+    """Verify _check_module_name rejects bad unittest names"""
     module_names = (
         'lint_unittests',
     )
@@ -460,4 +471,4 @@ class SourceCheckerTest(CheckerTestCase):
       node = TestNode(name=name)
       self.results = []
       self.checker._check_module_name(node)
-      self.assertEqual(len(self.results), 1)
+      self.assertLintFailed(expected=('R9203',))
