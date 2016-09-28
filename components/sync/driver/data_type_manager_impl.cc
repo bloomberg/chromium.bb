@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/core/data_type_debug_info_listener.h"
 #include "components/sync/driver/data_type_encryption_handler.h"
@@ -332,7 +333,10 @@ TypeSetPriorityList DataTypeManagerImpl::PrioritizeTypes(
 }
 
 void DataTypeManagerImpl::ProcessReconfigure() {
-  DCHECK(needs_reconfigure_);
+  // This may have been called asynchronously; no-op if it is no longer needed.
+  if (!needs_reconfigure_) {
+    return;
+  }
 
   // Wait for current download and association to finish.
   if (!download_types_queue_.empty() ||
@@ -499,7 +503,12 @@ void DataTypeManagerImpl::OnSingleDataTypeWillStop(
     if (error.error_type() != syncer::SyncError::UNRECOVERABLE_ERROR) {
       needs_reconfigure_ = true;
       last_configure_reason_ = syncer::CONFIGURE_REASON_PROGRAMMATIC;
-      ProcessReconfigure();
+      // Do this asynchronously so the ModelAssociationManager has a chance to
+      // finish stopping this type, otherwise DeactivateDataType() and Stop()
+      // end up getting called twice on the controller.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&DataTypeManagerImpl::ProcessReconfigure,
+                                weak_ptr_factory_.GetWeakPtr()));
     }
   }
 }

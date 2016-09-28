@@ -217,10 +217,7 @@ NonBlockingDataTypeController::CreateErrorHandler() {
 void NonBlockingDataTypeController::ReportLoadModelError(
     const syncer::SyncError& error) {
   DCHECK(CalledOnValidThread());
-  // Report the error only if the model is starting.
-  if (state_ == MODEL_STARTING) {
-    LoadModelsDone(UNRECOVERABLE_ERROR, error);
-  }
+  LoadModelsDone(UNRECOVERABLE_ERROR, error);
 }
 
 void NonBlockingDataTypeController::RecordStartFailure(
