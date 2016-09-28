@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef V8EventListenerList_h
-#define V8EventListenerList_h
+#ifndef V8EventListenerHelper_h
+#define V8EventListenerHelper_h
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8EventListener.h"
@@ -45,32 +45,32 @@ enum ListenerLookupType {
 };
 
 // This is a container for V8EventListener objects that uses hidden properties of v8::Object to speed up lookups.
-class V8EventListenerList {
-    STATIC_ONLY(V8EventListenerList);
+class V8EventListenerHelper {
+    STATIC_ONLY(V8EventListenerHelper);
 public:
-    static V8EventListener* findWrapper(v8::Local<v8::Value> value, ScriptState* scriptState)
+    static V8EventListener* existingEventListener(v8::Local<v8::Value> value, ScriptState* scriptState)
     {
-        ASSERT(scriptState->isolate()->InContext());
+        DCHECK(scriptState->isolate()->InContext());
         if (!value->IsObject())
             return nullptr;
 
-        v8::Local<v8::String> wrapperProperty = getHiddenProperty(false, scriptState->isolate());
-        return doFindWrapper(v8::Local<v8::Object>::Cast(value), wrapperProperty, scriptState);
+        v8::Local<v8::String> listenerProperty = getHiddenProperty(false, scriptState->isolate());
+        return findEventListener(v8::Local<v8::Object>::Cast(value), listenerProperty, scriptState);
     }
 
-    template<typename WrapperType>
-    static V8EventListener* findOrCreateWrapper(v8::Local<v8::Value>, bool isAttribute, ScriptState*);
+    template<typename ListenerType>
+    static V8EventListener* ensureEventListener(v8::Local<v8::Value>, bool isAttribute, ScriptState*);
 
     CORE_EXPORT static EventListener* getEventListener(ScriptState*, v8::Local<v8::Value>, bool isAttribute, ListenerLookupType);
 
 private:
-    static V8EventListener* doFindWrapper(v8::Local<v8::Object> object, v8::Local<v8::String> wrapperProperty, ScriptState* scriptState)
+    static V8EventListener* findEventListener(v8::Local<v8::Object> object, v8::Local<v8::String> listenerProperty, ScriptState* scriptState)
     {
         v8::HandleScope scope(scriptState->isolate());
-        ASSERT(scriptState->isolate()->InContext());
-        v8::Local<v8::Value> listener = V8HiddenValue::getHiddenValue(scriptState, object, wrapperProperty);
+        DCHECK(scriptState->isolate()->InContext());
+        v8::Local<v8::Value> listener = V8HiddenValue::getHiddenValue(scriptState, object, listenerProperty);
         if (listener.IsEmpty())
-            return 0;
+            return nullptr;
         return static_cast<V8EventListener*>(v8::External::Cast(*listener)->Value());
     }
 
@@ -80,28 +80,28 @@ private:
     }
 };
 
-template<typename WrapperType>
-V8EventListener* V8EventListenerList::findOrCreateWrapper(v8::Local<v8::Value> value, bool isAttribute, ScriptState* scriptState)
+template<typename ListenerType>
+V8EventListener* V8EventListenerHelper::ensureEventListener(v8::Local<v8::Value> value, bool isAttribute, ScriptState* scriptState)
 {
     v8::Isolate* isolate = scriptState->isolate();
-    ASSERT(isolate->InContext());
+    DCHECK(isolate->InContext());
     if (!value->IsObject())
         return nullptr;
 
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(value);
-    v8::Local<v8::String> wrapperProperty = getHiddenProperty(isAttribute, isolate);
+    v8::Local<v8::String> listenerProperty = getHiddenProperty(isAttribute, isolate);
 
-    V8EventListener* wrapper = doFindWrapper(object, wrapperProperty, scriptState);
-    if (wrapper)
-        return wrapper;
+    V8EventListener* listener = findEventListener(object, listenerProperty, scriptState);
+    if (listener)
+        return listener;
 
-    wrapper = WrapperType::create(object, isAttribute, scriptState);
-    if (wrapper)
-        V8HiddenValue::setHiddenValue(scriptState, object, wrapperProperty, v8::External::New(isolate, wrapper));
+    listener = ListenerType::create(object, isAttribute, scriptState);
+    if (listener)
+        V8HiddenValue::setHiddenValue(scriptState, object, listenerProperty, v8::External::New(isolate, listener));
 
-    return wrapper;
+    return listener;
 }
 
 } // namespace blink
 
-#endif // V8EventListenerList_h
+#endif // V8EventListenerHelper_h

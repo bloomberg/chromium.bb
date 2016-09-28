@@ -32,7 +32,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Event.h"
-#include "bindings/core/v8/V8EventListenerList.h"
+#include "bindings/core/v8/V8EventListenerHelper.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8HiddenValue.h"
 #include "core/events/BeforeUnloadEvent.h"

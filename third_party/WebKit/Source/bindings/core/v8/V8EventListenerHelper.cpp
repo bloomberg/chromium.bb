@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "bindings/core/v8/V8EventListenerList.h"
+#include "bindings/core/v8/V8EventListenerHelper.h"
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Window.h"
@@ -36,17 +36,17 @@
 
 namespace blink {
 
-EventListener* V8EventListenerList::getEventListener(ScriptState* scriptState, v8::Local<v8::Value> value, bool isAttribute, ListenerLookupType lookup)
+EventListener* V8EventListenerHelper::getEventListener(ScriptState* scriptState, v8::Local<v8::Value> value, bool isAttribute, ListenerLookupType lookup)
 {
     if (lookup == ListenerFindOnly) {
         // Used by EventTarget::removeEventListener, specifically
         // EventTargetV8Internal::removeEventListenerMethod
-        ASSERT(!isAttribute);
-        return V8EventListenerList::findWrapper(value, scriptState);
+        DCHECK(!isAttribute);
+        return V8EventListenerHelper::existingEventListener(value, scriptState);
     }
     if (toDOMWindow(scriptState->context()))
-        return V8EventListenerList::findOrCreateWrapper<V8EventListener>(value, isAttribute, scriptState);
-    return V8EventListenerList::findOrCreateWrapper<V8WorkerGlobalScopeEventListener>(value, isAttribute, scriptState);
+        return V8EventListenerHelper::ensureEventListener<V8EventListener>(value, isAttribute, scriptState);
+    return V8EventListenerHelper::ensureEventListener<V8WorkerGlobalScopeEventListener>(value, isAttribute, scriptState);
 }
 
 } // namespace blink

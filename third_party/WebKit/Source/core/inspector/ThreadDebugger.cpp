@@ -10,8 +10,8 @@
 #include "bindings/core/v8/V8DOMTokenList.h"
 #include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8EventListener.h"
+#include "bindings/core/v8/V8EventListenerHelper.h"
 #include "bindings/core/v8/V8EventListenerInfo.h"
-#include "bindings/core/v8/V8EventListenerList.h"
 #include "bindings/core/v8/V8HTMLAllCollection.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
 #include "bindings/core/v8/V8Node.h"
@@ -278,7 +278,7 @@ void ThreadDebugger::setMonitorEventsCallback(const v8::FunctionCallbackInfo<v8:
     if (!eventTarget)
         return;
     Vector<String> types = normalizeEventTypes(info);
-    EventListener* eventListener = V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info.Data()), false, enabled ? ListenerFindOrCreate : ListenerFindOnly);
+    EventListener* eventListener = V8EventListenerHelper::getEventListener(ScriptState::current(info.GetIsolate()), v8::Local<v8::Function>::Cast(info.Data()), false, enabled ? ListenerFindOrCreate : ListenerFindOnly);
     if (!eventListener)
         return;
     for (size_t i = 0; i < types.size(); ++i) {

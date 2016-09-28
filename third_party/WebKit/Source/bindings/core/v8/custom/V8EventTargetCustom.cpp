@@ -30,7 +30,6 @@
 
 #include "bindings/core/v8/V8EventTarget.h"
 
-#include "bindings/core/v8/V8EventListenerList.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"

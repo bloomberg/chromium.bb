@@ -444,9 +444,9 @@ def setter_expression(interface, attribute, context):
         if (interface.name in ['Window', 'WorkerGlobalScope'] and
                 attribute.name == 'onerror'):
             includes.add('bindings/core/v8/V8ErrorHandler.h')
-            arguments.append('V8EventListenerList::findOrCreateWrapper<V8ErrorHandler>(v8Value, true, ScriptState::current(info.GetIsolate()))')
+            arguments.append('V8EventListenerHelper::ensureEventListener<V8ErrorHandler>(v8Value, true, ScriptState::current(info.GetIsolate()))')
         else:
-            arguments.append('V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate)')
+            arguments.append('V8EventListenerHelper::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate)')
     else:
         arguments.append('cppValue')
     if context['is_setter_raises_exception']:

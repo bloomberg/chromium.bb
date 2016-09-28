@@ -38,7 +38,7 @@
 #include "bindings/core/v8/V8DocumentFragment.h"
 #include "bindings/core/v8/V8DocumentType.h"
 #include "bindings/core/v8/V8Element.h"
-#include "bindings/core/v8/V8EventListenerList.h"
+#include "bindings/core/v8/V8EventListenerHelper.h"
 #include "bindings/core/v8/V8EventTarget.h"
 #include "bindings/core/v8/V8Float32Array.h"
 #include "bindings/core/v8/V8HTMLCollection.h"
@@ -2245,7 +2245,7 @@ static void eventHandlerAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
     // Prepare the value to be set.
     moveEventListenerToNewWrapper(info.GetIsolate(), holder, impl->eventHandlerAttribute(), v8Value, V8TestObject::eventListenerCacheIndex);
 
-    impl->setEventHandlerAttribute(V8EventListenerList::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate));
+    impl->setEventHandlerAttribute(V8EventListenerHelper::getEventListener(ScriptState::current(info.GetIsolate()), v8Value, true, ListenerFindOrCreate));
 }
 
 void eventHandlerAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
