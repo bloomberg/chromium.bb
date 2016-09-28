@@ -18,6 +18,7 @@ SchemaHandler::~SchemaHandler() {
 
 Response SchemaHandler::GetDomains(
     std::vector<scoped_refptr<Domain>>* domains) {
+  // TODO(kozyatisnkiy): get this from the target instead of hardcoding a list.
   static const char kVersion[] = "1.2";
   static const char* kDomains[] = {
     "Inspector", "Memory", "Page", "Rendering", "Emulation", "Security",
@@ -25,7 +26,7 @@ Response SchemaHandler::GetDomains(
     "ApplicationCache", "DOM", "IO", "DOMDebugger", "Worker", "ServiceWorker",
     "Input", "LayerTree", "DeviceOrientation", "Tracing", "Animation",
     "Accessibility", "Storage", "Log", "Browser", "Runtime", "Debugger",
-    "Profiler", "HeapProfiler", "Schema"
+    "Profiler", "HeapProfiler", "Schema", "Target"
   };
   for (size_t i = 0; i < arraysize(kDomains); ++i) {
     domains->push_back(Domain::Create()

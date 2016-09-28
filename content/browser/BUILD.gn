@@ -435,6 +435,8 @@ source_set("browser") {
     "devtools/protocol/storage_handler.h",
     "devtools/protocol/system_info_handler.cc",
     "devtools/protocol/system_info_handler.h",
+    "devtools/protocol/target_handler.cc",
+    "devtools/protocol/target_handler.h",
     "devtools/protocol/tethering_handler.cc",
     "devtools/protocol/tethering_handler.h",
     "devtools/protocol/tracing_handler.cc",

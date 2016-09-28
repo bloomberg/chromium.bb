@@ -3263,6 +3263,103 @@
         ]
     },
     {
+        "domain": "Target",
+        "description": "Supports discovery and auto-attach to related targets.",
+        "experimental": true,
+        "types": [
+            {
+                "id": "TargetID",
+                "type": "string"
+            },
+            {
+                "id": "TargetType",
+                "type": "string",
+                "enum": ["page", "frame", "worker", "service_worker"]
+            },
+            {
+                "id": "TargetInfo",
+                "type": "object",
+                "properties": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "type", "$ref": "TargetType" },
+                    { "name": "title", "type": "string" },
+                    { "name": "url", "type": "string" }
+                ]
+            }
+        ],
+        "commands": [
+            {
+                "name": "enable",
+                "description": "Start discovering targets and attach to all related targets from now on.",
+                "handlers": ["browser"]
+            },
+            {
+                "name": "disable",
+                "description": "Stop discovering targets and detach from all currently attached targets.",
+                "handlers": ["browser"]
+            },
+            {
+                "name": "setWaitForDebuggerOnStart",
+                "parameters": [
+                    { "name": "value", "type": "boolean", "description": "Whether to pause new targets when attaching to them. Use <code>Runtime.runIfWaitingForDebugger</code> to run puased targets." }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "sendMessageToTarget",
+                "parameters": [
+                    { "name": "targetId", "type": "string" },
+                    { "name": "message", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "getTargetInfo",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "returns": [
+                    { "name": "targetInfo","$ref": "TargetInfo" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "activateTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            }
+        ],
+        "events": [
+            {
+                "name": "targetCreated",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "type", "$ref": "TargetType" },
+                    { "name": "url", "type": "string" },
+                    { "name": "waitingForDebugger", "type": "boolean" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "targetRemoved",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" }
+                ],
+                "handlers": ["browser"]
+            },
+            {
+                "name": "receivedMessageFromTarget",
+                "parameters": [
+                    { "name": "targetId", "$ref": "TargetID" },
+                    { "name": "message", "type": "string" }
+                ],
+                "handlers": ["browser"]
+            }
+        ]
+    },
+    {
         "domain": "Worker",
         "experimental": true,
         "types": [],
@@ -3336,10 +3433,6 @@
                 "enum": ["new", "installing", "installed", "activating", "activated", "redundant"]
             },
             {
-                "id": "TargetID",
-                "type": "string"
-            },
-            {
                 "id": "ServiceWorkerVersion",
                 "type": "object",
                 "description": "ServiceWorker version.",
@@ -3351,7 +3444,8 @@
                     { "name": "status", "$ref": "ServiceWorkerVersionStatus" },
                     { "name": "scriptLastModified", "type": "number", "optional": true, "description": "The Last-Modified header value of the main script." },
                     { "name": "scriptResponseTime", "type": "number", "optional": true, "description": "The time at which the response headers of the main script were received from the server.  For cached script it is the last time the cache entry was validated." },
-                    { "name": "controlledClients", "type": "array", "optional": true, "items": { "$ref": "TargetID" } }
+                    { "name": "controlledClients", "type": "array", "optional": true, "items": { "$ref": "Target.TargetID" } },
+                    { "name": "targetId", "$ref": "Target.TargetID", "optional": true }
                 ]
             },
             {
@@ -3366,16 +3460,6 @@
                     { "name": "lineNumber", "type": "integer" },
                     { "name": "columnNumber", "type": "integer" }
                 ]
-            },
-            {
-                "id": "TargetInfo",
-                "type": "object",
-                "properties": [
-                    { "name": "id", "$ref": "TargetID" },
-                    { "name": "type", "type": "string" },
-                    { "name": "title", "type": "string" },
-                    { "name": "url", "type": "string" }
-                ]
             }
         ],
         "commands": [
@@ -3385,21 +3469,6 @@
             },
             {
                 "name": "disable",
-                "handlers": ["browser"]
-            },
-            {
-                "name": "sendMessage",
-                "parameters": [
-                    { "name": "workerId", "type": "string" },
-                    { "name": "message", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "stop",
-                "parameters": [
-                    { "name": "workerId", "type": "string" }
-                ],
                 "handlers": ["browser"]
             },
             {
@@ -3469,50 +3538,9 @@
                     { "name": "lastChance", "type": "boolean" }
                 ],
                 "handlers": ["browser"]
-            },
-            {
-                "name": "getTargetInfo",
-                "parameters": [
-                    { "name": "targetId", "$ref": "TargetID" }
-                ],
-                "returns": [
-                    { "name": "targetInfo","$ref": "TargetInfo" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "activateTarget",
-                "parameters": [
-                    { "name": "targetId", "$ref": "TargetID" }
-                ],
-                "handlers": ["browser"]
             }
         ],
         "events": [
-            {
-                "name": "workerCreated",
-                "parameters": [
-                    { "name": "workerId", "type": "string" },
-                    { "name": "url", "type": "string" },
-                    { "name": "versionId", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "workerTerminated",
-                "parameters": [
-                    { "name": "workerId", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            },
-            {
-                "name": "dispatchMessage",
-                "parameters": [
-                    { "name": "workerId", "type": "string" },
-                    { "name": "message", "type": "string" }
-                ],
-                "handlers": ["browser"]
-            },
             {
                 "name": "workerRegistrationUpdated",
                 "parameters": [

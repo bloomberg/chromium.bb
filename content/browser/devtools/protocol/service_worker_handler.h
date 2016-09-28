@@ -33,25 +33,20 @@ class ServiceWorkerContextWrapper;
 namespace devtools {
 namespace service_worker {
 
-class ServiceWorkerHandler : public DevToolsAgentHostClient,
-                             public ServiceWorkerDevToolsManager::Observer {
+class ServiceWorkerHandler {
  public:
   typedef DevToolsProtocolClient::Response Response;
 
   ServiceWorkerHandler();
-  ~ServiceWorkerHandler() override;
+  ~ServiceWorkerHandler();
 
   void SetRenderFrameHost(RenderFrameHostImpl* render_frame_host);
   void SetClient(std::unique_ptr<Client> client);
-  void UpdateHosts();
   void Detached();
 
   // Protocol 'service worker' domain implementation.
   Response Enable();
   Response Disable();
-  Response SendMessage(const std::string& worker_id,
-                       const std::string& message);
-  Response Stop(const std::string& worker_id);
   Response Unregister(const std::string& scope_url);
   Response StartWorker(const std::string& scope_url);
   Response SkipWaiting(const std::string& scope_url);
@@ -66,27 +61,8 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
                              const std::string& registration_id,
                              const std::string& tag,
                              bool last_chance);
-  Response GetTargetInfo(const std::string& target_id,
-                         scoped_refptr<TargetInfo>* target_info);
-  Response ActivateTarget(const std::string& target_id);
-
-  // WorkerDevToolsManager::Observer implementation.
-  void WorkerCreated(ServiceWorkerDevToolsAgentHost* host) override;
-  void WorkerReadyForInspection(ServiceWorkerDevToolsAgentHost* host) override;
-  void WorkerVersionInstalled(ServiceWorkerDevToolsAgentHost* host) override;
-  void WorkerVersionDoomed(ServiceWorkerDevToolsAgentHost* host) override;
-  void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
 
  private:
-  // DevToolsAgentHostClient overrides.
-  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override;
-  void AgentHostClosed(DevToolsAgentHost* agent_host,
-                       bool replaced_with_another_client) override;
-
-  void ReportWorkerCreated(ServiceWorkerDevToolsAgentHost* host);
-  void ReportWorkerTerminated(ServiceWorkerDevToolsAgentHost* host);
-
   void OnWorkerRegistrationUpdated(
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
   void OnWorkerVersionUpdated(
@@ -100,9 +76,7 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
 
   scoped_refptr<ServiceWorkerContextWrapper> context_;
   std::unique_ptr<Client> client_;
-  ServiceWorkerDevToolsAgentHost::Map attached_hosts_;
   bool enabled_;
-  std::set<GURL> urls_;
   scoped_refptr<ServiceWorkerContextWatcher> context_watcher_;
   RenderFrameHostImpl* render_frame_host_;
 

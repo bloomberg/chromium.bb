@@ -25,7 +25,7 @@ function test()
     targets.forEach(function(target) {
         var agentNames = Object.keys(target._agentsMap).filter(function(agentName) {
             var agent = target._agentsMap[agentName];
-            return agent["enable"] && agent["disable"] && agentName !== "ServiceWorker" && agentName !== "Security" && agentName !== "Inspector";  // async wrt others.
+            return agent["enable"] && agent["disable"] && agentName !== "ServiceWorker" && agentName !== "Security" && agentName !== "Inspector" && agentName !== "Target";  // async wrt others.
         }).sort();
 
         function disableAgent(agentName)
