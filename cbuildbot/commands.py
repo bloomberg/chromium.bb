@@ -214,7 +214,7 @@ def BuildRootGitCleanup(buildroot, prune_all=False):
         # Above we deleted refs/heads/<branch> for each created branch, now we
         # need to delete the bare ref <branch> if it was created somehow.
         for ref in constants.CREATED_BRANCHES:
-          git.RunGit(cwd, ['update-ref', '-d', ref])
+          git.RunGit(cwd, ['update-ref', '-d', ref], error_code_ok=True)
 
 
   # Cleanup all of the directories.
