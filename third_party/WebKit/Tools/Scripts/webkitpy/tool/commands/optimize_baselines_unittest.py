@@ -75,8 +75,8 @@ class TestOptimizeBaselines(BaseTestCase):
         self.assertEquals(
             out,
             '{"add": [], "remove-lines": [], '
-            '"delete": ["/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.png", '
-            '"/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.txt"]}\n')
+            '"delete": ["/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.txt", '
+            '"/test.checkout/LayoutTests/platform/test-mac-mac10.10/another/test-expected.png"]}\n')
         self.assertFalse(
             self.tool.filesystem.exists(self.tool.filesystem.join(
                 test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))
