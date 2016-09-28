@@ -1648,6 +1648,37 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsProperties)
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsProperties)
+{
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id='clipper' style='contain:paint; width:400px; height:300px;'>"
+        "  <div id='child' style='position:relative; width:500px; height: 600px;'></div>"
+        "</div>"
+    );
+
+    LayoutBoxModelObject* clipper = toLayoutBoxModelObject(document().getElementById("clipper")->layoutObject());
+    const ObjectPaintProperties* clipProperties = clipper->objectPaintProperties();
+    LayoutObject* child = document().getElementById("child")->layoutObject();
+    const ObjectPaintProperties* childProperties = child->objectPaintProperties();
+
+    // No scroll translation because the document does not scroll (not enough content).
+    EXPECT_TRUE(!frameScrollTranslation());
+    EXPECT_EQ(framePreTranslation(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
+    EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
+
+    GeometryPropertyTreeState contentsProperties;
+    clipProperties->getContentsProperties(contentsProperties);
+    EXPECT_EQ(framePreTranslation(), contentsProperties.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), contentsProperties.clip);
+
+    EXPECT_EQ(framePreTranslation(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
+
+    EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->geometryPropertyTreeState.effect);
+    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsProperties)
 {
     // This test verifies the tree builder correctly computes and records the property tree context
