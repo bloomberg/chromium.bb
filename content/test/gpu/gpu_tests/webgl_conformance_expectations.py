@@ -112,8 +112,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'linux', 'nvidia', 'opengl'], bug=1007) # angle bug ID
 
     # Win failures
-    self.Fail('conformance/extensions/oes-texture-half-float.html',
-        ['win'], bug=607283)
     # Note that the following test seems to pass, but it may still be flaky.
     self.Fail('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
@@ -247,10 +245,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
                ['linux'], bug=627525)
-
-    # OpenGL
-    self.Fail('conformance/extensions/oes-texture-half-float.html',
-        ['linux', 'opengl'], bug=607283)
 
     # NVIDIA
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
