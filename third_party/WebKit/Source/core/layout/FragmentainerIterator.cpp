@@ -45,8 +45,6 @@ FragmentainerIterator::FragmentainerIterator(const LayoutFlowThread& flowThread,
         if (atEnd())
             return;
     }
-
-    updateOutput();
 }
 
 void FragmentainerIterator::advance()
@@ -62,7 +60,30 @@ void FragmentainerIterator::advance()
         if (atEnd())
             return;
     }
-    updateOutput();
+}
+
+LayoutSize FragmentainerIterator::paginationOffset() const
+{
+    DCHECK(!atEnd());
+    const MultiColumnFragmentainerGroup& group = currentGroup();
+    LayoutUnit fragmentainerLogicalTopInFlowThread = group.logicalTopInFlowThread() + m_currentFragmentainerIndex * group.logicalHeight();
+    return group.flowThreadTranslationAtOffset(fragmentainerLogicalTopInFlowThread, LayoutBox::AssociateWithLatterPage, CoordinateSpaceConversion::Visual);
+}
+
+LayoutRect FragmentainerIterator::fragmentainerInFlowThread() const
+{
+    DCHECK(!atEnd());
+    LayoutRect fragmentainerInFlowThread = currentGroup().flowThreadPortionRectAt(m_currentFragmentainerIndex);
+    m_flowThread.flipForWritingMode(fragmentainerInFlowThread);
+    return fragmentainerInFlowThread;
+}
+
+LayoutRect FragmentainerIterator::clipRectInFlowThread() const
+{
+    DCHECK(!atEnd());
+    LayoutRect clipRect = currentGroup().flowThreadPortionOverflowRectAt(m_currentFragmentainerIndex);
+    m_flowThread.flipForWritingMode(clipRect);
+    return clipRect;
 }
 
 const MultiColumnFragmentainerGroup& FragmentainerIterator::currentGroup() const
@@ -99,39 +120,26 @@ bool FragmentainerIterator::setFragmentainersOfInterest()
     // might not have to walk the entire fragmentainer group.
     group.columnIntervalForBlockRangeInFlowThread(m_logicalTopInFlowThread, m_logicalBottomInFlowThread, m_currentFragmentainerIndex, m_endFragmentainerIndex);
 
-    // Now intersect with the fragmentainers that actually intersect with the visual clip rect, to
-    // narrow it down even further. The clip rect needs to be relative to the current fragmentainer
-    // group.
-    LayoutRect clipRect = m_clipRectInMulticolContainer;
-    LayoutSize offset = group.flowThreadTranslationAtOffset(group.logicalTopInFlowThread(), LayoutBox::AssociateWithFormerPage, CoordinateSpaceConversion::Visual);
-    clipRect.move(-offset);
-    unsigned firstFragmentainerInClipRect, lastFragmentainerInClipRect;
-    group.columnIntervalForVisualRect(clipRect, firstFragmentainerInClipRect, lastFragmentainerInClipRect);
-    // If the two fragmentainer intervals are disjoint, there's nothing of interest in this
-    // fragmentainer group.
-    if (firstFragmentainerInClipRect > m_endFragmentainerIndex || lastFragmentainerInClipRect < m_currentFragmentainerIndex)
-        return false;
-    if (m_currentFragmentainerIndex < firstFragmentainerInClipRect)
-        m_currentFragmentainerIndex = firstFragmentainerInClipRect;
-    if (m_endFragmentainerIndex > lastFragmentainerInClipRect)
-        m_endFragmentainerIndex = lastFragmentainerInClipRect;
+    if (hasClipRect()) {
+        // Now intersect with the fragmentainers that actually intersect with the visual clip rect, to
+        // narrow it down even further. The clip rect needs to be relative to the current fragmentainer
+        // group.
+        LayoutRect clipRect = m_clipRectInMulticolContainer;
+        LayoutSize offset = group.flowThreadTranslationAtOffset(group.logicalTopInFlowThread(), LayoutBox::AssociateWithFormerPage, CoordinateSpaceConversion::Visual);
+        clipRect.move(-offset);
+        unsigned firstFragmentainerInClipRect, lastFragmentainerInClipRect;
+        group.columnIntervalForVisualRect(clipRect, firstFragmentainerInClipRect, lastFragmentainerInClipRect);
+        // If the two fragmentainer intervals are disjoint, there's nothing of interest in this
+        // fragmentainer group.
+        if (firstFragmentainerInClipRect > m_endFragmentainerIndex || lastFragmentainerInClipRect < m_currentFragmentainerIndex)
+            return false;
+        if (m_currentFragmentainerIndex < firstFragmentainerInClipRect)
+            m_currentFragmentainerIndex = firstFragmentainerInClipRect;
+        if (m_endFragmentainerIndex > lastFragmentainerInClipRect)
+            m_endFragmentainerIndex = lastFragmentainerInClipRect;
+    }
     DCHECK(m_endFragmentainerIndex >= m_currentFragmentainerIndex);
     return true;
-}
-
-void FragmentainerIterator::updateOutput()
-{
-    const MultiColumnFragmentainerGroup& group = currentGroup();
-
-    // Set the physical translation offset.
-    LayoutUnit fragmentainerLogicalTopInFlowThread = group.logicalTopInFlowThread() + m_currentFragmentainerIndex * group.logicalHeight();
-    m_paginationOffset = group.flowThreadTranslationAtOffset(fragmentainerLogicalTopInFlowThread, LayoutBox::AssociateWithLatterPage, CoordinateSpaceConversion::Visual);
-
-    // Set the overflow clip rect that corresponds to the fragmentainer.
-    m_clipRectInFlowThread = group.flowThreadPortionOverflowRectAt(m_currentFragmentainerIndex);
-
-    // Flip it into a physical rectangle.
-    m_flowThread.flipForWritingMode(m_clipRectInFlowThread);
 }
 
 } // namespace blink

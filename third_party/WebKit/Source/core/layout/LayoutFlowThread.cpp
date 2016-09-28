@@ -29,6 +29,7 @@
 
 #include "core/layout/LayoutFlowThread.h"
 
+#include "core/layout/FragmentainerIterator.h"
 #include "core/layout/LayoutMultiColumnSet.h"
 
 namespace blink {
@@ -118,6 +119,27 @@ void LayoutFlowThread::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, L
     for (LayoutMultiColumnSetList::const_iterator iter = m_multiColumnSetList.begin(); iter != m_multiColumnSetList.end(); ++iter) {
         LayoutMultiColumnSet* columnSet = *iter;
         computedValues.m_extent += columnSet->logicalHeightInFlowThread();
+    }
+}
+
+void LayoutFlowThread::absoluteQuadsForDescendant(const LayoutBox& descendant, Vector<FloatQuad>& quads)
+{
+    LayoutPoint offsetFromFlowThread;
+    for (const LayoutObject* object = &descendant; object != this;) {
+        const LayoutObject* container = object->container();
+        offsetFromFlowThread += object->offsetFromContainer(container);
+        object = container;
+    }
+    LayoutRect boundingRectInFlowThread(offsetFromFlowThread, descendant.frameRect().size());
+    // Set up a fragments relative to the descendant, in the flow thread coordinate space, and
+    // convert each of them, individually, to absolute coordinates.
+    for (FragmentainerIterator iterator(*this, boundingRectInFlowThread); !iterator.atEnd(); iterator.advance()) {
+        LayoutRect fragment = boundingRectInFlowThread;
+        // We use inclusiveIntersect() because intersect() would reset the coordinates for
+        // zero-height objects.
+        fragment.inclusiveIntersect(iterator.fragmentainerInFlowThread());
+        fragment.moveBy(-offsetFromFlowThread);
+        quads.append(descendant.localToAbsoluteQuad(FloatRect(fragment)));
     }
 }
 

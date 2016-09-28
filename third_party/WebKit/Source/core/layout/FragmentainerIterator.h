@@ -16,7 +16,11 @@ class MultiColumnFragmentainerGroup;
 // in block direction order.
 class FragmentainerIterator {
 public:
-    FragmentainerIterator(const LayoutFlowThread&, const LayoutRect& physicalBoundingBoxInFlowThread, const LayoutRect& clipRectInMulticolContainer);
+    // Initialize the iterator, and move to the first fragmentainer of interest.
+    // The clip rectangle is optional. If it's empty, it means that no clipping will be performed,
+    // and that the only thing that can limit the set of fragmentainers to visit is
+    // |physicalBoundingBox|.
+    FragmentainerIterator(const LayoutFlowThread&, const LayoutRect& physicalBoundingBoxInFlowThread, const LayoutRect& clipRectInMulticolContainer = LayoutRect());
 
     // Advance to the next fragmentainer. Not allowed to call this if atEnd() is true.
     void advance();
@@ -26,10 +30,13 @@ public:
 
     // The physical translation to apply to shift the box when converting from flowthread to visual
     // coordinates.
-    LayoutSize paginationOffset() const { DCHECK(!atEnd()); return m_paginationOffset; }
+    LayoutSize paginationOffset() const;
+
+    // Return the physical content box of the current fragmentainer, relative to the flow thread.
+    LayoutRect fragmentainerInFlowThread() const;
 
     // Return the physical clip rectangle of the current fragmentainer, relative to the flow thread.
-    LayoutRect clipRectInFlowThread() const { DCHECK(!atEnd()); return m_clipRectInFlowThread; }
+    LayoutRect clipRectInFlowThread() const;
 
 private:
     const LayoutFlowThread& m_flowThread;
@@ -43,14 +50,11 @@ private:
     LayoutUnit m_logicalTopInFlowThread;
     LayoutUnit m_logicalBottomInFlowThread;
 
-    LayoutSize m_paginationOffset;
-    LayoutRect m_clipRectInFlowThread;
-
     const MultiColumnFragmentainerGroup& currentGroup() const;
     void moveToNextFragmentainerGroup();
     bool setFragmentainersOfInterest();
-    void updateOutput();
     void setAtEnd() { m_currentColumnSet = nullptr; }
+    bool hasClipRect() const { return !m_clipRectInMulticolContainer.isEmpty(); }
 };
 
 } // namespace blink

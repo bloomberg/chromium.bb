@@ -30,22 +30,6 @@
         border: solid dodgerblue;
         box-sizing: border-box;
     }
-
-    .special > .left > span {
-        margin-top: 40px;
-        height: 10px;
-        border: none;
-    }
-    .special > .right span:first-child {
-        border-bottom: none;
-        height: 10px;
-        margin-top: -10px;
-        background-color: white;
-    }
-    .special > .right span:last-child {
-        border-top: none;
-        height: 15px;
-    }
 </style>
 <p>
     The blue borders should coincide with light blue squares, like this:
@@ -77,10 +61,7 @@
 <div class="columns">
     <div class="column right"><span></span></div>
 </div>
-<p>
-    Except here, where the blue border should be around the bigger slice of the blue square, on the right.
-</p>
-<div class="columns special">
-    <div class="column left"><span></span></div>
-    <div class="column right"><span></span><span></span></div>
+<div class="columns">
+    <div class="column left"><br><span></span></div>
+    <div class="column right"><span></span></div>
 </div>

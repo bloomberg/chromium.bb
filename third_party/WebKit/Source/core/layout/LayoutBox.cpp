@@ -626,6 +626,10 @@ void LayoutBox::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumul
 
 void LayoutBox::absoluteQuads(Vector<FloatQuad>& quads) const
 {
+    if (LayoutFlowThread* flowThread = flowThreadContainingBlock()) {
+        flowThread->absoluteQuadsForDescendant(*this, quads);
+        return;
+    }
     quads.append(localToAbsoluteQuad(FloatRect(0, 0, m_frameRect.width().toFloat(), m_frameRect.height().toFloat())));
 }
 

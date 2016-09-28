@@ -437,7 +437,14 @@ void MultiColumnFragmentainerGroup::columnIntervalForBlockRangeInFlowThread(Layo
     logicalBottomInFlowThread = std::min(logicalBottomInFlowThread, this->logicalBottomInFlowThread());
     ASSERT(logicalTopInFlowThread <= logicalBottomInFlowThread);
     firstColumn = columnIndexAtOffset(logicalTopInFlowThread, LayoutBox::AssociateWithLatterPage);
-    lastColumn = columnIndexAtOffset(logicalBottomInFlowThread, LayoutBox::AssociateWithFormerPage);
+    if (logicalBottomInFlowThread == logicalTopInFlowThread) {
+        // Zero-height block range. There'll be one column in the interval. Set it right away. This
+        // is important if we're at a column boundary, since calling columnIndexAtOffset() with the
+        // end-exclusive bottom offset would actually give us the *previous* column.
+        lastColumn = firstColumn;
+    } else {
+        lastColumn = columnIndexAtOffset(logicalBottomInFlowThread, LayoutBox::AssociateWithFormerPage);
+    }
 }
 
 void MultiColumnFragmentainerGroup::columnIntervalForVisualRect(const LayoutRect& rect, unsigned& firstColumn, unsigned& lastColumn) const

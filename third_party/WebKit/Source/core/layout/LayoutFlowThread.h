@@ -81,6 +81,8 @@ public:
     virtual void flowThreadDescendantStyleWillChange(LayoutBox*, StyleDifference, const ComputedStyle& newStyle) { }
     virtual void flowThreadDescendantStyleDidChange(LayoutBox*, StyleDifference, const ComputedStyle& oldStyle) { }
 
+    void absoluteQuadsForDescendant(const LayoutBox& descendant, Vector<FloatQuad>&);
+
     bool nodeAtPoint(HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) final;
 
     virtual void addColumnSetToThread(LayoutMultiColumnSet*) = 0;
