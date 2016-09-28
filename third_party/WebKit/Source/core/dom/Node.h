@@ -700,10 +700,13 @@ private:
         V0CustomElementFlag = 1 << 28,
         V0CustomElementUpgradedFlag = 1 << 29,
 
+        NeedsReattachLayoutTree = 1 << 30,
+        ChildNeedsReattachLayoutTree = 1 << 31,
+
         DefaultNodeFlags = IsFinishedParsingChildrenFlag | NeedsReattachStyleChange
     };
 
-    // 3 bits remaining.
+    // 0 bits remaining.
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }
