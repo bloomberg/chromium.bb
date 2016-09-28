@@ -52,7 +52,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
     /** View used to calculate the position of the cards' snap point. */
     private View mAboveTheFoldView;
 
-    /** Whether the RecyclerView should react to touch events. */
+    /** Whether the RecyclerView and its children should react to touch events. */
     private boolean mTouchEnabled = true;
 
     /** Whether the above-the-fold left space for a peeking card to be displayed. */
@@ -89,6 +89,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         mGestureDetector.onTouchEvent(ev);
+        if (!mTouchEnabled) return true;
         return super.onInterceptTouchEvent(ev);
     }
 
@@ -423,7 +424,7 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * Animates the card being swiped to the right as if the user had dismissed it. Any changes to
      * the animation here should be reflected also in
      * {@link #updateViewStateForDismiss(float, ViewHolder)} and reset in
-     * {@link CardViewHolder#onBindViewHolder(NewTabPageItem)}.
+     * {@link CardViewHolder#onBindViewHolder()}.
      * @param suggestion The item to be dismissed.
      */
     public void dismissItemWithAnimation(SnippetArticle suggestion) {

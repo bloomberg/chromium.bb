@@ -1779,6 +1779,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mContextMenuCloseObservers.addObserver(callback);
     }
 
+    @Override
+    public void onContextMenuClosed(Menu menu) {
+        for (Callback<Menu> callback : mContextMenuCloseObservers) {
+            callback.onResult(menu);
+        }
+    }
+
     /**
      * Removes a {@link Callback} from the list of callbacks that will be triggered when a
      * ContextMenu is closed.
