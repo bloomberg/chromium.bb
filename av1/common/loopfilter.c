@@ -1025,6 +1025,10 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
       lfm->above_uv[TX_8X8] |= lfm->above_uv[TX_16X16] & 0xff00;
       lfm->above_uv[TX_16X16] &= ~(lfm->above_uv[TX_16X16] & 0xff00);
     }
+#if CONFIG_MISC_FIXES
+  } else {
+    lfm->above_int_4x4_uv = lfm->left_int_4x4_uv;
+#endif  // CONFIG_MISC_FIXES
   }
 
   if (mi_col + MAX_MIB_SIZE > cm->mi_cols) {
