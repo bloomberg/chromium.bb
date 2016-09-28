@@ -59,8 +59,9 @@ class PerfBenchmark(benchmark.Benchmark):
       return []
 
     return fieldtrial_util.GenerateArgs(
-        os.path.join(variations_dir, 'fieldtrial_testing_config_.json'),
-        self._FixupTargetOS(possible_browser.target_os))
+        os.path.join(variations_dir,
+                     'fieldtrial_testing_config_%s.json' % self._FixupTargetOS(
+                         possible_browser.target_os)))
 
   @staticmethod
   def IsSvelte(possible_browser):
