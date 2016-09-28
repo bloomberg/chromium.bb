@@ -57,9 +57,59 @@ void SystemTrayClient::OnClientConnectionError() {
   system_tray_.reset();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// ash::mojom::SystemTrayClient:
+
+void SystemTrayClient::ShowSettings() {
+  SystemTrayCommon::ShowSettings();
+}
+
 void SystemTrayClient::ShowDateSettings() {
   SystemTrayCommon::ShowDateSettings();
 }
+
+void SystemTrayClient::ShowDisplaySettings() {
+  SystemTrayCommon::ShowDisplaySettings();
+}
+
+void SystemTrayClient::ShowChromeSlow() {
+  SystemTrayCommon::ShowChromeSlow();
+}
+
+void SystemTrayClient::ShowIMESettings() {
+  SystemTrayCommon::ShowIMESettings();
+}
+
+void SystemTrayClient::ShowHelp() {
+  SystemTrayCommon::ShowHelp();
+}
+
+void SystemTrayClient::ShowAccessibilityHelp() {
+  SystemTrayCommon::ShowAccessibilityHelp();
+}
+
+void SystemTrayClient::ShowAccessibilitySettings() {
+  SystemTrayCommon::ShowAccessibilitySettings();
+}
+
+void SystemTrayClient::ShowPaletteHelp() {
+  SystemTrayCommon::ShowPaletteHelp();
+}
+
+void SystemTrayClient::ShowPaletteSettings() {
+  SystemTrayCommon::ShowPaletteSettings();
+}
+
+void SystemTrayClient::ShowPublicAccountInfo() {
+  SystemTrayCommon::ShowPublicAccountInfo();
+}
+
+void SystemTrayClient::ShowProxySettings() {
+  SystemTrayCommon::ShowProxySettings();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// chromeos::system::SystemClockObserver:
 
 void SystemTrayClient::OnSystemClockChanged(
     chromeos::system::SystemClock* clock) {

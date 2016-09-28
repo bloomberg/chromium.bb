@@ -69,7 +69,7 @@ void TraySupervisedUser::DestroyDefaultView() {
 }
 
 void TraySupervisedUser::OnViewClicked(views::View* sender) {
-  WmShell::Get()->system_tray_delegate()->ShowSupervisedUserInfo();
+  // TODO(antrim): Find out what should we show in this case.
 }
 
 void TraySupervisedUser::UpdateAfterLoginStatusChange(LoginStatus status) {

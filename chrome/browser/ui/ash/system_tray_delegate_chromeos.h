@@ -84,7 +84,6 @@ class SystemTrayDelegateChromeOS
   void Initialize() override;
   bool GetTrayVisibilityOnStartup() override;
   ash::LoginStatus GetUserLoginStatus() const override;
-  void ChangeProfilePicture() override;
   std::string GetEnterpriseDomain() const override;
   base::string16 GetEnterpriseMessage() const override;
   std::string GetSupervisedUserManager() const override;
@@ -110,7 +109,6 @@ class SystemTrayDelegateChromeOS
   void ShowPaletteHelp() override;
   void ShowPaletteSettings() override;
   void ShowPublicAccountInfo() override;
-  void ShowSupervisedUserInfo() override;
   void ShowEnterpriseInfo() override;
   void ShowUserLogin() override;
   void SignOut() override;
@@ -132,7 +130,7 @@ class SystemTrayDelegateChromeOS
   bool GetBluetoothAvailable() override;
   bool GetBluetoothEnabled() override;
   bool GetBluetoothDiscovering() override;
-  void ChangeProxySettings() override;
+  void ShowProxySettings() override;
   ash::CastConfigDelegate* GetCastConfigDelegate() override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   ash::VolumeControlDelegate* GetVolumeControlDelegate() const override;

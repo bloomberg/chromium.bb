@@ -365,7 +365,6 @@ const char kTriggeredResetProfileSettingsSubPage[] =
     "triggeredResetProfileSettings";
 #if defined(OS_CHROMEOS)
 const char kInternetOptionsSubPage[] = "internet";
-const char kChangeProfilePictureSubPage[] = "changePicture";
 #endif
 
 // Extension sub pages.

@@ -398,7 +398,7 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
     ShowSettings();
     close_bubble = true;
   } else if (sender == proxy_settings_) {
-    delegate->ChangeProxySettings();
+    delegate->ShowProxySettings();
     close_bubble = true;
   } else if (sender == other_mobile_) {
     delegate->ShowOtherNetworkDialog(shill::kTypeCellular);

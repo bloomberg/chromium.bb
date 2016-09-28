@@ -36,29 +36,96 @@ SystemTrayDelegateMus* SystemTrayDelegateMus::Get() {
   return g_instance;
 }
 
-void SystemTrayDelegateMus::ConnectToSystemTrayClient() {
-  if (system_tray_client_.is_bound())
-    return;
+mojom::SystemTrayClient* SystemTrayDelegateMus::ConnectToSystemTrayClient() {
+  if (!system_tray_client_.is_bound()) {
+    // Connect (or reconnect) to the interface.
+    connector_->ConnectToInterface("exe:chrome", &system_tray_client_);
 
-  connector_->ConnectToInterface("exe:chrome", &system_tray_client_);
-
-  // Tolerate chrome crashing and coming back up.
-  system_tray_client_.set_connection_error_handler(base::Bind(
-      &SystemTrayDelegateMus::OnClientConnectionError, base::Unretained(this)));
+    // Tolerate chrome crashing and coming back up.
+    system_tray_client_.set_connection_error_handler(
+        base::Bind(&SystemTrayDelegateMus::OnClientConnectionError,
+                   base::Unretained(this)));
+  }
+  return system_tray_client_.get();
 }
 
 void SystemTrayDelegateMus::OnClientConnectionError() {
   system_tray_client_.reset();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// SystemTrayDelegate:
+
 base::HourClockType SystemTrayDelegateMus::GetHourClockType() const {
   return hour_clock_type_;
 }
 
-void SystemTrayDelegateMus::ShowDateSettings() {
-  ConnectToSystemTrayClient();
-  system_tray_client_->ShowDateSettings();
+void SystemTrayDelegateMus::ShowSettings() {
+  ConnectToSystemTrayClient()->ShowSettings();
 }
+
+void SystemTrayDelegateMus::ShowDateSettings() {
+  ConnectToSystemTrayClient()->ShowDateSettings();
+}
+
+void SystemTrayDelegateMus::ShowNetworkSettingsForGuid(
+    const std::string& guid) {
+  // http://crbug.com/647412
+  NOTIMPLEMENTED();
+}
+
+void SystemTrayDelegateMus::ShowDisplaySettings() {
+  ConnectToSystemTrayClient()->ShowDisplaySettings();
+}
+
+void SystemTrayDelegateMus::ShowPowerSettings() {
+  // http://crbug.com/647412
+  NOTIMPLEMENTED();
+}
+
+void SystemTrayDelegateMus::ShowChromeSlow() {
+  ConnectToSystemTrayClient()->ShowChromeSlow();
+}
+
+void SystemTrayDelegateMus::ShowIMESettings() {
+  ConnectToSystemTrayClient()->ShowIMESettings();
+}
+
+void SystemTrayDelegateMus::ShowHelp() {
+  ConnectToSystemTrayClient()->ShowHelp();
+}
+
+void SystemTrayDelegateMus::ShowAccessibilityHelp() {
+  ConnectToSystemTrayClient()->ShowAccessibilityHelp();
+}
+
+void SystemTrayDelegateMus::ShowAccessibilitySettings() {
+  ConnectToSystemTrayClient()->ShowAccessibilitySettings();
+}
+
+void SystemTrayDelegateMus::ShowPaletteHelp() {
+  ConnectToSystemTrayClient()->ShowPaletteHelp();
+}
+
+void SystemTrayDelegateMus::ShowPaletteSettings() {
+  ConnectToSystemTrayClient()->ShowPaletteSettings();
+}
+
+void SystemTrayDelegateMus::ShowPublicAccountInfo() {
+  ConnectToSystemTrayClient()->ShowPublicAccountInfo();
+}
+
+void SystemTrayDelegateMus::ShowEnterpriseInfo() {
+  // http://crbug.com/647412
+  NOTIMPLEMENTED();
+}
+
+void SystemTrayDelegateMus::ShowProxySettings() {
+  ConnectToSystemTrayClient()->ShowProxySettings();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// mojom::SystemTray:
 
 void SystemTrayDelegateMus::SetUse24HourClock(bool use_24_hour) {
   hour_clock_type_ = use_24_hour ? base::k24HourClock : base::k12HourClock;

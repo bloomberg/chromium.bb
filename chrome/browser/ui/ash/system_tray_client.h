@@ -28,7 +28,18 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   void OnClientConnectionError();
 
   // ash::mojom::SystemTrayClient:
+  void ShowSettings() override;
   void ShowDateSettings() override;
+  void ShowDisplaySettings() override;
+  void ShowChromeSlow() override;
+  void ShowIMESettings() override;
+  void ShowHelp() override;
+  void ShowAccessibilityHelp() override;
+  void ShowAccessibilitySettings() override;
+  void ShowPaletteHelp() override;
+  void ShowPaletteSettings() override;
+  void ShowPublicAccountInfo() override;
+  void ShowProxySettings() override;
 
   // chromeos::system::SystemClockObserver:
   void OnSystemClockChanged(chromeos::system::SystemClock* clock) override;

@@ -116,9 +116,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Gets information about the active user.
   virtual LoginStatus GetUserLoginStatus() const;
 
-  // Shows UI for changing user's profile picture.
-  virtual void ChangeProfilePicture();
-
   // Returns the domain that manages the device, if it is enterprise-enrolled.
   virtual std::string GetEnterpriseDomain() const;
 
@@ -203,9 +200,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Shows information about enterprise enrolled devices.
   virtual void ShowEnterpriseInfo();
 
-  // Shows information about supervised users.
-  virtual void ShowSupervisedUserInfo();
-
   // Shows login UI to add other users to this session.
   virtual void ShowUserLogin();
 
@@ -268,7 +262,7 @@ class ASH_EXPORT SystemTrayDelegate {
   virtual bool GetBluetoothDiscovering();
 
   // Shows UI for changing proxy settings.
-  virtual void ChangeProxySettings();
+  virtual void ShowProxySettings();
 
   // Returns CastConfigDelegate. May return nullptr.
   virtual CastConfigDelegate* GetCastConfigDelegate();

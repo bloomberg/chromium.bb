@@ -14,6 +14,47 @@ interface SystemTray {
 // Allows ash system tray to control a client (e.g. Chrome browser). Requests
 // often involve preferences or web UI that is not available to ash.
 interface SystemTrayClient {
+  // Shows general settings UI.
+  ShowSettings();
+
   // Shows the settings related to date, timezone etc.
   ShowDateSettings();
+
+  // TODO(crbug.com/647412): ShowSetTimeDialog();
+
+  // TODO(crbug.com/647412): ShowNetworkSettingsForGuid(string guid);
+
+  // Shows settings related to multiple displays.
+  ShowDisplaySettings();
+
+  // TODO(crbug.com/647412): ShowPowerSettings();
+
+  // Shows the page that lets you disable performance tracing.
+  ShowChromeSlow();
+
+  // Shows settings related to input methods.
+  ShowIMESettings();
+
+  // Shows help.
+  ShowHelp();
+
+  // Show accessibility help.
+  ShowAccessibilityHelp();
+
+  // Show the settings related to accessibility.
+  ShowAccessibilitySettings();
+
+  // Shows the help center article for the stylus tool palette.
+  ShowPaletteHelp();
+
+  // Shows the settings related to the stylus tool palette.
+  ShowPaletteSettings();
+
+  // Shows information about public account mode.
+  ShowPublicAccountInfo();
+
+  // TODO(crbug.com/647412): ShowEnterpriseInfo();
+
+  // Shows UI for changing proxy settings.
+  ShowProxySettings();
 };

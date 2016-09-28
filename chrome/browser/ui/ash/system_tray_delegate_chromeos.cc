@@ -45,7 +45,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/chromeos/events/system_key_event_listener.h"
@@ -53,7 +52,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -132,10 +130,6 @@ const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 
 // The maximum session length limit that can be set.
 const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
-
-const char kDisplaySettingsSubPageName[] = "display";
-const char kDisplayOverscanSettingsSubPageName[] = "displayOverscan";
-const char kPaletteSettingsSubPageName[] = "stylus-overlay";
 
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
@@ -360,12 +354,6 @@ ash::LoginStatus SystemTrayDelegateChromeOS::GetUserLoginStatus() const {
   return ash::LoginStatus::NOT_LOGGED_IN;
 }
 
-void SystemTrayDelegateChromeOS::ChangeProfilePicture() {
-  content::RecordAction(
-      base::UserMetricsAction("OpenChangeProfilePictureDialog"));
-  ShowSettingsSubPageForActiveUser(chrome::kChangeProfilePictureSubPage);
-}
-
 std::string SystemTrayDelegateChromeOS::GetEnterpriseDomain() const {
   return enterprise_domain_;
 }
@@ -420,7 +408,7 @@ base::HourClockType SystemTrayDelegateChromeOS::GetHourClockType() const {
 }
 
 void SystemTrayDelegateChromeOS::ShowSettings() {
-  ShowSettingsSubPageForActiveUser("");
+  SystemTrayCommon::ShowSettings();
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowSettings() {
@@ -434,11 +422,13 @@ void SystemTrayDelegateChromeOS::ShowDateSettings() {
 }
 
 void SystemTrayDelegateChromeOS::ShowSetTimeDialog() {
+  // TODO(mash): Refactor out GetNativeWindow and move to SystemTrayCommon.
   SetTimeDialog::ShowDialog(GetNativeWindow());
 }
 
 void SystemTrayDelegateChromeOS::ShowNetworkSettingsForGuid(
     const std::string& guid) {
+  // TODO(mash): Refactor out SessionStateDelegate and move to SystemTrayCommon.
   ash::WmShell* wm_shell = ash::WmShell::Get();
   if (LoginState::Get()->IsUserLoggedIn() &&
       !wm_shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
@@ -451,11 +441,11 @@ void SystemTrayDelegateChromeOS::ShowNetworkSettingsForGuid(
 }
 
 void SystemTrayDelegateChromeOS::ShowDisplaySettings() {
-  content::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
-  ShowSettingsSubPageForActiveUser(kDisplaySettingsSubPageName);
+  SystemTrayCommon::ShowDisplaySettings();
 }
 
 void SystemTrayDelegateChromeOS::ShowPowerSettings() {
+  // TODO(mash): Refactor out ash::PowerStatus and move to SystemTrayCommon.
   if (!(switches::PowerOverlayEnabled() ||
         (ash::PowerStatus::Get()->IsBatteryPresent() &&
          ash::PowerStatus::Get()->SupportsDualRoleDevices()))) {
@@ -466,9 +456,7 @@ void SystemTrayDelegateChromeOS::ShowPowerSettings() {
 }
 
 void SystemTrayDelegateChromeOS::ShowChromeSlow() {
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetPrimaryUserProfile());
-  chrome::ShowSlow(displayer.browser());
+  SystemTrayCommon::ShowChromeSlow();
 }
 
 bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
@@ -485,60 +473,43 @@ bool SystemTrayDelegateChromeOS::ShouldShowDisplayNotification() {
     return true;
 
   GURL visible_url = active_contents->GetLastCommittedURL();
-  return !(chrome::IsSettingsSubPage(visible_url,
-                                     kDisplaySettingsSubPageName) ||
-           chrome::IsSettingsSubPage(visible_url,
-                                     kDisplayOverscanSettingsSubPageName));
+  return !chrome::IsSettingsSubPage(
+             visible_url, SystemTrayCommon::kDisplaySettingsSubPageName) &&
+         !chrome::IsSettingsSubPage(
+             visible_url,
+             SystemTrayCommon::kDisplayOverscanSettingsSubPageName);
 }
 
 void SystemTrayDelegateChromeOS::ShowIMESettings() {
-  content::RecordAction(base::UserMetricsAction("OpenLanguageOptionsDialog"));
-  ShowSettingsSubPageForActiveUser(chrome::kLanguageOptionsSubPage);
+  SystemTrayCommon::ShowIMESettings();
 }
 
 void SystemTrayDelegateChromeOS::ShowHelp() {
-  chrome::ShowHelpForProfile(ProfileManager::GetActiveUserProfile(),
-                             chrome::HELP_SOURCE_MENU);
+  SystemTrayCommon::ShowHelp();
 }
 
 void SystemTrayDelegateChromeOS::ShowAccessibilityHelp() {
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  accessibility::ShowAccessibilityHelp(displayer.browser());
+  SystemTrayCommon::ShowAccessibilityHelp();
 }
 
 void SystemTrayDelegateChromeOS::ShowAccessibilitySettings() {
-  content::RecordAction(base::UserMetricsAction("ShowAccessibilitySettings"));
-  std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-                         l10n_util::GetStringUTF8(
-                             IDS_OPTIONS_SETTINGS_SECTION_TITLE_ACCESSIBILITY);
-  ShowSettingsSubPageForActiveUser(sub_page);
+  SystemTrayCommon::ShowAccessibilitySettings();
 }
 
 void SystemTrayDelegateChromeOS::ShowPaletteHelp() {
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  chrome::ShowSingletonTab(displayer.browser(),
-                           GURL(chrome::kChromePaletteHelpURL));
+  SystemTrayCommon::ShowPaletteHelp();
 }
 
 void SystemTrayDelegateChromeOS::ShowPaletteSettings() {
-  content::RecordAction(base::UserMetricsAction("ShowPaletteOptions"));
-  ShowSettingsSubPageForActiveUser(kPaletteSettingsSubPageName);
+  SystemTrayCommon::ShowPaletteSettings();
 }
 
 void SystemTrayDelegateChromeOS::ShowPublicAccountInfo() {
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  chrome::ShowPolicy(displayer.browser());
-}
-
-void SystemTrayDelegateChromeOS::ShowSupervisedUserInfo() {
-  // TODO(antrim): find out what should we show in this case.
-  // http://crbug.com/229762
+  SystemTrayCommon::ShowPublicAccountInfo();
 }
 
 void SystemTrayDelegateChromeOS::ShowEnterpriseInfo() {
+  // TODO(mash): Refactor out SessionStateDelegate and move to SystemTrayCommon.
   ash::LoginStatus status = GetUserLoginStatus();
   ash::WmShell* wm_shell = ash::WmShell::Get();
   if (status == ash::LoginStatus::NOT_LOGGED_IN ||
@@ -772,9 +743,8 @@ bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
          bluetooth_discovery_session_->IsActive();
 }
 
-void SystemTrayDelegateChromeOS::ChangeProxySettings() {
-  CHECK(GetUserLoginStatus() == ash::LoginStatus::NOT_LOGGED_IN);
-  LoginDisplayHost::default_host()->OpenProxySettings();
+void SystemTrayDelegateChromeOS::ShowProxySettings() {
+  SystemTrayCommon::ShowProxySettings();
 }
 
 ash::CastConfigDelegate* SystemTrayDelegateChromeOS::GetCastConfigDelegate() {

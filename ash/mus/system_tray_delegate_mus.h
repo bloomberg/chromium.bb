@@ -30,15 +30,30 @@ class SystemTrayDelegateMus : public DefaultSystemTrayDelegate,
   static SystemTrayDelegateMus* Get();
 
  private:
-  // Connects or reconnects the |system_tray_client_| interface.
-  void ConnectToSystemTrayClient();
+  // Connects or reconnects to the mojom::SystemTrayClient interface and returns
+  // the interface pointer.
+  mojom::SystemTrayClient* ConnectToSystemTrayClient();
 
   // Handles errors on the |system_tray_client_| interface connection.
   void OnClientConnectionError();
 
   // SystemTrayDelegate:
   base::HourClockType GetHourClockType() const override;
+  void ShowSettings() override;
   void ShowDateSettings() override;
+  void ShowNetworkSettingsForGuid(const std::string& guid) override;
+  void ShowDisplaySettings() override;
+  void ShowPowerSettings() override;
+  void ShowChromeSlow() override;
+  void ShowIMESettings() override;
+  void ShowHelp() override;
+  void ShowAccessibilityHelp() override;
+  void ShowAccessibilitySettings() override;
+  void ShowPaletteHelp() override;
+  void ShowPaletteSettings() override;
+  void ShowPublicAccountInfo() override;
+  void ShowEnterpriseInfo() override;
+  void ShowProxySettings() override;
 
   // mojom::SystemTray:
   void SetUse24HourClock(bool use_24_hour) override;

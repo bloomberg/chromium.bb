@@ -343,7 +343,6 @@ extern const char kSyncSetupSubPage[];
 extern const char kTriggeredResetProfileSettingsSubPage[];
 #if defined(OS_CHROMEOS)
 extern const char kInternetOptionsSubPage[];
-extern const char kChangeProfilePictureSubPage[];
 #endif
 
 // Extensions sub pages.

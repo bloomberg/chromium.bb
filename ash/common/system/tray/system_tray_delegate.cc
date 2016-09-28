@@ -43,8 +43,6 @@ LoginStatus SystemTrayDelegate::GetUserLoginStatus() const {
   return LoginStatus::NOT_LOGGED_IN;
 }
 
-void SystemTrayDelegate::ChangeProfilePicture() {}
-
 std::string SystemTrayDelegate::GetEnterpriseDomain() const {
   return std::string();
 }
@@ -121,8 +119,6 @@ void SystemTrayDelegate::ShowPublicAccountInfo() {}
 
 void SystemTrayDelegate::ShowEnterpriseInfo() {}
 
-void SystemTrayDelegate::ShowSupervisedUserInfo() {}
-
 void SystemTrayDelegate::ShowUserLogin() {}
 
 void SystemTrayDelegate::SignOut() {}
@@ -172,7 +168,7 @@ bool SystemTrayDelegate::GetBluetoothDiscovering() {
   return false;
 }
 
-void SystemTrayDelegate::ChangeProxySettings() {}
+void SystemTrayDelegate::ShowProxySettings() {}
 
 CastConfigDelegate* SystemTrayDelegate::GetCastConfigDelegate() {
   return nullptr;
