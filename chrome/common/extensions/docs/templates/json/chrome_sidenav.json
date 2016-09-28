@@ -266,38 +266,6 @@
             "href": "/multidevice/webview/tipsandtricks"
           }
         ]
-      },
-      {
-        "title": "Chrome for iOS",
-        "href": "/multidevice/ios/overview",
-        "items": [
-          {
-            "title": "Overview",
-            "href": "/multidevice/ios/overview"
-          },
-          {
-            "title": "Opening Links in Chrome",
-            "href": "/multidevice/ios/links"
-          },
-          {
-            "title": "Case Studies",
-            "href": "/multidevice/ios/case-studies",
-            "items": [
-              {
-                "title": "Case Studies",
-                "href": "/multidevice/ios/case-studies"
-              },
-              {
-                "title": "Pocket",
-                "href": "/multidevice/ios/pocket"
-              },
-              {
-                "title": "Feedly",
-                "href": "/multidevice/ios/feedly"
-              }
-            ]
-          }
-        ]
       }
     ]
   },
