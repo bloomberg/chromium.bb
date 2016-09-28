@@ -80,6 +80,8 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
   config_ = config;
   output_cb_ = BindToCurrentLoop(output_cb);
 
+  ResetTimestampState();
+
   if (config_.is_encrypted()) {
     // Postpone initialization after MediaCrypto is available.
     // SetCdm uses init_cb in a method that's already bound to the current loop.
@@ -93,7 +95,6 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
     return;
   }
 
-  ResetTimestampState();
   SetState(STATE_READY);
   bound_init_cb.Run(true);
 }
