@@ -2936,8 +2936,7 @@ bool isVisuallyEquivalentCandidate(const PositionInFlatTree& position)
 template <typename Strategy>
 static IntRect absoluteCaretBoundsOfAlgorithm(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    // TODO(xiaochengh): Ensure that this function is called with a valid
-    // |visiblePosition|, and add |DCHECK(visiblePosition.isValid())|;
+    DCHECK(visiblePosition.isValid()) << visiblePosition;
     LayoutObject* layoutObject;
     LayoutRect localRect = localCaretRectOfPosition(visiblePosition.toPositionWithAffinity(), layoutObject);
     if (localRect.isEmpty() || !layoutObject)
