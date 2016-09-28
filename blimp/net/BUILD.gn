@@ -21,7 +21,6 @@ component("net") {
     "blimp_message_pump.h",
     "blimp_message_thread_pipe.cc",
     "blimp_message_thread_pipe.h",
-    "blimp_net_export.h",
     "blimp_stats.cc",
     "blimp_stats.h",
     "blimp_transport.h",
@@ -78,6 +77,7 @@ component("net") {
 
   deps = [
     ":helium",
+    ":net_export",
     "//base",
     "//blimp/common",
     "//net",
@@ -97,12 +97,19 @@ source_set("helium") {
     "helium/vector_clock.h",
   ]
   deps = [
+    ":net_export",
     "//base",
     "//blimp/common",
   ]
 
   public_deps = [
     "//blimp/common/proto",
+  ]
+}
+
+source_set("net_export") {
+  sources = [
+      "blimp_net_export.h",
   ]
 }
 

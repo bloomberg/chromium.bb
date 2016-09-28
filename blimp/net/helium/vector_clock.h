@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "blimp/net/blimp_net_export.h"
+
 namespace blimp {
 
 // From wikipedia:
@@ -20,7 +22,7 @@ namespace blimp {
 
 typedef uint32_t Revision;
 
-class VectorClock {
+class BLIMP_NET_EXPORT VectorClock {
  public:
   enum class Comparison { LessThan, EqualTo, GreaterThan, Conflict };
 
