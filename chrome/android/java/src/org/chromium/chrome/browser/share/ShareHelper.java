@@ -61,6 +61,22 @@ import java.util.concurrent.TimeoutException;
  * A helper class that helps to start an intent to share titles and URLs.
  */
 public class ShareHelper {
+    /** Interface that receives intents for testing (to fake out actually sending them). */
+    public static interface FakeIntentReceiver {
+        /** Sets the intent to send back in the broadcast. */
+        public void setIntentToSendBack(Intent intent);
+
+        /** Called when a custom chooser dialog is shown. */
+        public void onCustomChooserShown(AlertDialog dialog);
+
+        /**
+         * Simulates firing the given intent, without actually doing so.
+         *
+         * @param context The context that will receive broadcasts from the simulated activity.
+         * @param intent The intent to send to the system.
+         */
+        public void fireIntent(Context context, Intent intent);
+    }
 
     private static final String TAG = "share";
 
@@ -80,7 +96,22 @@ public class ShareHelper {
      */
     private static final String SHARE_IMAGES_DIRECTORY_NAME = "screenshot";
 
+    /** Force the use of a Chrome-specific intent chooser, not the system chooser. */
+    private static boolean sForceCustomChooserForTesting = false;
+
+    /** If non-null, will be used instead of the real activity. */
+    private static FakeIntentReceiver sFakeIntentReceiverForTesting;
+
     private ShareHelper() {}
+
+    private static void fireIntent(Activity activity, Intent intent) {
+        if (sFakeIntentReceiverForTesting != null) {
+            Context context = activity.getApplicationContext();
+            sFakeIntentReceiverForTesting.fireIntent(context, intent);
+        } else {
+            activity.startActivity(intent);
+        }
+    }
 
     @SuppressFBWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     private static void deleteShareImageFiles(File file) {
@@ -91,6 +122,26 @@ public class ShareHelper {
         if (!file.delete()) {
             Log.w(TAG, "Failed to delete share image file: %s", file.getAbsolutePath());
         }
+    }
+
+    /**
+     * Force the use of a Chrome-specific intent chooser, not the system chooser.
+     *
+     * This emulates the behavior on pre Lollipop-MR1 systems, where the system chooser is not
+     * available.
+     */
+    public static void setForceCustomChooserForTesting(boolean enabled) {
+        sForceCustomChooserForTesting = enabled;
+    }
+
+    /**
+     * Uses a FakeIntentReceiver instead of actually sending intents to the system.
+     *
+     * @param receiver The object to send intents to. If null, resets back to the default behavior
+     *                 (really send intents).
+     */
+    public static void setFakeIntentReceiverForTesting(FakeIntentReceiver receiver) {
+        sFakeIntentReceiverForTesting = receiver;
     }
 
     /**
@@ -132,7 +183,8 @@ public class ShareHelper {
         }
 
         static boolean isSupported() {
-            return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1;
+            return !sForceCustomChooserForTesting
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1;
         }
 
         @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
@@ -166,7 +218,10 @@ public class ShareHelper {
             Intent chooserIntent = Intent.createChooser(sharingIntent,
                     activity.getString(R.string.share_link_chooser_title),
                     pendingIntent.getIntentSender());
-            activity.startActivity(chooserIntent);
+            if (sFakeIntentReceiverForTesting != null) {
+                sFakeIntentReceiverForTesting.setIntentToSendBack(intent);
+            }
+            fireIntent(activity, chooserIntent);
         }
 
         @Override
@@ -306,7 +361,7 @@ public class ShareHelper {
 
                     Intent chooserIntent = Intent.createChooser(getShareImageIntent(imageUri),
                             activity.getString(R.string.share_link_chooser_title));
-                    activity.startActivity(chooserIntent);
+                    fireIntent(activity, chooserIntent);
                 }
             }
         }.execute();
@@ -426,17 +481,21 @@ public class ShareHelper {
             }
         });
 
-        if (callback == null) return;
-
-        dialog.setOnDismissListener(new OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                if (!callbackCalled[0]) {
-                    callback.onCancel();
-                    callbackCalled[0] = true;
+        if (callback != null) {
+            dialog.setOnDismissListener(new OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    if (!callbackCalled[0]) {
+                        callback.onCancel();
+                        callbackCalled[0] = true;
+                    }
                 }
-            }
-        });
+            });
+        }
+
+        if (sFakeIntentReceiverForTesting != null) {
+            sFakeIntentReceiverForTesting.onCustomChooserShown(dialog);
+        }
     }
 
     /**
@@ -463,7 +522,7 @@ public class ShareHelper {
         if (sharingIntent.getComponent() != null) {
             // If a component was specified, there should not also be a callback.
             assert callback == null;
-            activity.startActivity(sharingIntent);
+            fireIntent(activity, sharingIntent);
         } else {
             assert TargetChosenReceiver.isSupported();
             TargetChosenReceiver.sendChooserIntent(saveLastUsed, activity, sharingIntent, callback);
