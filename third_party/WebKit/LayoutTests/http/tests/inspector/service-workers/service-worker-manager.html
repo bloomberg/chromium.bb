@@ -13,21 +13,24 @@ function test()
     WebInspector.targetManager.observeTargets({
         targetAdded: function(target)
         {
-            InspectorTest.addResult("Target added: " + target.name() + " type: " + target._type);
-            if (target.isDedicatedWorker()) {
+            InspectorTest.addResult("Target added: " + target.name() + "; type: " + InspectorTest.describeTargetType(target));
+            if (InspectorTest.isDedicatedWorker(target)) {
                 var serviceWorkerManager = WebInspector.targetManager.mainTarget().serviceWorkerManager;
                 // Allow agents to do rountrips.
                 InspectorTest.deprecatedRunAfterPendingDispatches(function() {
-                    for (var worker of serviceWorkerManager.workers())
-                        worker.stop();
+                    for (var registration of serviceWorkerManager.registrations().valuesArray()) {
+                        for (var version of registration.versions.valuesArray()) {
+                            serviceWorkerManager.stopWorker(version.id);
+                        }
+                    }
                 });
             }
         },
 
         targetRemoved: function(target)
         {
-            InspectorTest.addResult("Target removed: " + target.name() + " type: " + target._type);
-            if (target.isServiceWorker())
+            InspectorTest.addResult("Target removed: " + target.name() + "; type: " + InspectorTest.describeTargetType(target));
+            if (InspectorTest.isServiceWorker(target))
                 setTimeout(InspectorTest.completeTest);
         }
     });

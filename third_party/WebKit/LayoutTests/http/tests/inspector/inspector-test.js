@@ -948,6 +948,17 @@ InspectorTest.isServiceWorker = function(target)
     return target && !target.hasBrowserCapability() && !target.hasJSCapability() && target.hasNetworkCapability() && target.hasWorkerCapability();
 }
 
+InspectorTest.describeTargetType = function(target)
+{
+    if (InspectorTest.isDedicatedWorker(target))
+        return "worker";
+    if (InspectorTest.isServiceWorker(target))
+        return "service-worker";
+    if (!target.parentTarget())
+        return "page";
+    return "frame";
+}
+
     };  // initialize_InspectorTest
 
 var initializeCallId = 0;

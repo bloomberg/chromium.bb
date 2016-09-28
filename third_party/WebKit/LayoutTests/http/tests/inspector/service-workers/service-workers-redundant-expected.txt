@@ -2,75 +2,72 @@ ServiceWorkers must be shown correctly even if there is a redundant worker.
 
 The first ServiceWorker is activated.
 ==== ServiceWorkersView ====
-127.0.0.1/inspector/service-workers/resources/service-worker-redundant-scope/
-State
-activated
-Worker
-running
-inspect
-Script URL
-/inspector/service-workers/resources/changing-worker.php
-Updated
-RESPONSE-TIME
-Last-Modified
-LAST-MODIFIED
-Recent messages
-RESPONSE-TIME
-
+http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-redundant-scope/
+Update
+Push
+Sync
+Unregister
+Source
+Status
+#N installing
+12/31/1969, 4:00:00 PM
+Clients
+Errors
+0
+details
+clear
 ============================
 The second Serviceworker is installed.
 ==== ServiceWorkersView ====
-127.0.0.1/inspector/service-workers/resources/service-worker-redundant-scope/
-State
-activated
-Worker
-running
-inspect
-Script URL
-/inspector/service-workers/resources/changing-worker.php
-Updated
-RESPONSE-TIME
-Last-Modified
-LAST-MODIFIED
-Recent messages
-RESPONSE-TIME
-Controlled clients
-CLIENT
+http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-redundant-scope/
+Update
+Push
+Sync
+Unregister
+Source
+changing-worker.php
+Received
+Status
+#N activated and is running
+stop
+#N installing
+12/31/1969, 4:00:00 PM
+Clients
+http://127.0.0.1:8000/inspector/service-workers/service-workers-redundant.html
+focus
+Errors
+0
+details
+clear
 ============================
 The first ServiceWorker worker became redundant and stopped.
 ==== ServiceWorkersView ====
-127.0.0.1/inspector/service-workers/resources/service-worker-redundant-scope/
-State
-activated
-Worker
-running
-inspect
-Script URL
-/inspector/service-workers/resources/changing-worker.php
-Updated
-RESPONSE-TIME
-Last-Modified
-LAST-MODIFIED
-Recent messages
-RESPONSE-TIME
-
+http://127.0.0.1:8000/inspector/service-workers/resources/service-worker-redundant-scope/
+Update
+Push
+Sync
+Unregister
+Source
+changing-worker.php
+Received
+Status
+#N activated and is running
+stop
+Clients
+Errors
+0
+details
+clear
 ============================
 DevTools frontend is reopened.
 ==== ServiceWorkersView ====
-127.0.0.1/inspector/service-workers/resources/service-worker-redundant-scope/
-State
-activated
-Worker
-running
-inspect
-Script URL
-/inspector/service-workers/resources/changing-worker.php
-Updated
-RESPONSE-TIME
-Last-Modified
-LAST-MODIFIED
-Recent messages
-RESPONSE-TIME
-
+Update
+Push
+Sync
+Unregister
+Source
+Status
+Clients
+Errors
 ============================
 

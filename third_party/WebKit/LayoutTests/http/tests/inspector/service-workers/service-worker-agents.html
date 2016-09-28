@@ -11,7 +11,7 @@ function test()
 
     InspectorTest.addSniffer(WebInspector.MainConnection.prototype, "sendMessage", function(message) {
         var messageString = JSON.stringify(message);
-        if (!messageString.includes("ServiceWorker.sendMessage"))
+        if (!messageString.includes("Target.sendMessageToTarget"))
             return;
         if (messageString.includes("DOM."))
             InspectorTest.addResult("DOM-related command should NOT be issued: " + messageString);
