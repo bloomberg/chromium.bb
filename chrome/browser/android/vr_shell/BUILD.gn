@@ -39,8 +39,6 @@ static_library("vr_shell") {
     "//content/public/browser",
     "//content/public/common",
     "//device/vr",
-    "//third_party/gvr-android-sdk:gvr_base_java",
-    "//third_party/gvr-android-sdk:gvr_common_java",
     "//third_party/gvr-android-sdk:libgvr",
     "//ui/android",
     "//ui/base",
