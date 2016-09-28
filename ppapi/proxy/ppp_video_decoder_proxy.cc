@@ -25,10 +25,15 @@ void ProvidePictureBuffers(PP_Instance instance, PP_Resource decoder,
   HostResource decoder_resource;
   decoder_resource.SetHostResource(instance, decoder);
 
-  HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPVideoDecoder_ProvidePictureBuffers(
-          API_ID_PPP_VIDEO_DECODER_DEV,
-          decoder_resource, req_num_of_bufs, *dimensions, texture_target));
+  // This is called by the graphics system in response to a message from the
+  // GPU process. These messages will not be synchronized with the lifetime
+  // of the plugin so we need to null-check here.
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (dispatcher) {
+    dispatcher->Send(new PpapiMsg_PPPVideoDecoder_ProvidePictureBuffers(
+        API_ID_PPP_VIDEO_DECODER_DEV,
+        decoder_resource, req_num_of_bufs, *dimensions, texture_target));
+  }
 }
 
 void DismissPictureBuffer(PP_Instance instance, PP_Resource decoder,
@@ -36,10 +41,13 @@ void DismissPictureBuffer(PP_Instance instance, PP_Resource decoder,
   HostResource decoder_resource;
   decoder_resource.SetHostResource(instance, decoder);
 
-  HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPVideoDecoder_DismissPictureBuffer(
-          API_ID_PPP_VIDEO_DECODER_DEV,
-          decoder_resource, picture_buffer_id));
+  // Null check as in ProvidePictureBuffers above.
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (dispatcher) {
+    dispatcher->Send(new PpapiMsg_PPPVideoDecoder_DismissPictureBuffer(
+        API_ID_PPP_VIDEO_DECODER_DEV,
+        decoder_resource, picture_buffer_id));
+  }
 }
 
 void PictureReady(PP_Instance instance, PP_Resource decoder,
@@ -47,9 +55,12 @@ void PictureReady(PP_Instance instance, PP_Resource decoder,
   HostResource decoder_resource;
   decoder_resource.SetHostResource(instance, decoder);
 
-  HostDispatcher::GetForInstance(instance)->Send(
-      new PpapiMsg_PPPVideoDecoder_PictureReady(
-          API_ID_PPP_VIDEO_DECODER_DEV, decoder_resource, *picture));
+  // Null check as in ProvidePictureBuffers above.
+  HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
+  if (dispatcher) {
+    dispatcher->Send(new PpapiMsg_PPPVideoDecoder_PictureReady(
+        API_ID_PPP_VIDEO_DECODER_DEV, decoder_resource, *picture));
+  }
 }
 
 void NotifyError(PP_Instance instance, PP_Resource decoder,
