@@ -95,8 +95,11 @@ LayoutRect SVGLayoutSupport::transformPaintInvalidationRect(const LayoutObject& 
             const FloatSize strokeSize = rootTransform.mapSize(
                 FloatSize(strokeWidthForHairlinePadding, strokeWidthForHairlinePadding));
             if (strokeSize.width() < 1 || strokeSize.height() < 1) {
-                const float pad = 0.5f - std::min(strokeSize.width(), strokeSize.height()) / 2;
-                ASSERT(pad > 0);
+                float pad = 0.5f - std::min(strokeSize.width(), strokeSize.height()) / 2;
+                DCHECK_GT(pad, 0);
+                // Additionally, square/round caps can potentially introduce an outset <= 0.5
+                if (object.styleRef().svgStyle().capStyle() != ButtCap)
+                    pad += 0.5f;
                 adjustedRect.inflate(pad);
             }
         }
