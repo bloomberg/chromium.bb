@@ -52,6 +52,10 @@ const int kWebApkDownloadUrlTimeoutMs = 60000;
 // complete.
 const int kDownloadTimeoutMs = 60000;
 
+const int kWorldReadableFilePermission = base::FILE_PERMISSION_READ_BY_USER |
+                                         base::FILE_PERMISSION_READ_BY_GROUP |
+                                         base::FILE_PERMISSION_READ_BY_OTHERS;
+
 // Returns the scope from |info| if it is specified. Otherwise, returns the
 // default scope.
 GURL GetScope(const ShortcutInfo& info) {
@@ -126,6 +130,38 @@ GURL GetServerUrlForUpdate(const GURL& server_url,
   // crbug.com/636552. Simplify the server URL.
   return GURL(server_url.spec() + webapk_package + "/" +
               kDefaultWebApkServerUrlResponseType);
+}
+
+// Creates a directory depending on the type of the task, and set permissions.
+// It also creates any parent directory along the path if doesn't exist,
+// and sets permissions as well.
+// The previously downloaded APKs are deleted in order to clean up unused cached
+// data.
+base::FilePath CreateSubDirAndSetPermissionsInBackground(
+    const base::StringPiece& output_dir_name,
+    const std::string& package_name) {
+  base::FilePath output_root_dir;
+  base::android::GetCacheDirectory(&output_root_dir);
+  base::FilePath webapk_dir = output_root_dir.AppendASCII("webapks");
+  // Creating different downloaded directory for install/update cases is
+  // to prevent deleting the APK which is still in use when an install and an
+  // update happen at the same time. However, it doesn't help the cases of when
+  // mutiple installs (or multiple updates) happen at the same time.
+  base::FilePath output_dir = webapk_dir.AppendASCII(output_dir_name);
+  int posix_permissions = kWorldReadableFilePermission |
+                          base::FILE_PERMISSION_WRITE_BY_USER |
+                          base::FILE_PERMISSION_EXECUTE_BY_USER |
+                          base::FILE_PERMISSION_EXECUTE_BY_OTHERS;
+  if (base::PathExists(output_dir))
+    base::DeleteFile(output_dir, true);
+
+  // Creates the directory to download and sets permissions.
+  if (!base::CreateDirectory(output_dir) ||
+      !base::SetPosixFilePermissions(webapk_dir, posix_permissions) ||
+      !base::SetPosixFilePermissions(output_dir, posix_permissions))
+    return base::FilePath();
+
+  return output_dir;
 }
 
 }  // anonymous namespace
@@ -348,12 +384,23 @@ void WebApkInstaller::SendRequest(std::unique_ptr<webapk::WebApk> request_proto,
 
 void WebApkInstaller::OnGotWebApkDownloadUrl(const GURL& download_url,
                                              const std::string& package_name) {
-  base::FilePath output_dir;
-  base::android::GetCacheDirectory(&output_dir);
   webapk_package_ = package_name;
-  // TODO(pkotwicz): Download WebAPKs into WebAPK-specific subdirectory
-  // directory.
-  // TODO(pkotwicz): Figure out when downloaded WebAPK should be deleted.
+
+  base::PostTaskAndReplyWithResult(
+      GetBackgroundTaskRunner().get(), FROM_HERE,
+      base::Bind(&CreateSubDirAndSetPermissionsInBackground,
+                 task_type_ == WebApkInstaller::INSTALL ? "install" : "update",
+                 package_name),
+      base::Bind(&WebApkInstaller::OnCreatedSubDirAndSetPermissions,
+                 weak_ptr_factory_.GetWeakPtr(), download_url));
+}
+
+void WebApkInstaller::OnCreatedSubDirAndSetPermissions(
+    const GURL& download_url, const base::FilePath& output_dir) {
+  if (output_dir.empty()) {
+    OnFailure();
+    return;
+  }
 
   timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(download_timeout_ms_),
@@ -375,10 +422,9 @@ void WebApkInstaller::OnWebApkDownloaded(const base::FilePath& file_path,
     return;
   }
 
-  int posix_permissions = base::FILE_PERMISSION_READ_BY_USER |
+  int posix_permissions = kWorldReadableFilePermission |
                           base::FILE_PERMISSION_WRITE_BY_USER |
-                          base::FILE_PERMISSION_READ_BY_GROUP |
-                          base::FILE_PERMISSION_READ_BY_OTHERS;
+                          base::FILE_PERMISSION_EXECUTE_BY_USER;
   base::PostTaskAndReplyWithResult(
       GetBackgroundTaskRunner().get(), FROM_HERE,
       base::Bind(&base::SetPosixFilePermissions, file_path, posix_permissions),

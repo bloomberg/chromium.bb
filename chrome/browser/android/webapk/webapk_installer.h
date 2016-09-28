@@ -149,6 +149,11 @@ class WebApkInstaller : public net::URLFetcherDelegate {
   void OnGotWebApkDownloadUrl(const GURL& download_url,
                               const std::string& package_name);
 
+  // Called once the sub directory to store the downloaded WebAPK was
+  // created with permissions set properly or if creation failed.
+  void OnCreatedSubDirAndSetPermissions(const GURL& download_url,
+                                        const base::FilePath& file_path);
+
   // Called once the WebAPK has been downloaded. Makes the downloaded WebAPK
   // world readable and installs the WebAPK if the download was successful.
   // |file_path| is the file path that the WebAPK was downloaded to.
