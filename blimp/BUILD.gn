@@ -140,6 +140,7 @@ if (is_linux) {
       ":blimp_browsertests",
       ":blimp_unittests",
       "//base:base_unittests",
+      "//breakpad:generate_test_dump",
       "//content/test:content_unittests",
       "//ipc:ipc_tests",
       "//net:net_unittests",
