@@ -58,7 +58,7 @@ bool GpuMemoryBufferTracker::Init(const gfx::Size& dimensions,
   return true;
 }
 
-std::unique_ptr<VideoCaptureBufferHandle>
+std::unique_ptr<media::VideoCaptureBufferHandle>
 GpuMemoryBufferTracker::GetBufferHandle() {
   DCHECK_EQ(gpu_memory_buffers_.size(),
             media::VideoFrame::NumPlanes(pixel_format()));

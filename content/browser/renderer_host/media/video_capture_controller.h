@@ -52,24 +52,15 @@
 #include "content/common/content_export.h"
 #include "content/common/media/video_capture.h"
 #include "media/base/video_capture_types.h"
-#include "media/capture/video/video_capture_device.h"
+#include "media/capture/video/video_frame_receiver.h"
+
+namespace media {
+class VideoCaptureBufferPool;
+}
 
 namespace content {
-class VideoCaptureBufferPool;
 
-class CONTENT_EXPORT VideoFrameReceiver {
- public:
-  virtual ~VideoFrameReceiver(){};
-
-  virtual void OnIncomingCapturedVideoFrame(
-      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
-      const scoped_refptr<media::VideoFrame>& frame) = 0;
-  virtual void OnError() = 0;
-  virtual void OnLog(const std::string& message) = 0;
-  virtual void OnBufferDestroyed(int buffer_id_to_drop) = 0;
-};
-
-class CONTENT_EXPORT VideoCaptureController : public VideoFrameReceiver {
+class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
  public:
   // |max_buffers| is the maximum number of video frame buffers in-flight at any
   // one time.  This value should be based on the logical capacity of the
@@ -137,7 +128,7 @@ class CONTENT_EXPORT VideoCaptureController : public VideoFrameReceiver {
 
   bool has_received_frames() const { return has_received_frames_; }
 
-  // Implementation of VideoFrameReceiver interface:
+  // Implementation of media::VideoFrameReceiver interface:
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame) override;
@@ -164,7 +155,7 @@ class CONTENT_EXPORT VideoCaptureController : public VideoFrameReceiver {
                                const ControllerClients& clients);
 
   // The pool of shared-memory buffers used for capturing.
-  const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+  const scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
 
   // All clients served by this controller.
   ControllerClients controller_clients_;

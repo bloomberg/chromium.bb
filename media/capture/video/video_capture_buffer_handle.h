@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_HANDLE_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_HANDLE_H_
+#ifndef MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_BUFFER_HANDLE_H_
+#define MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_BUFFER_HANDLE_H_
 
 #include "base/files/file.h"
+#include "media/capture/capture_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace content {
+namespace media {
 
 // Abstraction of a pool's buffer data buffer and size for clients.
-class VideoCaptureBufferHandle {
+class CAPTURE_EXPORT VideoCaptureBufferHandle {
  public:
   virtual ~VideoCaptureBufferHandle() {}
   virtual gfx::Size dimensions() const = 0;
@@ -24,6 +25,6 @@ class VideoCaptureBufferHandle {
 #endif
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_HANDLE_H_
+#endif  // MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_BUFFER_HANDLE_H_

@@ -5,12 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_SHARED_MEMORY_BUFFER_TRACKER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_SHARED_MEMORY_BUFFER_TRACKER_H_
 
-#include "content/browser/renderer_host/media/video_capture_buffer_tracker.h"
+#include "media/capture/video/video_capture_buffer_tracker.h"
 
 namespace content {
 
 // Tracker specifics for SharedMemory.
-class SharedMemoryBufferTracker final : public VideoCaptureBufferTracker {
+class SharedMemoryBufferTracker final
+    : public media::VideoCaptureBufferTracker {
  public:
   SharedMemoryBufferTracker();
 
@@ -19,7 +20,7 @@ class SharedMemoryBufferTracker final : public VideoCaptureBufferTracker {
             media::VideoPixelStorage storage_type,
             base::Lock* lock) override;
 
-  std::unique_ptr<VideoCaptureBufferHandle> GetBufferHandle() override;
+  std::unique_ptr<media::VideoCaptureBufferHandle> GetBufferHandle() override;
   bool ShareToProcess(base::ProcessHandle process_handle,
                       base::SharedMemoryHandle* new_handle) override;
   bool ShareToProcess2(int plane,

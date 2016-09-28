@@ -30,7 +30,7 @@ bool SharedMemoryBufferTracker::Init(const gfx::Size& dimensions,
   return shared_memory_.CreateAndMapAnonymous(mapped_size_);
 }
 
-std::unique_ptr<VideoCaptureBufferHandle>
+std::unique_ptr<media::VideoCaptureBufferHandle>
 SharedMemoryBufferTracker::GetBufferHandle() {
   return base::MakeUnique<SharedMemoryBufferHandle>(this);
 }

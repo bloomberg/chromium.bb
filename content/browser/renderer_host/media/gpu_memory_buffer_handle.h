@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_GPU_MEMORY_BUFFER_HANDLE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_GPU_MEMORY_BUFFER_HANDLE_H_
 
-#include "content/browser/renderer_host/media/video_capture_buffer_handle.h"
+#include "media/capture/video/video_capture_buffer_handle.h"
 
 namespace content {
 
@@ -13,7 +13,7 @@ class GpuMemoryBufferTracker;
 
 // A simple proxy that implements the BufferHandle interface, providing
 // accessors to GpuMemoryBufferTracker's memory and properties.
-class GpuMemoryBufferBufferHandle : public VideoCaptureBufferHandle {
+class GpuMemoryBufferBufferHandle : public media::VideoCaptureBufferHandle {
  public:
   // |tracker| must outlive GpuMemoryBufferBufferHandle. This is ensured since
   // a tracker is pinned until ownership of this GpuMemoryBufferBufferHandle

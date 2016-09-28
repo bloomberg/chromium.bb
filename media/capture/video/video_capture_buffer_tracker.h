@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_TRACKER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_TRACKER_H_
+#ifndef MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_BUFFER_TRACKER_H_
+#define MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_BUFFER_TRACKER_H_
 
 #include <memory>
 
 #include "base/synchronization/lock.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_handle.h"
 #include "media/base/video_capture_types.h"
+#include "media/capture/video/video_capture_buffer_handle.h"
 
-namespace content {
+namespace media {
 
 // Keeps track of the state of a given mappable resource. Each
 // VideoCaptureBufferTracker carries indication of pixel format and storage
 // type. This is a base class for implementations using different kinds of
 // storage.
-class VideoCaptureBufferTracker {
+class CAPTURE_EXPORT VideoCaptureBufferTracker {
  public:
   VideoCaptureBufferTracker()
       : max_pixel_count_(0),
@@ -75,4 +75,4 @@ class VideoCaptureBufferTracker {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_BUFFER_TRACKER_H_
+#endif  // MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_BUFFER_TRACKER_H_

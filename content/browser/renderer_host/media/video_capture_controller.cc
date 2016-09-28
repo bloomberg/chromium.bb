@@ -18,13 +18,14 @@
 #include "build/build_config.h"
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
-#include "content/browser/renderer_host/media/video_capture_device_client.h"
+#include "content/browser/renderer_host/media/video_capture_buffer_tracker_factory_impl.h"
 #include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/video_frame.h"
+#include "media/capture/video/video_capture_buffer_pool_impl.h"
+#include "media/capture/video/video_capture_device_client.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/compositor/image_transport_factory.h"
@@ -79,14 +80,14 @@ void ReturnVideoFrame(const scoped_refptr<VideoFrame>& video_frame,
 #endif
 }
 
-std::unique_ptr<VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
-    const VideoCaptureJpegDecoder::DecodeDoneCB& decode_done_cb) {
+std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
+    const media::VideoCaptureJpegDecoder::DecodeDoneCB& decode_done_cb) {
   return base::MakeUnique<VideoCaptureGpuJpegDecoder>(decode_done_cb);
 }
 
-// Decorator for VideoFrameReceiver that forwards all incoming calls
+// Decorator for media::VideoFrameReceiver that forwards all incoming calls
 // to the Browser IO thread.
-class VideoFrameReceiverOnIOThread : public VideoFrameReceiver {
+class VideoFrameReceiverOnIOThread : public media::VideoFrameReceiver {
  public:
   explicit VideoFrameReceiverOnIOThread(
       const base::WeakPtr<VideoFrameReceiver>& receiver)
@@ -176,7 +177,9 @@ struct VideoCaptureController::ControllerClient {
 };
 
 VideoCaptureController::VideoCaptureController(int max_buffers)
-    : buffer_pool_(new VideoCaptureBufferPoolImpl(max_buffers)),
+    : buffer_pool_(new media::VideoCaptureBufferPoolImpl(
+          base::MakeUnique<VideoCaptureBufferTrackerFactoryImpl>(),
+          max_buffers)),
       state_(VIDEO_CAPTURE_STATE_STARTED),
       has_received_frames_(false),
       weak_ptr_factory_(this) {
@@ -191,7 +194,7 @@ VideoCaptureController::GetWeakPtrForIOThread() {
 std::unique_ptr<media::VideoCaptureDevice::Client>
 VideoCaptureController::NewDeviceClient() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return base::MakeUnique<VideoCaptureDeviceClient>(
+  return base::MakeUnique<media::VideoCaptureDeviceClient>(
       base::MakeUnique<VideoFrameReceiverOnIOThread>(
           this->GetWeakPtrForIOThread()),
       buffer_pool_,
@@ -408,7 +411,7 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
     const scoped_refptr<VideoFrame>& frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   const int buffer_id = buffer->id();
-  DCHECK_NE(buffer_id, VideoCaptureBufferPool::kInvalidId);
+  DCHECK_NE(buffer_id, media::VideoCaptureBufferPool::kInvalidId);
 
   int count = 0;
   if (state_ == VIDEO_CAPTURE_STATE_STARTED) {

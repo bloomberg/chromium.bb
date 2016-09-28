@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/video_capture_device_client.h"
+#include "media/capture/video/video_capture_device_client.h"
 
 #include <algorithm>
 #include <utility>
@@ -14,21 +14,21 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_handle.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
-#include "content/browser/renderer_host/media/video_capture_controller.h"
-#include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
+#include "media/capture/video/video_capture_buffer_handle.h"
+#include "media/capture/video/video_capture_buffer_pool.h"
+#include "media/capture/video/video_capture_jpeg_decoder.h"
+#include "media/capture/video/video_frame_receiver.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 using media::VideoCaptureFormat;
 using media::VideoFrame;
 using media::VideoFrameMetadata;
 
-namespace content {
+namespace media {
 
 // Class combining a Client::Buffer interface implementation and a pool buffer
 // implementation to guarantee proper cleanup on destruction on our side.
@@ -118,8 +118,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   if (rotation == 90 || rotation == 270)
     std::swap(destination_width, destination_height);
 
-  DCHECK_EQ(0, rotation % 90)
-      << " Rotation must be a multiple of 90, now: " << rotation;
+  DCHECK_EQ(0, rotation % 90) << " Rotation must be a multiple of 90, now: "
+                              << rotation;
   libyuv::RotationMode rotation_mode = libyuv::kRotate0;
   if (rotation == 90)
     rotation_mode = libyuv::kRotate90;
@@ -180,10 +180,10 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
       origin_colorspace = libyuv::FOURCC_UYVY;
       break;
     case media::PIXEL_FORMAT_RGB24:
-      // Linux RGB24 defines red at lowest byte address,
-      // see http://linuxtv.org/downloads/v4l-dvb-apis/packed-rgb.html.
-      // Windows RGB24 defines blue at lowest byte,
-      // see https://msdn.microsoft.com/en-us/library/windows/desktop/dd407253
+// Linux RGB24 defines red at lowest byte address,
+// see http://linuxtv.org/downloads/v4l-dvb-apis/packed-rgb.html.
+// Windows RGB24 defines blue at lowest byte,
+// see https://msdn.microsoft.com/en-us/library/windows/desktop/dd407253
 #if defined(OS_LINUX)
       origin_colorspace = libyuv::FOURCC_RAW;
 #elif defined(OS_WIN)
@@ -220,13 +220,13 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   DCHECK_GE(static_cast<size_t>(length), frame_format.ImageAllocationSize());
 
   if (external_jpeg_decoder_) {
-    const VideoCaptureGpuJpegDecoder::STATUS status =
+    const VideoCaptureJpegDecoder::STATUS status =
         external_jpeg_decoder_->GetStatus();
-    if (status == VideoCaptureGpuJpegDecoder::FAILED) {
+    if (status == VideoCaptureJpegDecoder::FAILED) {
       external_jpeg_decoder_.reset();
-    } else if (status == VideoCaptureGpuJpegDecoder::INIT_PASSED &&
-        frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
-        rotation == 0 && !flip) {
+    } else if (status == VideoCaptureJpegDecoder::INIT_PASSED &&
+               frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
+               rotation == 0 && !flip) {
       external_jpeg_decoder_->DecodeCapturedData(data, length, frame_format,
                                                  reference_time, timestamp,
                                                  std::move(buffer));
@@ -234,30 +234,21 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     }
   }
 
-  if (libyuv::ConvertToI420(data,
-                            length,
-                            y_plane_data,
-                            yplane_stride,
-                            u_plane_data,
-                            uv_plane_stride,
-                            v_plane_data,
-                            uv_plane_stride,
-                            crop_x,
-                            crop_y,
+  if (libyuv::ConvertToI420(data, length, y_plane_data, yplane_stride,
+                            u_plane_data, uv_plane_stride, v_plane_data,
+                            uv_plane_stride, crop_x, crop_y,
                             frame_format.frame_size.width(),
                             (flip ? -1 : 1) * frame_format.frame_size.height(),
-                            new_unrotated_width,
-                            new_unrotated_height,
-                            rotation_mode,
-                            origin_colorspace) != 0) {
+                            new_unrotated_width, new_unrotated_height,
+                            rotation_mode, origin_colorspace) != 0) {
     DLOG(WARNING) << "Failed to convert buffer's pixel format to I420 from "
                   << media::VideoPixelFormatToString(frame_format.pixel_format);
     return;
   }
 
-  const VideoCaptureFormat output_format = VideoCaptureFormat(
-      dimensions, frame_format.frame_rate,
-      media::PIXEL_FORMAT_I420, output_pixel_storage);
+  const VideoCaptureFormat output_format =
+      VideoCaptureFormat(dimensions, frame_format.frame_rate,
+                         media::PIXEL_FORMAT_I420, output_pixel_storage);
   OnIncomingCapturedBuffer(std::move(buffer), output_format, reference_time,
                            timestamp);
 }
@@ -358,8 +349,7 @@ void VideoCaptureDeviceClient::OnError(
   receiver_->OnError();
 }
 
-void VideoCaptureDeviceClient::OnLog(
-    const std::string& message) {
+void VideoCaptureDeviceClient::OnLog(const std::string& message) {
   receiver_->OnLog(message);
 }
 
@@ -412,4 +402,4 @@ VideoCaptureDeviceClient::ReserveI420OutputBuffer(
   return std::unique_ptr<Buffer>();
 }
 
-}  // namespace content
+}  // namespace media

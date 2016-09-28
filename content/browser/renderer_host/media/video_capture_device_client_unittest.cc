@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/video_capture_device_client.h"
+#include "media/capture/video/video_capture_device_client.h"
 
 #include <stddef.h>
 
@@ -15,10 +15,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/base/limits.h"
+#include "media/capture/video/video_capture_buffer_pool.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,6 +49,11 @@ class MockVideoCaptureController : public VideoCaptureController {
   }
 };
 
+// Note that this test does not exercise the class VideoCaptureDeviceClient
+// in isolation. The "unit under test" is an instance of
+// VideoCaptureDeviceClient with some context that is specific to
+// renderer_host/media, and therefore this test must live here and not in
+// media/capture/video.
 class VideoCaptureDeviceClientTest : public ::testing::Test {
  public:
   VideoCaptureDeviceClientTest()

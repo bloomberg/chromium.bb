@@ -4,7 +4,7 @@
 
 // Unit test for VideoCaptureBufferPool.
 
-#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
+#include "media/capture/video/video_capture_buffer_pool.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -24,9 +24,10 @@
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/display_compositor/buffer_queue.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_handle.h"
+#include "content/browser/renderer_host/media/video_capture_buffer_tracker_factory_impl.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "media/base/video_frame.h"
+#include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,6 +49,10 @@ static const PixelFormatAndStorage kCapturePixelFormatAndStorages[] = {
 
 static const int kTestBufferPoolSize = 3;
 
+// Note that this test does not exercise the class VideoCaptureBufferPool
+// in isolation. The "unit under test" is an instance of VideoCaptureBufferPool
+// with some context that is specific to renderer_host/media, and therefore
+// this test must live here and not in media/capture/video.
 class VideoCaptureBufferPoolTest
     : public testing::TestWithParam<PixelFormatAndStorage> {
  protected:
@@ -119,8 +124,8 @@ class VideoCaptureBufferPoolTest
   // This is a generic Buffer tracker
   class Buffer {
    public:
-    Buffer(const scoped_refptr<VideoCaptureBufferPool> pool,
-           std::unique_ptr<VideoCaptureBufferHandle> buffer_handle,
+    Buffer(const scoped_refptr<media::VideoCaptureBufferPool> pool,
+           std::unique_ptr<media::VideoCaptureBufferHandle> buffer_handle,
            int id)
         : id_(id), pool_(pool), buffer_handle_(std::move(buffer_handle)) {}
     ~Buffer() { pool_->RelinquishProducerReservation(id()); }
@@ -130,13 +135,15 @@ class VideoCaptureBufferPoolTest
 
    private:
     const int id_;
-    const scoped_refptr<VideoCaptureBufferPool> pool_;
-    const std::unique_ptr<VideoCaptureBufferHandle> buffer_handle_;
+    const scoped_refptr<media::VideoCaptureBufferPool> pool_;
+    const std::unique_ptr<media::VideoCaptureBufferHandle> buffer_handle_;
   };
 
   VideoCaptureBufferPoolTest()
       : expected_dropped_id_(0),
-        pool_(new VideoCaptureBufferPoolImpl(kTestBufferPoolSize)) {}
+        pool_(new media::VideoCaptureBufferPoolImpl(
+            base::MakeUnique<VideoCaptureBufferTrackerFactoryImpl>(),
+            kTestBufferPoolSize)) {}
 
 #if !defined(OS_ANDROID)
   void SetUp() override {
@@ -161,11 +168,11 @@ class VideoCaptureBufferPoolTest
     const int buffer_id = pool_->ReserveForProducer(
         dimensions, format_and_storage.pixel_format,
         format_and_storage.pixel_storage, &buffer_id_to_drop);
-    if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+    if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
       return std::unique_ptr<Buffer>();
     EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
 
-    std::unique_ptr<VideoCaptureBufferHandle> buffer_handle =
+    std::unique_ptr<media::VideoCaptureBufferHandle> buffer_handle =
         pool_->GetBufferHandle(buffer_id);
     return std::unique_ptr<Buffer>(
         new Buffer(pool_, std::move(buffer_handle), buffer_id));
@@ -177,7 +184,7 @@ class VideoCaptureBufferPoolTest
     const int buffer_id = pool_->ResurrectLastForProducer(
         dimensions, format_and_storage.pixel_format,
         format_and_storage.pixel_storage);
-    if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+    if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
       return std::unique_ptr<Buffer>();
     return std::unique_ptr<Buffer>(
         new Buffer(pool_, pool_->GetBufferHandle(buffer_id), buffer_id));
@@ -185,7 +192,7 @@ class VideoCaptureBufferPoolTest
 
   base::MessageLoop loop_;
   int expected_dropped_id_;
-  scoped_refptr<VideoCaptureBufferPool> pool_;
+  scoped_refptr<media::VideoCaptureBufferPool> pool_;
 
  private:
 #if !defined(OS_ANDROID)
@@ -204,7 +211,7 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
       size_hi, 0.0, GetParam().pixel_format, GetParam().pixel_storage);
 
   // Reallocation won't happen for the first part of the test.
-  ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
+  ExpectDroppedId(media::VideoCaptureBufferPool::kInvalidId);
 
   // The buffer pool should have zero utilization before any buffers have been
   // reserved.
@@ -334,7 +341,7 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   ASSERT_EQ(3.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
   void* const memory_pointer_hi = buffer2->data();
   buffer2.reset();  // Frees it.
-  ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
+  ExpectDroppedId(media::VideoCaptureBufferPool::kInvalidId);
   ASSERT_EQ(2.0 / kTestBufferPoolSize, pool_->GetBufferPoolUtilization());
   buffer2 = ReserveBuffer(size_lo, GetParam());
   void* const memory_pointer_lo = buffer2->data();
@@ -369,7 +376,7 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
 // Tests that a previously-released buffer can be immediately resurrected under
 // normal conditions.
 TEST_P(VideoCaptureBufferPoolTest, ResurrectsLastBuffer) {
-  ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
+  ExpectDroppedId(media::VideoCaptureBufferPool::kInvalidId);
 
   // At the start, there should be nothing to resurrect.
   std::unique_ptr<Buffer> resurrected =
@@ -413,7 +420,7 @@ TEST_P(VideoCaptureBufferPoolTest, ResurrectsLastBuffer) {
 
 // Tests that a buffer cannot be resurrected if its properties do not match.
 TEST_P(VideoCaptureBufferPoolTest, DoesNotResurrectIfPropertiesNotMatched) {
-  ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
+  ExpectDroppedId(media::VideoCaptureBufferPool::kInvalidId);
 
   // Reserve a 10x10 buffer, fill it with 0xcd values, and release it.
   std::unique_ptr<Buffer> original =
@@ -463,7 +470,7 @@ TEST_P(VideoCaptureBufferPoolTest, DoesNotResurrectIfPropertiesNotMatched) {
 // Tests that the buffers are managed by the pool such that the last-released
 // buffer is kept around as long as possible (for successful resurrection).
 TEST_P(VideoCaptureBufferPoolTest, AvoidsClobberingForResurrectingLastBuffer) {
-  ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
+  ExpectDroppedId(media::VideoCaptureBufferPool::kInvalidId);
 
   // Reserve a 10x10 buffer, fill it with 0xde values, and release it.
   std::unique_ptr<Buffer> original =

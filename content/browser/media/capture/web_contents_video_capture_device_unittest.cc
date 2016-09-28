@@ -20,8 +20,7 @@
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_handle.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
+#include "content/browser/renderer_host/media/video_capture_buffer_tracker_factory_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -38,6 +37,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "media/base/yuv_convert.h"
+#include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "skia/ext/platform_canvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -333,7 +333,8 @@ class StubClient : public media::VideoCaptureDevice::Client {
       const base::Closure& error_callback)
       : report_callback_(report_callback),
         error_callback_(error_callback) {
-    buffer_pool_ = new VideoCaptureBufferPoolImpl(2);
+    buffer_pool_ = new media::VideoCaptureBufferPoolImpl(
+        base::MakeUnique<VideoCaptureBufferTrackerFactoryImpl>(), 2);
   }
   ~StubClient() override {}
 
@@ -352,10 +353,11 @@ class StubClient : public media::VideoCaptureDevice::Client {
                       media::VideoPixelFormat format,
                       media::VideoPixelStorage storage) override {
     CHECK_EQ(format, media::PIXEL_FORMAT_I420);
-    int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;  // Ignored.
+    int buffer_id_to_drop =
+        media::VideoCaptureBufferPool::kInvalidId;  // Ignored.
     const int buffer_id = buffer_pool_->ReserveForProducer(
         dimensions, format, storage, &buffer_id_to_drop);
-    if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+    if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
       return NULL;
 
     return std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>(
@@ -406,7 +408,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
     CHECK_EQ(format, media::PIXEL_FORMAT_I420);
     const int buffer_id =
         buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
-    if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+    if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
       return nullptr;
     return std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>(
         new AutoReleaseBuffer(
@@ -423,9 +425,10 @@ class StubClient : public media::VideoCaptureDevice::Client {
  private:
   class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
    public:
-    AutoReleaseBuffer(const scoped_refptr<VideoCaptureBufferPool>& pool,
-                      std::unique_ptr<VideoCaptureBufferHandle> buffer_handle,
-                      int buffer_id)
+    AutoReleaseBuffer(
+        const scoped_refptr<media::VideoCaptureBufferPool>& pool,
+        std::unique_ptr<media::VideoCaptureBufferHandle> buffer_handle,
+        int buffer_id)
         : id_(buffer_id),
           pool_(pool),
           buffer_handle_(std::move(buffer_handle)) {
@@ -450,11 +453,11 @@ class StubClient : public media::VideoCaptureDevice::Client {
     ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
 
     const int id_;
-    const scoped_refptr<VideoCaptureBufferPool> pool_;
-    const std::unique_ptr<VideoCaptureBufferHandle> buffer_handle_;
+    const scoped_refptr<media::VideoCaptureBufferPool> pool_;
+    const std::unique_ptr<media::VideoCaptureBufferHandle> buffer_handle_;
   };
 
-  scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
+  scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
   base::Callback<void(SkColor, const gfx::Size&)> report_callback_;
   base::Closure error_callback_;
 

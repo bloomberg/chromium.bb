@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_DEVICE_CLIENT_H_
-#define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_DEVICE_CLIENT_H_
+#ifndef MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_DEVICE_CLIENT_H_
+#define MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_DEVICE_CLIENT_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,10 +13,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/content_export.h"
+#include "media/capture/capture_export.h"
 #include "media/capture/video/video_capture_device.h"
 
-namespace content {
+namespace media {
 class VideoCaptureBufferPool;
 class VideoFrameReceiver;
 class VideoCaptureJpegDecoder;
@@ -39,7 +39,7 @@ using VideoCaptureJpegDecoderFactoryCB =
 // GpuMemoryBuffers into Texture backed VideoFrames. This class creates and
 // manages the necessary entities to interact with the GPU process, notably an
 // offscreen Context to avoid janking the UI thread.
-class CONTENT_EXPORT VideoCaptureDeviceClient
+class CAPTURE_EXPORT VideoCaptureDeviceClient
     : public media::VideoCaptureDevice::Client,
       public base::SupportsWeakPtr<VideoCaptureDeviceClient> {
  public:
@@ -125,7 +125,6 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceClient);
 };
 
+}  // namespace media
 
-}  // namespace content
-
-#endif  // CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_DEVICE_CLIENT_H_
+#endif  // MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_DEVICE_CLIENT_H_

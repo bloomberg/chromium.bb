@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/video_capture_buffer_tracker_factory.h"
+#include "content/browser/renderer_host/media/video_capture_buffer_tracker_factory_impl.h"
 
 #include "base/memory/ptr_util.h"
 
@@ -11,9 +11,8 @@
 
 namespace content {
 
-// static
-std::unique_ptr<VideoCaptureBufferTracker>
-VideoCaptureBufferTrackerFactory::CreateTracker(
+std::unique_ptr<media::VideoCaptureBufferTracker>
+VideoCaptureBufferTrackerFactoryImpl::CreateTracker(
     media::VideoPixelStorage storage) {
   switch (storage) {
     case media::PIXEL_STORAGE_GPUMEMORYBUFFER:
@@ -22,7 +21,7 @@ VideoCaptureBufferTrackerFactory::CreateTracker(
       return base::MakeUnique<SharedMemoryBufferTracker>();
   }
   NOTREACHED();
-  return std::unique_ptr<VideoCaptureBufferTracker>();
+  return std::unique_ptr<media::VideoCaptureBufferTracker>();
 }
 
 }  // namespace content

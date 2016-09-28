@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/video_capture_buffer_pool.h"
+#include "media/capture/video/video_capture_buffer_pool_impl.h"
 
 #include <memory>
 
@@ -10,17 +10,19 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_handle.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_tracker.h"
-#include "content/browser/renderer_host/media/video_capture_buffer_tracker_factory.h"
+#include "media/capture/video/video_capture_buffer_handle.h"
+#include "media/capture/video/video_capture_buffer_tracker.h"
 #include "ui/gfx/buffer_format_util.h"
 
-namespace content {
+namespace media {
 
-VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(int count)
+VideoCaptureBufferPoolImpl::VideoCaptureBufferPoolImpl(
+    std::unique_ptr<VideoCaptureBufferTrackerFactory> buffer_tracker_factory,
+    int count)
     : count_(count),
       next_buffer_id_(0),
-      last_relinquished_buffer_id_(kInvalidId) {
+      last_relinquished_buffer_id_(kInvalidId),
+      buffer_tracker_factory_(std::move(buffer_tracker_factory)) {
   DCHECK_GT(count, 0);
 }
 
@@ -236,7 +238,7 @@ int VideoCaptureBufferPoolImpl::ReserveForProducerInternal(
   const int buffer_id = next_buffer_id_++;
 
   std::unique_ptr<VideoCaptureBufferTracker> tracker =
-      VideoCaptureBufferTrackerFactory::CreateTracker(storage_type);
+      buffer_tracker_factory_->CreateTracker(storage_type);
   // TODO(emircan): We pass the lock here to solve GMB allocation issue, see
   // crbug.com/545238.
   if (!tracker->Init(dimensions, pixel_format, storage_type, &lock_)) {
@@ -256,4 +258,4 @@ VideoCaptureBufferTracker* VideoCaptureBufferPoolImpl::GetTracker(
   return (it == trackers_.end()) ? NULL : it->second;
 }
 
-}  // namespace content
+}  // namespace media

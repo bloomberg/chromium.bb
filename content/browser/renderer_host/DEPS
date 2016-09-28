@@ -3,7 +3,6 @@ include_rules = [
   "+components/display_compositor",
   "+services/ui/public",
   "+third_party/zlib",
-  "+third_party/libyuv",
 
   # The renderer_host files should only call upwards in the layering via the
   # delegate interfaces.
