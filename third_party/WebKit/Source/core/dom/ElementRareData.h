@@ -92,25 +92,9 @@ public:
     NamedNodeMap* attributeMap() const { return m_attributeMap.get(); }
     void setAttributeMap(NamedNodeMap* attributeMap) { m_attributeMap = attributeMap; }
 
-    ComputedStyle* computedStyle() const
-    {
-        DCHECK(!(layoutObject() && m_computedStyle));
-        if (layoutObject())
-            return layoutObject()->mutableStyle();
-        return m_computedStyle.get();
-    }
-    void setComputedStyle(PassRefPtr<ComputedStyle> computedStyle)
-    {
-        if (layoutObject())
-            layoutObject()->setStyleInternal(std::move(computedStyle));
-        else
-            m_computedStyle = computedStyle;
-    }
-    void clearComputedStyleIfNoLayoutObject()
-    {
-        DCHECK(!(layoutObject() && m_computedStyle));
-        m_computedStyle = nullptr;
-    }
+    ComputedStyle* computedStyle() const { return m_computedStyle.get(); }
+    void setComputedStyle(PassRefPtr<ComputedStyle> computedStyle) { m_computedStyle = computedStyle; }
+    void clearComputedStyle() { m_computedStyle = nullptr; }
 
     ClassList* classList() const { return m_classList.get(); }
     void setClassList(ClassList* classList) { m_classList = classList; }

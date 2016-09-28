@@ -1562,7 +1562,7 @@ void Element::attachLayoutTree(const AttachContext& context)
     // need to clear any state that's been added since then.
     if (hasRareData() && getStyleChangeType() == NeedsReattachStyleChange) {
         ElementRareData* data = elementRareData();
-        data->clearComputedStyleIfNoLayoutObject();
+        data->clearComputedStyle();
     }
 
     if (!isSlotOrActiveInsertionPoint())
@@ -1608,7 +1608,7 @@ void Element::detachLayoutTree(const AttachContext& context)
 
         // attachLayoutTree() will clear the computed style for us when inside recalcStyle.
         if (!document().inStyleRecalc())
-            data->clearComputedStyleIfNoLayoutObject();
+            data->clearComputedStyle();
 
         if (ElementAnimations* elementAnimations = data->elementAnimations()) {
             if (context.performingReattach) {
@@ -1738,7 +1738,7 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
         if (hasRareData()) {
             ElementRareData* data = elementRareData();
             if (change != IndependentInherit)
-                data->clearComputedStyleIfNoLayoutObject();
+                data->clearComputedStyle();
 
             if (change >= IndependentInherit) {
                 if (ElementAnimations* elementAnimations = data->elementAnimations())

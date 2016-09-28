@@ -1004,7 +1004,6 @@ source_set("unit_tests") {
     "dom/DOMMatrixTest.cpp",
     "dom/DocumentStatisticsCollectorTest.cpp",
     "dom/DocumentTest.cpp",
-    "dom/ElementRareDataTest.cpp",
     "dom/ElementTest.cpp",
     "dom/ExecutionContextTaskTest.cpp",
     "dom/MainThreadTaskRunnerTest.cpp",
