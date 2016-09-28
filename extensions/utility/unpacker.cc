@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <set>
 #include <tuple>
 #include <utility>
@@ -46,6 +47,12 @@ namespace keys = manifest_keys;
 
 // A limit to stop us passing dangerously large canvases to the browser.
 const int kMaxImageCanvas = 4096 * 4096;
+
+static const base::FilePath::StringType kAllowedThemeFiletypes[] = {
+    FILE_PATH_LITERAL(".bmp"),  FILE_PATH_LITERAL(".gif"),
+    FILE_PATH_LITERAL(".jpeg"), FILE_PATH_LITERAL(".jpg"),
+    FILE_PATH_LITERAL(".json"), FILE_PATH_LITERAL(".png"),
+    FILE_PATH_LITERAL(".webp")};
 
 SkBitmap DecodeImage(const base::FilePath& path) {
   // Read the file from disk.
@@ -116,29 +123,50 @@ Unpacker::~Unpacker() {
 }
 
 // static
-bool Unpacker::ShouldExtractFile(const base::FilePath& file_path) {
+bool Unpacker::ShouldExtractFile(bool is_theme,
+                                 const base::FilePath& file_path) {
+  if (is_theme) {
+    const base::FilePath::StringType extension =
+        base::ToLowerASCII(file_path.FinalExtension());
+    // Allow filenames with no extension.
+    if (extension.empty())
+      return true;
+    return std::find(kAllowedThemeFiletypes,
+                     kAllowedThemeFiletypes + arraysize(kAllowedThemeFiletypes),
+                     extension) !=
+           (kAllowedThemeFiletypes + arraysize(kAllowedThemeFiletypes));
+  }
   return !base::FilePath::CompareEqualIgnoreCase(file_path.FinalExtension(),
                                                  FILE_PATH_LITERAL(".exe"));
 }
 
-std::unique_ptr<base::DictionaryValue> Unpacker::ReadManifest() {
-  base::FilePath manifest_path = extension_dir_.Append(kManifestFilename);
+// static
+bool Unpacker::IsManifestFile(const base::FilePath& file_path) {
+  CHECK(!file_path.IsAbsolute());
+  return base::FilePath::CompareEqualIgnoreCase(file_path.value(),
+                                                kManifestFilename);
+}
+
+// static
+std::unique_ptr<base::DictionaryValue> Unpacker::ReadManifest(
+    const base::FilePath& extension_dir,
+    std::string* error) {
+  DCHECK(error);
+  base::FilePath manifest_path = extension_dir.Append(kManifestFilename);
   if (!base::PathExists(manifest_path)) {
-    SetError(errors::kInvalidManifest);
-    return NULL;
+    *error = errors::kInvalidManifest;
+    return nullptr;
   }
 
   JSONFileValueDeserializer deserializer(manifest_path);
-  std::string error;
-  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
+  std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, error);
   if (!root.get()) {
-    SetError(error);
-    return NULL;
+    return nullptr;
   }
 
   if (!root->IsType(base::Value::TYPE_DICTIONARY)) {
-    SetError(errors::kInvalidManifest);
-    return NULL;
+    *error = errors::kInvalidManifest;
+    return nullptr;
   }
 
   return base::DictionaryValue::From(std::move(root));
@@ -170,11 +198,13 @@ bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
 
 bool Unpacker::Run() {
   // Parse the manifest.
-  parsed_manifest_ = ReadManifest();
-  if (!parsed_manifest_.get())
-    return false;  // Error was already reported.
-
   std::string error;
+  parsed_manifest_ = ReadManifest(extension_dir_, &error);
+  if (!parsed_manifest_.get()) {
+    SetError(error);
+    return false;
+  }
+
   scoped_refptr<Extension> extension(
       Extension::Create(extension_dir_, location_, *parsed_manifest_,
                         creation_flags_, extension_id_, &error));
