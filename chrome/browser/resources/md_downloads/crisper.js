@@ -7026,9 +7026,5 @@ cr.define('downloads', function() {
 // found in the LICENSE file.
 window.addEventListener('load', function() {
   downloads.Manager.onLoad();
-  if (!cr.isChromeOS) {
-    new FontFace('Roboto', "local('Roboto Bold'), local('Roboto-Bold'), " + "url(chrome://resources/roboto/roboto-bold.woff2) format('woff2')", {
-      weight: 'bold'
-    }).load();
-  }
+  document.fonts.load('bold 12px Roboto');
 });
