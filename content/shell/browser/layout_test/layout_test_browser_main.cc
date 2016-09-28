@@ -146,6 +146,7 @@ int LayoutTestBrowserMain(
   exit_code = RunTests(main_runner);
   base::RunLoop().RunUntilIdle();
 
+  content::Shell::CloseAllWindows();
 #if !defined(OS_ANDROID)
   main_runner->Shutdown();
 #endif
