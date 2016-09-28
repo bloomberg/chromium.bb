@@ -1502,7 +1502,7 @@ static void encode_dering(int level, struct aom_write_bit_buffer *wb) {
 static void write_delta_q(struct aom_write_bit_buffer *wb, int delta_q) {
   if (delta_q != 0) {
     aom_wb_write_bit(wb, 1);
-    aom_wb_write_inv_signed_literal(wb, delta_q, CONFIG_MISC_FIXES ? 6 : 4);
+    aom_wb_write_inv_signed_literal(wb, delta_q, 6);
   } else {
     aom_wb_write_bit(wb, 0);
   }
