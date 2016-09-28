@@ -17,6 +17,37 @@ function update_sensor_reading(buffer) {
   buffer[1] = kDefaultReadingValue;
 }
 
+test(() => assert_throws(
+    new RangeError(),
+    () => new AmbientLightSensor({frequency: -60})),
+    'Test that negative frequency causes exception from constructor.');
+
+sensor_test(sensor => {
+  let ambientLightSensor = new AmbientLightSensor({frequency: 560});
+  ambientLightSensor.start();
+
+  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+      .then(mockSensor => { return mockSensor.addConfigurationCalled(); })
+      .then(mockSensor => {
+         return new Promise((resolve, reject) => {
+          ambientLightSensor.onstatechange = event => {
+            if (ambientLightSensor.state === 'idle') {
+              resolve(mockSensor);
+            }
+
+            if (ambientLightSensor.state === 'active') {
+              let configuration = mockSensor.active_sensor_configurations_[0];
+              assert_equals(configuration.frequency, 60);
+              ambientLightSensor.stop();
+            }
+          };
+        });
+      })
+      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+  return testPromise;
+}, 'Test that frequency is capped to 60.0 Hz.');
+
 sensor_test(sensor => {
   let ambientLightSensor = new AmbientLightSensor({frequency: 60});
   ambientLightSensor.start();

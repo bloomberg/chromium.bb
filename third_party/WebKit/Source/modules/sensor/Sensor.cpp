@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
 #include "modules/sensor/SensorErrorEvent.h"
 #include "modules/sensor/SensorPollingStrategy.h"
@@ -17,15 +18,42 @@ using namespace device::mojom::blink;
 
 namespace blink {
 
-Sensor::Sensor(ExecutionContext* executionContext, const SensorOptions& sensorOptions, SensorType type)
+Sensor::Sensor(ScriptState* scriptState, const SensorOptions& sensorOptions, ExceptionState& exceptionState, SensorType type)
     : ActiveScriptWrappable(this)
-    , ContextLifecycleObserver(executionContext)
-    , PageVisibilityObserver(toDocument(executionContext)->page())
+    , ContextLifecycleObserver(scriptState->getExecutionContext())
+    , PageVisibilityObserver(toDocument(scriptState->getExecutionContext())->page())
     , m_sensorOptions(sensorOptions)
     , m_type(type)
     , m_state(Sensor::SensorState::IDLE)
     , m_storedData()
 {
+    // Check secure context.
+    String errorMessage;
+    if (!scriptState->getExecutionContext()->isSecureContext(errorMessage)) {
+        exceptionState.throwDOMException(SecurityError, errorMessage);
+        return;
+    }
+
+    // Check top-level browsing context.
+    if (!scriptState->domWindow() || !scriptState->domWindow()->frame() || !scriptState->domWindow()->frame()->isMainFrame()) {
+        exceptionState.throwSecurityError("Must be in a top-level browsing context");
+        return;
+    }
+
+    // Check the given frequency value.
+    if (m_sensorOptions.hasFrequency()) {
+        double frequency = m_sensorOptions.frequency();
+        if (frequency <= 0.0) {
+            exceptionState.throwRangeError("Frequency must be positive.");
+            return;
+        }
+
+        if (frequency > SensorConfiguration::kMaxAllowedFrequency) {
+            m_sensorOptions.setFrequency(SensorConfiguration::kMaxAllowedFrequency);
+            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, InfoMessageLevel, "Frequency is limited to 60 Hz.");
+            scriptState->getExecutionContext()->addConsoleMessage(consoleMessage);
+        }
+    }
 }
 
 Sensor::~Sensor() = default;

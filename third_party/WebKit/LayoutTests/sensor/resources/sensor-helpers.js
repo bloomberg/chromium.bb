@@ -49,10 +49,6 @@ function sensor_mocks(mojo) {
       addConfiguration(configuration) {
         assert_not_equals(configuration, null, "Invalid sensor configuration.");
 
-        if (this.add_configuration_called_ != null) {
-          this.add_configuration_called_(this);
-        }
-
         if (!this.start_should_fail_ && this.update_reading_function_ != null) {
           let timeout = (1 / configuration.frequency) * 1000;
           this.sensor_reading_timer_id_ = window.setTimeout(() => {
@@ -61,9 +57,12 @@ function sensor_mocks(mojo) {
               this.client_.sensorReadingChanged();
             }
           }, timeout);
-
-          this.active_sensor_configurations_.push(configuration);
         }
+
+        this.active_sensor_configurations_.push(configuration);
+
+        if (this.add_configuration_called_ != null)
+          this.add_configuration_called_(this);
 
         return sensorResponse(!this.start_should_fail_);
       }

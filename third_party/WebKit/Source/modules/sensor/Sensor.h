@@ -64,7 +64,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    Sensor(ExecutionContext*, const SensorOptions&, device::mojom::blink::SensorType);
+    Sensor(ScriptState*, const SensorOptions&, ExceptionState&, device::mojom::blink::SensorType);
     virtual SensorReading* createSensorReading(SensorProxy*) = 0;
 
     using SensorConfigurationPtr = device::mojom::blink::SensorConfigurationPtr;

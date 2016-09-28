@@ -13,7 +13,7 @@ bool StructTraits<device::mojom::SensorConfigurationDataView,
          device::PlatformSensorConfiguration* out) {
   // Maximum allowed frequency is capped to 60Hz.
   if (data.frequency() >
-          device::PlatformSensorConfiguration::kMaxAllowedFrequency ||
+          device::mojom::SensorConfiguration::kMaxAllowedFrequency ||
       data.frequency() <= 0.0) {
     return false;
   }

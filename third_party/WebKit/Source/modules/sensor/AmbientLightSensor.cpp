@@ -13,19 +13,19 @@ using device::mojom::blink::SensorType;
 namespace blink {
 
 // static
-AmbientLightSensor* AmbientLightSensor::create(ExecutionContext* context, const SensorOptions& sensorOptions)
+AmbientLightSensor* AmbientLightSensor::create(ScriptState* scriptState, const SensorOptions& options, ExceptionState& exceptionState)
 {
-    return new AmbientLightSensor(context, sensorOptions);
+    return new AmbientLightSensor(scriptState, options, exceptionState);
 }
 
 // static
-AmbientLightSensor* AmbientLightSensor::create(ExecutionContext* context)
+AmbientLightSensor* AmbientLightSensor::create(ScriptState* scriptState, ExceptionState& exceptionState)
 {
-    return create(context, SensorOptions());
+    return create(scriptState, SensorOptions(), exceptionState);
 }
 
-AmbientLightSensor::AmbientLightSensor(ExecutionContext* executionContext, const SensorOptions& sensorOptions)
-    : Sensor(executionContext, sensorOptions, SensorType::AMBIENT_LIGHT)
+AmbientLightSensor::AmbientLightSensor(ScriptState* scriptState, const SensorOptions& options, ExceptionState& exceptionState)
+    : Sensor(scriptState, options, exceptionState, SensorType::AMBIENT_LIGHT)
 {
 }
 

@@ -8,7 +8,8 @@
 [
     RuntimeEnabled=Sensor,
     Constructor(optional SensorOptions sensorOptions),
-    ConstructorCallWith=ExecutionContext,
+    ConstructorCallWith=ScriptState,
+    RaisesException=Constructor,
 ] interface AmbientLightSensor : Sensor {
     readonly attribute AmbientLightSensorReading? reading;
 };

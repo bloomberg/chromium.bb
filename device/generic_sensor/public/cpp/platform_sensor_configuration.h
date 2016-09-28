@@ -22,14 +22,8 @@ class PlatformSensorConfiguration {
   // used to compare two configurations.
   virtual bool operator>(const PlatformSensorConfiguration& other) const;
 
-  void set_frequency(double frequency) {
-    DCHECK(frequency_ <= kMaxAllowedFrequency && frequency_ > 0.0);
-    frequency_ = frequency;
-  }
-
+  void set_frequency(double frequency);
   double frequency() const { return frequency_; }
-
-  static constexpr double kMaxAllowedFrequency = 60.0;
 
  private:
   double frequency_ = 1.0;  // 1 Hz by default.

@@ -14,15 +14,15 @@ class AmbientLightSensorReading;
 class AmbientLightSensor final : public Sensor {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AmbientLightSensor* create(ExecutionContext*, const SensorOptions&);
-    static AmbientLightSensor* create(ExecutionContext*);
+    static AmbientLightSensor* create(ScriptState*, const SensorOptions&, ExceptionState&);
+    static AmbientLightSensor* create(ScriptState*, ExceptionState&);
 
     AmbientLightSensorReading* reading() const;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    AmbientLightSensor(ExecutionContext*, const SensorOptions&);
+    AmbientLightSensor(ScriptState*, const SensorOptions&, ExceptionState&);
     // Sensor overrides.
     SensorReading* createSensorReading(SensorProxy*) override;
     SensorConfigurationPtr createSensorConfig(const SensorOptions&, const SensorConfiguration& defaultConfig) override;
