@@ -112,6 +112,16 @@ source_set("web_arc") {
     "webui/url_data_manager_ios_backend.h",
     "webui/url_data_manager_ios_backend.mm",
     "webui/url_data_source_ios.mm",
+    "webui/url_data_source_ios_impl.cc",
+    "webui/url_data_source_ios_impl.h",
+    "webui/url_fetcher_block_adapter.h",
+    "webui/url_fetcher_block_adapter.mm",
+    "webui/web_ui_ios_controller_factory_registry.cc",
+    "webui/web_ui_ios_controller_factory_registry.h",
+    "webui/web_ui_ios_data_source_impl.h",
+    "webui/web_ui_ios_data_source_impl.mm",
+    "webui/web_ui_ios_impl.h",
+    "webui/web_ui_ios_impl.mm",
   ]
 
   libs = [ "WebKit.framework" ]
@@ -282,16 +292,6 @@ source_set("web") {
     "web_state/web_view_internal_creation_util.mm",
     "web_state/wk_web_view_security_util.h",
     "web_state/wk_web_view_security_util.mm",
-    "webui/url_data_source_ios_impl.cc",
-    "webui/url_data_source_ios_impl.h",
-    "webui/url_fetcher_block_adapter.h",
-    "webui/url_fetcher_block_adapter.mm",
-    "webui/web_ui_ios_controller_factory_registry.cc",
-    "webui/web_ui_ios_controller_factory_registry.h",
-    "webui/web_ui_ios_data_source_impl.h",
-    "webui/web_ui_ios_data_source_impl.mm",
-    "webui/web_ui_ios_impl.h",
-    "webui/web_ui_ios_impl.mm",
   ]
 
   libs = [ "WebKit.framework" ]
