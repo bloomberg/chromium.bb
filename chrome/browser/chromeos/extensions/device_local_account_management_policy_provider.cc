@@ -37,6 +37,7 @@ const char* const kPublicSessionWhitelist[] = {
     "ngjnkanfphagcaokhjecbgkboelgfcnf",  // Print button
     "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
     "cjanmonomjogheabiocdamfpknlpdehm",  // HP printer driver
+    "ioofdkhojeeimmagbjbknkejkgbphdfl",  // RICOH Print for Chrome
     "pmnllmkmjilbojkpgplbdmckghmaocjh",  // Scan app by François Beaufort
     "khpfeaanjngmcnplbdlpegiifgpfgdco",  // Smart Card Connector App
     "haeblkpifdemlfnkogkipmghfcbonief",  // Charismathics Smart Card Middleware
