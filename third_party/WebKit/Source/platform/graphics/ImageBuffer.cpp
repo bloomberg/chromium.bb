@@ -438,16 +438,18 @@ void ImageBuffer::disableAcceleration()
     if (!isAccelerated())
         return;
 
-    // Get current frame.
-    SkImage* image = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint).get();
+    sk_sp<SkImage> image = m_surface->newImageSnapshot(PreferNoAcceleration, SnapshotReasonPaint);
+    // Using a GPU-backed image with RecordingImageBufferSurface
+    // will fail at playback time.
+    image = image->makeNonTextureImage();
 
     // Create and configure a recording (unaccelerated) surface.
     std::unique_ptr<RecordingImageBufferFallbackSurfaceFactory> surfaceFactory = wrapUnique(new UnacceleratedSurfaceFactory());
     std::unique_ptr<ImageBufferSurface> surface = wrapUnique(new RecordingImageBufferSurface(m_surface->size(), std::move(surfaceFactory), m_surface->getOpacityMode(), m_surface->colorSpace()));
-    surface->canvas()->drawImage(image, 0, 0);
+    surface->canvas()->drawImage(image.get(), 0, 0);
     surface->setImageBuffer(this);
-
-    // Replace the current surface with the new surface.
+    if (m_client)
+        m_client->restoreCanvasMatrixClipStack(surface->canvas());
     m_surface = std::move(surface);
 
     didDisableAcceleration();

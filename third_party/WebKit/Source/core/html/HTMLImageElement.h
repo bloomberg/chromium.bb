@@ -103,6 +103,7 @@ public:
     FloatSize elementSize(const FloatSize&) const override;
     FloatSize defaultDestinationSize(const FloatSize&) const override;
     const KURL& sourceURL() const override;
+    bool isAccelerated() const override { return false; }
     bool isOpaque() const override;
     int sourceWidth() override;
     int sourceHeight() override;

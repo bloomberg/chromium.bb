@@ -67,6 +67,16 @@ enum {
 
     GetImageDataForcesNoAcceleration = 1,
 
+    // When drawing very large images to canvases, there is a point where
+    // GPU acceleration becomes inefficient due to texture upload overhead,
+    // especially when the image is large enough that it is likely to
+    // monopolize the texture cache, and when it is being downsized to the
+    // point that few of the upload texels are actually sampled. When both
+    // of these conditions are met, we disable acceleration.
+    DrawImageTextureUploadSoftSizeLimit = 4096 * 4096,
+    DrawImageTextureUploadSoftSizeLimitScaleThreshold = 4,
+    DrawImageTextureUploadHardSizeLimit = 8192 * 8192,
+
 }; // enum
 
 

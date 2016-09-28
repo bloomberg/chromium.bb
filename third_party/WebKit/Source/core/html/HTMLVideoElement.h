@@ -87,6 +87,7 @@ public:
     bool isHTMLVideoElement() const override { return true; }
     int sourceWidth() override { return videoWidth(); }
     int sourceHeight() override { return videoHeight(); }
+    bool isAccelerated() const override { return false; } // Video elements currently always go through RAM when used as a canvas image source.
 
     // ImageBitmapSource implementation
     IntSize bitmapSourceSize() const override;

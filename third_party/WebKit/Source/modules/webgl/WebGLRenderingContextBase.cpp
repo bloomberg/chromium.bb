@@ -4508,7 +4508,7 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(TexImageFunctionID fun
         return;
     ASSERT(bitmap->bitmapImage());
 
-    if (functionID != TexSubImage3D && bitmap->isTextureBacked() && canUseTexImageByGPU(functionID, internalformat, type)) {
+    if (functionID != TexSubImage3D && bitmap->isAccelerated() && canUseTexImageByGPU(functionID, internalformat, type)) {
         if (functionID == TexImage2D) {
             texImage2DBase(target, level, internalformat, bitmap->width(), bitmap->height(), 0, format, type, 0);
             texImageByGPU(TexImage2DByGPU, texture, target, level, internalformat, type, 0, 0, 0, bitmap);

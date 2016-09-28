@@ -281,6 +281,11 @@ bool HTMLCanvasElement::isPaintable() const
     return (m_context && m_context->isPaintable()) || ImageBuffer::canCreateImageBuffer(size());
 }
 
+bool HTMLCanvasElement::isAccelerated() const
+{
+    return m_context && m_context->isAccelerated();
+}
+
 void HTMLCanvasElement::didDraw(const FloatRect& rect)
 {
     if (rect.isEmpty())

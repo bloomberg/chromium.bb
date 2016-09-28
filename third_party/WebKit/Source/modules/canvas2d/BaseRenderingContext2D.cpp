@@ -964,7 +964,6 @@ void BaseRenderingContext2D::drawImageInternal(SkCanvas* c, CanvasImageSource* i
         trackDrawCall(DrawBitmapImage, nullptr, dstRect.width(), dstRect.height());
     }
 
-
     int initialSaveCount = c->getSaveCount();
     SkPaint imagePaint = *paint;
 
@@ -1073,6 +1072,26 @@ void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext, Canva
         disableDeferral(reason);
     else if (image->isTextureBacked())
         disableDeferral(DisableDeferralDrawImageWithTextureBackedSourceImage);
+
+    validateStateStack();
+
+    // Heuristic for disabling acceleration based on anticipated texture upload overhead
+    // See comments in ExpensiveCanvasHeuristicParameters.h for explanation.
+    ImageBuffer* buffer = imageBuffer();
+    if (buffer && buffer->isAccelerated() && !imageSource->isAccelerated()) {
+        float srcArea = srcRect.width() * srcRect.height();
+        if (srcArea > ExpensiveCanvasHeuristicParameters::DrawImageTextureUploadHardSizeLimit) {
+            buffer->disableAcceleration();
+        } else if (srcArea > ExpensiveCanvasHeuristicParameters::DrawImageTextureUploadSoftSizeLimit) {
+            SkRect bounds = dstRect;
+            SkMatrix ctm = drawingCanvas()->getTotalMatrix();
+            ctm.mapRect(&bounds);
+            float dstArea = dstRect.width() * dstRect.height();
+            if (srcArea > dstArea * ExpensiveCanvasHeuristicParameters::DrawImageTextureUploadSoftSizeLimitScaleThreshold) {
+                buffer->disableAcceleration();
+            }
+        }
+    }
 
     validateStateStack();
 

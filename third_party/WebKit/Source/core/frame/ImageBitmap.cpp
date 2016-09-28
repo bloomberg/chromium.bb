@@ -673,7 +673,7 @@ unsigned long ImageBitmap::height() const
     return m_image->height();
 }
 
-bool ImageBitmap::isTextureBacked() const
+bool ImageBitmap::isAccelerated() const
 {
     return m_image && (m_image->isTextureBacked() || m_image->hasMailbox());
 }

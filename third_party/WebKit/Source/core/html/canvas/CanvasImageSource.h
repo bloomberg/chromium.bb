@@ -68,6 +68,7 @@ public:
     virtual FloatSize defaultDestinationSize(const FloatSize& defaultObjectSize) const { return elementSize(defaultObjectSize); }
     virtual const KURL& sourceURL() const { return blankURL(); }
     virtual bool isOpaque() const { return false; }
+    virtual bool isAccelerated() const = 0;
 
     virtual int sourceWidth() = 0;
     virtual int sourceHeight() = 0;

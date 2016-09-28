@@ -47,6 +47,7 @@ public:
     bool wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const override { return false; }
     FloatSize elementSize(const FloatSize&) const override { return FloatSize(m_size); }
     bool isOpaque() const override { return m_isOpaque; }
+    bool isAccelerated() const { return false; }
     int sourceWidth() override { return m_size.width(); }
     int sourceHeight() override { return m_size.height(); }
 
@@ -795,6 +796,56 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration)
         EXPECT_EQ(720000, getGlobalGPUMemoryUsage());
     }
 
+    // Restore global state to prevent side-effects on other tests
+    RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(savedFixedRenderingMode);
+}
+
+TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics)
+{
+    bool savedFixedRenderingMode = RuntimeEnabledFeatures::canvas2dFixedRenderingModeEnabled();
+    RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(false);
+
+    enum TestVariants {
+        LargeTextureDisablesAcceleration = 0,
+        SmallTextureDoesNotDisableAcceleration = 1,
+
+        TestVariantCount = 2,
+    };
+
+    for (int testVariant = 0; testVariant < TestVariantCount; testVariant++) {
+        int delta = testVariant == LargeTextureDisablesAcceleration ? 1 : -1;
+        int srcSize = std::sqrt(static_cast<float>(ExpensiveCanvasHeuristicParameters::DrawImageTextureUploadSoftSizeLimit)) + delta;
+        int dstSize = srcSize / std::sqrt(static_cast<float>(ExpensiveCanvasHeuristicParameters::DrawImageTextureUploadSoftSizeLimitScaleThreshold)) - delta;
+
+        createContext(NonOpaque);
+        FakeGLES2Interface gl;
+        std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider(new FakeWebGraphicsContext3DProvider(&gl));
+        IntSize size(dstSize, dstSize);
+        RefPtr<Canvas2DLayerBridge> bridge = makeBridge(std::move(contextProvider), size, Canvas2DLayerBridge::EnableAcceleration);
+        std::unique_ptr<Canvas2DImageBufferSurface> surface(new Canvas2DImageBufferSurface(bridge, size));
+        canvasElement().createImageBufferUsingSurfaceForTesting(std::move(surface));
+
+        EXPECT_TRUE(canvasElement().buffer()->isAccelerated());
+        EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
+        // 4 bytes per pixel * 2 buffers = 8
+        EXPECT_EQ(8*dstSize*dstSize, getGlobalGPUMemoryUsage());
+        sk_sp<SkSurface> skSurface = SkSurface::MakeRasterN32Premul(srcSize, srcSize);
+        RefPtr<StaticBitmapImage> bigBitmap = StaticBitmapImage::create(skSurface->makeImageSnapshot());
+        ImageBitmap* bigImage = ImageBitmap::create(std::move(bigBitmap));
+        NonThrowableExceptionState exceptionState;
+        context2d()->drawImage(nullptr, bigImage, 0, 0, srcSize, srcSize, 0, 0, dstSize, dstSize, exceptionState);
+        EXPECT_FALSE(exceptionState.hadException());
+
+        if (testVariant == LargeTextureDisablesAcceleration) {
+            EXPECT_FALSE(canvasElement().buffer()->isAccelerated());
+            EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
+            EXPECT_EQ(0, getGlobalGPUMemoryUsage());
+        } else {
+            EXPECT_TRUE(canvasElement().buffer()->isAccelerated());
+            EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
+            EXPECT_EQ(8*dstSize*dstSize, getGlobalGPUMemoryUsage());
+        }
+    }
     // Restore global state to prevent side-effects on other tests
     RuntimeEnabledFeatures::setCanvas2dFixedRenderingModeEnabled(savedFixedRenderingMode);
 }

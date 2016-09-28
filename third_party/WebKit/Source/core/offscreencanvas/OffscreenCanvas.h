@@ -69,6 +69,7 @@ public:
     bool isOffscreenCanvas() const final { return true; }
     FloatSize elementSize(const FloatSize& defaultObjectSize) const final { return FloatSize(width(), height()); }
     bool isOpaque() const final;
+    bool isAccelerated() const final;
     int sourceWidth() final { return width(); }
     int sourceHeight() final { return height(); }
 

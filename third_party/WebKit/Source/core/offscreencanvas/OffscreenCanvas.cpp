@@ -156,6 +156,11 @@ bool OffscreenCanvas::isPaintable() const
     return m_context->isPaintable();
 }
 
+bool OffscreenCanvas::isAccelerated() const
+{
+    return m_context && m_context->isAccelerated();
+}
+
 OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher()
 {
     if (!m_frameDispatcher) {
