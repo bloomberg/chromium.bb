@@ -669,8 +669,7 @@ void CompositorImpl::OnGpuChannelEstablished(
       break;
     case ui::ContextProviderFactory::GpuChannelHostResult::
         FAILURE_GPU_PROCESS_INITIALIZATION_FAILED:
-      // TODO(khushalsagar): Retry or have a fallback path after
-      // crbug.com/643282 is resolved.
+      HandlePendingCompositorFrameSinkRequest();
       break;
     case ui::ContextProviderFactory::GpuChannelHostResult::SUCCESS:
       // We don't need the context anymore if we are invisible.
