@@ -249,7 +249,7 @@ EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::SendStartWorker(
-    std::unique_ptr<EmbeddedWorkerStartParams> params,
+    std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
     int process_id) {
   if (!context_)
     return SERVICE_WORKER_ERROR_ABORT;
@@ -269,23 +269,8 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::SendStartWorker(
   ServiceWorkerStatusCode status =
       Send(process_id, new EmbeddedWorkerMsg_StartWorker(*params));
   if (status == SERVICE_WORKER_OK)
-    BindWorkerToProcess(process_id, embedded_worker_id);
+    worker_process_map_[process_id].insert(embedded_worker_id);
   return status;
-}
-
-void EmbeddedWorkerRegistry::BindWorkerToProcess(int process_id,
-                                                 int embedded_worker_id) {
-  // The ServiceWorkerDispatcherHost is supposed to be created when the process
-  // is created, and keep an entry in process_sender_map_ for its whole
-  // lifetime.
-  DCHECK(base::ContainsKey(process_sender_map_, process_id));
-  DCHECK(GetWorker(embedded_worker_id));
-  DCHECK_EQ(GetWorker(embedded_worker_id)->process_id(), process_id);
-  DCHECK(
-      !base::ContainsKey(worker_process_map_, process_id) ||
-      !base::ContainsKey(worker_process_map_[process_id], embedded_worker_id));
-
-  worker_process_map_[process_id].insert(embedded_worker_id);
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(

@@ -288,10 +288,5 @@
     "prefix": "enable_wasm",
     "base": "http/tests/wasm",
     "args": ["--enable-wasm"]
-  },
-  {
-    "prefix": "mojo-service-worker",
-    "base": "http/tests/serviceworker",
-    "args": ["--mojo-service-worker"]
   }
 ]
