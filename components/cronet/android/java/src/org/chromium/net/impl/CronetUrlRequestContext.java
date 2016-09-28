@@ -260,7 +260,9 @@ public class CronetUrlRequestContext extends CronetEngine {
     public void startNetLogToFile(String fileName, boolean logAll) {
         synchronized (mLock) {
             checkHaveAdapter();
-            nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName, logAll);
+            if (!nativeStartNetLogToFile(mUrlRequestContextAdapter, fileName, logAll)) {
+                throw new RuntimeException("Unable to start NetLog");
+            }
             mIsLogging = true;
         }
     }
@@ -612,7 +614,7 @@ public class CronetUrlRequestContext extends CronetEngine {
     private native void nativeDestroy(long nativePtr);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
-    private native void nativeStartNetLogToFile(long nativePtr, String fileName, boolean logAll);
+    private native boolean nativeStartNetLogToFile(long nativePtr, String fileName, boolean logAll);
 
     @NativeClassQualifiedName("CronetURLRequestContextAdapter")
     private native void nativeStartNetLogToDisk(

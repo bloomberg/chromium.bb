@@ -775,7 +775,7 @@ CronetURLRequestContextAdapter::GetNetworkTaskRunner() const {
   return network_thread_->task_runner();
 }
 
-void CronetURLRequestContextAdapter::StartNetLogToFile(
+bool CronetURLRequestContextAdapter::StartNetLogToFile(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& jfile_name,
@@ -783,14 +783,14 @@ void CronetURLRequestContextAdapter::StartNetLogToFile(
   base::AutoLock lock(write_to_file_observer_lock_);
   // Do nothing if already logging to a file.
   if (write_to_file_observer_)
-    return;
+    return true;
   std::string file_name =
       base::android::ConvertJavaStringToUTF8(env, jfile_name);
   base::FilePath file_path(file_name);
   base::ScopedFILE file(base::OpenFile(file_path, "w"));
   if (!file) {
     LOG(ERROR) << "Failed to open NetLog file for writing.";
-    return;
+    return false;
   }
 
   write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
@@ -801,6 +801,8 @@ void CronetURLRequestContextAdapter::StartNetLogToFile(
   write_to_file_observer_->StartObserving(
       g_net_log.Get().net_log(), std::move(file),
       /*constants=*/nullptr, /*url_request_context=*/nullptr);
+
+  return true;
 }
 
 void CronetURLRequestContextAdapter::StartNetLogToDisk(

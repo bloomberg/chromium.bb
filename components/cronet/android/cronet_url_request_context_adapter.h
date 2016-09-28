@@ -79,8 +79,9 @@ class CronetURLRequestContextAdapter
 
   net::URLRequestContext* GetURLRequestContext();
 
-  // Starts NetLog logging to file. This can be called on any thread.
-  void StartNetLogToFile(JNIEnv* env,
+  // Starts NetLog logging to file. This can be called on any thread.  Returns
+  // false if it fails to open log file.
+  bool StartNetLogToFile(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jcaller,
                          const base::android::JavaParamRef<jstring>& jfile_name,
                          jboolean jlog_all);
