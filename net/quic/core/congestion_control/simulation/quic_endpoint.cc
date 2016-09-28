@@ -165,7 +165,7 @@ bool QuicEndpoint::HasOpenDynamicStreams() const {
 }
 
 QuicEndpoint::Writer::Writer(QuicEndpoint* endpoint)
-    : QuicDefaultPacketWriter(0), endpoint_(endpoint) {}
+    : endpoint_(endpoint), is_blocked_(false) {}
 
 QuicEndpoint::Writer::~Writer() {}
 
@@ -184,7 +184,7 @@ WriteResult QuicEndpoint::Writer::WritePacket(const char* buffer,
   // Instead of losing a packet, become write-blocked when the egress queue is
   // full.
   if (endpoint_->nic_tx_queue_.packets_queued() > kTxQueueSize) {
-    set_write_blocked(true);
+    is_blocked_ = true;
     return WriteResult(WRITE_STATUS_BLOCKED, 0);
   }
 

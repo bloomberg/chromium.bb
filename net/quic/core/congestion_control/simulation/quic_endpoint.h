@@ -92,7 +92,7 @@ class QuicEndpoint : public Endpoint,
 
  private:
   // A Writer object that writes into the |nic_tx_queue_|.
-  class Writer : public QuicDefaultPacketWriter {
+  class Writer : public QuicPacketWriter {
    public:
     explicit Writer(QuicEndpoint* endpoint);
     ~Writer() override;
@@ -102,9 +102,18 @@ class QuicEndpoint : public Endpoint,
                             const IPAddress& self_address,
                             const IPEndPoint& peer_address,
                             PerPacketOptions* options) override;
+    bool IsWriteBlockedDataBuffered() const override { return false; }
+    bool IsWriteBlocked() const override { return is_blocked_; }
+    void SetWritable() override { is_blocked_ = false; }
+    QuicByteCount GetMaxPacketSize(
+        const IPEndPoint& /*peer_address*/) const override {
+      return kMaxPacketSize;
+    }
 
    private:
     QuicEndpoint* endpoint_;
+
+    bool is_blocked_;
   };
 
   // Write stream data until |bytes_to_transfer_| is zero or the connection is
