@@ -13,13 +13,13 @@ import android.graphics.Bitmap;
 public class InstantAppsBannerData {
     private String mAppName;
     private Bitmap mAppIcon;
-    private String mHostname;
+    private String mUrl;
     private Intent mIntent;
 
-    public InstantAppsBannerData(String appName, Bitmap icon, String hostname, Intent intent) {
+    public InstantAppsBannerData(String appName, Bitmap icon, String url, Intent intent) {
         mAppName = appName;
         mAppIcon = icon;
-        mHostname = hostname;
+        mUrl = url;
         mIntent = intent;
     }
 
@@ -34,8 +34,8 @@ public class InstantAppsBannerData {
     }
 
     /** @return The host name for the URL. */
-    public String getHostname() {
-        return mHostname;
+    public String getUrl() {
+        return mUrl;
     }
 
     /** @return The intent to launch on "Open App" button click. */

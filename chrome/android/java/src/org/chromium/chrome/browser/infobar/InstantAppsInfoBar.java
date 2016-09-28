@@ -11,6 +11,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.instantapps.InstantAppsBannerData;
 import org.chromium.chrome.browser.widget.DualControlLayout;
+import org.chromium.components.url_formatter.UrlFormatter;
 
 /**
  * Infobar that asks the user whether they want to use an instant app for a particular website.
@@ -28,15 +29,14 @@ public class InstantAppsInfoBar extends ConfirmInfoBar {
     public void createContent(InfoBarLayout layout) {
         super.createContent(layout);
 
-        int launchButtonColor = ApiCompatibilityUtils.getColor(getContext().getResources(),
-                R.color.app_banner_install_button_bg);
-
         layout.setIsUsingBigIcon();
         layout.setMessage(mData.getAppName());
-        layout.getMessageLayout().addTwoLineDescription(R.drawable.instant_badge,
-                getContext().getString(R.string.instant_apps_info_bar_label), mData.getHostname());
+        layout.getMessageLayout().addDescription(
+                UrlFormatter.formatUrlForSecurityDisplay(mData.getUrl(), false));
         layout.getPrimaryButton().setText(R.string.instant_apps_open_in_app);
-        layout.getPrimaryButton().setButtonColor(launchButtonColor);
+        layout.getPrimaryButton()
+                .setButtonColor(ApiCompatibilityUtils.getColor(getContext().getResources(),
+                        R.color.app_banner_install_button_bg));
     }
 
     @Override

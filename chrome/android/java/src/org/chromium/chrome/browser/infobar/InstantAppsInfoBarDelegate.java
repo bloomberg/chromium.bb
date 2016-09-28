@@ -16,8 +16,6 @@ import org.chromium.chrome.browser.instantapps.InstantAppsBannerData;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.content_public.browser.WebContents;
 
-import java.net.URI;
-
 /**
  * Delegate for {@link InstantAppsInfoBar}. Use launch() method to display the infobar.
  */
@@ -26,16 +24,9 @@ public class InstantAppsInfoBarDelegate {
 
     private InstantAppsBannerData mData;
 
-    public static void launch(WebContents webContents, String label, Bitmap icon, Intent intent) {
-        String hostname = "";
-        try {
-            URI uri = URI.create(webContents.getUrl());
-            hostname = uri.getRawAuthority();
-        } catch (IllegalArgumentException e) {
-            // not able to parse the URL.
-        }
-        InstantAppsBannerData appsBannerData = new InstantAppsBannerData(
-                label, icon, hostname, intent);
+    public static void launch(WebContents webContents, String url, String label, Bitmap icon,
+            Intent intent) {
+        InstantAppsBannerData appsBannerData = new InstantAppsBannerData(label, icon, url, intent);
         nativeLaunch(webContents, appsBannerData);
     }
 
@@ -54,7 +45,7 @@ public class InstantAppsInfoBarDelegate {
         } catch (ActivityNotFoundException e) {
             Log.e(TAG, "No activity found to launch intent " + data.getIntent(), e);
         }
-        InstantAppsHandler.getInstance().recordDefaultOpen(data.getHostname());
+        InstantAppsHandler.getInstance().recordDefaultOpen(data.getUrl());
     }
 
     private static native void nativeLaunch(WebContents webContents, InstantAppsBannerData data);
