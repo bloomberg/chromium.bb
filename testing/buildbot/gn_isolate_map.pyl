@@ -84,7 +84,7 @@
     "args": [],
   },
   "android_junit_tests": {
-    "label": "//webrtc:android_juint_tests",
+    "label": "//webrtc:android_junit_tests",
     "type": "junit_test",
   },
   "android_webview_test_apk": {
