@@ -772,7 +772,8 @@ bool NavigationControllerImpl::PendingEntryMatchesHandle(
 bool NavigationControllerImpl::RendererDidNavigate(
     RenderFrameHostImpl* rfh,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-    LoadCommittedDetails* details) {
+    LoadCommittedDetails* details,
+    bool is_navigation_within_page) {
   is_initial_navigation_ = false;
 
   // Save the previous state before we clobber it.
@@ -799,8 +800,7 @@ bool NavigationControllerImpl::RendererDidNavigate(
   details->type = ClassifyNavigation(rfh, params);
 
   // is_in_page must be computed before the entry gets committed.
-  details->is_in_page = IsURLInPageNavigation(params.url, params.origin,
-                                              params.was_within_same_page, rfh);
+  details->is_in_page = is_navigation_within_page;
 
   switch (details->type) {
     case NAVIGATION_TYPE_NEW_PAGE:

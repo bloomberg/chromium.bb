@@ -562,8 +562,8 @@ void NavigatorImpl::DidNavigate(
 
   int old_entry_count = controller_->GetEntryCount();
   LoadCommittedDetails details;
-  bool did_navigate = controller_->RendererDidNavigate(render_frame_host,
-                                                       params, &details);
+  bool did_navigate = controller_->RendererDidNavigate(
+      render_frame_host, params, &details, is_navigation_within_page);
 
   // If the history length and/or offset changed, update other renderers in the
   // FrameTree.

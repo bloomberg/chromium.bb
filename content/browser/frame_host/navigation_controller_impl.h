@@ -149,7 +149,8 @@ class CONTENT_EXPORT NavigationControllerImpl
   bool RendererDidNavigate(
       RenderFrameHostImpl* rfh,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
-      LoadCommittedDetails* details);
+      LoadCommittedDetails* details,
+      bool is_navigation_within_page);
 
   // Notifies us that we just became active. This is used by the WebContentsImpl
   // so that we know to load URLs that were pending as "lazy" loads.
