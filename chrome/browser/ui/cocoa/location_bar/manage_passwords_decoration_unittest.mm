@@ -103,20 +103,14 @@ TEST_P(ManagePasswordsDecorationStateTest, TestState) {
   EXPECT_EQ(GetParam().visible, decoration()->IsVisible());
   NSImage* expected_image = nil;
   if (GetParam().image) {
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      // IDR_SAVE_PASSWORD_ACTIVE and IDR_SAVE_PASSWORD_INACTIVE map to
-      // gfx::VectorIconId::AUTOLOGIN in Material Design - fail the test if
-      // somehow some other value is present.
-      EXPECT_TRUE(GetParam().image == IDR_SAVE_PASSWORD_ACTIVE ||
-                  GetParam().image == IDR_SAVE_PASSWORD_INACTIVE);
-      const int kIconSize = 16;
-      expected_image = NSImageFromImageSkia(
-          gfx::CreateVectorIcon(gfx::VectorIconId::AUTOLOGIN,
-                                kIconSize,
-                                gfx::kChromeIconGrey));
-    } else {
-      expected_image = OmniboxViewMac::ImageForResource(GetParam().image);
-    }
+    // IDR_SAVE_PASSWORD_ACTIVE and IDR_SAVE_PASSWORD_INACTIVE map to
+    // gfx::VectorIconId::AUTOLOGIN in Material Design; fail the test if
+    // somehow some other value is present.
+    EXPECT_TRUE(GetParam().image == IDR_SAVE_PASSWORD_ACTIVE ||
+                GetParam().image == IDR_SAVE_PASSWORD_INACTIVE);
+    const int kIconSize = 16;
+    expected_image = NSImageFromImageSkia(gfx::CreateVectorIcon(
+        gfx::VectorIconId::AUTOLOGIN, kIconSize, gfx::kChromeIconGrey));
   }
   EXPECT_TRUE(ImagesEqual(expected_image, decoration()->GetImage()));
   EXPECT_NSEQ(GetParam().toolTip

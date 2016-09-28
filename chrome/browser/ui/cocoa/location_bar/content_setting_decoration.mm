@@ -67,11 +67,7 @@ const CGFloat kBorderPadding = 3;
 // subtracting kBorderPadding from 8px.
 const CGFloat kRightDividerPadding = 8.0;
 const CGFloat kLeftDividerPadding = 5.0;
-CGFloat DividerPadding() {
-  return ui::MaterialDesignController::IsModeMaterial()
-             ? kLeftDividerPadding + kRightDividerPadding
-             : 0.0;
-}
+const CGFloat kDividerPadding = kLeftDividerPadding + kRightDividerPadding;
 
 // Color of the vector graphic icons. Used when the location is not dark.
 // SkColorSetARGB(0xCC, 0xFF, 0xFF 0xFF);
@@ -343,7 +339,7 @@ CGFloat ContentSettingDecoration::GetWidthForSpace(CGFloat width) {
       preferred_width += kIconMarginPadding + kTextMarginPadding;
 
       // Add the width of the text based on the state of the animation.
-      CGFloat text_width = text_width_ + DividerPadding();
+      CGFloat text_width = text_width_ + kDividerPadding;
       switch (state) {
         case kOpening:
           preferred_width += text_width * kInMotionMultiplier * progress;
@@ -375,13 +371,6 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     // this ContentSettingDecoration's DrawInFrame() also draws the background.
     // In short, moving this code upstream to a common parent requires a non-
     // trivial bit of refactoring.
-    if (!ui::MaterialDesignController::IsModeMaterial()) {
-      const ui::NinePartImageIds image_ids =
-          IMAGE_GRID(IDR_OMNIBOX_CONTENT_SETTING_BUBBLE);
-      ui::DrawNinePartImage(
-          background_rect, image_ids, NSCompositeSourceOver, 1.0, true);
-    }
-
     // Draw the icon.
     NSImage* icon = GetImage();
     NSRect icon_rect = background_rect;
@@ -397,18 +386,14 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
         NSMaxX(background_rect) - NSMinX(remainder) - kLeftDividerPadding;
     DrawAttributedString(animated_text_, remainder);
 
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      NSBezierPath* line = [NSBezierPath bezierPath];
-      [line setLineWidth:1];
-      [line
-          moveToPoint:NSMakePoint(NSMaxX(background_rect) - kLeftDividerPadding,
+    NSBezierPath* line = [NSBezierPath bezierPath];
+    [line setLineWidth:1];
+    [line moveToPoint:NSMakePoint(NSMaxX(background_rect) - kLeftDividerPadding,
                                   NSMinY(background_rect))];
-      [line
-          lineToPoint:NSMakePoint(NSMaxX(background_rect) - kLeftDividerPadding,
+    [line lineToPoint:NSMakePoint(NSMaxX(background_rect) - kLeftDividerPadding,
                                   NSMaxY(background_rect))];
-      [GetDividerColor(owner_->IsLocationBarDark()) set];
-      [line stroke];
-    }
+    [GetDividerColor(owner_->IsLocationBarDark()) set];
+    [line stroke];
   } else {
     // No animation, draw the image as normal.
     ImageDecoration::DrawInFrame(frame, control_view);

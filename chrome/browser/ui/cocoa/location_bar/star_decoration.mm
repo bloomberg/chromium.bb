@@ -37,12 +37,6 @@ StarDecoration::~StarDecoration() {
 void StarDecoration::SetStarred(bool starred, bool location_bar_is_dark) {
   starred_ = starred;
   const int tip_id = starred ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    const int image_id = starred ? IDR_STAR_LIT : IDR_STAR;
-    SetImage(OmniboxViewMac::ImageForResource(image_id));
-    tooltip_.reset([l10n_util::GetNSStringWithFixup(tip_id) retain]);
-    return;
-  }
   SetImage(GetMaterialIcon(location_bar_is_dark));
   tooltip_.reset([l10n_util::GetNSStringWithFixup(tip_id) retain]);
 }

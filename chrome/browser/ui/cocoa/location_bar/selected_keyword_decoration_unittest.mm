@@ -30,13 +30,9 @@ class SelectedKeywordDecorationTest : public CocoaTest {
     // With Material Design vector images the image isn't set at creation time
     // but later by the LocationBar. The unit tests fail with a nil image, so
     // initialize it now.
-    if (ui::MaterialDesignController::IsModeMaterial()) {
-      const int kDefaultIconSize = 16;
-      decoration_.SetImage(NSImageFromImageSkia(
-            gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_SEARCH,
-                                  kDefaultIconSize,
-                                  SK_ColorBLACK)));
-    }
+    const int kDefaultIconSize = 16;
+    decoration_.SetImage(NSImageFromImageSkia(gfx::CreateVectorIcon(
+        gfx::VectorIconId::OMNIBOX_SEARCH, kDefaultIconSize, SK_ColorBLACK)));
   }
 
   SelectedKeywordDecoration decoration_;
@@ -47,13 +43,8 @@ class SelectedKeywordDecorationTest : public CocoaTest {
 TEST_F(SelectedKeywordDecorationTest, UsesPartialKeywordIfNarrow) {
 
   const base::string16 kKeyword = base::ASCIIToUTF16("Engine");
-  NSString* const kFullString = ui::MaterialDesignController::IsModeMaterial()
-                                    ? @"Search Engine"
-                                    : @"Search Engine:";
-  NSString* const kPartialString =
-      ui::MaterialDesignController::IsModeMaterial()
-          ? @"Search En\u2026"
-          : @"Search En\u2026:";  // ellipses
+  NSString* const kFullString = @"Search Engine";
+  NSString* const kPartialString = @"Search En\u2026";
 
   decoration_.SetKeyword(kKeyword, false);
 

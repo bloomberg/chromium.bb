@@ -32,28 +32,11 @@ const CGFloat kCornerRadius = 3.0;
 // How far to inset the left- and right-hand decorations from the field's
 // bounds.
 const CGFloat kRightDecorationXOffset = 5.0;
-CGFloat LeftDecorationXOffset() {
-  const CGFloat kLeftDecorationXOffset = 5.0;
-  const CGFloat kLeftMaterialDecorationXOffset = 6.0;
-  return ui::MaterialDesignController::IsModeMaterial()
-             ? kLeftMaterialDecorationXOffset
-             : kLeftDecorationXOffset;
-}
+const CGFloat kLeftDecorationXOffset = 6.0;
 
 // The amount of padding on either side reserved for drawing
 // decorations.  [Views has |kItemPadding| == 3.]
-CGFloat DecorationsHorizontalPad() {
-  const CGFloat kDecorationHorizontalPad = 3.0;
-  const CGFloat kMaterialDecorationHorizontalPad = 4.0;
-  return ui::MaterialDesignController::IsModeMaterial()
-      ? kMaterialDecorationHorizontalPad
-      : kDecorationHorizontalPad;
-}
-
-const ui::NinePartImageIds kPopupBorderImageIds =
-    IMAGE_GRID(IDR_OMNIBOX_POPUP_BORDER_AND_SHADOW);
-
-const ui::NinePartImageIds kNormalBorderImageIds = IMAGE_GRID(IDR_TEXTFIELD);
+const CGFloat kDecorationHorizontalPad = 4.0;
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
@@ -83,7 +66,6 @@ void CalculatePositionsHelper(
   // The initial padding depends on whether the first visible decoration is
   // a button or not.
   bool is_first_visible_decoration = true;
-  const CGFloat kDecorationHorizontalPad = DecorationsHorizontalPad();
 
   for (size_t i = 0; i < all_decorations.size(); ++i) {
     if (all_decorations[i]->IsVisible()) {
@@ -147,7 +129,7 @@ size_t CalculatePositionsInFrame(
 
   // Layout |left_decorations| against the LHS.
   CalculatePositionsHelper(frame, left_decorations, NSMinXEdge,
-                           LeftDecorationXOffset(), decorations,
+                           kLeftDecorationXOffset, decorations,
                            decoration_frames, &frame);
   DCHECK_EQ(decorations->size(), decoration_frames->size());
 
@@ -263,11 +245,9 @@ size_t CalculatePositionsInFrame(
   // after computing decoration positions because the decorations are already
   // correctly positioned. The spec also calls for positioning the text 1pt to
   // the right of its default position.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    textFrame.origin.x += 1;
-    textFrame.size.width -= 1;
-    textFrame.origin.y -= singlePixelLineWidth_;
-  }
+  textFrame.origin.x += 1;
+  textFrame.size.width -= 1;
+  textFrame.origin.y -= singlePixelLineWidth_;
 
   // NOTE: This function must closely match the logic in
   // |-drawInteriorWithFrame:inView:|.
@@ -285,7 +265,6 @@ size_t CalculatePositionsInFrame(
 
   // Determine the left-most extent for the i-beam cursor.
   CGFloat minX = NSMinX(textFrame);
-  const CGFloat kDecorationHorizontalPad = DecorationsHorizontalPad();
   for (size_t index = left_count; index--; ) {
     if (decorations[index]->AcceptsMousePress())
       break;
@@ -317,16 +296,13 @@ size_t CalculatePositionsInFrame(
 }
 
 - (void)drawWithFrame:(NSRect)frame inView:(NSView*)controlView {
-  BOOL isModeMaterial = ui::MaterialDesignController::IsModeMaterial();
   BOOL inDarkMode = [[controlView window] inIncognitoModeWithSystemTheme];
   BOOL showingFirstResponder = [self showsFirstResponder];
   // Adjust the inset by 1/2 the line width to get a crisp line (screen pixels
   // lay between cooridnate space lines).
   CGFloat insetSize = 1 - singlePixelLineWidth_ / 2.;
-  if (isModeMaterial && showingFirstResponder && !inDarkMode) {
+  if (showingFirstResponder && !inDarkMode) {
     insetSize++;
-  } else if (!isModeMaterial) {
-    insetSize = singlePixelLineWidth_ == 0.5 ? 1.5 : 2.0;
   }
 
   // Compute the border's bezier path.
@@ -335,10 +311,8 @@ size_t CalculatePositionsInFrame(
       [NSBezierPath bezierPathWithRoundedRect:pathRect
                                       xRadius:kCornerRadius
                                       yRadius:kCornerRadius];
-  if (isModeMaterial) {
-    [path setLineWidth:showingFirstResponder ? singlePixelLineWidth_ * 2
-                                             : singlePixelLineWidth_];
-  }
+  [path setLineWidth:showingFirstResponder ? singlePixelLineWidth_ * 2
+                                           : singlePixelLineWidth_];
 
   // Fill the background.
   [[self backgroundColor] set];
@@ -349,23 +323,14 @@ size_t CalculatePositionsInFrame(
   }
 
   // Draw the border.
-  if (isModeMaterial) {
-    if (!inDarkMode) {
-      const CGFloat kNormalStrokeGray = 168 / 255.;
-      [[NSColor colorWithCalibratedWhite:kNormalStrokeGray alpha:1] set];
-    } else {
-      const CGFloat k30PercentAlpha = 0.3;
-      [[NSColor colorWithCalibratedWhite:0 alpha:k30PercentAlpha] set];
-    }
-    [path stroke];
+  if (!inDarkMode) {
+    const CGFloat kNormalStrokeGray = 168 / 255.;
+    [[NSColor colorWithCalibratedWhite:kNormalStrokeGray alpha:1] set];
   } else {
-    ui::DrawNinePartImage(frame,
-                          isPopupMode_ ? kPopupBorderImageIds
-                                       : kNormalBorderImageIds,
-                          NSCompositeSourceOver,
-                          1.0,
-                          true);
+    const CGFloat k30PercentAlpha = 0.3;
+    [[NSColor colorWithCalibratedWhite:0 alpha:k30PercentAlpha] set];
   }
+  [path stroke];
 
   // Draw the interior contents. We do this after drawing the border as some
   // of the interior controls draw over it.
@@ -373,17 +338,8 @@ size_t CalculatePositionsInFrame(
 
   // Draw the focus ring.
   if (showingFirstResponder) {
-    if (!isModeMaterial) {
-      NSRect focusRingRect =
-          NSInsetRect(frame, singlePixelLineWidth_, singlePixelLineWidth_);
-      path = [NSBezierPath bezierPathWithRoundedRect:focusRingRect
-                                             xRadius:kCornerRadius
-                                             yRadius:kCornerRadius];
-      [path setLineWidth:singlePixelLineWidth_ * 2.0];
-    }
-
     CGFloat alphaComponent = 0.5 / singlePixelLineWidth_;
-    if (isModeMaterial && inDarkMode) {
+    if (inDarkMode) {
       // Special focus color for Material Incognito.
       [[NSColor colorWithSRGBRed:123 / 255.
                            green:170 / 255.
@@ -406,7 +362,6 @@ size_t CalculatePositionsInFrame(
                             &decorations, &decorationFrames, &workingFrame);
 
   // Draw the decorations.
-  const CGFloat kDecorationHorizontalPad = DecorationsHorizontalPad();
   for (size_t i = 0; i < decorations.size(); ++i) {
     if (decorations[i]) {
       NSRect background_frame = NSInsetRect(
@@ -431,7 +386,7 @@ size_t CalculatePositionsInFrame(
       [controlView convertPoint:location fromView:nil];
 
   // If we have decorations, the drop can't occur at their horizontal padding.
-  if (!leftDecorations_.empty() && locationInView.x < LeftDecorationXOffset())
+  if (!leftDecorations_.empty() && locationInView.x < kLeftDecorationXOffset)
     return false;
 
   if (!rightDecorations_.empty() &&

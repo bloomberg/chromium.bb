@@ -633,11 +633,6 @@ void LocationBarViewMac::UpdateLocationIcon() {
 }
 
 void LocationBarViewMac::UpdateColorsToMatchTheme() {
-  if (!ui::MaterialDesignController::IsModeMaterial() ||
-      ![[field_ window] inIncognitoMode]) {
-    return;
-  }
-
   // Update the location-bar icon.
   UpdateLocationIcon();
 
@@ -660,14 +655,6 @@ void LocationBarViewMac::OnThemeChanged() {
 }
 
 void LocationBarViewMac::OnChanged() {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    const int resource_id = omnibox_view_->GetIcon();
-    NSImage* image = OmniboxViewMac::ImageForResource(resource_id);
-    location_icon_decoration_->SetImage(image);
-    security_state_bubble_decoration_->SetImage(image);
-    Layout();
-    return;
-  }
   UpdateSecurityState(false);
   UpdateLocationIcon();
 }
@@ -697,8 +684,7 @@ bool LocationBarViewMac::ShouldShowSecurityState() const {
       security == security_state::SecurityStateModel::DANGEROUS ||
       (IsSecureConnection(security) && should_show_secure_verbose_);
 
-  return ui::MaterialDesignController::IsModeMaterial() &&
-         has_verbose_for_security && !omnibox_view_->IsEditingOrEmpty() &&
+  return has_verbose_for_security && !omnibox_view_->IsEditingOrEmpty() &&
          !omnibox_view_->model()->is_keyword_hint();
 }
 
@@ -715,16 +701,12 @@ NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {
         GetOmniboxIcon(template_url->GetExtensionId()).AsNSImage();
   }
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SkColor icon_color = IsLocationBarDark() ? kMaterialDarkVectorIconColor
-                                             : gfx::kGoogleBlue700;
-    return NSImageFromImageSkiaWithColorSpace(
-        gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_SEARCH,
-                              kDefaultIconSize, icon_color),
-        base::mac::GetSRGBColorSpace());
-  }
-
-  return OmniboxViewMac::ImageForResource(IDR_OMNIBOX_SEARCH);
+  SkColor icon_color =
+      IsLocationBarDark() ? kMaterialDarkVectorIconColor : gfx::kGoogleBlue700;
+  return NSImageFromImageSkiaWithColorSpace(
+      gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_SEARCH, kDefaultIconSize,
+                            icon_color),
+      base::mac::GetSRGBColorSpace());
 }
 
 SkColor LocationBarViewMac::GetLocationBarIconColor() const {

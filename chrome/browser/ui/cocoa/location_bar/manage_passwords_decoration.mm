@@ -87,10 +87,6 @@ void ManagePasswordsDecoration::UpdateUIState() {
     return;
   }
   SetVisible(true);
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    SetImage(OmniboxViewMac::ImageForResource(icon_->icon_id()));
-    return;
-  }
   // |location_bar_| can be NULL in tests.
   bool location_bar_is_dark = location_bar_ &&
       [[location_bar_->GetAutocompleteTextField() window]

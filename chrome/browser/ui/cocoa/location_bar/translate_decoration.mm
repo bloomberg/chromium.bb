@@ -20,11 +20,6 @@ TranslateDecoration::TranslateDecoration(CommandUpdater* command_updater)
 TranslateDecoration::~TranslateDecoration() {}
 
 void TranslateDecoration::SetLit(bool on, bool location_bar_is_dark) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    const int image_id = on ? IDR_TRANSLATE_ACTIVE : IDR_TRANSLATE;
-    SetImage(OmniboxViewMac::ImageForResource(image_id));
-    return;
-  }
   SetImage(GetMaterialIcon(location_bar_is_dark));
 }
 

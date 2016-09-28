@@ -79,22 +79,22 @@ namespace {
 // Duration of the toolbar animation.
 const NSTimeInterval kToolBarAnimationDuration = 0.12;
 
-// The height of the location bar in Material Design.
-const CGFloat kMaterialDesignLocationBarHeight = 28;
+// The height of the location bar.
+const CGFloat kLocationBarHeight = 28;
 
 // The padding between the top of the toolbar and the top of the
 // location bar.
-const CGFloat kMaterialDesignLocationBarPadding = 2;
+const CGFloat kLocationBarPadding = 2;
 
-// The padding between Material Design elements and the edges of the toolbar.
-const CGFloat kMaterialDesignElementPadding = 4;
+// The padding between elements and the edges of the toolbar.
+const CGFloat kElementPadding = 4;
 
 // Toolbar buttons are 24x24 and centered in a 28x28 space, so there is a 2pt-
 // wide inset.
-const CGFloat kMaterialDesignButtonInset = 2;
+const CGFloat kButtonInset = 2;
 
 // The y-offset of the browser actions container from the location bar.
-const CGFloat kMaterialDesignContainerYOffset = 2;
+const CGFloat kContainerYOffset = 2;
 
 // The minimum width of the location bar in pixels.
 const CGFloat kMinimumLocationBarWidth = 100.0;
@@ -230,15 +230,15 @@ class NotificationBridge : public AppMenuIconController::Delegate {
 @synthesize browser = browser_;
 
 + (CGFloat)locationBarHeight {
-  return kMaterialDesignLocationBarHeight;
+  return kLocationBarHeight;
 }
 
 + (CGFloat)appMenuLeftPadding {
-  return kMaterialDesignElementPadding;
+  return kElementPadding;
 }
 
 + (CGFloat)materialDesignButtonInset {
-  return kMaterialDesignButtonInset;
+  return kButtonInset;
 }
 
 - (id)initWithCommands:(CommandUpdater*)commands
@@ -304,30 +304,26 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [toolbarView setFrame:frame];
 
   NSRect backButtonFrame = [backButton_ frame];
-  backButtonFrame.origin.x =
-      kMaterialDesignElementPadding + kMaterialDesignButtonInset;
-  backButtonFrame.origin.y = NSMaxY(toolbarBounds) -
-      kMaterialDesignElementPadding - toolbarButtonSize.height;
+  backButtonFrame.origin.x = kElementPadding + kButtonInset;
+  backButtonFrame.origin.y =
+      NSMaxY(toolbarBounds) - kElementPadding - toolbarButtonSize.height;
   backButtonFrame.size = toolbarButtonSize;
   [backButton_ setFrame:backButtonFrame];
 
   NSRect forwardButtonFrame = [forwardButton_ frame];
-  forwardButtonFrame.origin.x =
-      NSMaxX(backButtonFrame) + 2 * kMaterialDesignButtonInset;
+  forwardButtonFrame.origin.x = NSMaxX(backButtonFrame) + 2 * kButtonInset;
   forwardButtonFrame.origin.y = backButtonFrame.origin.y;
   forwardButtonFrame.size = toolbarButtonSize;
   [forwardButton_ setFrame:forwardButtonFrame];
 
   NSRect reloadButtonFrame = [reloadButton_ frame];
-  reloadButtonFrame.origin.x =
-      NSMaxX(forwardButtonFrame) + 2 * kMaterialDesignButtonInset;
+  reloadButtonFrame.origin.x = NSMaxX(forwardButtonFrame) + 2 * kButtonInset;
   reloadButtonFrame.origin.y = forwardButtonFrame.origin.y;
   reloadButtonFrame.size = toolbarButtonSize;
   [reloadButton_ setFrame:reloadButtonFrame];
 
   NSRect homeButtonFrame = [homeButton_ frame];
-  homeButtonFrame.origin.x =
-      NSMaxX(reloadButtonFrame) + 2 * kMaterialDesignButtonInset;
+  homeButtonFrame.origin.x = NSMaxX(reloadButtonFrame) + 2 * kButtonInset;
   homeButtonFrame.origin.y = reloadButtonFrame.origin.y;
   homeButtonFrame.size = toolbarButtonSize;
   [homeButton_ setFrame:homeButtonFrame];
@@ -347,8 +343,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   CGFloat menuButtonFrameMaxX =
       NSMaxX(toolbarBounds) - [ToolbarController appMenuLeftPadding];
   menuButtonFrame.origin.x =
-      menuButtonFrameMaxX - kMaterialDesignButtonInset -
-          toolbarButtonSize.width;
+      menuButtonFrameMaxX - kButtonInset - toolbarButtonSize.width;
   menuButtonFrame.origin.y = homeButtonFrame.origin.y;
   menuButtonFrame.size = toolbarButtonSize;
   [appMenuButton_ setFrame:menuButtonFrame];
@@ -356,25 +351,23 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   // Adjust the size and location on the location bar to take up the
   // space between the reload and menu buttons.
   NSRect locationBarFrame = [locationBar_ frame];
-  locationBarFrame.origin.x = NSMaxX(homeButtonFrame) +
-      kMaterialDesignButtonInset;
+  locationBarFrame.origin.x = NSMaxX(homeButtonFrame) + kButtonInset;
   if (![homeButton_ isHidden]) {
     // Ensure proper spacing between the home button and the location bar.
-    locationBarFrame.origin.x += kMaterialDesignElementPadding;
+    locationBarFrame.origin.x += kElementPadding;
   }
-  locationBarFrame.origin.y = NSMaxY(toolbarBounds) -
-      kMaterialDesignLocationBarPadding - kMaterialDesignLocationBarHeight;
+  locationBarFrame.origin.y =
+      NSMaxY(toolbarBounds) - kLocationBarPadding - kLocationBarHeight;
   locationBarFrame.size.width =
       menuButtonFrame.origin.x -
           locationBarFrame.origin.x;
-  locationBarFrame.size.height = kMaterialDesignLocationBarHeight;
+  locationBarFrame.size.height = kLocationBarHeight;
   [locationBar_ setFrame:locationBarFrame];
 
   // Correctly position the extension buttons' container view.
   NSRect containerFrame = [browserActionsContainerView_ frame];
-  containerFrame.size.width += kMaterialDesignButtonInset;
-  containerFrame.origin.y =
-      locationBarFrame.origin.y + kMaterialDesignContainerYOffset;
+  containerFrame.size.width += kButtonInset;
+  containerFrame.origin.y = locationBarFrame.origin.y + kContainerYOffset;
   containerFrame.size.height = toolbarButtonSize.height;
   [browserActionsContainerView_ setFrame:containerFrame];
 
@@ -737,7 +730,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   // hiding the button, reverse the direction of the movement (to the left).
   CGFloat moveX = [homeButton_ frame].size.width;
   // Ensure proper spacing between the home button and the location bar.
-  moveX += kMaterialDesignElementPadding;
+  moveX += kElementPadding;
   if (hide)
     moveX *= -1;  // Reverse the direction of the move.
 
@@ -853,7 +846,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
         locationBarXPos;
     // Equalize the distance between the location bar and the first extension
     // button, and the distance between the location bar and home/reload button.
-    leftDistance -= kMaterialDesignButtonInset;
+    leftDistance -= kButtonInset;
   }
   if (leftDistance != 0.0)
     [self adjustLocationSizeBy:leftDistance animate:animate];
@@ -884,8 +877,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     // it afterwards.
     [browserActionsContainerView_ stopAnimation];
     NSRect containerFrame = [browserActionsContainerView_ frame];
-    containerFrame.origin.y =
-        [locationBar_ frame].origin.y + kMaterialDesignContainerYOffset;
+    containerFrame.origin.y = [locationBar_ frame].origin.y + kContainerYOffset;
     [browserActionsContainerView_ setFrame:containerFrame];
     [self pinLocationBarToLeftOfBrowserActionsContainerAndAnimate:NO];
   }

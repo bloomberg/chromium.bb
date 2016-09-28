@@ -93,28 +93,16 @@ void ZoomDecoration::HideUI() {
 void ZoomDecoration::ShowAndUpdateUI(zoom::ZoomController* zoom_controller,
                                      NSString* tooltip_string,
                                      bool location_bar_is_dark) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    vector_icon_id_ = gfx::VectorIconId::VECTOR_ICON_NONE;
-    zoom::ZoomController::RelativeZoom relative_zoom =
-        zoom_controller->GetZoomRelativeToDefault();
-    if (relative_zoom == zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM) {
-      vector_icon_id_ = gfx::VectorIconId::ZOOM_MINUS;
-    } else if (relative_zoom == zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM) {
-      vector_icon_id_ = gfx::VectorIconId::ZOOM_PLUS;
-    }
-
-    SetImage(GetMaterialIcon(location_bar_is_dark));
-  } else {
-    int image_id = IDR_ZOOM_NORMAL;
-    zoom::ZoomController::RelativeZoom relative_zoom =
-        zoom_controller->GetZoomRelativeToDefault();
-    if (relative_zoom == zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM)
-      image_id = IDR_ZOOM_MINUS;
-    else if (relative_zoom == zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM)
-      image_id = IDR_ZOOM_PLUS;
-
-    SetImage(OmniboxViewMac::ImageForResource(image_id));
+  vector_icon_id_ = gfx::VectorIconId::VECTOR_ICON_NONE;
+  zoom::ZoomController::RelativeZoom relative_zoom =
+      zoom_controller->GetZoomRelativeToDefault();
+  if (relative_zoom == zoom::ZoomController::ZOOM_BELOW_DEFAULT_ZOOM) {
+    vector_icon_id_ = gfx::VectorIconId::ZOOM_MINUS;
+  } else if (relative_zoom == zoom::ZoomController::ZOOM_ABOVE_DEFAULT_ZOOM) {
+    vector_icon_id_ = gfx::VectorIconId::ZOOM_PLUS;
   }
+
+  SetImage(GetMaterialIcon(location_bar_is_dark));
 
   tooltip_.reset([tooltip_string retain]);
 

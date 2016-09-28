@@ -50,10 +50,6 @@ const CGFloat kMinElidedBubbleWidth = 150.0;
 // |kMinElidedBubbleWidth|.
 const float kMaxBubbleFraction = 0.5;
 
-// The base text color used for non-MD. The color tuples are stolen from
-// location_bar_view_gtk.cc.
-const SkColor kBaseTextColor = SkColorSetRGB(0x07, 0x95, 0x00);
-
 // Duration of animation in ms.
 const NSTimeInterval kInAnimationDuration = 330;
 const NSTimeInterval kOutAnimationDuration = 250;
@@ -76,20 +72,16 @@ SecurityStateBubbleDecoration::SecurityStateBubbleDecoration(
       animation_(this),
       owner_(owner),
       disable_animations_during_testing_(false) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    // On Retina the text label is 1px above the Omnibox textfield's text
-    // baseline. If the Omnibox textfield also drew the label the baselines
-    // would align.
-    SetRetinaBaselineOffset(kRetinaBaselineOffset);
+  // On Retina the text label is 1px above the Omnibox textfield's text
+  // baseline. If the Omnibox textfield also drew the label the baselines
+  // would align.
+  SetRetinaBaselineOffset(kRetinaBaselineOffset);
 
-    base::scoped_nsobject<NSMutableParagraphStyle> style(
-        [[NSMutableParagraphStyle alloc] init]);
-    [style setLineBreakMode:NSLineBreakByClipping];
-    [attributes_ setObject:style forKey:NSParagraphStyleAttributeName];
-    animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-  } else {
-    SetTextColor(skia::SkColorToSRGBNSColor(kBaseTextColor));
-  }
+  base::scoped_nsobject<NSMutableParagraphStyle> style(
+      [[NSMutableParagraphStyle alloc] init]);
+  [style setLineBreakMode:NSLineBreakByClipping];
+  [attributes_ setObject:style forKey:NSParagraphStyleAttributeName];
+  animation_.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
 }
 
 SecurityStateBubbleDecoration::~SecurityStateBubbleDecoration() {
@@ -143,9 +135,6 @@ bool SecurityStateBubbleDecoration::AnimatingOut() const {
 // SecurityStateBubbleDecoration::LocationBarDecoration:
 
 CGFloat SecurityStateBubbleDecoration::GetWidthForSpace(CGFloat width) {
-  if (!ui::MaterialDesignController::IsModeMaterial())
-    return GetWidthForText(width);
-
   CGFloat location_icon_width = location_icon_->GetWidthForSpace(width);
   CGFloat text_width = GetWidthForText(width) - location_icon_width;
   return (text_width * GetAnimationProgress()) + location_icon_width;
@@ -255,12 +244,6 @@ void SecurityStateBubbleDecoration::DrawWithBackgroundInFrame(
     NSRect background_frame,
     NSRect frame,
     NSView* control_view) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    BubbleDecoration::DrawWithBackgroundInFrame(background_frame, frame,
-                                                control_view);
-    return;
-  }
-
   NSRect rect = NSInsetRect(background_frame, 0, 3);
   rect.size.width -= kRightSideMargin;
 
@@ -335,9 +318,6 @@ void SecurityStateBubbleDecoration::AnimationProgressed(
 // SecurityStateBubbleDecoration, private:
 
 CGFloat SecurityStateBubbleDecoration::GetAnimationProgress() const {
-  if (!ui::MaterialDesignController::IsModeMaterial())
-    return 1.0;
-
   if (disable_animations_during_testing_)
     return 1.0;
 

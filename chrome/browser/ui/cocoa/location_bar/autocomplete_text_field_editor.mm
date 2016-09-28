@@ -107,8 +107,8 @@ BOOL ThePasteboardIsTooDamnBig() {
 }
 
 - (void)viewDidMoveToWindow {
-  // Only care about landing in a window when in Material Design mode.
-  if ([self window] && ui::MaterialDesignController::IsModeMaterial()) {
+  // Only care about landing in a window.
+  if ([self window]) {
     [self updateColorsToMatchTheme];
   }
 }
@@ -604,9 +604,6 @@ BOOL ThePasteboardIsTooDamnBig() {
 // ThemedWindowDrawing implementation.
 
 - (void)windowDidChangeTheme {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return;
-  }
   [self updateColorsToMatchTheme];
 }
 

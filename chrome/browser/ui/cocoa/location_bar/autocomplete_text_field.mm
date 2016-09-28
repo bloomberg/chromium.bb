@@ -400,13 +400,11 @@ const CGFloat kAnimationDuration = 0.2;
 
   // Allow the ToolbarController to take action upon the
   // AutocompleteTextField being added to the window.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    BrowserWindowController* browserWindowController =
-        [BrowserWindowController browserWindowControllerForView:self];
-    [[browserWindowController toolbarController] locationBarWasAddedToWindow];
+  BrowserWindowController* browserWindowController =
+      [BrowserWindowController browserWindowControllerForView:self];
+  [[browserWindowController toolbarController] locationBarWasAddedToWindow];
 
-    [self updateColorsToMatchTheme];
-  }
+  [self updateColorsToMatchTheme];
 
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   [nc addObserver:self
@@ -552,10 +550,6 @@ const CGFloat kAnimationDuration = 0.2;
 // ThemedWindowDrawing implementation.
 
 - (void)windowDidChangeTheme {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return;
-  }
-
   [self updateColorsToMatchTheme];
 }
 

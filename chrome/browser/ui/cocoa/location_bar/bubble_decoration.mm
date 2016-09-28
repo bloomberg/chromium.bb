@@ -20,15 +20,13 @@ namespace {
 const CGFloat kRightSideMargin = 1.0;
 
 // Padding between the icon/label and bubble edges.
-CGFloat BubblePadding() {
-  return ui::MaterialDesignController::IsModeMaterial() ? 8.0 : 3.0;
-}
+const CGFloat kBubblePadding = 8.0;
 
 // Additional padding between the divider and the label.
 const CGFloat kDividerPadding = 2.0;
 
 // Padding between the icon and label.
-CGFloat kIconLabelPadding = 4.0;
+const CGFloat kIconLabelPadding = 4.0;
 
 // Inset for the background.
 const CGFloat kBackgroundYInset = 4.0;
@@ -45,7 +43,7 @@ BubbleDecoration::~BubbleDecoration() {
 }
 
 CGFloat BubbleDecoration::DividerPadding() const {
-  return ui::MaterialDesignController::IsModeMaterial() ? kDividerPadding : 0.0;
+  return kDividerPadding;
 }
 
 CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
@@ -55,14 +53,14 @@ CGFloat BubbleDecoration::GetWidthForImageAndLabel(NSImage* image,
 
   const CGFloat image_width = image ? [image size].width : 0.0;
   if (!label)
-    return BubblePadding() + image_width;
+    return kBubblePadding + image_width;
 
   // The bubble needs to take up an integral number of pixels.
   // Generally -sizeWithAttributes: seems to overestimate rather than
   // underestimate, so floor() seems to work better.
   const CGFloat label_width =
       std::floor([label sizeWithAttributes:attributes_].width);
-  return BubblePadding() + image_width + kIconLabelPadding + label_width +
+  return kBubblePadding + image_width + kIconLabelPadding + label_width +
          DividerPadding();
 }
 
@@ -115,22 +113,20 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   }
 
   // Draw the divider and set the text color.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    NSBezierPath* line = [NSBezierPath bezierPath];
-    [line setLineWidth:1];
-    [line moveToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
-                                  NSMinY(decoration_frame))];
-    [line lineToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
-                                  NSMaxY(decoration_frame))];
+  NSBezierPath* line = [NSBezierPath bezierPath];
+  [line setLineWidth:1];
+  [line moveToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
+                                NSMinY(decoration_frame))];
+  [line lineToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),
+                                NSMaxY(decoration_frame))];
 
-    bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
-    [GetDividerColor(in_dark_mode) set];
-    [line stroke];
+  bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
+  [GetDividerColor(in_dark_mode) set];
+  [line stroke];
 
-    NSColor* text_color =
-        in_dark_mode ? GetDarkModeTextColor() : GetBackgroundBorderColor();
-    SetTextColor(text_color);
-  }
+  NSColor* text_color =
+      in_dark_mode ? GetDarkModeTextColor() : GetBackgroundBorderColor();
+  SetTextColor(text_color);
 
   if (label_) {
     NSRect text_rect = frame;
@@ -154,11 +150,6 @@ void BubbleDecoration::DrawWithBackgroundInFrame(NSRect background_frame,
                                                  NSView* control_view) {
   NSRect rect = NSInsetRect(background_frame, 0, 1);
   rect.size.width -= kRightSideMargin;
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    ui::DrawNinePartImage(
-        rect, GetBubbleImageIds(), NSCompositeSourceOver, 1.0, true);
-  }
-
   DrawInFrame(frame, control_view);
 }
 
