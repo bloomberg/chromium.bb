@@ -438,19 +438,19 @@ void PaintPropertyTreeBuilder::updateSvgLocalToBorderBoxTransform(const LayoutOb
 
 void PaintPropertyTreeBuilder::updateScrollAndScrollTranslation(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
-    if (object.isBoxModelObject() && object.hasOverflowClip()) {
-        PaintLayer* layer = toLayoutBoxModelObject(object).layer();
-        DCHECK(layer);
-        DoubleSize scrollOffset = layer->getScrollableArea()->scrollOffset();
-        if (!scrollOffset.isZero() || layer->scrollsOverflow()) {
+    if (object.hasOverflowClip()) {
+        const LayoutBox& box = toLayoutBox(object);
+        const PaintLayerScrollableArea* scrollableArea = box.getScrollableArea();
+        DoubleSize scrollOffset = box.scrolledContentOffset();
+        if (!scrollOffset.isZero() || scrollableArea->scrollsOverflow()) {
             TransformationMatrix matrix = TransformationMatrix().translate(-scrollOffset.width(), -scrollOffset.height());
             context.current.transform = object.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateScrollTranslation(
                 context.current.transform, matrix, FloatPoint3D(), context.current.shouldFlattenInheritedTransform, context.current.renderingContextID);
 
-            IntSize scrollClip = layer->getScrollableArea()->visibleContentRect().size();
-            IntSize scrollBounds = layer->getScrollableArea()->contentsSize();
-            bool userScrollableHorizontal = layer->getScrollableArea()->userInputScrollable(HorizontalScrollbar);
-            bool userScrollableVertical = layer->getScrollableArea()->userInputScrollable(VerticalScrollbar);
+            IntSize scrollClip = scrollableArea->visibleContentRect().size();
+            IntSize scrollBounds = scrollableArea->contentsSize();
+            bool userScrollableHorizontal = scrollableArea->userInputScrollable(HorizontalScrollbar);
+            bool userScrollableVertical = scrollableArea->userInputScrollable(VerticalScrollbar);
             context.current.scroll = object.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateScroll(
                 context.current.scroll, context.current.transform, scrollClip, scrollBounds, userScrollableHorizontal, userScrollableVertical);
 
