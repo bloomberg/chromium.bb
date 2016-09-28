@@ -442,7 +442,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     /**
      * Returns an unmodifiable list containing all items in the adapter.
      */
-    public List<NewTabPageItem> getItems() {
+    private List<NewTabPageItem> getItems() {
         List<NewTabPageItem> items = new ArrayList<>();
         for (ItemGroup group : mGroups) {
             items.addAll(group.getItems());
@@ -466,12 +466,18 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         return Collections.unmodifiableList(mGroups);
     }
 
-    private int getGroupPositionOffset(ItemGroup group) {
+    @VisibleForTesting
+    int getGroupPositionOffset(ItemGroup group) {
         int positionOffset = 0;
         for (ItemGroup candidateGroup : mGroups) {
             if (candidateGroup == group) return positionOffset;
             positionOffset += candidateGroup.getItems().size();
         }
         return RecyclerView.NO_POSITION;
+    }
+
+    @VisibleForTesting
+    SnippetArticle getSuggestionAt(int position) {
+        return (SnippetArticle) getItems().get(position);
     }
 }
