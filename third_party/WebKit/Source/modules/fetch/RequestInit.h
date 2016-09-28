@@ -15,8 +15,8 @@
 
 namespace blink {
 
+class BytesConsumer;
 class ExceptionState;
-class FetchDataConsumerHandle;
 class Headers;
 
 // FIXME: Use IDL dictionary instead of this class.
@@ -29,7 +29,7 @@ public:
     Member<Headers> headers;
     Dictionary headersDictionary;
     String contentType;
-    std::unique_ptr<FetchDataConsumerHandle> body;
+    Member<BytesConsumer> body;
     Referrer referrer;
     String mode;
     String credentials;

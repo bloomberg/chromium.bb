@@ -15,8 +15,8 @@
 #include "core/dom/URLSearchParams.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/FormData.h"
-#include "modules/fetch/FetchBlobDataConsumerHandle.h"
-#include "modules/fetch/FetchFormDataConsumerHandle.h"
+#include "modules/fetch/BlobBytesConsumer.h"
+#include "modules/fetch/FormDataBytesConsumer.h"
 #include "modules/fetch/Headers.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/blob/BlobData.h"
@@ -110,26 +110,26 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         return;
 
     if (v8Body->IsArrayBuffer()) {
-        body = FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(v8Body.As<v8::Object>()));
+        body = new FormDataBytesConsumer(V8ArrayBuffer::toImpl(v8Body.As<v8::Object>()));
     } else if (v8Body->IsArrayBufferView()) {
-        body = FetchFormDataConsumerHandle::create(V8ArrayBufferView::toImpl(v8Body.As<v8::Object>()));
+        body = new FormDataBytesConsumer(V8ArrayBufferView::toImpl(v8Body.As<v8::Object>()));
     } else if (V8Blob::hasInstance(v8Body, isolate)) {
         RefPtr<BlobDataHandle> blobDataHandle = V8Blob::toImpl(v8Body.As<v8::Object>())->blobDataHandle();
         contentType = blobDataHandle->type();
-        body = FetchBlobDataConsumerHandle::create(context, blobDataHandle.release());
+        body = new BlobBytesConsumer(context, blobDataHandle.release());
     } else if (V8FormData::hasInstance(v8Body, isolate)) {
         RefPtr<EncodedFormData> formData = V8FormData::toImpl(v8Body.As<v8::Object>())->encodeMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=") + formData->boundary().data();
-        body = FetchFormDataConsumerHandle::create(context, formData.release());
+        body = new FormDataBytesConsumer(context, formData.release());
     } else if (V8URLSearchParams::hasInstance(v8Body, isolate)) {
         RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(v8Body.As<v8::Object>())->toEncodedFormData();
         contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
-        body = FetchFormDataConsumerHandle::create(context, formData.release());
+        body = new FormDataBytesConsumer(context, formData.release());
     } else if (v8Body->IsString()) {
         contentType = "text/plain;charset=UTF-8";
-        body = FetchFormDataConsumerHandle::create(toUSVString(isolate, v8Body, exceptionState));
+        body = new FormDataBytesConsumer(toUSVString(isolate, v8Body, exceptionState));
     }
 }
 

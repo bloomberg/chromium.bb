@@ -7,7 +7,7 @@
 
 #include "modules/ModulesExport.h"
 #include "modules/fetch/BytesConsumer.h"
-#include "modules/fetch/FetchFormDataConsumerHandle.h"
+#include "modules/fetch/FetchDataConsumerHandle.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/PassRefPtr.h"

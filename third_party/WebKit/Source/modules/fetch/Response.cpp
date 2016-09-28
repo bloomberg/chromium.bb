@@ -20,10 +20,10 @@
 #include "core/fileapi/Blob.h"
 #include "core/html/FormData.h"
 #include "core/streams/ReadableStreamOperations.h"
+#include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
-#include "modules/fetch/FetchBlobDataConsumerHandle.h"
-#include "modules/fetch/FetchFormDataConsumerHandle.h"
+#include "modules/fetch/FormDataBytesConsumer.h"
 #include "modules/fetch/ReadableStreamDataConsumerHandle.h"
 #include "modules/fetch/ResponseInit.h"
 #include "platform/network/EncodedFormData.h"
@@ -54,7 +54,7 @@ FetchResponseData* createFetchResponseDataFromWebResponse(ScriptState* scriptSta
         response->headerList()->append(i->key, i->value);
     }
 
-    response->replaceBodyStreamBuffer(new BodyStreamBuffer(scriptState, FetchBlobDataConsumerHandle::create(scriptState->getExecutionContext(), webResponse.blobDataHandle())));
+    response->replaceBodyStreamBuffer(new BodyStreamBuffer(scriptState, new BlobBytesConsumer(scriptState->getExecutionContext(), webResponse.blobDataHandle())));
 
     // Filter the response according to |webResponse|'s ResponseType.
     switch (webResponse.responseType()) {
@@ -132,21 +132,21 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         // https://crbug.com/335871.
     } else if (V8Blob::hasInstance(body, isolate)) {
         Blob* blob = V8Blob::toImpl(body.As<v8::Object>());
-        bodyBuffer = new BodyStreamBuffer(scriptState, FetchBlobDataConsumerHandle::create(executionContext, blob->blobDataHandle()));
+        bodyBuffer = new BodyStreamBuffer(scriptState, new BlobBytesConsumer(executionContext, blob->blobDataHandle()));
         contentType = blob->type();
     } else if (body->IsArrayBuffer()) {
-        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(V8ArrayBuffer::toImpl(body.As<v8::Object>())));
+        bodyBuffer = new BodyStreamBuffer(scriptState, new FormDataBytesConsumer(V8ArrayBuffer::toImpl(body.As<v8::Object>())));
     } else if (body->IsArrayBufferView()) {
-        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(V8ArrayBufferView::toImpl(body.As<v8::Object>())));
+        bodyBuffer = new BodyStreamBuffer(scriptState, new FormDataBytesConsumer(V8ArrayBufferView::toImpl(body.As<v8::Object>())));
     } else if (V8FormData::hasInstance(body, isolate)) {
         RefPtr<EncodedFormData> formData = V8FormData::toImpl(body.As<v8::Object>())->encodeMultiPartFormData();
         // Here we handle formData->boundary() as a C-style string. See
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=") + formData->boundary().data();
-        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(executionContext, formData.release()));
+        bodyBuffer = new BodyStreamBuffer(scriptState, new FormDataBytesConsumer(executionContext, formData.release()));
     } else if (V8URLSearchParams::hasInstance(body, isolate)) {
         RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(body.As<v8::Object>())->toEncodedFormData();
-        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(executionContext, formData.release()));
+        bodyBuffer = new BodyStreamBuffer(scriptState, new FormDataBytesConsumer(executionContext, formData.release()));
         contentType = "application/x-www-form-urlencoded;charset=UTF-8";
     } else if (ReadableStreamOperations::isReadableStream(scriptState, bodyValue)) {
         bodyBuffer = new BodyStreamBuffer(scriptState, bodyValue);
@@ -154,7 +154,7 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         String string = toUSVString(isolate, body, exceptionState);
         if (exceptionState.hadException())
             return nullptr;
-        bodyBuffer = new BodyStreamBuffer(scriptState, FetchFormDataConsumerHandle::create(string));
+        bodyBuffer = new BodyStreamBuffer(scriptState, new FormDataBytesConsumer(string));
         contentType = "text/plain;charset=UTF-8";
     }
     Response* response = create(scriptState, bodyBuffer, contentType, ResponseInit(init, exceptionState), exceptionState);

@@ -9,9 +9,9 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/loader/ThreadableLoader.h"
 #include "modules/credentialmanager/PasswordCredential.h"
+#include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
-#include "modules/fetch/FetchBlobDataConsumerHandle.h"
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/HTTPNames.h"
 #include "platform/network/ResourceRequest.h"
@@ -33,7 +33,7 @@ FetchRequestData* FetchRequestData::create(ScriptState* scriptState, const WebSe
     for (HTTPHeaderMap::const_iterator it = webRequest.headers().begin(); it != webRequest.headers().end(); ++it)
         request->m_headerList->append(it->key, it->value);
     if (webRequest.blobDataHandle())
-        request->setBuffer(new BodyStreamBuffer(scriptState, FetchBlobDataConsumerHandle::create(scriptState->getExecutionContext(), webRequest.blobDataHandle())));
+        request->setBuffer(new BodyStreamBuffer(scriptState, new BlobBytesConsumer(scriptState->getExecutionContext(), webRequest.blobDataHandle())));
     request->setContext(webRequest.requestContext());
     request->setReferrer(Referrer(webRequest.referrerUrl().string(), static_cast<ReferrerPolicy>(webRequest.referrerPolicy())));
     request->setMode(webRequest.mode());

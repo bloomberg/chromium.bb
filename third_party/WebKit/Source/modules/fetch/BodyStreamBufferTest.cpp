@@ -6,10 +6,10 @@
 
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "core/html/FormData.h"
+#include "modules/fetch/BlobBytesConsumer.h"
 #include "modules/fetch/BytesConsumerTestUtil.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
-#include "modules/fetch/FetchBlobDataConsumerHandle.h"
-#include "modules/fetch/FetchFormDataConsumerHandle.h"
+#include "modules/fetch/FormDataBytesConsumer.h"
 #include "platform/blob/BlobData.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/network/EncodedFormData.h"
@@ -32,15 +32,6 @@ using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 using Command = DataConsumerHandleTestUtil::Command;
 using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
 using MockFetchDataLoaderClient = DataConsumerHandleTestUtil::MockFetchDataLoaderClient;
-
-class FakeLoaderFactory : public FetchBlobDataConsumerHandle::LoaderFactory {
-public:
-    ThreadableLoader* create(ExecutionContext&, ThreadableLoaderClient*, const ThreadableLoaderOptions&, const ResourceLoaderOptions&) override
-    {
-        ASSERT_NOT_REACHED();
-        return nullptr;
-    }
-};
 
 class BodyStreamBufferTest : public ::testing::Test {
 protected:
@@ -174,7 +165,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle)
     data->appendText("hello", false);
     auto size = data->length();
     RefPtr<BlobDataHandle> blobDataHandle = BlobDataHandle::create(std::move(data), size);
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), FetchBlobDataConsumerHandle::create(scope.getExecutionContext(), blobDataHandle, new FakeLoaderFactory));
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), new BlobBytesConsumer(scope.getExecutionContext(), blobDataHandle));
 
     EXPECT_FALSE(buffer->isStreamLocked());
     EXPECT_FALSE(buffer->isStreamDisturbed());
@@ -232,7 +223,7 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData)
     data->append("name2", "value2");
     RefPtr<EncodedFormData> inputFormData = data->encodeMultiPartFormData();
 
-    BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), FetchFormDataConsumerHandle::create(scope.getExecutionContext(), inputFormData));
+    BodyStreamBuffer* buffer = new BodyStreamBuffer(scope.getScriptState(), new FormDataBytesConsumer(scope.getExecutionContext(), inputFormData));
 
     EXPECT_FALSE(buffer->isStreamLocked());
     EXPECT_FALSE(buffer->isStreamDisturbed());
