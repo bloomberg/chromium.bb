@@ -86,28 +86,50 @@ const char* V8Platform::GetCategoryGroupName(
       category_enabled_flag);
 }
 
-uint64_t V8Platform::AddTraceEvent(char phase,
-                                   const uint8_t* category_enabled_flag,
-                                   const char* name,
-                                   const char* scope,
-                                   uint64_t id,
-                                   uint64_t bind_id,
-                                   int32_t num_args,
-                                   const char** arg_names,
-                                   const uint8_t* arg_types,
-                                   const uint64_t* arg_values,
-                                   unsigned int flags) {
+namespace {
+
+class ConvertableToTraceFormatWrapper
+    : public base::trace_event::ConvertableToTraceFormat {
+ public:
+  explicit ConvertableToTraceFormatWrapper(
+      std::unique_ptr<v8::ConvertableToTraceFormat>& inner)
+      : inner_(std::move(inner)) {}
+  ~ConvertableToTraceFormatWrapper() override = default;
+  void AppendAsTraceFormat(std::string* out) const final {
+    inner_->AppendAsTraceFormat(out);
+  }
+
+ private:
+  std::unique_ptr<v8::ConvertableToTraceFormat> inner_;
+
+  DISALLOW_COPY_AND_ASSIGN(ConvertableToTraceFormatWrapper);
+};
+
+}  // namespace
+
+uint64_t V8Platform::AddTraceEvent(
+    char phase,
+    const uint8_t* category_enabled_flag,
+    const char* name,
+    const char* scope,
+    uint64_t id,
+    uint64_t bind_id,
+    int32_t num_args,
+    const char** arg_names,
+    const uint8_t* arg_types,
+    const uint64_t* arg_values,
+    std::unique_ptr<v8::ConvertableToTraceFormat>* arg_convertables,
+    unsigned int flags) {
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> convertables[2];
   if (num_args > 0 && arg_types[0] == TRACE_VALUE_TYPE_CONVERTABLE) {
     convertables[0].reset(
-        reinterpret_cast<base::trace_event::ConvertableToTraceFormat*>(
-            arg_values[0]));
+        new ConvertableToTraceFormatWrapper(arg_convertables[0]));
   }
   if (num_args > 1 && arg_types[1] == TRACE_VALUE_TYPE_CONVERTABLE) {
     convertables[1].reset(
-        reinterpret_cast<base::trace_event::ConvertableToTraceFormat*>(
-            arg_values[1]));
+        new ConvertableToTraceFormatWrapper(arg_convertables[1]));
   }
+  DCHECK_LE(num_args, 2);
   base::trace_event::TraceEventHandle handle =
       TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_BIND_ID(
           phase, category_enabled_flag, name, scope, id, bind_id, num_args,
