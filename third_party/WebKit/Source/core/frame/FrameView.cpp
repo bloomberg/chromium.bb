@@ -122,11 +122,10 @@
 #include "wtf/StdLibExtras.h"
 #include <memory>
 
-// Change the the following line to "#if 0" to disable crash on unexpected
-// dirty layout (crbug.com/590856) when dcheck is off.
-#if 1
-#define CHECK_FOR_DIRTY_LAYOUT CHECK
-#else
+// Used to check for dirty layouts violating document lifecycle rules.
+// If arg evaluates to true, the program will continue. If arg evaluates to
+// false, program will crash if DCHECK_IS_ON() or return false from the current
+// function.
 #define CHECK_FOR_DIRTY_LAYOUT(arg) \
 do { \
     if (!(arg)) { \
@@ -134,7 +133,6 @@ do { \
         return false; \
     } \
 } while (false)
-#endif
 
 namespace blink {
 
