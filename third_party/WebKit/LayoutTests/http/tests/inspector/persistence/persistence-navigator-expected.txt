@@ -16,8 +16,8 @@ top
       inspector-test.js
       isolated-filesystem-test.js
       workspace-test.js
-www
-  inspector/persistence/resources
+www [dimmed]
+  inspector/persistence/resources [dimmed]
     foo.js
 
 Running: addFileMapping
@@ -25,6 +25,8 @@ top
   127.0.0.1:8000
     inspector
       persistence
+        resources
+          foo.js [mapped]
         persistence-navigator.html
         persistence-test.js
       debugger-test.js
@@ -33,7 +35,7 @@ top
       workspace-test.js
 www
   inspector/persistence/resources
-    foo.js
+    foo.js [mapped]
 
 Running: removeFileMapping
 top
@@ -48,7 +50,7 @@ top
       inspector-test.js
       isolated-filesystem-test.js
       workspace-test.js
-www
-  inspector/persistence/resources
+www [dimmed]
+  inspector/persistence/resources [dimmed]
     foo.js
 
