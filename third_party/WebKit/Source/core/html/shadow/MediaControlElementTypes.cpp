@@ -182,6 +182,15 @@ bool MediaControlInputElement::isMouseFocusable() const
     return false;
 }
 
+void MediaControlInputElement::defaultEventHandler(Event* event)
+{
+    // If the element is in the overflow menu, clicking should hide the menu.
+    if (mediaControls().overflowMenuVisible() && parentElement()->shadowPseudoId() == AtomicString("-internal-media-controls-overflow-menu-list-item"))
+        mediaControls().toggleOverflowMenu();
+
+    HTMLInputElement::defaultEventHandler(event);
+}
+
 HTMLElement* MediaControlInputElement::createOverflowElement(MediaControls& mediaControls, MediaControlInputElement* button)
 {
     if (!button)

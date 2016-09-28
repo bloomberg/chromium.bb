@@ -844,11 +844,12 @@ void MediaControls::networkStateChanged()
 
 bool MediaControls::overflowMenuVisible()
 {
-    return m_overflowList->isWanted();
+    return m_overflowList ? m_overflowList->isWanted() : false;
 }
 
 void MediaControls::toggleOverflowMenu()
 {
+    DCHECK(m_overflowList);
     m_overflowList->setIsWanted(!m_overflowList->isWanted());
 }
 

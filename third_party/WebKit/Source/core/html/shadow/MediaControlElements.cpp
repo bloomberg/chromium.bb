@@ -295,7 +295,7 @@ void MediaControlMuteButtonElement::defaultEventHandler(Event* event)
         event->setDefaultHandled();
     }
 
-    HTMLInputElement::defaultEventHandler(event);
+    MediaControlInputElement::defaultEventHandler(event);
 }
 
 void MediaControlMuteButtonElement::updateDisplayType()
@@ -345,7 +345,7 @@ void MediaControlPlayButtonElement::defaultEventHandler(Event* event)
         updateDisplayType();
         event->setDefaultHandled();
     }
-    HTMLInputElement::defaultEventHandler(event);
+    MediaControlInputElement::defaultEventHandler(event);
 }
 
 void MediaControlPlayButtonElement::updateDisplayType()
@@ -424,16 +424,12 @@ void MediaControlToggleClosedCaptionsButtonElement::updateDisplayType()
 void MediaControlToggleClosedCaptionsButtonElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {
-        // If the user opens up the closed captions menu from the overfow menu,
-        // the overflow menu should no longer be visible.
-        if (mediaControls().overflowMenuVisible())
-            mediaControls().toggleOverflowMenu();
         mediaControls().toggleTextTrackList();
         updateDisplayType();
         event->setDefaultHandled();
     }
 
-    HTMLInputElement::defaultEventHandler(event);
+    MediaControlInputElement::defaultEventHandler(event);
 }
 
 WebLocalizedString::Name MediaControlToggleClosedCaptionsButtonElement::getOverflowStringName()
@@ -607,7 +603,7 @@ void MediaControlOverflowMenuButtonElement::defaultEventHandler(Event* event)
         event->setDefaultHandled();
     }
 
-    HTMLInputElement::defaultEventHandler(event);
+    MediaControlInputElement::defaultEventHandler(event);
 }
 
 // ----------------------------
@@ -862,7 +858,7 @@ void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event)
         }
         event->setDefaultHandled();
     }
-    HTMLInputElement::defaultEventHandler(event);
+    MediaControlInputElement::defaultEventHandler(event);
 }
 
 void MediaControlFullscreenButtonElement::setIsFullscreen(bool isFullscreen)
@@ -913,7 +909,7 @@ void MediaControlCastButtonElement::defaultEventHandler(Event* event)
             mediaElement().requestRemotePlayback();
         }
     }
-    HTMLInputElement::defaultEventHandler(event);
+    MediaControlInputElement::defaultEventHandler(event);
 }
 
 const AtomicString& MediaControlCastButtonElement::shadowPseudoId() const
