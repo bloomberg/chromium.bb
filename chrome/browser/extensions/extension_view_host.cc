@@ -165,6 +165,14 @@ WebContents* ExtensionViewHost::OpenURLFromTab(
   }
 }
 
+bool ExtensionViewHost::ShouldTransferNavigation(
+    bool is_main_frame_navigation) {
+  // Block navigations that cause main frame of an extension pop-up (or
+  // background page) to navigate to non-extension content (i.e. to web
+  // content).
+  return !is_main_frame_navigation;
+}
+
 bool ExtensionViewHost::PreHandleKeyboardEvent(
     WebContents* source,
     const NativeWebKeyboardEvent& event,

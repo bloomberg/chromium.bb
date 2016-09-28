@@ -12,12 +12,16 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
@@ -247,4 +251,54 @@ IN_PROC_BROWSER_TEST_F(ProcessManagementTest, MAYBE_ExtensionProcessBalancing) {
 
   EXPECT_GE((size_t) 6, process_map->size());
   EXPECT_EQ((size_t) 2, process_ids.size());
+}
+
+IN_PROC_BROWSER_TEST_F(ProcessManagementTest,
+                       NavigateExtensionTabToWebViaPost) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load an extension.
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("api_test/browser_action/popup_with_form"));
+  ASSERT_TRUE(extension);
+
+  // Navigate a tab to an extension page.
+  GURL extension_url = extension->GetResourceURL("popup.html");
+  ui_test_utils::NavigateToURL(browser(), extension_url);
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_EQ(extension_url, web_contents->GetLastCommittedURL());
+  content::RenderProcessHost* old_process_host =
+      web_contents->GetMainFrame()->GetProcess();
+
+  // Note that the |setTimeout| call below is needed to make sure
+  // ExecuteScriptAndExtractBool returns *after* a scheduled navigation has
+  // already started.
+  GURL web_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  std::string navigation_starting_script =
+      "var form = document.getElementById('form');\n"
+      "form.action = '" + web_url.spec() + "';\n"
+      "form.submit();\n"
+      "setTimeout(\n"
+      "    function() { window.domAutomationController.send(true); },\n"
+      "    0);\n";
+
+  // Try to trigger navigation to a webpage from within the tab.
+  bool ignored_script_result = false;
+  content::TestNavigationObserver nav_observer(web_contents, 1);
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents, navigation_starting_script, &ignored_script_result));
+
+  // Verify that the navigation succeeded.
+  nav_observer.Wait();
+  EXPECT_EQ(web_url, web_contents->GetLastCommittedURL());
+
+  // Verify that the navigation transferred the contents to another renderer
+  // process.
+  if (extensions::IsIsolateExtensionsEnabled()) {
+    content::RenderProcessHost* new_process_host =
+        web_contents->GetMainFrame()->GetProcess();
+    EXPECT_NE(old_process_host, new_process_host);
+  }
 }

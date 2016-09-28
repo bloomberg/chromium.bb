@@ -756,7 +756,8 @@ void NavigatorImpl::RequestTransferURL(
          SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
   // Allow the delegate to cancel the transfer.
-  if (!delegate_->ShouldTransferNavigation())
+  if (!delegate_->ShouldTransferNavigation(
+          render_frame_host->frame_tree_node()->IsMainFrame()))
     return;
 
   GURL dest_url(url);
