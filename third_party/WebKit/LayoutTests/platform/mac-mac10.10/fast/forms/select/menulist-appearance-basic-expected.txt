@@ -87,7 +87,13 @@ layer at (0,0) size 800x488
             text run at (8,1) width 36: "foo"
       LayoutText {#text} at (205,163) size 4x18
         text run at (205,163) width 4: " "
-      LayoutBR {BR} at (209,163) size 0x18
+      LayoutMenuList {SELECT} at (213,164) size 110x18 [bgcolor=#F8F8F8] [border: (1px solid #A6A6A6)]
+        LayoutBlockFlow (anonymous) at (1,1) size 108x16
+          LayoutText (anonymous) at (8,1) size 87x13
+            text run at (8,1) width 87: "September 2016"
+      LayoutText {#text} at (327,163) size 4x18
+        text run at (327,163) width 4: " "
+      LayoutBR {BR} at (331,163) size 0x18
       LayoutMenuList {SELECT} at (6,204) size 59x25 [bgcolor=#F8F8F8] [border: (1px solid #A6A6A6)]
         LayoutBlockFlow (anonymous) at (1,1) size 57x23
           LayoutText (anonymous) at (12,1) size 25x19
