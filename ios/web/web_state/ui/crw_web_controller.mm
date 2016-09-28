@@ -4801,6 +4801,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
 
+  // Don't create web views for invalid URLs.
+  if (!requestURL.is_valid())
+    return nil;
+
   if (![self userIsInteracting]) {
     NSString* referer = [self refererFromNavigationAction:action];
     GURL referrerURL =
