@@ -23,10 +23,11 @@
 #include "core/page/Page.h"
 #include "modules/fetch/Body.h"
 #include "modules/fetch/BodyStreamBuffer.h"
-#include "modules/fetch/CompositeDataConsumerHandle.h"
+#include "modules/fetch/BytesConsumer.h"
+#include "modules/fetch/BytesConsumerForDataConsumerHandle.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
-#include "modules/fetch/FetchFormDataConsumerHandle.h"
 #include "modules/fetch/FetchRequestData.h"
+#include "modules/fetch/FormDataBytesConsumer.h"
 #include "modules/fetch/Response.h"
 #include "modules/fetch/ResponseInit.h"
 #include "platform/HTTPNames.h"
@@ -50,6 +51,104 @@ bool IsRedirectStatusCode(int statusCode)
 {
     return (statusCode == 301 || statusCode == 302 || statusCode == 303 || statusCode == 307 || statusCode == 308);
 }
+
+class SRIBytesConsumer final : public BytesConsumer {
+public:
+    // BytesConsumer implementation
+    Result beginRead(const char** buffer, size_t* available) override
+    {
+        if (!m_underlying) {
+            *buffer = nullptr;
+            *available = 0;
+            return m_isCancelled ? Result::Done : Result::ShouldWait;
+        }
+        return m_underlying->beginRead(buffer, available);
+    }
+    Result endRead(size_t readSize) override
+    {
+        DCHECK(m_underlying);
+        return m_underlying->endRead(readSize);
+    }
+    PassRefPtr<BlobDataHandle> drainAsBlobDataHandle(BlobSizePolicy policy) override
+    {
+        return m_underlying ? m_underlying->drainAsBlobDataHandle(policy) : nullptr;
+    }
+    PassRefPtr<EncodedFormData> drainAsFormData() override
+    {
+        return m_underlying ? m_underlying->drainAsFormData() : nullptr;
+    }
+    void setClient(BytesConsumer::Client* client) override
+    {
+        DCHECK(!m_client);
+        DCHECK(client);
+        if (m_underlying)
+            m_underlying->setClient(client);
+        else
+            m_client = client;
+    }
+    void clearClient() override
+    {
+        if (m_underlying)
+            m_underlying->clearClient();
+        else
+            m_client = nullptr;
+    }
+    void cancel() override
+    {
+        if (m_underlying) {
+            m_underlying->cancel();
+        } else {
+            m_isCancelled = true;
+            m_client = nullptr;
+        }
+    }
+    PublicState getPublicState() const override
+    {
+        return m_underlying ? m_underlying->getPublicState() : m_isCancelled ? PublicState::Closed : PublicState::ReadableOrWaiting;
+    }
+    Error getError() const override
+    {
+        DCHECK(m_underlying);
+        // We must not be in the errored state until we get updated.
+        return m_underlying->getError();
+    }
+    String debugName() const override
+    {
+        return "SRIBytesConsumer";
+    }
+
+    // This function can be called at most once.
+    void update(BytesConsumer* consumer)
+    {
+        DCHECK(!m_underlying);
+        if (m_isCancelled) {
+            // This consumer has already been closed.
+            return;
+        }
+
+        m_underlying = consumer;
+        if (m_client) {
+            Client* client = m_client;
+            m_client = nullptr;
+            m_underlying->setClient(client);
+            if (getPublicState() != PublicState::ReadableOrWaiting)
+                client->onStateChange();
+        }
+    }
+
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_underlying);
+        visitor->trace(m_client);
+        BytesConsumer::trace(visitor);
+    }
+
+private:
+    Member<BytesConsumer> m_underlying;
+    Member<Client> m_client;
+    bool m_isCancelled = false;
+};
+
 
 } // namespace
 
@@ -80,7 +179,7 @@ public:
         // SRIVerifier takes ownership of |handle| and |response|.
         // |updater| must be garbage collected. The other arguments
         // all must have the lifetime of the give loader.
-        SRIVerifier(std::unique_ptr<WebDataConsumerHandle> handle, CompositeDataConsumerHandle::Updater* updater, Response* response, FetchManager::Loader* loader, String integrityMetadata, const KURL& url)
+        SRIVerifier(std::unique_ptr<WebDataConsumerHandle> handle, SRIBytesConsumer* updater, Response* response, FetchManager::Loader* loader, String integrityMetadata, const KURL& url)
             : m_handle(std::move(handle))
             , m_updater(updater)
             , m_response(response)
@@ -114,7 +213,7 @@ public:
             m_finished = true;
             if (r == WebDataConsumerHandle::Done) {
                 if (SubresourceIntegrity::CheckSubresourceIntegrity(m_integrityMetadata, m_buffer.data(), m_buffer.size(), m_url, *m_loader->document(), errorMessage)) {
-                    m_updater->update(FetchFormDataConsumerHandle::create(m_buffer.data(), m_buffer.size()));
+                    m_updater->update(new FormDataBytesConsumer(m_buffer.data(), m_buffer.size()));
                     m_loader->m_resolver->resolve(m_response);
                     m_loader->m_resolver.clear();
                     // FetchManager::Loader::didFinishLoading() can
@@ -128,7 +227,7 @@ public:
                     return;
                 }
             }
-            m_updater->update(createUnexpectedErrorDataConsumerHandle());
+            m_updater->update(new BytesConsumerForDataConsumerHandle(m_response->getExecutionContext(), createFetchDataConsumerHandleFromWebHandle(createUnexpectedErrorDataConsumerHandle())));
             m_loader->performNetworkError(errorMessage);
         }
 
@@ -142,7 +241,7 @@ public:
         }
     private:
         std::unique_ptr<WebDataConsumerHandle> m_handle;
-        Member<CompositeDataConsumerHandle::Updater> m_updater;
+        Member<SRIBytesConsumer> m_updater;
         // We cannot store a Response because its JS wrapper can be collected.
         // TODO(yhirano): Fix this.
         Member<Response> m_response;
@@ -296,11 +395,13 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
     }
 
     FetchResponseData* responseData = nullptr;
-    CompositeDataConsumerHandle::Updater* updater = nullptr;
-    if (m_request->integrity().isEmpty())
+    SRIBytesConsumer* sriConsumer = nullptr;
+    if (m_request->integrity().isEmpty()) {
         responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(std::move(handle))));
-    else
-        responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(scriptState, createFetchDataConsumerHandleFromWebHandle(CompositeDataConsumerHandle::create(createWaitingDataConsumerHandle(), &updater))));
+    } else {
+        sriConsumer = new SRIBytesConsumer();
+        responseData = FetchResponseData::createWithBuffer(new BodyStreamBuffer(scriptState, sriConsumer));
+    }
     responseData->setStatus(response.httpStatusCode());
     responseData->setStatusMessage(response.httpStatusText());
     for (auto& it : response.httpHeaderFields())
@@ -365,7 +466,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
         m_resolver.clear();
     } else {
         ASSERT(!m_integrityVerifier);
-        m_integrityVerifier = new SRIVerifier(std::move(handle), updater, r, this, m_request->integrity(), response.url());
+        m_integrityVerifier = new SRIVerifier(std::move(handle), sriConsumer, r, this, m_request->integrity(), response.url());
     }
 }
 
