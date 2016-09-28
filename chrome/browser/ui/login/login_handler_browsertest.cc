@@ -348,15 +348,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_Manual) {
   EXPECT_TRUE(observer.handlers().empty());
 }
 
-// Flaky on linux chromeos bots: crbug.com/648826.
-#if defined(OS_LINUX) && defined(OS_CHROMEOS)
-#define MAYBE_TestCancelAuth_OnNavigation DISABLED_TestCancelAuth_OnNavigation
-#else
-#define MAYBE_TestCancelAuth_OnNavigation TestCancelAuth_OnNavigation
-#endif
 // Test login prompt cancellation on navigation to a new page.
-IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
-                       MAYBE_TestCancelAuth_OnNavigation) {
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, TestCancelAuth_OnNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
   const GURL kAuthURL = embedded_test_server()->GetURL(kAuthBasicPage);
   const GURL kNoAuthURL = embedded_test_server()->GetURL(kNoAuthPage1);
@@ -367,8 +360,9 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   LoginPromptBrowserTestObserver observer;
   observer.Register(content::Source<NavigationController>(controller));
 
-  // One LOAD_STOP event for kAuthURL and one for kNoAuthURL.
-  const int kLoadStopEvents = 2;
+  // One LOAD_STOP event for LoginInterstitial, second for kAuthURL and third
+  // for kNoAuthURL.
+  const int kLoadStopEvents = 3;
   WindowedLoadStopObserver load_stop_waiter(controller, kLoadStopEvents);
   WindowedAuthNeededObserver auth_needed_waiter(controller);
   browser()->OpenURL(OpenURLParams(kAuthURL, Referrer(),
