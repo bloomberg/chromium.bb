@@ -34,6 +34,7 @@ class JsonPrefStoreCallbackTest;
 class JsonPrefStoreLossyWriteTest;
 class SequencedTaskRunner;
 class SequencedWorkerPool;
+class WriteCallbacksObserver;
 class Value;
 FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestBasic);
 FORWARD_DECLARE_TEST(JsonPrefStoreTest, WriteCountHistogramTestSinglePeriod);
@@ -49,6 +50,11 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
       public base::NonThreadSafe {
  public:
   struct ReadResult;
+
+  // A pair of callbacks to call before and after the preference file is written
+  // to disk.
+  using OnWriteCallbackPair =
+      std::pair<base::Closure, base::Callback<void(bool success)>>;
 
   // Returns instance of SequencedTaskRunner which guarantees that file
   // operations on the same file will be executed in sequenced order.
@@ -114,12 +120,6 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   void RegisterOnNextSuccessfulWriteReply(
       const base::Closure& on_next_successful_write_reply);
 
-  // Registers |on_next_write_callback| to be called once synchronously, on the
-  // next write event of |writer_|.
-  // |on_next_write_callback| must be thread-safe.
-  void RegisterOnNextWriteSynchronousCallback(
-      const base::Callback<void(bool success)>& on_next_write_callback);
-
   void ClearMutableValues() override;
 
  private:
@@ -181,6 +181,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
                            WriteCountHistogramTestPeriodWithGaps);
   friend class base::JsonPrefStoreCallbackTest;
   friend class base::JsonPrefStoreLossyWriteTest;
+  friend class base::WriteCallbacksObserver;
 
   ~JsonPrefStore() override;
 
@@ -196,6 +197,11 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
       const base::Callback<void(bool success)>& on_next_write_callback,
       scoped_refptr<base::SequencedTaskRunner> reply_task_runner,
       bool write_success);
+
+  // Registers the |callbacks| pair to be called once synchronously before and
+  // after, respectively, the next write event of |writer_|.
+  // Both callbacks must be thread-safe.
+  void RegisterOnNextWriteSynchronousCallbacks(OnWriteCallbackPair callbacks);
 
   // This method is called after the JSON file has been read.  It then hands
   // |value| (or an empty dictionary in some read error cases) to the
@@ -247,7 +253,7 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   std::set<std::string> keys_need_empty_value_;
 
   bool has_pending_successful_write_reply_;
-  bool has_pending_write_callback_;
+  bool has_pending_write_callbacks_;
   base::Closure on_next_successful_write_reply_;
 
   WriteCountHistogram write_count_histogram_;

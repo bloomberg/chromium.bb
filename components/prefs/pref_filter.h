@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/callback_forward.h"
 #include "components/prefs/base_prefs_export.h"
@@ -20,13 +21,17 @@ class Value;
 // Currently supported only by JsonPrefStore.
 class COMPONENTS_PREFS_EXPORT PrefFilter {
  public:
+  // A pair of pre-write and post-write callbacks.
+  using OnWriteCallbackPair =
+      std::pair<base::Closure, base::Callback<void(bool success)>>;
+
   // A callback to be invoked when |prefs| have been read (and possibly
   // pre-modified) and are now ready to be handed back to this callback's
   // builder. |schedule_write| indicates whether a write should be immediately
   // scheduled (typically because the |prefs| were pre-modified).
-  typedef base::Callback<void(std::unique_ptr<base::DictionaryValue> prefs,
-                              bool schedule_write)>
-      PostFilterOnLoadCallback;
+  using PostFilterOnLoadCallback =
+      base::Callback<void(std::unique_ptr<base::DictionaryValue> prefs,
+                          bool schedule_write)>;
 
   virtual ~PrefFilter() {}
 
@@ -49,7 +54,10 @@ class COMPONENTS_PREFS_EXPORT PrefFilter {
   // contained in |pref_store_contents| to a string. Modifications to
   // |pref_store_contents| will be persisted to disk and also affect the
   // in-memory state.
-  virtual void FilterSerializeData(
+  // If the returned callbacks are non-null, they will be registered to be
+  // invoked synchronously after the next write (from the I/O TaskRunner so they
+  // must not be bound to thread-unsafe member state).
+  virtual OnWriteCallbackPair FilterSerializeData(
       base::DictionaryValue* pref_store_contents) = 0;
 };
 

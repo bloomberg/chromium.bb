@@ -94,15 +94,17 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
   // Serialize data pending to be saved and execute write on backend thread.
   void DoScheduledWrite();
 
-  // Registers |on_next_write_callback| to be synchronously invoked from
-  // WriteFileAtomically() on its next write (i.e. from |task_runner_|), with
-  // |success| indicating whether it succeeded or not.
-  // |on_next_write_callback| must be thread safe, as it will be called on
-  // |task_runner_| and may be called during Chrome shutdown.
+  // Registers |before_next_write_callback| and |after_next_write_callback| to
+  // be synchronously invoked from WriteFileAtomically() before its next write
+  // and after its next write, respectively. The boolean passed to
+  // |after_next_write_callback| indicates whether the write was successful.
+  // Both callbacks must be thread safe as they will be called on |task_runner_|
+  // and may be called during Chrome shutdown.
   // If called more than once before a write is scheduled on |task_runner|, the
-  // latest callback clobbers the others.
-  void RegisterOnNextWriteCallback(
-      const Callback<void(bool success)>& on_next_write_callback);
+  // latest callbacks clobber the others.
+  void RegisterOnNextWriteCallbacks(
+      const Closure& before_next_write_callback,
+      const Callback<void(bool success)>& after_next_write_callback);
 
   TimeDelta commit_interval() const {
     return commit_interval_;
@@ -110,7 +112,8 @@ class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
 
  private:
   // Invoked synchronously on the next write event.
-  Callback<void(bool success)> on_next_write_callback_;
+  Closure before_next_write_callback_;
+  Callback<void(bool success)> after_next_write_callback_;
 
   // Path being written to.
   const FilePath path_;

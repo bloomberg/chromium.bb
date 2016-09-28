@@ -47,9 +47,11 @@ class SimpleInterceptablePrefFilter : public InterceptablePrefFilter {
  public:
   // PrefFilter remaining implementation.
   void FilterUpdate(const std::string& path) override { ADD_FAILURE(); }
-  void FilterSerializeData(
+  OnWriteCallbackPair FilterSerializeData(
       base::DictionaryValue* pref_store_contents) override {
     ADD_FAILURE();
+    return std::make_pair(base::Closure(),
+                          base::Callback<void(bool success)>());
   }
 
  private:

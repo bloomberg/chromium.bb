@@ -57,13 +57,18 @@ void LogFailure(const FilePath& path, TempFileFailure failure_code,
 
 // Helper function to call WriteFileAtomically() with a
 // std::unique_ptr<std::string>.
-void WriteScopedStringToFileAtomically(const FilePath& path,
-                                       std::unique_ptr<std::string> data,
-                                       Callback<void(bool success)> callback) {
+void WriteScopedStringToFileAtomically(
+    const FilePath& path,
+    std::unique_ptr<std::string> data,
+    Closure before_write_callback,
+    Callback<void(bool success)> after_write_callback) {
+  if (!before_write_callback.is_null())
+    before_write_callback.Run();
+
   bool result = ImportantFileWriter::WriteFileAtomically(path, *data);
 
-  if (!callback.is_null())
-    callback.Run(result);
+  if (!after_write_callback.is_null())
+    after_write_callback.Run(result);
 }
 
 }  // namespace
@@ -173,7 +178,8 @@ void ImportantFileWriter::WriteNow(std::unique_ptr<std::string> data) {
     timer_.Stop();
 
   Closure task = Bind(&WriteScopedStringToFileAtomically, path_, Passed(&data),
-                      Passed(&on_next_write_callback_));
+                      Passed(&before_next_write_callback_),
+                      Passed(&after_next_write_callback_));
 
   if (!task_runner_->PostTask(FROM_HERE, MakeCriticalClosure(task))) {
     // Posting the task to background message loop is not expected
@@ -209,9 +215,11 @@ void ImportantFileWriter::DoScheduledWrite() {
   serializer_ = nullptr;
 }
 
-void ImportantFileWriter::RegisterOnNextWriteCallback(
-    const Callback<void(bool success)>& on_next_write_callback) {
-  on_next_write_callback_ = on_next_write_callback;
+void ImportantFileWriter::RegisterOnNextWriteCallbacks(
+    const Closure& before_next_write_callback,
+    const Callback<void(bool success)>& after_next_write_callback) {
+  before_next_write_callback_ = before_next_write_callback;
+  after_next_write_callback_ = after_next_write_callback;
 }
 
 }  // namespace base

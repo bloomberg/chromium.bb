@@ -69,6 +69,7 @@ void SetCurrentTimeInMinutes(double minutes, base::SimpleTestClock* clock) {
 class InterceptingPrefFilter : public PrefFilter {
  public:
   InterceptingPrefFilter();
+  InterceptingPrefFilter(OnWriteCallbackPair callback_pair);
   ~InterceptingPrefFilter() override;
 
   // PrefFilter implementation:
@@ -76,8 +77,10 @@ class InterceptingPrefFilter : public PrefFilter {
       const PostFilterOnLoadCallback& post_filter_on_load_callback,
       std::unique_ptr<base::DictionaryValue> pref_store_contents) override;
   void FilterUpdate(const std::string& path) override {}
-  void FilterSerializeData(
-      base::DictionaryValue* pref_store_contents) override {}
+  OnWriteCallbackPair FilterSerializeData(
+      base::DictionaryValue* pref_store_contents) override {
+    return on_write_callback_pair_;
+  }
 
   bool has_intercepted_prefs() const { return intercepted_prefs_ != NULL; }
 
@@ -88,11 +91,18 @@ class InterceptingPrefFilter : public PrefFilter {
  private:
   PostFilterOnLoadCallback post_filter_on_load_callback_;
   std::unique_ptr<base::DictionaryValue> intercepted_prefs_;
+  OnWriteCallbackPair on_write_callback_pair_;
 
   DISALLOW_COPY_AND_ASSIGN(InterceptingPrefFilter);
 };
 
 InterceptingPrefFilter::InterceptingPrefFilter() {}
+
+InterceptingPrefFilter::InterceptingPrefFilter(
+    OnWriteCallbackPair callback_pair) {
+  on_write_callback_pair_ = callback_pair;
+}
+
 InterceptingPrefFilter::~InterceptingPrefFilter() {}
 
 void InterceptingPrefFilter::FilterOnLoad(
@@ -1006,37 +1016,61 @@ enum WriteCallbackObservationState {
   CALLED_WITH_SUCCESS,
 };
 
-class WriteCallbackObserver {
+class WriteCallbacksObserver {
  public:
-  WriteCallbackObserver() = default;
+  WriteCallbacksObserver() = default;
 
   // Register OnWrite() to be called on the next write of |json_pref_store|.
   void ObserveNextWriteCallback(JsonPrefStore* json_pref_store);
 
-  // Returns true if a write was observed via OnWrite()
-  // and resets the observation state to false regardless.
-  WriteCallbackObservationState GetAndResetObservationState();
+  // Returns whether OnPreWrite() was called, and resets the observation state
+  // to false.
+  bool GetAndResetPreWriteObservationState();
 
-  void OnWrite(bool success) {
-    EXPECT_EQ(NOT_CALLED, observation_state_);
-    observation_state_ = success ? CALLED_WITH_SUCCESS : CALLED_WITH_ERROR;
+  // Returns the |WriteCallbackObservationState| which was observed, then resets
+  // it to |NOT_CALLED|.
+  WriteCallbackObservationState GetAndResetPostWriteObservationState();
+
+  JsonPrefStore::OnWriteCallbackPair GetCallbackPair() {
+    return std::make_pair(
+        base::Bind(&WriteCallbacksObserver::OnPreWrite, base::Unretained(this)),
+        base::Bind(&WriteCallbacksObserver::OnPostWrite,
+                   base::Unretained(this)));
+  }
+
+  void OnPreWrite() {
+    EXPECT_FALSE(pre_write_called_);
+    pre_write_called_ = true;
+  }
+
+  void OnPostWrite(bool success) {
+    EXPECT_EQ(NOT_CALLED, post_write_observation_state_);
+    post_write_observation_state_ =
+        success ? CALLED_WITH_SUCCESS : CALLED_WITH_ERROR;
   }
 
  private:
-  WriteCallbackObservationState observation_state_ = NOT_CALLED;
+  bool pre_write_called_ = false;
+  WriteCallbackObservationState post_write_observation_state_ = NOT_CALLED;
 
-  DISALLOW_COPY_AND_ASSIGN(WriteCallbackObserver);
+  DISALLOW_COPY_AND_ASSIGN(WriteCallbacksObserver);
 };
 
-void WriteCallbackObserver::ObserveNextWriteCallback(JsonPrefStore* writer) {
-  writer->RegisterOnNextWriteSynchronousCallback(
-      base::Bind(&WriteCallbackObserver::OnWrite, base::Unretained(this)));
+void WriteCallbacksObserver::ObserveNextWriteCallback(JsonPrefStore* writer) {
+  writer->RegisterOnNextWriteSynchronousCallbacks(GetCallbackPair());
+}
+
+bool WriteCallbacksObserver::GetAndResetPreWriteObservationState() {
+  bool observation_state = pre_write_called_;
+  pre_write_called_ = false;
+  return observation_state;
 }
 
 WriteCallbackObservationState
-WriteCallbackObserver::GetAndResetObservationState() {
-  WriteCallbackObservationState state = observation_state_;
-  observation_state_ = NOT_CALLED;
+WriteCallbacksObserver::GetAndResetPostWriteObservationState() {
+  WriteCallbackObservationState state = post_write_observation_state_;
+  pre_write_called_ = false;
+  post_write_observation_state_ = NOT_CALLED;
   return state;
 }
 
@@ -1064,13 +1098,13 @@ class JsonPrefStoreCallbackTest : public JsonPrefStoreTest {
     JsonPrefStore::PostWriteCallback(
         base::Bind(&JsonPrefStore::RunOrScheduleNextSuccessfulWriteCallback,
                    pref_store->AsWeakPtr()),
-        base::Bind(&WriteCallbackObserver::OnWrite,
+        base::Bind(&WriteCallbacksObserver::OnPostWrite,
                    base::Unretained(&write_callback_observer_)),
         base::SequencedTaskRunnerHandle::Get(), success);
   }
 
   SuccessfulWriteReplyObserver successful_write_reply_observer_;
-  WriteCallbackObserver write_callback_observer_;
+  WriteCallbacksObserver write_callback_observer_;
 
  private:
   base::FilePath test_file_;
@@ -1078,44 +1112,82 @@ class JsonPrefStoreCallbackTest : public JsonPrefStoreTest {
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreCallbackTest);
 };
 
-TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallback) {
+TEST_F(JsonPrefStoreCallbackTest, TestSerializeDataCallbacks) {
+  base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
+  ASSERT_LT(0,
+            base::WriteFile(input_file, kReadJson, arraysize(kReadJson) - 1));
+
+  std::unique_ptr<InterceptingPrefFilter> intercepting_pref_filter(
+      new InterceptingPrefFilter(write_callback_observer_.GetCallbackPair()));
+  scoped_refptr<JsonPrefStore> pref_store =
+      new JsonPrefStore(input_file, message_loop_.task_runner(),
+                        std::move(intercepting_pref_filter));
+  ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store.get());
+
+  EXPECT_EQ(NOT_CALLED,
+            write_callback_observer_.GetAndResetPostWriteObservationState());
+  pref_store->SetValue("normal", base::MakeUnique<base::StringValue>("normal"),
+                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+  file_writer->DoScheduledWrite();
+
+  // The observer should not be invoked right away.
+  EXPECT_FALSE(write_callback_observer_.GetAndResetPreWriteObservationState());
+  EXPECT_EQ(NOT_CALLED,
+            write_callback_observer_.GetAndResetPostWriteObservationState());
+
+  RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(write_callback_observer_.GetAndResetPreWriteObservationState());
+  EXPECT_EQ(CALLED_WITH_SUCCESS,
+            write_callback_observer_.GetAndResetPostWriteObservationState());
+}
+
+TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbacks) {
   scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
   ImportantFileWriter* file_writer = GetImportantFileWriter(pref_store.get());
 
-  // Test RegisterOnNextWriteSynchronousCallback after
+  // Test RegisterOnNextWriteSynchronousCallbacks after
   // RegisterOnNextSuccessfulWriteReply.
   successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
   write_callback_observer_.ObserveNextWriteCallback(pref_store.get());
   file_writer->WriteNow(MakeUnique<std::string>("foo"));
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
-  EXPECT_TRUE(write_callback_observer_.GetAndResetObservationState());
+  EXPECT_TRUE(write_callback_observer_.GetAndResetPreWriteObservationState());
+  EXPECT_EQ(CALLED_WITH_SUCCESS,
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 
   // Test RegisterOnNextSuccessfulWriteReply after
-  // RegisterOnNextWriteSynchronousCallback.
+  // RegisterOnNextWriteSynchronousCallbacks.
   successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
   write_callback_observer_.ObserveNextWriteCallback(pref_store.get());
   file_writer->WriteNow(MakeUnique<std::string>("foo"));
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
-  EXPECT_TRUE(write_callback_observer_.GetAndResetObservationState());
+  EXPECT_TRUE(write_callback_observer_.GetAndResetPreWriteObservationState());
+  EXPECT_EQ(CALLED_WITH_SUCCESS,
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 
   // Test RegisterOnNextSuccessfulWriteReply only.
   successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
   file_writer->WriteNow(MakeUnique<std::string>("foo"));
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
-  EXPECT_FALSE(write_callback_observer_.GetAndResetObservationState());
+  EXPECT_FALSE(write_callback_observer_.GetAndResetPreWriteObservationState());
+  EXPECT_EQ(NOT_CALLED,
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 
-  // Test RegisterOnNextWriteSynchronousCallback only.
+  // Test RegisterOnNextWriteSynchronousCallbacks only.
   write_callback_observer_.ObserveNextWriteCallback(pref_store.get());
   file_writer->WriteNow(MakeUnique<std::string>("foo"));
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(successful_write_reply_observer_.GetAndResetObservationState());
-  EXPECT_TRUE(write_callback_observer_.GetAndResetObservationState());
+  EXPECT_TRUE(write_callback_observer_.GetAndResetPreWriteObservationState());
+  EXPECT_EQ(CALLED_WITH_SUCCESS,
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 }
 
-TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbackWithFakeFailure) {
+TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbacksWithFakeFailure) {
   scoped_refptr<JsonPrefStore> pref_store = CreatePrefStore();
 
   // Confirm that the observers are invoked.
@@ -1124,11 +1196,12 @@ TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbackWithFakeFailure) {
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
   EXPECT_EQ(CALLED_WITH_SUCCESS,
-            write_callback_observer_.GetAndResetObservationState());
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 
   // Confirm that the observation states were reset.
   EXPECT_FALSE(successful_write_reply_observer_.GetAndResetObservationState());
-  EXPECT_EQ(NOT_CALLED, write_callback_observer_.GetAndResetObservationState());
+  EXPECT_EQ(NOT_CALLED,
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 
   // Confirm that re-installing the observers works for another write.
   successful_write_reply_observer_.ObserveNextWriteCallback(pref_store.get());
@@ -1136,7 +1209,7 @@ TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbackWithFakeFailure) {
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
   EXPECT_EQ(CALLED_WITH_SUCCESS,
-            write_callback_observer_.GetAndResetObservationState());
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 
   // Confirm that the successful observer is not invoked by an unsuccessful
   // write, and that the synchronous observer is invoked.
@@ -1145,7 +1218,7 @@ TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbackWithFakeFailure) {
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(successful_write_reply_observer_.GetAndResetObservationState());
   EXPECT_EQ(CALLED_WITH_ERROR,
-            write_callback_observer_.GetAndResetObservationState());
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 
   // Do a real write, and confirm that the successful observer was invoked after
   // being set by |PostWriteCallback| by the last TriggerFakeWriteCallback.
@@ -1153,10 +1226,11 @@ TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbackWithFakeFailure) {
   file_writer->WriteNow(MakeUnique<std::string>("foo"));
   RunLoop().RunUntilIdle();
   EXPECT_TRUE(successful_write_reply_observer_.GetAndResetObservationState());
-  EXPECT_EQ(NOT_CALLED, write_callback_observer_.GetAndResetObservationState());
+  EXPECT_EQ(NOT_CALLED,
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 }
 
-TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbackDuringProfileDeath) {
+TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbacksDuringProfileDeath) {
   // Create a JsonPrefStore and attach observers to it, then delete it by making
   // it go out of scope to simulate profile switch or Chrome shutdown.
   {
@@ -1172,8 +1246,9 @@ TEST_F(JsonPrefStoreCallbackTest, TestPostWriteCallbackDuringProfileDeath) {
   }
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(successful_write_reply_observer_.GetAndResetObservationState());
+  EXPECT_TRUE(write_callback_observer_.GetAndResetPreWriteObservationState());
   EXPECT_EQ(CALLED_WITH_SUCCESS,
-            write_callback_observer_.GetAndResetObservationState());
+            write_callback_observer_.GetAndResetPostWriteObservationState());
 }
 
 }  // namespace base

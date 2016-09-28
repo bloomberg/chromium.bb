@@ -101,7 +101,8 @@ class PrefHashFilter : public InterceptablePrefFilter {
 
   // PrefFilter remaining implementation.
   void FilterUpdate(const std::string& path) override;
-  void FilterSerializeData(base::DictionaryValue* pref_store_contents) override;
+  OnWriteCallbackPair FilterSerializeData(
+      base::DictionaryValue* pref_store_contents) override;
 
  private:
   // InterceptablePrefFilter implementation.

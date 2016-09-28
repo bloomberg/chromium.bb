@@ -156,7 +156,7 @@ void PrefHashFilter::FilterUpdate(const std::string& path) {
 // Updates the stored hashes for |changed_paths_| before serializing data to
 // disk. This is required as storing the hash everytime a pref's value changes
 // is too expensive (see perf regression @ http://crbug.com/331273).
-void PrefHashFilter::FilterSerializeData(
+PrefFilter::OnWriteCallbackPair PrefHashFilter::FilterSerializeData(
     base::DictionaryValue* pref_store_contents) {
   if (!changed_paths_.empty()) {
     base::TimeTicks checkpoint = base::TimeTicks::Now();
@@ -180,6 +180,9 @@ void PrefHashFilter::FilterSerializeData(
     UMA_HISTOGRAM_TIMES("Settings.FilterSerializeDataTime",
                         base::TimeTicks::Now() - checkpoint);
   }
+
+  // TODO(proberge): return callbacks if external validation is enabled.
+  return std::make_pair(base::Closure(), base::Callback<void(bool success)>());
 }
 
 void PrefHashFilter::FinalizeFilterOnLoad(
