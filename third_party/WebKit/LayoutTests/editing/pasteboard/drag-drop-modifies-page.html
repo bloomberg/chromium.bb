@@ -1,38 +1,30 @@
-<html> 
-<head>
-<script src=../editing.js type="text/javascript"></script>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-function editingTest() {
-  
-    if (!window.testRunner)
-        return;
-    if (window.internals)
-        internals.settings.setEditingBehavior("mac");
+test(() => {
+    assert_not_equals(window.eventSender, undefined,
+        'This test requires eventSender');
 
-    extendSelectionForwardByWordCommand();
-    
-    window.testRunner.waitUntilDone();
-    
-    // Drag 'hello'
-    var e = document.getElementById("dragme");
-    x = e.offsetLeft + 10;
-    y = e.offsetTop + e.offsetHeight / 2;
-    eventSender.mouseMoveTo(x, y);
-    eventSender.mouseDown();
-    // and drop it off to the right somewhere
-    eventSender.leapForward(500);
-    eventSender.mouseMoveTo(x + 300, y);
-    eventSender.mouseUp();
-
-    window.testRunner.notifyDone();
-}
+    assert_selection(
+        '<div contenteditable><span id="dragme">^hello|</span> world</div>',
+        selection => {
+            // Drag 'hello'
+            const dragMe = selection.document.getElementById('dragme');
+            const editor = dragMe.parentNode;
+            const editorLeft = editor.offsetLeft + selection.document.offsetLeft;
+            const editorTop = editor.offsetTop + selection.document.offsetTop;
+            const x = editorLeft + dragMe.offsetWidth / 2;
+            const y = editorTop + dragMe.offsetHeight / 2;
+            eventSender.mouseMoveTo(x, y);
+            eventSender.mouseDown();
+            // and drop it off to the right somewhere
+            eventSender.leapForward(500);
+            eventSender.mouseMoveTo(editorLeft + editor.offsetWidth, y);
+            eventSender.mouseUp();
+        },
+        '<div contenteditable>world^hello|</div>',
+        'Drag "hello" after "wold"');
+});
 </script>
-<title>Drag and drop within a text input field modifies page</title> 
-</head> 
-<body>
-<p>This tests non-smartmove drag/drop. The space should be deleted on move,
-but not reinserted on drop, resulting in "worldhello".</p>
-<div contenteditable="true" id="test"><span id="dragme">hello</span> world</div>
-<script>runEditingTest();</script>
-</body>
-</html>
