@@ -898,8 +898,8 @@ extract the hidden &#8220;.git&#8221; folder which is necessary for <em>depot_to
 autoupdate itself. You can use &#8220;Extract all&#8230;&#8221; from the context menu though.</td>
 </tr></table>
 </div>
-<div class="paragraph"><p>Add <em>depot_tools</em> to the <em>end</em> of your PATH. Assuming you unzipped the
-bundle to <code>C:\workspace\depot_tools</code>:</p></div>
+<div class="paragraph"><p>Add <em>depot_tools</em> to the <em>start</em> of your PATH (must be ahead of any installs of
+Python). Assuming you unzipped the bundle to <code>C:\workspace\depot_tools</code>:</p></div>
 <div class="dlist"><dl>
 <dt class="hdlist1">
 With Administrator access: 
@@ -917,7 +917,7 @@ Without Administrator access:
 <p>
   <strong>Control Panel &#8594; User Accounts &#8594; User Accounts &#8594; Change my environment variables</strong>
 </p>
-<div class="paragraph"><p>Add a PATH user variable: <code>%PATH%;C:\workspace\depot_tools</code>.</p></div>
+<div class="paragraph"><p>Add a PATH user variable: <code>C:\workspace\depot_tools;%PATH%</code>.</p></div>
 </dd>
 </dl></div>
 <div class="paragraph"><p>From a <code>cmd.exe</code> shell, run the command <code>gclient</code> (without arguments). On first
@@ -946,10 +946,10 @@ If you see strange errors with the file system on the first run of gclient,
 </li>
 <li>
 <p>
-If you are running Windows XP and see errors like &#8220;The system cannot execute
-  the specified program&#8221;, try installing the
-  <a href="http://code.google.com/p/chromium/issues/detail?id=75886">&#8220;Microsoft
-  Visual C++ 2008 Redistributable Package&#8221;</a>.
+After running gclient open a command prompt and type <code>where python</code> and confirm that
+  the depot_tools python.bat comes ahead of any copies of python.exe. Failing to ensure
+  this can lead to overbuilding when using gn - see
+  <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=611087">crbug.com/611087</a>.
 </p>
 </li>
 </ul></div>
@@ -1573,14 +1573,14 @@ LKGR
 <div class="sectionbody">
 <div class="paragraph"><p>Part of the chromium <a href="depot_tools.html">depot_tools(7)</a> suite. These tools are meant to
 assist with the development of chromium and related projects. Download the tools
-from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools">here</a>.</p></div>
+from <a href="https://chromium.googlesource.com/chromium/tools/depot_tools.git">here</a>.</p></div>
 </div>
 </div>
 </div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-07-21 10:09:00 PDT
+Last updated 2016-09-28 15:37:50 PDT
 </div>
 </div>
 </body>

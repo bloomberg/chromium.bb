@@ -96,8 +96,8 @@ extract it somewhere.
 extract the hidden ``.git'' folder which is necessary for 'depot_tools' to
 autoupdate itself. You can use ``Extract all...'' from the context menu though.
 
-Add 'depot_tools' to the 'end' of your PATH. Assuming you unzipped the
-bundle to `C:\workspace\depot_tools`:
+Add 'depot_tools' to the 'start' of your PATH (must be ahead of any installs of
+Python). Assuming you unzipped the bundle to `C:\workspace\depot_tools`:
 
 With Administrator access: ::
   *Control Panel -> System and Security -> System -> Advanced system settings*
@@ -107,7 +107,7 @@ Modify the PATH system variable to include `C:\workspace\depot_tools`.
 Without Administrator access: ::
   *Control Panel -> User Accounts -> User Accounts -> Change my environment variables*
 +
-Add a PATH user variable: `%PATH%;C:\workspace\depot_tools`.
+Add a PATH user variable: `C:\workspace\depot_tools;%PATH%`.
 
 From a `cmd.exe` shell, run the command `gclient` (without arguments). On first
 run, gclient will install all the Windows-specific bits needed to work with the
@@ -121,10 +121,10 @@ code, including msysgit and python.
 * If you see strange errors with the file system on the first run of gclient,
   you may want to link:http://tortoisesvn.tigris.org/faq.html#cantmove2[disable
   Windows Indexing].
-* If you are running Windows XP and see errors like ``The system cannot execute
-  the specified program'', try installing the
-  link:http://code.google.com/p/chromium/issues/detail?id=75886[``Microsoft
-  Visual C++ 2008 Redistributable Package''].
+* After running gclient open a command prompt and type `where python` and confirm that
+  the depot_tools python.bat comes ahead of any copies of python.exe. Failing to ensure
+  this can lead to overbuilding when using gn - see
+  link:https://bugs.chromium.org/p/chromium/issues/detail?id=611087[crbug.com/611087].
 =====
 endif::backend-xhtml11[]
 
