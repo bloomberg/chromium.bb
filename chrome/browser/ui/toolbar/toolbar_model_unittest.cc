@@ -38,8 +38,8 @@ struct TestItem {
     base::ASCIIToUTF16("view-source:chrome://newtab")
   },
   {
-    GURL("chrome-extension://monkey/balls.html"),
-    base::ASCIIToUTF16("chrome-extension://monkey/balls.html")
+    GURL("chrome-extension://foo/bar.html"),
+    base::ASCIIToUTF16("chrome-extension://foo/bar.html")
   },
   {
     GURL(url::kAboutBlankURL),

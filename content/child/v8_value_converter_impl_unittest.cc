@@ -236,7 +236,7 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
       "    \"hot\": \"dog\",\n"
       "  }, \n"
       "  \"empty-dictionary\": {}, \n"
-      "  \"list\": [ \"monkey\", \"balls\" ], \n"
+      "  \"list\": [ \"bar\", \"foo\" ], \n"
       "  \"empty-list\": [], \n"
       "}");
 
