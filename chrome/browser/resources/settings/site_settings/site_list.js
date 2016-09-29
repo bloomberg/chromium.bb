@@ -130,7 +130,7 @@ Polymer({
    * @private
    */
   siteWithinCategoryChanged_: function(category, site) {
-    if (category == this.category || this.category == settings.ALL_SITES)
+    if (category == this.category || this.allSites)
       this.configureWidget_();
   },
 
@@ -205,6 +205,8 @@ Polymer({
    * @return {string} The icon to show (or blank, if none).
    */
   computeIconControlledBy_: function(item) {
+    if (this.allSites)
+      return '';
     return iconControlledBy[item.source] || '';
   },
 
@@ -320,7 +322,7 @@ Polymer({
    */
   appendSiteList_: function(sites, exceptionList) {
     for (var i = 0; i < exceptionList.length; ++i) {
-      if (this.category != settings.ALL_SITES) {
+      if (!this.allSites) {
         if (exceptionList[i].setting == settings.PermissionValues.DEFAULT)
           continue;
 
