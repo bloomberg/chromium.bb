@@ -22,6 +22,7 @@
 #include "content/common/page_state_serialization.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/site_isolation_policy.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
@@ -259,7 +260,8 @@ NavigationEntryImpl::NavigationEntryImpl(
       should_replace_entry_(false),
       should_clear_history_list_(false),
       can_load_local_resources_(false),
-      frame_tree_node_id_(-1) {
+      frame_tree_node_id_(-1),
+      reload_type_(ReloadType::NONE) {
 #if defined(OS_ANDROID)
   has_user_gesture_ = false;
 #endif
@@ -639,6 +641,7 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
 #if defined(OS_ANDROID)
   copy->has_user_gesture_ = has_user_gesture_;
 #endif
+  // ResetForCommit: reload_type_
   copy->extra_data_ = extra_data_;
 
   return copy;
@@ -753,6 +756,7 @@ void NavigationEntryImpl::ResetForCommit(FrameNavigationEntry* frame_entry) {
 
   set_should_clear_history_list(false);
   set_frame_tree_node_id(-1);
+  set_reload_type(ReloadType::NONE);
 
   if (frame_entry)
     frame_entry->set_source_site_instance(nullptr);

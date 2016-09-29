@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -6232,6 +6233,118 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // the dialog IPC is allowed to spawn a dialog, the call by the WebContents to
   // its delegate to get the JavaScriptDialogManager will cause a CHECK and the
   // test will fail.
+}
+
+namespace {
+
+// Execute JavaScript without the user gesture flag set, and wait for the
+// triggered load finished.
+void ExecuteJavaScriptAndWaitForLoadStop(WebContents* web_contents,
+                                         const std::string script) {
+  // WaitForLoadStop() does not work to wait for loading that is triggered by
+  // JavaScript asynchronously.
+  TestNavigationObserver observer(web_contents);
+
+  // ExecuteScript() sets a user gesture flag internally for testing, but we
+  // want to run JavaScript without the flag.  Call ExecuteJavaScriptForTests
+  // directory.
+  static_cast<WebContentsImpl*>(web_contents)
+      ->GetMainFrame()
+      ->ExecuteJavaScriptForTests(base::UTF8ToUTF16(script));
+
+  observer.Wait();
+}
+
+}  // namespace
+
+// Check if consecutive reloads can be correctly captured by metrics.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       ConsecutiveReloadMetrics) {
+  base::HistogramTester histogram;
+
+  const char kReloadToReloadMetricName[] =
+      "Navigation.Reload.ReloadToReloadDuration";
+  const char kReloadMainResourceToReloadMetricName[] =
+      "Navigation.Reload.ReloadMainResourceToReloadDuration";
+
+  // Navigate to a page, and check if metrics are initialized correctly.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+                             "/navigation_controller/page_with_links.html"));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 0);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 0);
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  // ReloadToRefreshContent triggers a reload of ReloadType::MAIN_RESOURCE.  The
+  // first reload should not be counted.
+  controller.ReloadToRefreshContent(false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 0);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 0);
+
+  // ReloadBypassingCache triggers a reload of ReloadType::BYPASSING_CACHE.
+  // Both metrics should count the consecutive reloads.
+  controller.ReloadBypassingCache(false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 1);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
+
+  // Triggers another reload of ReloadType::BYPASSING_CACHE.
+  // ReloadMainResourceToReload should not be counted here.
+  controller.ReloadBypassingCache(false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 2);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
+
+  // A browser-initiated navigation should reset the reload tracking
+  // information.
+  NavigateToURL(shell(), embedded_test_server()->GetURL(
+                             "/navigation_controller/simple_page_1.html"));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 2);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
+
+  // Then, the next reload should be assumed as the first reload.  Metrics
+  // should not be changed for the first reload.
+  controller.ReloadToRefreshContent(false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 2);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
+
+  // Another reload of ReloadType::MAIN_RESOURCE should be counted by both
+  // metrics again.
+  controller.ReloadToRefreshContent(false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 3);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 2);
+
+  // A renderer-initiated navigations with no user gesture don't reset reload
+  // tracking information, and the following reload will be counted by metrics.
+  ExecuteJavaScriptAndWaitForLoadStop(
+      shell()->web_contents(),
+      "history.pushState({}, 'page 1', 'simple_page_1.html')");
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 3);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 2);
+  ExecuteJavaScriptAndWaitForLoadStop(shell()->web_contents(),
+                                      "location.href='simple_page_2.html'");
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 3);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 2);
+
+  controller.ReloadToRefreshContent(false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
+
+  // Go back to the first page. Reload tracking information should be reset.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
+
+  controller.ReloadToRefreshContent(false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
+  histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
 }
 
 }  // namespace content

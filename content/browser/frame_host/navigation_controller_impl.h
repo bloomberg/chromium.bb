@@ -451,6 +451,13 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   std::unique_ptr<NavigationEntryScreenshotManager> screenshot_manager_;
 
+  // Used for tracking consecutive reload requests.  If the last user-initiated
+  // navigation (either browser-initiated or renderer-initiated with a user
+  // gesture) was a reload, these hold the ReloadType and timestamp.  Otherwise
+  // these are ReloadType::NONE and a null timestamp, respectively.
+  ReloadType last_committed_reload_type_;
+  base::Time last_committed_reload_time_;
+
   DISALLOW_COPY_AND_ASSIGN(NavigationControllerImpl);
 };
 
