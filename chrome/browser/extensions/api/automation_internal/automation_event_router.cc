@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/api/automation_api_constants.h"
 #include "chrome/common/extensions/api/automation_internal.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/notification_service.h"
@@ -62,7 +63,7 @@ void AutomationEventRouter::RegisterListenerWithDesktopPermission(
   Register(extension_id,
            listener_process_id,
            listener_routing_id,
-           0  /* desktop tree ID */,
+           api::automation::kDesktopTreeID,
            true);
 }
 

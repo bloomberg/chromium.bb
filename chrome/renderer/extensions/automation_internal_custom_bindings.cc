@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/common/extensions/api/automation_api_constants.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
 #include "content/public/renderer/render_frame.h"
@@ -147,6 +148,17 @@ static gfx::Rect ComputeGlobalNodeBounds(TreeCache* cache,
     }
 
     node = container;
+  }
+
+  // All trees other than the desktop tree are scaled by the device
+  // scale factor. Unscale them so they're all in consistent units.
+  if (cache->tree_id != api::automation::kDesktopTreeID) {
+    float scale_factor = cache->owner->context()
+                             ->GetRenderFrame()
+                             ->GetRenderView()
+                             ->GetDeviceScaleFactor();
+    if (scale_factor > 0)
+      bounds.Scale(1.0 / scale_factor);
   }
 
   return gfx::ToEnclosingRect(bounds);

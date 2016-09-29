@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/extensions/api/automation_api_constants.h"
 #include "chrome/common/extensions/api/automation_internal.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/automation.h"
@@ -51,7 +52,6 @@ namespace extensions {
 
 namespace {
 
-const int kDesktopTreeID = 0;
 const char kCannotRequestAutomationOnPage[] =
     "Cannot request automation tree on url \"*\". "
     "Extension manifest must request permission to access this host.";
@@ -336,7 +336,7 @@ AutomationInternalPerformActionFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (params->args.tree_id == kDesktopTreeID) {
+  if (params->args.tree_id == api::automation::kDesktopTreeID) {
 #if defined(USE_AURA)
     return RouteActionToAdapter(params.get(),
                                 AutomationManagerAura::GetInstance());
@@ -433,7 +433,7 @@ AutomationInternalQuerySelectorFunction::Run() {
   std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  if (params->args.tree_id == kDesktopTreeID) {
+  if (params->args.tree_id == api::automation::kDesktopTreeID) {
     return RespondNow(
         Error("domQuerySelector queries may not be used on the desktop."));
   }
