@@ -42,16 +42,18 @@ cr.define('settings_search_page', function() {
       // Tests that the page is querying and displaying search engine info on
       // startup.
       test('Initialization', function() {
-        var listboxElement = page.$$('paper-listbox');
+        var selectElement = page.$$('select');
 
         return browserProxy.whenCalled('getSearchEnginesList').then(function() {
-          assertEquals(0, listboxElement.selected);
+          Polymer.dom.flush();
+          assertEquals(0, selectElement.selectedIndex);
 
           // Simulate a user initiated change of the default search engine.
-          listboxElement.selected = 1;
+          selectElement.selectedIndex = 1;
+          selectElement.dispatchEvent(new CustomEvent('change'));
           return browserProxy.whenCalled('setDefaultSearchEngine');
         }).then(function() {
-          assertEquals(1, listboxElement.selected);
+          assertEquals(1, selectElement.selectedIndex);
 
           // Simulate a change that happened in a different tab.
           var searchEnginesInfo = generateSearchEngineInfo();
@@ -61,7 +63,8 @@ cr.define('settings_search_page', function() {
 
           browserProxy.resetResolver('setDefaultSearchEngine');
           cr.webUIListenerCallback('search-engines-changed', searchEnginesInfo);
-          assertEquals(2, listboxElement.selected);
+          Polymer.dom.flush();
+          assertEquals(2, selectElement.selectedIndex);
 
           browserProxy.whenCalled('setDefaultSearchEngine').then(function() {
             // Since the change happened in a different tab, there should be no
