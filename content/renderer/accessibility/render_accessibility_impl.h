@@ -66,7 +66,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // RenderAccessibility implementation.
   int GenerateAXID() override;
-  void SetPdfTreeSource(PdfAXTreeSource* source) override;
+  void SetPluginTreeSource(PluginAXTreeSource* source) override;
+  void OnPluginRootNodeUpdated() override;
 
   // RenderFrameObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -131,8 +132,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnSetValue(int acc_obj_id, base::string16 value);
   void OnShowContextMenu(int acc_obj_id);
 
-  void AddPdfTreeToUpdate(AXContentTreeUpdate* update);
-  void ScrollPdf(int id_to_make_visible);
+  void AddPluginTreeToUpdate(AXContentTreeUpdate* update);
+  void ScrollPlugin(int id_to_make_visible);
 
   // Events from Blink are collected until they are ready to be
   // sent to the browser.
@@ -148,11 +149,11 @@ class CONTENT_EXPORT RenderAccessibilityImpl
                            AXContentTreeData>;
   BlinkAXTreeSerializer serializer_;
 
-  using PdfAXTreeSerializer = ui::AXTreeSerializer<const ui::AXNode*,
-                                                   ui::AXNodeData,
-                                                   ui::AXTreeData>;
-  std::unique_ptr<PdfAXTreeSerializer> pdf_serializer_;
-  PdfAXTreeSource* pdf_tree_source_;
+  using PluginAXTreeSerializer = ui::AXTreeSerializer<const ui::AXNode*,
+                                                      ui::AXNodeData,
+                                                      ui::AXTreeData>;
+  std::unique_ptr<PluginAXTreeSerializer> plugin_serializer_;
+  PluginAXTreeSource* plugin_tree_source_;
 
   // Current location of every object, so we can detect when it moves.
   base::hash_map<int, ui::AXRelativeBounds> locations_;

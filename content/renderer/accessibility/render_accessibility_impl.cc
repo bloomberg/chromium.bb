@@ -81,7 +81,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame)
       render_frame_(render_frame),
       tree_source_(render_frame),
       serializer_(&tree_source_),
-      pdf_tree_source_(nullptr),
+      plugin_tree_source_(nullptr),
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false),
       reset_token_(0),
@@ -254,10 +254,18 @@ int RenderAccessibilityImpl::GenerateAXID() {
   return root.generateAXID();
 }
 
-void RenderAccessibilityImpl::SetPdfTreeSource(
-    RenderAccessibilityImpl::PdfAXTreeSource* pdf_tree_source) {
-  pdf_tree_source_ = pdf_tree_source;
-  pdf_serializer_.reset(new PdfAXTreeSerializer(pdf_tree_source_));
+void RenderAccessibilityImpl::SetPluginTreeSource(
+    RenderAccessibilityImpl::PluginAXTreeSource* plugin_tree_source) {
+  plugin_tree_source_ = plugin_tree_source;
+  plugin_serializer_.reset(new PluginAXTreeSerializer(plugin_tree_source_));
+
+  OnPluginRootNodeUpdated();
+}
+
+void RenderAccessibilityImpl::OnPluginRootNodeUpdated() {
+  // Search the accessibility tree for an EMBED element and post a
+  // children changed notification on it to force it to update the
+  // plugin accessibility tree.
 
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   WebAXObject root = tree_source_.GetRoot();
@@ -348,8 +356,8 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       continue;
     }
 
-    if (pdf_tree_source_)
-      AddPdfTreeToUpdate(&event_msg.update);
+    if (plugin_tree_source_)
+      AddPluginTreeToUpdate(&event_msg.update);
 
     event_msgs.push_back(event_msg);
 
@@ -533,8 +541,8 @@ void RenderAccessibilityImpl::OnReset(int reset_token) {
 
 void RenderAccessibilityImpl::OnScrollToMakeVisible(
     int acc_obj_id, gfx::Rect subfocus) {
-  if (pdf_tree_source_ && pdf_tree_source_->GetFromId(acc_obj_id)) {
-    ScrollPdf(acc_obj_id);
+  if (plugin_tree_source_ && plugin_tree_source_->GetFromId(acc_obj_id)) {
+    ScrollPlugin(acc_obj_id);
     return;
   }
 
@@ -703,43 +711,44 @@ void RenderAccessibilityImpl::OnDestruct() {
   delete this;
 }
 
-void RenderAccessibilityImpl::AddPdfTreeToUpdate(AXContentTreeUpdate* update) {
+void RenderAccessibilityImpl::AddPluginTreeToUpdate(
+    AXContentTreeUpdate* update) {
   for (size_t i = 0; i < update->nodes.size(); ++i) {
     if (update->nodes[i].role == ui::AX_ROLE_EMBEDDED_OBJECT) {
-      const ui::AXNode* root = pdf_tree_source_->GetRoot();
+      const ui::AXNode* root = plugin_tree_source_->GetRoot();
       update->nodes[i].child_ids.push_back(root->id());
 
-      ui::AXTreeUpdate pdf_update;
-      pdf_serializer_->SerializeChanges(root, &pdf_update);
+      ui::AXTreeUpdate plugin_update;
+      plugin_serializer_->SerializeChanges(root, &plugin_update);
 
       // We have to copy the updated nodes using a loop because we're
       // converting from a generic ui::AXNodeData to a vector of its
       // content-specific subclass AXContentNodeData.
       size_t old_count = update->nodes.size();
-      size_t new_count = pdf_update.nodes.size();
+      size_t new_count = plugin_update.nodes.size();
       update->nodes.resize(old_count + new_count);
       for (size_t i = 0; i < new_count; ++i)
-        update->nodes[old_count + i] = pdf_update.nodes[i];
+        update->nodes[old_count + i] = plugin_update.nodes[i];
       break;
     }
   }
 }
 
-void RenderAccessibilityImpl::ScrollPdf(int id_to_make_visible) {
-  // The PDF content doesn't scroll itself, rather it's just one big document
-  // and the embedding page scrolls. So, when we're requested to scroll to make
-  // a particular PDF node visible, get the coordinates of the target PDF node
-  // and then tell the document node to scroll to those coordinates.
+void RenderAccessibilityImpl::ScrollPlugin(int id_to_make_visible) {
+  // Plugin content doesn't scroll itself, so when we're requested to
+  // scroll to make a particular plugin node visible, get the
+  // coordinates of the target plugin node and then tell the document
+  // node to scroll to those coordinates.
   //
   // Note that calling scrollToMakeVisibleWithSubFocus() is preferable to
   // telling the document to scroll to a specific coordinate because it will
   // first compute whether that rectangle is visible and do nothing if it is.
   // If it's not visible, it will automatically center it.
 
-  DCHECK(pdf_tree_source_);
-  ui::AXNodeData root_data = pdf_tree_source_->GetRoot()->data();
+  DCHECK(plugin_tree_source_);
+  ui::AXNodeData root_data = plugin_tree_source_->GetRoot()->data();
   ui::AXNodeData target_data =
-      pdf_tree_source_->GetFromId(id_to_make_visible)->data();
+      plugin_tree_source_->GetFromId(id_to_make_visible)->data();
 
   gfx::RectF bounds = target_data.location;
   if (root_data.transform)

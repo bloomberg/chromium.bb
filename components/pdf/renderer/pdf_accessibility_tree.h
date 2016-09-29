@@ -22,6 +22,10 @@ class RenderFrame;
 class RendererPpapiHost;
 }
 
+namespace gfx {
+class Transform;
+};
+
 namespace pdf {
 
 class PdfAccessibilityTree
@@ -76,6 +80,7 @@ class PdfAccessibilityTree
   ui::AXNodeData* CreateNode(ui::AXRole role);
   float GetDeviceScaleFactor() const;
   content::RenderAccessibility* GetRenderAccessibility();
+  gfx::Transform* MakeTransformFromViewInfo();
 
   ui::AXTree tree_;
   content::RendererPpapiHost* host_;

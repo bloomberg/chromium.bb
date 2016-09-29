@@ -15,6 +15,7 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/transform.h"
 
 namespace pdf {
 
@@ -61,6 +62,15 @@ void PdfAccessibilityTree::SetAccessibilityViewportInfo(
   scroll_.Scale(1.0 / zoom_);
   offset_ = ToVector2dF(viewport_info.offset);
   offset_.Scale(1.0 / zoom_);
+
+  content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
+  if (render_accessibility && tree_.size() > 1) {
+    ui::AXNode* root = tree_.root();
+    ui::AXNodeData root_data = root->data();
+    root_data.transform = base::WrapUnique(MakeTransformFromViewInfo());
+    root->SetData(root_data);
+    render_accessibility->OnPluginRootNodeUpdated();
+  }
 }
 
 void PdfAccessibilityTree::SetAccessibilityDocInfo(
@@ -70,6 +80,12 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
 
   doc_info_ = doc_info;
   doc_node_ = CreateNode(ui::AX_ROLE_GROUP);
+
+  // Because all of the coordinates are expressed relative to the
+  // doc's coordinates, the origin of the doc must be (0, 0). Its
+  // width and height will be updated as we add each page so that the
+  // doc's bounding box surrounds all pages.
+  doc_node_->location = gfx::RectF(0, 0, 1, 1);
 }
 
 void PdfAccessibilityTree::SetAccessibilityPageInfo(
@@ -91,9 +107,6 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
           IDS_PDF_PAGE_INDEX, page_index + 1));
 
   gfx::RectF page_bounds = ToRectF(page_info.bounds);
-  page_bounds += offset_;
-  page_bounds -= scroll_;
-  page_bounds.Scale(zoom_ / GetDeviceScaleFactor());
   page_node->location = page_bounds;
   doc_node_->location.Union(page_node->location);
   doc_node_->child_ids.push_back(page_node->id);
@@ -142,7 +155,6 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
 
     inline_text_box_node->AddStringAttribute(ui::AX_ATTR_NAME, chars_utf8);
     gfx::RectF text_run_bounds = ToGfxRectF(text_run.bounds);
-    text_run_bounds.Scale(zoom_ / GetDeviceScaleFactor());
     text_run_bounds += page_bounds.OffsetFromOrigin();
     inline_text_box_node->location = text_run_bounds;
     inline_text_box_node->AddIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS,
@@ -173,6 +185,8 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
 }
 
 void PdfAccessibilityTree::Finish() {
+  doc_node_->transform = base::WrapUnique(MakeTransformFromViewInfo());
+
   ui::AXTreeUpdate update;
   update.root_id = doc_node_->id;
   for (const auto& node : nodes_)
@@ -181,7 +195,7 @@ void PdfAccessibilityTree::Finish() {
   CHECK(tree_.Unserialize(update)) << update.ToString() << tree_.error();
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (render_accessibility)
-    render_accessibility->SetPdfTreeSource(this);
+    render_accessibility->SetPluginTreeSource(this);
 }
 
 void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
@@ -241,7 +255,7 @@ std::vector<int32_t> PdfAccessibilityTree::GetTextRunCharOffsets(
   double offset = 0.0;
   for (uint32_t j = 0; j < text_run.len; ++j) {
     offset += chars[char_index + j].char_width;
-    char_offsets[j] = floor(offset * zoom_ / GetDeviceScaleFactor());
+    char_offsets[j] = floor(offset);
   }
   return char_offsets;
 }
@@ -262,7 +276,14 @@ ui::AXNodeData* PdfAccessibilityTree::CreateNode(ui::AXRole role) {
   node->id = render_accessibility->GenerateAXID();
   node->role = role;
   node->state = 1 << ui::AX_STATE_READ_ONLY;
+
+  // All nodes other than the first one have coordinates relative to
+  // the first node.
+  if (nodes_.size() > 0)
+    node->offset_container_id = nodes_[0]->id;
+
   nodes_.push_back(base::WrapUnique(node));
+
   return node;
 }
 
@@ -277,6 +298,15 @@ content::RenderAccessibility* PdfAccessibilityTree::GetRenderAccessibility() {
   content::RenderFrame* render_frame =
       host_->GetRenderFrameForInstance(instance_);
   return render_frame ? render_frame->GetRenderAccessibility() : nullptr;
+}
+
+gfx::Transform* PdfAccessibilityTree::MakeTransformFromViewInfo() {
+  gfx::Transform* transform = new gfx::Transform();
+  float scale_factor = zoom_ / GetDeviceScaleFactor();
+  transform->Scale(scale_factor, scale_factor);
+  transform->Translate(offset_);
+  transform->Translate(-scroll_);
+  return transform;
 }
 
 //

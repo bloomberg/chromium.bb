@@ -17,9 +17,13 @@ class CONTENT_EXPORT RenderAccessibility {
  public:
   virtual int GenerateAXID() = 0;
 
-  using PdfAXTreeSource =
+  // These APIs allow a page with a single EMBED element to graft an
+  // accessibility tree for the plugin content, implemented as an AXTreeSource,
+  // into the page's accessibility tree.
+  using PluginAXTreeSource =
       ui::AXTreeSource<const ui::AXNode*, ui::AXNodeData, ui::AXTreeData>;
-  virtual void SetPdfTreeSource(PdfAXTreeSource* source) = 0;
+  virtual void SetPluginTreeSource(PluginAXTreeSource* source) = 0;
+  virtual void OnPluginRootNodeUpdated() = 0;
 
  protected:
   ~RenderAccessibility() {}

@@ -79,12 +79,6 @@ class OutOfProcessInstance : public pp::Instance,
   void GetPrintPresetOptionsFromDocument(PP_PdfPrintPresetOptions_Dev* options);
   void EnableAccessibility();
 
-  // Start loading accessibility information.
-  void LoadAccessibility();
-
-  // Send accessibility information about the given page index.
-  void SendNextAccessibilityPage(int32_t page_index);
-
   void FlushCallback(int32_t result);
   void DidOpen(int32_t result);
   void DidOpenPreview(int32_t result);
@@ -181,6 +175,17 @@ class OutOfProcessInstance : public pp::Instance,
   void FormDidOpen(int32_t result);
 
   void UserMetricsRecordAction(const std::string& action);
+
+  // Start loading accessibility information.
+  void LoadAccessibility();
+
+  // Send accessibility information about the given page index.
+  void SendNextAccessibilityPage(int32_t page_index);
+
+  // Send the accessibility information about the current viewport. This is
+  // done once when accessibility is first loaded and again when the geometry
+  // changes.
+  void SendAccessibilityViewportInfo();
 
   enum DocumentLoadState {
     LOAD_STATE_LOADING,
