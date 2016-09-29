@@ -17,6 +17,7 @@ namespace simulation {
 
 const QuicStreamId kDataStream = 3;
 const QuicByteCount kWriteChunkSize = 128 * 1024;
+const char kStreamDataContents = 'Q';
 
 // Takes a SHA-1 hash of the name and converts it into five 32-bit integers.
 static std::vector<uint32_t> HashNameIntoFive32BitIntegers(std::string name) {
@@ -127,11 +128,6 @@ void QuicEndpoint::SetTxPort(ConstrainedPortInterface* port) {
   nic_tx_queue_.set_tx_port(port);
 }
 
-// Return the data that |kDataStream| is supposed to have at offset |offset|.
-inline static char DataAtOffset(QuicStreamOffset offset) {
-  return offset % 256;
-}
-
 void QuicEndpoint::OnPacketDequeued() {
   if (writer_.IsWriteBlocked() &&
       (nic_tx_queue_.capacity() - nic_tx_queue_.bytes_queued()) >=
@@ -145,8 +141,7 @@ void QuicEndpoint::OnStreamFrame(const QuicStreamFrame& frame) {
   // Verify that the data received always matches the output of DataAtOffset().
   DCHECK(frame.stream_id == kDataStream);
   for (size_t i = 0; i < frame.data_length; i++) {
-    const QuicStreamOffset absolute_offset = frame.offset + i;
-    if (frame.data_buffer[i] != DataAtOffset(absolute_offset)) {
+    if (frame.data_buffer[i] != kStreamDataContents) {
       wrong_data_received_ = true;
     }
   }
@@ -177,9 +172,6 @@ WriteResult QuicEndpoint::Writer::WritePacket(const char* buffer,
   DCHECK(!IsWriteBlocked());
   DCHECK(options == nullptr);
   DCHECK(buf_len <= kMaxPacketSize);
-
-  DCHECK(self_address == GetAddressFromName(endpoint_->name()).address());
-  DCHECK(peer_address == GetAddressFromName(endpoint_->peer_name_));
 
   // Instead of losing a packet, become write-blocked when the egress queue is
   // full.
@@ -224,10 +216,7 @@ void QuicEndpoint::WriteStreamData() {
     // Transfer data in chunks of size at most |kWriteChunkSize|.
     const size_t transmission_size =
         std::min(kWriteChunkSize, bytes_to_transfer_);
-    for (size_t i = 0; i < transmission_size; i++) {
-      const QuicStreamOffset offset = bytes_transferred_ + i;
-      transmission_buffer_[i] = DataAtOffset(offset);
-    }
+    memset(transmission_buffer_.get(), kStreamDataContents, transmission_size);
 
     iovec iov;
     iov.iov_base = transmission_buffer_.get();
