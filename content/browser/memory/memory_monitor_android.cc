@@ -15,27 +15,20 @@ namespace {
 const size_t kMBShift = 20;
 }
 
-// static
-std::unique_ptr<MemoryMonitorAndroid> MemoryMonitorAndroid::Create() {
-  return base::WrapUnique(new MemoryMonitorAndroid);
-}
+// An implementation of MemoryMonitorAndroid::Delegate using the Android APIs.
+class MemoryMonitorAndroidDelegateImpl : public MemoryMonitorAndroid::Delegate {
+ public:
+  MemoryMonitorAndroidDelegateImpl() {}
+  ~MemoryMonitorAndroidDelegateImpl() override {}
 
-// static
-bool MemoryMonitorAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
+  using MemoryInfo = MemoryMonitorAndroid::MemoryInfo;
+  void GetMemoryInfo(MemoryInfo* out) override;
 
-MemoryMonitorAndroid::MemoryMonitorAndroid() {}
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MemoryMonitorAndroidDelegateImpl);
+};
 
-MemoryMonitorAndroid::~MemoryMonitorAndroid() {}
-
-int MemoryMonitorAndroid::GetFreeMemoryUntilCriticalMB() {
-  MemoryInfo info;
-  GetMemoryInfo(&info);
-  return (info.avail_mem - info.threshold) >> kMBShift;
-}
-
-void MemoryMonitorAndroid::GetMemoryInfo(MemoryInfo* out) {
+void MemoryMonitorAndroidDelegateImpl::GetMemoryInfo(MemoryInfo* out) {
   DCHECK(out);
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_MemoryMonitorAndroid_getMemoryInfo(
@@ -59,6 +52,34 @@ static void GetMemoryInfoCallback(
   info->low_memory = low_memory;
   info->threshold = threshold;
   info->total_mem = total_mem;
+}
+
+// static
+std::unique_ptr<MemoryMonitorAndroid> MemoryMonitorAndroid::Create() {
+  auto delegate = base::WrapUnique(new MemoryMonitorAndroidDelegateImpl);
+  return base::WrapUnique(new MemoryMonitorAndroid(std::move(delegate)));
+}
+
+// static
+bool MemoryMonitorAndroid::Register(JNIEnv* env) {
+  return RegisterNativesImpl(env);
+}
+
+MemoryMonitorAndroid::MemoryMonitorAndroid(std::unique_ptr<Delegate> delegate)
+    : delegate_(std::move(delegate)) {
+  DCHECK(delegate_.get());
+}
+
+MemoryMonitorAndroid::~MemoryMonitorAndroid() {}
+
+int MemoryMonitorAndroid::GetFreeMemoryUntilCriticalMB() {
+  MemoryInfo info;
+  GetMemoryInfo(&info);
+  return (info.avail_mem - info.threshold) >> kMBShift;
+}
+
+void MemoryMonitorAndroid::GetMemoryInfo(MemoryInfo* out) {
+  delegate_->GetMemoryInfo(out);
 }
 
 // Implementation of a factory function defined in memory_monitor.h.

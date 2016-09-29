@@ -26,6 +26,17 @@ class CONTENT_EXPORT MemoryMonitorAndroid : public MemoryMonitor {
     jlong total_mem;
   };
 
+  // Delegate interface used by MemoryMonitorAndroid.
+  class Delegate {
+   public:
+    Delegate() {}
+    virtual ~Delegate() {};
+
+    // Get MemoryInfo. Implementations should fill |out| accordingly.
+    virtual void GetMemoryInfo(MemoryInfo* out) = 0;
+  };
+
+  MemoryMonitorAndroid(std::unique_ptr<Delegate> delegate);
   ~MemoryMonitorAndroid() override;
 
   // MemoryMonitor implementation:
@@ -34,8 +45,10 @@ class CONTENT_EXPORT MemoryMonitorAndroid : public MemoryMonitor {
   // Get memory info from the Android system.
   void GetMemoryInfo(MemoryInfo* out);
 
+  Delegate* delegate() { return delegate_.get(); }
+
  private:
-  MemoryMonitorAndroid();
+  std::unique_ptr<Delegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryMonitorAndroid);
 };
