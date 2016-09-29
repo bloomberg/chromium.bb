@@ -188,17 +188,21 @@ void BubbleBorder::set_paint_arrow(ArrowPaintType value) {
 
 gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
                                   const gfx::Size& contents_size) const {
-  if (UseMd()) {
+  if (UseMd() && (arrow_ == TOP_RIGHT || arrow_ == TOP_LEFT)) {
     // In MD, there are no arrows, so positioning logic is significantly
     // simpler.
     // TODO(estade): handle more anchor positions.
+    gfx::Rect contents_bounds(contents_size);
     if (arrow_ == TOP_RIGHT) {
-      gfx::Rect contents_bounds(contents_size);
       contents_bounds +=
           anchor_rect.bottom_right() - contents_bounds.top_right();
-      contents_bounds.Inset(-GetInsets());
-      return contents_bounds;
     }
+    if (arrow_ == TOP_LEFT) {
+      contents_bounds +=
+          anchor_rect.bottom_left() - contents_bounds.origin();
+    }
+    contents_bounds.Inset(-GetInsets());
+    return contents_bounds;
   }
 
   int x = anchor_rect.x();

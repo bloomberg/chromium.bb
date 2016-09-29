@@ -1349,7 +1349,10 @@ void BrowserView::ShowWebsiteSettings(
   // Some browser windows have a location icon embedded in the frame. Try to
   // use that if it exists. If it doesn't exist, use the location icon from
   // the location bar.
-  views::View* popup_anchor = frame_->GetLocationIconView();
+  views::View* popup_anchor =
+      ui::MaterialDesignController::IsSecondaryUiMaterial()
+          ? toolbar_->location_bar()
+          : frame_->GetLocationIconView();
   if (!popup_anchor)
     popup_anchor = GetLocationBarView()->location_icon_view()->GetImageView();
 

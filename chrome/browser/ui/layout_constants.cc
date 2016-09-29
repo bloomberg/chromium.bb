@@ -46,6 +46,8 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
       return kLocationBarBubbleVerticalPadding[mode];
     case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
+      if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+        return 1;
       return kLocationBarBubbleAnchorVerticalInset[mode];
     case LOCATION_BAR_HEIGHT:
       return kLocationBarHeight[mode];
