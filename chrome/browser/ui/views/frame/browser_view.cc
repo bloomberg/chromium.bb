@@ -46,7 +46,6 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar_constants.h"
-#include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -81,6 +80,7 @@
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/new_back_shortcut_bubble.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
@@ -1240,14 +1240,8 @@ void BrowserView::ShowUpdateChromeDialog() {
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
-  std::unique_ptr<BubbleSyncPromoDelegate> delegate;
-  delegate.reset(new BookmarkBubbleSignInDelegate(browser_.get()));
-
-  views::View* anchor_view = GetToolbarView()->GetBookmarkBubbleAnchor();
-  views::Widget* bubble_widget = BookmarkBubbleView::ShowBubble(
-      anchor_view, gfx::Rect(), nullptr, bookmark_bar_view_.get(),
-      std::move(delegate), browser_->profile(), url, already_bookmarked);
-  GetToolbarView()->OnBubbleCreatedForAnchor(anchor_view, bubble_widget);
+  toolbar_->ShowBookmarkBubble(url, already_bookmarked,
+                               bookmark_bar_view_.get());
 }
 
 void BrowserView::ShowBookmarkAppBubble(
@@ -1261,10 +1255,10 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     content::WebContents* web_contents,
     autofill::SaveCardBubbleController* controller,
     bool is_user_gesture) {
-  views::View* anchor_view = GetToolbarView()->GetSaveCreditCardBubbleAnchor();
+  views::View* anchor_view = toolbar_->GetSaveCreditCardBubbleAnchor();
   autofill::SaveCardBubbleViews* view = new autofill::SaveCardBubbleViews(
       anchor_view, web_contents, controller);
-  GetToolbarView()->OnBubbleCreatedForAnchor(anchor_view, view->GetWidget());
+  toolbar_->OnBubbleCreatedForAnchor(anchor_view, view->GetWidget());
   view->Show(is_user_gesture ? autofill::SaveCardBubbleViews::USER_GESTURE
                              : autofill::SaveCardBubbleViews::AUTOMATIC);
   return view;
@@ -1291,12 +1285,12 @@ void BrowserView::ShowTranslateBubble(
   if (IsMinimized())
     return;
 
-  views::View* anchor_view = GetToolbarView()->GetTranslateBubbleAnchor();
+  views::View* anchor_view = toolbar_->GetTranslateBubbleAnchor();
   views::Widget* bubble_widget = TranslateBubbleView::ShowBubble(
       anchor_view, web_contents, step,
       error_type, is_user_gesture ? TranslateBubbleView::USER_GESTURE
                                   : TranslateBubbleView::AUTOMATIC);
-  GetToolbarView()->OnBubbleCreatedForAnchor(anchor_view, bubble_widget);
+  toolbar_->OnBubbleCreatedForAnchor(anchor_view, bubble_widget);
 }
 
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
@@ -1531,10 +1525,6 @@ LocationBarView* BrowserView::GetLocationBarView() const {
 
 views::View* BrowserView::GetTabContentsContainerView() const {
   return contents_web_view_;
-}
-
-ToolbarView* BrowserView::GetToolbarView() const {
-  return toolbar_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

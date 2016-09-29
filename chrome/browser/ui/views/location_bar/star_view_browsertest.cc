@@ -41,8 +41,7 @@ typedef InProcessBrowserTest StarViewTest;
 IN_PROC_BROWSER_TEST_F(StarViewTest, MAYBE_HideOnSecondClick) {
   BrowserView* browser_view = reinterpret_cast<BrowserView*>(
       browser()->window());
-  views::View* star_view =
-      browser_view->GetToolbarView()->location_bar()->star_view();
+  views::View* star_view = browser_view->toolbar()->location_bar()->star_view();
 
   ui::MouseEvent pressed_event(
       ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),

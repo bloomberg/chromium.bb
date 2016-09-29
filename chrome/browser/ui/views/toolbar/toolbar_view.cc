@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
+#include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
@@ -285,12 +287,26 @@ bool ToolbarView::IsAppMenuFocused() {
   return app_menu_button_ && app_menu_button_->HasFocus();
 }
 
-views::View* ToolbarView::GetBookmarkBubbleAnchor() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
-    return location_bar();
+void ToolbarView::ShowBookmarkBubble(
+    const GURL& url,
+    bool already_bookmarked,
+    bookmarks::BookmarkBubbleObserver* observer) {
+  views::View* anchor_view = location_bar();
+  StarView* star_view = location_bar()->star_view();
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    if (star_view && star_view->visible())
+      anchor_view = star_view;
+    else
+      anchor_view = app_menu_button_;
+  }
 
-  views::View* star_view = location_bar()->star_view();
-  return (star_view && star_view->visible()) ? star_view : app_menu_button_;
+  std::unique_ptr<BubbleSyncPromoDelegate> delegate;
+  delegate.reset(new BookmarkBubbleSignInDelegate(browser_));
+  views::Widget* bubble_widget = BookmarkBubbleView::ShowBubble(
+      anchor_view, gfx::Rect(), nullptr, observer, std::move(delegate),
+      browser_->profile(), url, already_bookmarked);
+  if (star_view)
+    bubble_widget->AddObserver(star_view);
 }
 
 views::View* ToolbarView::GetSaveCreditCardBubbleAnchor() {
@@ -311,8 +327,7 @@ views::View* ToolbarView::GetTranslateBubbleAnchor() {
 void ToolbarView::OnBubbleCreatedForAnchor(views::View* anchor_view,
                                            views::Widget* bubble_widget) {
   if (bubble_widget &&
-      (anchor_view == location_bar()->star_view() ||
-       anchor_view == location_bar()->save_credit_card_icon_view() ||
+      (anchor_view == location_bar()->save_credit_card_icon_view() ||
        anchor_view == location_bar()->translate_icon_view())) {
     DCHECK(anchor_view);
     bubble_widget->AddObserver(static_cast<BubbleIconView*>(anchor_view));

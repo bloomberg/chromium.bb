@@ -123,7 +123,7 @@ void ExtensionInstalledBubbleView::UpdateAnchorView() {
   switch (controller_->anchor_position()) {
     case ExtensionInstalledBubble::ANCHOR_BROWSER_ACTION: {
       BrowserActionsContainer* container =
-          browser_view->GetToolbarView()->browser_actions();
+          browser_view->toolbar()->browser_actions();
       // Hitting this DCHECK means |ShouldShow| failed.
       DCHECK(!container->animating());
 
@@ -152,7 +152,7 @@ void ExtensionInstalledBubbleView::UpdateAnchorView() {
 
   // Default case.
   if (!reference_view || !reference_view->visible())
-    reference_view = browser_view->GetToolbarView()->app_menu_button();
+    reference_view = browser_view->toolbar()->app_menu_button();
   SetAnchorView(reference_view);
 }
 
@@ -349,7 +349,7 @@ bool ExtensionInstalledBubble::ShouldShow() {
   if (anchor_position() == ANCHOR_BROWSER_ACTION) {
     BrowserActionsContainer* container =
         BrowserView::GetBrowserViewForBrowser(browser())
-            ->GetToolbarView()
+            ->toolbar()
             ->browser_actions();
     return !container->animating();
   }

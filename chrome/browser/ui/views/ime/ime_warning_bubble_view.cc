@@ -101,7 +101,7 @@ ImeWarningBubbleView::ImeWarningBubbleView(
       bubble_has_shown_(false),
       toolbar_actions_bar_observer_(this),
       weak_ptr_factory_(this) {
-  container_ = browser_view_->GetToolbarView()->browser_actions();
+  container_ = browser_view_->toolbar()->browser_actions();
   toolbar_actions_bar_ = container_->toolbar_actions_bar();
   BrowserList::AddObserver(this);
 
@@ -142,7 +142,7 @@ void ImeWarningBubbleView::InitAnchorView() {
   }
   if (!reference_view || !reference_view->visible()) {
     // Anchors the bubble to the app menu.
-    reference_view = browser_view_->GetToolbarView()->app_menu_button();
+    reference_view = browser_view_->toolbar()->app_menu_button();
   }
   SetAnchorView(reference_view);
   set_arrow(views::BubbleBorder::TOP_RIGHT);

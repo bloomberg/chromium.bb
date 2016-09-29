@@ -28,6 +28,10 @@ class HomeButton;
 class ReloadButton;
 class ToolbarButton;
 
+namespace bookmarks {
+class BookmarkBubbleObserver;
+}
+
 namespace extensions {
 class Command;
 class Extension;
@@ -71,8 +75,10 @@ class ToolbarView : public views::AccessiblePaneView,
 
   virtual bool GetAcceleratorInfo(int id, ui::Accelerator* accel);
 
-  // Returns the view to which the bookmark bubble should be anchored.
-  views::View* GetBookmarkBubbleAnchor();
+  // Shows a bookmark bubble and anchors it appropriately.
+  void ShowBookmarkBubble(const GURL& url,
+                          bool already_bookmarked,
+                          bookmarks::BookmarkBubbleObserver* observer);
 
   // Returns the view to which the "Save credit card" bubble should be anchored.
   views::View* GetSaveCreditCardBubbleAnchor();

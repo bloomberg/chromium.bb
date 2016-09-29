@@ -70,7 +70,7 @@ class ManagePasswordsBubbleViewTest : public ManagePasswordsTest {
 
   ManagePasswordsIconView* view() override {
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-    return browser_view->GetToolbarView()
+    return browser_view->toolbar()
         ->location_bar()
         ->manage_passwords_icon_view();
   }

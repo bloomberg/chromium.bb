@@ -131,8 +131,8 @@ void NetworkProfileBubbleView::LinkClicked(views::Link* source,
 void NetworkProfileBubble::ShowNotification(Browser* browser) {
   views::View* anchor = NULL;
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
-  if (browser_view && browser_view->GetToolbarView())
-    anchor = browser_view->GetToolbarView()->app_menu_button();
+  if (browser_view && browser_view->toolbar())
+    anchor = browser_view->toolbar()->app_menu_button();
   NetworkProfileBubbleView* bubble =
       new NetworkProfileBubbleView(anchor, browser, browser->profile());
   views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();

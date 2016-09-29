@@ -374,7 +374,6 @@ class BrowserView : public BrowserWindow,
   BookmarkBarView* GetBookmarkBarView() const;
   LocationBarView* GetLocationBarView() const;
   views::View* GetTabContentsContainerView() const;
-  ToolbarView* GetToolbarView() const;
 
   // Overridden from TabStripModelObserver:
   void TabInsertedAt(TabStripModel* tab_strip_model,
