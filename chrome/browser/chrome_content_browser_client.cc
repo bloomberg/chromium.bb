@@ -66,6 +66,7 @@
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -3161,6 +3162,12 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   }
 
   return throttles;
+}
+
+std::unique_ptr<content::NavigationUIData>
+ChromeContentBrowserClient::GetNavigationUIData(
+    content::NavigationHandle* navigation_handle) {
+  return base::MakeUnique<ChromeNavigationUIData>(navigation_handle);
 }
 
 content::DevToolsManagerDelegate*

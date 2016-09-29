@@ -10,6 +10,7 @@
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/reload_type.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -139,6 +140,14 @@ class CONTENT_EXPORT NavigatorDelegate {
   // are defined by the content/ embedder, except in the case of interstitials
   // where no NavigationThrottles are added to the navigation.
   virtual ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
+      NavigationHandle* navigation_handle);
+
+  // PlzNavigate
+  // Called at the start of the navigation to get opaque data the embedder
+  // wants to see passed to the corresponding URLRequest on the IO thread.
+  // In the case of a navigation to an interstitial, no call will be made to the
+  // embedder and |nullptr| is returned.
+  virtual std::unique_ptr<NavigationUIData> GetNavigationUIData(
       NavigationHandle* navigation_handle);
 };
 

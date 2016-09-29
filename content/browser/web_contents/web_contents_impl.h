@@ -617,6 +617,8 @@ class CONTENT_EXPORT WebContentsImpl
   void DidChangeLoadProgress() override;
   ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
       NavigationHandle* navigation_handle) override;
+  std::unique_ptr<NavigationUIData> GetNavigationUIData(
+      NavigationHandle* navigation_handle) override;
 
   // RenderWidgetHostDelegate --------------------------------------------------
 

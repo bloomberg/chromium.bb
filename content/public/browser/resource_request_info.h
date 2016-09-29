@@ -17,6 +17,7 @@ class URLRequest;
 }
 
 namespace content {
+class NavigationUIData;
 class ResourceContext;
 class WebContents;
 
@@ -155,6 +156,11 @@ class ResourceRequestInfo {
 
   // Whether this request if using Lo-Fi mode.
   virtual bool IsUsingLoFi() const = 0;
+
+  // PlzNavigate
+  // Only used for navigations. Returns opaque data set by the embedder on the
+  // UI thread at the beginning of navigation.
+  virtual NavigationUIData* GetNavigationUIData() const = 0;
 
  protected:
   virtual ~ResourceRequestInfo() {}

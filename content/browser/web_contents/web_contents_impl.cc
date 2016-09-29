@@ -4500,6 +4500,12 @@ ScopedVector<NavigationThrottle> WebContentsImpl::CreateThrottlesForNavigation(
       navigation_handle);
 }
 
+std::unique_ptr<NavigationUIData> WebContentsImpl::GetNavigationUIData(
+    NavigationHandle* navigation_handle) {
+  DCHECK(IsBrowserSideNavigationEnabled());
+  return GetContentClient()->browser()->GetNavigationUIData(navigation_handle);
+}
+
 void WebContentsImpl::DidCancelLoading() {
   controller_.DiscardNonCommittedEntries();
 

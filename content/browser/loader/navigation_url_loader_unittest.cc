@@ -20,6 +20,7 @@
 #include "content/browser/streams/stream_url_request_job.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/stream_handle.h"
@@ -113,8 +114,9 @@ class NavigationURLLoaderTest : public testing::Test {
         new NavigationRequestInfo(common_params, begin_params, url,
                                   url::Origin(url), true, false, false, -1));
 
-    return NavigationURLLoader::Create(
-        browser_context_.get(), std::move(request_info), nullptr, delegate);
+    return NavigationURLLoader::Create(browser_context_.get(),
+                                       std::move(request_info), nullptr,
+                                       nullptr, delegate);
   }
 
   // Helper function for fetching the body of a URL to a string.

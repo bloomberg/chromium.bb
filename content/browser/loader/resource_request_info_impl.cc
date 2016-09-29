@@ -305,6 +305,10 @@ bool ResourceRequestInfoImpl::ShouldReportRawHeaders() const {
   return report_raw_headers_;
 }
 
+NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
+  return navigation_ui_data_.get();
+}
+
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
   request->SetUserData(NULL, this);
   int render_process_id;

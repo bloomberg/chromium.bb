@@ -59,6 +59,7 @@ class AppCacheService;
 class AsyncRevalidationManager;
 class LoaderDelegate;
 class NavigationURLLoaderImplCore;
+class NavigationUIData;
 class RenderFrameHostImpl;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
@@ -273,6 +274,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   void BeginNavigationRequest(
       ResourceContext* resource_context,
       const NavigationRequestInfo& info,
+      std::unique_ptr<NavigationUIData> navigation_ui_data,
       NavigationURLLoaderImplCore* loader,
       ServiceWorkerNavigationHandleCore* service_worker_handle_core);
 

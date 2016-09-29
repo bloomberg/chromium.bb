@@ -154,16 +154,20 @@ void WebRequestEventDetails::SetResponseSource(const net::URLRequest* request) {
     dict_.SetString(keys::kIpKey, response_ip);
 }
 
+void WebRequestEventDetails::SetFrameData(
+    const ExtensionApiFrameIdMap::FrameData& frame_data) {
+  dict_.SetInteger(keys::kTabIdKey, frame_data.tab_id);
+  dict_.SetInteger(keys::kFrameIdKey, frame_data.frame_id);
+  dict_.SetInteger(keys::kParentFrameIdKey, frame_data.parent_frame_id);
+}
+
 void WebRequestEventDetails::DetermineFrameDataOnUI() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderFrameHost* rfh =
       content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
   ExtensionApiFrameIdMap::FrameData frame_data =
       ExtensionApiFrameIdMap::Get()->GetFrameData(rfh);
-
-  dict_.SetInteger(keys::kTabIdKey, frame_data.tab_id);
-  dict_.SetInteger(keys::kFrameIdKey, frame_data.frame_id);
-  dict_.SetInteger(keys::kParentFrameIdKey, frame_data.parent_frame_id);
+  SetFrameData(frame_data);
 }
 
 void WebRequestEventDetails::DetermineFrameDataOnIO(
@@ -198,9 +202,7 @@ void WebRequestEventDetails::OnDeterminedFrameData(
     std::unique_ptr<WebRequestEventDetails> self,
     const DeterminedFrameDataCallback& callback,
     const ExtensionApiFrameIdMap::FrameData& frame_data) {
-  dict_.SetInteger(keys::kTabIdKey, frame_data.tab_id);
-  dict_.SetInteger(keys::kFrameIdKey, frame_data.frame_id);
-  dict_.SetInteger(keys::kParentFrameIdKey, frame_data.parent_frame_id);
+  SetFrameData(frame_data);
   callback.Run(std::move(self));
 }
 

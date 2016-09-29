@@ -19,6 +19,7 @@
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
@@ -396,6 +397,9 @@ void NavigationHandleImpl::WillStartRequest(
   complete_callback_ = callback;
 
   RegisterNavigationThrottles();
+
+  if (IsBrowserSideNavigationEnabled())
+    navigation_ui_data_ = GetDelegate()->GetNavigationUIData(this);
 
   // Notify each throttle of the request.
   NavigationThrottle::ThrottleCheckResult result = CheckWillStartRequest();

@@ -44,7 +44,8 @@ class NavigationURLLoaderImplCore {
   // Starts the request.
   void Start(ResourceContext* resource_context,
              ServiceWorkerNavigationHandleCore* service_worker_handle_core,
-             std::unique_ptr<NavigationRequestInfo> request_info);
+             std::unique_ptr<NavigationRequestInfo> request_info,
+             std::unique_ptr<NavigationUIData> navigation_ui_data);
 
   // Follows the current pending redirect.
   void FollowRedirect();

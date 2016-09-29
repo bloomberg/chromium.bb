@@ -28,6 +28,7 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
 
+class NavigationUIData;
 class NavigatorDelegate;
 class ResourceRequestBodyImpl;
 class ServiceWorkerContextWrapper;
@@ -272,6 +273,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called when the navigation is transferred to a different renderer.
   void Transfer();
 
+  NavigationUIData* navigation_ui_data() const {
+    return navigation_ui_data_.get();
+  }
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -385,8 +390,12 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // corresponding ServiceWorkerNetworkProvider is created in the renderer.
   std::unique_ptr<ServiceWorkerNavigationHandle> service_worker_handle_;
 
-  // Embedder data tied to this navigation.
+  // Embedder data from the IO thread tied to this navigation.
   std::unique_ptr<NavigationData> navigation_data_;
+
+  // PlzNavigate
+  // Embedder data from the UI thread tied to this navigation.
+  std::unique_ptr<NavigationUIData> navigation_ui_data_;
 
   SSLStatus ssl_status_;
 

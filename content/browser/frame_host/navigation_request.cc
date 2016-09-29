@@ -23,6 +23,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_data.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/content_client.h"
@@ -485,6 +486,10 @@ void NavigationRequest::OnStartChecksComplete(
                                   ? false
                                   : frame_tree_node_->parent()->IsMainFrame();
 
+  std::unique_ptr<NavigationUIData> navigation_ui_data;
+  if (navigation_handle_->navigation_ui_data())
+    navigation_ui_data = navigation_handle_->navigation_ui_data()->Clone();
+
   loader_ = NavigationURLLoader::Create(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
       base::MakeUnique<NavigationRequestInfo>(
@@ -492,6 +497,7 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->current_origin(), frame_tree_node_->IsMainFrame(),
           parent_is_main_frame, IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id()),
+      std::move(navigation_ui_data),
       navigation_handle_->service_worker_handle(), this);
 }
 

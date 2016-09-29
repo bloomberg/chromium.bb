@@ -8,6 +8,7 @@
 #include "base/guid.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/sandbox_type.h"
 #include "media/base/cdm_factory.h"
@@ -391,6 +392,11 @@ ScopedVector<NavigationThrottle>
 ContentBrowserClient::CreateThrottlesForNavigation(
     NavigationHandle* navigation_handle) {
   return ScopedVector<NavigationThrottle>();
+}
+
+std::unique_ptr<NavigationUIData> ContentBrowserClient::GetNavigationUIData(
+    NavigationHandle* navigation_handle) {
+  return nullptr;
 }
 
 #if defined(OS_WIN)

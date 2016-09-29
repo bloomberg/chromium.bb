@@ -57,6 +57,7 @@ class URLRequest;
 
 namespace extensions {
 
+class ExtensionNavigationUIData;
 class InfoMap;
 class WebRequestEventDetails;
 class WebRequestRulesRegistry;
@@ -171,6 +172,7 @@ class ExtensionWebRequestEventRouter
   // intercepting the request, OK otherwise.
   int OnBeforeRequest(void* browser_context,
                       const extensions::InfoMap* extension_info_map,
+                      ExtensionNavigationUIData* navigation_ui_data,
                       net::URLRequest* request,
                       const net::CompletionCallback& callback,
                       GURL* new_url);
@@ -181,6 +183,7 @@ class ExtensionWebRequestEventRouter
   // otherwise.
   int OnBeforeSendHeaders(void* browser_context,
                           const extensions::InfoMap* extension_info_map,
+                          ExtensionNavigationUIData* navigation_ui_data,
                           net::URLRequest* request,
                           const net::CompletionCallback& callback,
                           net::HttpRequestHeaders* headers);
@@ -189,6 +192,7 @@ class ExtensionWebRequestEventRouter
   // only.
   void OnSendHeaders(void* browser_context,
                      const extensions::InfoMap* extension_info_map,
+                     ExtensionNavigationUIData* navigation_ui_data,
                      net::URLRequest* request,
                      const net::HttpRequestHeaders& headers);
 
@@ -204,6 +208,7 @@ class ExtensionWebRequestEventRouter
   int OnHeadersReceived(
       void* browser_context,
       const extensions::InfoMap* extension_info_map,
+      ExtensionNavigationUIData* navigation_ui_data,
       net::URLRequest* request,
       const net::CompletionCallback& callback,
       const net::HttpResponseHeaders* original_response_headers,
@@ -218,6 +223,7 @@ class ExtensionWebRequestEventRouter
   net::NetworkDelegate::AuthRequiredResponse OnAuthRequired(
       void* browser_context,
       const extensions::InfoMap* extension_info_map,
+      ExtensionNavigationUIData* navigation_ui_data,
       net::URLRequest* request,
       const net::AuthChallengeInfo& auth_info,
       const net::NetworkDelegate::AuthCallback& callback,
@@ -227,6 +233,7 @@ class ExtensionWebRequestEventRouter
   // only.
   void OnBeforeRedirect(void* browser_context,
                         const extensions::InfoMap* extension_info_map,
+                        ExtensionNavigationUIData* navigation_ui_data,
                         net::URLRequest* request,
                         const GURL& new_location);
 
@@ -234,28 +241,33 @@ class ExtensionWebRequestEventRouter
   // the response have arrived.
   void OnResponseStarted(void* browser_context,
                          const extensions::InfoMap* extension_info_map,
+                         ExtensionNavigationUIData* navigation_ui_data,
                          net::URLRequest* request,
                          int net_error);
   // Deprecated.
   // TODO(maksims): Remove this.
   void OnResponseStarted(void* browser_context,
                          const extensions::InfoMap* extension_info_map,
+                         ExtensionNavigationUIData* navigation_ui_data,
                          net::URLRequest* request);
 
   // Dispatches the onComplete event.
   void OnCompleted(void* browser_context,
                    const extensions::InfoMap* extension_info_map,
+                   ExtensionNavigationUIData* navigation_ui_data,
                    net::URLRequest* request,
                    int net_error);
   // Deprecated.
   // TODO(maksims): Remove this.
   void OnCompleted(void* browser_context,
                    const extensions::InfoMap* extension_info_map,
+                   ExtensionNavigationUIData* navigation_ui_data,
                    net::URLRequest* request);
 
   // Dispatches an onErrorOccurred event.
   void OnErrorOccurred(void* browser_context,
                        const extensions::InfoMap* extension_info_map,
+                       ExtensionNavigationUIData* navigation_ui_data,
                        net::URLRequest* request,
                        bool started,
                        int net_error);
@@ -263,6 +275,7 @@ class ExtensionWebRequestEventRouter
   // TODO(maksims): Remove this.
   void OnErrorOccurred(void* browser_context,
                        const extensions::InfoMap* extension_info_map,
+                       ExtensionNavigationUIData* navigation_ui_data,
                        net::URLRequest* request,
                        bool started);
 
@@ -409,6 +422,7 @@ class ExtensionWebRequestEventRouter
   bool DispatchEvent(void* browser_context,
                      net::URLRequest* request,
                      const RawListeners& listener_ids,
+                     ExtensionNavigationUIData* navigation_ui_data,
                      std::unique_ptr<WebRequestEventDetails> event_details);
 
   void DispatchEventToListeners(

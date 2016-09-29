@@ -1082,7 +1082,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
                                     url::Origin(url), true, false, false, -1));
       std::unique_ptr<NavigationURLLoader> test_loader =
           NavigationURLLoader::Create(browser_context_.get(),
-                                      std::move(request_info), nullptr,
+                                      std::move(request_info), nullptr, nullptr,
                                       &delegate);
 
       // The navigation should fail with the expected error code.
@@ -2569,7 +2569,8 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
                                   url::Origin(download_url), true, false, false,
                                   -1));
     std::unique_ptr<NavigationURLLoader> loader = NavigationURLLoader::Create(
-        browser_context_.get(), std::move(request_info), nullptr, &delegate);
+        browser_context_.get(), std::move(request_info), nullptr, nullptr,
+        &delegate);
 
     // Wait until a response has been received and proceed with the response.
     KickOffRequest();

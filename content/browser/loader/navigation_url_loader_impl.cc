@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/stream_handle.h"
 
 namespace content {
@@ -23,6 +24,7 @@ namespace content {
 NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     BrowserContext* browser_context,
     std::unique_ptr<NavigationRequestInfo> request_info,
+    std::unique_ptr<NavigationUIData> navigation_ui_data,
     ServiceWorkerNavigationHandle* service_worker_handle,
     NavigationURLLoaderDelegate* delegate)
     : delegate_(delegate), weak_factory_(this) {
@@ -44,7 +46,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&NavigationURLLoaderImplCore::Start, base::Unretained(core_),
                  browser_context->GetResourceContext(),
-                 service_worker_handle_core, base::Passed(&request_info)));
+                 service_worker_handle_core, base::Passed(&request_info),
+                 base::Passed(&navigation_ui_data)));
 }
 
 NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {

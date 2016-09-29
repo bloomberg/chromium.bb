@@ -115,6 +115,7 @@ class GpuProcessHost;
 class LocationProvider;
 class MediaObserver;
 class NavigationHandle;
+class NavigationUIData;
 class PlatformNotificationService;
 class PresentationServiceDelegate;
 class QuotaPermissionContext;
@@ -739,6 +740,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // guaranteed that the throttles will be executed in the order they were
   // provided.
   virtual ScopedVector<NavigationThrottle> CreateThrottlesForNavigation(
+      NavigationHandle* navigation_handle);
+
+  // PlzNavigate
+  // Called at the start of the navigation to get opaque data the embedder
+  // wants to see passed to the corresponding URLRequest on the IO thread.
+  virtual std::unique_ptr<NavigationUIData> GetNavigationUIData(
       NavigationHandle* navigation_handle);
 
   // Allows the embedder to provide its own AudioManager implementation.

@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/resource_request_body_impl.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_type.h"
@@ -94,6 +95,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool IsDownload() const override;
   bool IsUsingLoFi() const override;
   bool ShouldReportRawHeaders() const;
+  NavigationUIData* GetNavigationUIData() const override;
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 
@@ -189,6 +191,11 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     initiated_in_secure_context_ = secure;
   }
 
+  void set_navigation_ui_data(
+      std::unique_ptr<NavigationUIData> navigation_ui_data) {
+    navigation_ui_data_ = std::move(navigation_ui_data);
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ResourceDispatcherHostTest,
                            DeletedFilterDetached);
@@ -231,6 +238,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   const std::string original_headers_;
   scoped_refptr<ResourceRequestBodyImpl> body_;
   bool initiated_in_secure_context_;
+  std::unique_ptr<NavigationUIData> navigation_ui_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceRequestInfoImpl);
 };

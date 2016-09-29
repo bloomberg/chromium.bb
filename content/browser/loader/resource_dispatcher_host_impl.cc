@@ -77,6 +77,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_details.h"
@@ -2046,6 +2047,7 @@ void ResourceDispatcherHostImpl::FinishedWithResourcesForRequest(
 void ResourceDispatcherHostImpl::BeginNavigationRequest(
     ResourceContext* resource_context,
     const NavigationRequestInfo& info,
+    std::unique_ptr<NavigationUIData> navigation_ui_data,
     NavigationURLLoaderImplCore* loader,
     ServiceWorkerNavigationHandleCore* service_worker_handle_core) {
   // PlzNavigate: BeginNavigationRequest currently should only be used for the
@@ -2167,6 +2169,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // If in the future this changes this should be updated to somehow get a
       // meaningful value.
       false);  // initiated_in_secure_context
+  extra_info->set_navigation_ui_data(std::move(navigation_ui_data));
+
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
@@ -2371,6 +2375,7 @@ void ResourceDispatcherHostImpl::StartLoading(
           "456331 ResourceDispatcherHostImpl::StartLoading"));
 
   ResourceLoader* loader_ptr = loader.get();
+  DCHECK(pending_loaders_[info->GetGlobalRequestID()] == nullptr);
   pending_loaders_[info->GetGlobalRequestID()] = std::move(loader);
 
   loader_ptr->StartRequest();

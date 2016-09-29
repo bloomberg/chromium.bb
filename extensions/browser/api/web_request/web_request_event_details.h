@@ -88,6 +88,12 @@ class WebRequestEventDetails {
     dict_.SetString(key, value);
   }
 
+  // Sets the following keys using the value provided.
+  // - tabId
+  // - frameId
+  // - parentFrameId
+  void SetFrameData(const ExtensionApiFrameIdMap::FrameData& frame_data);
+
   // Sets the following keys using information from constructor.
   // - tabId
   // - frameId
