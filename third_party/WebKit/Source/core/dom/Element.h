@@ -715,6 +715,8 @@ private:
     void updateId(TreeScope&, const AtomicString& oldId, const AtomicString& newId);
     void updateName(const AtomicString& oldName, const AtomicString& newName);
 
+    void clientQuads(Vector<FloatQuad>& quads);
+
     NodeType getNodeType() const final;
     bool childTypeAllowed(NodeType) const final;
 

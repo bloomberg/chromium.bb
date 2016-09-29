@@ -1034,39 +1034,43 @@ IntRect Element::visibleBoundsInVisualViewport() const
     return rect;
 }
 
-ClientRectList* Element::getClientRects()
+void Element::clientQuads(Vector<FloatQuad>& quads)
 {
     document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
 
     LayoutObject* elementLayoutObject = layoutObject();
-    if (!elementLayoutObject || (!elementLayoutObject->isBoxModelObject() && !elementLayoutObject->isBR()))
+    if (!elementLayoutObject)
+        return;
+
+    if (isSVGElement() && !elementLayoutObject->isSVGRoot()) {
+        // Get the bounding rectangle from the SVG model.
+        if (toSVGElement(this)->isSVGGraphicsElement())
+            quads.append(elementLayoutObject->localToAbsoluteQuad(elementLayoutObject->objectBoundingBox()));
+        return;
+    }
+
+    // FIXME: Handle table/inline-table with a caption.
+    if (elementLayoutObject->isBoxModelObject() || elementLayoutObject->isBR())
+        elementLayoutObject->absoluteQuads(quads);
+}
+
+ClientRectList* Element::getClientRects()
+{
+    Vector<FloatQuad> quads;
+    clientQuads(quads);
+    if (quads.isEmpty())
         return ClientRectList::create();
 
-    // FIXME: Handle SVG elements.
-    // FIXME: Handle table/inline-table with a caption.
-
-    Vector<FloatQuad> quads;
-    elementLayoutObject->absoluteQuads(quads);
+    LayoutObject* elementLayoutObject = layoutObject();
+    DCHECK(elementLayoutObject);
     document().adjustFloatQuadsForScrollAndAbsoluteZoom(quads, *elementLayoutObject);
     return ClientRectList::create(quads);
 }
 
 ClientRect* Element::getBoundingClientRect()
 {
-    document().updateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
-
     Vector<FloatQuad> quads;
-    LayoutObject* elementLayoutObject = layoutObject();
-    if (elementLayoutObject) {
-        if (isSVGElement() && !elementLayoutObject->isSVGRoot()) {
-            // Get the bounding rectangle from the SVG model.
-            if (toSVGElement(this)->isSVGGraphicsElement())
-                quads.append(elementLayoutObject->localToAbsoluteQuad(elementLayoutObject->objectBoundingBox()));
-        } else if (elementLayoutObject->isBoxModelObject() || elementLayoutObject->isBR()) {
-            elementLayoutObject->absoluteQuads(quads);
-        }
-    }
-
+    clientQuads(quads);
     if (quads.isEmpty())
         return ClientRect::create();
 
@@ -1074,6 +1078,7 @@ ClientRect* Element::getBoundingClientRect()
     for (size_t i = 1; i < quads.size(); ++i)
         result.unite(quads[i].boundingBox());
 
+    LayoutObject* elementLayoutObject = layoutObject();
     DCHECK(elementLayoutObject);
     document().adjustFloatRectForScrollAndAbsoluteZoom(result, *elementLayoutObject);
     return ClientRect::create(result);
