@@ -4801,6 +4801,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
 
+  // Don't create windows for non-empty invalid URLs.
+  if (!requestURL.is_empty() && !requestURL.is_valid()) {
+    DLOG(WARNING) << "Unable to open a window with invalid URL: "
+                  << requestURL.spec();
+    return nil;
+  }
+
   if (![self userIsInteracting]) {
     NSString* referer = [self refererFromNavigationAction:action];
     GURL referrerURL =
