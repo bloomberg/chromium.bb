@@ -231,19 +231,26 @@ static uint8_t scan_blk_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
 static int has_top_right(const MACROBLOCKD *xd, int mi_row, int mi_col,
                          int bs) {
-  int has_tr =
-      !((mi_row & bs) & (bs * 2 - 1)) || !((mi_col & bs) & (bs * 2 - 1));
+  // In a split partition all apart from the bottom right has a top right
+  int has_tr = !((mi_row & bs) && (mi_col & bs));
 
-  // Filter out partial right-most boundaries
-  if ((mi_col & bs) & (bs * 2 - 1)) {
-    if (((mi_col & (2 * bs)) & (bs * 4 - 1)) &&
-        ((mi_row & (2 * bs)) & (bs * 4 - 1)))
-      has_tr = 0;
+  // bs > 0 and bs is a power of 2
+  assert(bs > 0 && !(bs & (bs - 1)));
+
+  // For each 4x4 group of blocks, when the bottom right is decoded the blocks
+  // to the right have not been decoded therefore the bottom right does
+  // not have a top right
+  while (bs < MAX_MIB_SIZE) {
+    if (mi_col & bs) {
+      if ((mi_col & (2 * bs)) && (mi_row & (2 * bs))) {
+        has_tr = 0;
+        break;
+      }
+    } else {
+      break;
+    }
+    bs <<= 1;
   }
-
-  if (has_tr)
-    if (((mi_col + xd->n8_w) & 0x07) == 0)
-      if ((mi_row & 0x07) > 0) has_tr = 0;
 
   if (xd->n8_w < xd->n8_h)
     if (!xd->is_sec_rect) has_tr = 1;
