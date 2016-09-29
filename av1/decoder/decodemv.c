@@ -619,16 +619,15 @@ static INLINE void read_mv(aom_reader *r, MV *mv, const MV *ref,
 #else
       (MV_JOINT_TYPE)aom_read_tree(r, av1_mv_joint_tree, ctx->joints, ACCT_STR);
 #endif
-  const int use_hp = allow_hp && av1_use_mv_hp(ref);
   MV diff = { 0, 0 };
 
   if (mv_joint_vertical(joint_type))
-    diff.row = read_mv_component(r, &ctx->comps[0], use_hp);
+    diff.row = read_mv_component(r, &ctx->comps[0], allow_hp);
 
   if (mv_joint_horizontal(joint_type))
-    diff.col = read_mv_component(r, &ctx->comps[1], use_hp);
+    diff.col = read_mv_component(r, &ctx->comps[1], allow_hp);
 
-  av1_inc_mv(&diff, counts, use_hp);
+  av1_inc_mv(&diff, counts, allow_hp);
 
   mv->row = ref->row + diff.row;
   mv->col = ref->col + diff.col;

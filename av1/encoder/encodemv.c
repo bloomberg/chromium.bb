@@ -273,7 +273,6 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
                    nmv_context *mvctx, int usehp) {
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
-  usehp = usehp && av1_use_mv_hp(ref);
 
 #if CONFIG_DAALA_EC
   aom_write_symbol(w, j, mvctx->joint_cdf, MV_JOINTS);
@@ -318,7 +317,7 @@ static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
 #else
     nmv_context_counts *counts = nmv_counts;
 #endif
-    av1_inc_mv(&diff, counts, av1_use_mv_hp(ref));
+    av1_inc_mv(&diff, counts, 1);
   }
 }
 
