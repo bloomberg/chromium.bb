@@ -114,6 +114,21 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
     SCOPED_TRACE("~AudioRendererImplTest()");
   }
 
+  // Reconfigures a renderer without config change support using given params.
+  void ConfigureBasicRenderer(const AudioParameters& params) {
+    hardware_params_ = params;
+    sink_ = new FakeAudioRendererSink(hardware_params_);
+    decoder_ = new MockAudioDecoder();
+    ScopedVector<AudioDecoder> decoders;
+    decoders.push_back(decoder_);
+    renderer_.reset(new AudioRendererImpl(message_loop_.task_runner(),
+                                          sink_.get(), std::move(decoders),
+                                          new MediaLog()));
+    testing::Mock::VerifyAndClearExpectations(&demuxer_stream_);
+    EXPECT_CALL(demuxer_stream_, SupportsConfigChanges())
+        .WillRepeatedly(Return(false));
+  }
+
   void ExpectUnsupportedAudioDecoder() {
     EXPECT_CALL(*decoder_, Initialize(_, _, _, _))
         .WillOnce(DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(false)));
@@ -535,6 +550,37 @@ TEST_F(AudioRendererImplTest, Underflow_CapacityResetsAfterFlush) {
   // Verify that the buffer capacity is restored to the |initial_capacity|.
   FlushDuringPendingRead();
   EXPECT_EQ(buffer_capacity().value, initial_capacity.value);
+}
+
+TEST_F(AudioRendererImplTest, Underflow_CapacityIncreasesBeforeHaveNothing) {
+  Initialize();
+  Preroll();
+  StartTicking();
+
+  // Verify the next FillBuffer() call triggers the underflow callback
+  // since the decoder hasn't delivered any data after it was drained.
+  OutputFrames initial_capacity = buffer_capacity();
+
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_FALSE(ConsumeBufferedData(OutputFrames(frames_buffered().value + 1)));
+
+  // Verify that the buffer capacity increased despite not sending have nothing.
+  EXPECT_GT(buffer_capacity().value, initial_capacity.value);
+}
+
+TEST_F(AudioRendererImplTest, CapacityAppropriateForHardware) {
+  // Verify that initial capacity is reasonable in normal case.
+  Initialize();
+  EXPECT_GT(buffer_capacity().value, hardware_params_.frames_per_buffer());
+
+  // Verify in the no-config-changes-expected case.
+  ConfigureBasicRenderer(AudioParameters(
+      AudioParameters::AUDIO_PCM_LOW_LATENCY, kChannelLayout,
+      kOutputSamplesPerSecond, SampleFormatToBytesPerChannel(kSampleFormat) * 8,
+      1024 * 15));
+
+  Initialize();
+  EXPECT_GT(buffer_capacity().value, hardware_params_.frames_per_buffer());
 }
 
 TEST_F(AudioRendererImplTest, Underflow_Flush) {

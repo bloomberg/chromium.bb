@@ -348,14 +348,17 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
   if (!expecting_config_changes_ || !hw_params.IsValid() ||
       hw_params.format() == AudioParameters::AUDIO_FAKE) {
     // The actual buffer size is controlled via the size of the AudioBus
-    // provided to Render(), so just choose something reasonable here for looks.
-    int buffer_size = stream->audio_decoder_config().samples_per_second() / 100;
-    audio_parameters_.Reset(
-        AudioParameters::AUDIO_PCM_LOW_LATENCY,
-        stream->audio_decoder_config().channel_layout(),
-        stream->audio_decoder_config().samples_per_second(),
-        stream->audio_decoder_config().bits_per_channel(),
-        buffer_size);
+    // provided to Render(), but we should choose a value here based on hardware
+    // parameters if possible since it affects the initial buffer size used by
+    // the algorithm. Too little will cause underflow on Bluetooth devices.
+    int buffer_size =
+        std::max(stream->audio_decoder_config().samples_per_second() / 100,
+                 hw_params.IsValid() ? hw_params.frames_per_buffer() : 0);
+    audio_parameters_.Reset(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                            stream->audio_decoder_config().channel_layout(),
+                            stream->audio_decoder_config().samples_per_second(),
+                            stream->audio_decoder_config().bits_per_channel(),
+                            buffer_size);
     buffer_converter_.reset();
   } else {
     // To allow for seamless sample rate adaptations (i.e. changes from say
@@ -851,6 +854,10 @@ int AudioRendererImpl::Render(AudioBus* audio_bus,
         algorithm_->IncreaseQueueCapacity();
         SetBufferingState_Locked(BUFFERING_HAVE_NOTHING);
       }
+    } else if (frames_written < frames_requested && !received_end_of_stream_) {
+      // If we only partially filled the request and should have more data, go
+      // ahead and increase queue capacity to try and meet the next request.
+      algorithm_->IncreaseQueueCapacity();
     }
 
     audio_clock_->WroteAudio(frames_written + frames_after_end_of_stream,
