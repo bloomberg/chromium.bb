@@ -106,3 +106,11 @@ include_rules = [
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebWindowFeatures.h",
 ]
+
+specific_include_rules = {
+  # Exploits don't abide by DEPS; so all IPC message definitions are fair game
+  # in this type of test.
+  'chrome_security_exploit_browsertest\.cc' : [
+    '+content/common',
+  ],
+}

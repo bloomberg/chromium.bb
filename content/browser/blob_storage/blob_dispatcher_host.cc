@@ -304,12 +304,23 @@ void BlobDispatcherHost::OnDecrementBlobRefCount(const std::string& uuid) {
 void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
                                                  const std::string& uuid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BlobStorageContext* context = this->context();
+  ChildProcessSecurityPolicyImpl* security_policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+
+  // Blob urls have embedded origins. A frame should only be creating blob URLs
+  // in the origin of its current document. Make sure that the origin advertised
+  // on the URL is allowed to be rendered in this process.
+  if (!public_url.SchemeIsBlob() ||
+      !security_policy->CanCommitURL(process_id_, public_url)) {
+    bad_message::ReceivedBadMessage(this, bad_message::BDH_DISALLOWED_ORIGIN);
+    return;
+  }
   if (uuid.empty()) {
     bad_message::ReceivedBadMessage(this,
                                     bad_message::BDH_INVALID_URL_OPERATION);
     return;
   }
+  BlobStorageContext* context = this->context();
   if (!IsInUseInHost(uuid) || context->registry().IsURLMapped(public_url)) {
     UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidURLRegister", BDH_INCREMENT,
                               BDH_TRACING_ENUM_LAST);

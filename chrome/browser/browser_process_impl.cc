@@ -78,6 +78,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
+#include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/switch_utils.h"
@@ -220,10 +221,22 @@ BrowserProcessImpl::BrowserProcessImpl(
       net_log_path, GetNetCaptureModeFromCommandLine(command_line),
       command_line.GetCommandLineString(), chrome::GetChannelString()));
 
-  ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-      extensions::kExtensionScheme);
-  ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-      extensions::kExtensionResourceScheme);
+#if defined(ENABLE_EXTENSIONS)
+  if (extensions::IsIsolateExtensionsEnabled()) {
+    // chrome-extension:// URLs are safe to request anywhere, but may only
+    // commit (including in iframes) in extension processes.
+    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeIsolatedScheme(
+        extensions::kExtensionScheme, true);
+    // TODO(nick): Kill off kExtensionResourceScheme.
+    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeIsolatedScheme(
+        extensions::kExtensionResourceScheme, false);
+  } else {
+    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
+        extensions::kExtensionScheme);
+    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
+        extensions::kExtensionResourceScheme);
+  }
+#endif
   ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       chrome::kChromeSearchScheme);
 

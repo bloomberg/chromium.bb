@@ -63,6 +63,15 @@ void ExtensionWebContentsObserver::InitializeRenderFrame(
   if (!frame_extension)
     return;
 
+  // |render_frame_host->GetProcess()| is an extension process. Grant permission
+  // to commit pages from chrome-extension:// origins.
+  content::ChildProcessSecurityPolicy* security_policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  int process_id = render_frame_host->GetProcess()->GetID();
+  security_policy->GrantScheme(process_id, extensions::kExtensionScheme);
+  security_policy->GrantScheme(process_id,
+                               extensions::kExtensionResourceScheme);
+
   // Notify the render frame of the view type.
   render_frame_host->Send(new ExtensionMsg_NotifyRenderViewType(
       render_frame_host->GetRoutingID(), GetViewType(web_contents())));

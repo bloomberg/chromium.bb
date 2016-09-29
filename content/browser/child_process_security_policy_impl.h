@@ -43,6 +43,9 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // ChildProcessSecurityPolicy implementation.
   void RegisterWebSafeScheme(const std::string& scheme) override;
+  void RegisterWebSafeIsolatedScheme(
+      const std::string& scheme,
+      bool always_allow_in_origin_headers) override;
   bool IsWebSafeScheme(const std::string& scheme) override;
   void GrantReadFile(int child_id, const base::FilePath& file) override;
   void GrantCreateReadWriteFile(int child_id,
@@ -64,6 +67,8 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
                                  const std::string& filesystem_id) override;
   void GrantOrigin(int child_id, const url::Origin& origin) override;
   void GrantScheme(int child_id, const std::string& scheme) override;
+  bool CanRequestURL(int child_id, const GURL& url) override;
+  bool CanCommitURL(int child_id, const GURL& url) override;
   bool CanReadFile(int child_id, const base::FilePath& file) override;
   bool CanCreateReadWriteFile(int child_id,
                               const base::FilePath& file) override;
@@ -126,17 +131,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
 
   // Revoke read raw cookies permission.
   void RevokeReadRawCookies(int child_id);
-
-  // Before servicing a child process's request for a URL, the browser should
-  // call this method to determine whether the process has the capability to
-  // request the URL.
-  bool CanRequestURL(int child_id, const GURL& url);
-
-  // Whether the process is allowed to commit a document from the given URL.
-  // This is more restrictive than CanRequestURL, since CanRequestURL allows
-  // requests that might lead to cross-process navigations or external protocol
-  // handlers.
-  bool CanCommitURL(int child_id, const GURL& url);
 
   // Whether the given origin is valid for an origin header. Valid origin
   // headers are commitable URLs plus suborigin URLs.
@@ -235,9 +229,11 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // class.  You must not block while holding this lock.
   base::Lock lock_;
 
-  // These schemes are white-listed for all child processes.  This set is
-  // protected by |lock_|.
-  SchemeSet web_safe_schemes_;
+  // These schemes are white-listed for all child processes in various contexts.
+  // These sets are protected by |lock_|.
+  SchemeSet schemes_okay_to_commit_in_any_process_;
+  SchemeSet schemes_okay_to_request_in_any_process_;
+  SchemeSet schemes_okay_to_appear_as_origin_headers_;
 
   // These schemes do not actually represent retrievable URLs.  For example,
   // the the URLs in the "about" scheme are aliases to other URLs.  This set is
