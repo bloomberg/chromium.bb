@@ -292,8 +292,6 @@ TEST_F(BluetoothChooserControllerWithDevicesAddedTest,
   bluetooth_chooser_controller_.OnAdapterPresenceChanged(
       content::BluetoothChooser::AdapterPresence::POWERED_OFF);
   EXPECT_EQ(0u, bluetooth_chooser_controller_.NumOptions());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF),
-            bluetooth_chooser_controller_.GetNoOptionsText());
   EXPECT_EQ(base::string16(), bluetooth_chooser_controller_.GetStatus());
 }
 

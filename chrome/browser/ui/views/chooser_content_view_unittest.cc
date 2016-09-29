@@ -55,6 +55,9 @@ class ChooserContentViewTest : public views::ViewsTestBase {
     ASSERT_TRUE(table_model_);
     throbber_ = chooser_content_view_->throbber_for_test();
     ASSERT_TRUE(throbber_);
+    turn_adapter_off_help_ =
+        chooser_content_view_->turn_adapter_off_help_for_test();
+    ASSERT_TRUE(turn_adapter_off_help_);
     discovery_state_.reset(chooser_content_view_->CreateExtraView());
     ASSERT_TRUE(discovery_state_);
     styled_label_.reset(chooser_content_view_->CreateFootnoteView());
@@ -72,6 +75,7 @@ class ChooserContentViewTest : public views::ViewsTestBase {
   views::TableView* table_view_;
   ui::TableModel* table_model_;
   views::Throbber* throbber_;
+  views::Link* turn_adapter_off_help_;
   std::unique_ptr<views::StyledLabel> styled_label_;
 
  private:
@@ -94,6 +98,7 @@ TEST_F(ChooserContentViewTest, InitialState) {
   EXPECT_EQ(0, table_view_->SelectedRowCount());
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
+  EXPECT_FALSE(turn_adapter_off_help_->visible());
   EXPECT_TRUE(discovery_state_->text().empty());
 }
 
@@ -488,6 +493,7 @@ TEST_F(ChooserContentViewTest, AdapterOnAndOffAndOn) {
   EXPECT_EQ(0, table_view_->SelectedRowCount());
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
+  EXPECT_FALSE(turn_adapter_off_help_->visible());
   EXPECT_TRUE(discovery_state_->enabled());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN),
             discovery_state_->text());
@@ -509,18 +515,12 @@ TEST_F(ChooserContentViewTest, AdapterOnAndOffAndOn) {
   mock_chooser_controller_->OnAdapterPresenceChanged(
       content::BluetoothChooser::AdapterPresence::POWERED_OFF);
   EXPECT_EQ(0u, mock_chooser_controller_->NumOptions());
-  EXPECT_TRUE(table_view_->visible());
-  // Since "Bluetooth turned off." needs to be displayed on the |table_view_|,
-  // the number of rows is 1.
-  EXPECT_EQ(1, table_view_->RowCount());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF),
-            table_model_->GetText(0, 0));
-  // |table_view_| should be disabled since there is no option shown.
-  EXPECT_FALSE(table_view_->enabled());
-  // No option selected.
-  EXPECT_EQ(0, table_view_->SelectedRowCount());
-  EXPECT_EQ(-1, table_view_->FirstSelectedRow());
+  EXPECT_FALSE(table_view_->visible());
   EXPECT_FALSE(throbber_->visible());
+  EXPECT_TRUE(turn_adapter_off_help_->visible());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF),
+      turn_adapter_off_help_->text());
   EXPECT_FALSE(discovery_state_->enabled());
   EXPECT_TRUE(discovery_state_->text().empty());
 
@@ -536,6 +536,7 @@ TEST_F(ChooserContentViewTest, AdapterOnAndOffAndOn) {
   EXPECT_EQ(0, table_view_->SelectedRowCount());
   EXPECT_EQ(-1, table_view_->FirstSelectedRow());
   EXPECT_FALSE(throbber_->visible());
+  EXPECT_FALSE(turn_adapter_off_help_->visible());
   EXPECT_TRUE(discovery_state_->enabled());
   EXPECT_EQ(l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN),
             discovery_state_->text());
@@ -641,9 +642,14 @@ TEST_F(ChooserContentViewTest, DiscoveringAndOneOptionAddedAndSelectedAndIdle) {
             discovery_state_->text());
 }
 
+TEST_F(ChooserContentViewTest, ClickAdapterOffHelpLink) {
+  EXPECT_CALL(*mock_chooser_controller_, OpenAdapterOffHelpUrl()).Times(1);
+  chooser_content_view_->LinkClicked(turn_adapter_off_help_, 0);
+}
+
 TEST_F(ChooserContentViewTest, ClickRescanLink) {
   EXPECT_CALL(*mock_chooser_controller_, RefreshOptions()).Times(1);
-  chooser_content_view_->LinkClicked(nullptr, 0);
+  chooser_content_view_->LinkClicked(discovery_state_.get(), 0);
 }
 
 TEST_F(ChooserContentViewTest, ClickStyledLabelLink) {

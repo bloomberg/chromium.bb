@@ -25,6 +25,9 @@ class Throbber;
 
 // A bubble or dialog view for choosing among several options in a table.
 // Used for WebUSB/WebBluetooth device selection for Chrome and extensions.
+//
+// TODO(juncai): change ChooserContentView class name to be more specific.
+// https://crbug.com/651568
 class ChooserContentView : public views::View,
                            public ui::TableModel,
                            public ChooserController::View,
@@ -37,6 +40,7 @@ class ChooserContentView : public views::View,
 
   // views::View:
   gfx::Size GetPreferredSize() const override;
+  void Layout() override;
 
   // ui::TableModel:
   int RowCount() override;
@@ -74,13 +78,18 @@ class ChooserContentView : public views::View,
 
   views::TableView* table_view_for_test() const { return table_view_; }
   views::Throbber* throbber_for_test() const { return throbber_; }
+  views::Link* turn_adapter_off_help_for_test() const {
+    return turn_adapter_off_help_;
+  }
 
  private:
   std::unique_ptr<ChooserController> chooser_controller_;
-  views::TableView* table_view_;                // Weak.
-  views::Throbber* throbber_;                   // Weak.
-  views::Link* discovery_state_ = nullptr;      // Weak.
-  views::StyledLabel* styled_label_ = nullptr;  // Weak.
+  views::TableView* table_view_ = nullptr;        // Weak.
+  views::View* table_parent_ = nullptr;           // Weak.
+  views::Throbber* throbber_ = nullptr;           // Weak.
+  views::Link* turn_adapter_off_help_ = nullptr;  // Weak.
+  views::Link* discovery_state_ = nullptr;        // Weak.
+  views::StyledLabel* styled_label_ = nullptr;    // Weak.
 
   DISALLOW_COPY_AND_ASSIGN(ChooserContentView);
 };

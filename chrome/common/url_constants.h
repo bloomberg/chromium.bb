@@ -594,6 +594,9 @@ extern const char kWindowsXPVistaDeprecationURL[];
 // Chooser.
 extern const char kChooserBluetoothOverviewURL[];
 
+// The URL for providing help when the Bluetooth adapter is off.
+extern const char kBluetoothAdapterOffHelpURL[];
+
 // The URL for the WebUsb help center article.
 extern const char kChooserUsbOverviewURL[];
 

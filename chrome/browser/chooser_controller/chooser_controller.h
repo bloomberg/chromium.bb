@@ -114,6 +114,9 @@ class ChooserController {
   // Open help center URL.
   virtual void OpenHelpCenterUrl() const = 0;
 
+  // Provide help information when the adapter is off.
+  virtual void OpenAdapterOffHelpUrl() const;
+
   // Only one view may be registered at a time.
   void set_view(View* view) { view_ = view; }
   View* view() const { return view_; }

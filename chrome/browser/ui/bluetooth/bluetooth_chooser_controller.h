@@ -37,6 +37,7 @@ class BluetoothChooserController : public ChooserController {
   bool IsPaired(size_t index) const override;
   base::string16 GetOption(size_t index) const override;
   void RefreshOptions() override;
+  void OpenAdapterOffHelpUrl() const override;
   base::string16 GetStatus() const override;
   void Select(size_t index) override;
   void Cancel() override;
@@ -85,7 +86,6 @@ class BluetoothChooserController : public ChooserController {
   std::unordered_map<base::string16, int> device_name_counts_;
 
   content::BluetoothChooser::EventHandler event_handler_;
-  base::string16 no_devices_text_;
   base::string16 status_text_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothChooserController);

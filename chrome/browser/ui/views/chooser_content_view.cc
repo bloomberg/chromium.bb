@@ -9,6 +9,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -17,7 +19,6 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/controls/throbber.h"
-#include "ui/views/layout/fill_layout.h"
 
 namespace {
 
@@ -26,6 +27,8 @@ const int kChooserWidth = 330;
 const int kChooserHeight = 220;
 
 const int kThrobberDiameter = 24;
+
+const int kAdapterOffHelpLinkPadding = 5;
 
 // The lookup table for signal strength level image.
 const int kSignalStrengthLevelImageIds[5] = {IDR_SIGNAL_0_BAR, IDR_SIGNAL_1_BAR,
@@ -50,29 +53,49 @@ ChooserContentView::ChooserContentView(
   table_view_->SetObserver(table_view_observer);
   table_view_->SetEnabled(chooser_controller_->NumOptions() > 0);
 
-  SetLayoutManager(new views::FillLayout());
-  views::View* table_parent = table_view_->CreateParentIfNecessary();
-  AddChildView(table_parent);
+  table_parent_ = table_view_->CreateParentIfNecessary();
+  AddChildView(table_parent_);
 
   throbber_ = new views::Throbber();
-  // Set the throbber in the center of the chooser.
-  throbber_->SetBounds((kChooserWidth - kThrobberDiameter) / 2,
-                       (kChooserHeight - kThrobberDiameter) / 2,
-                       kThrobberDiameter, kThrobberDiameter);
   throbber_->SetVisible(false);
   AddChildView(throbber_);
+
+  turn_adapter_off_help_ = new views::Link(
+      l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF));
+  turn_adapter_off_help_->SetHandlesTooltips(false);
+  turn_adapter_off_help_->SetUnderline(false);
+  turn_adapter_off_help_->SetMultiLine(true);
+  turn_adapter_off_help_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  turn_adapter_off_help_->set_listener(this);
+  turn_adapter_off_help_->SetVisible(false);
+  AddChildView(turn_adapter_off_help_);
 }
 
 ChooserContentView::~ChooserContentView() {
   chooser_controller_->set_view(nullptr);
   table_view_->SetObserver(nullptr);
   table_view_->SetModel(nullptr);
+  turn_adapter_off_help_->set_listener(nullptr);
   if (discovery_state_)
     discovery_state_->set_listener(nullptr);
 }
 
 gfx::Size ChooserContentView::GetPreferredSize() const {
   return gfx::Size(kChooserWidth, kChooserHeight);
+}
+
+void ChooserContentView::Layout() {
+  gfx::Rect rect(GetContentsBounds());
+  table_parent_->SetBoundsRect(rect);
+  // Set the throbber in the center of the chooser.
+  throbber_->SetBounds((rect.width() - kThrobberDiameter) / 2,
+                       (rect.height() - kThrobberDiameter) / 2,
+                       kThrobberDiameter, kThrobberDiameter);
+  turn_adapter_off_help_->SetPosition(
+      gfx::Point(kAdapterOffHelpLinkPadding, kAdapterOffHelpLinkPadding));
+  turn_adapter_off_help_->SizeToFit(rect.width() -
+                                    2 * kAdapterOffHelpLinkPadding);
+  views::View::Layout();
 }
 
 int ChooserContentView::RowCount() {
@@ -159,7 +182,8 @@ void ChooserContentView::OnAdapterEnabledChanged(bool enabled) {
   // of a previously selected row.
   table_view_->Select(-1);
   UpdateTableView();
-  table_view_->SetVisible(true);
+  table_view_->SetVisible(enabled);
+  turn_adapter_off_help_->SetVisible(!enabled);
 
   throbber_->Stop();
   throbber_->SetVisible(false);
@@ -195,7 +219,12 @@ void ChooserContentView::OnRefreshStateChanged(bool refreshing) {
 }
 
 void ChooserContentView::LinkClicked(views::Link* source, int event_flags) {
-  chooser_controller_->RefreshOptions();
+  if (source == discovery_state_)
+    chooser_controller_->RefreshOptions();
+  else if (source == turn_adapter_off_help_)
+    chooser_controller_->OpenAdapterOffHelpUrl();
+  else
+    NOTREACHED();
 }
 
 void ChooserContentView::StyledLabelLinkClicked(views::StyledLabel* label,

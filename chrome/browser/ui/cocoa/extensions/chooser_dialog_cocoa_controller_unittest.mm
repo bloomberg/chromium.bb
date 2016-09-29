@@ -929,8 +929,9 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
   // No option selected.
   EXPECT_EQ(-1, table_view_.selectedRow);
   ExpectNoRowImage(0);
-  ExpectRowTextIs(
-      0, l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF));
+  // TODO(juncai): test the row text is "Turn on Bluetooth to allow pairing"
+  // after the Mac implementation is done.
+  // https://crbug.com/644168
   EXPECT_FALSE(IsRowPaired(0));
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);

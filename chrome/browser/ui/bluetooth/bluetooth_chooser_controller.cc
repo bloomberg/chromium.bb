@@ -40,9 +40,7 @@ BluetoothChooserController::BluetoothChooserController(
     : ChooserController(owner,
                         IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_ORIGIN,
                         IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
-      event_handler_(event_handler),
-      no_devices_text_(l10n_util::GetStringUTF16(
-          IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT)) {}
+      event_handler_(event_handler) {}
 
 BluetoothChooserController::~BluetoothChooserController() {}
 
@@ -51,7 +49,8 @@ bool BluetoothChooserController::ShouldShowIconBeforeText() const {
 }
 
 base::string16 BluetoothChooserController::GetNoOptionsText() const {
-  return no_devices_text_;
+  return l10n_util::GetStringUTF16(
+      IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
 }
 
 base::string16 BluetoothChooserController::GetOkButtonLabel() const {
@@ -95,6 +94,13 @@ void BluetoothChooserController::RefreshOptions() {
     return;
   ClearAllDevices();
   event_handler_.Run(content::BluetoothChooser::Event::RESCAN, std::string());
+}
+
+void BluetoothChooserController::OpenAdapterOffHelpUrl() const {
+  GetBrowser()->OpenURL(content::OpenURLParams(
+      GURL(chrome::kBluetoothAdapterOffHelpURL), content::Referrer(),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initialized */));
 }
 
 base::string16 BluetoothChooserController::GetStatus() const {
@@ -142,8 +148,6 @@ void BluetoothChooserController::OnAdapterPresenceChanged(
       NOTREACHED();
       break;
     case content::BluetoothChooser::AdapterPresence::POWERED_OFF:
-      no_devices_text_ =
-          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_ADAPTER_OFF);
       status_text_ = base::string16();
       if (view()) {
         view()->OnAdapterEnabledChanged(
@@ -151,8 +155,6 @@ void BluetoothChooserController::OnAdapterPresenceChanged(
       }
       break;
     case content::BluetoothChooser::AdapterPresence::POWERED_ON:
-      no_devices_text_ = l10n_util::GetStringUTF16(
-          IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
       status_text_ =
           l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
       if (view()) {
