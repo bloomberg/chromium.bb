@@ -74,8 +74,11 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
                   CurrentSupportedVersions()),
       bytes_to_transfer_(0),
       bytes_transferred_(0),
+      write_blocked_count_(0),
       wrong_data_received_(false),
       transmission_buffer_(new char[kWriteChunkSize]) {
+  nic_tx_queue_.set_listener_interface(this);
+
   connection_.SetSelfAddress(GetAddressFromName(name));
   connection_.set_visitor(this);
   connection_.SetEncrypter(ENCRYPTION_FORWARD_SECURE, new NullEncrypter());
@@ -178,6 +181,7 @@ WriteResult QuicEndpoint::Writer::WritePacket(const char* buffer,
   // full.
   if (endpoint_->nic_tx_queue_.packets_queued() > kTxQueueSize) {
     is_blocked_ = true;
+    endpoint_->write_blocked_count_++;
     return WriteResult(WRITE_STATUS_BLOCKED, 0);
   }
 

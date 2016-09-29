@@ -2,13 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/memory/ptr_util.h"
 #include "net/quic/test_tools/simulator/quic_endpoint.h"
+
+#include "base/memory/ptr_util.h"
+#include "net/quic/test_tools/quic_connection_peer.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/simulator/simulator.h"
 #include "net/quic/test_tools/simulator/switch.h"
 
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::_;
+using ::testing::NiceMock;
+using ::testing::Return;
 
 namespace net {
 namespace simulator {
@@ -66,6 +73,47 @@ TEST_F(QuicEndpointTest, OneWayTransmission) {
   const QuicByteCount total_bytes_transferred = 600 + 2 * 1024 * 1024;
   EXPECT_EQ(total_bytes_transferred, endpoint_a.bytes_transferred());
   EXPECT_EQ(total_bytes_transferred, endpoint_b.bytes_received());
+  EXPECT_EQ(0u, endpoint_a.write_blocked_count());
+  EXPECT_FALSE(endpoint_a.wrong_data_received());
+  EXPECT_FALSE(endpoint_b.wrong_data_received());
+}
+
+// Test the situation in which the writer becomes write-blocked.
+TEST_F(QuicEndpointTest, WriteBlocked) {
+  QuicEndpoint endpoint_a(&simulator_, "Endpoint A", "Endpoint B",
+                          Perspective::IS_CLIENT, 42);
+  QuicEndpoint endpoint_b(&simulator_, "Endpoint B", "Endpoint A",
+                          Perspective::IS_SERVER, 42);
+  auto link_a = Link(&endpoint_a, switch_.port(1));
+  auto link_b = Link(&endpoint_b, switch_.port(2));
+
+  // Will be owned by the sent packet manager.
+  auto* sender = new NiceMock<test::MockSendAlgorithm>();
+  EXPECT_CALL(*sender, TimeUntilSend(_, _))
+      .WillRepeatedly(Return(QuicTime::Delta::Zero()));
+  EXPECT_CALL(*sender, PacingRate(_))
+      .WillRepeatedly(Return(10 * kDefaultBandwidth));
+  EXPECT_CALL(*sender, BandwidthEstimate())
+      .WillRepeatedly(Return(10 * kDefaultBandwidth));
+  EXPECT_CALL(*sender, GetCongestionWindow())
+      .WillRepeatedly(
+          Return(kMaxPacketSize * kDefaultMaxCongestionWindowPackets));
+  test::QuicConnectionPeer::SetSendAlgorithm(endpoint_a.connection(),
+                                             kDefaultPathId, sender);
+
+  // First transmit a small, packet-size chunk of data.
+  QuicByteCount bytes_to_transfer = 3 * 1024 * 1024;
+  endpoint_a.AddBytesToTransfer(bytes_to_transfer);
+  QuicTime end_time =
+      simulator_.GetClock()->Now() + QuicTime::Delta::FromSeconds(30);
+  simulator_.RunUntil([this, &endpoint_b, bytes_to_transfer, end_time]() {
+    return endpoint_b.bytes_received() == bytes_to_transfer ||
+           simulator_.GetClock()->Now() >= end_time;
+  });
+
+  EXPECT_EQ(bytes_to_transfer, endpoint_a.bytes_transferred());
+  EXPECT_EQ(bytes_to_transfer, endpoint_b.bytes_received());
+  EXPECT_GT(endpoint_a.write_blocked_count(), 0u);
   EXPECT_FALSE(endpoint_a.wrong_data_received());
   EXPECT_FALSE(endpoint_b.wrong_data_received());
 }

@@ -47,6 +47,7 @@ class QuicEndpoint : public Endpoint,
   inline QuicByteCount bytes_received() {
     return connection_.GetStats().stream_bytes_received;
   }
+  inline size_t write_blocked_count() { return write_blocked_count_; }
   inline bool wrong_data_received() const { return wrong_data_received_; }
 
   // Send |bytes| bytes.  Initiates the transfer if one is not already in
@@ -129,6 +130,9 @@ class QuicEndpoint : public Endpoint,
 
   QuicByteCount bytes_to_transfer_;
   QuicByteCount bytes_transferred_;
+
+  // Counts the number of times the writer became write-blocked.
+  size_t write_blocked_count_;
 
   // Set to true if the endpoint receives stream data different from what it
   // expects.
