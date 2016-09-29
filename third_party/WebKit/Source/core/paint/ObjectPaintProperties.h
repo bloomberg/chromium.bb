@@ -21,18 +21,29 @@
 namespace blink {
 
 // A complete set of paint properties including those that are inherited from other objects.
-struct PropertyTreeState {
-    PropertyTreeState(const TransformPaintPropertyNode* transformState,
-        const ClipPaintPropertyNode* clipState, const EffectPaintPropertyNode* effectState,
-        const ScrollPaintPropertyNode* scrollState)
-        : transform(transformState), clip(clipState), effect(effectState), scroll(scrollState)
+// RefPtrs are used to guard against use-after-free bugs and DCHECKs ensure PropertyTreeState never
+// retains the last reference to a property tree node.
+class PropertyTreeState {
+public:
+    PropertyTreeState(const TransformPaintPropertyNode* transform,
+        const ClipPaintPropertyNode* clip,
+        const EffectPaintPropertyNode* effect,
+        const ScrollPaintPropertyNode* scroll)
+        : m_transform(transform), m_clip(clip), m_effect(effect), m_scroll(scroll)
     {
-        DCHECK(transform && clip && effect && scroll);
+        DCHECK(!m_transform->hasOneRef() && !m_clip->hasOneRef() && !m_effect->hasOneRef() && !m_scroll->hasOneRef());
     }
-    const TransformPaintPropertyNode* transform;
-    const ClipPaintPropertyNode* clip;
-    const EffectPaintPropertyNode* effect;
-    const ScrollPaintPropertyNode* scroll;
+
+    const TransformPaintPropertyNode* transform() const { DCHECK(!m_transform->hasOneRef()); return m_transform.get(); }
+    const ClipPaintPropertyNode* clip() const { DCHECK(!m_clip->hasOneRef()); return m_clip.get(); }
+    const EffectPaintPropertyNode* effect() const { DCHECK(!m_effect->hasOneRef()); return m_effect.get(); }
+    const ScrollPaintPropertyNode* scroll() const { DCHECK(!m_scroll->hasOneRef()); return m_scroll.get(); }
+
+private:
+    RefPtr<const TransformPaintPropertyNode> m_transform;
+    RefPtr<const ClipPaintPropertyNode> m_clip;
+    RefPtr<const EffectPaintPropertyNode> m_effect;
+    RefPtr<const ScrollPaintPropertyNode> m_scroll;
 };
 
 // This class stores property tree related information associated with a LayoutObject.

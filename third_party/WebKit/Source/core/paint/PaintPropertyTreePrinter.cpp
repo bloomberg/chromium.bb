@@ -430,13 +430,13 @@ private:
     void writeFrameViewPaintPropertyNodes(const FrameView& frameView)
     {
         if (const auto* contentsState = frameView.totalPropertyTreeStateForContents()) {
-            if (const auto* root = getRoot(contentsState->transform))
+            if (const auto* root = getRoot(contentsState->transform()))
                 writePaintPropertyNode(*root, &frameView, "rootTransform");
-            if (const auto* root = getRoot(contentsState->clip))
+            if (const auto* root = getRoot(contentsState->clip()))
                 writePaintPropertyNode(*root, &frameView, "rootClip");
-            if (const auto* root = getRoot(contentsState->effect))
+            if (const auto* root = getRoot(contentsState->effect()))
                 writePaintPropertyNode(*root, &frameView, "rootEffect");
-            if (const auto* root = getRoot(contentsState->scroll))
+            if (const auto* root = getRoot(contentsState->scroll()))
                 writePaintPropertyNode(*root, &frameView, "rootScroll");
         }
         TransformPaintPropertyNode* preTranslation = frameView.preTranslation();

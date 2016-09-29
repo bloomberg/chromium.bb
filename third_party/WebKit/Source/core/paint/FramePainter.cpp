@@ -48,10 +48,10 @@ void FramePainter::paint(GraphicsContext& context, const GlobalPaintFlags global
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
             if (const PropertyTreeState* contentsState = m_frameView->totalPropertyTreeStateForContents()) {
                 PaintChunkProperties properties(context.getPaintController().currentPaintChunkProperties());
-                properties.transform = contentsState->transform;
-                properties.clip = contentsState->clip;
-                properties.effect = contentsState->effect;
-                properties.scroll = contentsState->scroll;
+                properties.transform = contentsState->transform();
+                properties.clip = contentsState->clip();
+                properties.effect = contentsState->effect();
+                properties.scroll = contentsState->scroll();
                 scopedPaintChunkProperties.emplace(context.getPaintController(), *frameView().layoutView(), properties);
             }
         }
