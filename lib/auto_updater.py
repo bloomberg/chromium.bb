@@ -607,7 +607,6 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   STATEFUL_TEST_FILE = '.test_file_to_be_deleted'
   UPDATED_MARKER = '/var/run/update_engine_autoupdate_completed'
   _LAB_MACHINE_FILE = '/mnt/stateful_partition/.labmachine'
-  AUTO_DIR = '/usr/local/autotest'
   KERNEL_A = {'name': 'KERN-A', 'kernel': 2, 'root': 3}
   KERNEL_B = {'name': 'KERN-B', 'kernel': 4, 'root': 5}
   KERNEL_UPDATE_TIMEOUT = 120
@@ -616,8 +615,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   REBOOT_TIMEOUT = 480
 
   def __init__(self, device, build_name, payload_dir, dev_dir='',
-               log_file=None, tempdir=None, autodir=None,
-               clobber_stateful=True, local_devserver=False, yes=False):
+               log_file=None, tempdir=None, clobber_stateful=True,
+               local_devserver=False, yes=False):
     """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
 
     Args:
@@ -630,7 +629,6 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
           the tempdir for cros flash is /tmp/cros-flash****/, used to
           temporarily keep files when transferring devserver package, and
           reserve devserver and update engine logs.
-      autodir: the directory of autotest files in the device.
       clobber_stateful: whether to do a clean stateful update. The default is
           True for CrOS update.
       local_devserver: Indecate whether users use their local devserver.
@@ -657,12 +655,6 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
       self.update_version = None
     else:
       self.update_version = build_name
-
-    if not autodir:
-      self.device_auto_dir = self.AUTO_DIR
-    else:
-      self.device_auto_dir = autodir
-
 
   def _cgpt(self, flag, kernel, dev='$(rootdev -s -d)'):
     """Return numeric cgpt value for the specified flag, kernel, device."""
@@ -948,9 +940,3 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
           '%s instead' % (self.device.hostname,
                           self.update_version,
                           self._GetReleaseVersion()))
-
-    logging.debug('Cleaning up old autotest directories...')
-    try:
-      self.device.RunCommand(['rm', '-rf', self.device_auto_dir])
-    except cros_build_lib.RunCommandError as e:
-      logging.debug('Cannot clean up the old autotest directories: %s', e)
