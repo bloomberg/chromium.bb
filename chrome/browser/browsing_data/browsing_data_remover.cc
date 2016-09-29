@@ -804,6 +804,13 @@ void BrowsingDataRemover::RemoveImpl(
                               weak_ptr_factory_.GetWeakPtr())));
   }
 
+  if (remove_mask & REMOVE_DURABLE_PERMISSION) {
+    HostContentSettingsMapFactory::GetForProfile(profile_)
+        ->ClearSettingsForOneTypeWithPredicate(
+            CONTENT_SETTINGS_TYPE_DURABLE_STORAGE,
+            base::Bind(&ForwardPrimaryPatternCallback, same_pattern_filter));
+  }
+
   if (remove_mask & REMOVE_LOCAL_STORAGE) {
     storage_partition_remove_mask |=
         content::StoragePartition::REMOVE_DATA_MASK_LOCAL_STORAGE;

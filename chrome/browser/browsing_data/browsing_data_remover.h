@@ -127,6 +127,8 @@ class BrowsingDataRemover : public KeyedService
 #if BUILDFLAG(ANDROID_JAVA_UI)
     REMOVE_WEBAPP_DATA = 1 << 18,
 #endif
+    REMOVE_DURABLE_PERMISSION = 1 << 19,
+
     // The following flag is used only in tests. In normal usage, hosted app
     // data is controlled by the REMOVE_COOKIES flag, applied to the
     // protected-web origin.
@@ -146,7 +148,8 @@ class BrowsingDataRemover : public KeyedService
 #if BUILDFLAG(ANDROID_JAVA_UI)
                        REMOVE_WEBAPP_DATA |
 #endif
-                       REMOVE_SITE_USAGE_DATA,
+                       REMOVE_SITE_USAGE_DATA |
+                       REMOVE_DURABLE_PERMISSION,
 
     // Datatypes that can be deleted partially per URL / origin / domain,
     // whichever makes sense.

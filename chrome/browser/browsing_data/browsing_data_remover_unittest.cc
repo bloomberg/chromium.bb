@@ -43,6 +43,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/storage/durable_storage_permission_context.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -2626,6 +2627,48 @@ TEST_F(BrowsingDataRemoverTest, RemoveContentSettingsWithBlacklist) {
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kOrigin3),
             host_settings[2].primary_pattern)
       << host_settings[2].primary_pattern.ToString();
+}
+
+TEST_F(BrowsingDataRemoverTest, RemoveDurablePermission) {
+  // Add our settings.
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetProfile());
+
+  DurableStoragePermissionContext durable_permission(GetProfile());
+  durable_permission.UpdateContentSetting(kOrigin1, GURL(),
+                                          CONTENT_SETTING_ALLOW);
+  durable_permission.UpdateContentSetting(kOrigin2, GURL(),
+                                          CONTENT_SETTING_ALLOW);
+
+  // Clear all except for origin1 and origin3.
+  RegistrableDomainFilterBuilder filter(
+      RegistrableDomainFilterBuilder::BLACKLIST);
+  filter.AddRegisterableDomain(kTestRegisterableDomain1);
+  filter.AddRegisterableDomain(kTestRegisterableDomain3);
+  BlockUntilOriginDataRemoved(browsing_data::LAST_HOUR,
+                              BrowsingDataRemover::REMOVE_DURABLE_PERMISSION,
+                              filter);
+
+  EXPECT_EQ(BrowsingDataRemover::REMOVE_DURABLE_PERMISSION, GetRemovalMask());
+  EXPECT_EQ(BrowsingDataHelper::UNPROTECTED_WEB, GetOriginTypeMask());
+
+  // Verify we only have allow for the first origin.
+  ContentSettingsForOneType host_settings;
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, std::string(), &host_settings);
+
+  ASSERT_EQ(2u, host_settings.size());
+  // Only the first should should have a setting.
+  EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(kOrigin1),
+            host_settings[0].primary_pattern)
+      << host_settings[0].primary_pattern.ToString();
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_settings[0].setting);
+
+  // And our wildcard.
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[1].primary_pattern)
+      << host_settings[1].primary_pattern.ToString();
+  EXPECT_EQ(CONTENT_SETTING_ASK, host_settings[1].setting);
 }
 
 // Test that removing cookies clears HTTP auth data.

@@ -305,16 +305,20 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataAll) {
 
   EXPECT_EQ(base::Time::FromDoubleT(1.0), GetBeginTime());
   EXPECT_EQ((BrowsingDataRemover::REMOVE_SITE_DATA |
-      BrowsingDataRemover::REMOVE_CACHE |
-      BrowsingDataRemover::REMOVE_DOWNLOADS |
-      BrowsingDataRemover::REMOVE_FORM_DATA |
-      BrowsingDataRemover::REMOVE_HISTORY |
-      BrowsingDataRemover::REMOVE_PASSWORDS) &
-      // TODO(benwells): implement clearing of site usage data via the browsing
-      // data API. https://crbug.com/500801.
-      ~BrowsingDataRemover::REMOVE_SITE_USAGE_DATA &
-      // We can't remove plugin data inside a test profile.
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA, GetRemovalMask());
+             BrowsingDataRemover::REMOVE_CACHE |
+             BrowsingDataRemover::REMOVE_DOWNLOADS |
+             BrowsingDataRemover::REMOVE_FORM_DATA |
+             BrowsingDataRemover::REMOVE_HISTORY |
+             BrowsingDataRemover::REMOVE_PASSWORDS) &
+             // TODO(benwells): implement clearing of site usage data via the
+             // browsing data API. https://crbug.com/500801.
+             ~BrowsingDataRemover::REMOVE_SITE_USAGE_DATA &
+             // TODO(dmurph): implement clearing of durable storage permission
+             // via the browsing data API. https://crbug.com/500801.
+             ~BrowsingDataRemover::REMOVE_DURABLE_PERMISSION &
+             // We can't remove plugin data inside a test profile.
+             ~BrowsingDataRemover::REMOVE_PLUGIN_DATA,
+            GetRemovalMask());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, BrowsingDataOriginTypeMask) {
@@ -490,33 +494,37 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSimple) {
 
 // Test cookie and app data settings.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionSiteData) {
-  int site_data_no_usage = BrowsingDataRemover::REMOVE_SITE_DATA &
-      ~BrowsingDataRemover::REMOVE_SITE_USAGE_DATA;
-  int site_data_no_plugins = site_data_no_usage &
-      ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
+  int site_data_no_durable_or_usage =
+      BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_SITE_USAGE_DATA &
+      ~BrowsingDataRemover::REMOVE_DURABLE_PERMISSION;
+  int site_data_no_plugins_durable_usage =
+      site_data_no_durable_or_usage & ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
 
   SetPrefsAndVerifySettings(BrowsingDataRemover::REMOVE_COOKIES,
                             UNPROTECTED_WEB,
-                            site_data_no_plugins);
+                            site_data_no_plugins_durable_usage);
   SetPrefsAndVerifySettings(
       BrowsingDataRemover::REMOVE_HOSTED_APP_DATA_TESTONLY,
       PROTECTED_WEB,
-      site_data_no_plugins);
+      site_data_no_plugins_durable_usage);
   SetPrefsAndVerifySettings(
       BrowsingDataRemover::REMOVE_COOKIES |
           BrowsingDataRemover::REMOVE_HOSTED_APP_DATA_TESTONLY,
       PROTECTED_WEB | UNPROTECTED_WEB,
-      site_data_no_plugins);
+      site_data_no_plugins_durable_usage);
   SetPrefsAndVerifySettings(
       BrowsingDataRemover::REMOVE_COOKIES |
           BrowsingDataRemover::REMOVE_PLUGIN_DATA,
       UNPROTECTED_WEB,
-      site_data_no_usage);
+      site_data_no_durable_or_usage);
 }
 
 // Test an arbitrary assortment of settings.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionAssorted) {
-  int site_data_no_plugins = BrowsingDataRemover::REMOVE_SITE_DATA &
+  int site_data_no_plugins_durable_usage =
+      BrowsingDataRemover::REMOVE_SITE_DATA &
+      ~BrowsingDataRemover::REMOVE_DURABLE_PERMISSION &
       ~BrowsingDataRemover::REMOVE_SITE_USAGE_DATA &
       ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
 
@@ -525,7 +533,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SettingsFunctionAssorted) {
           BrowsingDataRemover::REMOVE_HISTORY |
           BrowsingDataRemover::REMOVE_DOWNLOADS,
     UNPROTECTED_WEB,
-    site_data_no_plugins |
+    site_data_no_plugins_durable_usage |
         BrowsingDataRemover::REMOVE_HISTORY |
         BrowsingDataRemover::REMOVE_DOWNLOADS);
 }
