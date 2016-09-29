@@ -565,9 +565,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         super.updatePanelForCloseOrPeek(percentage);
 
         getPromoControl().onUpdateFromCloseToPeek(percentage);
-
         getPeekPromoControl().onUpdateFromCloseToPeek(percentage);
-        getSearchBarControl().onUpdateFromCloseToPeek(percentage);
     }
 
     @Override
@@ -575,9 +573,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         super.updatePanelForExpansion(percentage);
 
         getPromoControl().onUpdateFromPeekToExpand(percentage);
-
         getPeekPromoControl().onUpdateFromPeekToExpand(percentage);
-        getSearchBarControl().onUpdateFromPeekToExpand(percentage);
     }
 
     @Override
@@ -585,9 +581,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         super.updatePanelForMaximization(percentage);
 
         getPromoControl().onUpdateFromExpandToMaximize(percentage);
-
         getPeekPromoControl().onUpdateFromExpandToMaximize(percentage);
-        getSearchBarControl().onUpdateFromExpandToMaximize(percentage);
     }
 
     @Override

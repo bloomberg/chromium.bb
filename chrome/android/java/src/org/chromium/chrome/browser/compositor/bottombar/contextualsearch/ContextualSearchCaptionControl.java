@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelInflater;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -48,7 +47,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
      * ANIMATION_PERCENTAGE_COMPLETE when the Contextual Search bar is peeking and
      * ANIMATION_PERCENTAGE_ZERO when it is expanded.
      */
-    private float mAnimationPercentage = ANIMATION_PERCENTAGE_COMPLETE;
+    private float mAnimationPercentage = ANIMATION_PERCENTAGE_ZERO;
 
     /**
      * Whether a new snapshot has been captured by the system yet - this is false when we have
@@ -100,11 +99,6 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
      */
     private void show() {
         mIsVisible = true;
-        // When the Panel is in transition it will get the right animation percentage during the
-        // state-transition update.
-        if (mOverlayPanel.isPeeking()) {
-            mAnimationPercentage = ANIMATION_PERCENTAGE_COMPLETE;
-        }
     }
 
     /**
@@ -130,36 +124,6 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
         return mAnimationPercentage;
     }
 
-    /**
-     * Updates this caption when in transition between closed to peeked states.
-     * @param percentage The percentage to the more opened state.
-     */
-    public void onUpdateFromCloseToPeek(float percentage) {
-        if (!mIsVisible) return;
-
-        mAnimationPercentage = ANIMATION_PERCENTAGE_COMPLETE;
-    }
-
-    /**
-     * Updates this caption when in transition between peeked to expanded states.
-     * @param percentage The percentage to the more opened state.
-     */
-    public void onUpdateFromPeekToExpand(float percentage) {
-        float fadingOutPercentage = Math.max(0f, (percentage - 0.5f) * 2);
-        mAnimationPercentage = MathUtils.interpolate(
-                ANIMATION_PERCENTAGE_COMPLETE, ANIMATION_PERCENTAGE_ZERO, fadingOutPercentage);
-    }
-
-    /**
-     * Updates this caption when in transition between expanded and maximized states.
-     * @param percentage The percentage to the more opened state.
-     */
-    public void onUpdateFromExpandToMaximize(float percentage) {
-        if (!mIsVisible) return;
-
-        mAnimationPercentage = ANIMATION_PERCENTAGE_ZERO;
-    }
-
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
@@ -181,13 +145,9 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
     // ============================================================================================
 
     private void animateTransitionIn() {
-        if (mAnimationPercentage == 0f) return;
-
-        long duration = (long)
-                (OverlayPanelAnimation.MAXIMUM_ANIMATION_DURATION_MS * mAnimationPercentage);
-
         mOverlayPanel.addToAnimation(this, AnimationType.APPEARANCE, ANIMATION_PERCENTAGE_ZERO,
-                mAnimationPercentage, duration, 0);
+                ANIMATION_PERCENTAGE_COMPLETE, OverlayPanelAnimation.MAXIMUM_ANIMATION_DURATION_MS,
+                0);
     }
 
     @Override

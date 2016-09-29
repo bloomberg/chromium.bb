@@ -83,30 +83,6 @@ public class ContextualSearchBarControl
     }
 
     /**
-     * Updates this bar when in transition between closed to peeked states.
-     * @param percentage The percentage to the more opened state.
-     */
-    public void onUpdateFromCloseToPeek(float percentage) {
-        mCaptionControl.onUpdateFromCloseToPeek(percentage);
-    }
-
-    /**
-     * Updates this bar when in transition between peeked to expanded states.
-     * @param percentage The percentage to the more opened state.
-     */
-    public void onUpdateFromPeekToExpand(float percentage) {
-        mCaptionControl.onUpdateFromPeekToExpand(percentage);
-    }
-
-    /**
-     * Updates this bar when in transition between expanded and maximized states.
-     * @param percentage The percentage to the more opened state.
-     */
-    public void onUpdateFromExpandToMaximize(float percentage) {
-        mCaptionControl.onUpdateFromExpandToMaximize(percentage);
-    }
-
-    /**
      * Sets the search context to display in the control.
      * @param selection The portion of the context that represents the user's selection.
      * @param end The portion of the context after the selection.
