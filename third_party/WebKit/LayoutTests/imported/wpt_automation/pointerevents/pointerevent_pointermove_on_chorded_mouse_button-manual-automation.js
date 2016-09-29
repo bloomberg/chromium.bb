@@ -2,11 +2,12 @@ importAutomationScript('/pointerevents/pointerevent_common_input.js');
 
 function inject_input() {
   return mouseMoveIntoTarget('#target0').then(function() {
-    return mouseMoveIntoTarget('#target1');
+    return mouseButtonPress(0);
   }).then(function() {
-    return mouseDragInTargets(['#btnCapture', '#btnCapture', '#target1', '#target0', '#target1']);
+    return mouseButtonPress(1);
   }).then(function() {
-    return mouseMoveIntoTarget('#target1');
+    return mouseButtonRelease(1);
+  }).then(function() {
+    return mouseButtonRelease(0);
   });
 }
-

@@ -41,11 +41,34 @@ function mouseMoveIntoTarget(targetSelector, targetFrame) {
   }
   return new Promise(function(resolve, reject) {
     if (window.eventSender) {
+      scrollPageIfNeeded(targetSelector, targetDocument);
       var target = targetDocument.querySelector(targetSelector);
       var targetRect = target.getBoundingClientRect();
       eventSender.mouseMoveTo(frameLeft + targetRect.left + boundaryOffset, frameTop + targetRect.top + boundaryOffset);
       resolve();
     } else {
+      reject();
+    }
+  });
+}
+
+function mouseButtonPress(button) {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      eventSender.mouseDown(button);
+      resolve();
+   } else {
+      reject();
+    }
+  });
+}
+
+function mouseButtonRelease(button) {
+  return new Promise(function(resolve, reject) {
+    if (window.eventSender) {
+      eventSender.mouseUp(button);
+      resolve();
+   } else {
       reject();
     }
   });
