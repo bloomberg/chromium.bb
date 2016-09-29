@@ -44,16 +44,19 @@ static LayoutRect mapLocalRectToPaintInvalidationBacking(GeometryMapper& geometr
     // (see LayoutBoxModelObject.h) but we need them to be in physical
     // coordinates.
     FloatRect rect = localRect;
-    if (object.isBox()) {
-        toLayoutBox(object).flipForWritingMode(rect);
-    } else if (!(context.forcedSubtreeInvalidationFlags & PaintInvalidatorContext::ForcedSubtreeSlowPathRect)) {
-        // For SPv2 and the GeometryMapper path, we also need to convert the rect
-        // for non-boxes into physical coordinates before applying paint offset.
-        // (Otherwise we'll call mapToVisualrectInAncestorSpace() which requires
-        // physical coordinates for boxes, but "physical coordinates with flipped
-        // block-flow direction" for non-boxes for which we don't need to flip.)
-        // TODO(wangxianzhu): Avoid containingBlock().
-        object.containingBlock()->flipForWritingMode(rect);
+    // Writing-mode flipping doesn't apply to non-root SVG.
+    if (!object.isSVG() || object.isSVGRoot()) {
+        if (object.isBox()) {
+            toLayoutBox(object).flipForWritingMode(rect);
+        } else if (!(context.forcedSubtreeInvalidationFlags & PaintInvalidatorContext::ForcedSubtreeSlowPathRect)) {
+            // For SPv2 and the GeometryMapper path, we also need to convert the rect
+            // for non-boxes into physical coordinates before applying paint offset.
+            // (Otherwise we'll call mapToVisualrectInAncestorSpace() which requires
+            // physical coordinates for boxes, but "physical coordinates with flipped
+            // block-flow direction" for non-boxes for which we don't need to flip.)
+            // TODO(wangxianzhu): Avoid containingBlock().
+            object.containingBlock()->flipForWritingMode(rect);
+        }
     }
 
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
