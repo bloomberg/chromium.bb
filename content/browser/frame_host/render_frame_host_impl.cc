@@ -2504,6 +2504,10 @@ void RenderFrameHostImpl::FailedNavigation(
     const RequestNavigationParams& request_params,
     bool has_stale_copy_in_cache,
     int error_code) {
+  // Update renderer permissions even for failed commits, so that for example
+  // the URL bar correctly displays privileged URLs instead of filtering them.
+  UpdatePermissionsForNavigation(common_params, request_params);
+
   // Get back to a clean state, in case a new navigation started without
   // completing an unload handler.
   ResetWaitingState();
