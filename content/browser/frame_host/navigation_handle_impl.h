@@ -81,7 +81,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_synchronous,
       bool is_srcdoc,
       const base::TimeTicks& navigation_start,
-      int pending_nav_entry_id);
+      int pending_nav_entry_id,
+      bool started_from_context_menu);
   ~NavigationHandleImpl() override;
 
   // NavigationHandle implementation:
@@ -126,6 +127,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       RenderFrameHost* render_frame_host,
       const std::string& raw_response_header) override;
   void CallDidCommitNavigationForTesting(const GURL& url) override;
+  bool WasStartedFromContextMenu() const override;
 
   NavigationData* GetNavigationData() override;
 
@@ -301,7 +303,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                        bool is_synchronous,
                        bool is_srcdoc,
                        const base::TimeTicks& navigation_start,
-                       int pending_nav_entry_id);
+                       int pending_nav_entry_id,
+                       bool started_from_context_menu);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
@@ -414,6 +417,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Whether the navigation ended up being a download or a stream.
   bool is_download_;
   bool is_stream_;
+
+  // False by default unless the navigation started within a context menu.
+  bool started_from_context_menu_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 

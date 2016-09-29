@@ -90,6 +90,9 @@ class CONTENT_EXPORT NavigationHandle {
   // browser process. Corresponds to Navigation Timing API.
   virtual const base::TimeTicks& NavigationStart() = 0;
 
+  // Whether or not the navigation was started within a context menu.
+  virtual bool WasStartedFromContextMenu() const = 0;
+
   // Parameters available at network request start time ------------------------
   //
   // The following parameters are only available when the network request is

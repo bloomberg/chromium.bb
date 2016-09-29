@@ -39,7 +39,8 @@ void InterstitialPageNavigatorImpl::DidStartProvisionalLoad(
                                    false,  // is_synchronous
                                    false,  // is_srcdoc
                                    navigation_start,
-                                   0);  // pending_nav_entry_id
+                                   0,       // pending_nav_entry_id
+                                   false);  // started_in_context_menu
 }
 
 void InterstitialPageNavigatorImpl::DidNavigate(

@@ -1215,11 +1215,11 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
     // nav_id. If the previous handle was a prematurely aborted navigation
     // loaded via LoadDataWithBaseURL, propogate the entry id.
     navigation_handle_ = NavigationHandleImpl::Create(
-        validated_params.url, frame_tree_node_,
-        is_renderer_initiated,
+        validated_params.url, frame_tree_node_, is_renderer_initiated,
         true,  // is_synchronous
         validated_params.is_srcdoc, base::TimeTicks::Now(),
-        entry_id_for_data_nav);
+        entry_id_for_data_nav,
+        false);  // started_from_context_menu
     // PlzNavigate
     if (IsBrowserSideNavigationEnabled()) {
       // PlzNavigate: synchronous loads happen in the renderer, and the browser

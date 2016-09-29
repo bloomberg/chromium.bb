@@ -6,12 +6,11 @@
 
 namespace content {
 
-OpenURLParams::OpenURLParams(
-    const GURL& url,
-    const Referrer& referrer,
-    WindowOpenDisposition disposition,
-    ui::PageTransition transition,
-    bool is_renderer_initiated)
+OpenURLParams::OpenURLParams(const GURL& url,
+                             const Referrer& referrer,
+                             WindowOpenDisposition disposition,
+                             ui::PageTransition transition,
+                             bool is_renderer_initiated)
     : url(url),
       referrer(referrer),
       uses_post(false),
@@ -20,16 +19,32 @@ OpenURLParams::OpenURLParams(
       transition(transition),
       is_renderer_initiated(is_renderer_initiated),
       should_replace_current_entry(false),
-      user_gesture(!is_renderer_initiated) {
-}
+      user_gesture(!is_renderer_initiated),
+      started_from_context_menu(false) {}
 
-OpenURLParams::OpenURLParams(
-    const GURL& url,
-    const Referrer& referrer,
-    int frame_tree_node_id,
-    WindowOpenDisposition disposition,
-    ui::PageTransition transition,
-    bool is_renderer_initiated)
+OpenURLParams::OpenURLParams(const GURL& url,
+                             const Referrer& referrer,
+                             WindowOpenDisposition disposition,
+                             ui::PageTransition transition,
+                             bool is_renderer_initiated,
+                             bool started_from_context_menu)
+    : url(url),
+      referrer(referrer),
+      uses_post(false),
+      frame_tree_node_id(-1),
+      disposition(disposition),
+      transition(transition),
+      is_renderer_initiated(is_renderer_initiated),
+      should_replace_current_entry(false),
+      user_gesture(!is_renderer_initiated),
+      started_from_context_menu(started_from_context_menu) {}
+
+OpenURLParams::OpenURLParams(const GURL& url,
+                             const Referrer& referrer,
+                             int frame_tree_node_id,
+                             WindowOpenDisposition disposition,
+                             ui::PageTransition transition,
+                             bool is_renderer_initiated)
     : url(url),
       referrer(referrer),
       uses_post(false),
@@ -38,8 +53,8 @@ OpenURLParams::OpenURLParams(
       transition(transition),
       is_renderer_initiated(is_renderer_initiated),
       should_replace_current_entry(false),
-      user_gesture(!is_renderer_initiated) {
-}
+      user_gesture(!is_renderer_initiated),
+      started_from_context_menu(false) {}
 
 OpenURLParams::OpenURLParams()
     : uses_post(false),
@@ -48,7 +63,8 @@ OpenURLParams::OpenURLParams()
       transition(ui::PAGE_TRANSITION_LINK),
       is_renderer_initiated(false),
       should_replace_current_entry(false),
-      user_gesture(true) {}
+      user_gesture(true),
+      started_from_context_menu(false) {}
 
 OpenURLParams::OpenURLParams(const OpenURLParams& other) = default;
 

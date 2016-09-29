@@ -163,7 +163,8 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
   bool IsCustomItemEnabled(int id) const;
 
   // Opens the specified URL string in a new tab.
-  void OpenURL(const GURL& url, const GURL& referrer,
+  void OpenURL(const GURL& url,
+               const GURL& referrer,
                WindowOpenDisposition disposition,
                ui::PageTransition transition);
 
@@ -172,7 +173,8 @@ class RenderViewContextMenuBase : public ui::SimpleMenuModel::Delegate,
                                const GURL& referrer,
                                WindowOpenDisposition disposition,
                                ui::PageTransition transition,
-                               const std::string& extra_headers);
+                               const std::string& extra_headers,
+                               bool started_from_context_menu);
 
   content::ContextMenuParams params_;
   content::WebContents* const source_web_contents_;

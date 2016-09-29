@@ -37,7 +37,8 @@ NavigateParams::NavigateParams(WebContents* a_target_contents)
       ref_behavior(IGNORE_REF),
       initiating_profile(nullptr),
       should_replace_current_entry(false),
-      created_with_opener(false) {}
+      created_with_opener(false),
+      started_from_context_menu(false) {}
 #else
 NavigateParams::NavigateParams(Browser* a_browser,
                                const GURL& a_url,
@@ -60,7 +61,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
       browser(a_browser),
       initiating_profile(NULL),
       should_replace_current_entry(false),
-      created_with_opener(false) {}
+      created_with_opener(false),
+      started_from_context_menu(false) {}
 
 NavigateParams::NavigateParams(Browser* a_browser,
                                WebContents* a_target_contents)
@@ -81,7 +83,8 @@ NavigateParams::NavigateParams(Browser* a_browser,
       browser(a_browser),
       initiating_profile(NULL),
       should_replace_current_entry(false),
-      created_with_opener(false) {}
+      created_with_opener(false),
+      started_from_context_menu(false) {}
 #endif  // !defined(OS_ANDROID)
 
 NavigateParams::NavigateParams(Profile* a_profile,
@@ -107,7 +110,8 @@ NavigateParams::NavigateParams(Profile* a_profile,
 #endif
       initiating_profile(a_profile),
       should_replace_current_entry(false),
-      created_with_opener(false) {
+      created_with_opener(false),
+      started_from_context_menu(false) {
 }
 
 NavigateParams::NavigateParams(const NavigateParams& other) = default;
@@ -128,6 +132,7 @@ void FillNavigateParamsFromOpenURLParams(NavigateParams* nav_params,
       params.should_replace_current_entry;
   nav_params->uses_post = params.uses_post;
   nav_params->post_data = params.post_data;
+  nav_params->started_from_context_menu = params.started_from_context_menu;
 }
 
 }  // namespace chrome

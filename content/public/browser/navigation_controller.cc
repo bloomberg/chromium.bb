@@ -23,7 +23,8 @@ NavigationController::LoadURLParams::LoadURLParams(const GURL& url)
       intent_received_timestamp(0),
       has_user_gesture(false),
 #endif
-      should_clear_history_list(false) {
+      should_clear_history_list(false),
+      started_from_context_menu(false) {
 }
 
 NavigationController::LoadURLParams::~LoadURLParams() {
@@ -48,7 +49,8 @@ NavigationController::LoadURLParams::LoadURLParams(
       intent_received_timestamp(other.intent_received_timestamp),
       has_user_gesture(other.has_user_gesture),
 #endif
-      should_clear_history_list(false) {
+      should_clear_history_list(false),
+      started_from_context_menu(other.started_from_context_menu) {
 }
 
 NavigationController::LoadURLParams&
@@ -73,6 +75,7 @@ NavigationController::LoadURLParams::operator=(
   intent_received_timestamp = other.intent_received_timestamp;
   has_user_gesture = other.has_user_gesture;
 #endif
+  started_from_context_menu = other.started_from_context_menu;
 
   return *this;
 }

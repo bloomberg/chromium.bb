@@ -184,17 +184,20 @@ void NavigatorImpl::DidStartProvisionalLoad(
   // should always have a pending NavigationEntry to distinguish them.
   bool is_renderer_initiated = true;
   int pending_nav_entry_id = 0;
+  bool started_from_context_menu = false;
   NavigationEntryImpl* pending_entry = controller_->GetPendingEntry();
   if (pending_entry) {
     is_renderer_initiated = pending_entry->is_renderer_initiated();
     pending_nav_entry_id = pending_entry->GetUniqueID();
+    started_from_context_menu = pending_entry->has_started_from_context_menu();
   }
+
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
       validated_url, render_frame_host->frame_tree_node(),
       is_renderer_initiated,
       false,             // is_synchronous
       is_iframe_srcdoc,  // is_srcdoc
-      navigation_start, pending_nav_entry_id));
+      navigation_start, pending_nav_entry_id, started_from_context_menu));
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(

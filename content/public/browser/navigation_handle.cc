@@ -34,7 +34,8 @@ NavigationHandle::CreateNavigationHandleForTesting(
           true,   // is_renderer_initiated
           false,  // is_synchronous
           false,  // is_srcdoc
-          base::TimeTicks::Now(), 0);
+          base::TimeTicks::Now(), 0,
+          false);  // started_from_context_menu
   handle_impl->set_render_frame_host(
       static_cast<RenderFrameHostImpl*>(render_frame_host));
   if (error != net::OK)

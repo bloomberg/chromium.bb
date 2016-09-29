@@ -191,6 +191,9 @@ class NavigationController {
     // commits.
     bool should_clear_history_list;
 
+    // Indicates whether or not this navigation was initiated via context menu.
+    bool started_from_context_menu;
+
     explicit LoadURLParams(const GURL& url);
     ~LoadURLParams();
 

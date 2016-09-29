@@ -233,6 +233,9 @@ struct NavigateParams {
   // Indicates whether |target_contents| is being created with a window.opener.
   bool created_with_opener;
 
+  // Whether or not the related navigation was started in the context menu.
+  bool started_from_context_menu;
+
   // SiteInstance of the frame that initiated the navigation or null if we
   // don't know it. This should be assigned from the OpenURLParams of the
   // WebContentsDelegate::OpenURLFromTab implementation and is used to determine

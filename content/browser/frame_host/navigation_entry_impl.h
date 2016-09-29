@@ -249,6 +249,14 @@ class CONTENT_EXPORT NavigationEntryImpl
     unique_id_ = unique_id;
   }
 
+  void set_started_from_context_menu(bool started_from_context_menu) {
+    started_from_context_menu_ = started_from_context_menu;
+  }
+
+  bool has_started_from_context_menu() const {
+    return started_from_context_menu_;
+  }
+
   // The SiteInstance represents which pages must share processes. This is a
   // reference counted pointer to a shared SiteInstance.
   //
@@ -525,6 +533,9 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Used to store ReloadType for the entry.  This is ReloadType::NONE for
   // non-reload navigations.  Reset at commit and not persisted.
   ReloadType reload_type_;
+
+  // Determine if the navigation was started within a context menu.
+  bool started_from_context_menu_;
 
   // Used to store extra data to support browser features. This member is not
   // persisted, unless specific data is taken out/put back in at save/restore

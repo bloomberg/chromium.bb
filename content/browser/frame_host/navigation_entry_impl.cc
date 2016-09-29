@@ -261,7 +261,8 @@ NavigationEntryImpl::NavigationEntryImpl(
       should_clear_history_list_(false),
       can_load_local_resources_(false),
       frame_tree_node_id_(-1),
-      reload_type_(ReloadType::NONE) {
+      reload_type_(ReloadType::NONE),
+      started_from_context_menu_(false) {
 #if defined(OS_ANDROID)
   has_user_gesture_ = false;
 #endif

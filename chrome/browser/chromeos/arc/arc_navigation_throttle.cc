@@ -73,6 +73,9 @@ ArcNavigationThrottle::~ArcNavigationThrottle() = default;
 content::NavigationThrottle::ThrottleCheckResult
 ArcNavigationThrottle::WillStartRequest() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // We must not handle navigations started from the context menu.
+  if (navigation_handle()->WasStartedFromContextMenu())
+    return content::NavigationThrottle::PROCEED;
   return HandleRequest();
 }
 

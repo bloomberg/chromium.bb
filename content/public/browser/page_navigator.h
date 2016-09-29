@@ -33,6 +33,12 @@ struct CONTENT_EXPORT OpenURLParams {
                 bool is_renderer_initiated);
   OpenURLParams(const GURL& url,
                 const Referrer& referrer,
+                WindowOpenDisposition disposition,
+                ui::PageTransition transition,
+                bool is_renderer_initiated,
+                bool started_from_context_menu);
+  OpenURLParams(const GURL& url,
+                const Referrer& referrer,
                 int frame_tree_node_id,
                 WindowOpenDisposition disposition,
                 ui::PageTransition transition,
@@ -81,6 +87,9 @@ struct CONTENT_EXPORT OpenURLParams {
   // Indicates whether this navigation was triggered while processing a user
   // gesture if the navigation was initiated by the renderer.
   bool user_gesture;
+
+  // Indicates whether this navigation was started via context menu.
+  bool started_from_context_menu;
 
  private:
   OpenURLParams();
