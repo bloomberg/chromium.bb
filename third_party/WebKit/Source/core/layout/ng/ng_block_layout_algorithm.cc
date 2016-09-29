@@ -125,9 +125,6 @@ LayoutUnit NGBlockLayoutAlgorithm::CollapseMargins(
     const NGConstraintSpace& space,
     const NGBoxStrut& margins,
     const NGFragment& fragment) {
-  // TODO(chrome-layout-team): Do not collapse margins for elements that
-  // establish new block formatting contexts
-
   // Zero-height boxes are ignored and do not participate in margin collapsing.
   bool is_zero_height_box = !fragment.BlockSize() && margins.IsEmpty();
   if (is_zero_height_box)
@@ -160,15 +157,19 @@ LayoutUnit NGBlockLayoutAlgorithm::CollapseMargins(
     curr_margin_strut.SetMarginBlockEnd(margins.block_end);
   }
 
-  // Update the parent fragment's margin strut
-  UpdateMarginStrut(curr_margin_strut);
-
-  // Compute the margin block start for adjoining blocks.
+  // Compute the margin block start for
+  // 1) adjoining blocks
+  // 2) 1st block in the newly established formatting context.
   LayoutUnit margin_block_start;
-  if (is_fragment_margin_strut_block_start_updated_) {
+  if (is_fragment_margin_strut_block_start_updated_ ||
+      space.IsNewFormattingContext()) {
     margin_block_start = ComputeCollapsedMarginBlockStart(
         prev_child_margin_strut_, curr_margin_strut);
   }
+
+  // Update the parent fragment's margin strut
+  UpdateMarginStrut(curr_margin_strut);
+
   prev_child_margin_strut_ = curr_margin_strut;
   return margin_block_start;
 }

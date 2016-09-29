@@ -157,6 +157,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
   auto* space =
       new NGConstraintSpace(HorizontalTopBottom, LeftToRight,
                             NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  space->SetIsNewFormattingContext(true);
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   EXPECT_EQ(NGMarginStrut({LayoutUnit(kDiv1MarginTop)}), frag->MarginStrut());

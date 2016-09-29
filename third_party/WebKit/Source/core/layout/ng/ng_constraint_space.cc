@@ -18,7 +18,8 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
           container_size.ConvertToPhysical(writing_mode))),
       size_(container_size),
       writing_mode_(writing_mode),
-      direction_(direction) {}
+      direction_(direction),
+      is_new_fc_(false) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
@@ -26,7 +27,8 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
     : physical_space_(physical_space),
       size_(physical_space->ContainerSize().ConvertToLogical(writing_mode)),
       writing_mode_(writing_mode),
-      direction_(direction) {}
+      direction_(direction),
+      is_new_fc_(false) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
@@ -35,7 +37,8 @@ NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
       offset_(constraint_space->Offset()),
       size_(constraint_space->Size()),
       writing_mode_(writing_mode),
-      direction_(direction) {}
+      direction_(direction),
+      is_new_fc_(false) {}
 
 NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
                                      NGLogicalOffset offset,
@@ -44,13 +47,17 @@ NGConstraintSpace::NGConstraintSpace(const NGConstraintSpace& other,
       offset_(offset),
       size_(size),
       writing_mode_(other.WritingMode()),
-      direction_(other.Direction()) {}
+      direction_(other.Direction()),
+      is_new_fc_(false) {}
 
 NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
                                      NGDirection direction,
                                      const NGConstraintSpace& other,
                                      NGLogicalSize size)
-    : size_(size), writing_mode_(writing_mode), direction_(direction) {
+    : size_(size),
+      writing_mode_(writing_mode),
+      direction_(direction),
+      is_new_fc_(false) {
   physical_space_ =
       new NGPhysicalConstraintSpace(size.ConvertToPhysical(writing_mode));
   for (const NGExclusion& exclusion : other.PhysicalSpace()->Exclusions()) {

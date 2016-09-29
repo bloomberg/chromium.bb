@@ -85,6 +85,10 @@ class CORE_EXPORT NGConstraintSpace final
   // return the size of the layout opportunity.
   virtual NGLogicalSize Size() const { return size_; }
 
+  // Whether the current constraint space is for the newly established
+  // Formatting Context.
+  bool IsNewFormattingContext() const { return is_new_fc_; }
+
   // Whether exceeding the containerSize triggers the presence of a scrollbar
   // for the indicated direction.
   // If exceeded the current layout should be aborted and invoked again with a
@@ -119,6 +123,9 @@ class CORE_EXPORT NGConstraintSpace final
   void SetOverflowTriggersScrollbar(bool inlineTriggers, bool blockTriggers);
   void SetFixedSize(bool inlineFixed, bool blockFixed);
   void SetFragmentationType(NGFragmentationType);
+  // TODO(layout-ng): Add m_isNewFc flag to ComputedStyle and use it instead of
+  // the function below.
+  void SetIsNewFormattingContext(bool is_new_fc) { is_new_fc_ = is_new_fc; }
 
   String ToString() const;
 
@@ -128,6 +135,9 @@ class CORE_EXPORT NGConstraintSpace final
   NGLogicalSize size_;
   unsigned writing_mode_ : 3;
   unsigned direction_ : 1;
+  // Whether the current constraint space is for the newly established
+  // formatting Context
+  bool is_new_fc_ : 1;
 };
 
 inline std::ostream& operator<<(std::ostream& stream,
