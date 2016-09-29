@@ -2467,25 +2467,33 @@ private:
 
     void inheritUnicodeBidiFrom(const ComputedStyle& parent) { m_nonInheritedData.m_unicodeBidi = parent.m_nonInheritedData.m_unicodeBidi; }
 
-    bool isDisplayFlexibleBox(EDisplay display) const
+    static bool isDisplayFlexibleBox(EDisplay display)
     {
         return display == FLEX || display == INLINE_FLEX;
     }
 
-    bool isDisplayGridBox(EDisplay display) const
+    static bool isDisplayGridBox(EDisplay display)
     {
         return display == GRID || display == INLINE_GRID;
     }
 
-    bool isDisplayReplacedType(EDisplay display) const
+    static bool isDisplayReplacedType(EDisplay display)
     {
         return display == INLINE_BLOCK || display == INLINE_BOX || display == INLINE_FLEX
             || display == INLINE_TABLE || display == INLINE_GRID;
     }
 
-    bool isDisplayInlineType(EDisplay display) const
+    static bool isDisplayInlineType(EDisplay display)
     {
         return display == INLINE || isDisplayReplacedType(display);
+    }
+
+    static bool isDisplayTableType(EDisplay display)
+    {
+        return display == TABLE || display == INLINE_TABLE || display == TABLE_ROW_GROUP
+            || display == TABLE_HEADER_GROUP || display == TABLE_FOOTER_GROUP || display == TABLE_ROW
+            || display == TABLE_COLUMN_GROUP || display == TABLE_COLUMN || display == TABLE_CELL
+            || display == TABLE_CAPTION;
     }
 
     // Color accessors are all private to make sure callers use visitedDependentColor instead to access them.

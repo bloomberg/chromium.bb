@@ -715,7 +715,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
         || m_nonInheritedData.m_originalDisplay != other.m_nonInheritedData.m_originalDisplay)
         return true;
 
-    if (m_nonInheritedData.m_effectiveDisplay >= FIRST_TABLE_DISPLAY && m_nonInheritedData.m_effectiveDisplay <= LAST_TABLE_DISPLAY) {
+    if (isDisplayTableType(display())) {
         if (m_inheritedData.m_borderCollapse != other.m_inheritedData.m_borderCollapse
             || m_inheritedData.m_emptyCells != other.m_inheritedData.m_emptyCells
             || m_inheritedData.m_captionSide != other.m_inheritedData.m_captionSide
