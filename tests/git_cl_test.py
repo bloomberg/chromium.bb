@@ -884,6 +884,7 @@ class TestGitCl(TestCase):
     calls += [
         ((['git', 'rev-list',
             expected_upstream_ref + '..' + ref_to_push],), ''),
+        ((['git', 'config', 'rietveld.cc'],), '')
         ]
 
     notify_suffix = 'notify=%s' % ('ALL' if notify else 'NONE')
@@ -891,6 +892,9 @@ class TestGitCl(TestCase):
       ref_suffix += ',' + notify_suffix
     else:
       ref_suffix = '%' + notify_suffix
+
+    # Add cc from watch list.
+    ref_suffix += ',cc=joe@example.com'
 
     if reviewers:
       ref_suffix += ',' + ','.join('r=%s' % email
@@ -921,12 +925,6 @@ class TestGitCl(TestCase):
           ((['git', 'config', 'branch.master.gerritsquashhash',
              'abcdef0123456789'],), ''),
       ]
-    calls += [
-        ((['git', 'config', 'rietveld.cc'],), ''),
-        ((['AddReviewers', 'chromium-review.googlesource.com',
-           123456 if squash else None,
-          ['joe@example.com'], False],), ''),
-    ]
     calls += cls._git_post_upload_calls()
     return calls
 
@@ -960,9 +958,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl.gclient_utils, 'RunEditor',
               lambda *_, **__: self._mocked_call(['RunEditor']))
     self.mock(git_cl, 'DownloadGerritHook', self._mocked_call)
-    self.mock(git_cl.gerrit_util, 'AddReviewers',
-              lambda h, i, add, is_reviewer: self._mocked_call(
-                  ['AddReviewers', h, i, add, is_reviewer]))
 
     self.calls = self._gerrit_base_calls(issue=issue)
     self.calls += self._gerrit_upload_calls(
