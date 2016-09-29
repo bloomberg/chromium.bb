@@ -644,6 +644,11 @@ public class NewTabPage
         }
 
         @Override
+        public void closeContextMenu() {
+            mActivity.closeContextMenu();
+        }
+
+        @Override
         public SuggestionsSource getSuggestionsSource() {
             return mSnippetsBridge;
         }

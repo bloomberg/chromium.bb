@@ -349,5 +349,10 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
         public SuggestionsSource getSuggestionsSource() {
             return mSnippetsSource;
         }
+
+        @Override
+        public void closeContextMenu() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

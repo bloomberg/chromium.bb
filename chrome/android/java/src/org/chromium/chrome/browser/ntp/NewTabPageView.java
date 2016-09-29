@@ -274,6 +274,11 @@ public class NewTabPageView extends FrameLayout
         void removeContextMenuCloseCallback(Callback<Menu> callback);
 
         /**
+         * Makes the {@link Activity} close any open context menu.
+         */
+        void closeContextMenu();
+
+        /**
          * Handles clicks on the "learn more" link in the footer.
          */
         void onLearnMoreClicked();
@@ -864,6 +869,9 @@ public class NewTabPageView extends FrameLayout
             int oldLeft, int oldTop, int oldRight, int oldBottom) {
         int oldHeight = oldBottom - oldTop;
         int newHeight = bottom - top;
+
+        // Close the Context Menu as it may have moved (https://crbug.com/642688).
+        mManager.closeContextMenu();
 
         if (oldHeight == newHeight && !mTileCountChanged) return;
         mTileCountChanged = false;

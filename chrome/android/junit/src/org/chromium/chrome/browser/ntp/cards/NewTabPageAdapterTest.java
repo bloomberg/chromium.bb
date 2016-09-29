@@ -42,6 +42,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
+import java.nio.channels.UnsupportedAddressTypeException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -914,6 +915,11 @@ public class NewTabPageAdapterTest {
         @Override
         @Nullable public SuggestionsSource getSuggestionsSource() {
             return mSuggestionsSource;
+        }
+
+        @Override
+        public void closeContextMenu() {
+            throw new UnsupportedAddressTypeException();
         }
     }
 }
