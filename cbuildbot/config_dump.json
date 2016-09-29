@@ -5878,7 +5878,7 @@
         "build_type": "config",
         "builder_class_name": "config_builders.UpdateConfigBuilder",
         "buildslave_type": "gce_wimpy",
-        "description": "Build Config Updater",
+        "description": "Build Config Updater reads updated GE config files from GS, and commits them to chromite after running tests.",
         "hw_tests_override": [],
         "important": true,
         "vm_tests": []
@@ -22485,6 +22485,7 @@
         "boards": [],
         "build_type": "binary",
         "builder_class_name": "test_builders.ManifestVersionedSyncBuilder",
+        "description": "Sync tryjob to help with cbuildbot development",
         "hw_tests_override": []
     },
     "terra-chrome-pfq": {
@@ -22754,7 +22755,8 @@
                 "grouped": true,
                 "name": "whirlwind-test-ap"
             }
-        ]
+        ],
+        "description": "Create images used to power access points in WiFi lab."
     },
     "tidus-chrome-pfq": {
         "_template": "chrome_pfq",
