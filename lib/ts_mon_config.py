@@ -88,13 +88,14 @@ def SetupTsMonGlobalState(service_name,
     fqdn = socket.getfqdn().lower()
     host = fqdn.split('.')[0]
     args.extend(['--ts-mon-task-hostname', 'autogen:' + host,
-                 '--ts-mon-task-number', os.getpid()])
+                 '--ts-mon-task-number', str(os.getpid())])
 
   args.extend(['--ts-mon-flush', 'auto' if auto_flush else 'manual'])
 
   try:
     config.process_argparse_options(parser.parse_args(args=args))
     logging.notice('ts_mon was set up.')
+    global _WasSetup  # pylint: disable=global-statement
     _WasSetup = True
   except Exception as e:
     logging.warning('Failed to configure ts_mon, monitoring is disabled: %s', e,

@@ -49,6 +49,17 @@ class TestIndirectMetrics(cros_test_lib.MockTestCase):
                      'time',
                      mock.Mock(time=mock.Mock(side_effect=TimeIterator())))
 
+  def testShortLived(self):
+    """Tests that configuring ts-mon to use short-lived processes works."""
+    self.patchTime()
+    with tempfile.NamedTemporaryFile(dir='/var/tmp') as out:
+      with ts_mon_config.SetupTsMonGlobalState('metrics_unittest',
+                                               short_lived=True,
+                                               debug_file=out.name):
+        # pylint: disable=protected-access
+        self.assertTrue(ts_mon_config._WasSetup)
+
+
   def testResetAfter(self):
     """Tests that the reset_after flag works to send metrics only once."""
     # By mocking out its "time" module, the forked flushing process will think
