@@ -358,7 +358,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
   }
 
   void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {
-    EXPECT_TRUE(false);
+    DCHECK(false);
   }
 
   std::string waiting_for_notification_;
@@ -836,6 +836,27 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectDuringFrameSwap) {
                                           "    !!window.open('', 'foo'));",
                                           &success));
   EXPECT_TRUE(success);
+}
+
+// CrashTab() works differently on Windows, leading to RFH removal before
+// RenderProcessGone is called. TODO(dgozman): figure out the problem.
+#if defined(OS_WIN)
+#define MAYBE_DoubleCrash DISABLED_DoubleCrash
+#else
+#define MAYBE_DoubleCrash DoubleCrash
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, MAYBE_DoubleCrash) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  Attach();
+  SendCommand("ServiceWorker.enable", nullptr);
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  CrashTab(shell()->web_contents());
+  NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);
+  CrashTab(shell()->web_contents());
+  NavigateToURLBlockUntilNavigationsComplete(shell(), GURL("about:blank"), 1);
+  // Should not crash at this point.
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ReloadBlankPage) {

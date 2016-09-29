@@ -330,6 +330,7 @@ void RenderFrameDevToolsAgentHost::OnCancelPendingNavigation(
   if (agent_host->pending_ && agent_host->pending_->host() == pending) {
     DCHECK(agent_host->current_ && agent_host->current_->host() == current);
     agent_host->DiscardPending();
+    DCHECK(agent_host->CheckConsistency());
   }
 }
 
@@ -394,6 +395,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       emulation_handler_(nullptr),
       frame_trace_recorder_(nullptr),
       protocol_handler_(new DevToolsProtocolHandler(this)),
+      handlers_frame_host_(nullptr),
       current_frame_crashed_(false),
       pending_handle_(nullptr),
       frame_tree_node_(host->frame_tree_node()) {
@@ -583,7 +585,14 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
   if (current_->host() != render_frame_host_impl || current_frame_crashed_) {
     SetPending(render_frame_host_impl);
     pending_handle_ = navigation_handle;
+    // Commit when navigating the same frame after crash, avoiding the same
+    // host in current_ and pending_.
+    if (current_->host() == render_frame_host_impl) {
+      pending_handle_ = nullptr;
+      CommitPending();
+    }
   }
+  DCHECK(CheckConsistency());
 }
 
 void RenderFrameDevToolsAgentHost::DidFinishNavigation(
@@ -612,6 +621,7 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   }
   DispatchBufferedProtocolMessagesIfNecessary();
 
+  DCHECK(CheckConsistency());
   if (navigation_handle->HasCommitted())
     target_handler_->UpdateServiceWorkers();
 }
@@ -623,12 +633,21 @@ void RenderFrameDevToolsAgentHost::AboutToNavigateRenderFrame(
     return;
 
   DCHECK(!pending_ || pending_->host() != old_host);
-  if (!current_ || current_->host() != old_host)
+  if (!current_ || current_->host() != old_host) {
+    DCHECK(CheckConsistency());
     return;
-  if (old_host == new_host && !current_frame_crashed_)
+  }
+  if (old_host == new_host && !current_frame_crashed_) {
+    DCHECK(CheckConsistency());
     return;
+  }
   DCHECK(!pending_);
   SetPending(static_cast<RenderFrameHostImpl*>(new_host));
+  // Commit when navigating the same frame after crash, avoiding the same
+  // host in current_ and pending_.
+  if (old_host == new_host)
+    CommitPending();
+  DCHECK(CheckConsistency());
 }
 
 void RenderFrameDevToolsAgentHost::AboutToNavigate(
@@ -637,6 +656,7 @@ void RenderFrameDevToolsAgentHost::AboutToNavigate(
     return;
   DCHECK(current_);
   navigating_handles_.insert(navigation_handle);
+  DCHECK(CheckConsistency());
 }
 
 void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
@@ -646,21 +666,24 @@ void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
     return;
 
   DCHECK(!pending_ || pending_->host() != old_host);
-  if (!current_ || current_->host() != old_host)
+  if (!current_ || current_->host() != old_host) {
+    DCHECK(CheckConsistency());
     return;
+  }
 
   // AboutToNavigateRenderFrame was not called for renderer-initiated
   // navigation.
   if (!pending_)
     SetPending(static_cast<RenderFrameHostImpl*>(new_host));
-
   CommitPending();
+  DCHECK(CheckConsistency());
 }
 
 void RenderFrameDevToolsAgentHost::FrameDeleted(RenderFrameHost* rfh) {
   if (pending_ && pending_->host() == rfh) {
     if (!IsBrowserSideNavigationEnabled())
       DiscardPending();
+    DCHECK(CheckConsistency());
     return;
   }
 
@@ -671,6 +694,8 @@ void RenderFrameDevToolsAgentHost::FrameDeleted(RenderFrameHost* rfh) {
 void RenderFrameDevToolsAgentHost::RenderFrameDeleted(RenderFrameHost* rfh) {
   if (!current_frame_crashed_)
     FrameDeleted(rfh);
+  else
+    DCHECK(CheckConsistency());
 }
 
 void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
@@ -686,6 +711,18 @@ void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
   pending_handle_ = nullptr;
   WebContentsObserver::Observe(nullptr);
   Release();
+}
+
+bool RenderFrameDevToolsAgentHost::CheckConsistency() {
+  if (current_ && pending_ && current_->host() == pending_->host())
+    return false;
+  if (IsBrowserSideNavigationEnabled())
+    return true;
+  if (!frame_tree_node_)
+    return !handlers_frame_host_;
+  RenderFrameHostManager* manager = frame_tree_node_->render_manager();
+  return handlers_frame_host_ == manager->current_frame_host() ||
+      handlers_frame_host_ == manager->pending_frame_host();
 }
 
 void RenderFrameDevToolsAgentHost::CreatePowerSaveBlocker() {
@@ -722,6 +759,7 @@ void RenderFrameDevToolsAgentHost::RenderProcessGone(
       inspector_handler_->TargetDetached("Render process gone.");
       break;
   }
+  DCHECK(CheckConsistency());
 }
 
 bool RenderFrameDevToolsAgentHost::OnMessageReceived(
@@ -759,12 +797,15 @@ void RenderFrameDevToolsAgentHost::DidAttachInterstitialPage() {
     page_handler_->DidAttachInterstitialPage();
 
   // TODO(dgozman): this may break for cross-process subframes.
-  if (!pending_)
+  if (!pending_) {
+    DCHECK(CheckConsistency());
     return;
+  }
   // Pending set in AboutToNavigateRenderFrame turned out to be interstitial.
   // Connect back to the real one.
   DiscardPending();
   pending_handle_ = nullptr;
+  DCHECK(CheckConsistency());
 }
 
 void RenderFrameDevToolsAgentHost::DidDetachInterstitialPage() {
@@ -780,6 +821,7 @@ void RenderFrameDevToolsAgentHost::DidCommitProvisionalLoadForFrame(
     return;
   if (pending_ && pending_->host() == render_frame_host)
     CommitPending();
+  DCHECK(CheckConsistency());
   target_handler_->UpdateServiceWorkers();
 }
 
@@ -793,6 +835,7 @@ void RenderFrameDevToolsAgentHost::DidFailProvisionalLoad(
     return;
   if (pending_ && pending_->host() == render_frame_host)
     DiscardPending();
+  DCHECK(CheckConsistency());
 }
 
 void RenderFrameDevToolsAgentHost::WasShown() {
@@ -821,6 +864,7 @@ void RenderFrameDevToolsAgentHost::
 
 void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
     RenderFrameHostImpl* host) {
+  handlers_frame_host_ = host;
   dom_handler_->SetRenderFrameHost(host);
   if (emulation_handler_)
     emulation_handler_->SetRenderFrameHost(host);
