@@ -648,8 +648,8 @@ media-time-remaining-display
 -internal-media-track-selection-checkmark
 -internal-media-closed-captions-icon
 -internal-media-subtitles-icon
--internal-overflow-menu-button
--internal-media-download-icon
+-internal-media-overflow-button
+-internal-media-download-button
 menulist
 menulist-button
 menulist-text

@@ -7,7 +7,7 @@ var overflowButtonsCSS = [
     "-internal-media-controls-cast-button",
     "-webkit-media-controls-toggle-closed-captions-button"];
 //  PseudoID for the overflow button
-var menuID = "-internal-overflow-menu-button";
+var menuID = "-internal-media-controls-overflow-button";
 //  PseudoID for the overflow list
 var listID = "-internal-media-controls-overflow-menu-list";
 
@@ -33,4 +33,3 @@ var OverflowMenuButtons = {
 
 // Default text within the overflow menu
 var overflowMenuText = ["Play", "Fullscreen", "Download", "Mute", "Cast", "Captions"];
-

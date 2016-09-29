@@ -418,8 +418,8 @@ video::-internal-media-controls-text-track-list-kind-subtitles {
     vertical-align: middle;
 }
 
-video::-internal-overflow-menu-button, audio::-internal-overflow-menu-button {
-    -webkit-appearance: -internal-overflow-menu-button;
+video::-internal-media-controls-overflow-button, audio::-internal-media-controls-overflow-button {
+    -webkit-appearance: -internal-media-overflow-button;
     display: flex;
     flex: none;
     box-sizing: border-box;
@@ -434,7 +434,7 @@ video::-internal-overflow-menu-button, audio::-internal-overflow-menu-button {
 }
 
 video::-internal-media-controls-download-button, audio::-internal-media-controls-download-button {
-    -webkit-appearance: -internal-media-download-icon;
+    -webkit-appearance: -internal-media-download-button;
     display: flex;
     flex: none;
     box-sizing: border-box;
