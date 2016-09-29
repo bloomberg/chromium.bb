@@ -51,9 +51,11 @@ class MockVideoCaptureImpl : public VideoCaptureImpl {
                        VideoCaptureMessageFilter* filter,
                        PauseResumeCallback* pause_callback,
                        base::Closure destruct_callback)
-      : VideoCaptureImpl(session_id, filter),
-        pause_callback_(pause_callback), destruct_callback_(destruct_callback) {
-  }
+      : VideoCaptureImpl(session_id,
+                         filter,
+                         ChildProcess::current()->io_task_runner()),
+        pause_callback_(pause_callback),
+        destruct_callback_(destruct_callback) {}
 
   ~MockVideoCaptureImpl() override { destruct_callback_.Run(); }
 
@@ -80,7 +82,7 @@ class MockVideoCaptureImpl : public VideoCaptureImpl {
   }
 
   PauseResumeCallback* const pause_callback_;
-  base::Closure destruct_callback_;
+  const base::Closure destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureImpl);
 };
@@ -90,8 +92,7 @@ class MockVideoCaptureImplManager : public VideoCaptureImplManager {
   MockVideoCaptureImplManager(PauseResumeCallback* pause_callback,
                               base::Closure destruct_video_capture_callback)
       : pause_callback_(pause_callback),
-        destruct_video_capture_callback_(
-          destruct_video_capture_callback) {}
+        destruct_video_capture_callback_(destruct_video_capture_callback) {}
   ~MockVideoCaptureImplManager() override {}
 
  protected:
@@ -104,35 +105,21 @@ class MockVideoCaptureImplManager : public VideoCaptureImplManager {
 
  private:
   PauseResumeCallback* const pause_callback_;
-  base::Closure destruct_video_capture_callback_;
+  const base::Closure destruct_video_capture_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureImplManager);
 };
 
 }  // namespace
 
-class VideoCaptureImplManagerTest
-    : public ::testing::Test, public PauseResumeCallback {
+class VideoCaptureImplManagerTest : public ::testing::Test,
+                                    public PauseResumeCallback {
  public:
   VideoCaptureImplManagerTest()
-      : manager_(new MockVideoCaptureImplManager(
-            this, BindToCurrentLoop(cleanup_run_loop_.QuitClosure()))) {
-    params_.requested_format = media::VideoCaptureFormat(
-        gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
-    child_process_.reset(new ChildProcess());
-  }
-
-  void FakeChannelSetup() {
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-        child_process_->io_task_runner();
-    if (!task_runner->BelongsToCurrentThread()) {
-      task_runner->PostTask(
-          FROM_HERE, base::Bind(&VideoCaptureImplManagerTest::FakeChannelSetup,
-                                base::Unretained(this)));
-      return;
-    }
-    manager_->video_capture_message_filter()->OnFilterAdded(NULL);
-  }
+      : child_process_(new ChildProcess()),
+        manager_(new MockVideoCaptureImplManager(
+            this,
+            BindToCurrentLoop(cleanup_run_loop_.QuitClosure()))) {}
 
  protected:
   static constexpr size_t kNumClients = 3;
@@ -146,11 +133,19 @@ class VideoCaptureImplManagerTest
     EXPECT_CALL(*this, OnStarted(_)).WillOnce(RunClosure(quit_closure))
         .RetiresOnSaturation();
     std::array<base::Closure, kNumClients> stop_callbacks;
-    for (size_t i = 0; i < kNumClients; ++i)
+    media::VideoCaptureParams params;
+    params.requested_format = media::VideoCaptureFormat(
+        gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
+    for (size_t i = 0; i < kNumClients; ++i) {
       stop_callbacks[i] = StartCapture(
           same_session_id ? 0 : static_cast<media::VideoCaptureSessionId>(i),
-          params_);
-    FakeChannelSetup();
+          params);
+    }
+    child_process_->io_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&VideoCaptureMessageFilter::OnFilterAdded,
+                   base::Unretained(manager_->video_capture_message_filter()),
+                   nullptr));
     run_loop.Run();
     return stop_callbacks;
   }
@@ -177,16 +172,12 @@ class VideoCaptureImplManagerTest
   MOCK_METHOD1(OnResumed, void(media::VideoCaptureSessionId id));
 
   void OnStateUpdate(media::VideoCaptureSessionId id, VideoCaptureState state) {
-    switch (state) {
-      case VIDEO_CAPTURE_STATE_STARTED:
-        OnStarted(id);
-        break;
-      case VIDEO_CAPTURE_STATE_STOPPED:
-        OnStopped(id);
-        break;
-      default:
-        NOTREACHED();
-    }
+    if (state == VIDEO_CAPTURE_STATE_STARTED)
+      OnStarted(id);
+    else if (state == VIDEO_CAPTURE_STATE_STOPPED)
+      OnStopped(id);
+    else
+      NOTREACHED();
   }
 
   base::Closure StartCapture(media::VideoCaptureSessionId id,
@@ -198,9 +189,8 @@ class VideoCaptureImplManagerTest
                    base::Unretained(this)));
   }
 
-  base::MessageLoop message_loop_;
-  std::unique_ptr<ChildProcess> child_process_;
-  media::VideoCaptureParams params_;
+  const base::MessageLoop message_loop_;
+  const std::unique_ptr<ChildProcess> child_process_;
   base::RunLoop cleanup_run_loop_;
   std::unique_ptr<MockVideoCaptureImplManager> manager_;
 

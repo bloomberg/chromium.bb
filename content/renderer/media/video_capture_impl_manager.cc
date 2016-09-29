@@ -71,11 +71,8 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
     return;
   // Forcibly release all video capture resources.
   for (auto& entry : devices_) {
-    ChildProcess::current()->io_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VideoCaptureImpl::DeInit,
-                              base::Unretained(entry.impl.get())));
-    ChildProcess::current()->io_task_runner()->DeleteSoon(
-        FROM_HERE, entry.impl.release());
+    ChildProcess::current()->io_task_runner()->DeleteSoon(FROM_HERE,
+                                                          entry.impl.release());
   }
   devices_.clear();
 }
@@ -91,11 +88,10 @@ base::Closure VideoCaptureImplManager::UseDevice(
     it = devices_.end() - 1;
     it->session_id = id;
     it->impl = CreateVideoCaptureImplForTesting(id, filter_.get());
-    if (!it->impl)
-      it->impl.reset(new VideoCaptureImpl(id, filter_.get()));
-    ChildProcess::current()->io_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VideoCaptureImpl::Init,
-                              base::Unretained(it->impl.get())));
+    if (!it->impl) {
+      it->impl.reset(new VideoCaptureImpl(
+          id, filter_.get(), ChildProcess::current()->io_task_runner()));
+    }
   }
   ++it->client_count;
 
@@ -238,11 +234,8 @@ void VideoCaptureImplManager::UnrefDevice(
   --it->client_count;
   if (it->client_count > 0)
     return;
-  ChildProcess::current()->io_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureImpl::DeInit,
-                            base::Unretained(it->impl.get())));
-  ChildProcess::current()->io_task_runner()->DeleteSoon(
-      FROM_HERE, it->impl.release());
+  ChildProcess::current()->io_task_runner()->DeleteSoon(FROM_HERE,
+                                                        it->impl.release());
   devices_.erase(it);
 }
 
