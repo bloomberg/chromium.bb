@@ -68,7 +68,7 @@ HistogramBase* SparseHistogram::FactoryGet(const std::string& name,
     ReportHistogramActivity(*histogram, HISTOGRAM_LOOKUP);
   }
 
-  DCHECK_EQ(SPARSE_HISTOGRAM, histogram->GetHistogramType());
+  CHECK_EQ(SPARSE_HISTOGRAM, histogram->GetHistogramType());
   return histogram;
 }
 

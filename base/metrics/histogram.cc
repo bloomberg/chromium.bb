@@ -216,7 +216,7 @@ HistogramBase* Histogram::Factory::Build() {
     ReportHistogramActivity(*histogram, HISTOGRAM_LOOKUP);
   }
 
-  DCHECK_EQ(histogram_type_, histogram->GetHistogramType()) << name_;
+  CHECK_EQ(histogram_type_, histogram->GetHistogramType()) << name_;
   if (bucket_count_ != 0 &&
       !histogram->HasConstructionArguments(minimum_, maximum_, bucket_count_)) {
     // The construction arguments do not match the existing histogram.  This can
