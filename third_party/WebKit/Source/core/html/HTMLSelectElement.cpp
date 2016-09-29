@@ -836,7 +836,7 @@ void HTMLSelectElement::resetToDefaultSelection(ResetReason reason)
         }
         ++optionIndex;
     }
-    if (!lastSelectedOption && m_size <= 1 && firstEnabledOption && !firstEnabledOption->selected()) {
+    if (!lastSelectedOption && m_size <= 1 && (!firstEnabledOption || (firstEnabledOption && !firstEnabledOption->selected()))) {
         selectOption(firstEnabledOption, reason == ResetReasonSelectedOptionRemoved ? 0 : DeselectOtherOptions);
         lastSelectedOption = firstEnabledOption;
         didChange = true;
