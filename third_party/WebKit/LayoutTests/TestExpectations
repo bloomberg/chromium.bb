@@ -1179,6 +1179,8 @@ crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failu
 
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
+crbug.com/651502 storage/websql/transaction-removed-context-crash.html [ Failure ]
+
 crbug.com/593567 [ Linux ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ Skip ]
 crbug.com/593567 [ Linux ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ Skip ]
 
