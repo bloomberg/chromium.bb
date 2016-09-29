@@ -545,12 +545,15 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
     : database_policy_(NULL),
       database_policy_type_(ActivityLogPolicy::POLICY_INVALID),
       profile_(Profile::FromBrowserContext(context)),
+      extension_system_(ExtensionSystem::Get(context)),
       db_enabled_(false),
       testing_mode_(false),
       has_threads_(true),
       extension_registry_observer_(this),
-      watchdog_apps_active_(0),
-      is_active_(false) {
+      active_consumers_(0),
+      cached_consumer_count_(0),
+      is_active_(false),
+      weak_factory_(this) {
   SetActivityHandlers();
 
   // This controls whether logging statements are printed & which policy is set.
@@ -558,7 +561,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
       switches::kEnableExtensionActivityLogTesting);
 
   // Check if the watchdog extension is previously installed and active.
-  watchdog_apps_active_ =
+  cached_consumer_count_ =
       profile_->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive);
 
   observers_ = new base::ObserverListThreadSafe<Observer>;
@@ -571,15 +574,12 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
     has_threads_ = false;
   }
 
-  db_enabled_ =
-      has_threads_ && (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                           switches::kEnableExtensionActivityLogging) ||
-                       watchdog_apps_active_);
-
   extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
-  ChooseDatabasePolicy();
-
-  CheckActive();
+  CheckActive(true);  // use cached
+  extension_system_->ready().Post(
+      FROM_HERE,
+      base::Bind(&ActivityLog::OnExtensionSystemReady,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ActivityLog::SetDatabasePolicy(
@@ -639,29 +639,32 @@ bool ActivityLog::IsDatabaseEnabled() {
 }
 
 bool ActivityLog::IsWatchdogAppActive() {
-  return (watchdog_apps_active_ > 0);
+  return active_consumers_ > 0;
+}
+
+void ActivityLog::UpdateCachedConsumerCount() {
+  cached_consumer_count_ = active_consumers_;
+  profile_->GetPrefs()->SetInteger(prefs::kWatchdogExtensionActive,
+                                   cached_consumer_count_);
 }
 
 void ActivityLog::SetWatchdogAppActiveForTesting(bool active) {
-  watchdog_apps_active_ = active ? 1 : 0;
-  CheckActive();
+  active_consumers_ = active ? 1 : 0;
+  CheckActive(false);  // don't use cached
 }
 
 void ActivityLog::OnExtensionLoaded(content::BrowserContext* browser_context,
                                     const Extension* extension) {
   if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
     return;
-  if (has_threads_)
-    db_enabled_ = true;
   g_activity_log_state.Get().AddWhitelistedId(extension->id());
-  watchdog_apps_active_++;
-  profile_->GetPrefs()->SetInteger(prefs::kWatchdogExtensionActive,
-                                   watchdog_apps_active_);
-  if (watchdog_apps_active_ == 1)
-    ChooseDatabasePolicy();
+  ++active_consumers_;
 
-  if (!is_active_)
-    CheckActive();
+  if (!extension_system_->ready().is_signaled())
+    return;
+
+  CheckActive(false);  // don't use cached
+  UpdateCachedConsumerCount();
 }
 
 void ActivityLog::OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -669,17 +672,13 @@ void ActivityLog::OnExtensionUnloaded(content::BrowserContext* browser_context,
                                       UnloadedExtensionInfo::Reason reason) {
   if (!ActivityLogAPI::IsExtensionWhitelisted(extension->id()))
     return;
-  watchdog_apps_active_--;
-  profile_->GetPrefs()->SetInteger(prefs::kWatchdogExtensionActive,
-                                   watchdog_apps_active_);
-  if (watchdog_apps_active_ == 0 &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExtensionActivityLogging)) {
-    db_enabled_ = false;
-  }
+  --active_consumers_;
 
-  if (is_active_)
-    CheckActive();
+  if (!extension_system_->ready().is_signaled())
+    return;
+
+  CheckActive(false);  // don't use cached
+  UpdateCachedConsumerCount();
 }
 
 // OnExtensionUnloaded will also be called right before this.
@@ -690,7 +689,7 @@ void ActivityLog::OnExtensionUninstalled(
   if (ActivityLogAPI::IsExtensionWhitelisted(extension->id()) &&
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableExtensionActivityLogging) &&
-      watchdog_apps_active_ == 0) {
+      active_consumers_ == 0) {
     DeleteDatabase();
   } else if (database_policy_) {
     database_policy_->RemoveExtensionData(extension->id());
@@ -732,7 +731,6 @@ void ActivityLog::LogAction(scoped_refptr<Action> action) {
       other->SetInteger(constants::kActionDomVerb, DomActionType::XHR);
     }
   }
-
   if (IsDatabaseEnabled() && database_policy_)
     database_policy_->ProcessAction(action);
   if (IsWatchdogAppActive())
@@ -845,17 +843,31 @@ void ActivityLog::DeleteDatabase() {
   database_policy_->DeleteDatabase();
 }
 
-void ActivityLog::CheckActive() {
-  bool has_db = db_enabled_ && database_policy_;
+void ActivityLog::CheckActive(bool use_cached) {
+  bool has_consumer =
+      active_consumers_ || (use_cached && cached_consumer_count_);
+  bool needs_db =
+      has_threads_ && (has_consumer ||
+                       base::CommandLine::ForCurrentProcess()->HasSwitch(
+                           switches::kEnableExtensionActivityLogging));
+  bool should_be_active = needs_db || has_consumer;
+
+  if (should_be_active == is_active_)
+    return;
+
   ActivityLogState& state = g_activity_log_state.Get();
   content::BrowserContext* off_the_record =
       profile_->HasOffTheRecordProfile() ? profile_->GetOffTheRecordProfile()
                                          : nullptr;
-
+  bool has_db = db_enabled_ && database_policy_;
   bool old_is_active = is_active_;
-  if (has_db || IsWatchdogAppActive()) {
-    if (is_active_)
-      return;  // Already enabled.
+
+  if (should_be_active) {
+    if (needs_db && !has_db) {
+      db_enabled_ = true;
+      ChooseDatabasePolicy();
+    }
+
     state.AddActiveContext(profile_);
     if (off_the_record)
       state.AddActiveContext(off_the_record);
@@ -864,7 +876,9 @@ void ActivityLog::CheckActive() {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::NotificationService::AllSources());
     is_active_ = true;
-  } else if (is_active_) {
+  } else {
+    if (has_db && !needs_db)
+      db_enabled_ = false;
     state.RemoveActiveContext(profile_);
     if (off_the_record)
       state.RemoveActiveContext(off_the_record);
@@ -872,15 +886,14 @@ void ActivityLog::CheckActive() {
     is_active_ = false;
   }
 
-  if (old_is_active != is_active_) {
-    for (content::RenderProcessHost::iterator iter(
-             content::RenderProcessHost::AllHostsIterator());
-         !iter.IsAtEnd(); iter.Advance()) {
-      content::RenderProcessHost* host = iter.GetCurrentValue();
-      if (profile_->IsSameProfile(
-              Profile::FromBrowserContext(host->GetBrowserContext()))) {
-        host->Send(new ExtensionMsg_SetActivityLoggingEnabled(is_active_));
-      }
+  DCHECK_NE(is_active_, old_is_active);
+  for (content::RenderProcessHost::iterator iter(
+           content::RenderProcessHost::AllHostsIterator());
+       !iter.IsAtEnd(); iter.Advance()) {
+    content::RenderProcessHost* host = iter.GetCurrentValue();
+    if (profile_->IsSameProfile(
+            Profile::FromBrowserContext(host->GetBrowserContext()))) {
+      host->Send(new ExtensionMsg_SetActivityLoggingEnabled(is_active_));
     }
   }
 }
@@ -904,6 +917,13 @@ void ActivityLog::Observe(int type,
     }
     default:
       NOTREACHED();
+  }
+}
+
+void ActivityLog::OnExtensionSystemReady() {
+  if (active_consumers_ != cached_consumer_count_) {
+    CheckActive(false);
+    UpdateCachedConsumerCount();
   }
 }
 

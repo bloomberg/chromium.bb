@@ -39,6 +39,7 @@ class PrefRegistrySyncable;
 namespace extensions {
 class Extension;
 class ExtensionRegistry;
+class ExtensionSystem;
 
 // A utility for tracing interesting activity for each extension.
 // It writes to an ActivityDatabase on a separate thread to record the activity.
@@ -140,6 +141,10 @@ class ActivityLog : public BrowserContextKeyedAPI,
   // --enable-extension-activity-logging flag is set.
   bool IsDatabaseEnabled();
 
+  // Updates cached_consumer_count_ to be active_consumers_ and stores the value
+  // in prefs.
+  void UpdateCachedConsumerCount();
+
   // ScriptExecutionObserver implementation.
   // Fires when a ContentScript is executed.
   void OnScriptsExecuted(const content::WebContents* web_contents,
@@ -154,12 +159,17 @@ class ActivityLog : public BrowserContextKeyedAPI,
   void SetDatabasePolicy(ActivityLogPolicy::PolicyType policy_type);
 
   // Checks the current |is_active_| state and modifies it if appropriate.
-  void CheckActive();
+  // If |use_cached| is true, then this checks the cached_consumer_count_ for
+  // whether or not a consumer is active. Otherwise, checks active_consumers_.
+  void CheckActive(bool use_cached);
 
   // content::NotificationObserver:
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // Called once the ExtensionSystem is ready.
+  void OnExtensionSystemReady();
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ActivityLog"; }
@@ -181,6 +191,9 @@ class ActivityLog : public BrowserContextKeyedAPI,
   ActivityLogPolicy::PolicyType database_policy_type_;
 
   Profile* profile_;
+
+  ExtensionSystem* extension_system_;
+
   bool db_enabled_;  // Whether logging to disk is currently enabled.
   // testing_mode_ controls which policy is selected.
   // * By default, we choose a policy that doesn't log most arguments to avoid
@@ -200,10 +213,14 @@ class ActivityLog : public BrowserContextKeyedAPI,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  // Set if the watchdog app is installed and enabled. Maintained by
-  // kWatchdogExtensionActive pref variable. Since there are multiple valid
-  // extension IDs, this needs to be an int to count how many are installed.
-  int watchdog_apps_active_;
+  // The number of active consumers of the activity log.
+  int active_consumers_;
+
+  // The cached number of consumers of the activity log. Maintained by the
+  // kWatchdogExtensionActive pref variable, and updated on startup. We cache
+  // the result so that we can record extension actions that happen before
+  // all extensions have finished loading.
+  int cached_consumer_count_;
 
   // True if the activity log is currently active, meaning that the user has
   // either added the commandline switch or has loaded a compatible extension.
@@ -212,6 +229,8 @@ class ActivityLog : public BrowserContextKeyedAPI,
   bool is_active_;
 
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<ActivityLog> weak_factory_;
 
   FRIEND_TEST_ALL_PREFIXES(ActivityLogApiTest, TriggerEvent);
   FRIEND_TEST_ALL_PREFIXES(ActivityLogEnabledTest, AppAndCommandLine);

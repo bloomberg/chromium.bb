@@ -429,6 +429,8 @@ class ActivityLogTestWithoutSwitch : public ActivityLogTest {
 };
 
 TEST_F(ActivityLogTestWithoutSwitch, TestShouldLog) {
+  static_cast<TestExtensionSystem*>(
+      ExtensionSystem::Get(profile()))->SetReady();
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());
   scoped_refptr<const Extension> empty_extension =
       test_util::CreateEmptyExtension();

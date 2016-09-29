@@ -116,9 +116,9 @@ TEST_F(ActivityLogEnabledTest, PrefSwitch) {
       profile2->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive));
   EXPECT_EQ(2,
       profile3->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive));
-  EXPECT_TRUE(activity_log1->IsWatchdogAppActive());
-  EXPECT_FALSE(activity_log2->IsWatchdogAppActive());
-  EXPECT_TRUE(activity_log3->IsWatchdogAppActive());
+  EXPECT_TRUE(activity_log1->is_active());
+  EXPECT_FALSE(activity_log2->is_active());
+  EXPECT_TRUE(activity_log3->is_active());
   EXPECT_TRUE(activity_log1->IsDatabaseEnabled());
   EXPECT_FALSE(activity_log2->IsDatabaseEnabled());
   EXPECT_TRUE(activity_log3->IsDatabaseEnabled());
@@ -281,6 +281,49 @@ TEST_F(ActivityLogEnabledTest, AppAndCommandLine) {
   EXPECT_EQ(0,
       profile->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive));
   EXPECT_FALSE(activity_log->IsWatchdogAppActive());
+}
+
+// Tests that if the cached count in the profile preferences is incorrect, the
+// activity log will correct itself.
+TEST_F(ActivityLogEnabledTest, IncorrectPrefsRecovery) {
+  std::unique_ptr<TestingProfile> profile(
+      static_cast<TestingProfile*>(CreateBrowserContext()));
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  ExtensionService* extension_service =
+    static_cast<TestExtensionSystem*>(
+        ExtensionSystem::Get(profile.get()))->CreateExtensionService(
+            &command_line, base::FilePath(), false);
+
+  // Set the preferences to indicate a cached count of 10.
+  profile->GetPrefs()->SetInteger(prefs::kWatchdogExtensionActive, 10);
+  ActivityLog* activity_log = ActivityLog::GetInstance(profile.get());
+
+  static_cast<TestExtensionSystem*>(
+      ExtensionSystem::Get(profile.get()))->SetReady();
+  base::RunLoop().RunUntilIdle();
+
+  // Even though the cached count was 10, the activity log should correctly
+  // realize that there were no real consumers, and should be inactive and
+  // correct the prefs.
+  EXPECT_FALSE(activity_log->is_active());
+  EXPECT_EQ(
+      0, profile->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive));
+
+  // Testing adding an extension maintains pref and active correctness.
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(DictionaryBuilder()
+                           .Set("name", "Watchdog Extension ")
+                           .Set("version", "1.0.0")
+                           .Set("manifest_version", 2)
+                           .Build())
+          .SetID(kExtensionID)
+          .Build();
+  extension_service->AddExtension(extension.get());
+
+  EXPECT_EQ(
+      1, profile->GetPrefs()->GetInteger(prefs::kWatchdogExtensionActive));
+  EXPECT_TRUE(activity_log->is_active());
 }
 
 }  // namespace extensions
