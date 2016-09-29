@@ -196,8 +196,10 @@ void TrayBackgroundView::TrayContainer::SetAlignment(ShelfAlignment alignment) {
   UpdateLayout();
 }
 
-void TrayBackgroundView::TrayContainer::SetMargin(const gfx::Insets& margin) {
-  margin_ = margin;
+void TrayBackgroundView::TrayContainer::SetMargin(int main_axis_margin,
+                                                  int cross_axis_margin) {
+  main_axis_margin_ = main_axis_margin;
+  cross_axis_margin_ = cross_axis_margin;
   UpdateLayout();
 }
 
@@ -223,24 +225,30 @@ void TrayBackgroundView::TrayContainer::ViewHierarchyChanged(
 }
 
 void TrayBackgroundView::TrayContainer::UpdateLayout() {
+  bool is_horizontal = IsHorizontalAlignment(alignment_);
+
   // Adjust the size of status tray dark background by adding additional
   // empty border.
   views::BoxLayout::Orientation orientation =
-      IsHorizontalAlignment(alignment_) ? views::BoxLayout::kHorizontal
-                                        : views::BoxLayout::kVertical;
+      is_horizontal ? views::BoxLayout::kHorizontal
+                    : views::BoxLayout::kVertical;
   const gfx::Insets insets(
       ash::MaterialDesignController::IsShelfMaterial()
-          ? gfx::Insets(IsHorizontalAlignment(alignment_)
-                            ? gfx::Insets(0, kHitRegionPadding, 0,
-                                          kHitRegionPadding + kSeparatorWidth)
-                            : gfx::Insets(kHitRegionPadding, 0,
-                                          kHitRegionPadding + kSeparatorWidth,
-                                          0))
+          ? is_horizontal ? gfx::Insets(0, kHitRegionPadding, 0,
+                                        kHitRegionPadding + kSeparatorWidth)
+                          : gfx::Insets(kHitRegionPadding, 0,
+                                        kHitRegionPadding + kSeparatorWidth, 0)
           : gfx::Insets(kBackgroundAdjustPadding));
-  SetBorder(views::Border::CreateEmptyBorder(insets + margin_));
+  const gfx::Insets margin(
+      is_horizontal ? gfx::Insets(cross_axis_margin_, main_axis_margin_)
+                    : gfx::Insets(main_axis_margin_, cross_axis_margin_));
+  SetBorder(views::Border::CreateEmptyBorder(insets + margin));
+
   views::BoxLayout* layout = new views::BoxLayout(orientation, 0, 0, 0);
   layout->SetDefaultFlex(1);
+  layout->set_minimum_cross_axis_size(kTrayItemSize);
   views::View::SetLayoutManager(layout);
+
   PreferredSizeChanged();
 }
 

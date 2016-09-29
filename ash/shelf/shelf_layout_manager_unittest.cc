@@ -1891,11 +1891,8 @@ TEST_F(ShelfLayoutManagerTest, StatusAreaHitBoxCoversEdge) {
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   generator.MoveMouseTo(inset_display_bounds.bottom_right());
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
-#if !defined(OS_WIN)
   generator.ClickLeftButton();
-  // The bottom right pixel doesn't work on Windows; see crbug.com/633434
   EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
-#endif
   generator.ClickLeftButton();
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
 
@@ -1903,11 +1900,8 @@ TEST_F(ShelfLayoutManagerTest, StatusAreaHitBoxCoversEdge) {
   GetPrimaryShelf()->SetAlignment(SHELF_ALIGNMENT_RIGHT);
   generator.MoveMouseTo(inset_display_bounds.bottom_right());
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
-#if !defined(OS_WIN)
   generator.ClickLeftButton();
-  // The bottom right pixel doesn't work on Windows; see crbug.com/633434
   EXPECT_TRUE(status_area_widget->IsMessageBubbleShown());
-#endif
   generator.ClickLeftButton();
   EXPECT_FALSE(status_area_widget->IsMessageBubbleShown());
 

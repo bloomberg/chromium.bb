@@ -70,7 +70,8 @@ constexpr int kMaximumSmallIconCount = 3;
 constexpr gfx::Size kTrayItemInnerIconSize(16, 16);
 constexpr gfx::Size kTrayItemInnerBellIconSizeNonMd(18, 18);
 constexpr gfx::Size kTrayItemOuterSize(26, 26);
-constexpr gfx::Insets kTrayItemInsets(3, 3);
+constexpr int kTrayMainAxisInset = 3;
+constexpr int kTrayCrossAxisInset = 0;
 
 constexpr int kTrayItemAnimationDurationMS = 200;
 
@@ -334,7 +335,7 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
                                             display);
   OnMessageCenterTrayChanged();
 
-  tray_container()->SetMargin(kTrayItemInsets);
+  tray_container()->SetMargin(kTrayMainAxisInset, kTrayCrossAxisInset);
 }
 
 WebNotificationTray::~WebNotificationTray() {
