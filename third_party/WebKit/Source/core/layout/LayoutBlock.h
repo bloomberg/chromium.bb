@@ -172,9 +172,6 @@ public:
     bool hasMarginAfterQuirk(const LayoutBox* child) const;
 
     void markPositionedObjectsForLayout();
-    // FIXME: Do we really need this to be virtual? It's just so we can call this on
-    // LayoutBoxes without needed to check whether they're LayoutBlocks first.
-    void markForPaginationRelayoutIfNeeded(SubtreeLayoutScope&) final;
 
     LayoutUnit textIndentOffset() const;
 

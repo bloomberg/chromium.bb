@@ -1682,7 +1682,7 @@ void LayoutFlexibleBox::layoutAndPlaceChildren(LayoutUnit& crossAxisOffset, cons
         }
         updateBlockChildDirtyBitsBeforeLayout(forceChildRelayout, *child);
         if (!child->needsLayout())
-            child->markForPaginationRelayoutIfNeeded(layoutScope);
+            markChildForPaginationRelayoutIfNeeded(*child, layoutScope);
         if (child->needsLayout())
             m_relaidOutChildren.add(child);
         child->layoutIfNeeded();

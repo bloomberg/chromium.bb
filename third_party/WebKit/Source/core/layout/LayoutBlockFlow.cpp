@@ -667,7 +667,7 @@ bool LayoutBlockFlow::positionAndLayoutOnceIfNeeded(LayoutBox& child, LayoutUnit
             // item, its width can change (because it has more available width).
             layoutScope.setChildNeedsLayout(&child);
         } else {
-            child.markForPaginationRelayoutIfNeeded(layoutScope);
+            markChildForPaginationRelayoutIfNeeded(child, layoutScope);
         }
     }
 
@@ -3085,7 +3085,7 @@ bool LayoutBlockFlow::positionNewFloats(LineWidth* width)
 
         SubtreeLayoutScope layoutScope(*childBox);
         if (isPaginated && !childBox->needsLayout())
-            childBox->markForPaginationRelayoutIfNeeded(layoutScope);
+            markChildForPaginationRelayoutIfNeeded(*childBox, layoutScope);
 
         childBox->layoutIfNeeded();
 

@@ -180,7 +180,7 @@ void LayoutTableRow::layout()
     for (LayoutTableCell* cell = firstCell(); cell; cell = cell->nextCell()) {
         SubtreeLayoutScope layouter(*cell);
         if (!cell->needsLayout())
-            cell->markForPaginationRelayoutIfNeeded(layouter);
+            markChildForPaginationRelayoutIfNeeded(*cell, layouter);
         if (cell->needsLayout())
             cell->layout();
         // We're laying out each cell here to establish its raw logical height so it can be used to

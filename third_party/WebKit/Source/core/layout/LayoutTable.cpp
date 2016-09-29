@@ -483,7 +483,7 @@ void LayoutTable::layout()
 
         for (LayoutObject* child = firstChild(); child; child = child->nextSibling()) {
             if (!child->needsLayout() && child->isBox())
-                toLayoutBox(child)->markForPaginationRelayoutIfNeeded(layouter);
+                markChildForPaginationRelayoutIfNeeded(*toLayoutBox(child), layouter);
             if (child->isTableSection()) {
                 LayoutTableSection* section = toLayoutTableSection(child);
                 if (m_columnLogicalWidthChanged)

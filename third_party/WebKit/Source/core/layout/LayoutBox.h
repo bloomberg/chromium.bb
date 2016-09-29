@@ -827,7 +827,7 @@ public:
     bool shrinkToAvoidFloats() const;
     virtual bool avoidsFloats() const;
 
-    virtual void markForPaginationRelayoutIfNeeded(SubtreeLayoutScope&);
+    void markChildForPaginationRelayoutIfNeeded(LayoutBox& child, SubtreeLayoutScope&);
 
     bool isWritingModeRoot() const { return !parent() || parent()->style()->getWritingMode() != style()->getWritingMode(); }
     bool isOrthogonalWritingModeRoot() const { return parent() && parent()->isHorizontalWritingMode() != isHorizontalWritingMode(); }

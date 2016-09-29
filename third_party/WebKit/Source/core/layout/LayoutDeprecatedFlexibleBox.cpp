@@ -452,7 +452,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
             child->computeAndSetBlockDirectionMargins(this);
 
             if (!child->needsLayout())
-                child->markForPaginationRelayoutIfNeeded(layoutScope);
+                markChildForPaginationRelayoutIfNeeded(*child, layoutScope);
 
             // Now do the layout.
             child->layoutIfNeeded();
@@ -526,7 +526,7 @@ void LayoutDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                 layoutScope.setChildNeedsLayout(child);
 
             if (!child->needsLayout())
-                child->markForPaginationRelayoutIfNeeded(layoutScope);
+                markChildForPaginationRelayoutIfNeeded(*child, layoutScope);
 
             child->layoutIfNeeded();
 
@@ -762,7 +762,7 @@ void LayoutDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             setHeight(size().height() + child->marginTop());
 
             if (!child->needsLayout())
-                child->markForPaginationRelayoutIfNeeded(layoutScope);
+                markChildForPaginationRelayoutIfNeeded(*child, layoutScope);
 
             // Now do a layout.
             child->layoutIfNeeded();

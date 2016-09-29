@@ -849,7 +849,7 @@ void LayoutTableSection::layout()
 
         if (LayoutTableRow* rowLayoutObject = m_grid[r].rowLayoutObject) {
             if (!rowLayoutObject->needsLayout())
-                rowLayoutObject->markForPaginationRelayoutIfNeeded(layouter);
+                markChildForPaginationRelayoutIfNeeded(*rowLayoutObject, layouter);
             rowLayoutObject->layoutIfNeeded();
         }
     }
@@ -1087,7 +1087,7 @@ void LayoutTableSection::layoutRows()
             setLogicalPositionForCell(cell, c);
 
             if (!cell->needsLayout())
-                cell->markForPaginationRelayoutIfNeeded(layouter);
+                markChildForPaginationRelayoutIfNeeded(*cell, layouter);
 
             cell->layoutIfNeeded();
 

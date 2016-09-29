@@ -4053,13 +4053,15 @@ bool LayoutBox::hasNonCompositedScrollbars() const
     return false;
 }
 
-void LayoutBox::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
+void LayoutBox::markChildForPaginationRelayoutIfNeeded(LayoutBox& child, SubtreeLayoutScope& layoutScope)
 {
-    ASSERT(!needsLayout());
-    // If fragmentation height has changed, we need to lay out. No need to enter the layoutObject if it
-    // is childless, though.
-    if (view()->layoutState()->pageLogicalHeightChanged() && slowFirstChild())
-        layoutScope.setChildNeedsLayout(this);
+    DCHECK(!child.needsLayout());
+    LayoutState* layoutState = view()->layoutState();
+    if (!layoutState->isPaginated())
+        return;
+
+    if (layoutState->pageLogicalHeightChanged() || (layoutState->pageLogicalHeight() && layoutState->pageLogicalOffset(child, child.logicalTop()) != child.pageLogicalOffset()))
+        layoutScope.setChildNeedsLayout(&child);
 }
 
 void LayoutBox::markOrthogonalWritingModeRoot()

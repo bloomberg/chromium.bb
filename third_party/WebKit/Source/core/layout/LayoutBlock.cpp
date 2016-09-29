@@ -726,7 +726,7 @@ void LayoutBlock::layoutPositionedObjects(bool relayoutChildren, PositionedLayou
         }
 
         if (!positionedObject->needsLayout())
-            positionedObject->markForPaginationRelayoutIfNeeded(layoutScope);
+            markChildForPaginationRelayoutIfNeeded(*positionedObject, layoutScope);
 
         // FIXME: We should be able to do a r->setNeedsPositionedMovementLayout() here instead of a full layout. Need
         // to investigate why it does not trigger the correct invalidations in that case. crbug.com/350756
@@ -757,16 +757,6 @@ void LayoutBlock::markPositionedObjectsForLayout()
         for (auto* descendant : *positionedDescendants)
             descendant->setChildNeedsLayout();
     }
-}
-
-void LayoutBlock::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
-{
-    ASSERT(!needsLayout());
-    if (needsLayout())
-        return;
-
-    if (view()->layoutState()->pageLogicalHeightChanged() || (view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(*this, logicalTop()) != pageLogicalOffset()))
-        layoutScope.setChildNeedsLayout(this);
 }
 
 void LayoutBlock::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
