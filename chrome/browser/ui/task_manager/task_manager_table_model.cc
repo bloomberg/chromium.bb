@@ -33,16 +33,13 @@ namespace task_manager {
 
 namespace {
 
+const char kCpuTextFormatString[] = "%.1f";
+
 #if defined(OS_MACOSX)
 // Match Activity Monitor's default refresh rate.
 const int64_t kRefreshTimeMS = 2000;
-
-// Activity Monitor shows %cpu with one decimal digit -- be consistent with
-// that.
-const char kCpuTextFormatString[] = "%.1f";
 #else
 const int64_t kRefreshTimeMS = 1000;
-const char kCpuTextFormatString[] = "%.0f";
 #endif  // defined(OS_MACOSX)
 
 // The columns that are shared by a group will show the value of the column
