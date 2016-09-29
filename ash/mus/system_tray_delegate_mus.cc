@@ -4,8 +4,10 @@
 
 #include "ash/mus/system_tray_delegate_mus.h"
 
+#include "ash/common/system/networking_config_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
+#include "ash/mus/vpn_delegate_mus.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/time_formatting.h"
@@ -17,10 +19,30 @@ namespace {
 
 SystemTrayDelegateMus* g_instance = nullptr;
 
+// TODO(mash): Provide a real implementation, perhaps by folding its behavior
+// into an ash-side network information cache. http://crbug.com/651157
+class StubNetworkingConfigDelegate : public NetworkingConfigDelegate {
+ public:
+  StubNetworkingConfigDelegate() {}
+  ~StubNetworkingConfigDelegate() override {}
+
+ private:
+  // NetworkingConfigDelegate:
+  std::unique_ptr<const ExtensionInfo> LookUpExtensionForNetwork(
+      const std::string& service_path) override {
+    return nullptr;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(StubNetworkingConfigDelegate);
+};
+
 }  // namespace
 
 SystemTrayDelegateMus::SystemTrayDelegateMus(shell::Connector* connector)
-    : connector_(connector), hour_clock_type_(base::GetHourClockType()) {
+    : connector_(connector),
+      hour_clock_type_(base::GetHourClockType()),
+      networking_config_delegate_(new StubNetworkingConfigDelegate),
+      vpn_delegate_(new VPNDelegateMus) {
   // Don't make an initial connection to exe:chrome. Do it on demand.
   DCHECK(!g_instance);
   g_instance = this;
@@ -122,6 +144,15 @@ void SystemTrayDelegateMus::ShowEnterpriseInfo() {
 
 void SystemTrayDelegateMus::ShowProxySettings() {
   ConnectToSystemTrayClient()->ShowProxySettings();
+}
+
+NetworkingConfigDelegate* SystemTrayDelegateMus::GetNetworkingConfigDelegate()
+    const {
+  return networking_config_delegate_.get();
+}
+
+VPNDelegate* SystemTrayDelegateMus::GetVPNDelegate() const {
+  return vpn_delegate_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

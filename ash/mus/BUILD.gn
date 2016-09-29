@@ -77,8 +77,6 @@ source_set("lib") {
     "shelf_delegate_mus.h",
     "shell_delegate_mus.cc",
     "shell_delegate_mus.h",
-    "system_tray_delegate_mus.cc",
-    "system_tray_delegate_mus.h",
     "wallpaper_delegate_mus.cc",
     "wallpaper_delegate_mus.h",
     "window_manager.cc",
@@ -132,6 +130,13 @@ source_set("lib") {
   ]
 
   if (is_chromeos) {
+    sources += [
+      "system_tray_delegate_mus.cc",
+      "system_tray_delegate_mus.h",
+      "vpn_delegate_mus.cc",
+      "vpn_delegate_mus.h",
+    ]
+
     deps += [
       "//chromeos",
       "//chromeos:power_manager_proto",
@@ -192,6 +197,17 @@ repack("resources") {
     "//ui/views/mus:resources",
     "//ui/views/resources",
   ]
+
+  if (is_chromeos) {
+    sources += [
+      "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_100_percent.pak",
+      "$root_gen_dir/ui/chromeos/strings/ui_chromeos_strings_en-US.pak",
+    ]
+    deps += [
+      "//ui/chromeos/resources",
+      "//ui/chromeos/strings",
+    ]
+  }
 }
 
 repack("resources_200") {
@@ -206,6 +222,11 @@ repack("resources_200") {
     "//ui/resources",
     "//ui/views/resources",
   ]
+
+  if (is_chromeos) {
+    sources += [ "$root_gen_dir/ui/chromeos/resources/ui_chromeos_resources_200_percent.pak" ]
+    deps += [ "//ui/chromeos/resources" ]
+  }
 }
 
 source_set("unittests") {

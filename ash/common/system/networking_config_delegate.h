@@ -31,8 +31,7 @@ class NetworkingConfigDelegate {
   virtual ~NetworkingConfigDelegate() {}
 
   // Returns information about the extension registered to control configuration
-  // of the network |service_path|. If no extension is registered, the
-  // scoped_ptr is empty.
+  // of the network |service_path|. Returns null if no extension is registered.
   virtual std::unique_ptr<const ExtensionInfo> LookUpExtensionForNetwork(
       const std::string& service_path) = 0;
 

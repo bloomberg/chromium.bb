@@ -11,7 +11,6 @@
 #include "ash/mus/accelerators/accelerator_registrar_impl.h"
 #include "ash/mus/native_widget_factory_mus.h"
 #include "ash/mus/shelf_delegate_mus.h"
-#include "ash/mus/system_tray_delegate_mus.h"
 #include "ash/mus/wallpaper_delegate_mus.h"
 #include "ash/mus/window_manager.h"
 #include "base/bind.h"
@@ -31,8 +30,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/mus/system_tray_delegate_mus.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"  // nogncheck
 #endif
@@ -53,6 +54,7 @@ void InitializeComponents() {
   bluez::BluezDBusManager::Initialize(
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
       chromeos::DBusThreadManager::Get()->IsUsingFakes());
+  chromeos::NetworkHandler::Initialize();
   // TODO(jamescook): Initialize real audio handler.
   chromeos::CrasAudioHandler::InitializeForTesting();
   PowerStatus::Initialize();
@@ -63,6 +65,7 @@ void ShutdownComponents() {
 #if defined(OS_CHROMEOS)
   PowerStatus::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
+  chromeos::NetworkHandler::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 #endif
@@ -176,9 +179,13 @@ void WindowManagerApplication::Create(const shell::Identity& remote_identity,
 
 void WindowManagerApplication::Create(const shell::Identity& remote_identity,
                                       mojom::SystemTrayRequest request) {
+#if defined(OS_CHROMEOS)
+  // Chrome-with-ash only runs on Chrome OS, so don't provide the SystemTray
+  // interface on other platforms.
   mojom::SystemTray* system_tray = SystemTrayDelegateMus::Get();
   DCHECK(system_tray);
   system_tray_bindings_.AddBinding(system_tray, std::move(request));
+#endif
 }
 
 void WindowManagerApplication::Create(

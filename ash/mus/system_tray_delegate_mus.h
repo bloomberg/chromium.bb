@@ -5,6 +5,8 @@
 #ifndef ASH_MUS_SYSTEM_TRAY_DELEGATE_MUS_H_
 #define ASH_MUS_SYSTEM_TRAY_DELEGATE_MUS_H_
 
+#include <memory>
+
 #include "ash/common/system/tray/default_system_tray_delegate.h"
 #include "ash/public/interfaces/system_tray.mojom.h"
 #include "base/i18n/time_formatting.h"
@@ -16,9 +18,14 @@ class Connector;
 
 namespace ash {
 
+class NetworkingConfigDelegate;
+class VPNDelegate;
+
 // Handles the settings displayed in the system tray menu. For mus most settings
 // are obtained from chrome browser via mojo IPC. For the classic ash version
 // see SystemTrayDelegateChromeOS.
+//
+// Chrome OS only. Other platforms use DefaultSystemTrayDelegate directly.
 //
 // TODO: Support all methods in SystemTrayDelegate. http://crbug.com/647412.
 class SystemTrayDelegateMus : public DefaultSystemTrayDelegate,
@@ -54,6 +61,8 @@ class SystemTrayDelegateMus : public DefaultSystemTrayDelegate,
   void ShowPublicAccountInfo() override;
   void ShowEnterpriseInfo() override;
   void ShowProxySettings() override;
+  NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
+  VPNDelegate* GetVPNDelegate() const override;
 
   // mojom::SystemTray:
   void SetUse24HourClock(bool use_24_hour) override;
@@ -66,6 +75,9 @@ class SystemTrayDelegateMus : public DefaultSystemTrayDelegate,
 
   // 12 or 24 hour display.
   base::HourClockType hour_clock_type_;
+
+  std::unique_ptr<NetworkingConfigDelegate> networking_config_delegate_;
+  std::unique_ptr<VPNDelegate> vpn_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegateMus);
 };
