@@ -38,11 +38,12 @@ Each of the sub-directories have their own `BUILD.gn` file, which includes
 targets for both C++ and Java.
 
 *   `//blimp/client/core/`
-    *   `android/` All Android-related code, including Java-code, that are for
-        the code living directly in `//blimp/client/core`.
     *   `compositor/` Code related to the Chrome Compositor.
     *   `contents/` Code related to the contents of a web page.
     *   `contents/android/` JNI bridges and Java-code for `contents`.
+    *   **`context/` Code related to the context (`BlimpClientContext`), which
+        is the core functionality used by all embedders.**
+    *   `context/android` JNI bridges and Java-code for `context`.
     *   `session/` Code related to the session with the engine.
 
 Most code in `core` do not need any Java counterparts unless the embedder is
@@ -56,9 +57,10 @@ and a real one. The default is to use the dummy API, but an embedder can choose
 to enable full blimp support by setting the GN arguments `enable_blimp_client`
 to `true`.
 
-Basically only the implementation of BlimpClientContext has been split out into
-two parts (both in C++ and Java), and the choice of which backing implementation
-to be used is selected by the `enable_blimp_client` flag.
+Basically only the implementation of `BlimpClientContext` has been split out
+into two parts (both in C++ and Java), and the choice of which backing
+implementation to be used is selected by the `enable_blimp_client` flag. These
+two implementations live in `//blimp/client/context`.
 
 ### The public directory
 
@@ -98,6 +100,12 @@ code will move together with the usage of the feature itself, such as
 The `session` directory is from the old directory organization, and all the
 content of this will move over to the `core/session` directory.
 
+#### The support directory
+
+The `support` directory is a directory providing help to embedders. This
+typically includes a default implementation of an interface from
+`//blimp/client/public` or other helpful tools.
+
 #### The test directory
 
 The `test` directory contains tools helpful for testing client code.
@@ -119,7 +127,7 @@ class `Foo`, that lives in `//blimp/client/core/foo/foo.[cc|h]`.
     `//blimp/client/core/foo/android/foo_android.[cc|h]`
 
 *   Add the JNI-bridge JNI registration to:
-     `//blimp/client/core/android/blimp_jni_registrar.cc`
+     `//blimp/client/core/context/android/blimp_jni_registrar.cc`
 
 *   Add this to the top of `//blimp/client/core/foo/BUILD.gn`:
 
@@ -152,7 +160,7 @@ class `Foo`, that lives in `//blimp/client/core/foo/foo.[cc|h]`.
         "android/java/src/org/chromium/blimp/core/foo/Foo.java",
       ]
 
-      jni_package = "blimp/client/core/contents"
+      jni_package = "blimp/client/core/foo"
     }
     ```
 
@@ -173,3 +181,6 @@ class `Foo`, that lives in `//blimp/client/core/foo/foo.[cc|h]`.
       }
     }
     ```
+
+*   Add `//blimp/client/core/foo:foo_java` as a dependency in
+    `//blimp/client/core:core_java`.

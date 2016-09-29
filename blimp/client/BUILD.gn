@@ -17,8 +17,8 @@ source_set("session") {
 
   public_deps = [
     "//blimp/client/core",
-    "//blimp/client/core:switches",
     "//blimp/client/core/geolocation",
+    "//blimp/client/core/switches",
     "//blimp/common/proto",
     "//device/geolocation",
     "//ui/events",
@@ -52,8 +52,8 @@ source_set("client") {
 
   public_deps = [
     ":session",
-    "//blimp/client/core:switches",
     "//blimp/client/core/compositor",
+    "//blimp/client/core/switches",
     "//blimp/client/support",
     "//cc",
     "//cc/surfaces",
@@ -288,7 +288,7 @@ if (is_android) {
       ":blimp_java",
       "//base:base_java",
       "//base:base_java_test_support",
-      "//blimp/client/core:common_java",
+      "//blimp/client/core/common:common_java",
       "//blimp/client/core/contents:contents_java",
       "//blimp/client/core/settings:settings_java",
       "//blimp/client/public:public_headers_java",

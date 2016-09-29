@@ -17,6 +17,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.blimp.core.MockBlimpClientContext;
 import org.chromium.blimp.core.MockBlimpClientContextDelegate;
+import org.chromium.blimp.core.common.PreferencesUtil;
 import org.chromium.components.signin.ChromeSigninController;
 
 /**

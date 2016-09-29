@@ -45,15 +45,15 @@ if (is_android) {
     visibility = [ "//blimp/client/*" ]
 
     java_files = [
-      "../android/java/src/org/chromium/blimp/core/settings/AboutBlimpPreferences.java",
-      "../android/java/src/org/chromium/blimp/core/settings/BlimpPreferencesDelegate.java",
+      "android/java/src/org/chromium/blimp/core/settings/AboutBlimpPreferences.java",
+      "android/java/src/org/chromium/blimp/core/settings/BlimpPreferencesDelegate.java",
     ]
 
     # TODO(xingliu): Clean resources files in the future. http://crbug.com/630687.
     deps = [
       "//base:base_java",
       "//blimp/client:blimp_java_resources",
-      "//blimp/client/core:common_java",
+      "//blimp/client/core/common:common_java",
       "//blimp/client/public:public_headers_java",
       "//components/signin/core/browser/android:java",
       "//components/sync/android:sync_java",
@@ -65,7 +65,7 @@ if (is_android) {
     visibility = [ ":*" ]
 
     sources = [
-      "../android/java/src/org/chromium/blimp/core/settings/AboutBlimpPreferences.java",
+      "android/java/src/org/chromium/blimp/core/settings/AboutBlimpPreferences.java",
     ]
 
     jni_package = "blimp/client/core/settings"

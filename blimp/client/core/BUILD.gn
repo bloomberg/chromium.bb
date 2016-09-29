@@ -33,112 +33,37 @@ group("core") {
   ]
 
   deps = [
-    ":context",
-    ":switches",
     "//blimp/client/core/compositor",
     "//blimp/client/core/contents",
+    "//blimp/client/core/context",
     "//blimp/client/core/feedback",
     "//blimp/client/core/geolocation",
     "//blimp/client/core/render_widget",
     "//blimp/client/core/session",
     "//blimp/client/core/settings",
+    "//blimp/client/core/switches",
   ]
 }
 
-source_set("dummy_core") {
+group("dummy_core") {
   visibility = [ ":*" ]
 
-  sources = [
-    "dummy_blimp_client_context.cc",
-    "dummy_blimp_client_context.h",
-  ]
-
   deps = [
-    "//base",
-    "//blimp/client/public:public_headers",
-    "//url",
+    "//blimp/client/core/context:dummy",
   ]
-
-  if (is_android) {
-    sources += [
-      "android/dummy_blimp_client_context_android.cc",
-      "android/dummy_blimp_client_context_android.h",
-      "android/dummy_blimp_jni_registrar.cc",
-    ]
-
-    deps += [ ":dummy_core_jni_headers" ]
-  }
 }
 
-source_set("unit_tests") {
+group("unit_tests") {
   testonly = true
 
-  sources = [
-    "blimp_client_context_impl_unittest.cc",
-  ]
-
   deps = [
-    ":context",
     "//blimp/client/core/compositor:unit_tests",
     "//blimp/client/core/contents:unit_tests",
+    "//blimp/client/core/context:unit_tests",
     "//blimp/client/core/feedback:unit_tests",
     "//blimp/client/core/geolocation:unit_tests",
     "//blimp/client/core/render_widget:unit_tests",
     "//blimp/client/core/session:unit_tests",
-    "//blimp/client/public:public_headers",
-    "//blimp/client/test",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-}
-
-source_set("context") {
-  sources = [
-    "blimp_client_context_impl.cc",
-    "blimp_client_context_impl.h",
-  ]
-
-  public_deps = [
-    "//base",
-    "//blimp/client/core/compositor:compositor",
-    "//blimp/client/core/contents",
-    "//blimp/client/core/session",
-    "//blimp/client/public:public_headers",
-    "//device/geolocation",
-    "//url",
-  ]
-
-  deps = [
-    ":switches",
-    "//blimp/client/core/feedback",
-    "//blimp/client/core/geolocation",
-    "//blimp/client/core/settings",
-  ]
-
-  if (is_android) {
-    sources += [
-      "android/blimp_client_context_impl_android.cc",
-      "android/blimp_client_context_impl_android.h",
-      "android/blimp_jni_registrar.cc",
-    ]
-
-    deps += [
-      ":context_jni_headers",
-      "//blimp/client/core/settings",
-      "//ui/android",
-    ]
-  }
-}
-
-source_set("switches") {
-  visibility = [
-    "//blimp/client/*",
-    "//blimp/engine:browser_tests",
-  ]
-
-  sources = [
-    "blimp_client_switches.cc",
-    "blimp_client_switches.h",
   ]
 }
 
@@ -168,79 +93,20 @@ if (is_android) {
     ]
 
     deps = [
-      ":context_java",
-      ":switches_java",
       "//blimp/client/core/contents:contents_java",
+      "//blimp/client/core/context:context_java",
       "//blimp/client/core/feedback:feedback_java",
       "//blimp/client/core/settings:settings_java",
+      "//blimp/client/core/switches:switches_java",
       "//device/geolocation:geolocation_java",
     ]
   }
 
-  android_library("dummy_core_java") {
+  java_group("dummy_core_java") {
     visibility = [ ":*" ]
 
-    java_files = [ "android/java/src/org/chromium/blimp/core/DummyBlimpClientContext.java" ]
-
     deps = [
-      "//base:base_java",
-      "//blimp/client/public:public_headers_java",
-      "//ui/android:ui_java",
+      "//blimp/client/core/context:dummy_context_java",
     ]
-  }
-
-  android_library("context_java") {
-    visibility = [ "//blimp/client/*" ]
-
-    java_files = [ "android/java/src/org/chromium/blimp/core/BlimpClientContextImpl.java" ]
-
-    deps = [
-      ":common_java",
-      ":switches_java",
-      "//base:base_java",
-      "//blimp/client/core/contents:contents_java",
-      "//blimp/client/core/feedback:feedback_java",
-      "//blimp/client/core/settings:settings_java",
-      "//blimp/client/public:public_headers_java",
-      "//ui/android:ui_java",
-    ]
-  }
-
-  android_library("common_java") {
-    visibility = [ "//blimp/client/*" ]
-
-    java_files = [ "android/java/src/org/chromium/blimp/core/settings/PreferencesUtil.java" ]
-
-    deps = [
-      "//base:base_java",
-      "//blimp/client/public:public_headers_java",
-    ]
-  }
-
-  android_library("switches_java") {
-    visibility = [ "//blimp/client/*" ]
-
-    java_files =
-        [ "android/java/src/org/chromium/blimp/core/BlimpClientSwitches.java" ]
-  }
-
-  generate_jni("context_jni_headers") {
-    visibility = [ ":*" ]
-
-    sources = [
-      "android/java/src/org/chromium/blimp/core/BlimpClientContextImpl.java",
-    ]
-
-    jni_package = "blimp/client/core"
-  }
-
-  generate_jni("dummy_core_jni_headers") {
-    visibility = [ ":*" ]
-
-    sources = [
-      "android/java/src/org/chromium/blimp/core/DummyBlimpClientContext.java",
-    ]
-
-    jni_package = "blimp/client/core"
   }
 }

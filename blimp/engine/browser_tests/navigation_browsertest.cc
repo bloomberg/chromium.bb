@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
-#include "blimp/client/core/blimp_client_context_impl.h"
 #include "blimp/client/core/contents/blimp_navigation_controller_impl.h"
+#include "blimp/client/core/context/blimp_client_context_impl.h"
 #include "blimp/client/session/test_client_session.h"
 #include "blimp/client/test/compositor/mock_compositor_dependencies.h"
 #include "blimp/client/test/contents/mock_blimp_contents_observer.h"

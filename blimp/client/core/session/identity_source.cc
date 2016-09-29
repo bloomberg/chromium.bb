@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "blimp/client/core/blimp_client_switches.h"
+#include "blimp/client/core/switches/blimp_client_switches.h"
 
 namespace blimp {
 namespace client {

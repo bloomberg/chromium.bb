@@ -19,7 +19,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "blimp/client/core/blimp_client_switches.h"
+#include "blimp/client/core/switches/blimp_client_switches.h"
 #include "blimp/common/get_client_auth_token.h"
 #include "blimp/common/protocol_version.h"
 #include "blimp/common/switches.h"
