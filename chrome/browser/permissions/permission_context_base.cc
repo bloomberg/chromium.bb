@@ -273,13 +273,9 @@ void PermissionContextBase::NotifyPermissionSet(
   UpdateTabContext(id, requesting_origin,
                    content_setting == CONTENT_SETTING_ALLOW);
 
-  if (content_setting == CONTENT_SETTING_DEFAULT) {
-    content_setting =
-        HostContentSettingsMapFactory::GetForProfile(profile_)
-            ->GetDefaultContentSetting(content_settings_type_, nullptr);
-  }
+  if (content_setting == CONTENT_SETTING_DEFAULT)
+    content_setting = CONTENT_SETTING_ASK;
 
-  DCHECK_NE(content_setting, CONTENT_SETTING_DEFAULT);
   callback.Run(content_setting);
 }
 
