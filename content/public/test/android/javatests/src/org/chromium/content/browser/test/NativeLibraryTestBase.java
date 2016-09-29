@@ -6,6 +6,7 @@ package org.chromium.content.browser.test;
 
 import android.test.InstrumentationTestCase;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -39,7 +40,7 @@ public class NativeLibraryTestBase extends InstrumentationTestCase {
         assertFalse(ThreadUtils.runningOnUiThread());
 
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX,
-                getInstrumentation().getTargetContext());
+                ContextUtils.getApplicationContext());
 
         try {
             ApplicationUtils.waitForLibraryDependencies(getInstrumentation());
@@ -61,15 +62,14 @@ public class NativeLibraryTestBase extends InstrumentationTestCase {
     private void nativeInitialization(boolean initBrowserProcess) {
         if (initBrowserProcess) {
             try {
-                BrowserStartupController.get(getInstrumentation().getTargetContext(),
+                BrowserStartupController.get(ContextUtils.getApplicationContext(),
                         LibraryProcessType.PROCESS_BROWSER).startBrowserProcessesSync(false);
             } catch (ProcessInitException e) {
                 throw new Error(e);
             }
         } else {
             try {
-                LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
-                        .ensureInitialized(getInstrumentation().getTargetContext());
+                LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
             } catch (ProcessInitException e) {
                 throw new Error(e);
             }

@@ -25,13 +25,13 @@ public class BlimpNativeInstrumentationTestCase extends InstrumentationTestCase 
             @Override
             public void run() {
                 try {
-                    BlimpLibraryLoader.startAsync(getInstrumentation().getTargetContext(),
-                            new BlimpLibraryLoader.Callback() {
-                                public void onStartupComplete(boolean success) {
-                                    mSuccess = success;
-                                    mNativeReadySemaphore.release();
-                                }
-                            });
+                    BlimpLibraryLoader.startAsync(new BlimpLibraryLoader.Callback() {
+                        @Override
+                        public void onStartupComplete(boolean success) {
+                            mSuccess = success;
+                            mNativeReadySemaphore.release();
+                        }
+                    });
                 } catch (ProcessInitException e) {
                     throw new RuntimeException("Failed to initialize process.");
                 }

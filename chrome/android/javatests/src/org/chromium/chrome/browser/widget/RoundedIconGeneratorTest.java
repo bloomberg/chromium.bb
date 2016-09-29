@@ -20,6 +20,7 @@ public class RoundedIconGeneratorTest extends NativeLibraryTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         CommandLine.init(null);
         loadNativeLibraryAndInitBrowserProcess();
     }

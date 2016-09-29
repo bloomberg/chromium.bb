@@ -5,6 +5,7 @@
 package org.chromium.content_shell_apk;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.content.app.ContentApplication;
@@ -17,6 +18,11 @@ public class ContentShellApplication extends ContentApplication {
 
     public static final String COMMAND_LINE_FILE = "/data/local/tmp/content-shell-command-line";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "content_shell";
+
+    public ContentShellApplication() {
+        super();
+        ContextUtils.initApplicationContext(this);
+    }
 
     @Override
     public void onCreate() {

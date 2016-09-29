@@ -78,6 +78,7 @@ public class ImportantFileWriterAndroidTest extends NativeLibraryTestBase {
 
     @Override
     public void setUp() throws Exception {
+        super.setUp();
         loadNativeLibraryNoBrowserProcess();
     }
 }

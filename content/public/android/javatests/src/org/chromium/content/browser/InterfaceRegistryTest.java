@@ -31,7 +31,7 @@ public class InterfaceRegistryTest extends ContentShellTestBase {
 
     private static final long RUN_LOOP_TIMEOUT_MS = 25;
 
-    private final List<Closeable> mCloseablesToClose = new ArrayList<Closeable>();
+    private final List<Closeable> mCloseablesToClose = new ArrayList<>();
     private long mNativeTestEnvironment;
 
     static class CalcConnectionErrorHandler implements ConnectionErrorHandler {
@@ -99,8 +99,7 @@ public class InterfaceRegistryTest extends ContentShellTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(
-                getInstrumentation().getTargetContext());
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         launchContentShellWithUrl("about://blank");
         mNativeTestEnvironment = ShellMojoTestUtils.setupTestEnvironment();
     }

@@ -65,7 +65,7 @@ public class ChildProcessServiceImpl {
     // Child library process type.
     private int mLibraryProcessType;
 
-    private static AtomicReference<Context> sContext = new AtomicReference<Context>(null);
+    private static AtomicReference<Context> sContext = new AtomicReference<>(null);
     private boolean mLibraryInitialized = false;
     // Becomes true once the service is bound. Access must synchronize around mMainThread.
     private boolean mIsBound = false;
@@ -121,7 +121,7 @@ public class ChildProcessServiceImpl {
         }
     };
 
-    // The ClassLoader for the host browser context.
+    // The ClassLoader for the host context.
     private ClassLoader mHostClassLoader;
 
     /* package */ static Context getContext() {
@@ -131,10 +131,10 @@ public class ChildProcessServiceImpl {
     /**
      * Loads Chrome's native libraries and initializes a ChildProcessServiceImpl.
      * @param context The application context.
-     * @param hostBrowserContext The context of the host browser (i.e. Chrome).
+     * @param hostContext The host context the library should be loaded with (i.e. Chrome).
      */
-    public void create(final Context context, final Context hostBrowserContext) {
-        mHostClassLoader = hostBrowserContext.getClassLoader();
+    public void create(final Context context, final Context hostContext) {
+        mHostClassLoader = hostContext.getClassLoader();
         Log.i(TAG, "Creating new ChildProcessService pid=%d", Process.myPid());
         if (sContext.get() != null) {
             throw new RuntimeException("Illegal child process reuse.");
@@ -181,7 +181,8 @@ public class ChildProcessServiceImpl {
 
                     boolean loadAtFixedAddressFailed = false;
                     try {
-                        LibraryLoader.get(mLibraryProcessType).loadNow(hostBrowserContext);
+                        LibraryLoader.get(mLibraryProcessType)
+                                .loadNowOverrideApplicationContext(hostContext);
                         isLoaded = true;
                     } catch (ProcessInitException e) {
                         if (requestedSharedRelro) {
@@ -195,7 +196,8 @@ public class ChildProcessServiceImpl {
                     if (!isLoaded && requestedSharedRelro) {
                         linker.disableSharedRelros();
                         try {
-                            LibraryLoader.get(mLibraryProcessType).loadNow(hostBrowserContext);
+                            LibraryLoader.get(mLibraryProcessType)
+                                    .loadNowOverrideApplicationContext(hostContext);
                             isLoaded = true;
                         } catch (ProcessInitException e) {
                             Log.e(TAG, "Failed to load native library on retry", e);

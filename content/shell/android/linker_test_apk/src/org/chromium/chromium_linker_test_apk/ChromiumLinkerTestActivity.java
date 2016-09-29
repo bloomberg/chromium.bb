@@ -118,8 +118,7 @@ public class ChromiumLinkerTestActivity extends Activity {
         // Load the library in the browser process, this will also run the test
         // runner in this process.
         try {
-            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
-                    .ensureInitialized(getApplicationContext());
+            LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         } catch (ProcessInitException e) {
             Log.i(TAG, "Cannot load chromium_linker_test:" +  e);
         }

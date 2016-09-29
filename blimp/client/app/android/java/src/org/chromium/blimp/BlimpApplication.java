@@ -17,13 +17,16 @@ import org.chromium.base.ResourceExtractor;
  */
 public class BlimpApplication extends BaseChromiumApplication {
     private static final String COMMAND_LINE_FILE = "blimp-command-line";
-    private static final String[] MANDATORY_PAK_FILES = new String[] {};
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "blimp";
+
+    public BlimpApplication() {
+        super();
+        ContextUtils.initApplicationContext(this);
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        ContextUtils.initApplicationContext(this);
         ResourceExtractor.setResourcesToExtract(new ResourceExtractor.ResourceEntry[0]);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, this);
         initCommandLine();

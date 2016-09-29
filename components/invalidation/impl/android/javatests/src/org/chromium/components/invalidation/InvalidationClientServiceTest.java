@@ -58,7 +58,7 @@ public class InvalidationClientServiceTest extends
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        mStartServiceIntents = new ArrayList<Intent>();
+        mStartServiceIntents = new ArrayList<>();
         setContext(new AdvancedMockContext(getContext()) {
             @Override
             public ComponentName startService(Intent intent) {
@@ -69,7 +69,7 @@ public class InvalidationClientServiceTest extends
         Context appContext = getContext().getApplicationContext();
         ContextUtils.initApplicationContextForTests(appContext);
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, appContext);
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(getContext());
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         setupService();
     }
 
@@ -90,8 +90,8 @@ public class InvalidationClientServiceTest extends
          * Test plan: compute the set of registration operations resulting from various combinations
          * of existing and desired registrations. Verifying that they are correct.
          */
-        Set<ObjectId> regAccumulator = new HashSet<ObjectId>();
-        Set<ObjectId> unregAccumulator = new HashSet<ObjectId>();
+        Set<ObjectId> regAccumulator = new HashSet<>();
+        Set<ObjectId> unregAccumulator = new HashSet<>();
 
         // Empty existing and desired registrations should yield empty operation sets.
         InvalidationClientService.computeRegistrationOps(
@@ -116,7 +116,7 @@ public class InvalidationClientServiceTest extends
                 regAccumulator, unregAccumulator);
         assertEquals(
                 toObjectIdSet(ModelType.BOOKMARKS, ModelType.SESSIONS),
-                new HashSet<ObjectId>(regAccumulator));
+                new HashSet<>(regAccumulator));
         assertEquals(0, unregAccumulator.size());
         regAccumulator.clear();
 
@@ -159,7 +159,7 @@ public class InvalidationClientServiceTest extends
         // Verify registrations issued.
         assertEquals(CollectionUtil.newHashSet(
                 toObjectId(ModelType.BOOKMARKS), toObjectId(ModelType.SESSIONS), objectId),
-                new HashSet<ObjectId>(getService().mRegistrations.get(0)));
+                new HashSet<>(getService().mRegistrations.get(0)));
     }
 
     @SmallTest
@@ -189,7 +189,7 @@ public class InvalidationClientServiceTest extends
         assertEquals(1, getService().mRegistrations.size());
         assertEquals(CollectionUtil.newHashSet(
                 toObjectId(ModelType.BOOKMARKS), toObjectId(ModelType.SESSIONS), objectId),
-                new HashSet<ObjectId>(getService().mRegistrations.get(0)));
+                new HashSet<>(getService().mRegistrations.get(0)));
     }
 
     @SmallTest
@@ -579,17 +579,17 @@ public class InvalidationClientServiceTest extends
         InvalidationPreferences invPrefs = new InvalidationPreferences();
         Set<String> actualSyncTypes = invPrefs.getSavedSyncedTypes();
         if (actualSyncTypes == null) {
-            actualSyncTypes = new HashSet<String>();
+            actualSyncTypes = new HashSet<>();
         }
 
         // Get object ids saved to preferences.
         Set<ObjectId> actualObjectIds = invPrefs.getSavedObjectIds();
         if (actualObjectIds == null) {
-            actualObjectIds = new HashSet<ObjectId>();
+            actualObjectIds = new HashSet<>();
         }
 
         // Get expected registered object ids.
-        Set<ObjectId> expectedRegisteredIds = new HashSet<ObjectId>();
+        Set<ObjectId> expectedRegisteredIds = new HashSet<>();
         if (isReady) {
             expectedRegisteredIds.addAll(modelTypesToObjectIds(expectedTypes));
             expectedRegisteredIds.addAll(expectedObjectIds);
@@ -612,8 +612,8 @@ public class InvalidationClientServiceTest extends
         getService().onCreate();
 
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Set<ObjectId> objectIds = new HashSet<ObjectId>();
-        Set<Integer> types = new HashSet<Integer>();
+        Set<ObjectId> objectIds = new HashSet<>();
+        Set<Integer> types = new HashSet<>();
 
         // Register for some object ids.
         objectIds.add(ObjectId.newInstance(1, "obj1".getBytes()));
@@ -703,7 +703,7 @@ public class InvalidationClientServiceTest extends
         Set<ObjectId> expectedRegistrations =
                 modelTypesToObjectIds(CollectionUtil.newHashSet(ModelType.SESSIONS));
         assertEquals(expectedRegistrations,
-                     new HashSet<ObjectId>(getService().mRegistrations.get(0)));
+                     new HashSet<>(getService().mRegistrations.get(0)));
     }
 
     @SmallTest
@@ -738,7 +738,7 @@ public class InvalidationClientServiceTest extends
         assertEquals(1, getService().mRegistrations.size());
         Set<ObjectId> expectedTypes =
                 modelTypesToObjectIds(CollectionUtil.newHashSet(ModelType.SESSIONS));
-        assertEquals(expectedTypes, new HashSet<ObjectId>(getService().mRegistrations.get(0)));
+        assertEquals(expectedTypes, new HashSet<>(getService().mRegistrations.get(0)));
     }
 
     @SmallTest
@@ -806,7 +806,7 @@ public class InvalidationClientServiceTest extends
                 actualRegisterIntent.getExtras().keySet());
         assertEquals(
                 desiredObjectIds,
-                new HashSet<ObjectId>(getService().mRegistrations.get(0)));
+                new HashSet<>(getService().mRegistrations.get(0)));
     }
 
     @SmallTest
@@ -837,7 +837,7 @@ public class InvalidationClientServiceTest extends
     }
 
     private Set<ObjectId> toObjectIdSet(int... modelTypes) {
-        Set<ObjectId> objectIds = new HashSet<ObjectId>(modelTypes.length);
+        Set<ObjectId> objectIds = new HashSet<>(modelTypes.length);
         for (int i = 0; i < modelTypes.length; i++) {
             objectIds.add(toObjectId(modelTypes[i]));
         }
@@ -845,7 +845,7 @@ public class InvalidationClientServiceTest extends
     }
 
     private Set<ObjectId> modelTypesToObjectIds(Set<Integer> modelTypes) {
-        Set<ObjectId> objectIds = new HashSet<ObjectId>();
+        Set<ObjectId> objectIds = new HashSet<>();
         for (Integer modelType : modelTypes) {
             objectIds.add(toObjectId(modelType));
         }
@@ -853,7 +853,7 @@ public class InvalidationClientServiceTest extends
     }
 
     private Set<String> modelTypesToNotificationTypes(Set<Integer> modelTypes) {
-        Set<String> strings = new HashSet<String>();
+        Set<String> strings = new HashSet<>();
         for (Integer modelType : modelTypes) {
             strings.add(ModelTypeHelper.toNotificationType(modelType));
         }

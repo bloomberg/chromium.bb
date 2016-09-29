@@ -45,7 +45,7 @@ public abstract class AwBrowserProcess {
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX, appContext);
         try {
             LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW);
-            libraryLoader.loadNow(appContext);
+            libraryLoader.loadNow();
             // Switch the command line implementation from Java to native.
             // It's okay for the WebView to do this before initialization because we have
             // setup the JNI bindings by this point.

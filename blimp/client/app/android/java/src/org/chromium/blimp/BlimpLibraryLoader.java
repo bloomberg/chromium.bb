@@ -4,9 +4,9 @@
 
 package org.chromium.blimp;
 
-import android.content.Context;
 import android.os.Handler;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ResourceExtractor;
 import org.chromium.base.ThreadUtils;
@@ -33,7 +33,7 @@ public final class BlimpLibraryLoader {
     }
 
     /**
-     * Whether or not a call to {@link #startAsync(Context, Callback)} is/has actually attempted to
+     * Whether or not a call to {@link #startAsync(Callback)} is/has actually attempted to
      * load the native library.
      */
     private static boolean sLoadAttempted = false;
@@ -43,9 +43,9 @@ public final class BlimpLibraryLoader {
 
     /**
      * A list of {@link Callback} instances that still need to be notified of the result of the
-     * initial call to {@link #startAsync(Context, Callback)}.
+     * initial call to {@link #startAsync(Callback)}.
      */
-    private static ObserverList<Callback> sOutstandingCallbacks = new ObserverList<Callback>();
+    private static ObserverList<Callback> sOutstandingCallbacks = new ObserverList<>();
 
     /**
      * Disallow instantiation of this class.
@@ -58,13 +58,11 @@ public final class BlimpLibraryLoader {
      * wait for the first call to finish and notify their {@link BlimpLibraryLoader.Callback}
      * instances accordingly.  Any calls to this after the library has finished loading will just
      * have the initial load result posted back to {@code callback}.
-     * @param context               A {@link Context} object.
      * @param callback              A {@link BlimpLibraryLoader.Callback} to be notified upon
      *                              completion.
      * @throws ProcessInitException
      */
-    public static void startAsync(final Context context, final Callback callback)
-            throws ProcessInitException {
+    public static void startAsync(final Callback callback) throws ProcessInitException {
         ThreadUtils.assertOnUiThread();
 
         // Save the callback to be notified once loading and initializiation is one.
@@ -83,9 +81,9 @@ public final class BlimpLibraryLoader {
         if (sLoadAttempted) return;
         sLoadAttempted = true;
 
-        ResourceExtractor extractor = ResourceExtractor.get(context);
+        ResourceExtractor extractor = ResourceExtractor.get(ContextUtils.getApplicationContext());
         extractor.startExtractingResources();
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(context);
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
 
         extractor.addCompletionCallback(new Runnable() {
             @Override

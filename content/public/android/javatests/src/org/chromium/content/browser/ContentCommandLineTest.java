@@ -35,6 +35,7 @@ public class ContentCommandLineTest extends NativeLibraryTestBase {
 
     @Override
     public void setUp() throws Exception {
+        super.setUp();
         CommandLine.reset();
     }
 

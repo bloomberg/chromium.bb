@@ -7,6 +7,7 @@ package org.chromium.components_browsertests_apk;
 import android.content.Context;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
 
 /**
@@ -18,6 +19,7 @@ public class ComponentsBrowserTestsApplication extends BaseChromiumApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        ContextUtils.initApplicationContext(this);
         initializeApplicationParameters(this);
     }
 

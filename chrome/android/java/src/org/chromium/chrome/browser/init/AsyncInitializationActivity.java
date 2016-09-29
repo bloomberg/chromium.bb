@@ -109,7 +109,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
         if (mLaunchBehindWorkaround != null) mLaunchBehindWorkaround.onSetContentView();
 
         // Kick off long running IO tasks that can be done in parallel.
-        mNativeInitializationController = new NativeInitializationController(this, this);
+        mNativeInitializationController = new NativeInitializationController(this);
         initializeChildProcessCreationParams();
         mNativeInitializationController.startBackgroundTasks(shouldAllocateChildConnection());
     }

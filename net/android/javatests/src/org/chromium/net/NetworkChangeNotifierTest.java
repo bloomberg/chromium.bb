@@ -144,7 +144,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         }
 
         // List of networks we're pretending are currently connected.
-        private final ArrayList<MockNetwork> mMockNetworks = new ArrayList<MockNetwork>();
+        private final ArrayList<MockNetwork> mMockNetworks = new ArrayList<>();
 
         private boolean mActiveNetworkExists;
         private int mNetworkType;
@@ -304,7 +304,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     private static class TestNetworkChangeNotifierAutoDetectObserver
             implements NetworkChangeNotifierAutoDetect.Observer {
         // The list of network changes that have been witnessed.
-        final ArrayList<ChangeInfo> mChanges = new ArrayList<ChangeInfo>();
+        final ArrayList<ChangeInfo> mChanges = new ArrayList<>();
 
         @Override
         public void onConnectionTypeChanged(int newConnectionType) {}
@@ -413,13 +413,13 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER)
-                .ensureInitialized(getInstrumentation().getTargetContext());
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Find Network.Network(int netId) using reflection.
             mNetworkConstructor = Network.class.getConstructor(Integer.TYPE);
         }
         ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
             public void run() {
                 createTestNotifier(WatchForChanges.ONLY_WHEN_APP_IN_FOREGROUND);
             }
@@ -779,6 +779,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
                 new TestNetworkChangeNotifierAutoDetectObserver();
         Callable<NetworkChangeNotifierAutoDetect> callable =
                 new Callable<NetworkChangeNotifierAutoDetect>() {
+                    @Override
                     public NetworkChangeNotifierAutoDetect call() {
                         return new NetworkChangeNotifierAutoDetect(
                                 observer, context, new RegistrationPolicyApplicationStatus() {
@@ -794,8 +795,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
                                 });
                     }
                 };
-        FutureTask<NetworkChangeNotifierAutoDetect> task =
-                new FutureTask<NetworkChangeNotifierAutoDetect>(callable);
+        FutureTask<NetworkChangeNotifierAutoDetect> task = new FutureTask<>(callable);
         ThreadUtils.postOnUiThread(task);
         NetworkChangeNotifierAutoDetect ncn = task.get();
 

@@ -74,11 +74,9 @@ public class BlimpRendererActivity
     @SuppressFBWarnings("DM_EXIT")  // FindBugs doesn't like System.exit().
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         buildAndTriggerTokenSourceIfNeeded();
-
         try {
-            BlimpLibraryLoader.startAsync(this, this);
+            BlimpLibraryLoader.startAsync(this);
         } catch (ProcessInitException e) {
             Log.e(TAG, "Native startup exception", e);
             System.exit(-1);

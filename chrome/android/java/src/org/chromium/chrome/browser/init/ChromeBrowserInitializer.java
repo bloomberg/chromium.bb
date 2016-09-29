@@ -359,7 +359,7 @@ public class ChromeBrowserInitializer {
             mApplication.initCommandLine();
             LibraryLoader libraryLoader = LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER);
             StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            libraryLoader.ensureInitialized(mApplication);
+            libraryLoader.ensureInitialized();
             StrictMode.setThreadPolicy(oldPolicy);
             libraryLoader.asyncPrefetchLibrariesToMemory();
             BrowserStartupController.get(mApplication, LibraryProcessType.PROCESS_BROWSER)

@@ -4,7 +4,6 @@
 
 package org.chromium.mojo;
 
-import android.content.Context;
 import android.test.InstrumentationTestCase;
 
 import org.chromium.base.ContextUtils;
@@ -26,9 +25,9 @@ public class MojoTestCase extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Context appContext = getInstrumentation().getTargetContext().getApplicationContext();
-        ContextUtils.initApplicationContext(appContext);
-        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(appContext);
+        ContextUtils.initApplicationContext(
+                getInstrumentation().getTargetContext().getApplicationContext());
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
         nativeInit();
         mTestEnvironmentPointer = nativeSetupTestEnvironment();
     }

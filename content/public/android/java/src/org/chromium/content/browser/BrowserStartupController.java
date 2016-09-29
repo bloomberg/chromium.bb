@@ -118,7 +118,7 @@ public class BrowserStartupController {
 
     BrowserStartupController(Context context, int libraryProcessType) {
         mContext = context.getApplicationContext();
-        mAsyncStartupCallbacks = new ArrayList<StartupCallback>();
+        mAsyncStartupCallbacks = new ArrayList<>();
         mLibraryProcessType = libraryProcessType;
     }
 
@@ -302,7 +302,7 @@ public class BrowserStartupController {
         try {
             // Normally Main.java will have already loaded the library asynchronously, we only need
             // to load it here if we arrived via another flow, e.g. bookmark access & sync setup.
-            LibraryLoader.get(mLibraryProcessType).ensureInitialized(mContext);
+            LibraryLoader.get(mLibraryProcessType).ensureInitialized();
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
