@@ -83,12 +83,12 @@ void setKeyframeValue(Element& element, StringKeyframe& keyframe, const String& 
     StyleSheetContents* styleSheetContents = element.document().elementSheet().contents();
     CSSPropertyID cssProperty = AnimationInputHelpers::keyframeAttributeToCSSProperty(property, element.document());
     if (cssProperty != CSSPropertyInvalid) {
-        keyframe.setCSSPropertyValue(cssProperty, value, &element, styleSheetContents);
+        keyframe.setCSSPropertyValue(cssProperty, value, styleSheetContents);
         return;
     }
     cssProperty = AnimationInputHelpers::keyframeAttributeToPresentationAttribute(property, element);
     if (cssProperty != CSSPropertyInvalid) {
-        keyframe.setPresentationAttributeValue(cssProperty, value, &element, styleSheetContents);
+        keyframe.setPresentationAttributeValue(cssProperty, value, styleSheetContents);
         return;
     }
     const QualifiedName* svgAttribute = AnimationInputHelpers::keyframeAttributeToSVGAttribute(property, element);

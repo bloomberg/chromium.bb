@@ -22,9 +22,9 @@ public:
         return adoptRef(new StringKeyframe);
     }
 
-    void setCSSPropertyValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
+    void setCSSPropertyValue(CSSPropertyID, const String& value, StyleSheetContents*);
     void setCSSPropertyValue(CSSPropertyID, const CSSValue&);
-    void setPresentationAttributeValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
+    void setPresentationAttributeValue(CSSPropertyID, const String& value, StyleSheetContents*);
     void setSVGAttributeValue(const QualifiedName&, const String& value);
 
     const CSSValue& cssPropertyValue(CSSPropertyID property) const
