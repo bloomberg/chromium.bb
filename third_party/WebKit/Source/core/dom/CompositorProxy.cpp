@@ -204,7 +204,7 @@ DOMMatrix* CompositorProxy::transform(ExceptionState& exceptionState) const
         return nullptr;
     if (raiseExceptionIfNotMutable(CompositorMutableProperty::kTransform, exceptionState))
         return nullptr;
-    return DOMMatrix::create(m_state->transform());
+    return DOMMatrix::create(m_state->transform(), exceptionState);
 }
 
 void CompositorProxy::setOpacity(double opacity, ExceptionState& exceptionState)

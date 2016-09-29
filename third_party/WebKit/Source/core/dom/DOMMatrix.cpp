@@ -6,20 +6,29 @@
 
 namespace blink {
 
-DOMMatrix* DOMMatrix::create()
+DOMMatrix* DOMMatrix::create(ExceptionState& exceptionState)
 {
     return new DOMMatrix(TransformationMatrix());
 }
 
-DOMMatrix* DOMMatrix::create(DOMMatrixReadOnly* other)
+DOMMatrix* DOMMatrix::create(DOMMatrixReadOnly* other, ExceptionState& exceptionState)
 {
     return new DOMMatrix(other->matrix(), other->is2D());
 }
 
-DOMMatrix* DOMMatrix::create(const SkMatrix44& matrix)
+DOMMatrix* DOMMatrix::create(const SkMatrix44& matrix, ExceptionState& exceptionState)
 {
     TransformationMatrix transformationMatrix(matrix);
     return new DOMMatrix(transformationMatrix, transformationMatrix.isAffine());
+}
+
+DOMMatrix* DOMMatrix::create(Vector<double> sequence, ExceptionState& exceptionState)
+{
+    if (sequence.size() != 6 && sequence.size() != 16) {
+        exceptionState.throwTypeError("The sequence must contain 6 elements for a 2D matrix or 16 elements for a 3D matrix.");
+        return nullptr;
+    }
+    return new DOMMatrix(sequence, sequence.size());
 }
 
 DOMMatrix* DOMMatrix::fromFloat32Array(DOMFloat32Array* float32Array, ExceptionState& exceptionState)

@@ -5,6 +5,7 @@
 #ifndef DOMMatrix_h
 #define DOMMatrix_h
 
+#include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMMatrixInit.h"
 #include "core/dom/DOMMatrixReadOnly.h"
 
@@ -13,9 +14,10 @@ namespace blink {
 class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static DOMMatrix* create();
-    static DOMMatrix* create(DOMMatrixReadOnly*);
-    static DOMMatrix* create(const SkMatrix44&);
+    static DOMMatrix* create(ExceptionState&);
+    static DOMMatrix* create(DOMMatrixReadOnly*, ExceptionState& = ASSERT_NO_EXCEPTION);
+    static DOMMatrix* create(const SkMatrix44&, ExceptionState&);
+    static DOMMatrix* create(Vector<double>, ExceptionState&);
     static DOMMatrix* fromFloat32Array(DOMFloat32Array*, ExceptionState&);
     static DOMMatrix* fromFloat64Array(DOMFloat64Array*, ExceptionState&);
     static DOMMatrix* fromMatrix(DOMMatrixInit&, ExceptionState&);
