@@ -51,10 +51,10 @@ class DepsUpdater(object):
         chromium_commitish = show_ref_output.split()[0]
 
         if options.target == 'wpt':
-            import_commitish = self.update(WPT_DEST_NAME, WPT_REPO_URL, options.keep_w3c_repos_around)
+            import_commitish = self.update(WPT_DEST_NAME, WPT_REPO_URL, options.keep_w3c_repos_around, options.revision)
             self._copy_resources()
         elif options.target == 'css':
-            import_commitish = self.update(CSS_DEST_NAME, CSS_REPO_URL, options.keep_w3c_repos_around)
+            import_commitish = self.update(CSS_DEST_NAME, CSS_REPO_URL, options.keep_w3c_repos_around, options.revision)
         else:
             raise AssertionError("Unsupported target %s" % options.target)
 
@@ -74,6 +74,8 @@ class DepsUpdater(object):
                             help='allow script to run even if we have local commits')
         parser.add_argument('--keep-w3c-repos-around', action='store_true',
                             help='leave the w3c repos around that were imported previously.')
+        parser.add_argument('-r', dest='revision', action='store',
+                            help='Target revision.')
         parser.add_argument('target', choices=['css', 'wpt'],
                             help='Target repository.  "css" for csswg-test, "wpt" for web-platform-tests.')
         parser.add_argument('--auto-update', action='store_true',
@@ -140,12 +142,13 @@ class DepsUpdater(object):
             self.copyfile(source, destination)
             self.run(['git', 'add', destination])
 
-    def update(self, dest_dir_name, url, keep_w3c_repos_around):
+    def update(self, dest_dir_name, url, keep_w3c_repos_around, revision):
         """Updates an imported repository.
 
         Args:
             dest_dir_name: The destination directory name.
             url: URL of the git repository.
+            revision: Commit hash or None.
 
         Returns:
             A string for the commit description "<destination>@<commitish>".
@@ -154,6 +157,9 @@ class DepsUpdater(object):
         self.print_('## Cloning %s into %s.' % (url, temp_repo_path))
         self.run(['git', 'clone', url, temp_repo_path])
 
+        if revision is not None:
+            self.print_('## Checking out %s' % revision)
+            self.run(['git', 'checkout', revision], cwd=temp_repo_path)
         self.run(['git', 'submodule', 'update', '--init', '--recursive'], cwd=temp_repo_path)
 
         self.print_('## Noting the revision we are importing.')
