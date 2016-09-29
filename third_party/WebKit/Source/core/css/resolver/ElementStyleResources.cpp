@@ -34,13 +34,13 @@
 #include "core/style/ContentData.h"
 #include "core/style/CursorData.h"
 #include "core/style/FillLayer.h"
+#include "core/style/FilterOperation.h"
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleGeneratedImage.h"
 #include "core/style/StyleImage.h"
 #include "core/style/StyleInvalidImage.h"
 #include "core/style/StylePendingImage.h"
-#include "platform/graphics/filters/FilterOperation.h"
 
 namespace blink {
 

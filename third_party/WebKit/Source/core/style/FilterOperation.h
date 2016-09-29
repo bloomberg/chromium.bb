@@ -26,8 +26,8 @@
 #ifndef FilterOperation_h
 #define FilterOperation_h
 
+#include "core/CoreExport.h"
 #include "platform/Length.h"
-#include "platform/PlatformExport.h"
 #include "platform/graphics/BoxReflection.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/filters/Filter.h"
@@ -39,7 +39,7 @@ namespace blink {
 
 // CSS Filters
 
-class PLATFORM_EXPORT FilterOperation : public GarbageCollectedFinalized<FilterOperation> {
+class CORE_EXPORT FilterOperation : public GarbageCollectedFinalized<FilterOperation> {
     WTF_MAKE_NONCOPYABLE(FilterOperation);
 public:
     enum OperationType {
@@ -78,7 +78,7 @@ public:
         case NONE:
             break;
         }
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return false;
     }
 
@@ -117,7 +117,7 @@ private:
 #define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, operationType) \
     DEFINE_TYPE_CASTS(thisType, FilterOperation, op, op->type() == FilterOperation::operationType, op.type() == FilterOperation::operationType);
 
-class PLATFORM_EXPORT ReferenceFilterOperation : public FilterOperation {
+class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
 public:
     static ReferenceFilterOperation* create(const String& url, const AtomicString& fragment)
     {
@@ -139,7 +139,7 @@ public:
 private:
     FilterOperation* blend(const FilterOperation* from, double progress) const override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return nullptr;
     }
 
@@ -167,7 +167,7 @@ DEFINE_FILTER_OPERATION_TYPE_CASTS(ReferenceFilterOperation, REFERENCE);
 
 // GRAYSCALE, SEPIA, SATURATE and HUE_ROTATE are variations on a basic color matrix effect.
 // For HUE_ROTATE, the angle of rotation is stored in m_amount.
-class PLATFORM_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
+class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
 public:
     static BasicColorMatrixFilterOperation* create(double amount, OperationType type)
     {
@@ -205,7 +205,7 @@ inline bool isBasicColorMatrixFilterOperation(const FilterOperation& operation)
 DEFINE_TYPE_CASTS(BasicColorMatrixFilterOperation, FilterOperation, op, isBasicColorMatrixFilterOperation(*op), isBasicColorMatrixFilterOperation(op));
 
 // INVERT, BRIGHTNESS, CONTRAST and OPACITY are variations on a basic component transfer effect.
-class PLATFORM_EXPORT BasicComponentTransferFilterOperation : public FilterOperation {
+class CORE_EXPORT BasicComponentTransferFilterOperation : public FilterOperation {
 public:
     static BasicComponentTransferFilterOperation* create(double amount, OperationType type)
     {
@@ -244,7 +244,7 @@ inline bool isBasicComponentTransferFilterOperation(const FilterOperation& opera
 
 DEFINE_TYPE_CASTS(BasicComponentTransferFilterOperation, FilterOperation, op, isBasicComponentTransferFilterOperation(*op), isBasicComponentTransferFilterOperation(op));
 
-class PLATFORM_EXPORT BlurFilterOperation : public FilterOperation {
+class CORE_EXPORT BlurFilterOperation : public FilterOperation {
 public:
     static BlurFilterOperation* create(const Length& stdDeviation)
     {
@@ -278,7 +278,7 @@ private:
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(BlurFilterOperation, BLUR);
 
-class PLATFORM_EXPORT DropShadowFilterOperation : public FilterOperation {
+class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
 public:
     static DropShadowFilterOperation* create(const IntPoint& location, int stdDeviation, Color color)
     {
@@ -320,7 +320,7 @@ private:
 
 DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
 
-class PLATFORM_EXPORT BoxReflectFilterOperation : public FilterOperation {
+class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
 public:
     static BoxReflectFilterOperation* create(const BoxReflection& reflection)
     {

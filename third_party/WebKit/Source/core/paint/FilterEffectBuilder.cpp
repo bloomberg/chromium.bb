@@ -27,6 +27,7 @@
 #include "core/paint/FilterEffectBuilder.h"
 
 #include "core/layout/svg/ReferenceFilterBuilder.h"
+#include "core/style/FilterOperations.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGLengthContext.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
@@ -40,7 +41,6 @@
 #include "platform/graphics/filters/FEGaussianBlur.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/FilterEffect.h"
-#include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "public/platform/WebPoint.h"

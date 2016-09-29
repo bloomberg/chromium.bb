@@ -10,8 +10,8 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/style/FilterOperations.h"
 #include "core/style/ShadowData.h"
-#include "platform/graphics/filters/FilterOperations.h"
 #include <memory>
 
 namespace blink {

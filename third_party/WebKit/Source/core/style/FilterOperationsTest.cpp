@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/FilterOperations.h"
+#include "core/style/FilterOperations.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

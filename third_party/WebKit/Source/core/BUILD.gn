@@ -1206,6 +1206,7 @@ source_set("unit_tests") {
     "paint/VideoPainterTest.cpp",
     "streams/ReadableStreamOperationsTest.cpp",
     "style/ComputedStyleTest.cpp",
+    "style/FilterOperationsTest.cpp",
     "style/OutlineValueTest.cpp",
     "style/SVGComputedStyleTest.cpp",
     "svg/SVGPathParserTest.cpp",

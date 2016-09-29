@@ -26,7 +26,7 @@
 #ifndef StyleFilterData_h
 #define StyleFilterData_h
 
-#include "platform/graphics/filters/FilterOperations.h"
+#include "core/style/FilterOperations.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

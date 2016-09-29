@@ -30,8 +30,8 @@
 #include "core/paint/PaintLayerFilterInfo.h"
 
 #include "core/paint/PaintLayer.h"
+#include "core/style/FilterOperations.h"
 #include "platform/graphics/filters/FilterEffect.h"
-#include "platform/graphics/filters/FilterOperations.h"
 
 namespace blink {
 

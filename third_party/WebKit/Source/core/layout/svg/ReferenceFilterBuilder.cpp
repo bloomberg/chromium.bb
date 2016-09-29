@@ -29,9 +29,9 @@
 
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
+#include "core/style/FilterOperation.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFilterElement.h"
-#include "platform/graphics/filters/FilterOperation.h"
 
 namespace blink {
 

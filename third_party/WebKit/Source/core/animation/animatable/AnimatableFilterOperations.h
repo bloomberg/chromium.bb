@@ -32,7 +32,7 @@
 #define AnimatableFilterOperations_h
 
 #include "core/animation/animatable/AnimatableValue.h"
-#include "platform/graphics/filters/FilterOperations.h"
+#include "core/style/FilterOperations.h"
 
 namespace blink {
 

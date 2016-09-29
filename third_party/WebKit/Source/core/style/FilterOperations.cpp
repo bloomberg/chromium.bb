@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/FilterOperations.h"
+#include "core/style/FilterOperations.h"
 
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/IntSize.h"
@@ -101,17 +101,19 @@ FloatRect FilterOperations::mapRect(const FloatRect& rect) const
 
 bool FilterOperations::hasFilterThatAffectsOpacity() const
 {
-    for (size_t i = 0; i < m_operations.size(); ++i)
+    for (size_t i = 0; i < m_operations.size(); ++i) {
         if (m_operations[i]->affectsOpacity())
             return true;
+    }
     return false;
 }
 
 bool FilterOperations::hasFilterThatMovesPixels() const
 {
-    for (size_t i = 0; i < m_operations.size(); ++i)
+    for (size_t i = 0; i < m_operations.size(); ++i) {
         if (m_operations[i]->movesPixels())
             return true;
+    }
     return false;
 }
 

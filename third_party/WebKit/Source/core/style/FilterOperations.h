@@ -26,15 +26,13 @@
 #ifndef FilterOperations_h
 #define FilterOperations_h
 
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntRectOutsets.h"
-#include "platform/graphics/filters/FilterOperation.h"
-#include "wtf/RefPtr.h"
+#include "core/CoreExport.h"
+#include "core/style/FilterOperation.h"
 #include "wtf/Vector.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT FilterOperations {
+class CORE_EXPORT FilterOperations {
     DISALLOW_NEW();
 public:
     FilterOperations();

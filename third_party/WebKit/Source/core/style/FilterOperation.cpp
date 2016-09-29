@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/graphics/filters/FilterOperation.h"
+#include "core/style/FilterOperation.h"
 
 #include "platform/LengthFunctions.h"
 #include "platform/animation/AnimationUtilities.h"
@@ -45,7 +45,7 @@ static inline FloatSize outsetSizeForBlur(float stdDeviation)
 
 FilterOperation* FilterOperation::blend(const FilterOperation* from, const FilterOperation* to, double progress)
 {
-    ASSERT(from || to);
+    DCHECK(from || to);
     if (to)
         return to->blend(from, progress);
     return from->blend(0, 1 - progress);
@@ -69,7 +69,7 @@ FilterOperation* BasicColorMatrixFilterOperation::blend(const FilterOperation* f
 {
     double fromAmount;
     if (from) {
-        ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
+        SECURITY_DCHECK(from->isSameType(*this));
         fromAmount = toBasicColorMatrixFilterOperation(from)->amount();
     } else {
         switch (m_type) {
@@ -83,7 +83,7 @@ FilterOperation* BasicColorMatrixFilterOperation::blend(const FilterOperation* f
             break;
         default:
             fromAmount = 0;
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
 
@@ -99,7 +99,7 @@ FilterOperation* BasicColorMatrixFilterOperation::blend(const FilterOperation* f
         result = clampTo<double>(result, 0);
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return BasicColorMatrixFilterOperation::create(result, m_type);
 }
@@ -108,7 +108,7 @@ FilterOperation* BasicComponentTransferFilterOperation::blend(const FilterOperat
 {
     double fromAmount;
     if (from) {
-        ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
+        SECURITY_DCHECK(from->isSameType(*this));
         fromAmount = toBasicComponentTransferFilterOperation(from)->amount();
     } else {
         switch (m_type) {
@@ -122,7 +122,7 @@ FilterOperation* BasicComponentTransferFilterOperation::blend(const FilterOperat
             break;
         default:
             fromAmount = 0;
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
     }
 
@@ -137,7 +137,7 @@ FilterOperation* BasicComponentTransferFilterOperation::blend(const FilterOperat
         result = clampTo<double>(result, 0, 1);
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     return BasicComponentTransferFilterOperation::create(result, m_type);
 }
@@ -197,7 +197,7 @@ FloatRect BoxReflectFilterOperation::mapRect(const FloatRect& rect) const
 
 FilterOperation* BoxReflectFilterOperation::blend(const FilterOperation* from, double progress) const
 {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
 }
 
