@@ -167,6 +167,7 @@ enum EntryPropertyName {
   contentMimeType,
   sharedWithMe,
   shared,
+  starred,
   externalFileUrl
 };
 
@@ -274,6 +275,9 @@ dictionary EntryProperties {
   // True if the entry is labeled as shared (either from me to others or to me
   // by others.)
   boolean? shared;
+
+  // True if the entry is starred by the user.
+  boolean? starred;
 
   // External file URL to open the file in browser.
   DOMString? externalFileUrl;

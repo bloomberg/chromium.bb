@@ -109,6 +109,9 @@ message ResourceEntry {
   // server. Deleted entries won't be stored in ResourceMetadata.
   optional bool deleted = 11;
 
+  // True if the entry is labeled "starred".
+  optional bool starred = 20;
+
   // True if the entry is labeled with "shared-with-me", i.e., owned by someone
   // else initially and later shared to the current user.
   optional bool shared_with_me = 14;
@@ -149,6 +152,10 @@ message ResourceMetadataHeader {
   // drive_resource_metadata_storage.h defines the current version.
   optional int32 version = 1;
   optional int64 largest_changestamp = 2;
+
+  // True if resources already have been updated after 'starred' property added.
+  // Otherwise, we have to load them from server.
+  optional bool starred_property_initialized = 3;
 }
 
 // Message to store information of an existing cache file.

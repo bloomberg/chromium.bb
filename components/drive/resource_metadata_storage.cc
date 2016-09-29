@@ -630,6 +630,24 @@ bool ResourceMetadataStorage::Initialize() {
     }
   }
 
+  // Update local resouces if 'starred' property has not been initialized.
+  if (resource_map_) {
+    ResourceMetadataHeader header;
+    if (GetHeader(&header) != FILE_ERROR_OK)
+      return false;
+
+    if (!header.starred_property_initialized()) {
+      // largest changestamp == 0 means data in DB is obsolete.
+      // So data for all entries will be reloaded.
+      header.set_largest_changestamp(0);
+      header.set_starred_property_initialized(true);
+      FileError error = PutHeader(header);
+
+      if (error != FILE_ERROR_OK)
+        return false;
+    }
+  }
+
   UMA_HISTOGRAM_ENUMERATION("Drive.MetadataDBInitResult",
                             init_result,
                             DB_INIT_MAX_VALUE);

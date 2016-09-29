@@ -65,6 +65,7 @@ bool ConvertFileResourceToResourceEntry(
     parent_resource_id = input.parents()[0].file_id();
 
   converted.set_deleted(input.labels().is_trashed());
+  converted.set_starred(input.labels().is_starred());
   converted.set_shared_with_me(!input.shared_with_me_date().is_null());
   converted.set_shared(input.shared());
 

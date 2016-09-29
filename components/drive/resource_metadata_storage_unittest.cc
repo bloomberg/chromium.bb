@@ -43,6 +43,21 @@ class ResourceMetadataStorageTest : public testing::Test {
     EXPECT_EQ(FILE_ERROR_OK, storage_->PutHeader(header));
   }
 
+  // Overwrites |storage_|'s starred_property_initialized.
+  void SetStarredPropertyInitialized(bool value) {
+    ResourceMetadataHeader header;
+    ASSERT_EQ(FILE_ERROR_OK, storage_->GetHeader(&header));
+    header.set_starred_property_initialized(value);
+    EXPECT_EQ(FILE_ERROR_OK, storage_->PutHeader(header));
+  }
+
+  // Returns |storage_|'s starred_property_initialized.
+  bool GetStarredPropertyInitialized() {
+    ResourceMetadataHeader header;
+    EXPECT_EQ(FILE_ERROR_OK, storage_->GetHeader(&header));
+    return header.starred_property_initialized();
+  }
+
   bool CheckValidity() {
     return storage_->CheckValidity();
   }
@@ -632,6 +647,29 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   // Remove key1.
   EXPECT_EQ(FILE_ERROR_OK, storage_->RemoveEntry(key1));
   EXPECT_TRUE(CheckValidity());
+}
+
+TEST_F(ResourceMetadataStorageTest, ChangeStarredPropertyInitialized) {
+  // Suppose 'Starred' property has not loaded.
+  bool starred_property_initialized = false;
+  SetStarredPropertyInitialized(starred_property_initialized);
+
+  const int64_t kLargestChangestamp = 1234567890;
+  EXPECT_EQ(FILE_ERROR_OK,
+            storage_->SetLargestChangestamp(kLargestChangestamp));
+
+  // Close DB and reopen.
+  storage_.reset(new ResourceMetadataStorage(
+      temp_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get()));
+  ASSERT_TRUE(storage_->Initialize());
+
+  starred_property_initialized = GetStarredPropertyInitialized();
+  EXPECT_TRUE(starred_property_initialized);
+
+  int64_t largest_changestamp = 0;
+  EXPECT_EQ(FILE_ERROR_OK,
+            storage_->GetLargestChangestamp(&largest_changestamp));
+  EXPECT_EQ(0, largest_changestamp);
 }
 
 }  // namespace internal

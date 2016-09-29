@@ -83,6 +83,7 @@ void FillEntryPropertiesValueForDrive(const drive::ResourceEntry& entry_proto,
                                       EntryProperties* properties) {
   properties->shared_with_me.reset(new bool(shared_with_me));
   properties->shared.reset(new bool(entry_proto.shared()));
+  properties->starred.reset(new bool(entry_proto.starred()));
 
   const drive::PlatformFileInfoProto& file_info = entry_proto.file_info();
   properties->size.reset(new double(file_info.size()));

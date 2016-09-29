@@ -56,6 +56,7 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
   EXPECT_EQ("", parent_resource_id);
 
   EXPECT_FALSE(entry.deleted());
+  EXPECT_FALSE(entry.starred());
   EXPECT_FALSE(entry.shared_with_me());
   EXPECT_FALSE(entry.shared());
 
@@ -105,6 +106,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("", parent_resource_id);
 
   EXPECT_FALSE(entry.deleted());
+  EXPECT_FALSE(entry.starred());
   EXPECT_FALSE(entry.shared_with_me());
   EXPECT_FALSE(entry.shared());
 
@@ -155,6 +157,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ(parent.file_id(), parent_resource_id);
 
   EXPECT_FALSE(entry.deleted());
+  EXPECT_FALSE(entry.starred());
   EXPECT_FALSE(entry.shared_with_me());
   EXPECT_FALSE(entry.shared());
 
@@ -193,6 +196,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ("", parent_resource_id);
 
   EXPECT_TRUE(entry.deleted());  // The document was deleted.
+  EXPECT_FALSE(entry.starred());
   EXPECT_FALSE(entry.shared_with_me());
   EXPECT_FALSE(entry.shared());
 
@@ -290,6 +294,18 @@ TEST(ResourceEntryConversionTest,
 
   EXPECT_EQ(change_resource.modification_date().ToInternalValue(),
             entry.modification_date());
+}
+
+TEST(ResourceEntryConversionTest,
+     ConvertFileResourceToResourceEntry_StarredEntry) {
+  google_apis::FileResource file_resource;
+  file_resource.mutable_labels()->set_starred(true);
+
+  ResourceEntry entry;
+  std::string parent_resource_id;
+  EXPECT_TRUE(ConvertFileResourceToResourceEntry(
+      file_resource, &entry, &parent_resource_id));
+  EXPECT_TRUE(entry.starred());
 }
 
 TEST(ResourceEntryConversionTest,

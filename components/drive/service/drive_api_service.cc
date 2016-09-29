@@ -100,7 +100,8 @@ const char kAboutResourceFields[] =
     "kind,quotaBytesTotal,quotaBytesUsedAggregate,largestChangeId,rootFolderId";
 const char kFileResourceFields[] =
     "kind,id,title,createdDate,sharedWithMeDate,mimeType,"
-    "md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
+    "md5Checksum,fileSize,labels/trashed,labels/starred,"
+    "imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents(id,parentLink),alternateLink,"
     "modifiedDate,lastViewedByMeDate,shared";
@@ -110,13 +111,15 @@ const char kFileResourceShareLinkFields[] =
     "kind,id,shareLink";
 const char kFileListFields[] =
     "kind,items(kind,id,title,createdDate,sharedWithMeDate,"
-    "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
+    "mimeType,md5Checksum,fileSize,labels/trashed,labels/starred,"
+    "imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents(id,parentLink),alternateLink,"
     "modifiedDate,lastViewedByMeDate,shared),nextLink";
 const char kChangeListFields[] =
     "kind,items(file(kind,id,title,createdDate,sharedWithMeDate,"
-    "mimeType,md5Checksum,fileSize,labels/trashed,imageMediaMetadata/width,"
+    "mimeType,md5Checksum,fileSize,labels/trashed,labels/starred,"
+    "imageMediaMetadata/width,"
     "imageMediaMetadata/height,imageMediaMetadata/rotation,etag,"
     "parents(id,parentLink),alternateLink,modifiedDate,"
     "lastViewedByMeDate,shared),deleted,id,fileId,modificationDate),nextLink,"
