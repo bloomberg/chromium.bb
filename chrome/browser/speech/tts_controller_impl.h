@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/speech/tts_controller.h"
@@ -54,6 +55,8 @@ class TtsControllerImpl : public TtsController {
   ~TtsControllerImpl() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestGetMatchingVoice);
+
   // Get the platform TTS implementation (or injected mock).
   TtsPlatformImpl* GetPlatformImpl();
 

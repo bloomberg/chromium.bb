@@ -81,7 +81,9 @@ Utterance::Utterance(content::BrowserContext* browser_context)
 }
 
 Utterance::~Utterance() {
-  DCHECK(finished_);
+  // It's an error if an Utterance is destructed without being finished,
+  // unless |browser_context_| is nullptr because it's a unit test.
+  DCHECK(finished_ || !browser_context_);
 }
 
 void Utterance::OnTtsEvent(TtsEventType event_type,
@@ -163,39 +165,15 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
   // Get all available voices and try to find a matching voice.
   std::vector<VoiceData> voices;
   GetVoices(utterance->browser_context(), &voices);
+
+  // Get the best matching voice. If nothing matches, just set "native"
+  // to true because that might trigger deferred loading of native voices.
   int index = GetMatchingVoice(utterance, voices);
-
   VoiceData voice;
-  if (index != -1) {
-    // Select the matching voice.
+  if (index >= 0)
     voice = voices[index];
-  } else {
-    // However, if no match was found on a platform without native tts voices,
-    // attempt to get a voice based only on the current locale without respect
-    // to any supplied voice names.
-    std::vector<VoiceData> native_voices;
-
-    if (GetPlatformImpl()->PlatformImplAvailable())
-      GetPlatformImpl()->GetVoices(&native_voices);
-
-    if (native_voices.empty() && !voices.empty()) {
-      // TODO(dtseng): Notify extension caller of an error.
-      utterance->set_voice_name("");
-      // TODO(gaochun): Replace the global variable g_browser_process with
-      // GetContentClient()->browser() to eliminate the dependency of browser
-      // once TTS implementation was moved to content.
-      utterance->set_lang(g_browser_process->GetApplicationLocale());
-      index = GetMatchingVoice(utterance, voices);
-
-      // If even that fails, just take the first available voice.
-      if (index == -1)
-        index = 0;
-      voice = voices[index];
-    } else {
-      // Otherwise, simply give native voices a chance to handle this utterance.
-      voice.native = true;
-    }
-  }
+  else
+    voice.native = true;  // Try to let
 
   GetPlatformImpl()->WillSpeakUtteranceWithVoice(utterance, voice);
 
@@ -376,60 +354,94 @@ TtsPlatformImpl* TtsControllerImpl::GetPlatformImpl() {
 
 int TtsControllerImpl::GetMatchingVoice(
     const Utterance* utterance, std::vector<VoiceData>& voices) {
-  // Make two passes: the first time, do strict language matching
-  // ('fr-FR' does not match 'fr-CA'). The second time, do prefix
-  // language matching ('fr-FR' matches 'fr' and 'fr-CA')
-  for (int pass = 0; pass < 2; ++pass) {
-    for (size_t i = 0; i < voices.size(); ++i) {
-      const VoiceData& voice = voices[i];
+  // Return the index of the voice that best match the utterance parameters.
+  //
+  // These criteria are considered mandatory - if they're specified, any voice
+  // that doesn't match is rejected.
+  //
+  //   Extension ID
+  //   Voice name
+  //
+  // The other criteria are scored based on how well they match, in
+  // this order of precedence:
+  //
+  //   Utterange language (exact region preferred, then general language)
+  //   App/system language (exact region preferred, then general language)
+  //   Required event types
+  //   Gender
 
-      if (!utterance->extension_id().empty() &&
-          utterance->extension_id() != voice.extension_id) {
-        continue;
-      }
+  // TODO(gaochun): Replace the global variable g_browser_process with
+  // GetContentClient()->browser() to eliminate the dependency of browser
+  // once TTS implementation was moved to content.
+  std::string app_lang = g_browser_process->GetApplicationLocale();
 
-      if (!voice.name.empty() &&
-          !utterance->voice_name().empty() &&
-          voice.name != utterance->voice_name()) {
-        continue;
+  // Start with a best score of -1, that way even if none of the criteria
+  // match, something will be returned if there are any voices.
+  int best_score = -1;
+  int best_score_index = -1;
+  for (size_t i = 0; i < voices.size(); ++i) {
+    const VoiceData& voice = voices[i];
+    int score = 0;
+
+    // If the extension ID is specified, check for an exact match.
+    if (!utterance->extension_id().empty() &&
+        utterance->extension_id() != voice.extension_id)
+      continue;
+
+    // If the voice name is specified, check for an exact match.
+    if (!utterance->voice_name().empty() &&
+        voice.name != utterance->voice_name())
+      continue;
+
+    // Prefer the utterance language.
+    if (!voice.lang.empty() && !utterance->lang().empty()) {
+      // An exact language match is worth more than a partial match.
+      if (voice.lang == utterance->lang()) {
+        score += 32;
+      } else if (TrimLanguageCode(voice.lang) ==
+                 TrimLanguageCode(utterance->lang())) {
+        score += 16;
       }
-      if (!voice.lang.empty() && !utterance->lang().empty()) {
-        std::string voice_lang = voice.lang;
-        std::string utterance_lang = utterance->lang();
-        if (pass == 1) {
-          voice_lang = TrimLanguageCode(voice_lang);
-          utterance_lang = TrimLanguageCode(utterance_lang);
+    }
+
+    // Prefer the system language after that.
+    if (!voice.lang.empty()) {
+      if (voice.lang == app_lang)
+        score += 8;
+      else if (TrimLanguageCode(voice.lang) == TrimLanguageCode(app_lang))
+        score += 4;
+    }
+
+    // Next, prefer required event types.
+    if (utterance->required_event_types().size() > 0) {
+      bool has_all_required_event_types = true;
+      for (std::set<TtsEventType>::const_iterator iter =
+               utterance->required_event_types().begin();
+           iter != utterance->required_event_types().end();
+           ++iter) {
+        if (voice.events.find(*iter) == voice.events.end()) {
+          has_all_required_event_types = false;
+          break;
         }
-        if (voice_lang != utterance_lang) {
-          continue;
-        }
       }
-      if (voice.gender != TTS_GENDER_NONE &&
-          utterance->gender() != TTS_GENDER_NONE &&
-          voice.gender != utterance->gender()) {
-        continue;
-      }
+      if (has_all_required_event_types)
+        score += 2;
+    }
 
-      if (utterance->required_event_types().size() > 0) {
-        bool has_all_required_event_types = true;
-        for (std::set<TtsEventType>::const_iterator iter =
-                 utterance->required_event_types().begin();
-             iter != utterance->required_event_types().end();
-             ++iter) {
-          if (voice.events.find(*iter) == voice.events.end()) {
-            has_all_required_event_types = false;
-            break;
-          }
-        }
-        if (!has_all_required_event_types)
-          continue;
-      }
+    // Finally prefer the requested gender last.
+    if (voice.gender != TTS_GENDER_NONE &&
+        utterance->gender() != TTS_GENDER_NONE &&
+        voice.gender == utterance->gender()) {
+      score += 1;
+    }
 
-      return static_cast<int>(i);
+    if (score > best_score) {
+      best_score = score;
+      best_score_index = i;
     }
   }
 
-  return -1;
+  return best_score_index;
 }
 
 void TtsControllerImpl::VoicesChanged() {

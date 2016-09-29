@@ -88,6 +88,7 @@ chrome.test.runTests([
     chrome.tts.speak(
         'native speech 3',
         {
+         'voiceName': 'French',
          'lang': 'fr-FR',
          'enqueue': true,
          'onEvent': function(event) {
