@@ -56,7 +56,7 @@ class WebMVideoSource : public CompressedVideoSource {
 
   void FillFrame() {
     ASSERT_TRUE(aom_ctx_->file != NULL);
-    const int status = webm_read_frame(webm_ctx_, &buf_, &buf_sz_, &buf_sz_);
+    const int status = webm_read_frame(webm_ctx_, &buf_, &buf_sz_);
     ASSERT_GE(status, 0) << "webm_read_frame failed";
     if (status == 1) {
       end_of_file_ = true;
@@ -66,7 +66,7 @@ class WebMVideoSource : public CompressedVideoSource {
   void SeekToNextKeyFrame() {
     ASSERT_TRUE(aom_ctx_->file != NULL);
     do {
-      const int status = webm_read_frame(webm_ctx_, &buf_, &buf_sz_, &buf_sz_);
+      const int status = webm_read_frame(webm_ctx_, &buf_, &buf_sz_);
       ASSERT_GE(status, 0) << "webm_read_frame failed";
       ++frame_;
       if (status == 1) {
