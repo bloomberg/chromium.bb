@@ -5,10 +5,10 @@
 #include "core/timing/Performance.h"
 
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "bindings/core/v8/V8PerformanceObserverInnerCallback.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
-#include "core/timing/PerformanceObserverCallback.h"
 #include "core/timing/PerformanceObserverInit.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,31 +36,19 @@ public:
     }
 };
 
-class MockPerformanceObserverCallback : public PerformanceObserverCallback {
-public:
-    MockPerformanceObserverCallback() {}
-    ~MockPerformanceObserverCallback() {}
-
-    void handleEvent(PerformanceObserverEntryList*, PerformanceObserver*) override {}
-
-    DEFINE_INLINE_TRACE()
-    {
-        PerformanceObserverCallback::trace(visitor);
-    }
-};
-
 class PerformanceBaseTest : public ::testing::Test {
 protected:
     void initialize(ScriptState* scriptState)
     {
+        v8::Local<v8::Function> callback = v8::Function::New(scriptState->context(), nullptr).ToLocalChecked();
         m_base = new TestPerformanceBase();
-        m_cb = new MockPerformanceObserverCallback();
+        m_cb = V8PerformanceObserverInnerCallback::create(scriptState->isolate(), callback);
         m_observer = PerformanceObserver::create(scriptState, m_base, m_cb);
     }
 
     Persistent<TestPerformanceBase> m_base;
     Persistent<PerformanceObserver> m_observer;
-    Persistent<MockPerformanceObserverCallback> m_cb;
+    Persistent<V8PerformanceObserverInnerCallback> m_cb;
 };
 
 TEST_F(PerformanceBaseTest, Register)

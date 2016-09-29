@@ -5,22 +5,14 @@
 #include "core/timing/PerformanceObserver.h"
 
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "bindings/core/v8/V8PerformanceObserverInnerCallback.h"
 #include "core/timing/Performance.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceMark.h"
-#include "core/timing/PerformanceObserverCallback.h"
 #include "core/timing/PerformanceObserverInit.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
-
-class MockPerformanceObserverCallback : public PerformanceObserverCallback {
-public:
-    MockPerformanceObserverCallback() {}
-    ~MockPerformanceObserverCallback() override {}
-
-    void handleEvent(PerformanceObserverEntryList*, PerformanceObserver*) override {}
-};
 
 class MockPerformanceBase : public PerformanceBase {
 public:
@@ -37,8 +29,9 @@ class PerformanceObserverTest : public ::testing::Test {
 protected:
     void initialize(ScriptState* scriptState)
     {
+        v8::Local<v8::Function> callback = v8::Function::New(scriptState->context(), nullptr).ToLocalChecked();
         m_base = new MockPerformanceBase();
-        m_cb = new MockPerformanceObserverCallback();
+        m_cb = V8PerformanceObserverInnerCallback::create(scriptState->isolate(), callback);
         m_observer = PerformanceObserver::create(scriptState, m_base, m_cb);
     }
 
@@ -56,7 +49,7 @@ protected:
     }
 
     Persistent<MockPerformanceBase> m_base;
-    Persistent<MockPerformanceObserverCallback> m_cb;
+    Persistent<V8PerformanceObserverInnerCallback> m_cb;
     Persistent<PerformanceObserver> m_observer;
 };
 

@@ -5,10 +5,10 @@
 #include "core/timing/PerformanceObserver.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/V8PerformanceObserverInnerCallback.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceEntry.h"
-#include "core/timing/PerformanceObserverCallback.h"
 #include "core/timing/PerformanceObserverEntryList.h"
 #include "core/timing/PerformanceObserverInit.h"
 #include "platform/Timer.h"
@@ -16,13 +16,13 @@
 
 namespace blink {
 
-PerformanceObserver* PerformanceObserver::create(ScriptState* scriptState, PerformanceBase* performance, PerformanceObserverCallback* callback)
+PerformanceObserver* PerformanceObserver::create(ScriptState* scriptState, PerformanceBase* performance, V8PerformanceObserverInnerCallback* callback)
 {
     ASSERT(isMainThread());
     return new PerformanceObserver(scriptState, performance, callback);
 }
 
-PerformanceObserver::PerformanceObserver(ScriptState* scriptState, PerformanceBase* performance, PerformanceObserverCallback* callback)
+PerformanceObserver::PerformanceObserver(ScriptState* scriptState, PerformanceBase* performance, V8PerformanceObserverInnerCallback* callback)
     : m_scriptState(scriptState)
     , m_callback(callback)
     , m_performance(performance)
@@ -87,9 +87,11 @@ void PerformanceObserver::deliver()
 
     PerformanceEntryVector performanceEntries;
     performanceEntries.swap(m_performanceEntries);
-    Member<PerformanceObserverEntryList> entryList(new PerformanceObserverEntryList(performanceEntries));
+    PerformanceObserverEntryList* entryList = new PerformanceObserverEntryList(performanceEntries);
+    // TODO(bashi): Make sure that not throwing exception is OK.
+    TrackExceptionState exceptionState;
 
-    m_callback->handleEvent(entryList, this);
+    m_callback->call(m_scriptState.get(), this, exceptionState, entryList, this);
 }
 
 DEFINE_TRACE(PerformanceObserver)

@@ -184,8 +184,6 @@ bindings_core_v8_files =
                     "core/v8/V8PagePopupControllerBinding.h",
                     "core/v8/V8PerContextData.cpp",
                     "core/v8/V8PerContextData.h",
-                    "core/v8/V8PerformanceObserverCallback.cpp",
-                    "core/v8/V8PerformanceObserverCallback.h",
                     "core/v8/V8PerIsolateData.cpp",
                     "core/v8/V8PerIsolateData.h",
                     "core/v8/V8PersistentValueVector.h",
