@@ -609,7 +609,7 @@ def ResolvePrimitive(json, mapping):
         mapping["subdomain"] = Uncamelcase(mapping["command"])
       DeclareEnum(json, mapping)
   else:
-    raise Exception("Unknown type: %s" % json_type)
+    raise Exception("Unknown type: %s" % jsonrpc_type)
   mapping["storage_type"] = mapping["param_type"]
   mapping["raw_type"] = mapping["param_type"]
   mapping["prep_req"] = tmpl_prep_req.substitute(mapping)
