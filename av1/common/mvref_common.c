@@ -509,11 +509,6 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const int bw = num_8x8_blocks_wide_lookup[mi->mbmi.sb_type] << 3;
   const int bh = num_8x8_blocks_high_lookup[mi->mbmi.sb_type] << 3;
 
-#if !CONFIG_MISC_FIXES
-  // Blank the reference vector list
-  memset(mv_ref_list, 0, sizeof(*mv_ref_list) * MAX_MV_REF_CANDIDATES);
-#endif
-
   // The nearest 2 blocks are treated differently
   // if the size < 8x8 we get the mv from the bmi substructure,
   // and we also need to keep a mode count.
@@ -627,14 +622,8 @@ Done:
   if (mode_context)
     mode_context[ref_frame] = counter_to_context[context_counter];
 
-#if CONFIG_MISC_FIXES
   for (i = refmv_count; i < MAX_MV_REF_CANDIDATES; ++i)
     mv_ref_list[i].as_int = 0;
-#else
-  // Clamp vectors
-  for (i = 0; i < MAX_MV_REF_CANDIDATES; ++i)
-    clamp_mv_ref(&mv_ref_list[i].as_mv, bw, bh, xd);
-#endif
 }
 
 void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,

@@ -252,13 +252,7 @@ static INLINE int_mv scale_mv(const MB_MODE_INFO *mbmi, int ref,
   return mv;
 }
 
-#if CONFIG_MISC_FIXES
 #define CLIP_IN_ADD(mv, bw, bh, xd) clamp_mv_ref(mv, bw, bh, xd)
-#else
-#define CLIP_IN_ADD(mv, bw, bh, xd) \
-  do {                              \
-  } while (0)
-#endif
 
 // This macro is used to add a motion vector mv_ref list if it isn't
 // already in the list.  If it's the second motion vector it will also
