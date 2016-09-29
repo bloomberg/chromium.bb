@@ -96,7 +96,7 @@
             </button>
           </div>
 <if expr="not chromeos">
-          <template is="dom-if" if="[[!syncStatus.signedIn]]">
+          <template is="dom-if" if="[[showSignin_(syncStatus)]]">
             <span class="secondary-action">
               <paper-button class="primary-button" on-tap="onSigninTap_"
                   disabled="[[syncStatus.setupInProgress]]">
@@ -115,7 +115,8 @@
           </template>
 </if>
         </div>
-        <div class="settings-box two-line" hidden="[[syncStatus.signedIn]]">
+        <div class="settings-box two-line"
+            hidden="[[!showSignin_(syncStatus)]]">
           $i18n{syncOverview}
         </div>
 

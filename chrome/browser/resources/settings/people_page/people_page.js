@@ -358,4 +358,12 @@ Polymer({
   getIconImageset_: function(iconUrl) {
     return cr.icon.getImage(iconUrl);
   },
+
+  /**
+   * @return {boolean} Whether to show the "Sign in to Chrome" button.
+   * @private
+   */
+  showSignin_: function(syncStatus) {
+    return syncStatus.signinAllowed && !syncStatus.signedIn;
+  },
 });
