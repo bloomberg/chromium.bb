@@ -10,7 +10,6 @@ Bug(intentional) harness-tests/timeout.html [ Timeout ]
 
 crbug.com/420008 inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
 crbug.com/420008 virtual/threaded/inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
-crbug.com/597572 [ Debug ] http/tests/inspector/resource-tree/resource-tree-reload.html [ Pass Failure ]
 
 crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pass ]
 
@@ -137,36 +136,19 @@ crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failu
 crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
-crbug.com/522645 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure Pass ]
 crbug.com/522647 http/tests/notifications/close-dispatch-asynchronous.html [ Failure Pass ]
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
-crbug.com/521855 transitions/cancel-and-start-new.html [ Failure Pass ]
 crbug.com/521853 [ Win ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
-crbug.com/521084 animations/additive-transform-animations.html [ Pass Timeout ]
-crbug.com/521086 fast/cookies/cookies-disabled-in-data-url.html [ Crash Pass Timeout ]
-crbug.com/521090 [ Mac Win ] http/tests/history/post-replace-state-reload.html [ Crash Failure Pass ]
-crbug.com/521093 http/tests/loading/pdf-commit-load-callbacks.html [ Failure Pass ]
-crbug.com/521094 [ Mac ] http/tests/navigation/beacon-cross-origin.https.html [ Crash Failure Pass ]
 crbug.com/521096 imported/wpt/webstorage/event_case_sensitive.html [ Failure Pass ]
-crbug.com/521107 [ Debug ] fast/html/imports/import-custom-element-abort.html [ Crash Pass ]
-crbug.com/520169 [ Win ] fast/dom/Geolocation/timestamp.html [ Failure Pass ]
 crbug.com/520170 [ Win ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/520174 fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
-crbug.com/520180 [ Linux ] fast/text/basic/001.html [ Pass Timeout ]
-crbug.com/520183 http/tests/fouc/scroll-left-while-loading.html [ Pass Timeout ]
 crbug.com/520184 http/tests/history/frameset-repeated-name.html [ Failure Pass ]
-crbug.com/520187 [ Linux Win ] http/tests/loading/bad-scheme-subframe.html [ Failure Pass ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
-crbug.com/520191 http/tests/security/mixedContent/strict-mode-via-pref-image-blocked.https.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
-crbug.com/520612 [ Linux ] fullscreen/anonymous-block-merge-crash.html [ Pass Timeout ]
 crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]
-crbug.com/520614 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_buffer_size_restriction.html [ Failure Pass ]
 crbug.com/520619 [ Android Mac Linux Win7 ] webexposed/global-interface-listing.html [ Pass Timeout ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
-crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
-crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Failure Pass ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -183,7 +165,6 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scro
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
-crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Failure Pass ]
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518988 [ Win7 ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass ]
@@ -202,8 +183,6 @@ crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-e
 
 crbug.com/519001 storage/indexeddb/pending-version-change-stuck-works-with-terminate.html [ Pass Timeout ]
 crbug.com/519002 storage/indexeddb/pending-version-change-stuck.html [ Pass Timeout ]
-crbug.com/410949 http/tests/security/local-image-from-remote-whitelisted.html [ Failure Pass ]
-crbug.com/518915 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash Pass ]
 crbug.com/445100 fast/block/float/marquee-shrink-to-avoid-floats.html [ Failure Pass ]
 
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
@@ -217,7 +196,6 @@ crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass F
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
 crbug.com/326139 crbug.com/390125 media/video-frame-accurate-seek.html [ Failure Pass ]
-crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/extra-transition.html [ Pass Failure ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/equivalent-background-image-no-transition.html [ Pass Timeout ]
@@ -231,26 +209,19 @@ crbug.com/446385 [ Win7 Debug ] http/tests/xmlhttprequest/xmlhttprequest-json-re
 crbug.com/248938 virtual/threaded/transitions/interrupt-transform-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/transitions/change-duration-during-transition.html [ Pass Failure ]
-crbug.com/248938 [ Win ] virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/248938 [ Mac ] virtual/threaded/transitions/transition-end-event-unprefixed-01.html [ Pass Failure ]
 crbug.com/513143 virtual/threaded/fast/scroll-behavior/subframe-interrupted-scroll.html [ Failure Pass ]
 crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.html [ Pass Failure ]
 crbug.com/638693 virtual/threaded/animations/display-inline-style-adjust.html [ Pass Crash Failure ]
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
-crbug.com/248938 [ Win Debug ] virtual/threaded/animations/delay-start-event.html [ Pass Failure ]
 crbug.com/248938 [ Mac Win ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
-crbug.com/248938 [ Linux Win ] virtual/threaded/animations/cascade-important.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
-crbug.com/248938 [ Win Debug ] virtual/threaded/transitions/transition-end-event-multiple-04.html [ Pass Failure ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-end-event-prefixed-01.html [ Pass Timeout ]
-crbug.com/352405 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-rendering.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/unprefixed-perspective-origin.html [ Pass Timeout ]
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/transition-not-interpolable.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
-
-crbug.com/542541 [ Debug ] fast/events/click-count.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
@@ -268,36 +239,20 @@ crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.
 # Release trybots run asserts, but the main waterfall ones don't. So, even
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
 crbug.com/389648 crbug.com/517123 crbug.com/410145 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
-crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
 
 crbug.com/636207 [ Win Debug ] fast/dom/HTMLImageElement/image-srcset-w-onerror.html [ Failure Pass ]
 
 crbug.com/569139 fast/js/string-replace-2.html [ Failure ]
 crbug.com/569139 fast/js/regexp-caching.html [ Failure ]
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Failure ]
-crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]
-crbug.com/498539 [ Win ] inspector/tracing/timeline-misc/timeline-event-dispatch.html [ Failure Pass ]
 crbug.com/498539 inspector/console/console-log-syntax-error.html [ Pass Timeout ]
 crbug.com/498539 inspector/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
 crbug.com/498539 virtual/threaded/inspector/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
-crbug.com/498539 inspector/tracing/timeline-js/timeline-injected-script-eval.html [ Pass Failure ]
-crbug.com/498539 inspector/tracing/timeline-time/timeline-time.html [ Pass Failure Timeout ]
-crbug.com/498539 inspector/tracing/timeline-time/timeline-timer.html [ Pass Failure ]
 crbug.com/498539 [ Mac ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
-crbug.com/498539 [ Mac10.10 ] inspector/sources/debugger/debug-inlined-scripts-fragment-id.html [ Pass Timeout ]
-crbug.com/498539 [ Precise Win7 Mac10.10 ] inspector/sources/debugger-breakpoints/dynamic-scripts-breakpoints.html [ Pass Timeout ]
-crbug.com/498539 [ Precise Mac10.10 ] inspector/sources/debugger-breakpoints/set-breakpoint.html [ Pass Timeout ]
-crbug.com/498539 [ Trusty ] inspector/sources/debugger/mutation-observer-suspend-while-paused.html [ Pass Timeout ]
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
-crbug.com/498539 [ Trusty ] http/tests/inspector/sources/ui-source-code-highlight.php [ Crash Pass Timeout ]
-crbug.com/498539 [ Mac10.10 ] inspector/sources/debugger-ui/reveal-not-skipped.html [ Failure Pass ]
-crbug.com/498539 [ Mac10.10 ] inspector/sources/debugger/rethrow-error-from-bindings-crash.html [ Failure Pass ]
 crbug.com/498539 [ Mac10.9 ] inspector/console/console-uncaught-exception.html [ Failure Pass ]
 crbug.com/498539 [ Win7 ] inspector/console/console-dir-es6.html [ Failure Pass ]
-crbug.com/521099 inspector/console/shadow-element.html [ Crash Pass Timeout ]
-crbug.com/498539 [ Retina ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
-crbug.com/498539 crbug.com/410145 [ Release ] inspector-protocol/heap-profiler/heap-objects-tracking.html [ Crash Pass ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 
 crbug.com/596968 [ Win ] inspector-protocol/input/eventTimestamp.html [ Failure Pass ]
@@ -342,11 +297,6 @@ crbug.com/525889 imported/wpt/html/webappapis/scripting/processing-model-2/runti
 
 crbug.com/636961 [ Linux Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/ongoing-smooth-scroll-vertical-rl-anchors.html [ Pass Failure ]
 
-crbug.com/552532 [ Win10 ] fast/replaced/no-focus-ring-embed.html [ Pass Crash ]
-crbug.com/552532 [ Win10 ] fast/replaced/no-focus-ring-object.html [ Pass Crash ]
-crbug.com/552532 [ Win10 ] plugins/focus.html [ Pass Crash ]
-crbug.com/552532 [ Win10 ] plugins/tabindex.html [ Pass Crash ]
-
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-video-is-black.https.html [ Skip ]
 crbug.com/387740 imported/wpt/mediacapture-streams/MediaStreamTrack-end.https.html [ Skip ]
@@ -373,7 +323,6 @@ crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.htm
 crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]
 
 # Ref test needs updating due to new font metrics.
-crbug.com/404597 fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 crbug.com/404597 [ Win ] fast/selectors/007a.html [ Pass Failure ]
 
 # Web Components related tests (Shadow DOM, Custom Elements) failures.
@@ -654,9 +603,6 @@ crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-ellipse-circum
 crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-ellipse-circumference-fill.html [ Failure Pass ]
 crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-arc-circumference.html [ Failure Pass ]
 crbug.com/649063 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Failure Pass ]
-
-crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/transform-interpolation.html [ Pass Crash ]
-crbug.com/364250 [ Debug ] virtual/threaded/animations/interpolation/webkit-transform-interpolation.html [ Pass Crash ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
@@ -1049,7 +995,6 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
 crbug.com/543369 [ Linux ] fast/forms/select-popup/popup-menu-appearance-tall.html [ Failure ]
-crbug.com/613510 fast/forms/suggestion-picker/date-suggestion-picker-appearance-rtl.html [ Pass Timeout ]
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
@@ -1074,19 +1019,11 @@ crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-
 
 crbug.com/634264 http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Crash Timeout ]
 
-crbug.com/587593 [ Android ] fast/js/pic/cached-single-entry-transition.html [ Pass Failure ]
-
-crbug.com/587779 [ Linux Mac10.9 Mac10.10 Mac10.11 Retina ] fast/dynamic/window-resize-scrollbars-test.html [ Timeout Failure Pass ]
-
-crbug.com/588103 fast/xmlhttprequest/xmlhttprequest-responsetype-arraybuffer.html [ Pass Failure ]
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]
-crbug.com/594672 fast/events/scale-and-scroll-iframe-window.html [ Failure Pass ]
 
 crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scroll/horizontal-smooth-scroll-in-rtl.html [ Failure ]
-
-crbug.com/594595 [ Linux ] http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Timeout Pass ]
 
 crbug.com/453002 [ Win ] fast/text/international/text-combine-image-test.html [ Failure Pass ]
 crbug.com/453002 [ Win ] fast/text/international/vertical-text-glyph-test.html [ Failure Pass ]
@@ -1158,8 +1095,6 @@ crbug.com/487344 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-ra
 crbug.com/638621 [ Win ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/646644 [ Mac10.9 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout ]
 
-crbug.com/614197 [ Mac ] http/tests/media/pdf-served-as-pdf.html [ Pass Timeout ]
-
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 
 crbug.com/606302 [ Linux Mac Win7 ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
@@ -1173,8 +1108,6 @@ crbug.com/646133 [ Win7 Debug ] imported/wpt/quirks-mode/unitless-length.html [ 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
 
-crbug.com/622672 [ Mac ] virtual/threaded/fast/scroll-behavior/overflow-interrupted-scroll.html [ Pass Failure ]
-
 crbug.com/624430 [ Win10 ] fast/text/font-features/caps-casemapping.html [ Failure ]
 
 crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
@@ -1186,9 +1119,6 @@ crbug.com/593567 [ Linux ] virtual/scalefactor150/fast/hidpi/static/data-suggest
 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
-
-crbug.com/629711 [ Linux Debug ] fast/workers/shared-worker-exception.html [ Crash Pass ]
-crbug.com/629711 [ Linux Debug ] virtual/sharedarraybuffer/fast/workers/shared-worker-exception.html [ Crash Pass ]
 
 crbug.com/399507 [ Mac Linux Win10 ] virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
 
