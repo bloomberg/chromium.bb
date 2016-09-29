@@ -17,12 +17,17 @@ def HostArch():
   # Convert machine type to format recognized by gyp.
   if re.match(r'i.86', host_arch) or host_arch == 'i86pc':
     host_arch = 'ia32'
-  elif host_arch in ['x86_64', 'amd64']:
+  elif host_arch in ['x86_64', 'amd64', 'AMD64']:
     host_arch = 'x64'
   elif host_arch.startswith('arm'):
     host_arch = 'arm'
   elif host_arch.startswith('mips'):
     host_arch = 'mips'
+  elif host_arch.startswith('ppc'):
+    host_arch = 'ppc'
+  elif host_arch.startswith('s390'):
+    host_arch = 's390'
+
 
   # platform.machine is based on running kernel. It's possible to use 64-bit
   # kernel with 32-bit userland, e.g. to give linker slightly more memory.
