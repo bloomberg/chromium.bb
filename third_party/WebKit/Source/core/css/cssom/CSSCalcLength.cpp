@@ -4,6 +4,7 @@
 
 #include "core/css/cssom/CSSCalcLength.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/CSSCalcDictionary.h"
@@ -66,6 +67,12 @@ CSSCalcLength* CSSCalcLength::create(const CSSCalcDictionary& dictionary, Except
         exceptionState.throwTypeError("Must specify at least one value in CSSCalcDictionary for creating a CSSCalcLength.");
     }
     return result;
+}
+
+CSSCalcLength* CSSCalcLength::fromCSSValue(const CSSPrimitiveValue&)
+{
+    // TODO(meade): Implement.
+    return nullptr;
 }
 
 bool CSSCalcLength::containsPercent() const

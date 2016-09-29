@@ -4,15 +4,27 @@
 
 #include "core/css/cssom/CSSSimpleLength.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/CSSCalcLength.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
-CSSValue* CSSSimpleLength::toCSSValue() const
+CSSSimpleLength* CSSSimpleLength::create(double value, const String& type, ExceptionState& exceptionState)
 {
-    return CSSPrimitiveValue::create(m_value, m_unit);
+    CSSPrimitiveValue::UnitType unit = CSSLengthValue::unitFromName(type);
+    if (!CSSLengthValue::isSupportedLengthUnit(unit)) {
+        exceptionState.throwTypeError("Invalid unit for CSSSimpleLength: " + type);
+        return nullptr;
+    }
+    return new CSSSimpleLength(value, unit);
+}
+
+CSSSimpleLength* CSSSimpleLength::fromCSSValue(const CSSPrimitiveValue& value)
+{
+    DCHECK(value.isLength());
+    return new CSSSimpleLength(value.getDoubleValue(), value.typeWithCalcResolved());
 }
 
 bool CSSSimpleLength::containsPercent() const
@@ -43,6 +55,11 @@ CSSLengthValue* CSSSimpleLength::divideInternal(double x)
 {
     DCHECK_NE(x, 0);
     return create(m_value / x, m_unit);
+}
+
+CSSValue* CSSSimpleLength::toCSSValue() const
+{
+    return CSSPrimitiveValue::create(m_value, m_unit);
 }
 
 } // namespace blink

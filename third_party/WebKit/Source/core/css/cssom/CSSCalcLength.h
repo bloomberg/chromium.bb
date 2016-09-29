@@ -22,6 +22,7 @@ public:
     {
         return create(length);
     }
+    static CSSCalcLength* fromCSSValue(const CSSPrimitiveValue&);
 
 #define GETTER_MACRO(name, type) \
     double name(bool& isNull) \

@@ -567,7 +567,6 @@ interface CSSSimpleLength : CSSLengthValue
     getter type
     getter value
     method constructor
-    setter value
 interface CSSSkew : CSSTransformComponent
     attribute @@toStringTag
     getter ax

@@ -91,7 +91,6 @@ CONSOLE MESSAGE: line 137: interface CSSSimpleLength : CSSLengthValue
 CONSOLE MESSAGE: line 137:     getter type
 CONSOLE MESSAGE: line 137:     getter value
 CONSOLE MESSAGE: line 137:     method constructor
-CONSOLE MESSAGE: line 137:     setter value
 CONSOLE MESSAGE: line 137: interface CSSSkew : CSSTransformComponent
 CONSOLE MESSAGE: line 137:     getter ax
 CONSOLE MESSAGE: line 137:     getter ay

@@ -5,39 +5,29 @@
 #ifndef CSSSimpleLength_h
 #define CSSSimpleLength_h
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "core/css/cssom/CSSLengthValue.h"
 
 namespace blink {
 
 class CSSPrimitiveValue;
+class ExceptionState;
 
 class CORE_EXPORT CSSSimpleLength final : public CSSLengthValue {
     WTF_MAKE_NONCOPYABLE(CSSSimpleLength);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static CSSSimpleLength* create(double value, const String& type, ExceptionState& exceptionState)
-    {
-        CSSPrimitiveValue::UnitType unit = unitFromName(type);
-        if (!isSupportedLengthUnit(unit)) {
-            exceptionState.throwTypeError("Invalid unit for CSSSimpleLength: " + type);
-            return nullptr;
-        }
-        return new CSSSimpleLength(value, unit);
-    }
-
+    static CSSSimpleLength* create(double, const String& type, ExceptionState&);
     static CSSSimpleLength* create(double value, CSSPrimitiveValue::UnitType type)
     {
         return new CSSSimpleLength(value, type);
     }
+    static CSSSimpleLength* fromCSSValue(const CSSPrimitiveValue&);
 
     bool containsPercent() const override;
 
     double value() const { return m_value; }
     String unit() const { return String(CSSPrimitiveValue::unitTypeToString(m_unit)); }
     CSSPrimitiveValue::UnitType lengthUnit() const { return m_unit; }
-
-    void setValue(double value) { m_value = value; }
 
     StyleValueType type() const override { return StyleValueType::SimpleLengthType; }
 

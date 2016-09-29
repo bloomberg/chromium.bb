@@ -8,6 +8,6 @@
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
 ] interface CSSSimpleLength : CSSLengthValue {
-    [EnforceRange] attribute double value;
+    [EnforceRange] readonly attribute double value;
     [ImplementedAs=unit] readonly attribute LengthType type;
 };

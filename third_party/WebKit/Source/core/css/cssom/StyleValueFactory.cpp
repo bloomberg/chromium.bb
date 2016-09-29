@@ -19,6 +19,16 @@ namespace blink {
 
 namespace {
 
+CSSStyleValue* styleValueForPrimitiveValue(const CSSPrimitiveValue& primitiveValue)
+{
+    if (primitiveValue.isNumber())
+        return CSSNumberValue::create(primitiveValue.getDoubleValue());
+    if (primitiveValue.isLength())
+        return CSSSimpleLength::fromCSSValue(primitiveValue);
+
+    return nullptr;
+}
+
 CSSStyleValue* styleValueForProperty(CSSPropertyID propertyID, const CSSValue& value)
 {
     switch (propertyID) {
@@ -29,22 +39,12 @@ CSSStyleValue* styleValueForProperty(CSSPropertyID propertyID, const CSSValue& v
         break;
     }
 
-    if (value.isPrimitiveValue()) {
-        const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
-        if (primitiveValue.isLength() && !primitiveValue.isCalculated())
-            return CSSSimpleLength::create(primitiveValue.getDoubleValue(), primitiveValue.typeWithCalcResolved());
-        if (primitiveValue.isNumber())
-            return CSSNumberValue::create(primitiveValue.getDoubleValue());
-    }
-
-    if (value.isVariableReferenceValue()) {
+    if (value.isPrimitiveValue())
+        return styleValueForPrimitiveValue(toCSSPrimitiveValue(value));
+    if (value.isVariableReferenceValue())
         return CSSUnparsedValue::fromCSSValue(toCSSVariableReferenceValue(value));
-    }
-
-    if (value.isImageValue()) {
-        const CSSImageValue& imageValue = toCSSImageValue(value);
-        return CSSURLImageValue::create(imageValue.valueWithURLMadeAbsolute());
-    }
+    if (value.isImageValue())
+        return CSSURLImageValue::create(toCSSImageValue(value).valueWithURLMadeAbsolute());
 
     return nullptr;
 }
