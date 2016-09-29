@@ -168,7 +168,6 @@ static void read_inter_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 #endif
 }
 
-#if CONFIG_MISC_FIXES
 static REFERENCE_MODE read_frame_reference_mode(
     const AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (is_compound_reference_allowed(cm)) {
@@ -179,19 +178,6 @@ static REFERENCE_MODE read_frame_reference_mode(
     return SINGLE_REFERENCE;
   }
 }
-#else
-static REFERENCE_MODE read_frame_reference_mode(const AV1_COMMON *cm,
-                                                aom_reader *r) {
-  if (is_compound_reference_allowed(cm)) {
-    return aom_read_bit(r, ACCT_STR)
-               ? (aom_read_bit(r, ACCT_STR) ? REFERENCE_MODE_SELECT
-                                            : COMPOUND_REFERENCE)
-               : SINGLE_REFERENCE;
-  } else {
-    return SINGLE_REFERENCE;
-  }
-}
-#endif
 
 static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
   FRAME_CONTEXT *const fc = cm->fc;
@@ -1982,9 +1968,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   setup_segmentation_dequant(cm);
   cm->tx_mode =
       (!cm->seg.enabled && xd->lossless[0]) ? ONLY_4X4 : read_tx_mode(rb);
-#if CONFIG_MISC_FIXES
   cm->reference_mode = read_frame_reference_mode(cm, rb);
-#endif
 
   setup_tile_info(pbi, rb);
   sz = aom_rb_read_literal(rb, 16);
@@ -2110,9 +2094,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     for (i = 0; i < INTRA_INTER_CONTEXTS; i++)
       av1_diff_update_prob(&r, &fc->intra_inter_prob[i], ACCT_STR);
 
-#if !CONFIG_MISC_FIXES
-    cm->reference_mode = read_frame_reference_mode(cm, &r);
-#endif
     if (cm->reference_mode != SINGLE_REFERENCE)
       setup_compound_reference_mode(cm);
     read_frame_reference_mode_probs(cm, &r);

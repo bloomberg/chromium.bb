@@ -2128,7 +2128,6 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     cm->tx_mode = TX_4X4;
   else
     write_txfm_mode(cm->tx_mode, wb);
-#if CONFIG_MISC_FIXES
   if (cpi->allow_comp_inter_inter) {
     const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;
     const int use_compound_pred = cm->reference_mode != SINGLE_REFERENCE;
@@ -2136,7 +2135,6 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     aom_wb_write_bit(wb, use_hybrid_pred);
     if (!use_hybrid_pred) aom_wb_write_bit(wb, use_compound_pred);
   }
-#endif
 
   write_tile_info(cm, wb);
 }
@@ -2236,23 +2234,10 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 
     if (cpi->allow_comp_inter_inter) {
       const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;
-#if !CONFIG_MISC_FIXES
-      const int use_compound_pred = cm->reference_mode != SINGLE_REFERENCE;
-
-      aom_write_bit(header_bc, use_compound_pred);
-      if (use_compound_pred) {
-        aom_write_bit(header_bc, use_hybrid_pred);
-        if (use_hybrid_pred)
-          for (i = 0; i < COMP_INTER_CONTEXTS; i++)
-            av1_cond_prob_diff_update(header_bc, &fc->comp_inter_prob[i],
-                                      counts->comp_inter[i], probwt);
-      }
-#else
       if (use_hybrid_pred)
         for (i = 0; i < COMP_INTER_CONTEXTS; i++)
           av1_cond_prob_diff_update(header_bc, &fc->comp_inter_prob[i],
                                     counts->comp_inter[i], probwt);
-#endif
     }
 
     if (cm->reference_mode != COMPOUND_REFERENCE)
