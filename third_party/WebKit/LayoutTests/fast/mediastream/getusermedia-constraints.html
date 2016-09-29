@@ -16,7 +16,7 @@ promise_test(function() {
         assert_unreached('getUserMedia should have failed');
       })
     .catch(function(e) {
-        assert_equals(e.name, 'SyntaxError');
+        assert_equals(e.name, 'TypeError');
       });
 }, 'getUserMedia() without any media types should fail');
 

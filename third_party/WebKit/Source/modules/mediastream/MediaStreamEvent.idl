@@ -22,7 +22,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.w3.org/TR/webrtc/#mediastreamevent
+// An old version of WebRTC defines the MediaStreamEvent interface:
+// https://www.w3.org/TR/2015/WD-webrtc-20150210/#mediastreamevent
 
 [
     Constructor(DOMString type, optional MediaStreamEventInit eventInitDict),

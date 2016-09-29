@@ -6,9 +6,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS window.internals.isUseCounted(document, GetUserMediaPrefixed) is false
 PASS window.internals.isUseCounted(document, GetUserMediaLegacy) is false
-PASS navigator.webkitGetUserMedia({audio:false, video:false}, error, error); threw exception SyntaxError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
+PASS navigator.webkitGetUserMedia({audio:false, video:false}, error, error); threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
 PASS navigator.webkitGetUserMedia({audio:true}, gotStreamNoMore, error); did not throw exception.
-PASS navigator.getUserMedia({audio:false, video:false}, error, error); threw exception SyntaxError: Failed to execute 'getUserMedia' on 'Navigator': At least one of audio and video must be requested.
+PASS navigator.getUserMedia({audio:false, video:false}, error, error); threw exception TypeError: Failed to execute 'getUserMedia' on 'Navigator': At least one of audio and video must be requested.
 PASS navigator.getUserMedia({audio:true}, gotStream1, error); did not throw exception.
 PASS window.internals.isUseCounted(document, GetUserMediaPrefixed) is true
 PASS window.internals.isUseCounted(document, GetUserMediaLegacy) is true

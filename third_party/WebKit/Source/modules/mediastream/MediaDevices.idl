@@ -3,21 +3,19 @@
 // found in the LICENSE file.
 
 // The spec for MediaDevices is in two parts:
-// http://w3c.github.io/mediacapture-main/#mediadevices
-// http://w3c.github.io/mediacapture-main/#mediadevices-interface-extensions
+// https://w3c.github.io/mediacapture-main/#mediadevices
+// https://w3c.github.io/mediacapture-main/#mediadevices-interface-extensions
 
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    ConstructorCallWith=ExecutionContext
-]
-interface MediaDevices : EventTarget {
+] interface MediaDevices : EventTarget {
+    [RuntimeEnabled=OnDeviceChange] attribute EventHandler ondevicechange;
     [CallWith=ScriptState, MeasureAs=MediaDevicesEnumerateDevices] Promise<sequence<MediaDeviceInfo>> enumerateDevices();
     [RuntimeEnabled=MediaConstraints] MediaTrackSupportedConstraints getSupportedConstraints();
     [RuntimeEnabled=GetUserMedia,
      CallWith=ScriptState,
      RaisesException,
      MeasureAs=GetUserMediaPromise
-    ] Promise<MediaStream> getUserMedia(MediaStreamConstraints options);
-    [RuntimeEnabled=OnDeviceChange] attribute EventHandler ondevicechange;
+    ] Promise<MediaStream> getUserMedia(optional MediaStreamConstraints constraints);
 };

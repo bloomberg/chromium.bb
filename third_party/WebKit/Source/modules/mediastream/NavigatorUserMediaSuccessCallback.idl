@@ -22,6 +22,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/mediacapture-main/#navigatorusermediasuccesscallback
+
+// TODO(foolip): This should be a callback function, not a callback interface.
+// https://crbug.com/569301
 callback interface NavigatorUserMediaSuccessCallback {
     void handleEvent(MediaStream stream);
 };

@@ -79,7 +79,7 @@ UserMediaRequest* UserMediaRequest::create(ExecutionContext* context, UserMediaC
         return nullptr;
 
     if (audio.isNull() && video.isNull()) {
-        errorState.throwDOMException(SyntaxError, "At least one of audio and video must be requested");
+        errorState.throwTypeError("At least one of audio and video must be requested");
         return nullptr;
     }
 

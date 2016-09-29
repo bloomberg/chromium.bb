@@ -17,17 +17,21 @@
  * Boston, MA 02110-1301, USA.
  */
 
+// https://w3c.github.io/mediacapture-main/#navigatorusermedia-interface-extensions
+
 partial interface Navigator {
-    [RaisesException,
-     ImplementedAs=getUserMedia,
-     MeasureAs=GetUserMediaPrefixed
-    ] void webkitGetUserMedia(MediaStreamConstraints options,
-                                              NavigatorUserMediaSuccessCallback successCallback,
-                                              NavigatorUserMediaErrorCallback errorCallback);
     [RaisesException,
      RuntimeEnabled=GetUserMedia,
      MeasureAs=GetUserMediaLegacy,
-    ] void getUserMedia(MediaStreamConstraints options,
-                                              NavigatorUserMediaSuccessCallback successCallback,
-                                              NavigatorUserMediaErrorCallback errorCallback);
+    ] void getUserMedia(MediaStreamConstraints constraints,
+                        NavigatorUserMediaSuccessCallback successCallback,
+                        NavigatorUserMediaErrorCallback errorCallback);
+
+    // Non-standard
+    [RaisesException,
+     ImplementedAs=getUserMedia,
+     MeasureAs=GetUserMediaPrefixed
+    ] void webkitGetUserMedia(MediaStreamConstraints constraints,
+                              NavigatorUserMediaSuccessCallback successCallback,
+                              NavigatorUserMediaErrorCallback errorCallback);
 };

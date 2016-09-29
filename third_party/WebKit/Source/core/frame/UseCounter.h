@@ -1322,6 +1322,7 @@ public:
         WebkitEditableContentChangedOnTextArea = 1598,
         WebkitEditableContentChangedOnContentEditable = 1599,
         WebkitEditableContentChangedOnNotNode = 1600,
+        V8NavigatorUserMediaError_ConstraintName_AttributeGetter = 1601,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

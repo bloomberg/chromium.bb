@@ -22,10 +22,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// https://w3c.github.io/mediacapture-main/archives/20150629/getusermedia.html#mediastreamerror
+
+// TODO(foolip): This become OverconstrainedError in
+// https://github.com/w3c/mediacapture-main/pull/194 but but that does not have
+// a |constraintName| member:
+// https://w3c.github.io/mediacapture-main/#overconstrainederror-object
+// See also https://github.com/w3c/mediacapture-main/issues/405
 [
     NoInterfaceObject
 ] interface NavigatorUserMediaError {
     readonly attribute DOMString name;
     readonly attribute DOMString message;
-    readonly attribute DOMString constraintName;
+    [Measure] readonly attribute DOMString constraintName;
 };

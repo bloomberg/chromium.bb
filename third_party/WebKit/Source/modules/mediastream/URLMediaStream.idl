@@ -28,10 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// An old version of Media Capture and Streams defines URL.createObjectURL:
+// https://w3c.github.io/mediacapture-main/archives/20131017/getusermedia.html
+
+// TODO(foolip): Update link if it's revived in the spec:
+// https://github.com/w3c/mediacapture-main/issues/404
+
 partial interface URL {
-    // This method was specified in the Media Capture and Streams specification
-    // until
-    // https://w3c.github.io/mediacapture-main/archives/20131017/getusermedia.html
-    // But it has been removed.
     [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ExecutionContext] static DOMString? createObjectURL(MediaStream stream);
 };

@@ -9,15 +9,15 @@ PASS navigator.webkitGetUserMedia({video: true}, emptyFunction) threw exception 
 PASS navigator.webkitGetUserMedia({video: true}, emptyFunction, emptyFunction) did not throw exception.
 PASS navigator.webkitGetUserMedia({audio: true}, emptyFunction, emptyFunction) did not throw exception.
 PASS navigator.webkitGetUserMedia({audio: true, video: true}, emptyFunction, emptyFunction) did not throw exception.
-PASS navigator.webkitGetUserMedia(-Infinity, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('options') is not an object..
-PASS navigator.webkitGetUserMedia(42, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('options') is not an object..
-PASS navigator.webkitGetUserMedia(Infinity, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('options') is not an object..
-PASS navigator.webkitGetUserMedia(emptyFunction, emptyFunction, emptyFunction) threw exception SyntaxError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
-PASS navigator.webkitGetUserMedia(null, emptyFunction, emptyFunction) threw exception SyntaxError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
-PASS navigator.webkitGetUserMedia(true, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('options') is not an object..
-PASS navigator.webkitGetUserMedia(undefined, emptyFunction, emptyFunction) threw exception SyntaxError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
-PASS navigator.webkitGetUserMedia({ }, emptyFunction, emptyFunction) threw exception SyntaxError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
-PASS navigator.webkitGetUserMedia({foo: true }, emptyFunction, emptyFunction) threw exception SyntaxError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
+PASS navigator.webkitGetUserMedia(-Infinity, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('constraints') is not an object..
+PASS navigator.webkitGetUserMedia(42, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('constraints') is not an object..
+PASS navigator.webkitGetUserMedia(Infinity, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('constraints') is not an object..
+PASS navigator.webkitGetUserMedia(emptyFunction, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
+PASS navigator.webkitGetUserMedia(null, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
+PASS navigator.webkitGetUserMedia(true, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': parameter 1 ('constraints') is not an object..
+PASS navigator.webkitGetUserMedia(undefined, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
+PASS navigator.webkitGetUserMedia({ }, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
+PASS navigator.webkitGetUserMedia({foo: true }, emptyFunction, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': At least one of audio and video must be requested.
 PASS navigator.webkitGetUserMedia({audio:true, video:true}, emptyFunction, undefined) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': The callback provided as parameter 3 is not a function..
 PASS navigator.webkitGetUserMedia({video: true}, "foobar", emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': The callback provided as parameter 2 is not a function..
 PASS navigator.webkitGetUserMedia({video: true}, -Infinity, emptyFunction) threw exception TypeError: Failed to execute 'webkitGetUserMedia' on 'Navigator': The callback provided as parameter 2 is not a function..
