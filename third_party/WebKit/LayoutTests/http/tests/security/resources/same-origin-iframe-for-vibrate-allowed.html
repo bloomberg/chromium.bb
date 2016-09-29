@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+</head>
+<body>
+    <script>
+        test(function () {
+            assert_true(navigator.vibrate(200));
+        }, "A same-origin iframe may call navigator.vibrate.");
+    </script>
+</body>
+</html>
