@@ -547,16 +547,13 @@ DispatchEventResult EventTarget::fireEventListeners(Event* event)
     }
 
     // Only invoke the callback if event listeners were fired for this phase.
-    if (firedEventListeners)
+    if (firedEventListeners) {
         event->doneDispatchingEventAtCurrentTarget();
 
-    // TODO(dtapuska): Should we really do counting here for these events
-    // if we really didn't fire a listener? For example having a bubbling
-    // listener on an event that doesn't bubble likely records a UMA
-    // metric where it probably shouldn't because it was never fired.
-    // See https://crbug.com/612829
-    Editor::countEvent(getExecutionContext(), event);
-    countLegacyEvents(legacyTypeName, listenersVector, legacyListenersVector);
+        // Only count uma metrics if we really fired an event listener.
+        Editor::countEvent(getExecutionContext(), event);
+        countLegacyEvents(legacyTypeName, listenersVector, legacyListenersVector);
+    }
     return dispatchEventResult(*event);
 }
 
