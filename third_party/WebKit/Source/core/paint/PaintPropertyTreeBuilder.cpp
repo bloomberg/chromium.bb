@@ -218,8 +218,8 @@ static FloatPoint3D transformOrigin(const LayoutBox& box)
 void PaintPropertyTreeBuilder::updateTransform(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
     if (object.isSVG() && !object.isSVGRoot()) {
-        // SVG does not use paint offset internally.
-        DCHECK(context.current.paintOffset == LayoutPoint());
+        // SVG (other than SVGForeignObject) does not use paint offset internally.
+        DCHECK(object.isSVGForeignObject() || context.current.paintOffset == LayoutPoint());
 
         // FIXME(pdr): Check for the presence of a transform instead of the value. Checking for an
         // identity matrix will cause the property tree structure to change during animations if
@@ -541,7 +541,10 @@ static void deriveBorderBoxFromContainerContext(const LayoutObject& object, Pain
     default:
         ASSERT_NOT_REACHED();
     }
-    if (boxModelObject.isBox() && (!boxModelObject.isSVG() || boxModelObject.isSVGRoot())) {
+
+    // SVGForeignObject needs paint offset because its viewport offset is baked into its location(),
+    // while its localSVGTransform() doesn't contain the offset.
+    if (boxModelObject.isBox() && (!boxModelObject.isSVG() || boxModelObject.isSVGRoot() || boxModelObject.isSVGForeignObject())) {
         // TODO(pdr): Several calls in this function walk back up the tree to calculate containers
         // (e.g., topLeftLocation, offsetForInFlowPosition*). The containing block and other
         // containers can be stored on PaintPropertyTreeBuilderContext instead of recomputing them.
