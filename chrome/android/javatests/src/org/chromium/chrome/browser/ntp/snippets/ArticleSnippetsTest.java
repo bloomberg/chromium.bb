@@ -77,7 +77,7 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 View aboveTheFold = new View(getActivity());
 
                 mRecyclerView.setAboveTheFoldView(aboveTheFold);
-                mAdapter = new NewTabPageAdapter(mNtpManager, aboveTheFold, mUiConfig);
+                mAdapter = NewTabPageAdapter.create(mNtpManager, aboveTheFold, mUiConfig);
                 mRecyclerView.setAdapter(mAdapter);
             }
         });

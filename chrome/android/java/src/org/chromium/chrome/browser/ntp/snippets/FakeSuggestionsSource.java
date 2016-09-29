@@ -110,7 +110,7 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     @Override
     public void getSuggestionVisited(
             SnippetArticle suggestion, Callback<Boolean> callback) {
-        throw new UnsupportedOperationException();
+        callback.onResult(false);
     }
 
     @Override

@@ -18,7 +18,9 @@ import android.graphics.drawable.BitmapDrawable;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -329,6 +331,17 @@ public class NewTabPageView extends FrameLayout
             // made for the ScrollView UI.
             ViewGroup.LayoutParams params = mNewTabPageLayout.getLayoutParams();
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
+
+            mRecyclerView.setItemAnimator(new DefaultItemAnimator() {
+                @Override
+                public void onAnimationFinished(ViewHolder viewHolder) {
+                    super.onAnimationFinished(viewHolder);
+                    // When removing sections, because the animations are all translations, the
+                    // scroll events don't fire and we can get in the situation where the toolbar
+                    // buttons disappear.
+                    updateSearchBoxOnScroll();
+                }
+            });
         } else {
             stub.setLayoutResource(R.layout.new_tab_page_scroll_view);
             mScrollView = (NewTabPageScrollView) stub.inflate();
@@ -361,8 +374,7 @@ public class NewTabPageView extends FrameLayout
 
         // Set up snippets
         if (mUseCardsUi) {
-            mNewTabPageAdapter =
-                    new NewTabPageAdapter(mManager, mNewTabPageLayout, mUiConfig);
+            mNewTabPageAdapter = NewTabPageAdapter.create(mManager, mNewTabPageLayout, mUiConfig);
             mRecyclerView.setAdapter(mNewTabPageAdapter);
             mRecyclerView.scrollToPosition(scrollPosition);
 

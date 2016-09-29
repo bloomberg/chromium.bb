@@ -42,7 +42,7 @@ import java.util.Map;
  * elements will be the cards shown to the user
  */
 public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
-        implements SuggestionsSource.Observer {
+        implements SuggestionsSource.Observer, ItemGroup.Observer {
     private static final String TAG = "Ntp";
 
     private final NewTabPageManager mNewTabPageManager;
@@ -127,19 +127,38 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     }
 
     /**
-     * Constructor to create the manager for all the cards to display on the NTP
+     * Creates the adapter that will manage all the cards to display on the NTP.
      *
      * @param manager the NewTabPageManager to use to interact with the rest of the system.
      * @param aboveTheFoldView the layout encapsulating all the above-the-fold elements
      *                         (logo, search box, most visited tiles)
-     * @param suggestionsSource the bridge to interact with the content suggestions service.
      * @param uiConfig the NTP UI configuration, to be passed to created views.
      */
-    public NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig) {
+    public static NewTabPageAdapter create(
+            NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig) {
+        NewTabPageAdapter adapter = new NewTabPageAdapter(manager, aboveTheFoldView, uiConfig);
+        adapter.initializeSections();
+        return adapter;
+    }
+
+    /**
+     * Constructor for {@link NewTabPageAdapter}. The object is not completely ready to be used
+     * until {@link #initializeSections()} is called. Usage reserved for testing, prefer calling
+     * {@link NewTabPageAdapter#create(NewTabPageManager, View, UiConfig)} in production code.
+     */
+    @VisibleForTesting
+    NewTabPageAdapter(NewTabPageManager manager, View aboveTheFoldView, UiConfig uiConfig) {
         mNewTabPageManager = manager;
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
+    }
 
+    /**
+     * Initialises the sections to be handled by this adapter. Events about categories for which
+     * a section has not been registered at this point will be ignored.
+     */
+    @VisibleForTesting
+    void initializeSections() {
         SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
 
         int[] categories = suggestionsSource.getCategories();
@@ -203,7 +222,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         if (suggestions.isEmpty()) return;
 
         setSuggestions(category, suggestions, status);
-        updateGroups();
 
         NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_SHOWN);
     }
@@ -222,18 +240,16 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         if (status == CategoryStatus.CATEGORY_EXPLICITLY_DISABLED
                 || status == CategoryStatus.LOADING_ERROR) {
             // Need to remove the entire section from the UI immediately.
-            mSections.remove(category);
+            removeSection(mSections.get(category));
         } else {
             mSections.get(category).setStatus(status);
         }
-        updateGroups();
     }
 
     @Override
     public void onSuggestionInvalidated(@CategoryInt int category, String idWithinCategory) {
         if (!mSections.containsKey(category)) return;
         mSections.get(category).removeSuggestionById(idWithinCategory);
-        updateGroups();
     }
 
     @Override
@@ -358,8 +374,56 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             mGroups.add(mBottomSpacer);
         }
 
-        // TODO(bauerb): Notify about a smaller range: https://crbug.com/627512
         notifyDataSetChanged();
+    }
+
+    private void removeSection(SuggestionsSection section) {
+        mSections.remove(section.getCategory());
+        int startPos = getGroupPositionOffset(section);
+        mGroups.remove(section);
+        int removedItems = section.getItems().size();
+
+        if (mSections.isEmpty()) {
+            if (mGroups.remove(mFooter)) ++removedItems;
+            if (mGroups.remove(mBottomSpacer)) ++removedItems;
+        }
+
+        notifyItemRangeRemoved(startPos, removedItems);
+        notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
+    }
+
+    @Override
+    public void notifyGroupChanged(ItemGroup group, int itemCountBefore, int itemCountAfter) {
+        int startPos = getGroupPositionOffset(group);
+
+        if (group instanceof SuggestionsSection) {
+            // The header is stable in sections. Don't notify about it.
+            ++startPos;
+            --itemCountBefore;
+            --itemCountAfter;
+        }
+
+        if (itemCountBefore < itemCountAfter) {
+            notifyItemRangeChanged(startPos, itemCountBefore);
+            notifyItemRangeInserted(startPos + itemCountBefore, itemCountAfter - itemCountBefore);
+        } else {
+            notifyItemRangeChanged(startPos, itemCountAfter);
+            notifyItemRangeRemoved(startPos + itemCountAfter, itemCountBefore - itemCountAfter);
+        }
+
+        notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
+    }
+
+    @Override
+    public void notifyItemInserted(ItemGroup group, int itemPosition) {
+        notifyItemInserted(getGroupPositionOffset(group) + itemPosition);
+        notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
+    }
+
+    @Override
+    public void notifyItemRemoved(ItemGroup group, int itemPosition) {
+        notifyItemRemoved(getGroupPositionOffset(group) + itemPosition);
+        notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
     }
 
     @Override
@@ -392,9 +456,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
 
     private void dismissSection(SuggestionsSection section) {
         mNewTabPageManager.getSuggestionsSource().dismissCategory(section.getCategory());
-
-        mSections.remove(section.getCategory());
-        updateGroups();
+        removeSection(section);
     }
 
     private void dismissSuggestion(int position) {
@@ -418,22 +480,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             }
         });
 
-        mRecyclerView.announceForAccessibility(mRecyclerView.getResources().getString(
-                R.string.ntp_accessibility_item_removed, suggestion.mTitle));
+        announceItemRemoved(suggestion.mTitle);
 
         suggestionsSource.dismissSuggestion(suggestion);
         SuggestionsSection section = (SuggestionsSection) getGroup(position);
         section.removeSuggestion(suggestion);
-
-        if (section.hasSuggestions()) {
-            // If one of many suggestions was dismissed, it's a simple item removal, which can be
-            // animated smoothly by the RecyclerView.
-            notifyItemRemoved(position);
-        } else {
-            // If the last suggestion was dismissed, multiple items will have changed, so mark
-            // everything as changed.
-            notifyDataSetChanged();
-        }
     }
 
     /**
@@ -476,5 +527,11 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
     @VisibleForTesting
     SnippetArticle getSuggestionAt(int position) {
         return (SnippetArticle) getItems().get(position);
+    }
+
+    @VisibleForTesting
+    void announceItemRemoved(String suggestionTitle) {
+        mRecyclerView.announceForAccessibility(mRecyclerView.getResources().getString(
+                R.string.ntp_accessibility_item_removed, suggestionTitle));
     }
 }

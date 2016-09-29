@@ -28,11 +28,24 @@ public class SuggestionsSection implements ItemGroup {
     private final ActionItem mMoreButton;
     @CategoryInt
     private final int mCategory;
+    private final Observer mObserver;
 
     public SuggestionsSection(@CategoryInt int category, SuggestionsCategoryInfo info,
             final NewTabPageAdapter adapter) {
+        this(category, info, adapter, new ActionDelegate() {
+            @Override
+            public void onButtonTapped() {
+                adapter.reloadSnippets();
+            }
+        });
+    }
+
+    @VisibleForTesting
+    SuggestionsSection(@CategoryInt int category, SuggestionsCategoryInfo info, Observer observer,
+            ActionDelegate actionDelegate) {
         mHeader = new SectionHeader(info.getTitle());
         mCategory = category;
+        mObserver = observer;
 
         // TODO(dgn): Properly define strings, actions, etc. for each section and category type.
         if (info.hasMoreButton()) {
@@ -40,17 +53,13 @@ public class SuggestionsSection implements ItemGroup {
             mActionDelegate = null;
         } else {
             mMoreButton = null;
-            mActionDelegate = new ActionDelegate() {
-                @Override
-                public void onButtonTapped() {
-                    adapter.reloadSnippets();
-                }
-            };
+            mActionDelegate = actionDelegate;
         }
     }
 
     @Override
     public List<NewTabPageItem> getItems() {
+        // Note: Keep this coherent with the various notify** calls on ItemGroup.Observer
         List<NewTabPageItem> items = new ArrayList<>();
         items.add(mHeader);
         items.addAll(mSuggestions);
@@ -63,8 +72,22 @@ public class SuggestionsSection implements ItemGroup {
     }
 
     public void removeSuggestion(SnippetArticle suggestion) {
-        mSuggestions.remove(suggestion);
+        int removedIndex = mSuggestions.indexOf(suggestion);
+        if (removedIndex == -1) return;
+
+        mSuggestions.remove(removedIndex);
         if (mMoreButton != null) mMoreButton.setDismissable(!hasSuggestions());
+
+        // Note: Keep this coherent with getItems()
+        int globalRemovedIndex = removedIndex + 1; // Header has index 0 in the section.
+        mObserver.notifyItemRemoved(this, globalRemovedIndex);
+
+        if (!hasSuggestions()) {
+            // When the last suggestion is removed, we insert other items to display the status,
+            // notify about them too.
+            mObserver.notifyItemInserted(this, globalRemovedIndex);
+            mObserver.notifyItemInserted(this, globalRemovedIndex + (mMoreButton == null ? 1 : 2));
+        }
     }
 
     public void removeSuggestionById(String idWithinCategory) {
@@ -87,7 +110,8 @@ public class SuggestionsSection implements ItemGroup {
     public void setSuggestions(List<SnippetArticle> suggestions, @CategoryStatusEnum int status) {
         copyThumbnails(suggestions);
 
-        setStatus(status);
+        int itemCountBefore = getItems().size();
+        setStatusInternal(status);
 
         mSuggestions.clear();
         mSuggestions.addAll(suggestions);
@@ -95,10 +119,17 @@ public class SuggestionsSection implements ItemGroup {
         if (mMoreButton != null) {
             mMoreButton.setPosition(mSuggestions.size());
         }
+        mObserver.notifyGroupChanged(this, itemCountBefore, getItems().size());
     }
 
     /** Sets the status for the section. Some statuses can cause the suggestions to be cleared. */
     public void setStatus(@CategoryStatusEnum int status) {
+        int itemCountBefore = getItems().size();
+        setStatusInternal(status);
+        mObserver.notifyGroupChanged(this, itemCountBefore, getItems().size());
+    }
+
+    private void setStatusInternal(@CategoryStatusEnum int status) {
         mStatus = StatusItem.create(status, mActionDelegate);
 
         if (!SnippetsBridge.isCategoryStatusAvailable(status)) mSuggestions.clear();
