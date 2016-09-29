@@ -14,6 +14,7 @@
 
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ref_counted.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -59,6 +60,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
       AVSampleBufferDisplayLayer* fullscreen_low_power_layer);
 
  private:
+  class SolidColorContents;
   struct RootLayer;
   struct ClipAndSortingLayer;
   struct TransformLayer;
@@ -161,6 +163,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
     // their use count.
     const gfx::ScopedInUseIOSurface io_surface;
     const base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
+    scoped_refptr<SolidColorContents> solid_color_contents;
     gfx::RectF contents_rect;
     gfx::Rect rect;
     unsigned background_color = 0;

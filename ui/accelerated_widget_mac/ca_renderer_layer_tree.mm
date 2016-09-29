@@ -10,6 +10,8 @@
 #include <GLES2/gl2extchromium.h>
 
 #include "base/command_line.h"
+#include "base/lazy_instance.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -128,6 +130,75 @@ bool AVSampleBufferDisplayLayerEnqueueIOSurface(
 }
 
 }  // namespace
+
+class CARendererLayerTree::SolidColorContents
+    : public base::RefCounted<CARendererLayerTree::SolidColorContents> {
+ public:
+  static scoped_refptr<SolidColorContents> Get(SkColor color);
+  id GetContents() const;
+
+ private:
+  friend class base::RefCounted<SolidColorContents>;
+
+  SolidColorContents(SkColor color, IOSurfaceRef io_surface);
+  ~SolidColorContents();
+
+  SkColor color_ = 0;
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
+  static base::LazyInstance<std::map<SkColor, SolidColorContents*>> map_;
+};
+
+base::LazyInstance<std::map<SkColor, CARendererLayerTree::SolidColorContents*>>
+    CARendererLayerTree::SolidColorContents::map_;
+
+// static
+scoped_refptr<CARendererLayerTree::SolidColorContents>
+CARendererLayerTree::SolidColorContents::Get(SkColor color) {
+  const int kSolidColorContentsSize = 16;
+
+  auto found = map_.Get().find(color);
+  if (found != map_.Get().end())
+    return found->second;
+
+  IOSurfaceRef io_surface = CreateIOSurface(
+      gfx::Size(kSolidColorContentsSize, kSolidColorContentsSize),
+      gfx::BufferFormat::BGRA_8888);
+  if (!io_surface)
+    return nullptr;
+
+  size_t bytes_per_row = IOSurfaceGetBytesPerRowOfPlane(io_surface, 0);
+  IOSurfaceLock(io_surface, 0, NULL);
+  char* row_base_address =
+      reinterpret_cast<char*>(IOSurfaceGetBaseAddress(io_surface));
+  for (int i = 0; i < kSolidColorContentsSize; ++i) {
+    unsigned int* pixel = reinterpret_cast<unsigned int*>(row_base_address);
+    for (int j = 0; j < kSolidColorContentsSize; ++j)
+      *(pixel++) = color;
+    row_base_address += bytes_per_row;
+  }
+  IOSurfaceUnlock(io_surface, 0, NULL);
+
+  return new SolidColorContents(color, io_surface);
+}
+
+id CARendererLayerTree::SolidColorContents::GetContents() const {
+  return static_cast<id>(io_surface_.get());
+}
+
+CARendererLayerTree::SolidColorContents::SolidColorContents(
+    SkColor color,
+    IOSurfaceRef io_surface)
+    : color_(color), io_surface_(io_surface) {
+  DCHECK(map_.Get().find(color_) == map_.Get().end());
+  map_.Get()[color_] = this;
+}
+
+CARendererLayerTree::SolidColorContents::~SolidColorContents() {
+  auto found = map_.Get().find(color_);
+  DCHECK(found != map_.Get().end());
+  DCHECK(found->second == this);
+  map_.Get().erase(color_);
+}
 
 CARendererLayerTree::CARendererLayerTree(
     bool allow_av_sample_buffer_display_layer)
@@ -289,6 +360,17 @@ CARendererLayerTree::ContentLayer::ContentLayer(
       ca_filter(filter == GL_LINEAR ? kCAFilterLinear : kCAFilterNearest) {
   DCHECK(filter == GL_LINEAR || filter == GL_NEAREST);
 
+  // On Mac OS Sierra, solid color layers are not color color corrected to the
+  // output monitor color space, but IOSurface-backed layers are color
+  // corrected. Note that this is only the case when the CALayers are shared
+  // across processes. To make colors consistent across both solid color and
+  // IOSurface-backed layers, use a cache of solid-color IOSurfaces as contents.
+  // https://crbug.com/633805
+  if (base::mac::IsAtLeastOS10_12()) {
+    solid_color_contents = SolidColorContents::Get(background_color);
+    ContentLayer::contents_rect = gfx::RectF(0, 0, 1, 1);
+  }
+
   // Because the root layer has setGeometryFlipped:YES, there is some ambiguity
   // about what exactly top and bottom mean. This ambiguity is resolved in
   // different ways for solid color CALayers and for CALayers that have content
@@ -301,7 +383,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
     ca_edge_aa_mask |= kCALayerLeftEdge;
   if (edge_aa_mask & GL_CA_LAYER_EDGE_RIGHT_CHROMIUM)
     ca_edge_aa_mask |= kCALayerRightEdge;
-  if (io_surface) {
+  if (io_surface || solid_color_contents) {
     if (edge_aa_mask & GL_CA_LAYER_EDGE_TOP_CHROMIUM)
       ca_edge_aa_mask |= kCALayerBottomEdge;
     if (edge_aa_mask & GL_CA_LAYER_EDGE_BOTTOM_CHROMIUM)
@@ -326,6 +408,7 @@ CARendererLayerTree::ContentLayer::ContentLayer(
 CARendererLayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
     : io_surface(layer.io_surface),
       cv_pixel_buffer(layer.cv_pixel_buffer),
+      solid_color_contents(layer.solid_color_contents),
       contents_rect(layer.contents_rect),
       rect(layer.rect),
       background_color(layer.background_color),
@@ -548,7 +631,8 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     std::swap(ca_layer, old_layer->ca_layer);
     std::swap(av_layer, old_layer->av_layer);
     update_contents = old_layer->io_surface != io_surface ||
-                      old_layer->cv_pixel_buffer != cv_pixel_buffer;
+                      old_layer->cv_pixel_buffer != cv_pixel_buffer ||
+                      old_layer->solid_color_contents != solid_color_contents;
     update_contents_rect = old_layer->contents_rect != contents_rect;
     update_rect = old_layer->rect != rect;
     update_background_color = old_layer->background_color != background_color;
@@ -585,7 +669,11 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     }
   } else {
     if (update_contents) {
-      [ca_layer setContents:static_cast<id>(io_surface.get())];
+      if (io_surface) {
+        [ca_layer setContents:static_cast<id>(io_surface.get())];
+      } else if (solid_color_contents) {
+        [ca_layer setContents:solid_color_contents->GetContents()];
+      }
       if ([ca_layer respondsToSelector:(@selector(setContentsScale:))])
         [ca_layer setContentsScale:scale_factor];
     }
@@ -626,9 +714,15 @@ void CARendererLayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
       if (use_av_layer) {
         // Yellow represents an AV layer that changed this frame.
         color.reset(CGColorCreateGenericRGB(1, 1, 0, 1));
-      } else {
+      } else if (io_surface) {
         // Pink represents a CALayer that changed this frame.
         color.reset(CGColorCreateGenericRGB(1, 0, 1, 1));
+      } else if (solid_color_contents) {
+        // Cyan represents a solid color IOSurface-backed layer.
+        color.reset(CGColorCreateGenericRGB(0, 1, 1, 1));
+      } else {
+        // Red represents a solid color layer.
+        color.reset(CGColorCreateGenericRGB(1, 0, 0, 1));
       }
     } else {
       // Grey represents a CALayer that has not changed.
