@@ -9,5 +9,5 @@ console-dirxml.html:12 #document
 console-dirxml.html:13 #document-fragment
 console-dirxml.html:14 <p></p>
 console-dirxml.html:15 [p]
-console-dirxml.html:16 [#document, #document-fragment, <span></span>]
+console-dirxml.html:16 [document, document-fragment, span]
 
