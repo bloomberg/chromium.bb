@@ -38,7 +38,6 @@ layer at (0,0) size 800x600
             [feTurbulence type="TURBULENCE" baseFrequency="0.05, 0.05" seed="0.00" numOctaves="2" stitchTiles="0"]
       LayoutText {#text} at (0,47) size 3x10
         text run at (0,47) width 3: " "
-      LayoutText {#text} at (0,0) size 0x0
       LayoutImage {IMG} at (7.25,5) size 80x45
       LayoutText {#text} at (92,47) size 3x10
         text run at (92,47) width 3: " "

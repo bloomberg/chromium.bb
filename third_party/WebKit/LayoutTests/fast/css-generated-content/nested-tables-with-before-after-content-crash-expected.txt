@@ -23,4 +23,3 @@ layer at (0,0) size 800x600
                           LayoutTextFragment (anonymous) at (16,0) size 16x16
                             text run at (16,0) width 16: "\""
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0

@@ -24,7 +24,6 @@ layer at (0,0) size 800x296
             LayoutBlockFlow {DIV} at (13,1) size 112x13
             LayoutBlockFlow {DIV} at (0,0) size 13x15
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,140) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,2) size 125x15
@@ -35,7 +34,6 @@ layer at (0,0) size 800x296
           LayoutFlexibleBox {DIV} at (3,2) size 125x15
             LayoutBlockFlow {DIV} at (0,1) size 112x13
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow {P} at (0,210) size 784x19
         LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,2) size 125x15
@@ -45,7 +43,6 @@ layer at (0,0) size 800x296
         LayoutTextControl {INPUT} at (0,0) size 131x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutFlexibleBox {DIV} at (3,2) size 125x15
             LayoutBlockFlow {DIV} at (13,1) size 112x13
-        LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
 layer at (677,19) size 112x13
   LayoutBlockFlow {DIV} at (0,0) size 112x13

@@ -7,7 +7,6 @@ layer at (0,0) size 800x551
         text run at (41,49) width 5: " "
       LayoutText {#text} at (113,49) size 5x18
         text run at (113,49) width 5: " "
-      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (159,49) size 5x18
         text run at (159,49) width 5: " "
       LayoutText {#text} at (218,49) size 5x18

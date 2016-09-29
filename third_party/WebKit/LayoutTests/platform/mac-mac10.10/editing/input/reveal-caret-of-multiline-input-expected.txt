@@ -8,7 +8,6 @@ layer at (0,0) size 800x174
           text run at (0,0) width 610: "When the caret is scrolled out, on starting typing it must be brought to the center of the control."
       LayoutBlockFlow (anonymous) at (0,18) size 784x140
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 81x136 clip at (9,27) size 64x134 scrollY 98.00 scrollHeight 420
   LayoutTextControl {TEXTAREA} at (0,0) size 81x136 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 60x416

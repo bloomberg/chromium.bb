@@ -21,9 +21,6 @@ layer at (0,0) size 800x600
           text run at (420,0) width 272: "layer\x{2019}s and its stacking context\x{2019}s z-index lists."
       LayoutBlockFlow (anonymous) at (0,92) size 784x0
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,100) size 0x0
   LayoutInline (relative positioned) {SPAN} at (0,0) size 0x0
-    LayoutText {#text} at (0,0) size 0x0
     LayoutText {#text} at (0,0) size 0x0

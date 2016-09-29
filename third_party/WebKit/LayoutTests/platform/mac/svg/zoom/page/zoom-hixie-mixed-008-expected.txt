@@ -15,6 +15,3 @@ layer at (0,0) size 785x666 backgroundClip at (0,0) size 785x600 clip at (0,0) s
               LayoutText {#text} at (140,0) size 120x59
                 text run at (140,0) width 120: "TEST"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0

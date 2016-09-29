@@ -12,6 +12,5 @@ layer at (0,0) size 800x600
 layer at (8,8) size 160x105 backgroundClip at (8,8) size 150x15 clip at (8,8) size 150x15
   LayoutBlockFlow (positioned) {DIV} at (8,8) size 160x105
     LayoutText {#text} at (0,0) size 0x0
-    LayoutText {#text} at (0,0) size 0x0
 layer at (13,13) size 160x105 backgroundClip at (8,8) size 150x15 clip at (8,8) size 150x15
   LayoutImage (relative positioned) {IMG} at (0,0) size 160x105

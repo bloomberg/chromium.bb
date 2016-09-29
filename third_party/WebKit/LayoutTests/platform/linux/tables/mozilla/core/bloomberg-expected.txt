@@ -220,13 +220,11 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutText {#text} at (0,0) size 0x0
                 LayoutImage {IMG} at (4,4) size 120x60
               LayoutText {#text} at (0,0) size 0x0
-              LayoutText {#text} at (0,0) size 0x0
               LayoutImage {IMG} at (4,64) size 120x1
             LayoutTableCell {TD} at (276,28) size 175x69 [border: (1px inset #808080)] [r=1 c=2 rs=1 cs=1]
               LayoutInline {A} at (0,0) size 167x19
                 LayoutText {#text} at (0,0) size 0x0
                 LayoutImage {IMG} at (4,4) size 167x60
-              LayoutText {#text} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
               LayoutImage {IMG} at (4,64) size 167x1
             LayoutTableCell {TD} at (451,28) size 183x531 [bgcolor=#CCCC99] [border: (1px inset #808080)] [r=1 c=3 rs=6 cs=1]
@@ -249,11 +247,9 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {A} at (0,0) size 175x19
                   LayoutImage {IMG} at (0,0) size 175x270
                 LayoutText {#text} at (0,0) size 0x0
-                LayoutText {#text} at (0,0) size 0x0
                 LayoutInline {A} at (0,0) size 161x19
                   LayoutText {#text} at (0,0) size 0x0
                   LayoutImage {IMG} at (7,270) size 161x30
-                LayoutText {#text} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
                 LayoutInline {FONT} at (0,0) size 155x16 [color=#000000]
                   LayoutInline {B} at (0,0) size 155x16
@@ -280,7 +276,6 @@ layer at (0,0) size 785x716 backgroundClip at (0,0) size 785x600 clip at (0,0) s
                 LayoutInline {A} at (0,0) size 125x19
                   LayoutText {#text} at (0,0) size 0x0
                   LayoutImage {IMG} at (25,369) size 125x125
-                LayoutText {#text} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
           LayoutTableRow {TR} at (0,111) size 634x153
             LayoutTableCell {TD} at (148,111) size 303x128 [bgcolor=#FFFFFF] [border: (1px inset #808080)] [r=2 c=1 rs=1 cs=2]

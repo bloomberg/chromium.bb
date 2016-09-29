@@ -6,7 +6,6 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,0) size 784x0
         LayoutInline {B} at (0,0) size 0x0
           LayoutText {#text} at (0,0) size 0x0
-          LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,0) size 220x94 [border: (1px outset #808080)]
         LayoutTableSection {TBODY} at (1,1) size 218x92
           LayoutTableRow {TR} at (0,5) size 218x24
@@ -32,7 +31,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 0x0
           LayoutBR {BR} at (0,0) size 0x19
           LayoutInline {B} at (0,0) size 0x0
-            LayoutText {#text} at (0,0) size 0x0
             LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,114) size 784x123
         LayoutTable {TABLE} at (0,0) size 220x123 [border: (1px outset #808080)]
@@ -69,7 +67,6 @@ layer at (0,0) size 800x600
             LayoutBR {BR} at (0,0) size 0x19
             LayoutInline {B} at (0,0) size 0x0
               LayoutText {#text} at (0,0) size 0x0
-              LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,257) size 784x94
         LayoutTable {TABLE} at (0,0) size 253x94 [border: (1px outset #808080)]
           LayoutTableSection {TBODY} at (1,1) size 251x92
@@ -98,7 +95,6 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (0,0) size 0x0
               LayoutBR {BR} at (0,0) size 0x19
               LayoutInline {B} at (0,0) size 0x0
-                LayoutText {#text} at (0,0) size 0x0
                 LayoutText {#text} at (0,0) size 0x0
       LayoutBlockFlow (anonymous) at (0,371) size 784x123
         LayoutTable {TABLE} at (0,0) size 253x123 [border: (1px outset #808080)]

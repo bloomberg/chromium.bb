@@ -10,4 +10,3 @@ layer at (0,0) size 800x600
           LayoutText (anonymous) at (8,2) size 26x13
             text run at (8,2) width 26: "PASS"
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0

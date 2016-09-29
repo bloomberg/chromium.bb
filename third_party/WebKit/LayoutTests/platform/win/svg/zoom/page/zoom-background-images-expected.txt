@@ -14,6 +14,3 @@ layer at (0,0) size 800x163
         text run at (461,142) width 3: " "
       LayoutImage {IMG} at (474.88,11.56) size 129.31x129.31 [border: (1px solid #000000)]
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0

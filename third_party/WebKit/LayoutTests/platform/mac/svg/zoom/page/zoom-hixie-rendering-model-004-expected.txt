@@ -11,6 +11,3 @@ layer at (0,0) size 800x401
         LayoutSVGRoot {svg} at (11,239) size 145x145
           LayoutSVGRect {rect} at (11,239) size 145x145 [fill={[type=SOLID] [color=#000080]}] [x=0.00] [y=0.00] [width=100.00] [height=100.00]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0

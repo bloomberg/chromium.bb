@@ -1,6 +1,6 @@
 Visit Chromium Click the text! Button
 Copyright 2015.
-    I have a checkbox  Radio  Button
+   I have a checkbox  Radio  Button
    I have a menuItem   Menu   ItemRadio
 Birthday:  Birthday(date and time):  Birthday(datetime-local):  Birthday (month and year):  Select a week:  Select a file:  Min-Max:  Color:  Select a time:      
 0  100 + =

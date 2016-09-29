@@ -71,10 +71,6 @@
     {
       "object": "LayoutText #text",
       "reason": "layoutObject insertion"
-    },
-    {
-      "object": "LayoutText #text",
-      "reason": "layoutObject insertion"
     }
   ]
 }

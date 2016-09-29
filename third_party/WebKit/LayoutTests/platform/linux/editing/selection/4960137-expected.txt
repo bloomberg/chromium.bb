@@ -8,7 +8,6 @@ layer at (0,0) size 800x600
           text run at (0,0) width 619: "This tests for an ASSERTion failure when setting the main frame's selection inside a node in a subframe."
       LayoutBlockFlow (anonymous) at (0,36) size 784x154
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,44) size 304x154
   LayoutIFrame {IFRAME} at (0,0) size 304x154 [border: (2px inset #EEEEEE)]
     layer at (0,0) size 300x150

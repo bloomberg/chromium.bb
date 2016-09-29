@@ -32,7 +32,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (177,2) size 167x17
             text run at (177,2) width 167: "drop me into the text field"
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (10,107) size 169x16
   LayoutBlockFlow {DIV} at (2,3) size 169x16
     LayoutText {#text} at (0,0) size 119x16

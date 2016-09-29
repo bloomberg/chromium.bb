@@ -294,6 +294,8 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style, const LayoutObje
     const LayoutObject* prev = LayoutTreeBuilderTraversal::previousSiblingLayoutObject(*this);
     if (prev && prev->isBR()) // <span><br/> <br/></span>
         return false;
+    if (prev && prev->isText() && prev->node()->isTextNode() && toText(prev->node())->containsOnlyWhitespace())
+        return false;
 
     if (parent.isLayoutInline()) {
         // <span><div/> <div/></span>

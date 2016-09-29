@@ -23,10 +23,6 @@ layer at (0,0) size 800x249
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 layer at (0,0) size 415x415
   LayoutBlockFlow (positioned) {DIV} at (0,0) size 414.72x414.72 [bgcolor=#000000]
 layer at (0,0) size 207x207

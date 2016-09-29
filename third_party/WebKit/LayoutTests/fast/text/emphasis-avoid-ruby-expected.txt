@@ -68,7 +68,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (64,214) size 32x32
           text run at (64,214) width 32: " "
-        LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {DIV} at (96,8) size 48x224
           LayoutText {#text} at (16,0) size 32x64
             text run at (16,0) width 64: "1 "
@@ -85,7 +84,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 0x0
         LayoutText {#text} at (144,214) size 32x32
           text run at (144,214) width 32: " "
-        LayoutText {#text} at (0,0) size 0x0
         LayoutBlockFlow {DIV} at (176,8) size 48x224
           LayoutText {#text} at (16,0) size 32x64
             text run at (16,0) width 64: "1 "

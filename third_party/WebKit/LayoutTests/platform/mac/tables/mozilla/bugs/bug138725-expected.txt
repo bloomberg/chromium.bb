@@ -12,7 +12,6 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (0,0) size 0x0
                   LayoutInline {SPAN} at (0,0) size 0x0
                     LayoutText {#text} at (0,0) size 0x0
-                    LayoutText {#text} at (0,0) size 0x0
               LayoutBlockFlow (anonymous) at (1,1) size 138x46
                 LayoutTable {TABLE} at (0,0) size 138x46
                   LayoutTableSection {TBODY} at (0,0) size 138x46

@@ -45,6 +45,5 @@ layer at (0,0) size 800x34
         LayoutText {#text} at (296,0) size 5x17
           text run at (296,0) width 5: "."
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 selection start: position 0 of child 0 {#text} of child 1 {SPAN} of child 1 {DIV} of body
 selection end:   position 1 of child 16 {#text} of child 1 {DIV} of body

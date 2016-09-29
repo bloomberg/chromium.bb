@@ -68,7 +68,6 @@ layer at (0,0) size 800x600
               [SourceGraphic]
       LayoutText {#text} at (0,96) size 4x17
         text run at (0,96) width 4: " "
-      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (184,96) size 4x17
         text run at (184,96) width 4: " "
       LayoutText {#text} at (368,96) size 4x17

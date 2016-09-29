@@ -18,7 +18,6 @@ layer at (0,0) size 800x174
         LayoutText {#text} at (283,97) size 5x18
           text run at (283,97) width 5: " "
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,64) size 48x101 clip at (9,65) size 35x99
   LayoutListBox {SELECT} at (0,13.69) size 47.70x101.31 [bgcolor=#FFFFFF] [border: (1px solid #999999)]
     LayoutBlockFlow {OPTION} at (1,1) size 34.70x14.19

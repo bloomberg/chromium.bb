@@ -14,7 +14,6 @@ layer at (0,0) size 800x600
               text run at (0,0) width 64: "Details1"
           LayoutText {#text} at (64,0) size 4x19
             text run at (64,0) width 4: " "
-          LayoutText {#text} at (0,0) size 0x0
           LayoutBlockFlow {SPAN} at (68,3) size 64x16
             LayoutText {#text} at (0,0) size 64x16
               text run at (0,0) width 64: "Details2"

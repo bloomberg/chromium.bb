@@ -193,6 +193,5 @@ layer at (0,0) size 800x547
           text run at (124,70) width 213: "lobortis eu iaculis vel,"
           text run at (3,110) width 208: "scelerisque nec dolor."
       LayoutText {#text} at (0,0) size 0x0
-      LayoutText {#text} at (0,0) size 0x0
 selection start: position 10 of child 0 {#text} of child 1 {SPAN} of child 10 {DIV} of body
 selection end:   position 7 of child 0 {#text} of child 3 {SPAN} of child 10 {DIV} of body

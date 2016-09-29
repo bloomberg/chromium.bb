@@ -10,7 +10,6 @@ layer at (0,0) size 800x245
         LayoutText {#text} at (320,165) size 4x19
           text run at (320,165) width 4: " "
         LayoutText {#text} at (0,0) size 0x0
-        LayoutText {#text} at (0,0) size 0x0
 layer at (8,52) size 320x180
   LayoutVideo {VIDEO} at (0,0) size 320x180
 layer at (332,52) size 320x180
