@@ -287,12 +287,11 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    // Although this is redundant with the Field Trial testing configuration,
-    // the official builders don't use those, so we also enable it here.
-    feature_list.InitAndEnableFeature(features::kBlockSmallContent);
-
+    // Although BlockSmallContent is redundant with the Field Trial testing
+    // configuration, the official builders don't use those, so enable it here.
     // Disable HTML5 By Default feature to test Plugin Power Saver specifically.
-    feature_list.InitAndDisableFeature(features::kPreferHtmlOverPlugins);
+    feature_list.InitWithFeatures({features::kBlockSmallContent},
+                                  {features::kPreferHtmlOverPlugins});
   }
 
  protected:
