@@ -249,7 +249,7 @@ grit("generate_components_strings") {
     "java/res/values-zh-rTW/components_strings.xml",
     "java/res/values/components_strings.xml",
   ]
-  foreach(_locale, locales) {
+  foreach(_locale, locales_with_fake_bidi) {
     outputs += [ "components_strings_${_locale}.pak" ]
   }
 }
