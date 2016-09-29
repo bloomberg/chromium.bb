@@ -784,8 +784,4 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                     R.string.accessibility_toolbar_btn_menu));
         }
     }
-
-    @Override
-    public void setReturnButtonListener(View.OnClickListener listener) {
-    }
 }

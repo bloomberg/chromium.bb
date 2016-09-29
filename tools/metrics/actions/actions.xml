@@ -15070,6 +15070,7 @@ should be able to be added at any place in this file.
     tab closing buttons because those doesn't send the user back to the previous
     app.
   </description>
+  <obsolete>The button option was removed and code deleted.</obsolete>
 </action>
 
 <action name="TaskManager">

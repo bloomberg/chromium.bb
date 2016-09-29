@@ -85,9 +85,4 @@ public interface Toolbar {
      * @param animate Whether the removal of the badge should be animated.
      */
     void removeAppMenuUpdateBadge(boolean animate);
-
-    /**
-     * Herb: Sets the listener that is told when the "return to previous app" button is clicked.
-     */
-    void setReturnButtonListener(View.OnClickListener listener);
 }

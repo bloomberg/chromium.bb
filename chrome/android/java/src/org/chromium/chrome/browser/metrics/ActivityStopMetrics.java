@@ -21,9 +21,6 @@ public class ActivityStopMetrics {
     @IntDef({
         STOP_REASON_UNKNOWN,
         STOP_REASON_BACK_BUTTON,
-        STOP_REASON_RETURN_BUTTON,
-        STOP_REASON_CUSTOM_TAB_STARTED,
-        STOP_REASON_CUSTOM_TAB_STOPPED,
         STOP_REASON_OTHER_CHROME_ACTIVITY_IN_FOREGROUND,
         STOP_REASON_COUNT
     })
@@ -35,14 +32,15 @@ public class ActivityStopMetrics {
     /** Activity stopped after the user hit the back button. */
     public static final int STOP_REASON_BACK_BUTTON = 1;
 
-    /** Activity stopped after the user hit the close/return UI button. */
-    public static final int STOP_REASON_RETURN_BUTTON = 2;
+    // Obsolete -- Activity stopped after the user hit the close/return UI button.
+    // public static final int STOP_REASON_RETURN_BUTTON = 2;
 
-    /** Activity stopped because it launched a {@link CustomTabActivity} on top of itself. */
-    public static final int STOP_REASON_CUSTOM_TAB_STARTED = 3;
+    // Obsolete --  Activity stopped because it launched a {@link CustomTabActivity} on top of
+    //              itself.
+    // public static final int STOP_REASON_CUSTOM_TAB_STARTED = 3;
 
-    /** Activity stopped because its child {@link CustomTabActivity} stopped itself. */
-    public static final int STOP_REASON_CUSTOM_TAB_STOPPED = 4;
+    // Obsolete -- Activity stopped because its child {@link CustomTabActivity} stopped itself.
+    // public static final int STOP_REASON_CUSTOM_TAB_STOPPED = 4;
 
     /** Activity stopped because another of Chrome Activities came into focus. */
     public static final int STOP_REASON_OTHER_CHROME_ACTIVITY_IN_FOREGROUND = 5;

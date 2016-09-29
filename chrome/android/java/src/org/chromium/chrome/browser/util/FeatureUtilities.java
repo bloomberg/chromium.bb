@@ -154,8 +154,8 @@ public class FeatureUtilities {
     }
 
     /**
-     * @return Which flavor of Herb is being tested.  See {@link ChromeSwitches#HERB_FLAVOR_ANISE}
-     *         and its related switches.
+     * @return Which flavor of Herb is being tested.
+     *         See {@link ChromeSwitches#HERB_FLAVOR_ELDERBERRY} and its related switches.
      */
     public static String getHerbFlavor() {
         Context context = ContextUtils.getApplicationContext();
@@ -203,33 +203,16 @@ public class FeatureUtilities {
         // The first clause does the null checks so so we can freely use the startsWith() function.
         String newFlavor = FieldTrialList.findFullName(HERB_EXPERIMENT_NAME);
         Log.d(TAG, "Experiment flavor: " + newFlavor);
-        if (TextUtils.isEmpty(newFlavor)
-                || newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_CONTROL)
-                || newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_DEFAULT)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_DISABLED;
-        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_ANISE)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_ANISE;
-        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_BASIL)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_BASIL;
-        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_CHIVE)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_CHIVE;
-        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_DILL)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_DILL;
-        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_ELDERBERRY)) {
+        if (!TextUtils.isEmpty(newFlavor)
+                && newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_ELDERBERRY)) {
             newFlavor = ChromeSwitches.HERB_FLAVOR_ELDERBERRY;
+        } else {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_DISABLED;
         }
 
         CommandLine instance = CommandLine.getInstance();
         if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_DISABLED_SWITCH)) {
             newFlavor = ChromeSwitches.HERB_FLAVOR_DISABLED;
-        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_ANISE_SWITCH)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_ANISE;
-        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_BASIL_SWITCH)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_BASIL;
-        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_CHIVE_SWITCH)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_CHIVE;
-        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_DILL_SWITCH)) {
-            newFlavor = ChromeSwitches.HERB_FLAVOR_DILL;
         } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_ELDERBERRY_SWITCH)) {
             newFlavor = ChromeSwitches.HERB_FLAVOR_ELDERBERRY;
         }

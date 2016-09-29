@@ -179,20 +179,12 @@ public abstract class ChromeSwitches {
      */
     public static final String HERB_FLAVOR_DISABLED_SWITCH =
             "tab-management-experiment-type-disabled";
-    public static final String HERB_FLAVOR_ANISE_SWITCH = "tab-management-experiment-type-anise";
-    public static final String HERB_FLAVOR_BASIL_SWITCH = "tab-management-experiment-type-basil";
-    public static final String HERB_FLAVOR_CHIVE_SWITCH = "tab-management-experiment-type-chive";
-    public static final String HERB_FLAVOR_DILL_SWITCH = "tab-management-experiment-type-dill";
     public static final String HERB_FLAVOR_ELDERBERRY_SWITCH =
             "tab-management-experiment-type-elderberry";
 
     public static final String HERB_FLAVOR_DEFAULT = "Default";
     public static final String HERB_FLAVOR_CONTROL = "Control";
     public static final String HERB_FLAVOR_DISABLED = "Disabled";
-    public static final String HERB_FLAVOR_ANISE = "Anise";
-    public static final String HERB_FLAVOR_BASIL = "Basil";
-    public static final String HERB_FLAVOR_CHIVE = "Chive";
-    public static final String HERB_FLAVOR_DILL = "Dill";
     public static final String HERB_FLAVOR_ELDERBERRY = "Elderberry";
 
     public static final String DISABLE_APP_LINK = "disable-app-link";

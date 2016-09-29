@@ -1090,14 +1090,6 @@ const char kNtpSwitchToExistingTab[] = "ntp-switch-to-existing-tab";
 const char kProgressBarAnimation[]          = "progress-bar-animation";
 
 // Specifies a particular tab management experiment to enable.
-const char kTabManagementExperimentTypeAnise[] =
-    "tab-management-experiment-type-anise";
-const char kTabManagementExperimentTypeBasil[] =
-    "tab-management-experiment-type-basil";
-const char kTabManagementExperimentTypeChive[] =
-    "tab-management-experiment-type-chive";
-const char kTabManagementExperimentTypeDill[] =
-    "tab-management-experiment-type-dill";
 const char kTabManagementExperimentTypeDisabled[] =
     "tab-management-experiment-type-disabled";
 const char kTabManagementExperimentTypeElderberry[] =
