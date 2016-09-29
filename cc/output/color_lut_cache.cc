@@ -51,7 +51,7 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
   int lut_entries = lut_samples * lut_samples * lut_samples;
   float inverse = 1.0f / (lut_samples - 1);
   std::vector<unsigned char> lut(lut_entries * 4);
-  std::vector<gfx::ColorTransform::TriStim> samples(lut_samples * 3);
+  std::vector<gfx::ColorTransform::TriStim> samples(lut_samples);
   unsigned char* lutp = lut.data();
   for (int y = 0; y < lut_samples; y++) {
     for (int v = 0; v < lut_samples; v++) {
