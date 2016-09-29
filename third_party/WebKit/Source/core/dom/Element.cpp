@@ -3218,7 +3218,10 @@ bool Element::isSpellCheckingEnabled() const
         }
     }
 
-    return true;
+    if (!document().page())
+        return true;
+
+    return document().page()->settings().spellCheckEnabledByDefault();
 }
 
 #if DCHECK_IS_ON()

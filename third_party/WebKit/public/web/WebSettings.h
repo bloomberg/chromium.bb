@@ -238,6 +238,7 @@ public:
     // event handlers specified. User can also trigger click handlers for such
     // elements using SPACE or ENTER keys.
     virtual void setSpatialNavigationEnabled(bool) = 0;
+    virtual void setSpellCheckEnabledByDefault(bool) = 0;
     virtual void setStandardFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setStrictMixedContentChecking(bool) = 0;
     virtual void setStrictMixedContentCheckingForPlugin(bool) = 0;

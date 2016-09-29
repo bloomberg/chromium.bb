@@ -430,3 +430,7 @@ browserSideNavigationEnabled initial=false
 forcePreloadNoneForMediaElements initial=false
 
 hideScrollbars initial=false
+
+# Spellchecking is enabled by default for elements that do not specify it explicitly
+# using the "spellcheck" attribute.
+spellCheckEnabledByDefault initial=true

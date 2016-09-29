@@ -342,6 +342,11 @@ void WebSettingsImpl::setSpatialNavigationEnabled(bool enabled)
     m_settings->setSpatialNavigationEnabled(enabled);
 }
 
+void WebSettingsImpl::setSpellCheckEnabledByDefault(bool enabled)
+{
+    m_settings->setSpellCheckEnabledByDefault(enabled);
+}
+
 void WebSettingsImpl::setTextAreasAreResizable(bool areResizable)
 {
     m_settings->setTextAreasAreResizable(areResizable);

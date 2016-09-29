@@ -155,6 +155,7 @@ public:
     void setShrinksViewportContentToFit(bool) override;
     void setSmartInsertDeleteEnabled(bool) override;
     void setSpatialNavigationEnabled(bool) override;
+    void setSpellCheckEnabledByDefault(bool) override;
     void setStandardFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) override;
     void setStrictMixedContentChecking(bool) override;
     void setStrictMixedContentCheckingForPlugin(bool) override;
