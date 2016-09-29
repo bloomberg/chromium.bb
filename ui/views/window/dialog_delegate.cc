@@ -255,10 +255,7 @@ View* DialogDelegateView::GetContentsView() {
 }
 
 void DialogDelegateView::GetAccessibleState(ui::AXViewState* state) {
-  // This may be called by screen readers after the window is closed.
-  // See crbug.com/648280
-  if (!GetWidget()->IsClosed())
-    state->name = GetWindowTitle();
+  state->name = GetWindowTitle();
   state->role = ui::AX_ROLE_DIALOG;
 }
 

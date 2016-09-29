@@ -52,9 +52,18 @@ void NativeViewAccessibility::NotifyAccessibilityEvent(ui::AXEvent event_type) {
 // ui::AXPlatformNodeDelegate
 
 const ui::AXNodeData& NativeViewAccessibility::GetData() {
+  data_ = ui::AXNodeData();
+
+  // Views may misbehave if their widget is closed; return an unknown role
+  // rather than possibly crashing.
+  if (!view_->GetWidget() || view_->GetWidget()->IsClosed()) {
+    data_.role = ui::AX_ROLE_UNKNOWN;
+    data_.state = 1 << ui::AX_STATE_DISABLED;
+    return data_;
+  }
+
   ui::AXViewState state;
   view_->GetAccessibleState(&state);
-  data_ = ui::AXNodeData();
   data_.role = state.role;
   data_.state = state.state();
   data_.location = gfx::RectF(view_->GetBoundsInScreen());
@@ -67,9 +76,7 @@ const ui::AXNodeData& NativeViewAccessibility::GetData() {
   data_.AddStringAttribute(ui::AX_ATTR_PLACEHOLDER,
                            base::UTF16ToUTF8(state.placeholder));
 
-  // General expectation is that GetTooltipText() is only asked for
-  // while on screen and in a widget.
-  if (view_->GetWidget() && state.description.empty() &&
+  if (state.description.empty() &&
       view_->GetTooltipText(gfx::Point(), &state.description))
     data_.AddStringAttribute(ui::AX_ATTR_DESCRIPTION,
                              base::UTF16ToUTF8(state.description));

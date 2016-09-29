@@ -31,16 +31,27 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    button_.reset(new TestButton());
-    button_->SetSize(gfx::Size(20, 20));
-    button_accessibility_ = NativeViewAccessibility::Create(button_.get());
 
-    label_.reset(new Label);
-    button_->AddChildView(label_.get());
-    label_accessibility_ = NativeViewAccessibility::Create(label_.get());
+    widget_ = new views::Widget;
+    views::Widget::InitParams params =
+        CreateParams(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    params.bounds = gfx::Rect(0, 0, 200, 200);
+    widget_->Init(params);
+
+    button_ = new TestButton();
+    button_->SetSize(gfx::Size(20, 20));
+    button_accessibility_ = NativeViewAccessibility::Create(button_);
+
+    label_ = new Label();
+    button_->AddChildView(label_);
+    label_accessibility_ = NativeViewAccessibility::Create(label_);
+
+    widget_->SetContentsView(button_);
   }
 
   void TearDown() override {
+    if (!widget_->IsClosed())
+      widget_->Close();
     button_accessibility_->Destroy();
     button_accessibility_ = NULL;
     label_accessibility_->Destroy();
@@ -49,9 +60,10 @@ class NativeViewAccessibilityTest : public ViewsTestBase {
   }
 
  protected:
-  std::unique_ptr<TestButton> button_;
+  views::Widget* widget_;
+  TestButton* button_;
   NativeViewAccessibility* button_accessibility_;
-  std::unique_ptr<Label> label_;
+  Label* label_;
   NativeViewAccessibility* label_accessibility_;
 };
 
