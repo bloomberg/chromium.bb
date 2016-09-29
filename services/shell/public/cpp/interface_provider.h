@@ -5,6 +5,7 @@
 #ifndef SERVICES_SHELL_PUBLIC_CPP_INTERFACE_PROVIDER_H_
 #define SERVICES_SHELL_PUBLIC_CPP_INTERFACE_PROVIDER_H_
 
+#include "base/bind.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 
 namespace shell {
@@ -78,6 +79,19 @@ class InterfaceProvider {
   }
   void GetInterface(const std::string& name,
                     mojo::ScopedMessagePipeHandle request_handle);
+
+  // Returns a callback to GetInterface<Interface>(). This can be passed to
+  // InterfaceRegistry::AddInterface() to forward requests.
+  template <typename Interface>
+  base::Callback<void(mojo::InterfaceRequest<Interface>)>
+  CreateInterfaceFactory() {
+    // InterfaceProvider::GetInterface() is overloaded, so static_cast to select
+    // the overload that takes an mojo::InterfaceRequest<Interface>.
+    return base::Bind(static_cast<void (InterfaceProvider::*)(
+                          mojo::InterfaceRequest<Interface>)>(
+                          &InterfaceProvider::GetInterface<Interface>),
+                      GetWeakPtr());
+  }
 
  private:
   void SetBinderForName(

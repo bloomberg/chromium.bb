@@ -98,6 +98,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/mojo/interface_registrar_android.h"
+#include "content/public/browser/android/java_interfaces.h"
 #if defined(ENABLE_MOJO_CDM)
 #include "content/browser/media/android/provision_fetcher_impl.h"
 #endif
@@ -2144,7 +2145,11 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   GetInterfaceRegistry()->AddInterface(base::Bind(
       &PresentationServiceImpl::CreateMojoService, base::Unretained(this)));
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  GetInterfaceRegistry()->AddInterface(
+      GetGlobalJavaInterfaces()
+          ->CreateInterfaceFactory<device::VibrationManager>());
+#else
   GetInterfaceRegistry()->AddInterface(
       base::Bind(&device::VibrationManagerImpl::Create));
 #endif

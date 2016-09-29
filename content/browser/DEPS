@@ -16,6 +16,7 @@ include_rules = [
   "+device/gamepad", # For gamepad API
   "+device/generic_sensor",  # For sensors service.
   "+device/geolocation",
+  "+device/nfc",
   "+device/power_save_blocker",
   "+device/sensors/public",
   "+device/time_zone_monitor",  # For TimeZoneMonitor creation.

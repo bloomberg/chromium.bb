@@ -19,7 +19,7 @@ import java.util.Map;
  * implement an InterfaceFactory that creates instances of your implementation
  * and register that on the registry with a Manager for the interface like this:
  *
- *   registry.addInterface(factory, InterfaceType.MANAGER);
+ *   registry.addInterface(InterfaceType.MANAGER, factory);
  */
 public class InterfaceRegistry implements InterfaceProvider {
     private final Map<String, InterfaceBinder> mBinders = new HashMap<String, InterfaceBinder>();
@@ -67,7 +67,12 @@ public class InterfaceRegistry implements InterfaceProvider {
         }
 
         public void bindToMessagePipe(MessagePipeHandle pipe) {
-            mManager.bind(mFactory.createImpl(), pipe);
+            I impl = mFactory.createImpl();
+            if (impl == null) {
+                pipe.close();
+                return;
+            }
+            mManager.bind(impl, pipe);
         }
     }
 }

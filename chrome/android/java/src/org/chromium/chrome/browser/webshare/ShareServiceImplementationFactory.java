@@ -4,14 +4,14 @@
 
 package org.chromium.chrome.browser.webshare;
 
-import org.chromium.content.browser.InterfaceRegistry.ImplementationFactory;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.services.shell.InterfaceFactory;
 import org.chromium.webshare.mojom.ShareService;
 
 /**
  * Factory that creates instances of ShareService.
  */
-public class ShareServiceImplementationFactory implements ImplementationFactory<ShareService> {
+public class ShareServiceImplementationFactory implements InterfaceFactory<ShareService> {
     private final WebContents mWebContents;
 
     public ShareServiceImplementationFactory(WebContents webContents) {

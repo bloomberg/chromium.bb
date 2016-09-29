@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/trace_event/trace_event.h"
+#include "chrome/browser/android/mojo/chrome_interface_registrar_android.h"
 #include "chrome/browser/android/seccomp_support_detector.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/chrome_paths.h"
@@ -123,6 +124,8 @@ void ChromeBrowserMainPartsAndroid::PostBrowserStart() {
   content::BrowserThread::GetBlockingPool()->PostDelayedTask(FROM_HERE,
       base::Bind(&SeccompSupportDetector::StartDetection),
       base::TimeDelta::FromMinutes(1));
+
+  RegisterChromeJavaMojoInterfaces();
 }
 
 void ChromeBrowserMainPartsAndroid::ShowMissingLocaleMessageBox() {
