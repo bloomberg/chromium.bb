@@ -22,11 +22,12 @@ const uint64_t kDebugTrackUid = 0xDEADBEEF;
 const int kVideoTrackNumber = 1;
 }  // namespace
 
-void write_webm_file_header(struct EbmlGlobal *glob,
+void write_webm_file_header(struct WebmOutputContext *webm_ctx,
                             const aom_codec_enc_cfg_t *cfg,
+                            const struct aom_rational *fps,
                             stereo_format_t stereo_fmt, unsigned int fourcc,
                             const struct AvxRational *par) {
-  mkvmuxer::MkvWriter *const writer = new mkvmuxer::MkvWriter(glob->stream);
+  mkvmuxer::MkvWriter *const writer = new mkvmuxer::MkvWriter(webm_ctx->stream);
   mkvmuxer::Segment *const segment = new mkvmuxer::Segment();
   segment->Init(writer);
   segment->set_mode(mkvmuxer::Segment::kFile);
@@ -36,7 +37,7 @@ void write_webm_file_header(struct EbmlGlobal *glob,
   const uint64_t kTimecodeScale = 1000000;
   info->set_timecode_scale(kTimecodeScale);
   std::string version = "aomenc";
-  if (!glob->debug) {
+  if (!webm_ctx->debug) {
     version.append(std::string(" ") + aom_codec_version_str());
   }
   info->set_writing_app(version.c_str());
@@ -61,35 +62,36 @@ void write_webm_file_header(struct EbmlGlobal *glob,
     video_track->set_display_width(display_width);
     video_track->set_display_height(cfg->g_h);
   }
-  if (glob->debug) {
+  if (webm_ctx->debug) {
     video_track->set_uid(kDebugTrackUid);
   }
-  glob->writer = writer;
-  glob->segment = segment;
+  webm_ctx->writer = writer;
+  webm_ctx->segment = segment;
 }
 
-void write_webm_block(struct EbmlGlobal *glob, const aom_codec_enc_cfg_t *cfg,
+void write_webm_block(struct WebmOutputContext *webm_ctx,
+                      const aom_codec_enc_cfg_t *cfg,
                       const aom_codec_cx_pkt_t *pkt) {
   mkvmuxer::Segment *const segment =
-      reinterpret_cast<mkvmuxer::Segment *>(glob->segment);
+      reinterpret_cast<mkvmuxer::Segment *>(webm_ctx->segment);
   int64_t pts_ns = pkt->data.frame.pts * 1000000000ll * cfg->g_timebase.num /
                    cfg->g_timebase.den;
-  if (pts_ns <= glob->last_pts_ns) pts_ns = glob->last_pts_ns + 1000000;
-  glob->last_pts_ns = pts_ns;
+  if (pts_ns <= webm_ctx->last_pts_ns) pts_ns = webm_ctx->last_pts_ns + 1000000;
+  webm_ctx->last_pts_ns = pts_ns;
 
   segment->AddFrame(static_cast<uint8_t *>(pkt->data.frame.buf),
                     pkt->data.frame.sz, kVideoTrackNumber, pts_ns,
                     pkt->data.frame.flags & AOM_FRAME_IS_KEY);
 }
 
-void write_webm_file_footer(struct EbmlGlobal *glob) {
+void write_webm_file_footer(struct WebmOutputContext *webm_ctx) {
   mkvmuxer::MkvWriter *const writer =
-      reinterpret_cast<mkvmuxer::MkvWriter *>(glob->writer);
+      reinterpret_cast<mkvmuxer::MkvWriter *>(webm_ctx->writer);
   mkvmuxer::Segment *const segment =
-      reinterpret_cast<mkvmuxer::Segment *>(glob->segment);
+      reinterpret_cast<mkvmuxer::Segment *>(webm_ctx->segment);
   segment->Finalize();
   delete segment;
   delete writer;
-  glob->writer = NULL;
-  glob->segment = NULL;
+  webm_ctx->writer = NULL;
+  webm_ctx->segment = NULL;
 }
