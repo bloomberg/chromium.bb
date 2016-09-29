@@ -155,13 +155,17 @@ class ChooserController;
 // Called when the "Get help" button is pressed.
 - (void)onHelpPressed:(id)sender;
 
-// Gets the image from table row view. For testing only.
+// Update the color of the image and text in the table row view.
+- (void)updateContentRowColor;
+
+// Gets the image from table row view. For testing and internal use only.
 - (NSImageView*)tableRowViewImage:(NSInteger)row;
 
-// Gets the text from table row view. For testing only.
+// Gets the text from table row view. For testing and internal use only.
 - (NSTextField*)tableRowViewText:(NSInteger)row;
 
-// Gets the paired status from table row view. For testing only.
+// Gets the paired status from table row view. For testing and internal use
+// only.
 - (NSTextField*)tableRowViewPairedStatus:(NSInteger)row;
 
 @end

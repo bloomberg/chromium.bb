@@ -64,6 +64,10 @@ const CGFloat kTableRowViewVerticalPadding = 1.0f;
 const int kSignalStrengthLevelImageIds[5] = {IDR_SIGNAL_0_BAR, IDR_SIGNAL_1_BAR,
                                              IDR_SIGNAL_2_BAR, IDR_SIGNAL_3_BAR,
                                              IDR_SIGNAL_4_BAR};
+const int kSignalStrengthLevelImageSelectedIds[5] = {
+    IDR_SIGNAL_0_BAR_SELECTED, IDR_SIGNAL_1_BAR_SELECTED,
+    IDR_SIGNAL_2_BAR_SELECTED, IDR_SIGNAL_3_BAR_SELECTED,
+    IDR_SIGNAL_4_BAR_SELECTED};
 
 // Creates a label with |text|.
 base::scoped_nsobject<NSTextField> CreateLabel(NSString* text) {
@@ -75,6 +79,7 @@ base::scoped_nsobject<NSTextField> CreateLabel(NSString* text) {
   [label setSelectable:NO];
   [label setStringValue:text];
   [label setFont:[NSFont systemFontOfSize:[NSFont systemFontSize]]];
+  [label setTextColor:[NSColor blackColor]];
   [label sizeToFit];
   return label;
 }
@@ -298,12 +303,13 @@ void ChooserContentViewController::OnOptionRemoved(size_t index) {
   // be adjusted by one.
   NSInteger idx = static_cast<NSInteger>(index);
   NSInteger selected_row = [table_view_ selectedRow];
-  if (selected_row == idx)
+  if (selected_row == idx) {
     [table_view_ deselectRow:idx];
-  else if (selected_row > idx)
+  } else if (selected_row > idx) {
     [table_view_
             selectRowIndexes:[NSIndexSet indexSetWithIndex:selected_row - 1]
         byExtendingSelection:NO];
+  }
 
   UpdateTableView();
 }
@@ -803,6 +809,50 @@ void ChooserContentViewController::UpdateTableView() {
 
 - (void)onHelpPressed:(id)sender {
   chooserController_->OpenHelpCenterUrl();
+}
+
+- (void)updateContentRowColor {
+  NSInteger selectedRow = [tableView_ selectedRow];
+  NSInteger numOptions =
+      base::checked_cast<NSInteger>(chooserController_->NumOptions());
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  for (NSInteger rowIndex = 0; rowIndex < numOptions; ++rowIndex) {
+    // Update the color of the text.
+    [[self tableRowViewText:rowIndex]
+        setTextColor:(rowIndex == selectedRow ? [NSColor whiteColor]
+                                              : [NSColor blackColor])];
+
+    // Update the color of the image.
+    if (chooserController_->ShouldShowIconBeforeText()) {
+      if (chooserController_->IsConnected(rowIndex)) {
+        [[self tableRowViewImage:rowIndex]
+            setImage:gfx::NSImageFromImageSkia(gfx::CreateVectorIcon(
+                         gfx::VectorIconId::BLUETOOTH_CONNECTED,
+                         rowIndex == selectedRow ? SK_ColorWHITE
+                                                 : gfx::kChromeIconGrey))];
+      } else {
+        int signalStrengthLevel =
+            chooserController_->GetSignalStrengthLevel(rowIndex);
+        if (signalStrengthLevel != -1) {
+          int imageId =
+              rowIndex == selectedRow
+                  ? kSignalStrengthLevelImageSelectedIds[signalStrengthLevel]
+                  : kSignalStrengthLevelImageIds[signalStrengthLevel];
+          [[self tableRowViewImage:rowIndex]
+              setImage:rb.GetNativeImageNamed(imageId).ToNSImage()];
+        }
+      }
+    }
+
+    // Update the color of paired status.
+    NSTextField* pairedStatusText = [self tableRowViewPairedStatus:rowIndex];
+    if (pairedStatusText) {
+      [pairedStatusText
+          setTextColor:(skia::SkColorToCalibratedNSColor(
+                           rowIndex == selectedRow ? gfx::kGoogleGreen300
+                                                   : gfx::kGoogleGreen700))];
+    }
+  }
 }
 
 - (NSImageView*)tableRowViewImage:(NSInteger)row {

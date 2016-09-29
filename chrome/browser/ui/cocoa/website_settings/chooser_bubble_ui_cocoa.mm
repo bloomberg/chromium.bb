@@ -209,6 +209,7 @@ std::unique_ptr<BubbleUi> ChooserBubbleDelegate::BuildBubbleUi() {
 }
 
 - (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
+  [chooserContentView_ updateContentRowColor];
   [connectButton_ setEnabled:[tableView_ numberOfSelectedRows] > 0];
 }
 

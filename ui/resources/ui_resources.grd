@@ -189,6 +189,11 @@
         <structure type="chrome_scaled_image" name="IDR_SIGNAL_2_BAR" file="common/signal_2_bar.png" />
         <structure type="chrome_scaled_image" name="IDR_SIGNAL_3_BAR" file="common/signal_3_bar.png" />
         <structure type="chrome_scaled_image" name="IDR_SIGNAL_4_BAR" file="common/signal_4_bar.png" />
+        <structure type="chrome_scaled_image" name="IDR_SIGNAL_0_BAR_SELECTED" file="common/signal_0_bar_selected.png" />
+        <structure type="chrome_scaled_image" name="IDR_SIGNAL_1_BAR_SELECTED" file="common/signal_1_bar_selected.png" />
+        <structure type="chrome_scaled_image" name="IDR_SIGNAL_2_BAR_SELECTED" file="common/signal_2_bar_selected.png" />
+        <structure type="chrome_scaled_image" name="IDR_SIGNAL_3_BAR_SELECTED" file="common/signal_3_bar_selected.png" />
+        <structure type="chrome_scaled_image" name="IDR_SIGNAL_4_BAR_SELECTED" file="common/signal_4_bar_selected.png" />
       </if>
       <if expr="use_aura">
         <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE_CENTER" file="common/text_selection_handle_center.png" />
