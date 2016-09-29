@@ -8,8 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/notifications/notification_delegate.h"
-#include "url/gurl.h"
+#include "chrome/browser/notifications/web_notification_delegate.h"
+
+class GURL;
 
 namespace content {
 class BrowserContext;
@@ -18,7 +19,7 @@ class BrowserContext;
 // Delegate responsible for listening to the click event on persistent
 // notifications, to forward them to the PlatformNotificationService so that
 // JavaScript events can be fired on the associated Service Worker.
-class PersistentNotificationDelegate : public NotificationDelegate {
+class PersistentNotificationDelegate : public WebNotificationDelegate {
  public:
   PersistentNotificationDelegate(content::BrowserContext* browser_context,
                                  const std::string& notification_id,
@@ -30,18 +31,11 @@ class PersistentNotificationDelegate : public NotificationDelegate {
   void Close(bool by_user) override;
   void Click() override;
   void ButtonClick(int button_index) override;
-  void SettingsClick() override;
-  bool ShouldDisplaySettingsButton() override;
-
-  std::string id() const override;
 
  protected:
   ~PersistentNotificationDelegate() override;
 
  private:
-  content::BrowserContext* browser_context_;
-  std::string notification_id_;
-  GURL origin_;
   int notification_settings_index_;
 
   DISALLOW_COPY_AND_ASSIGN(PersistentNotificationDelegate);

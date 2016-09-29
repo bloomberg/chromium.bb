@@ -2284,6 +2284,8 @@ split_static_library("browser") {
       "notifications/persistent_notification_handler.h",
       "notifications/platform_notification_service_impl.cc",
       "notifications/platform_notification_service_impl.h",
+      "notifications/web_notification_delegate.cc",
+      "notifications/web_notification_delegate.h",
       "push_messaging/push_messaging_notification_manager.cc",
       "push_messaging/push_messaging_notification_manager.h",
     ]

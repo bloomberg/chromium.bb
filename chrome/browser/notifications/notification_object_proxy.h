@@ -9,7 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/notifications/notification_delegate.h"
+#include "chrome/browser/notifications/web_notification_delegate.h"
+
+class GURL;
 
 namespace content {
 class BrowserContext;
@@ -20,13 +22,14 @@ class DesktopNotificationDelegate;
 // which corresponds to a notification toast on the desktop.  It can be signaled
 // when various events occur regarding the desktop notification, and the
 // attached JS listeners will be invoked in the renderer or worker process.
-class NotificationObjectProxy : public NotificationDelegate {
+class NotificationObjectProxy : public WebNotificationDelegate {
  public:
   // Creates a Proxy object with the necessary callback information. The Proxy
   // will take ownership of |delegate|.
   NotificationObjectProxy(
       content::BrowserContext* browser_context,
       const std::string& notification_id,
+      const GURL& origin,
       std::unique_ptr<content::DesktopNotificationDelegate> delegate);
 
   // NotificationDelegate implementation.
@@ -34,18 +37,13 @@ class NotificationObjectProxy : public NotificationDelegate {
   void Close(bool by_user) override;
   void Click() override;
   void ButtonClick(int button_index) override;
-  void SettingsClick() override;
-  bool ShouldDisplaySettingsButton() override;
-  std::string id() const override;
 
  protected:
   ~NotificationObjectProxy() override;
 
  private:
-  content::BrowserContext* browser_context_;
   std::unique_ptr<content::DesktopNotificationDelegate> delegate_;
   bool displayed_;
-  std::string notification_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationObjectProxy);
 };

@@ -15,6 +15,7 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
+class Browser;
 class Profile;
 
 // NotificationDelegate which does nothing, useful for testing when
@@ -71,6 +72,21 @@ class StubNotificationUIManager : public NotificationUIManager {
   base::Closure notification_added_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(StubNotificationUIManager);
+};
+
+// Helper class that has to be created in the stack to check if the fullscreen
+// setting of a browser is in the desired state.
+class FullscreenStateWaiter {
+ public:
+  FullscreenStateWaiter(Browser* browser, bool desired_state);
+
+  void Wait();
+
+ private:
+  Browser* browser_;
+  bool desired_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(FullscreenStateWaiter);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_TEST_UTIL_H_

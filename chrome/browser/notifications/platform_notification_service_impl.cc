@@ -284,7 +284,7 @@ void PlatformNotificationServiceImpl::DisplayNotification(
   DCHECK_EQ(0u, notification_resources.action_icons.size());
 
   NotificationObjectProxy* proxy = new NotificationObjectProxy(
-      browser_context, notification_id, std::move(delegate));
+      browser_context, notification_id, origin, std::move(delegate));
   Notification notification = CreateNotificationFromData(
       profile, GURL() /* service_worker_scope */, origin, notification_data,
       notification_resources, proxy);

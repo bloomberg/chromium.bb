@@ -4,6 +4,10 @@
 
 #include "chrome/browser/notifications/notification_test_util.h"
 
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
+#include "content/public/test/test_utils.h"
+
 MockNotificationDelegate::MockNotificationDelegate(const std::string& id)
     : id_(id) {}
 
@@ -134,4 +138,16 @@ void StubNotificationUIManager::CancelAll() {
   for (const auto& pair : notifications_)
     pair.first.delegate()->Close(false /* by_user */);
   notifications_.clear();
+}
+
+FullscreenStateWaiter::FullscreenStateWaiter(
+    Browser* browser, bool desired_state)
+    : browser_(browser),
+      desired_state_(desired_state) {}
+
+void FullscreenStateWaiter::Wait() {
+  while (desired_state_ !=
+      browser_->exclusive_access_manager()->context()->IsFullscreen()) {
+    content::RunAllPendingInMessageLoop();
+  }
 }

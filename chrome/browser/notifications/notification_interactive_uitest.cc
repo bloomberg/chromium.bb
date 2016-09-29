@@ -23,13 +23,16 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -49,6 +52,11 @@
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification_blocker.h"
 #include "url/gurl.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
+#endif
 
 namespace {
 
@@ -881,3 +889,107 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationDoubleClose) {
   result = CreateNotification(browser(), true, "", "Title1", "Body1", "chat");
   EXPECT_NE("-1", result);
 }
+
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayNormal) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Creates a simple notification.
+  AllowAllOrigins();
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+
+  std::string result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
+
+  ASSERT_EQ(1, GetNotificationCount());
+  message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+
+  // Because the webpage is not fullscreen, ShouldDisplayOverFullscreen will be
+  // false.
+  EXPECT_FALSE(
+      (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayFullscreen) {
+#if defined(OS_MACOSX)
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
+#endif
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Creates a simple notification.
+  AllowAllOrigins();
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+
+  std::string result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
+
+  // Set the page fullscreen
+  browser()->exclusive_access_manager()->fullscreen_controller()->
+      ToggleBrowserFullscreenMode();
+
+  {
+    FullscreenStateWaiter fs_state(browser(), true);
+    fs_state.Wait();
+  }
+
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
+      browser()->window()->GetNativeWindow()));
+
+  ASSERT_TRUE(browser()->window()->IsActive());
+
+  ASSERT_EQ(1, GetNotificationCount());
+  message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+
+  // Because the webpage is fullscreen, ShouldDisplayOverFullscreen will be true
+  EXPECT_TRUE(
+      (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
+}
+
+// The Fake OSX fullscreen window doesn't like drawing a second fullscreen
+// window when another is visible.
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestShouldDisplayMultiFullscreen) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  AllowAllOrigins();
+
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+
+  Browser* other_browser = CreateBrowser(browser()->profile());
+  ui_test_utils::NavigateToURL(other_browser, GURL("about:blank"));
+
+  std::string result = CreateSimpleNotification(browser(), true);
+  EXPECT_NE("-1", result);
+
+  // Set the notifcation page fullscreen
+  browser()->exclusive_access_manager()->fullscreen_controller()->
+      ToggleBrowserFullscreenMode();
+  {
+    FullscreenStateWaiter fs_state(browser(), true);
+    fs_state.Wait();
+  }
+
+  // Set the other browser fullscreen
+  other_browser->exclusive_access_manager()->fullscreen_controller()->
+      ToggleBrowserFullscreenMode();
+  {
+    FullscreenStateWaiter fs_state(other_browser, true);
+    fs_state.Wait();
+  }
+
+  ASSERT_TRUE(browser()->exclusive_access_manager()->context()->IsFullscreen());
+  ASSERT_TRUE(
+      other_browser->exclusive_access_manager()->context()->IsFullscreen());
+
+  ASSERT_FALSE(browser()->window()->IsActive());
+  ASSERT_TRUE(other_browser->window()->IsActive());
+
+  ASSERT_EQ(1, GetNotificationCount());
+  message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetVisibleNotifications();
+  // Because the second page is the top-most fullscreen,
+  // ShouldDisplayOverFullscreen will be false
+  EXPECT_FALSE(
+      (*notifications.rbegin())->delegate()->ShouldDisplayOverFullscreen());
+}
+#endif
