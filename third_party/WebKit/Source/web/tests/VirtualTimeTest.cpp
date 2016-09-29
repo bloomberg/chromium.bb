@@ -41,6 +41,14 @@ protected:
             WebScriptSource(WebString(scriptSource)), false, &callbackHelper);
         return callbackHelper.result();
     }
+
+    void TearDown() override
+    {
+        // The SimTest destructor calls runPendingTasks. This is a problem because if there are
+        // any repeating tasks, advancing virtual time will cause the runloop to busy loop. Pausing
+        // virtual time here fixes that.
+        webView().scheduler()->setVirtualTimePolicy(WebViewScheduler::VirtualTimePolicy::PAUSE);
+    }
 };
 
 namespace {
