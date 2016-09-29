@@ -113,6 +113,11 @@ class AvSettings {
     // where step interval should be 1%.
     AUDIO_VOLUME_STEP_INTERVAL_CHANGED = 7,
 
+    // This event shall be fired whenever the HDR output type changes.
+    // On this event, GetHdrOutputType() will be called on the thread where
+    // Initialize() was called.
+    HDR_OUTPUT_TYPE_CHANGED = 8,
+
     // This event should be fired when the device is connected to HDMI sinks.
     HDMI_CONNECTED = 100,
 
@@ -276,6 +281,16 @@ class AvSettings {
   // Enables/Disables Wake-On-Cast status.
   // Returns false if failed or not supported.
   virtual bool EnableWakeOnCast(bool enabled) = 0;
+
+  // Supported HDR output modes.
+  enum HdrOutputType {
+    HDR_OUTPUT_SDR,  // not HDR
+    HDR_OUTPUT_HDR,  // HDR with static metadata
+    HDR_OUTPUT_DOLBYVISION  // DolbyVision output
+  };
+
+  // Gets the current HDR output type.
+  virtual HdrOutputType GetHdrOutputType() = 0;
 };
 
 }  // namespace chromecast
