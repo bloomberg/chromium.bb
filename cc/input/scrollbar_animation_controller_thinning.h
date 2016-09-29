@@ -56,7 +56,9 @@ class CC_EXPORT ScrollbarAnimationControllerThinning
   float ThumbThicknessScaleAtAnimationProgress(float progress);
   float AdjustScale(float new_value,
                     float current_value,
-                    AnimationChange animation_change);
+                    AnimationChange animation_change,
+                    float min_value,
+                    float max_value);
   void ApplyOpacityAndThumbThicknessScale(float opacity,
                                           float thumb_thickness_scale);
 

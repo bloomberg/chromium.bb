@@ -97,6 +97,19 @@ TEST_F(ScrollbarAnimationControllerThinningTest, Idle) {
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
+// Check that scrollbar appears again, when the layer becomes scrollable.
+TEST_F(ScrollbarAnimationControllerThinningTest, AppearOnResize) {
+  scrollbar_controller_->DidScrollUpdate(false);
+  // Make the Layer non-scrollable, scrollbar disappears.
+  clip_layer_->SetBounds(gfx::Size(200, 200));
+  scrollbar_controller_->DidScrollUpdate(false);
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
+  // Make the layer scrollable, scrollbar appears again.
+  clip_layer_->SetBounds(gfx::Size(100, 100));
+  scrollbar_controller_->DidScrollUpdate(false);
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
+}
+
 // Check that scrollbar disappears when the layer becomes non-scrollable.
 TEST_F(ScrollbarAnimationControllerThinningTest, HideOnResize) {
   LayerImpl* scroll_layer = host_impl_.active_tree()->LayerById(1);
