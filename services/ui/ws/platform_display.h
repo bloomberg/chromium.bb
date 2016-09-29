@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -76,7 +77,7 @@ class PlatformDisplay {
 
   virtual void ReleaseCapture() = 0;
 
-  virtual void SetCursorById(int32_t cursor) = 0;
+  virtual void SetCursorById(mojom::Cursor cursor) = 0;
 
   virtual display::Display::Rotation GetRotation() = 0;
 
@@ -129,7 +130,7 @@ class DefaultPlatformDisplay : public PlatformDisplay,
   void SetTitle(const base::string16& title) override;
   void SetCapture() override;
   void ReleaseCapture() override;
-  void SetCursorById(int32_t cursor) override;
+  void SetCursorById(mojom::Cursor cursor) override;
   float GetDeviceScaleFactor() override;
   display::Display::Rotation GetRotation() override;
   void UpdateTextInputState(const ui::TextInputState& state) override;

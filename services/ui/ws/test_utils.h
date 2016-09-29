@@ -261,14 +261,14 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
  public:
   static const int64_t kFirstDisplayId;
 
-  explicit TestPlatformDisplayFactory(int32_t* cursor_id_storage);
+  explicit TestPlatformDisplayFactory(mojom::Cursor* cursor_storage);
   ~TestPlatformDisplayFactory();
 
   // PlatformDisplayFactory:
   PlatformDisplay* CreatePlatformDisplay() override;
 
  private:
-  int32_t* cursor_id_storage_;
+  mojom::Cursor* cursor_storage_;
   int64_t next_display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplayFactory);
@@ -575,7 +575,7 @@ class WindowServerTestHelper {
   ~WindowServerTestHelper();
 
   WindowServer* window_server() { return window_server_.get(); }
-  int32_t cursor_id() const { return cursor_id_; }
+  mojom::Cursor cursor() const { return cursor_id_; }
 
   TestWindowServerDelegate* window_server_delegate() {
     return &window_server_delegate_;
@@ -583,7 +583,7 @@ class WindowServerTestHelper {
   base::MessageLoop* message_loop() { return &message_loop_; }
 
  private:
-  int32_t cursor_id_;
+  mojom::Cursor cursor_id_;
   TestPlatformDisplayFactory platform_display_factory_;
   TestWindowServerDelegate window_server_delegate_;
   std::unique_ptr<WindowServer> window_server_;
@@ -617,7 +617,7 @@ class WindowEventTargetingHelper {
   // Sets the task runner for |message_loop_|
   void SetTaskRunner(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
-  int32_t cursor_id() const { return ws_test_helper_.cursor_id(); }
+  mojom::Cursor cursor() const { return ws_test_helper_.cursor(); }
   Display* display() { return display_; }
   TestWindowTreeBinding* last_binding() {
     return ws_test_helper_.window_server_delegate()->last_binding();

@@ -103,7 +103,7 @@ void EventDispatcher::SetMousePointerScreenLocation(
   delegate_->OnMouseCursorLocationChanged(screen_location);
 }
 
-bool EventDispatcher::GetCurrentMouseCursor(int32_t* cursor_out) {
+bool EventDispatcher::GetCurrentMouseCursor(ui::mojom::Cursor* cursor_out) {
   if (drag_controller_) {
     *cursor_out = drag_controller_->current_cursor();
     return true;

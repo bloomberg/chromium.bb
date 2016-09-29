@@ -131,8 +131,7 @@ class WindowTreeTest : public testing::Test {
   ~WindowTreeTest() override {}
 
   ui::mojom::Cursor cursor_id() {
-    return static_cast<ui::mojom::Cursor>(
-        window_event_targeting_helper_.cursor_id());
+    return window_event_targeting_helper_.cursor();
   }
   Display* display() { return window_event_targeting_helper_.display(); }
   TestWindowTreeBinding* last_binding() {

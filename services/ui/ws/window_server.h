@@ -193,7 +193,7 @@ class WindowServer : public ServerWindowDelegate,
                             const mojom::OrderDirection direction);
   void ProcessWindowDeleted(ServerWindow* window);
   void ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
-                                               int32_t cursor_id);
+                                               mojom::Cursor cursor_id);
 
   // Sends an |event| to all WindowTrees belonging to |user_id| that might be
   // observing events. Skips |ignore_tree| if it is non-null. |target_window| is
@@ -320,9 +320,9 @@ class WindowServer : public ServerWindowDelegate,
       const std::string& name,
       const std::vector<uint8_t>* new_data) override;
   void OnWindowPredefinedCursorChanged(ServerWindow* window,
-                                       int32_t cursor_id) override;
+                                       mojom::Cursor cursor_id) override;
   void OnWindowNonClientCursorChanged(ServerWindow* window,
-                                      int32_t cursor_id) override;
+                                      mojom::Cursor cursor_id) override;
   void OnWindowTextInputStateChanged(ServerWindow* window,
                                      const ui::TextInputState& state) override;
   void OnTransientWindowAdded(ServerWindow* window,

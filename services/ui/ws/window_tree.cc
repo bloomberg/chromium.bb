@@ -699,7 +699,7 @@ void WindowTree::ProcessWindowOpacityChanged(const ServerWindow* window,
 }
 
 void WindowTree::ProcessCursorChanged(const ServerWindow* window,
-                                      int32_t cursor_id,
+                                      mojom::Cursor cursor_id,
                                       bool originated_change) {
   if (originated_change)
     return;
@@ -707,8 +707,7 @@ void WindowTree::ProcessCursorChanged(const ServerWindow* window,
   if (!IsWindowKnown(window, &client_window_id))
     return;
 
-  client()->OnWindowPredefinedCursorChanged(client_window_id.id,
-                                            mojom::Cursor(cursor_id));
+  client()->OnWindowPredefinedCursorChanged(client_window_id.id, cursor_id);
 }
 
 void WindowTree::ProcessFocusChanged(const ServerWindow* old_focused_window,

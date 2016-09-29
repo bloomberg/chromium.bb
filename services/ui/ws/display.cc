@@ -13,6 +13,7 @@
 #include "mojo/common/common_type_converters.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "services/ui/common/types.h"
+#include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/focus_controller.h"
@@ -35,7 +36,7 @@ Display::Display(WindowServer* window_server,
                  const PlatformDisplayInitParams& platform_display_init_params)
     : window_server_(window_server),
       platform_display_(PlatformDisplay::Create(platform_display_init_params)),
-      last_cursor_(ui::kCursorNone) {
+      last_cursor_(mojom::Cursor::CURSOR_NULL) {
   platform_display_->Init(this);
 
   window_server_->window_manager_window_tree_factory_set()->AddObserver(this);
@@ -220,7 +221,7 @@ void Display::OnWillDestroyTree(WindowTree* tree) {
   }
 }
 
-void Display::UpdateNativeCursor(int32_t cursor_id) {
+void Display::UpdateNativeCursor(mojom::Cursor cursor_id) {
   if (cursor_id != last_cursor_) {
     platform_display_->SetCursorById(cursor_id);
     last_cursor_ = cursor_id;

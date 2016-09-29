@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "services/ui/common/types.h"
+#include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "services/ui/ws/drag_cursor_updater.h"
 #include "services/ui/ws/modal_window_controller.h"
@@ -64,7 +65,7 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
 
   // If we still have the window of the last mouse move, returns true and sets
   // the current cursor to use to |cursor_out|.
-  bool GetCurrentMouseCursor(int32_t* cursor_out);
+  bool GetCurrentMouseCursor(ui::mojom::Cursor* cursor_out);
 
   // |capture_window_| will receive all input. See window_tree.mojom for
   // details.

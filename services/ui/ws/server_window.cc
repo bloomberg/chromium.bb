@@ -288,7 +288,7 @@ void ServerWindow::SetPredefinedCursor(ui::mojom::Cursor value) {
   cursor_id_ = value;
   FOR_EACH_OBSERVER(
       ServerWindowObserver, observers_,
-      OnWindowPredefinedCursorChanged(this, static_cast<int32_t>(value)));
+      OnWindowPredefinedCursorChanged(this, value));
 }
 
 void ServerWindow::SetNonClientCursor(ui::mojom::Cursor value) {
@@ -297,7 +297,7 @@ void ServerWindow::SetNonClientCursor(ui::mojom::Cursor value) {
   non_client_cursor_id_ = value;
   FOR_EACH_OBSERVER(
       ServerWindowObserver, observers_,
-      OnWindowNonClientCursorChanged(this, static_cast<int32_t>(value)));
+      OnWindowNonClientCursorChanged(this, value));
 }
 
 void ServerWindow::SetTransform(const gfx::Transform& transform) {

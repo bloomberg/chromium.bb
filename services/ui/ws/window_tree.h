@@ -243,7 +243,7 @@ class WindowTree : public mojom::WindowTree,
                                    float new_opacity,
                                    bool originated_change);
   void ProcessCursorChanged(const ServerWindow* window,
-                            int32_t cursor_id,
+                            mojom::Cursor cursor_id,
                             bool originated_change);
   void ProcessFocusChanged(const ServerWindow* old_focused_window,
                            const ServerWindow* new_focused_window);

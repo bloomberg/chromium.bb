@@ -132,14 +132,14 @@ void DefaultPlatformDisplay::ReleaseCapture() {
   platform_window_->ReleaseCapture();
 }
 
-void DefaultPlatformDisplay::SetCursorById(int32_t cursor_id) {
+void DefaultPlatformDisplay::SetCursorById(mojom::Cursor cursor_id) {
 #if !defined(OS_ANDROID)
   // TODO(erg): This still isn't sufficient, and will only use native cursors
   // that chrome would use, not custom image cursors. For that, we should
   // delegate to the window manager to load images from resource packs.
   //
   // We probably also need to deal with different DPIs.
-  ui::Cursor cursor(cursor_id);
+  ui::Cursor cursor(static_cast<int32_t>(cursor_id));
   cursor_loader_->SetPlatformCursor(&cursor);
   platform_window_->SetCursor(cursor.platform());
 #endif

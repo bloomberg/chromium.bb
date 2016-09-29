@@ -420,8 +420,8 @@ void WindowServer::ProcessWindowDeleted(ServerWindow* window) {
     pair.second->ProcessWindowDeleted(window, IsOperationSource(pair.first));
 }
 
-void WindowServer::ProcessWillChangeWindowPredefinedCursor(ServerWindow* window,
-                                                           int32_t cursor_id) {
+void WindowServer::ProcessWillChangeWindowPredefinedCursor(
+    ServerWindow* window, mojom::Cursor cursor_id) {
   for (auto& pair : tree_map_) {
     pair.second->ProcessCursorChanged(window, cursor_id,
                                       IsOperationSource(pair.first));
@@ -580,7 +580,7 @@ void WindowServer::UpdateNativeCursorFromMouseLocation(ServerWindow* window) {
     EventDispatcher* event_dispatcher =
         display_root->window_manager_state()->event_dispatcher();
     event_dispatcher->UpdateCursorProviderByLastKnownLocation();
-    int32_t cursor_id = 0;
+    mojom::Cursor cursor_id = mojom::Cursor::CURSOR_NULL;
     if (event_dispatcher->GetCurrentMouseCursor(&cursor_id))
       display_root->display()->UpdateNativeCursor(cursor_id);
   }
@@ -598,7 +598,7 @@ void WindowServer::UpdateNativeCursorIfOver(ServerWindow* window) {
     return;
 
   event_dispatcher->UpdateNonClientAreaForCurrentWindow();
-  int32_t cursor_id = 0;
+  mojom::Cursor cursor_id = mojom::Cursor::CURSOR_NULL;
   if (event_dispatcher->GetCurrentMouseCursor(&cursor_id))
     display_root->display()->UpdateNativeCursor(cursor_id);
 }
@@ -744,7 +744,7 @@ void WindowServer::OnWindowVisibilityChanged(ServerWindow* window) {
 }
 
 void WindowServer::OnWindowPredefinedCursorChanged(ServerWindow* window,
-                                                   int32_t cursor_id) {
+                                                   mojom::Cursor cursor_id) {
   if (in_destructor_)
     return;
 
@@ -754,7 +754,7 @@ void WindowServer::OnWindowPredefinedCursorChanged(ServerWindow* window,
 }
 
 void WindowServer::OnWindowNonClientCursorChanged(ServerWindow* window,
-                                                  int32_t cursor_id) {
+                                                  mojom::Cursor cursor_id) {
   if (in_destructor_)
     return;
 

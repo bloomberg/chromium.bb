@@ -10,6 +10,7 @@
 #include "cc/output/copy_output_request.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
+#include "services/ui/public/interfaces/cursor.mojom.h"
 #include "services/ui/surfaces/surfaces_state.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/display_manager.h"
@@ -30,10 +31,10 @@ class TestPlatformDisplay : public PlatformDisplay {
  public:
   explicit TestPlatformDisplay(int64_t id,
                                bool is_primary,
-                               int32_t* cursor_id_storage)
+                               mojom::Cursor* cursor_storage)
       : id_(id),
         is_primary_(is_primary),
-        cursor_id_storage_(cursor_id_storage) {
+        cursor_storage_(cursor_storage) {
     display_metrics_.bounds = gfx::Rect(0, 0, 400, 300);
     display_metrics_.device_scale_factor = 1.f;
   }
@@ -50,7 +51,9 @@ class TestPlatformDisplay : public PlatformDisplay {
   void SetTitle(const base::string16& title) override {}
   void SetCapture() override {}
   void ReleaseCapture() override {}
-  void SetCursorById(int32_t cursor) override { *cursor_id_storage_ = cursor; }
+  void SetCursorById(mojom::Cursor cursor) override {
+    *cursor_storage_ = cursor;
+  }
   display::Display::Rotation GetRotation() override {
     return display::Display::Rotation::ROTATE_0;
   }
@@ -72,7 +75,7 @@ class TestPlatformDisplay : public PlatformDisplay {
 
   int64_t id_;
   bool is_primary_;
-  int32_t* cursor_id_storage_;
+  mojom::Cursor* cursor_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
 };
@@ -113,8 +116,8 @@ void WindowManagerWindowTreeFactorySetTestApi::Add(const UserId& user_id) {
 const int64_t TestPlatformDisplayFactory::kFirstDisplayId = 1;
 
 TestPlatformDisplayFactory::TestPlatformDisplayFactory(
-    int32_t* cursor_id_storage)
-    : cursor_id_storage_(cursor_id_storage),
+    mojom::Cursor* cursor_storage)
+    : cursor_storage_(cursor_storage),
       next_display_id_(kFirstDisplayId) {}
 
 TestPlatformDisplayFactory::~TestPlatformDisplayFactory() {}
@@ -122,7 +125,7 @@ TestPlatformDisplayFactory::~TestPlatformDisplayFactory() {}
 PlatformDisplay* TestPlatformDisplayFactory::CreatePlatformDisplay() {
   bool is_primary = (next_display_id_ == kFirstDisplayId);
   return new TestPlatformDisplay(next_display_id_++, is_primary,
-                                 cursor_id_storage_);
+                                 cursor_storage_);
 }
 
 // TestFrameGeneratorDelegate -------------------------------------------------
@@ -464,7 +467,8 @@ bool TestWindowServerDelegate::IsTestConfig() const {
 // WindowServerTestHelper  ---------------------------------------------------
 
 WindowServerTestHelper::WindowServerTestHelper()
-    : cursor_id_(0), platform_display_factory_(&cursor_id_) {
+    : cursor_id_(mojom::Cursor::CURSOR_NULL),
+      platform_display_factory_(&cursor_id_) {
   PlatformDisplay::set_factory_for_testing(&platform_display_factory_);
   window_server_ = base::MakeUnique<WindowServer>(&window_server_delegate_);
   window_server_delegate_.set_window_server(window_server_.get());

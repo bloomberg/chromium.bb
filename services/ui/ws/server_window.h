@@ -89,9 +89,9 @@ class ServerWindow {
   bool can_accept_drops() const { return accepts_drops_; }
   void SetCanAcceptDrops(bool accepts_drags);
 
-  int32_t cursor() const { return static_cast<int32_t>(cursor_id_); }
-  int32_t non_client_cursor() const {
-    return static_cast<int32_t>(non_client_cursor_id_);
+  ui::mojom::Cursor cursor() const { return cursor_id_; }
+  ui::mojom::Cursor non_client_cursor() const {
+    return non_client_cursor_id_;
   }
 
   const ServerWindow* parent() const { return parent_; }
