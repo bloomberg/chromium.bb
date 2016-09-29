@@ -116,11 +116,11 @@ INSTANTIATE_TEST_CASE_P(
         ::testing::Values(
             static_cast<const libaom_test::CodecFactory *>(&libaom_test::kAV1)),
         ::testing::Combine(::testing::Values(::libaom_test::kTwoPassGood),
-                           ::testing::Values(CONFIG_MISC_FIXES))));
+                           ::testing::Values(1))));
 #else
 AV1_INSTANTIATE_TEST_CASE(
     SuperframeTest,
     ::testing::Combine(::testing::Values(::libaom_test::kTwoPassGood),
-                       ::testing::Values(CONFIG_MISC_FIXES)));
+                       ::testing::Values(1)));
 #endif
 }  // namespace

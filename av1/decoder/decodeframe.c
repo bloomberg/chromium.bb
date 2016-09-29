@@ -1075,15 +1075,10 @@ static void setup_tile_info(AV1Decoder *pbi, struct aom_read_bit_buffer *rb) {
   // rows
   cm->log2_tile_rows = aom_rb_read_bit(rb);
   if (cm->log2_tile_rows) cm->log2_tile_rows += aom_rb_read_bit(rb);
-
-#if CONFIG_MISC_FIXES
   // tile size magnitude
   if (cm->log2_tile_rows > 0 || cm->log2_tile_cols > 0) {
     cm->tile_sz_mag = aom_rb_read_literal(rb, 2);
   }
-#else
-  cm->tile_sz_mag = 3;
-#endif
 #if CONFIG_TILE_GROUPS
   // Store an index to the location of the tile group information
   pbi->tg_size_bit_offset = rb->bit_offset;
@@ -1133,9 +1128,9 @@ static void get_tile_buffer(const uint8_t *const data_end,
     if (decrypt_cb) {
       uint8_t be_data[4];
       decrypt_cb(decrypt_state, *data, be_data, tile_sz_mag + 1);
-      size = mem_get_varsize(be_data, tile_sz_mag) + CONFIG_MISC_FIXES;
+      size = mem_get_varsize(be_data, tile_sz_mag) + 1;
     } else {
-      size = mem_get_varsize(*data, tile_sz_mag) + CONFIG_MISC_FIXES;
+      size = mem_get_varsize(*data, tile_sz_mag) + 1;
     }
     *data += tile_sz_mag + 1;
 

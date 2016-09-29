@@ -1740,12 +1740,7 @@ static size_t encode_tiles(AV1_COMP *cpi, uint8_t *data_ptr,
   unsigned int max_tile = 0;
 #if CONFIG_TILE_GROUPS
   const int n_log2_tiles = cm->log2_tile_rows + cm->log2_tile_cols;
-#if CONFIG_MISC_FIXES
   const int have_tiles = n_log2_tiles > 0;
-#else
-  const int have_tiles = 0;  // we have tiles, but we don't want to write a
-                             // tile size marker in the header
-#endif
 
   size_t comp_hdr_size;
   // Fixed size tile groups for the moment
@@ -1825,7 +1820,7 @@ static size_t encode_tiles(AV1_COMP *cpi, uint8_t *data_ptr,
       assert(tok == tok_end);
       ans_write_init(&ans, data_ptr + total_size + 4 * !is_last_tile);
       buf_ans_flush(buf_ans, &ans);
-      tile_size = ans_write_end(&ans) - CONFIG_MISC_FIXES;
+      tile_size = ans_write_end(&ans) - 1;
 #else
       aom_start_encode(&residual_bc, data_ptr + total_size + 4 * !is_last_tile);
 
@@ -1833,7 +1828,7 @@ static size_t encode_tiles(AV1_COMP *cpi, uint8_t *data_ptr,
                   tok_end);
       assert(tok == tok_end);
       aom_stop_encode(&residual_bc);
-      tile_size = residual_bc.pos - CONFIG_MISC_FIXES;
+      tile_size = residual_bc.pos - 1;
 #endif
       assert(tile_size > 0);
       if (!is_last_tile) {
@@ -1842,7 +1837,7 @@ static size_t encode_tiles(AV1_COMP *cpi, uint8_t *data_ptr,
         max_tile = max_tile > tile_size ? max_tile : tile_size;
         total_size += 4;
       }
-      total_size += tile_size + CONFIG_MISC_FIXES;
+      total_size += tile_size + 1;
     }
   }
 #if CONFIG_TILE_GROUPS
@@ -2309,7 +2304,6 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_ANS
 }
 
-#if CONFIG_MISC_FIXES
 static int remux_tiles(uint8_t *dest, const int sz, const int n_tiles,
                        const int mag) {
   int rpos = 0, wpos = 0, n;
@@ -2342,7 +2336,6 @@ static int remux_tiles(uint8_t *dest, const int sz, const int n_tiles,
 
   return wpos;
 }
-#endif
 
 void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size) {
   uint8_t *data = dest;
@@ -2353,19 +2346,12 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size) {
   size_t data_sz;
   struct aom_write_bit_buffer wb = { data, 0 };
   unsigned int max_tile;
-#if CONFIG_MISC_FIXES || CONFIG_EXT_REFS
   AV1_COMMON *const cm = &cpi->common;
-#endif  // CONFIG_MISC_FIXES || CONFIG_EXT_REFS
 
 #if !CONFIG_TILE_GROUPS
   size_t uncompressed_hdr_size;
-#if CONFIG_MISC_FIXES
   const int n_log2_tiles = cm->log2_tile_rows + cm->log2_tile_cols;
   const int have_tiles = n_log2_tiles > 0;
-#else
-  const int have_tiles = 0;  // we have tiles, but we don't want to write a
-                             // tile size marker in the header
-#endif
 
 #if CONFIG_BITSTREAM_DEBUG
   bitstream_queue_reset_write();
@@ -2395,7 +2381,6 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size) {
   data_sz = encode_tiles(cpi, &wb, &max_tile);
 #endif
 #if !CONFIG_TILE_GROUPS
-#if CONFIG_MISC_FIXES
   /* A global size of tile lengths in a frame does not fit with tile
      groups, as we may want to transmit a tile group as soon as encoded,
      rather than buffering the frame.
@@ -2417,8 +2402,6 @@ void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size) {
   } else {
     assert(n_log2_tiles == 0);
   }
-#endif
-
   // TODO(jbb): Figure out what to do if first_part_size > 16 bits.
   aom_wb_write_literal(&saved_wb, (int)first_part_size, 16);
 #endif
