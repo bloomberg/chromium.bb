@@ -21,8 +21,8 @@ promise_test(() => {
           'or recognized standard name from ' +
           'https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx' +
           ' e.g. \'alert_notification\'.',
-          'SyntaxError'),
+          'TypeError'),
         'Wrong Service name passed.');
     });
-}, 'Wrong Service name. Reject with SyntaxError.');
+}, 'Wrong Service name. Reject with TypeError.');
 </script>

@@ -327,8 +327,8 @@ String getUUIDForGATTAttribute(GATTAttribute attribute, StringOrUnsignedLong nam
             " e.g. 'gatt.characteristic_presentation_format'.");
         break;
     }
-    // Otherwise, throw a SyntaxError.
-    exceptionState.throwDOMException(SyntaxError, errorMessage.toString());
+    // Otherwise, throw a TypeError.
+    exceptionState.throwDOMException(V8TypeError, errorMessage.toString());
     return String();
 }
 

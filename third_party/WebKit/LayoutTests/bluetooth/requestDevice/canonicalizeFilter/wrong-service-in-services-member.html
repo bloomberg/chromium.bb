@@ -9,7 +9,7 @@ promise_test(t => {
       let test_promises = Promise.resolve();
       generateRequestDeviceArgsWithServices(['wrong_service']).forEach(args => {
         test_promises = test_promises.then(() => promise_rejects(
-          t, 'SyntaxError', requestDeviceWithKeyDown(args)));
+          t, TypeError(), requestDeviceWithKeyDown(args)));
       });
       return test_promises;
     });

@@ -24,8 +24,8 @@ promise_test(() => {
           'https://developer.bluetooth.org/gatt/characteristics/' +
           'Pages/CharacteristicsHome.aspx' +
           ' e.g. \'aerobic_heart_rate_lower_limit\'.',
-          'SyntaxError'),
+          'TypeError'),
         'Wrong Characteristic name passed.');
     });
-}, 'Wrong Characteristic name. Reject with SyntaxError.');
+}, 'Wrong Characteristic name. Reject with TypeError.');
 </script>
