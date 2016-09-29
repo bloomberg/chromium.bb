@@ -58,9 +58,12 @@ enum VideoPixelFormat {
   PIXEL_FORMAT_YUV422P12 = 23,
   PIXEL_FORMAT_YUV444P12 = 24,
 
+  PIXEL_FORMAT_Y8 = 25,   // single 8bpp plane.
+  PIXEL_FORMAT_Y16 = 26,  // single 16bpp plane.
+
   // Please update UMA histogram enumeration when adding new formats here.
   PIXEL_FORMAT_MAX =
-      PIXEL_FORMAT_YUV444P12,  // Must always be equal to largest entry logged.
+      PIXEL_FORMAT_Y16,  // Must always be equal to largest entry logged.
 };
 
 // Color space or color range used for the pixels.

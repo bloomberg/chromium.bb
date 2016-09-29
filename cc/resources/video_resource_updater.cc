@@ -87,6 +87,8 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
     case media::PIXEL_FORMAT_YUV420P12:
     case media::PIXEL_FORMAT_YUV422P12:
     case media::PIXEL_FORMAT_YUV444P12:
+    case media::PIXEL_FORMAT_Y8:
+    case media::PIXEL_FORMAT_Y16:
     case media::PIXEL_FORMAT_UNKNOWN:
       break;
   }
@@ -337,6 +339,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     case media::PIXEL_FORMAT_RGB32:
     case media::PIXEL_FORMAT_MJPEG:
     case media::PIXEL_FORMAT_MT21:
+    case media::PIXEL_FORMAT_Y8:
       bits_per_channel = 8;
       break;
     case media::PIXEL_FORMAT_YUV420P9:
@@ -354,7 +357,13 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     case media::PIXEL_FORMAT_YUV444P12:
       bits_per_channel = 12;
       break;
+    case media::PIXEL_FORMAT_Y16:
+      bits_per_channel = 16;
+      break;
   }
+
+  // TODO(dshwang): support PIXEL_FORMAT_Y16. crbug.com/624436
+  DCHECK_NE(bits_per_channel, 16);
 
   // Only YUV software video frames are supported.
   if (!media::IsYuvPlanar(input_frame_format)) {

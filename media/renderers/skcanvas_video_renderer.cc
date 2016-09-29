@@ -642,6 +642,12 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     case PIXEL_FORMAT_RGB32:
     case PIXEL_FORMAT_MJPEG:
     case PIXEL_FORMAT_MT21:
+    // TODO(dshwang): Use either I400ToARGB or J400ToARGB depending if we want
+    // BT.601 constrained range of 16 to 240, or JPEG full range BT.601
+    // coefficients. Implement it when Y8/16 foramt is supported.
+    // crbug.com/624436
+    case PIXEL_FORMAT_Y8:
+    case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_UNKNOWN:
       NOTREACHED();
   }
