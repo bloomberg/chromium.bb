@@ -131,6 +131,9 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
 
   SafeBrowsingPingManager* ping_manager() const;
 
+  const scoped_refptr<V4LocalDatabaseManager>& v4_local_database_manager()
+      const;
+
   // Returns a preference validation delegate that adds incidents to the
   // incident reporting service for validation failures. Returns NULL if the
   // service is not applicable for the given profile.

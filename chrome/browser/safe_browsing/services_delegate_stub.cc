@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "components/safe_browsing_db/v4_local_database_manager.h"
 
 namespace safe_browsing {
 
@@ -29,6 +30,11 @@ ServicesDelegateStub::~ServicesDelegateStub() {}
 
 void ServicesDelegateStub::InitializeCsdService(
     net::URLRequestContextGetter* context_getter) {}
+
+const scoped_refptr<V4LocalDatabaseManager>&
+ServicesDelegateStub::v4_local_database_manager() const {
+  return v4_local_database_manager_;
+}
 
 void ServicesDelegateStub::Initialize() {}
 

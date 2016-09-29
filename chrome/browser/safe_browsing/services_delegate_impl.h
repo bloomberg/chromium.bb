@@ -28,6 +28,8 @@ class ServicesDelegateImpl : public ServicesDelegate {
 
  private:
   // ServicesDelegate:
+  const scoped_refptr<V4LocalDatabaseManager>& v4_local_database_manager()
+      const override;
   void Initialize() override;
   void InitializeCsdService(
       net::URLRequestContextGetter* context_getter) override;
@@ -48,11 +50,6 @@ class ServicesDelegateImpl : public ServicesDelegate {
     net::URLRequestContextGetter* url_request_context_getter,
     const V4ProtocolConfig& v4_config) override;
   void StopOnIOThread(bool shutdown) override;
-
-  // Is the Pver4 database manager enabled? Controlled by Finch.
-  bool IsV4LocalDatabaseManagerEnabled();
-
-  V4LocalDatabaseManager* CreateV4LocalDatabaseManager();
 
   DownloadProtectionService* CreateDownloadProtectionService();
   IncidentReportingService* CreateIncidentReportingService();
