@@ -3821,11 +3821,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
     av1_adapt_coef_probs(cm);
-#if CONFIG_MISC_FIXES
     av1_adapt_intra_frame_probs(cm);
-#else
-    if (!frame_is_intra_only(cm)) av1_adapt_intra_frame_probs(cm);
-#endif
   }
 
   if (!frame_is_intra_only(cm)) {

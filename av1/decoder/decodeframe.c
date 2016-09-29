@@ -2428,14 +2428,9 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   if (!xd->corrupted) {
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
       av1_adapt_coef_probs(cm);
-#if CONFIG_MISC_FIXES
       av1_adapt_intra_frame_probs(cm);
-#endif
 
       if (!frame_is_intra_only(cm)) {
-#if !CONFIG_MISC_FIXES
-        av1_adapt_intra_frame_probs(cm);
-#endif
         av1_adapt_inter_frame_probs(cm);
         av1_adapt_mv_probs(cm, cm->allow_high_precision_mv);
       }
