@@ -119,7 +119,7 @@ private:
 
     WebServiceWorkerContextClient* m_client;
 
-    Member<ServiceWorkerGlobalScope> m_workerGlobalScope;
+    CrossThreadPersistent<ServiceWorkerGlobalScope> m_workerGlobalScope;
 };
 
 } // namespace blink

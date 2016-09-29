@@ -85,7 +85,6 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy()
 DEFINE_TRACE(ServiceWorkerGlobalScopeProxy)
 {
     visitor->trace(m_document);
-    visitor->trace(m_workerGlobalScope);
 }
 
 void ServiceWorkerGlobalScopeProxy::setRegistration(std::unique_ptr<WebServiceWorkerRegistration::Handle> handle)
