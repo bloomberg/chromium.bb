@@ -193,11 +193,14 @@ class WebDataConsumerHandleImplTest : public ::testing::Test {
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
     options.element_num_bytes = 1;
-    options.capacity_num_bytes = 4;
+    options.capacity_num_bytes = kDataPipeCapacity;
 
     MojoResult result = mojo::CreateDataPipe(&options, &producer_, &consumer_);
     ASSERT_EQ(MOJO_RESULT_OK, result);
   }
+
+ protected:
+  static constexpr int kDataPipeCapacity = 4;
 
   // This function can be blocked if the associated consumer doesn't consume
   // the data.
@@ -274,6 +277,29 @@ TEST_F(WebDataConsumerHandleImplTest, TwoPhaseReadData) {
   t.Stop();
 
   EXPECT_EQ(expected, operation->result());
+}
+
+TEST_F(WebDataConsumerHandleImplTest, ZeroSizeRead) {
+  ASSERT_GT(kDataPipeCapacity - 1, 0);
+  constexpr size_t data_size = kDataPipeCapacity - 1;
+  std::string expected = ProduceData(data_size);
+  producer_.reset();
+  std::unique_ptr<WebDataConsumerHandleImpl> handle(
+      new WebDataConsumerHandleImpl(std::move(consumer_)));
+  std::unique_ptr<WebDataConsumerHandle::Reader> reader(
+      handle->obtainReader(nullptr));
+
+  size_t read_size;
+  WebDataConsumerHandle::Result rv =
+      reader->read(nullptr, 0, WebDataConsumerHandle::FlagNone, &read_size);
+  EXPECT_EQ(WebDataConsumerHandle::Result::Ok, rv);
+
+  char buffer[16];
+  rv = reader->read(&buffer, sizeof(buffer), WebDataConsumerHandle::FlagNone,
+                    &read_size);
+  EXPECT_EQ(WebDataConsumerHandle::Result::Ok, rv);
+  EXPECT_EQ(data_size, read_size);
+  EXPECT_EQ(expected, std::string(buffer, read_size));
 }
 
 }  // namespace
