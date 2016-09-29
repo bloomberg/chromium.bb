@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<div id="host"></div>
+<div></div>
+<div></div>
+<div></div>
+<div></div>
+<script>
+    test(() => assert_not_equals(window.internals, undefined, "Needs window.internals for testing."), "Check that window.internals is defined");
+
+    var root = host.attachShadow({mode:"open"});
+    root.innerHTML = "<div></div><div></div><div></div>";
+    host.offsetTop;
+
+    test(() => {
+        var sheet = document.createElement("style");
+        sheet.appendChild(document.createTextNode(`
+            @keyframes unused {
+                from { color: pink }
+                to { color: orange }
+            }`));
+        root.appendChild(sheet);
+        // TODO(rune@opera.com): This count should be 1 when async stylesheet
+        // update with RuleSet invalidations land. Currently we always do a
+        // subtree recalc for stylesheet mutations in shadow trees.
+        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 5,
+            "Recalc for shadow tree, including host and inserted style element.");
+    }, "Check that adding @keyframes does not cause a style recalc of the host element when no animations are running.");
+</script>

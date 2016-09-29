@@ -128,9 +128,6 @@ public:
     void shadowRootRemovedFromDocument(ShadowRoot*);
     void appendActiveAuthorStyleSheets();
 
-    void setHasUnresolvedKeyframesRule() { m_hasUnresolvedKeyframesRule = true; }
-    void keyframesRulesAdded();
-
     StyleResolver* resolver() const
     {
         return m_resolver.get();
@@ -268,7 +265,6 @@ private:
 
     bool m_ignorePendingStylesheets = false;
     bool m_didCalculateResolver = false;
-    bool m_hasUnresolvedKeyframesRule = false;
 
     Member<StyleResolver> m_resolver;
     StyleInvalidator m_styleInvalidator;

@@ -90,7 +90,7 @@ public:
     void clearOutdatedAnimation(Animation*);
     bool hasOutdatedAnimation() const { return m_outdatedAnimationCount > 0; }
     bool needsAnimationTimingUpdate();
-    void invalidateKeyframeEffects();
+    void invalidateKeyframeEffects(const TreeScope&);
 
     void setPlaybackRate(double);
     double playbackRate() const;

@@ -1161,10 +1161,13 @@ StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, con
     if (ScopedStyleResolver* scopedResolver = element->treeScope().scopedStyleResolver())
         resolvers.append(scopedResolver);
 
-    for (size_t i = 0; i < resolvers.size(); ++i) {
-        if (StyleRuleKeyframes* keyframesRule = resolvers[i]->keyframeStylesForAnimation(animationName.impl()))
+    for (auto& resolver : resolvers) {
+        if (StyleRuleKeyframes* keyframesRule = resolver->keyframeStylesForAnimation(animationName.impl()))
             return keyframesRule;
     }
+
+    for (auto& resolver : resolvers)
+        resolver->setHasUnresolvedKeyframesRule();
     return nullptr;
 }
 

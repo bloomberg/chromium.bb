@@ -331,10 +331,10 @@ double AnimationTimeline::playbackRate() const
     return m_playbackRate;
 }
 
-void AnimationTimeline::invalidateKeyframeEffects()
+void AnimationTimeline::invalidateKeyframeEffects(const TreeScope& treeScope)
 {
     for (const auto& animation : m_animations)
-        animation->invalidateKeyframeEffect();
+        animation->invalidateKeyframeEffect(treeScope);
 }
 
 DEFINE_TRACE(AnimationTimeline)

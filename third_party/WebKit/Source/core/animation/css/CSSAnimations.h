@@ -61,6 +61,7 @@ public:
 
     static const StylePropertyShorthand& propertiesForTransitionAll();
     static bool isAnimatableProperty(CSSPropertyID);
+    static bool isAffectedByKeyframesFromScope(const Element&, const TreeScope&);
     static void calculateUpdate(const Element* animatingElement, Element&, const ComputedStyle&, ComputedStyle* parentStyle, CSSAnimationUpdate&, StyleResolver*);
     static void snapshotCompositorKeyframes(Element&, CSSAnimationUpdate&, const ComputedStyle&, const ComputedStyle* parentStyle);
 

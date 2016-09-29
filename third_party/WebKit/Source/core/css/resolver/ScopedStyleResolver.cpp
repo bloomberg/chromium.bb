@@ -27,6 +27,7 @@
 #include "core/css/resolver/ScopedStyleResolver.h"
 
 #include "core/HTMLNames.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontFace.h"
@@ -37,6 +38,7 @@
 #include "core/css/resolver/MatchRequest.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/Document.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -142,6 +144,46 @@ void ScopedStyleResolver::addKeyframeStyle(StyleRuleKeyframes* rule)
     } else {
         m_keyframesRuleMap.set(s.impl(), rule);
     }
+}
+
+static Node& invalidationRootFor(const TreeScope& treeScope)
+{
+    if (treeScope.rootNode() == treeScope.document())
+        return treeScope.document();
+    return toShadowRoot(treeScope.rootNode()).host();
+}
+
+void ScopedStyleResolver::keyframesRulesAdded(const TreeScope& treeScope)
+{
+    // Called when @keyframes rules are about to be added/removed from a
+    // TreeScope. @keyframes rules may apply to animations on elements in the
+    // same TreeScope as the stylesheet, or the host element in the parent
+    // TreeScope if the TreeScope is a shadow tree.
+
+    ScopedStyleResolver* resolver = treeScope.scopedStyleResolver();
+    ScopedStyleResolver* parentResolver = treeScope.parentTreeScope() ? treeScope.parentTreeScope()->scopedStyleResolver() : nullptr;
+
+    bool hadUnresolvedKeyframes = false;
+    if (resolver && resolver->m_hasUnresolvedKeyframesRule) {
+        resolver->m_hasUnresolvedKeyframesRule = false;
+        hadUnresolvedKeyframes = true;
+    }
+    if (parentResolver && parentResolver->m_hasUnresolvedKeyframesRule) {
+        parentResolver->m_hasUnresolvedKeyframesRule = false;
+        hadUnresolvedKeyframes = true;
+    }
+
+    if (hadUnresolvedKeyframes) {
+        // If an animation ended up not being started because no @keyframes
+        // rules were found for the animation-name, we need to recalculate style
+        // for the elements in the scope, including its shadow host if
+        // applicable.
+        invalidationRootFor(treeScope).setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
+        return;
+    }
+
+    // If we have animations running, added/removed @keyframes may affect these.
+    treeScope.document().timeline().invalidateKeyframeEffects(treeScope);
 }
 
 void ScopedStyleResolver::collectMatchingAuthorRules(ElementRuleCollector& collector, CascadeOrder cascadeOrder)

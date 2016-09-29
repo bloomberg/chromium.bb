@@ -62,6 +62,8 @@ public:
     void resetAuthorStyle();
     void collectViewportRulesTo(ViewportStyleResolver*) const;
     bool hasDeepOrShadowSelector() const { return m_hasDeepOrShadowSelector; }
+    void setHasUnresolvedKeyframesRule() { m_hasUnresolvedKeyframesRule = true; }
+    static void keyframesRulesAdded(const TreeScope&);
 
     DECLARE_TRACE();
 
@@ -108,6 +110,7 @@ private:
 
     Member<CSSStyleSheetRuleSubSet> m_treeBoundaryCrossingRuleSet;
     bool m_hasDeepOrShadowSelector = false;
+    bool m_hasUnresolvedKeyframesRule = false;
 };
 
 } // namespace blink

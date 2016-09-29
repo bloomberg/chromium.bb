@@ -306,10 +306,8 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
             timing.timingFunction = Timing::defaults().timingFunction;
 
             StyleRuleKeyframes* keyframesRule = resolver->findKeyframesRule(elementForScoping, name);
-            if (!keyframesRule) {
-                element.document().styleEngine().setHasUnresolvedKeyframesRule();
+            if (!keyframesRule)
                 continue; // Cancel the animation if there's no style rule for it.
-            }
 
             const RunningAnimation* existingAnimation = nullptr;
             size_t existingAnimationIndex = 0;
@@ -894,6 +892,19 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     default:
         return true;
     }
+}
+
+bool CSSAnimations::isAffectedByKeyframesFromScope(const Element& element, const TreeScope& treeScope)
+{
+    // Animated elements are affected by @keyframes rules from the same scope
+    // and from their shadow sub-trees if they are shadow hosts.
+    if (element.treeScope() == treeScope)
+        return true;
+    if (!isShadowHost(element))
+        return false;
+    if (treeScope.rootNode() == treeScope.document())
+        return false;
+    return toShadowRoot(treeScope.rootNode()).host() == element;
 }
 
 DEFINE_TRACE(CSSAnimations)

@@ -28,6 +28,7 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
@@ -166,7 +167,7 @@ void StyleSheetInvalidationAnalysis::invalidateStyle()
     ASSERT(!m_dirtiesAllStyle);
 
     if (m_addsKeyframes)
-        m_treeScope->document().styleEngine().keyframesRulesAdded();
+        ScopedStyleResolver::keyframesRulesAdded(*m_treeScope);
 
     if (m_treeScope->rootNode().isShadowRoot()) {
         ContainerNode& shadowHost = toShadowRoot(m_treeScope->rootNode()).host();

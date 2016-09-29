@@ -53,6 +53,7 @@ class AnimationTimeline;
 class CompositorAnimationPlayer;
 class Element;
 class ExceptionState;
+class TreeScope;
 
 class CORE_EXPORT Animation final
     : public EventTargetWithInlineData
@@ -182,7 +183,7 @@ public:
     bool effectSuppressed() const { return m_effectSuppressed; }
     void setEffectSuppressed(bool);
 
-    void invalidateKeyframeEffect();
+    void invalidateKeyframeEffect(const TreeScope&);
 
     DECLARE_VIRTUAL_TRACE();
 

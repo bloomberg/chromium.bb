@@ -33,6 +33,7 @@
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/CompositorPendingAnimations.h"
 #include "core/animation/KeyframeEffect.h"
+#include "core/animation/css/CSSAnimations.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/StyleChangeReason.h"
@@ -1086,12 +1087,15 @@ void Animation::disableCompositedAnimationForTesting()
     cancelAnimationOnCompositor();
 }
 
-void Animation::invalidateKeyframeEffect()
+void Animation::invalidateKeyframeEffect(const TreeScope& treeScope)
 {
     if (!m_content || !m_content->isKeyframeEffect())
         return;
 
-    toKeyframeEffect(m_content.get())->target()->setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
+    Element& target = *toKeyframeEffect(m_content.get())->target();
+
+    if (CSSAnimations::isAffectedByKeyframesFromScope(target, treeScope))
+        target.setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
 }
 
 DEFINE_TRACE(Animation)
