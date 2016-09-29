@@ -29,7 +29,7 @@ namespace history {
 
 namespace {
 
-// Reason for dropping a particular record.
+// Reason for dropping a particular record. Used for UMA.
 enum DroppedReason {
   DROPPED_REASON_BAD_STATE = 0,
   DROPPED_REASON_BAD_DANGER_TYPE = 1,
@@ -624,7 +624,6 @@ bool DownloadDatabase::CreateDownload(const DownloadRow& info) {
     count_urls.BindInt(0, info.id);
     if (count_urls.Step()) {
       bool corrupt_urls = count_urls.ColumnInt(0) > 0;
-      UMA_HISTOGRAM_BOOLEAN("Download.DatabaseCorruptUrls", corrupt_urls);
       if (corrupt_urls) {
         // There should not be any URLs in downloads_url_chains for this
         // info.id.  If there are, we don't want them to interfere with
