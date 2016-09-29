@@ -508,12 +508,6 @@ class SyncStage(generic_stages.BuilderStage):
         }),
     })
 
-    # TODO: Schedule slave builds for the external waterfall first.
-    # Do not overwrite dryrun for internal waterfall after confirming
-    # buildbucket can safely replace the git-based scheduler.
-    if build_config.active_waterfall == constants.WATERFALL_INTERNAL:
-      dryrun = True
-
     content = buildbucket_lib.PutBuildBucket(
         body, self.buildbucket_http, self._run.options.test_tryjob,
         dryrun)
@@ -555,8 +549,7 @@ class SyncStage(generic_stages.BuilderStage):
         self.PostSlaveBuildToBuildbucket(slave_name, slave_config,
                                          build_id, dryrun)
       except buildbucket_lib.BuildbucketResponseException as e:
-        if (slave_config.important and
-            slave_config.active_waterfall == constants.WATERFALL_EXTERNAL):
+        if important_only or slave_config.important:
           raise
         else:
           logging.warning('Failed to schedule %s: %s' % (slave_name, e))

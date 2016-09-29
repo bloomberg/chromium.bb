@@ -424,7 +424,9 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
             important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map_2)
-    stage.ScheduleSlaveBuildsViaBuildbucket(
+    self.assertRaises(
+        buildbucket_lib.BuildbucketResponseException,
+        stage.ScheduleSlaveBuildsViaBuildbucket,
         important_only=False, dryrun=True)
 
   def testScheduleUnimportantSlaveBuildsFailure(self):
@@ -437,30 +439,28 @@ class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
         'slave_external': config_lib.BuildConfig(
             important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
         'slave_internal': config_lib.BuildConfig(
-            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),}
+            important=False, active_waterfall=constants.WATERFALL_INTERNAL),}
     self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
                      return_value=slave_config_map)
     stage.ScheduleSlaveBuildsViaBuildbucket(important_only=False, dryrun=True)
 
-  def testPostSlaveBuildToBuildbucketWithExternalBuilds(self):
-    """Test PostSlaveBuildToBuildbucket with external builds."""
+  def testScheduleSlaveBuildsFailure(self):
+    """Test ScheduleSlaveBuilds with mixed slave failures."""
     stage = self.ConstructStage()
-    mock_b = self.PatchObject(buildbucket_lib, 'PutBuildBucket')
-    slave_config = config_lib.BuildConfig(
-        important=True, active_waterfall=constants.WATERFALL_EXTERNAL)
-    stage.PostSlaveBuildToBuildbucket(
-        'fake_build_name', slave_config, 'fake_build_id', False)
-    mock_b.assert_called_with(mock.ANY, mock.ANY, mock.ANY, False)
+    self.PatchObject(sync_stages.SyncStage, 'PostSlaveBuildToBuildbucket',
+                     side_effect=buildbucket_lib.BuildbucketResponseException)
 
-  def testPostSlaveBuildToBuildbucketWithInternalBuilds(self):
-    """test PostSlaveBuildToBuildbucket with internal builds."""
-    stage = self.ConstructStage()
-    mock_b = self.PatchObject(buildbucket_lib, 'PutBuildBucket')
-    slave_config = config_lib.BuildConfig(
-        important=True, active_waterfall=constants.WATERFALL_INTERNAL)
-    stage.PostSlaveBuildToBuildbucket(
-        'fake_build_name', slave_config, 'fake_build_id', False)
-    mock_b.assert_called_with(mock.ANY, mock.ANY, mock.ANY, True)
+    slave_config_map = {
+        'slave_external': config_lib.BuildConfig(
+            important=False, active_waterfall=constants.WATERFALL_EXTERNAL),
+        'slave_internal': config_lib.BuildConfig(
+            important=True, active_waterfall=constants.WATERFALL_INTERNAL)}
+    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
+                     return_value=slave_config_map)
+    self.assertRaises(
+        buildbucket_lib.BuildbucketResponseException,
+        stage.ScheduleSlaveBuildsViaBuildbucket,
+        important_only=False, dryrun=True)
 
 
 class BaseCQTestCase(generic_stages_unittest.StageTestCase):
