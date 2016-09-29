@@ -89,13 +89,14 @@ ArcProcessTask::ArcProcessTask(base::ProcessId pid,
 void ArcProcessTask::StartIconLoading() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (package_name_.empty())
-    return;
-
   scoped_refptr<arc::ActivityIconLoader> icon_loader = GetIconLoader();
   arc::ActivityIconLoader::GetResult result =
       arc::ActivityIconLoader::GetResult::FAILED_ARC_NOT_READY;
   if (icon_loader) {
+    // In some case, the package_name_ does not exists, it would be expected to
+    // get default process icon. For example, daemon processes in android
+    // container such like surfaceflinger, debuggerd or installd. Each of them
+    // would be shown on task manager but does not have a package name.
     std::vector<arc::ActivityIconLoader::ActivityName> activities = {
         {package_name_, kEmptyActivityName}};
     result = icon_loader->GetActivityIcons(
