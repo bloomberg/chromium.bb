@@ -72,6 +72,10 @@ void SystemTrayClient::ShowDisplaySettings() {
   SystemTrayCommon::ShowDisplaySettings();
 }
 
+void SystemTrayClient::ShowPowerSettings() {
+  SystemTrayCommon::ShowPowerSettings();
+}
+
 void SystemTrayClient::ShowChromeSlow() {
   SystemTrayCommon::ShowChromeSlow();
 }

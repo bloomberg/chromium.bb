@@ -58,6 +58,12 @@ void SystemTrayCommon::ShowDisplaySettings() {
 }
 
 // static
+void SystemTrayCommon::ShowPowerSettings() {
+  content::RecordAction(base::UserMetricsAction("Tray_ShowPowerOptions"));
+  ShowSettingsSubPageForActiveUser(chrome::kPowerOptionsSubPage);
+}
+
+// static
 void SystemTrayCommon::ShowChromeSlow() {
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetPrimaryUserProfile());

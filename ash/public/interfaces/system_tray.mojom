@@ -27,7 +27,8 @@ interface SystemTrayClient {
   // Shows settings related to multiple displays.
   ShowDisplaySettings();
 
-  // TODO(crbug.com/647412): ShowPowerSettings();
+  // Shows settings related to power.
+  ShowPowerSettings();
 
   // Shows the page that lets you disable performance tracing.
   ShowChromeSlow();

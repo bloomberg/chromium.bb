@@ -101,8 +101,7 @@ void SystemTrayDelegateMus::ShowDisplaySettings() {
 }
 
 void SystemTrayDelegateMus::ShowPowerSettings() {
-  // http://crbug.com/647412
-  NOTIMPLEMENTED();
+  ConnectToSystemTrayClient()->ShowPowerSettings();
 }
 
 void SystemTrayDelegateMus::ShowChromeSlow() {

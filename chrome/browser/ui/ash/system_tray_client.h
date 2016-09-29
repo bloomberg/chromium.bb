@@ -31,6 +31,7 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   void ShowSettings() override;
   void ShowDateSettings() override;
   void ShowDisplaySettings() override;
+  void ShowPowerSettings() override;
   void ShowChromeSlow() override;
   void ShowIMESettings() override;
   void ShowHelp() override;

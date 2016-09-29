@@ -25,6 +25,9 @@ class SystemTrayCommon {
   // Shows settings related to multiple displays.
   static void ShowDisplaySettings();
 
+  // Shows settings related to power.
+  static void ShowPowerSettings();
+
   // Shows the page that lets you disable performance tracing.
   static void ShowChromeSlow();
 

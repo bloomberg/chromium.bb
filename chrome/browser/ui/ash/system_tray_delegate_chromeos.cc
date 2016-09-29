@@ -445,14 +445,7 @@ void SystemTrayDelegateChromeOS::ShowDisplaySettings() {
 }
 
 void SystemTrayDelegateChromeOS::ShowPowerSettings() {
-  // TODO(mash): Refactor out ash::PowerStatus and move to SystemTrayCommon.
-  if (!(switches::PowerOverlayEnabled() ||
-        (ash::PowerStatus::Get()->IsBatteryPresent() &&
-         ash::PowerStatus::Get()->SupportsDualRoleDevices()))) {
-    return;
-  }
-  content::RecordAction(base::UserMetricsAction("Tray_ShowPowerOptions"));
-  ShowSettingsSubPageForActiveUser(chrome::kPowerOptionsSubPage);
+  SystemTrayCommon::ShowPowerSettings();
 }
 
 void SystemTrayDelegateChromeOS::ShowChromeSlow() {
