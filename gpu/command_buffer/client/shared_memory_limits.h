@@ -10,6 +10,8 @@
 namespace gpu {
 
 struct SharedMemoryLimits {
+  SharedMemoryLimits() = default;
+
   int32_t command_buffer_size = 1024 * 1024;
   uint32_t start_transfer_buffer_size = 1 * 1024 * 1024;
   uint32_t min_transfer_buffer_size = 1 * 256 * 1024;
