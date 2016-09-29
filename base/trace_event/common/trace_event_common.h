@@ -297,8 +297,8 @@
 
 #define TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(category_group, name, scope, \
                                             timestamp)                   \
-  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                    \
-      TRACE_EVENT_PHASE_INSTANT, category_group, name, 0, 0, timestamp,  \
+  INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(                               \
+      TRACE_EVENT_PHASE_INSTANT, category_group, name, timestamp,        \
       TRACE_EVENT_FLAG_NONE | scope)
 
 // Syntactic sugars for the sampling tracing in the main thread.
@@ -396,14 +396,14 @@
                            arg2_name, arg2_val)
 
 #define TRACE_EVENT_MARK_WITH_TIMESTAMP0(category_group, name, timestamp) \
-  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                     \
-      TRACE_EVENT_PHASE_MARK, category_group, name, 0, 0, timestamp,      \
+  INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(                                \
+      TRACE_EVENT_PHASE_MARK, category_group, name, timestamp,            \
       TRACE_EVENT_FLAG_NONE)
 
 #define TRACE_EVENT_MARK_WITH_TIMESTAMP1(category_group, name, timestamp, \
                                          arg1_name, arg1_val)             \
-  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                     \
-      TRACE_EVENT_PHASE_MARK, category_group, name, 0, 0, timestamp,      \
+  INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(                                \
+      TRACE_EVENT_PHASE_MARK, category_group, name, timestamp,            \
       TRACE_EVENT_FLAG_NONE, arg1_name, arg1_val)
 
 #define TRACE_EVENT_COPY_MARK(category_group, name)                      \
@@ -411,8 +411,8 @@
                            TRACE_EVENT_FLAG_COPY)
 
 #define TRACE_EVENT_COPY_MARK_WITH_TIMESTAMP(category_group, name, timestamp) \
-  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                         \
-      TRACE_EVENT_PHASE_MARK, category_group, name, 0, 0, timestamp,          \
+  INTERNAL_TRACE_EVENT_ADD_WITH_TIMESTAMP(                                    \
+      TRACE_EVENT_PHASE_MARK, category_group, name, timestamp,                \
       TRACE_EVENT_FLAG_COPY)
 
 // Similar to TRACE_EVENT_ENDx but with a custom |at| timestamp provided.
