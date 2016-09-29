@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
@@ -75,21 +74,6 @@ struct ASH_EXPORT ShelfItem {
 };
 
 typedef std::vector<ShelfItem> ShelfItems;
-
-// Windows with ShelfItemDetails appear in the shelf.
-// See ShelfWindowWatcher for details.
-struct ASH_EXPORT ShelfItemDetails {
-  ShelfItemDetails();
-  ~ShelfItemDetails();
-
-  ShelfItemType type = TYPE_UNDEFINED;
-
-  // Resource id of the image to display on the shelf.
-  int image_resource_id = kInvalidImageResourceID;
-
-  // Title of the item.
-  base::string16 title;
-};
 
 }  // namespace ash
 

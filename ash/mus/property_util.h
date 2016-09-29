@@ -62,6 +62,7 @@ ui::wm::WindowType GetWmWindowType(const ui::Window* window);
 
 mojom::AshWindowType GetAshWindowType(const ui::Window* window);
 
+void SetWindowTitle(ui::Window* window, base::string16 title);
 base::string16 GetWindowTitle(const ui::Window* window);
 
 mojo::Array<uint8_t> GetWindowAppIcon(const ui::Window* window);

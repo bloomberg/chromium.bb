@@ -41,7 +41,6 @@ class Widget;
 namespace ash {
 
 class ImmersiveFullscreenController;
-struct ShelfItemDetails;
 class WmLayoutManager;
 class WmRootWindowController;
 class WmShell;
@@ -81,6 +80,7 @@ class ASH_EXPORT WmWindow {
   virtual void SetName(const char* name) = 0;
   virtual std::string GetName() const = 0;
 
+  virtual void SetTitle(const base::string16& title) = 0;
   virtual base::string16 GetTitle() const = 0;
 
   // See shell_window_ids.h for list of known ids.
@@ -132,11 +132,6 @@ class ASH_EXPORT WmWindow {
   virtual void SetColorProperty(WmWindowProperty key, SkColor value) = 0;
   virtual int GetIntProperty(WmWindowProperty key) = 0;
   virtual void SetIntProperty(WmWindowProperty key, int value) = 0;
-
-  // Returns null if there are no details.
-  virtual ShelfItemDetails* GetShelfItemDetails() = 0;
-  virtual void SetShelfItemDetails(const ShelfItemDetails& details) = 0;
-  virtual void ClearShelfItemDetails() = 0;
 
   wm::WindowState* GetWindowState() {
     return const_cast<wm::WindowState*>(

@@ -105,11 +105,10 @@ task_manager::TaskManagerTableModel* TaskManagerView::Show(Browser* browser) {
 #if defined(USE_ASH)
   ash::WmWindow* wm_window = ash::WmLookup::Get()->GetWindowForWidget(
       g_task_manager_view->GetWidget());
-  ash::ShelfItemDetails item_details;
-  item_details.type = ash::TYPE_DIALOG;
-  item_details.image_resource_id = IDR_ASH_SHELF_ICON_TASK_MANAGER;
-  item_details.title = wm_window->GetTitle();
-  wm_window->SetShelfItemDetails(item_details);
+  wm_window->SetIntProperty(ash::WmWindowProperty::SHELF_ITEM_TYPE,
+                            ash::TYPE_DIALOG);
+  wm_window->SetIntProperty(ash::WmWindowProperty::SHELF_ICON_RESOURCE_ID,
+                            IDR_ASH_SHELF_ICON_TASK_MANAGER);
 #endif
   return g_task_manager_view->table_model_.get();
 }

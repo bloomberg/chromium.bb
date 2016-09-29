@@ -28,7 +28,7 @@ enum ShelfConstant {
   SHELF_INSETS_FOR_AUTO_HIDE
 };
 
-// Invalid image resource id used for ShelfItemDetails.
+// Invalid image resource id used for shelf items.
 const int kInvalidImageResourceID = -1;
 
 // We reserve a small area on the edge of the workspace area to ensure that

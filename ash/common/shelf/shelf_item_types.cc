@@ -9,7 +9,4 @@ namespace ash {
 ShelfItem::ShelfItem() {}
 ShelfItem::~ShelfItem() {}
 
-ShelfItemDetails::ShelfItemDetails() {}
-ShelfItemDetails::~ShelfItemDetails() {}
-
 }  // namespace ash

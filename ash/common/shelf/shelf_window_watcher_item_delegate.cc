@@ -4,8 +4,6 @@
 
 #include "ash/common/shelf/shelf_window_watcher_item_delegate.h"
 
-#include "ash/common/shelf/shelf_item_types.h"
-#include "ash/common/wm/window_state.h"
 #include "ash/common/wm_window.h"
 #include "ui/events/event.h"
 
@@ -18,23 +16,20 @@ ShelfWindowWatcherItemDelegate::~ShelfWindowWatcherItemDelegate() {}
 
 ShelfItemDelegate::PerformedAction ShelfWindowWatcherItemDelegate::ItemSelected(
     const ui::Event& event) {
-  wm::WindowState* window_state = window_->GetWindowState();
-  if (window_state->IsActive()) {
+  if (window_->IsActive()) {
     if (event.type() & ui::ET_KEY_RELEASED) {
       window_->Animate(::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
       return kNoAction;
-    } else {
-      window_state->Minimize();
-      return kExistingWindowMinimized;
     }
-  } else {
-    window_state->Activate();
-    return kExistingWindowActivated;
+    window_->Minimize();
+    return kExistingWindowMinimized;
   }
+  window_->Activate();
+  return kExistingWindowActivated;
 }
 
 base::string16 ShelfWindowWatcherItemDelegate::GetTitle() {
-  return window_->GetShelfItemDetails()->title;
+  return window_->GetTitle();
 }
 
 ShelfMenuModel* ShelfWindowWatcherItemDelegate::CreateApplicationMenu(

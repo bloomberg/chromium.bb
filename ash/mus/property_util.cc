@@ -175,6 +175,11 @@ mojom::AshWindowType GetAshWindowType(const ui::Window* window) {
       window->GetSharedProperty<int32_t>(mojom::kAshWindowType_Property));
 }
 
+void SetWindowTitle(ui::Window* window, base::string16 title) {
+  window->SetSharedProperty<base::string16>(
+      ui::mojom::WindowManager::kWindowTitle_Property, title);
+}
+
 base::string16 GetWindowTitle(const ui::Window* window) {
   if (!window->HasSharedProperty(
           ui::mojom::WindowManager::kWindowTitle_Property)) {

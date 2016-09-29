@@ -45,16 +45,16 @@
 #include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
 
-DECLARE_WINDOW_PROPERTY_TYPE(ash::ShelfItemDetails*);
 DECLARE_WINDOW_PROPERTY_TYPE(ash::WmWindowAura*);
 
 namespace ash {
 
 DEFINE_WINDOW_PROPERTY_KEY(ShelfID, kShelfIDKey, kInvalidShelfID);
+DEFINE_WINDOW_PROPERTY_KEY(int, kShelfItemTypeKey, TYPE_UNDEFINED);
+DEFINE_WINDOW_PROPERTY_KEY(int,
+                           kShelfIconResourceIdKey,
+                           kInvalidImageResourceID);
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(ShelfItemDetails,
-                                 kShelfItemDetailsKey,
-                                 nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(WmWindowAura, kWmWindowKey, nullptr);
 
 static_assert(aura::Window::kInitialId == kShellWindowId_Invalid,
@@ -166,6 +166,10 @@ void WmWindowAura::SetName(const char* name) {
 
 std::string WmWindowAura::GetName() const {
   return window_->name();
+}
+
+void WmWindowAura::SetTitle(const base::string16& title) {
+  window_->SetTitle(title);
 }
 
 base::string16 WmWindowAura::GetTitle() const {
@@ -316,8 +320,14 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
   if (key == WmWindowProperty::MODAL_TYPE)
     return window_->GetProperty(aura::client::kModalKey);
 
+  if (key == WmWindowProperty::SHELF_ICON_RESOURCE_ID)
+    return window_->GetProperty(kShelfIconResourceIdKey);
+
   if (key == WmWindowProperty::SHELF_ID)
     return window_->GetProperty(kShelfIDKey);
+
+  if (key == WmWindowProperty::SHELF_ITEM_TYPE)
+    return window_->GetProperty(kShelfItemTypeKey);
 
   if (key == WmWindowProperty::TOP_VIEW_INSET)
     return window_->GetProperty(aura::client::kTopViewInset);
@@ -327,8 +337,16 @@ int WmWindowAura::GetIntProperty(WmWindowProperty key) {
 }
 
 void WmWindowAura::SetIntProperty(WmWindowProperty key, int value) {
+  if (key == WmWindowProperty::SHELF_ICON_RESOURCE_ID) {
+    window_->SetProperty(kShelfIconResourceIdKey, value);
+    return;
+  }
   if (key == WmWindowProperty::SHELF_ID) {
     window_->SetProperty(kShelfIDKey, value);
+    return;
+  }
+  if (key == WmWindowProperty::SHELF_ITEM_TYPE) {
+    window_->SetProperty(kShelfItemTypeKey, value);
     return;
   }
   if (key == WmWindowProperty::TOP_VIEW_INSET) {
@@ -337,20 +355,6 @@ void WmWindowAura::SetIntProperty(WmWindowProperty key, int value) {
   }
 
   NOTREACHED();
-}
-
-ShelfItemDetails* WmWindowAura::GetShelfItemDetails() {
-  return window_->GetProperty(kShelfItemDetailsKey);
-}
-
-void WmWindowAura::SetShelfItemDetails(const ShelfItemDetails& details) {
-  // |item_details| is owned by |window_|.
-  ShelfItemDetails* item_details = new ShelfItemDetails(details);
-  window_->SetProperty(kShelfItemDetailsKey, item_details);
-}
-
-void WmWindowAura::ClearShelfItemDetails() {
-  window_->ClearProperty(kShelfItemDetailsKey);
 }
 
 const wm::WindowState* WmWindowAura::GetWindowState() const {
@@ -825,10 +829,12 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     wm_property = WmWindowProperty::EXCLUDE_FROM_MRU;
   } else if (key == aura::client::kModalKey) {
     wm_property = WmWindowProperty::MODAL_TYPE;
+  } else if (key == kShelfIconResourceIdKey) {
+    wm_property = WmWindowProperty::SHELF_ICON_RESOURCE_ID;
   } else if (key == kShelfIDKey) {
     wm_property = WmWindowProperty::SHELF_ID;
-  } else if (key == kShelfItemDetailsKey) {
-    wm_property = WmWindowProperty::SHELF_ITEM_DETAILS;
+  } else if (key == kShelfItemTypeKey) {
+    wm_property = WmWindowProperty::SHELF_ITEM_TYPE;
   } else if (key == kSnapChildrenToPixelBoundary) {
     wm_property = WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY;
   } else if (key == aura::client::kTopViewInset) {

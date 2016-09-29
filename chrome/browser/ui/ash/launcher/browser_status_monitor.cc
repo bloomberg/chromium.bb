@@ -7,6 +7,7 @@
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/wm_window_property.h"
+#include "ash/common/wm_window_tracker.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/ui/settings_window_manager_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -85,19 +85,29 @@ class BrowserStatusMonitor::LocalWebContentsObserver
 // Observes any new settings windows and sets their shelf icon (since they
 // are excluded from BrowserShortcutLauncherItem).
 class BrowserStatusMonitor::SettingsWindowObserver
-    : public chrome::SettingsWindowManagerObserver {
+    : public chrome::SettingsWindowManagerObserver,
+      public ash::WmWindowTracker {
  public:
   SettingsWindowObserver() {}
   ~SettingsWindowObserver() override {}
 
-  // SettingsWindowManagerObserver
+  // SettingsWindowManagerObserver:
   void OnNewSettingsWindow(Browser* settings_browser) override {
-    ash::ShelfItemDetails item_details;
-    item_details.type = ash::TYPE_DIALOG;
-    item_details.image_resource_id = IDR_ASH_SHELF_ICON_SETTINGS;
-    item_details.title = l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE);
     aura::Window* aura_window = settings_browser->window()->GetNativeWindow();
-    ash::WmWindowAura::Get(aura_window)->SetShelfItemDetails(item_details);
+    ash::WmWindow* window = ash::WmWindowAura::Get(aura_window);
+    window->SetTitle(l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
+    window->SetIntProperty(ash::WmWindowProperty::SHELF_ITEM_TYPE,
+                           ash::TYPE_DIALOG);
+    window->SetIntProperty(ash::WmWindowProperty::SHELF_ICON_RESOURCE_ID,
+                           IDR_ASH_SHELF_ICON_SETTINGS);
+    Add(window);
+  }
+
+  // ash::WmWindowTracker:
+  void OnWindowTitleChanged(ash::WmWindow* window) override {
+    // Name the window "Settings" instead of "Google Chrome - Settings".
+    if (window->GetTitle() != l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE))
+      window->SetTitle(l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
   }
 
  private:

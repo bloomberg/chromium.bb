@@ -23,19 +23,20 @@
 namespace ash {
 namespace {
 
-// Sets ShelfItem property by using the value of |details|.
-void SetShelfItemDetailsForShelfItem(ash::ShelfItem* item,
-                                     const ash::ShelfItemDetails& details) {
-  item->type = details.type;
-  if (details.image_resource_id != ash::kInvalidImageResourceID) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    item->image = *rb.GetImageSkiaNamed(details.image_resource_id);
-  }
+// Update the ShelfItem from relevant window properties.
+void UpdateShelfItemForWindow(ShelfItem* item, WmWindow* window) {
+  item->type = static_cast<ShelfItemType>(
+      window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE));
+  const int icon =
+      window->GetIntProperty(WmWindowProperty::SHELF_ICON_RESOURCE_ID);
+  if (icon != kInvalidImageResourceID)
+    item->image = *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon);
 }
 
 // Returns true if |window| has a ShelfItem added by ShelfWindowWatcher.
 bool HasShelfItemForWindow(WmWindow* window) {
-  return window->GetShelfItemDetails() &&
+  return window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE) !=
+             TYPE_UNDEFINED &&
          window->GetIntProperty(WmWindowProperty::SHELF_ID) != kInvalidShelfID;
 }
 
@@ -74,8 +75,10 @@ ShelfWindowWatcher::UserWindowObserver::~UserWindowObserver() {}
 void ShelfWindowWatcher::UserWindowObserver::OnWindowPropertyChanged(
     WmWindow* window,
     WmWindowProperty property) {
-  if (property == WmWindowProperty::SHELF_ITEM_DETAILS)
-    window_watcher_->OnUserWindowShelfItemDetailsChanged(window);
+  if (property == WmWindowProperty::SHELF_ITEM_TYPE ||
+      property == WmWindowProperty::SHELF_ICON_RESOURCE_ID) {
+    window_watcher_->OnUserWindowPropertyChanged(window);
+  }
 }
 
 void ShelfWindowWatcher::UserWindowObserver::OnWindowDestroying(
@@ -106,11 +109,10 @@ ShelfWindowWatcher::~ShelfWindowWatcher() {
 }
 
 void ShelfWindowWatcher::AddShelfItem(WmWindow* window) {
-  const ShelfItemDetails* item_details = window->GetShelfItemDetails();
   ShelfItem item;
   ShelfID id = model_->next_id();
   item.status = window->IsActive() ? STATUS_ACTIVE : STATUS_RUNNING;
-  SetShelfItemDetailsForShelfItem(&item, *item_details);
+  UpdateShelfItemForWindow(&item, window);
   window->SetIntProperty(WmWindowProperty::SHELF_ID, id);
   std::unique_ptr<ShelfItemDelegate> item_delegate(
       new ShelfWindowWatcherItemDelegate(window));
@@ -148,15 +150,15 @@ int ShelfWindowWatcher::GetShelfItemIndexForWindow(WmWindow* window) const {
 
 void ShelfWindowWatcher::OnUserWindowAdded(WmWindow* window) {
   // The window may already be tracked from when it was added to a different
-  // display or because an existing window added ShelfItemDetails to itself.
+  // display or because an existing window added its shelf item properties.
   if (observed_user_windows_.IsObserving(window))
     return;
 
   observed_user_windows_.Add(window);
 
-  // Add ShelfItem if |window| already has a ShelfItemDetails when it is
-  // created.
-  if (window->GetShelfItemDetails() &&
+  // Add a ShelfItem if |window| has a valid ShelfItemType on creation.
+  if (window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE) !=
+          TYPE_UNDEFINED &&
       window->GetIntProperty(WmWindowProperty::SHELF_ID) == kInvalidShelfID) {
     AddShelfItem(window);
   }
@@ -170,21 +172,21 @@ void ShelfWindowWatcher::OnUserWindowDestroying(WmWindow* window) {
     RemoveShelfItem(window);
 }
 
-void ShelfWindowWatcher::OnUserWindowShelfItemDetailsChanged(WmWindow* window) {
-  if (!window->GetShelfItemDetails()) {
+void ShelfWindowWatcher::OnUserWindowPropertyChanged(WmWindow* window) {
+  if (window->GetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE) ==
+      TYPE_UNDEFINED) {
     // Removes ShelfItem for |window| when it has a ShelfItem.
     if (window->GetIntProperty(WmWindowProperty::SHELF_ID) != kInvalidShelfID)
       RemoveShelfItem(window);
     return;
   }
 
-  // When ShelfItemDetails is changed, update ShelfItem.
+  // Update an existing ShelfItem for |window| when a property has changed.
   if (HasShelfItemForWindow(window)) {
     int index = GetShelfItemIndexForWindow(window);
     DCHECK_GE(index, 0);
     ShelfItem item = model_->items()[index];
-    const ShelfItemDetails* details = window->GetShelfItemDetails();
-    SetShelfItemDetailsForShelfItem(&item, *details);
+    UpdateShelfItemForWindow(&item, window);
     model_->Set(index, item);
     return;
   }

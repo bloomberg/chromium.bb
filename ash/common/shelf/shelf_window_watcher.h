@@ -17,7 +17,7 @@ class ShelfModel;
 class WmWindow;
 
 // ShelfWindowWatcher creates and handles a ShelfItem for windows in the default
-// container that have a ShelfItemDetails property (e.g. the task manager
+// container that have a valid ShelfItemType property (e.g. the task manager
 // dialog or the OS settings window). It adds the ShelfItem when the window is
 // added to the default container and maintains it until the window is closed,
 // even if the window is transiently reparented (e.g. during a drag).
@@ -46,7 +46,7 @@ class ShelfWindowWatcher : public WmActivationObserver,
   };
 
   // Observes individual user windows to detect when they are closed or when
-  // they have ShelfItemDetails changed.
+  // their shelf item properties have changed.
   class UserWindowObserver : public WmWindowObserver {
    public:
     explicit UserWindowObserver(ShelfWindowWatcher* window_watcher);
@@ -63,7 +63,7 @@ class ShelfWindowWatcher : public WmActivationObserver,
     DISALLOW_COPY_AND_ASSIGN(UserWindowObserver);
   };
 
-  // Creates a ShelfItem for |window| that has ShelfItemDetails.
+  // Creates a ShelfItem for |window|.
   void AddShelfItem(WmWindow* window);
 
   // Removes a ShelfItem for |window|.
@@ -79,11 +79,11 @@ class ShelfWindowWatcher : public WmActivationObserver,
   void OnContainerWindowDestroying(WmWindow* container);
 
   // Adds a shelf item for new windows added to the default container that have
-  // a ShelfItemDetails property.
+  // a valid ShelfItemType property value.
   void OnUserWindowAdded(WmWindow* window);
 
   // Adds, updates or removes the shelf item based on a property change.
-  void OnUserWindowShelfItemDetailsChanged(WmWindow* window);
+  void OnUserWindowPropertyChanged(WmWindow* window);
 
   // Removes the shelf item when a window closes.
   void OnUserWindowDestroying(WmWindow* window);

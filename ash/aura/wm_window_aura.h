@@ -52,6 +52,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   WmShell* GetShell() const override;
   void SetName(const char* name) override;
   std::string GetName() const override;
+  void SetTitle(const base::string16& title) override;
   base::string16 GetTitle() const override;
   void SetShellWindowId(int id) override;
   int GetShellWindowId() const override;
@@ -83,9 +84,6 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   void SetColorProperty(WmWindowProperty key, SkColor value) override;
   int GetIntProperty(WmWindowProperty key) override;
   void SetIntProperty(WmWindowProperty key, int value) override;
-  ShelfItemDetails* GetShelfItemDetails() override;
-  void SetShelfItemDetails(const ShelfItemDetails& details) override;
-  void ClearShelfItemDetails() override;
   const wm::WindowState* GetWindowState() const override;
   WmWindow* GetToplevelWindow() override;
   WmWindow* GetToplevelWindowForFocus() override;

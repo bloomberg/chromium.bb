@@ -18,10 +18,13 @@ enum class WmWindowProperty {
   MODAL_TYPE,
 
   // Type int.
+  SHELF_ICON_RESOURCE_ID,
+
+  // Type int.
   SHELF_ID,
 
-  // Type ShelfItemDetails.
-  SHELF_ITEM_DETAILS,
+  // Type int, but cast to ShelfItemType.
+  SHELF_ITEM_TYPE,
 
   // Type bool.
   SNAP_CHILDREN_TO_PIXEL_BOUNDARY,

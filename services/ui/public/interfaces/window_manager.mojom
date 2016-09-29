@@ -51,6 +51,11 @@ interface WindowManager {
   const string kRestoreBounds_Property = "prop:restore-bounds";
   // Shadow style for the window. Type: mojom::ShadowStyle.
   const string kShadowStyle_Property = "prop:shadow-style";
+  // The image resource ID to be used as the shelf item's icon. Type: int
+  const string kShelfIconResourceId_Property = "prop:shelf-icon-resource-id";
+  // The type of item to be shown on the shelf for this window. Type: int
+  // A few ash::ShelfItemType values are supported; TYPE_UNKNOWN means no item.
+  const string kShelfItemType_Property = "prop:shelf-item-type";
   // The window's show state. Type: ShowState.
   const string kShowState_Property = "prop:show-state";
   // The window bounds as set by user input. Type: gfx::Rect.
