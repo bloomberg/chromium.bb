@@ -158,6 +158,7 @@ X11SurfaceFactory::~X11SurfaceFactory() {}
 
 std::vector<gl::GLImplementation>
 X11SurfaceFactory::GetAllowedGLImplementations() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   std::vector<gl::GLImplementation> impls;
   impls.push_back(gl::kGLImplementationEGLGLES2);
   // DesktopGL (GLX) should be the first option when crbug.com/646982 is fixed.
@@ -167,6 +168,7 @@ X11SurfaceFactory::GetAllowedGLImplementations() {
 }
 
 GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   switch (implementation) {
     case gl::kGLImplementationDesktopGL:
       return glx_implementation_.get();
