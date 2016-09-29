@@ -10,6 +10,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.v4.app.NotificationManagerCompat;
 
 import org.chromium.base.Log;
 
@@ -35,6 +36,8 @@ public class DownloadManagerDelegate {
             String path, long length, String originalUrl, String referer) {
         DownloadManager manager =
                 (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
+        boolean useSystemNotification = !notificationManager.areNotificationsEnabled();
         String newMimeType =
                 ChromeDownloadDelegate.remapGenericMimeType(mimeType, originalUrl, fileName);
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
@@ -46,7 +49,7 @@ public class DownloadManagerDelegate {
                 Uri originalUri = Uri.parse(originalUrl);
                 Uri refererUri = referer == null ? Uri.EMPTY : Uri.parse(referer);
                 return (Long) method.invoke(manager, fileName, description, true, newMimeType, path,
-                        length, false, originalUri, refererUri);
+                        length, useSystemNotification, originalUri, refererUri);
             } catch (SecurityException e) {
                 Log.e(TAG, "Cannot access the needed method.");
             } catch (NoSuchMethodException e) {
@@ -58,7 +61,7 @@ public class DownloadManagerDelegate {
             }
         }
         return manager.addCompletedDownload(fileName, description, true, newMimeType, path, length,
-                false);
+                useSystemNotification);
     }
 
     /**
