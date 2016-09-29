@@ -388,6 +388,7 @@
         },
         "compile_only_pre_cq": {
             "_template": "compile_only_pre_cq",
+            "active_waterfall": "chromiumos.tryserver",
             "archive": false,
             "build_packages_in_background": true,
             "build_type": "binary",
@@ -752,6 +753,7 @@
         },
         "no_vmtest_pre_cq": {
             "_template": "no_vmtest_pre_cq",
+            "active_waterfall": "chromiumos.tryserver",
             "archive": false,
             "build_packages_in_background": true,
             "build_type": "binary",
@@ -813,6 +815,7 @@
         },
         "payloads": {
             "_template": "payloads",
+            "active_waterfall": "chromiumos.tryserver",
             "build_type": "payloads",
             "builder_class_name": "release_builders.GeneratePayloadsBuilder",
             "description": "Regenerate release payloads.",
@@ -828,6 +831,7 @@
         },
         "pre_cq": {
             "_template": "pre_cq",
+            "active_waterfall": "chromiumos.tryserver",
             "archive": false,
             "build_packages_in_background": true,
             "build_type": "binary",
@@ -1144,6 +1148,7 @@
         },
         "unittest_stress": {
             "_template": "unittest_stress",
+            "active_waterfall": "chromiumos.tryserver",
             "build_type": "tryjob",
             "builder_class_name": "test_builders.UnittestStressBuilder",
             "description": "Run Unittests repeatedly to look for flake.",
@@ -1153,6 +1158,7 @@
         },
         "wificell_pre_cq": {
             "_template": "wificell_pre_cq",
+            "active_waterfall": "chromiumos.tryserver",
             "build_packages_in_background": true,
             "build_type": "binary",
             "chrome_sdk_build_chrome": false,
@@ -3745,6 +3751,7 @@
         "vm_tests": []
     },
     "branch-util": {
+        "active_waterfall": "chromiumos.tryserver",
         "boards": [],
         "build_type": null,
         "builder_class_name": "release_builders.CreateBranchBuilder",
@@ -22492,6 +22499,7 @@
         ]
     },
     "sync-test-cbuildbot": {
+        "active_waterfall": "chromiumos.tryserver",
         "boards": [],
         "build_type": "binary",
         "builder_class_name": "test_builders.ManifestVersionedSyncBuilder",

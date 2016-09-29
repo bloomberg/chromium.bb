@@ -1246,6 +1246,7 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
       description='Run Unittests repeatedly to look for flake.',
 
       builder_class_name='test_builders.UnittestStressBuilder',
+      active_waterfall=constants.WATERFALL_TRYBOT,
 
       # Make this available, so we can stress a previous build.
       manifest_version=True,
@@ -1435,14 +1436,12 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
       build_type=constants.PAYLOADS_TYPE,
       builder_class_name='release_builders.GeneratePayloadsBuilder',
       description='Regenerate release payloads.',
-
       # Sync to the code used to do the build the first time.
       manifest_version=True,
-
       # This is the actual work we want to do.
       paygen=True,
-
       upload_hw_test_artifacts=False,
+      active_waterfall=constants.WATERFALL_TRYBOT,
   )
 
 
@@ -1658,6 +1657,7 @@ def PreCqBuilders(site_config, board_configs, hw_test_list):
   site_config.AddTemplate(
       'pre_cq',
       site_config.templates.paladin,
+      active_waterfall=constants.WATERFALL_TRYBOT,
       build_type=constants.INCREMENTAL_TYPE,
       build_packages_in_background=True,
       pre_cq=True,
@@ -3153,6 +3153,7 @@ def SpecialtyBuilders(site_config):
       build_type=None,
       builder_class_name='release_builders.CreateBranchBuilder',
       description='Used for creating/deleting branches (TPMs only)',
+      active_waterfall=constants.WATERFALL_TRYBOT,
   )
 
   site_config.AddWithoutTemplate(
@@ -3163,6 +3164,7 @@ def SpecialtyBuilders(site_config):
       builder_class_name='test_builders.ManifestVersionedSyncBuilder',
       chroot_replace=True,
       description='Sync tryjob to help with cbuildbot development',
+      active_waterfall=constants.WATERFALL_TRYBOT,
   )
 
   site_config.AddGroup(
