@@ -24,7 +24,7 @@ content::Manifest GetValidManifest() {
   manifest.display = blink::WebDisplayModeStandalone;
 
   content::Manifest::Icon icon;
-  icon.type = ToNullableUTF16("image/png");
+  icon.type = base::ASCIIToUTF16("image/png");
   icon.sizes.push_back(gfx::Size(144, 144));
   manifest.icons.push_back(icon);
 

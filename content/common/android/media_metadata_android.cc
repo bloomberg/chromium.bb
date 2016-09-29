@@ -46,12 +46,10 @@ MediaMetadataAndroid::CreateJavaObject(
 
   for (const auto& artwork : metadata.artwork) {
     std::string src = artwork.src.spec();
-    base::string16 type = artwork.type.is_null() ?
-        base::string16() : artwork.type.string();
     ScopedJavaLocalRef<jstring> j_src(
         base::android::ConvertUTF8ToJavaString(env, src));
     ScopedJavaLocalRef<jstring> j_type(
-        base::android::ConvertUTF16ToJavaString(env, type));
+        base::android::ConvertUTF16ToJavaString(env, artwork.type));
     ScopedJavaLocalRef<jintArray> j_sizes(
         base::android::ToJavaIntArray(
             env, GetFlattenedSizeArray(artwork.sizes)));

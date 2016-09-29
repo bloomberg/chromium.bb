@@ -62,8 +62,7 @@ class ManifestIconSelectorTest : public testing::Test  {
       const std::vector<gfx::Size> sizes) {
     content::Manifest::Icon icon;
     icon.src = GURL(url);
-    if (!type.empty())
-      icon.type = base::NullableString16(base::UTF8ToUTF16(type), false);
+    icon.type = base::UTF8ToUTF16(type);
     icon.sizes = sizes;
 
     return icon;

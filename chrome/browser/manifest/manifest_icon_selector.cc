@@ -118,9 +118,8 @@ std::vector<Manifest::Icon> ManifestIconSelector::FilterIconsByType(
   std::vector<Manifest::Icon> result;
 
   for (size_t i = 0; i < icons.size(); ++i) {
-    if (icons[i].type.is_null() ||
-        mime_util::IsSupportedImageMimeType(
-            base::UTF16ToUTF8(icons[i].type.string()))) {
+    if (icons[i].type.empty() ||
+        mime_util::IsSupportedImageMimeType(base::UTF16ToUTF8(icons[i].type))) {
       result.push_back(icons[i]);
     }
   }

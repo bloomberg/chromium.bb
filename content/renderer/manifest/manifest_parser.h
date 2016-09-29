@@ -121,8 +121,8 @@ class CONTENT_EXPORT ManifestParser {
 
   // Parses the 'type' field of an icon, as defined in:
   // http://w3c.github.io/manifest/#dfn-steps-for-processing-the-type-member-of-an-icon
-  // Returns the parsed string if any, a null string if the parsing failed.
-  base::NullableString16 ParseIconType(const base::DictionaryValue& icon);
+  // Returns the parsed string if any, an empty string if the parsing failed.
+  base::string16 ParseIconType(const base::DictionaryValue& icon);
 
   // Parses the 'sizes' field of an icon, as defined in:
   // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-sizes-member-of-an-icon

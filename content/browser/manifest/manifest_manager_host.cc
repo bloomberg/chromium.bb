@@ -125,9 +125,7 @@ void ManifestManagerHost::OnRequestManifestResponse(
   for (auto& icon : manifest.icons) {
     if (!icon.src.is_valid())
       icon.src = GURL();
-    icon.type = base::NullableString16(
-        icon.type.string().substr(0, Manifest::kMaxIPCStringLength),
-        icon.type.is_null());
+    icon.type = icon.type.substr(0, Manifest::kMaxIPCStringLength);
   }
   manifest.gcm_sender_id = base::NullableString16(
         manifest.gcm_sender_id.string().substr(

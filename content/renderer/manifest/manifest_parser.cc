@@ -249,9 +249,12 @@ GURL ManifestParser::ParseIconSrc(const base::DictionaryValue& icon) {
   return ParseURL(icon, "src", manifest_url_);
 }
 
-base::NullableString16 ManifestParser::ParseIconType(
+base::string16 ManifestParser::ParseIconType(
     const base::DictionaryValue& icon) {
-  return ParseString(icon, "type", Trim);
+  base::NullableString16 nullable_string = ParseString(icon, "type", Trim);
+  if (nullable_string.is_null())
+    return base::string16();
+  return nullable_string.string();
 }
 
 std::vector<gfx::Size> ManifestParser::ParseIconSizes(

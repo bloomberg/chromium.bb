@@ -43,9 +43,7 @@ bool CheckArtworkSrcSanity(const GURL& src) {
 bool CheckArtworkSanity(const MediaMetadata::Artwork& artwork) {
   if (!CheckArtworkSrcSanity(artwork.src))
     return false;
-  if (artwork.type.is_null())
-    return false;
-  if (artwork.type.string().size() > kMaxArtworkTypeLength)
+  if (artwork.type.size() > kMaxArtworkTypeLength)
     return false;
   if (artwork.sizes.size() > kMaxNumberOfArtworkSizes)
     return false;
@@ -58,10 +56,7 @@ MediaMetadata::Artwork SanitizeArtwork(const MediaMetadata::Artwork& artwork) {
   MediaMetadata::Artwork sanitized_artwork;
 
   sanitized_artwork.src = artwork.src;
-  sanitized_artwork.type = artwork.type.is_null() ?
-      base::NullableString16() :
-      base::NullableString16(
-          artwork.type.string().substr(0, kMaxArtworkTypeLength), false);
+  sanitized_artwork.type = artwork.type.substr(0, kMaxArtworkTypeLength);
   for (const auto& size : artwork.sizes) {
     sanitized_artwork.sizes.push_back(size);
     if (sanitized_artwork.sizes.size() == kMaxNumberOfArtworkSizes)

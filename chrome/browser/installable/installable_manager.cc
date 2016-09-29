@@ -31,10 +31,10 @@ bool DoesManifestContainRequiredIcon(const content::Manifest& manifest) {
   for (const auto& icon : manifest.icons) {
     // The type field is optional. If it isn't present, fall back on checking
     // the src extension, and allow the icon if the extension ends with png.
-    if (!base::EqualsASCII(icon.type.string(), "image/png") &&
-        !(icon.type.is_null() &&
-          base::EndsWith(icon.src.ExtractFileName(), kPngExtension,
-                         base::CompareCase::INSENSITIVE_ASCII)))
+    if (!base::EqualsASCII(icon.type, "image/png") &&
+        !(icon.type.empty() && base::EndsWith(
+            icon.src.ExtractFileName(), kPngExtension,
+            base::CompareCase::INSENSITIVE_ASCII)))
       continue;
 
     for (const auto& size : icon.sizes) {

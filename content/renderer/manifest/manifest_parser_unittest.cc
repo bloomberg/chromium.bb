@@ -737,7 +737,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   {
     Manifest manifest =
         ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": \"foo\" } ] }");
-    EXPECT_TRUE(base::EqualsASCII(manifest.icons[0].type.string(), "foo"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.icons[0].type, "foo"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -745,7 +745,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   {
     Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
                                       " \"type\": \"  foo  \" } ] }");
-    EXPECT_TRUE(base::EqualsASCII(manifest.icons[0].type.string(), "foo"));
+    EXPECT_TRUE(base::EqualsASCII(manifest.icons[0].type, "foo"));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -753,7 +753,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   {
     Manifest manifest =
         ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": {} } ] }");
-    EXPECT_TRUE(manifest.icons[0].type.is_null());
+    EXPECT_TRUE(manifest.icons[0].type.empty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'type' ignored, type string expected.",
               errors()[0]);
@@ -763,7 +763,7 @@ TEST_F(ManifestParserTest, IconTypeParseRules) {
   {
     Manifest manifest =
         ParseManifest("{ \"icons\": [ {\"src\": \"\", \"type\": 42 } ] }");
-    EXPECT_TRUE(manifest.icons[0].type.is_null());
+    EXPECT_TRUE(manifest.icons[0].type.empty());
     EXPECT_EQ(1u, GetErrorCount());
     EXPECT_EQ("property 'type' ignored, type string expected.",
               errors()[0]);

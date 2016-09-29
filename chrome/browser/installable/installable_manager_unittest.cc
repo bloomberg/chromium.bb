@@ -25,7 +25,7 @@ class InstallableManagerUnitTest : public testing::Test {
     manifest.display = blink::WebDisplayModeStandalone;
 
     content::Manifest::Icon icon;
-    icon.type = ToNullableUTF16("image/png");
+    icon.type = base::ASCIIToUTF16("image/png");
     icon.sizes.push_back(gfx::Size(144, 144));
     manifest.icons.push_back(icon);
 
@@ -107,11 +107,11 @@ TEST_F(InstallableManagerUnitTest, ManifestRequiresValidStartURL) {
 TEST_F(InstallableManagerUnitTest, ManifestRequiresImagePNG) {
   content::Manifest manifest = GetValidManifest();
 
-  manifest.icons[0].type = ToNullableUTF16("image/gif");
+  manifest.icons[0].type = base::ASCIIToUTF16("image/gif");
   EXPECT_FALSE(IsManifestValid(manifest));
   EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
 
-  manifest.icons[0].type = base::NullableString16();
+  manifest.icons[0].type.clear();
   EXPECT_FALSE(IsManifestValid(manifest));
   EXPECT_EQ(MANIFEST_MISSING_SUITABLE_ICON, GetErrorCode());
 

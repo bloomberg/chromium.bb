@@ -55,7 +55,7 @@ std::string BuildSetMetadataScript(
   for (const auto& artwork : metadata->artwork) {
     generated_script << artwork_separator << "{"
        << "src: \"" << artwork.src.spec() << "\", "
-       << "type: \"" << artwork.type.string() << "\", "
+       << "type: \"" << artwork.type << "\", "
        << "sizes: \"";
     for (const auto& size : artwork.sizes) {
       generated_script << size.width() << "x" << size.height() << " ";
@@ -83,7 +83,7 @@ void PrintTo(const base::Optional<MediaMetadata>& metadata, std::ostream* os) {
   *os << "artwork=[";
   for (const auto& artwork : metadata->artwork) {
     *os << "{ src=" << artwork.src.spec() << ", ";
-    *os << "type=" << artwork.type.string() << ", ";
+    *os << "type=" << artwork.type << ", ";
     *os << "sizes=[";
     for (const auto& size : artwork.sizes) {
       *os <<  size.width() << "x" << size.height() << " ";
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(BrowserMediaSessionManagerBrowserTest,
   expected->album = base::ASCIIToUTF16("album1");
   MediaMetadata::Artwork artwork;
   artwork.src = GURL("http://foo.com/bar.png");
-  artwork.type = base::NullableString16(base::ASCIIToUTF16("image/png"), false);
+  artwork.type = base::ASCIIToUTF16("image/png");
   artwork.sizes.push_back(gfx::Size(128, 128));
   expected->artwork.push_back(artwork);
 
@@ -175,8 +175,7 @@ IN_PROC_BROWSER_TEST_F(BrowserMediaSessionManagerBrowserTest,
   expected->album = base::ASCIIToUTF16("album2");
   MediaMetadata::Artwork artwork;
   artwork.src = GURL("http://foo.com/bar.jpg");
-  artwork.type = base::NullableString16(
-      base::ASCIIToUTF16("image/jpeg"), false);
+  artwork.type = base::ASCIIToUTF16("image/jpeg");
   artwork.sizes.push_back(gfx::Size(256, 256));
   expected->artwork.push_back(artwork);
 
@@ -234,8 +233,7 @@ IN_PROC_BROWSER_TEST_F(BrowserMediaSessionManagerBrowserTest,
   base::Optional<MediaMetadata> dirty_metadata = MediaMetadata();
   MediaMetadata::Artwork file_artwork;
   file_artwork.src = GURL("file:///foo/bar.jpg");
-  file_artwork.type = base::NullableString16(
-      base::ASCIIToUTF16("image/jpeg"), false);
+  file_artwork.type = base::ASCIIToUTF16("image/jpeg");
   dirty_metadata->artwork.push_back(file_artwork);
 
   base::Optional<MediaMetadata> expected = MediaMetadata();
