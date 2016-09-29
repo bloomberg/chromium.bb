@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/mock_pref_change_callback.h"
@@ -120,8 +121,10 @@ void AppWindowGeometryCacheTest::AddGeometryAndLoadExtension(
     const gfx::Rect& bounds,
     const gfx::Rect& screen_bounds,
     ui::WindowShowState state) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  base::DictionaryValue* value = new base::DictionaryValue;
+  std::unique_ptr<base::DictionaryValue> dict =
+      base::MakeUnique<base::DictionaryValue>();
+  std::unique_ptr<base::DictionaryValue> value =
+      base::MakeUnique<base::DictionaryValue>();
   value->SetInteger("x", bounds.x());
   value->SetInteger("y", bounds.y());
   value->SetInteger("w", bounds.width());
@@ -131,7 +134,7 @@ void AppWindowGeometryCacheTest::AddGeometryAndLoadExtension(
   value->SetInteger("screen_bounds_w", screen_bounds.width());
   value->SetInteger("screen_bounds_h", screen_bounds.height());
   value->SetInteger("state", state);
-  dict->SetWithoutPathExpansion(window_id, value);
+  dict->SetWithoutPathExpansion(window_id, std::move(value));
   extension_prefs_->SetGeometryCache(extension_id, std::move(dict));
   LoadExtension(extension_id);
 }

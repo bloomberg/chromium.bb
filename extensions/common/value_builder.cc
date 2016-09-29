@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 namespace extensions {
@@ -29,25 +30,29 @@ std::string DictionaryBuilder::ToJSON() const {
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           int in_value) {
-  dict_->SetWithoutPathExpansion(path, new base::FundamentalValue(in_value));
+  dict_->SetWithoutPathExpansion(
+      path, base::MakeUnique<base::FundamentalValue>(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           double in_value) {
-  dict_->SetWithoutPathExpansion(path, new base::FundamentalValue(in_value));
+  dict_->SetWithoutPathExpansion(
+      path, base::MakeUnique<base::FundamentalValue>(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           const std::string& in_value) {
-  dict_->SetWithoutPathExpansion(path, new base::StringValue(in_value));
+  dict_->SetWithoutPathExpansion(path,
+                                 base::MakeUnique<base::StringValue>(in_value));
   return *this;
 }
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           const base::string16& in_value) {
-  dict_->SetWithoutPathExpansion(path, new base::StringValue(in_value));
+  dict_->SetWithoutPathExpansion(path,
+                                 base::MakeUnique<base::StringValue>(in_value));
   return *this;
 }
 
@@ -60,7 +65,8 @@ DictionaryBuilder& DictionaryBuilder::Set(
 
 DictionaryBuilder& DictionaryBuilder::SetBoolean(
     const std::string& path, bool in_value) {
-  dict_->SetWithoutPathExpansion(path, new base::FundamentalValue(in_value));
+  dict_->SetWithoutPathExpansion(
+      path, base::MakeUnique<base::FundamentalValue>(in_value));
   return *this;
 }
 

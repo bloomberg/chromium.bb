@@ -88,7 +88,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
     if (!status.ok())
       return MakeReadResult(status);
     if (setting)
-      settings->SetWithoutPathExpansion(key, setting.release());
+      settings->SetWithoutPathExpansion(key, std::move(setting));
   }
 
   return MakeReadResult(std::move(settings), status);

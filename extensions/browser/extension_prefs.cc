@@ -202,7 +202,7 @@ class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
     if (!dict->GetDictionary(extension_id_, &extension)) {
       // Extension pref does not exist, create it.
       extension = new base::DictionaryValue();
-      dict->SetWithoutPathExpansion(extension_id_, extension);
+      dict->SetWithoutPathExpansion(extension_id_, base::WrapUnique(extension));
     }
     return extension;
   }
@@ -298,16 +298,16 @@ T* ExtensionPrefs::ScopedUpdate<T, type_enum_value>::Get() {
 template <typename T, base::Value::Type type_enum_value>
 T* ExtensionPrefs::ScopedUpdate<T, type_enum_value>::Create() {
   base::DictionaryValue* dict = update_.Get();
-  base::DictionaryValue* extension = NULL;
-  base::Value* key_value = NULL;
-  T* value_as_t = NULL;
+  base::DictionaryValue* extension = nullptr;
+  base::Value* key_value = nullptr;
+  T* value_as_t = nullptr;
   if (!dict->GetDictionary(extension_id_, &extension)) {
     extension = new base::DictionaryValue;
-    dict->SetWithoutPathExpansion(extension_id_, extension);
+    dict->SetWithoutPathExpansion(extension_id_, base::WrapUnique(extension));
   }
   if (!extension->Get(key_, &key_value)) {
     value_as_t = new T;
-    extension->SetWithoutPathExpansion(key_, value_as_t);
+    extension->SetWithoutPathExpansion(key_, base::WrapUnique(value_as_t));
   } else {
     // It would be nice to CHECK that this doesn't happen, but since prefs can
     // get into a mangled state, we can't really do that. Instead, handle it
@@ -322,7 +322,7 @@ T* ExtensionPrefs::ScopedUpdate<T, type_enum_value>::Create() {
           base::IntToString(static_cast<int>(key_value->GetType())));
       base::debug::DumpWithoutCrashing();
       value_as_t = new T();
-      extension->SetWithoutPathExpansion(key_, value_as_t);
+      extension->SetWithoutPathExpansion(key_, base::WrapUnique(value_as_t));
     } else {
       value_as_t = static_cast<T*>(key_value);
     }

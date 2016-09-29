@@ -30,10 +30,10 @@ namespace {
 // for |key|, creating it if necessary.
 base::ListValue* GetOrCreateList(base::DictionaryValue* dictionary,
                                  const std::string& key) {
-  base::ListValue* list = NULL;
+  base::ListValue* list = nullptr;
   if (!dictionary->GetList(key, &list)) {
     list = new base::ListValue();
-    dictionary->SetWithoutPathExpansion(key, list);
+    dictionary->SetWithoutPathExpansion(key, base::WrapUnique(list));
   }
   return list;
 }

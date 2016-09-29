@@ -408,10 +408,11 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
   if (!filtered_events)
     filtered_events = update.Create();
 
-  ListValue* filter_list = NULL;
+  ListValue* filter_list = nullptr;
   if (!filtered_events->GetList(event_name, &filter_list)) {
     filter_list = new ListValue;
-    filtered_events->SetWithoutPathExpansion(event_name, filter_list);
+    filtered_events->SetWithoutPathExpansion(event_name,
+                                             base::WrapUnique(filter_list));
   }
 
   filter_list->Append(filter->CreateDeepCopy());

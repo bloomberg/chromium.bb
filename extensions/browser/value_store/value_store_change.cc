@@ -16,14 +16,15 @@ std::string ValueStoreChange::ToJson(
   base::DictionaryValue changes_value;
   for (ValueStoreChangeList::const_iterator it = changes.begin();
       it != changes.end(); ++it) {
-    base::DictionaryValue* change_value = new base::DictionaryValue();
+    std::unique_ptr<base::DictionaryValue> change_value =
+        base::MakeUnique<base::DictionaryValue>();
     if (it->old_value()) {
       change_value->Set("oldValue", it->old_value()->DeepCopy());
     }
     if (it->new_value()) {
       change_value->Set("newValue", it->new_value()->DeepCopy());
     }
-    changes_value.SetWithoutPathExpansion(it->key(), change_value);
+    changes_value.SetWithoutPathExpansion(it->key(), std::move(change_value));
   }
   std::string json;
   bool success = base::JSONWriter::Write(changes_value, &json);
