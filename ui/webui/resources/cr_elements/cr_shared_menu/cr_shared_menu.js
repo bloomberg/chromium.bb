@@ -8,8 +8,6 @@ var SLIDE_CUBIC_BEZIER = 'cubic-bezier(0.3, 0.95, 0.5, 1)';
 Polymer({
   is: 'cr-shared-menu',
 
-  behaviors: [Polymer.IronA11yKeysBehavior],
-
   properties: {
     menuOpen: {
       type: Boolean,
@@ -26,14 +24,6 @@ Polymer({
     itemData: {
       type: Object,
       value: null,
-    },
-
-    /** @override */
-    keyEventTarget: {
-      type: Object,
-      value: function() {
-        return this.$.menu;
-      }
     },
 
     openAnimationConfig: {
@@ -76,10 +66,6 @@ Polymer({
     }
   },
 
-  keyBindings: {
-    'tab': 'onTabPressed_',
-  },
-
   listeners: {
     'dropdown.iron-overlay-canceled': 'onOverlayCanceled_',
   },
@@ -90,21 +76,19 @@ Polymer({
    */
   lastAnchor_: null,
 
-  /**
-   * The first focusable child in the menu's light DOM.
-   * @private {?Element}
-   */
-  firstFocus_: null,
-
-  /**
-   * The last focusable child in the menu's light DOM.
-   * @private {?Element}
-   */
-  lastFocus_: null,
+  /** @private {?function(!Event)} */
+  keyHandler_: null,
 
   /** @override */
   attached: function() {
     window.addEventListener('resize', this.closeMenu.bind(this));
+    this.keyHandler_ = this.onCaptureKeyDown_.bind(this);
+    this.$.menu.addEventListener('keydown', this.keyHandler_, true);
+  },
+
+  /** @override */
+  detached: function() {
+    this.$.menu.removeEventListener('keydown', this.keyHandler_, true);
   },
 
   /** Closes the menu. */
@@ -132,15 +116,7 @@ Polymer({
     this.itemData = opt_itemData || null;
     this.lastAnchor_ = anchor;
     this.$.dropdown.restoreFocusOnClose = true;
-
-    var focusableChildren = Polymer.dom(this).querySelectorAll(
-        '[tabindex]:not([disabled]):not([hidden]),' +
-        'button:not([disabled]):not([hidden])');
-    if (focusableChildren.length > 0) {
-      this.$.dropdown.focusTarget = focusableChildren[0];
-      this.firstFocus_ = focusableChildren[0];
-      this.lastFocus_ = focusableChildren[focusableChildren.length - 1];
-    }
+    this.$.menu.selected = -1;
 
     // Move the menu to the anchor.
     this.$.dropdown.positionTarget = anchor;
@@ -160,28 +136,22 @@ Polymer({
   },
 
   /**
-   * Trap focus inside the menu. As a very basic heuristic, will wrap focus from
-   * the first element with a nonzero tabindex to the last such element.
-   * TODO(tsergeant): Use iron-focus-wrap-behavior once it is available
-   * (https://github.com/PolymerElements/iron-overlay-behavior/issues/179).
-   * @param {CustomEvent} e
+   * Close the menu when tab is pressed. Note that we must
+   * explicitly add a capture event listener to do this as iron-menu-behavior
+   * eats all key events during bubbling. See
+   * https://github.com/PolymerElements/iron-menu-behavior/issues/56.
+   * This will move focus to the next focusable element before/after the
+   * anchor.
+   * @private
    */
-  onTabPressed_: function(e) {
-    if (!this.firstFocus_ || !this.lastFocus_)
-      return;
-
-    var toFocus;
-    var keyEvent = e.detail.keyboardEvent;
-    if (keyEvent.shiftKey && keyEvent.target == this.firstFocus_)
-      toFocus = this.lastFocus_;
-    else if (!keyEvent.shiftKey && keyEvent.target == this.lastFocus_)
-      toFocus = this.firstFocus_;
-
-    if (!toFocus)
-      return;
-
-    e.preventDefault();
-    toFocus.focus();
+  onCaptureKeyDown_: function(e) {
+    if (Polymer.IronA11yKeysBehavior.keyboardEventMatchesKeys(e, 'tab')) {
+      // Need to refocus the anchor synchronously so that the tab event takes
+      // effect on it.
+      this.$.dropdown.restoreFocusOnClose = false;
+      this.lastAnchor_.focus();
+      this.closeMenu();
+    }
   },
 
   /**

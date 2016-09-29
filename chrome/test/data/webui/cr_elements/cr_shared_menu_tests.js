@@ -12,17 +12,15 @@ suite('cr-shared-menu', function() {
   var items = [];
 
   function afterOpen(callback) {
-    menu.addEventListener('iron-overlay-opened', function f() {
-      menu.removeEventListener('iron-overlay-opened', f);
-      callback();
+    listenOnce(menu, 'iron-overlay-opened', function () {
+      // paper-listbox applies focus after opening with microtask timing.
+      // Delay until that has happened:
+      setTimeout(callback, 0);
     });
   }
 
   function afterClose(callback) {
-    menu.addEventListener('iron-overlay-closed', function f() {
-      menu.removeEventListener('iron-overlay-closed', f);
-      callback();
-    });
+    listenOnce(menu, 'iron-overlay-closed', () => callback());
   }
 
   suiteSetup(function() {
@@ -146,32 +144,48 @@ suite('cr-shared-menu', function() {
       });
     });
 
-    test('focus is trapped inside the menu', function(done) {
+    test('tab closes menu', function(done) {
       button.focus();
       MockInteractions.tap(button);
 
       afterOpen(function() {
-        // Simulate shift-tab on first element.
-        assertEquals(items[0], menu.shadowRoot.activeElement);
+        MockInteractions.pressAndReleaseKeyOn(items[0], 9);
+        afterClose(function() {
+          // Focus should move to a different element, but we can't simulate
+          // the right events to test this.
+          done();
+        });
+      });
+    });
+
+    test('shift-tab closes menu', function(done) {
+      button.focus();
+      MockInteractions.tap(button);
+
+      afterOpen(function() {
         MockInteractions.pressAndReleaseKeyOn(items[0], 9, ['shift']);
-        assertEquals(items[2], menu.shadowRoot.activeElement);
+        afterClose(done);
+      });
+    });
 
-        // Simulate tab on last element.
-        MockInteractions.pressAndReleaseKeyOn(items[2], 9);
-        assertEquals(items[0], menu.shadowRoot.activeElement);
+    test('up and down change focus', function(done) {
+      button.focus();
+      MockInteractions.tap(button);
 
-        // Simulate shift-tab on first element.
-        assertEquals(items[0], menu.shadowRoot.activeElement);
-        MockInteractions.pressAndReleaseKeyOn(items[0], 9, ['shift']);
-        assertEquals(items[2], menu.shadowRoot.activeElement);
+      afterOpen(function() {
+        // Pressing down on first item goes to second item.
+        assertEquals(items[0], document.activeElement);
+        MockInteractions.pressAndReleaseKeyOn(items[0], 40);
+        assertEquals(items[1], document.activeElement);
 
-        // Simulate shift-tab on last element. This should simply cause the
-        // browser to focus the previous item in the tab order, since
-        // cr-shared-menu should not wrap in this case. However, we can't mimic
-        // native events from JS, so the focus won't actually move unless
-        // cr-shared--menu misbehaves.
-        MockInteractions.pressAndReleaseKeyOn(items[2], 9, ['shift']);
-        assertEquals(items[2], menu.shadowRoot.activeElement);
+        // Pressing down twice more cycles back to first item.
+        MockInteractions.pressAndReleaseKeyOn(items[1], 40);
+        MockInteractions.pressAndReleaseKeyOn(items[2], 40);
+        assertEquals(items[0], document.activeElement);
+
+        // Pressing up cycles to last item.
+        MockInteractions.pressAndReleaseKeyOn(items[0], 38);
+        assertEquals(items[2], document.activeElement);
 
         done();
       });
@@ -193,6 +207,7 @@ suite('cr-shared-menu', function() {
 
       items[3] = document.createElement('button');
       items[3].disabled = true;
+      menu.appendChild(items[3]);
 
       items[4] = document.createElement('paper-item');
       items[4].hidden = true;
@@ -209,13 +224,13 @@ suite('cr-shared-menu', function() {
         assertEquals(items[1], menu.shadowRoot.activeElement);
 
         // The last two items are disabled or hidden, so they should be skipped
-        // too.
-        MockInteractions.pressAndReleaseKeyOn(items[1], 9, ['shift']);
+        // when pressing up.
+        MockInteractions.pressAndReleaseKeyOn(items[1], 38);
         assertEquals(items[2], menu.shadowRoot.activeElement);
 
-        // Simulate tab on last tabbable element to wrap to the first tabbable
-        // element again.
-        MockInteractions.pressAndReleaseKeyOn(items[2], 9);
+        // Simulate pressing down on last focusable element to wrap to first
+        // focusable element.
+        MockInteractions.pressAndReleaseKeyOn(items[2], 40);
         assertEquals(items[1], menu.shadowRoot.activeElement);
 
         done();

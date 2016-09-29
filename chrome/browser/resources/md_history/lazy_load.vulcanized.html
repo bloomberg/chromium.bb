@@ -520,22 +520,38 @@ paper-ripple {
   </template>
 
   </dom-module>
+<dom-module id="paper-listbox" assetpath="chrome://resources/polymer/v1_0/paper-listbox/" css-build="shadow">
+  <template>
+    <style scope="paper-listbox">:host {
+  display: block;
+        padding: 8px 0;
+
+        background: var(--paper-listbox-background-color,var(--primary-background-color));;
+        color: var(--paper-listbox-color,var(--primary-text-color));;
+
+        ;
+}
+
+</style>
+
+    <content></content>
+  </template>
+
+  </dom-module>
 <dom-module id="cr-shared-menu" assetpath="chrome://resources/cr_elements/cr_shared_menu/" css-build="shadow">
   <template>
-    <style scope="cr-shared-menu">#menu {
+    <style scope="cr-shared-menu">paper-listbox {
   box-shadow: var(--shadow-elevation-2dp_-_box-shadow);
-        background-color: white;
         overflow: hidden;
-        padding: 8px 0;
         position: relative;
         width: var(--cr-shared-menu-width);
 }
 
 </style>
     <iron-dropdown id="dropdown" allow-outside-scroll="" restore-focus-on-close="" vertical-align="auto" horizontal-align="right" opened="{{menuOpen}}" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]">
-      <div id="menu" class="dropdown-content" role="menu">
+      <paper-listbox id="menu" class="dropdown-content">
         <content></content>
-      </div>
+      </paper-listbox>
     </iron-dropdown>
   </template>
   </dom-module>
