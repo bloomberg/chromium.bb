@@ -68,6 +68,12 @@ class GpuIntegrationTest(
       # aborts the control flow here.
       self.skipTest('SKIPPING TEST due to test expectations')
     try:
+      # TODO(nednguyen): For some reason the arguments are getting wrapped
+      # in another tuple sometimes (like in the WebGL extension tests).
+      # Perhaps only if multiple arguments are yielded in the test
+      # generator?
+      if len(args) == 1 and isinstance(args[0], tuple):
+        args = args[0]
       self.RunActualGpuTest(url, *args)
     except Exception:
       if expectation == 'pass':

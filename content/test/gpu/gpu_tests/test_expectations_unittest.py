@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import unittest
 
+from gpu_tests import gpu_integration_test
 from gpu_tests import test_expectations
 
 from telemetry.page import page as page_module
@@ -57,7 +58,6 @@ class SampleTestExpectations(test_expectations.TestExpectations):
     self.Fail('page2.html', ['vista'], bug=123)
     self.Fail('page3.html', bug=123)
     self.Fail('page4.*', bug=123)
-    self.Fail('http://test.com/page5.html', bug=123)
     self.Fail('Pages.page_6')
     self.Fail('page7.html', ['mountainlion'])
     self.Fail('page8.html', ['mavericks'])
@@ -86,9 +86,20 @@ class SampleTestExpectations(test_expectations.TestExpectations):
       return True
     return expectation.valid_condition_matched
 
+class FailingAbsoluteTestExpectations(test_expectations.TestExpectations):
+  def CreateExpectation(self, expectation, url_pattern, conditions=None,
+                        bug=None):
+    return SampleExpectationSubclass(expectation, url_pattern,
+                                     conditions=conditions, bug=bug)
+
+  def SetExpectations(self):
+    self.Fail('http://test.com/page5.html', bug=123)
+
 class TestExpectationsTest(unittest.TestCase):
   def setUp(self):
-    self.expectations = SampleTestExpectations()
+    self.expectations = SampleTestExpectations(url_prefixes=[
+      'third_party/webgl/src/sdk/tests/',
+      'content/test/data/gpu'])
 
   def assertExpectationEquals(self, expected, page, platform=StubPlatform(''),
                               browser_type=None):
@@ -137,15 +148,10 @@ class TestExpectationsTest(unittest.TestCase):
     self.assertExpectationEquals('fail', page, StubPlatform('win'))
     self.assertExpectationEquals('fail', page_js, StubPlatform('win'))
 
-  # Expectations with absolute paths should match the entire path
-  def testAbsoluteExpectations(self):
-    ps = story_set.StorySet()
-    page = page_module.Page('http://test.com/page5.html', ps)
-    page_org = page_module.Page('http://test.org/page5.html', ps)
-    page_https = page_module.Page('https://test.com/page5.html', ps)
-    self.assertExpectationEquals('fail', page, StubPlatform('win'))
-    self.assertExpectationEquals('pass', page_org, StubPlatform('win'))
-    self.assertExpectationEquals('pass', page_https, StubPlatform('win'))
+  # Absolute URLs in expectations are no longer allowed.
+  def testAbsoluteExpectationsAreForbidden(self):
+    with self.assertRaises(ValueError):
+      FailingAbsoluteTestExpectations()
 
   # Expectations can be set against page names as well as urls
   def testPageNameExpectations(self):
@@ -225,3 +231,30 @@ class TestExpectationsTest(unittest.TestCase):
     page = page_module.Page(
       'file://conformance/glsl/page15.html?webglVersion=2', ps)
     self.assertExpectationEquals('skip', page)
+
+  def testURLPrefixesAreStripped(self):
+    # This test uses the "_EmulatedPage" class from the GPU integration tests
+    # because it's in that context where support for URL prefixes was added.
+    self.assertExpectationEquals(
+      'skip',
+      gpu_integration_test._EmulatedPage(
+        'third_party/webgl/src/sdk/tests/conformance/glsl/page15.html',
+        'Page15'))
+    self.assertExpectationEquals(
+      'fail',
+      gpu_integration_test._EmulatedPage(
+        'third_party/webgl/src/sdk/tests/conformance/glsl/foo.html',
+        'Foo'))
+    # Test exact and wildcard matches on Windows.
+    self.assertExpectationEquals(
+      'skip',
+      gpu_integration_test._EmulatedPage(
+        'third_party\\webgl\\src\\sdk\\tests\\conformance\\glsl\\page15.html',
+        'Page15'),
+      StubPlatform('win'))
+    self.assertExpectationEquals(
+      'fail',
+      gpu_integration_test._EmulatedPage(
+        'third_party\\webgl\\src\\sdk\\tests\\conformance\\glsl\\foo.html',
+        'Foo'),
+      StubPlatform('win'))

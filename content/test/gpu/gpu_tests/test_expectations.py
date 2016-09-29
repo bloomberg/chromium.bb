@@ -36,14 +36,21 @@ class Expectation(object):
   Supports conditions based on operating system (e.g., win, mac) and
   browser type (e.g. 'debug', 'release').
 
+  The pattern, if a URL, *must* be a relative URL. Absolute URLs
+  (e.g. starting with a scheme like http://, https://, file://) are
+  not allowed. A ValueError is raised if one is passed to __init__.
+
   Subclass this class and call super.__init__ last in your constructor
   in order to add new user-defined conditions. The conditions are
   parsed at the end of this class's constructor, so be careful not to
   overwrite the results of the constructor call!
+
   """
 
   def __init__(self, expectation, pattern, conditions=None, bug=None):
     self.expectation = expectation.lower()
+    if pattern.find('://') > 0:
+      raise ValueError('Absolute URLs are not allowed in patterns')
     self.pattern = pattern
     self.bug = bug
 
@@ -89,12 +96,16 @@ class Expectation(object):
 class TestExpectations(object):
   """A class which defines the expectations for a page set test execution"""
 
-  def __init__(self):
+  def __init__(self, url_prefixes=None):
     self._expectations = []
+    self._url_prefixes = []
     self._skip_matching_names = False
     self._built_expectation_cache = True
     self._ClearExpectationsCache()
     self.SetExpectations()
+    if url_prefixes:
+      for p in url_prefixes:
+        self._url_prefixes.append(p)
 
   def SetExpectations(self):
     """Called on creation. Override to set up custom expectations."""
@@ -160,8 +171,9 @@ class TestExpectations(object):
       return url
     return url.replace('\\', '/')
 
-  def _GetURLPath(self, url):
-    components = urlparse.urlsplit(url)
+  def _GetURLPath(self, url, browser):
+    normalized_url = self._GetNormalizedURL(url, browser)
+    components = urlparse.urlsplit(normalized_url)
     # For compatibility, the file:// scheme must be treated specially.
     # The top-level directory shows up in the netloc portion of the URL.
     if components[0] == 'file':
@@ -177,6 +189,13 @@ class TestExpectations(object):
     query_index = url_path.find('?')
     if query_index > 0:
       url_path = url_path[0:query_index]
+    # Look for the URL prefixes specified at construction time, and
+    # trim the first one found, if any.
+    if self._url_prefixes:
+      for p in self._url_prefixes:
+        if url_path.startswith(p):
+          url_path = url_path[len(p):]
+          break
     return url_path
 
   def _GetExpectationObjectForPage(self, browser, page):
@@ -185,13 +204,9 @@ class TestExpectations(object):
     # First attempt to look up by the page's URL or name.
     e = None
     # Relative URL (common case).
-    url = self._GetNormalizedURL(page.url, browser)
-    url_path = self._GetURLPath(url)
+    url_path = self._GetURLPath(page.url, browser)
     if url_path:
       e = self._expectations_by_pattern.get(url_path)
-    if e:
-      return e
-    e = self._expectations_by_pattern.get(url)
     if e:
       return e
     if page.name:
@@ -242,15 +257,12 @@ class TestExpectations(object):
     # everything except the page's name or URL.
     if not self._skip_matching_names:
       # Relative URL.
-      if not fnmatch.fnmatch(self._GetURLPath(page.url),
+      if not fnmatch.fnmatch(self._GetURLPath(page.url, browser),
                              expectation.pattern):
-        # Absolute URL.
-        if not fnmatch.fnmatch(page.url,
-                               expectation.pattern):
-          # Name.
-          if not (page.name and fnmatch.fnmatch(page.name,
-                                                expectation.pattern)):
-            return False
+        # Name.
+        if not (page.name and fnmatch.fnmatch(page.name,
+                                              expectation.pattern)):
+          return False
 
     platform = browser.platform
     os_matches = (not expectation.os_conditions or
