@@ -186,11 +186,6 @@ void FullscreenController::ExitFullscreenModeForTab(WebContents* web_contents) {
     exclusive_access_context->UpdateUIForTabFullscreen(
         ExclusiveAccessContext::STATE_EXIT_TAB_FULLSCREEN);
 
-#if defined(OS_MACOSX)
-  // Clear the bubble URL, which forces the Mac UI to redraw.
-  exclusive_access_manager()->UpdateExclusiveAccessExitBubbleContent();
-#endif  // defined(OS_MACOSX)
-
   // If currently there is a tab in "tab fullscreen" mode and fullscreen
   // was not caused by it (i.e., previously it was in "browser fullscreen"
   // mode), we need to switch back to "browser fullscreen" mode. In this
