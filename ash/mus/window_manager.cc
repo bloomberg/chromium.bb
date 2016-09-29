@@ -34,6 +34,7 @@
 #include "services/ui/public/interfaces/mus_constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/display_observer.h"
 #include "ui/events/mojo/event.mojom.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
 #include "ui/views/mus/screen_mus.h"
@@ -136,15 +137,20 @@ void WindowManager::RemoveObserver(WindowManagerObserver* observer) {
 RootWindowController* WindowManager::CreateRootWindowController(
     ui::Window* window,
     const display::Display& display) {
+  // CreateRootWindowController() means a new display is being added, so the
+  // DisplayList needs to be updated. Calling AddDisplay() results in
+  // notifying DisplayObservers. Ash code assumes when this happens there is
+  // a valid RootWindowController for the new display. Suspend notifying
+  // observers, add the Display, create the RootWindowController, and then
+  // notify DisplayObservers. Classic ash does this by making sure
+  // WindowTreeHostManager is added as a DisplayObserver early on.
+  std::unique_ptr<display::DisplayListObserverLock> display_lock =
+      screen_->display_list()->SuspendObserverUpdates();
+  const bool is_first_display = screen_->display_list()->displays().empty();
   // TODO(sky): should be passed whether display is primary.
-
-  // There needs to be at least one display before creating
-  // RootWindowController, otherwise initializing the compositor fails.
-  const bool was_displays_empty = screen_->display_list()->displays().empty();
-  if (was_displays_empty) {
-    screen_->display_list()->AddDisplay(display,
-                                        display::DisplayList::Type::PRIMARY);
-  }
+  screen_->display_list()->AddDisplay(
+      display, is_first_display ? display::DisplayList::Type::PRIMARY
+                                : display::DisplayList::Type::NOT_PRIMARY);
 
   std::unique_ptr<RootWindowController> root_window_controller_ptr(
       new RootWindowController(this, window, display));
@@ -155,15 +161,10 @@ RootWindowController* WindowManager::CreateRootWindowController(
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                     OnRootWindowControllerAdded(root_window_controller));
 
-  if (!was_displays_empty) {
-    // If this isn't the initial display then add the display to Screen after
-    // creating the RootWindowController. We need to do this after creating the
-    // RootWindowController as adding the display triggers OnDisplayAdded(),
-    // which triggers some overrides asking for the RootWindowController for the
-    // new display.
-    screen_->display_list()->AddDisplay(
-        display, display::DisplayList::Type::NOT_PRIMARY);
-  }
+  FOR_EACH_OBSERVER(display::DisplayObserver,
+                    *screen_->display_list()->observers(),
+                    OnDisplayAdded(root_window_controller->display()));
+
   return root_window_controller;
 }
 

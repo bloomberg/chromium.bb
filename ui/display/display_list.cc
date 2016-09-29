@@ -4,13 +4,25 @@
 
 #include "ui/display/display_list.h"
 
+#include "base/memory/ptr_util.h"
 #include "ui/display/display_observer.h"
 
 namespace display {
 
+DisplayListObserverLock::~DisplayListObserverLock() {
+  display_list_->DecrementObserverSuspendLockCount();
+}
+
+DisplayListObserverLock::DisplayListObserverLock(DisplayList* display_list)
+    : display_list_(display_list) {
+  display_list_->IncrementObserverSuspendLockCount();
+}
+
 DisplayList::DisplayList() {}
 
-DisplayList::~DisplayList() {}
+DisplayList::~DisplayList() {
+  DCHECK_EQ(0, observer_suspend_lock_count_);
+}
 
 void DisplayList::AddObserver(display::DisplayObserver* observer) {
   observers_.AddObserver(observer);
@@ -44,6 +56,10 @@ DisplayList::Displays::const_iterator DisplayList::GetPrimaryDisplayIterator()
              : displays_.begin() + primary_display_index_;
 }
 
+std::unique_ptr<DisplayListObserverLock> DisplayList::SuspendObserverUpdates() {
+  return base::WrapUnique(new DisplayListObserverLock(this));
+}
+
 void DisplayList::UpdateDisplay(const display::Display& display, Type type) {
   auto iter = FindDisplayById(display.id());
   DCHECK(iter != displays_.end());
@@ -75,8 +91,10 @@ void DisplayList::UpdateDisplay(const display::Display& display, Type type) {
     changed_values |=
         display::DisplayObserver::DISPLAY_METRIC_DEVICE_SCALE_FACTOR;
   }
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayMetricsChanged(*local_display, changed_values));
+  if (should_notify_observers()) {
+    FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
+                      OnDisplayMetricsChanged(*local_display, changed_values));
+  }
 }
 
 void DisplayList::AddDisplay(const display::Display& display, Type type) {
@@ -84,8 +102,10 @@ void DisplayList::AddDisplay(const display::Display& display, Type type) {
   displays_.push_back(display);
   if (type == Type::PRIMARY)
     primary_display_index_ = static_cast<int>(displays_.size()) - 1;
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayAdded(display));
+  if (should_notify_observers()) {
+    FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
+                      OnDisplayAdded(display));
+  }
 }
 
 void DisplayList::RemoveDisplay(int64_t id) {
@@ -102,7 +122,19 @@ void DisplayList::RemoveDisplay(int64_t id) {
   }
   const display::Display display = *iter;
   displays_.erase(iter);
-  FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
-                    OnDisplayRemoved(display));
+  if (should_notify_observers()) {
+    FOR_EACH_OBSERVER(display::DisplayObserver, observers_,
+                      OnDisplayRemoved(display));
+  }
 }
+
+void DisplayList::IncrementObserverSuspendLockCount() {
+  observer_suspend_lock_count_++;
+}
+
+void DisplayList::DecrementObserverSuspendLockCount() {
+  DCHECK_GT(observer_suspend_lock_count_, 0);
+  observer_suspend_lock_count_--;
+}
+
 }  // namespace display
