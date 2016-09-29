@@ -243,8 +243,9 @@ Node* Text::cloneNode(bool /*deep*/)
 
 static inline bool canHaveWhitespaceChildren(const LayoutObject& parent)
 {
-    // <button> should allow whitespace even though LayoutFlexibleBox doesn't.
-    if (parent.isLayoutButton())
+    // <button> and <fieldset> should allow whitespace even though
+    // LayoutFlexibleBox doesn't.
+    if (parent.isLayoutButton() || parent.isFieldset())
         return true;
 
     if (parent.isTable() || parent.isTableRow() || parent.isTableSection()
