@@ -2,6 +2,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dropdown-menu/paper-dropdown-menu-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/search_engines_page/search_engines_page.html">
@@ -12,8 +13,7 @@
 
 <dom-module id="settings-search-page">
   <template>
-    <style include="settings-shared">
-    </style>
+    <style include="settings-shared"></style>
     <settings-animated-pages id="pages" section="search">
       <neon-animatable route-path="default">
         <div class="settings-box first">
@@ -30,11 +30,16 @@
             </paper-listbox>
           </paper-dropdown-menu-light>
         </div>
-        <div id="subpage-trigger" class="settings-box">
-          <paper-button on-tap="onManageSearchEnginesTap_"
-              class="primary-button">
+        <div id="subpage-trigger" class="settings-box two-line"
+            on-tap="onManageSearchEnginesTap_" actionable>
+          <div class="start">
             $i18n{searchEnginesManage}
-          </paper-button>
+            <div class="secondary">
+              $i18n{searchEnginesManageDescription}
+            </div>
+          </div>
+          <button class="icon-arrow-right" is="paper-icon-button-light">
+          </button>
         </div>
       </neon-animatable>
       <template is="dom-if" route-path="/searchEngines">

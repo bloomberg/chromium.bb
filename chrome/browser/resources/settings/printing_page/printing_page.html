@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/printing_page/cloud_printers.html">
 <link rel="import" href="/route.html">
@@ -29,10 +30,15 @@
           </div>
         </template>
 </if>
-        <div id="cloudPrinters" class="settings-box"
+        <div id="cloudPrinters" class="settings-box two-line"
             on-tap="onTapCloudPrinters_" actionable>
           <iron-icon icon="settings:cloud-printing"></iron-icon>
-          <div class="middle">$i18n{cloudPrintersTitle}</div>
+          <div class="middle">
+            $i18n{cloudPrintersTitle}
+            <div class="secondary">$i18n{cloudPrintersTitleDescription}</div>
+          </div>
+          <button class="icon-arrow-right" is="paper-icon-button-light">
+          </button>
         </div>
       </neon-animatable>
 <if expr="chromeos">

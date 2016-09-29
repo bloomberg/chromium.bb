@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/people_page/sync_page.html">
@@ -82,17 +83,17 @@
           <div id="profile-icon" on-tap="onPictureTap_" actionable
               style="background-image: [[getIconImageset_(profileIconUrl_)]]">
           </div>
-          <div class="middle">
 <if expr="not chromeos">
-            <span id="profile-name" on-tap="onProfileNameTap_" actionable>
-              [[profileName_]]
-            </span>
+          <div class="middle two-line" on-tap="onProfileNameTap_" actionable>
 </if>
 <if expr="chromeos">
-            <span id="profile-name">
+          <div class="middle two-line" on-tap="onPictureTap_" actionable>
+</if>
+            <span class="flex" id="profile-name">
               [[profileName_]]
             </span>
-</if>
+            <button class="icon-arrow-right" is="paper-icon-button-light">
+            </button>
           </div>
 <if expr="not chromeos">
           <template is="dom-if" if="[[!syncStatus.signedIn]]">
@@ -149,6 +150,7 @@
                 [[syncStatus.statusText]]
               </div>
             </div>
+          <button class="icon-external" is="paper-icon-button-light"></button>
           </div>
         </template>
 
@@ -162,6 +164,7 @@
             <div>$i18n{personalizeGoogleServicesTitle}</div>
             <div class="secondary">$i18n{personalizeGoogleServicesText}</div>
           </div>
+          <button class="icon-external" is="paper-icon-button-light"></button>
         </div>
 
 <if expr="chromeos">
@@ -229,18 +232,26 @@
         </template>
 </if>
 
-        <div id="manage-other-people-subpage-trigger" class="settings-box">
-          <paper-button class="primary-button" on-tap="onManageOtherPeople_">
+        <div id="manage-other-people-subpage-trigger"
+            class="settings-box two-line" on-tap="onManageOtherPeople_"
+            actionable>
+          <div class="start">
             $i18n{manageOtherPeople}
-          </paper-button>
+            <div class="secondary">$i18n{manageOtherPeopleDescription}</div>
+          </div>
+          <button class="icon-external" is="paper-icon-button-light"></button>
         </div>
 
         <template is="dom-if" if=[[profileManagesSupervisedUsers_]]>
-          <div id="manageSupervisedUsersContainer" class="settings-box">
-            <paper-button class="primary-button"
-                on-tap="onManageSupervisedUsers_">
+          <div id="manageSupervisedUsersContainer" class="settings-box two-line"
+              on-tap="onManageSupervisedUsers_" actionable>
+            <div class="start">
               $i18n{manageSupervisedUsers}
-            </paper-button>
+              <div class="secondary">
+                $i18n{manageSupervisedUsersDescription}
+              </div>
+            </div>
+            <button class="icon-external" is="paper-icon-button-light"></button>
           </div>
         </template>
       </neon-animatable>

@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/appearance_page/appearance_browser_proxy.html">
 <link rel="import" href="/controls/controlled_radio_button.html">
 <link rel="import" href="/controls/settings_dropdown_menu.html">
@@ -17,13 +18,8 @@
 <link rel="import" href="appearance_fonts_page.html">
 
 <dom-module id="settings-appearance-page">
-  <link rel="import" type="css" href="chrome://resources/css/widgets.css">
   <template>
-    <style include="settings-shared">
-      .settings-box iron-icon {
-        -webkit-margin-end: var(--iron-icon-spacing);
-      }
-    </style>
+    <style include="settings-shared"></style>
     <settings-animated-pages id="pages" section="appearance">
       <neon-animatable route-path="default">
 <if expr="chromeos">
@@ -31,26 +27,27 @@
             on-tap="openWallpaperManager_" actionable
             hidden="[[!pageVisibility.setWallpaper]]">
           <iron-icon icon="settings:wallpaper"></iron-icon>
-          <div class="start">
+          <div class="middle">
             <div>$i18n{setWallpaper}</div>
             <div class="secondary">$i18n{openWallpaperApp}</div>
           </div>
+          <button class="icon-external" is="paper-icon-button-light"></button>
         </div>
         <div class="settings-box two-line"
-            hidden="[[!pageVisibility.setTheme]]">
+            hidden="[[!pageVisibility.setTheme]]"
+            on-tap="openThemesGallery_" actionable>
 </if>
 <if expr="not chromeos">
         <div class="settings-box two-line first"
-            hidden="[[!pageVisibility.setTheme]]">
+            hidden="[[!pageVisibility.setTheme]]"
+            on-tap="openThemesGallery_" actionable>
 </if>
-          <div class="layout horizontal center flex"
-              on-tap="openThemesGallery_" actionable>
-            <iron-icon icon="settings:palette"></iron-icon>
-            <div>
-              <div>$i18n{theme}</div>
-              <div class="secondary">[[themeSublabel_]]</div>
-            </div>
+          <iron-icon icon="settings:palette"></iron-icon>
+          <div class="middle">
+            <div>$i18n{theme}</div>
+            <div class="secondary">[[themeSublabel_]]</div>
           </div>
+          <button class="icon-external" is="paper-icon-button-light"></button>
           <template is="dom-if" if="[[allowResetTheme_]]">
             <div class="secondary-action">
               <paper-button id="resetTheme" on-tap="resetTheme_"
@@ -95,8 +92,7 @@
               pref="{{prefs.bookmark_bar.show_on_all_tabs}}">
           </settings-checkbox>
         </div>
-        <div class$="settings-box [[getFirst_(
-            pageVisibility.bookmarksBar)]]">
+        <div class$="settings-box [[getFirst_(pageVisibility.bookmarksBar)]]">
 <if expr="is_linux and not chromeos">
           <settings-checkbox class="start" label="$i18n{showWindowDecorations}"
               pref="{{prefs.browser.custom_chrome_frame}}" inverted>
@@ -110,11 +106,14 @@
               menu-options="[[fontSizeOptions_]]">
           </settings-dropdown-menu>
         </div>
-        <div id="customize-fonts-subpage-trigger"
-            class="settings-box two-line single-column"
+        <div id="customize-fonts-subpage-trigger" class="settings-box two-line"
             on-tap="onCustomizeFontsTap_" actionable>
-          <div>$i18n{customizeFonts}</div>
-          <div class="secondary">$i18n{chooseFonts}</div>
+          <div class="start">
+            <div>$i18n{customizeFonts}</div>
+            <div class="secondary">$i18n{chooseFonts}</div>
+          </div>
+          <button class="icon-arrow-right" is="paper-icon-button-light">
+          </button>
         </div>
         <div class="settings-box"
             hidden="[[!pageVisibility.pageZoom]]">

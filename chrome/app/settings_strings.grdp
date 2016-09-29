@@ -104,8 +104,14 @@
   <message name="IDS_SETTINGS_ACCESSIBILITY" desc="Name of the settings page which displays accessibility preferences.">
     Accessibility
   </message>
+  <message name="IDS_SETTINGS_ACCESSIBILITY_WEB_STORE" desc="Text for an external link explaining that additional accessibility features are found on the Chrome Web Store.">
+    Choose from the Chrome Web Store
+  </message>
   <message name="IDS_SETTINGS_MORE_FEATURES_LINK" desc="Link which opens page where users can install extensions which provide additional accessibility features.">
     Add accessibility features
+  </message>
+  <message name="IDS_SETTINGS_MORE_FEATURES_LINK_DESCRIPTION" desc="Description for the link about additional accessibility features.">
+    Enable accessibility features
   </message>
   <if expr="chromeos">
     <message name="IDS_SETTINGS_OPTIONS_IN_MENU_LABEL" desc="Label for checkbox which enables showing accessibility options in the system menu.">
@@ -743,8 +749,11 @@
   <message name="IDS_SETTINGS_PRINTING_NOTIFICATIONS_LABEL" desc="Label for the checkbox which enabled notifications when new printers are added to the user's network">
     Show notifications when new printers are detected on the network
   </message>
-  <message name="IDS_SETTINGS_PRINTING_MANAGE_CLOUD_PRINT_DEVICES" desc="Text for the button which allows users to manager their Google Cloud Print devices">
+  <message name="IDS_SETTINGS_PRINTING_MANAGE_CLOUD_PRINT_DEVICES" desc="Text for the button which allows users to manage their Google Cloud Print devices">
     Manage Cloud Print devices
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_MANAGE_CLOUD_PRINT_DEVICES_DESCRIPTION" desc="Description for the button which allows users to manage their Google Cloud Print devices">
+    Add or remove printers
   </message>
   <if expr="chromeos">
     <message name="IDS_SETTINGS_PRINTING_CUPS_PRINTERS" desc="In Printing Settings, the title of the CUPS printers setting section.">
@@ -852,6 +861,9 @@
   </if>
   <message name="IDS_SETTINGS_PRINTING_CLOUD_PRINTERS" desc="In Printing Settings, the title of the google cloud printers setting section.">
     Google Cloud Print
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CLOUD_PRINTERS_DESCRIPTION" desc="In Printing Settings, the title description of the google cloud printers setting section.">
+    Setup cloud printing devices
   </message>
 
   <!-- Downloads Page -->
@@ -1471,6 +1483,9 @@
   <message name="IDS_SETTINGS_CLEAR_DATA" desc="Text for clear browsing data button in Privacy options">
     Clear browsing data
   </message>
+  <message name="IDS_SETTINGS_CLEAR_DATA_DESCRIPTION" desc="Description for clear browsing data button in Privacy options">
+    Control your browsing data
+  </message>
   <message name="IDS_SETTINGS_TITLE_AND_COUNT" desc="The title of a section in the settings page with a count of the total number of items in the section">
     <ph name="TITLE">$1<ex>Block</ex></ph> - <ph name="COUNT">$2<ex>42</ex></ph>
   </message>
@@ -1492,6 +1507,9 @@
   </message>
   <message name="IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES" desc="Label for the Manage Search Engines button.">
     Manage search engines
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES_DESCRIPTION" desc="Description label for the Manage Search Engines button.">
+    Add, edit, or remove search engines
   </message>
   <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL" desc="Label for the checkbox which enables the OK Google hotword.">
     Enable "Ok Google" to start a voice search.
@@ -1826,8 +1844,14 @@
   <message name="IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE" desc="Label for the button that opens the multi-profile user manager.">
     Manage other people
   </message>
+  <message name="IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE_DESCRIPTION" desc="Description for the button that opens the multi-profile user manager.">
+    Enable guest browsing
+  </message>
   <message name="IDS_SETTINGS_PEOPLE_MANAGE_SUPERVISED_USERS" desc="Label for the button that opens the supervised users dashboard.">
     Manage supervised users
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_MANAGE_SUPERVISED_USERS_DESCRIPTION" desc="Description for the button that opens the supervised users dashboard.">
+    Opens Supervised Users Dashboard
   </message>
   <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
     Google Profile photo

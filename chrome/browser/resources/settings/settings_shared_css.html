@@ -5,6 +5,29 @@
 <dom-module id="settings-shared">
   <template>
     <style include="cr-shared-style">
+      button[is='paper-icon-button-light'] {
+        --paper-icon-button-light-ripple: {
+          /* Center the ripple on the icon button. */
+          height: 36px;
+          left: -8px;
+          top: -8px;
+          width: 36px;
+        };
+        -webkit-margin-start: 16px;
+        background-size: cover;
+        flex-shrink: 0;
+        height: 20px;
+        width: 20px;
+      }
+
+      [actionable] button[is="paper-icon-button-light"].icon-arrow-right {
+        background-image: url(images/arrow_right.svg);
+      }
+
+      [actionable] button[is="paper-icon-button-light"].icon-external {
+        background-image: url(images/open_in_new.svg);
+      }
+
       /* Use <h2> as the "sub-header" mentioned in the UX design docs. */
       h2 {
         align-items: center;
@@ -24,6 +47,7 @@
       }
 
       paper-button {
+        height: 32px;
         margin: 0;
       }
 
@@ -33,7 +57,7 @@
 
       paper-toggle-button {
         @apply(--settings-actionable);
-        height: 20px;
+        height: var(--settings-row-min-height);
         width: 31px;
       }
 
@@ -300,15 +324,25 @@
 
       /* The middle part (horizontally) of a row. */
       .settings-box .middle {
-        -webkit-margin-start: 16px;
+        -webkit-padding-start: 16px;
         align-items: center;
         flex: auto;
+      }
+
+      .settings-box .middle.two-line {
+        display: flex;
+        min-height: var(--settings-row-two-line-min-height);
       }
 
       /* The start (left in LTR) part (horizontally) of a row. */
       .settings-box .start {
         align-items: center;
         flex: auto;
+      }
+
+      .settings-box .start.two-line {
+        display: flex;
+        min-height: var(--settings-row-two-line-min-height);
       }
 
       /* The secondary-action wraps a clickable sub-area of a .settings-box.
@@ -322,8 +356,12 @@
        *  +-------------------------------------------------------+ */
       .settings-box .secondary-action {
         -webkit-border-start: var(--settings-separator-line);
+        -webkit-margin-start: 20px;
         -webkit-padding-start: 20px;
+        align-items: center;
+        display: flex;
         flex-shrink: 0;
+        height: var(--settings-row-min-height);
       }
 
       .settings-box paper-item iron-icon {

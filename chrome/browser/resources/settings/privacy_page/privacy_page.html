@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/route.html">
@@ -123,23 +124,34 @@
 </if>
         </div>
 <if expr="use_nss_certs or is_win or is_macosx">
-        <div id="manageCertificates" class="settings-box two-line single-column"
+        <div id="manageCertificates" class="settings-box two-line"
             actionable on-tap="onManageCertificatesTap_">
-          <div>$i18n{manageCertificates}</div>
-          <div class="secondary">$i18n{manageCertificatesDescription}</div>
+          <div class="start">
+            <div>$i18n{manageCertificates}</div>
+            <div class="secondary">$i18n{manageCertificatesDescription}</div>
+          </div>
+          <button class="icon-arrow-right" is="paper-icon-button-light">
+          </button>
         </div>
 </if>
         <div id="site-settings-subpage-trigger"
-            class="settings-box two-line single-column" actionable
+            class="settings-box two-line" actionable
             on-tap="onSiteSettingsTap_">
-          <div>$i18n{siteSettings}</div>
-          <div class="secondary">$i18n{siteSettingsDescription}</div>
+          <div class="start">
+            <div>$i18n{siteSettings}</div>
+            <div class="secondary">$i18n{siteSettingsDescription}</div>
+          </div>
+          <button class="icon-arrow-right" is="paper-icon-button-light">
+          </button>
         </div>
-        <div class="settings-box">
-          <paper-button id="clearBrowsingData"
-              on-tap="onClearBrowsingDataTap_" class="primary-button">
+        <div class="settings-box two-line" id="clearBrowsingData"
+            on-tap="onClearBrowsingDataTap_" actionable>
+          <div class="start">
             $i18n{clearBrowsingData}
-          </paper-button>
+            <div class="secondary">$i18n{clearBrowsingDataDescription}</div>
+          </div>
+          <button class="icon-arrow-right" is="paper-icon-button-light">
+          </button>
         </div>
       </neon-animatable>
 <if expr="use_nss_certs">

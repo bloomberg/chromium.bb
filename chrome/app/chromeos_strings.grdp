@@ -2641,9 +2641,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_ADDITIONAL_FEATURES_TITLE" desc="In the settings tab, the title of a link that adds additional accessibility features not found in the built-in settings.">
     Add additional features
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_ADDITIONAL_FEATURES_DESCRIPTION" desc="In the settings tab, an explanation that additional accessibility features are found on the Chrome Web Store.">
-    Choose from the Chrome Web Store
-  </message>
   <message name="IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_NAME" desc="Name of the about:flag option for experimental accessibility features.">
     Experimental accessibility features
   </message>

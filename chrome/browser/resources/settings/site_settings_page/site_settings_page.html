@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -8,18 +9,16 @@
 
 <dom-module id="settings-site-settings-page">
   <template>
-    <style include="settings-shared">
-      .settings-box[category] {
-        @apply(--settings-actionable);
-      }
-    </style>
+    <style include="settings-shared"></style>
     <div class="settings-box first" category$="[[ALL_SITES]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="settings:list"></iron-icon>
       <div class="middle">$i18n{siteSettingsCategoryAllSites}</div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.COOKIES]]" on-tap="onTapCategory">
+        category$="[[ContentSettingsTypes.COOKIES]]" on-tap="onTapCategory"
+        actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.COOKIES)]]"></iron-icon>
       <div class="middle">
@@ -28,85 +27,98 @@
         </div>
         <div id="cookies" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.GEOLOCATION]]" on-tap="onTapCategory">
+        category$="[[ContentSettingsTypes.GEOLOCATION]]" on-tap="onTapCategory"
+        actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.GEOLOCATION)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.GEOLOCATION)]]
         <div id="geolocation" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.CAMERA]]" on-tap="onTapCategory">
+        category$="[[ContentSettingsTypes.CAMERA]]" on-tap="onTapCategory"
+        actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.CAMERA)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.CAMERA)]]
         <div id="camera" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line" category$="[[ContentSettingsTypes.MIC]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.MIC)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.MIC)]]
         <div id="mic" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.NOTIFICATIONS]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.NOTIFICATIONS)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.NOTIFICATIONS)]]
         <div id="notifications" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.JAVASCRIPT]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.JAVASCRIPT)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.JAVASCRIPT)]]
         <div id="javascript" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.PLUGINS]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.PLUGINS)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.PLUGINS)]]
         <div id="plugins" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.IMAGES]]" on-tap="onTapCategory">
+        category$="[[ContentSettingsTypes.IMAGES]]" on-tap="onTapCategory"
+        actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.IMAGES)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.IMAGES)]]
         <div id="images" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
-        category$="[[ContentSettingsTypes.POPUPS]]" on-tap="onTapCategory">
+        category$="[[ContentSettingsTypes.POPUPS]]" on-tap="onTapCategory"
+        actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.POPUPS)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.POPUPS)]]
         <div id="popups" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.BACKGROUND_SYNC]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.BACKGROUND_SYNC)]]"></iron-icon>
       <div class="middle">
@@ -114,10 +126,11 @@
             ContentSettingsTypes.BACKGROUND_SYNC)]]
         <div id="backgroundSync" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.KEYGEN]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.KEYGEN)]]"></iron-icon>
       <div class="middle">
@@ -125,10 +138,11 @@
             ContentSettingsTypes.KEYGEN)]]
         <div id="keygen" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.AUTOMATIC_DOWNLOADS]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.AUTOMATIC_DOWNLOADS)]]"></iron-icon>
       <div class="middle">
@@ -136,10 +150,11 @@
             ContentSettingsTypes.AUTOMATIC_DOWNLOADS)]]
         <div id="automaticDownloads" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.UNSANDBOXED_PLUGINS]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.UNSANDBOXED_PLUGINS)]]"></iron-icon>
       <div class="middle">
@@ -147,10 +162,11 @@
             ContentSettingsTypes.UNSANDBOXED_PLUGINS)]]
         <div id="unsandboxedPlugins" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box two-line"
         category$="[[ContentSettingsTypes.PROTOCOL_HANDLERS]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.PROTOCOL_HANDLERS)]]"></iron-icon>
       <div class="middle">
@@ -158,22 +174,25 @@
             ContentSettingsTypes.PROTOCOL_HANDLERS)]]
         <div id="handlers" class="secondary"></div>
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box" category$="[[ContentSettingsTypes.ZOOM_LEVELS]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.ZOOM_LEVELS)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.ZOOM_LEVELS)]]
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
     <div class="settings-box" category$="[[ContentSettingsTypes.USB_DEVICES]]"
-        on-tap="onTapCategory">
+        on-tap="onTapCategory" actionable>
       <iron-icon icon="[[computeIconForContentCategory(
           ContentSettingsTypes.USB_DEVICES)]]"></iron-icon>
       <div class="middle">
         [[computeTitleForContentCategory(ContentSettingsTypes.USB_DEVICES)]]
       </div>
+      <button class="icon-arrow-right" is="paper-icon-button-light"></button>
     </div>
   </template>
   <script src="site_settings_page.js"></script>

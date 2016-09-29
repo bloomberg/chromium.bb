@@ -1,5 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/settings_shared_css.html">
 
@@ -19,18 +19,19 @@
         section="a11y">
       <neon-animatable route-path="default">
         <div class="settings-box first">
-          <div class="start">
-            $i18n{optionsInMenuLabel}
-          </div>
+          <div class="start">$i18n{optionsInMenuLabel}</div>
           <paper-toggle-button id="optionsInMenuToggle"
               checked="{{prefs.settings.a11y.enable_menu.value}}">
           </paper-toggle-button>
         </div>
-        <div id="subpage-trigger" class="settings-box">
-          <paper-button class="primary-button"
-              on-tap="onManageAccessibilityFeaturesTap_">
+        <div id="subpage-trigger" class="settings-box two-line"
+            on-tap="onManageAccessibilityFeaturesTap_" actionable>
+          <div class="start">
             $i18n{manageAccessibilityFeatures}
-          </paper-button>
+            <div class="secondary">$i18n{moreFeaturesLinkDescription}</div>
+          </div>
+          <button class="icon-arrow-right" is="paper-icon-button-light">
+          </button>
         </div>
       </neon-animatable>
       <template is="dom-if" route-path="/manageAccessibility">
@@ -45,10 +46,13 @@
 </if>
 
 <if expr="not chromeos">
-    <div class="settings-box first">
-      <paper-button class="primary-button" on-tap="onMoreFeaturesTap_">
+    <div class="settings-box first two-line" on-tap="onMoreFeaturesTap_"
+        actionable>
+      <div class="start">
         $i18n{moreFeaturesLink}
-      </paper-button>
+        <div class="secondary">$i18n{a11yWebStore}</div>
+      </div>
+      <button class="icon-external" is="paper-icon-button-light"></button>
     </div>
 </if>
 
