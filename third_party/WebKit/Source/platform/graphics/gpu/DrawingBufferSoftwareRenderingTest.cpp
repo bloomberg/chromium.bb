@@ -34,8 +34,8 @@ public:
     GrContext* grContext() override { return nullptr; }
     bool bindToCurrentThread() override { return false; }
     gpu::Capabilities getCapabilities() override { return gpu::Capabilities(); }
-    void setLostContextCallback(WebClosure) {}
-    void setErrorMessageCallback(WebFunction<void(const char*, int32_t id)>) {}
+    void setLostContextCallback(const base::Closure&) {}
+    void setErrorMessageCallback(const base::Callback<void(const char*, int32_t id)>&) {}
 
 private:
     std::unique_ptr<gpu::gles2::GLES2Interface> m_gl;

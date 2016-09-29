@@ -31,7 +31,7 @@
 #ifndef WebGraphicsContext3DProvider_h
 #define WebGraphicsContext3DProvider_h
 
-#include "public/platform/functional/WebFunction.h"
+#include "base/callback_forward.h"
 
 class GrContext;
 
@@ -58,8 +58,8 @@ public:
     // this scenario, the compositor would not be using GPU.
     virtual bool isSoftwareRendering() const = 0;
 
-    virtual void setLostContextCallback(WebClosure) = 0;
-    virtual void setErrorMessageCallback(WebFunction<void(const char* msg, int32_t id)>) = 0;
+    virtual void setLostContextCallback(const base::Closure&) = 0;
+    virtual void setErrorMessageCallback(const base::Callback<void(const char* msg, int32_t id)>&) = 0;
 };
 
 } // namespace blink

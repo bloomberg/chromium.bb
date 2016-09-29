@@ -39,7 +39,6 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBufferTestHelpers.h"
 #include "public/platform/Platform.h"
-#include "public/platform/functional/WebFunction.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"

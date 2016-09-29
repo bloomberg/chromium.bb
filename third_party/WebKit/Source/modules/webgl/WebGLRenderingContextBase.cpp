@@ -93,7 +93,6 @@
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "public/platform/Platform.h"
-#include "public/platform/functional/WebFunction.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
@@ -1102,13 +1101,13 @@ void WebGLRenderingContextBase::initializeNewContext()
     contextGL()->Scissor(0, 0, drawingBufferWidth(), drawingBufferHeight());
 
     drawingBuffer()->contextProvider()->setLostContextCallback(
-        WebClosure(WTF::bind(
+        convertToBaseCallback(WTF::bind(
             &WebGLRenderingContextBase::forceLostContext,
             wrapWeakPersistent(this),
             WebGLRenderingContextBase::RealLostContext,
             WebGLRenderingContextBase::Auto)));
     drawingBuffer()->contextProvider()->setErrorMessageCallback(
-        WebFunction<void(const char*, int32_t)>(WTF::bind(
+        convertToBaseCallback(WTF::bind(
             &WebGLRenderingContextBase::onErrorMessage,
             wrapWeakPersistent(this))));
 
@@ -1219,8 +1218,10 @@ void WebGLRenderingContextBase::destroyContext()
 
     m_extensionsUtil.reset();
 
-    drawingBuffer()->contextProvider()->setLostContextCallback(WebClosure());
-    drawingBuffer()->contextProvider()->setErrorMessageCallback(WebFunction<void(const char*, int32_t)>());
+    std::unique_ptr<WTF::Closure> nullClosure;
+    std::unique_ptr<WTF::Function<void(const char*, int32_t)>> nullFunction;
+    drawingBuffer()->contextProvider()->setLostContextCallback(convertToBaseCallback(std::move(nullClosure)));
+    drawingBuffer()->contextProvider()->setErrorMessageCallback(convertToBaseCallback(std::move(nullFunction)));
     drawingBuffer()->addNewMailboxCallback(nullptr);
 
     ASSERT(drawingBuffer());

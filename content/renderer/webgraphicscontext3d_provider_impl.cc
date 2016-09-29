@@ -6,7 +6,6 @@
 
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "third_party/WebKit/public/platform/functional/WebFunction.h"
 
 namespace content {
 
@@ -38,13 +37,13 @@ bool WebGraphicsContext3DProviderImpl::isSoftwareRendering() const {
 }
 
 void WebGraphicsContext3DProviderImpl::setLostContextCallback(
-    blink::WebClosure c) {
-  provider_->SetLostContextCallback(c.TakeBaseCallback());
+    const base::Closure& c) {
+  provider_->SetLostContextCallback(c);
 }
 
 void WebGraphicsContext3DProviderImpl::setErrorMessageCallback(
-    blink::WebFunction<void(const char*, int32_t)> c) {
-  provider_->ContextSupport()->SetErrorMessageCallback(c.TakeBaseCallback());
+    const base::Callback<void(const char*, int32_t)>& c) {
+  provider_->ContextSupport()->SetErrorMessageCallback(c);
 }
 
 }  // namespace content

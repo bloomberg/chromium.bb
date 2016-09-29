@@ -210,7 +210,9 @@ public:
 
     friend base::Callback<R(Args...)> convertToBaseCallback(std::unique_ptr<Function> function)
     {
-        return std::move(function->m_callback);
+        if (function)
+            return std::move(function->m_callback);
+        return base::Callback<R(Args...)>();
     }
 
 private:

@@ -41,8 +41,8 @@ public:
     }
 
     bool bindToCurrentThread() override { return false; }
-    void setLostContextCallback(WebClosure) override {}
-    void setErrorMessageCallback(WebFunction<void(const char*, int32_t id)>) {}
+    void setLostContextCallback(const base::Closure&) override {}
+    void setErrorMessageCallback(const base::Callback<void(const char*, int32_t id)>&) {}
 
 private:
     gpu::gles2::GLES2Interface* m_gl;

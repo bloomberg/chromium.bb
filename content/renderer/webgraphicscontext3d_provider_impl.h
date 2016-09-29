@@ -33,9 +33,9 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   GrContext* grContext() override;
   gpu::Capabilities getCapabilities() override;
   bool isSoftwareRendering() const override;
-  void setLostContextCallback(blink::WebClosure) override;
+  void setLostContextCallback(const base::Closure&) override;
   void setErrorMessageCallback(
-      blink::WebFunction<void(const char*, int32_t)>) override;
+      const base::Callback<void(const char*, int32_t)>&) override;
 
   ContextProviderCommandBuffer* context_provider() const {
     return provider_.get();
