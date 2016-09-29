@@ -1,4 +1,3 @@
--DevToolsProtocolTest.ControlNavigationsMainFrame
 -IFrameZoomBrowserTest.RedirectToPageWithSubframeZoomsCorrectly
 -IFrameZoomBrowserTest.SubframesDontZoomIndependently
 -NavigationControllerBrowserTest.EnsureSamePageNavigationUpdatesFrameNavigationEntry
