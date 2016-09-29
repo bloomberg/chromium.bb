@@ -34,6 +34,8 @@
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/effects/SkImageSource.h"
+#include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 #include "third_party/skia/include/effects/SkPictureImageFilter.h"
 #include "third_party/skia/include/effects/SkXfermodeImageFilter.h"
 
@@ -96,13 +98,24 @@ sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection, sk_s
 {
     sk_sp<SkImageFilter> maskedInput;
     if (SkPicture* maskPicture = reflection.mask()) {
+        // Since SkPictures can't be serialized to the browser process, first raster the mask to a bitmap, then
+        // encode it in an SkImageSource, which can be serialized.
+        SkBitmap bitmap;
+        const SkRect cullRect = maskPicture->cullRect();
+        bitmap.allocPixels(SkImageInfo::MakeN32Premul(cullRect.width(), cullRect.height()));
+        SkCanvas canvas(bitmap);
+        canvas.clear(SK_ColorTRANSPARENT);
+        canvas.translate(-cullRect.x(), -cullRect.y());
+        canvas.drawPicture(maskPicture);
+        sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+
         // SkXfermodeImageFilter can choose an excessively large size if the
         // mask is smaller than the filtered contents (due to overflow).
         // http://skbug.com/5210
         SkImageFilter::CropRect cropRect(maskPicture->cullRect());
         maskedInput = SkXfermodeImageFilter::Make(
             SkXfermode::Make(SkXfermode::kSrcIn_Mode),
-            SkPictureImageFilter::Make(sk_ref_sp(maskPicture)),
+            SkOffsetImageFilter::Make(cullRect.x(), cullRect.y(), SkImageSource::Make(image)),
             input, &cropRect);
     } else {
         maskedInput = input;

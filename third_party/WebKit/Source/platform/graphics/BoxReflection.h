@@ -11,7 +11,6 @@
 
 class SkImageFilter;
 class SkMatrix;
-class SkPicture;
 
 namespace blink {
 

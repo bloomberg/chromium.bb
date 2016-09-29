@@ -687,6 +687,14 @@ crbug.com/402379 [ Win7 Debug ] storage/indexeddb/mozilla/indexes.html [ Pass ]
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
+crbug.com/648055 compositing/reflections/masked-reflection-on-composited.html [ NeedsRebaseline ]
+crbug.com/648055 fast/css/transformed-mask.html [ NeedsRebaseline ]
+crbug.com/648055 fast/reflections/reflection-masks.html [ NeedsRebaseline ]
+crbug.com/648055 fast/images/color-profile-reflection.html [ NeedsRebaseline ]
+crbug.com/648055 [ Mac ] virtual/gpu-rasterization/fast/images/color-profile-reflection.html [ NeedsRebaseline ]
+crbug.com/648055 [ Win ] virtual/gpu-rasterization/fast/images/color-profile-reflection.html [ NeedsRebaseline ]
+crbug.com/648055 css3/blending/effect-background-blend-mode-stacking.html [ NeedsRebaseline ]
+
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Pass ]
 crbug.com/504706 [ Linux ] inspector/profiler/heap-snapshot-containment-sorting.html [ Pass ]
 
