@@ -2438,7 +2438,7 @@ ScopedResolvedFramebufferBinder::ScopedResolvedFramebufferBinder(
       decoder_->should_use_native_gmb_for_backbuffer_ &&
       !decoder_->offscreen_buffer_should_have_alpha_ &&
       decoder_->ChromiumImageNeedsRGBEmulation() &&
-      decoder_->feature_info_->workarounds()
+      decoder_->workarounds()
           .disable_multisampling_color_mask_usage;
   if (alpha_channel_needs_clear) {
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT,
@@ -2978,7 +2978,7 @@ bool GLES2DecoderImpl::Initialize(
   // Create GPU Tracer for timing values.
   gpu_tracer_.reset(new GPUTracer(this));
 
-  if (feature_info_->workarounds().disable_timestamp_queries) {
+  if (workarounds().disable_timestamp_queries) {
     // Forcing time elapsed query for any GPU Timing Client forces it for all
     // clients in the context.
     GetGLContext()->CreateGPUTimingClient()->ForceTimeElapsedQuery();
@@ -3072,7 +3072,7 @@ bool GLES2DecoderImpl::Initialize(
 
   state_.default_vertex_attrib_manager->Initialize(
       group_->max_vertex_attribs(),
-      feature_info_->workarounds().init_vertex_attributes);
+      workarounds().init_vertex_attributes);
 
   // vertex_attrib_manager is set to default_vertex_attrib_manager by this call
   DoBindVertexArrayOES(0);
@@ -3353,7 +3353,7 @@ bool GLES2DecoderImpl::Initialize(
   // always enabled and there is no way to disable it.
   // Therefore, it seems OK to also always enable it on top of Desktop GL for
   // both ES2 and ES3 contexts.
-  if (!feature_info_->workarounds().disable_texture_cube_map_seamless &&
+  if (!workarounds().disable_texture_cube_map_seamless &&
       gl_version_info().IsAtLeastGL(3, 2)) {
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
   }
@@ -3414,7 +3414,7 @@ bool GLES2DecoderImpl::Initialize(
   }
 
   supports_post_sub_buffer_ = surface->SupportsPostSubBuffer();
-  if (feature_info_->workarounds()
+  if (workarounds()
           .disable_post_sub_buffers_for_onscreen_surfaces &&
       !surface->IsOffscreen())
     supports_post_sub_buffer_ = false;
@@ -3425,11 +3425,11 @@ bool GLES2DecoderImpl::Initialize(
 
   supports_async_swap_ = surface->SupportsAsyncSwap();
 
-  if (feature_info_->workarounds().reverse_point_sprite_coord_origin) {
+  if (workarounds().reverse_point_sprite_coord_origin) {
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
   }
 
-  if (feature_info_->workarounds().unbind_fbo_on_context_switch) {
+  if (workarounds().unbind_fbo_on_context_switch) {
     context_->SetUnbindFboOnMakeCurrent();
   }
 
@@ -3580,7 +3580,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.surfaceless = surfaceless_;
   bool is_offscreen = !!offscreen_target_frame_buffer_.get();
   caps.flips_vertically = !is_offscreen && surface_->FlipsVertically();
-  caps.msaa_is_slow = feature_info_->workarounds().msaa_is_slow;
+  caps.msaa_is_slow = workarounds().msaa_is_slow;
 
   caps.blend_equation_advanced =
       feature_info_->feature_flags().blend_equation_advanced;
@@ -3594,7 +3594,7 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.image_ycbcr_420v =
       feature_info_->feature_flags().chromium_image_ycbcr_420v;
   caps.max_copy_texture_chromium_size =
-      feature_info_->workarounds().max_copy_texture_chromium_size;
+      workarounds().max_copy_texture_chromium_size;
   caps.render_buffer_format_bgra8888 =
       feature_info_->feature_flags().ext_render_buffer_format_bgra8888;
   caps.occlusion_query_boolean =
@@ -3602,11 +3602,11 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
   caps.timer_queries =
       query_manager_->GPUTimingAvailable();
   caps.disable_multisampling_color_mask_usage =
-      feature_info_->workarounds().disable_multisampling_color_mask_usage;
+      workarounds().disable_multisampling_color_mask_usage;
   caps.disable_webgl_rgb_multisampling_usage =
-      feature_info_->workarounds().disable_webgl_rgb_multisampling_usage;
+      workarounds().disable_webgl_rgb_multisampling_usage;
   caps.emulate_rgb_buffer_with_rgba =
-      feature_info_->workarounds().disable_gl_rgb_format;
+      workarounds().disable_gl_rgb_format;
 
   return caps;
 }
@@ -5713,7 +5713,7 @@ void GLES2DecoderImpl::DoResumeTransformFeedback() {
                        "transform feedback is not active or not paused");
     return;
   }
-  if (feature_info_->workarounds().rebind_transform_feedback_before_resume) {
+  if (workarounds().rebind_transform_feedback_before_resume) {
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
     glBindTransformFeedback(GL_TRANSFORM_FEEDBACK,
         state_.bound_transform_feedback->service_id());
@@ -16041,7 +16041,7 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     compatibility_internal_format = format_info->decompressed_internal_format;
   }
 
-  if (feature_info_->workarounds().reset_base_mipmap_level_before_texstorage &&
+  if (workarounds().reset_base_mipmap_level_before_texstorage &&
       texture->base_level() > 0)
     glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, 0);
 
@@ -16055,7 +16055,7 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     glTexStorage3D(target, levels, compatibility_internal_format, width, height,
                    depth);
   }
-  if (feature_info_->workarounds().reset_base_mipmap_level_before_texstorage &&
+  if (workarounds().reset_base_mipmap_level_before_texstorage &&
       texture->base_level() > 0)
     glTexParameteri(target, GL_TEXTURE_BASE_LEVEL, texture->base_level());
 
@@ -16514,7 +16514,7 @@ void GLES2DecoderImpl::DoLoseContextCHROMIUM(GLenum current, GLenum other) {
 void GLES2DecoderImpl::DoFlushDriverCachesCHROMIUM(void) {
   // On Adreno Android devices we need to use a workaround to force caches to
   // clear.
-  if (feature_info_->workarounds().unbind_egl_context_to_flush_driver_caches) {
+  if (workarounds().unbind_egl_context_to_flush_driver_caches) {
     context_->ReleaseCurrent(nullptr);
     context_->MakeCurrent(surface_.get());
   }
