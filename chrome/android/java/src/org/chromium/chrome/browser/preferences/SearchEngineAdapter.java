@@ -53,12 +53,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
          * one.
          * @param name Provides the name of it (with a simplified URL in parenthesis).
          */
-        void currentSearchEngineDetermined(String name);
-
-        /**
-         * Called when the dialog should be dismissed.
-         */
-        void onDismissDialog();
+        void currentSearchEngineDetermined(int selectedIndex);
     }
 
     // The current context.
@@ -123,11 +118,7 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
         }
 
         // Report back what is selected.
-        String name = "";
-        if (mSelectedSearchEnginePosition > -1) {
-            name = mSearchEngines.get(mSelectedSearchEnginePosition).getShortName();
-        }
-        mCallback.currentSearchEngineDetermined(name);
+        mCallback.currentSearchEngineDetermined(toIndex(mSelectedSearchEnginePosition));
     }
 
     private int toIndex(int position) {
@@ -261,11 +252,9 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
 
         // Record the change in search engine.
         mSelectedSearchEnginePosition = position;
-        TemplateUrlService.getInstance().setSearchEngine(toIndex(mSelectedSearchEnginePosition));
 
         // Report the change back.
-        TemplateUrl templateUrl = mSearchEngines.get(mSelectedSearchEnginePosition);
-        mCallback.currentSearchEngineDetermined(templateUrl.getShortName());
+        mCallback.currentSearchEngineDetermined(toIndex(mSelectedSearchEnginePosition));
 
         notifyDataSetChanged();
     }
@@ -284,7 +273,6 @@ public class SearchEngineAdapter extends BaseAdapter implements LoadListener, On
             settingsIntent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
             mContext.startActivity(settingsIntent);
         }
-        mCallback.onDismissDialog();
     }
 
     private boolean locationEnabled(int position, boolean checkGeoHeader) {

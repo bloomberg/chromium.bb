@@ -11,7 +11,8 @@
 
     <PreferenceCategory
         android:title="@string/prefs_section_basics"/>
-    <org.chromium.chrome.browser.preferences.SearchEnginePreference
+    <org.chromium.chrome.browser.preferences.ChromeBasePreference
+        android:fragment="org.chromium.chrome.browser.preferences.SearchEnginePreference"
         android:key="search_engine"
         android:title="@string/prefs_search_engine"/>
     <org.chromium.chrome.browser.preferences.ChromeBasePreference

@@ -24,6 +24,8 @@ import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionPreferences;
 import org.chromium.chrome.browser.preferences.password.SavePasswordsPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -32,13 +34,12 @@ import org.chromium.components.sync.AndroidSyncSettings;
 /**
  * The main settings screen, shown when the user first opens Settings.
  */
-public class MainPreferences extends PreferenceFragment implements SignInStateObserver,
-        Preference.OnPreferenceClickListener {
-
+public class MainPreferences extends PreferenceFragment
+        implements SignInStateObserver, Preference.OnPreferenceClickListener, LoadListener {
     public static final String PREF_SIGN_IN = "sign_in";
-    public static final String PREF_SEARCH_ENGINE = "search_engine";
     public static final String PREF_DOCUMENT_MODE = "document_mode";
     public static final String PREF_AUTOFILL_SETTINGS = "autofill_settings";
+    public static final String PREF_SEARCH_ENGINE = "search_engine";
     public static final String PREF_SAVED_PASSWORDS = "saved_passwords";
     public static final String PREF_HOMEPAGE = "homepage";
     public static final String PREF_DATA_REDUCTION = "data_reduction";
@@ -54,7 +55,6 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
     private SignInPreference mSignInPreference;
     private ManagedPreferenceDelegate mManagedPreferenceDelegate;
 
-    private boolean mShowSearchEnginePicker;
     private boolean mIsDemoUser;
 
     public MainPreferences() {
@@ -65,11 +65,6 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if (savedInstanceState == null && getArguments() != null
-                && getArguments().getBoolean(EXTRA_SHOW_SEARCH_ENGINE_PICKER, false)) {
-            mShowSearchEnginePicker = true;
-        }
 
         mIsDemoUser = ApiCompatibilityUtils.isDemoUser(getActivity());
     }
@@ -86,10 +81,6 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
             setupSignInPref();
         }
 
-        if (mShowSearchEnginePicker) {
-            mShowSearchEnginePicker = false;
-            ((SearchEnginePreference) findPreference(PREF_SEARCH_ENGINE)).showDialog();
-        }
     }
 
     @Override
@@ -116,6 +107,16 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
         addPreferencesFromResource(R.xml.main_preferences);
 
         addBlimpPreferences();
+
+        if (TemplateUrlService.getInstance().isLoaded()) {
+            updateSummary();
+        } else {
+            TemplateUrlService.getInstance().registerLoadListener(this);
+            TemplateUrlService.getInstance().load();
+            ChromeBasePreference searchEnginePref =
+                    (ChromeBasePreference) findPreference(PREF_SEARCH_ENGINE);
+            searchEnginePref.setEnabled(false);
+        }
 
         ChromeBasePreference autofillPref =
                 (ChromeBasePreference) findPreference(PREF_AUTOFILL_SETTINGS);
@@ -171,6 +172,21 @@ public class MainPreferences extends PreferenceFragment implements SignInStateOb
         if (mIsDemoUser) {
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_IN));
         }
+    }
+
+    @Override
+    public void onTemplateUrlServiceLoaded() {
+        TemplateUrlService.getInstance().unregisterLoadListener(this);
+        updateSummary();
+    }
+
+    private void updateSummary() {
+        ChromeBasePreference searchEnginePref =
+                (ChromeBasePreference) findPreference(PREF_SEARCH_ENGINE);
+        searchEnginePref.setEnabled(true);
+        searchEnginePref.setSummary(TemplateUrlService.getInstance()
+                                            .getDefaultSearchEngineTemplateUrl()
+                                            .getShortName());
     }
 
     private void setOnOffSummary(Preference pref, boolean isOn) {

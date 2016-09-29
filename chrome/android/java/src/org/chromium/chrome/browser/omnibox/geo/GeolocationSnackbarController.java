@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
 import android.text.SpannableString;
 import android.text.style.TypefaceSpan;
 import android.view.View;
@@ -16,9 +15,8 @@ import android.view.View;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.preferences.MainPreferences;
-import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.SearchEnginePreference;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -132,10 +130,8 @@ public class GeolocationSnackbarController implements SnackbarController {
         UiUtils.hideKeyboard(view);
 
         Context context = view.getContext();
-        Intent intent = PreferencesLauncher.createIntentForSettingsPage(context, null);
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putBoolean(MainPreferences.EXTRA_SHOW_SEARCH_ENGINE_PICKER, true);
-        intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+        Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                context, SearchEnginePreference.class.getName());
         context.startActivity(intent);
     }
 

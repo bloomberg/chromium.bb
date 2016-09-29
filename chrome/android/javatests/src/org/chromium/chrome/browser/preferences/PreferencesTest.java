@@ -91,17 +91,15 @@ public class PreferencesTest extends NativeLibraryTestBase {
             }
         });
 
-        final Preferences prefActivity = startPreferences(getInstrumentation(),
-                MainPreferences.class.getName());
+        final Preferences prefActivity =
+                startPreferences(getInstrumentation(), SearchEnginePreference.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 // Ensure that the second search engine in the list is selected.
-                PreferenceFragment fragment = (PreferenceFragment)
-                        prefActivity.getFragmentForTest();
-                SearchEnginePreference pref = (SearchEnginePreference)
-                        fragment.findPreference(SearchEnginePreference.PREF_SEARCH_ENGINE);
+                SearchEnginePreference pref =
+                        (SearchEnginePreference) prefActivity.getFragmentForTest();
                 assertNotNull(pref);
                 assertEquals("1", pref.getValueForTesting());
 
@@ -154,17 +152,15 @@ public class PreferencesTest extends NativeLibraryTestBase {
             }
         });
 
-        final Preferences prefActivity = startPreferences(getInstrumentation(),
-                MainPreferences.class.getName());
+        final Preferences prefActivity =
+                startPreferences(getInstrumentation(), SearchEnginePreference.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 // Ensure that the first search engine in the list is selected.
-                PreferenceFragment fragment = (PreferenceFragment)
-                        prefActivity.getFragmentForTest();
-                SearchEnginePreference pref = (SearchEnginePreference)
-                        fragment.findPreference(SearchEnginePreference.PREF_SEARCH_ENGINE);
+                SearchEnginePreference pref =
+                        (SearchEnginePreference) prefActivity.getFragmentForTest();
                 assertNotNull(pref);
                 assertEquals("0", pref.getValueForTesting());
 
