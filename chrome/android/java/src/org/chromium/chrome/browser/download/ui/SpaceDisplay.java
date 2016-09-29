@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StatFs;
 import android.support.v7.widget.RecyclerView;
-import android.text.format.Formatter;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -24,6 +23,8 @@ import java.io.File;
 /** A View that manages the display of space used by the downloads. */
 class SpaceDisplay extends RecyclerView.AdapterDataObserver {
     private static final String TAG = "download_ui";
+    private static final long BYTES_PER_KILOBYTE = 1024;
+    private static final long BYTES_PER_MEGABYTE = 1024 * 1024;
     private static final long BYTES_PER_GIGABYTE = 1024 * 1024 * 1024;
 
     private final AsyncTask<Void, Void, Long> mFileSystemBytesTask;
@@ -80,8 +81,6 @@ class SpaceDisplay extends RecyclerView.AdapterDataObserver {
 
     @Override
     public void onChanged() {
-        Context context = mSpaceUsedTextView.getContext();
-
         if (mFileSystemBytes == Long.MAX_VALUE) {
             try {
                 mFileSystemBytes = mFileSystemBytesTask.get();
@@ -90,11 +89,7 @@ class SpaceDisplay extends RecyclerView.AdapterDataObserver {
             }
 
             // Display how big the storage is.
-            String fileSystemReadable = Formatter.formatFileSize(context, mFileSystemBytes);
-
-            float fileSystemGigabytes = convertBytesToGigabytes(mFileSystemBytes);
-            mSpaceTotalTextView.setText(context.getResources().getString(
-                    R.string.download_manager_ui_space_available, fileSystemGigabytes));
+            mSpaceTotalTextView.setText(getStringForBytes(false, mFileSystemBytes));
         }
 
         // Indicate how much space has been used by downloads.
@@ -102,15 +97,30 @@ class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         int percentage =
                 mFileSystemBytes == 0 ? 0 : (int) (100.0 * usedBytes / mFileSystemBytes);
         mSpaceBar.setProgress(percentage);
-
-        float usedGigabytes = convertBytesToGigabytes(usedBytes);
-        mSpaceUsedTextView.setText(context.getResources().getString(
-                R.string.download_manager_ui_space_used, usedGigabytes));
+        mSpaceUsedTextView.setText(getStringForBytes(true, usedBytes));
 
         RecordHistogram.recordPercentageHistogram("Android.DownloadManager.SpaceUsed", percentage);
     }
 
-    private float convertBytesToGigabytes(long bytes) {
-        return bytes / (float) BYTES_PER_GIGABYTE;
+    private String getStringForBytes(boolean isUsedString, long bytes) {
+        int resourceId;
+        float bytesInCorrectUnits;
+
+        if (bytes < BYTES_PER_MEGABYTE) {
+            resourceId = isUsedString ? R.string.download_manager_ui_space_used_kb
+                    : R.string.download_manager_ui_space_available_kb;
+            bytesInCorrectUnits = bytes / (float) BYTES_PER_KILOBYTE;
+        } else if (bytes < BYTES_PER_GIGABYTE) {
+            resourceId = isUsedString ? R.string.download_manager_ui_space_used_mb
+                    : R.string.download_manager_ui_space_available_mb;
+            bytesInCorrectUnits = bytes / (float) BYTES_PER_MEGABYTE;
+        } else {
+            resourceId = isUsedString ? R.string.download_manager_ui_space_used_gb
+                    : R.string.download_manager_ui_space_available_gb;
+            bytesInCorrectUnits = bytes / (float) BYTES_PER_GIGABYTE;
+        }
+
+        Context context = mSpaceUsedTextView.getContext();
+        return context.getResources().getString(resourceId, bytesInCorrectUnits);
     }
 }

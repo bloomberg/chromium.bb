@@ -175,7 +175,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
             }
         });
         mAdapterObserver.onChangedCallback.waitForCallback(callCount);
-        assertEquals("0.50 GB used", mSpaceUsedDisplay.getText());
+        assertEquals("512.00 MB used", mSpaceUsedDisplay.getText());
     }
 
     /** Clicking on filters affects various things in the UI. */
@@ -248,7 +248,7 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
         mStubbedProvider.getOfflinePageBridge().deleteItemCallback.waitForCallback(0);
         assertFalse(mStubbedProvider.getSelectionDelegate().isSelectionEnabled());
         assertEquals(8, mAdapter.getItemCount());
-        assertEquals("0.00 GB used", mSpaceUsedDisplay.getText());
+        assertEquals("0.65 KB used", mSpaceUsedDisplay.getText());
     }
 
     @MediumTest

@@ -1740,11 +1740,23 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_OPEN_DOWNLOADED_LABEL" desc="A text label on the snackbar widget to open the downloaded file.">
         Open
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_AVAILABLE" desc="String indicating how much storage is available on the device.">
-        <ph name="gigabytes">%1$1.2f<ex>12.5</ex></ph> GB available
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_AVAILABLE_KB" desc="String indicating how much storage is available on the device, in kilobytes.">
+        <ph name="kilobytes">%1$3.2f<ex>12.5</ex></ph> KB available
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED" desc="String indicating that some amount of storage (in gigabytes or GB) space on the device has been used.">
-        <ph name="gigabytes">%1$1.2f<ex>0.3</ex></ph> GB used
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_AVAILABLE_MB" desc="String indicating how much storage is available on the device, in megabytes.">
+        <ph name="megabytes">%1$3.2f<ex>12.5</ex></ph> MB available
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_AVAILABLE_GB" desc="String indicating how much storage is available on the device, in gigabytes.">
+        <ph name="gigabytes">%1$3.2f<ex>12.5</ex></ph> GB available
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_KB" desc="String indicating that some amount of storage space on the device has been used by downloads, in kilobytes.">
+        <ph name="kilobytes">%1$3.2f<ex>0.3</ex></ph> KB used
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_MB" desc="String indicating that some amount of storage space on the device has been used by downloads, in megabytes.">
+        <ph name="megabytes">%1$3.2f<ex>0.3</ex></ph> MB used
+      </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_GB" desc="String indicating that some amount of storage space on the device has been used by downloads, in gigabytes.">
+        <ph name="gigabytes">%1$3.2f<ex>0.3</ex></ph> GB used
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_ALL_DOWNLOADS" desc="Indicates that clicking on this button shows all of your downloads.">
         All downloads
@@ -1773,8 +1785,8 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_DOWNLOAD_MANAGER_UI_EMPTY" desc="Indicates that there are no downloaded items.">
         No downloads here
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_VIEW_EXTERNALLY" desc="Menu item to open an item externally.">
-        Open externally
+      <message name="IDS_DOWNLOAD_MANAGER_OPEN_WITH" desc="Menu item to open an item with another app.">
+        Open with...
       </message>
 
       <!-- Document mode messages -->

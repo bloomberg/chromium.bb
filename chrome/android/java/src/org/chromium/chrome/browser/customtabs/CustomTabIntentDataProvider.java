@@ -344,8 +344,11 @@ public class CustomTabIntentDataProvider {
         Intent addedIntent = new Intent();
         addedIntent.setData(Uri.parse(url));
         try {
+            // Media viewers pass in PendingIntents that contain CHOOSER Intents.  Setting the data
+            // in these cases prevents the Intent from firing correctly.
             PendingIntent pendingIntent = mMenuEntries.get(menuIndex).second;
-            pendingIntent.send(activity, 0, addedIntent, mOnFinished, null);
+            pendingIntent.send(
+                    activity, 0, isMediaViewer() ? null : addedIntent, mOnFinished, null);
         } catch (CanceledException e) {
             Log.e(TAG, "Custom tab in Chrome failed to send pending intent.");
         }

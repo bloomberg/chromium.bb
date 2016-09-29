@@ -117,7 +117,7 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
     }
 
     /** Wraps a {@link DownloadItem}. */
-    static class DownloadItemWrapper extends DownloadHistoryItemWrapper {
+    public static class DownloadItemWrapper extends DownloadHistoryItemWrapper {
         private static final String MIMETYPE_VIDEO = "video";
         private static final String MIMETYPE_AUDIO = "audio";
         private static final String MIMETYPE_IMAGE = "image";
@@ -188,7 +188,7 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
         @Override
         public void open() {
             Context context = ContextUtils.getApplicationContext();
-            Intent viewIntent = DownloadUtils.createViewIntentForDownloadItem(mItem, getFile());
+            Intent viewIntent = DownloadUtils.createViewIntentForDownloadItem(this);
 
             if (mItem.hasBeenExternallyRemoved()) {
                 Toast.makeText(context, context.getString(R.string.download_cant_open_file),
@@ -199,25 +199,33 @@ public abstract class DownloadHistoryItemWrapper implements TimedItem {
             // Check if Chrome should open the file itself.
             if (mBackendProvider.getDownloadDelegate().isDownloadOpenableInBrowser(
                     mItem.getId(), mIsOffTheRecord)) {
+                Bitmap closeIcon = BitmapFactory.decodeResource(
+                        context.getResources(), R.drawable.ic_arrow_back_white_24dp);
+                Bitmap shareIcon = BitmapFactory.decodeResource(
+                        context.getResources(), R.drawable.ic_share_white_24dp);
+
                 CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
                 builder.setToolbarColor(Color.BLACK);
+                builder.setCloseButtonIcon(closeIcon);
                 builder.setShowTitle(true);
 
                 // Create a PendingIntent that can be used to view the file externally.
-                PendingIntent pendingViewIntent =
-                        PendingIntent.getActivity(context, 0, viewIntent, 0);
-                builder.addMenuItem(context.getString(R.string.download_manager_view_externally),
-                        pendingViewIntent);
+                // TODO(dfalcantara): Check if this is problematic in multi-window mode, where two
+                //                    different viewers could be visible at the same time.
+                Intent chooserIntent = Intent.createChooser(viewIntent, null);
+                chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                String openWithStr = context.getString(R.string.download_manager_open_with);
+                PendingIntent pendingViewIntent = PendingIntent.getActivity(
+                        context, 0, chooserIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+                builder.addMenuItem(openWithStr, pendingViewIntent);
 
                 // Create a PendingIntent that shares the file with external apps.
                 List<DownloadHistoryItemWrapper> items = new ArrayList<>();
                 items.add(this);
                 PendingIntent pendingShareIntent = PendingIntent.getActivity(
                         context, 0, DownloadUtils.createShareIntent(items), 0);
-                Bitmap bitmap = BitmapFactory.decodeResource(
-                        context.getResources(), R.drawable.ic_share_white_24dp);
                 builder.setActionButton(
-                        bitmap, context.getString(R.string.share), pendingShareIntent, true);
+                        shareIcon, context.getString(R.string.share), pendingShareIntent, true);
 
                 // Build up the Intent further.
                 Intent intent = builder.build().intent;

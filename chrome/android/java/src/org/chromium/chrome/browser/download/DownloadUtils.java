@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
@@ -37,7 +38,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.Toast;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -205,20 +205,19 @@ public class DownloadUtils {
     /**
      * Creates an Intent to open the file in another app by firing an Intent to Android.
      * @param item Item to open.
-     * @param file File pointing at the DownloadItem.
      * @return     Intent that can be used to start an Activity for the DownloadItem.
      */
-    public static Intent createViewIntentForDownloadItem(DownloadItem item, File file) {
-        String mimeType = Intent.normalizeMimeType(item.getDownloadInfo().getMimeType());
-        Uri fileUri = Uri.fromFile(file);
-        Intent fileIntent = new Intent();
-        fileIntent.setAction(Intent.ACTION_VIEW);
+    public static Intent createViewIntentForDownloadItem(DownloadItemWrapper item) {
+        String mimeType = Intent.normalizeMimeType(item.getMimeType());
+        Uri fileUri = Uri.fromFile(item.getFile());
+        Intent fileIntent = new Intent(Intent.ACTION_VIEW);
         if (TextUtils.isEmpty(mimeType)) {
             fileIntent.setData(fileUri);
         } else {
             fileIntent.setDataAndType(fileUri, mimeType);
         }
-        fileIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        fileIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         return fileIntent;
     }
 
