@@ -86,7 +86,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/layout/GeneratedChildren.h"
 #include "core/layout/api/LayoutViewItem.h"
-#include "core/style/StyleVariableData.h"
+#include "core/style/StyleInheritedVariables.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -108,7 +108,8 @@ void setAnimationUpdateIfNeeded(StyleResolverState& state, Element& element)
 bool cacheCustomPropertiesForApplyAtRules(StyleResolverState& state, const MatchedPropertiesRange& range)
 {
     bool ruleSetsCustomProperty = false;
-    if (!state.style()->variables())
+    // TODO(timloh): @apply should also work with properties registered as non-inherited.
+    if (!state.style()->inheritedVariables())
         return false;
     for (const auto& matchedProperties : range) {
         const StylePropertySet& properties = *matchedProperties.properties;
@@ -118,7 +119,7 @@ bool cacheCustomPropertiesForApplyAtRules(StyleResolverState& state, const Match
             if (current.id() != CSSPropertyApplyAtRule)
                 continue;
             AtomicString name(toCSSCustomIdentValue(current.value()).value());
-            CSSVariableData* variableData = state.style()->variables()->getVariable(name);
+            CSSVariableData* variableData = state.style()->inheritedVariables()->getVariable(name);
             if (!variableData)
                 continue;
             StylePropertySet* customPropertySet = variableData->propertySet();
@@ -1434,7 +1435,7 @@ template <CSSPropertyPriority priority>
 void StyleResolver::applyPropertiesForApplyAtRule(StyleResolverState& state, const CSSValue& value, bool isImportant, PropertyWhitelistType propertyWhitelistType)
 {
     state.style()->setHasVariableReferenceFromNonInheritedProperty();
-    if (!state.style()->variables())
+    if (!state.style()->inheritedVariables())
         return;
     const String& name = toCSSCustomIdentValue(value).value();
     const StylePropertySet* propertySet = state.customPropertySetForApplyAtRule(name);

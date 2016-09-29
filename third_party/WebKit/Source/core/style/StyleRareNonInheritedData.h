@@ -58,6 +58,7 @@ class StyleFlexibleBoxData;
 class StyleGridData;
 class StyleGridItemData;
 class StyleMultiColData;
+class StyleNonInheritedVariables;
 class StyleReflection;
 class StyleTransformData;
 class StyleWillChangeData;
@@ -155,6 +156,8 @@ public:
     Vector<String> m_callbackSelectors;
 
     std::unique_ptr<Vector<Persistent<StyleImage>>> m_paintImages;
+
+    std::unique_ptr<StyleNonInheritedVariables> m_variables;
 
     StyleContentAlignmentData m_alignContent;
     StyleSelfAlignmentData m_alignItems;

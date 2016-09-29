@@ -63,7 +63,8 @@
 #include "core/style/CursorData.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
-#include "core/style/StyleVariableData.h"
+#include "core/style/StyleInheritedVariables.h"
+#include "core/style/StyleNonInheritedVariables.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {
@@ -1648,19 +1649,24 @@ static EBreak mapToColumnBreakValue(EBreak genericBreakValue)
 
 const CSSValue* ComputedStyleCSSValueMapping::get(const AtomicString customPropertyName, const ComputedStyle& style, const PropertyRegistry* registry)
 {
-    StyleVariableData* variables = style.variables();
     if (registry) {
         const PropertyRegistry::Registration* registration = registry->registration(customPropertyName);
         if (registration) {
-            if (variables) {
-                const CSSValue* result = variables->registeredInheritedProperty(customPropertyName);
-                if (result)
-                    return result;
+            const CSSValue* result = nullptr;
+            if (registration->inherits()) {
+                if (StyleInheritedVariables* variables = style.inheritedVariables())
+                    result = variables->registeredVariable(customPropertyName);
+            } else {
+                if (StyleNonInheritedVariables* variables = style.nonInheritedVariables())
+                    result = variables->registeredVariable(customPropertyName);
             }
+            if (result)
+                return result;
             return registration->initial();
         }
     }
 
+    StyleInheritedVariables* variables = style.inheritedVariables();
     if (!variables)
         return nullptr;
 
@@ -1673,7 +1679,8 @@ const CSSValue* ComputedStyleCSSValueMapping::get(const AtomicString customPrope
 
 std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> ComputedStyleCSSValueMapping::getVariables(const ComputedStyle& style)
 {
-    StyleVariableData* variables = style.variables();
+    // TODO(timloh): Also return non-inherited variables
+    StyleInheritedVariables* variables = style.inheritedVariables();
     if (variables)
         return variables->getVariables();
     return nullptr;

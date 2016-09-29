@@ -28,6 +28,7 @@
 #include "core/style/ComputedStyle.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleFilterData.h"
+#include "core/style/StyleNonInheritedVariables.h"
 #include "core/style/StyleTransformData.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 
@@ -46,7 +47,7 @@ public:
     DataPersistent<void*> dataPersistents[2];
     void* ownPtrs[4];
     Persistent<void*> persistentHandles[2];
-    void* refPtrs[2];
+    void* refPtrs[3];
     void* uniquePtrs[1];
 
     FillLayer fillLayers;
@@ -88,6 +89,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData()
     , m_visitedLinkBorderRightColor(StyleColor::currentColor())
     , m_visitedLinkBorderTopColor(StyleColor::currentColor())
     , m_visitedLinkBorderBottomColor(StyleColor::currentColor())
+    , m_variables(ComputedStyle::initialNonInheritedVariables())
     , m_alignContent(ComputedStyle::initialContentAlignment())
     , m_alignItems(ComputedStyle::initialDefaultAlignment())
     , m_alignSelf(ComputedStyle::initialSelfAlignment())
@@ -169,6 +171,7 @@ StyleRareNonInheritedData::StyleRareNonInheritedData(const StyleRareNonInherited
     , m_visitedLinkBorderRightColor(o.m_visitedLinkBorderRightColor)
     , m_visitedLinkBorderTopColor(o.m_visitedLinkBorderTopColor)
     , m_visitedLinkBorderBottomColor(o.m_visitedLinkBorderBottomColor)
+    , m_variables(o.m_variables ? o.m_variables->copy() : nullptr)
     , m_alignContent(o.m_alignContent)
     , m_alignItems(o.m_alignItems)
     , m_alignSelf(o.m_alignSelf)
@@ -254,6 +257,7 @@ bool StyleRareNonInheritedData::operator==(const StyleRareNonInheritedData& o) c
         && m_visitedLinkBorderTopColor == o.m_visitedLinkBorderTopColor
         && m_visitedLinkBorderBottomColor == o.m_visitedLinkBorderBottomColor
         && m_callbackSelectors == o.m_callbackSelectors
+        && dataEquivalent(m_variables, o.m_variables)
         && m_alignContent == o.m_alignContent
         && m_alignItems == o.m_alignItems
         && m_alignSelf == o.m_alignSelf

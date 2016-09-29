@@ -19,7 +19,8 @@ class CSSVariableData;
 class CSSVariableReferenceValue;
 class PropertyRegistry;
 class StyleResolverState;
-class StyleVariableData;
+class StyleInheritedVariables;
+class StyleNonInheritedVariables;
 
 class CSSVariableResolver {
     STACK_ALLOCATED();
@@ -56,7 +57,8 @@ private:
     PassRefPtr<CSSVariableData> resolveCustomProperty(AtomicString name, const CSSVariableData&);
 
     const StyleResolverState& m_styleResolverState;
-    StyleVariableData* m_styleVariableData;
+    StyleInheritedVariables* m_inheritedVariables;
+    StyleNonInheritedVariables* m_nonInheritedVariables;
     Member<const PropertyRegistry> m_registry;
     HashSet<AtomicString> m_variablesSeen;
     // Resolution doesn't finish when a cycle is detected. Fallbacks still

@@ -1759,15 +1759,24 @@ public:
     void clearResetDirectives();
 
     // Variables.
-    static StyleVariableData* initialVariables() { return nullptr; }
-    StyleVariableData* variables() const;
-    void setVariable(const AtomicString&, PassRefPtr<CSSVariableData>);
-    void removeVariable(const AtomicString&);
+    static StyleInheritedVariables* initialInheritedVariables() { return nullptr; }
+    static StyleNonInheritedVariables* initialNonInheritedVariables() { return nullptr; }
+
+    StyleInheritedVariables* inheritedVariables() const;
+    StyleNonInheritedVariables* nonInheritedVariables() const;
+
+    void setUnresolvedInheritedVariable(const AtomicString&, PassRefPtr<CSSVariableData>);
+    void setUnresolvedNonInheritedVariable(const AtomicString&, PassRefPtr<CSSVariableData>);
+
+    void setResolvedUnregisteredVariable(const AtomicString&, PassRefPtr<CSSVariableData>);
+    void setResolvedInheritedVariable(const AtomicString&, PassRefPtr<CSSVariableData>, const CSSValue*);
+    void setResolvedNonInheritedVariable(const AtomicString&, PassRefPtr<CSSVariableData>, const CSSValue*);
+
+    void removeInheritedVariable(const AtomicString&);
+    void removeNonInheritedVariable(const AtomicString&);
+
     void setHasVariableReferenceFromNonInheritedProperty() { m_nonInheritedData.m_variableReference = true; }
     bool hasVariableReferenceFromNonInheritedProperty() const { return m_nonInheritedData.m_variableReference; }
-
-    // Call these after setting the CSSVariableData
-    void setRegisteredInheritedProperty(const AtomicString&, const CSSValue*);
 
     // Animations.
     CSSAnimationData& accessAnimations();
@@ -2533,6 +2542,9 @@ private:
 
     bool requireTransformOrigin(ApplyTransformOrigin applyOrigin, ApplyMotionPath) const;
     static bool shadowListHasCurrentColor(const ShadowList*);
+
+    StyleInheritedVariables& mutableInheritedVariables();
+    StyleNonInheritedVariables& mutableNonInheritedVariables();
 };
 
 // FIXME: Reduce/remove the dependency on zoom adjusted int values.

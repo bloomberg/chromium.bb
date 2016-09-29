@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/style/StyleVariableData.h"
+#include "core/style/StyleInheritedVariables.h"
 
 #include "core/style/DataEquivalency.h"
 
 namespace blink {
 
-bool StyleVariableData::operator==(const StyleVariableData& other) const
+bool StyleInheritedVariables::operator==(const StyleInheritedVariables& other) const
 {
     // It's technically possible for divergent roots to be value-equal,
     // but unlikely. This equality operator is used for optimization purposes
@@ -30,7 +30,7 @@ bool StyleVariableData::operator==(const StyleVariableData& other) const
     return true;
 }
 
-StyleVariableData::StyleVariableData(StyleVariableData& other)
+StyleInheritedVariables::StyleInheritedVariables(StyleInheritedVariables& other)
 {
     if (!other.m_root) {
         m_root = &other;
@@ -41,7 +41,7 @@ StyleVariableData::StyleVariableData(StyleVariableData& other)
     }
 }
 
-CSSVariableData* StyleVariableData::getVariable(const AtomicString& name) const
+CSSVariableData* StyleInheritedVariables::getVariable(const AtomicString& name) const
 {
     auto result = m_data.find(name);
     if (result == m_data.end() && m_root)
@@ -51,12 +51,22 @@ CSSVariableData* StyleVariableData::getVariable(const AtomicString& name) const
     return result->value.get();
 }
 
-void StyleVariableData::setRegisteredInheritedProperty(const AtomicString& name, const CSSValue* parsedValue)
+void StyleInheritedVariables::setRegisteredVariable(const AtomicString& name, const CSSValue* parsedValue)
 {
     m_registeredData.set(name, const_cast<CSSValue*>(parsedValue));
 }
 
-void StyleVariableData::removeVariable(const AtomicString& name)
+CSSValue* StyleInheritedVariables::registeredVariable(const AtomicString& name) const
+{
+    auto result = m_registeredData.find(name);
+    if (result != m_registeredData.end())
+        return result->value.get();
+    if (m_root)
+        return m_root->registeredVariable(name);
+    return nullptr;
+}
+
+void StyleInheritedVariables::removeVariable(const AtomicString& name)
 {
     m_data.set(name, nullptr);
     auto iterator = m_registeredData.find(name);
@@ -64,7 +74,7 @@ void StyleVariableData::removeVariable(const AtomicString& name)
         iterator->value = nullptr;
 }
 
-std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> StyleVariableData::getVariables() const
+std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> StyleInheritedVariables::getVariables() const
 {
     std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> result;
     if (m_root) {

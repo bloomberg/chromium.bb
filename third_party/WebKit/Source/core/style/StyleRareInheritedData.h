@@ -44,7 +44,7 @@ class CursorData;
 class QuotesData;
 class ShadowList;
 class StyleImage;
-class StyleVariableData;
+class StyleInheritedVariables;
 
 typedef RefVector<AppliedTextDecoration> AppliedTextDecorationList;
 typedef HeapVector<CursorData> CursorList;
@@ -160,7 +160,7 @@ public:
     RefPtr<AppliedTextDecorationList> appliedTextDecorations;
     TabSize m_tabSize;
 
-    RefPtr<StyleVariableData> variables;
+    RefPtr<StyleInheritedVariables> variables;
     TextSizeAdjust m_textSizeAdjust;
 
 private:

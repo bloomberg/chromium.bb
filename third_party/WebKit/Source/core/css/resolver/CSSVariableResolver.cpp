@@ -19,7 +19,8 @@
 #include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
-#include "core/style/StyleVariableData.h"
+#include "core/style/StyleInheritedVariables.h"
+#include "core/style/StyleNonInheritedVariables.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -44,31 +45,40 @@ CSSVariableData* CSSVariableResolver::valueForCustomProperty(AtomicString name)
     const PropertyRegistry::Registration* registration = m_registry ? m_registry->registration(name) : nullptr;
 
     CSSVariableData* variableData = nullptr;
-    if (m_styleVariableData)
-        variableData = m_styleVariableData->getVariable(name);
+    if (!registration || registration->inherits()) {
+        if (m_inheritedVariables)
+            variableData = m_inheritedVariables->getVariable(name);
+    } else {
+        variableData = m_nonInheritedVariables->getVariable(name);
+    }
     if (!variableData)
         return registration ? registration->initialVariableData() : nullptr;
     if (!variableData->needsVariableResolution())
         return variableData;
 
     RefPtr<CSSVariableData> newVariableData = resolveCustomProperty(name, *variableData);
-    if (registration) {
-        const CSSValue* parsedValue = nullptr;
-        if (newVariableData) {
-            parsedValue = newVariableData->parseForSyntax(registration->syntax());
-            if (parsedValue)
-                parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(m_styleResolverState, *parsedValue);
-            else
-                newVariableData = nullptr;
-        }
-        m_styleVariableData->setVariable(name, newVariableData);
-        m_styleVariableData->setRegisteredInheritedProperty(name, parsedValue);
-        if (!newVariableData)
-            return registration->initialVariableData();
+    if (!registration) {
+        m_inheritedVariables->setVariable(name, newVariableData);
         return newVariableData.get();
     }
 
-    m_styleVariableData->setVariable(name, newVariableData);
+    const CSSValue* parsedValue = nullptr;
+    if (newVariableData) {
+        parsedValue = newVariableData->parseForSyntax(registration->syntax());
+        if (parsedValue)
+            parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(m_styleResolverState, *parsedValue);
+        else
+            newVariableData = nullptr;
+    }
+    if (registration->inherits()) {
+        m_inheritedVariables->setVariable(name, newVariableData);
+        m_inheritedVariables->setRegisteredVariable(name, parsedValue);
+    } else {
+        m_nonInheritedVariables->setVariable(name, newVariableData);
+        m_nonInheritedVariables->setRegisteredVariable(name, parsedValue);
+    }
+    if (!newVariableData)
+        return registration->initialVariableData();
     return newVariableData.get();
 }
 
@@ -82,7 +92,7 @@ PassRefPtr<CSSVariableData> CSSVariableResolver::resolveCustomProperty(AtomicStr
     m_variablesSeen.remove(name);
 
     // The old variable data holds onto the backing string the new resolved CSSVariableData
-    // relies on. Ensure it will live beyond us overwriting the RefPtr in StyleVariableData.
+    // relies on. Ensure it will live beyond us overwriting the RefPtr in StyleInheritedVariables.
     ASSERT(variableData.refCount() > 1);
 
     if (!success || !m_cycleStartPoints.isEmpty()) {
@@ -216,18 +226,26 @@ const CSSValue* CSSVariableResolver::resolvePendingSubstitutions(const StyleReso
 
 void CSSVariableResolver::resolveVariableDefinitions(const StyleResolverState& state)
 {
-    StyleVariableData* variables = state.style()->variables();
-    if (!variables)
+    StyleInheritedVariables* inheritedVariables = state.style()->inheritedVariables();
+    StyleNonInheritedVariables* nonInheritedVariables = state.style()->nonInheritedVariables();
+    if (!inheritedVariables && !nonInheritedVariables)
         return;
 
     CSSVariableResolver resolver(state);
-    for (auto& variable : variables->m_data)
-        resolver.valueForCustomProperty(variable.key);
+    if (inheritedVariables) {
+        for (auto& variable : inheritedVariables->m_data)
+            resolver.valueForCustomProperty(variable.key);
+    }
+    if (nonInheritedVariables) {
+        for (auto& variable : nonInheritedVariables->m_data)
+            resolver.valueForCustomProperty(variable.key);
+    }
 }
 
 CSSVariableResolver::CSSVariableResolver(const StyleResolverState& state)
     : m_styleResolverState(state)
-    , m_styleVariableData(state.style()->variables())
+    , m_inheritedVariables(state.style()->inheritedVariables())
+    , m_nonInheritedVariables(state.style()->nonInheritedVariables())
     , m_registry(state.document().propertyRegistry())
 {
 }

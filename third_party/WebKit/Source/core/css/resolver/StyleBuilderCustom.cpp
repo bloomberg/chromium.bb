@@ -70,7 +70,8 @@
 #include "core/style/QuotesData.h"
 #include "core/style/SVGComputedStyle.h"
 #include "core/style/StyleGeneratedImage.h"
-#include "core/style/StyleVariableData.h"
+#include "core/style/StyleInheritedVariables.h"
+#include "core/style/StyleNonInheritedVariables.h"
 #include "platform/fonts/FontDescription.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PtrUtil.h"
@@ -804,47 +805,74 @@ void StyleBuilderFunctions::applyValueCSSPropertyVariable(StyleResolverState& st
     if (registry)
         registration = registry->registration(name);
 
-    switch (declaration.id()) {
-    case CSSValueInitial:
-        state.style()->removeVariable(name);
-        break;
+    bool initial = declaration.id() == CSSValueInitial
+        || (declaration.id() == CSSValueUnset && registration && !registration->inherits());
+    bool inherit = declaration.id() == CSSValueInherit
+        || (declaration.id() == CSSValueUnset && (!registration || registration->inherits()));
+    DCHECK(!(initial && inherit));
 
-    case CSSValueUnset:
-    case CSSValueInherit: {
-        state.style()->removeVariable(name);
-        StyleVariableData* parentVariables = state.parentStyle()->variables();
-        if (!parentVariables)
-            return;
-        CSSVariableData* value = parentVariables->getVariable(name);
-        if (!value)
-            return;
-        state.style()->setVariable(name, value);
-        if (registration)
-            state.style()->setRegisteredInheritedProperty(name, parentVariables->registeredInheritedProperty(name));
-        break;
-    }
-    case CSSValueInternalVariableValue:
-        if (registration) {
-            if (declaration.value()->needsVariableResolution()) {
-                state.style()->setVariable(name, declaration.value());
-                return;
-            }
-            const CSSValue* parsedValue = declaration.value()->parseForSyntax(registration->syntax());
-            if (!parsedValue) {
-                state.style()->setVariable(name, nullptr);
-                state.style()->setRegisteredInheritedProperty(name, nullptr);
-                return;
-            }
-            parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(state, *parsedValue);
-            state.style()->setVariable(name, declaration.value());
-            state.style()->setRegisteredInheritedProperty(name, parsedValue);
+    if (declaration.id() == CSSValueInternalVariableValue) {
+        if (declaration.value()->needsVariableResolution()) {
+            if (!registration || registration->inherits())
+                state.style()->setUnresolvedInheritedVariable(name, declaration.value());
+            else
+                state.style()->setUnresolvedNonInheritedVariable(name, declaration.value());
             return;
         }
-        state.style()->setVariable(name, declaration.value());
-        break;
-    default:
-        NOTREACHED();
+
+        if (!registration) {
+            state.style()->setResolvedUnregisteredVariable(name, declaration.value());
+            return;
+        }
+
+        const CSSValue* parsedValue = declaration.value()->parseForSyntax(registration->syntax());
+        if (parsedValue) {
+            parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(state, *parsedValue);
+            DCHECK(parsedValue);
+            if (registration->inherits())
+                state.style()->setResolvedInheritedVariable(name, declaration.value(), parsedValue);
+            else
+                state.style()->setResolvedNonInheritedVariable(name, declaration.value(), parsedValue);
+            return;
+        }
+        if (registration->inherits())
+            inherit = true;
+        else
+            initial = true;
     }
+
+    DCHECK(initial ^ inherit);
+
+    if (initial) {
+        if (!registration || registration->inherits())
+            state.style()->removeInheritedVariable(name);
+        else
+            state.style()->removeNonInheritedVariable(name);
+        return;
+    }
+
+    if (!registration || registration->inherits()) {
+        state.style()->removeInheritedVariable(name);
+        StyleInheritedVariables* parentVariables = state.parentStyle()->inheritedVariables();
+        if (!parentVariables)
+            return;
+        CSSVariableData* parentValue = parentVariables->getVariable(name);
+        if (parentValue) {
+            if (!registration)
+                state.style()->setResolvedUnregisteredVariable(name, parentValue);
+            else
+                state.style()->setResolvedInheritedVariable(name, parentValue, parentVariables->registeredVariable(name));
+        }
+        return;
+    }
+
+    state.style()->removeNonInheritedVariable(name);
+    StyleNonInheritedVariables* parentVariables = state.parentStyle()->nonInheritedVariables();
+    if (!parentVariables)
+        return;
+    CSSVariableData* parentValue = parentVariables->getVariable(name);
+    if (parentValue)
+        state.style()->setResolvedNonInheritedVariable(name, parentValue, parentVariables->registeredVariable(name));
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyBaselineShift(StyleResolverState& state)

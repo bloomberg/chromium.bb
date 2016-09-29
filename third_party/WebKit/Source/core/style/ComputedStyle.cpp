@@ -40,7 +40,8 @@
 #include "core/style/ShadowList.h"
 #include "core/style/StyleImage.h"
 #include "core/style/StyleInheritedData.h"
-#include "core/style/StyleVariableData.h"
+#include "core/style/StyleInheritedVariables.h"
+#include "core/style/StyleNonInheritedVariables.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
@@ -881,10 +882,10 @@ bool ComputedStyle::diffNeedsPaintInvalidationObjectForPaintImage(const StyleIma
             return true;
     }
 
-    if (variables() || other.variables()) {
+    if (inheritedVariables() || other.inheritedVariables()) {
         for (const AtomicString& property : *value->customInvalidationProperties()) {
-            CSSVariableData* thisVar = variables() ? variables()->getVariable(property) : nullptr;
-            CSSVariableData* otherVar = other.variables() ? other.variables()->getVariable(property) : nullptr;
+            CSSVariableData* thisVar = inheritedVariables() ? inheritedVariables()->getVariable(property) : nullptr;
+            CSSVariableData* otherVar = other.inheritedVariables() ? other.inheritedVariables()->getVariable(property) : nullptr;
 
             if (!dataEquivalent(thisVar, otherVar))
                 return true;
@@ -1445,42 +1446,80 @@ const Vector<AppliedTextDecoration>& ComputedStyle::appliedTextDecorations() con
     return m_rareInheritedData->appliedTextDecorations->vector();
 }
 
-StyleVariableData* ComputedStyle::variables() const
+StyleInheritedVariables* ComputedStyle::inheritedVariables() const
 {
     return m_rareInheritedData->variables.get();
 }
 
-void ComputedStyle::setVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value)
+StyleNonInheritedVariables* ComputedStyle::nonInheritedVariables() const
 {
-    RefPtr<StyleVariableData>& variables = m_rareInheritedData.access()->variables;
+    return m_rareNonInheritedData->m_variables.get();
+}
+
+StyleInheritedVariables& ComputedStyle::mutableInheritedVariables()
+{
+    RefPtr<StyleInheritedVariables>& variables = m_rareInheritedData.access()->variables;
     if (!variables)
-        variables = StyleVariableData::create();
+        variables = StyleInheritedVariables::create();
     else if (!variables->hasOneRef())
         variables = variables->copy();
-    variables->setVariable(name, std::move(value));
+    return *variables;
 }
 
-void ComputedStyle::setRegisteredInheritedProperty(const AtomicString& name, const CSSValue* parsedValue)
+StyleNonInheritedVariables& ComputedStyle::mutableNonInheritedVariables()
 {
-    RefPtr<StyleVariableData>& variables = m_rareInheritedData.access()->variables;
-    // The CSSVariableData needs to be set before calling this function
-    DCHECK(variables);
-    DCHECK(!!parsedValue == !!variables->getVariable(name));
-    DCHECK(!(variables->getVariable(name) && variables->getVariable(name)->needsVariableResolution()));
-
-    if (!variables->hasOneRef())
-        variables = variables->copy();
-    variables->setRegisteredInheritedProperty(name, parsedValue);
-}
-
-void ComputedStyle::removeVariable(const AtomicString& name)
-{
-    RefPtr<StyleVariableData>& variables = m_rareInheritedData.access()->variables;
+    std::unique_ptr<StyleNonInheritedVariables>& variables = m_rareNonInheritedData.access()->m_variables;
     if (!variables)
-        return;
-    if (!variables->hasOneRef())
-        variables = variables->copy();
-    variables->removeVariable(name);
+        variables = StyleNonInheritedVariables::create();
+    return *variables;
+}
+
+void ComputedStyle::setUnresolvedInheritedVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value)
+{
+    DCHECK(value && value->needsVariableResolution());
+    mutableInheritedVariables().setVariable(name, std::move(value));
+}
+
+void ComputedStyle::setUnresolvedNonInheritedVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value)
+{
+    DCHECK(value && value->needsVariableResolution());
+    mutableNonInheritedVariables().setVariable(name, std::move(value));
+}
+
+void ComputedStyle::setResolvedUnregisteredVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value)
+{
+    DCHECK(value && !value->needsVariableResolution());
+    mutableInheritedVariables().setVariable(name, std::move(value));
+}
+
+void ComputedStyle::setResolvedInheritedVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value, const CSSValue* parsedValue)
+{
+    DCHECK(!!value == !!parsedValue);
+    DCHECK(!(value && value->needsVariableResolution()));
+
+    StyleInheritedVariables& variables = mutableInheritedVariables();
+    variables.setVariable(name, std::move(value));
+    variables.setRegisteredVariable(name, parsedValue);
+}
+
+void ComputedStyle::setResolvedNonInheritedVariable(const AtomicString& name, PassRefPtr<CSSVariableData> value, const CSSValue* parsedValue)
+{
+    DCHECK(!!value == !!parsedValue);
+    DCHECK(!(value && value->needsVariableResolution()));
+
+    StyleNonInheritedVariables& variables = mutableNonInheritedVariables();
+    variables.setVariable(name, std::move(value));
+    variables.setRegisteredVariable(name, parsedValue);
+}
+
+void ComputedStyle::removeInheritedVariable(const AtomicString& name)
+{
+    mutableInheritedVariables().removeVariable(name);
+}
+
+void ComputedStyle::removeNonInheritedVariable(const AtomicString& name)
+{
+    mutableNonInheritedVariables().removeVariable(name);
 }
 
 float ComputedStyle::wordSpacing() const { return getFontDescription().wordSpacing(); }

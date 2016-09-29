@@ -9,8 +9,6 @@ namespace blink {
 void PropertyRegistry::registerProperty(const AtomicString& name, const CSSSyntaxDescriptor& syntax, bool inherits, const CSSValue* initial, PassRefPtr<CSSVariableData> initialVariableData)
 {
     DCHECK(!registration(name));
-    // TODO(timloh): We only support inherited properties for now.
-    inherits = true;
     m_registrations.set(name, new Registration(syntax, inherits, initial, initialVariableData));
 }
 
