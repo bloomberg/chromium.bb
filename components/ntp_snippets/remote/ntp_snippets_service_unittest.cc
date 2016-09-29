@@ -367,9 +367,10 @@ class NTPSnippetsServiceTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  std::unique_ptr<NTPSnippetsService> MakeSnippetsService() {
+  std::unique_ptr<NTPSnippetsService> MakeSnippetsService(
+      bool set_empty_response = true) {
     auto service = MakeSnippetsServiceWithoutInitialization();
-    WaitForSnippetsServiceInitialization();
+    WaitForSnippetsServiceInitialization(set_empty_response);
     return service;
   }
 
@@ -405,13 +406,14 @@ class NTPSnippetsServiceTest : public ::testing::Test {
                                                    utils_.pref_service()));
   }
 
-  void WaitForSnippetsServiceInitialization() {
+  void WaitForSnippetsServiceInitialization(bool set_empty_response = true) {
     EXPECT_TRUE(observer_);
     EXPECT_FALSE(observer_->Loaded());
 
     // Add an initial fetch response, as the service tries to fetch when there
     // is nothing in the DB.
-    SetUpFetchResponse(GetTestJson(std::vector<std::string>()));
+    if (set_empty_response)
+      SetUpFetchResponse(GetTestJson(std::vector<std::string>()));
 
     base::RunLoop().RunUntilIdle();
     observer_->WaitForLoad();
@@ -484,25 +486,23 @@ TEST_F(NTPSnippetsServiceTest, ScheduleOnStart) {
   auto service = MakeSnippetsService();
 
   // When we have no snippets are all, loading the service initiates a fetch.
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ("OK", service->snippets_fetcher()->last_status());
 }
 
 TEST_F(NTPSnippetsServiceTest, DontRescheduleOnStart) {
   EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
-  auto service = MakeSnippetsService();
-  base::RunLoop().RunUntilIdle();
+  SetUpFetchResponse(GetTestJson({GetSnippet()}));
+  auto service = MakeSnippetsService(/*set_empty_response=*/false);
 
-  // When recreating the service, we should not get a single |Schedule| call:
+  // When recreating the service, we should not get any |Schedule| calls:
   // The tasks are already scheduled with the correct intervals, so nothing on
-  // initialization, but the service still has no data, so one |Schedule|
-  // happens after the automatic fetch.
+  // initialization, and the service has data from the DB, so no automatic fetch
+  // should happen.
   Mock::VerifyAndClearExpectations(&mock_scheduler());
-  EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(1);
+  EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(0);
   EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
   ResetSnippetsService(&service);
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(NTPSnippetsServiceTest, RescheduleAfterSuccessfulFetch) {
@@ -511,7 +511,6 @@ TEST_F(NTPSnippetsServiceTest, RescheduleAfterSuccessfulFetch) {
   // have any data yet) fetch finishes.
   EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   auto service = MakeSnippetsService();
-  base::RunLoop().RunUntilIdle();
 
   // A successful fetch should trigger another |Schedule|.
   EXPECT_CALL(mock_scheduler(), Schedule(_, _));
@@ -524,7 +523,6 @@ TEST_F(NTPSnippetsServiceTest, DontRescheduleAfterFailedFetch) {
   // have any data yet) fetch finishes.
   EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(2);
   auto service = MakeSnippetsService();
-  base::RunLoop().RunUntilIdle();
 
   // A failed fetch should NOT trigger another |Schedule|.
   EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(0);
@@ -572,7 +570,6 @@ TEST_F(NTPSnippetsServiceTest, RescheduleOnStateChange) {
   }
   auto service = MakeSnippetsService();
   ASSERT_TRUE(service->ready());
-  base::RunLoop().RunUntilIdle();
 
   service->OnDisabledReasonChanged(DisabledReason::EXPLICITLY_DISABLED);
   ASSERT_FALSE(service->ready());
@@ -588,7 +585,6 @@ TEST_F(NTPSnippetsServiceTest, DontUnscheduleOnShutdown) {
   EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
 
   auto service = MakeSnippetsService();
-  base::RunLoop().RunUntilIdle();
 
   service.reset();
   base::RunLoop().RunUntilIdle();
