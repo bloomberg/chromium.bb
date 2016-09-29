@@ -208,12 +208,7 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
 static void update_mv_probs(aom_prob *p, int n, aom_reader *r) {
   int i;
   for (i = 0; i < n; ++i)
-#if CONFIG_MISC_FIXES
     av1_diff_update_prob(r, &p[i], ACCT_STR);
-#else
-    if (aom_read(r, MV_UPDATE_PROB, ACCT_STR))
-      p[i] = (aom_read_literal(r, 7, ACCT_STR) << 1) | 1;
-#endif
 }
 
 static void read_mv_probs(nmv_context *ctx, int allow_hp, aom_reader *r) {

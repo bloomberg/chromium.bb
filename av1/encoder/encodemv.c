@@ -140,7 +140,6 @@ static void build_nmv_component_cost_table(int *mvcost,
 
 static void update_mv(aom_writer *w, const unsigned int ct[2], aom_prob *cur_p,
                       aom_prob upd_p) {
-#if CONFIG_MISC_FIXES
   (void)upd_p;
 #if CONFIG_TILE_GROUPS
   // Just use the maximum number of tile groups to avoid passing in the actual
@@ -148,16 +147,6 @@ static void update_mv(aom_writer *w, const unsigned int ct[2], aom_prob *cur_p,
   av1_cond_prob_diff_update(w, cur_p, ct, MAX_NUM_TG);
 #else
   av1_cond_prob_diff_update(w, cur_p, ct, 1);
-#endif
-#else
-  const aom_prob new_p = get_binary_prob(ct[0], ct[1]) | 1;
-  const int update = cost_branch256(ct, *cur_p) + av1_cost_zero(upd_p) >
-                     cost_branch256(ct, new_p) + av1_cost_one(upd_p) + 7 * 256;
-  aom_write(w, update, upd_p);
-  if (update) {
-    *cur_p = new_p;
-    aom_write_literal(w, new_p >> 1, 7);
-  }
 #endif
 }
 
