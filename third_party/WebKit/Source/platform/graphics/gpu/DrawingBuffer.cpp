@@ -249,13 +249,13 @@ void DrawingBuffer::freeRecycledMailboxes()
 
 std::unique_ptr<cc::SharedBitmap> DrawingBuffer::createOrRecycleBitmap()
 {
-    size_t i = 0;
-    while (i < m_recycledBitmaps.size()) {
-        if (m_recycledBitmaps[i].size != m_size)
-            m_recycledBitmaps.remove(i); // Removed this position so iterate on it again.
-        else
-            ++i;
-    }
+    auto it = std::remove_if(m_recycledBitmaps.begin(), m_recycledBitmaps.end(),
+        [this](const RecycledBitmap& bitmap)
+        {
+            return bitmap.size != m_size;
+        });
+    m_recycledBitmaps.shrink(it - m_recycledBitmaps.begin());
+
     if (!m_recycledBitmaps.isEmpty()) {
         RecycledBitmap recycled = std::move(m_recycledBitmaps.last());
         m_recycledBitmaps.removeLast();
