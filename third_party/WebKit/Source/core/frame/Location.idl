@@ -48,17 +48,17 @@
     // TODO(foolip): Per spec, Location implements URLUtils. The below is
     // mostly like the URLUtils interface, but with some members missing and
     // using DOMString instead of USVString.
-    [SetterCallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity=Setter] attribute DOMString href;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity=Setter, RaisesException=Setter] attribute DOMString href;
     [NotEnumerable, ImplementedAs=href] DOMString toString();
     readonly attribute DOMString origin;
 
     [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString protocol;
-    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString host;
-    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString hostname;
-    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString port;
-    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString pathname;
-    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString search;
-    [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString hash;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString host;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString hostname;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString port;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString pathname;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString search;
+    [SetterCallWith=(CurrentWindow,EnteredWindow), RaisesException=Setter] attribute DOMString hash;
 
     // TODO(foolip): Location does not have a valueOf() override in the spec.
     // See the comment in Location.h for the purpose of this.

@@ -58,7 +58,7 @@ public:
     Frame* frame() const { return m_frame.get(); }
     void reset() { m_frame = nullptr; }
 
-    void setHref(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setHref(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     String href() const;
 
     void assign(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
@@ -67,17 +67,17 @@ public:
 
     void setProtocol(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     String protocol() const;
-    void setHost(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setHost(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     String host() const;
-    void setHostname(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setHostname(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     String hostname() const;
-    void setPort(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setPort(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     String port() const;
-    void setPathname(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setPathname(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     String pathname() const;
-    void setSearch(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setSearch(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     String search() const;
-    void setHash(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&);
+    void setHash(LocalDOMWindow* currentWindow, LocalDOMWindow* enteredWindow, const String&, ExceptionState&);
     String hash() const;
     String origin() const;
 

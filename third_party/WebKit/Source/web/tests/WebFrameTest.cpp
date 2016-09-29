@@ -7939,7 +7939,7 @@ TEST_P(ParameterizedWebFrameTest, CrossDomainAccessErrorsUseCallingWindow)
     // Attempt a blocked navigation of an opener's subframe, and ensure that
     // the error shows up on the popup (calling) window's console, rather than
     // the target window.
-    popupView->mainFrame()->executeScript(WebScriptSource("opener.frames[1].location.href='data:text/html,foo'"));
+    popupView->mainFrame()->executeScript(WebScriptSource("try { opener.frames[1].location.href='data:text/html,foo'; } catch (e) {}"));
     EXPECT_TRUE(webFrameClient.messages.isEmpty());
     ASSERT_EQ(1u, popupWebFrameClient.messages.size());
     EXPECT_TRUE(std::string::npos != popupWebFrameClient.messages[0].text.utf8().find("Unsafe JavaScript attempt to initiate navigation"));

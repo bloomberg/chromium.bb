@@ -3769,9 +3769,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
 
   // frames[1] can't be used due to a bug where RemoteFrames are created out of
   // order (https://crbug.com/478792).  Instead, target second frame by name.
-  EXPECT_TRUE(ExecuteScript(
-      root->child_at(0),
-      "parent.frames['frame2'].location.href = 'data:text/html,foo'"));
+  EXPECT_TRUE(ExecuteScript(root->child_at(0),
+                            "try { parent.frames['frame2'].location.href = "
+                            "'data:text/html,foo'; } catch (e) {}"));
   console_delegate->Wait();
 
   std::string frame_origin = root->child_at(1)->current_origin().Serialize();
