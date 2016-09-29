@@ -93,6 +93,8 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class BrowserProcessImpl;
   friend void chrome::AttemptRestart();
   friend class chrome::android::ExternalDataUseObserverBridge;
+  // For StackSamplingConfiguration.
+  friend class ChromeBrowserMainParts;
   friend class ChromeMetricsServicesManagerClient;
   friend class ChromeRenderMessageFilter;
   friend class DataReductionProxyChromeSettings;
@@ -108,7 +110,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::IncidentReportingService;
   friend class settings::MetricsReportingHandler;
   friend class speech::ChromeSpeechRecognitionManagerDelegate;
-  friend class StackSamplingConfiguration;
   friend class system_logs::ChromeInternalLogSource;
   friend class UmaSessionStats;
   friend class safe_browsing::SRTFetcher;

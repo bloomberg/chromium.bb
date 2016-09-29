@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_STACK_SAMPLING_CONFIGURATION_H_
-#define CHROME_BROWSER_STACK_SAMPLING_CONFIGURATION_H_
+#ifndef CHROME_COMMON_STACK_SAMPLING_CONFIGURATION_H_
+#define CHROME_COMMON_STACK_SAMPLING_CONFIGURATION_H_
 
 #include "base/macros.h"
 #include "base/profiler/stack_sampling_profiler.h"
@@ -21,8 +21,10 @@ class StackSamplingConfiguration {
   // Returns true if the profiler should be started at all.
   bool IsProfilerEnabled() const;
 
-  // Register the chosen configuration as a synthetic field trial.
-  void RegisterSyntheticFieldTrial() const;
+  // Get the synthetic field trial configuration. Returns true if a synthetic
+  // field trial should be registered.
+  bool GetSyntheticFieldTrial(std::string* trial_name,
+                              std::string* group_name) const;
 
  private:
   enum ProfileConfiguration {
@@ -41,4 +43,4 @@ class StackSamplingConfiguration {
   DISALLOW_COPY_AND_ASSIGN(StackSamplingConfiguration);
 };
 
-#endif  // CHROME_BROWSER_STACK_SAMPLING_CONFIGURATION_H_
+#endif  // CHROME_COMMON_STACK_SAMPLING_CONFIGURATION_H_

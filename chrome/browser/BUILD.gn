@@ -1125,8 +1125,6 @@ split_static_library("browser") {
     "ssl/ssl_client_certificate_selector.h",
     "ssl/ssl_error_handler.cc",
     "ssl/ssl_error_handler.h",
-    "stack_sampling_configuration.cc",
-    "stack_sampling_configuration.h",
     "status_icons/status_icon.cc",
     "status_icons/status_icon.h",
     "status_icons/status_icon_menu_model.cc",

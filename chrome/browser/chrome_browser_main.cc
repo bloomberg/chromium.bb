@@ -892,7 +892,12 @@ void ChromeBrowserMainParts::SetupFieldTrials() {
 
   // Register a synthetic field trial for the sampling profiler configuration
   // that was already chosen.
-  sampling_profiler_config_.RegisterSyntheticFieldTrial();
+  std::string trial_name, group_name;
+  if (sampling_profiler_config_.GetSyntheticFieldTrial(&trial_name,
+                                                       &group_name)) {
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(trial_name,
+                                                              group_name);
+  }
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

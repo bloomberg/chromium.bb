@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/stack_sampling_configuration.h"
+#include "chrome/common/stack_sampling_configuration.h"
 
 #include "base/rand_util.h"
-#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
 
@@ -76,40 +75,41 @@ bool StackSamplingConfiguration::IsProfilerEnabled() const {
           configuration_ != PROFILE_CONTROL);
 }
 
-void StackSamplingConfiguration::RegisterSyntheticFieldTrial() const {
+bool StackSamplingConfiguration::GetSyntheticFieldTrial(
+    std::string* trial_name,
+    std::string* group_name) const {
   if (!IsProfilerSupported())
-    return;
+    return false;
 
-  std::string group;
+  *trial_name = "SyntheticStackProfilingConfiguration";
+  *group_name = std::string();
   switch (configuration_) {
     case PROFILE_DISABLED:
-      group = "Disabled";
+      *group_name = "Disabled";
       break;
 
     case PROFILE_CONTROL:
-      group = "Control";
+      *group_name = "Control";
       break;
 
     case PROFILE_NO_SAMPLES:
-      group = "NoSamples";
+      *group_name = "NoSamples";
       break;
 
     case PROFILE_5HZ:
-      group = "5Hz";
+      *group_name = "5Hz";
       break;
 
     case PROFILE_10HZ:
-      group = "10Hz";
+      *group_name = "10Hz";
       break;
 
     case PROFILE_100HZ:
-      group = "100Hz";
+      *group_name = "100Hz";
       break;
   }
 
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      "SyntheticStackProfilingConfiguration",
-      group);
+  return !group_name->empty();
 }
 
 // static

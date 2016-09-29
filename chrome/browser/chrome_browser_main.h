@@ -16,8 +16,8 @@
 #include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/process_singleton.h"
-#include "chrome/browser/stack_sampling_configuration.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/common/stack_sampling_configuration.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
