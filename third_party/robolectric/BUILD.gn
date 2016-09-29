@@ -4,6 +4,19 @@
 
 import("//build/config/android/rules.gni")
 
+java_group("robolectric_all_java") {
+  testonly = true
+  deps = [
+    ":android-all-5.0.0_r2-robolectric-1",
+    ":robolectric_annotations_java",
+    ":robolectric_java",
+    ":robolectric_resources_java",
+    ":robolectric_utils_java",
+    ":shadows-core-3.0-21",
+    ":shadows-multidex-3.0",
+  ]
+}
+
 java_prebuilt("tagsoup-1.2") {
   testonly = true
   jar_path = "lib/tagsoup-1.2.jar"
