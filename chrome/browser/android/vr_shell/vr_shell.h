@@ -94,15 +94,15 @@ class VrShell : public device::GvrDelegate {
  private:
   virtual ~VrShell();
   void LoadUIContent();
-  void DrawVrShell();
+  void DrawVrShell(const gvr::Mat4f& head_pose);
   void DrawEye(const gvr::Mat4f& view_matrix,
                const gvr::BufferViewport& params);
   void DrawContentRect();
   void DrawWebVr();
-  void DrawUI();
-  void DrawCursor();
+  void DrawUI(const gvr::Mat4f& render_matrix);
+  void DrawCursor(const gvr::Mat4f& render_matrix);
 
-  void UpdateController();
+  void UpdateController(const gvr::Vec3f& forward_vector);
 
   void HandleQueuedTasks();
 
@@ -123,12 +123,6 @@ class VrShell : public device::GvrDelegate {
   std::unique_ptr<gvr::BufferViewportList> buffer_viewport_list_;
   std::unique_ptr<gvr::BufferViewport> buffer_viewport_;
   std::unique_ptr<gvr::SwapChain> swap_chain_;
-
-  gvr::Mat4f view_matrix_;
-  gvr::Mat4f projection_matrix_;
-
-  gvr::Mat4f head_pose_;
-  gvr::Vec3f forward_vector_;
 
   gvr::Sizei render_size_;
   float cursor_distance_;

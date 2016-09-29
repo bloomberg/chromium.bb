@@ -171,14 +171,14 @@ void VrShell::InitializeGl(JNIEnv* env,
       new gvr::BufferViewport(gvr_api_->CreateBufferViewport()));
 }
 
-void VrShell::UpdateController() {
+void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   if (!controller_active_) {
     // No controller detected, set up a gaze cursor that tracks the
     // forward direction.
     //
-    // Make a rotation quaternion that rotates forward_vector_ to (0, 0, -1).
+    // Make a rotation quaternion that rotates forward_vector to (0, 0, -1).
     gvr::Quatf gaze_quat;
-    gaze_quat.qw = 1 - forward_vector_.z;
+    gaze_quat.qw = 1 - forward_vector.z;
     if (gaze_quat.qw < 1e-6) {
       // Degenerate case: vectors are exactly opposite. Replace by an
       // arbitrary 180 degree rotation to avoid invalid normalization.
@@ -187,8 +187,8 @@ void VrShell::UpdateController() {
       gaze_quat.qz = 0.0f;
       gaze_quat.qw = 0.0f;
     } else {
-      gaze_quat.qx = forward_vector_.y;
-      gaze_quat.qy = -forward_vector_.x;
+      gaze_quat.qx = forward_vector.y;
+      gaze_quat.qy = -forward_vector.x;
       gaze_quat.qz = 0.0f;
       NormalizeQuat(gaze_quat);
     }
@@ -197,19 +197,16 @@ void VrShell::UpdateController() {
 
   gvr::Mat4f mat = QuatToMatrix(controller_quat_);
   gvr::Vec3f forward = MatrixVectorMul(mat, kNeutralPose);
-  gvr::Vec3f translation = getTranslation(mat);
+  gvr::Vec3f origin = kHandPosition;
 
-  // Use the eye midpoint as the origin for Cardboard mode, but apply an offset
-  // for the controller.
-  if (controller_active_) {
-    translation.x += kHandPosition.x;
-    translation.y += kHandPosition.y;
-    translation.z += kHandPosition.z;
+  // Use the eye midpoint as the origin for Cardboard mode.
+  if (!controller_active_) {
+    origin = kOrigin;
   }
 
   float desktop_dist = scene_.GetUiElementById(kBrowserUiElementId)
-      ->GetRayDistance(translation, forward);
-  gvr::Vec3f cursor_position = GetRayPoint(translation, forward, desktop_dist);
+      ->GetRayDistance(origin, forward);
+  gvr::Vec3f cursor_position = GetRayPoint(origin, forward, desktop_dist);
   look_at_vector_ = cursor_position;
   cursor_distance_ = desktop_dist;
 
@@ -267,7 +264,19 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   gvr::Frame frame = swap_chain_->AcquireFrame();
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
-  head_pose_ = gvr_api_->GetHeadPoseInStartSpace(target_time);
+
+  gvr::Mat4f head_pose =
+      gvr_api_->GetHeadPoseInStartSpace(target_time);
+
+  gvr::Vec3f position = getTranslation(head_pose);
+  if (position.x == 0.0f && position.y == 0.0f && position.z == 0.0f) {
+    // This appears to be a 3DOF pose without a neck model. Add one.
+    // The head pose has redundant data. Assume we're only using the
+    // object_from_reference_matrix, we're not updating position_external.
+    // TODO: Not sure what object_from_reference_matrix is. The new api removed
+    // it. For now, removing it seems working fine.
+    ApplyNeckModel(head_pose);
+  }
 
   // Bind back to the default framebuffer.
   frame.BindBuffer(0);
@@ -275,27 +284,15 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (webvr_mode_) {
     DrawWebVr();
   } else {
-    DrawVrShell();
+    DrawVrShell(head_pose);
   }
 
   frame.Unbind();
-  frame.Submit(*buffer_viewport_list_, head_pose_);
+  frame.Submit(*buffer_viewport_list_, head_pose);
 }
 
-void VrShell::DrawVrShell() {
+void VrShell::DrawVrShell(const gvr::Mat4f& head_pose) {
   float screen_tilt = desktop_screen_tilt_ * M_PI / 180.0f;
-
-  gvr::Vec3f headPos = getTranslation(head_pose_);
-  if (headPos.x == 0.0f && headPos.y == 0.0f && headPos.z == 0.0f) {
-    // This appears to be a 3DOF pose without a neck model. Add one.
-    // The head pose has redundant data. Assume we're only using the
-    // object_from_reference_matrix, we're not updating position_external.
-    // TODO: Not sure what object_from_reference_matrix is. The new api removed
-    // it. For now, removing it seems working fine.
-    ApplyNeckModel(head_pose_);
-  }
-
-  forward_vector_ = getForwardVector(head_pose_);
 
   desktop_plane_->translation = desktop_position_;
 
@@ -304,13 +301,13 @@ void VrShell::DrawVrShell() {
   // Update the render position of all UI elements (including desktop).
   scene_.UpdateTransforms(screen_tilt, UiScene::TimeInMicroseconds());
 
-  UpdateController();
+  UpdateController(getForwardVector(head_pose));
 
   // Everything should be positioned now, ready for drawing.
   gvr::Mat4f left_eye_view_matrix =
-    MatrixMul(gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE), head_pose_);
+    MatrixMul(gvr_api_->GetEyeFromHeadMatrix(GVR_LEFT_EYE), head_pose);
   gvr::Mat4f right_eye_view_matrix =
-      MatrixMul(gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE), head_pose_);
+      MatrixMul(gvr_api_->GetEyeFromHeadMatrix(GVR_RIGHT_EYE), head_pose);
 
   // Use culling to remove back faces.
   glEnable(GL_CULL_FACE);
@@ -340,27 +337,22 @@ void VrShell::DrawEye(const gvr::Mat4f& view_matrix,
             pixel_rect.right - pixel_rect.left,
             pixel_rect.top - pixel_rect.bottom);
 
-  view_matrix_ = view_matrix;
-
-  projection_matrix_ =
-      PerspectiveMatrixFromView(params.GetSourceFov(), kZNear, kZFar);
+  gvr::Mat4f render_matrix = MatrixMul(
+      PerspectiveMatrixFromView(params.GetSourceFov(), kZNear, kZFar),
+      view_matrix);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // TODO(mthiesse): Draw order for transparency.
-  DrawUI();
-  DrawCursor();
+  DrawUI(render_matrix);
+  DrawCursor(render_matrix);
 }
 
-void VrShell::DrawUI() {
+void VrShell::DrawUI(const gvr::Mat4f& render_matrix) {
   for (const auto& rect : scene_.GetUiElements()) {
     if (!rect->visible) {
       continue;
     }
-
-    gvr::Mat4f combined_matrix = MatrixMul(view_matrix_,
-                                           rect->transform.to_world);
-    combined_matrix = MatrixMul(projection_matrix_, combined_matrix);
 
     Rectf copy_rect;
     jint texture_handle;
@@ -377,12 +369,13 @@ void VrShell::DrawUI() {
       texture_handle = ui_texture_id_;
     }
 
+    gvr::Mat4f transform = MatrixMul(render_matrix, rect->transform.to_world);
     vr_shell_renderer_->GetTexturedQuadRenderer()->Draw(
-        texture_handle, combined_matrix, copy_rect);
+        texture_handle, transform, copy_rect);
   }
 }
 
-void VrShell::DrawCursor() {
+void VrShell::DrawCursor(const gvr::Mat4f& render_matrix) {
   gvr::Mat4f mat;
   SetIdentityM(mat);
 
@@ -394,9 +387,8 @@ void VrShell::DrawCursor() {
   TranslateM(mat, mat, look_at_vector_.x * kReticleZOffset,
              look_at_vector_.y * kReticleZOffset,
              look_at_vector_.z * kReticleZOffset);
-  gvr::Mat4f mv = MatrixMul(view_matrix_, mat);
-  gvr::Mat4f mvp = MatrixMul(projection_matrix_, mv);
-  vr_shell_renderer_->GetReticleRenderer()->Draw(mvp);
+  gvr::Mat4f transform = MatrixMul(render_matrix, mat);
+  vr_shell_renderer_->GetReticleRenderer()->Draw(transform);
 
   // Draw the laser only for controllers.
   if (!controller_active_) {
@@ -427,9 +419,8 @@ void VrShell::DrawCursor() {
   // Move the beam origin to the hand.
   TranslateM(mat, mat, kHandPosition.x, kHandPosition.y, kHandPosition.z);
 
-  mv = MatrixMul(view_matrix_, mat);
-  mvp = MatrixMul(projection_matrix_, mv);
-  vr_shell_renderer_->GetLaserRenderer()->Draw(mvp);
+  transform = MatrixMul(render_matrix, mat);
+  vr_shell_renderer_->GetLaserRenderer()->Draw(transform);
 }
 
 void VrShell::DrawWebVr() {
