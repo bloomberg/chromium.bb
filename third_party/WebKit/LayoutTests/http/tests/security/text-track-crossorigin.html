@@ -38,9 +38,20 @@
                     break;
 
                 case 3:
+                    log('Loading <b>without</b> Access-Control-Allow-Origin header, with a redirect, no "crossorigin" attribute on &lt;video&gt;');
+                    url = "http://127.0.0.1:8000/security/resources/redir.php?url=http://localhost:8000/security/resources/captions-with-access-control-headers.php"
+                    videoElement.removeAttribute('crossorigin');
+                    trackElement.removeAttribute('crossorigin');
+                    trackElement.setAttribute('src', url);
+                    shouldLoad = false;
+                    ++counter;
+                    break;
+
+                case 4:
                     log("END OF TEST");
                     if (window.testRunner)
                         testRunner.notifyDone();
+                    break;
                 }
             }
 
@@ -72,8 +83,13 @@
                     shouldLoad = true;
                     ++counter;
                     break;
-                }
 
+                case 4:
+                    log("END OF TEST");
+                    if (window.testRunner)
+                        testRunner.notifyDone();
+                    break;
+                }
             }
 
             function start()
