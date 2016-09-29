@@ -640,6 +640,7 @@ interface WorkerGlobalScope : EventTarget
     getter caches
     getter crypto
     getter indexedDB
+    getter isSecureContext
     getter location
     getter navigator
     getter onerror

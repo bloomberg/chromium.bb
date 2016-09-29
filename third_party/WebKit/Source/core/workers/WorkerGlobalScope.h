@@ -84,6 +84,7 @@ public:
     WorkerLocation* location() const;
     WorkerNavigator* navigator() const;
     void close();
+    bool isSecureContextForBindings() const { return ExecutionContext::isSecureContext(StandardSecureContextCheck); }
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(rejectionhandled);
