@@ -11,8 +11,6 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
@@ -48,7 +46,6 @@ class ExtensionRegistry;
 // extensions. There is one instance shared between a browser context and
 // its related incognito instance.
 class RuntimeAPI : public BrowserContextKeyedAPI,
-                   public content::NotificationObserver,
                    public ExtensionRegistryObserver,
                    public UpdateObserver,
                    public ProcessManagerObserver {
@@ -77,11 +74,6 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
 
   explicit RuntimeAPI(content::BrowserContext* context);
   ~RuntimeAPI() override;
-
-  // content::NotificationObserver overrides:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   void ReloadExtension(const std::string& extension_id);
   bool CheckForUpdates(const std::string& extension_id,
@@ -113,6 +105,9 @@ class RuntimeAPI : public BrowserContextKeyedAPI,
 
   // Cancels any previously scheduled restart request.
   void MaybeCancelRunningDelayedRestartTimer();
+
+  // Handler for the signal from ExtensionSystem::ready().
+  void OnExtensionsReady();
 
   RestartAfterDelayStatus ScheduleDelayedRestart(const base::Time& now,
                                                  int seconds_from_now);

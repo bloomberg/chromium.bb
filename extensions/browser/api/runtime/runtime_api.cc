@@ -21,7 +21,6 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/runtime/runtime_api_delegate.h"
@@ -33,13 +32,13 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
-#include "extensions/browser/notification_types.h"
 #include "extensions/browser/process_manager_factory.h"
 #include "extensions/common/api/runtime.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
+#include "extensions/common/one_shot_event.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "url/gurl.h"
 
@@ -205,9 +204,9 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
   // incognito.
   DCHECK(!browser_context_->IsOffTheRecord());
 
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED,
-                 content::Source<BrowserContext>(context));
+  ExtensionSystem::Get(context)->ready().Post(
+      FROM_HERE, base::Bind(&RuntimeAPI::OnExtensionsReady,
+                            weak_ptr_factory_.GetWeakPtr()));
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
   process_manager_observer_.Add(ProcessManager::Get(browser_context_));
 
@@ -221,16 +220,6 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
 }
 
 RuntimeAPI::~RuntimeAPI() {
-}
-
-void RuntimeAPI::Observe(int type,
-                         const content::NotificationSource& source,
-                         const content::NotificationDetails& details) {
-  DCHECK_EQ(extensions::NOTIFICATION_EXTENSIONS_READY_DEPRECATED, type);
-  // We're done restarting Chrome after an update.
-  dispatch_chrome_updated_event_ = false;
-
-  delegate_->AddUpdateObserver(this);
 }
 
 void RuntimeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
@@ -435,6 +424,12 @@ bool RuntimeAPI::OpenOptionsPage(const Extension* extension) {
 void RuntimeAPI::MaybeCancelRunningDelayedRestartTimer() {
   if (restart_after_delay_timer_.IsRunning())
     restart_after_delay_timer_.Stop();
+}
+
+void RuntimeAPI::OnExtensionsReady() {
+  // We're done restarting Chrome after an update.
+  dispatch_chrome_updated_event_ = false;
+  delegate_->AddUpdateObserver(this);
 }
 
 RuntimeAPI::RestartAfterDelayStatus RuntimeAPI::ScheduleDelayedRestart(
