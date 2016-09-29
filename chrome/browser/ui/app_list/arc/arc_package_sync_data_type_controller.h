@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_APP_LIST_ARC_ARC_PACKAGE_SYNC_DATA_TYPE_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "components/arc/common/app.mojom.h"
+#include "components/arc/instance_holder.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/ui_data_type_controller.h"
@@ -19,7 +21,8 @@ class Profile;
 // A UIDataTypeController for arc package sync datatypes, which enables or
 // disables these types based on whether ArcAppInstance is ready.
 class ArcPackageSyncDataTypeController
-    : public sync_driver::UIDataTypeController {
+    : public sync_driver::UIDataTypeController,
+      public arc::InstanceHolder<arc::mojom::AppInstance>::Observer {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   ArcPackageSyncDataTypeController(syncer::ModelType type,
@@ -28,12 +31,21 @@ class ArcPackageSyncDataTypeController
                                    Profile* profile);
   ~ArcPackageSyncDataTypeController() override;
 
+  // UIDataTypeController override:
   bool ReadyForStart() const override;
+  bool StartModels() override;
 
  private:
-  void OnArcAppsSyncPrefChanged();
+  // arc::InstanceHolder<arc::mojom::AppInstance>::Observer:
+  void OnInstanceReady() override;
 
   void OnArcEnabledPrefChanged();
+
+  void EnableDataType();
+
+  bool ShouldSyncArc() const;
+
+  bool model_normal_start_ = true;
 
   Profile* const profile_;
 
