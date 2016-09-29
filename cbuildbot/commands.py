@@ -205,15 +205,20 @@ def BuildRootGitCleanup(buildroot, prune_all=False):
             logging.warning('Deleting %s as well', store)
             osutils.RmDir(store, ignore_missing=True)
 
+      # TODO: Make the deletions below smarter. Look to see what exists, instead
+      # of just deleting things we think might be there.
+
       # Delete all branches created by cbuildbot.
       if os.path.isdir(repo_git_store):
         cmd = ['branch', '-D'] + list(constants.CREATED_BRANCHES)
+        # Ignore errors, since we delete branches without checking existence.
         git.RunGit(repo_git_store, cmd, error_code_ok=True)
 
       if os.path.isdir(cwd):
         # Above we deleted refs/heads/<branch> for each created branch, now we
         # need to delete the bare ref <branch> if it was created somehow.
         for ref in constants.CREATED_BRANCHES:
+          # Ignore errors, since we delete branches without checking existence.
           git.RunGit(cwd, ['update-ref', '-d', ref], error_code_ok=True)
 
 
