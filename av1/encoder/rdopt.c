@@ -4875,7 +4875,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     mbmi->uv_mode = DC_PRED;
     mbmi->ref_frame[0] = INTRA_FRAME;
     mbmi->ref_frame[1] = NONE;
-    memset(x->skip_txfm, SKIP_TXFM_NONE, sizeof(x->skip_txfm));
     palette_mode_info.palette_size[0] = 0;
     rate_overhead = rd_pick_palette_intra_sby(
         cpi, x, bsize, palette_ctx, cpi->mbmode_cost[DC_PRED],
