@@ -440,10 +440,10 @@ AS_IF([test "x$enable_resize_optimization" = "xyes"],
       [AC_DEFINE([USE_RESIZE_POOL], [1], [Use resize memory pool as a performance optimization])])
 
 AC_ARG_ENABLE(weston-launch, [  --enable-weston-launch],, enable_weston_launch=yes)
-AM_CONDITIONAL(BUILD_WESTON_LAUNCH, test x$enable_weston_launch == xyes)
-if test x$enable_weston_launch == xyes; then
+AM_CONDITIONAL(BUILD_WESTON_LAUNCH, test x$enable_weston_launch = xyes)
+if test x$enable_weston_launch = xyes; then
   WESTON_SEARCH_LIBS([PAM], [pam], [pam_open_session], [have_pam=yes], [have_pam=no])
-  if test x$have_pam == xno; then
+  if test x$have_pam = xno; then
     AC_ERROR([weston-launch requires pam])
   fi
 fi
