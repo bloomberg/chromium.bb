@@ -793,6 +793,11 @@ bool IsHttpPost(const blink::WebURLRequest& request) {
 // Note that HLS and MP4 detection are pre-redirect and path-based. It is
 // possible to load such a URL and find different content.
 bool UseWebMediaPlayerImpl(const GURL& url) {
+  // Always use WMPI for playing blob URLs since WMPA could never play them very
+  // well and no longer has support for MSE based playbacks.
+  if (url.SchemeIsBlob())
+    return true;
+
   // WMPI does not support HLS.
   if (media::MediaCodecUtil::IsHLSURL(url))
     return false;

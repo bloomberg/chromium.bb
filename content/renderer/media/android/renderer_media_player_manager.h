@@ -46,7 +46,6 @@ class RendererMediaPlayerManager :
                   int player_id,
                   const GURL& url,
                   const GURL& first_party_for_cookies,
-                  int demuxer_client_id,
                   const GURL& frame_url,
                   bool allow_credentials,
                   int delegate_id) override;
@@ -117,7 +116,6 @@ class RendererMediaPlayerManager :
   void OnTimeUpdate(int player_id,
                     base::TimeDelta current_timestamp,
                     base::TimeTicks current_time_ticks);
-  void OnWaitingForDecryptionKey(int player_id);
   void OnMediaPlayerReleased(int player_id);
   void OnConnectedToRemoteDevice(int player_id,
       const std::string& remote_playback_message);

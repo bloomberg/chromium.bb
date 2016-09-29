@@ -172,7 +172,7 @@ void WebMediaPlayerCast::Initialize(const GURL& url,
                                     blink::WebLocalFrame* frame,
                                     int delegate_id) {
   player_manager_->Initialize(MEDIA_PLAYER_TYPE_REMOTE_ONLY, player_id_, url,
-                              frame->document().firstPartyForCookies(), 0,
+                              frame->document().firstPartyForCookies(),
                               frame->document().url(), true, delegate_id);
   is_player_initialized_ = true;
 }
@@ -330,7 +330,6 @@ void WebMediaPlayerCast::OnRemoteRouteAvailabilityChanged(
 }
 
 void WebMediaPlayerCast::SuspendAndReleaseResources() {}
-void WebMediaPlayerCast::OnWaitingForDecryptionKey() {}
 
 bool WebMediaPlayerCast::hasVideo() const {
   return true;

@@ -6,7 +6,6 @@
 #define MEDIA_BASE_ANDROID_MEDIA_PLAYER_MANAGER_H_
 
 #include "base/time/time.h"
-#include "media/base/android/demuxer_stream_player_params.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -61,10 +60,6 @@ class MEDIA_EXPORT MediaPlayerManager {
 
   // Called when video size has changed. Args: player ID, width, height.
   virtual void OnVideoSizeChanged(int player_id, int width, int height) = 0;
-
-  // Called when the player pauses as a new key is required to decrypt
-  // encrypted content.
-  virtual void OnWaitingForDecryptionKey(int player_id) = 0;
 
   // Returns the player that's in the fullscreen mode currently.
   virtual MediaPlayerAndroid* GetFullscreenPlayer() = 0;

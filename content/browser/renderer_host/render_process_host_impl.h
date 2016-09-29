@@ -60,7 +60,6 @@ namespace content {
 class AudioInputRendererHost;
 class AudioRendererHost;
 class BrowserCdmManager;
-class BrowserDemuxerAndroid;
 class InProcessChildThreadParams;
 class MessagePortMessageFilter;
 class MojoChildConnection;
@@ -263,12 +262,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // It is suspected that shared workers prevent render process hosts
   // from shutting down: crbug.com/608049
   static void CheckAllWorkersTerminated();
-
-#if defined(OS_ANDROID)
-  const scoped_refptr<BrowserDemuxerAndroid>& browser_demuxer_android() {
-    return browser_demuxer_android_;
-  }
-#endif
 
   RenderFrameMessageFilter* render_frame_message_filter_for_testing() const {
     return render_frame_message_filter_.get();
@@ -551,10 +544,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<AudioRendererHost> audio_renderer_host_;
 
   scoped_refptr<AudioInputRendererHost> audio_input_renderer_host_;
-
-#if defined(OS_ANDROID)
-  scoped_refptr<BrowserDemuxerAndroid> browser_demuxer_android_;
-#endif
 
 #if defined(ENABLE_WEBRTC)
   scoped_refptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;

@@ -91,8 +91,6 @@ class WebMediaPlayerCast : public RendererMediaPlayerInterface {
   // However, the actual GlTexture is not released to keep the video screenshot.
   void SuspendAndReleaseResources() override;
 
-  void OnWaitingForDecryptionKey() override;
-
   bool paused() const override;
   bool hasVideo() const override;
 

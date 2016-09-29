@@ -788,8 +788,6 @@ source_set("browser") {
     "mach_broker_mac.mm",
     "manifest/manifest_manager_host.cc",
     "manifest/manifest_manager_host.h",
-    "media/android/browser_demuxer_android.cc",
-    "media/android/browser_demuxer_android.h",
     "media/android/browser_media_player_manager.cc",
     "media/android/browser_media_player_manager.h",
     "media/android/browser_media_session_manager.cc",

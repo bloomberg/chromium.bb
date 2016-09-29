@@ -97,11 +97,8 @@ class MEDIA_EXPORT AudioCodecBridge : public SdkMediaCodecBridge {
   // See MediaCodecUtil::IsKnownUnaccelerated().
   static bool IsKnownUnaccelerated(const AudioCodec& codec);
 
-  // Starts the audio codec bridge. If |play_audio| is true this method creates
-  // Android AudioTrack object for the actual audio playback
-  // (http://developer.android.com/reference/android/media/AudioTrack.html).
+  // Starts the audio codec bridge.
   bool ConfigureAndStart(const AudioDecoderConfig& config,
-                         bool play_audio,
                          jobject media_crypto);
 
   // An overloaded variant used by AudioDecoderJob and AudioMediaCodecDecoder.
@@ -114,31 +111,7 @@ class MEDIA_EXPORT AudioCodecBridge : public SdkMediaCodecBridge {
                          size_t extra_data_size,
                          int64_t codec_delay_ns,
                          int64_t seek_preroll_ns,
-                         bool play_audio,
                          jobject media_crypto) WARN_UNUSED_RESULT;
-
-  // Creates AudioTrack object for |sampling_rate| and |channel_count|
-  // (http://developer.android.com/reference/android/media/AudioTrack.html).
-  // Returns true in the case of success, false otherwise.
-  bool CreateAudioTrack(int sampling_rate, int channel_count);
-
-  // Plays the output buffer right away or save for later playback if |postpone|
-  // is set to true. This call must be called after DequeueOutputBuffer() and
-  // before ReleaseOutputBuffer. The data is extracted from the output buffers
-  // using |index|, |size| and |offset|. The playback head position in frames is
-  // output in |*playback_pos|.
-  // When |postpone| is set to true, the next PlayOutputBuffer() should have
-  // postpone == false, and it will play two buffers: the postponed one and
-  // the one identified by |index|.
-  // Returns MEDIA_CODEC_ERROR if an error occurs, or MEDIA_CODEC_OK otherwise.
-  MediaCodecStatus PlayOutputBuffer(int index,
-                                    size_t size,
-                                    size_t offset,
-                                    bool postpone,
-                                    int64_t* playback_pos);
-
-  // Set the volume of the audio output.
-  void SetVolume(double volume);
 
  private:
   explicit AudioCodecBridge(const std::string& mime);

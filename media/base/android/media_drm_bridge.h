@@ -143,12 +143,6 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
                                  const std::string& session_id);
   void RejectPromise(uint32_t promise_id, const std::string& error_message);
 
-  // Returns a MediaCrypto object. Can only be called after |j_media_crypto_|
-  // is set.
-  // TODO(xhwang): This is only used by MediaSourcePlayer et al. Remove this
-  // method when MediaSourcePlayer is deprecated.
-  jobject GetMediaCrypto();
-
   // Registers a callback which will be called when MediaCrypto is ready.
   // Can be called on any thread. Only one callback should be registered.
   // The registered callbacks will be fired on |task_runner_|. The caller

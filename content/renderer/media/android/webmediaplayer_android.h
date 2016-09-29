@@ -19,15 +19,10 @@
 #include "base/time/time.h"
 #include "cc/layers/video_frame_provider.h"
 #include "content/renderer/media/android/media_info_loader.h"
-#include "content/renderer/media/android/media_source_delegate.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/android/media_player_android.h"
-#include "media/base/cdm_context.h"
-#include "media/base/demuxer_stream.h"
-#include "media/base/eme_constants.h"
-#include "media/base/media_keys.h"
 #include "media/base/time_delta_interpolator.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
@@ -196,7 +191,6 @@ class WebMediaPlayerAndroid
   void OnSeekComplete(const base::TimeDelta& current_time) override;
   void OnMediaError(int error_type) override;
   void OnVideoSizeChanged(int width, int height) override;
-  void OnDurationChanged(const base::TimeDelta& duration);
 
   // Called to update the current time.
   void OnTimeUpdate(base::TimeDelta current_timestamp,
@@ -223,15 +217,6 @@ class WebMediaPlayerAndroid
   void setContentDecryptionModule(
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) override;
-
-  void OnMediaSourceOpened(blink::WebMediaSource* web_media_source);
-
-  void OnEncryptedMediaInitData(media::EmeInitDataType init_data_type,
-                                const std::vector<uint8_t>& init_data);
-
-  // Called when a decoder detects that the key needed to decrypt the stream
-  // is not available.
-  void OnWaitingForDecryptionKey() override;
 
   // WebMediaPlayerDelegate::Observer implementation.
   void OnHidden() override;
@@ -261,8 +246,7 @@ class WebMediaPlayerAndroid
  private:
   void InitializePlayer(const GURL& url,
                         const GURL& first_party_for_cookies,
-                        bool allowed_stored_credentials,
-                        int demuxer_client_id);
+                        bool allowed_stored_credentials);
   void Pause(bool is_media_related_action);
   void DrawRemotePlaybackText(const std::string& remote_playback_message);
   void ReallocateVideoFrame();
@@ -272,7 +256,6 @@ class WebMediaPlayerAndroid
                         const GURL& redirected_url,
                         const GURL& first_party_for_cookies,
                         bool allow_stored_credentials);
-  bool IsKeySystemSupported(const std::string& key_system);
   bool IsLocalResource();
 
   // Called whenever we create a new StreamTextureProxy and had a VFP::Client,
@@ -281,29 +264,6 @@ class WebMediaPlayerAndroid
   // DidReceiveFrame().
   // Passing nullptr to this method will clear the previous callback.
   void UpdateStreamTextureProxyCallback(cc::VideoFrameProvider::Client* client);
-
-  // Called when |cdm_context| is ready.
-  void OnCdmContextReady(media::CdmContext* cdm_context);
-
-  // Sets the CDM. Should only be called when |is_player_initialized_| is true
-  // and a new non-null |cdm_context_| is available. Fires |cdm_attached_cb_| on
-  // the main thread with the result after the CDM is attached.
-  void SetCdmInternal(const media::CdmAttachedCB& cdm_attached_cb);
-
-  // Called when the CDM is attached.
-  void OnCdmAttached(const media::CdmAttachedCB& cdm_attached_cb, bool success);
-
-  // Requests that this object notifies when a CDM is ready through the
-  // |cdm_ready_cb| provided.
-  // If |cdm_ready_cb| is null, the existing callback will be fired with
-  // NULL immediately and reset.
-  void SetCdmReadyCB(const MediaSourceDelegate::CdmReadyCB& cdm_ready_cb);
-
-  // Called when the ContentDecryptionModule has been attached to the
-  // pipeline/decoders.
-  void ContentDecryptionModuleAttached(
-      blink::WebContentDecryptionModuleResult result,
-      bool success);
 
   bool IsHLSStream() const;
   // Report whether the loaded url, after following redirects, points to a HLS
@@ -320,7 +280,6 @@ class WebMediaPlayerAndroid
   blink::WebFrame* const frame_;
 
   blink::WebMediaPlayerClient* const client_;
-  blink::WebMediaPlayerEncryptedMediaClient* const encrypted_client_;
 
   // WebMediaPlayer notifies the |delegate_| of playback state changes using
   // |delegate_id_|; an id provided after registering with the delegate.  The
@@ -448,16 +407,6 @@ class WebMediaPlayerAndroid
 
   std::unique_ptr<MediaInfoLoader> info_loader_;
 
-  // Non-owned pointer to the CdmContext. Updated in the constructor,
-  // generateKeyRequest() or setContentDecryptionModule().
-  media::CdmContext* cdm_context_;
-
-  // This is only Used by Clear Key key system implementation, where a renderer
-  // side CDM will be used. This is similar to WebMediaPlayerImpl. For other key
-  // systems, a browser side CDM will be used and we set CDM by calling
-  // player_manager_->SetCdm() directly.
-  MediaSourceDelegate::CdmReadyCB cdm_ready_cb_;
-
   // Whether stored credentials are allowed to be passed to the server.
   bool allow_stored_credentials_;
 
@@ -470,8 +419,6 @@ class WebMediaPlayerAndroid
   // Tracks the most recent media time update and provides interpolated values
   // as playback progresses.
   media::TimeDeltaInterpolator interpolator_;
-
-  std::unique_ptr<MediaSourceDelegate> media_source_delegate_;
 
   int frame_id_;
 

@@ -20,7 +20,6 @@
 // Dictates which type of media playback is being initialized.
 enum MediaPlayerHostMsg_Initialize_Type {
   MEDIA_PLAYER_TYPE_URL,
-  MEDIA_PLAYER_TYPE_MEDIA_SOURCE,
   MEDIA_PLAYER_TYPE_REMOTE_ONLY,
   MEDIA_PLAYER_TYPE_LAST = MEDIA_PLAYER_TYPE_REMOTE_ONLY
 };
@@ -44,7 +43,6 @@ class RendererMediaPlayerInterface {
   virtual void OnTimeUpdate(base::TimeDelta current_timestamp,
                             base::TimeTicks current_time_ticks) = 0;
 
-  virtual void OnWaitingForDecryptionKey() = 0;
   virtual void OnPlayerReleased() = 0;
 
   // Functions called when media player status changes.
@@ -76,7 +74,6 @@ class RendererMediaPlayerManagerInterface {
                           int player_id,
                           const GURL& url,
                           const GURL& first_party_for_cookies,
-                          int demuxer_client_id,
                           const GURL& frame_url,
                           bool allow_credentials,
                           int delegate_id) = 0;

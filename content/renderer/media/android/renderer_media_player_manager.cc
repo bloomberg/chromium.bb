@@ -43,8 +43,6 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaVideoSizeChanged,
                         OnVideoSizeChanged)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaTimeUpdate, OnTimeUpdate)
-    IPC_MESSAGE_HANDLER(MediaPlayerMsg_WaitingForDecryptionKey,
-                        OnWaitingForDecryptionKey)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_MediaPlayerReleased,
                         OnMediaPlayerReleased)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_ConnectedToRemoteDevice,
@@ -68,14 +66,12 @@ void RendererMediaPlayerManager::Initialize(
     int player_id,
     const GURL& url,
     const GURL& first_party_for_cookies,
-    int demuxer_client_id,
     const GURL& frame_url,
     bool allow_credentials,
     int delegate_id) {
   MediaPlayerHostMsg_Initialize_Params media_player_params;
   media_player_params.type = type;
   media_player_params.player_id = player_id;
-  media_player_params.demuxer_client_id = demuxer_client_id;
   media_player_params.url = url;
   media_player_params.first_party_for_cookies = first_party_for_cookies;
   media_player_params.frame_url = frame_url;
@@ -188,12 +184,6 @@ void RendererMediaPlayerManager::OnTimeUpdate(
   media::RendererMediaPlayerInterface* player = GetMediaPlayer(player_id);
   if (player)
     player->OnTimeUpdate(current_timestamp, current_time_ticks);
-}
-
-void RendererMediaPlayerManager::OnWaitingForDecryptionKey(int player_id) {
-  media::RendererMediaPlayerInterface* player = GetMediaPlayer(player_id);
-  if (player)
-    player->OnWaitingForDecryptionKey();
 }
 
 void RendererMediaPlayerManager::OnMediaPlayerReleased(int player_id) {

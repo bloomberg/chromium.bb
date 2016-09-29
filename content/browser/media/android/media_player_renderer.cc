@@ -194,10 +194,6 @@ void MediaPlayerRenderer::OnVideoSizeChanged(int player_id,
   renderer_client_->OnVideoNaturalSizeChange(video_size_);
 }
 
-void MediaPlayerRenderer::OnWaitingForDecryptionKey(int player_id) {
-  NOTREACHED();
-}
-
 media::MediaPlayerAndroid* MediaPlayerRenderer::GetFullscreenPlayer() {
   NOTREACHED();
   return nullptr;

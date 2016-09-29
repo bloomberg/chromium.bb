@@ -9,7 +9,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/singleton.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/media/android/browser_demuxer_android.h"
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/media/android/media_throttler.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
@@ -29,7 +28,6 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "media/base/android/media_player_bridge.h"
-#include "media/base/android/media_source_player.h"
 #include "media/base/android/media_url_interceptor.h"
 #include "media/base/media_content_type.h"
 
@@ -41,7 +39,6 @@
 using media::MediaPlayerAndroid;
 using media::MediaPlayerBridge;
 using media::MediaPlayerManager;
-using media::MediaSourcePlayer;
 
 namespace content {
 
@@ -191,8 +188,7 @@ ContentViewCore* BrowserMediaPlayerManager::GetContentViewCore() const {
 
 MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     const MediaPlayerHostMsg_Initialize_Params& media_player_params,
-    bool hide_url_log,
-    BrowserDemuxerAndroid* demuxer) {
+    bool hide_url_log) {
   switch (media_player_params.type) {
     case MEDIA_PLAYER_TYPE_REMOTE_ONLY:
     case MEDIA_PLAYER_TYPE_URL: {
@@ -232,15 +228,6 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
         media_player_bridge->Initialize();
       }
       return media_player_bridge;
-    }
-
-    case MEDIA_PLAYER_TYPE_MEDIA_SOURCE: {
-      return new MediaSourcePlayer(
-          media_player_params.player_id, this,
-          base::Bind(&BrowserMediaPlayerManager::OnDecoderResourcesReleased,
-                     weak_ptr_factory_.GetWeakPtr()),
-          demuxer->CreateDemuxer(media_player_params.demuxer_client_id),
-          media_player_params.frame_url);
     }
   }
 
@@ -371,10 +358,6 @@ void BrowserMediaPlayerManager::OnVideoSizeChanged(
     video_view_->OnVideoSizeChanged(width, height);
 }
 
-void BrowserMediaPlayerManager::OnWaitingForDecryptionKey(int player_id) {
-  Send(new MediaPlayerMsg_WaitingForDecryptionKey(RoutingID(), player_id));
-}
-
 media::MediaResourceGetter*
 BrowserMediaPlayerManager::GetMediaResourceGetter() {
   if (!media_resource_getter_.get()) {
@@ -476,19 +459,12 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
 
 void BrowserMediaPlayerManager::OnInitialize(
     const MediaPlayerHostMsg_Initialize_Params& media_player_params) {
-  DCHECK(media_player_params.type != MEDIA_PLAYER_TYPE_MEDIA_SOURCE ||
-      media_player_params.demuxer_client_id > 0)
-      << "Media source players must have positive demuxer client IDs: "
-      << media_player_params.demuxer_client_id;
-
   DestroyPlayer(media_player_params.player_id);
 
   RenderProcessHostImpl* host = static_cast<RenderProcessHostImpl*>(
       web_contents()->GetRenderProcessHost());
-  MediaPlayerAndroid* player =
-      CreateMediaPlayer(media_player_params,
-                        host->GetBrowserContext()->IsOffTheRecord(),
-                        host->browser_demuxer_android().get());
+  MediaPlayerAndroid* player = CreateMediaPlayer(
+      media_player_params, host->GetBrowserContext()->IsOffTheRecord());
 
   if (!player)
     return;

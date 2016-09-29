@@ -22,14 +22,9 @@
 #include "ui/gl/android/scoped_java_surface.h"
 #include "url/gurl.h"
 
-namespace media {
-class DemuxerAndroid;
-}
-
 struct MediaPlayerHostMsg_Initialize_Params;
 
 namespace content {
-class BrowserDemuxerAndroid;
 #if !defined(USE_AURA)
 class ContentViewCore;
 #endif
@@ -97,7 +92,6 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                       const base::TimeDelta& current_time) override;
   void OnError(int player_id, int error) override;
   void OnVideoSizeChanged(int player_id, int width, int height) override;
-  void OnWaitingForDecryptionKey(int player_id) override;
 
   media::MediaResourceGetter* GetMediaResourceGetter() override;
   media::MediaUrlInterceptor* GetMediaUrlInterceptor() override;
@@ -169,8 +163,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // Constructs a MediaPlayerAndroid object.
   media::MediaPlayerAndroid* CreateMediaPlayer(
       const MediaPlayerHostMsg_Initialize_Params& media_player_params,
-      bool hide_url_log,
-      BrowserDemuxerAndroid* demuxer);
+      bool hide_url_log);
 
   // Instructs |player| to release its java player. This will not remove the
   // player from |players_|.

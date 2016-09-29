@@ -78,7 +78,6 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
                       const base::TimeDelta& current_time) override;
   void OnError(int player_id, int error) override;
   void OnVideoSizeChanged(int player_id, int width, int height) override;
-  void OnWaitingForDecryptionKey(int player_id) override;
   media::MediaPlayerAndroid* GetFullscreenPlayer() override;
   media::MediaPlayerAndroid* GetPlayer(int player_id) override;
   bool RequestPlay(int player_id,

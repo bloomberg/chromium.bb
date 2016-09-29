@@ -364,7 +364,6 @@ AudioCodecBridge::AudioCodecBridge(const std::string& mime)
     : SdkMediaCodecBridge(mime, false, MEDIA_CODEC_DECODER, false) {}
 
 bool AudioCodecBridge::ConfigureAndStart(const AudioDecoderConfig& config,
-                                         bool play_audio,
                                          jobject media_crypto) {
   const int channel_count =
       ChannelLayoutToChannelCount(config.channel_layout());
@@ -377,7 +376,7 @@ bool AudioCodecBridge::ConfigureAndStart(const AudioDecoderConfig& config,
   return ConfigureAndStart(config.codec(), config.samples_per_second(),
                            channel_count, config.extra_data().data(),
                            config.extra_data().size(), codec_delay_ns,
-                           seek_preroll_ns, play_audio, media_crypto);
+                           seek_preroll_ns, media_crypto);
 }
 
 bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
@@ -387,7 +386,6 @@ bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
                                          size_t extra_data_size,
                                          int64_t codec_delay_ns,
                                          int64_t seek_preroll_ns,
-                                         bool play_audio,
                                          jobject media_crypto) {
   DVLOG(2) << __FUNCTION__ << ": "
            << " codec:" << GetCodecName(codec)
@@ -396,7 +394,7 @@ bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
            << " codec_delay_ns:" << codec_delay_ns
            << " seek_preroll_ns:" << seek_preroll_ns
            << " extra data size:" << extra_data_size
-           << " play audio:" << play_audio << " media_crypto:" << media_crypto;
+           << " media_crypto:" << media_crypto;
   DCHECK(media_codec());
 
   std::string codec_string = AudioCodecToAndroidMimeType(codec);
@@ -417,7 +415,7 @@ bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
   }
 
   if (!Java_MediaCodecBridge_configureAudio(env, media_codec(), j_format,
-                                            media_crypto, 0, play_audio)) {
+                                            media_crypto, 0)) {
     return false;
   }
 
@@ -552,49 +550,6 @@ bool AudioCodecBridge::ConfigureMediaFormat(jobject j_format,
       return false;
   }
   return true;
-}
-
-bool AudioCodecBridge::CreateAudioTrack(int sampling_rate, int channel_count) {
-  DVLOG(2) << __FUNCTION__ << ": samping_rate:" << sampling_rate
-           << " channel_count:" << channel_count;
-
-  JNIEnv* env = AttachCurrentThread();
-  return Java_MediaCodecBridge_createAudioTrack(env, media_codec(),
-                                                sampling_rate, channel_count);
-}
-
-MediaCodecStatus AudioCodecBridge::PlayOutputBuffer(int index,
-                                                    size_t size,
-                                                    size_t offset,
-                                                    bool postpone,
-                                                    int64_t* playback_pos) {
-  DCHECK_LE(0, index);
-  int numBytes = base::checked_cast<int>(size);
-
-  const uint8_t* buffer = nullptr;
-  size_t capacity = 0;
-  MediaCodecStatus status =
-      GetOutputBufferAddress(index, offset, &buffer, &capacity);
-  if (status != MEDIA_CODEC_OK) {
-    DLOG(ERROR) << __FUNCTION__
-                << ": GetOutputBufferAddress() failed for index:" << index;
-    return status;
-  }
-
-  numBytes = std::min(base::checked_cast<int>(capacity), numBytes);
-  CHECK_GE(numBytes, 0);
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> byte_array =
-      base::android::ToJavaByteArray(env, buffer, numBytes);
-  *playback_pos = Java_MediaCodecBridge_playOutputBuffer(env, media_codec(),
-                                                         byte_array, postpone);
-  return status;
-}
-
-void AudioCodecBridge::SetVolume(double volume) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_MediaCodecBridge_setVolume(env, media_codec(), volume);
 }
 
 // static

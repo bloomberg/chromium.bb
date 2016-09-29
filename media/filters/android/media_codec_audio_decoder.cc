@@ -113,8 +113,7 @@ bool MediaCodecAudioDecoder::CreateMediaCodecLoop() {
 
   jobject media_crypto_obj = media_crypto_ ? media_crypto_->obj() : nullptr;
 
-  if (!audio_codec_bridge->ConfigureAndStart(config_, false /* no AudioTrack */,
-                                             media_crypto_obj)) {
+  if (!audio_codec_bridge->ConfigureAndStart(config_, media_crypto_obj)) {
     DLOG(ERROR) << __FUNCTION__ << " failed: cannot configure audio codec for "
                 << config_.AsHumanReadableString();
     return false;

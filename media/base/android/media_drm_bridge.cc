@@ -533,11 +533,6 @@ void MediaDrmBridge::RejectPromise(uint32_t promise_id,
                                      error_message);
 }
 
-jobject MediaDrmBridge::GetMediaCrypto() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return j_media_crypto_->obj();
-}
-
 void MediaDrmBridge::SetMediaCryptoReadyCB(
     const MediaCryptoReadyCB& media_crypto_ready_cb) {
   if (!task_runner_->BelongsToCurrentThread()) {

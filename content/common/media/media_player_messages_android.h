@@ -8,8 +8,6 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_message_macros.h"
-#include "media/base/android/demuxer_stream_player_params.h"
-#include "media/base/decrypt_config.h"
 #include "media/blink/renderer_media_player_interface.h"
 #include "media/gpu/ipc/common/media_param_traits.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -19,45 +17,6 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START MediaPlayerMsgStart
 
-IPC_ENUM_TRAITS(media::AudioCodec)
-IPC_ENUM_TRAITS(media::DemuxerStream::Status)
-IPC_ENUM_TRAITS(media::DemuxerStream::Type)
-IPC_ENUM_TRAITS(media::VideoCodec)
-
-IPC_STRUCT_TRAITS_BEGIN(media::DemuxerConfigs)
-  IPC_STRUCT_TRAITS_MEMBER(audio_codec)
-  IPC_STRUCT_TRAITS_MEMBER(audio_channels)
-  IPC_STRUCT_TRAITS_MEMBER(audio_sampling_rate)
-  IPC_STRUCT_TRAITS_MEMBER(is_audio_encrypted)
-  IPC_STRUCT_TRAITS_MEMBER(audio_extra_data)
-  IPC_STRUCT_TRAITS_MEMBER(audio_codec_delay_ns)
-  IPC_STRUCT_TRAITS_MEMBER(audio_seek_preroll_ns)
-
-  IPC_STRUCT_TRAITS_MEMBER(video_codec)
-  IPC_STRUCT_TRAITS_MEMBER(video_size)
-  IPC_STRUCT_TRAITS_MEMBER(is_video_encrypted)
-  IPC_STRUCT_TRAITS_MEMBER(video_extra_data)
-
-  IPC_STRUCT_TRAITS_MEMBER(duration)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::DemuxerData)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(access_units)
-  IPC_STRUCT_TRAITS_MEMBER(demuxer_configs)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(media::AccessUnit)
-  IPC_STRUCT_TRAITS_MEMBER(status)
-  IPC_STRUCT_TRAITS_MEMBER(is_end_of_stream)
-  IPC_STRUCT_TRAITS_MEMBER(data)
-  IPC_STRUCT_TRAITS_MEMBER(timestamp)
-  IPC_STRUCT_TRAITS_MEMBER(key_id)
-  IPC_STRUCT_TRAITS_MEMBER(iv)
-  IPC_STRUCT_TRAITS_MEMBER(subsamples)
-  IPC_STRUCT_TRAITS_MEMBER(is_key_frame)
-IPC_STRUCT_TRAITS_END()
-
 IPC_ENUM_TRAITS_MAX_VALUE(MediaPlayerHostMsg_Initialize_Type,
                           MEDIA_PLAYER_TYPE_LAST)
 
@@ -65,7 +24,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(MediaPlayerHostMsg_Initialize_Type,
 IPC_STRUCT_BEGIN(MediaPlayerHostMsg_Initialize_Params)
   IPC_STRUCT_MEMBER(MediaPlayerHostMsg_Initialize_Type, type)
   IPC_STRUCT_MEMBER(int, player_id)
-  IPC_STRUCT_MEMBER(int, demuxer_client_id)
   IPC_STRUCT_MEMBER(GURL, url)
   IPC_STRUCT_MEMBER(GURL, first_party_for_cookies)
   IPC_STRUCT_MEMBER(GURL, frame_url)
@@ -91,26 +49,6 @@ IPC_STRUCT_END()
 //    seek flow, above, keeping web apps aware of seeks. These requests are
 //    also allowed while another actual seek is in progress.
 //
-// If the demuxer is located in the renderer, as in media source players, the
-// browser must ensure the renderer demuxer is appropriately seeked between
-// receipt of MediaPlayerHostMsg_Seek and transmission of
-// MediaPlayerMsg_SeekCompleted. The following two renderer-demuxer control
-// messages book-end the renderer-demuxer seek:
-// 1.1 Browser->Renderer MediaPlayerMsg_DemuxerSeekRequest
-// 1.2 Renderer->Browser MediaPlayerHostMsg_DemuxerSeekDone
-
-// Only in short-term hack to seek to reach I-Frame to feed a newly constructed
-// video decoder may the above IPC sequence be modified to exclude SeekRequest,
-// Seek and SeekCompleted, with condition that DemuxerSeekRequest's
-// |is_browser_seek| parameter be true. Regular seek messages must still be
-// handled even when a hack browser seek is in progress. In this case, the
-// browser seek request's |time_to_seek| may no longer be buffered and the
-// demuxer may instead seek to a future buffered time. The resulting
-// DemuxerSeekDone message's |actual_browser_seek_time| is the time actually
-// seeked-to, and is only meaningful for these hack browser seeks.
-// TODO(wolenetz): Instead of doing browser seek, replay cached data since last
-// keyframe. See http://crbug.com/304234.
-
 // Messages for notifying the render process of media playback status -------
 
 // Media buffering has updated.
@@ -157,9 +95,6 @@ IPC_MESSAGE_ROUTED3(MediaPlayerMsg_MediaTimeUpdate,
                     base::TimeDelta /* current_timestamp */,
                     base::TimeTicks /* current_time_ticks */)
 
-// A new key is required in order to continue decrypting encrypted content.
-IPC_MESSAGE_ROUTED1(MediaPlayerMsg_WaitingForDecryptionKey, int /* player_id */)
-
 // The player has been released.
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_MediaPlayerReleased,
                     int /* player_id */)
@@ -175,17 +110,6 @@ IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidMediaPlayerPlay,
 // The player was paused.
 IPC_MESSAGE_ROUTED1(MediaPlayerMsg_DidMediaPlayerPause,
                     int /* player_id */)
-
-// Requests renderer demuxer seek.
-IPC_MESSAGE_CONTROL3(MediaPlayerMsg_DemuxerSeekRequest,
-                     int /* demuxer_client_id */,
-                     base::TimeDelta /* time_to_seek */,
-                     bool /* is_browser_seek */)
-
-// The media source player reads data from demuxer
-IPC_MESSAGE_CONTROL2(MediaPlayerMsg_ReadFromDemuxer,
-                     int /* demuxer_client_id */,
-                     media::DemuxerStream::Type /* type */)
 
 // Clank has connected to the remote device.
 IPC_MESSAGE_ROUTED2(MediaPlayerMsg_ConnectedToRemoteDevice,
@@ -247,33 +171,13 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_EnterFullscreen, int /* player_id */)
 
 // Play the media on a remote device, if possible.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlayback,
-                    int /* demuxer_client_id */)
+                    int /* player_id */)
 
 // Control media playing on a remote device.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlaybackControl,
-                    int /* demuxer_client_id */)
+                    int /* player_id */)
 
 // Requests the player with |player_id| to use the CDM with |cdm_id|.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_SetCdm,
                     int /* player_id */,
                     int /* cdm_id */)
-
-// Sent after the renderer demuxer has seeked.
-IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_DemuxerSeekDone,
-                     int /* demuxer_client_id */,
-                     base::TimeDelta /* actual_browser_seek_time */)
-
-// Inform the media source player that the demuxer is ready.
-IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_DemuxerReady,
-                     int /* demuxer_client_id */,
-                     media::DemuxerConfigs)
-
-// Sent when the data was read from the ChunkDemuxer.
-IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_ReadFromDemuxerAck,
-                     int /* demuxer_client_id */,
-                     media::DemuxerData)
-
-// Inform the media source player of changed media duration from demuxer.
-IPC_MESSAGE_CONTROL2(MediaPlayerHostMsg_DurationChanged,
-                     int /* demuxer_client_id */,
-                     base::TimeDelta /* duration */)

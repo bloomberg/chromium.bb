@@ -24,7 +24,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
@@ -37,7 +36,6 @@
 #include "media/base/android/media_common_android.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/base/cdm_context.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_log.h"
@@ -141,7 +139,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     const media::WebMediaPlayerParams& params)
     : frame_(frame),
       client_(client),
-      encrypted_client_(encrypted_client),
       delegate_(delegate),
       delegate_id_(0),
       defer_load_cb_(params.defer_load_cb()),
@@ -171,7 +168,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       player_type_(MEDIA_PLAYER_TYPE_URL),
       is_remote_(false),
       media_log_(params.media_log()),
-      cdm_context_(nullptr),
       allow_stored_credentials_(false),
       is_local_resource_(false),
       interpolator_(&default_tick_clock_),
@@ -193,11 +189,6 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 
   TryCreateStreamTextureProxyIfNeeded();
   interpolator_.SetUpperBound(base::TimeDelta());
-
-  if (params.initial_cdm()) {
-    cdm_context_ = media::ToWebContentDecryptionModuleImpl(params.initial_cdm())
-                       ->GetCdmContext();
-  }
 }
 
 WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
@@ -229,17 +220,6 @@ WebMediaPlayerAndroid::~WebMediaPlayerAndroid() {
     delegate_->PlayerGone(delegate_id_);
     delegate_->RemoveObserver(delegate_id_);
   }
-
-  if (media_source_delegate_) {
-    // Part of |media_source_delegate_| needs to be stopped on the media thread.
-    // Wait until |media_source_delegate_| is fully stopped before tearing
-    // down other objects.
-    base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                               base::WaitableEvent::InitialState::NOT_SIGNALED);
-    media_source_delegate_->Stop(
-        base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter)));
-    waiter.Wait();
-  }
 }
 
 void WebMediaPlayerAndroid::load(LoadType load_type,
@@ -263,59 +243,16 @@ void WebMediaPlayerAndroid::DoLoad(LoadType load_type,
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   media::ReportMetrics(load_type, GURL(url), frame_->getSecurityOrigin());
-
-  switch (load_type) {
-    case LoadTypeURL:
-      player_type_ = MEDIA_PLAYER_TYPE_URL;
-      break;
-
-    case LoadTypeMediaSource:
-      player_type_ = MEDIA_PLAYER_TYPE_MEDIA_SOURCE;
-      break;
-
-    case LoadTypeMediaStream:
-      CHECK(false) << "WebMediaPlayerAndroid doesn't support MediaStream on "
-                      "this platform";
-      return;
-  }
+  DCHECK_EQ(load_type, LoadTypeURL)
+      << "WebMediaPlayerAndroid doesn't support MediaStream or "
+         "MediaSource on this platform";
 
   url_ = url;
   is_local_resource_ = IsLocalResource();
-  int demuxer_client_id = 0;
-  if (player_type_ != MEDIA_PLAYER_TYPE_URL) {
-    RendererDemuxerAndroid* demuxer =
-        RenderThreadImpl::current()->renderer_demuxer();
-    demuxer_client_id = demuxer->GetNextDemuxerClientID();
-
-    media_source_delegate_.reset(new MediaSourceDelegate(
-        demuxer, demuxer_client_id, media_task_runner_, media_log_));
-
-    if (player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE) {
-      media_source_delegate_->InitializeMediaSource(
-          base::Bind(&WebMediaPlayerAndroid::OnMediaSourceOpened,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&WebMediaPlayerAndroid::OnEncryptedMediaInitData,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&WebMediaPlayerAndroid::SetCdmReadyCB,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&WebMediaPlayerAndroid::UpdateNetworkState,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&WebMediaPlayerAndroid::OnDurationChanged,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&WebMediaPlayerAndroid::OnWaitingForDecryptionKey,
-                     weak_factory_.GetWeakPtr()));
-      InitializePlayer(url_, frame_->document().firstPartyForCookies(),
-                       true, demuxer_client_id);
-    }
-  } else {
-    info_loader_.reset(
-        new MediaInfoLoader(
-            url,
-            cors_mode,
-            base::Bind(&WebMediaPlayerAndroid::DidLoadMediaInfo,
-                       weak_factory_.GetWeakPtr())));
-    info_loader_->Start(frame_);
-  }
+  info_loader_.reset(new MediaInfoLoader(
+      url, cors_mode, base::Bind(&WebMediaPlayerAndroid::DidLoadMediaInfo,
+                                 weak_factory_.GetWeakPtr())));
+  info_loader_->Start(frame_);
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateLoading);
   UpdateReadyState(WebMediaPlayer::ReadyStateHaveNothing);
@@ -327,15 +264,14 @@ void WebMediaPlayerAndroid::DidLoadMediaInfo(
     const GURL& first_party_for_cookies,
     bool allow_stored_credentials) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(!media_source_delegate_);
   if (status == MediaInfoLoader::kFailed) {
     info_loader_.reset();
     UpdateNetworkState(WebMediaPlayer::NetworkStateNetworkError);
     return;
   }
   redirected_url_ = redirected_url;
-  InitializePlayer(
-      redirected_url, first_party_for_cookies, allow_stored_credentials, 0);
+  InitializePlayer(redirected_url, first_party_for_cookies,
+                   allow_stored_credentials);
 
   UpdateNetworkState(WebMediaPlayer::NetworkStateIdle);
 }
@@ -409,26 +345,12 @@ void WebMediaPlayerAndroid::seek(double seconds) {
 
   if (seeking_) {
     if (new_seek_time == seek_time_) {
-      if (media_source_delegate_) {
-        // Don't suppress any redundant in-progress MSE seek. There could have
-        // been changes to the underlying buffers after seeking the demuxer and
-        // before receiving OnSeekComplete() for the currently in-progress seek.
-        MEDIA_LOG(DEBUG, media_log_)
-            << "Detected MediaSource seek to same time as in-progress seek to "
-            << seek_time_ << ".";
-      } else {
-        // Suppress all redundant seeks if unrestricted by media source
-        // demuxer API.
-        pending_seek_ = false;
-        return;
-      }
+      pending_seek_ = false;
+      return;
     }
 
     pending_seek_ = true;
     pending_seek_time_ = new_seek_time;
-
-    if (media_source_delegate_)
-      media_source_delegate_->CancelPendingSeek(pending_seek_time_);
 
     // Later, OnSeekComplete will trigger the pending seek.
     return;
@@ -436,9 +358,6 @@ void WebMediaPlayerAndroid::seek(double seconds) {
 
   seeking_ = true;
   seek_time_ = new_seek_time;
-
-  if (media_source_delegate_)
-    media_source_delegate_->StartWaitingForSeek(seek_time_);
 
   // Kick off the asynchronous seek!
   player_manager_->Seek(player_id_, seek_time_);
@@ -527,9 +446,6 @@ double WebMediaPlayerAndroid::duration() const {
 double WebMediaPlayerAndroid::timelineOffset() const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   base::Time timeline_offset;
-  if (media_source_delegate_)
-    timeline_offset = media_source_delegate_->GetTimelineOffset();
-
   if (timeline_offset.is_null())
     return std::numeric_limits<double>::quiet_NaN();
 
@@ -567,8 +483,6 @@ blink::WebString WebMediaPlayerAndroid::getErrorMessage() {
 }
 
 blink::WebTimeRanges WebMediaPlayerAndroid::buffered() const {
-  if (media_source_delegate_)
-    return media_source_delegate_->Buffered();
   return buffered_;
 }
 
@@ -741,29 +655,21 @@ double WebMediaPlayerAndroid::mediaTimeForTimeValue(double timeValue) const {
 }
 
 unsigned WebMediaPlayerAndroid::decodedFrameCount() const {
-  if (media_source_delegate_)
-    return media_source_delegate_->DecodedFrameCount();
   NOTIMPLEMENTED();
   return 0;
 }
 
 unsigned WebMediaPlayerAndroid::droppedFrameCount() const {
-  if (media_source_delegate_)
-    return media_source_delegate_->DroppedFrameCount();
   NOTIMPLEMENTED();
   return 0;
 }
 
 size_t WebMediaPlayerAndroid::audioDecodedByteCount() const {
-  if (media_source_delegate_)
-    return media_source_delegate_->AudioDecodedByteCount();
   NOTIMPLEMENTED();
   return 0;
 }
 
 size_t WebMediaPlayerAndroid::videoDecodedByteCount() const {
-  if (media_source_delegate_)
-    return media_source_delegate_->VideoDecodedByteCount();
   NOTIMPLEMENTED();
   return 0;
 }
@@ -790,12 +696,8 @@ void WebMediaPlayerAndroid::OnMediaMetadataChanged(
     // Client readyState transition from HAVE_NOTHING to HAVE_METADATA
     // already triggers a durationchanged event. If this is a different
     // transition, remember to signal durationchanged.
-    // Do not ever signal durationchanged on metadata change in MSE case
-    // because OnDurationChanged() handles this.
-    if (ready_state_ > WebMediaPlayer::ReadyStateHaveNothing &&
-        player_type_ != MEDIA_PLAYER_TYPE_MEDIA_SOURCE) {
+    if (ready_state_ > WebMediaPlayer::ReadyStateHaveNothing)
       need_to_signal_duration_changed = true;
-    }
   }
 
   if (ready_state_ != WebMediaPlayer::ReadyStateHaveEnoughData) {
@@ -1015,21 +917,6 @@ void WebMediaPlayerAndroid::OnRemoteRouteAvailabilityChanged(
   client_->remoteRouteAvailabilityChanged(routes_available);
 }
 
-void WebMediaPlayerAndroid::OnDurationChanged(const base::TimeDelta& duration) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  // Only MSE |player_type_| registers this callback.
-  DCHECK_EQ(player_type_, MEDIA_PLAYER_TYPE_MEDIA_SOURCE);
-
-  // Cache the new duration value and trust it over any subsequent duration
-  // values received in OnMediaMetadataChanged().
-  duration_ = duration;
-  ignore_metadata_duration_change_ = true;
-
-  // Notify MediaPlayerClient that duration has changed, if > HAVE_NOTHING.
-  if (ready_state_ > WebMediaPlayer::ReadyStateHaveNothing)
-    client_->durationChanged();
-}
-
 void WebMediaPlayerAndroid::UpdateNetworkState(
     WebMediaPlayer::NetworkState state) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -1089,21 +976,17 @@ void WebMediaPlayerAndroid::SuspendAndReleaseResources() {
 void WebMediaPlayerAndroid::InitializePlayer(
     const GURL& url,
     const GURL& first_party_for_cookies,
-    bool allow_stored_credentials,
-    int demuxer_client_id) {
+    bool allow_stored_credentials) {
   ReportHLSMetrics();
 
   allow_stored_credentials_ = allow_stored_credentials;
-  player_manager_->Initialize(
-      player_type_, player_id_, url, first_party_for_cookies, demuxer_client_id,
-      frame_->document().url(), allow_stored_credentials, delegate_id_);
+  player_manager_->Initialize(player_type_, player_id_, url,
+                              first_party_for_cookies, frame_->document().url(),
+                              allow_stored_credentials, delegate_id_);
   is_player_initialized_ = true;
 
   if (is_fullscreen_)
     player_manager_->EnterFullscreen(player_id_);
-
-  if (cdm_context_)
-    SetCdmInternal(base::Bind(&media::IgnoreCdmAttached));
 }
 
 void WebMediaPlayerAndroid::Pause(bool is_media_related_action) {
@@ -1353,69 +1236,9 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  // Once the CDM is set it can't be cleared as there may be frames being
-  // decrypted on other threads. So fail this request.
-  // http://crbug.com/462365#c7.
-  if (!cdm) {
-    result.completeWithError(
-        blink::WebContentDecryptionModuleExceptionInvalidStateError, 0,
-        "The existing MediaKeys object cannot be removed at this time.");
-    return;
-  }
-
-  cdm_context_ = media::ToWebContentDecryptionModuleImpl(cdm)->GetCdmContext();
-
-  if (is_player_initialized_) {
-    SetCdmInternal(
-        base::Bind(&WebMediaPlayerAndroid::ContentDecryptionModuleAttached,
-                   weak_factory_.GetWeakPtr(), result));
-  } else {
-    // No pipeline/decoder connected, so resolve the promise. When something
-    // is connected, setting the CDM will happen in SetCdmReadyCB().
-    ContentDecryptionModuleAttached(result, true);
-  }
-}
-
-void WebMediaPlayerAndroid::ContentDecryptionModuleAttached(
-    blink::WebContentDecryptionModuleResult result,
-    bool success) {
-  if (success) {
-    result.complete();
-    return;
-  }
-
   result.completeWithError(
-      blink::WebContentDecryptionModuleExceptionNotSupportedError,
-      0,
-      "Unable to set MediaKeys object");
-}
-
-void WebMediaPlayerAndroid::OnMediaSourceOpened(
-    blink::WebMediaSource* web_media_source) {
-  client_->mediaSourceOpened(web_media_source);
-}
-
-void WebMediaPlayerAndroid::OnEncryptedMediaInitData(
-    media::EmeInitDataType init_data_type,
-    const std::vector<uint8_t>& init_data) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  // TODO(xhwang): Update this UMA name. https://crbug.com/589251
-  UMA_HISTOGRAM_COUNTS("Media.EME.NeedKey", 1);
-
-  DCHECK(init_data_type != media::EmeInitDataType::UNKNOWN);
-
-  encrypted_client_->encrypted(ConvertToWebInitDataType(init_data_type),
-                               init_data.data(), init_data.size());
-}
-
-void WebMediaPlayerAndroid::OnWaitingForDecryptionKey() {
-  encrypted_client_->didBlockPlaybackWaitingForKey();
-
-  // TODO(jrummell): didResumePlaybackBlockedForKey() should only be called
-  // when a key has been successfully added (e.g. OnSessionKeysChange() with
-  // |has_additional_usable_key| = true). http://crbug.com/461903
-  encrypted_client_->didResumePlaybackBlockedForKey();
+      blink::WebContentDecryptionModuleExceptionInvalidStateError, 0,
+      "EME is not supported for this playback.");
 }
 
 void WebMediaPlayerAndroid::OnHidden() {
@@ -1462,88 +1285,6 @@ void WebMediaPlayerAndroid::OnPause() {
 void WebMediaPlayerAndroid::OnVolumeMultiplierUpdate(double multiplier) {
   volume_multiplier_ = multiplier;
   setVolume(volume_);
-}
-
-void WebMediaPlayerAndroid::OnCdmContextReady(media::CdmContext* cdm_context) {
-  DCHECK(!cdm_context_);
-
-  if (!cdm_context) {
-    LOG(ERROR) << "CdmContext not available (e.g. CDM creation failed).";
-    return;
-  }
-
-  cdm_context_ = cdm_context;
-
-  if (is_player_initialized_)
-    SetCdmInternal(base::Bind(&media::IgnoreCdmAttached));
-}
-
-void WebMediaPlayerAndroid::SetCdmInternal(
-    const media::CdmAttachedCB& cdm_attached_cb) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(cdm_context_ && is_player_initialized_);
-  DCHECK(cdm_context_->GetDecryptor() ||
-         cdm_context_->GetCdmId() != media::CdmContext::kInvalidCdmId)
-      << "CDM should support either a Decryptor or a CDM ID.";
-
-  if (cdm_ready_cb_.is_null()) {
-    cdm_attached_cb.Run(true);
-    return;
-  }
-
-  // Satisfy |cdm_ready_cb_|. Use BindToCurrentLoop() since the callback could
-  // be fired on other threads.
-  base::ResetAndReturn(&cdm_ready_cb_)
-      .Run(cdm_context_, media::BindToCurrentLoop(base::Bind(
-                             &WebMediaPlayerAndroid::OnCdmAttached,
-                             weak_factory_.GetWeakPtr(), cdm_attached_cb)));
-}
-
-void WebMediaPlayerAndroid::OnCdmAttached(
-    const media::CdmAttachedCB& cdm_attached_cb,
-    bool success) {
-  DVLOG(1) << __FUNCTION__ << ": success: " << success;
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  if (!success) {
-    if (cdm_context_->GetCdmId() == media::CdmContext::kInvalidCdmId) {
-      NOTREACHED() << "CDM cannot be attached to media player.";
-      cdm_attached_cb.Run(false);
-      return;
-    }
-
-    // If the CDM is not attached (e.g. the CDM does not support a Decryptor),
-    // MediaSourceDelegate will fall back to use a browser side (IPC-based) CDM.
-    player_manager_->SetCdm(player_id_, cdm_context_->GetCdmId());
-  }
-
-  cdm_attached_cb.Run(true);
-}
-
-void WebMediaPlayerAndroid::SetCdmReadyCB(
-    const MediaSourceDelegate::CdmReadyCB& cdm_ready_cb) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(is_player_initialized_);
-
-  // Cancels the previous CDM request.
-  if (cdm_ready_cb.is_null()) {
-    if (!cdm_ready_cb_.is_null()) {
-      base::ResetAndReturn(&cdm_ready_cb_)
-          .Run(nullptr, base::Bind(&media::IgnoreCdmAttached));
-    }
-    return;
-  }
-
-  // TODO(xhwang): Support multiple CDM notification request (e.g. from
-  // video and audio). The current implementation is okay for the current
-  // media pipeline since we initialize audio and video decoders in sequence.
-  // But WebMediaPlayerAndroid should not depend on media pipeline's
-  // implementation detail.
-  DCHECK(cdm_ready_cb_.is_null());
-  cdm_ready_cb_ = cdm_ready_cb;
-
-  if (cdm_context_)
-    SetCdmInternal(base::Bind(&media::IgnoreCdmAttached));
 }
 
 bool WebMediaPlayerAndroid::supportsOverlayFullscreenVideo() {

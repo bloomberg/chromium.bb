@@ -122,7 +122,6 @@ class PeerConnectionTracker;
 class CategorizedWorkerPool;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
-class RendererDemuxerAndroid;
 class RendererGpuVideoAcceleratorFactories;
 class ResourceDispatchThrottler;
 class V8SamplingProfiler;
@@ -302,10 +301,6 @@ class CONTENT_EXPORT RenderThreadImpl
   }
 
 #if defined(OS_ANDROID)
-  RendererDemuxerAndroid* renderer_demuxer() {
-    return renderer_demuxer_.get();
-  }
-
   SynchronousCompositorFilter* sync_compositor_message_filter() {
     return sync_compositor_message_filter_.get();
   }
@@ -559,9 +554,6 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<AudioMessageFilter> audio_message_filter_;
   scoped_refptr<MidiMessageFilter> midi_message_filter_;
-#if defined(OS_ANDROID)
-  scoped_refptr<RendererDemuxerAndroid> renderer_demuxer_;
-#endif
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
   std::unique_ptr<V8SamplingProfiler> v8_sampling_profiler_;
 

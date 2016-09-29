@@ -163,7 +163,7 @@ TEST(SdkMediaCodecBridgeTest, DoNormal) {
   media_codec.reset(AudioCodecBridge::Create(kCodecMP3));
 
   ASSERT_TRUE(media_codec->ConfigureAndStart(kCodecMP3, 44100, 2, nullptr, 0, 0,
-                                             0, false, nullptr));
+                                             0, nullptr));
 
   int input_buf_index = -1;
   MediaCodecStatus status =
@@ -225,13 +225,13 @@ TEST(SdkMediaCodecBridgeTest, InvalidVorbisHeader) {
   uint8_t invalid_first_byte[] = {0x00, 0xff, 0xff, 0xff, 0xff};
   EXPECT_FALSE(media_codec->ConfigureAndStart(
       kCodecVorbis, 44100, 2, invalid_first_byte, sizeof(invalid_first_byte), 0,
-      0, false, nullptr));
+      0, nullptr));
 
   // Size of the header does not match with the data we passed in.
   uint8_t invalid_size[] = {0x02, 0x01, 0xff, 0x01, 0xff};
-  EXPECT_FALSE(media_codec->ConfigureAndStart(
-      kCodecVorbis, 44100, 2, invalid_size, sizeof(invalid_size), 0, 0, false,
-      nullptr));
+  EXPECT_FALSE(
+      media_codec->ConfigureAndStart(kCodecVorbis, 44100, 2, invalid_size,
+                                     sizeof(invalid_size), 0, 0, nullptr));
 
   // Size of the header is too large.
   size_t large_size = 8 * 1024 * 1024 + 2;
@@ -240,9 +240,8 @@ TEST(SdkMediaCodecBridgeTest, InvalidVorbisHeader) {
   for (size_t i = 1; i < large_size - 1; ++i)
     very_large_header[i] = 0xff;
   very_large_header[large_size - 1] = 0xfe;
-  EXPECT_FALSE(media_codec->ConfigureAndStart(kCodecVorbis, 44100, 2,
-                                              very_large_header, 0x80000000, 0,
-                                              0, false, nullptr));
+  EXPECT_FALSE(media_codec->ConfigureAndStart(
+      kCodecVorbis, 44100, 2, very_large_header, 0x80000000, 0, 0, nullptr));
   delete[] very_large_header;
 }
 
@@ -258,17 +257,17 @@ TEST(SdkMediaCodecBridgeTest, InvalidOpusHeader) {
 
   // Extra Data is NULL.
   EXPECT_FALSE(media_codec->ConfigureAndStart(kCodecOpus, 48000, 2, nullptr, 0,
-                                              -1, 0, false, nullptr));
+                                              -1, 0, nullptr));
 
   // Codec Delay is < 0.
-  EXPECT_FALSE(media_codec->ConfigureAndStart(
-      kCodecOpus, 48000, 2, dummy_extra_data, sizeof(dummy_extra_data), -1, 0,
-      false, nullptr));
+  EXPECT_FALSE(
+      media_codec->ConfigureAndStart(kCodecOpus, 48000, 2, dummy_extra_data,
+                                     sizeof(dummy_extra_data), -1, 0, nullptr));
 
   // Seek Preroll is < 0.
-  EXPECT_FALSE(media_codec->ConfigureAndStart(
-      kCodecOpus, 48000, 2, dummy_extra_data, sizeof(dummy_extra_data), 0, -1,
-      false, nullptr));
+  EXPECT_FALSE(
+      media_codec->ConfigureAndStart(kCodecOpus, 48000, 2, dummy_extra_data,
+                                     sizeof(dummy_extra_data), 0, -1, nullptr));
 }
 
 TEST(SdkMediaCodecBridgeTest, PresentationTimestampsDoNotDecrease) {

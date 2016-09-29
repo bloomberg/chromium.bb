@@ -6,8 +6,6 @@ package org.chromium.media;
 
 import android.annotation.TargetApi;
 import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
 import android.media.MediaCodec;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
@@ -65,8 +63,6 @@ class MediaCodecBridge {
     private ByteBuffer[] mOutputBuffers;
 
     private MediaCodec mMediaCodec;
-    private AudioTrack mAudioTrack;
-    private byte[] mPendingAudioBuffer;
     private boolean mFlushed;
     private long mLastPresentationTimeUs;
     private String mMime;
@@ -194,7 +190,6 @@ class MediaCodecBridge {
             MediaCodec mediaCodec, String mime, boolean adaptivePlaybackSupported) {
         assert mediaCodec != null;
         mMediaCodec = mediaCodec;
-        mPendingAudioBuffer = null;
         mMime = mime;
         mLastPresentationTimeUs = 0;
         mFlushed = true;
@@ -238,10 +233,6 @@ class MediaCodecBridge {
             Log.e(TAG, "Cannot release media codec", e);
         }
         mMediaCodec = null;
-        if (mAudioTrack != null) {
-            mAudioTrack.release();
-        }
-        mPendingAudioBuffer = null;
     }
 
     @SuppressWarnings("deprecation")
@@ -288,12 +279,6 @@ class MediaCodecBridge {
     private int flush() {
         try {
             mFlushed = true;
-            if (mAudioTrack != null) {
-                // Need to call pause() here, or otherwise flush() is a no-op.
-                mAudioTrack.pause();
-                mAudioTrack.flush();
-                mPendingAudioBuffer = null;
-            }
             mMediaCodec.flush();
         } catch (IllegalStateException e) {
             Log.e(TAG, "Failed to flush MediaCodec", e);
@@ -305,9 +290,6 @@ class MediaCodecBridge {
     @CalledByNative
     private void stop() {
         mMediaCodec.stop();
-        if (mAudioTrack != null) {
-            mAudioTrack.pause();
-        }
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -447,12 +429,6 @@ class MediaCodecBridge {
             } else if (indexOrStatus == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 status = MEDIA_CODEC_OUTPUT_FORMAT_CHANGED;
                 MediaFormat newFormat = mMediaCodec.getOutputFormat();
-                if (mAudioTrack != null && newFormat.containsKey(MediaFormat.KEY_SAMPLE_RATE)) {
-                    int newSampleRate = newFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-                    if (mAudioTrack.setPlaybackRate(newSampleRate) != AudioTrack.SUCCESS) {
-                        status = MEDIA_CODEC_ERROR;
-                    }
-                }
             } else if (indexOrStatus == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 status = MEDIA_CODEC_DEQUEUE_OUTPUT_AGAIN_LATER;
             } else {
@@ -610,15 +586,9 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private boolean configureAudio(
-            MediaFormat format, MediaCrypto crypto, int flags, boolean playAudio) {
+    private boolean configureAudio(MediaFormat format, MediaCrypto crypto, int flags) {
         try {
             mMediaCodec.configure(format, null, crypto, flags);
-            if (playAudio) {
-                int sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
-                int channelCount = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT);
-                if (!createAudioTrack(sampleRate, channelCount)) return false;
-            }
             return true;
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Cannot configure the audio codec", e);
@@ -630,106 +600,6 @@ class MediaCodecBridge {
             Log.e(TAG, "Cannot configure the audio codec", e);
         }
         return false;
-    }
-
-    @CalledByNative
-    private boolean createAudioTrack(int sampleRate, int channelCount) {
-        Log.v(TAG, "createAudioTrack: sampleRate:" + sampleRate + " channelCount:" + channelCount);
-
-        int channelConfig = getAudioFormat(channelCount);
-
-        // Using 16bit PCM for output. Keep this value in sync with
-        // kBytesPerAudioOutputSample in media_codec_bridge.cc.
-        int minBufferSize = AudioTrack.getMinBufferSize(
-                sampleRate, channelConfig, AudioFormat.ENCODING_PCM_16BIT);
-
-        // Set buffer size to be at least 1.5 times the minimum buffer size
-        // (see http://crbug.com/589269).
-        // TODO(timav, qinmin): For MediaSourcePlayer, we starts both audio and
-        // video decoder once we got valid presentation timestamp from the decoder
-        // (prerolling_==false). However, this doesn't guarantee that audiotrack
-        // starts outputing samples, especially with a larger buffersize.
-        // The best solution will be having a large buffer size in AudioTrack, and
-        // sync audio/video start when audiotrack starts output samples
-        // (head position starts progressing).
-        int minBufferSizeInFrames = minBufferSize / PCM16_BYTES_PER_SAMPLE / channelCount;
-        int bufferSize =
-                (int) (1.5 * minBufferSizeInFrames) * PCM16_BYTES_PER_SAMPLE * channelCount;
-
-        if (mAudioTrack != null) mAudioTrack.release();
-
-        mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, channelConfig,
-                AudioFormat.ENCODING_PCM_16BIT, bufferSize, AudioTrack.MODE_STREAM);
-        if (mAudioTrack.getState() == AudioTrack.STATE_UNINITIALIZED) {
-            Log.e(TAG, "Cannot create AudioTrack");
-            mAudioTrack = null;
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     *  Play the audio buffer that is passed in.
-     *
-     *  @param buf Audio buffer to be rendered.
-     *  @param postpone If true, save audio buffer for playback with the next
-     *  audio buffer. Must be followed by playOutputBuffer() without postpone,
-     *  flush() or release().
-     *  @return The number of frames that have already been consumed by the
-     *  hardware. This number resets to 0 after each flush call.
-     */
-    @CalledByNative
-    private long playOutputBuffer(byte[] buf, boolean postpone) {
-        if (mAudioTrack == null) {
-            return 0;
-        }
-
-        if (postpone) {
-            assert mPendingAudioBuffer == null;
-            mPendingAudioBuffer = buf;
-            return 0;
-        }
-
-        if (AudioTrack.PLAYSTATE_PLAYING != mAudioTrack.getPlayState()) {
-            mAudioTrack.play();
-        }
-
-        int size = 0;
-        if (mPendingAudioBuffer != null) {
-            size = mAudioTrack.write(mPendingAudioBuffer, 0, mPendingAudioBuffer.length);
-            if (mPendingAudioBuffer.length != size) {
-                Log.i(TAG, "Failed to send all data to audio output, expected size: "
-                                + mPendingAudioBuffer.length + ", actual size: " + size);
-            }
-            mPendingAudioBuffer = null;
-        }
-
-        size = mAudioTrack.write(buf, 0, buf.length);
-        if (buf.length != size) {
-            Log.i(TAG, "Failed to send all data to audio output, expected size: "
-                    + buf.length + ", actual size: " + size);
-        }
-        // TODO(qinmin): Returning the head position allows us to estimate
-        // the current presentation time in native code. However, it is
-        // better to use AudioTrack.getCurrentTimestamp() to get the last
-        // known time when a frame is played. However, we will need to
-        // convert the java nano time to C++ timestamp.
-        // If the stream runs too long, getPlaybackHeadPosition() could
-        // overflow. AudioTimestampHelper in MediaSourcePlayer has the same
-        // issue. See http://crbug.com/358801.
-
-        // The method AudioTrack.getPlaybackHeadPosition() returns int that should be
-        // interpreted as unsigned 32 bit value. Convert the return value of
-        // getPlaybackHeadPosition() into unsigned int using the long mask.
-        return 0xFFFFFFFFL & mAudioTrack.getPlaybackHeadPosition();
-    }
-
-    @SuppressWarnings("deprecation")
-    @CalledByNative
-    private void setVolume(double volume) {
-        if (mAudioTrack != null) {
-            mAudioTrack.setStereoVolume((float) volume, (float) volume);
-        }
     }
 
     private void resetLastPresentationTimeIfNeeded(long presentationTimeUs) {
