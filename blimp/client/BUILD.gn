@@ -117,10 +117,12 @@ source_set("test_support") {
 if (is_linux && !is_chromeos && use_x11) {
   executable("blimp_shell") {
     sources = [
-      "app/linux/blimp_client_session_linux.cc",
-      "app/linux/blimp_client_session_linux.h",
+      "app/linux/blimp_client_context_delegate_linux.cc",
+      "app/linux/blimp_client_context_delegate_linux.h",
       "app/linux/blimp_display_manager.cc",
       "app/linux/blimp_display_manager.h",
+      "app/linux/blimp_display_manager_delegate_main.cc",
+      "app/linux/blimp_display_manager_delegate_main.h",
       "app/linux/blimp_main.cc",
     ]
 

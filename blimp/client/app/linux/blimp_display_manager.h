@@ -17,32 +17,37 @@ class Size;
 }
 
 namespace ui {
+class PlatformEventSource;
 class PlatformWindow;
 }
 
 namespace blimp {
 namespace client {
 
-class BlimpCompositorDependencies;
-class BlimpCompositorManager;
 class BrowserCompositor;
-class RenderWidgetFeature;
-class TabControlFeature;
+class BlimpContents;
+class CompositorDependencies;
 
 class BlimpDisplayManagerDelegate {
  public:
   virtual void OnClosed() = 0;
 };
 
+// Manages an X11 window that interacts with a Compositor by listening to the
+// window's event handlers
 class BlimpDisplayManager : public ui::PlatformWindowDelegate {
  public:
-  BlimpDisplayManager(const gfx::Size& window_size,
-                      BlimpDisplayManagerDelegate* delegate,
-                      RenderWidgetFeature* render_widget_feature,
-                      TabControlFeature* tab_control_feature);
+  // |delegate|: The delegate to receive the OnClosed call.
+  // |compositor_dependencies|: Set of compositor dependencies provided by the
+  // embedder.
+  BlimpDisplayManager(BlimpDisplayManagerDelegate* delegate,
+                      CompositorDependencies* compositor_dependencies);
   ~BlimpDisplayManager() override;
 
-  // ui::PlatformWindowDelegate:
+  void SetWindowSize(const gfx::Size& window_size);
+  void SetBlimpContents(std::unique_ptr<BlimpContents> contents);
+
+  // ui::PlatformWindowDelegate implementation.
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;
   void OnDamageRect(const gfx::Rect& damaged_region) override {}
   void DispatchEvent(ui::Event* event) override;
@@ -75,11 +80,10 @@ class BlimpDisplayManager : public ui::PlatformWindowDelegate {
   float device_pixel_ratio_;
 
   BlimpDisplayManagerDelegate* delegate_;
-  TabControlFeature* tab_control_feature_;
 
-  std::unique_ptr<BlimpCompositorDependencies> compositor_dependencies_;
-  std::unique_ptr<BlimpCompositorManager> compositor_manager_;
   std::unique_ptr<BrowserCompositor> compositor_;
+  std::unique_ptr<BlimpContents> contents_;
+  std::unique_ptr<ui::PlatformEventSource> platform_event_source_;
   std::unique_ptr<ui::PlatformWindow> platform_window_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpDisplayManager);
