@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -43,6 +44,9 @@ const int64_t kTicksResolutionMs = base::Time::kMinLowResolutionThresholdMs;
 #else
 const int64_t kTicksResolutionMs = 1;  // Assume 1ms for non-windows platforms.
 #endif
+
+// Variations Service feature that enables network time service querying.
+extern const base::Feature kNetworkTimeServiceQuerying;
 
 // A class that receives network time updates and can provide the network time
 // for a corresponding local time. This class is not thread safe.

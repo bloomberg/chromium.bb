@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -33,6 +32,9 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace network_time {
+
+const base::Feature kNetworkTimeServiceQuerying{
+    "NetworkTimeServiceQuerying", base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -93,10 +95,6 @@ const char kPrefNetworkTime[] = "network";
 const uint32_t kTimeServerMaxSkewSeconds = 10;
 
 const char kTimeServiceURL[] = "http://clients2.google.com/time/1/current";
-
-// Variations Service feature that enables network time service querying.
-const base::Feature kNetworkTimeServiceQuerying{
-    "NetworkTimeServiceQuerying", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kVariationsServiceCheckTimeIntervalSeconds[] =
     "CheckTimeIntervalSeconds";

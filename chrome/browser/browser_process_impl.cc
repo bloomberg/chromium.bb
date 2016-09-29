@@ -1067,6 +1067,13 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
   CacheDefaultWebClientState();
 
   platform_part_->PreMainMessageLoopRun();
+
+  if (base::FeatureList::IsEnabled(network_time::kNetworkTimeServiceQuerying)) {
+    network_time_tracker_.reset(new network_time::NetworkTimeTracker(
+        base::WrapUnique(new base::DefaultClock()),
+        base::WrapUnique(new base::DefaultTickClock()), local_state(),
+        system_request_context()));
+  }
 }
 
 void BrowserProcessImpl::CreateIconManager() {
