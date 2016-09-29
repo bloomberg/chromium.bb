@@ -47,11 +47,24 @@ class Simulator : public QuicConnectionHelperInterface {
 
   QuicAlarmFactory* GetAlarmFactory();
 
+  inline void set_random_generator(QuicRandom* random) {
+    random_generator_ = random;
+  }
+
   // Run the simulation until either no actors are scheduled or
   // |termination_predicate| returns true.  Returns true if terminated due to
   // predicate, and false otherwise.
   template <class TerminationPredicate>
   bool RunUntil(TerminationPredicate termination_predicate);
+
+  // Same as RunUntil, except this function also accepts a |deadline|, and will
+  // return false if the deadline is exceeded.
+  template <class TerminationPredicate>
+  bool RunUntilOrTimeout(TerminationPredicate termination_predicate,
+                         QuicTime::Delta deadline);
+
+  // Runs the simulation for exactly the specified |time_span|.
+  void RunFor(QuicTime::Delta time_span);
 
  private:
   class Clock : public QuicClock {
@@ -70,6 +83,17 @@ class Simulator : public QuicConnectionHelperInterface {
     QuicTime now_;
   };
 
+  // The delegate used for RunFor().
+  class RunForDelegate : public QuicAlarm::Delegate {
+   public:
+    explicit RunForDelegate(bool* run_for_should_stop);
+    void OnAlarm() override;
+
+   private:
+    // Pointer to |run_for_should_stop_| in the parent simulator.
+    bool* run_for_should_stop_;
+  };
+
   // Finds the next scheduled actor, advances time to the schedule time and
   // notifies the actor.
   void HandleNextScheduledActor();
@@ -78,6 +102,11 @@ class Simulator : public QuicConnectionHelperInterface {
   QuicRandom* random_generator_;
   SimpleBufferAllocator buffer_allocator_;
   AlarmFactory alarm_factory_;
+
+  // Alarm for RunFor() method.
+  std::unique_ptr<QuicAlarm> run_for_alarm_;
+  // Flag used to stop simulations ran via RunFor().
+  bool run_for_should_stop_;
 
   // Schedule of when the actors will be executed via an Act() call.  The
   // schedule is subject to the following invariants:
@@ -104,6 +133,20 @@ bool Simulator::RunUntil(TerminationPredicate termination_predicate) {
     HandleNextScheduledActor();
   }
   return false;
+}
+
+template <class TerminationPredicate>
+bool Simulator::RunUntilOrTimeout(TerminationPredicate termination_predicate,
+                                  QuicTime::Delta timeout) {
+  QuicTime end_time = clock_.Now() + timeout;
+  bool return_value = RunUntil([end_time, &termination_predicate, this]() {
+    return termination_predicate() || clock_.Now() >= end_time;
+  });
+
+  if (clock_.Now() >= end_time) {
+    return false;
+  }
+  return return_value;
 }
 
 }  // namespace simulator

@@ -527,5 +527,38 @@ TEST(SimulatorTest, AlarmCancelling) {
   EXPECT_EQ(0u, alarm_counter);
 }
 
+// Tests Simulator::RunUntilOrTimeout() interface.
+TEST(SimulatorTest, RunUntilOrTimeout) {
+  Simulator simulator;
+  bool simulation_result;
+
+  // Count the number of seconds since the beginning of the simulation.
+  Counter counter(&simulator, "counter", QuicTime::Delta::FromSeconds(1));
+
+  // Ensure that the counter reaches the value of 10 given a 20 second deadline.
+  simulation_result = simulator.RunUntilOrTimeout(
+      [&counter]() { return counter.get_value() == 10; },
+      QuicTime::Delta::FromSeconds(20));
+  ASSERT_TRUE(simulation_result);
+
+  // Ensure that the counter will not reach the value of 100 given that the
+  // starting value is 10 and the deadline is 20 seconds.
+  simulation_result = simulator.RunUntilOrTimeout(
+      [&counter]() { return counter.get_value() == 100; },
+      QuicTime::Delta::FromSeconds(20));
+  ASSERT_FALSE(simulation_result);
+}
+
+// Tests Simulator::RunFor() interface.
+TEST(SimulatorTest, RunFor) {
+  Simulator simulator;
+
+  Counter counter(&simulator, "counter", QuicTime::Delta::FromSeconds(3));
+
+  simulator.RunFor(QuicTime::Delta::FromSeconds(100));
+
+  EXPECT_EQ(33, counter.get_value());
+}
+
 }  // namespace simulator
 }  // namespace net

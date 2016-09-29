@@ -11,7 +11,11 @@ namespace simulator {
 
 Simulator::Simulator()
     : random_generator_(nullptr),
-      alarm_factory_(this, "Default Alarm Manager") {}
+      alarm_factory_(this, "Default Alarm Manager"),
+      run_for_should_stop_(false) {
+  run_for_alarm_.reset(
+      alarm_factory_.CreateAlarm(new RunForDelegate(&run_for_should_stop_)));
+}
 
 Simulator::~Simulator() {}
 
@@ -92,6 +96,30 @@ QuicBufferAllocator* Simulator::GetBufferAllocator() {
 
 QuicAlarmFactory* Simulator::GetAlarmFactory() {
   return &alarm_factory_;
+}
+
+Simulator::RunForDelegate::RunForDelegate(bool* run_for_should_stop)
+    : run_for_should_stop_(run_for_should_stop) {}
+
+void Simulator::RunForDelegate::OnAlarm() {
+  *run_for_should_stop_ = true;
+}
+
+void Simulator::RunFor(QuicTime::Delta time_span) {
+  DCHECK(!run_for_alarm_->IsSet());
+
+  // RunFor() ensures that the simulation stops at the exact time specified by
+  // scheduling an alarm at that point and using that alarm to abort the
+  // simulation.  An alarm is necessary because otherwise it is possible that
+  // nothing is scheduled at |end_time|, so the simulation will either go
+  // further than requested or stop before reaching |end_time|.
+  const QuicTime end_time = clock_.Now() + time_span;
+  run_for_alarm_->Set(end_time);
+  run_for_should_stop_ = false;
+  bool simulation_result = RunUntil([this]() { return run_for_should_stop_; });
+
+  DCHECK(simulation_result);
+  DCHECK(clock_.Now() == end_time);
 }
 
 void Simulator::HandleNextScheduledActor() {
