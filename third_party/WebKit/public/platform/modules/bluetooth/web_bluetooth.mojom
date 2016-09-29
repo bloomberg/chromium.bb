@@ -67,8 +67,6 @@ enum WebBluetoothError {
   REQUEST_DEVICE_WITH_BLACKLISTED_UUID,
   REQUEST_DEVICE_FROM_CROSS_ORIGIN_IFRAME,
   REQUEST_DEVICE_WITHOUT_FRAME,
-  // TODO(ortuno): Remove once we no longer use IPC.
-  ENUM_MAX_VALUE = REQUEST_DEVICE_WITHOUT_FRAME,
 };
 
 struct WebBluetoothScanFilter {

@@ -4,9 +4,6 @@
 
 // https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothuuid
 
-// Implement BluetoothUUID: http://crbug.com/491441
-// Significant TODOs remain in BluetoothUUID.cpp.
-
 [
     OriginTrialEnabled=WebBluetooth,
 ] interface BluetoothUUID {
