@@ -965,30 +965,6 @@ TELEMETRY_TESTS = {
       },
     ],
   },
-  'pixel_test': {
-    'target_name': 'pixel',
-    'args': [
-      '--refimg-cloud-storage-bucket',
-      'chromium-gpu-archive/reference-images',
-      '--os-type',
-      '${os_type}',
-      '--build-revision',
-      '${got_revision}',
-      '--test-machine-name',
-      '${buildername}',
-    ],
-    'non_precommit_args': [
-      '--upload-refimg-to-cloud-storage',
-    ],
-    'precommit_args': [
-      '--download-refimg-from-cloud-storage',
-    ],
-    'tester_configs': [
-      {
-        'allow_on_android': True,
-      },
-    ],
-  },
   'screenshot_sync': {
     'tester_configs': [
       {
@@ -1015,6 +991,30 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'allow_on_android': True,
       },
     ]
+  },
+  'pixel_test': {
+    'target_name': 'pixel',
+    'args': [
+      '--refimg-cloud-storage-bucket',
+      'chromium-gpu-archive/reference-images',
+      '--os-type',
+      '${os_type}',
+      '--build-revision',
+      '${got_revision}',
+      '--test-machine-name',
+      '${buildername}',
+    ],
+    'non_precommit_args': [
+      '--upload-refimg-to-cloud-storage',
+    ],
+    'precommit_args': [
+      '--download-refimg-from-cloud-storage',
+    ],
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ],
   },
   'webgl_conformance': {
     'tester_configs': [

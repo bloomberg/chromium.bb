@@ -9,27 +9,27 @@ from gpu_tests.gpu_test_expectations import GpuTestExpectations
 class PixelExpectations(GpuTestExpectations):
   def SetExpectations(self):
     # Sample Usage:
-    # self.Fail('Pixel.Canvas2DRedBox',
+    # self.Fail('Pixel_Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
-    self.Fail('Pixel.ScissorTestWithPreserveDrawingBuffer',
+    self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
-    self.Fail('Pixel.ScissorTestWithPreserveDrawingBufferES3',
+    self.Fail('Pixel_ScissorTestWithPreserveDrawingBufferES3',
               ['mac'], bug=540039)
-    self.Fail('Pixel.WebGLGreenTriangleES3',
+    self.Fail('Pixel_WebGLGreenTriangleES3',
               ['mac', ('intel', 0x116)], bug=540531)
 
     # TODO(ccameron) fix these on Mac Retina
-    self.Fail('Pixel.CSS3DBlueBox', ['mac'], bug=533690)
-    self.Fail('Pixel.CSS3DBlueBoxES3', ['mac'], bug=533690)
+    self.Fail('Pixel_CSS3DBlueBox', ['mac'], bug=533690)
+    self.Fail('Pixel_CSS3DBlueBoxES3', ['mac'], bug=533690)
 
     # TODO(vmiura) check / generate reference images for Android devices
-    self.Fail('Pixel.SolidColorBackground', ['mac', 'android'], bug=624256)
+    self.Fail('Pixel_SolidColorBackground', ['mac', 'android'], bug=624256)
 
     # TODO(erikchen) check / generate reference images.
-    self.Fail('Pixel.CSSFilterEffects', ['mac'], bug=581526)
-    self.Fail('Pixel.CSSFilterEffects.NoOverlays', ['mac'], bug=581526)
+    self.Fail('Pixel_CSSFilterEffects', ['mac'], bug=581526)
+    self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=581526)
 
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
