@@ -26,11 +26,19 @@ CORE_EXPORT void showTransformPropertyTree(const blink::FrameView& rootFrame);
 CORE_EXPORT void showClipPropertyTree(const blink::FrameView& rootFrame);
 CORE_EXPORT void showEffectPropertyTree(const blink::FrameView& rootFrame);
 CORE_EXPORT void showScrollPropertyTree(const blink::FrameView& rootFrame);
-
 CORE_EXPORT String transformPropertyTreeAsString(const blink::FrameView& rootFrame);
 CORE_EXPORT String clipPropertyTreeAsString(const blink::FrameView& rootFrame);
 CORE_EXPORT String effectPropertyTreeAsString(const blink::FrameView& rootFrame);
 CORE_EXPORT String scrollPropertyTreeAsString(const blink::FrameView& rootFrame);
+
+CORE_EXPORT void showPaintPropertyPath(const blink::TransformPaintPropertyNode*);
+CORE_EXPORT void showPaintPropertyPath(const blink::ClipPaintPropertyNode*);
+CORE_EXPORT void showPaintPropertyPath(const blink::EffectPaintPropertyNode*);
+CORE_EXPORT void showPaintPropertyPath(const blink::ScrollPaintPropertyNode*);
+CORE_EXPORT String transformPaintPropertyPathAsString(const blink::TransformPaintPropertyNode*);
+CORE_EXPORT String clipPaintPropertyPathAsString(const blink::ClipPaintPropertyNode*);
+CORE_EXPORT String effectPaintPropertyPathAsString(const blink::EffectPaintPropertyNode*);
+CORE_EXPORT String scrollPaintPropertyPathAsString(const blink::ScrollPaintPropertyNode*);
 
 CORE_EXPORT String paintPropertyTreeGraph(const blink::FrameView&);
 

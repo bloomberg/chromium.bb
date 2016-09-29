@@ -41,6 +41,20 @@ public:
         return stringBuilder.toString();
     }
 
+    String pathAsString(const PropertyTreeNode* lastNode)
+    {
+        const PropertyTreeNode* node = lastNode;
+        while (!node->isRoot()) {
+            addPropertyNode(node, "");
+            node = node->parent();
+        }
+        addPropertyNode(node, "root");
+
+        StringBuilder stringBuilder;
+        addAllPropertyNodes(stringBuilder, node);
+        return stringBuilder.toString();
+    }
+
     void addPropertyNode(const PropertyTreeNode* node, String debugInfo)
     {
         m_nodeToDebugString.set(node, debugInfo);
@@ -546,6 +560,46 @@ String effectPropertyTreeAsString(const blink::FrameView& rootFrame)
 String scrollPropertyTreeAsString(const blink::FrameView& rootFrame)
 {
     return blink::PropertyTreePrinter<blink::ScrollPaintPropertyNode>().treeAsString(rootFrame);
+}
+
+String transformPaintPropertyPathAsString(const blink::TransformPaintPropertyNode* node)
+{
+    return blink::PropertyTreePrinter<blink::TransformPaintPropertyNode>().pathAsString(node);
+}
+
+String clipPaintPropertyPathAsString(const blink::ClipPaintPropertyNode* node)
+{
+    return blink::PropertyTreePrinter<blink::ClipPaintPropertyNode>().pathAsString(node);
+}
+
+String effectPaintPropertyPathAsString(const blink::EffectPaintPropertyNode* node)
+{
+    return blink::PropertyTreePrinter<blink::EffectPaintPropertyNode>().pathAsString(node);
+}
+
+String scrollPaintPropertyPathAsString(const blink::ScrollPaintPropertyNode* node)
+{
+    return blink::PropertyTreePrinter<blink::ScrollPaintPropertyNode>().pathAsString(node);
+}
+
+void showPaintPropertyPath(const blink::TransformPaintPropertyNode* node)
+{
+    fprintf(stderr, "%s\n", transformPaintPropertyPathAsString(node).utf8().data());
+}
+
+void showPaintPropertyPath(const blink::ClipPaintPropertyNode* node)
+{
+    fprintf(stderr, "%s\n", clipPaintPropertyPathAsString(node).utf8().data());
+}
+
+void showPaintPropertyPath(const blink::EffectPaintPropertyNode* node)
+{
+    fprintf(stderr, "%s\n", effectPaintPropertyPathAsString(node).utf8().data());
+}
+
+void showPaintPropertyPath(const blink::ScrollPaintPropertyNode* node)
+{
+    fprintf(stderr, "%s\n", scrollPaintPropertyPathAsString(node).utf8().data());
 }
 
 String paintPropertyTreeGraph(const blink::FrameView& frameView)

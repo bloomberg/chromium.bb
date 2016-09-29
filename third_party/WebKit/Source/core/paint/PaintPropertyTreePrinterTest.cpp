@@ -4,6 +4,7 @@
 
 #include "core/paint/PaintPropertyTreePrinter.h"
 
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -78,6 +79,55 @@ TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTree)
     EXPECT_THAT(scrollTreeAsString.ascii().data(),
         testing::MatchesRegex("root .*"
             "  Scroll \\(.*\\) .*"));
+}
+
+TEST_P(PaintPropertyTreePrinterTest, SimpleTransformTreePath)
+{
+    setBodyInnerHTML("<div id='transform' style='transform: translate3d(10px, 10px, 0px);'></div>");
+    LayoutObject* transformedObject = document().getElementById("transform")->layoutObject();
+    const ObjectPaintProperties* transformedObjectProperties = transformedObject->objectPaintProperties();
+    String transformPathAsString = transformPaintPropertyPathAsString(transformedObjectProperties->transform());
+    EXPECT_THAT(transformPathAsString.ascii().data(),
+        testing::MatchesRegex("root .* transform.*"
+            "  .* transform.*"
+            "    .* transform.*"
+            "       .* transform.*"));
+}
+
+TEST_P(PaintPropertyTreePrinterTest, SimpleClipTreePath)
+{
+    setBodyInnerHTML("<div id='clip' style='position: absolute; clip: rect(10px, 80px, 70px, 40px);'></div>");
+    LayoutObject* clippedObject = document().getElementById("clip")->layoutObject();
+    const ObjectPaintProperties* clippedObjectProperties = clippedObject->objectPaintProperties();
+    String clipPathAsString = clipPaintPropertyPathAsString(clippedObjectProperties->cssClip());
+    EXPECT_THAT(clipPathAsString.ascii().data(),
+        testing::MatchesRegex("root .* rect.*"
+            "  .* rect.*"
+            "    .* rect.*"));
+}
+
+TEST_P(PaintPropertyTreePrinterTest, SimpleEffectTreePath)
+{
+    setBodyInnerHTML("<div id='effect' style='opacity: 0.9;'></div>");
+    LayoutObject* effectObject = document().getElementById("effect")->layoutObject();
+    const ObjectPaintProperties* effectObjectProperties = effectObject->objectPaintProperties();
+    String effectPathAsString = effectPaintPropertyPathAsString(effectObjectProperties->effect());
+    EXPECT_THAT(effectPathAsString.ascii().data(),
+        testing::MatchesRegex("root .* opacity.*"
+            "  .* opacity.*"));
+}
+
+TEST_P(PaintPropertyTreePrinterTest, SimpleScrollTreePath)
+{
+    setBodyInnerHTML("<div id='scroll' style='overflow: scroll; height: 100px;'>"
+        "  <div id='forceScroll' style='height: 4000px;'></div>"
+        "</div>");
+    LayoutObject* scrollObject = document().getElementById("scroll")->layoutObject();
+    const ObjectPaintProperties* scrollObjectProperties = scrollObject->objectPaintProperties();
+    String scrollPathAsString = scrollPaintPropertyPathAsString(scrollObjectProperties->scroll());
+    EXPECT_THAT(scrollPathAsString.ascii().data(),
+        testing::MatchesRegex("root .* scroll.*"
+            "  .* scroll.*"));
 }
 
 } // namespace blink
