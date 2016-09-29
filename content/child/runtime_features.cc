@@ -252,8 +252,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::enableMediaDocumentDownloadButton(
       base::FeatureList::IsEnabled(features::kMediaDocumentDownloadButton));
 
-  if (base::FeatureList::IsEnabled(features::kPointerEvents))
-    WebRuntimeFeatures::enablePointerEvent(true);
+  WebRuntimeFeatures::enablePointerEvent(
+      base::FeatureList::IsEnabled(features::kPointerEvents));
 
   if (base::FeatureList::IsEnabled(features::kPointerEventV1SpecCapturing))
     WebRuntimeFeatures::enablePointerEventV1SpecCapturing(true);

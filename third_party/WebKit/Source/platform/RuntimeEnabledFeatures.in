@@ -169,7 +169,7 @@ PerformanceObserver status=stable
 PermissionDelegation status=test
 Permissions status=stable
 PermissionsRequestRevoke status=experimental
-PointerEvent status=experimental
+PointerEvent status=stable
 // For temporary compat testing of Edge-like model - crbug.com/640700
 PointerEventV1SpecCapturing
 PreciseMemoryInfo

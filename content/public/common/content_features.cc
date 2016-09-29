@@ -117,7 +117,7 @@ const base::Feature kPassiveEventListenersDueToFling{
 
 // Pointer events support.
 const base::Feature kPointerEvents{"PointerEvent",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether pointer event capturing follow v1 spec instead of v2 proposal.
 // See https://rawgit.com/w3c/pointerevents/reduce-hit-tests/index.html.
