@@ -487,6 +487,8 @@ void LocalDOMWindow::registerEventListenerObserver(EventListenerObserver* eventL
 
 void LocalDOMWindow::reset()
 {
+    DCHECK(document());
+    document()->notifyContextDestroyed();
     frameDestroyed();
 
     m_screen = nullptr;
