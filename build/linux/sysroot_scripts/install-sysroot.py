@@ -108,10 +108,6 @@ def DetectHostArch():
     return 'arm64'
   elif detected_host_arch == 'mips':
     return 'mips'
-  elif detected_host_arch == 'ppc':
-    return 'ppc'
-  elif detected_host_arch == 's390':
-    return 's390'
 
   raise Error('Unrecognized host arch: %s' % detected_host_arch)
 
@@ -182,12 +178,7 @@ def main(args):
   parser.add_option('--arch', type='choice', choices=valid_archs,
                     help='Sysroot architecture: %s' % ', '.join(valid_archs))
   options, _ = parser.parse_args(args)
-  host_arch = DetectHostArch()
   if options.running_as_hook and not sys.platform.startswith('linux'):
-    return 0
-
-  # PPC/s390 don't use sysroot, see http://crbug.com/646169
-  if host_arch in ('ppc','s390'):
     return 0
 
   if options.running_as_hook:
