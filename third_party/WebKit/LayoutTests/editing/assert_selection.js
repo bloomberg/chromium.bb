@@ -682,13 +682,22 @@ function commonPrefixOf(str1, str2) {
  * @param {string} inputText
  * @param {function(!Selection)|string}
  * @param {string} expectedText
- * @param {string=} opt_description
+ * @param {Object=} opt_options
+ * @return {!Sample}
  */
 function assertSelection(
-    inputText, tester, expectedText, opt_description = '') {
+    inputText, tester, expectedText, opt_options = {}) {
+  const kDescription = 'description';
+  const kRemoveSampleIfSucceeded = 'removeSampleIfSucceeded';
+  /** @type {!Object} */
+  const options = typeof(opt_options) === 'string'
+      ? {description: opt_options} : opt_options;
   /** @type {string} */
-  const description =
-      opt_description === '' ? assembleDescription() : opt_description;
+  const description = kDescription in options
+      ? options[kDescription] : assembleDescription();
+  /** @type {boolean} */
+  const removeSampleIfSucceeded = kRemoveSampleIfSucceeded in options
+      ? !!options[kRemoveSampleIfSucceeded] : true;
   checkExpectedText(expectedText);
   const sample = new Sample(inputText);
   if (typeof(tester) === 'function') {
@@ -704,8 +713,9 @@ function assertSelection(
   // We keep sample HTML when assertion is false for ease of debugging test
   // case.
   if (actualText === expectedText) {
-    sample.remove();
-    return;
+    if (removeSampleIfSucceeded)
+        sample.remove();
+    return sample;
   }
   throw new Error(`${description}\n` +
     `\t expected ${expectedText},\n` +

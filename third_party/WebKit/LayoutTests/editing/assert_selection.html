@@ -162,4 +162,22 @@ test(() => {
         '<div contenteditable>FOO|</div>',
         'set HTML fragment and text to clipboard and pasteAndMatchStyle');
 }, 'selection.setClipboardData');
+
+test(() => {
+    const sample1 = assert_selection('abc', '', 'abc',
+        {removeSampleIfSucceeded: false});
+    assert_equals(sample1.iframe_.parentNode, document.body,
+        'removeSampleIfSucceeded: false');
+
+    const sample2 = assert_selection('abc', '', 'abc',
+        {removeSampleIfSucceeded: true});
+    assert_equals(sample2.iframe_.parentNode, null,
+        'removeSampleIfSucceeded: true');
+
+    const sample3 = assert_selection('abc', '', 'abc');
+    assert_equals(sample3.iframe_.parentNode, null, 'with default options');
+
+    const sample4 = assert_selection('abc', '', 'abc', 'description');
+    assert_equals(sample4.iframe_.parentNode, null, 'with description');
+}, 'removeSampleIfSucceeded');
 </script>
