@@ -670,7 +670,6 @@ void CSPDirectiveList::parseReportURI(const String& name, const String& value)
 
     // Remove report-uri in meta policies, per https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
     if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta) {
-        UseCounter::count(m_policy->document(), UseCounter::InvalidReportUriDirectiveInMetaCSP);
         m_policy->reportInvalidDirectiveInMeta(name);
         return;
     }
@@ -705,7 +704,6 @@ void CSPDirectiveList::setCSPDirective(const String& name, const String& value, 
 
     // Remove frame-ancestors directives in meta policies, per https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
     if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta && name == ContentSecurityPolicy::FrameAncestors) {
-        UseCounter::count(m_policy->document(), UseCounter::InvalidFrameAncestorsDirectiveInMetaCSP);
         m_policy->reportInvalidDirectiveInMeta(name);
         return;
     }
@@ -717,7 +715,6 @@ void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sand
 {
     // Remove sandbox directives in meta policies, per https://www.w3.org/TR/CSP2/#delivery-html-meta-element.
     if (m_headerSource == ContentSecurityPolicyHeaderSourceMeta) {
-        UseCounter::count(m_policy->document(), UseCounter::InvalidSandboxDirectiveInMetaCSP);
         m_policy->reportInvalidDirectiveInMeta(name);
         return;
     }
@@ -838,8 +835,6 @@ void CSPDirectiveList::parseReflectedXSS(const String& name, const String& value
 void CSPDirectiveList::parseReferrer(const String& name, const String& value)
 {
     m_didSetReferrerPolicy = true;
-
-    UseCounter::count(m_policy->document(), UseCounter::CSPReferrerDirective);
 
     if (value.isEmpty()) {
         m_policy->reportInvalidReferrer(value);
