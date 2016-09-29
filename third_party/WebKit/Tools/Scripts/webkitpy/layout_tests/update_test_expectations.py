@@ -33,12 +33,12 @@ _log = logging.getLogger(__name__)
 
 def main(host, bot_test_expectations_factory, argv):
     parser = argparse.ArgumentParser(epilog=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-    parser.parse_args(argv)
+    parser.add_argument('--verbose', '-v', action='store_true', default=False, help='enable more verbose logging')
+    args = parser.parse_args(argv)
+
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(levelname)s: %(message)s")
 
     port = host.port_factory.get()
-
-    logging.basicConfig(level=logging.INFO, format="%(message)s")
-
     expectations_file = port.path_to_generic_test_expectations_file()
     if not host.filesystem.isfile(expectations_file):
         _log.warning("Didn't find generic expectations file at: " + expectations_file)
@@ -56,6 +56,7 @@ def main(host, bot_test_expectations_factory, argv):
 
 
 class RemoveFlakesOMatic(object):
+
     def __init__(self, host, port, bot_test_expectations_factory):
         self._host = host
         self._port = port
@@ -92,16 +93,18 @@ class RemoveFlakesOMatic(object):
 
         # The line can be deleted if the only expectation on the line that appears in the actual
         # results is the PASS expectation.
+        builders_checked = []
         for config in test_expectation_line.matching_configurations:
             builder_name = self._host.builders.builder_name_for_specifiers(config.version, config.build_type)
 
             if not builder_name:
-                _log.error('Failed to get builder for config [%s, %s, %s]',
-                           config.version, config.architecture, config.build_type)
+                _log.debug('No builder with config %s', config)
                 # TODO(bokan): Matching configurations often give us bots that don't have a
                 # builder in builders.py's exact_matches. Should we ignore those or be conservative
                 # and assume we need these expectations to make a decision?
-                return False
+                continue
+
+            builders_checked.append(builder_name)
 
             if builder_name not in self._builder_results_by_path.keys():
                 _log.error('Failed to find results for builder "%s"', builder_name)
@@ -118,6 +121,11 @@ class RemoveFlakesOMatic(object):
             if self._expectations_that_were_met(test_expectation_line, results_for_single_test) != set(['PASS']):
                 return False
 
+        if builders_checked:
+            _log.debug('Checked builders:\n  %s', '\n  '.join(builders_checked))
+        else:
+            _log.warning('No matching builders for line, deleting line.')
+        _log.info('Deleting line "%s"', test_expectation_line.original_string.strip())
         return True
 
     def _has_pass_expectation(self, expectations):

@@ -3,10 +3,11 @@
 # found in the LICENSE file.
 
 from collections import OrderedDict
+import logging
 
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.logtesting import LoggingTestCase
+from webkitpy.common.system.logtesting import LoggingTestCase, LogTesting
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port.factory import PortFactory
 from webkitpy.layout_tests.port.test import LAYOUT_TEST_DIR
@@ -667,22 +668,37 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             # This line shouldn't be removed either since it's not flaky.
             Bug(test) test/b.html [ Failure Timeout ]""")
 
-    def test_log_missing_builders(self):
-        """Tests that we emit the appropriate error for a missing builder.
+    def test_missing_builders_for_some_configurations(self):
+        """Tests the behavior when there are no builders for some configurations.
 
-        If a TestExpectation has a matching configuration what we can't resolve
-        to a builder we should emit an Error.
+        We don't necessarily expect to have builders for all configurations,
+        so as long as a test appears to be non-flaky on all matching configurations
+        that have builders, then it can be removed, even if there are extra
+        configurations with no existing builders.
         """
+        # Set the logging level used for assertLog to allow us to check all messages,
+        # even messages with a "debug" severity level.
+        self._log = LogTesting.setUp(self, logging_level=logging.DEBUG)
 
         test_expectations_before = """
+            # There are no builders that match this configuration at all.
             Bug(test) [ Win ] test/a.html [ Failure Pass ]
+
+            # This matches the existing linux release builder and
+            # also linux debug, which has no builder.
             Bug(test) [ Linux ] test/b.html [ Failure Pass ]
-            # This one shouldn't emit an error since it's not flaky, we don't
-            # have to check the builder results.
+
+            # No message should be emitted for this one because it's not
+            # marked as flaky, so we don't need to check builder results.
             Bug(test) test/c.html [ Failure ]
+
+            # This one is marked as flaky and there are some matching
+            # configurations with no builders, but for all configurations
+            # with existing builders, it is non-flaky.
             Bug(test) test/d.html [ Failure Pass ]
-            # This one shouldn't emit an error since it will only match the
-            # existing Linux Release configuration
+
+            # This one only matches the existing linux release builder,
+            # and it's still flaky, so it shouldn't be removed.
             Bug(test) [ Linux Release ] test/e.html [ Failure Pass ]"""
 
         self._define_builders({
@@ -692,15 +708,11 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             },
         })
 
-        # Three errors should be emitted:
-        # (1) There's no Windows builders so a.html will emit an error on the
-        #     first missing one.
-        # (2) There's no Linux debug builder so b.html will emit an error.
-        # (3) c.html is missing will match both the Windows and Linux dbg
-        # builders which are missing so it'll emit an error on the first one.
         self._port.all_build_types = ('release', 'debug')
-        self._port.all_systems = (('win7', 'x86'),
-                                  ('precise', 'x86_64'))
+        self._port.all_systems = (
+            ('win7', 'x86'),
+            ('precise', 'x86_64'),
+        )
 
         self._parse_expectations(test_expectations_before)
         self._expectation_factory._all_results_by_builder = {
@@ -715,16 +727,31 @@ class UpdateTestExpectationsTest(LoggingTestCase):
 
         updated_expectations = (
             self._flake_remover.get_updated_test_expectations())
-        self.assertLog([
-            'ERROR: Failed to get builder for config [win7, x86, release]\n',
-            'ERROR: Failed to get builder for config [precise, x86_64, debug]\n',
-            'ERROR: Failed to get builder for config [win7, x86, release]\n',
-        ])
 
-        # Also make sure we didn't remove any lines if some builders were
-        # missing.
+        self.assertLog([
+            'DEBUG: No builder with config <win7, x86, release>\n',
+            'DEBUG: No builder with config <win7, x86, debug>\n',
+            'WARNING: No matching builders for line, deleting line.\n',
+            'INFO: Deleting line "Bug(test) [ Win ] test/a.html [ Failure Pass ]"\n',
+            'DEBUG: No builder with config <precise, x86_64, debug>\n',
+            'DEBUG: Checked builders:\n  WebKit Linux\n',
+            'INFO: Deleting line "Bug(test) [ Linux ] test/b.html [ Failure Pass ]"\n',
+            'DEBUG: No builder with config <win7, x86, release>\n',
+            'DEBUG: No builder with config <win7, x86, debug>\n',
+            'DEBUG: No builder with config <precise, x86_64, debug>\n',
+            'DEBUG: Checked builders:\n  WebKit Linux\n',
+            'INFO: Deleting line "Bug(test) test/d.html [ Failure Pass ]"\n',
+        ])
         self._assert_expectations_match(
-            updated_expectations, test_expectations_before)
+            updated_expectations,
+            """
+            # No message should be emitted for this one because it's not
+            # marked as flaky, so we don't need to check builder results.
+            Bug(test) test/c.html [ Failure ]
+
+            # This one only matches the existing linux release builder,
+            # and it's still flaky, so it shouldn't be removed.
+            Bug(test) [ Linux Release ] test/e.html [ Failure Pass ]""")
 
     def test_log_missing_results(self):
         """Tests that we emit the appropriate error for missing results.
