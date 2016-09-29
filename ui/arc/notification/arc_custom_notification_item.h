@@ -33,7 +33,7 @@ class ArcCustomNotificationItem : public ArcNotificationItem {
   ~ArcCustomNotificationItem() override;
 
   void UpdateWithArcNotificationData(
-      const mojom::ArcNotificationData& data) override;
+      mojom::ArcNotificationDataPtr data) override;
 
   void CloseFromCloseButton();
 

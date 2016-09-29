@@ -24,7 +24,6 @@ static_library("arc") {
     "//base",
     "//components/arc:arc_base",
     "//components/arc:arc_bindings",
-    "//components/arc:arc_bitmap",
     "//components/exo",
     "//components/signin/core/account_id",
     "//mojo/common:common_base",

@@ -7,7 +7,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/arc/bitmap/bitmap_type_converters.h"
 #include "ui/arc/notification/arc_custom_notification_view.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_types.h"
@@ -54,41 +53,44 @@ ArcCustomNotificationItem::~ArcCustomNotificationItem() {
 }
 
 void ArcCustomNotificationItem::UpdateWithArcNotificationData(
-    const mojom::ArcNotificationData& data) {
+    mojom::ArcNotificationDataPtr data) {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(notification_key(), data.key);
+  DCHECK_EQ(notification_key(), data->key);
 
-  if (CacheArcNotificationData(data))
+  if (HasPendingNotification()) {
+    CacheArcNotificationData(std::move(data));
     return;
+  }
 
   message_center::RichNotificationData rich_data;
-  rich_data.pinned = (data.no_clear || data.ongoing_event);
-  rich_data.priority = ConvertAndroidPriority(data.priority);
-  rich_data.small_image = ConvertAndroidSmallIcon(data.small_icon);
-  if (!data.accessible_name.is_null())
-    rich_data.accessible_name = base::UTF8ToUTF16(data.accessible_name.get());
+  rich_data.pinned = (data->no_clear || data->ongoing_event);
+  rich_data.priority = ConvertAndroidPriority(data->priority);
+  if (data->small_icon)
+    rich_data.small_image = gfx::Image::CreateFrom1xBitmap(*data->small_icon);
+  if (!data->accessible_name.is_null())
+    rich_data.accessible_name = base::UTF8ToUTF16(data->accessible_name.get());
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::SYSTEM_COMPONENT, kNotifierId);
   notifier_id.profile_id = profile_id().GetUserEmail();
 
-  DCHECK(!data.title.is_null());
-  DCHECK(!data.message.is_null());
+  DCHECK(!data->title.is_null());
+  DCHECK(!data->message.is_null());
   SetNotification(base::MakeUnique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_CUSTOM, notification_id(),
-      base::UTF8ToUTF16(data.title.get()),
-      base::UTF8ToUTF16(data.message.get()), gfx::Image(),
+      base::UTF8ToUTF16(data->title.get()),
+      base::UTF8ToUTF16(data->message.get()), gfx::Image(),
       base::UTF8ToUTF16("arc"),  // display source
       GURL(),                    // empty origin url, for system component
       notifier_id, rich_data, new ArcNotificationDelegate(this)));
 
   pinned_ = rich_data.pinned;
 
-  if (data.snapshot_image.is_null()) {
+  if (!data->snapshot_image || data->snapshot_image->isNull()) {
     snapshot_ = gfx::ImageSkia();
   } else {
     snapshot_ = gfx::ImageSkia(gfx::ImageSkiaRep(
-        data.snapshot_image.To<SkBitmap>(), data.snapshot_image_scale));
+        *data->snapshot_image, data->snapshot_image_scale));
   }
 
   FOR_EACH_OBSERVER(Observer, observers_, OnItemUpdated());

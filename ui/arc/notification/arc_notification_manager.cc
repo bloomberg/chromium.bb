@@ -88,7 +88,7 @@ void ArcNotificationManager::OnNotificationPosted(
     DCHECK(result.second);
     it = result.first;
   }
-  it->second->UpdateWithArcNotificationData(*data);
+  it->second->UpdateWithArcNotificationData(std::move(data));
 }
 
 void ArcNotificationManager::OnNotificationRemoved(const mojo::String& key) {

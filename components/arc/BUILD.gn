@@ -116,21 +116,6 @@ static_library("arc_base") {
   ]
 }
 
-static_library("arc_bitmap") {
-  sources = [
-    "bitmap/bitmap_type_converters.cc",
-    "bitmap/bitmap_type_converters.h",
-  ]
-
-  deps = [
-    "//skia",
-  ]
-
-  public_deps = [
-    ":arc_bindings",
-  ]
-}
-
 mojom("arc_bindings") {
   sources = [
     "common/app.mojom",

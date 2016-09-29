@@ -4,5 +4,6 @@
 
 typemaps = [
   "//components/arc/common/app.typemap",
+  "//components/arc/common/bitmap.typemap",
   "//components/arc/common/bluetooth.typemap",
 ]
