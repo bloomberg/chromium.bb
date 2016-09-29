@@ -81,7 +81,7 @@ MemoryInfo* Performance::memory()
 PerformanceNavigation* Performance::navigation() const
 {
     if (!m_navigation)
-        m_navigation = PerformanceNavigation::create(m_frame);
+        m_navigation = PerformanceNavigation::create(frame());
 
     return m_navigation.get();
 }
@@ -89,7 +89,7 @@ PerformanceNavigation* Performance::navigation() const
 PerformanceTiming* Performance::timing() const
 {
     if (!m_timing)
-        m_timing = PerformanceTiming::create(m_frame);
+        m_timing = PerformanceTiming::create(frame());
 
     return m_timing.get();
 }

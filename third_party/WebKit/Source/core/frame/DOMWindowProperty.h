@@ -44,7 +44,7 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-protected:
+private:
     Member<LocalFrame> m_frame;
 };
 

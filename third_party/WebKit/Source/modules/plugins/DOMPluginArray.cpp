@@ -53,7 +53,7 @@ DOMPlugin* DOMPluginArray::item(unsigned index)
     const Vector<PluginInfo>& plugins = data->plugins();
     if (index >= plugins.size())
         return nullptr;
-    return DOMPlugin::create(data, m_frame, index);
+    return DOMPlugin::create(data, frame(), index);
 }
 
 DOMPlugin* DOMPluginArray::namedItem(const AtomicString& propertyName)
@@ -64,25 +64,25 @@ DOMPlugin* DOMPluginArray::namedItem(const AtomicString& propertyName)
     const Vector<PluginInfo>& plugins = data->plugins();
     for (unsigned i = 0; i < plugins.size(); ++i) {
         if (plugins[i].name == propertyName)
-            return DOMPlugin::create(data, m_frame, i);
+            return DOMPlugin::create(data, frame(), i);
     }
     return nullptr;
 }
 
 void DOMPluginArray::refresh(bool reload)
 {
-    if (!m_frame)
+    if (!frame())
         return;
     Page::refreshPlugins();
     if (reload)
-        m_frame->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
+        frame()->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
 }
 
 PluginData* DOMPluginArray::pluginData() const
 {
-    if (!m_frame)
+    if (!frame())
         return nullptr;
-    return m_frame->pluginData();
+    return frame()->pluginData();
 }
 
 } // namespace blink

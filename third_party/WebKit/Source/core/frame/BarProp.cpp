@@ -47,9 +47,9 @@ DEFINE_TRACE(BarProp)
 
 bool BarProp::visible() const
 {
-    if (!m_frame)
+    if (!frame())
         return false;
-    FrameHost* host = m_frame->host();
+    FrameHost* host = frame()->host();
     if (!host)
         return false;
 

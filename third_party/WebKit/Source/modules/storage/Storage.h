@@ -44,13 +44,13 @@ class Storage final : public GarbageCollected<Storage>, public ScriptWrappable, 
     USING_GARBAGE_COLLECTED_MIXIN(Storage);
 public:
     static Storage* create(LocalFrame*, StorageArea*);
-    unsigned length(ExceptionState& ec) const { return m_storageArea->length(ec, m_frame); }
-    String key(unsigned index, ExceptionState& ec) const { return m_storageArea->key(index, ec, m_frame); }
-    String getItem(const String& key, ExceptionState& ec) const { return m_storageArea->getItem(key, ec, m_frame); }
-    void setItem(const String& key, const String& value, ExceptionState& ec) { m_storageArea->setItem(key, value, ec, m_frame); }
-    void removeItem(const String& key, ExceptionState& ec) { m_storageArea->removeItem(key, ec, m_frame); }
-    void clear(ExceptionState& ec) { m_storageArea->clear(ec, m_frame); }
-    bool contains(const String& key, ExceptionState& ec) const { return m_storageArea->contains(key, ec, m_frame); }
+    unsigned length(ExceptionState& ec) const { return m_storageArea->length(ec, frame()); }
+    String key(unsigned index, ExceptionState& ec) const { return m_storageArea->key(index, ec, frame()); }
+    String getItem(const String& key, ExceptionState& ec) const { return m_storageArea->getItem(key, ec, frame()); }
+    void setItem(const String& key, const String& value, ExceptionState& ec) { m_storageArea->setItem(key, value, ec, frame()); }
+    void removeItem(const String& key, ExceptionState& ec) { m_storageArea->removeItem(key, ec, frame()); }
+    void clear(ExceptionState& ec) { m_storageArea->clear(ec, frame()); }
+    bool contains(const String& key, ExceptionState& ec) const { return m_storageArea->contains(key, ec, frame()); }
 
     StorageArea* area() const { return m_storageArea.get(); }
 

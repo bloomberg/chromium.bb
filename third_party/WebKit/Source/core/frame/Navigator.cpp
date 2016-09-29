@@ -62,34 +62,34 @@ String Navigator::vendorSub() const
 String Navigator::userAgent() const
 {
     // If the frame is already detached it no longer has a meaningful useragent.
-    if (!m_frame || !m_frame->page())
+    if (!frame() || !frame()->page())
         return String();
 
-    return m_frame->loader().userAgent();
+    return frame()->loader().userAgent();
 }
 
 bool Navigator::cookieEnabled() const
 {
-    if (!m_frame)
+    if (!frame())
         return false;
 
-    Settings* settings = m_frame->settings();
+    Settings* settings = frame()->settings();
     if (!settings || !settings->cookieEnabled())
         return false;
 
-    return cookiesEnabled(m_frame->document());
+    return cookiesEnabled(frame()->document());
 }
 
 Vector<String> Navigator::languages()
 {
     Vector<String> languages;
 
-    if (!m_frame || !m_frame->host()) {
+    if (!frame() || !frame()->host()) {
         languages.append(defaultLanguage());
         return languages;
     }
 
-    String acceptLanguages = m_frame->host()->chromeClient().acceptLanguages();
+    String acceptLanguages = frame()->host()->chromeClient().acceptLanguages();
     acceptLanguages.split(',', languages);
 
     // Sanitizing tokens. We could do that more extensively but we should assume

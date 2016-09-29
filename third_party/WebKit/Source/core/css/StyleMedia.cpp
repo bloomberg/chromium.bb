@@ -40,7 +40,7 @@ StyleMedia::StyleMedia(LocalFrame* frame)
 
 AtomicString StyleMedia::type() const
 {
-    FrameView* view = m_frame ? m_frame->view() : nullptr;
+    FrameView* view = frame() ? frame()->view() : nullptr;
     if (view)
         return view->mediaType();
 
@@ -49,10 +49,10 @@ AtomicString StyleMedia::type() const
 
 bool StyleMedia::matchMedium(const String& query) const
 {
-    if (!m_frame)
+    if (!frame())
         return false;
 
-    Document* document = m_frame->document();
+    Document* document = frame()->document();
     ASSERT(document);
     Element* documentElement = document->documentElement();
     if (!documentElement)
@@ -62,7 +62,7 @@ bool StyleMedia::matchMedium(const String& query) const
     if (!media->set(query))
         return false;
 
-    MediaQueryEvaluator screenEval(m_frame);
+    MediaQueryEvaluator screenEval(frame());
     return screenEval.eval(media);
 }
 

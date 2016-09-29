@@ -43,10 +43,10 @@ PerformanceNavigation::PerformanceNavigation(LocalFrame* frame)
 
 unsigned short PerformanceNavigation::type() const
 {
-    if (!m_frame)
+    if (!frame())
         return kTypeNavigate;
 
-    DocumentLoader* documentLoader = m_frame->loader().documentLoader();
+    DocumentLoader* documentLoader = frame()->loader().documentLoader();
     if (!documentLoader)
         return kTypeNavigate;
 
@@ -62,10 +62,10 @@ unsigned short PerformanceNavigation::type() const
 
 unsigned short PerformanceNavigation::redirectCount() const
 {
-    if (!m_frame)
+    if (!frame())
         return 0;
 
-    DocumentLoader* loader = m_frame->loader().documentLoader();
+    DocumentLoader* loader = frame()->loader().documentLoader();
     if (!loader)
         return 0;
 

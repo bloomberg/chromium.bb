@@ -125,9 +125,9 @@ const WTF::AtomicString& ScreenOrientation::interfaceName() const
 
 ExecutionContext* ScreenOrientation::getExecutionContext() const
 {
-    if (!m_frame)
+    if (!frame())
         return 0;
-    return m_frame->document();
+    return frame()->document();
 }
 
 String ScreenOrientation::type() const
@@ -155,7 +155,7 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state, const AtomicString& lo
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(state);
     ScriptPromise promise = resolver->promise();
 
-    Document* document = m_frame ? m_frame->document() : 0;
+    Document* document = frame() ? frame()->document() : 0;
 
     if (!document || !controller()) {
         DOMException* exception = DOMException::create(InvalidStateError, "The object is no longer associated to a document.");
@@ -183,10 +183,10 @@ void ScreenOrientation::unlock()
 
 ScreenOrientationController* ScreenOrientation::controller()
 {
-    if (!m_frame)
+    if (!frame())
         return 0;
 
-    return ScreenOrientationController::from(*m_frame);
+    return ScreenOrientationController::from(*frame());
 }
 
 DEFINE_TRACE(ScreenOrientation)

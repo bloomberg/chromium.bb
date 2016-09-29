@@ -40,8 +40,8 @@ Storage::Storage(LocalFrame* frame, StorageArea* storageArea)
     : DOMWindowProperty(frame)
     , m_storageArea(storageArea)
 {
-    ASSERT(m_frame);
-    ASSERT(m_storageArea);
+    DCHECK(frame);
+    DCHECK(m_storageArea);
 }
 
 String Storage::anonymousNamedGetter(const AtomicString& name, ExceptionState& exceptionState)

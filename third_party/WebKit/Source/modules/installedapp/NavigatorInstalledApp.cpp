@@ -71,7 +71,7 @@ ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(ScriptState* script
     ScriptPromise promise = resolver->promise();
 
     // Don't crash when called and unattached to document.
-    Document* document = m_frame ? m_frame->document() : 0;
+    Document* document = frame() ? frame()->document() : 0;
 
     if (!document || !controller()) {
         DOMException* exception = DOMException::create(InvalidStateError, "The object is no longer associated to a document.");

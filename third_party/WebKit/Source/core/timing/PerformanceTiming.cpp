@@ -426,18 +426,18 @@ unsigned long long PerformanceTiming::parseBlockedOnScriptExecutionFromDocumentW
 
 DocumentLoader* PerformanceTiming::documentLoader() const
 {
-    if (!m_frame)
+    if (!frame())
         return nullptr;
 
-    return m_frame->loader().documentLoader();
+    return frame()->loader().documentLoader();
 }
 
 const DocumentTiming* PerformanceTiming::documentTiming() const
 {
-    if (!m_frame)
+    if (!frame())
         return nullptr;
 
-    Document* document = m_frame->document();
+    Document* document = frame()->document();
     if (!document)
         return nullptr;
 
@@ -446,10 +446,10 @@ const DocumentTiming* PerformanceTiming::documentTiming() const
 
 const PaintTiming* PerformanceTiming::paintTiming() const
 {
-    if (!m_frame)
+    if (!frame())
         return nullptr;
 
-    Document* document = m_frame->document();
+    Document* document = frame()->document();
     if (!document)
         return nullptr;
 
@@ -458,10 +458,10 @@ const PaintTiming* PerformanceTiming::paintTiming() const
 
 const DocumentParserTiming* PerformanceTiming::documentParserTiming() const
 {
-    if (!m_frame)
+    if (!frame())
         return nullptr;
 
-    Document* document = m_frame->document();
+    Document* document = frame()->document();
     if (!document)
         return nullptr;
 

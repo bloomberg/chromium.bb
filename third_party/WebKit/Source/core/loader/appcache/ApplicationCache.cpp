@@ -61,9 +61,9 @@ void ApplicationCache::frameDestroyed()
 
 ApplicationCacheHost* ApplicationCache::applicationCacheHost() const
 {
-    if (!m_frame || !m_frame->loader().documentLoader())
+    if (!frame() || !frame()->loader().documentLoader())
         return 0;
-    return m_frame->loader().documentLoader()->applicationCacheHost();
+    return frame()->loader().documentLoader()->applicationCacheHost();
 }
 
 unsigned short ApplicationCache::status() const
@@ -105,8 +105,8 @@ const AtomicString& ApplicationCache::interfaceName() const
 
 ExecutionContext* ApplicationCache::getExecutionContext() const
 {
-    if (m_frame)
-        return m_frame->document();
+    if (frame())
+        return frame()->document();
     return 0;
 }
 
@@ -136,10 +136,10 @@ const AtomicString& ApplicationCache::toEventType(ApplicationCacheHost::EventID 
 
 void ApplicationCache::recordAPIUseType() const
 {
-    if (!m_frame)
+    if (!frame())
         return;
 
-    Document* document = m_frame->document();
+    Document* document = frame()->document();
 
     if (!document)
         return;

@@ -53,7 +53,7 @@ DOMMimeType* DOMMimeTypeArray::item(unsigned index)
     const Vector<MimeClassInfo>& mimes = data->mimes();
     if (index >= mimes.size())
         return nullptr;
-    return DOMMimeType::create(data, m_frame, index);
+    return DOMMimeType::create(data, frame(), index);
 }
 
 DOMMimeType* DOMMimeTypeArray::namedItem(const AtomicString& propertyName)
@@ -64,16 +64,16 @@ DOMMimeType* DOMMimeTypeArray::namedItem(const AtomicString& propertyName)
     const Vector<MimeClassInfo>& mimes = data->mimes();
     for (unsigned i = 0; i < mimes.size(); ++i) {
         if (mimes[i].type == propertyName)
-            return DOMMimeType::create(data, m_frame, i);
+            return DOMMimeType::create(data, frame(), i);
     }
     return nullptr;
 }
 
 PluginData* DOMMimeTypeArray::getPluginData() const
 {
-    if (!m_frame)
+    if (!frame())
         return nullptr;
-    return m_frame->pluginData();
+    return frame()->pluginData();
 }
 
 } // namespace blink

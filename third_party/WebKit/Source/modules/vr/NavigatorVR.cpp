@@ -49,7 +49,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* scriptState)
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
-    Document* document = m_frame ? m_frame->document() : 0;
+    Document* document = frame() ? frame()->document() : 0;
 
     if (!document || !controller()) {
         DOMException* exception = DOMException::create(InvalidStateError, "The object is no longer associated to a document.");
@@ -78,7 +78,7 @@ VRController* NavigatorVR::controller()
 
 Document* NavigatorVR::document()
 {
-    return m_frame ? m_frame->document() : 0;
+    return frame() ? frame()->document() : 0;
 }
 
 DEFINE_TRACE(NavigatorVR)
@@ -105,16 +105,16 @@ const char* NavigatorVR::supplementName()
 
 void NavigatorVR::fireVRDisplayPresentChange(VRDisplay* display)
 {
-    if (m_frame && m_frame->localDOMWindow()) {
-        m_frame->localDOMWindow()->enqueueWindowEvent(
+    if (frame() && frame()->localDOMWindow()) {
+        frame()->localDOMWindow()->enqueueWindowEvent(
             VRDisplayEvent::create(EventTypeNames::vrdisplaypresentchange, true, false, display, ""));
     }
 }
 
 void NavigatorVR::fireVREvent(VRDisplayEvent* event)
 {
-    if (m_frame && m_frame->localDOMWindow()) {
-        m_frame->localDOMWindow()->enqueueWindowEvent(event);
+    if (frame() && frame()->localDOMWindow()) {
+        frame()->localDOMWindow()->enqueueWindowEvent(event);
     }
 }
 

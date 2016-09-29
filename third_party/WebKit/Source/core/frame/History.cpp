@@ -68,9 +68,9 @@ DEFINE_TRACE(History)
 
 unsigned History::length() const
 {
-    if (!m_frame || !m_frame->loader().client())
+    if (!frame() || !frame()->loader().client())
         return 0;
-    return m_frame->loader().client()->backForwardLength();
+    return frame()->loader().client()->backForwardLength();
 }
 
 SerializedScriptValue* History::state()
@@ -81,10 +81,10 @@ SerializedScriptValue* History::state()
 
 SerializedScriptValue* History::stateInternal() const
 {
-    if (!m_frame)
+    if (!frame())
         return 0;
 
-    if (HistoryItem* historyItem = m_frame->loader().currentItem())
+    if (HistoryItem* historyItem = frame()->loader().currentItem())
         return historyItem->stateObject();
 
     return 0;
@@ -93,16 +93,16 @@ SerializedScriptValue* History::stateInternal() const
 void History::setScrollRestoration(const String& value)
 {
     ASSERT(value == "manual"  || value == "auto");
-    if (!m_frame || !m_frame->loader().client())
+    if (!frame() || !frame()->loader().client())
         return;
 
     HistoryScrollRestorationType scrollRestoration = value == "manual" ? ScrollRestorationManual : ScrollRestorationAuto;
     if (scrollRestoration == scrollRestorationInternal())
         return;
 
-    if (HistoryItem* historyItem = m_frame->loader().currentItem()) {
+    if (HistoryItem* historyItem = frame()->loader().currentItem()) {
         historyItem->setScrollRestorationType(scrollRestoration);
-        m_frame->loader().client()->didUpdateCurrentHistoryItem();
+        frame()->loader().client()->didUpdateCurrentHistoryItem();
     }
 }
 
@@ -113,8 +113,8 @@ String History::scrollRestoration()
 
 HistoryScrollRestorationType History::scrollRestorationInternal() const
 {
-    if (m_frame) {
-        if (HistoryItem* historyItem = m_frame->loader().currentItem())
+    if (frame()) {
+        if (HistoryItem* historyItem = frame()->loader().currentItem())
             return historyItem->scrollRestorationType();
     }
 
@@ -143,7 +143,7 @@ void History::forward(ExecutionContext* context)
 
 void History::go(ExecutionContext* context, int delta)
 {
-    if (!m_frame || !m_frame->loader().client())
+    if (!frame() || !frame()->loader().client())
         return;
 
     ASSERT(isMainThread());
@@ -151,7 +151,7 @@ void History::go(ExecutionContext* context, int delta)
     if (!activeDocument)
         return;
 
-    if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*m_frame))
+    if (!activeDocument->frame() || !activeDocument->frame()->canNavigate(*frame()))
         return;
     if (!NavigationDisablerForUnload::isNavigationAllowed())
         return;
@@ -161,14 +161,14 @@ void History::go(ExecutionContext* context, int delta)
     // This behavior is designed in the following spec.
     // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
     if (delta)
-        m_frame->loader().client()->navigateBackForward(delta);
+        frame()->loader().client()->navigateBackForward(delta);
     else
-        m_frame->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
+        frame()->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
 }
 
 KURL History::urlForState(const String& urlString)
 {
-    Document* document = m_frame->document();
+    Document* document = frame()->document();
 
     if (urlString.isNull())
         return document->url();
@@ -204,17 +204,17 @@ bool History::canChangeToUrl(const KURL& url, SecurityOrigin* documentOrigin, co
 
 void History::stateObjectAdded(PassRefPtr<SerializedScriptValue> data, const String& /* title */, const String& urlString, HistoryScrollRestorationType restorationType, FrameLoadType type, ExceptionState& exceptionState)
 {
-    if (!m_frame || !m_frame->page() || !m_frame->loader().documentLoader())
+    if (!frame() || !frame()->page() || !frame()->loader().documentLoader())
         return;
 
     KURL fullURL = urlForState(urlString);
-    if (!canChangeToUrl(fullURL, m_frame->document()->getSecurityOrigin(), m_frame->document()->url())) {
+    if (!canChangeToUrl(fullURL, frame()->document()->getSecurityOrigin(), frame()->document()->url())) {
         // We can safely expose the URL to JavaScript, as a) no redirection takes place: JavaScript already had this URL, b) JavaScript can only access a same-origin History object.
-        exceptionState.throwSecurityError("A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + m_frame->document()->getSecurityOrigin()->toString() + "' and URL '" + m_frame->document()->url().elidedString() + "'.");
+        exceptionState.throwSecurityError("A history state object with URL '" + fullURL.elidedString() + "' cannot be created in a document with origin '" + frame()->document()->getSecurityOrigin()->toString() + "' and URL '" + frame()->document()->url().elidedString() + "'.");
         return;
     }
 
-    m_frame->loader().updateForSameDocumentNavigation(fullURL, SameDocumentNavigationHistoryApi, std::move(data), restorationType, type, m_frame->document());
+    frame()->loader().updateForSameDocumentNavigation(fullURL, SameDocumentNavigationHistoryApi, std::move(data), restorationType, type, frame()->document());
 }
 
 } // namespace blink
