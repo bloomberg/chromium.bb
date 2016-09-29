@@ -391,6 +391,21 @@ class ActivityLogState {
 base::LazyInstance<ActivityLogState> g_activity_log_state =
     LAZY_INSTANCE_INITIALIZER;
 
+// Returns the ActivityLog associated with the given |browser_context| after
+// checking that |browser_context| is valid.
+ActivityLog* SafeGetActivityLog(content::BrowserContext* browser_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // There's a chance that the |browser_context| was deleted some time during
+  // the thread hops.
+  // TODO(devlin): We should probably be doing this more extensively throughout
+  // extensions code.
+  if (g_browser_process->IsShuttingDown() ||
+      !g_browser_process->profile_manager()->IsValidProfile(browser_context)) {
+    return nullptr;
+  }
+  return ActivityLog::GetInstance(browser_context);
+}
+
 // Calls into the ActivityLog to log an api event or function call.
 // Must be called on the UI thread.
 void LogApiActivityOnUI(content::BrowserContext* browser_context,
@@ -399,15 +414,7 @@ void LogApiActivityOnUI(content::BrowserContext* browser_context,
                         std::unique_ptr<base::ListValue> args,
                         Action::ActionType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // There's a chance that the |browser_context| was deleted some time during
-  // the thread hops.
-  // TODO(devlin): We should probably be doing this more extensively throughout
-  // extensions code.
-  if (g_browser_process->IsShuttingDown() ||
-      !g_browser_process->profile_manager()->IsValidProfile(browser_context)) {
-    return;
-  }
-  ActivityLog* activity_log = ActivityLog::GetInstance(browser_context);
+  ActivityLog* activity_log = SafeGetActivityLog(browser_context);
   if (!activity_log || !activity_log->ShouldLog(extension_id))
     return;
   scoped_refptr<Action> action =
@@ -464,7 +471,7 @@ void LogWebRequestActivityOnUI(content::BrowserContext* browser_context,
                                const std::string& api_call,
                                std::unique_ptr<base::DictionaryValue> details) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ActivityLog* activity_log = ActivityLog::GetInstance(browser_context);
+  ActivityLog* activity_log = SafeGetActivityLog(browser_context);
   if (!activity_log || !activity_log->ShouldLog(extension_id))
     return;
   scoped_refptr<Action> action = new Action(
