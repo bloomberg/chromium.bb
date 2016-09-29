@@ -162,7 +162,7 @@ bool KeyframeEffect::hasIncompatibleStyle()
         || animation()->affects(*m_target, CSSPropertyTranslate);
 
     if (animation()->hasActiveAnimationsOnCompositor()) {
-        if (m_target->computedStyle()->hasOffsetPath() && affectsTransform)
+        if (m_target->computedStyle()->hasOffset() && affectsTransform)
             return true;
         return hasMultipleTransformProperties();
     }
@@ -281,7 +281,7 @@ bool KeyframeEffect::isCandidateForAnimationOnCompositor(double animationPlaybac
     // in computed style because they need to be explicitly ordered
     if (!model()
         || !m_target
-        || (m_target->computedStyle() && m_target->computedStyle()->hasOffsetPath())
+        || (m_target->computedStyle() && m_target->computedStyle()->hasOffset())
         || hasMultipleTransformProperties())
         return false;
 

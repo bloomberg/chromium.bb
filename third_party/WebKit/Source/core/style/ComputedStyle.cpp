@@ -988,6 +988,8 @@ static bool hasPropertyThatCreatesStackingContext(const Vector<CSSPropertyID>& p
         case CSSPropertyAliasWebkitTransformStyle:
         case CSSPropertyPerspective:
         case CSSPropertyAliasWebkitPerspective:
+        case CSSPropertyOffsetPath:
+        case CSSPropertyOffsetPosition:
         case CSSPropertyWebkitMask:
         case CSSPropertyWebkitMaskBoxImage:
         case CSSPropertyClipPath:
@@ -1109,7 +1111,7 @@ void ComputedStyle::applyTransform(TransformationMatrix& result, const LayoutSiz
 
 void ComputedStyle::applyTransform(TransformationMatrix& result, const FloatRect& boundingBox, ApplyTransformOrigin applyOrigin, ApplyMotionPath applyMotionPath, ApplyIndependentTransformProperties applyIndependentTransformProperties) const
 {
-    if (!hasOffsetPath())
+    if (!hasOffset())
         applyMotionPath = ExcludeMotionPath;
     bool applyTransformOrigin = requireTransformOrigin(applyOrigin, applyMotionPath);
 
@@ -1154,7 +1156,10 @@ void ComputedStyle::applyTransform(TransformationMatrix& result, const FloatRect
 void ComputedStyle::applyMotionPathTransform(float originX, float originY, TransformationMatrix& transform) const
 {
     const StyleMotionData& motionData = m_rareNonInheritedData->m_transform->m_motion;
-    ASSERT(motionData.m_path);
+    // TODO(ericwilligers): crbug.com/638055 Apply offset-position and offset-anchor.
+    if (!motionData.m_path) {
+        return;
+    }
     const StylePath& motionPath = *motionData.m_path;
     float pathLength = motionPath.length();
     float distance = floatValueForLength(motionData.m_distance, pathLength);

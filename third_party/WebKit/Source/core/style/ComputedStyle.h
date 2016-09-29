@@ -2141,7 +2141,7 @@ public:
     bool hasBlendMode() const { return blendMode() != WebBlendModeNormal; }
 
     // Motion utility functions.
-    bool hasOffsetPath() const { return offsetPath(); }
+    bool hasOffset() const { return (offsetPosition().x() != Length(Auto)) || offsetPath(); }
 
     // Direction utility functions.
     bool isLeftToRightDirection() const { return direction() == LTR; }
@@ -2249,7 +2249,7 @@ public:
 
     // Filter/transform utility functions.
     bool has3DTransform() const { return m_rareNonInheritedData->m_transform->has3DTransform(); }
-    bool hasTransform() const { return hasTransformOperations() || hasOffsetPath() || hasCurrentTransformAnimation() || translate() || rotate() || scale(); }
+    bool hasTransform() const { return hasTransformOperations() || hasOffset() || hasCurrentTransformAnimation() || translate() || rotate() || scale(); }
     bool hasTransformOperations() const { return !m_rareNonInheritedData->m_transform->m_operations.operations().isEmpty(); }
     ETransformStyle3D usedTransformStyle3D() const { return hasGroupingProperty() ? TransformStyle3DFlat : transformStyle3D(); }
     bool transformDataEquivalent(const ComputedStyle& otherStyle) const { return m_rareNonInheritedData->m_transform == otherStyle.m_rareNonInheritedData->m_transform; }
