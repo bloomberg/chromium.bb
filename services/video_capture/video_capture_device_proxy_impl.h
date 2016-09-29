@@ -28,20 +28,6 @@ class VideoCaptureDeviceProxyImpl : public mojom::VideoCaptureDeviceProxy {
 
   void OnClientConnectionErrorOrClose();
 
-  // TODO(chfremer): Consider using Mojo type mapping instead of conversion
-  // methods.
-  // https://crbug.com/642387
-  static media::VideoCaptureFormat ConvertFromMojoToMedia(
-      mojom::VideoCaptureFormatPtr format);
-  static media::VideoPixelFormat ConvertFromMojoToMedia(
-      media::mojom::VideoFormat format);
-  static media::VideoPixelStorage ConvertFromMojoToMedia(
-      mojom::VideoPixelStorage storage);
-  static media::ResolutionChangePolicy ConvertFromMojoToMedia(
-      mojom::ResolutionChangePolicy policy);
-  static media::PowerLineFrequency ConvertFromMojoToMedia(
-      mojom::PowerLineFrequency frequency);
-
  private:
   std::unique_ptr<media::VideoCaptureDevice> device_;
   bool device_running_ = false;
