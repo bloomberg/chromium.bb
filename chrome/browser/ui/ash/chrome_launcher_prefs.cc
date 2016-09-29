@@ -317,7 +317,7 @@ base::DictionaryValue* CreateAppDict(const std::string& app_id) {
 
 ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,
                                                    int64_t display_id) {
-  DCHECK_GE(display_id, 0);
+  DCHECK_NE(display_id, display::Display::kInvalidDisplayID);
 
   // Don't show the shelf in app mode.
   if (chrome::IsRunningInAppMode())
@@ -332,7 +332,7 @@ ShelfAutoHideBehavior GetShelfAutoHideBehaviorPref(PrefService* prefs,
 void SetShelfAutoHideBehaviorPref(PrefService* prefs,
                                   int64_t display_id,
                                   ShelfAutoHideBehavior behavior) {
-  DCHECK_GE(display_id, 0);
+  DCHECK_NE(display_id, display::Display::kInvalidDisplayID);
 
   const char* value = AutoHideBehaviorToPref(behavior);
   if (!value)
@@ -347,7 +347,7 @@ void SetShelfAutoHideBehaviorPref(PrefService* prefs,
 }
 
 ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id) {
-  DCHECK_GE(display_id, 0);
+  DCHECK_NE(display_id, display::Display::kInvalidDisplayID);
 
   // See comment in |kShelfAlignment| as to why we consider two prefs.
   return AlignmentFromPref(GetPerDisplayPref(
@@ -357,7 +357,7 @@ ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id) {
 void SetShelfAlignmentPref(PrefService* prefs,
                            int64_t display_id,
                            ShelfAlignment alignment) {
-  DCHECK_GE(display_id, 0);
+  DCHECK_NE(display_id, display::Display::kInvalidDisplayID);
 
   const char* value = AlignmentToPref(alignment);
   if (!value)
