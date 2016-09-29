@@ -119,6 +119,7 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/scheduler/resource_dispatch_throttler.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
+#include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_context_message_filter.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
@@ -867,8 +868,11 @@ void RenderThreadImpl::Init(
   GetContentClient()->renderer()->ExposeInterfacesToBrowser(
       GetInterfaceRegistry());
 
-  GetInterfaceRegistry()->AddInterface(base::Bind(CreateFrameFactory));
-  GetInterfaceRegistry()->AddInterface(base::Bind(CreateEmbeddedWorkerSetup));
+  GetInterfaceRegistry()->AddInterface(base::Bind(&CreateFrameFactory));
+  GetInterfaceRegistry()->AddInterface(base::Bind(&CreateEmbeddedWorkerSetup));
+  GetInterfaceRegistry()->AddInterface(
+      base::Bind(&EmbeddedWorkerInstanceClientImpl::Create,
+                 base::Unretained(embedded_worker_dispatcher_.get())));
 
   GetRemoteInterfaces()->GetInterface(
       mojo::GetProxy(&storage_partition_service_));

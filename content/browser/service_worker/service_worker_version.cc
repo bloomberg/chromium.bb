@@ -35,6 +35,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
+#include "content/common/service_worker/embedded_worker_start_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_type_converters.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -1406,8 +1407,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   StartTimeoutTimer();
 
-  std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
-      new EmbeddedWorkerMsg_StartWorker_Params());
+  std::unique_ptr<EmbeddedWorkerStartParams> params(
+      new EmbeddedWorkerStartParams());
   params->service_worker_version_id = version_id_;
   params->scope = scope_;
   params->script_url = script_url_;

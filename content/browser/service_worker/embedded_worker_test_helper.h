@@ -15,14 +15,16 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 class GURL;
-struct EmbeddedWorkerMsg_StartWorker_Params;
 struct ServiceWorkerMsg_ExtendableMessageEvent_Params;
 
 namespace shell {
@@ -39,6 +41,7 @@ class MockRenderProcessHost;
 class ServiceWorkerContextCore;
 class ServiceWorkerContextWrapper;
 class TestBrowserContext;
+struct EmbeddedWorkerStartParams;
 struct PushEventPayload;
 struct ServiceWorkerFetchRequest;
 
@@ -60,6 +63,28 @@ struct ServiceWorkerFetchRequest;
 class EmbeddedWorkerTestHelper : public IPC::Sender,
                                  public IPC::Listener {
  public:
+  class MockEmbeddedWorkerInstanceClient
+      : public mojom::EmbeddedWorkerInstanceClient {
+   public:
+    explicit MockEmbeddedWorkerInstanceClient(
+        base::WeakPtr<EmbeddedWorkerTestHelper> helper);
+    ~MockEmbeddedWorkerInstanceClient() override;
+
+    static void Bind(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
+                     mojom::EmbeddedWorkerInstanceClientRequest request);
+
+   private:
+    // Implementation of mojo interfaces.
+    void StartWorker(const EmbeddedWorkerStartParams& params) override;
+
+    base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
+    mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
+
+    base::Optional<int> embedded_worker_id_;
+
+    DISALLOW_COPY_AND_ASSIGN(MockEmbeddedWorkerInstanceClient);
+  };
+
   // If |user_data_directory| is empty, the context makes storage stuff in
   // memory.
   explicit EmbeddedWorkerTestHelper(const base::FilePath& user_data_directory);
@@ -80,6 +105,11 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   // Inner IPC sink for script context messages sent via EmbeddedWorker.
   IPC::TestSink* inner_ipc_sink() { return &inner_sink_; }
 
+  std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>*
+  mock_instance_clients() {
+    return &mock_instance_clients_;
+  }
+
   ServiceWorkerContextCore* context();
   ServiceWorkerContextWrapper* context_wrapper() { return wrapper_.get(); }
   void ShutdownContext();
@@ -95,9 +125,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
     return embedded_worker_id_service_worker_version_id_map_;
   }
 
-  // Only used for tests that force creating a new render process. There is no
-  // corresponding MockRenderProcessHost.
-  int new_render_process_id() const { return mock_render_process_id_ + 1; }
+  // Only used for tests that force creating a new render process.
+  int new_render_process_id() const { return new_mock_render_process_id_; }
 
   TestBrowserContext* browser_context() { return browser_context_.get(); }
 
@@ -158,7 +187,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   class MockEmbeddedWorkerSetup;
 
-  void OnStartWorkerStub(const EmbeddedWorkerMsg_StartWorker_Params& params);
+  void OnStartWorkerStub(const EmbeddedWorkerStartParams& params);
   void OnResumeAfterDownloadStub(int embedded_worker_id);
   void OnStopWorkerStub(int embedded_worker_id);
   void OnMessageToWorkerStub(int thread_id,
@@ -179,18 +208,29 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   MessagePortMessageFilter* NewMessagePortMessageFilter();
 
+  std::unique_ptr<shell::InterfaceRegistry> CreateInterfaceRegistry(
+      MockRenderProcessHost* rph);
+
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> render_process_host_;
+  std::unique_ptr<MockRenderProcessHost> new_render_process_host_;
 
   scoped_refptr<ServiceWorkerContextWrapper> wrapper_;
 
   IPC::TestSink sink_;
   IPC::TestSink inner_sink_;
 
+  std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>
+      mock_instance_clients_;
+  size_t mock_instance_clients_next_index_;
+
   int next_thread_id_;
   int mock_render_process_id_;
+  int new_mock_render_process_id_;
 
   std::unique_ptr<shell::InterfaceRegistry> render_process_interface_registry_;
+  std::unique_ptr<shell::InterfaceRegistry>
+      new_render_process_interface_registry_;
 
   std::map<int, int64_t> embedded_worker_id_service_worker_version_id_map_;
 

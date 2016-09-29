@@ -23,6 +23,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/common/console_message_level.h"
 #include "url/gurl.h"
@@ -31,8 +32,6 @@
 #ifdef SendMessage
 #undef SendMessage
 #endif
-
-struct EmbeddedWorkerMsg_StartWorker_Params;
 
 namespace IPC {
 class Message;
@@ -46,6 +45,7 @@ class InterfaceRegistry;
 namespace content {
 
 class EmbeddedWorkerRegistry;
+struct EmbeddedWorkerStartParams;
 class MessagePortMessageFilter;
 class ServiceWorkerContextCore;
 
@@ -112,7 +112,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // started and evaluated, or when an error occurs.
   // |params| should be populated with service worker version info needed
   // to start the worker.
-  void Start(std::unique_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+  void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
              const StatusCallback& callback);
 
   // Stops the worker. It is invalid to call this when the worker is
@@ -224,6 +224,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
                                      int worker_devtools_agent_route_id,
                                      bool wait_for_debugger);
 
+  // Sends StartWorker message via Mojo.
+  void SendMojoStartWorker(std::unique_ptr<EmbeddedWorkerStartParams> params);
+
   // Called back from StartTask after a start worker message is sent.
   void OnStartWorkerMessageSent();
 
@@ -306,8 +309,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   // Current running information.
   std::unique_ptr<EmbeddedWorkerInstance::WorkerProcessHandle> process_handle_;
   int thread_id_;
+
+  // These are connected to the renderer process after OnThreadStarted.
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
+  // |client_| is used to send messages to the renderer process.
+  mojom::EmbeddedWorkerInstanceClientPtr client_;
 
   // Whether devtools is attached or not.
   bool devtools_attached_;
