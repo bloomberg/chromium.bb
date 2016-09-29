@@ -2904,7 +2904,7 @@ def _GetConfig(site_config, ge_build_config, board_configs,
               vm_tests=[],
           )
 
-  def _AdjustTemplateConfigs():
+  def _AdjustReleaseConfigs():
     """Adjust ungrouped and grouped release configs"""
     (builder_group_dict, builder_ungrouped_dict) = (
         config_lib.GroupBoardsByBuilderAndBoardGroup(
@@ -2912,129 +2912,6 @@ def _GetConfig(site_config, ge_build_config, board_configs,
     _AdjustUngroupedReleaseConfigs(builder_ungrouped_dict)
     _AdjustGroupedReleaseConfigs(builder_group_dict)
 
-  _AdjustTemplateConfigs()
-
-  def MergeOverwrittenConfigs(*args, **kwargs):
-    """Merge overwritten configs."""
-    result = config_lib.BuildConfig()
-    result.apply(*args, **kwargs)
-    return result
-
-  overwritten_configs = {
-      'amd64-generic-chromium-pfq': {
-          'disk_layout': '2gb-rootfs',
-          'useflags': [],
-      },
-
-      'beaglebone-paladin': {
-          'chrome_sdk': False,
-          'image_test': False,
-          'rootfs_verification': False,
-          'sync_chrome': False,
-      },
-
-      'beaglebone_servo-paladin': {
-          'chrome_sdk': False,
-          'image_test': False,
-          'rootfs_verification': False,
-          'sync_chrome': False,
-      },
-
-      'lakitu-pre-cq':
-          site_config.templates.lakitu_test_customizations,
-
-      'lakitu_next-pre-cq':
-          site_config.templates.lakitu_test_customizations,
-
-      ### Arm release configs
-      'smaug-release' : {
-          'paygen': False,
-          'sign_types':['nv_lp0_firmware'],
-      },
-
-      # beaglebone build doesn't generate signed images, so don't try
-      # to release them.
-      'beaglebone-release': MergeOverwrittenConfigs(
-          site_config.templates.beaglebone,
-          buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-          images=['base', 'test'],
-      ),
-
-      'beaglebone_servo-release': MergeOverwrittenConfigs(
-          site_config.templates.beaglebone,
-          payload_image='base',
-          buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-          images=['base', 'test'],
-      ),
-
-      # Hw Lab can't test storm, yet.
-      'storm-release': {
-          'paygen_skip_testing':True,
-          'signer_tests':False,
-      },
-
-      'whirlwind-release': {
-          'dev_installer_prebuilts':True,
-      },
-
-      'lakitu-release': MergeOverwrittenConfigs(
-          site_config.templates.lakitu_test_customizations,
-          sign_types=['base'],
-      ),
-
-      'lakitu_next-release': MergeOverwrittenConfigs(
-          site_config.templates.lakitu_test_customizations,
-          signer_tests=False,
-      ),
-
-      'guado_labstation-release': {
-          'hw_tests':[config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
-                      num=1, timeout=120*60, warn_only=True,
-                      async=True, retry=False, max_retries=None,
-                      file_bugs=False),
-          ],
-           'image_test':False,
-           'images':['test'],
-           'signer_tests':False,
-           'paygen':False,
-           'vm_tests':[],
-      },
-
-      'lumpy-chrome-pfq': {
-          'afdo_generate': True,
-          # Disable hugepages before collecting AFDO profile.
-          'useflags': append_useflags(['-transparent_hugepage']),
-          'hw_tests': ([hw_test_list.AFDORecordTest()] +
-                       hw_test_list.SharedPoolPFQ()),
-      },
-
-      'cyan-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
-      'daisy_skate-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'falco-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'veyron_minnie-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
-      },
-
-      'peach_pit-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-
-      'tricky-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
-  }
-
-  def _OverwriteBoardConfigs():
-    """Given boards, overwrite special configs if needed."""
     for board in _cheets_boards:
       config_name = GetReleaseConfigName(board)
       # For boards in _cheets_boards, use cheets_release template
@@ -3051,15 +2928,7 @@ def _GetConfig(site_config, ge_build_config, board_configs,
           board_configs[board],
       )
 
-    for config_name, overrides  in overwritten_configs.iteritems():
-      # TODO: Turn this assert into a unittest.
-      # config = site_config[config_name]
-      # for k, v in overrides.iteritems():
-      #   assert config[k] != v, ('Unnecessary override: %s: %s' %
-      #                           (config_name, k))
-      site_config[config_name].apply(**overrides)
-
-  _OverwriteBoardConfigs()
+  _AdjustReleaseConfigs()
 
   def _AddPayloadConfigs():
     """Create <board>-payloads configs for all payload generating boards.
@@ -3068,7 +2937,6 @@ def _GetConfig(site_config, ge_build_config, board_configs,
     config with 'paygen' True. The idea is that we have a build that generates
     payloads, we need to have a tryjob to re-attempt them on failure.
     """
-    # Generate a payloads trybot config for every board that generates payloads.
     for board in _all_release_boards:
       if site_config['%s-release' % board].paygen:
         site_config.Add(
@@ -3136,6 +3004,141 @@ def InsertWaterfallDefaults(site_config, is_release_branch):
         site_config[name]['active_waterfall'] = waterfall
 
 
+def ApplyCustomOverrides(site_config, hw_test_list):
+  """Method with to override specific flags for specific builders.
+
+  Generally try really hard to avoid putting anything here that isn't
+  a really special case for a single specific builder. This is performed
+  after every other bit of processing, so it always has the final say.
+
+  Args:
+    site_config: config_lib.SiteConfig containing builds to have their
+                 waterfall values updated.
+    hw_test_list: Object to help create lists of standard HW Tests.
+  """
+  overwritten_configs = {
+      'amd64-generic-chromium-pfq': {
+          'disk_layout': '2gb-rootfs',
+          'useflags': [],
+      },
+
+      'beaglebone-paladin': {
+          'chrome_sdk': False,
+          'image_test': False,
+          'rootfs_verification': False,
+          'sync_chrome': False,
+      },
+
+      'beaglebone_servo-paladin': {
+          'chrome_sdk': False,
+          'image_test': False,
+          'rootfs_verification': False,
+          'sync_chrome': False,
+      },
+
+      'lakitu-pre-cq':
+          site_config.templates.lakitu_test_customizations,
+
+      'lakitu_next-pre-cq':
+          site_config.templates.lakitu_test_customizations,
+
+      ### Arm release configs
+      'smaug-release' : {
+          'paygen': False,
+          'sign_types':['nv_lp0_firmware'],
+      },
+
+      # beaglebone build doesn't generate signed images, so don't try
+      # to release them.
+      'beaglebone-release': config_lib.BuildConfig().apply(
+          site_config.templates.beaglebone,
+          buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+          images=['base', 'test'],
+      ),
+
+      'beaglebone_servo-release': config_lib.BuildConfig().apply(
+          site_config.templates.beaglebone,
+          payload_image='base',
+          buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+          images=['base', 'test'],
+      ),
+
+      # Hw Lab can't test storm, yet.
+      'storm-release': {
+          'paygen_skip_testing':True,
+          'signer_tests':False,
+      },
+
+      'whirlwind-release': {
+          'dev_installer_prebuilts':True,
+      },
+
+      'lakitu-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_test_customizations,
+          sign_types=['base'],
+      ),
+
+      'lakitu_next-release': config_lib.BuildConfig().apply(
+          site_config.templates.lakitu_test_customizations,
+          signer_tests=False,
+      ),
+
+      'guado_labstation-release': {
+          'hw_tests': [
+              config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
+                                      num=1, timeout=120*60, warn_only=True,
+                                      async=True, retry=False, max_retries=None,
+                                      file_bugs=False),
+          ],
+          'image_test':False,
+          'images':['test'],
+          'signer_tests':False,
+          'paygen':False,
+          'vm_tests':[],
+      },
+
+      'lumpy-chrome-pfq': {
+          'afdo_generate': True,
+          # Disable hugepages before collecting AFDO profile.
+          'useflags': append_useflags(['-transparent_hugepage']),
+          'hw_tests': ([hw_test_list.AFDORecordTest()] +
+                       hw_test_list.SharedPoolPFQ()),
+      },
+
+      'cyan-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'daisy_skate-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'falco-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'veyron_minnie-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
+      'peach_pit-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+
+      'tricky-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
+  }
+
+  for config_name, overrides  in overwritten_configs.iteritems():
+    # TODO: Turn this assert into a unittest.
+    # config = site_config[config_name]
+    # for k, v in overrides.iteritems():
+    #   assert config[k] != v, ('Unnecessary override: %s: %s' %
+    #                           (config_name, k))
+    site_config[config_name].apply(**overrides)
+
+
 @factory.CachedFunctionCall
 def GetConfig():
   """Create the Site configuration for all ChromeOS builds.
@@ -3173,5 +3176,7 @@ def GetConfig():
 
   # Assign waterfalls to builders that don't have them yet.
   InsertWaterfallDefaults(site_config, is_release_branch)
+
+  ApplyCustomOverrides(site_config, hw_test_list)
 
   return site_config

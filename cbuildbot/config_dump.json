@@ -3415,6 +3415,12 @@
         "vm_tests": [],
         "vm_tests_override": null
     },
+    "beaglebone-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "beaglebone"
+        ]
+    },
     "beaglebone-pre-cq": {
         "_template": "pre_cq",
         "boards": [
@@ -3626,6 +3632,12 @@
         ],
         "vm_tests": [],
         "vm_tests_override": null
+    },
+    "beaglebone_servo-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "beaglebone_servo"
+        ]
     },
     "beaglebone_servo-pre-cq": {
         "_template": "pre_cq",
@@ -10080,6 +10092,12 @@
             "chrome_internal"
         ],
         "vm_tests": []
+    },
+    "guado_labstation-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "guado_labstation"
+        ]
     },
     "guado_labstation-pre-cq": {
         "_template": "pre_cq",
@@ -20406,6 +20424,12 @@
         ],
         "vm_tests": [],
         "vm_tests_override": null
+    },
+    "smaug-payloads": {
+        "_template": "payloads",
+        "boards": [
+            "smaug"
+        ]
     },
     "smaug-pre-cq": {
         "_template": "pre_cq",
