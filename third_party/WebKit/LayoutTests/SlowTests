@@ -191,6 +191,22 @@ crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests19.html [ Slow ]
 crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests2.html [ Slow ]
 crbug.com/490511 imported/wpt/html/syntax/parsing/html5lib_tests20.html [ Slow ]
 
+crbug.com/490939 imported/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Slow ]
+crbug.com/490939 imported/wpt/dom/ranges/Range-comparePoint.html [ Slow ]
+crbug.com/490939 imported/wpt/dom/ranges/Range-isPointInRange.html [ Slow ]
+crbug.com/490939 imported/wpt/dom/ranges/Range-mutations.html [ Slow ]
+crbug.com/490939 imported/wpt/dom/ranges/Range-set.html [ Slow ]
+crbug.com/490939 imported/wpt/html/dom/reflection-embedded.html [ Slow ]
+crbug.com/490939 imported/wpt/html/dom/reflection-forms.html [ Slow ]
+crbug.com/490939 imported/wpt/html/dom/reflection-grouping.html [ Slow ]
+crbug.com/490939 imported/wpt/html/dom/reflection-metadata.html [ Slow ]
+crbug.com/490939 imported/wpt/html/dom/reflection-misc.html [ Slow ]
+crbug.com/490939 imported/wpt/html/dom/reflection-obsolete.html [ Slow ]
+crbug.com/490939 imported/wpt/html/dom/reflection-sections.html [ Slow ]
+crbug.com/490939 imported/wpt/html/dom/reflection-tabular.html [ Slow ]
+crbug.com/490939 imported/wpt/html/dom/reflection-text.html [ Slow ]
+crbug.com/490939 imported/wpt/svg/interfaces.html [ Slow ]
+
 # FIXME: These tests might still be buggy and time out. They were marked as Slow on 9/20/2013.
 # Double-check the data after they've been running another week or so.
 webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.html [ Slow ]

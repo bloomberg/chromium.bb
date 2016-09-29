@@ -345,22 +345,8 @@ imported/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-037.html [
 imported/wpt/html/syntax/parsing-html-fragments/the-input-byte-stream-038.html [ Skip ]
 
 # crbug.com/490939: The following tests are too large.  They cause time out frequently.
-imported/wpt/dom/ranges/Range-compareBoundaryPoints.html [ Skip ]
-imported/wpt/dom/ranges/Range-comparePoint.html [ Skip ]
-imported/wpt/dom/ranges/Range-isPointInRange.html [ Skip ]
-imported/wpt/dom/ranges/Range-mutations.html [ Skip ]
-imported/wpt/dom/ranges/Range-set.html [ Skip ]
+# Also, html/dom/interfaces.html is flaky.
 imported/wpt/html/dom/interfaces.html [ Skip ]
-imported/wpt/html/dom/reflection-embedded.html [ Skip ]
-imported/wpt/html/dom/reflection-forms.html [ Skip ]
-imported/wpt/html/dom/reflection-grouping.html [ Skip ]
-imported/wpt/html/dom/reflection-metadata.html [ Skip ]
-imported/wpt/html/dom/reflection-misc.html [ Skip ]
-imported/wpt/html/dom/reflection-obsolete.html [ Skip ]
-imported/wpt/html/dom/reflection-sections.html [ Skip ]
-imported/wpt/html/dom/reflection-tabular.html [ Skip ]
-imported/wpt/html/dom/reflection-text.html [ Skip ]
-imported/wpt/svg/interfaces.html [ Skip ]
 
 # Depends on unimported directories of web-platform-tests/.
 imported/wpt/html/browsers/browsing-the-web/read-text/load-text-plain.html [ Skip ]
