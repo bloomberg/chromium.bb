@@ -5,7 +5,7 @@
 // The tests here cover the end-to-end functionality of tab capturing and
 // playback as video.  The page generates video test patterns that rotate
 // cyclicly, and the rendering output of the tab is captured into a
-// LocalMediaStream.  This stream is then piped into a video element for
+// local MediaStream.  This stream is then piped into a video element for
 // playback, and a canvas is used to examine the frames of the video for
 // expected content.  The stream may be plumbed one of two ways, depending on
 // the 'method' query param:
@@ -13,6 +13,12 @@
 //   local:  LocalMediaStream --> DOM Video Element
 //   webrtc: LocalMediaStream --> PeerConnection (sender)
 //             --> PeerConnection (receiver) --> DOM Video Element
+//
+// There are two rounds of testing: In each round, video frames are received and
+// monitored, and the round successfully completes once each of the expected
+// patterns is observed. Between the two rounds, the MediaStream is disconnected
+// from its consumer, which places the tab capture "device" into a suspend mode.
+var testRoundNumber = 0;
 
 // The test pattern cycles as a color fill of red, then green, then blue.
 var colors = [ [ 255, 0, 0 ], [ 0, 255, 0 ], [ 0, 0, 255 ] ];
@@ -78,16 +84,19 @@ function renderTestPatternLoop() {
     if (curIdx >= colors.length) {  // Completed a cycle.
       curIdx = 0;
       // Increase the wait time between switching test patterns for overloaded
-      // bots that aren't capturing all the frames of video.
-      this.stepTimeMillis *= 1.25;
+      // bots that aren't capturing all the frames of video. Only do this for
+      // the first test phase, since increases shouldn't be needed after that.
+      if (testRoundNumber == 0) {
+        this.stepTimeMillis *= 1.25;
+      }
     }
     this.nextSteppingAt = now + this.stepTimeMillis;
   }
 }
 
 function waitForExpectedColors(colorDeviation) {
-  // If needed, create the video and canvas elements, but no need to append them
-  // to the DOM.
+  // At the start of a round of testing, create the video and canvas elements,
+  // but no need to append them to the DOM.
   if (!this.video) {
     this.video = document.createElement("video");
     this.video.width = width;
@@ -119,15 +128,39 @@ function waitForExpectedColors(colorDeviation) {
       if (Math.abs(pixel[0] - curColor[0]) <= colorDeviation &&
           Math.abs(pixel[1] - curColor[1]) <= colorDeviation &&
           Math.abs(pixel[2] - curColor[2]) <= colorDeviation) {
-        console.debug("Observed expected color RGB(" + curColor +
-            ") in the video as RGB(" + pixel + ")");
+        console.debug(`${testRoundNumber == 0 ? 'First' : 'Second'} round: ` +
+            `Observed expected color RGB(${curColor}) in the video as ` +
+            `RGB(${pixel})`);
         expectedColors.splice(i, 1);
       }
     }
   }
 
   if (expectedColors.length == 0) {
-    chrome.test.succeed();
+    // Successful end of the current test round. If the first round, sleep, then
+    // execute the second round. If the second round, then the whole test has
+    // succeeded.
+    if (testRoundNumber == 0) {
+      // Destroy the video, which will disconnect the consumer of the
+      // MediaStream.
+      this.video.removeEventListener("error", chrome.test.fail);
+      this.video.src = '';
+      this.video = null;
+
+      // Wait one second, then execute the second round of testing. This tests
+      // the suspend/resume functionality of tab capture (w.r.t. a MediaStream
+      // having no consumers, and then being re-used with a new consumer).
+      console.debug('First round succeeded! Now testing suspend/resume...');
+      setTimeout(function() {
+        ++testRoundNumber;
+        for (const color of colors) {
+          expectedColors.push(color);
+        }
+        waitForExpectedColors(colorDeviation);
+      }, 1000);
+    } else {
+      chrome.test.succeed();
+    }
   } else {
     setTimeout(function () { waitForExpectedColors(colorDeviation); },
                1000 / frameRate);

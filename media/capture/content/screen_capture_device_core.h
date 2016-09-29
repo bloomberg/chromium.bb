@@ -37,6 +37,10 @@ class CAPTURE_EXPORT VideoCaptureMachine {
                      const VideoCaptureParams& params,
                      const base::Callback<void(bool)> callback) = 0;
 
+  // Suspend/Resume frame delivery. Implementations of these are optional.
+  virtual void Suspend() {}
+  virtual void Resume() {}
+
   // Stops capturing.
   // |callback| is invoked after the capturing has stopped.
   virtual void Stop(const base::Closure& callback) = 0;
@@ -82,11 +86,13 @@ class CAPTURE_EXPORT ScreenCaptureDeviceCore
   void AllocateAndStart(const VideoCaptureParams& params,
                         std::unique_ptr<VideoCaptureDevice::Client> client);
   void RequestRefreshFrame();
+  void Suspend();
+  void Resume();
   void StopAndDeAllocate();
 
  private:
   // Flag indicating current state.
-  enum State { kIdle, kCapturing, kError, kLastCaptureState };
+  enum State { kIdle, kCapturing, kSuspended, kError, kLastCaptureState };
 
   void TransitionStateTo(State next_state);
 

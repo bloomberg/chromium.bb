@@ -69,7 +69,7 @@ void ScreenCaptureDeviceCore::AllocateAndStart(
 void ScreenCaptureDeviceCore::RequestRefreshFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (state_ != kCapturing)
+  if (state_ != kCapturing && state_ != kSuspended)
     return;
 
   if (oracle_proxy_->AttemptPassiveRefresh())
@@ -77,10 +77,32 @@ void ScreenCaptureDeviceCore::RequestRefreshFrame() {
   capture_machine_->MaybeCaptureForRefresh();
 }
 
-void ScreenCaptureDeviceCore::StopAndDeAllocate() {
+void ScreenCaptureDeviceCore::Suspend() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ != kCapturing)
+    return;
+
+  TransitionStateTo(kSuspended);
+
+  capture_machine_->Suspend();
+}
+
+void ScreenCaptureDeviceCore::Resume() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (state_ != kSuspended)
+    return;
+
+  TransitionStateTo(kCapturing);
+
+  capture_machine_->Resume();
+}
+
+void ScreenCaptureDeviceCore::StopAndDeAllocate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (state_ != kCapturing && state_ != kSuspended)
     return;
 
   oracle_proxy_->Stop();
@@ -105,7 +127,7 @@ ScreenCaptureDeviceCore::ScreenCaptureDeviceCore(
 
 ScreenCaptureDeviceCore::~ScreenCaptureDeviceCore() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(state_, kCapturing);
+  DCHECK(state_ != kCapturing && state_ != kSuspended);
   if (capture_machine_) {
     capture_machine_->Stop(
         base::Bind(&DeleteCaptureMachine, base::Passed(&capture_machine_)));
@@ -117,7 +139,8 @@ void ScreenCaptureDeviceCore::TransitionStateTo(State next_state) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
 #ifndef NDEBUG
-  static const char* kStateNames[] = {"Idle", "Capturing", "Error"};
+  static const char* kStateNames[] = {"Idle", "Capturing", "Suspended",
+                                      "Error"};
   static_assert(arraysize(kStateNames) == kLastCaptureState,
                 "Different number of states and textual descriptions");
   DVLOG(1) << "State change: " << kStateNames[state_] << " --> "

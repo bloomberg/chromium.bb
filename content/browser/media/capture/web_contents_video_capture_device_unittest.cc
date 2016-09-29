@@ -468,7 +468,8 @@ class StubClientObserver {
  public:
   StubClientObserver()
       : error_encountered_(false),
-        wait_color_yuv_(0xcafe1950) {
+        wait_color_yuv_(0xcafe1950),
+        expecting_frames_(true) {
     client_.reset(new StubClient(
         base::Bind(&StubClientObserver::DidDeliverFrame,
                    base::Unretained(this)),
@@ -481,8 +482,14 @@ class StubClientObserver {
     return std::move(client_);
   }
 
+  void SetIsExpectingFrames(bool expecting_frames) {
+    base::AutoLock guard(lock_);
+    expecting_frames_ = expecting_frames;
+  }
+
   void QuitIfConditionsMet(SkColor color, const gfx::Size& size) {
     base::AutoLock guard(lock_);
+    EXPECT_TRUE(expecting_frames_);
     if (error_encountered_ || wait_color_yuv_ == kNotInterested ||
         wait_color_yuv_ == color) {
       last_frame_color_yuv_ = color;
@@ -566,6 +573,7 @@ class StubClientObserver {
   SkColor last_frame_color_yuv_;
   gfx::Size last_frame_size_;
   std::unique_ptr<StubClient> client_;
+  bool expecting_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(StubClientObserver);
 };
@@ -1184,6 +1192,41 @@ TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest,
     RunTestForPreferredSize(
         policies[i], gfx::Size(837, 999), gfx::Size(837, 999));
   }
+}
+
+// Tests the Suspend/Resume() functionality.
+TEST_F(MAYBE_WebContentsVideoCaptureDeviceTest, SuspendsAndResumes) {
+  media::VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(kTestWidth, kTestHeight);
+  capture_params.requested_format.frame_rate = kTestFramesPerSecond;
+  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  device()->AllocateAndStart(capture_params, client_observer()->PassClient());
+
+  for (int i = 0; i < 3; ++i) {
+    // Draw a RED frame and wait for a normal frame capture to occur.
+    source()->SetSolidColor(SK_ColorRED);
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorRED));
+
+    // Suspend capture and then draw a GREEN frame. No frame capture should
+    // occur.
+    device()->MaybeSuspend();
+    base::RunLoop().RunUntilIdle();
+    client_observer()->SetIsExpectingFrames(false);
+    source()->SetSolidColor(SK_ColorGREEN);
+    SimulateDrawEvent();
+    base::RunLoop().RunUntilIdle();
+
+    // Resume capture and then draw a BLUE frame and wait for it to be captured.
+    device()->Resume();
+    base::RunLoop().RunUntilIdle();
+    client_observer()->SetIsExpectingFrames(true);
+    source()->SetSolidColor(SK_ColorBLUE);
+    SimulateDrawEvent();
+    ASSERT_NO_FATAL_FAILURE(client_observer()->WaitForNextColor(SK_ColorBLUE));
+  }
+
+  device()->StopAndDeAllocate();
 }
 
 // Tests the RequestRefreshFrame() functionality.

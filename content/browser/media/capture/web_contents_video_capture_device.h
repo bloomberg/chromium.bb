@@ -38,6 +38,8 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void RequestRefreshFrame() override;
+  void MaybeSuspend() override;
+  void Resume() override;
   void StopAndDeAllocate() override;
 
  private:

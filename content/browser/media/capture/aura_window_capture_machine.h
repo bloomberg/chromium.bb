@@ -43,6 +43,8 @@ class AuraWindowCaptureMachine
   void Start(const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
              const media::VideoCaptureParams& params,
              const base::Callback<void(bool)> callback) override;
+  void Suspend() override;
+  void Resume() override;
   void Stop(const base::Closure& callback) override;
   void MaybeCaptureForRefresh() override;
 
@@ -66,6 +68,8 @@ class AuraWindowCaptureMachine
   bool InternalStart(
       const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
       const media::VideoCaptureParams& params);
+  void InternalSuspend();
+  void InternalResume();
   void InternalStop(const base::Closure& callback);
 
   // Captures a frame. |event_time| is provided by the compositor, or is null
@@ -125,6 +129,10 @@ class AuraWindowCaptureMachine
   // TODO(jiayl): Remove power_save_blocker_ when there is an API to keep the
   // screen from sleeping for the drive-by web.
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
+
+  // False while frame capture has been suspended. All other aspects of the
+  // machine are maintained.
+  bool frame_capture_active_;
 
   // WeakPtrs are used for the asynchronous capture callbacks passed to external
   // modules.  They are only valid on the UI thread and become invalidated

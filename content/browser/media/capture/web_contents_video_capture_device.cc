@@ -61,6 +61,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
@@ -264,6 +265,8 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   void Start(const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
              const media::VideoCaptureParams& params,
              const base::Callback<void(bool)> callback) override;
+  void Suspend() override;
+  void Resume() override;
   void Stop(const base::Closure& callback) override;
   bool IsAutoThrottlingEnabled() const override {
     return auto_throttling_enabled_;
@@ -284,6 +287,8 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   bool InternalStart(
       const scoped_refptr<media::ThreadSafeCaptureOracle>& oracle_proxy,
       const media::VideoCaptureParams& params);
+  void InternalSuspend();
+  void InternalResume();
   void InternalStop(const base::Closure& callback);
   void InternalMaybeCaptureForRefresh();
   bool IsStarted() const;
@@ -344,6 +349,11 @@ class WebContentsCaptureMachine : public media::VideoCaptureMachine {
   // Responsible for forwarding events from the active RenderWidgetHost to the
   // oracle, and initiating captures accordingly.
   std::unique_ptr<ContentCaptureSubscription> subscription_;
+
+  // False while frame capture has been suspended. This prevents subscriptions
+  // from being created by RenewFrameSubscription() until frame capture is
+  // resumed.
+  bool frame_capture_active_;
 
   // Weak pointer factory used to invalidate callbacks.
   // NOTE: Weak pointers must be invalidated before all other member variables.
@@ -618,6 +628,7 @@ WebContentsCaptureMachine::WebContentsCaptureMachine(
       initial_main_render_frame_id_(main_render_frame_id),
       tracker_(new WebContentsTracker(true)),
       auto_throttling_enabled_(enable_auto_throttling),
+      frame_capture_active_(true),
       weak_ptr_factory_(this) {
   DVLOG(1) << "Created WebContentsCaptureMachine for " << render_process_id
            << ':' << main_render_frame_id
@@ -668,8 +679,41 @@ bool WebContentsCaptureMachine::InternalStart(
   tracker_->Start(initial_render_process_id_, initial_main_render_frame_id_,
                   base::Bind(&WebContentsCaptureMachine::RenewFrameSubscription,
                              weak_ptr_factory_.GetWeakPtr()));
+  if (WebContents* contents = tracker_->web_contents())
+    contents->IncrementCapturerCount(ComputeOptimalViewSize());
 
   return true;
+}
+
+void WebContentsCaptureMachine::Suspend() {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&WebContentsCaptureMachine::InternalSuspend,
+                 base::Unretained(this)));
+}
+
+void WebContentsCaptureMachine::InternalSuspend() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!frame_capture_active_)
+    return;
+  frame_capture_active_ = false;
+  if (IsStarted())
+    RenewFrameSubscription(true);
+}
+
+void WebContentsCaptureMachine::Resume() {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&WebContentsCaptureMachine::InternalResume,
+                                     base::Unretained(this)));
+}
+
+void WebContentsCaptureMachine::InternalResume() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (frame_capture_active_)
+    return;
+  frame_capture_active_ = true;
+  if (IsStarted())
+    RenewFrameSubscription(true);
 }
 
 void WebContentsCaptureMachine::Stop(const base::Closure& callback) {
@@ -691,9 +735,9 @@ void WebContentsCaptureMachine::InternalStop(const base::Closure& callback) {
   // return false from here onward.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  // Note: RenewFrameSubscription() must be called before stopping |tracker_| so
-  // the web_contents() can be notified that the capturing is ending.
   RenewFrameSubscription(false);
+  if (WebContents* contents = tracker_->web_contents())
+    contents->DecrementCapturerCount();
   tracker_->Stop();
 
   // The render thread cannot be stopped on the UI thread, so post a message
@@ -884,15 +928,13 @@ void WebContentsCaptureMachine::RenewFrameSubscription(bool had_target) {
       had_target ? tracker_->GetTargetRenderWidgetHost() : nullptr;
 
   // Always destroy the old subscription before creating a new one.
-  const bool had_subscription = !!subscription_;
-  subscription_.reset();
-
-  DVLOG(1) << "Renewing frame subscription to RWH@" << rwh
-           << ", had_subscription=" << had_subscription;
+  if (subscription_) {
+    DVLOG(1) << "Cancelling existing ContentCaptureSubscription.";
+    subscription_.reset();
+  }
 
   if (!rwh) {
-    if (had_subscription && tracker_->web_contents())
-      tracker_->web_contents()->DecrementCapturerCount();
+    DVLOG(1) << "Cannot renew ContentCaptureSubscription: no RWH target.";
     if (IsStarted()) {
       // Tracking of WebContents and/or its main frame has failed before Stop()
       // was called, so report this as an error:
@@ -902,12 +944,12 @@ void WebContentsCaptureMachine::RenewFrameSubscription(bool had_target) {
     return;
   }
 
-  if (!had_subscription && tracker_->web_contents())
-    tracker_->web_contents()->IncrementCapturerCount(ComputeOptimalViewSize());
-
-  subscription_.reset(new ContentCaptureSubscription(
-      *rwh, oracle_proxy_, base::Bind(&WebContentsCaptureMachine::Capture,
-                                      weak_ptr_factory_.GetWeakPtr())));
+  if (frame_capture_active_) {
+    DVLOG(1) << "Renewing ContentCaptureSubscription to RWH@" << rwh;
+    subscription_.reset(new ContentCaptureSubscription(
+        *rwh, oracle_proxy_, base::Bind(&WebContentsCaptureMachine::Capture,
+                                        weak_ptr_factory_.GetWeakPtr())));
+  }
 }
 
 void WebContentsCaptureMachine::UpdateCaptureSize() {
@@ -974,6 +1016,14 @@ void WebContentsVideoCaptureDevice::AllocateAndStart(
 
 void WebContentsVideoCaptureDevice::RequestRefreshFrame() {
   core_->RequestRefreshFrame();
+}
+
+void WebContentsVideoCaptureDevice::MaybeSuspend() {
+  core_->Suspend();
+}
+
+void WebContentsVideoCaptureDevice::Resume() {
+  core_->Resume();
 }
 
 void WebContentsVideoCaptureDevice::StopAndDeAllocate() {

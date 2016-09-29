@@ -38,6 +38,7 @@ namespace content {
 AuraWindowCaptureMachine::AuraWindowCaptureMachine()
     : desktop_window_(NULL),
       screen_capture_(false),
+      frame_capture_active_(true),
       weak_factory_(this) {}
 
 AuraWindowCaptureMachine::~AuraWindowCaptureMachine() {}
@@ -92,6 +93,30 @@ bool AuraWindowCaptureMachine::InternalStart(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
 
   return true;
+}
+
+void AuraWindowCaptureMachine::Suspend() {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&AuraWindowCaptureMachine::InternalSuspend,
+                                     base::Unretained(this)));
+}
+
+void AuraWindowCaptureMachine::InternalSuspend() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DVLOG(1) << "Suspending frame capture and delivery.";
+  frame_capture_active_ = false;
+}
+
+void AuraWindowCaptureMachine::Resume() {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&AuraWindowCaptureMachine::InternalResume,
+                                     base::Unretained(this)));
+}
+
+void AuraWindowCaptureMachine::InternalResume() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DVLOG(1) << "Resuming frame capture and delivery.";
+  frame_capture_active_ = true;
 }
 
 void AuraWindowCaptureMachine::Stop(const base::Closure& callback) {
@@ -408,7 +433,8 @@ void AuraWindowCaptureMachine::OnAnimationStep(base::TimeTicks timestamp) {
   // captures and quality/smoothness of animating content will suffer
   // significantly.
   // http://crbug.com/492839
-  Capture(timestamp);
+  if (frame_capture_active_)
+    Capture(timestamp);
 }
 
 void AuraWindowCaptureMachine::OnCompositingShuttingDown(
