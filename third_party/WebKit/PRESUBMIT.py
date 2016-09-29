@@ -13,7 +13,11 @@ import re
 import sys
 
 
-_EXCLUDED_PATHS = ()
+_EXCLUDED_PATHS = (
+    # LayoutTests/imported is excluded because these files are automatically
+    # imported, so we do not have direct control over their content.
+    r'^third_party[\\\/]WebKit[\\\/]LayoutTests[\\\/]imported[\\\/].*',
+)
 
 
 def _CheckForNonBlinkVariantMojomIncludes(input_api, output_api):
