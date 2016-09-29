@@ -174,12 +174,11 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
 
 static StyleRecalcChange diffPseudoStyles(const ComputedStyle& oldStyle, const ComputedStyle& newStyle)
 {
-    // If the pseudoStyles have changed, we want any StyleRecalcChange that is not NoChange
-    // because setStyle will do the right thing with anything else.
-    if (!oldStyle.hasAnyPublicPseudoStyles())
+    // If the pseudoStyles have changed, ensure layoutObject triggers setStyle.
+    if (!oldStyle.hasAnyPublicPseudoStyles() && !newStyle.hasAnyPublicPseudoStyles())
         return NoChange;
     for (PseudoId pseudoId = FirstPublicPseudoId; pseudoId < FirstInternalPseudoId; pseudoId = static_cast<PseudoId>(pseudoId + 1)) {
-        if (!oldStyle.hasPseudoStyle(pseudoId))
+        if (!oldStyle.hasPseudoStyle(pseudoId) && !newStyle.hasPseudoStyle(pseudoId))
             continue;
         const ComputedStyle* newPseudoStyle = newStyle.getCachedPseudoStyle(pseudoId);
         if (!newPseudoStyle)
