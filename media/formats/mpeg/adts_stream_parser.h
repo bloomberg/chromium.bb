@@ -18,7 +18,6 @@ class MEDIA_EXPORT ADTSStreamParser : public MPEGAudioStreamParserBase {
   ADTSStreamParser();
   ~ADTSStreamParser() override;
 
- private:
   // MPEGAudioStreamParserBase overrides.
   int ParseFrameHeader(const uint8_t* data,
                        int size,
@@ -26,8 +25,10 @@ class MEDIA_EXPORT ADTSStreamParser : public MPEGAudioStreamParserBase {
                        int* sample_rate,
                        ChannelLayout* channel_layout,
                        int* sample_count,
-                       bool* metadata_frame) const override;
+                       bool* metadata_frame,
+                       std::vector<uint8_t>* extra_data) const override;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ADTSStreamParser);
 };
 

@@ -18,6 +18,7 @@
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_export.h"
 #include "media/formats/mp2t/es_parser.h"
+#include "media/formats/mpeg/adts_stream_parser.h"
 
 namespace media {
 class AudioTimestampHelper;
@@ -61,7 +62,7 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
   // Signal any audio configuration change (if any).
   // Return false if the current audio config is not
   // a supported ADTS audio config.
-  bool UpdateAudioConfiguration(const uint8_t* adts_header);
+  bool UpdateAudioConfiguration(const uint8_t* adts_header, int size);
 
   // Callbacks:
   // - to signal a new audio configuration,
@@ -78,6 +79,8 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
 
   // Last audio config.
   AudioDecoderConfig last_audio_decoder_config_;
+
+  ADTSStreamParser adts_parser_;
 
   DISALLOW_COPY_AND_ASSIGN(EsParserAdts);
 };

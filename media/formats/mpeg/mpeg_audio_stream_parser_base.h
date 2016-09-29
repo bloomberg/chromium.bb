@@ -82,7 +82,8 @@ class MEDIA_EXPORT MPEGAudioStreamParserBase : public StreamParser {
                                int* sample_rate,
                                ChannelLayout* channel_layout,
                                int* sample_count,
-                               bool* metadata_frame) const = 0;
+                               bool* metadata_frame,
+                               std::vector<uint8_t>* extra_data) const = 0;
 
   const scoped_refptr<MediaLog>& media_log() const { return media_log_; }
 

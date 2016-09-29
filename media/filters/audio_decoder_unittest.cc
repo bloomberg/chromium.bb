@@ -38,7 +38,7 @@
 #include "media/filters/android/media_codec_audio_decoder.h"
 
 #if defined(USE_PROPRIETARY_CODECS)
-#include "media/formats/mpeg/adts_header_parser.h"
+#include "media/formats/mpeg/adts_stream_parser.h"
 #endif
 
 // Helper macro to skip the test if MediaCodec is not available.
@@ -204,9 +204,16 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
     // streams we need to extract it with a separate procedure.
     if (GetParam().decoder_type == MEDIA_CODEC &&
         GetParam().codec == kCodecAAC && config.extra_data().empty()) {
-      size_t ignore_orig_sample_rate;
-      ASSERT_TRUE(ParseAdtsHeader(packet.data, false, &config,
-                                  &ignore_orig_sample_rate));
+      int sample_rate;
+      ChannelLayout channel_layout;
+      std::vector<uint8_t> extra_data;
+      ASSERT_GT(ADTSStreamParser().ParseFrameHeader(
+                    packet.data, packet.size, nullptr, &sample_rate,
+                    &channel_layout, nullptr, nullptr, &extra_data),
+                0);
+      config.Initialize(kCodecAAC, kSampleFormatS16, channel_layout,
+                        sample_rate, extra_data, Unencrypted(),
+                        base::TimeDelta(), 0);
       ASSERT_FALSE(config.extra_data().empty());
     }
 #endif

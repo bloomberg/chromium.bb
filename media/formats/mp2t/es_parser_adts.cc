@@ -13,12 +13,12 @@
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/bit_reader.h"
 #include "media/base/channel_layout.h"
+#include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/common/offset_byte_queue.h"
 #include "media/formats/mp2t/mp2t_common.h"
 #include "media/formats/mpeg/adts_constants.h"
-#include "media/formats/mpeg/adts_header_parser.h"
 
 namespace media {
 
@@ -123,7 +123,7 @@ bool EsParserAdts::ParseFromEsQueue() {
   while (LookForAdtsFrame(&adts_frame)) {
     // Update the audio configuration if needed.
     DCHECK_GE(adts_frame.size, kADTSHeaderMinSize);
-    if (!UpdateAudioConfiguration(adts_frame.data))
+    if (!UpdateAudioConfiguration(adts_frame.data, adts_frame.size))
       return false;
 
     // Get the PTS & the duration of this access unit.
@@ -173,12 +173,28 @@ void EsParserAdts::ResetInternal() {
   last_audio_decoder_config_ = AudioDecoderConfig();
 }
 
-bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header) {
-  AudioDecoderConfig audio_decoder_config;
-  size_t orig_sample_rate = 0;
-  if (!ParseAdtsHeader(adts_header, sbr_in_mimetype_, &audio_decoder_config,
-                       &orig_sample_rate))
+bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header,
+                                            int size) {
+  int orig_sample_rate;
+  ChannelLayout channel_layout;
+  std::vector<uint8_t> extra_data;
+  if (adts_parser_.ParseFrameHeader(adts_header, size, nullptr,
+                                    &orig_sample_rate, &channel_layout, nullptr,
+                                    nullptr, &extra_data) <= 0) {
     return false;
+  }
+
+  // The following code is written according to ISO 14496 Part 3 Table 1.11 and
+  // Table 1.22. (Table 1.11 refers to the capping to 48000, Table 1.22 refers
+  // to SBR doubling the AAC sample rate.)
+  // TODO(damienv) : Extend sample rate cap to 96kHz for Level 5 content.
+  const int extended_samples_per_second =
+      sbr_in_mimetype_ ? std::min(2 * orig_sample_rate, 48000)
+                       : orig_sample_rate;
+
+  AudioDecoderConfig audio_decoder_config(
+      kCodecAAC, kSampleFormatS16, channel_layout, extended_samples_per_second,
+      extra_data, Unencrypted());
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
     DVLOG(1) << "Sampling frequency: "
@@ -188,9 +204,8 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header) {
              << ChannelLayoutToString(audio_decoder_config.channel_layout());
 
     // For AAC audio with SBR (Spectral Band Replication) the sampling rate is
-    // doubled in ParseAdtsHeader above, but AudioTimestampHelper should still
-    // use the original sample rate to compute audio timestamps and durations
-    // correctly.
+    // doubled above, but AudioTimestampHelper should still use the original
+    // sample rate to compute audio timestamps and durations correctly.
 
     // Reset the timestamp helper to use a new time scale.
     if (audio_timestamp_helper_ &&

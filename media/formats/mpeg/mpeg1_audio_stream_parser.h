@@ -79,7 +79,8 @@ class MEDIA_EXPORT MPEG1AudioStreamParser : public MPEGAudioStreamParserBase {
                        int* sample_rate,
                        ChannelLayout* channel_layout,
                        int* sample_count,
-                       bool* metadata_frame) const override;
+                       bool* metadata_frame,
+                       std::vector<uint8_t>* extra_data) const override;
 
   DISALLOW_COPY_AND_ASSIGN(MPEG1AudioStreamParser);
 };
