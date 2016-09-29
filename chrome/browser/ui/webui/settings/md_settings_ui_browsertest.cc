@@ -29,9 +29,10 @@ IN_PROC_BROWSER_TEST_F(MdSettingsUITest, ViewSourceDoesntCrash) {
            chrome::kChromeUIMdSettingsURL));
 }
 
-// May not complete on memory bots. TODO(dbeam): investigate and fix.
-// See https://crbug.com/558434 and https://crbug.com/620370.
-#if defined(MEMORY_SANITIZER)
+// May not complete on memory and Windows debug bots. TODO(dbeam): investigate
+// and fix. See https://crbug.com/558434, https://crbug.com/620370 and
+// https://crbug.com/651296.
+#if defined(MEMORY_SANITIZER) || defined(OS_WIN)
 #define MAYBE_BackForwardDoesntCrash DISABLED_BackForwardDoesntCrash
 #else
 #define MAYBE_BackForwardDoesntCrash BackForwardDoesntCrash

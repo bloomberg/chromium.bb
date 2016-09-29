@@ -768,6 +768,13 @@ TEST_F('CrSettingsRouteDynamicParametersTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
+// Times out on Windows Tests (dbg). See https://crbug.com/651296.
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_MainPage_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_MainPage_All All');
+GEN('#endif');
+
 /**
  * Test fixture for chrome/browser/resources/settings/settings_main/.
  * @constructor
@@ -787,7 +794,7 @@ CrSettingsMainPageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsMainPageTest', 'All', function() {
+TEST_F('CrSettingsMainPageTest', 'MAYBE_MainPage_All', function() {
   settings_main_page.registerTests();
   mocha.run();
 });
