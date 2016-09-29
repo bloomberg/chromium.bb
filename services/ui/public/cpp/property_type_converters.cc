@@ -95,6 +95,37 @@ int32_t TypeConverter<int32_t, std::vector<uint8_t>>::Convert(
 }
 
 // static
+std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, int64_t>::Convert(
+    const int64_t& input) {
+  std::vector<uint8_t> vec(8);
+  vec[0] = (input >> 56) & 0xFF;
+  vec[1] = (input >> 48) & 0xFF;
+  vec[2] = (input >> 40) & 0xFF;
+  vec[3] = (input >> 32) & 0xFF;
+  vec[4] = (input >> 24) & 0xFF;
+  vec[5] = (input >> 16) & 0xFF;
+  vec[6] = (input >> 8) & 0xFF;
+  vec[7] = input & 0xFF;
+  return vec;
+}
+
+// static
+int64_t TypeConverter<int64_t, std::vector<uint8_t>>::Convert(
+    const std::vector<uint8_t>& input) {
+  if (input.size() < 8) {
+    NOTREACHED();
+    return 0;
+  }
+  return static_cast<int64_t>(input[0]) << 56 |
+         static_cast<int64_t>(input[1]) << 48 |
+         static_cast<int64_t>(input[2]) << 40 |
+         static_cast<int64_t>(input[3]) << 32 |
+         static_cast<int64_t>(input[4]) << 24 |
+         static_cast<int64_t>(input[5]) << 16 |
+         static_cast<int64_t>(input[6]) << 8 | static_cast<int64_t>(input[7]);
+}
+
+// static
 std::vector<uint8_t>
 TypeConverter<std::vector<uint8_t>, base::string16>::Convert(
     const base::string16& input) {

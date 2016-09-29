@@ -32,6 +32,9 @@ interface WindowManager {
   // Initial bounds to create the window at. If empty the WindowManager decides
   // the initial bounds.
   const string kInitialBounds_Property = "prop:initial_bounds";
+  // The id of the display (display::Display::id()) to create the window on.
+  // Type: int64.
+  const string kInitialDisplayId_Property = "prop:initial_display_id";
   // Internal window name. Useful for debugging. Type: mojom::String
   const string kName_Property = "prop:name";
   // The window's preferred size as defined by its content. Type: gfx::Size.

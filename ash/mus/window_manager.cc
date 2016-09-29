@@ -93,9 +93,8 @@ void WindowManager::SetScreenLocked(bool is_locked) {
 
 ui::Window* WindowManager::NewTopLevelWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  // TODO(sky): need to maintain active as well as allowing specifying display.
   RootWindowController* root_window_controller =
-      root_window_controllers_.begin()->get();
+      GetRootWindowControllerForNewTopLevelWindow(properties);
   return root_window_controller->NewTopLevelWindow(properties);
 }
 
@@ -225,6 +224,23 @@ WindowManager::FindRootWindowControllerByWindow(ui::Window* window) {
 RootWindowController* WindowManager::GetPrimaryRootWindowController() {
   return static_cast<WmRootWindowControllerMus*>(
              WmShell::Get()->GetPrimaryRootWindowController())
+      ->root_window_controller();
+}
+
+RootWindowController*
+WindowManager::GetRootWindowControllerForNewTopLevelWindow(
+    std::map<std::string, std::vector<uint8_t>>* properties) {
+  // If a specific display was requested, use it.
+  const int64_t display_id = GetInitialDisplayId(*properties);
+  for (auto& root_window_controller_ptr : root_window_controllers_) {
+    if (root_window_controller_ptr->display().id() == display_id)
+      return root_window_controller_ptr.get();
+  }
+
+  return static_cast<WmRootWindowControllerMus*>(
+             WmShellMus::Get()
+                 ->GetRootWindowForNewWindows()
+                 ->GetRootWindowController())
       ->root_window_controller();
 }
 

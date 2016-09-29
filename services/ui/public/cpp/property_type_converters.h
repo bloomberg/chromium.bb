@@ -54,6 +54,15 @@ struct TypeConverter<int32_t, std::vector<uint8_t>> {
 };
 
 template <>
+struct TypeConverter<std::vector<uint8_t>, int64_t> {
+  static std::vector<uint8_t> Convert(const int64_t& input);
+};
+template <>
+struct TypeConverter<int64_t, std::vector<uint8_t>> {
+  static int64_t Convert(const std::vector<uint8_t>& input);
+};
+
+template <>
 struct TypeConverter<std::vector<uint8_t>, base::string16> {
   static std::vector<uint8_t> Convert(const base::string16& input);
 };

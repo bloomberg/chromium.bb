@@ -113,6 +113,11 @@ class WindowManager : public ui::WindowManagerDelegate,
 
   RootWindowController* GetPrimaryRootWindowController();
 
+  // Returns the RootWindowController where new top levels are created.
+  // |properties| is the properties supplied during window creation.
+  RootWindowController* GetRootWindowControllerForNewTopLevelWindow(
+      std::map<std::string, std::vector<uint8_t>>* properties);
+
   // WindowTreeClientDelegate:
   void OnEmbed(ui::Window* root) override;
   void OnEmbedRootDestroyed(ui::Window* root) override;

@@ -253,5 +253,12 @@ bool ShouldRenderParentTitleArea(ui::Window* window) {
              ui::mojom::WindowManager::kRendererParentTitleArea_Property);
 }
 
+int64_t GetInitialDisplayId(const ui::Window::SharedProperties& properties) {
+  auto iter =
+      properties.find(ui::mojom::WindowManager::kInitialDisplayId_Property);
+  return iter == properties.end() ? display::Display::kInvalidDisplayID
+                                  : mojo::ConvertTo<int64_t>(iter->second);
+}
+
 }  // namespace mus
 }  // namespace ash

@@ -83,6 +83,10 @@ bool ShouldRemoveStandardFrame(ui::Window* window);
 // See description of |WindowManager::kRendererParentTitleArea_Property|.
 bool ShouldRenderParentTitleArea(ui::Window* window);
 
+// Returns the kInitialDisplayId_Property if present, otherwise
+// kInvalidDisplayID.
+int64_t GetInitialDisplayId(const ui::Window::SharedProperties& properties);
+
 }  // namespace mus
 }  // namespace ash
 
