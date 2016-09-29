@@ -1005,6 +1005,8 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         if (!hyphenated && isBreakAtSoftHyphen() && !disableSoftHyphen) {
             hyphenated = true;
             m_atEnd = true;
+        } else if (!m_ignoringSpaces && canBreakMidWord && m_width.committedWidth()) {
+            m_atEnd = true;
         }
     }
     return false;
