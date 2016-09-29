@@ -30,7 +30,7 @@ using ui::PAGE_TRANSITION_TYPED;
 
 namespace {
 
-const base::FilePath::CharType* kSimpleFile = FILE_PATH_LITERAL("/simple.html");
+const base::FilePath::CharType* kSimpleFile = FILE_PATH_LITERAL("simple.html");
 
 }  // namespace
 
