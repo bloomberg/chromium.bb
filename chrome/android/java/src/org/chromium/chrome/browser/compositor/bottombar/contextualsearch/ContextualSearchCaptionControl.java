@@ -181,6 +181,8 @@ public class ContextualSearchCaptionControl extends OverlayPanelInflater
     // ============================================================================================
 
     private void animateTransitionIn() {
+        if (mAnimationPercentage == 0f) return;
+
         long duration = (long)
                 (OverlayPanelAnimation.MAXIMUM_ANIMATION_DURATION_MS * mAnimationPercentage);
 
