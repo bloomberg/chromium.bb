@@ -410,9 +410,18 @@ cr.define('md_history.history_list_test', function() {
                 'https://www.google.com',
                 'https://en.wikipedia.org',
               ], element.historyData_.map(item => item.title));
+
+              // Deletion should deselect all.
+              assertDeepEquals(
+                  [false, false, false],
+                  items.slice(0, 3).map(i => i.selected));
+
               done();
             });
           });
+
+          MockInteractions.tap(items[1].$.checkbox);
+          MockInteractions.tap(items[3].$.checkbox);
           MockInteractions.tap(items[1].$['menu-button']);
           app.$.history.$.sharedMenu.get();
           MockInteractions.tap(app.$.history.$$('#menuRemoveButton'));

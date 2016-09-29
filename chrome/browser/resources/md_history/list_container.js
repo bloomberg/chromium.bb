@@ -238,11 +238,13 @@ Polymer({
     var itemData = menu.itemData;
     browserService.deleteItems([itemData.item])
         .then(function(items) {
-          this.getSelectedList_().removeItemsByPath([itemData.path]);
-          // This unselect-all is to reset the toolbar when deleting a selected
-          // item. TODO(tsergeant): Make this automatic based on observing list
+          // This unselect-all resets the toolbar when deleting a selected item
+          // and clears selection state which can be invalid if items move
+          // around during deletion.
+          // TODO(tsergeant): Make this automatic based on observing list
           // modifications.
           this.fire('unselect-all');
+          this.getSelectedList_().removeItemsByPath([itemData.path]);
 
           var index = itemData.index;
           if (index == undefined)
