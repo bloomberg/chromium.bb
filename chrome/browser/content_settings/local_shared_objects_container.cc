@@ -11,6 +11,7 @@
 #include "chrome/browser/browsing_data/browsing_data_cookie_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_indexed_db_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_local_storage_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_service_worker_helper.h"
@@ -217,9 +218,9 @@ void LocalSharedObjectsContainer::Reset() {
 std::unique_ptr<CookiesTreeModel>
 LocalSharedObjectsContainer::CreateCookiesTreeModel() const {
   LocalDataContainer* container = new LocalDataContainer(
-      cookies(), databases(), local_storages(), session_storages(), appcaches(),
-      indexed_dbs(), file_systems(), nullptr, channel_ids(), service_workers(),
-      cache_storages(), nullptr);
+      cookies_, databases_, local_storages_, session_storages_, appcaches_,
+      indexed_dbs_, file_systems_, nullptr, channel_ids_, service_workers_,
+      cache_storages_, nullptr);
 
   return base::MakeUnique<CookiesTreeModel>(container, nullptr);
 }

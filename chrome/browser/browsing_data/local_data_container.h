@@ -64,18 +64,19 @@ typedef std::vector<std::string> FlashLSODomainList;
 // the empty string, as no app can have an empty id.
 class LocalDataContainer {
  public:
-  LocalDataContainer(BrowsingDataCookieHelper* cookie_helper,
-                     BrowsingDataDatabaseHelper* database_helper,
-                     BrowsingDataLocalStorageHelper* local_storage_helper,
-                     BrowsingDataLocalStorageHelper* session_storage_helper,
-                     BrowsingDataAppCacheHelper* appcache_helper,
-                     BrowsingDataIndexedDBHelper* indexed_db_helper,
-                     BrowsingDataFileSystemHelper* file_system_helper,
-                     BrowsingDataQuotaHelper* quota_helper,
-                     BrowsingDataChannelIDHelper* channel_id_helper,
-                     BrowsingDataServiceWorkerHelper* service_worker_helper,
-                     BrowsingDataCacheStorageHelper* cache_storage_helper,
-                     BrowsingDataFlashLSOHelper* flash_data_helper);
+  LocalDataContainer(
+      scoped_refptr<BrowsingDataCookieHelper> cookie_helper,
+      scoped_refptr<BrowsingDataDatabaseHelper> database_helper,
+      scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper,
+      scoped_refptr<BrowsingDataLocalStorageHelper> session_storage_helper,
+      scoped_refptr<BrowsingDataAppCacheHelper> appcache_helper,
+      scoped_refptr<BrowsingDataIndexedDBHelper> indexed_db_helper,
+      scoped_refptr<BrowsingDataFileSystemHelper> file_system_helper,
+      scoped_refptr<BrowsingDataQuotaHelper> quota_helper,
+      scoped_refptr<BrowsingDataChannelIDHelper> channel_id_helper,
+      scoped_refptr<BrowsingDataServiceWorkerHelper> service_worker_helper,
+      scoped_refptr<BrowsingDataCacheStorageHelper> cache_storage_helper,
+      scoped_refptr<BrowsingDataFlashLSOHelper> flash_data_helper);
   virtual ~LocalDataContainer();
 
   // This method must be called to start the process of fetching the resources.
