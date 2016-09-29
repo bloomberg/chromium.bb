@@ -12,8 +12,8 @@ from gpu_tests import fake_win_amd_gpu_info
 from gpu_tests import gpu_test_base
 from gpu_tests import path_util
 from gpu_tests import test_expectations
-from gpu_tests import webgl_conformance
 from gpu_tests import webgl_conformance_expectations
+from gpu_tests import webgl_conformance_integration_test
 from gpu_tests import webgl2_conformance_expectations
 
 class FakeWindowsPlatform(fakes.FakePlatform):
@@ -69,13 +69,15 @@ class WebGLConformanceExpectationsTest(unittest.TestCase):
 
   def testWebGLExpectationsHaveNoCollisions(self):
     conformance = webgl_conformance_expectations.\
-      WebGLConformanceExpectations(webgl_conformance.conformance_path)
+      WebGLConformanceExpectations(
+        webgl_conformance_integration_test.conformance_path)
 
     self.checkConformanceHasNoCollisions(conformance)
 
   def testWebGL2ExpectationsHaveNoCollisions(self):
     conformance = webgl2_conformance_expectations.\
-      WebGL2ConformanceExpectations(webgl_conformance.conformance_path)
+      WebGL2ConformanceExpectations(
+        webgl_conformance_integration_test.conformance_path)
 
     self.checkConformanceHasNoCollisions(conformance)
 
