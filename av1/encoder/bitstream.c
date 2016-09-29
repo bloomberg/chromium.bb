@@ -1589,17 +1589,10 @@ static void update_seg_probs(AV1_COMP *cpi, aom_writer *w) {
 #endif
 }
 
-#if CONFIG_MISC_FIXES
 static void write_txfm_mode(TX_MODE mode, struct aom_write_bit_buffer *wb) {
   aom_wb_write_bit(wb, mode == TX_MODE_SELECT);
   if (mode != TX_MODE_SELECT) aom_wb_write_literal(wb, mode, 2);
 }
-#else
-static void write_txfm_mode(TX_MODE mode, aom_writer *wb) {
-  aom_write_literal(wb, AOMMIN(mode, ALLOW_32X32), 2);
-  if (mode >= ALLOW_32X32) aom_write_bit(wb, mode == TX_MODE_SELECT);
-}
-#endif
 
 static void update_txfm_probs(AV1_COMMON *cm, aom_writer *w,
                               FRAME_COUNTS *counts) {
@@ -2131,11 +2124,11 @@ static void write_uncompressed_header(AV1_COMP *cpi,
   }
 #endif
 
-#if CONFIG_MISC_FIXES
   if (!cm->seg.enabled && xd->lossless[0])
     cm->tx_mode = TX_4X4;
   else
     write_txfm_mode(cm->tx_mode, wb);
+#if CONFIG_MISC_FIXES
   if (cpi->allow_comp_inter_inter) {
     const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;
     const int use_compound_pred = cm->reference_mode != SINGLE_REFERENCE;
@@ -2171,16 +2164,7 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   aom_start_encode(header_bc, data);
 #endif
 
-#if !CONFIG_MISC_FIXES
-  if (cpi->td.mb.e_mbd.lossless[0]) {
-    cm->tx_mode = TX_4X4;
-  } else {
-    write_txfm_mode(cm->tx_mode, header_bc);
-    update_txfm_probs(cm, header_bc, counts);
-  }
-#else
   update_txfm_probs(cm, header_bc, counts);
-#endif
   update_coef_probs(cpi, header_bc);
   update_skip_probs(cm, header_bc, counts);
 #if CONFIG_DELTA_Q

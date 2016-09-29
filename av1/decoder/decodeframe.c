@@ -112,17 +112,9 @@ static int decode_unsigned_max(struct aom_read_bit_buffer *rb, int max) {
   return data > max ? max : data;
 }
 
-#if CONFIG_MISC_FIXES
 static TX_MODE read_tx_mode(struct aom_read_bit_buffer *rb) {
   return aom_rb_read_bit(rb) ? TX_MODE_SELECT : aom_rb_read_literal(rb, 2);
 }
-#else
-static TX_MODE read_tx_mode(aom_reader *r) {
-  TX_MODE tx_mode = aom_read_literal(r, 2, ACCT_STR);
-  if (tx_mode == ALLOW_32X32) tx_mode += aom_read_bit(r, ACCT_STR);
-  return tx_mode;
-}
-#endif
 
 static void read_tx_mode_probs(struct tx_probs *tx_probs, aom_reader *r) {
   int i, j;
@@ -1988,9 +1980,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   }
 
   setup_segmentation_dequant(cm);
-#if CONFIG_MISC_FIXES
   cm->tx_mode =
       (!cm->seg.enabled && xd->lossless[0]) ? ONLY_4X4 : read_tx_mode(rb);
+#if CONFIG_MISC_FIXES
   cm->reference_mode = read_frame_reference_mode(cm, rb);
 #endif
 
@@ -2032,9 +2024,6 @@ static void read_ext_tx_probs(FRAME_CONTEXT *fc, aom_reader *r) {
 static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
                                   size_t partition_size) {
   AV1_COMMON *const cm = &pbi->common;
-#if !CONFIG_MISC_FIXES
-  MACROBLOCKD *const xd = &pbi->mb;
-#endif
   FRAME_CONTEXT *const fc = cm->fc;
   aom_reader r;
   int k, i, j;
@@ -2044,9 +2033,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder 0");
 
-#if !CONFIG_MISC_FIXES
-  cm->tx_mode = xd->lossless[0] ? ONLY_4X4 : read_tx_mode(&r);
-#endif
   if (cm->tx_mode == TX_MODE_SELECT) read_tx_mode_probs(&fc->tx_probs, &r);
   read_coef_probs(fc, cm->tx_mode, &r);
 
