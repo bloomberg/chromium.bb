@@ -134,7 +134,7 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 
   ArcAppWindowLauncherItemController* controller() { return controller_; }
 
-  const std::string app_id() { return app_id_; }
+  const std::string& app_id() { return app_id_; }
 
   // ui::BaseWindow:
   bool IsActive() const override {
@@ -275,6 +275,12 @@ void ArcAppWindowLauncherController::ActiveUserChanged(
   if (user_email == primary_user_email) {
     // Restore existing Arc window and create controllers for them.
     AttachControllerToWindowsIfNeeded();
+
+    // Make sure that we created items for all apps, not only which have a
+    // window.
+    for (const auto& it : task_id_to_shelf_app_id_)
+      AttachControllerToTask(it.second, it.first);
+
     // Update active status.
     OnTaskSetActive(active_task_id_);
   } else {
@@ -285,6 +291,12 @@ void ArcAppWindowLauncherController::ActiveUserChanged(
       UnregisterApp(app_window, true);
     }
     task_id_to_app_window_.clear();
+
+    // Some controllers might have no windows attached, for example background
+    // task when foreground tasks is in full screen.
+    for (const auto& it : app_controller_map_)
+      owner()->CloseLauncherItem(it.second->shelf_id());
+    app_controller_map_.clear();
   }
 }
 
@@ -429,14 +441,20 @@ void ArcAppWindowLauncherController::OnTaskCreated(
     const std::string& package_name,
     const std::string& activity_name) {
   DCHECK(!GetAppWindowForTask(task_id));
-  task_id_to_shelf_app_id_[task_id] = GetShelfAppIdFromArcAppId(
+  const std::string shelf_app_id = GetShelfAppIdFromArcAppId(
       ArcAppListPrefs::GetAppId(package_name, activity_name));
+  task_id_to_shelf_app_id_[task_id] = shelf_app_id;
 
   // Don't create shelf icon for non-primary user.
   if (observed_profile_ != owner()->GetProfile())
     return;
 
   AttachControllerToWindowsIfNeeded();
+
+  // Some tasks can be started in background and might have no window until
+  // pushed to the front. We need its representation on the shelf to give a user
+  // control over it.
+  AttachControllerToTask(shelf_app_id, task_id);
 }
 
 void ArcAppWindowLauncherController::OnTaskDestroyed(int task_id) {
@@ -577,31 +595,45 @@ void ArcAppWindowLauncherController::StopObserving(Profile* profile) {
     env->RemoveObserver(this);
 }
 
+ArcAppWindowLauncherItemController*
+ArcAppWindowLauncherController::AttachControllerToTask(
+    const std::string& shelf_app_id,
+    int task_id) {
+  AppControllerMap::const_iterator it = app_controller_map_.find(shelf_app_id);
+  if (it != app_controller_map_.end()) {
+    DCHECK_EQ(it->second->app_id(), shelf_app_id);
+    it->second->AddTaskId(task_id);
+    return it->second;
+  }
+
+  ArcAppWindowLauncherItemController* controller =
+      new ArcAppWindowLauncherItemController(shelf_app_id, owner());
+  const ash::ShelfID shelf_id =
+      shelf_delegate_->GetShelfIDForAppID(shelf_app_id);
+  if (!shelf_id) {
+    owner()->CreateAppLauncherItem(controller, shelf_app_id,
+                                   ash::STATUS_RUNNING);
+  } else {
+    owner()->SetItemController(shelf_id, controller);
+    owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
+  }
+  controller->AddTaskId(task_id);
+  app_controller_map_[shelf_app_id] = controller;
+  return controller;
+}
+
 void ArcAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   const std::string app_id = app_window->app_id();
   DCHECK(!app_id.empty());
 
-  ArcAppWindowLauncherItemController* controller;
-  AppControllerMap::iterator it = app_controller_map_.find(app_id);
-  ash::ShelfID shelf_id = 0;
-  if (it != app_controller_map_.end()) {
-    controller = it->second;
-    DCHECK_EQ(controller->app_id(), app_id);
-    shelf_id = controller->shelf_id();
-  } else {
-    controller = new ArcAppWindowLauncherItemController(app_id, owner());
-    shelf_id = shelf_delegate_->GetShelfIDForAppID(app_id);
-    if (shelf_id == 0) {
-      // Map Play Store shelf icon to Arc Support host, to share one entry.
-      shelf_id = owner()->CreateAppLauncherItem(controller, app_id,
-                                                ash::STATUS_RUNNING);
-    } else {
-      owner()->SetItemController(shelf_id, controller);
-    }
-    app_controller_map_[app_id] = controller;
-  }
+  ArcAppWindowLauncherItemController* controller =
+      AttachControllerToTask(app_id, app_window->task_id());
+  DCHECK(controller);
+
+  const ash::ShelfID shelf_id = shelf_delegate_->GetShelfIDForAppID(app_id);
+  DCHECK(shelf_id);
+
   controller->AddWindow(app_window);
-  controller->AddTaskId(app_window->task_id());
   owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
   app_window->SetController(controller);
   app_window->set_shelf_id(shelf_id);

@@ -1966,7 +1966,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
   // Arc window created after and closed before mojom notification.
   std::string window_app_id2("org.chromium.arc.2");
   arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1]);
-  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
   arc_window = CreateArcWindow(window_app_id2);
   ASSERT_TRUE(arc_window);
   EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id2));
