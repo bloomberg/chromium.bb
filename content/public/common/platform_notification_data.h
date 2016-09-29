@@ -31,7 +31,8 @@ struct CONTENT_EXPORT PlatformNotificationAction {
   ~PlatformNotificationAction();
 
   // Type of the action (button or text input).
-  PlatformNotificationActionType type;
+  PlatformNotificationActionType type =
+      PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
 
   // Action name that the author can use to distinguish them.
   std::string action;
