@@ -108,6 +108,7 @@ class BattOrPowerCases(_BattOrBenchmark):
     return 'battor.power_cases'
 
 
+@benchmark.Disabled('all')  # crbug.com/651384.
 class BattOrPowerCasesNoChromeTrace(_BattOrBenchmark):
   page_set = page_sets.power_cases.PowerCasesPageSet
 
