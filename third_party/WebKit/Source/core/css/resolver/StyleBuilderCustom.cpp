@@ -805,15 +805,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyVariable(StyleResolverState& st
     if (registry)
         registration = registry->registration(name);
 
-    bool initial = declaration.id() == CSSValueInitial
-        || (declaration.id() == CSSValueUnset && registration && !registration->inherits());
-    bool inherit = declaration.id() == CSSValueInherit
-        || (declaration.id() == CSSValueUnset && (!registration || registration->inherits()));
+    bool isInheritedProperty = !registration || registration->inherits();
+    bool initial = declaration.isInitial(isInheritedProperty);
+    bool inherit = declaration.isInherit(isInheritedProperty);
     DCHECK(!(initial && inherit));
 
-    if (declaration.id() == CSSValueInternalVariableValue) {
+    if (!initial && !inherit) {
         if (declaration.value()->needsVariableResolution()) {
-            if (!registration || registration->inherits())
+            if (isInheritedProperty)
                 state.style()->setUnresolvedInheritedVariable(name, declaration.value());
             else
                 state.style()->setUnresolvedNonInheritedVariable(name, declaration.value());
@@ -829,13 +828,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyVariable(StyleResolverState& st
         if (parsedValue) {
             parsedValue = &StyleBuilderConverter::convertRegisteredPropertyValue(state, *parsedValue);
             DCHECK(parsedValue);
-            if (registration->inherits())
+            if (isInheritedProperty)
                 state.style()->setResolvedInheritedVariable(name, declaration.value(), parsedValue);
             else
                 state.style()->setResolvedNonInheritedVariable(name, declaration.value(), parsedValue);
             return;
         }
-        if (registration->inherits())
+        if (isInheritedProperty)
             inherit = true;
         else
             initial = true;
@@ -844,14 +843,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyVariable(StyleResolverState& st
     DCHECK(initial ^ inherit);
 
     if (initial) {
-        if (!registration || registration->inherits())
+        if (isInheritedProperty)
             state.style()->removeInheritedVariable(name);
         else
             state.style()->removeNonInheritedVariable(name);
         return;
     }
 
-    if (!registration || registration->inherits()) {
+    if (isInheritedProperty) {
         state.style()->removeInheritedVariable(name);
         StyleInheritedVariables* parentVariables = state.parentStyle()->inheritedVariables();
         if (!parentVariables)

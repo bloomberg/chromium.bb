@@ -26,7 +26,10 @@ public:
 
     const AtomicString& name() const { return m_name; }
     CSSVariableData* value() const { return m_value.get(); }
-    CSSValueID id() const { return m_valueId; }
+
+    bool isInherit(bool isInheritedProperty) const { return m_valueId == CSSValueInherit || (isInheritedProperty && m_valueId == CSSValueUnset); }
+    bool isInitial(bool isInheritedProperty) const { return m_valueId == CSSValueInitial || (!isInheritedProperty && m_valueId == CSSValueUnset); }
+
     String customCSSText() const;
 
     bool equals(const CSSCustomPropertyDeclaration& other) const { return this == &other; }
@@ -46,7 +49,7 @@ private:
         : CSSValue(CustomPropertyDeclarationClass)
         , m_name(name)
         , m_value(value)
-        , m_valueId(CSSValueInternalVariableValue)
+        , m_valueId(CSSValueInvalid)
     {
     }
 
