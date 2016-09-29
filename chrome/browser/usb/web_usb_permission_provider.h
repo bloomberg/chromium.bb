@@ -20,6 +20,10 @@ class RenderFrameHost;
 // granted by the user through a device chooser UI.
 class WebUSBPermissionProvider : public device::usb::PermissionProvider {
  public:
+  static bool HasDevicePermission(
+      content::RenderFrameHost* render_frame_host,
+      scoped_refptr<const device::UsbDevice> device);
+
   explicit WebUSBPermissionProvider(
       content::RenderFrameHost* render_frame_host);
   ~WebUSBPermissionProvider() override;

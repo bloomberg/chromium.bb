@@ -44,6 +44,7 @@ class UsbChooserController : public ChooserController,
   base::string16 GetOkButtonLabel() const override;
   size_t NumOptions() const override;
   base::string16 GetOption(size_t index) const override;
+  bool IsPaired(size_t index) const override;
   void RefreshOptions() override;
   base::string16 GetStatus() const override;
   void Select(size_t index) override;
