@@ -251,7 +251,6 @@ protected:
                 && m_verticalAlign == other.m_verticalAlign
                 && m_clear == other.m_clear
                 && m_position == other.m_position
-                && m_floating == other.m_floating
                 && m_tableLayout == other.m_tableLayout
                 && m_unicodeBidi == other.m_unicodeBidi
                 // hasViewportUnits
@@ -281,7 +280,6 @@ protected:
         unsigned m_verticalAlign : 4; // EVerticalAlign
         unsigned m_clear : 2; // EClear
         unsigned m_position : 3; // EPosition
-        unsigned m_floating : 2; // EFloat
         unsigned m_tableLayout : 1; // ETableLayout
         unsigned m_unicodeBidi : 3; // EUnicodeBidi
 
@@ -368,7 +366,6 @@ protected:
         m_nonInheritedData.m_verticalAlign = initialVerticalAlign();
         m_nonInheritedData.m_clear = initialClear();
         m_nonInheritedData.m_position = initialPosition();
-        m_nonInheritedData.m_floating = static_cast<unsigned>(initialFloating());
         m_nonInheritedData.m_tableLayout = initialTableLayout();
         m_nonInheritedData.m_unicodeBidi = initialUnicodeBidi();
         m_nonInheritedData.m_breakBefore = initialBreakBefore();
@@ -828,11 +825,6 @@ public:
         if (m_rareNonInheritedData->m_boxReflect != reflect)
             m_rareNonInheritedData.access()->m_boxReflect = reflect;
     }
-
-    // float
-    static EFloat initialFloating() { return EFloat::None; }
-    EFloat floating() const { return static_cast<EFloat>(m_nonInheritedData.m_floating); }
-    void setFloating(EFloat v) { m_nonInheritedData.m_floating = static_cast<unsigned>(v); }
 
     // Grid properties.
     static Vector<GridTrackSize> initialGridAutoRepeatTracks() { return Vector<GridTrackSize>(); /* none */ }

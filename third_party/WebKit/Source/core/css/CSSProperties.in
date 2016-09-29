@@ -225,7 +225,7 @@ flex-direction
 flex-grow interpolable, type_name=float
 flex-shrink interpolable, type_name=float
 flex-wrap
-float type_name=EFloat, name_for_methods=Floating
+float type_name=EFloat, name_for_methods=Floating, keyword_only, keywords=[none|left|right]
 flood-color interpolable, svg, converter=convertColor
 flood-opacity interpolable, svg, converter=convertNumberOrPercentage
 grid-auto-columns runtime_flag=CSSGridLayout, converter=convertGridTrackSizeList

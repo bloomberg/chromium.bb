@@ -83,7 +83,7 @@ public:
     void setBitDefaults()
     {
         {% for field in fields %}
-        reset{{field.property['upper_camel_name']}}();
+        {{field.resetter_method_name}}();
         {% endfor %}
     }
 
@@ -93,15 +93,17 @@ public:
     };
     void inheritFrom(const ComputedStyleBase& inheritParent, IsAtShadowBoundary isAtShadowBoundary = NotAtShadowBoundary);
 
+    void copyNonInheritedFromCached(const ComputedStyleBase& other);
+
     // Fields.
     // TODO(sashab): Remove initialFoo() static methods and update callers to
     // use resetFoo(), which can be more efficient.
     {% for field in fields %}
     // {{field.property['name']}}
-    inline static {{field.type}} initial{{field.property['upper_camel_name']}}() { return {{field.default_value}}; }
-    {{field.type}} {{field.property['lower_camel_name']}}() const { return static_cast<{{field.type}}>({{field.name}}); }
-    void set{{field.property['upper_camel_name']}}({{field.type}} v) { {{field.name}} = static_cast<unsigned>(v); }
-    inline void reset{{field.property['upper_camel_name']}}() { {{field.name}} = {{default_value(field)}}; }
+    inline static {{field.type}} {{field.initial_method_name}}() { return {{field.default_value}}; }
+    {{field.type}} {{field.getter_method_name}}() const { return static_cast<{{field.type}}>({{field.name}}); }
+    void {{field.setter_method_name}}({{field.type}} v) { {{field.name}} = static_cast<unsigned>(v); }
+    inline void {{field.resetter_method_name}}() { {{field.name}} = {{default_value(field)}}; }
 
     {% endfor %}
 protected:

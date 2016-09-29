@@ -329,6 +329,7 @@ void ComputedStyle::inheritFrom(const ComputedStyle& inheritParent, IsAtShadowBo
 
 void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
 {
+    ComputedStyleBase::copyNonInheritedFromCached(other);
     m_box = other.m_box;
     m_visual = other.m_visual;
     m_background = other.m_background;
@@ -345,7 +346,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other)
     m_nonInheritedData.m_verticalAlign = other.m_nonInheritedData.m_verticalAlign;
     m_nonInheritedData.m_clear = other.m_nonInheritedData.m_clear;
     m_nonInheritedData.m_position = other.m_nonInheritedData.m_position;
-    m_nonInheritedData.m_floating = other.m_nonInheritedData.m_floating;
     m_nonInheritedData.m_tableLayout = other.m_nonInheritedData.m_tableLayout;
     m_nonInheritedData.m_unicodeBidi = other.m_nonInheritedData.m_unicodeBidi;
     m_nonInheritedData.m_hasViewportUnits = other.m_nonInheritedData.m_hasViewportUnits;
@@ -498,7 +498,8 @@ bool ComputedStyle::loadingCustomFontsEqual(const ComputedStyle& other) const
 bool ComputedStyle::nonInheritedEqual(const ComputedStyle& other) const
 {
     // compare everything except the pseudoStyle pointer
-    return m_nonInheritedData == other.m_nonInheritedData
+    return ComputedStyleBase::nonInheritedEqual(other)
+        && m_nonInheritedData == other.m_nonInheritedData
         && m_box == other.m_box
         && m_visual == other.m_visual
         && m_background == other.m_background
@@ -711,7 +712,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(const ComputedStyle&
         || m_nonInheritedData.m_overflowY != other.m_nonInheritedData.m_overflowY
         || m_nonInheritedData.m_clear != other.m_nonInheritedData.m_clear
         || m_nonInheritedData.m_unicodeBidi != other.m_nonInheritedData.m_unicodeBidi
-        || m_nonInheritedData.m_floating != other.m_nonInheritedData.m_floating
+        || floating() != other.floating()
         || m_nonInheritedData.m_originalDisplay != other.m_nonInheritedData.m_originalDisplay)
         return true;
 

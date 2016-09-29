@@ -12,4 +12,11 @@ void ComputedStyleBase::inheritFrom(const ComputedStyleBase& inheritParent, IsAt
     {% endfor %}
 }
 
+void ComputedStyleBase::copyNonInheritedFromCached(const ComputedStyleBase& other)
+{
+    {% for field in fields if not field.property['inherited'] %}
+    {{field.name}} = other.{{field.name}};
+    {% endfor %}
+}
+
 } // namespace blink

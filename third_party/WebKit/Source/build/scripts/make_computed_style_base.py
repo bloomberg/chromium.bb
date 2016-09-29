@@ -42,22 +42,37 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             'size',
             # Default value for field
             'default_value',
+            # Method names
+            'getter_method_name',
+            'setter_method_name',
+            'initial_method_name',
+            'resetter_method_name',
         ])
         self._fields = []
         for property in self._properties.values():
             if property['keyword_only']:
+                property_name = property['upper_camel_name']
+                if property['name_for_methods']:
+                    property_name = property['name_for_methods']
+                property_name_lower = property_name[0].lower() + property_name[1:]
+
                 # From the Blink style guide: Other data members should be prefixed by "m_". [names-data-members]
-                field_name = 'm_' + property['lower_camel_name']
+                field_name = 'm_' + property_name_lower
                 bits_needed = math.log(len(property['keywords']), 2)
                 type_name = property['type_name']
                 # For now, assume the default value is the first enum value.
                 default_value = type_name + '::' + self._computed_enums[type_name][0]
+
                 self._fields.append(Field(
                     name=field_name,
                     property=property,
                     type=type_name,
                     size=int(math.ceil(bits_needed)),
                     default_value=default_value,
+                    getter_method_name=property_name_lower,
+                    setter_method_name='set' + property_name,
+                    initial_method_name='initial' + property_name,
+                    resetter_method_name='reset' + property_name,
                 ))
 
     @template_expander.use_jinja('ComputedStyleBase.h.tmpl')

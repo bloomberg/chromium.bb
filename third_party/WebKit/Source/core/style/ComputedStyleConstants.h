@@ -124,10 +124,6 @@ enum EPosition {
     FixedPosition = 6
 };
 
-enum class EFloat : unsigned {
-    None, Left, Right
-};
-
 enum EMarginCollapse { MarginCollapseCollapse, MarginCollapseSeparate, MarginCollapseDiscard };
 
 // Box decoration attributes. Not inherited.
