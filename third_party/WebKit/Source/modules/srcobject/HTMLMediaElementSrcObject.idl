@@ -12,5 +12,5 @@ partial interface HTMLMediaElement {
     // HTMLMediaElement.idl. However, we cannot define srcObject in
     // HTMLMediaElement.idl because of the dependency restriction from modules/
     // to core/. For now we avoid the problem by using a partial interface.
-    attribute MediaProvider? srcObject;
+    [Measure] attribute MediaProvider? srcObject;
 };

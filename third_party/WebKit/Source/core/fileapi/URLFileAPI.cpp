@@ -8,6 +8,7 @@
 #include "core/dom/DOMURL.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/PublicURLManager.h"
 
 namespace blink {
@@ -19,9 +20,13 @@ String URLFileAPI::createObjectURL(ExecutionContext* executionContext, Blob* blo
     DCHECK(executionContext);
 
     if (blob->isClosed()) {
+        // TODO(jsbell): The spec doesn't throw, but rather returns a blob: URL
+        // without adding it to the store.
         exceptionState.throwDOMException(InvalidStateError, String(blob->isFile() ? "File" : "Blob") + " has been closed.");
         return String();
     }
+
+    UseCounter::count(executionContext, UseCounter::CreateObjectURLBlob);
     return DOMURL::createPublicURL(executionContext, blob, blob->uuid());
 }
 

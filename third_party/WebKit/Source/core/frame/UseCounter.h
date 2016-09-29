@@ -1323,6 +1323,11 @@ public:
         WebkitEditableContentChangedOnContentEditable = 1599,
         WebkitEditableContentChangedOnNotNode = 1600,
         V8NavigatorUserMediaError_ConstraintName_AttributeGetter = 1601,
+        V8HTMLMediaElement_SrcObject_AttributeGetter = 1602,
+        V8HTMLMediaElement_SrcObject_AttributeSetter = 1603,
+        CreateObjectURLBlob = 1604,
+        CreateObjectURLMediaSource = 1605,
+        CreateObjectURLMediaStream = 1606,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
