@@ -178,6 +178,13 @@ leveldb::Slice MakeSlice(const base::StringPiece& s) {
   return leveldb::Slice(s.begin(), s.size());
 }
 
+bool DatabaseExists(const base::FilePath& path) {
+  // It's not enough to check that the directory exists, since DestroyDB
+  // sometimes leaves behind an empty directory
+  // (https://github.com/google/leveldb/issues/215).
+  return base::PathExists(path.Append(FILE_PATH_LITERAL("CURRENT")));
+}
+
 }  // namespace
 
 class GCMStoreImpl::Backend
@@ -287,7 +294,7 @@ LoadStatus GCMStoreImpl::Backend::OpenStoreAndLoadData(StoreOpenMode open_mode,
 
   // Checks if the store exists or not. Calling DB::Open with create_if_missing
   // not set will still create a new directory if the store does not exist.
-  if (open_mode == DO_NOT_CREATE && !base::DirectoryExists(path_)) {
+  if (open_mode == DO_NOT_CREATE && !DatabaseExists(path_)) {
     DVLOG(2) << "Database " << path_.value() << " does not exist";
     return STORE_DOES_NOT_EXIST;
   }

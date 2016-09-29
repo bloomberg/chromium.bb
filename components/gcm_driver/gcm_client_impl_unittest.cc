@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
@@ -675,6 +676,50 @@ TEST_F(GCMClientImplTest, LoadingBusted) {
                       std::map<std::string, std::string>()));
 
   EXPECT_EQ(LOADING_COMPLETED, last_event());
+  EXPECT_EQ(kDeviceAndroidId2, mcs_client()->last_android_id());
+  EXPECT_EQ(kDeviceSecurityToken2, mcs_client()->last_security_token());
+}
+
+TEST_F(GCMClientImplTest, LoadingWithEmptyDirectory) {
+  // Close the GCM store.
+  gcm_client()->Stop();
+  PumpLoopUntilIdle();
+
+  // Make the store directory empty, to simulate a previous destroy store
+  // operation failing to delete the store directory.
+  ASSERT_TRUE(base::DeleteFile(gcm_store_path(), true /* recursive */));
+  ASSERT_TRUE(base::CreateDirectory(gcm_store_path()));
+
+  base::HistogramTester histogram_tester;
+
+  // Restart GCM client. The store should be considered to not exist.
+  BuildGCMClient(base::TimeDelta());
+  InitializeGCMClient();
+  gcm_client()->Start(GCMClient::DELAYED_START);
+  PumpLoopUntilIdle();
+  histogram_tester.ExpectUniqueSample("GCM.LoadStatus",
+                                      13 /* STORE_DOES_NOT_EXIST */, 1);
+  // Since the store does not exist, the database should not have been opened.
+  histogram_tester.ExpectTotalCount("GCM.Database.Open", 0);
+  // Without a store, DELAYED_START loading should only reach INITIALIZED state.
+  EXPECT_EQ(GCMClientImpl::INITIALIZED, gcm_client_state());
+
+  // The store directory should still exist (and be empty). If not, then the
+  // DELAYED_START load has probably reset the store, rather than leaving that
+  // to the next IMMEDIATE_START load as expected.
+  ASSERT_TRUE(base::DirectoryExists(gcm_store_path()));
+  ASSERT_FALSE(
+      base::PathExists(gcm_store_path().Append(FILE_PATH_LITERAL("CURRENT"))));
+
+  // IMMEDIATE_START loading should successfully create a new store despite the
+  // empty directory.
+  reset_last_event();
+  StartGCMClient();
+  ASSERT_NO_FATAL_FAILURE(
+      CompleteCheckin(kDeviceAndroidId2, kDeviceSecurityToken2, std::string(),
+                      std::map<std::string, std::string>()));
+  EXPECT_EQ(LOADING_COMPLETED, last_event());
+  EXPECT_EQ(GCMClientImpl::READY, gcm_client_state());
   EXPECT_EQ(kDeviceAndroidId2, mcs_client()->last_android_id());
   EXPECT_EQ(kDeviceSecurityToken2, mcs_client()->last_security_token());
 }

@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -69,6 +70,7 @@ class GCMStoreImplTest : public testing::Test {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   base::ScopedTempDir temp_directory_;
+  base::FilePath store_path_;
   bool expected_success_;
   uint64_t next_persistent_id_;
 };
@@ -84,12 +86,14 @@ GCMStoreImplTest::GCMStoreImplTest()
 GCMStoreImplTest::~GCMStoreImplTest() {}
 
 std::unique_ptr<GCMStoreImpl> GCMStoreImplTest::BuildGCMStore() {
-  return std::unique_ptr<GCMStoreImpl>(new GCMStoreImpl(
-      // Pass an non-existent directory as store path to match the exact
-      // behavior in the production code. Currently GCMStoreImpl checks if
-      // the directory exist or not to determine the store existence.
-      temp_directory_.GetPath().Append(FILE_PATH_LITERAL("GCM Store")),
-      task_runner_, base::WrapUnique<Encryptor>(new FakeEncryptor)));
+  // Pass an non-existent directory as store path to match the exact behavior in
+  // the production code. Currently GCMStoreImpl checks if the directory exists
+  // and contains a CURRENT file to determine the store existence.
+  store_path_ =
+      temp_directory_.GetPath().Append(FILE_PATH_LITERAL("GCM Store"));
+  return std::unique_ptr<GCMStoreImpl>(
+      new GCMStoreImpl(store_path_, task_runner_,
+                       base::WrapUnique<Encryptor>(new FakeEncryptor)));
 }
 
 void GCMStoreImplTest::LoadGCMStore(
@@ -140,15 +144,32 @@ TEST_F(GCMStoreImplTest, LoadNew) {
   EXPECT_EQ(base::Time::FromInternalValue(0LL), load_result->last_checkin_time);
 }
 
-// Verify new database is not created when DO_NOT_CREATE_NEW_STORE is passed.
+// Verify new database is not created when DO_NOT_CREATE is passed.
 TEST_F(GCMStoreImplTest, LoadWithoutCreatingNewStore) {
   std::unique_ptr<GCMStoreImpl> gcm_store(BuildGCMStore());
   std::unique_ptr<GCMStore::LoadResult> load_result;
-  gcm_store->Load(
-      GCMStore::DO_NOT_CREATE,
-      base::Bind(&GCMStoreImplTest::LoadWithoutCheckCallback,
-                 base::Unretained(this),
-                 &load_result));
+  gcm_store->Load(GCMStore::DO_NOT_CREATE,
+                  base::Bind(&GCMStoreImplTest::LoadWithoutCheckCallback,
+                             base::Unretained(this), &load_result));
+  PumpLoop();
+
+  EXPECT_FALSE(load_result->success);
+  EXPECT_TRUE(load_result->store_does_not_exist);
+}
+
+// Verifies that loads with DO_NOT_CREATE set store_does_not_exist to true when
+// an empty directory was left behind after destroying the database.
+TEST_F(GCMStoreImplTest, LoadWithEmptyDirectory) {
+  std::unique_ptr<GCMStoreImpl> gcm_store(BuildGCMStore());
+
+  // Create an empty directory at the store path, to simulate an empty directory
+  // being left behind after destroying a previous store.
+  ASSERT_TRUE(base::CreateDirectory(store_path_));
+
+  std::unique_ptr<GCMStore::LoadResult> load_result;
+  gcm_store->Load(GCMStore::DO_NOT_CREATE,
+                  base::Bind(&GCMStoreImplTest::LoadWithoutCheckCallback,
+                             base::Unretained(this), &load_result));
   PumpLoop();
 
   EXPECT_FALSE(load_result->success);
