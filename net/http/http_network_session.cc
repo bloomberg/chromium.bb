@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -219,11 +220,13 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
 
   memory_pressure_listener_.reset(new base::MemoryPressureListener(base::Bind(
       &HttpNetworkSession::OnMemoryPressure, base::Unretained(this))));
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 HttpNetworkSession::~HttpNetworkSession() {
   base::STLDeleteElements(&response_drainers_);
   spdy_session_pool_.CloseAllSessions();
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
 void HttpNetworkSession::AddResponseDrainer(HttpResponseBodyDrainer* drainer) {
@@ -391,6 +394,24 @@ void HttpNetworkSession::OnMemoryPressure(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
       CloseIdleConnections();
+      break;
+  }
+}
+
+void HttpNetworkSession::OnMemoryStateChange(base::MemoryState state) {
+  // TODO(hajimehoshi): When the state changes, adjust the sizes of the caches
+  // to reduce the limits. HttpNetworkSession doesn't have the ability to limit
+  // at present.
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      break;
+    case base::MemoryState::THROTTLED:
+      CloseIdleConnections();
+      break;
+    case base::MemoryState::SUSPENDED:
+    // Note: Not supported at present. Fall through.
+    case base::MemoryState::UNKNOWN:
+      NOTREACHED();
       break;
   }
 }

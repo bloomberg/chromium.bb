@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -61,7 +62,8 @@ class TransportSecurityState;
 
 // This class holds session objects used by HttpNetworkTransaction objects.
 class NET_EXPORT HttpNetworkSession
-    : NON_EXPORTED_BASE(public base::NonThreadSafe) {
+    : NON_EXPORTED_BASE(public base::NonThreadSafe),
+      public base::MemoryCoordinatorClient {
  public:
   struct NET_EXPORT Params {
     Params();
@@ -199,7 +201,7 @@ class NET_EXPORT HttpNetworkSession
   };
 
   explicit HttpNetworkSession(const Params& params);
-  ~HttpNetworkSession();
+  ~HttpNetworkSession() override;
 
   HttpAuthCache* http_auth_cache() { return &http_auth_cache_; }
   SSLClientAuthCache* ssl_client_auth_cache() {
@@ -278,6 +280,9 @@ class NET_EXPORT HttpNetworkSession
   // Flush sockets on low memory notifications callback.
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+
+  // base::MemoryCoordinatorClient implementation:
+  void OnMemoryStateChange(base::MemoryState state) override;
 
   NetLog* const net_log_;
   HttpServerProperties* const http_server_properties_;
