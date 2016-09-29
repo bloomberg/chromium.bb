@@ -2150,7 +2150,6 @@ def _GetConfig(site_config, board_configs, hw_test_list):
       trybot_list=True,
   )
 
-  # pylint: disable=bad-continuation
   site_config.AddForBoards(
       'telem-chromium-pfq-informational',
       ['x86-generic', 'amd64-generic'],
@@ -2365,8 +2364,8 @@ def _GetConfig(site_config, board_configs, hw_test_list):
 
   # *-cheets devices run a different suite
   _paladin_cheets_hwtest_boards = frozenset([
-    'cyan',
-    'veyron_minnie',
+      'cyan',
+      'veyron_minnie',
   ])
 
   _paladin_chroot_replace_boards = frozenset([

@@ -305,51 +305,101 @@ class SiteParametersClassTest(cros_test_lib.TestCase):
     self.assertEquals('bar', site_params.foo)
 
 
-class SiteConfigClassTest(cros_test_lib.TestCase):
+class SiteConfigTest(cros_test_lib.TestCase):
   """Config tests."""
 
-  def testAdd(self):
-    """Test the SiteConfig.Add behavior."""
+  @staticmethod
+  def _callable(x):
+    return x + ' extended'
 
-    minimal_defaults = {
-        'name': None, '_template': None, 'value': 'default',
+  def setUp(self):
+    self.complex_defaults = {
+        'value': 'default',
     }
 
-    site_config = config_lib.SiteConfig(defaults=minimal_defaults)
-    template = site_config.AddTemplate('template', value='template')
-    mixin = config_lib.BuildConfig(value='mixin')
+    self.complex_site_params = {
+        'site_foo': True,
+        'site_bar': False,
+        'nested': {'sub1': 1, 'sub2': 2},
+    }
 
-    site_config.Add('default')
+    # Construct our test config.
+    site_config = config_lib.SiteConfig(
+        defaults=self.complex_defaults, site_params=self.complex_site_params)
 
-    site_config.Add('default_with_override',
-                    value='override')
+    site_config.AddTemplate('match', value='default')
+    site_config.AddTemplate('template', value='template')
+    site_config.AddTemplate('mixin', value='mixin')
+    site_config.AddTemplate('unused', value='unused')
+    site_config.AddTemplate('callable', value=self._callable)
 
-    site_config.Add('default_with_mixin',
-                    None,
-                    mixin)
+    default = site_config.Add('default')
 
-    site_config.Add('mixin_with_override',
-                    None,
-                    mixin,
-                    value='override')
+    default_with_override = site_config.Add(
+        'default_with_override',
+        value='override')
 
-    site_config.Add('default_with_template',
-                    template)
+    site_config.AddWithoutTemplate(
+        'default_with_mixin',
+        site_config.templates.mixin)
 
-    site_config.Add('template_with_override',
-                    template,
-                    value='override')
+    site_config.AddWithoutTemplate(
+        'mixin_with_override',
+        site_config.templates.mixin,
+        value='override')
 
+    site_config.Add(
+        'default_with_template',
+        site_config.templates.template)
 
-    site_config.Add('template_with_mixin',
-                    template,
-                    mixin)
+    site_config.Add(
+        'template_with_override',
+        site_config.templates.template,
+        value='override')
 
-    site_config.Add('template_with_mixin_override',
-                    template,
-                    mixin,
-                    value='override')
+    site_config.Add(
+        'template_with_mixin',
+        site_config.templates.template,
+        site_config.templates.mixin)
 
+    site_config.Add(
+        'template_with_mixin_override',
+        site_config.templates.template,
+        site_config.templates.mixin,
+        value='override')
+
+    site_config.Add(
+        'match',
+        value='default')
+
+    site_config.Add(
+        'template_back_to_default',
+        site_config.templates.template,
+        value='default')
+
+    site_config.Add(
+        'calling',
+        site_config.templates.callable)
+
+    site_config.Add(
+        'vm_tests',
+        vm_tests=[config_lib.VMTestConfig('vm_suite')],
+        vm_tests_override=[config_lib.VMTestConfig('vm_override')])
+
+    site_config.Add(
+        'hw_tests',
+        hw_tests=[config_lib.HWTestConfig('hw_suite')],
+        hw_tests_override=[config_lib.HWTestConfig('hw_override')])
+
+    site_config.AddGroup(
+        'parent',
+        default,
+        default_with_override)
+
+    self.site_config = site_config
+
+  def testAddedContents(self):
+    """Verify that our complex config looks like we expect, before saving."""
     expected = {
         'default': {
             '_template': None,
@@ -391,22 +441,79 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
             'name': 'template_with_mixin_override',
             'value': 'override'
         },
+        'calling': {
+            '_template': 'callable',
+            'name': 'calling',
+            'value': 'default extended',
+        },
+        'match': {
+            '_template': None,
+            'name': 'match',
+            'value': 'default',
+        },
+        'template_back_to_default': {
+            '_template': 'template',
+            'name': 'template_back_to_default',
+            'value': 'default',
+        },
+        'vm_tests': {
+            '_template': None,
+            'name': 'vm_tests',
+            'vm_tests': [config_lib.VMTestConfig('vm_suite')],
+            'vm_tests_override': [config_lib.VMTestConfig('vm_override')],
+        },
+        'hw_tests': {
+            '_template': None,
+            'name': 'hw_tests',
+            'hw_tests': [config_lib.HWTestConfig('hw_suite')],
+            'hw_tests_override': [config_lib.HWTestConfig('hw_override')],
+        },
+        'parent': {
+            '_template': None,
+            'name': 'parent',
+            'value': 'default',
+        },
     }
 
-    self.maxDiff = None
-    self.assertDictEqual(site_config, expected)
+    # Make sure our expected build configs exist.
+    self.assertItemsEqual(self.site_config.keys(), expected.keys())
+
+    # Make sure each one contains
+    self.longMessage = True
+    for name in expected.keys():
+      self.assertDictContainsSubset(expected[name],
+                                    self.site_config[name],
+                                    name)
+
+    # Special handling for child configs.
+
+    children = self.site_config['parent'].child_configs
+    self.assertEqual(len(children), 2)
+    self.assertDictContainsSubset(
+        {
+            '_template': None,
+            'name': 'default',
+            'value': 'default',
+            'grouped': True,
+        },
+        children[0])
+
+    self.assertDictContainsSubset(
+        {
+            '_template': None,
+            'name': 'default_with_override',
+            'value': 'override',
+            'grouped': True,
+        },
+        children[1])
 
   def testAddErrors(self):
     """Test the SiteConfig.Add behavior."""
-    site_config = MockSiteConfig()
+    self.site_config.Add('foo')
 
-    site_config.Add('foo')
-
-    # TODO(kevcheng): Disabled test for now until I figure out where configs
-    #                 are repeatedly added in chromeos_config_unittest.
     # Test we can't add the 'foo' config again.
-    # with self.assertRaises(AssertionError):
-    #   site_config.Add('foo')
+    with self.assertRaises(AssertionError):
+      self.site_config.Add('foo')
 
     # Create a template without using AddTemplate so the site config doesn't
     # know about it.
@@ -414,146 +521,87 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
         name='fake_template', _template='fake_template')
 
     with self.assertRaises(AssertionError):
-      site_config.Add('bar', fake_template)
+      self.site_config.Add('bar', fake_template)
 
   def testTemplateAttr(self):
     """Test the SiteConfig.templates.name behavior."""
+    template1 = self.site_config.AddTemplate('template1', value='template')
+    template2 = self.site_config.AddTemplate('template2', value='template')
 
-    site_config = config_lib.SiteConfig()
-    template1 = site_config.AddTemplate('template1', value='template')
-    template2 = site_config.AddTemplate('template2', value='template')
-
-    self.assertIs(template1, site_config.templates.template1)
-    self.assertIs(template2, site_config.templates.template2)
+    self.assertIs(template1, self.site_config.templates.template1)
+    self.assertIs(template2, self.site_config.templates.template2)
 
     # Try to fetch a non-existent template.
     with self.assertRaises(AttributeError):
-      _ = site_config.templates.no_such_template
+      _ = self.site_config.templates.no_such_template
 
-
-  def testSaveLoadEmpty(self):
-    config = config_lib.SiteConfig(defaults={}, site_params={})
-    config_str = config.SaveConfigToString()
+  def _verifyLoadSave(self, site_config):
+    """Make sure that we can save and re-load a site."""
+    config_str = site_config.SaveConfigToString()
     loaded = config_lib.LoadConfigFromString(config_str)
 
-    self.assertEqual(config, loaded)
+    #
+    # BUG ALERT ON TEST FAILURE
+    #
+    # assertDictEqual can correctly compare these structs for equivalence, but
+    # has a bug when displaying differences on failure. The embedded
+    # HWTestConfig values are correctly compared, but ALWAYS display as
+    # different, if something else triggers a failure.
+    #
+
+    # This for loop is to make differences easier to find/read.
+    self.longMessage = True
+    for name in site_config.iterkeys():
+      self.assertDictEqual(loaded[name], site_config[name], name)
+
+    # This includes templates and the default build config.
+    self.assertEqual(site_config, loaded)
+
+    loaded_str = loaded.SaveConfigToString()
+
+    self.assertEqual(config_str, loaded_str)
+
+    # Cycle through save load again, just for completeness.
+    loaded2 = config_lib.LoadConfigFromString(loaded_str)
+    loaded2_str = loaded2.SaveConfigToString()
+    self.assertEqual(loaded_str, loaded2_str)
+
+    # Make sure we can dump long content without crashing.
+    self.assertNotEqual(site_config.DumpExpandedConfigToString(), '')
+    self.assertNotEqual(loaded.DumpExpandedConfigToString(), '')
+
+    return loaded
+
+  def testSaveLoadEmpty(self):
+    """Create, save, and reload an empty config."""
+    site_config = config_lib.SiteConfig()
+
+    loaded = self._verifyLoadSave(site_config)
 
     self.assertEqual(loaded.keys(), [])
     self.assertEqual(loaded._templates.keys(), [])
-    self.assertEqual(loaded.GetDefault(), config_lib.DefaultSettings())
-    self.assertEqual(loaded.params,
-                     config_lib.SiteParameters(
-                         config_lib.DefaultSiteParameters()))
-
-    self.assertNotEqual(loaded.SaveConfigToString(), '')
-
-    # Make sure we can dump debug content without crashing.
-    self.assertNotEqual(loaded.DumpExpandedConfigToString(), '')
+    self.assertDictEqual(
+        loaded.GetDefault(), config_lib.DefaultSettings())
+    self.assertDictEqual(
+        loaded.params, config_lib.DefaultSiteParameters())
 
   def testSaveLoadComplex(self):
+    """Create, save, and reload an complex config."""
+    # Verify it.
+    loaded = self._verifyLoadSave(self.site_config)
 
-    # pylint: disable=line-too-long
-    src_str = """{
-    "_default": {
-        "bar": true,
-        "baz": false,
-        "child_configs": [],
-        "foo": false,
-        "hw_tests": [],
-        "nested": { "sub1": 1, "sub2": 2 }
-    },
-    "_site_params": {
-        "site_foo": true,
-        "site_bar": false
-    },
-    "_templates": {
-       "build": {
-            "baz": true
-       },
-       "unused": {
-            "description": "No build uses this template."
-       }
-    },
-    "diff_build": {
-        "_template": "build",
-        "bar": false,
-        "foo": true,
-        "name": "diff_build"
-    },
-    "match_build": {
-        "name": "match_build"
-    },
-    "parent_build": {
-        "child_configs": [
-            {
-                "name": "empty_build"
-            },
-            {
-                "bar": false,
-                "name": "child_build",
-                "hw_tests": [
-                    "{\\n    \\"async\\": true,\\n    \\"blocking\\": false,\\n    \\"critical\\": false,\\n    \\"file_bugs\\": true,\\n    \\"max_retries\\": null,\\n    \\"minimum_duts\\": 4,\\n    \\"num\\": 2,\\n    \\"offload_failures_only\\": false,\\n    \\"pool\\": \\"bvt\\",\\n    \\"priority\\": \\"PostBuild\\",\\n    \\"retry\\": false,\\n    \\"suite\\": \\"bvt-perbuild\\",\\n    \\"suite_min_duts\\": 1,\\n    \\"timeout\\": 10800,\\n    \\"warn_only\\": false\\n}"
-                ]
-            }
-        ],
-        "name": "parent_build"
-    },
-    "default_name_build": {
-    }
-}"""
-
-    config = config_lib.LoadConfigFromString(src_str)
-
+    # Verify default build config
     expected_defaults = config_lib.DefaultSettings()
-    expected_defaults.update({
-        "bar": True,
-        "baz": False,
-        "child_configs": [],
-        "foo": False,
-        "hw_tests": [],
-        "nested": {"sub1": 1, "sub2": 2},
-    })
+    expected_defaults.update(self.complex_defaults)
+    self.assertDictEqual(loaded.GetDefault(), expected_defaults)
 
-    self.assertEqual(config.GetDefault(), expected_defaults)
+    # Verify Site Params.
+    expected_site_params = config_lib.DefaultSiteParameters()
+    expected_site_params.update(self.complex_site_params)
+    self.assertDictEqual(loaded.params, expected_site_params)
 
-    # Verify assorted stuff in the loaded config to make sure it matches
-    # expectations.
-    self.assertFalse(config['match_build'].foo)
-    self.assertTrue(config['match_build'].bar)
-    self.assertFalse(config['match_build'].baz)
-    self.assertTrue(config['diff_build'].foo)
-    self.assertFalse(config['diff_build'].bar)
-    self.assertTrue(config['diff_build'].baz)
-    self.assertTrue(config['parent_build'].bar)
-    self.assertTrue(config['parent_build'].child_configs[0].bar)
-    self.assertFalse(config['parent_build'].child_configs[1].bar)
-    self.assertEqual(
-        config['parent_build'].child_configs[1].hw_tests[0],
-        config_lib.HWTestConfig(
-            suite='bvt-perbuild',
-            async=True, file_bugs=True, max_retries=None,
-            minimum_duts=4, num=2, priority='PostBuild',
-            retry=False, suite_min_duts=1))
-    self.assertEqual(config['default_name_build'].name, 'default_name_build')
-
-    self.assertTrue(config.params.site_foo)
-    self.assertFalse(config.params.site_bar)
-
-    # Ensure that all templates are present.
-    self.assertItemsEqual(config.templates.keys(), ['build', 'unused'])
-
-    # Load an save again, just to make sure there are no changes.
-    loaded = config_lib.LoadConfigFromString(config.SaveConfigToString())
-
-    # This tests that build configs match, except that unused templates
-    # are stripped out.
-    self.assertEqual(config, loaded)
-    self.assertEqual(config._site_params, loaded._site_params)
-    self.assertItemsEqual(loaded.templates.keys(), ['build'])
-
-    # Make sure we can dump debug content without crashing.
-    self.assertNotEqual(config.DumpExpandedConfigToString(), '')
-
+    # Ensure that expected templates are present.
+    self.assertItemsEqual(loaded.templates.keys(), ['template', 'callable'])
 
   def testTemplatesToSave(self):
     def _invert(x):
@@ -577,7 +625,7 @@ class SiteConfigClassTest(cros_test_lib.TestCase):
         }
     )
 
-    results = config._TemplatesToSave()
+    results = config._MarshalTemplates()
 
     self.assertItemsEqual(
         results,

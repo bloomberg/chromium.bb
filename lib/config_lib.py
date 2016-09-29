@@ -1017,10 +1017,13 @@ class SiteConfig(dict):
                    of the site_params dictionary should be strings.
     """
     super(SiteConfig, self).__init__()
-    self._defaults = DefaultSettings() if defaults is None else defaults
+    self._defaults = DefaultSettings()
+    if defaults:
+      self._defaults.update(defaults)
     self._templates = AttrDict() if templates is None else AttrDict(templates)
-    self._site_params = (
-        DefaultSiteParameters() if site_params is None else site_params)
+    self._site_params = DefaultSiteParameters()
+    if site_params:
+      self._site_params.update(site_params)
 
   def GetDefault(self):
     """Create the canonical default build configuration."""
@@ -1264,43 +1267,6 @@ class SiteConfig(dict):
       # Create the new config for this board.
       self.Add(config_name, template, *mixins, **kwargs)
 
-  def SaveConfigToFile(self, config_file):
-    """Save this Config to a Json file.
-
-    Args:
-      config_file: The file to write too.
-    """
-    json_string = self.SaveConfigToString()
-    osutils.WriteFile(config_file, json_string)
-
-  def HideDefaults(self, name, cfg):
-    """Hide the defaults from a given config entry.
-
-    Args:
-      name: Default build name (usually dictionary key).
-      cfg: A config entry.
-
-    Returns:
-      The same config entry, but without any defaults.
-    """
-    my_default = self.GetDefault()
-    my_default['name'] = name
-
-    template = cfg.get('_template')
-    if template:
-      my_default.update(self._templates[template])
-      my_default['_template'] = None
-
-    d = {}
-    for k, v in cfg.iteritems():
-      if my_default.get(k) != v:
-        if k == 'child_configs':
-          d['child_configs'] = [self.HideDefaults(name, child) for child in v]
-        else:
-          d[k] = v
-
-    return d
-
   def AddTemplate(self, name, *args, **kwargs):
     """Create a template named |name|.
 
@@ -1315,14 +1281,43 @@ class SiteConfig(dict):
     """
     assert name not in self._templates, ('Template %s already exists.' % name)
 
-    cfg = BuildConfig()
-    cfg.apply(*args, **kwargs)
-    cfg['_template'] = name
-    self._templates[name] = cfg
+    template = BuildConfig()
+    template.apply(*args, **kwargs)
+    template['_template'] = name
+    self._templates[name] = template
 
-    return cfg
+    return template
 
-  def _TemplatesToSave(self):
+  def _MarshalBuildConfig(self, name, config):
+    """Hide the defaults from a given config entry.
+
+    Args:
+      name: Default build name (usually dictionary key).
+      config: A config entry.
+
+    Returns:
+      The same config entry, but without any defaults.
+    """
+    defaults = self.GetDefault()
+    defaults['name'] = name
+
+    template = config.get('_template')
+    if template:
+      defaults.apply(self._templates[template])
+      defaults['_template'] = None
+
+    result = {}
+    for k, v in config.iteritems():
+      if defaults.get(k) != v:
+        if k == 'child_configs':
+          result['child_configs'] = [self._MarshalBuildConfig(name, child)
+                                     for child in v]
+        else:
+          result[k] = v
+
+    return result
+
+  def _MarshalTemplates(self):
     """Return a version of self._templates with only used templates.
 
     Templates have callables/delete keys resolved against GetDefault() to
@@ -1357,14 +1352,22 @@ class SiteConfig(dict):
     site_params = self.params
 
     config_dict = {}
-    for k, v in self.iteritems():
-      config_dict[k] = self.HideDefaults(k, v)
-
     config_dict['_default'] = default
-    config_dict['_templates'] = self._TemplatesToSave()
+    config_dict['_templates'] = self._MarshalTemplates()
     config_dict['_site_params'] = SiteParameters.HideDefaults(site_params)
+    for k, v in self.iteritems():
+      config_dict[k] = self._MarshalBuildConfig(k, v)
 
     return PrettyJsonDict(config_dict)
+
+  def SaveConfigToFile(self, config_file):
+    """Save this Config to a Json file.
+
+    Args:
+      config_file: The file to write too.
+    """
+    json_string = self.SaveConfigToString()
+    osutils.WriteFile(config_file, json_string)
 
   def DumpExpandedConfigToString(self):
     """Dump the SiteConfig to Json with all configs full expanded.
@@ -1497,10 +1500,11 @@ def LoadConfigFromString(json_string):
   # Use standard defaults, but allow the config to override.
   defaults = DefaultSettings()
   defaults.update(config_dict.pop(DEFAULT_BUILD_CONFIG))
-
   _UpdateConfig(defaults)
 
-  templates = config_dict.pop('_templates', None)
+  templates = config_dict.pop('_templates', {})
+  for t in templates.itervalues():
+    _UpdateConfig(t)
 
   site_params = DefaultSiteParameters()
   site_params.update(config_dict.pop('_site_params', {}))
