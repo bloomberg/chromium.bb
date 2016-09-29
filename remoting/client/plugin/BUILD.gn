@@ -7,10 +7,6 @@ assert(is_nacl,
 
 import("//build/config/features.gni")
 
-config("enable_linker_optimization") {
-  ldflags = [ "-Wl,-O1" ]
-}
-
 executable("remoting_client_plugin_newlib") {
   sources = [
     "chromoting_instance.cc",
@@ -48,12 +44,6 @@ executable("remoting_client_plugin_newlib") {
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
-
-  if (is_debug) {
-    # Always enable link-time optimization in debug builds to workaround
-    # crbug.com/538243 .
-    configs += [ ":enable_linker_optimization" ]
-  }
 
   deps = [
     "//net",
