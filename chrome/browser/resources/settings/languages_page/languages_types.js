@@ -109,6 +109,12 @@ LanguageHelper.prototype = {
   moveLanguage: assertNotReached,
 
   /**
+   * Moves the language directly to the front of the list of enabled languages.
+   * @param {string} languageCode
+   */
+  moveLanguageToFront: assertNotReached,
+
+  /**
    * Enables translate for the given language by removing the translate
    * language from the blocked languages preference.
    * @param {string} languageCode

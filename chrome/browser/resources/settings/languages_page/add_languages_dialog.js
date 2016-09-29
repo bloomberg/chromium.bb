@@ -34,6 +34,10 @@ Polymer({
 
   attached: function() {
     this.$.dialog.showModal();
+    // Fire iron-resize after the list initially displays to prevent flickering.
+    setTimeout(function() {
+      this.$$('iron-list').fire('iron-resize');
+    }.bind(this));
   },
 
   /**

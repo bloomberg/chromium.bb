@@ -576,6 +576,25 @@ Polymer({
   },
 
   /**
+   * Moves the language directly to the front of the list of enabled languages.
+   * @param {string} languageCode
+   */
+  moveLanguageToFront: function(languageCode) {
+    if (!CrSettingsPrefs.isInitialized)
+      return;
+
+    var languageCodes =
+        this.getPref(preferredLanguagesPrefName).value.split(',');
+    var originalIndex = languageCodes.indexOf(languageCode);
+    assert(originalIndex != -1);
+
+    languageCodes.splice(originalIndex, 1);
+    languageCodes.unshift(languageCode);
+
+    this.setPrefValue(preferredLanguagesPrefName, languageCodes.join(','));
+  },
+
+  /**
    * Enables translate for the given language by removing the translate
    * language from the blocked languages preference.
    * @param {string} languageCode

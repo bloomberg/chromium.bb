@@ -108,6 +108,16 @@ Polymer({
 
   /**
    * @param {!LanguageState} language
+   * @return {boolean} True if |language| is first or second in the list of
+   *     enabled languages. Used to hide the "Move to top" option.
+   * @private
+   */
+  isFirstOrSecondLanguage_: function(language) {
+    return this.languages.enabled.slice(0, 2).includes(language);
+  },
+
+  /**
+   * @param {!LanguageState} language
    * @return {boolean} True if |language| is last in the list of enabled
    *     languages. Used to hide the "Move down" option.
    * @private
@@ -175,6 +185,7 @@ Polymer({
       // Reset the chosen UI language to the actual UI language.
       this.languageHelper.resetUILanguage();
     }
+    /** @type {!CrSharedMenuElement} */(this.$.menu.get()).closeMenu();
   },
 
    /**
@@ -204,6 +215,28 @@ Polymer({
       this.languageHelper.disableTranslateLanguage(
           this.detailLanguage_.language.code);
     }
+    /** @type {!CrSharedMenuElement} */(this.$.menu.get()).closeMenu();
+  },
+
+  /**
+   * Returns "complex" if the menu includes checkboxes, which should change the
+   * spacing of items and show a separator in the menu.
+   * @param {boolean} translateEnabled
+   * @return {string}
+   */
+  getMenuClass_: function(translateEnabled) {
+    if (translateEnabled || cr.isChromeOS || cr.isWindows)
+      return 'complex';
+    return '';
+  },
+
+  /**
+   * Moves the language to the top of the list.
+   * @private
+   */
+  onMoveToTopTap_: function() {
+    /** @type {!CrSharedMenuElement} */(this.$.menu.get()).closeMenu();
+    this.languageHelper.moveLanguageToFront(this.detailLanguage_.language.code);
   },
 
   /**

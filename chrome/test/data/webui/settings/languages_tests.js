@@ -63,6 +63,17 @@ cr.define('settings-languages', function() {
       return fakePrefs;
     }
 
+    /**
+     * @param {!Array<string>} expected
+     */
+    function assertLanguageOrder(expected) {
+      assertEquals(expected.length, languageHelper.languages.enabled.length);
+      for (var i = 0; i < expected.length; i++) {
+        assertEquals(
+            expected[i], languageHelper.languages.enabled[i].language.code);
+      }
+    }
+
     var languageHelper;
     var languageSettingsPrivate;
 
@@ -93,11 +104,7 @@ cr.define('settings-languages', function() {
         assertEquals(languageSettingsPrivate.languages[i].code,
                      languageHelper.languages.supported[i].code);
       }
-      assertEquals(2, languageHelper.languages.enabled.length);
-      assertEquals('en-US',
-                   languageHelper.languages.enabled[0].language.code);
-      assertEquals('sw',
-                   languageHelper.languages.enabled[1].language.code);
+      assertLanguageOrder(['en-US', 'sw']);
       assertEquals('en', languageHelper.languages.translateTarget);
 
       // TODO(michaelpg): Test other aspects of the model.
@@ -117,34 +124,34 @@ cr.define('settings-languages', function() {
     });
 
     test('reorder languages', function() {
+      // New language is added at the end.
       languageHelper.enableLanguage('en-CA');
-      assertEquals('en-US', languageHelper.languages.enabled[0].language.code);
-      assertEquals('sw', languageHelper.languages.enabled[1].language.code);
-      assertEquals('en-CA', languageHelper.languages.enabled[2].language.code);
+      assertLanguageOrder(['en-US', 'sw', 'en-CA']);
 
       // Can move a language up.
       languageHelper.moveLanguage('en-CA', -1);
-      assertEquals('en-US', languageHelper.languages.enabled[0].language.code);
-      assertEquals('en-CA', languageHelper.languages.enabled[1].language.code);
-      assertEquals('sw', languageHelper.languages.enabled[2].language.code);
+      assertLanguageOrder(['en-US', 'en-CA', 'sw']);
 
       // Can move a language down.
       languageHelper.moveLanguage('en-US', 1);
-      assertEquals('en-CA', languageHelper.languages.enabled[0].language.code);
-      assertEquals('en-US', languageHelper.languages.enabled[1].language.code);
-      assertEquals('sw', languageHelper.languages.enabled[2].language.code);
+      assertLanguageOrder(['en-CA', 'en-US', 'sw']);
+
+      // Can move a language to the front.
+      languageHelper.moveLanguageToFront('sw');
+      var expectedOrder = ['sw', 'en-CA', 'en-US'];
+      assertLanguageOrder(expectedOrder);
 
       // Moving the first language up has no effect.
-      languageHelper.moveLanguage('en-CA', -1);
-      assertEquals('en-CA', languageHelper.languages.enabled[0].language.code);
-      assertEquals('en-US', languageHelper.languages.enabled[1].language.code);
-      assertEquals('sw', languageHelper.languages.enabled[2].language.code);
+      languageHelper.moveLanguage('sw', -1);
+      assertLanguageOrder(expectedOrder);
+
+      // Moving the first language to top has no effect.
+      languageHelper.moveLanguageToFront('sw');
+      assertLanguageOrder(expectedOrder);
 
       // Moving the last language down has no effect.
-      languageHelper.moveLanguage('sw', 1);
-      assertEquals('en-CA', languageHelper.languages.enabled[0].language.code);
-      assertEquals('en-US', languageHelper.languages.enabled[1].language.code);
-      assertEquals('sw', languageHelper.languages.enabled[2].language.code);
+      languageHelper.moveLanguage('en-US', 1);
+      assertLanguageOrder(expectedOrder);
     });
 
     if (cr.isChromeOS) {
