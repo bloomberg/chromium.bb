@@ -1544,5 +1544,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         mControlContainer.setVisibility(visibility);
         getCompositorViewHolder().getSurfaceView().setVisibility(visibility);
         getCompositorViewHolder().setVisibility(visibility);
+
+        // Enter HTML5 fullscreen to ensure the texture fills the entire composited surface.
+        getFullscreenManager().setPersistentFullscreenMode(visibility == View.GONE);
     }
 }
