@@ -24,7 +24,6 @@
 
 #include "platform/graphics/filters/FEComposite.h"
 
-#include "SkArithmeticMode.h"
 #include "SkXfermodeImageFilter.h"
 
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
@@ -197,12 +196,14 @@ sk_sp<SkImageFilter> FEComposite::createImageFilterInternal(bool requiresPMColor
     sk_sp<SkImageFilter> foreground(SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
     sk_sp<SkImageFilter> background(SkiaImageFilterBuilder::build(inputEffect(1), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
     SkImageFilter::CropRect cropRect = getCropRect();
-    sk_sp<SkXfermode> mode;
-    if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)
-        mode = SkArithmeticMode::Make(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4), requiresPMColorValidation);
-    else
-        mode = SkXfermode::Make(toXfermode(m_type));
-    return SkXfermodeImageFilter::Make(std::move(mode), std::move(background), std::move(foreground), &cropRect);
+
+    if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC) {
+        return SkXfermodeImageFilter::MakeArithmetic(
+            SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4),
+            requiresPMColorValidation, std::move(background), std::move(foreground), &cropRect);
+    }
+
+    return SkXfermodeImageFilter::Make(SkXfermode::Make(toXfermode(m_type)), std::move(background), std::move(foreground), &cropRect);
 }
 
 static TextStream& operator<<(TextStream& ts, const CompositeOperationType& type)
