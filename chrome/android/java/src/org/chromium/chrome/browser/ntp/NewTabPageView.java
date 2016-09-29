@@ -1196,6 +1196,7 @@ public class NewTabPageView extends FrameLayout
      * @return The adapter position the user has scrolled to.
      */
     public int getScrollPosition() {
-        return mRecyclerView.getScrollPosition();
+        if (mUseCardsUi) return mRecyclerView.getScrollPosition();
+        return RecyclerView.NO_POSITION;
     }
 }
