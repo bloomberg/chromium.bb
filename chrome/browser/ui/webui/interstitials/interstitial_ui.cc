@@ -152,7 +152,7 @@ SSLBlockingPage* CreateSSLBlockingPage(content::WebContents* web_contents) {
     options_mask |= security_interstitials::SSLErrorUI::SOFT_OVERRIDE_ENABLED;
   if (strict_enforcement)
     options_mask |= security_interstitials::SSLErrorUI::STRICT_ENFORCEMENT;
-  return new SSLBlockingPage(
+  return SSLBlockingPage::Create(
       web_contents, cert_error, ssl_info, request_url, options_mask,
       time_triggered_, nullptr,
       base::Callback<void(content::CertificateRequestResultType)>());

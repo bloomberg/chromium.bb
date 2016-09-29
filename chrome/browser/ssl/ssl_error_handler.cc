@@ -337,9 +337,9 @@ void SSLErrorHandler::ShowSSLInterstitial() {
   RecordUMA(IsErrorOverridable() ? SHOW_SSL_INTERSTITIAL_OVERRIDABLE
                                  : SHOW_SSL_INTERSTITIAL_NONOVERRIDABLE);
 
-  (new SSLBlockingPage(web_contents_, cert_error_, ssl_info_, request_url_,
-                       options_mask_, base::Time::NowFromSystemTime(),
-                       std::move(ssl_cert_reporter_), callback_))
+  (SSLBlockingPage::Create(web_contents_, cert_error_, ssl_info_, request_url_,
+                           options_mask_, base::Time::NowFromSystemTime(),
+                           std::move(ssl_cert_reporter_), callback_))
       ->Show();
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".

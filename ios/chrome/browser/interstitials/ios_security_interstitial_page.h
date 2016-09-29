@@ -12,14 +12,8 @@
 #include "ios/web/public/interstitials/web_interstitial_delegate.h"
 #include "url/gurl.h"
 
-class IOSChromeControllerClient;
-
 namespace base {
 class DictionaryValue;
-}
-
-namespace security_interstitials {
-class MetricsHelper;
 }
 
 namespace web {

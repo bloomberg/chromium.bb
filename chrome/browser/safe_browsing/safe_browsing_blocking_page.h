@@ -193,7 +193,8 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
     SB_REASON_MALWARE,
     SB_REASON_HARMFUL,
     SB_REASON_PHISHING,
-  } interstitial_reason_;
+  };
+  SBInterstitialReason interstitial_reason_;
 
   // The factory used to instantiate SafeBrowsingBlockingPage objects.
   // Useful for tests, so they can provide their own implementation of
@@ -208,11 +209,22 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
   void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
 
-  std::string GetMetricPrefix() const;
-  std::string GetExtraMetricsSuffix() const;
-  std::string GetRapporPrefix() const;
-  std::string GetDeprecatedRapporPrefix() const;
-  std::string GetSamplingEventName() const;
+  static std::string GetMetricPrefix(const UnsafeResourceList& unsafe_resources,
+                                     SBInterstitialReason interstitial_reason);
+  static std::string GetExtraMetricsSuffix(
+      const UnsafeResourceList& unsafe_resources);
+  static std::string GetRapporPrefix(SBInterstitialReason interstitial_reason);
+  static std::string GetDeprecatedRapporPrefix(
+      SBInterstitialReason interstitial_reason);
+  static std::string GetSamplingEventName(
+      SBInterstitialReason interstitial_reason);
+
+  static SBInterstitialReason GetInterstitialReason(
+      const UnsafeResourceList& unsafe_resources);
+
+  static std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
+      content::WebContents* web_contents,
+      const UnsafeResourceList& unsafe_resources);
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingBlockingPage);
 };

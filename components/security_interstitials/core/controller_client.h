@@ -56,7 +56,7 @@ enum SecurityInterstitialCommands {
 // by the JavaScript error page.
 class ControllerClient {
  public:
-  ControllerClient();
+  explicit ControllerClient(std::unique_ptr<MetricsHelper> metrics_helper);
   virtual ~ControllerClient();
 
   // Handle the user's reporting preferences.
@@ -78,7 +78,6 @@ class ControllerClient {
   virtual void Reload() = 0;
 
   MetricsHelper* metrics_helper() const;
-  void set_metrics_helper(std::unique_ptr<MetricsHelper> metrics_helper);
 
   virtual void OpenUrlInCurrentTab(const GURL& url) = 0;
 

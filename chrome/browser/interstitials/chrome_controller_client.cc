@@ -10,6 +10,7 @@
 #include "base/process/launch.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -126,8 +127,11 @@ void LaunchDateAndTimeSettingsOnFile() {
 }  // namespace
 
 ChromeControllerClient::ChromeControllerClient(
-    content::WebContents* web_contents)
-    : web_contents_(web_contents), interstitial_page_(nullptr) {}
+    content::WebContents* web_contents,
+    std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper)
+    : ControllerClient(std::move(metrics_helper)),
+      web_contents_(web_contents),
+      interstitial_page_(nullptr) {}
 
 ChromeControllerClient::~ChromeControllerClient() {}
 

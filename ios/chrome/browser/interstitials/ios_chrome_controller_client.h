@@ -12,6 +12,10 @@
 
 class GURL;
 
+namespace security_interstitials {
+class MetricsHelper;
+}
+
 namespace web {
 class WebInterstitial;
 class WebState;
@@ -21,7 +25,9 @@ class WebState;
 class IOSChromeControllerClient
     : public security_interstitials::ControllerClient {
  public:
-  explicit IOSChromeControllerClient(web::WebState* web_state);
+  IOSChromeControllerClient(
+      web::WebState* web_state,
+      std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper);
   ~IOSChromeControllerClient() override;
 
   void SetWebInterstitial(web::WebInterstitial* web_interstitial);

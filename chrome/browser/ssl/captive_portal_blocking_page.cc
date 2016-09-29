@@ -21,6 +21,7 @@
 #include "components/certificate_reporting/error_reporter.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_interstitials/core/controller_client.h"
+#include "components/security_interstitials/core/metrics_helper.h"
 #include "components/url_formatter/url_formatter.h"
 #include "components/wifi/wifi_service.h"
 #include "content/public/browser/web_contents.h"
@@ -56,7 +57,7 @@ CaptivePortalBlockingPage::CaptivePortalBlockingPage(
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
-    : SecurityInterstitialPage(web_contents, request_url),
+    : SecurityInterstitialPage(web_contents, request_url, nullptr),
       login_url_(login_url),
       callback_(callback) {
   DCHECK(login_url_.is_valid());

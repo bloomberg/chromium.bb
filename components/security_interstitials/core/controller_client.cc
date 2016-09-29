@@ -22,16 +22,14 @@ const char kPrivacyLinkHtml[] =
     "<a id=\"privacy-link\" href=\"\" onclick=\"sendCommand(%d); "
     "return false;\" onmousedown=\"return false;\">%s</a>";
 
-ControllerClient::ControllerClient() {}
+ControllerClient::ControllerClient(
+    std::unique_ptr<MetricsHelper> metrics_helper)
+    : metrics_helper_(std::move(metrics_helper)) {}
+
 ControllerClient::~ControllerClient() {}
 
 MetricsHelper* ControllerClient::metrics_helper() const {
   return metrics_helper_.get();
-}
-
-void ControllerClient::set_metrics_helper(
-    std::unique_ptr<MetricsHelper> metrics_helper) {
-  metrics_helper_ = std::move(metrics_helper);
 }
 
 void ControllerClient::SetReportingPreference(bool report) {

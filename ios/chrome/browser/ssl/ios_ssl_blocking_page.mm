@@ -65,6 +65,21 @@ void RecordSSLExpirationPageEventState(bool expired_but_previously_allowed,
         END_OF_SSL_EXPIRATION_AND_DECISION);
   }
 }
+
+IOSChromeMetricsHelper* CreateMetricsHelper(web::WebState* web_state,
+                                            const GURL& request_url,
+                                            bool overridable) {
+  // Set up the metrics helper for the SSLErrorUI.
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix =
+      overridable ? "ssl_overridable" : "ssl_nonoverridable";
+  reporting_info.rappor_prefix = kSSLRapporPrefix;
+  reporting_info.deprecated_rappor_prefix = kDeprecatedSSLRapporPrefix;
+  reporting_info.rappor_report_type = rappor::LOW_FREQUENCY_UMA_RAPPOR_TYPE;
+  reporting_info.deprecated_rappor_report_type = rappor::UMA_RAPPOR_TYPE;
+  return new IOSChromeMetricsHelper(web_state, request_url, reporting_info);
+}
+
 }  // namespace
 
 // Note that we always create a navigation entry with SSL errors.
@@ -83,24 +98,16 @@ IOSSSLBlockingPage::IOSSSLBlockingPage(
       overridable_(IsOverridable(options_mask)),
       expired_but_previously_allowed_(
           (options_mask & SSLErrorUI::EXPIRED_BUT_PREVIOUSLY_ALLOWED) != 0),
-      controller_(new IOSChromeControllerClient(web_state)) {
+      controller_(new IOSChromeControllerClient(
+          web_state,
+          base::WrapUnique(CreateMetricsHelper(web_state,
+                                               request_url,
+                                               IsOverridable(options_mask))))) {
   // Override prefs for the SSLErrorUI.
   if (overridable_)
     options_mask |= SSLErrorUI::SOFT_OVERRIDE_ENABLED;
   else
     options_mask &= ~SSLErrorUI::SOFT_OVERRIDE_ENABLED;
-
-  // Set up the metrics helper for the SSLErrorUI.
-  security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  reporting_info.metric_prefix =
-      overridable_ ? "ssl_overridable" : "ssl_nonoverridable";
-  reporting_info.rappor_prefix = kSSLRapporPrefix;
-  reporting_info.deprecated_rappor_prefix = kDeprecatedSSLRapporPrefix;
-  reporting_info.rappor_report_type = rappor::LOW_FREQUENCY_UMA_RAPPOR_TYPE;
-  reporting_info.deprecated_rappor_report_type = rappor::UMA_RAPPOR_TYPE;
-  IOSChromeMetricsHelper* ios_chrome_metrics_helper =
-      new IOSChromeMetricsHelper(web_state, request_url, reporting_info);
-  controller_->set_metrics_helper(base::WrapUnique(ios_chrome_metrics_helper));
 
   ssl_error_ui_.reset(new SSLErrorUI(request_url, cert_error, ssl_info,
                                      options_mask, time_triggered,
@@ -211,8 +218,6 @@ void IOSSSLBlockingPage::NotifyDenyCertificate() {
 
 // static
 bool IOSSSLBlockingPage::IsOverridable(int options_mask) {
-  const bool is_overridable =
-      (options_mask & SSLErrorUI::SOFT_OVERRIDE_ENABLED) &&
-      !(options_mask & SSLErrorUI::STRICT_ENFORCEMENT);
-  return is_overridable;
+  return (options_mask & SSLErrorUI::SOFT_OVERRIDE_ENABLED) &&
+         !(options_mask & SSLErrorUI::STRICT_ENFORCEMENT);
 }

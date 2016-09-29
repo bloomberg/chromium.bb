@@ -16,7 +16,9 @@ class WebContents;
 // Provides embedder-specific logic for the security error page controller.
 class ChromeControllerClient : public security_interstitials::ControllerClient {
  public:
-  explicit ChromeControllerClient(content::WebContents* web_contents);
+  ChromeControllerClient(
+      content::WebContents* web_contents,
+      std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper);
   ~ChromeControllerClient() override;
 
   void set_interstitial_page(content::InterstitialPage* interstitial_page);

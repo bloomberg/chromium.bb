@@ -35,6 +35,19 @@ namespace {
 
 const char kMetricsName[] = "bad_clock";
 
+std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  // Set up the metrics helper for the BadClockUI.
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = kMetricsName;
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
+      base::MakeUnique<ChromeMetricsHelper>(web_contents, request_url,
+                                            reporting_info, kMetricsName);
+  metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
+  return metrics_helper;
+}
+
 }  // namespace
 
 // static
@@ -54,20 +67,12 @@ BadClockBlockingPage::BadClockBlockingPage(
     ssl_errors::ClockState clock_state,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
-    : SecurityInterstitialPage(web_contents, request_url),
+    : SecurityInterstitialPage(web_contents,
+                               request_url,
+                               CreateMetricsHelper(web_contents, request_url)),
       callback_(callback),
       ssl_info_(ssl_info),
       time_triggered_(time_triggered) {
-  // Set up the metrics helper for the BadClockUI.
-  security_interstitials::MetricsHelper::ReportDetails reporting_info;
-  reporting_info.metric_prefix = kMetricsName;
-  ChromeMetricsHelper* chrome_metrics_helper = new ChromeMetricsHelper(
-      web_contents, request_url, reporting_info, kMetricsName);
-  chrome_metrics_helper->StartRecordingCaptivePortalMetrics(false);
-  std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper(
-      chrome_metrics_helper);
-  controller()->set_metrics_helper(std::move(metrics_helper));
-
   cert_report_helper_.reset(new CertReportHelper(
       std::move(ssl_cert_reporter), web_contents, request_url, ssl_info,
       certificate_reporting::ErrorReport::INTERSTITIAL_CLOCK,

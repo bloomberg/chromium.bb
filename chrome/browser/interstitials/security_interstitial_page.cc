@@ -27,12 +27,14 @@
 
 SecurityInterstitialPage::SecurityInterstitialPage(
     content::WebContents* web_contents,
-    const GURL& request_url)
+    const GURL& request_url,
+    std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper)
     : web_contents_(web_contents),
       request_url_(request_url),
       interstitial_page_(NULL),
       create_view_(true),
-      controller_(new ChromeControllerClient(web_contents)) {
+      controller_(
+          new ChromeControllerClient(web_contents, std::move(metrics_helper))) {
   // Creating interstitial_page_ without showing it leaks memory, so don't
   // create it here.
 }
@@ -74,6 +76,15 @@ bool SecurityInterstitialPage::IsPrefEnabled(const char* pref) {
   return profile->GetPrefs()->GetBoolean(pref);
 }
 
+ChromeControllerClient* SecurityInterstitialPage::controller() {
+  return controller_.get();
+}
+
+security_interstitials::MetricsHelper*
+SecurityInterstitialPage::metrics_helper() {
+  return controller_->metrics_helper();
+}
+
 base::string16 SecurityInterstitialPage::GetFormattedHostName() const {
   return security_interstitials::common_string_util::GetFormattedHostName(
       request_url_);
@@ -89,18 +100,4 @@ std::string SecurityInterstitialPage::GetHTMLContents() {
                          .as_string();
   webui::AppendWebUiCssTextDefaults(&html);
   return webui::GetI18nTemplateHtml(html, &load_time_data);
-}
-
-security_interstitials::MetricsHelper*
-SecurityInterstitialPage::metrics_helper() {
-  return controller_->metrics_helper();
-}
-
-void SecurityInterstitialPage::set_metrics_helper(
-    std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper) {
-  controller_->set_metrics_helper(std::move(metrics_helper));
-}
-
-ChromeControllerClient* SecurityInterstitialPage::controller() {
-  return controller_.get();
 }

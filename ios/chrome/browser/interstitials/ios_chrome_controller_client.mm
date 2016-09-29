@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/interstitials/ios_chrome_controller_client.h"
 
 #include "base/logging.h"
+#include "components/security_interstitials/core/metrics_helper.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -12,8 +13,12 @@
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 
-IOSChromeControllerClient::IOSChromeControllerClient(web::WebState* web_state)
-    : web_state_(web_state), web_interstitial_(nullptr) {}
+IOSChromeControllerClient::IOSChromeControllerClient(
+    web::WebState* web_state,
+    std::unique_ptr<security_interstitials::MetricsHelper> metrics_helper)
+    : security_interstitials::ControllerClient(std::move(metrics_helper)),
+      web_state_(web_state),
+      web_interstitial_(nullptr) {}
 
 IOSChromeControllerClient::~IOSChromeControllerClient() {}
 
