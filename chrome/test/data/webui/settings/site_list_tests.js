@@ -282,6 +282,23 @@ cr.define('site_list', function() {
         }
       };
 
+      /**
+       * An example Javascript pref with a chrome-extension:// scheme.
+       * @type {SiteSettingsPref}
+       */
+      var prefsChromeExtension = {
+        exceptions: {
+          javascript: [
+            {
+              embeddingOrigin: '',
+              origin: 'chrome-extension://cfhgfbfpcbnnbibfphagcjmgjfjmojfa/',
+              setting: 'block',
+              source: 'preference',
+            },
+          ]
+        }
+      };
+
       // Import necessary html before running suite.
       suiteSetup(function() {
         CrSettingsPrefs.setInitialized();
@@ -499,11 +516,11 @@ cr.define('site_list', function() {
               MockInteractions.tap(menuItems[2]);
               return browserProxy.whenCalled(
                   'resetCategoryPermissionForOrigin');
-            }).then(function(arguments) {
-              assertEquals('http://foo.com', arguments[0]);
-              assertEquals('http://foo.com', arguments[1]);
-              assertEquals(settings.ContentSettingsTypes.COOKIES, arguments[2]);
-              assertFalse(arguments[3]);  // Incognito.
+            }).then(function(args) {
+              assertEquals('http://foo.com', args[0]);
+              assertEquals('http://foo.com', args[1]);
+              assertEquals(settings.ContentSettingsTypes.COOKIES, args[2]);
+              assertFalse(args[3]);  // Incognito.
             });
       });
 
@@ -535,11 +552,11 @@ cr.define('site_list', function() {
               MockInteractions.tap(menuItems[1]);
               return browserProxy.whenCalled(
                   'resetCategoryPermissionForOrigin');
-            }).then(function(arguments) {
-              assertEquals('http://foo.com', arguments[0]);
-              assertEquals('http://foo.com', arguments[1]);
-              assertEquals(settings.ContentSettingsTypes.COOKIES, arguments[2]);
-              assertTrue(arguments[3]);  // Incognito.
+            }).then(function(args) {
+              assertEquals('http://foo.com', args[0]);
+              assertEquals('http://foo.com', args[1]);
+              assertEquals(settings.ContentSettingsTypes.COOKIES, args[2]);
+              assertTrue(args[3]);  // Incognito.
             });
       });
 
@@ -766,6 +783,27 @@ cr.define('site_list', function() {
           assertTrue(!!menuItems);
           MockInteractions.tap(menuItems[0]);
           return browserProxy.whenCalled('setCategoryPermissionForOrigin');
+        });
+      });
+
+      test('Chrome Extension scheme', function() {
+        setupCategory(settings.ContentSettingsTypes.JAVASCRIPT,
+            settings.PermissionValues.BLOCK, prefsChromeExtension);
+        return browserProxy.whenCalled('getExceptionList').then(function(
+            contentType) {
+          Polymer.dom.flush();
+          assertMenu(['Allow', 'Remove'], testElement);
+
+          var menuItems = getMenuItems(testElement.$.listContainer, 0);
+          assertTrue(!!menuItems);
+          MockInteractions.tap(menuItems[0]);  // Action: Allow.
+          return browserProxy.whenCalled('setCategoryPermissionForOrigin');
+        }).then(function(args) {
+          assertEquals('chrome-extension://cfhgfbfpcbnnbibfphagcjmgjfjmojfa/',
+              args[0]);
+          assertEquals('', args[1]);
+          assertEquals(settings.ContentSettingsTypes.JAVASCRIPT, args[2]);
+          assertEquals('allow', args[3]);
         });
       });
     });

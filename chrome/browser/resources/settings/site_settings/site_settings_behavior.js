@@ -381,6 +381,8 @@ var SiteSettingsBehaviorImpl = {
       return pattern.replace('http://', 'http://[*.]');
     else if (pattern.startsWith('https://'))
       return pattern.replace('https://', 'https://[*.]');
+    else if (pattern.startsWith('chrome-extension://'))
+      return pattern;  // No need for a wildcard for this.
     else
       return '[*.]' + pattern;
   },
@@ -481,7 +483,8 @@ var SiteSettingsBehaviorImpl = {
    */
   expandSiteException: function(exception) {
     var origin = exception.origin;
-    var originForDisplay = this.sanitizePort(this.toUrl(origin).origin);
+    var url = this.toUrl(origin);
+    var originForDisplay = url ? this.sanitizePort(url.origin) : origin;
 
     var embeddingOrigin = exception.embeddingOrigin;
     var embeddingOriginForDisplay = '';
