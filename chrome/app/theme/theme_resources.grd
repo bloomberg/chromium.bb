@@ -259,7 +259,6 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_INFO" file="common/info_small.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_3D_BLOCKED" file="common/infobar_3d_blocked.png" />
-      <structure type="chrome_scaled_image" name="IDR_INFOBAR_ALT_NAV_URL" file="common/infobar_alt_nav_url.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_COOKIE" file="common/infobar_cookie.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_INFOBAR_DESKTOP_NOTIFICATIONS" file="legacy/infobar_desktop_notifications.png" />
@@ -276,7 +275,6 @@
       <if expr="is_android">
         <structure type="chrome_scaled_image" name="IDR_INFOBAR_SAVE_PASSWORD" file="common/infobar_save_password.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_INFOBAR_THEME" file="common/infobar_theme.png" />
       <if expr="is_macosx or is_android">
         <structure type="chrome_scaled_image" name="IDR_INFOBAR_TRANSLATE" file="common/infobar_translate.png" />
       </if>

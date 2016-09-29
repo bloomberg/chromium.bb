@@ -11,7 +11,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
@@ -109,14 +108,6 @@ AlternateNavInfoBarDelegate::GetIdentifier() const {
   return ALTERNATE_NAV_INFOBAR_DELEGATE;
 }
 
-int AlternateNavInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_ALT_NAV_URL;
-}
-
 gfx::VectorIconId AlternateNavInfoBarDelegate::GetVectorIconId() const {
-#if defined(OS_MACOSX)
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
-#else
   return gfx::VectorIconId::GLOBE;
-#endif
 }

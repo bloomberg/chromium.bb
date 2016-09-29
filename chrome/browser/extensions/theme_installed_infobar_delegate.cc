@@ -116,16 +116,8 @@ ThemeInstalledInfoBarDelegate::GetIdentifier() const {
   return THEME_INSTALLED_INFOBAR_DELEGATE;
 }
 
-int ThemeInstalledInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_THEME;
-}
-
 gfx::VectorIconId ThemeInstalledInfoBarDelegate::GetVectorIconId() const {
-#if defined(OS_MACOSX)
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
-#else
   return gfx::VectorIconId::PAINTBRUSH;
-#endif
 }
 
 ThemeInstalledInfoBarDelegate*

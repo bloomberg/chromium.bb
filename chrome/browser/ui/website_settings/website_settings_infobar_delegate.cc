@@ -39,16 +39,8 @@ WebsiteSettingsInfoBarDelegate::GetIdentifier() const {
   return WEBSITE_SETTINGS_INFOBAR_DELEGATE;
 }
 
-int WebsiteSettingsInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_ALT_NAV_URL;
-}
-
 gfx::VectorIconId WebsiteSettingsInfoBarDelegate::GetVectorIconId() const {
-#if defined(OS_MACOSX)
-  return gfx::VectorIconId::VECTOR_ICON_NONE;
-#else
   return gfx::VectorIconId::GLOBE;
-#endif
 }
 
 base::string16 WebsiteSettingsInfoBarDelegate::GetMessageText() const {
