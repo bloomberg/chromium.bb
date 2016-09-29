@@ -2829,7 +2829,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   rdc->ex_search_count = 0;  // Exhaustive mesh search hits.
 
   for (i = 0; i < MAX_SEGMENTS; ++i) {
-    const int qindex = CONFIG_MISC_FIXES && cm->seg.enabled
+    const int qindex = cm->seg.enabled
                            ? av1_get_qindex(&cm->seg, i, cm->base_qindex)
                            : cm->base_qindex;
     xd->lossless[i] = qindex == 0 && cm->y_dc_delta_q == 0 &&

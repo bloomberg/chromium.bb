@@ -772,7 +772,7 @@ static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x, int *rate,
 
   assert(bs == xd->mi[0]->mbmi.sb_type);
 
-  if (CONFIG_MISC_FIXES && xd->lossless[0]) {
+  if (xd->lossless[0]) {
     choose_smallest_tx_size(cpi, x, rate, distortion, skip, ret_sse,
                             ref_best_rd, bs);
   } else if (cpi->sf.tx_size_search_method == USE_LARGESTALL ||

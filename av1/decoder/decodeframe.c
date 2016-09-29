@@ -1972,7 +1972,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 #endif
 
   for (i = 0; i < MAX_SEGMENTS; ++i) {
-    const int qindex = CONFIG_MISC_FIXES && cm->seg.enabled
+    const int qindex = cm->seg.enabled
                            ? av1_get_qindex(&cm->seg, i, cm->base_qindex)
                            : cm->base_qindex;
     xd->lossless[i] = qindex == 0 && cm->y_dc_delta_q == 0 &&
