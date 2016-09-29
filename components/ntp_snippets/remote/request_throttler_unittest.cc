@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/request_throttler.h"
+#include "components/ntp_snippets/remote/request_throttler.h"
 
 #include <memory>
 

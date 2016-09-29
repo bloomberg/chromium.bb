@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
-#define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_FETCHER_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_FETCHER_H_
 
 #include <memory>
 #include <set>
@@ -16,8 +16,8 @@
 #include "base/optional.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "components/ntp_snippets/ntp_snippet.h"
-#include "components/ntp_snippets/request_throttler.h"
+#include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/request_throttler.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -265,4 +265,4 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
 };
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_FETCHER_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_FETCHER_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/ntp_snippets_service.h"
+#include "components/ntp_snippets/remote/ntp_snippets_service.h"
 
 #include <algorithm>
 #include <iterator>
@@ -26,8 +26,8 @@
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
-#include "components/ntp_snippets/ntp_snippets_database.h"
 #include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/remote/ntp_snippets_database.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"

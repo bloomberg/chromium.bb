@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPET_H_
-#define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPET_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPET_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPET_H_
 
 #include <map>
 #include <memory>
@@ -152,4 +152,4 @@ class NTPSnippet {
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_NTP_SNIPPET_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPET_H_

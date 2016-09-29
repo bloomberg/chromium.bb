@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/ntp_snippets_service.h"
+#include "components/ntp_snippets/remote/ntp_snippets_service.h"
 
 #include <memory>
 #include <utility>
@@ -26,12 +26,12 @@
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category_factory.h"
-#include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
-#include "components/ntp_snippets/ntp_snippets_database.h"
-#include "components/ntp_snippets/ntp_snippets_fetcher.h"
-#include "components/ntp_snippets/ntp_snippets_scheduler.h"
-#include "components/ntp_snippets/ntp_snippets_test_utils.h"
+#include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/ntp_snippets_database.h"
+#include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
+#include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
+#include "components/ntp_snippets/remote/ntp_snippets_test_utils.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"

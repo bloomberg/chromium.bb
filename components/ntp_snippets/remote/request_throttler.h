@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_REQUEST_THROTTLER_H_
-#define COMPONENTS_NTP_SNIPPETS_REQUEST_THROTTLER_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_REQUEST_THROTTLER_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_REQUEST_THROTTLER_H_
 
 #include <string>
 
@@ -93,4 +93,4 @@ class RequestThrottler {
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_REQUEST_THROTTLER_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_REQUEST_THROTTLER_H_

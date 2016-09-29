@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
-#include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/switches.h"
 #include "content/public/browser/web_ui.h"
 

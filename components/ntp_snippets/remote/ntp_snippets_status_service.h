@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_STATUS_SERVICE_H_
-#define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_STATUS_SERVICE_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_STATUS_SERVICE_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_STATUS_SERVICE_H_
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
@@ -75,4 +75,4 @@ class NTPSnippetsStatusService : public SigninManagerBase::Observer {
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_STATUS_SERVICE_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_STATUS_SERVICE_H_

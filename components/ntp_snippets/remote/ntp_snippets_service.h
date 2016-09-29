@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SERVICE_H_
-#define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SERVICE_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SERVICE_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SERVICE_H_
 
 #include <cstddef>
 #include <map>
@@ -21,11 +21,11 @@
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
-#include "components/ntp_snippets/ntp_snippet.h"
-#include "components/ntp_snippets/ntp_snippets_fetcher.h"
-#include "components/ntp_snippets/ntp_snippets_scheduler.h"
-#include "components/ntp_snippets/ntp_snippets_status_service.h"
-#include "components/ntp_snippets/request_throttler.h"
+#include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
+#include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
+#include "components/ntp_snippets/remote/ntp_snippets_status_service.h"
+#include "components/ntp_snippets/remote/request_throttler.h"
 #include "components/suggestions/suggestions_service.h"
 
 class PrefRegistrySimple;
@@ -375,4 +375,4 @@ class NTPSnippetsService final : public ContentSuggestionsProvider,
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SERVICE_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SERVICE_H_

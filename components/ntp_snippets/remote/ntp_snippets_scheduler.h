@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SCHEDULER_H_
-#define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SCHEDULER_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SCHEDULER_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SCHEDULER_H_
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -33,4 +33,4 @@ class NTPSnippetsScheduler {
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_SCHEDULER_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_SCHEDULER_H_

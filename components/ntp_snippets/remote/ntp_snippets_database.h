@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_DATABASE_H_
-#define COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_DATABASE_H_
+#ifndef COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_DATABASE_H_
+#define COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_DATABASE_H_
 
 #include <memory>
 #include <string>
@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/leveldb_proto/proto_database.h"
-#include "components/ntp_snippets/ntp_snippet.h"
+#include "components/ntp_snippets/remote/ntp_snippet.h"
 
 namespace base {
 class FilePath;
@@ -131,4 +131,4 @@ class NTPSnippetsDatabase {
 
 }  // namespace ntp_snippets
 
-#endif  // COMPONENTS_NTP_SNIPPETS_NTP_SNIPPETS_DATABASE_H_
+#endif  // COMPONENTS_NTP_SNIPPETS_REMOTE_NTP_SNIPPETS_DATABASE_H_

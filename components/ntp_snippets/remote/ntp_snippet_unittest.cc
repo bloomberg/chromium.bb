@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/ntp_snippet.h"
+#include "components/ntp_snippets/remote/ntp_snippet.h"
 
 #include "base/json/json_reader.h"
 #include "base/values.h"

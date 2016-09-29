@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/ntp_snippets_database.h"
+#include "components/ntp_snippets/remote/ntp_snippets_database.h"
 
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "components/leveldb_proto/proto_database_impl.h"
-#include "components/ntp_snippets/proto/ntp_snippets.pb.h"
+#include "components/ntp_snippets/remote/proto/ntp_snippets.pb.h"
 
 using leveldb_proto::ProtoDatabaseImpl;
 

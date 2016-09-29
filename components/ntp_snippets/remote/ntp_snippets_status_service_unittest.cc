@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ntp_snippets/ntp_snippets_status_service.h"
+#include "components/ntp_snippets/remote/ntp_snippets_status_service.h"
 
 #include <memory>
 
-#include "components/ntp_snippets/ntp_snippets_test_utils.h"
 #include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/remote/ntp_snippets_test_utils.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
