@@ -8,18 +8,34 @@
 
 namespace mojo {
 
-std::vector<mojo::ScopedHandle>
-StructTraits<gfx::mojom::NativePixmapHandleDataView,
-             gfx::NativePixmapHandle>::fds(const gfx::NativePixmapHandle&
-                                               pixmap_handle) {
-  std::vector<mojo::ScopedHandle> handles;
+void* StructTraits<gfx::mojom::NativePixmapHandleDataView,
+                   gfx::NativePixmapHandle>::
+    SetUpContext(const gfx::NativePixmapHandle& pixmap_handle) {
+  return new PixmapHandleFdList();
+}
+
+void StructTraits<gfx::mojom::NativePixmapHandleDataView,
+                  gfx::NativePixmapHandle>::
+    TearDownContext(const gfx::NativePixmapHandle& handle, void* context) {
+  delete static_cast<PixmapHandleFdList*>(context);
+}
+
+std::vector<mojo::ScopedHandle> StructTraits<
+    gfx::mojom::NativePixmapHandleDataView,
+    gfx::NativePixmapHandle>::fds(const gfx::NativePixmapHandle& pixmap_handle,
+                                  void* context) {
+  PixmapHandleFdList* handles = static_cast<PixmapHandleFdList*>(context);
 #if defined(USE_OZONE)
-  for (const base::FileDescriptor& fd : pixmap_handle.fds) {
-    base::PlatformFile platform_file = fd.fd;
-    handles.push_back(mojo::WrapPlatformFile(platform_file));
+  if (handles->empty()) {
+    // Generate the handles here, but do not send them yet.
+    for (const base::FileDescriptor& fd : pixmap_handle.fds) {
+      base::PlatformFile platform_file = fd.fd;
+      handles->push_back(mojo::WrapPlatformFile(platform_file));
+    }
+    return PixmapHandleFdList(handles->size());
   }
 #endif  // defined(USE_OZONE)
-  return handles;
+  return std::move(*handles);
 }
 
 bool StructTraits<
@@ -31,7 +47,12 @@ bool StructTraits<
   data.GetFdsDataView(&handles_data_view);
   for (size_t i = 0; i < handles_data_view.size(); ++i) {
     mojo::ScopedHandle handle = handles_data_view.Take(i);
-    out->fds.push_back(base::FileDescriptor(handle.release().value(), true));
+    base::PlatformFile platform_file;
+    if (mojo::UnwrapPlatformFile(std::move(handle), &platform_file) !=
+        MOJO_RESULT_OK)
+      return false;
+    constexpr bool auto_close = true;
+    out->fds.push_back(base::FileDescriptor(platform_file, auto_close));
   }
   return data.ReadPlanes(&out->planes);
 #else
