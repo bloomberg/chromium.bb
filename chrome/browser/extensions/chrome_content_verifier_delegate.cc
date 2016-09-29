@@ -11,6 +11,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/syslog_logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
@@ -179,8 +180,9 @@ void ChromeContentVerifierDelegate::VerifyFailed(
           service->pending_extension_manager();
       if (pending_manager->IsPolicyReinstallForCorruptionExpected(extension_id))
         return;
-      LOG(WARNING) << "Corruption detected in policy extension " << extension_id
-                   << " installed at: " << extension->path().value();
+      SYSLOG(WARNING) << "Corruption detected in policy extension "
+                      << extension_id << " installed at: "
+                      << extension->path().value();
       pending_manager->ExpectPolicyReinstallForCorruption(extension_id);
       service->DisableExtension(extension_id, Extension::DISABLE_CORRUPTED);
       service->CheckForExternalUpdates();
