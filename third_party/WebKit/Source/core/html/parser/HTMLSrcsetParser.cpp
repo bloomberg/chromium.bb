@@ -39,6 +39,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "platform/json/JSONValues.h"
 #include "wtf/text/ParsingUtilities.h"
 #include "wtf/text/StringToNumber.h"
 #include <algorithm>
@@ -301,7 +302,7 @@ static void parseImageCandidatesFromSrcsetAttribute(const String& attribute, con
                 if (document) {
                     UseCounter::count(document, UseCounter::SrcsetDroppedCandidate);
                     if (document->frame())
-                        document->frame()->console().addMessage(ConsoleMessage::create(OtherMessageSource, ErrorMessageLevel, String("Dropped srcset candidate ") + String(imageURLStart, imageURLEnd - imageURLStart)));
+                        document->frame()->console().addMessage(ConsoleMessage::create(OtherMessageSource, ErrorMessageLevel, String("Dropped srcset candidate ") + JSONValue::quoteString(String(imageURLStart, imageURLEnd - imageURLStart))));
                 }
                 continue;
             }
