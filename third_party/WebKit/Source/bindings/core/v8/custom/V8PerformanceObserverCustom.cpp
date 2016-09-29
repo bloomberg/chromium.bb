@@ -9,7 +9,7 @@
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Performance.h"
-#include "bindings/core/v8/V8PerformanceObserverInnerCallback.h"
+#include "bindings/core/v8/V8PerformanceObserverCallback.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/PerformanceObserver.h"
 
@@ -37,7 +37,7 @@ void V8PerformanceObserver::constructorCustom(const v8::FunctionCallbackInfo<v8:
         V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("PerformanceObserver", "The callback provided as parameter 1 is not a function."));
         return;
     }
-    V8PerformanceObserverInnerCallback* callback = V8PerformanceObserverInnerCallback::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+    V8PerformanceObserverCallback* callback = V8PerformanceObserverCallback::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
 
     PerformanceObserver* observer = PerformanceObserver::create(ScriptState::forReceiverObject(info), performance, callback);
 
