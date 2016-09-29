@@ -2213,7 +2213,6 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if CONFIG_DAALA_EC
     av1_copy(cm->kf_y_cdf, av1_kf_y_mode_cdf);
 #endif
-#if CONFIG_MISC_FIXES
     for (i = 0; i < INTRA_MODES; ++i)
       for (j = 0; j < INTRA_MODES; ++j) {
         prob_diff_update(av1_intra_mode_tree, cm->kf_y_prob[i][j],
@@ -2224,7 +2223,6 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                         cm->kf_y_cdf[i][j]);
 #endif
       }
-#endif
   } else {
 #if CONFIG_REF_MV
     update_inter_mode_probs(cm, header_bc, counts);

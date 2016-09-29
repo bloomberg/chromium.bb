@@ -2096,7 +2096,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_DAALA_EC
     av1_copy(cm->kf_y_cdf, av1_kf_y_mode_cdf);
 #endif
-#if CONFIG_MISC_FIXES
     for (k = 0; k < INTRA_MODES; k++)
       for (j = 0; j < INTRA_MODES; j++) {
         for (i = 0; i < INTRA_MODES - 1; ++i)
@@ -2106,7 +2105,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
                         cm->kf_y_cdf[k][j]);
 #endif
       }
-#endif
   } else {
 #if !CONFIG_REF_MV
     nmv_context *const nmvc = &fc->nmvc;
