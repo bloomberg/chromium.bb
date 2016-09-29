@@ -3042,6 +3042,111 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(data_url, entry2->root_node()->children[1]->frame_entry->url());
 }
 
+// Allows waiting until an URL with a data scheme commits in any frame.
+class DataUrlCommitObserver : public WebContentsObserver {
+ public:
+  explicit DataUrlCommitObserver(WebContents* web_contents)
+      : WebContentsObserver(web_contents),
+        message_loop_runner_(new MessageLoopRunner) {}
+
+  void Wait() { message_loop_runner_->Run(); }
+
+ private:
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    if (navigation_handle->HasCommitted() &&
+        !navigation_handle->IsErrorPage() &&
+        navigation_handle->GetURL().scheme() == "data")
+      message_loop_runner_->Quit();
+  }
+
+  // The MessageLoopRunner used to spin the message loop.
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+};
+
+// Verify that dynamically generated iframes load properly during a history
+// navigation if no history item can be found for them.
+// See https://crbug.com/649345.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       FrameNavigationEntry_DynamicSubframeHistoryFallback) {
+  // This test only makes sense when subframe FrameNavigationEntries are in use.
+  if (!SiteIsolationPolicy::UseSubframeNavigationEntries())
+    return;
+
+  // 1. Start on a page with a script-generated iframe.  The iframe has a
+  // dynamic name, starts at about:blank, and gets navigated to a dynamic data
+  // URL as the page is loading.
+  GURL main_url_a(embedded_test_server()->GetURL(
+      "a.com", "/navigation_controller/dynamic_iframe.html"));
+  {
+    // Wait until the data URL has committed, even if load stop happens after
+    // about:blank load.
+    DataUrlCommitObserver data_observer(shell()->web_contents());
+    EXPECT_TRUE(NavigateToURL(shell(), main_url_a));
+    data_observer.Wait();
+  }
+  const NavigationControllerImpl& controller =
+      static_cast<const NavigationControllerImpl&>(
+          shell()->web_contents()->GetController());
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  ASSERT_EQ(1U, root->child_count());
+  ASSERT_EQ(0U, root->child_at(0)->child_count());
+  EXPECT_EQ(main_url_a, root->current_url());
+  EXPECT_EQ("data", root->child_at(0)->current_url().scheme());
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry1 = controller.GetLastCommittedEntry();
+
+  // The entry should have a FrameNavigationEntry for the data subframe.
+  ASSERT_EQ(1U, entry1->root_node()->children.size());
+  EXPECT_EQ("data",
+            entry1->root_node()->children[0]->frame_entry->url().scheme());
+
+  // 2. Navigate main frame cross-site, destroying the frames.
+  GURL main_url_b(embedded_test_server()->GetURL(
+      "b.com", "/navigation_controller/simple_page_2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url_b));
+  ASSERT_EQ(0U, root->child_count());
+  EXPECT_EQ(main_url_b, root->current_url());
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
+  NavigationEntryImpl* entry2 = controller.GetLastCommittedEntry();
+  EXPECT_EQ(0U, entry2->root_node()->children.size());
+
+  // 3. Go back, recreating the iframe.  The subframe will have a new name this
+  // time, so we won't find a history item for it.  We should let the new data
+  // URL be loaded into it, rather than clobbering it with an about:blank page.
+  {
+    // Wait until the data URL has committed, even if load stop happens first.
+    DataUrlCommitObserver back_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_load_observer.Wait();
+  }
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ASSERT_EQ(1U, root->child_count());
+  EXPECT_EQ(main_url_a, root->current_url());
+  EXPECT_EQ("data", root->child_at(0)->current_url().scheme());
+
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(entry1, controller.GetLastCommittedEntry());
+
+  // The entry should have both the stale FrameNavigationEntry with the old
+  // name and the new FrameNavigationEntry for the fallback navigation.
+  ASSERT_EQ(2U, entry1->root_node()->children.size());
+  EXPECT_EQ("data",
+            entry1->root_node()->children[0]->frame_entry->url().scheme());
+  EXPECT_EQ("data",
+            entry1->root_node()->children[1]->frame_entry->url().scheme());
+
+  // The iframe commit should have been classified AUTO_SUBFRAME and not
+  // NEW_SUBFRAME, so we should still be able to go forward.
+  EXPECT_TRUE(shell()->web_contents()->GetController().CanGoForward());
+}
+
 // Verify that we don't clobber any content injected into the initial blank page
 // if we go back to an about:blank subframe.  See https://crbug.com/626416.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,

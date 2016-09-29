@@ -1048,7 +1048,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       render_view_(params.render_view->AsWeakPtr()),
       routing_id_(params.routing_id),
       proxy_routing_id_(MSG_ROUTING_NONE),
-      browser_has_subtree_history_items_(false),
 #if defined(ENABLE_PLUGINS)
       plugin_power_saver_helper_(nullptr),
       plugin_find_handler_(nullptr),
@@ -1171,11 +1170,6 @@ void RenderFrameImpl::Initialize() {
   RenderFrameImpl* parent_frame = RenderFrameImpl::FromWebFrame(
       frame_->parent());
   if (parent_frame) {
-    // Inherit knowledge of whether we need to consult the browser process for
-    // a history item on the first navigation.  This is inherited by further
-    // subframes and cleared at didStopLoading.
-    browser_has_subtree_history_items_ =
-        parent_frame->browser_has_subtree_history_items_;
     is_using_lofi_ = parent_frame->IsUsingLoFi();
     effective_connection_type_ = parent_frame->getEffectiveConnectionType();
   }
@@ -4850,7 +4844,7 @@ void RenderFrameImpl::didStopLoading() {
   // Any subframes created after this point won't be considered part of the
   // current history navigation (if this was one), so we don't need to track
   // this state anymore.
-  browser_has_subtree_history_items_ = false;
+  history_subframe_unique_names_.clear();
 
   render_view_->FrameDidStopLoading(frame_);
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
@@ -4996,12 +4990,16 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   }
 
   // In OOPIF-enabled modes, back/forward navigations in newly created subframes
-  // should be sent to the browser if there is a chance there is a matching
-  // FrameNavigationEntry.  If none is found (or if the browser has indicated it
-  // has no subtree history items), fall back to loading the default url.
+  // should be sent to the browser if there is a matching FrameNavigationEntry.
+  // If this frame isn't on the list of unique names that have history items,
+  // fall back to loading the default url.  (We remove each name as we encounter
+  // it, because it will only be used once as the frame is created.)
   if (SiteIsolationPolicy::UseSubframeNavigationEntries() &&
       info.isHistoryNavigationInNewChildFrame && is_content_initiated &&
-      browser_has_subtree_history_items_) {
+      frame_->parent() &&
+      RenderFrameImpl::FromWebFrame(frame_->parent())
+              ->history_subframe_unique_names_.erase(
+                  frame_->uniqueName().utf8()) > 0) {
     // Don't do this if |info| also says it is a client redirect, in which case
     // JavaScript on the page is trying to interrupt the history navigation.
     if (!info.isClientRedirect) {
@@ -5605,10 +5603,9 @@ void RenderFrameImpl::NavigateInternal(
                         : blink::WebFrameLoadType::BackForward;
         should_load_request = true;
 
-        // Remember whether we should consult the browser process for any
-        // subframes created during this history navigation.
-        browser_has_subtree_history_items_ =
-            request_params.has_subtree_history_items;
+        // Keep track of which subframes the browser process has history items
+        // for during a history navigation.
+        history_subframe_unique_names_ = request_params.subframe_unique_names;
 
         if (history_load_type == blink::WebHistorySameDocumentLoad) {
           // If this is marked as a same document load but we haven't committed

@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <set>
+
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
@@ -186,7 +188,7 @@ class CONTENT_EXPORT NavigationEntryImpl
       const FrameNavigationEntry& frame_entry,
       bool is_same_document_history_load,
       bool is_history_navigation_in_new_child,
-      bool has_subtree_history_items,
+      const std::set<std::string>& subframe_unique_names,
       bool has_committed_real_load,
       bool intended_as_new_entry,
       int pending_offset_to_send,
@@ -230,14 +232,16 @@ class CONTENT_EXPORT NavigationEntryImpl
   // there is one in this NavigationEntry.
   FrameNavigationEntry* GetFrameEntry(FrameTreeNode* frame_tree_node) const;
 
-  // Returns whether the TreeNode associated with |frame_tree_node| has any
-  // children.  If not, the renderer process does not need to ask the browser
-  // when new subframes are created during a back/forward navigation.
-  // TODO(creis): Send a data structure with all unique names in the subtree,
-  // along with any corresponding same-process PageStates.  The renderer only
+  // Returns a set of frame unique names for immediate children of the TreeNode
+  // associated with |frame_tree_node|.  The renderer process will use this list
+  // of names to know whether to ask the browser process for a history item when
+  // new subframes are created during a back/forward navigation.
+  // TODO(creis): Send a data structure that also contains all corresponding
+  // same-process PageStates for the subtree, so that the renderer process only
   // needs to ask the browser process to handle the cross-process cases.
   // See https://crbug.com/639842.
-  bool HasSubtreeHistoryItems(FrameTreeNode* frame_tree_node) const;
+  std::set<std::string> GetSubframeUniqueNames(
+      FrameTreeNode* frame_tree_node) const;
 
   // Removes any subframe FrameNavigationEntries that match the unique name of
   // |frame_tree_node|, and all of their children. There should be at most one,
