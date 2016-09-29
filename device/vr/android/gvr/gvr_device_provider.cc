@@ -58,6 +58,7 @@ class GvrNonPresentingDelegate : public GvrDelegate {
   }
 
   // GvrDelegate implementation
+  void SetWebVRSecureOrigin(bool secure_origin) override {}
   void SubmitWebVRFrame() override {}
   void UpdateWebVRTextureBounds(int eye,
                                 float left,

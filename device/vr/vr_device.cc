@@ -18,7 +18,7 @@ VRDevice::VRDevice(VRDeviceProvider* provider)
 
 VRDevice::~VRDevice() {}
 
-bool VRDevice::RequestPresent() {
+bool VRDevice::RequestPresent(bool secure_origin) {
   return true;
 };
 

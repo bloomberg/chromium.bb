@@ -68,6 +68,7 @@ class VrShell : public device::GvrDelegate {
   void SetUiTextureSize(int width, int height);
 
   // device::GvrDelegate implementation
+  void SetWebVRSecureOrigin(bool secure_origin) override;
   void SubmitWebVRFrame() override;
   void UpdateWebVRTextureBounds(
       int eye, float left, float top, float width, float height) override;
@@ -151,6 +152,7 @@ class VrShell : public device::GvrDelegate {
   int ui_tex_height_ = 0;
 
   bool webvr_mode_ = false;
+  bool webvr_secure_origin_ = false;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 

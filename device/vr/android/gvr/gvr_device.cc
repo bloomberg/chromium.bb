@@ -183,7 +183,10 @@ void GvrDevice::ResetPose() {
     gvr_api->ResetTracking();
 }
 
-bool GvrDevice::RequestPresent() {
+bool GvrDevice::RequestPresent(bool secure_origin) {
+  secure_origin_ = secure_origin;
+  if (delegate_)
+    delegate_->SetWebVRSecureOrigin(secure_origin_);
   return gvr_provider_->RequestPresent();
 }
 
@@ -213,8 +216,10 @@ void GvrDevice::SetDelegate(GvrDelegate* delegate) {
   delegate_ = delegate;
 
   // Notify the clients that this device has changed
-  if (delegate_)
+  if (delegate_) {
+    delegate_->SetWebVRSecureOrigin(secure_origin_);
     VRDeviceManager::GetInstance()->OnDeviceChanged(GetVRDevice());
+  }
 }
 
 gvr::GvrApi* GvrDevice::GetGvrApi() {

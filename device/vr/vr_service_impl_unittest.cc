@@ -157,15 +157,15 @@ TEST_F(VRServiceImplTest, DevicePresentationIsolation) {
                               service_2->service(), device->id()));
 
   // Begin presenting to the fake device with service 1
-  EXPECT_TRUE(
-      device_manager_->RequestPresent(service_1->service(), device->id()));
+  EXPECT_TRUE(device_manager_->RequestPresent(service_1->service(),
+                                              device->id(), true));
 
   EXPECT_TRUE(presenting());
 
   // Service 2 should not be able to present to the device while service 1
   // is still presenting.
-  EXPECT_FALSE(
-      device_manager_->RequestPresent(service_2->service(), device->id()));
+  EXPECT_FALSE(device_manager_->RequestPresent(service_2->service(),
+                                               device->id(), true));
 
   // Only the presenting service should be able to access the device
   EXPECT_EQ(device.get(), VRDeviceManager::GetAllowedDevice(

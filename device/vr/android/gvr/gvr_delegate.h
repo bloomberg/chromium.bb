@@ -28,6 +28,7 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
 
 class DEVICE_VR_EXPORT GvrDelegate {
  public:
+  virtual void SetWebVRSecureOrigin(bool secure_origin) = 0;
   virtual void SubmitWebVRFrame() = 0;
   virtual void UpdateWebVRTextureBounds(int eye,
                                         float left,

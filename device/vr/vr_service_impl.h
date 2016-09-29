@@ -40,6 +40,7 @@ class VRServiceImpl : public VRService {
   void ResetPose(uint32_t index) override;
 
   void RequestPresent(uint32_t index,
+                      bool secureOrigin,
                       const RequestPresentCallback& callback) override;
   void ExitPresent(uint32_t index) override;
   void SubmitFrame(uint32_t index, VRPosePtr pose) override;

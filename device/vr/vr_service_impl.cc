@@ -64,9 +64,10 @@ void VRServiceImpl::ResetPose(uint32_t index) {
 }
 
 void VRServiceImpl::RequestPresent(uint32_t index,
+                                   bool secureOrigin,
                                    const RequestPresentCallback& callback) {
   VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
-  callback.Run(device_manager->RequestPresent(this, index));
+  callback.Run(device_manager->RequestPresent(this, index, secureOrigin));
 }
 
 void VRServiceImpl::ExitPresent(uint32_t index) {

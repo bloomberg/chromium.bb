@@ -35,7 +35,7 @@ class DEVICE_VR_EXPORT VRDevice {
   virtual VRPosePtr GetPose() = 0;
   virtual void ResetPose() = 0;
 
-  virtual bool RequestPresent();
+  virtual bool RequestPresent(bool secure_origin);
   virtual void ExitPresent(){};
   virtual void SubmitFrame(VRPosePtr pose){};
   virtual void UpdateLayerBounds(VRLayerBoundsPtr leftBounds,

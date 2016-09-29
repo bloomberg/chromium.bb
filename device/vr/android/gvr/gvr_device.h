@@ -27,7 +27,7 @@ class GvrDevice : public VRDevice {
   VRPosePtr GetPose() override;
   void ResetPose() override;
 
-  bool RequestPresent() override;
+  bool RequestPresent(bool secure_origin) override;
   void ExitPresent() override;
 
   void SubmitFrame(VRPosePtr pose) override;
@@ -41,6 +41,7 @@ class GvrDevice : public VRDevice {
 
   GvrDelegate* delegate_;
   GvrDeviceProvider* gvr_provider_;
+  bool secure_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(GvrDevice);
 };

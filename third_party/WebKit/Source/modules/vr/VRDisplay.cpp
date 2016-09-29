@@ -231,7 +231,8 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState, const HeapVect
     }
 
     if (firstPresent) {
-        controller()->requestPresent(resolver, m_displayId);
+        bool secureContext = scriptState->getExecutionContext()->isSecureContext();
+        controller()->requestPresent(resolver, m_displayId, secureContext);
     } else {
         updateLayerBounds();
         resolver->resolve();

@@ -445,6 +445,10 @@ void VrShell::DrawWebVr() {
 
   glViewport(0, 0, render_size_.width, render_size_.height);
   vr_shell_renderer_->GetWebVrRenderer()->Draw(content_texture_id_);
+
+  if (!webvr_secure_origin_) {
+    // TODO(klausw): Draw the insecure origin warning here.
+  }
 }
 
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -483,6 +487,10 @@ void VrShell::SetWebVrMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled) {
   webvr_mode_ = enabled;
+}
+
+void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
+  webvr_secure_origin_ = secure_origin;
 }
 
 void VrShell::SubmitWebVRFrame() {

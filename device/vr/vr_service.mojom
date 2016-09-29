@@ -69,7 +69,7 @@ interface VRService {
   GetPose(uint32 index) => (VRPose? pose);
   ResetPose(uint32 index);
 
-  RequestPresent(uint32 index) => (bool success);
+  RequestPresent(uint32 index, bool secureOrigin) => (bool success);
   ExitPresent(uint32 index);
   SubmitFrame(uint32 index, VRPose? pose);
   UpdateLayerBounds(uint32 index, VRLayerBounds leftBounds, VRLayerBounds rightBounds);

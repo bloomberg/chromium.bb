@@ -45,7 +45,8 @@ class VRDeviceManager : public VRClientDispatcher {
 
   // Manage presentation to only allow a single service and device at a time.
   DEVICE_VR_EXPORT bool RequestPresent(VRServiceImpl* service,
-                                       unsigned int index);
+                                       unsigned int index,
+                                       bool secure_origin);
   DEVICE_VR_EXPORT void ExitPresent(VRServiceImpl* service, unsigned int index);
   void SubmitFrame(VRServiceImpl* service, unsigned int index, VRPosePtr pose);
 

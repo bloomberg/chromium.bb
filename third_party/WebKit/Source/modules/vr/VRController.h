@@ -34,7 +34,7 @@ public:
     void getDisplays(ScriptPromiseResolver*);
     device::blink::VRPosePtr getPose(unsigned index);
     void resetPose(unsigned index);
-    void requestPresent(ScriptPromiseResolver*, unsigned index);
+    void requestPresent(ScriptPromiseResolver*, unsigned index, bool secureOrigin);
     void exitPresent(unsigned index);
     void submitFrame(unsigned index, device::blink::VRPosePtr);
     void updateLayerBounds(unsigned index,

@@ -165,7 +165,8 @@ void VRDeviceManager::OnDeviceChanged(VRDisplayPtr device) {
 }
 
 bool VRDeviceManager::RequestPresent(VRServiceImpl* service,
-                                     unsigned int index) {
+                                     unsigned int index,
+                                     bool secure_origin) {
   // Is anything presenting currently?
   if (presenting_service_) {
     // Should never have a presenting service without a presenting device.
@@ -198,7 +199,7 @@ bool VRDeviceManager::RequestPresent(VRServiceImpl* service,
 
   // Attempt to begin presenting to this device. This could fail for any number
   // of device-specific reasons.
-  if (!requested_device->RequestPresent())
+  if (!requested_device->RequestPresent(secure_origin))
     return false;
 
   // Successfully began presenting!

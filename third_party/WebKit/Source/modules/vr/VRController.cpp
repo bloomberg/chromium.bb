@@ -58,7 +58,7 @@ void VRController::resetPose(unsigned index)
     m_service->ResetPose(index);
 }
 
-void VRController::requestPresent(ScriptPromiseResolver* resolver, unsigned index)
+void VRController::requestPresent(ScriptPromiseResolver* resolver, unsigned index, bool secureOrigin)
 {
     if (!m_service) {
         DOMException* exception = DOMException::create(InvalidStateError, "The service is no longer active.");
@@ -66,7 +66,7 @@ void VRController::requestPresent(ScriptPromiseResolver* resolver, unsigned inde
         return;
     }
 
-    m_service->RequestPresent(index, convertToBaseCallback(WTF::bind(&VRController::onPresentComplete, wrapPersistent(this), wrapPersistent(resolver), index)));
+    m_service->RequestPresent(index, secureOrigin, convertToBaseCallback(WTF::bind(&VRController::onPresentComplete, wrapPersistent(this), wrapPersistent(resolver), index)));
 }
 
 void VRController::exitPresent(unsigned index)
