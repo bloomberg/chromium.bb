@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/quic/test_tools/simulator/quic_endpoint.h"
+
 #include "base/memory/ptr_util.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
-#include "net/quic/core/congestion_control/simulation/quic_endpoint.h"
-#include "net/quic/core/congestion_control/simulation/simulator.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/crypto/crypto_protocol.h"
+#include "net/quic/test_tools/simulator/simulator.h"
 
 using base::StringPrintf;
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 const QuicStreamId kDataStream = 3;
 const QuicByteCount kWriteChunkSize = 128 * 1024;
@@ -263,5 +264,5 @@ void QuicEndpointMultiplexer::SetTxPort(ConstrainedPortInterface* port) {
   }
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

@@ -6,12 +6,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "net/quic/core/congestion_control/simulation/switch.h"
+#include "net/quic/test_tools/simulator/switch.h"
 
 using base::StringPrintf;
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 Switch::Switch(Simulator* simulator,
                std::string name,
@@ -83,5 +83,5 @@ void Switch::DispatchPacket(SwitchPortNumber port_number,
   }
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

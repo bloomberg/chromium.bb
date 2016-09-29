@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
-#include "net/quic/core/congestion_control/simulation/alarm_factory.h"
 #include "net/quic/core/quic_alarm.h"
+#include "net/quic/test_tools/simulator/alarm_factory.h"
 
 using base::StringPrintf;
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 // Alarm is an implementation of QuicAlarm which can schedule alarms in the
 // simulation timeline.
@@ -78,5 +78,5 @@ QuicArenaScopedPtr<QuicAlarm> AlarmFactory::CreateAlarm(
       new Alarm(simulator_, GetNewAlarmName(), std::move(delegate)));
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

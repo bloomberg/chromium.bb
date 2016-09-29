@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_PORT_H_
-#define NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_PORT_H_
+#ifndef NET_QUIC_TEST_TOOLS_SIMULATOR_PORT_H_
+#define NET_QUIC_TEST_TOOLS_SIMULATOR_PORT_H_
 
 #include <string>
 #include <utility>
 
-#include "net/quic/core/congestion_control/simulation/actor.h"
 #include "net/quic/core/quic_protocol.h"
+#include "net/quic/test_tools/simulator/actor.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 struct Packet {
   Packet();
@@ -60,7 +60,7 @@ class Endpoint : public Actor {
   Endpoint(Simulator* simulator, std::string name);
 };
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_PORT_H_
+#endif  // NET_QUIC_TEST_TOOLS_SIMULATOR_PORT_H_

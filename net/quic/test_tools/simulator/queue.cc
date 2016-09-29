@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/core/congestion_control/simulation/queue.h"
+#include "net/quic/test_tools/simulator/queue.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 Queue::ListenerInterface::~ListenerInterface() {}
 
@@ -60,5 +60,5 @@ void Queue::ScheduleNextPacketDequeue() {
   Schedule(clock_->Now() + tx_port_->TimeUntilAvailable());
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

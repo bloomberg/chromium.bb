@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_ALARM_FACTORY_H_
-#define NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_ALARM_FACTORY_H_
+#ifndef NET_QUIC_TEST_TOOLS_SIMULATOR_ALARM_FACTORY_H_
+#define NET_QUIC_TEST_TOOLS_SIMULATOR_ALARM_FACTORY_H_
 
-#include "net/quic/core/congestion_control/simulation/actor.h"
 #include "net/quic/core/quic_alarm_factory.h"
+#include "net/quic/test_tools/simulator/actor.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 // AlarmFactory allows to schedule QuicAlarms using the simulation event queue.
 class AlarmFactory : public QuicAlarmFactory {
@@ -33,7 +33,7 @@ class AlarmFactory : public QuicAlarmFactory {
   DISALLOW_COPY_AND_ASSIGN(AlarmFactory);
 };
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_ALARM_FACTORY_H_
+#endif  // NET_QUIC_TEST_TOOLS_SIMULATOR_ALARM_FACTORY_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_QUEUE_H_
-#define NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_QUEUE_H_
+#ifndef NET_QUIC_TEST_TOOLS_SIMULATOR_QUEUE_H_
+#define NET_QUIC_TEST_TOOLS_SIMULATOR_QUEUE_H_
 
-#include "net/quic/core/congestion_control/simulation/link.h"
+#include "net/quic/test_tools/simulator/link.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 // A finitely sized queue which egresses packets onto a constrained link.  The
 // capacity of the queue is measured in bytes as opposed to packets.
@@ -53,7 +53,7 @@ class Queue : public Actor, public UnconstrainedPortInterface {
   DISALLOW_COPY_AND_ASSIGN(Queue);
 };
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_QUEUE_H_
+#endif  // NET_QUIC_TEST_TOOLS_SIMULATOR_QUEUE_H_

@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_SIMULATOR_H_
-#define NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_SIMULATOR_H_
+#ifndef NET_QUIC_TEST_TOOLS_SIMULATOR_SIMULATOR_H_
+#define NET_QUIC_TEST_TOOLS_SIMULATOR_SIMULATOR_H_
 
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
 
-#include "net/quic/core/congestion_control/simulation/actor.h"
-#include "net/quic/core/congestion_control/simulation/alarm_factory.h"
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_simple_buffer_allocator.h"
+#include "net/quic/test_tools/simulator/actor.h"
+#include "net/quic/test_tools/simulator/alarm_factory.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 // Simulator is responsible for scheduling actors in the simulation and
 // providing basic utility interfaces (clock, alarms, RNG and others).
@@ -106,7 +106,7 @@ bool Simulator::RunUntil(TerminationPredicate termination_predicate) {
   return false;
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_SIMULATOR_H_
+#endif  // NET_QUIC_TEST_TOOLS_SIMULATOR_SIMULATOR_H_

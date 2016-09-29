@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_QUIC_ENDPOINT_H_
-#define NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_QUIC_ENDPOINT_H_
+#ifndef NET_QUIC_TEST_TOOLS_SIMULATOR_QUIC_ENDPOINT_H_
+#define NET_QUIC_TEST_TOOLS_SIMULATOR_QUIC_ENDPOINT_H_
 
-#include "net/quic/core/congestion_control/simulation/link.h"
-#include "net/quic/core/congestion_control/simulation/queue.h"
 #include "net/quic/core/crypto/null_decrypter.h"
 #include "net/quic/core/crypto/null_encrypter.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_protocol.h"
+#include "net/quic/test_tools/simulator/link.h"
+#include "net/quic/test_tools/simulator/queue.h"
 #include "net/tools/quic/quic_default_packet_writer.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 // Size of the TX queue used by the kernel/NIC.  1000 is the Linux
 // kernel default.
@@ -159,7 +159,7 @@ class QuicEndpointMultiplexer : public Endpoint,
   std::unordered_map<std::string, QuicEndpoint*> mapping_;
 };
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_QUIC_ENDPOINT_H_
+#endif  // NET_QUIC_TEST_TOOLS_SIMULATOR_QUIC_ENDPOINT_H_

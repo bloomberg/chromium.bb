@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_ACTOR_H_
-#define NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_ACTOR_H_
+#ifndef NET_QUIC_TEST_TOOLS_SIMULATOR_ACTOR_H_
+#define NET_QUIC_TEST_TOOLS_SIMULATOR_ACTOR_H_
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "net/quic/core/quic_time.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 class Simulator;
 struct ScheduledActor;
@@ -61,7 +61,7 @@ class Actor {
   DISALLOW_COPY_AND_ASSIGN(Actor);
 };
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_ACTOR_H_
+#endif  // NET_QUIC_TEST_TOOLS_SIMULATOR_ACTOR_H_

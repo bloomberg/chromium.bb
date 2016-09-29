@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/core/congestion_control/simulation/port.h"
+#include "net/quic/test_tools/simulator/port.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 Packet::Packet()
     : source(), destination(), tx_timestamp(QuicTime::Zero()), size(0) {}
@@ -17,5 +17,5 @@ Packet::Packet(const Packet& packet) = default;
 Endpoint::Endpoint(Simulator* simulator, std::string name)
     : Actor(simulator, name) {}
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

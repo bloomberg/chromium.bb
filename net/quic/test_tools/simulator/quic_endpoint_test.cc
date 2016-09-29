@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
-#include "net/quic/core/congestion_control/simulation/quic_endpoint.h"
-#include "net/quic/core/congestion_control/simulation/simulator.h"
-#include "net/quic/core/congestion_control/simulation/switch.h"
+#include "net/quic/test_tools/simulator/quic_endpoint.h"
+#include "net/quic/test_tools/simulator/simulator.h"
+#include "net/quic/test_tools/simulator/switch.h"
 
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 const QuicBandwidth kDefaultBandwidth =
     QuicBandwidth::FromKBitsPerSecond(10 * 1000);
@@ -138,5 +138,5 @@ TEST_F(QuicEndpointTest, Competition) {
   }
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

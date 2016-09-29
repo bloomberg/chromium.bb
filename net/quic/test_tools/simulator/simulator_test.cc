@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "net/quic/test_tools/simulator/simulator.h"
+
 #include "base/memory/ptr_util.h"
-#include "net/quic/core/congestion_control/simulation/alarm_factory.h"
-#include "net/quic/core/congestion_control/simulation/link.h"
-#include "net/quic/core/congestion_control/simulation/queue.h"
-#include "net/quic/core/congestion_control/simulation/simulator.h"
-#include "net/quic/core/congestion_control/simulation/switch.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/quic/test_tools/simulator/alarm_factory.h"
+#include "net/quic/test_tools/simulator/link.h"
+#include "net/quic/test_tools/simulator/queue.h"
+#include "net/quic/test_tools/simulator/switch.h"
 
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 // A simple counter that increments its value by 1 every specified period.
 class Counter : public Actor {
@@ -526,5 +527,5 @@ TEST(SimulatorTest, AlarmCancelling) {
   EXPECT_EQ(0u, alarm_counter);
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

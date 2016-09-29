@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
-#include "net/quic/core/congestion_control/simulation/link.h"
-#include "net/quic/core/congestion_control/simulation/simulator.h"
+#include "net/quic/test_tools/simulator/link.h"
+#include "net/quic/test_tools/simulator/simulator.h"
 
 using base::StringPrintf;
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 // Parameters for random noise delay.
 const uint64_t kMaxRandomDelayUs = 10;
@@ -112,5 +112,5 @@ SymmetricLink::SymmetricLink(Endpoint* endpoint_a,
   endpoint_b->SetTxPort(&b_to_a_link_);
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

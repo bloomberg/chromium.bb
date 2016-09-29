@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/core/congestion_control/simulation/actor.h"
-#include "net/quic/core/congestion_control/simulation/simulator.h"
+#include "net/quic/test_tools/simulator/actor.h"
+#include "net/quic/test_tools/simulator/simulator.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 Actor::Actor(Simulator* simulator, std::string name)
     : simulator_(simulator),
@@ -25,5 +25,5 @@ void Actor::Unschedule() {
   simulator_->Unschedule(this);
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

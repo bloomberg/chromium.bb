@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
-#include "net/quic/core/congestion_control/simulation/simulator.h"
 #include "net/quic/core/crypto/quic_random.h"
+#include "net/quic/test_tools/simulator/simulator.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 Simulator::Simulator()
     : random_generator_(nullptr),
@@ -114,5 +114,5 @@ void Simulator::HandleNextScheduledActor() {
   actor->Act();
 }
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net

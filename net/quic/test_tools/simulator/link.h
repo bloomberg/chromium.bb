@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_LINK_H_
-#define NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_LINK_H_
+#ifndef NET_QUIC_TEST_TOOLS_SIMULATOR_LINK_H_
+#define NET_QUIC_TEST_TOOLS_SIMULATOR_LINK_H_
 
 #include <queue>
 #include <utility>
 
-#include "net/quic/core/congestion_control/simulation/actor.h"
-#include "net/quic/core/congestion_control/simulation/port.h"
 #include "net/quic/core/crypto/quic_random.h"
+#include "net/quic/test_tools/simulator/actor.h"
+#include "net/quic/test_tools/simulator/port.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 // A reliable simplex link between two endpoints with constrained bandwidth.  A
 // few microseconds of random delay are added for every packet to avoid
@@ -94,7 +94,7 @@ class SymmetricLink {
   DISALLOW_COPY_AND_ASSIGN(SymmetricLink);
 };
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_LINK_H_
+#endif  // NET_QUIC_TEST_TOOLS_SIMULATOR_LINK_H_

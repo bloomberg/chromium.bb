@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_SWITCH_H_
-#define NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_SWITCH_H_
+#ifndef NET_QUIC_TEST_TOOLS_SIMULATOR_SWITCH_H_
+#define NET_QUIC_TEST_TOOLS_SIMULATOR_SWITCH_H_
 
 #include <unordered_map>
 
-#include "net/quic/core/congestion_control/simulation/queue.h"
+#include "net/quic/test_tools/simulator/queue.h"
 
 namespace net {
-namespace simulation {
+namespace simulator {
 
 typedef size_t SwitchPortNumber;
 
@@ -75,7 +75,7 @@ class Switch {
   DISALLOW_COPY_AND_ASSIGN(Switch);
 };
 
-}  // namespace simulation
+}  // namespace simulator
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_CONGESTION_CONTROL_SIMULATION_SWITCH_H_
+#endif  // NET_QUIC_TEST_TOOLS_SIMULATOR_SWITCH_H_
