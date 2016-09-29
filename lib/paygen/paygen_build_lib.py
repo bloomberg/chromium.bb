@@ -70,6 +70,9 @@ BOARDS_URI = 'gs://chromeos-build-release-console/boards.json'
 FSI_URI = 'gs://chromeos-build-release-console/fsis.json'
 OMAHA_URI = 'gs://chromeos-build-release-console/omaha_status.json'
 
+# Max number of attempts to download and parse a JSON file.
+JSON_PARSE_RETRY_COUNT = 2
+
 
 class Error(Exception):
   """Exception base class for this module."""
@@ -415,12 +418,12 @@ class _PaygenBuild(object):
 
   def _GetFsisJson(self):
     if not self.cachedFsisJson:
-      self.cachedFsisJson = json.loads(gslib.Cat(FSI_URI))
+      self.cachedFsisJson = _GetJson(FSI_URI)
     return self.cachedFsisJson
 
   def _GetOmahaJson(self):
     if not self.cachedOmahaJson:
-      self.cachedOmahaJson = json.loads(gslib.Cat(OMAHA_URI))
+      self.cachedOmahaJson = _GetJson(OMAHA_URI)
     return self.cachedOmahaJson
 
   def _GetFlagURI(self, flag):
@@ -1441,7 +1444,7 @@ def ValidateBoardConfig(board):
     BoardNotConfigured if the board is unknown.
   """
   # Right now, we just validate that the board exists.
-  boards = json.loads(gslib.Cat(BOARDS_URI))
+  boards = _GetJson(BOARDS_URI)
   for b in boards.get('boards', []):
     if b['public_codename'] == board:
       return
@@ -1480,3 +1483,42 @@ def CreatePayloads(build, work_dir, site_config,
                output_dir=output_dir,
                run_parallel=run_parallel,
                skip_duts_check=skip_duts_check).CreatePayloads()
+
+
+def _GetAndValidateJson(uri):
+  """Downloads JSON from URI and tries to parse it.
+
+  Args:
+    uri: The URI of a JSON file at the given GS URI.
+
+  Returns:
+    Valid JSON retrived from given uri on success.
+
+  Raises:
+    ValueError if the downloaded JSON fails to parse.
+  """
+  try:
+    downloaded_json = gslib.Cat(uri)
+    return json.loads(downloaded_json)
+  except ValueError as e:
+    logging.error('Failed to parse JSON downloaded from %s.\n'
+                  'Here\'s what we got:\n%r\n'
+                  'Error: %s', uri, downloaded_json, e)
+    raise
+
+
+def _GetJson(uri):
+  """Downloads JSON from URI and tries to parse it.
+
+  This function will attempt to retry if the downloaded JSON is bad
+  JSON_PARSE_RETRY_COUNT times.
+
+  Args:
+    uri: The URI of a JSON file at the given GS URI.
+
+  Returns:
+    Valid JSON retrieved from given uri.
+  """
+  # If the downloaded JSON is bad, a ValueError exception will be rasied.
+  return retry_util.RetryException(ValueError, JSON_PARSE_RETRY_COUNT,
+                                   _GetAndValidateJson, uri)
