@@ -130,7 +130,6 @@ test("media_blink_unittests") {
     "interval_map_unittest.cc",
     "key_system_config_selector_unittest.cc",
     "lru_unittest.cc",
-    "mock_webframeclient.h",
     "mock_weburlloader.cc",
     "mock_weburlloader.h",
     "multibuffer_data_source_unittest.cc",

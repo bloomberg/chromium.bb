@@ -17,7 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/media_log.h"
 #include "media/base/seekable_buffer.h"
-#include "media/blink/mock_webframeclient.h"
 #include "media/blink/mock_weburlloader.h"
 #include "media/blink/url_index.h"
 #include "net/base/net_errors.h"
@@ -27,6 +26,7 @@
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -71,11 +71,11 @@ static bool CorrectAcceptEncodingAndEtag(const blink::WebURLRequest& request) {
 class ResourceMultiBufferDataProviderTest : public testing::Test {
  public:
   ResourceMultiBufferDataProviderTest()
-      : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)),
-        frame_(WebLocalFrame::create(blink::WebTreeScopeType::Document,
-                                     &client_)) {
-    view_->setMainFrame(frame_);
-    url_index_.reset(new UrlIndex(frame_, 0));
+      : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)) {
+    WebLocalFrame* frame =
+        WebLocalFrame::create(blink::WebTreeScopeType::Document, &client_);
+    view_->setMainFrame(frame);
+    url_index_.reset(new UrlIndex(frame, 0));
 
     for (int i = 0; i < kDataSize; ++i) {
       data_[i] = i;
@@ -84,7 +84,6 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
 
   virtual ~ResourceMultiBufferDataProviderTest() {
     view_->close();
-    frame_->close();
   }
 
   void Initialize(const char* url, int first_position) {
@@ -234,9 +233,8 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
   ResourceMultiBufferDataProvider* loader_;
   NiceMock<MockWebURLLoader>* url_loader_;
 
-  MockWebFrameClient client_;
+  blink::WebFrameClient client_;
   WebView* view_;
-  WebLocalFrame* frame_;
 
   base::MessageLoop message_loop_;
 

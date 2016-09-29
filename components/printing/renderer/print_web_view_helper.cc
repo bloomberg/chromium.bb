@@ -527,11 +527,11 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
       blink::WebView::create(nullptr, blink::WebPageVisibilityStateVisible);
   web_view->settings()->setJavaScriptEnabled(true);
 
-  blink::WebLocalFrame* frame =
-      blink::WebLocalFrame::create(blink::WebTreeScopeType::Document, NULL);
+  blink::WebFrameClient frame_client;
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::create(
+      blink::WebTreeScopeType::Document, &frame_client);
   web_view->setMainFrame(frame);
-  blink::WebFrameWidget* widget =
-      blink::WebFrameWidget::create(nullptr, web_view, frame);
+  blink::WebFrameWidget::create(nullptr, web_view, frame);
 
   base::StringValue html(ResourceBundle::GetSharedInstance().GetLocalizedString(
       IDR_PRINT_PREVIEW_PAGE));
@@ -561,9 +561,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
   frame->printPage(0, canvas);
   frame->printEnd();
 
-  widget->close();
   web_view->close();
-  frame->close();
 }
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 
@@ -620,14 +618,13 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
   bool allowsBrokenNullLayerTreeView() const override;
 
   // blink::WebFrameClient:
-  blink::WebFrame* createChildFrame(
+  blink::WebLocalFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
       const blink::WebString& unique_name,
       blink::WebSandboxFlags sandbox_flags,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
-  void frameDetached(blink::WebLocalFrame* frame, DetachType type) override;
 
   void CallOnReady();
   void ResizeForPrinting();
@@ -775,24 +772,16 @@ void PrepareFrameAndViewForPrint::didStopLoading() {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-blink::WebFrame* PrepareFrameAndViewForPrint::createChildFrame(
+blink::WebLocalFrame* PrepareFrameAndViewForPrint::createChildFrame(
     blink::WebLocalFrame* parent,
     blink::WebTreeScopeType scope,
     const blink::WebString& name,
     const blink::WebString& unique_name,
     blink::WebSandboxFlags sandbox_flags,
     const blink::WebFrameOwnerProperties& frame_owner_properties) {
-  blink::WebFrame* frame = blink::WebLocalFrame::create(scope, this);
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::create(scope, this);
   parent->appendChild(frame);
   return frame;
-}
-
-void PrepareFrameAndViewForPrint::frameDetached(blink::WebLocalFrame* frame,
-                                                DetachType type) {
-  DCHECK(type == DetachType::Remove);
-  if (frame->parent())
-    frame->parent()->removeChild(frame);
-  frame->close();
 }
 
 void PrepareFrameAndViewForPrint::CallOnReady() {

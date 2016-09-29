@@ -77,8 +77,7 @@ protected:
     void SetUp() override
     {
         m_webView = toWebViewImpl(WebView::create(&m_webViewClient, WebPageVisibilityStateVisible));
-        m_mainFrame = WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient);
-        m_webView->setMainFrame(m_mainFrame);
+        m_webView->setMainFrame(WebLocalFrame::create(WebTreeScopeType::Document, &m_webFrameClient));
         m_chromeClientImpl = toChromeClientImpl(&m_webView->page()->chromeClient());
         m_result = WebNavigationPolicyIgnore;
     }
@@ -86,7 +85,6 @@ protected:
     void TearDown() override
     {
         m_webView->close();
-        m_mainFrame->close();
     }
 
     WebNavigationPolicy getNavigationPolicyWithMouseEvent(int modifiers, WebMouseEvent::Button button, bool asPopup)
@@ -112,7 +110,6 @@ protected:
     WebNavigationPolicy m_result;
     TestWebViewClient m_webViewClient;
     WebViewImpl* m_webView;
-    WebFrame* m_mainFrame;
     FrameTestHelpers::TestWebFrameClient m_webFrameClient;
     Persistent<ChromeClientImpl> m_chromeClientImpl;
 };
@@ -281,12 +278,11 @@ protected:
     void TearDown() override
     {
         m_webView->close();
-        m_mainFrame->close();
     }
 
     ViewCreatingClient m_webViewClient;
     WebViewImpl* m_webView;
-    WebFrame* m_mainFrame;
+    WebLocalFrame* m_mainFrame;
     FrameTestHelpers::TestWebFrameClient m_webFrameClient;
     Persistent<ChromeClientImpl> m_chromeClientImpl;
 };

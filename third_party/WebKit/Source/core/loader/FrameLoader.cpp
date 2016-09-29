@@ -1115,7 +1115,7 @@ bool FrameLoader::prepareForCommit()
     // frame on a detached DOM tree, which is bad.
     SubframeLoadingDisabler disabler(m_frame->document());
     if (m_documentLoader) {
-        client()->dispatchWillClose();
+        client()->dispatchWillCommitProvisionalLoad();
         dispatchUnloadEvent();
     }
     m_frame->detachChildren();

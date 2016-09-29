@@ -5889,11 +5889,11 @@ public:
     int willSendRequestCallCount() const { return m_willSendRequestCallCount; }
     int childFrameCreationCount() const { return m_childFrameCreationCount; }
 
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString&, const WebString&, WebSandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
+    virtual WebLocalFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString&, const WebString&, WebSandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
     {
         DCHECK(m_childClient);
         m_childFrameCreationCount++;
-        WebFrame* frame = WebLocalFrame::create(scope, m_childClient);
+        WebLocalFrame* frame = WebLocalFrame::create(scope, m_childClient);
         parent->appendChild(frame);
         return frame;
     }
@@ -6277,10 +6277,10 @@ class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
 public:
     FailCreateChildFrame() : m_callCount(0) { }
 
-    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, const WebString& frameUniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties) override
+    WebLocalFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& frameName, const WebString& frameUniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties) override
     {
         ++m_callCount;
-        return 0;
+        return nullptr;
     }
 
     int callCount() const { return m_callCount; }

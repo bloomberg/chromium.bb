@@ -7,12 +7,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/renderer/media/android/media_info_loader.h"
-#include "content/test/mock_webframeclient.h"
 #include "content/test/mock_weburlloader.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -40,15 +40,13 @@ static const int kHttpNotFound = 404;
 class MediaInfoLoaderTest : public testing::Test {
  public:
   MediaInfoLoaderTest()
-      : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)),
-        frame_(WebLocalFrame::create(blink::WebTreeScopeType::Document,
-                                     &client_)) {
-    view_->setMainFrame(frame_);
+      : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)) {
+    view_->setMainFrame(
+        WebLocalFrame::create(blink::WebTreeScopeType::Document, &client_));
   }
 
   virtual ~MediaInfoLoaderTest() {
     view_->close();
-    frame_->close();
   }
 
   void Initialize(
@@ -116,9 +114,8 @@ class MediaInfoLoaderTest : public testing::Test {
   std::unique_ptr<MediaInfoLoader> loader_;
   NiceMock<MockWebURLLoader>* url_loader_;
 
-  MockWebFrameClient client_;
+  blink::WebFrameClient client_;
   WebView* view_;
-  WebLocalFrame* frame_;
 
   base::MessageLoop message_loop_;
 

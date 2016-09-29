@@ -74,7 +74,6 @@ protected:
     void TearDown() override
     {
         m_webView->close();
-        m_mainFrame->close();
     }
 
     WebString userAgent()
@@ -92,7 +91,7 @@ protected:
 private:
     MockWebFrameClient m_webFrameClient;
     WebView* m_webView;
-    WebFrame* m_mainFrame;
+    WebLocalFrame* m_mainFrame;
 };
 
 TEST_F(FrameLoaderClientImplTest, UserAgentOverride)

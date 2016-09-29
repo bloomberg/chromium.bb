@@ -21,7 +21,6 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_helpers.h"
-#include "media/blink/mock_webframeclient.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/renderers/default_renderer_factory.h"
@@ -152,7 +151,6 @@ class WebMediaPlayerImplTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
 
     web_view_->close();
-    web_local_frame_->close();
   }
 
  protected:
@@ -243,7 +241,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   base::Thread media_thread_;
 
   // Blink state.
-  MockWebFrameClient web_frame_client_;
+  blink::WebFrameClient web_frame_client_;
   blink::WebView* web_view_;
   blink::WebLocalFrame* web_local_frame_;
 

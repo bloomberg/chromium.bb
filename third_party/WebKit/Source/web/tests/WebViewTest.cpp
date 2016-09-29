@@ -413,10 +413,10 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame)
     // webView does not have a frame yet, but we should still be able to set the background color.
     webView->setBaseBackgroundColor(kBlue);
     EXPECT_EQ(kBlue, webView->backgroundColor());
-    WebLocalFrame* frame = WebLocalFrame::create(WebTreeScopeType::Document, nullptr);
+    FrameTestHelpers::TestWebFrameClient webFrameClient;
+    WebLocalFrame* frame = WebLocalFrame::create(WebTreeScopeType::Document, &webFrameClient);
     webView->setMainFrame(frame);
     webView->close();
-    frame->close();
 }
 
 TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent)
@@ -1827,7 +1827,8 @@ TEST_F(WebViewTest, ClientTapHandling)
 TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient)
 {
     WebViewImpl* webView = WebViewImpl::create(nullptr, WebPageVisibilityStateVisible);
-    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, nullptr);
+    FrameTestHelpers::TestWebFrameClient webFrameClient;
+    WebLocalFrame* localFrame = WebLocalFrame::create(WebTreeScopeType::Document, &webFrameClient);
     webView->setMainFrame(localFrame);
     WebGestureEvent event;
     event.type = WebInputEvent::GestureTap;
@@ -1836,8 +1837,6 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient)
     event.y = 8;
     EXPECT_EQ(WebInputEventResult::NotHandled, webView->handleInputEvent(event));
     webView->close();
-    // Explicitly close as the frame as no frame client to do so on frameDetached().
-    localFrame->close();
 }
 
 TEST_F(WebViewTest, LongPressEmptyDiv)
@@ -2722,7 +2721,7 @@ TEST_F(WebViewTest, SmartClipDoesNotCrashPositionReversed)
 class CreateChildCounterFrameClient : public FrameTestHelpers::TestWebFrameClient {
 public:
     CreateChildCounterFrameClient() : m_count(0) { }
-    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, const WebFrameOwnerProperties&) override;
+    WebLocalFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, const WebFrameOwnerProperties&) override;
 
     int count() const { return m_count; }
 
@@ -2730,7 +2729,7 @@ private:
     int m_count;
 };
 
-WebFrame* CreateChildCounterFrameClient::createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
+WebLocalFrame* CreateChildCounterFrameClient::createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
 {
     ++m_count;
     return TestWebFrameClient::createChildFrame(parent, scope, name, uniqueName, sandboxFlags, frameOwnerProperties);

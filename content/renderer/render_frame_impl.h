@@ -470,7 +470,7 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::BlameContext* frameBlameContext() override;
   blink::WebServiceWorkerProvider* createServiceWorkerProvider() override;
   void didAccessInitialDocument() override;
-  blink::WebFrame* createChildFrame(
+  blink::WebLocalFrame* createChildFrame(
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
@@ -480,7 +480,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void didChangeOpener(blink::WebFrame* frame) override;
   void frameDetached(blink::WebLocalFrame* frame, DetachType type) override;
   void frameFocused() override;
-  void willClose(blink::WebFrame* frame) override;
+  void willCommitProvisionalLoad(blink::WebLocalFrame* frame) override;
   void didChangeName(const blink::WebString& name,
                      const blink::WebString& unique_name) override;
   void didEnforceInsecureRequestPolicy(

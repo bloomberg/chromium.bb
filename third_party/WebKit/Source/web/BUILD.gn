@@ -171,6 +171,7 @@ component("web") {
     "WebFormControlElement.cpp",
     "WebFormElement.cpp",
     "WebFrame.cpp",
+    "WebFrameClient.cpp",
     "WebFrameContentDumper.cpp",
     "WebFrameImplBase.cpp",
     "WebFrameImplBase.h",

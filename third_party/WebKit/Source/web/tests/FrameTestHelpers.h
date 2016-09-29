@@ -210,8 +210,7 @@ class TestWebFrameClient : public WebFrameClient {
 public:
     TestWebFrameClient();
 
-    WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, const WebFrameOwnerProperties&) override;
-    void frameDetached(WebLocalFrame*, DetachType) override;
+    WebLocalFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags, const WebFrameOwnerProperties&) override;
     void didStartLoading(bool) override;
     void didStopLoading() override;
 

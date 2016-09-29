@@ -435,10 +435,10 @@ void FrameLoaderClientImpl::dispatchDidNavigateWithinPage(HistoryItem* item, His
         m_webFrame->client()->didNavigateWithinPage(m_webFrame, WebHistoryItem(item), static_cast<WebHistoryCommitType>(commitType), contentInitiated);
 }
 
-void FrameLoaderClientImpl::dispatchWillClose()
+void FrameLoaderClientImpl::dispatchWillCommitProvisionalLoad()
 {
     if (m_webFrame->client())
-        m_webFrame->client()->willClose(m_webFrame);
+        m_webFrame->client()->willCommitProvisionalLoad(m_webFrame);
 }
 
 void FrameLoaderClientImpl::dispatchDidStartProvisionalLoad(double triggeringEventTime)

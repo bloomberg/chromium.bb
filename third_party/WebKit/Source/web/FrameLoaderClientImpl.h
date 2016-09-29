@@ -90,7 +90,7 @@ public:
     void dispatchDidHandleOnloadEvents() override;
     void dispatchDidReceiveServerRedirectForProvisionalLoad() override;
     void dispatchDidNavigateWithinPage(HistoryItem*, HistoryCommitType, bool contentInitiated) override;
-    void dispatchWillClose() override;
+    void dispatchWillCommitProvisionalLoad() override;
     void dispatchDidStartProvisionalLoad(double triggeringEventTime) override;
     void dispatchDidReceiveTitle(const String&) override;
     void dispatchDidChangeIcons(IconType) override;

@@ -1131,11 +1131,9 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame)
 {
     WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(&frame);
     WebFrameClient* client = webFrame->client();
-    if (client) {
-        providePushControllerTo(frame, client->pushClient());
-        provideUserMediaTo(frame, UserMediaClientImpl::create(client->userMediaClient()));
-    }
-
+    DCHECK(client);
+    providePushControllerTo(frame, client->pushClient());
+    provideUserMediaTo(frame, UserMediaClientImpl::create(client->userMediaClient()));
     provideIndexedDBClientTo(frame, IndexedDBClientImpl::create());
     provideLocalFileSystemTo(frame, LocalFileSystemClient::create());
     provideNavigatorContentUtilsTo(frame, NavigatorContentUtilsClientImpl::create(webFrame));
@@ -1145,15 +1143,15 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame)
     enableWebBluetooth = true;
 #endif
     if (enableWebBluetooth)
-        BluetoothSupplement::provideTo(frame, client ? client->bluetooth() : nullptr);
+        BluetoothSupplement::provideTo(frame, client->bluetooth());
 
-    ScreenOrientationController::provideTo(frame, client ? client->webScreenOrientationClient() : nullptr);
+    ScreenOrientationController::provideTo(frame, client->webScreenOrientationClient());
     if (RuntimeEnabledFeatures::presentationEnabled())
-        PresentationController::provideTo(frame, client ? client->presentationClient() : nullptr);
+        PresentationController::provideTo(frame, client->presentationClient());
     if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())
         provideAudioOutputDeviceClientTo(frame, AudioOutputDeviceClientImpl::create());
     if (RuntimeEnabledFeatures::installedAppEnabled())
-        InstalledAppController::provideTo(frame, client ? client->installedAppClient() : nullptr);
+        InstalledAppController::provideTo(frame, client->installedAppClient());
 }
 
 } // namespace blink

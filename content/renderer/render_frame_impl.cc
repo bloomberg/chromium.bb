@@ -2818,7 +2818,7 @@ void RenderFrameImpl::didAccessInitialDocument() {
   has_accessed_initial_document_ = true;
 }
 
-blink::WebFrame* RenderFrameImpl::createChildFrame(
+blink::WebLocalFrame* RenderFrameImpl::createChildFrame(
     blink::WebLocalFrame* parent,
     blink::WebTreeScopeType scope,
     const blink::WebString& name,
@@ -2942,9 +2942,10 @@ void RenderFrameImpl::frameFocused() {
   Send(new FrameHostMsg_FrameFocused(routing_id_));
 }
 
-void RenderFrameImpl::willClose(blink::WebFrame* frame) {
+void RenderFrameImpl::willCommitProvisionalLoad(blink::WebLocalFrame* frame) {
   DCHECK_EQ(frame_, frame);
 
+  // TODO(dcheng): Rename observer to FrameWillCommitProvisionalLoad.
   FOR_EACH_OBSERVER(RenderFrameObserver, observers_, FrameWillClose());
   FOR_EACH_OBSERVER(RenderViewObserver, render_view_->observers(),
                     FrameWillClose(frame));

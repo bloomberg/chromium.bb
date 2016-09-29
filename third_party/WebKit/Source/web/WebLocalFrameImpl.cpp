@@ -1478,6 +1478,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* cli
     , m_webDevToolsFrontend(0)
     , m_selfKeepAlive(this)
 {
+    DCHECK(m_client);
     frameCount++;
 }
 

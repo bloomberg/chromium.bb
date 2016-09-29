@@ -151,7 +151,6 @@ static_library("test_support") {
     "mock_webblob_registry_impl.h",
     "mock_webclipboard_impl.cc",
     "mock_webclipboard_impl.h",
-    "mock_webframeclient.h",
     "mock_weburlloader.cc",
     "mock_weburlloader.h",
     "net/url_request_abort_on_end_job.cc",

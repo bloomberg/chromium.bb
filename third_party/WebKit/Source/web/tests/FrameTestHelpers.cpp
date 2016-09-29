@@ -275,22 +275,11 @@ TestWebFrameClient::TestWebFrameClient()
 {
 }
 
-WebFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
+WebLocalFrame* TestWebFrameClient::createChildFrame(WebLocalFrame* parent, WebTreeScopeType scope, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties& frameOwnerProperties)
 {
-    WebFrame* frame = WebLocalFrame::create(scope, this);
+    WebLocalFrame* frame = WebLocalFrame::create(scope, this);
     parent->appendChild(frame);
     return frame;
-}
-
-void TestWebFrameClient::frameDetached(WebLocalFrame* frame, DetachType type)
-{
-    if (type == DetachType::Remove && frame->parent())
-        frame->parent()->removeChild(frame);
-
-    if (frame->frameWidget())
-        frame->frameWidget()->close();
-
-    frame->close();
 }
 
 void TestWebFrameClient::didStartLoading(bool)

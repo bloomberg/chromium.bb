@@ -14,13 +14,13 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/blink/buffered_data_source_host_impl.h"
-#include "media/blink/mock_webframeclient.h"
 #include "media/blink/mock_weburlloader.h"
 #include "media/blink/multibuffer_data_source.h"
 #include "media/blink/multibuffer_reader.h"
 #include "media/blink/resource_multibuffer_data_provider.h"
 #include "media/blink/test_response_generator.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
+#include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
@@ -225,16 +225,15 @@ class MultibufferDataSourceTest : public testing::Test {
  public:
   MultibufferDataSourceTest()
       : view_(WebView::create(nullptr, blink::WebPageVisibilityStateVisible)),
-        frame_(
-            WebLocalFrame::create(blink::WebTreeScopeType::Document, &client_)),
-        preload_(MultibufferDataSource::AUTO),
-        url_index_(make_linked_ptr(new TestUrlIndex(frame_))) {
-    view_->setMainFrame(frame_);
+        preload_(MultibufferDataSource::AUTO) {
+    WebLocalFrame* frame =
+        WebLocalFrame::create(blink::WebTreeScopeType::Document, &client_);
+    view_->setMainFrame(frame);
+    url_index_ = make_linked_ptr(new TestUrlIndex(frame));
   }
 
   virtual ~MultibufferDataSourceTest() {
     view_->close();
-    frame_->close();
   }
 
   MOCK_METHOD1(OnInitialize, void(bool));
@@ -476,9 +475,8 @@ class MultibufferDataSourceTest : public testing::Test {
   }
 
  protected:
-  MockWebFrameClient client_;
+  blink::WebFrameClient client_;
   WebView* view_;
-  WebLocalFrame* frame_;
   MultibufferDataSource::Preload preload_;
   base::MessageLoop message_loop_;
   linked_ptr<TestUrlIndex> url_index_;

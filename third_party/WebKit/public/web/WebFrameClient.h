@@ -83,6 +83,7 @@ class WebExternalPopupMenuClient;
 class WebFileChooserCompletion;
 class WebFormElement;
 class WebInstalledAppClient;
+class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
@@ -108,8 +109,10 @@ struct WebPopupMenuInfo;
 struct WebRect;
 struct WebURLError;
 
-class WebFrameClient {
+class BLINK_EXPORT WebFrameClient {
 public:
+    virtual ~WebFrameClient() {}
+
     // Factory methods -----------------------------------------------------
 
     // May return null.
@@ -156,13 +159,11 @@ public:
     // pending navigation's URL, because a URL spoof is possible.
     virtual void didAccessInitialDocument() { }
 
-    // A child frame was created in this frame. This is called when the frame
-    // is created and initialized. Takes the name of the new frame, the parent
-    // frame and returns a new WebFrame. The WebFrame is considered in-use
-    // until frameDetached() is called on it.
-    // Note: If you override this, you should almost certainly be overriding
-    // frameDetached().
-    virtual WebFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties&) { return nullptr; }
+    // Request the creation of a new child frame. Embedders may return nullptr
+    // to prevent the new child frame from being attached. Otherwise, embedders
+    // should create a new WebLocalFrame, insert it into the frame tree, and
+    // return the created frame.
+    virtual WebLocalFrame* createChildFrame(WebLocalFrame* parent, WebTreeScopeType, const WebString& name, const WebString& uniqueName, WebSandboxFlags sandboxFlags, const WebFrameOwnerProperties&) { return nullptr; }
 
     // This frame has set its opener to another frame, or disowned the opener
     // if opener is null. See http://html.spec.whatwg.org/#dom-opener.
@@ -171,15 +172,17 @@ public:
     // Specifies the reason for the detachment.
     enum class DetachType { Remove, Swap };
 
-    // This frame has been detached from the view, but has not been closed yet.
-    virtual void frameDetached(WebLocalFrame*, DetachType) {}
+    // This frame has been detached. Embedders should release any resources
+    // associated with this frame. If the DetachType is Remove, the frame should
+    // also be removed from the frame tree; otherwise, if the DetachType is
+    // Swap, the frame is being replaced in-place by WebFrame::swap().
+    virtual void frameDetached(WebLocalFrame*, DetachType);
 
-    // This frame has become focused..
+    // This frame has become focused.
     virtual void frameFocused() { }
 
-    // This frame is about to be closed. This is called after frameDetached,
-    // when the document is being unloaded, due to new one committing.
-    virtual void willClose(WebFrame*) { }
+    // A provisional load is about to commit.
+    virtual void willCommitProvisionalLoad(WebLocalFrame*) {}
 
     // This frame's name has changed.
     virtual void didChangeName(const WebString& name, const WebString& uniqueName) { }
@@ -693,9 +696,6 @@ public:
     {
         return WebURL();
     }
-
-protected:
-    virtual ~WebFrameClient() { }
 };
 
 } // namespace blink

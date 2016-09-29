@@ -62,13 +62,12 @@ WebViewPlugin::WebViewPlugin(content::RenderView* render_view,
   // ApplyWebPreferences before making a WebLocalFrame so that the frame sees a
   // consistent view of our preferences.
   content::RenderView::ApplyWebPreferences(preferences, web_view_);
-  WebLocalFrame* web_local_frame = WebLocalFrame::create(
+  WebLocalFrame* web_frame = WebLocalFrame::create(
       blink::WebTreeScopeType::Document, &web_frame_client_);
-  web_frame_ = web_local_frame;
-  web_view_->setMainFrame(web_frame_);
+  web_view_->setMainFrame(web_frame);
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
-  web_frame_widget_ = WebFrameWidget::create(this, web_view_, web_local_frame);
+  WebFrameWidget::create(this, web_view_, web_frame);
 }
 
 // static
@@ -85,9 +84,7 @@ WebViewPlugin* WebViewPlugin::Create(content::RenderView* render_view,
 
 WebViewPlugin::~WebViewPlugin() {
   DCHECK(!weak_factory_.HasWeakPtrs());
-  web_frame_widget_->close();
   web_view_->close();
-  web_frame_->close();
 }
 
 WebPluginContainer* WebViewPlugin::container() const { return container_; }
