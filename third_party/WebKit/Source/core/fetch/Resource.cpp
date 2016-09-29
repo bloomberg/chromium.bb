@@ -729,14 +729,9 @@ void Resource::didRemoveClientOrObserver()
         // "no-store: ... MUST make a best-effort attempt to remove the information from volatile storage as promptly as possible"
         // "... History buffers MAY store such responses as part of their normal operation."
         // We allow non-secure content to be reused in history, but we do not allow secure content to be reused.
-        if (hasCacheControlNoStoreHeader() && url().protocolIs("https")) {
+        if (hasCacheControlNoStoreHeader() && url().protocolIs("https"))
             memoryCache()->remove(this);
-            memoryCache()->prune();
-        } else {
-            memoryCache()->prune(this);
-        }
     }
-    // This object may be dead here.
 }
 
 void Resource::allClientsAndObserversRemoved()

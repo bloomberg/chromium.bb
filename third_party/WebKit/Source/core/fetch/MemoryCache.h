@@ -187,7 +187,7 @@ public:
 
     void evictResources();
 
-    void prune(Resource* justReleasedResource = 0);
+    void prune();
 
     // Called to adjust a resource's size, lru list position, and access count.
     void update(Resource*, size_t oldSize, size_t newSize, bool wasAccessed = false);

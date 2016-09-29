@@ -648,7 +648,7 @@ void MemoryCache::evictResources()
     }
 }
 
-void MemoryCache::prune(Resource* justReleasedResource)
+void MemoryCache::prune()
 {
     TRACE_EVENT0("renderer", "MemoryCache::prune()");
 
@@ -677,21 +677,6 @@ void MemoryCache::prune(Resource* justReleasedResource)
             Platform::current()->currentThread()->addTaskObserver(this);
             m_prunePending = true;
         }
-    }
-
-    if (m_prunePending && m_deadSize > m_maxDeferredPruneDeadCapacity && justReleasedResource) {
-        // The following eviction does not respect LRU order, but it can be done
-        // immediately in constant time, as opposed to pruneDeadResources, which
-        // we would rather defer because it is O(N), which would make tear-down of N
-        // objects O(N^2) if we pruned immediately. This immediate eviction is a
-        // safeguard against runaway memory consumption by dead resources
-        // while a prune is pending.
-        if (MemoryCacheEntry* entry = getEntryForResource(justReleasedResource))
-            evict(entry);
-
-        // As a last resort, prune immediately
-        if (m_deadSize > m_maxDeferredPruneDeadCapacity)
-            pruneNow(currentTime, AutomaticPrune);
     }
 }
 

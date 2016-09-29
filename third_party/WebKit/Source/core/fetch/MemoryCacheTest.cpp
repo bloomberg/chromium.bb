@@ -312,8 +312,7 @@ static void TestClientRemoval(Resource* resource1, Resource* resource2)
     EXPECT_EQ(0u, memoryCache()->deadSize());
     EXPECT_EQ(resource1->size() + resource2->size(), memoryCache()->liveSize());
 
-    // Removing the client from resource1 should result in all resources
-    // remaining in cache since the prune is deferred.
+    // Removing the client from resource1 should not trigger pruning.
     client1->removeAsClient();
     EXPECT_GT(resource1->decodedSize(), 0u);
     EXPECT_GT(resource2->decodedSize(), 0u);
@@ -322,15 +321,25 @@ static void TestClientRemoval(Resource* resource1, Resource* resource2)
     EXPECT_TRUE(memoryCache()->contains(resource1));
     EXPECT_TRUE(memoryCache()->contains(resource2));
 
-    // Removing the client from resource2 should result in immediate
-    // eviction of resource2 because we are over the prune deferral limit.
+    // Removing the client from resource2 should not trigger pruning.
     client2->removeAsClient();
     EXPECT_GT(resource1->decodedSize(), 0u);
     EXPECT_GT(resource2->decodedSize(), 0u);
-    EXPECT_EQ(resource1->size(), memoryCache()->deadSize());
+    EXPECT_EQ(resource1->size() + resource2->size(), memoryCache()->deadSize());
     EXPECT_EQ(0u, memoryCache()->liveSize());
     EXPECT_TRUE(memoryCache()->contains(resource1));
-    EXPECT_FALSE(memoryCache()->contains(resource2));
+    EXPECT_TRUE(memoryCache()->contains(resource2));
+
+    WeakPersistent<Resource> resource1Weak = resource1;
+    WeakPersistent<Resource> resource2Weak = resource2;
+
+    ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+    // Resources are garbage-collected (WeakMemoryCache) and thus removed
+    // from MemoryCache.
+    EXPECT_FALSE(resource1Weak);
+    EXPECT_FALSE(resource2Weak);
+    EXPECT_EQ(0u, memoryCache()->deadSize());
+    EXPECT_EQ(0u, memoryCache()->liveSize());
 }
 
 TEST_F(MemoryCacheTest, ClientRemoval_Basic)
