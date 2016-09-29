@@ -39,6 +39,7 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPrintParams.h"
+#include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -562,6 +563,7 @@ void GpuBenchmarking::PrintPagesToSkPictures(v8::Isolate* isolate,
       blink::WebRect(kMarginLeft, kMarginTop, kContentWidth, kContentHeight);
   SkFILEWStream wStream(path.MaybeAsASCII().c_str());
   sk_sp<SkDocument> doc = SkMakeMultiPictureDocument(&wStream);
+  context.web_frame()->view()->settings()->setShouldPrintBackgrounds(true);
   int page_count = context.web_frame()->printBegin(params);
   for (int i = 0; i < page_count; ++i) {
     SkCanvas* canvas =
