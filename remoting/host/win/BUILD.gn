@@ -24,6 +24,8 @@ dpi_aware_manifest = "//remoting/host/win/dpi_aware.manifest"
 
 # Reference this manifest to give the binary the uiAccess privilege.
 enable_uiaccess_manifest = "//remoting/host/win/enable_uiaccess.manifest"
+enable_uiaccess_require_admin_manifest =
+    "//remoting/host/win/enable_uiaccess_require_admin.manifest"
 
 # Depending on this target gives a default executable manifest with the addition
 # of the DPI aware tag.
@@ -57,6 +59,18 @@ windows_manifest("dpi_aware_uiaccess_exe_manifest") {
     default_compatibility_manifest,
     dpi_aware_manifest,
     enable_uiaccess_manifest,
+  ]
+  type = "exe"
+}
+
+# Depending on this target gives the executable a default manifest with the
+# addition of the DPI aware tag and enables uiAccess.
+windows_manifest("dpi_aware_uiaccess_require_admin_exe_manifest") {
+  sources = [
+    common_controls_manifest,
+    default_compatibility_manifest,
+    dpi_aware_manifest,
+    enable_uiaccess_require_admin_manifest,
   ]
   type = "exe"
 }
@@ -414,7 +428,7 @@ executable("remoting_desktop") {
   ]
 
   if (is_official_build) {
-    deps += [ ":dpi_aware_elevated_exe_manifest" ]
+    deps += [ ":dpi_aware_uiaccess_require_admin_exe_manifest" ]
   } else {
     deps += [ ":dpi_aware_exe_manifest" ]
   }
