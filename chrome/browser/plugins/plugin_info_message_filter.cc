@@ -367,7 +367,8 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
 
   if (plugin_setting == CONTENT_SETTING_DETECT_IMPORTANT_CONTENT ||
       (plugin_setting == CONTENT_SETTING_ALLOW &&
-       base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins))) {
+       base::FeatureList::IsEnabled(features::kPreferHtmlOverPlugins) &&
+       !base::FeatureList::IsEnabled(features::kRunAllFlashInAllowMode))) {
     *status = ChromeViewHostMsg_GetPluginInfo_Status::kPlayImportantContent;
   } else if (plugin_setting == CONTENT_SETTING_BLOCK) {
     // For managed users with the ASK policy, we allow manually running plugins

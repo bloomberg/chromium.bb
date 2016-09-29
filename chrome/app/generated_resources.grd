@@ -6050,6 +6050,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION" desc="Description for the NaCl Socket API feature.">
         Allows applications to use NaCl Socket API. Use only to test NaCl plugins.
       </message>
+      <message name="IDS_FLAGS_RUN_ALL_FLASH_IN_ALLOW_MODE_NAME" desc="Name for the Run all Flash in Allow mode feature.">
+        Run all Flash content when Flash setting is set to "allow"
+      </message>
+      <message name="IDS_FLAGS_RUN_ALL_FLASH_IN_ALLOW_MODE_DESCRIPTION" desc="Description for the Run all Flash in Allow mode feature.">
+        For sites that have been set to "allow" Flash content, run all content including any that has been deemed unimportant.
+      </message>
       <message name="IDS_FLAGS_PINCH_SCALE_NAME" desc="Name of the flag to turn on experiental pinch to scale.">
         Pinch scale
       </message>

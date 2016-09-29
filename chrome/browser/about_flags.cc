@@ -904,6 +904,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"allow-nacl-socket-api", IDS_FLAGS_ALLOW_NACL_SOCKET_API_NAME,
      IDS_FLAGS_ALLOW_NACL_SOCKET_API_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE_AND_VALUE(switches::kAllowNaClSocketAPI, "*")},
+    {"run-all-flash-in-allow-mode", IDS_FLAGS_RUN_ALL_FLASH_IN_ALLOW_MODE_NAME,
+     IDS_FLAGS_RUN_ALL_FLASH_IN_ALLOW_MODE_DESCRIPTION, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kRunAllFlashInAllowMode)},
 #endif  // ENABLE_PLUGINS
 #if defined(OS_CHROMEOS)
     {"mash", IDS_FLAGS_USE_MASH_NAME, IDS_FLAGS_USE_MASH_DESCRIPTION, kOsCrOS,
