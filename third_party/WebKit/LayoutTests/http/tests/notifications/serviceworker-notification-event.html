@@ -36,13 +36,15 @@
               testRunner.simulateWebNotificationClick(scope, -1 /* action_index */);
 
               workerInfo.port.addEventListener('message', function(event) {
-                  if (typeof event.data != 'boolean') {
-                      assert_unreached('Received an invalid message from the Service Worker.');
-                      return;
+                  if (typeof event.data != 'object' || typeof event.data.success != 'boolean') {
+                    assert_unreached('Received an invalid message from the Service Worker.');
+                    return;
                   }
 
                   // (3) Verify that the tests were successful in the Service Worker.
-                  assert_true(event.data);
+                  assert_true(event.data.success,
+                      'Expected tests to pass, but assertion failed:' + '\n' +
+                      event.data.message + '\n');
 
                   test.done();
               });

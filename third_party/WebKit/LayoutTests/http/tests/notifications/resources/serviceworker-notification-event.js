@@ -10,33 +10,41 @@ addEventListener('notificationclick', e => runTest(e.notification));
 
 // Test body for the serviceworker-notification-event.html layout test.
 function runTest(notification) {
-    assert_true('NotificationEvent' in self);
+    const result = {
+      success: true,
+      message: null
+    }
+    try {
+      assert_true('NotificationEvent' in self);
 
-    assert_throws(null, () => new NotificationEvent('NotificationEvent'));
-    assert_throws(null, () => new NotificationEvent('NotificationEvent', {}));
-    assert_throws(null, () => new NotificationEvent('NotificationEvent', { notification: null }));
+      assert_throws(null, () => new NotificationEvent('NotificationEvent'));
+      assert_throws(null, () => new NotificationEvent('NotificationEvent', {}));
+      assert_throws(null, () => new NotificationEvent('NotificationEvent', { notification: null }));
 
-    const event = new NotificationEvent('NotificationEvent', { notification });
+      const event = new NotificationEvent('NotificationEvent', { notification });
 
-    assert_equals(event.type, 'NotificationEvent');
-    assert_idl_attribute(event, 'notification');
-    assert_idl_attribute(event, 'action');
-    assert_equals(event.cancelable, false);
-    assert_equals(event.bubbles, false);
-    assert_equals(event.notification, notification);
-    assert_equals(event.action, '');
-    assert_inherits(event, 'waitUntil');
+      assert_equals(event.type, 'NotificationEvent');
+      assert_idl_attribute(event, 'notification');
+      assert_idl_attribute(event, 'action');
+      assert_equals(event.cancelable, false);
+      assert_equals(event.bubbles, false);
+      assert_equals(event.notification, notification);
+      assert_equals(event.action, '');
+      assert_inherits(event, 'waitUntil');
 
-    const customEvent = new NotificationEvent('NotificationEvent', {
-                            notification: notification,
-                            bubbles: true,
-                            cancelable: true });
+      const customEvent = new NotificationEvent('NotificationEvent', {
+                              notification: notification,
+                              bubbles: true,
+                              cancelable: true });
 
-    assert_equals(customEvent.type, 'NotificationEvent');
-    assert_equals(customEvent.cancelable, true);
-    assert_equals(customEvent.bubbles, true);
-    assert_equals(customEvent.notification, notification);
-
+      assert_equals(customEvent.type, 'NotificationEvent');
+      assert_equals(customEvent.cancelable, true);
+      assert_equals(customEvent.bubbles, true);
+      assert_equals(customEvent.notification, notification);
+    } catch (e) {
+      result.success = false;
+      result.message = e.message + '\n' + e.stack;
+    }
     // Signal to the document that the test has finished running.
-    messagePort.postMessage(true /* success */);
+    messagePort.postMessage(result);
 }
