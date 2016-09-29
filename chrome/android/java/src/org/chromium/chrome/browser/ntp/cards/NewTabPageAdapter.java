@@ -383,13 +383,15 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
         mGroups.remove(section);
         int removedItems = section.getItems().size();
 
-        if (mSections.isEmpty()) {
-            if (mGroups.remove(mFooter)) ++removedItems;
-            if (mGroups.remove(mBottomSpacer)) ++removedItems;
-        }
-
         notifyItemRangeRemoved(startPos, removedItems);
-        notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
+
+        if (mSections.isEmpty()) {
+            mGroups.remove(mFooter);
+            mGroups.remove(mBottomSpacer);
+            notifyItemRangeRemoved(startPos + removedItems, 2);
+        } else {
+            notifyItemChanged(getItems().size() - 1); // Refresh the spacer too.
+        }
     }
 
     @Override
@@ -521,6 +523,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder>
             if (candidateGroup == group) return positionOffset;
             positionOffset += candidateGroup.getItems().size();
         }
+        Log.d(TAG, "Group not found: %s", group);
         return RecyclerView.NO_POSITION;
     }
 

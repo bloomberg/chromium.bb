@@ -274,8 +274,10 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * @return The {@code ViewHolder} of the header, or null if it is not present.
      */
     private SectionHeaderViewHolder findFirstHeader() {
-        ViewHolder viewHolder =
-                findViewHolderForAdapterPosition(getNewTabPageAdapter().getFirstHeaderPosition());
+        int firstHeaderPosition = getNewTabPageAdapter().getFirstHeaderPosition();
+        if (firstHeaderPosition == RecyclerView.NO_POSITION) return null;
+
+        ViewHolder viewHolder = findViewHolderForAdapterPosition(firstHeaderPosition);
         if (!(viewHolder instanceof SectionHeaderViewHolder)) return null;
 
         return (SectionHeaderViewHolder) viewHolder;
@@ -286,8 +288,10 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * @return The {@code ViewHolder} for the first card, or null if it is not present.
      */
     private CardViewHolder findFirstCard() {
-        ViewHolder viewHolder =
-                findViewHolderForAdapterPosition(getNewTabPageAdapter().getFirstCardPosition());
+        int firstCardPosition = getNewTabPageAdapter().getFirstCardPosition();
+        if (firstCardPosition == RecyclerView.NO_POSITION) return null;
+
+        ViewHolder viewHolder = findViewHolderForAdapterPosition(firstCardPosition);
         if (!(viewHolder instanceof CardViewHolder)) return null;
 
         return (CardViewHolder) viewHolder;
@@ -298,8 +302,10 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * @return The {@code ViewHolder} of the last content item, or null if it is not present.
      */
     private ViewHolder findLastContentItem() {
-        ViewHolder viewHolder = findViewHolderForAdapterPosition(
-                getNewTabPageAdapter().getLastContentItemPosition());
+        int lastContentItemPosition = getNewTabPageAdapter().getLastContentItemPosition();
+        if (lastContentItemPosition == RecyclerView.NO_POSITION) return null;
+
+        ViewHolder viewHolder = findViewHolderForAdapterPosition(lastContentItemPosition);
         if (viewHolder instanceof Footer.ViewHolder) return viewHolder;
 
         return null;
@@ -310,7 +316,10 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * @return The {@code ViewHolder} of the bottom spacer, or null if it is not present.
      */
     private ViewHolder findBottomSpacer() {
-        return findViewHolderForAdapterPosition(getNewTabPageAdapter().getBottomSpacerPosition());
+        int bottomSpacerPosition = getNewTabPageAdapter().getBottomSpacerPosition();
+        if (bottomSpacerPosition == RecyclerView.NO_POSITION) return null;
+
+        return findViewHolderForAdapterPosition(bottomSpacerPosition);
     }
 
     /**
@@ -318,8 +327,10 @@ public class NewTabPageRecyclerView extends RecyclerView {
      * @return The View for above the fold or null, if it is not present.
      */
     public NewTabPageLayout findAboveTheFoldView() {
-        ViewHolder viewHolder =
-                findViewHolderForAdapterPosition(getNewTabPageAdapter().getAboveTheFoldPosition());
+        int aboveTheFoldPosition = getNewTabPageAdapter().getAboveTheFoldPosition();
+        if (aboveTheFoldPosition == RecyclerView.NO_POSITION) return null;
+
+        ViewHolder viewHolder = findViewHolderForAdapterPosition(aboveTheFoldPosition);
         if (viewHolder == null) return null;
 
         View view = viewHolder.itemView;
