@@ -612,7 +612,7 @@ bool MediaControlsPainter::paintMediaOverflowMenu(const LayoutObject& object, co
         return false;
 
     static Image* mediaOverflowButton = platformResource("mediaplayerOverflowMenu");
-    return paintMediaButton(paintInfo.context, rect, mediaOverflowButton);
+    return paintMediaButton(paintInfo.context, rect, mediaOverflowButton, &object, true);
 }
 
 bool MediaControlsPainter::paintMediaDownloadIcon(const LayoutObject& object, const PaintInfo& paintInfo, const IntRect& rect)
@@ -621,8 +621,10 @@ bool MediaControlsPainter::paintMediaDownloadIcon(const LayoutObject& object, co
     if (!mediaElement)
         return false;
 
+    bool isEnabled = hasSource(mediaElement);
+
     static Image* mediaDownloadIcon = platformResource("mediaplayerDownloadIcon");
-    return paintMediaButton(paintInfo.context, rect, mediaDownloadIcon);
+    return paintMediaButton(paintInfo.context, rect, mediaDownloadIcon, &object, isEnabled);
 }
 
 void MediaControlsPainter::adjustMediaSliderThumbSize(ComputedStyle& style)
