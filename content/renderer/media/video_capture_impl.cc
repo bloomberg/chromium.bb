@@ -448,8 +448,9 @@ void VideoCaptureImpl::OnStateChanged(VideoCaptureState state) {
         RestartCapture();
       break;
     case VIDEO_CAPTURE_STATE_PAUSED:
+    case VIDEO_CAPTURE_STATE_RESUMED:
       for (const auto& client : clients_)
-        client.second.state_update_cb.Run(VIDEO_CAPTURE_STATE_PAUSED);
+        client.second.state_update_cb.Run(state);
       break;
     case VIDEO_CAPTURE_STATE_ERROR:
       DVLOG(1) << "OnStateChanged: error!, device_id = " << device_id_;

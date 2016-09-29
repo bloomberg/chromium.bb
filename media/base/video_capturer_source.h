@@ -81,10 +81,33 @@ class MEDIA_EXPORT VideoCapturerSource {
   // the screen's content has not changed in a while), consumers may request a
   // "refresh frame" to be delivered. For instance, this would be needed when
   // a new sink is added to a MediaStreamTrack.
+  //
   // The default implementation is a no-op and implementations are not required
   // to honor this request. If they decide to and capturing is started
   // successfully, then |new_frame_callback| should be called with a frame.
+  //
+  // Note: This should only be called after StartCapture() and before
+  // StopCapture(). Otherwise, its behavior is undefined.
   virtual void RequestRefreshFrame() {}
+
+  // Optionally suspends frame delivery. The source may or may not honor this
+  // request. Thus, the caller cannot assume frame delivery will actually
+  // stop. Even if frame delivery is suspended, this might not take effect
+  // immediately.
+  //
+  // The purpose of this is to allow minimizing resource usage while
+  // there are no frame consumers present.
+  //
+  // Note: This should only be called after StartCapture() and before
+  // StopCapture(). Otherwise, its behavior is undefined.
+  virtual void MaybeSuspend() {}
+
+  // Resumes frame delivery, if it was suspended. If frame delivery was not
+  // suspended, this is a no-op, and frame delivery will continue.
+  //
+  // Note: This should only be called after StartCapture() and before
+  // StopCapture(). Otherwise, its behavior is undefined.
+  virtual void Resume() {}
 
   // Stops capturing frames and clears all callbacks including the
   // SupportedFormatsCallback callback. Note that queued frame callbacks

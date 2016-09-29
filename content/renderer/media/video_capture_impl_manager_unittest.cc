@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <array>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/child/child_process.h"
+#include "content/common/media/video_capture_messages.h"
 #include "content/renderer/media/video_capture_impl.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
@@ -27,18 +31,55 @@ ACTION_P(RunClosure, closure) {
   closure.Run();
 }
 
+namespace {
+
+// Callback interface to be implemented by
+// VideoCaptureImplManagerTest. MockVideoCaptureImpl intercepts IPC messages and
+// calls these methods to simulate what the VideoCaptureHost would do.
+class PauseResumeCallback {
+ public:
+  PauseResumeCallback() {}
+  virtual ~PauseResumeCallback() {}
+
+  virtual void OnPaused(media::VideoCaptureSessionId session_id) = 0;
+  virtual void OnResumed(media::VideoCaptureSessionId session_id) = 0;
+};
+
 class MockVideoCaptureImpl : public VideoCaptureImpl {
  public:
   MockVideoCaptureImpl(media::VideoCaptureSessionId session_id,
                        VideoCaptureMessageFilter* filter,
+                       PauseResumeCallback* pause_callback,
                        base::Closure destruct_callback)
       : VideoCaptureImpl(session_id, filter),
-        destruct_callback_(destruct_callback) {
+        pause_callback_(pause_callback), destruct_callback_(destruct_callback) {
   }
 
   ~MockVideoCaptureImpl() override { destruct_callback_.Run(); }
 
+  void Send(IPC::Message* message) override {
+    IPC_BEGIN_MESSAGE_MAP(MockVideoCaptureImpl, *message)
+      IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Pause, DevicePauseCapture)
+      IPC_MESSAGE_HANDLER(VideoCaptureHostMsg_Resume, DeviceResumeCapture)
+      default:
+        VideoCaptureImpl::Send(message);
+        return;
+    IPC_END_MESSAGE_MAP()
+    delete message;
+  }
+
  private:
+  void DevicePauseCapture(int device_id) {
+    pause_callback_->OnPaused(session_id());
+  }
+
+  void DeviceResumeCapture(int device_id,
+                           media::VideoCaptureSessionId session_id,
+                           const media::VideoCaptureParams& params) {
+    pause_callback_->OnResumed(session_id);
+  }
+
+  PauseResumeCallback* const pause_callback_;
   base::Closure destruct_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureImpl);
@@ -46,32 +87,36 @@ class MockVideoCaptureImpl : public VideoCaptureImpl {
 
 class MockVideoCaptureImplManager : public VideoCaptureImplManager {
  public:
-  explicit MockVideoCaptureImplManager(
-      base::Closure destruct_video_capture_callback)
-      : destruct_video_capture_callback_(
+  MockVideoCaptureImplManager(PauseResumeCallback* pause_callback,
+                              base::Closure destruct_video_capture_callback)
+      : pause_callback_(pause_callback),
+        destruct_video_capture_callback_(
           destruct_video_capture_callback) {}
   ~MockVideoCaptureImplManager() override {}
 
  protected:
-  VideoCaptureImpl* CreateVideoCaptureImplForTesting(
+  std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
       media::VideoCaptureSessionId id,
       VideoCaptureMessageFilter* filter) const override {
-    return new MockVideoCaptureImpl(id,
-                                    filter,
-                                    destruct_video_capture_callback_);
+    return base::MakeUnique<MockVideoCaptureImpl>(
+        id, filter, pause_callback_, destruct_video_capture_callback_);
   }
 
  private:
+  PauseResumeCallback* const pause_callback_;
   base::Closure destruct_video_capture_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MockVideoCaptureImplManager);
 };
 
-class VideoCaptureImplManagerTest : public ::testing::Test {
+}  // namespace
+
+class VideoCaptureImplManagerTest
+    : public ::testing::Test, public PauseResumeCallback {
  public:
   VideoCaptureImplManagerTest()
       : manager_(new MockVideoCaptureImplManager(
-          BindToCurrentLoop(cleanup_run_loop_.QuitClosure()))) {
+            this, BindToCurrentLoop(cleanup_run_loop_.QuitClosure()))) {
     params_.requested_format = media::VideoCaptureFormat(
         gfx::Size(176, 144), 30, media::PIXEL_FORMAT_I420);
     child_process_.reset(new ChildProcess());
@@ -90,29 +135,65 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
   }
 
  protected:
+  static constexpr size_t kNumClients = 3;
+
+  std::array<base::Closure, kNumClients> StartCaptureForAllClients(
+      bool same_session_id) {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+    EXPECT_CALL(*this, OnStarted(_)).Times(kNumClients - 1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*this, OnStarted(_)).WillOnce(RunClosure(quit_closure))
+        .RetiresOnSaturation();
+    std::array<base::Closure, kNumClients> stop_callbacks;
+    for (size_t i = 0; i < kNumClients; ++i)
+      stop_callbacks[i] = StartCapture(
+          same_session_id ? 0 : static_cast<media::VideoCaptureSessionId>(i),
+          params_);
+    FakeChannelSetup();
+    run_loop.Run();
+    return stop_callbacks;
+  }
+
+  void StopCaptureForAllClients(
+      std::array<base::Closure, kNumClients>* stop_callbacks) {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+    EXPECT_CALL(*this, OnStopped(_)).Times(kNumClients - 1)
+        .RetiresOnSaturation();
+    EXPECT_CALL(*this, OnStopped(_)).WillOnce(RunClosure(quit_closure))
+        .RetiresOnSaturation();
+    for (size_t i = 0; i < kNumClients; ++i)
+      (*stop_callbacks)[i].Run();
+    run_loop.Run();
+  }
+
   MOCK_METHOD2(OnFrameReady,
                void(const scoped_refptr<media::VideoFrame>&,
                     base::TimeTicks estimated_capture_time));
-  MOCK_METHOD0(OnStarted, void());
-  MOCK_METHOD0(OnStopped, void());
+  MOCK_METHOD1(OnStarted, void(media::VideoCaptureSessionId id));
+  MOCK_METHOD1(OnStopped, void(media::VideoCaptureSessionId id));
+  MOCK_METHOD1(OnPaused, void(media::VideoCaptureSessionId id));
+  MOCK_METHOD1(OnResumed, void(media::VideoCaptureSessionId id));
 
-  void OnStateUpdate(VideoCaptureState state) {
+  void OnStateUpdate(media::VideoCaptureSessionId id, VideoCaptureState state) {
     switch (state) {
       case VIDEO_CAPTURE_STATE_STARTED:
-        OnStarted();
+        OnStarted(id);
         break;
       case VIDEO_CAPTURE_STATE_STOPPED:
-        OnStopped();
+        OnStopped(id);
         break;
       default:
         NOTREACHED();
     }
   }
 
-  base::Closure StartCapture(const media::VideoCaptureParams& params) {
+  base::Closure StartCapture(media::VideoCaptureSessionId id,
+                             const media::VideoCaptureParams& params) {
     return manager_->StartCapture(
-        0, params, base::Bind(&VideoCaptureImplManagerTest::OnStateUpdate,
-                              base::Unretained(this)),
+        id, params, base::Bind(&VideoCaptureImplManagerTest::OnStateUpdate,
+                               base::Unretained(this), id),
         base::Bind(&VideoCaptureImplManagerTest::OnFrameReady,
                    base::Unretained(this)));
   }
@@ -130,38 +211,102 @@ class VideoCaptureImplManagerTest : public ::testing::Test {
 // Multiple clients with the same session id. There is only one
 // media::VideoCapture object.
 TEST_F(VideoCaptureImplManagerTest, MultipleClients) {
-  base::Closure release_cb1 = manager_->UseDevice(0);
-  base::Closure release_cb2 = manager_->UseDevice(0);
-  base::Closure stop_cb1, stop_cb2;
-  {
-    base::RunLoop run_loop;
-    base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
-    EXPECT_CALL(*this, OnStarted()).WillOnce(RunClosure(quit_closure));
-    EXPECT_CALL(*this, OnStarted()).RetiresOnSaturation();
-    stop_cb1 = StartCapture(params_);
-    stop_cb2 = StartCapture(params_);
-    FakeChannelSetup();
-    run_loop.Run();
-  }
-
-  {
-    base::RunLoop run_loop;
-    base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
-    EXPECT_CALL(*this, OnStopped()).WillOnce(RunClosure(quit_closure));
-    EXPECT_CALL(*this, OnStopped()).RetiresOnSaturation();
-    stop_cb1.Run();
-    stop_cb2.Run();
-    run_loop.Run();
-  }
-
-  release_cb1.Run();
-  release_cb2.Run();
+  std::array<base::Closure, kNumClients> release_callbacks;
+  for (size_t i = 0; i < kNumClients; ++i)
+    release_callbacks[i] = manager_->UseDevice(0);
+  std::array<base::Closure, kNumClients> stop_callbacks =
+      StartCaptureForAllClients(true);
+  StopCaptureForAllClients(&stop_callbacks);
+  for (size_t i = 0; i < kNumClients; ++i)
+    release_callbacks[i].Run();
   cleanup_run_loop_.Run();
 }
 
 TEST_F(VideoCaptureImplManagerTest, NoLeak) {
   manager_->UseDevice(0).Reset();
   manager_.reset();
+  cleanup_run_loop_.Run();
+}
+
+TEST_F(VideoCaptureImplManagerTest, SuspendAndResumeSessions) {
+  std::array<base::Closure, kNumClients> release_callbacks;
+  for (size_t i = 0; i < kNumClients; ++i) {
+    release_callbacks[i] =
+        manager_->UseDevice(static_cast<media::VideoCaptureSessionId>(i));
+  }
+  std::array<base::Closure, kNumClients> stop_callbacks =
+      StartCaptureForAllClients(false);
+
+  // Call SuspendDevices(true) to suspend all clients, and expect all to be
+  // paused.
+  {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+    EXPECT_CALL(*this, OnPaused(0)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*this, OnPaused(1)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*this, OnPaused(2)).WillOnce(RunClosure(quit_closure))
+        .RetiresOnSaturation();
+    manager_->SuspendDevices(true);
+    run_loop.Run();
+  }
+
+  // Call SuspendDevices(false) and expect all to be resumed.
+  {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+    EXPECT_CALL(*this, OnResumed(0)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*this, OnResumed(1)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*this, OnResumed(2)).WillOnce(RunClosure(quit_closure))
+        .RetiresOnSaturation();
+    manager_->SuspendDevices(false);
+    run_loop.Run();
+  }
+
+  // Suspend just the first client and expect just the first client to be
+  // paused.
+  {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+    EXPECT_CALL(*this, OnPaused(0)).WillOnce(RunClosure(quit_closure))
+        .RetiresOnSaturation();
+    manager_->Suspend(0);
+    run_loop.Run();
+  }
+
+  // Now call SuspendDevices(true) again, and expect just the second and third
+  // clients to be paused.
+  {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+    EXPECT_CALL(*this, OnPaused(1)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*this, OnPaused(2)).WillOnce(RunClosure(quit_closure))
+        .RetiresOnSaturation();
+    manager_->SuspendDevices(true);
+    run_loop.Run();
+  }
+
+  // Resume just the first client, but it should not resume because all devices
+  // are supposed to be suspended.
+  {
+    manager_->Resume(0);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // Now, call SuspendDevices(false) and expect all to be resumed.
+  {
+    base::RunLoop run_loop;
+    base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
+    EXPECT_CALL(*this, OnResumed(0)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*this, OnResumed(1)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*this, OnResumed(2)).WillOnce(RunClosure(quit_closure))
+        .RetiresOnSaturation();
+    manager_->SuspendDevices(false);
+    run_loop.Run();
+  }
+
+  StopCaptureForAllClients(&stop_callbacks);
+  for (size_t i = 0; i < kNumClients; ++i)
+    release_callbacks[i].Run();
   cleanup_run_loop_.Run();
 }
 

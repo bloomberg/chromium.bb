@@ -87,6 +87,10 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   media::VideoCaptureSessionId session_id() const { return session_id_; }
 
+ protected:
+  // Note: Overridden only by unit test subclasses.
+  virtual void Send(IPC::Message* message);
+
  private:
   friend class VideoCaptureImplTest;
   friend class MockVideoCaptureImpl;
@@ -148,8 +152,6 @@ class CONTENT_EXPORT VideoCaptureImpl
   void StopDevice();
   void RestartCapture();
   void StartCaptureInternal();
-
-  virtual void Send(IPC::Message* message);
 
   // Helpers.
   bool RemoveClient(int client_id, ClientInfoMap* clients);

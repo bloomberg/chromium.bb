@@ -252,11 +252,12 @@ void MediaStreamVideoTrack::AddSink(MediaStreamVideoSink* sink,
   frame_deliverer_->AddCallback(sink, callback);
   secure_tracker_.Add(sink, is_sink_secure);
   // Request source to deliver a frame because a new sink is added.
-  if (source_) {
-    source_->RequestRefreshFrame();
-    source_->UpdateCapturingLinkSecure(this,
-                                       secure_tracker_.is_capturing_secure());
-  }
+  if (!source_)
+    return;
+  source_->UpdateHasConsumers(this, true);
+  source_->RequestRefreshFrame();
+  source_->UpdateCapturingLinkSecure(this,
+                                     secure_tracker_.is_capturing_secure());
 }
 
 void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
@@ -267,9 +268,12 @@ void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {
   sinks_.erase(it);
   frame_deliverer_->RemoveCallback(sink);
   secure_tracker_.Remove(sink);
-  if (source_)
-    source_->UpdateCapturingLinkSecure(this,
-                                       secure_tracker_.is_capturing_secure());
+  if (!source_)
+    return;
+  if (sinks_.empty())
+    source_->UpdateHasConsumers(this, false);
+  source_->UpdateCapturingLinkSecure(this,
+                                     secure_tracker_.is_capturing_secure());
 }
 
 void MediaStreamVideoTrack::SetEnabled(bool enabled) {

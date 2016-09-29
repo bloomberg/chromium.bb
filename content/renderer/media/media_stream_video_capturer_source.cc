@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/stack_trace.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -212,6 +213,8 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
                     const VideoCaptureDeliverFrameCB& new_frame_callback,
                     const RunningCallback& running_callback) override;
   void RequestRefreshFrame() override;
+  void MaybeSuspend() override;
+  void Resume() override;
   void StopCapture() override;
 
  private:
@@ -230,9 +233,12 @@ class LocalVideoCapturerSource final : public media::VideoCapturerSource {
   // Indicates if we are capturing generated content, e.g. Tab or Desktop.
   const bool is_content_capture_;
 
-  // These two are valid between StartCapture() and StopCapture().
-  base::Closure stop_capture_cb_;
+  // This is run once to report whether the device was successfully started
+  // after a call to StartCapture().
   RunningCallback running_callback_;
+
+  // This is valid between StartCapture() and StopCapture().
+  base::Closure stop_capture_cb_;
 
   // Placeholder keeping the callback between asynchronous device enumeration
   // calls.
@@ -319,6 +325,18 @@ void LocalVideoCapturerSource::RequestRefreshFrame() {
   manager_->RequestRefreshFrame(session_id_);
 }
 
+void LocalVideoCapturerSource::MaybeSuspend() {
+  DVLOG(3) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  manager_->Suspend(session_id_);
+}
+
+void LocalVideoCapturerSource::Resume() {
+  DVLOG(3) << __func__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  manager_->Resume(session_id_);
+}
+
 void LocalVideoCapturerSource::StopCapture() {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -335,10 +353,24 @@ void LocalVideoCapturerSource::OnStateUpdate(VideoCaptureState state) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (running_callback_.is_null())
     return;
-  const bool is_started_ok = state == VIDEO_CAPTURE_STATE_STARTED;
-  running_callback_.Run(is_started_ok);
-  if (!is_started_ok)
-    running_callback_.Reset();
+  switch (state) {
+    case VIDEO_CAPTURE_STATE_STARTED:
+      base::ResetAndReturn(&running_callback_).Run(true);
+      break;
+
+    case VIDEO_CAPTURE_STATE_STOPPING:
+    case VIDEO_CAPTURE_STATE_STOPPED:
+    case VIDEO_CAPTURE_STATE_ERROR:
+    case VIDEO_CAPTURE_STATE_ENDED:
+      base::ResetAndReturn(&running_callback_).Run(false);
+      break;
+
+    case VIDEO_CAPTURE_STATE_STARTING:
+    case VIDEO_CAPTURE_STATE_PAUSED:
+    case VIDEO_CAPTURE_STATE_RESUMED:
+      // Not applicable to reporting on device start success/failure.
+      break;
+  }
 }
 
 void LocalVideoCapturerSource::OnDeviceFormatsInUseReceived(
@@ -414,7 +446,14 @@ void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
   source_->RequestRefreshFrame();
 }
 
-void MediaStreamVideoCapturerSource::SetCapturingLinkSecured(bool is_secure) {
+void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
+  if (has_consumers)
+    source_->Resume();
+  else
+    source_->MaybeSuspend();
+}
+
+void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
   Send(new MediaStreamHostMsg_SetCapturingLinkSecured(
       device_info().session_id, device_info().device.type, is_secure));
 }

@@ -71,13 +71,14 @@ class CONTENT_EXPORT MediaStreamVideoSource
                 const ConstraintsCallback& callback);
   void RemoveTrack(MediaStreamVideoTrack* track);
 
+  // Called by |track| to notify the source whether it has any paths to a
+  // consuming endpoint.
+  void UpdateHasConsumers(MediaStreamVideoTrack* track, bool has_consumers);
+
   void UpdateCapturingLinkSecure(MediaStreamVideoTrack* track, bool is_secure);
 
   // Request underlying source to capture a new frame.
   virtual void RequestRefreshFrame() {}
-
-  // Notify underlying source if the capturing link is secure.
-  virtual void SetCapturingLinkSecured(bool is_secure) {}
 
   // Returns the task runner where video frames will be delivered on.
   base::SingleThreadTaskRunner* io_task_runner() const;
@@ -125,6 +126,16 @@ class CONTENT_EXPORT MediaStreamVideoSource
   // call OnSupportedFormats after this method has been called. After this
   // method has been called, MediaStreamVideoSource may be deleted.
   virtual void StopSourceImpl() = 0;
+
+  // Optionally overridden by subclasses to act on whether there are any
+  // consumers present. When none are present, the source can stop delivering
+  // frames, giving it the option of running in an "idle" state to minimize
+  // resource usage.
+  virtual void OnHasConsumers(bool has_consumers) {}
+
+  // Optionally overridden by subclasses to act on whether the capturing link
+  // has become secure or insecure.
+  virtual void OnCapturingLinkSecured(bool is_secure) {}
 
   enum State {
     NEW,
@@ -182,6 +193,10 @@ class CONTENT_EXPORT MediaStreamVideoSource
 
   // Tracks that currently are connected to this source.
   std::vector<MediaStreamVideoTrack*> tracks_;
+
+  // Tracks that have no paths to a consuming endpoint, and so do not need
+  // frames delivered from the source. This is a subset of |tracks_|.
+  std::vector<MediaStreamVideoTrack*> suspended_tracks_;
 
   // This is used for tracking if all connected video sinks are secure.
   SecureDisplayLinkTracker<MediaStreamVideoTrack> secure_tracker_;

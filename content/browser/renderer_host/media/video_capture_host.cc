@@ -237,13 +237,12 @@ void VideoCaptureHost::OnPauseCapture(int device_id) {
 
   VideoCaptureControllerID controller_id(device_id);
   EntryMap::iterator it = entries_.find(controller_id);
-  if (it == entries_.end())
+  if (it == entries_.end() || !it->second)
     return;
 
-  if (it->second) {
-    media_stream_manager_->video_capture_manager()->PauseCaptureForClient(
-        it->second.get(), controller_id, this);
-  }
+  media_stream_manager_->video_capture_manager()->PauseCaptureForClient(
+      it->second.get(), controller_id, this);
+  Send(new VideoCaptureMsg_StateChanged(device_id, VIDEO_CAPTURE_STATE_PAUSED));
 }
 
 void VideoCaptureHost::OnResumeCapture(
@@ -255,13 +254,13 @@ void VideoCaptureHost::OnResumeCapture(
 
   VideoCaptureControllerID controller_id(device_id);
   EntryMap::iterator it = entries_.find(controller_id);
-  if (it == entries_.end())
+  if (it == entries_.end() || !it->second)
     return;
 
-  if (it->second) {
-    media_stream_manager_->video_capture_manager()->ResumeCaptureForClient(
-        session_id, params, it->second.get(), controller_id, this);
-  }
+  media_stream_manager_->video_capture_manager()->ResumeCaptureForClient(
+      session_id, params, it->second.get(), controller_id, this);
+  Send(new VideoCaptureMsg_StateChanged(device_id,
+                                        VIDEO_CAPTURE_STATE_RESUMED));
 }
 
 void VideoCaptureHost::OnRequestRefreshFrame(int device_id) {

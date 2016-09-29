@@ -739,11 +739,20 @@ void VideoCaptureManager::PauseCaptureForClient(
   if (!entry)
     NOTREACHED() << "Got Null entry while pausing capture";
 
-  // Do not pause Content Video Capture devices, e.g. Tab or Screen capture.
-  if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
-    return;
-
+  const bool had_active_client = controller->HasActiveClient();
   controller->PauseClient(client_id, client_handler);
+  if (!had_active_client || controller->HasActiveClient())
+    return;
+  if (media::VideoCaptureDevice* device = entry->video_capture_device()) {
+    device_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&VideoCaptureDevice::MaybeSuspend,
+                   // Unretained is safe to use here because |device| would be
+                   // null if it was scheduled for shutdown and destruction, and
+                   // because this task is guaranteed to run before the task
+                   // that destroys the |device|.
+                   base::Unretained(device)));
+  }
 }
 
 void VideoCaptureManager::ResumeCaptureForClient(
@@ -760,11 +769,20 @@ void VideoCaptureManager::ResumeCaptureForClient(
   if (!entry)
     NOTREACHED() << "Got Null entry while resuming capture";
 
-  // Do not resume Content Video Capture devices, e.g. Tab or Screen capture.
-  if (entry->stream_type != MEDIA_DEVICE_VIDEO_CAPTURE)
-    return;
-
+  const bool had_active_client = controller->HasActiveClient();
   controller->ResumeClient(client_id, client_handler);
+  if (had_active_client || !controller->HasActiveClient())
+    return;
+  if (media::VideoCaptureDevice* device = entry->video_capture_device()) {
+    device_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&VideoCaptureDevice::Resume,
+                   // Unretained is safe to use here because |device| would be
+                   // null if it was scheduled for shutdown and destruction, and
+                   // because this task is guaranteed to run before the task
+                   // that destroys the |device|.
+                   base::Unretained(device)));
+  }
 }
 
 void VideoCaptureManager::RequestRefreshFrameForClient(

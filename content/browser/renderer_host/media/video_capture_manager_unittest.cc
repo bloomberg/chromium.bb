@@ -8,11 +8,14 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
@@ -32,6 +35,91 @@ using ::testing::Return;
 using ::testing::SaveArg;
 
 namespace content {
+
+namespace {
+
+// Wraps FakeVideoCaptureDeviceFactory to allow mocking of the
+// VideoCaptureDevice MaybeSuspend() and Resume() methods. This is used to check
+// that devices are asked to suspend or resume at the correct times.
+class WrappedDeviceFactory : public media::FakeVideoCaptureDeviceFactory {
+ public:
+  class WrappedDevice : public media::VideoCaptureDevice {
+   public:
+    WrappedDevice(std::unique_ptr<media::VideoCaptureDevice> device,
+                  WrappedDeviceFactory* factory)
+        : device_(std::move(device)), factory_(factory) {
+      factory_->OnDeviceCreated(this);
+    }
+
+    ~WrappedDevice() final {
+      factory_->OnDeviceDestroyed(this);
+    }
+
+    void AllocateAndStart(const media::VideoCaptureParams& params,
+                          std::unique_ptr<Client> client) final {
+      device_->AllocateAndStart(params, std::move(client));
+    }
+
+    void RequestRefreshFrame() final {
+      device_->RequestRefreshFrame();
+    }
+
+    void MaybeSuspend() final {
+      factory_->WillSuspendDevice();
+      device_->MaybeSuspend();
+    }
+
+    void Resume() final {
+      factory_->WillResumeDevice();
+      device_->Resume();
+    }
+
+    void StopAndDeAllocate() final {
+      device_->StopAndDeAllocate();
+    }
+
+    void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) final {
+      device_->GetPhotoCapabilities(std::move(callback));
+    }
+
+    void TakePhoto(TakePhotoCallback callback) final {
+      device_->TakePhoto(std::move(callback));
+    }
+
+   private:
+    const std::unique_ptr<media::VideoCaptureDevice> device_;
+    WrappedDeviceFactory* const factory_;
+
+    DISALLOW_COPY_AND_ASSIGN(WrappedDevice);
+  };
+
+  WrappedDeviceFactory() : FakeVideoCaptureDeviceFactory() {}
+  ~WrappedDeviceFactory() final {}
+
+  std::unique_ptr<media::VideoCaptureDevice> CreateDevice(
+      const media::VideoCaptureDeviceDescriptor& device_descriptor) final {
+    return base::MakeUnique<WrappedDevice>(
+        FakeVideoCaptureDeviceFactory::CreateDevice(device_descriptor), this);
+  }
+
+  MOCK_METHOD0(WillSuspendDevice, void());
+  MOCK_METHOD0(WillResumeDevice, void());
+
+ private:
+  void OnDeviceCreated(WrappedDevice* device) {
+    devices_.push_back(device);
+  }
+
+  void OnDeviceDestroyed(WrappedDevice* device) {
+    const auto it = std::find(devices_.begin(), devices_.end(), device);
+    CHECK(it != devices_.end());
+    devices_.erase(it);
+  }
+
+  std::vector<WrappedDevice*> devices_;
+
+  DISALLOW_COPY_AND_ASSIGN(WrappedDeviceFactory);
+};
 
 // Listener class used to track progress of VideoCaptureManager test.
 class MockMediaStreamProviderListener : public MediaStreamProviderListener {
@@ -65,6 +153,8 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
   void OnGotControllerCallback(VideoCaptureControllerID) {}
 };
 
+}  // namespace
+
 // Test class
 class VideoCaptureManagerTest : public testing::Test {
  public:
@@ -93,10 +183,9 @@ class VideoCaptureManagerTest : public testing::Test {
                                            message_loop_.get()));
     vcm_ = new VideoCaptureManager(
         std::unique_ptr<media::VideoCaptureDeviceFactory>(
-            new media::FakeVideoCaptureDeviceFactory()));
-    video_capture_device_factory_ =
-        static_cast<media::FakeVideoCaptureDeviceFactory*>(
-            vcm_->video_capture_device_factory());
+            new WrappedDeviceFactory()));
+    video_capture_device_factory_ = static_cast<WrappedDeviceFactory*>(
+        vcm_->video_capture_device_factory());
     const int32_t kNumberOfFakeDevices = 2;
     video_capture_device_factory_->set_number_of_devices(kNumberOfFakeDevices);
     vcm_->Register(listener_.get(), message_loop_->task_runner().get());
@@ -114,7 +203,6 @@ class VideoCaptureManagerTest : public testing::Test {
 
   void OnGotControllerCallback(
       VideoCaptureControllerID id,
-      base::Closure quit_closure,
       bool expect_success,
       const base::WeakPtr<VideoCaptureController>& controller) {
     if (expect_success) {
@@ -124,7 +212,6 @@ class VideoCaptureManagerTest : public testing::Test {
     } else {
       ASSERT_FALSE(controller);
     }
-    quit_closure.Run();
   }
 
   VideoCaptureControllerID StartClient(int session_id, bool expect_success) {
@@ -133,7 +220,6 @@ class VideoCaptureManagerTest : public testing::Test {
         gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
 
     VideoCaptureControllerID client_id(next_client_id_++);
-    base::RunLoop run_loop;
     vcm_->StartCaptureForClient(
         session_id,
         params,
@@ -143,9 +229,8 @@ class VideoCaptureManagerTest : public testing::Test {
         base::Bind(&VideoCaptureManagerTest::OnGotControllerCallback,
                    base::Unretained(this),
                    client_id,
-                   run_loop.QuitClosure(),
                    expect_success));
-    run_loop.Run();
+    base::RunLoop().RunUntilIdle();
     return client_id;
   }
 
@@ -161,19 +246,22 @@ class VideoCaptureManagerTest : public testing::Test {
     media::VideoCaptureParams params;
     params.requested_format = media::VideoCaptureFormat(
         gfx::Size(320, 240), 30, media::PIXEL_FORMAT_I420);
-
     vcm_->ResumeCaptureForClient(
         session_id,
         params,
         controllers_[client_id],
         client_id,
         frame_observer_.get());
+    // Allow possible VideoCaptureDevice::Resume() task to run.
+    base::RunLoop().RunUntilIdle();
   }
 
   void PauseClient(VideoCaptureControllerID client_id) {
     ASSERT_EQ(1u, controllers_.count(client_id));
     vcm_->PauseCaptureForClient(controllers_[client_id], client_id,
-                               frame_observer_.get());
+                                frame_observer_.get());
+    // Allow possible VideoCaptureDevice::MaybeSuspend() task to run.
+    base::RunLoop().RunUntilIdle();
   }
 
 #if defined(OS_ANDROID)
@@ -190,7 +278,7 @@ class VideoCaptureManagerTest : public testing::Test {
   std::unique_ptr<BrowserThreadImpl> ui_thread_;
   std::unique_ptr<BrowserThreadImpl> io_thread_;
   std::unique_ptr<MockFrameObserver> frame_observer_;
-  media::FakeVideoCaptureDeviceFactory* video_capture_device_factory_;
+  WrappedDeviceFactory* video_capture_device_factory_;
   StreamDeviceInfoArray devices_;
 
  private:
@@ -476,21 +564,38 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
   vcm_->Unregister();
 }
 
-// Try to open, start, pause and resume a device.
+// Try to open, start, pause and resume a device. Confirm the device is
+// paused/resumed at the correct times in both single-client and multiple-client
+// scenarios.
 TEST_F(VideoCaptureManagerTest, PauseAndResumeClient) {
-  InSequence s;
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
-  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 
-  int video_session_id = vcm_->Open(devices_.front());
-  VideoCaptureControllerID client_id = StartClient(video_session_id, true);
+  const int video_session_id = vcm_->Open(devices_.front());
+  const VideoCaptureControllerID client_id =
+      StartClient(video_session_id, true);
 
-  // Resume client a second time should cause no problem.
+  // Test pause/resume when only one client is present.
+  EXPECT_CALL(*video_capture_device_factory_, WillSuspendDevice()).Times(1);
   PauseClient(client_id);
+  EXPECT_CALL(*video_capture_device_factory_, WillResumeDevice()).Times(1);
   ResumeClient(video_session_id, client_id);
+
+  // Attempting to resume the client a second time should not cause any calls to
+  // VideoCaptureDevice::Resume().
+  ResumeClient(video_session_id, client_id);
+
+  // Add a second client that is never paused, then pause/resume the first
+  // client, and no calls to VideoCaptureDevice::MaybeSuspend() or Resume() are
+  // made.
+  const VideoCaptureControllerID client_id2 =
+      StartClient(video_session_id, true);
+  PauseClient(client_id);
   ResumeClient(video_session_id, client_id);
 
   StopClient(client_id);
+  StopClient(client_id2);
+
+  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
   vcm_->Close(video_session_id);
 
   // Wait to check callbacks before removing the listener.

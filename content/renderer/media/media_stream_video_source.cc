@@ -393,11 +393,26 @@ void MediaStreamVideoSource::RemoveTrack(MediaStreamVideoTrack* video_track) {
     StopSource();
 }
 
+void MediaStreamVideoSource::UpdateHasConsumers(MediaStreamVideoTrack* track,
+                                                bool has_consumers) {
+  DCHECK(CalledOnValidThread());
+  const auto it =
+      std::find(suspended_tracks_.begin(), suspended_tracks_.end(), track);
+  if (has_consumers) {
+    if (it != suspended_tracks_.end())
+      suspended_tracks_.erase(it);
+  } else {
+    if (it == suspended_tracks_.end())
+      suspended_tracks_.push_back(track);
+  }
+  OnHasConsumers(suspended_tracks_.size() < tracks_.size());
+}
+
 void MediaStreamVideoSource::UpdateCapturingLinkSecure(
-    MediaStreamVideoTrack* track,
-    bool is_secure) {
+    MediaStreamVideoTrack* track, bool is_secure) {
+  DCHECK(CalledOnValidThread());
   secure_tracker_.Update(track, is_secure);
-  SetCapturingLinkSecured(secure_tracker_.is_capturing_secure());
+  OnCapturingLinkSecured(secure_tracker_.is_capturing_secure());
 }
 
 base::SingleThreadTaskRunner* MediaStreamVideoSource::io_task_runner() const {

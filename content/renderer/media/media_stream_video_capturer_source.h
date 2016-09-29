@@ -35,16 +35,14 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
                                  RenderFrame* render_frame);
   ~MediaStreamVideoCapturerSource() override;
 
-  // Implements MediaStreamVideoSource.
-  void RequestRefreshFrame() override;
-
-  void SetCapturingLinkSecured(bool is_secure) override;
-
  private:
   friend class CanvasCaptureHandlerTest;
   friend class MediaStreamVideoCapturerSourceTest;
 
-  // Implements MediaStreamVideoSource.
+  // MediaStreamVideoSource overrides.
+  void RequestRefreshFrame() override;
+  void OnHasConsumers(bool has_consumers) override;
+  void OnCapturingLinkSecured(bool is_secure) override;
   void GetCurrentSupportedFormats(
       int max_requested_width,
       int max_requested_height,

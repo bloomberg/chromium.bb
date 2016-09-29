@@ -24,6 +24,8 @@
 
 #include "content/renderer/media/video_capture_impl_manager.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -35,10 +37,32 @@
 
 namespace content {
 
+struct VideoCaptureImplManager::DeviceEntry {
+  media::VideoCaptureSessionId session_id;
+
+  // To be used and destroyed only on the IO thread.
+  std::unique_ptr<VideoCaptureImpl> impl;
+
+  // Number of clients using |impl|.
+  int client_count;
+
+  // This is set to true if this device is being suspended, via
+  // VideoCaptureImplManager::Suspend().
+  // See also: VideoCaptureImplManager::is_suspending_all_.
+  bool is_individually_suspended;
+
+  DeviceEntry()
+      : session_id(0), client_count(0), is_individually_suspended(false) {}
+  DeviceEntry(DeviceEntry&& other) = default;
+  DeviceEntry& operator=(DeviceEntry&& other) = default;
+  ~DeviceEntry() = default;
+};
+
 VideoCaptureImplManager::VideoCaptureImplManager()
     : next_client_id_(0),
       filter_(new VideoCaptureMessageFilter()),
       render_main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      is_suspending_all_(false),
       weak_factory_(this) {}
 
 VideoCaptureImplManager::~VideoCaptureImplManager() {
@@ -46,12 +70,12 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
   if (devices_.empty())
     return;
   // Forcibly release all video capture resources.
-  for (const auto& device : devices_) {
-    VideoCaptureImpl* const impl = device.second.second;
+  for (auto& entry : devices_) {
     ChildProcess::current()->io_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&VideoCaptureImpl::DeInit, base::Unretained(impl)));
-    ChildProcess::current()->io_task_runner()->DeleteSoon(FROM_HERE, impl);
+        FROM_HERE, base::Bind(&VideoCaptureImpl::DeInit,
+                              base::Unretained(entry.impl.get())));
+    ChildProcess::current()->io_task_runner()->DeleteSoon(
+        FROM_HERE, entry.impl.release());
   }
   devices_.clear();
 }
@@ -59,18 +83,31 @@ VideoCaptureImplManager::~VideoCaptureImplManager() {
 base::Closure VideoCaptureImplManager::UseDevice(
     media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-  VideoCaptureImpl* impl = NULL;
-  const VideoCaptureDeviceMap::iterator it = devices_.find(id);
+  auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   if (it == devices_.end()) {
-    impl = CreateVideoCaptureImplForTesting(id, filter_.get());
-    if (!impl)
-      impl = new VideoCaptureImpl(id, filter_.get());
-    devices_[id] = std::make_pair(1, impl);
+    devices_.push_back(DeviceEntry());
+    it = devices_.end() - 1;
+    it->session_id = id;
+    it->impl = CreateVideoCaptureImplForTesting(id, filter_.get());
+    if (!it->impl)
+      it->impl.reset(new VideoCaptureImpl(id, filter_.get()));
     ChildProcess::current()->io_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&VideoCaptureImpl::Init, base::Unretained(impl)));
-  } else {
-    ++it->second.first;
+        FROM_HERE, base::Bind(&VideoCaptureImpl::Init,
+                              base::Unretained(it->impl.get())));
   }
+  ++it->client_count;
+
+  // Design limit: When there are multiple clients, VideoCaptureImplManager
+  // would have to individually track which ones requested suspending/resuming,
+  // in order to determine whether the whole device should be suspended.
+  // Instead, handle the non-common use case of multiple clients by just
+  // resuming the suspended device, and disable suspend functionality while
+  // there are multiple clients.
+  if (it->is_individually_suspended)
+    Resume(id);
+
   return base::Bind(&VideoCaptureImplManager::UnrefDevice,
                     weak_factory_.GetWeakPtr(), id);
 }
@@ -81,17 +118,19 @@ base::Closure VideoCaptureImplManager::StartCapture(
     const VideoCaptureStateUpdateCB& state_update_cb,
     const VideoCaptureDeliverFrameCB& deliver_frame_cb) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-  const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second.second;
 
   // This ID is used to identify a client of VideoCaptureImpl.
   const int client_id = ++next_client_id_;
 
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&VideoCaptureImpl::StartCapture, base::Unretained(impl),
-                 client_id, params, state_update_cb, deliver_frame_cb));
+      base::Bind(&VideoCaptureImpl::StartCapture,
+                 base::Unretained(it->impl.get()), client_id, params,
+                 state_update_cb, deliver_frame_cb));
   return base::Bind(&VideoCaptureImplManager::StopCapture,
                     weak_factory_.GetWeakPtr(), client_id, id);
 }
@@ -99,83 +138,125 @@ base::Closure VideoCaptureImplManager::StartCapture(
 void VideoCaptureImplManager::RequestRefreshFrame(
     media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-  const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second.second;
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&VideoCaptureImpl::RequestRefreshFrame,
-                 base::Unretained(impl)));
+                 base::Unretained(it->impl.get())));
+}
+
+void VideoCaptureImplManager::Suspend(media::VideoCaptureSessionId id) {
+  DCHECK(render_main_task_runner_->BelongsToCurrentThread());
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+  DCHECK(it != devices_.end());
+  if (it->is_individually_suspended)
+    return;  // Device has already been individually suspended.
+  if (it->client_count > 1)
+    return;  // Punt when there is >1 client (see comments in UseDevice()).
+  it->is_individually_suspended = true;
+  if (is_suspending_all_)
+    return;  // Device should already be suspended.
+  ChildProcess::current()->io_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureImpl::SuspendCapture,
+                            base::Unretained(it->impl.get()), true));
+}
+
+void VideoCaptureImplManager::Resume(media::VideoCaptureSessionId id) {
+  DCHECK(render_main_task_runner_->BelongsToCurrentThread());
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
+  DCHECK(it != devices_.end());
+  if (!it->is_individually_suspended)
+    return;  // Device was not individually suspended.
+  it->is_individually_suspended = false;
+  if (is_suspending_all_)
+    return;  // Device must remain suspended until all are resumed.
+  ChildProcess::current()->io_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureImpl::SuspendCapture,
+                            base::Unretained(it->impl.get()), false));
 }
 
 void VideoCaptureImplManager::GetDeviceSupportedFormats(
     media::VideoCaptureSessionId id,
     const VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-  const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second.second;
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::Bind(&VideoCaptureImpl::GetDeviceSupportedFormats,
-                            base::Unretained(impl), callback));
+                            base::Unretained(it->impl.get()), callback));
 }
 
 void VideoCaptureImplManager::GetDeviceFormatsInUse(
     media::VideoCaptureSessionId id,
     const VideoCaptureDeviceFormatsCB& callback) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-  const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second.second;
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::Bind(&VideoCaptureImpl::GetDeviceFormatsInUse,
-                            base::Unretained(impl), callback));
+                            base::Unretained(it->impl.get()), callback));
 }
 
-VideoCaptureImpl*
+std::unique_ptr<VideoCaptureImpl>
 VideoCaptureImplManager::CreateVideoCaptureImplForTesting(
     media::VideoCaptureSessionId id,
     VideoCaptureMessageFilter* filter) const {
-  return NULL;
+  return std::unique_ptr<VideoCaptureImpl>();
 }
 
 void VideoCaptureImplManager::StopCapture(int client_id,
                                           media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-  const VideoCaptureDeviceMap::const_iterator it = devices_.find(id);
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second.second;
   ChildProcess::current()->io_task_runner()->PostTask(
       FROM_HERE, base::Bind(&VideoCaptureImpl::StopCapture,
-                            base::Unretained(impl), client_id));
+                            base::Unretained(it->impl.get()), client_id));
 }
 
 void VideoCaptureImplManager::UnrefDevice(
     media::VideoCaptureSessionId id) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-  const VideoCaptureDeviceMap::iterator it = devices_.find(id);
+  const auto it = std::find_if(
+      devices_.begin(), devices_.end(),
+      [id] (const DeviceEntry& entry) { return entry.session_id == id; });
   DCHECK(it != devices_.end());
-  VideoCaptureImpl* const impl = it->second.second;
-
-  // Unref and destroy on the IO thread if there's no more client.
-  DCHECK(it->second.first);
-  --it->second.first;
-  if (!it->second.first) {
-    devices_.erase(id);
-    ChildProcess::current()->io_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&VideoCaptureImpl::DeInit, base::Unretained(impl)));
-    ChildProcess::current()->io_task_runner()->DeleteSoon(FROM_HERE, impl);
-  }
+  DCHECK_GT(it->client_count, 0);
+  --it->client_count;
+  if (it->client_count > 0)
+    return;
+  ChildProcess::current()->io_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VideoCaptureImpl::DeInit,
+                            base::Unretained(it->impl.get())));
+  ChildProcess::current()->io_task_runner()->DeleteSoon(
+      FROM_HERE, it->impl.release());
+  devices_.erase(it);
 }
 
 void VideoCaptureImplManager::SuspendDevices(bool suspend) {
   DCHECK(render_main_task_runner_->BelongsToCurrentThread());
-  for (const auto& device : devices_) {
-    VideoCaptureImpl* const impl = device.second.second;
+  if (is_suspending_all_ == suspend)
+    return;
+  is_suspending_all_ = suspend;
+  for (auto& entry : devices_) {
+    if (entry.is_individually_suspended)
+      continue;  // Either: 1) Already suspended; or 2) Should not be resumed.
     ChildProcess::current()->io_task_runner()->PostTask(
         FROM_HERE, base::Bind(&VideoCaptureImpl::SuspendCapture,
-                              base::Unretained(impl), suspend));
+                              base::Unretained(entry.impl.get()), suspend));
   }
 }
 

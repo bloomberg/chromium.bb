@@ -165,7 +165,30 @@ class CAPTURE_EXPORT VideoCaptureDevice {
   // configured maximum frame rate. Any VideoCaptureDevice that does self-pause,
   // however, should provide an implementation of this method that makes
   // reasonable attempts to honor these requests.
+  //
+  // Note: This should only be called after AllocateAndStart() and before
+  // StopAndDeAllocate(). Otherwise, its behavior is undefined.
   virtual void RequestRefreshFrame() {}
+
+  // Optionally suspends frame delivery. The VideoCaptureDevice may or may not
+  // honor this request. Thus, the caller cannot assume frame delivery will
+  // actually stop. Even if frame delivery is suspended, this might not take
+  // effect immediately.
+  //
+  // The purpose of this is to quickly place the device into a state where it's
+  // resource utilization is minimized while there are no frame consumers; and
+  // then quickly resume once a frame consumer is present.
+  //
+  // Note: This should only be called after AllocateAndStart() and before
+  // StopAndDeAllocate(). Otherwise, its behavior is undefined.
+  virtual void MaybeSuspend() {}
+
+  // Resumes frame delivery, if it was suspended. If frame delivery was not
+  // suspended, this is a no-op, and frame delivery will continue.
+  //
+  // Note: This should only be called after AllocateAndStart() and before
+  // StopAndDeAllocate(). Otherwise, its behavior is undefined.
+  virtual void Resume() {}
 
   // Deallocates the video capturer, possibly asynchronously.
   //
