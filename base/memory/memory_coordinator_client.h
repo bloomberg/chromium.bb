@@ -43,8 +43,6 @@ enum class MemoryState {
 // threading guarantees and ownership management.
 class BASE_EXPORT MemoryCoordinatorClient {
  public:
-  virtual ~MemoryCoordinatorClient() {}
-
   // Called when memory state has changed. Any transition can occur except for
   // UNKNOWN. General guidelines are:
   //  * NORMAL:    Restore the default settings for memory allocation/usage if
@@ -52,6 +50,9 @@ class BASE_EXPORT MemoryCoordinatorClient {
   //  * THROTTLED: Use smaller limits for memory allocations and caches.
   //  * SUSPENDED: Purge memory.
   virtual void OnMemoryStateChange(MemoryState state) = 0;
+
+protected:
+  virtual ~MemoryCoordinatorClient() {}
 };
 
 }  // namespace base
