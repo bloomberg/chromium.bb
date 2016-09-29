@@ -72,7 +72,6 @@ void MetricsMemoryDetails::OnDetailsAvailable() {
 
 void MetricsMemoryDetails::UpdateHistograms() {
   // Reports a set of memory metrics to UMA.
-  // Memory is measured in KB.
 
   const ProcessData& browser = *ChromeBrowser();
   size_t aggregate_memory = 0;
@@ -97,6 +96,9 @@ void MetricsMemoryDetails::UpdateHistograms() {
                                       committed / 1024);
         continue;
       case content::PROCESS_TYPE_RENDERER: {
+        UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.RendererAll", sample / 1024);
+        UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.RendererAll.Committed",
+                                      committed / 1024);
         ProcessMemoryInformation::RendererProcessType renderer_type =
             browser.processes[index].renderer_type;
         switch (renderer_type) {
@@ -200,9 +202,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
   // TODO(viettrungluu): Do we want separate counts for the other
   // (platform-specific) process types?
 
-  // TODO(rkaplow): Remove once we've verified Memory.Total2 is ok.
-  int total_sample_old = static_cast<int>(aggregate_memory / 1000);
-  UMA_HISTOGRAM_MEMORY_MB("Memory.Total", total_sample_old);
   int total_sample = static_cast<int>(aggregate_memory / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total2", total_sample);
 
