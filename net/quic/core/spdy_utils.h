@@ -34,6 +34,12 @@ class NET_EXPORT_PRIVATE SpdyUtils {
                            int64_t* content_length,
                            SpdyHeaderBlock* headers);
 
+  // Populate |content length| with the value of the content-length header if
+  // one or more are present in the headers. Returns true on success, false if
+  // parsing fails.
+  static bool ExtractContentLengthFromHeaders(int64_t* content_length,
+                                              SpdyHeaderBlock* headers);
+
   // Parses |data| as a std::string containing serialized HTTP/2 HEADERS frame,
   // populating |trailers| with the key->value std:pairs found.
   // The final offset header will be excluded from |trailers|, and instead the

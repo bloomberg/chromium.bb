@@ -47,6 +47,12 @@ bool SpdyUtils::ParseHeaders(const char* data,
     return false;  // Headers were invalid.
   }
 
+  return ExtractContentLengthFromHeaders(content_length, headers);
+}
+
+// static
+bool SpdyUtils::ExtractContentLengthFromHeaders(int64_t* content_length,
+                                                SpdyHeaderBlock* headers) {
   if (base::ContainsKey(*headers, "content-length")) {
     // Check whether multiple values are consistent.
     base::StringPiece content_length_header = (*headers)["content-length"];
@@ -56,6 +62,7 @@ bool SpdyUtils::ParseHeaders(const char* data,
     for (const string& value : values) {
       int64_t new_value;
       if (!base::StringToInt64(value, &new_value) || new_value < 0) {
+        DLOG(ERROR) << "Content length was either unparseable or negative.";
         return false;
       }
       if (*content_length < 0) {
@@ -63,11 +70,13 @@ bool SpdyUtils::ParseHeaders(const char* data,
         continue;
       }
       if (new_value != *content_length) {
+        DLOG(ERROR) << "Parsed content length " << new_value << " is "
+                    << "inconsistent with previously detected content length "
+                    << *content_length;
         return false;
       }
     }
   }
-
   return true;
 }
 
@@ -130,29 +139,8 @@ bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
     headers->AppendValueOrAddHeader(name, p.second);
   }
 
-  if (base::ContainsKey(*headers, "content-length")) {
-    // Check whether multiple values are consistent.
-    StringPiece content_length_header = (*headers)["content-length"];
-    vector<string> values =
-        base::SplitString(content_length_header, base::StringPiece("\0", 1),
-                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    for (const string& value : values) {
-      int64_t new_value;
-      if (!base::StringToInt64(value, &new_value) || new_value < 0) {
-        DLOG(ERROR) << "Content length was either unparseable or negative.";
-        return false;
-      }
-      if (*content_length < 0) {
-        *content_length = new_value;
-        continue;
-      }
-      if (new_value != *content_length) {
-        DLOG(ERROR) << "Parsed content length " << new_value << " is "
-                    << "inconsistent with previously detected content length "
-                    << *content_length;
-        return false;
-      }
-    }
+  if (!ExtractContentLengthFromHeaders(content_length, headers)) {
+    return false;
   }
 
   DVLOG(1) << "Successfully parsed headers: " << headers->DebugString();
