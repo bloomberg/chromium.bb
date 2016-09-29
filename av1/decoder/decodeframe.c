@@ -721,9 +721,6 @@ static void read_coef_probs(FRAME_CONTEXT *fc, TX_MODE tx_mode, aom_reader *r) {
 static void setup_segmentation(AV1_COMMON *const cm,
                                struct aom_read_bit_buffer *rb) {
   struct segmentation *const seg = &cm->seg;
-#if !CONFIG_MISC_FIXES
-  struct segmentation_probs *const segp = &cm->segp;
-#endif
   int i, j;
 
   seg->update_map = 0;
@@ -739,29 +736,11 @@ static void setup_segmentation(AV1_COMMON *const cm,
     seg->update_map = aom_rb_read_bit(rb);
   }
   if (seg->update_map) {
-#if !CONFIG_MISC_FIXES
-    for (i = 0; i < SEG_TREE_PROBS; i++) {
-      segp->tree_probs[i] =
-          aom_rb_read_bit(rb) ? aom_rb_read_literal(rb, 8) : MAX_PROB;
-    }
-#if CONFIG_DAALA_EC
-    av1_tree_to_cdf(av1_segment_tree, segp->tree_probs, segp->tree_cdf);
-#endif
-#endif
     if (frame_is_intra_only(cm) || cm->error_resilient_mode) {
       seg->temporal_update = 0;
     } else {
       seg->temporal_update = aom_rb_read_bit(rb);
     }
-#if !CONFIG_MISC_FIXES
-    if (seg->temporal_update) {
-      for (i = 0; i < PREDICTION_PROBS; i++)
-        segp->pred_probs[i] =
-            aom_rb_read_bit(rb) ? aom_rb_read_literal(rb, 8) : MAX_PROB;
-    } else {
-      for (i = 0; i < PREDICTION_PROBS; i++) segp->pred_probs[i] = MAX_PROB;
-    }
-#endif
   }
 
   // Segmentation data update
@@ -2079,7 +2058,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     av1_diff_update_prob(&r, &fc->delta_q_prob[k], ACCT_STR);
 #endif
 
-#if CONFIG_MISC_FIXES
   if (cm->seg.enabled && cm->seg.update_map) {
     if (cm->seg.temporal_update) {
       for (k = 0; k < PREDICTION_PROBS; k++)
@@ -2093,6 +2071,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif
   }
 
+#if CONFIG_MISC_FIXES
   for (j = 0; j < INTRA_MODES; j++) {
     for (i = 0; i < INTRA_MODES - 1; ++i)
       av1_diff_update_prob(&r, &fc->uv_mode_prob[j][i], ACCT_STR);

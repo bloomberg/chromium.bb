@@ -66,10 +66,6 @@ typedef struct {
   int nmv_costs_hp[NMV_CONTEXTS][2][MV_VALS];
 #endif
 
-#if !CONFIG_MISC_FIXES
-  aom_prob segment_pred_probs[PREDICTION_PROBS];
-#endif
-
   // 0 = Intra, Last, GF, ARF
   signed char last_ref_lf_deltas[MAX_REF_FRAMES];
   // 0 = ZERO_MV, MV

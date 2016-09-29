@@ -441,11 +441,6 @@ static void save_coding_context(AV1_COMP *cpi) {
 
   av1_copy(cc->nmvcosts, cpi->nmvcosts);
   av1_copy(cc->nmvcosts_hp, cpi->nmvcosts_hp);
-
-#if !CONFIG_MISC_FIXES
-  av1_copy(cc->segment_pred_probs, cm->segp.pred_probs);
-#endif
-
   av1_copy(cc->last_ref_lf_deltas, cm->lf.last_ref_deltas);
   av1_copy(cc->last_mode_lf_deltas, cm->lf.last_mode_deltas);
 
@@ -473,11 +468,6 @@ static void restore_coding_context(AV1_COMP *cpi) {
 
   av1_copy(cpi->nmvcosts, cc->nmvcosts);
   av1_copy(cpi->nmvcosts_hp, cc->nmvcosts_hp);
-
-#if !CONFIG_MISC_FIXES
-  av1_copy(cm->segp.pred_probs, cc->segment_pred_probs);
-#endif
-
   av1_copy(cm->lf.last_ref_deltas, cc->last_ref_lf_deltas);
   av1_copy(cm->lf.last_mode_deltas, cc->last_mode_lf_deltas);
 

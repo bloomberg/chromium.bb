@@ -829,7 +829,6 @@ static const aom_prob default_switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS]
                                                     };
 #endif  // CONFIG_EXT_INTERP
 
-#if CONFIG_MISC_FIXES
 // FIXME(someone) need real defaults here
 static const aom_prob default_segment_tree_probs[SEG_TREE_PROBS] = {
   128, 128, 128, 128, 128, 128, 128
@@ -839,7 +838,6 @@ static const aom_prob default_segment_pred_probs[PREDICTION_PROBS] = {
   128, 128, 128
 };
 // clang-format on
-#endif
 
 const aom_tree_index av1_ext_tx_tree[TREE_SIZE(TX_TYPES)] = {
   -DCT_DCT, 2, -ADST_ADST, 4, -ADST_DCT, -DCT_ADST
@@ -893,10 +891,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_MOTION_VAR
   av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
 #endif  // CONFIG_MOTION_VAR
-#if CONFIG_MISC_FIXES
   av1_copy(fc->seg.tree_probs, default_segment_tree_probs);
   av1_copy(fc->seg.pred_probs, default_segment_pred_probs);
-#endif
   av1_copy(fc->intra_ext_tx_prob, default_intra_ext_tx_prob);
   av1_copy(fc->inter_ext_tx_prob, default_inter_ext_tx_prob);
 #if CONFIG_DAALA_EC
@@ -916,9 +912,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
                      fc->inter_ext_tx_cdf, EXT_TX_SIZES);
   av1_tree_to_cdf_2D(av1_intra_mode_tree, av1_kf_y_mode_prob, av1_kf_y_mode_cdf,
                      INTRA_MODES, INTRA_MODES);
-#if CONFIG_MISC_FIXES
   av1_tree_to_cdf(av1_segment_tree, fc->seg.tree_probs, fc->seg.tree_cdf);
-#endif
 #endif
 #if CONFIG_DELTA_Q
   av1_copy(fc->delta_q_prob, default_delta_q_probs);
@@ -1090,7 +1084,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
 #endif
   }
 
-#if CONFIG_MISC_FIXES
   if (cm->seg.temporal_update) {
     for (i = 0; i < PREDICTION_PROBS; i++)
       fc->seg.pred_probs[i] =
@@ -1103,6 +1096,7 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
                          counts->seg.tree_total, fc->seg.tree_probs);
   }
 
+#if CONFIG_MISC_FIXES
   for (i = 0; i < INTRA_MODES; ++i)
     aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->uv_mode_prob[i],
                          counts->uv_mode[i], fc->uv_mode_prob[i]);

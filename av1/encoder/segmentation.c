@@ -59,11 +59,7 @@ static void calc_segtree_probs(unsigned *segcounts,
                            segcounts[4] + segcounts[5],
                            segcounts[6] + segcounts[7] };
   const unsigned ccc[2] = { cc[0] + cc[1], cc[2] + cc[3] };
-#if CONFIG_MISC_FIXES
   int i;
-#else
-  (void)probwt;
-#endif
 
   segment_tree_probs[0] = get_binary_prob(ccc[0], ccc[1]);
   segment_tree_probs[1] = get_binary_prob(cc[0], cc[1]);
@@ -73,7 +69,6 @@ static void calc_segtree_probs(unsigned *segcounts,
   segment_tree_probs[5] = get_binary_prob(segcounts[4], segcounts[5]);
   segment_tree_probs[6] = get_binary_prob(segcounts[6], segcounts[7]);
 
-#if CONFIG_MISC_FIXES
   for (i = 0; i < 7; i++) {
     const unsigned *ct =
         i == 0 ? ccc : i < 3 ? cc + (i & 2) : segcounts + (i - 3) * 2;
@@ -81,9 +76,6 @@ static void calc_segtree_probs(unsigned *segcounts,
                                         &segment_tree_probs[i],
                                         DIFF_UPDATE_PROB, probwt);
   }
-#else
-  (void)cur_tree_probs;
-#endif
 }
 
 // Based on set of segment counts and probabilities calculate a cost estimate
@@ -210,12 +202,7 @@ static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
 void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
   struct segmentation *seg = &cm->seg;
-#if CONFIG_MISC_FIXES
   struct segmentation_probs *segp = &cm->fc->seg;
-#else
-  struct segmentation_probs *segp = &cm->segp;
-#endif
-
   int no_pred_cost;
   int t_pred_cost = INT_MAX;
 
@@ -225,30 +212,14 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
 #else
   const int probwt = 1;
 #endif
-
-#if CONFIG_MISC_FIXES
   unsigned(*temporal_predictor_count)[2] = cm->counts.seg.pred;
   unsigned *no_pred_segcounts = cm->counts.seg.tree_total;
   unsigned *t_unpred_seg_counts = cm->counts.seg.tree_mispred;
-#else
-  unsigned temporal_predictor_count[PREDICTION_PROBS][2] = { { 0 } };
-  unsigned no_pred_segcounts[MAX_SEGMENTS] = { 0 };
-  unsigned t_unpred_seg_counts[MAX_SEGMENTS] = { 0 };
-#endif
-
   aom_prob no_pred_tree[SEG_TREE_PROBS];
   aom_prob t_pred_tree[SEG_TREE_PROBS];
   aom_prob t_nopred_prob[PREDICTION_PROBS];
-
-#if CONFIG_MISC_FIXES
   (void)xd;
   av1_zero(cm->counts.seg);
-#else
-  // Set default state for the segment tree probabilities and the
-  // temporal coding probabilities
-  memset(segp->tree_probs, 255, sizeof(segp->tree_probs));
-  memset(segp->pred_probs, 255, sizeof(segp->pred_probs));
-#endif
 
   // First of all generate stats regarding how well the last segment map
   // predicts this one
@@ -288,11 +259,9 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
       const int count1 = temporal_predictor_count[i][1];
 
       t_nopred_prob[i] = get_binary_prob(count0, count1);
-#if CONFIG_MISC_FIXES
       av1_prob_diff_update_savings_search(
           temporal_predictor_count[i], segp->pred_probs[i], &t_nopred_prob[i],
           DIFF_UPDATE_PROB, probwt);
-#endif
 
       // Add in the predictor signaling cost
       t_pred_cost += count0 * av1_cost_zero(t_nopred_prob[i]) +
@@ -304,15 +273,8 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
   if (t_pred_cost < no_pred_cost) {
     assert(!cm->error_resilient_mode);
     seg->temporal_update = 1;
-#if !CONFIG_MISC_FIXES
-    memcpy(segp->tree_probs, t_pred_tree, sizeof(t_pred_tree));
-    memcpy(segp->pred_probs, t_nopred_prob, sizeof(t_nopred_prob));
-#endif
   } else {
     seg->temporal_update = 0;
-#if !CONFIG_MISC_FIXES
-    memcpy(segp->tree_probs, no_pred_tree, sizeof(no_pred_tree));
-#endif
   }
 #if CONFIG_DAALA_EC
   av1_tree_to_cdf(av1_segment_tree, segp->tree_probs, segp->tree_cdf);
@@ -321,16 +283,10 @@ void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
 
 void av1_reset_segment_features(AV1_COMMON *cm) {
   struct segmentation *seg = &cm->seg;
-#if !CONFIG_MISC_FIXES
-  struct segmentation_probs *segp = &cm->segp;
-#endif
 
   // Set up default state for MB feature flags
   seg->enabled = 0;
   seg->update_map = 0;
   seg->update_data = 0;
-#if !CONFIG_MISC_FIXES
-  memset(segp->tree_probs, 255, sizeof(segp->tree_probs));
-#endif
   av1_clearall_segfeatures(seg);
 }

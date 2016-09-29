@@ -767,11 +767,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
   const MACROBLOCKD *const xd = &x->e_mbd;
 #endif
   const struct segmentation *const seg = &cm->seg;
-#if CONFIG_MISC_FIXES
   const struct segmentation_probs *const segp = &cm->fc->seg;
-#else
-  const struct segmentation_probs *const segp = &cm->segp;
-#endif
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
   const PREDICTION_MODE mode = mbmi->mode;
@@ -975,11 +971,7 @@ static void write_mb_modes_kf(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                               MODE_INFO **mi_8x8, aom_writer *w) {
 #endif
   const struct segmentation *const seg = &cm->seg;
-#if CONFIG_MISC_FIXES
   const struct segmentation_probs *const segp = &cm->fc->seg;
-#else
-  const struct segmentation_probs *const segp = &cm->segp;
-#endif
   const MODE_INFO *const mi = mi_8x8[0];
   const MODE_INFO *const above_mi = xd->above_mi;
   const MODE_INFO *const left_mi = xd->left_mi;
@@ -1521,9 +1513,6 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   int i, j;
 
   const struct segmentation *seg = &cm->seg;
-#if !CONFIG_MISC_FIXES
-  const struct segmentation_probs *segp = &cm->segp;
-#endif
 
   aom_wb_write_bit(wb, seg->enabled);
   if (!seg->enabled) return;
@@ -1537,15 +1526,6 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (seg->update_map) {
     // Select the coding strategy (temporal or spatial)
     av1_choose_segmap_coding_method(cm, xd);
-#if !CONFIG_MISC_FIXES
-    // Write out probabilities used to decode unpredicted  macro-block segments
-    for (i = 0; i < SEG_TREE_PROBS; i++) {
-      const int prob = segp->tree_probs[i];
-      const int update = prob != MAX_PROB;
-      aom_wb_write_bit(wb, update);
-      if (update) aom_wb_write_literal(wb, prob, 8);
-    }
-#endif
 
     // Write out the chosen coding method.
     if (!frame_is_intra_only(cm) && !cm->error_resilient_mode) {
@@ -1553,17 +1533,6 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
     } else {
       assert(seg->temporal_update == 0);
     }
-
-#if !CONFIG_MISC_FIXES
-    if (seg->temporal_update) {
-      for (i = 0; i < PREDICTION_PROBS; i++) {
-        const int prob = segp->pred_probs[i];
-        const int update = prob != MAX_PROB;
-        aom_wb_write_bit(wb, update);
-        if (update) aom_wb_write_literal(wb, prob, 8);
-      }
-    }
-#endif
   }
 
   // Segmentation data
@@ -1591,7 +1560,6 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-#if CONFIG_MISC_FIXES
 static void update_seg_probs(AV1_COMP *cpi, aom_writer *w) {
   AV1_COMMON *cm = &cpi->common;
 #if CONFIG_TILE_GROUPS
@@ -1621,6 +1589,7 @@ static void update_seg_probs(AV1_COMP *cpi, aom_writer *w) {
 #endif
 }
 
+#if CONFIG_MISC_FIXES
 static void write_txfm_mode(TX_MODE mode, struct aom_write_bit_buffer *wb) {
   aom_wb_write_bit(wb, mode == TX_MODE_SELECT);
   if (mode != TX_MODE_SELECT) aom_wb_write_literal(wb, mode, 2);
@@ -2217,9 +2186,9 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if CONFIG_DELTA_Q
   update_delta_q_probs(cm, header_bc, counts);
 #endif
-#if CONFIG_MISC_FIXES
   update_seg_probs(cpi, header_bc);
 
+#if CONFIG_MISC_FIXES
   for (i = 0; i < INTRA_MODES; ++i) {
     prob_diff_update(av1_intra_mode_tree, fc->uv_mode_prob[i],
                      counts->uv_mode[i], INTRA_MODES, probwt, header_bc);

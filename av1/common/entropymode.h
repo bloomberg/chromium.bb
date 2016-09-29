@@ -126,9 +126,7 @@ typedef struct frame_contexts {
 #else
   nmv_context nmvc;
 #endif
-#if CONFIG_MISC_FIXES
   struct segmentation_probs seg;
-#endif
   aom_prob intra_ext_tx_prob[EXT_TX_SIZES][TX_TYPES][TX_TYPES - 1];
   aom_prob inter_ext_tx_prob[EXT_TX_SIZES][TX_TYPES - 1];
   int initialized;
@@ -193,9 +191,7 @@ typedef struct FRAME_COUNTS {
 #else
   nmv_context_counts mv;
 #endif
-#if CONFIG_MISC_FIXES
   struct seg_counts seg;
-#endif
 #if CONFIG_DELTA_Q
   unsigned int delta_q[DELTA_Q_CONTEXTS][2];
 #endif
