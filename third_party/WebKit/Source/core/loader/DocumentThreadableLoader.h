@@ -42,7 +42,6 @@
 #include "platform/network/ResourceError.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
-#include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
@@ -238,7 +237,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         Referrer m_referrerAfterRedirect;
 
         RawResourceClientStateChecker m_checker;
-        WeakPtrFactory<DocumentThreadableLoader> m_weakFactory;
     };
 
 } // namespace blink

@@ -57,6 +57,7 @@
 #include "public/platform/WebURLRequest.h"
 #include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/WeakPtr.h"
 #include <memory>
 
 namespace blink {
@@ -151,7 +152,6 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document& document, Threadabl
     , m_corsRedirectLimit(m_options.crossOriginRequestPolicy == UseAccessControl ? kMaxCORSRedirects : 0)
     , m_redirectMode(WebURLRequest::FetchRedirectModeFollow)
     , m_didRedirect(false)
-    , m_weakFactory(this)
 {
     DCHECK(client);
 }
@@ -434,10 +434,6 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
     }
 
     if (m_redirectMode == WebURLRequest::FetchRedirectModeManual) {
-        // Keep |this| alive even if the client release a reference in
-        // responseReceived().
-        WeakPtr<DocumentThreadableLoader> self(m_weakFactory.createWeakPtr());
-
         // We use |m_redirectMode| to check the original redirect mode.
         // |request| is a new request for redirect. So we don't set the redirect
         // mode of it in WebURLLoaderImpl::Context::OnReceivedRedirect().
@@ -449,11 +445,6 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
         // will have to read the body. And also HTTPCache changes will be needed
         // because it doesn't store the body of redirect responses.
         responseReceived(resource, redirectResponse, wrapUnique(new EmptyDataHandle()));
-
-        if (!self) {
-            request = ResourceRequest();
-            return;
-        }
 
         if (m_client) {
             DCHECK(m_actualRequest.isNull());
@@ -868,18 +859,12 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
             newRequest.setOriginRestriction(FetchRequest::NoOriginRestriction);
         DCHECK(!resource());
 
-        WeakPtr<DocumentThreadableLoader> self(m_weakFactory.createWeakPtr());
-
         if (request.requestContext() == WebURLRequest::RequestContextVideo || request.requestContext() == WebURLRequest::RequestContextAudio)
             setResource(RawResource::fetchMedia(newRequest, document().fetcher()));
         else if (request.requestContext() == WebURLRequest::RequestContextManifest)
             setResource(RawResource::fetchManifest(newRequest, document().fetcher()));
         else
             setResource(RawResource::fetch(newRequest, document().fetcher()));
-
-        // setResource() might call notifyFinished() synchronously, and thus
-        if (!self)
-            return;
 
         if (!resource()) {
             InspectorInstrumentation::documentThreadableLoaderFailedToStartLoadingForClient(m_document, m_client);
