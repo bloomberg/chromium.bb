@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/incident_reporting/delayed_analysis_callback.h"
 #include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 
@@ -29,7 +28,6 @@ class IncidentReportingService;
 class ResourceRequestDetector;
 struct ResourceRequestInfo;
 class SafeBrowsingService;
-class V4LocalDatabaseManager;
 struct V4ProtocolConfig;
 
 // Abstraction to help organize code for mobile vs full safe browsing modes.
@@ -67,9 +65,6 @@ class ServicesDelegate {
       ServicesDelegate::ServicesCreator* services_creator);
 
   virtual ~ServicesDelegate() {}
-
-  virtual const scoped_refptr<V4LocalDatabaseManager>&
-  v4_local_database_manager() const = 0;
 
   // Initializes internal state using the ServicesCreator.
   virtual void Initialize() = 0;
