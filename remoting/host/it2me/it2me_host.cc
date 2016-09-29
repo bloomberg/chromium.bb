@@ -64,13 +64,12 @@ It2MeHost::It2MeHost(
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid)
     : host_context_(std::move(host_context)),
-      task_runner_(host_context_->ui_task_runner()),
       observer_(observer),
       xmpp_server_config_(xmpp_server_config),
       directory_bot_jid_(directory_bot_jid),
       policy_watcher_(std::move(policy_watcher)),
       confirmation_dialog_(std::move(confirmation_dialog)) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
 }
 
 It2MeHost::~It2MeHost() {
@@ -81,7 +80,6 @@ It2MeHost::~It2MeHost() {
 
 void It2MeHost::Connect() {
   if (!host_context_->ui_task_runner()->BelongsToCurrentThread()) {
-    DCHECK(task_runner_->BelongsToCurrentThread());
     host_context_->ui_task_runner()->PostTask(
         FROM_HERE, base::Bind(&It2MeHost::Connect, this));
     return;
@@ -103,7 +101,7 @@ void It2MeHost::Connect() {
 }
 
 void It2MeHost::Disconnect() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
   host_context_->network_task_runner()->PostTask(
       FROM_HERE, base::Bind(&It2MeHost::DisconnectOnNetworkThread, this));
 }
@@ -140,7 +138,7 @@ void It2MeHost::DisconnectOnNetworkThread() {
 
 void It2MeHost::RequestNatPolicy() {
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
-    DCHECK(task_runner_->BelongsToCurrentThread());
+    DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
     host_context_->network_task_runner()->PostTask(
         FROM_HERE, base::Bind(&It2MeHost::RequestNatPolicy, this));
     return;
@@ -282,7 +280,7 @@ void It2MeHost::OnClientConnected(const std::string& jid) {
   HOST_LOG << "Client " << client_username << " connected.";
 
   // Pass the client user name to the script object before changing state.
-  task_runner_->PostTask(
+  host_context_->ui_task_runner()->PostTask(
       FROM_HERE, base::Bind(&It2MeHost::Observer::OnClientAuthenticated,
                             observer_, client_username));
 
@@ -360,9 +358,9 @@ void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
   nat_traversal_enabled_ = nat_traversal_enabled;
 
   // Notify the web-app of the policy setting.
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnNatPolicyChanged,
-                            observer_, nat_traversal_enabled_));
+  host_context_->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&It2MeHost::Observer::OnNatPolicyChanged, observer_,
+                            nat_traversal_enabled_));
 }
 
 void It2MeHost::UpdateHostDomainPolicy(const std::string& host_domain) {
@@ -431,9 +429,9 @@ void It2MeHost::SetState(It2MeHostState state,
   state_ = state;
 
   // Post a state-change notification to the web-app.
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStateChanged,
-                            observer_, state, error_message));
+  host_context_->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStateChanged, observer_,
+                            state, error_message));
 }
 
 bool It2MeHost::IsConnected() const {
@@ -475,9 +473,9 @@ void It2MeHost::OnReceivedSupportID(
   host_->SetAuthenticatorFactory(std::move(factory));
 
   // Pass the Access Code to the script object before changing state.
-  task_runner_->PostTask(
-      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode,
-                            observer_, access_code, lifetime));
+  host_context_->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode, observer_,
+                            access_code, lifetime));
 
   SetState(kReceivedAccessCode, "");
 }

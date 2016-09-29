@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "remoting/host/host_status_observer.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog.h"
 #include "remoting/host/it2me/it2me_confirmation_dialog_proxy.h"
@@ -109,9 +108,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   ~It2MeHost() override;
 
   ChromotingHostContext* host_context() { return host_context_.get(); }
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
-    return task_runner_;
-  }
   base::WeakPtr<It2MeHost::Observer> observer() { return observer_; }
 
  private:
@@ -158,7 +154,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   // Caller supplied fields.
   std::unique_ptr<ChromotingHostContext> host_context_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<It2MeHost::Observer> observer_;
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
   std::string directory_bot_jid_;

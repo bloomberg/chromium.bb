@@ -151,7 +151,6 @@ class MockIt2MeHost : public It2MeHost {
 
 void MockIt2MeHost::Connect() {
   if (!host_context()->ui_task_runner()->BelongsToCurrentThread()) {
-    DCHECK(task_runner()->BelongsToCurrentThread());
     host_context()->ui_task_runner()->PostTask(
         FROM_HERE, base::Bind(&MockIt2MeHost::Connect, this));
     return;
@@ -163,27 +162,23 @@ void MockIt2MeHost::Connect() {
   std::string access_code(kTestAccessCode);
   base::TimeDelta lifetime =
       base::TimeDelta::FromSeconds(kTestAccessCodeLifetimeInSeconds);
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&It2MeHost::Observer::OnStoreAccessCode,
-                                     observer(),
-                                     access_code,
-                                     lifetime));
+  host_context()->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode, observer(),
+                            access_code, lifetime));
 
   RunSetState(kReceivedAccessCode);
 
   std::string client_username(kTestClientUsername);
-  task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&It2MeHost::Observer::OnClientAuthenticated,
-                 observer(),
-                 client_username));
+  host_context()->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&It2MeHost::Observer::OnClientAuthenticated,
+                            observer(), client_username));
 
   RunSetState(kConnected);
 }
 
 void MockIt2MeHost::Disconnect() {
   if (!host_context()->network_task_runner()->BelongsToCurrentThread()) {
-    DCHECK(task_runner()->BelongsToCurrentThread());
+    DCHECK(host_context()->ui_task_runner()->BelongsToCurrentThread());
     host_context()->network_task_runner()->PostTask(
         FROM_HERE, base::Bind(&MockIt2MeHost::Disconnect, this));
     return;
