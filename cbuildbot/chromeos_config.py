@@ -630,6 +630,11 @@ _cheets_x86_boards = _cheets_boards | frozenset([
     'wizpig',
 ])
 
+_beaglebone_boards = frozenset([
+    'beaglebone',
+    'beaglebone_servo',
+])
+
 _lakitu_boards = frozenset([
     'lakitu',
     'lakitu_next',
@@ -1031,6 +1036,7 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
       rootfs_verification=False,
       paygen=False,
       signer_tests=False,
+      images=remove_images(['recovery', 'factory_install']),
   )
 
   # This adds Chrome branding.
@@ -1563,6 +1569,8 @@ def CreateBoardConfigs(site_config, ge_build_config):
       board_config.update(site_config.templates.no_unittest_builder)
     if board in _no_vmtest_boards:
       board_config.update(site_config.templates.no_vmtest_builder)
+    if board in _beaglebone_boards:
+      board_config.apply(site_config.templates.beaglebone)
 
     # Note: board_config configs should not specify a useflag list. Convert any
     # useflags that this board_config config has accrued (for instance,
@@ -3048,20 +3056,15 @@ def ApplyCustomOverrides(site_config, hw_test_list):
           'sign_types':['nv_lp0_firmware'],
       },
 
-      # beaglebone build doesn't generate signed images, so don't try
-      # to release them.
-      'beaglebone-release': config_lib.BuildConfig().apply(
-          site_config.templates.beaglebone,
-          buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-          images=['base', 'test'],
-      ),
+      # Move beaglebone-release to GCE until we're smart enough to put
+      # everything there that doesn't use VM Tests.
+      'beaglebone-release': {
+          'buildslave_type': constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+      },
 
-      'beaglebone_servo-release': config_lib.BuildConfig().apply(
-          site_config.templates.beaglebone,
-          payload_image='base',
-          buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-          images=['base', 'test'],
-      ),
+      'beaglebone_servo-release': {
+          'buildslave_type': constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+      },
 
       # Hw Lab can't test storm, yet.
       'storm-release': {

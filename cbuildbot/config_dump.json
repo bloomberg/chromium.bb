@@ -3330,8 +3330,11 @@
         "boards": [
             "beaglebone"
         ],
+        "chrome_sdk": false,
         "important": false,
         "manifest": "official.xml",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "vm_tests": []
     },
     "beaglebone-chromium-pfq": {
@@ -3339,7 +3342,10 @@
         "boards": [
             "beaglebone"
         ],
+        "chrome_sdk": false,
         "important": false,
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -3350,10 +3356,13 @@
         "boards": [
             "beaglebone"
         ],
+        "image_test": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -3363,7 +3372,15 @@
         "boards": [
             "beaglebone"
         ],
+        "chrome_sdk": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "prebuilts": "public",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -3385,10 +3402,13 @@
         "boards": [
             "beaglebone"
         ],
+        "image_test": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -3415,21 +3435,18 @@
         "vm_tests": [],
         "vm_tests_override": null
     },
-    "beaglebone-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "beaglebone"
-        ]
-    },
     "beaglebone-pre-cq": {
         "_template": "pre_cq",
         "boards": [
             "beaglebone"
         ],
+        "image_test": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ],
@@ -3458,58 +3475,14 @@
         "vm_tests": [],
         "vm_tests_override": null
     },
-    "beaglebone-release-afdo": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "beaglebone"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "beaglebone"
-                ],
-                "grouped": true,
-                "name": "beaglebone-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "beaglebone"
-                ],
-                "grouped": true,
-                "name": "beaglebone-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "beaglebone-release-afdo-generate": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "beaglebone"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "beaglebone-release-afdo-use": {
-        "_template": "release_afdo_use",
-        "boards": [
-            "beaglebone"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
     "beaglebone-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
         "boards": [
             "beaglebone"
         ],
         "manifest": "official.xml",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "vm_tests": []
     },
     "beaglebone-tot-chrome-pfq-informational-gn": {
@@ -3518,6 +3491,8 @@
             "beaglebone"
         ],
         "manifest": "official.xml",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "vm_tests": []
     },
     "beaglebone-tot-chromium-pfq-informational": {
@@ -3525,6 +3500,8 @@
         "boards": [
             "beaglebone"
         ],
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -3535,6 +3512,8 @@
         "boards": [
             "beaglebone"
         ],
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -3550,6 +3529,8 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -3559,8 +3540,11 @@
         "boards": [
             "beaglebone_servo"
         ],
+        "chrome_sdk": false,
         "important": false,
         "manifest": "official.xml",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "vm_tests": []
     },
     "beaglebone_servo-chromium-pfq": {
@@ -3568,7 +3552,10 @@
         "boards": [
             "beaglebone_servo"
         ],
+        "chrome_sdk": false,
         "important": false,
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -3579,10 +3566,13 @@
         "boards": [
             "beaglebone_servo"
         ],
+        "image_test": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -3592,7 +3582,15 @@
         "boards": [
             "beaglebone_servo"
         ],
+        "chrome_sdk": false,
+        "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "prebuilts": "public",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -3603,10 +3601,13 @@
         "boards": [
             "beaglebone_servo"
         ],
+        "image_test": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]
@@ -3633,21 +3634,18 @@
         "vm_tests": [],
         "vm_tests_override": null
     },
-    "beaglebone_servo-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "beaglebone_servo"
-        ]
-    },
     "beaglebone_servo-pre-cq": {
         "_template": "pre_cq",
         "boards": [
             "beaglebone_servo"
         ],
+        "image_test": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ],
@@ -3670,56 +3668,9 @@
         ],
         "important": true,
         "paygen": false,
-        "payload_image": "base",
         "rootfs_verification": false,
         "signer_tests": false,
         "sync_chrome": false,
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "beaglebone_servo-release-afdo": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "beaglebone_servo"
-        ],
-        "child_configs": [
-            {
-                "_template": "release_afdo_generate",
-                "boards": [
-                    "beaglebone_servo"
-                ],
-                "grouped": true,
-                "name": "beaglebone_servo-release-afdo-generate",
-                "vm_tests": [],
-                "vm_tests_override": null
-            },
-            {
-                "_template": "release_afdo_use",
-                "boards": [
-                    "beaglebone_servo"
-                ],
-                "grouped": true,
-                "name": "beaglebone_servo-release-afdo-use",
-                "vm_tests": [],
-                "vm_tests_override": null
-            }
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "beaglebone_servo-release-afdo-generate": {
-        "_template": "release_afdo_generate",
-        "boards": [
-            "beaglebone_servo"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "beaglebone_servo-release-afdo-use": {
-        "_template": "release_afdo_use",
-        "boards": [
-            "beaglebone_servo"
-        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -3729,6 +3680,8 @@
             "beaglebone_servo"
         ],
         "manifest": "official.xml",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "vm_tests": []
     },
     "beaglebone_servo-tot-chrome-pfq-informational-gn": {
@@ -3737,6 +3690,8 @@
             "beaglebone_servo"
         ],
         "manifest": "official.xml",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "vm_tests": []
     },
     "beaglebone_servo-tot-chromium-pfq-informational": {
@@ -3744,6 +3699,8 @@
         "boards": [
             "beaglebone_servo"
         ],
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
         ],
@@ -3754,6 +3711,8 @@
         "boards": [
             "beaglebone_servo"
         ],
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "-chrome_internal",
             "gn"
@@ -3769,6 +3728,8 @@
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "overlays": "both",
+        "rootfs_verification": false,
+        "sync_chrome": false,
         "useflags": [
             "chrome_internal"
         ]
