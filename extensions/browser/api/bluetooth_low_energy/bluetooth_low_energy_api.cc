@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
+#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 
 #include <stdint.h>
 #include <algorithm>
@@ -18,8 +18,6 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
-#include "chrome/common/extensions/api/bluetooth_low_energy.h"
 #include "content/public/browser/browser_thread.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
@@ -27,13 +25,14 @@
 #include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "extensions/browser/api/bluetooth_low_energy/utils.h"
+#include "extensions/browser/api/extensions_api_client.h"
+#include "extensions/browser/kiosk/kiosk_delegate.h"
 #include "extensions/common/api/bluetooth/bluetooth_manifest_data.h"
+#include "extensions/common/api/bluetooth_low_energy.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/switches.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#endif
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -329,13 +328,9 @@ device::BluetoothGattCharacteristic::Permissions GetBluetoothPermissions(
 }
 
 bool IsAutoLaunchedKioskApp(const ExtensionId& id) {
-#if defined(OS_CHROMEOS)
-  chromeos::KioskAppManager::App app_info;
-  return chromeos::KioskAppManager::Get()->GetApp(id, &app_info) &&
-         app_info.was_auto_launched_with_zero_delay;
-#else
-  return false;
-#endif
+  KioskDelegate* delegate = ExtensionsBrowserClient::Get()->GetKioskDelegate();
+  DCHECK(delegate);
+  return delegate->IsAutoLaunchedKioskApp(id);
 }
 
 bool IsPeripheralFlagEnabled() {
@@ -345,8 +340,7 @@ bool IsPeripheralFlagEnabled() {
 
 }  // namespace
 
-
-static base::LazyInstance<BrowserContextKeyedAPIFactory<BluetoothLowEnergyAPI> >
+static base::LazyInstance<BrowserContextKeyedAPIFactory<BluetoothLowEnergyAPI>>
     g_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
@@ -366,8 +360,7 @@ BluetoothLowEnergyAPI::BluetoothLowEnergyAPI(BrowserContext* context)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-BluetoothLowEnergyAPI::~BluetoothLowEnergyAPI() {
-}
+BluetoothLowEnergyAPI::~BluetoothLowEnergyAPI() {}
 
 void BluetoothLowEnergyAPI::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -497,9 +490,7 @@ bool BluetoothLowEnergyConnectFunction::DoWork() {
     persistent = properties->persistent;
 
   event_router->Connect(
-      persistent,
-      extension(),
-      params->device_address,
+      persistent, extension(), params->device_address,
       base::Bind(&BluetoothLowEnergyConnectFunction::SuccessCallback, this),
       base::Bind(&BluetoothLowEnergyConnectFunction::ErrorCallback, this));
 
@@ -535,8 +526,7 @@ bool BluetoothLowEnergyDisconnectFunction::DoWork() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
   event_router->Disconnect(
-      extension(),
-      params->device_address,
+      extension(), params->device_address,
       base::Bind(&BluetoothLowEnergyDisconnectFunction::SuccessCallback, this),
       base::Bind(&BluetoothLowEnergyDisconnectFunction::ErrorCallback, this));
 
@@ -637,8 +627,8 @@ bool BluetoothLowEnergyGetCharacteristicFunction::DoWork() {
 
   apibtle::Characteristic characteristic;
   BluetoothLowEnergyEventRouter::Status status =
-      event_router->GetCharacteristic(
-          extension(), params->characteristic_id, &characteristic);
+      event_router->GetCharacteristic(extension(), params->characteristic_id,
+                                      &characteristic);
   if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
     SetError(StatusToString(status));
     SendResponse(false);
@@ -674,8 +664,8 @@ bool BluetoothLowEnergyGetCharacteristicsFunction::DoWork() {
 
   BluetoothLowEnergyEventRouter::CharacteristicList characteristic_list;
   BluetoothLowEnergyEventRouter::Status status =
-      event_router->GetCharacteristics(
-          extension(), params->service_id, &characteristic_list);
+      event_router->GetCharacteristics(extension(), params->service_id,
+                                       &characteristic_list);
   if (status != BluetoothLowEnergyEventRouter::kStatusSuccess) {
     SetError(StatusToString(status));
     SendResponse(false);
@@ -824,8 +814,7 @@ bool BluetoothLowEnergyReadCharacteristicValueFunction::DoWork() {
 
   instance_id_ = params->characteristic_id;
   event_router->ReadCharacteristicValue(
-      extension(),
-      instance_id_,
+      extension(), instance_id_,
       base::Bind(
           &BluetoothLowEnergyReadCharacteristicValueFunction::SuccessCallback,
           this),
@@ -882,9 +871,7 @@ bool BluetoothLowEnergyWriteCharacteristicValueFunction::DoWork() {
 
   std::vector<uint8_t> value(params->value.begin(), params->value.end());
   event_router->WriteCharacteristicValue(
-      extension(),
-      params->characteristic_id,
-      value,
+      extension(), params->characteristic_id, value,
       base::Bind(
           &BluetoothLowEnergyWriteCharacteristicValueFunction::SuccessCallback,
           this),
@@ -930,9 +917,7 @@ bool BluetoothLowEnergyStartCharacteristicNotificationsFunction::DoWork() {
     persistent = properties->persistent;
 
   event_router->StartCharacteristicNotifications(
-      persistent,
-      extension(),
-      params->characteristic_id,
+      persistent, extension(), params->characteristic_id,
       base::Bind(&BluetoothLowEnergyStartCharacteristicNotificationsFunction::
                      SuccessCallback,
                  this),
@@ -943,8 +928,8 @@ bool BluetoothLowEnergyStartCharacteristicNotificationsFunction::DoWork() {
   return true;
 }
 
-void
-BluetoothLowEnergyStartCharacteristicNotificationsFunction::SuccessCallback() {
+void BluetoothLowEnergyStartCharacteristicNotificationsFunction::
+    SuccessCallback() {
   SendResponse(true);
 }
 
@@ -973,8 +958,7 @@ bool BluetoothLowEnergyStopCharacteristicNotificationsFunction::DoWork() {
   EXTENSION_FUNCTION_VALIDATE(params.get() != NULL);
 
   event_router->StopCharacteristicNotifications(
-      extension(),
-      params->characteristic_id,
+      extension(), params->characteristic_id,
       base::Bind(&BluetoothLowEnergyStopCharacteristicNotificationsFunction::
                      SuccessCallback,
                  this),
@@ -985,8 +969,8 @@ bool BluetoothLowEnergyStopCharacteristicNotificationsFunction::DoWork() {
   return true;
 }
 
-void
-BluetoothLowEnergyStopCharacteristicNotificationsFunction::SuccessCallback() {
+void BluetoothLowEnergyStopCharacteristicNotificationsFunction::
+    SuccessCallback() {
   SendResponse(true);
 }
 
@@ -1016,8 +1000,7 @@ bool BluetoothLowEnergyReadDescriptorValueFunction::DoWork() {
 
   instance_id_ = params->descriptor_id;
   event_router->ReadDescriptorValue(
-      extension(),
-      instance_id_,
+      extension(), instance_id_,
       base::Bind(
           &BluetoothLowEnergyReadDescriptorValueFunction::SuccessCallback,
           this),
@@ -1073,9 +1056,7 @@ bool BluetoothLowEnergyWriteDescriptorValueFunction::DoWork() {
 
   std::vector<uint8_t> value(params->value.begin(), params->value.end());
   event_router->WriteDescriptorValue(
-      extension(),
-      params->descriptor_id,
-      value,
+      extension(), params->descriptor_id, value,
       base::Bind(
           &BluetoothLowEnergyWriteDescriptorValueFunction::SuccessCallback,
           this),
@@ -1098,12 +1079,10 @@ void BluetoothLowEnergyWriteDescriptorValueFunction::ErrorCallback(
 
 BluetoothLowEnergyAdvertisementFunction::
     BluetoothLowEnergyAdvertisementFunction()
-    : advertisements_manager_(nullptr) {
-}
+    : advertisements_manager_(nullptr) {}
 
 BluetoothLowEnergyAdvertisementFunction::
-    ~BluetoothLowEnergyAdvertisementFunction() {
-}
+    ~BluetoothLowEnergyAdvertisementFunction() {}
 
 int BluetoothLowEnergyAdvertisementFunction::AddAdvertisement(
     BluetoothApiAdvertisement* advertisement) {

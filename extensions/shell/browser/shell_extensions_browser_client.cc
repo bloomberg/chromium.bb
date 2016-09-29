@@ -20,6 +20,7 @@
 #include "extensions/browser/updater/null_extension_cache.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/shell/browser/api/generated_api_registration.h"
+#include "extensions/shell/browser/delegates/shell_kiosk_delegate.h"
 #include "extensions/shell/browser/shell_extension_host_delegate.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
@@ -242,6 +243,12 @@ ExtensionWebContentsObserver*
 ShellExtensionsBrowserClient::GetExtensionWebContentsObserver(
     content::WebContents* web_contents) {
   return ShellExtensionWebContentsObserver::FromWebContents(web_contents);
+}
+
+KioskDelegate* ShellExtensionsBrowserClient::GetKioskDelegate() {
+  if (!kiosk_delegate_)
+    kiosk_delegate_.reset(new ShellKioskDelegate());
+  return kiosk_delegate_.get();
 }
 
 }  // namespace extensions

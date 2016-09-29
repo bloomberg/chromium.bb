@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/bluetooth_low_energy/utils.h"
+#include "extensions/browser/api/bluetooth_low_energy/utils.h"
 
 #include <stddef.h>
 #include <iterator>
@@ -22,8 +22,7 @@ std::unique_ptr<base::ListValue> CharacteristicPropertiesToValue(
   std::unique_ptr<base::ListValue> property_list(new base::ListValue());
   for (std::vector<CharacteristicProperty>::const_iterator iter =
            properties.begin();
-       iter != properties.end();
-       ++iter)
+       iter != properties.end(); ++iter)
     property_list->AppendString(ToString(*iter));
   return property_list;
 }

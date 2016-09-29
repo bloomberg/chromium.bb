@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/kiosk/kiosk_delegate.h"
 
 class PrefService;
 
@@ -91,6 +92,7 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsMinBrowserVersionSupported(const std::string& min_version) override;
   ExtensionWebContentsObserver* GetExtensionWebContentsObserver(
       content::WebContents* web_contents) override;
+  KioskDelegate* GetKioskDelegate() override;
 
   // Sets the API client.
   void SetAPIClientForTest(ExtensionsAPIClient* api_client);
@@ -107,6 +109,8 @@ class ShellExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   // The extension cache used for download and installation.
   std::unique_ptr<ExtensionCache> extension_cache_;
+
+  std::unique_ptr<KioskDelegate> kiosk_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellExtensionsBrowserClient);
 };

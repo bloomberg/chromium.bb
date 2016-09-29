@@ -29,6 +29,7 @@ source_set("api") {
     "//extensions/browser/api/app_window",
     "//extensions/browser/api/audio",
     "//extensions/browser/api/bluetooth",
+    "//extensions/browser/api/bluetooth_low_energy",
     "//extensions/browser/api/bluetooth_socket",
     "//extensions/browser/api/cast_channel",
     "//extensions/browser/api/clipboard",

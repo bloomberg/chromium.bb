@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_connection.h"
+#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_connection.h"
 
 #include "base/lazy_instance.h"
 
 namespace extensions {
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ApiResourceManager<BluetoothLowEnergyConnection> > > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    ApiResourceManager<BluetoothLowEnergyConnection>>>
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 template <>
-BrowserContextKeyedAPIFactory<
-    ApiResourceManager<BluetoothLowEnergyConnection> >*
+BrowserContextKeyedAPIFactory<ApiResourceManager<BluetoothLowEnergyConnection>>*
 ApiResourceManager<BluetoothLowEnergyConnection>::GetFactoryInstance() {
   return g_factory.Pointer();
 }
@@ -27,11 +26,10 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
       persistent_(persistent),
       connection_(connection.release()) {}
 
-BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {
-}
+BluetoothLowEnergyConnection::~BluetoothLowEnergyConnection() {}
 
-device::BluetoothGattConnection*
-BluetoothLowEnergyConnection::GetConnection() const {
+device::BluetoothGattConnection* BluetoothLowEnergyConnection::GetConnection()
+    const {
   return connection_.get();
 }
 

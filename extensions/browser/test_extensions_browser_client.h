@@ -19,6 +19,7 @@
 #include "extensions/browser/updater/extension_cache.h"
 
 namespace extensions {
+class KioskDelegate;
 
 // A simplified ExtensionsBrowserClient for a single normal browser context and
 // an optional incognito browser context associated with it. A test that uses
@@ -109,6 +110,7 @@ class TestExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsMinBrowserVersionSupported(const std::string& min_version) override;
   ExtensionWebContentsObserver* GetExtensionWebContentsObserver(
       content::WebContents* web_contents) override;
+  KioskDelegate* GetKioskDelegate() override;
   scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context) override;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
+#include "extensions/browser/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
 
 #include "base/lazy_instance.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
@@ -12,8 +12,8 @@ namespace extensions {
 
 // static
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ApiResourceManager<BluetoothApiAdvertisement>>> g_server_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    ApiResourceManager<BluetoothApiAdvertisement>>>
+    g_server_factory = LAZY_INSTANCE_INITIALIZER;
 
 // static
 template <>
@@ -29,7 +29,6 @@ BluetoothApiAdvertisement::BluetoothApiAdvertisement(
   DCHECK_CURRENTLY_ON(kThreadId);
 }
 
-BluetoothApiAdvertisement::~BluetoothApiAdvertisement() {
-}
+BluetoothApiAdvertisement::~BluetoothApiAdvertisement() {}
 
 }  // namespace extensions

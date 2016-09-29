@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
-#define CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
+#ifndef EXTENSIONS_BROWSER_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
+#define EXTENSIONS_BROWSER_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
 
 #include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
-#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 #include "content/public/browser/browser_context.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/bluetooth_low_energy/bluetooth_api_advertisement.h"
+#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_histogram_value.h"
@@ -56,7 +56,7 @@ struct Params;
 class BluetoothLowEnergyAPI : public BrowserContextKeyedAPI {
  public:
   static BrowserContextKeyedAPIFactory<BluetoothLowEnergyAPI>*
-      GetFactoryInstance();
+  GetFactoryInstance();
 
   // Convenience method to get the BluetoothLowEnergy API for a browser context.
   static BluetoothLowEnergyAPI* Get(content::BrowserContext* context);
@@ -631,4 +631,4 @@ class BluetoothLowEnergySendRequestResponseFunction
 }  // namespace api
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_
+#endif  // EXTENSIONS_BROWSER_API_BLUETOOTH_LOW_ENERGY_BLUETOOTH_LOW_ENERGY_API_H_

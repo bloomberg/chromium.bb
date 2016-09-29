@@ -205,6 +205,10 @@ TestExtensionsBrowserClient::GetExtensionWebContentsObserver(
   return nullptr;
 }
 
+KioskDelegate* TestExtensionsBrowserClient::GetKioskDelegate() {
+  return nullptr;
+}
+
 scoped_refptr<update_client::UpdateClient>
 TestExtensionsBrowserClient::CreateUpdateClient(
     content::BrowserContext* context) {

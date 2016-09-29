@@ -76,18 +76,6 @@ static_library("extensions") {
     "api/automation_internal/automation_internal_api.h",
     "api/autotest_private/autotest_private_api.cc",
     "api/autotest_private/autotest_private_api.h",
-    "api/bluetooth_low_energy/bluetooth_api_advertisement.cc",
-    "api/bluetooth_low_energy/bluetooth_api_advertisement.h",
-    "api/bluetooth_low_energy/bluetooth_low_energy_api.cc",
-    "api/bluetooth_low_energy/bluetooth_low_energy_api.h",
-    "api/bluetooth_low_energy/bluetooth_low_energy_connection.cc",
-    "api/bluetooth_low_energy/bluetooth_low_energy_connection.h",
-    "api/bluetooth_low_energy/bluetooth_low_energy_event_router.cc",
-    "api/bluetooth_low_energy/bluetooth_low_energy_event_router.h",
-    "api/bluetooth_low_energy/bluetooth_low_energy_notify_session.cc",
-    "api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h",
-    "api/bluetooth_low_energy/utils.cc",
-    "api/bluetooth_low_energy/utils.h",
     "api/bookmark_manager_private/bookmark_manager_private_api.cc",
     "api/bookmark_manager_private/bookmark_manager_private_api.h",
     "api/bookmarks/bookmark_api_constants.cc",
@@ -503,6 +491,8 @@ static_library("extensions") {
     "chrome_extension_web_contents_observer.h",
     "chrome_extensions_browser_client.cc",
     "chrome_extensions_browser_client.h",
+    "chrome_kiosk_delegate.h",
+    "chrome_kiosk_delegate_chromeos.cc",
     "chrome_mojo_service_registration.cc",
     "chrome_mojo_service_registration.h",
     "chrome_process_manager_delegate.cc",
@@ -920,6 +910,10 @@ static_library("extensions") {
     "//ui/strings",
     "//url",
   ]
+
+  if (!is_chromeos) {
+    sources += [ "chrome_kiosk_delegate.cc" ]
+  }
 
   if (is_chromeos) {
     sources += [

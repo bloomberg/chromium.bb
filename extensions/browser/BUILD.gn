@@ -250,6 +250,7 @@ source_set("browser") {
       "//extensions/browser/app_window",
       "//extensions/browser/guest_view",
       "//extensions/browser/install",
+      "//extensions/browser/kiosk",
       "//extensions/browser/mojo",
       "//extensions/browser/updater",
       "//extensions/browser/value_store",

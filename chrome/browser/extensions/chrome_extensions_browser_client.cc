@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/chrome_extension_api_frame_id_map_helper.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_kiosk_delegate.h"
 #include "chrome/browser/extensions/chrome_mojo_service_registration.h"
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
 #include "chrome/browser/extensions/chrome_url_request_util.h"
@@ -415,6 +416,12 @@ bool ChromeExtensionsBrowserClient::IsActivityLoggingEnabled(
     content::BrowserContext* context) {
   ActivityLog* activity_log = ActivityLog::GetInstance(context);
   return activity_log && activity_log->is_active();
+}
+
+KioskDelegate* ChromeExtensionsBrowserClient::GetKioskDelegate() {
+  if (!kiosk_delegate_)
+    kiosk_delegate_.reset(new ChromeKioskDelegate());
+  return kiosk_delegate_.get();
 }
 
 }  // namespace extensions

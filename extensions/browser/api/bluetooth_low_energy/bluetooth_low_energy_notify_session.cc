@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
+#include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_notify_session.h"
 
 #include "base/lazy_instance.h"
 
 namespace extensions {
 
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
-    ApiResourceManager<BluetoothLowEnergyNotifySession> > > g_factory =
-    LAZY_INSTANCE_INITIALIZER;
+    ApiResourceManager<BluetoothLowEnergyNotifySession>>>
+    g_factory = LAZY_INSTANCE_INITIALIZER;
 
 template <>
 BrowserContextKeyedAPIFactory<
-    ApiResourceManager<BluetoothLowEnergyNotifySession> >*
+    ApiResourceManager<BluetoothLowEnergyNotifySession>>*
 ApiResourceManager<BluetoothLowEnergyNotifySession>::GetFactoryInstance() {
   return g_factory.Pointer();
 }
@@ -27,8 +27,7 @@ BluetoothLowEnergyNotifySession::BluetoothLowEnergyNotifySession(
       persistent_(persistent),
       session_(session.release()) {}
 
-BluetoothLowEnergyNotifySession::~BluetoothLowEnergyNotifySession() {
-}
+BluetoothLowEnergyNotifySession::~BluetoothLowEnergyNotifySession() {}
 
 device::BluetoothGattNotifySession*
 BluetoothLowEnergyNotifySession::GetSession() const {
