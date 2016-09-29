@@ -1886,7 +1886,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (void)updateFullscreenExitBubble {
-  [self layoutSubviews];
   [self showFullscreenExitBubbleIfNecessary];
 }
 

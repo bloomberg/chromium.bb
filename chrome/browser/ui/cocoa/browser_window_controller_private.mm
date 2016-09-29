@@ -1014,8 +1014,6 @@ willPositionSheet:(NSWindow*)sheet
       positionFindBarViewAtMaxY:output.findBarMaxY
                        maxWidth:NSWidth(output.contentAreaFrame)];
 
-  exclusiveAccessController_->Layout(output.fullscreenExitButtonMaxY);
-
   if (fullscreenLowPowerCoordinator_) {
     fullscreenLowPowerCoordinator_->SetLayoutParameters(
         output.toolbarFrame, output.infoBarFrame, output.contentAreaFrame,

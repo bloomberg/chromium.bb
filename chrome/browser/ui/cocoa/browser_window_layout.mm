@@ -300,7 +300,6 @@ const CGFloat kLocationBarRightOffset = 35;
 
   // Place the find bar immediately below the toolbar/attached bookmark bar.
   output_.findBarMaxY = maxY;
-  output_.fullscreenExitButtonMaxY = maxY;
 
   if (parameters_.inAnyFullscreen &&
       (parameters_.slidingStyle ==

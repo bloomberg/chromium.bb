@@ -51,9 +51,6 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
   // Closes any open bubble.
   void Destroy();
 
-  // If showing, position the bubble at the given y-coordinate.
-  void Layout(CGFloat max_y);
-
   // ExclusiveAccessContext:
   Profile* GetProfile() override;
   bool IsFullscreen() const override;

@@ -101,7 +101,6 @@ struct LayoutOutput {
   NSRect bookmarkFrame;
   NSRect fullscreenBackingBarFrame;
   CGFloat findBarMaxY;
-  CGFloat fullscreenExitButtonMaxY;
   NSRect infoBarFrame;
   CGFloat infoBarMaxTopArrowHeight;
   NSRect downloadShelfFrame;
