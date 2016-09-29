@@ -127,7 +127,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
 
   FinalizeHandlerInitialization(
       request, provider_host.get(), blob_storage_context, skip_service_worker,
-      FETCH_REQUEST_MODE_SAME_ORIGIN, FETCH_CREDENTIALS_MODE_INCLUDE,
+      FETCH_REQUEST_MODE_NAVIGATE, FETCH_CREDENTIALS_MODE_INCLUDE,
       FetchRedirectMode::MANUAL_MODE, resource_type, request_context_type,
       frame_type, body);
 
