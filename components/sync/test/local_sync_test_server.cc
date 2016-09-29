@@ -37,6 +37,10 @@ LocalSyncTestServer::~LocalSyncTestServer() {}
 
 bool LocalSyncTestServer::AddCommandLineArguments(
     base::CommandLine* command_line) const {
+  // Suppress loading of site packages in order to avoid a version mismatch
+  // between pre-installed versions of python libraries.
+  // See https://bugs.chromium.org/p/chromium/issues/detail?id=649829
+  command_line->AppendSwitch("-S");
   if (!LocalTestServer::AddCommandLineArguments(command_line))
     return false;
   if (xmpp_port_ != 0) {
