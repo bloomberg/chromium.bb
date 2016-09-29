@@ -20,9 +20,6 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import org.chromium.base.Log;
-import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
-import org.chromium.content.browser.ContentVideoViewEmbedder;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -114,13 +111,6 @@ public class CastShellActivity extends Activity {
         String url = getIntent().getDataString();
         Log.d(TAG, "onCreate startupUrl: %s", url);
         mNativeCastWindow = mCastWindowManager.launchCastWindow(url);
-
-        getActiveContentViewCore().setContentViewClient(new ContentViewClient() {
-            @Override
-            public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
-                return new ActivityContentVideoViewEmbedder(CastShellActivity.this);
-            }
-        });
     }
 
     @Override

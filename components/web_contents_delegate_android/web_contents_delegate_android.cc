@@ -327,6 +327,25 @@ void WebContentsDelegateAndroid::ShowRepostFormWarningDialog(
   Java_WebContentsDelegateAndroid_showRepostFormWarningDialog(env, obj);
 }
 
+ScopedJavaLocalRef<jobject>
+WebContentsDelegateAndroid::GetContentVideoViewEmbedder() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return ScopedJavaLocalRef<jobject>();
+
+  return Java_WebContentsDelegateAndroid_getContentVideoViewEmbedder(env, obj);
+}
+
+bool WebContentsDelegateAndroid::ShouldBlockMediaRequest(const GURL& url) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return false;
+  ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
+  return Java_WebContentsDelegateAndroid_shouldBlockMediaRequest(env, obj, j_url);
+}
+
 void WebContentsDelegateAndroid::EnterFullscreenModeForTab(
     WebContents* web_contents,
     const GURL& origin) {

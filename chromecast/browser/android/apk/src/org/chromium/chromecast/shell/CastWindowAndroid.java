@@ -4,6 +4,7 @@
 
 package org.chromium.chromecast.shell;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -17,6 +18,8 @@ import android.widget.LinearLayout;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
+import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
@@ -122,12 +125,15 @@ public class CastWindowAndroid extends LinearLayout {
     /**
      * Initializes the ContentView based on the native tab contents pointer passed in.
      * @param nativeWebContents The pointer to the native tab contents object.
+     * @param renderProcessId ID of the corresponding render process host.
+     * @param productVersion String containing version description.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void initFromNativeWebContents(WebContents webContents, int renderProcessId) {
+    private void initFromNativeWebContents(WebContents webContents, int renderProcessId,
+            String productVersion) {
         Context context = getContext();
-        mContentViewCore = new ContentViewCore(context);
+        mContentViewCore = new ContentViewCore(context, productVersion);
         ContentView view = ContentView.createContentView(context, mContentViewCore);
         mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(view), view,
                 webContents, mWindow);
@@ -154,6 +160,11 @@ public class CastWindowAndroid extends LinearLayout {
                         new Intent(ACTION_PAGE_LOADED, intentUri));
             }
         };
+    }
+
+    @CalledByNative
+    private ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+        return new ActivityContentVideoViewEmbedder((Activity) getContext());
     }
 
     /**

@@ -375,7 +375,7 @@ class ContextualSearchFakeServer
         private boolean mIsVisible;
 
         ContentViewCoreWrapper(ChromeActivity activity) {
-            super(activity);
+            super(activity, "");
         }
 
         @Override

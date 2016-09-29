@@ -128,6 +128,8 @@ class Shell : public WebContentsDelegate,
                            bool to_different_document) override;
 #if defined(OS_ANDROID)
   void LoadProgressChanged(WebContents* source, double progress) override;
+  base::android::ScopedJavaLocalRef<jobject>
+      GetContentVideoViewEmbedder() override;
 #endif
   void EnterFullscreenModeForTab(WebContents* web_contents,
                                  const GURL& origin) override;

@@ -29,6 +29,7 @@ import com.google.vr.ndk.base.GvrLayout;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.ContentView;
@@ -121,7 +122,7 @@ public class VrShell extends GvrLayout implements GLSurfaceView.Renderer, VrShel
 
         mUiVrWindowAndroid = new VrWindowAndroid(mActivity);
         mUiContents = WebContentsFactory.createWebContents(true, false);
-        mUiCVC = new ContentViewCore(mActivity);
+        mUiCVC = new ContentViewCore(mActivity, ChromeVersionInfo.getProductVersion());
         ContentView uiContentView = ContentView.createContentView(mActivity, mUiCVC);
         mUiCVC.initialize(ViewAndroidDelegate.createBasicDelegate(uiContentView),
                 uiContentView, mUiContents, mUiVrWindowAndroid);

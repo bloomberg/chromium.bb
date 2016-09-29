@@ -707,16 +707,6 @@ ContentViewCoreImpl::CreateMotionEventSynthesizer() {
   return Java_ContentViewCore_createMotionEventSynthesizer(env, obj);
 }
 
-bool ContentViewCoreImpl::ShouldBlockMediaRequest(const GURL& url) {
-  JNIEnv* env = AttachCurrentThread();
-
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return true;
-  ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
-  return Java_ContentViewCore_shouldBlockMediaRequest(env, obj, j_url);
-}
-
 void ContentViewCoreImpl::DidStopFlinging() {
   JNIEnv* env = AttachCurrentThread();
 

@@ -77,6 +77,11 @@ void Shell::LoadProgressChanged(WebContents* source, double progress) {
   Java_Shell_onLoadProgressChanged(env, java_object_, progress);
 }
 
+ScopedJavaLocalRef<jobject> Shell::GetContentVideoViewEmbedder() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_Shell_getContentVideoViewEmbedder(env, java_object_);
+}
+
 void Shell::PlatformToggleFullscreenModeForTab(WebContents* web_contents,
                                                bool enter_fullscreen) {
   JNIEnv* env = AttachCurrentThread();

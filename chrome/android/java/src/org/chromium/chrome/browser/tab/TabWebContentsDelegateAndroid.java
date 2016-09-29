@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.document.DocumentWebContentsDelegate;
 import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
@@ -38,6 +39,9 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
+import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
+import org.chromium.content.browser.ContentVideoViewEmbedder;
+import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ResourceRequestBody;
@@ -487,6 +491,39 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
     public static void notifyStopped(int tabId) {
         final Tab tab = TabWindowManager.getInstance().getTabById(tabId);
         if (tab != null) nativeNotifyStopped(tab.getWebContents());
+    }
+
+    @Override
+    public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+        return new ActivityContentVideoViewEmbedder(mTab.getActivity()) {
+            @Override
+            public void enterFullscreenVideo(View view, boolean isVideoLoaded) {
+                super.enterFullscreenVideo(view, isVideoLoaded);
+                FullscreenManager fullscreenManager = mTab.getFullscreenManager();
+                if (fullscreenManager != null) {
+                    fullscreenManager.setOverlayVideoMode(true);
+                    // Disable double tap for video.
+                    ContentViewCore cvc = mTab.getContentViewCore();
+                    if (cvc != null) {
+                        cvc.updateDoubleTapSupport(false);
+                    }
+                }
+            }
+
+            @Override
+            public void exitFullscreenVideo() {
+                FullscreenManager fullscreenManager = mTab.getFullscreenManager();
+                if (fullscreenManager != null) {
+                    fullscreenManager.setOverlayVideoMode(false);
+                    // Disable double tap for video.
+                    ContentViewCore cvc = mTab.getContentViewCore();
+                    if (cvc != null) {
+                        cvc.updateDoubleTapSupport(true);
+                    }
+                }
+                super.exitFullscreenVideo();
+            }
+        };
     }
 
     private static native void nativeOnRendererUnresponsive(WebContents webContents);

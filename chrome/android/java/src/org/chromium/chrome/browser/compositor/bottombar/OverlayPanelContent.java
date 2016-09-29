@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
@@ -18,6 +19,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.components.web_contents_delegate_android.WebContentsDelegateAndroid;
+import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -160,6 +162,11 @@ public class OverlayPanelContent {
             public boolean isFullscreenForTabOrPending() {
                 return mIsFullscreen;
             }
+
+            @Override
+            public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+                return null;  // Have a no-op embedder be used.
+            }
         };
     }
 
@@ -204,7 +211,7 @@ public class OverlayPanelContent {
      * @return The newly created ContentViewCore.
      */
     protected ContentViewCore createContentViewCore(ChromeActivity activity) {
-        return new ContentViewCore(activity);
+        return new ContentViewCore(activity, ChromeVersionInfo.getProductVersion());
     }
 
     /**

@@ -95,7 +95,7 @@ public class OverlayPanelEventFilterTest extends InstrumentationTestCase {
 
     private final class StubbedContentViewCore extends ContentViewCore {
         public StubbedContentViewCore(Context context) {
-            super(context);
+            super(context, "");
         }
 
         @Override

@@ -172,7 +172,7 @@ public class ContextualSearchTapEventTest extends ChromeActivityTestCaseBase<Chr
         private String mCurrentText;
 
         public StubbedContentViewCore(Context context) {
-            super(context);
+            super(context, "");
         }
 
         @Override

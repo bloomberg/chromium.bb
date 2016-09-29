@@ -358,9 +358,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // testing/benchmarking purposes.
   base::android::ScopedJavaLocalRef<jobject> CreateMotionEventSynthesizer();
 
-  // Returns True if the given media should be blocked to load.
-  bool ShouldBlockMediaRequest(const GURL& url);
-
   void DidStopFlinging();
 
   // Returns the context with which the ContentViewCore was created, typically

@@ -6,6 +6,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chromecast/base/version.h"
 #include "chromecast/browser/android/cast_window_manager.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -64,8 +65,9 @@ void CastWindowAndroid::Initialize() {
   window_java_.Reset(CreateCastWindowView(this));
 
   Java_CastWindowAndroid_initFromNativeWebContents(
-      env, window_java_.obj(), web_contents_->GetJavaWebContents().obj(),
-      web_contents_->GetRenderProcessHost()->GetID());
+      env, window_java_, web_contents_->GetJavaWebContents(),
+      web_contents_->GetRenderProcessHost()->GetID(),
+      base::android::ConvertUTF8ToJavaString(env, PRODUCT_VERSION));
 
   // Enabling hole-punching also requires runtime renderer preference
   content::RendererPreferences* prefs =
@@ -141,6 +143,12 @@ bool CastWindowAndroid::AddMessageToConsole(content::WebContents* source,
 void CastWindowAndroid::ActivateContents(content::WebContents* contents) {
   DCHECK_EQ(contents, web_contents_.get());
   contents->GetRenderViewHost()->GetWidget()->Focus();
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+CastWindowAndroid::GetContentVideoViewEmbedder() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_CastWindowAndroid_getContentVideoViewEmbedder(env, window_java_);
 }
 
 void CastWindowAndroid::RenderProcessGone(base::TerminationStatus status) {

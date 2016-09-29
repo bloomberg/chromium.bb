@@ -113,6 +113,21 @@ public class ContentVideoView extends FrameLayout
         }
     }
 
+    private static final ContentVideoViewEmbedder NULL_VIDEO_EMBEDDER =
+            new ContentVideoViewEmbedder() {
+                @Override
+                public void enterFullscreenVideo(View view, boolean isVideoLoaded) {}
+
+                @Override
+                public void fullscreenVideoLoaded() {}
+
+                @Override
+                public void exitFullscreenVideo() {}
+
+                @Override
+                public void setSystemUiVisibility(boolean enterFullscreen) {}
+    };
+
     private final Runnable mExitFullscreenRunnable = new Runnable() {
         @Override
         public void run() {
@@ -124,7 +139,7 @@ public class ContentVideoView extends FrameLayout
             ContentVideoViewEmbedder embedder, int videoWidth, int videoHeight) {
         super(context);
         mNativeContentVideoView = nativeContentVideoView;
-        mEmbedder = embedder;
+        mEmbedder = embedder != null ? embedder : NULL_VIDEO_EMBEDDER;
         mUmaRecorded = false;
         mPossibleAccidentalChange = false;
         mIsVideoLoaded = videoWidth > 0 && videoHeight > 0;
@@ -282,10 +297,10 @@ public class ContentVideoView extends FrameLayout
      */
     @CalledByNative
     private static ContentVideoView createContentVideoView(ContentViewCore contentViewCore,
-            long nativeContentVideoView, int videoWidth, int videoHeight) {
+            ContentVideoViewEmbedder embedder, long nativeContentVideoView,
+            int videoWidth, int videoHeight) {
         ThreadUtils.assertOnUiThread();
         Context context = contentViewCore.getContext();
-        ContentVideoViewEmbedder embedder = contentViewCore.getContentVideoViewEmbedder();
         ContentVideoView videoView = new ContentVideoView(
                 context, nativeContentVideoView, embedder, videoWidth, videoHeight);
         return videoView;

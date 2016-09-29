@@ -102,6 +102,7 @@ public class AwContents implements SmartClipProvider,
     private static final boolean TRACE = false;
     private static final int NO_WARN = 0;
     private static final int WARN = 1;
+    private static final String PRODUCT_VERSION = AwContentsStatics.getProductVersion();
 
     private static final String WEB_ARCHIVE_EXTENSION = ".mht";
     // The request code should be unique per WebView/AwContents object.
@@ -771,7 +772,7 @@ public class AwContents implements SmartClipProvider,
         mSettings = settings;
         mLayoutSizer.setDelegate(new AwLayoutSizerDelegate());
         mWebContentsDelegate = new AwWebContentsDelegateAdapter(
-                this, contentsClient, mContentViewClient, mContext, mContainerView);
+                this, contentsClient, settings, mContext, mContainerView);
         mContentsClientBridge = new AwContentsClientBridge(mContext, contentsClient,
                 AwContentsStatics.getClientCertLookupTable());
         mZoomControls = new AwZoomControls(this);
@@ -1048,7 +1049,7 @@ public class AwContents implements SmartClipProvider,
         WebContents webContents = nativeGetWebContents(mNativeAwContents);
 
         mWindowAndroid = getWindowAndroid(mContext);
-        mContentViewCore = new ContentViewCore(mContext);
+        mContentViewCore = new ContentViewCore(mContext, PRODUCT_VERSION);
         mViewAndroidDelegate = new AwViewAndroidDelegate(mContainerView,
                 mContentViewCore.getRenderCoordinates());
         initializeContentViewCore(mContentViewCore, mContext, mViewAndroidDelegate,

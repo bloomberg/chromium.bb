@@ -19,10 +19,14 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
+import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
+import android.webkit.WebChromeClient;
+import android.widget.FrameLayout;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.common.ResourceRequestBody;
 
@@ -37,15 +41,17 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
 
     private final AwContents mAwContents;
     private final AwContentsClient mContentsClient;
-    private final AwContentViewClient mContentViewClient;
+    private final AwSettings mAwSettings;
     private final Context mContext;
     private View mContainerView;
+    private FrameLayout mCustomView;
+    private AwContentVideoViewEmbedder mVideoViewEmbedder;
 
     public AwWebContentsDelegateAdapter(AwContents awContents, AwContentsClient contentsClient,
-            AwContentViewClient contentViewClient, Context context, View containerView) {
+            AwSettings settings, Context context, View containerView) {
         mAwContents = awContents;
         mContentsClient = contentsClient;
-        mContentViewClient = contentViewClient;
+        mAwSettings = settings;
         mContext = context;
         setContainerView(containerView);
     }
@@ -264,15 +270,68 @@ class AwWebContentsDelegateAdapter extends AwWebContentsDelegate {
     @Override
     public void toggleFullscreenModeForTab(boolean enterFullscreen) {
         if (enterFullscreen) {
-            mContentViewClient.enterFullscreen();
+            enterFullscreen();
         } else {
-            mContentViewClient.exitFullscreen();
+            exitFullscreen();
         }
     }
 
     @Override
     public void loadingStateChanged() {
         mContentsClient.updateTitle(mAwContents.getTitle(), false);
+    }
+
+    /**
+     * Called to show the web contents in fullscreen mode.
+     *
+     * <p>If entering fullscreen on a video element the web contents will contain just
+     * the html5 video controls. {@link #enterFullscreenVideo(View)} will be called later
+     * once the ContentVideoView, which contains the hardware accelerated fullscreen video,
+     * is ready to be shown.
+     */
+    private void enterFullscreen() {
+        if (mAwContents.isFullScreen()) {
+            return;
+        }
+        View fullscreenView = mAwContents.enterFullScreen();
+        if (fullscreenView == null) {
+            return;
+        }
+        WebChromeClient.CustomViewCallback cb = new WebChromeClient.CustomViewCallback() {
+            @Override
+            public void onCustomViewHidden() {
+                if (mCustomView != null) {
+                    mAwContents.requestExitFullscreen();
+                }
+            }
+        };
+        mCustomView = new FrameLayout(mContext);
+        mCustomView.addView(fullscreenView);
+        mContentsClient.onShowCustomView(mCustomView, cb);
+    }
+
+    /**
+     * Called to show the web contents in embedded mode.
+     */
+    private void exitFullscreen() {
+        if (mCustomView != null) {
+            mCustomView = null;
+            if (mVideoViewEmbedder != null) mVideoViewEmbedder.setCustomView(null);
+            mAwContents.exitFullScreen();
+            mContentsClient.onHideCustomView();
+        }
+    }
+
+    @Override
+    public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+        mVideoViewEmbedder = new AwContentVideoViewEmbedder(mContext, mContentsClient, mCustomView);
+        return mVideoViewEmbedder;
+    }
+
+    @Override
+    public boolean shouldBlockMediaRequest(String url) {
+        return mAwSettings != null
+                ? mAwSettings.getBlockNetworkLoads() && URLUtil.isNetworkUrl(url) : true;
     }
 
     private static class GetDisplayNameTask extends AsyncTask<Void, Void, String[]> {

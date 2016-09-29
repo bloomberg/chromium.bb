@@ -209,6 +209,15 @@ void WebContentsDelegate::RequestMediaDecodePermission(
     const base::Callback<void(bool)>& callback) {
   callback.Run(false);
 }
+
+base::android::ScopedJavaLocalRef<jobject>
+WebContentsDelegate::GetContentVideoViewEmbedder() {
+  return base::android::ScopedJavaLocalRef<jobject>();
+}
+
+bool WebContentsDelegate::ShouldBlockMediaRequest(const GURL& url) {
+  return false;
+}
 #endif
 
 bool WebContentsDelegate::RequestPpapiBrokerPermission(

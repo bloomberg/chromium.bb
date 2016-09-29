@@ -157,19 +157,6 @@ public class ContentViewClient {
         }
     }
 
-    public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
-        return null;
-    }
-
-    /**
-     * Called when BrowserMediaPlayerManager wants to load a media resource.
-     * @param url the URL of media resource to load.
-     * @return true to prevent the resource from being loaded.
-     */
-    public boolean shouldBlockMediaRequest(String url) {
-        return false;
-    }
-
     /**
      * Check whether a key should be propagated to the embedder or not.
      * We need to send almost every key to Blink. However:
@@ -258,12 +245,5 @@ public class ContentViewClient {
      */
     public int getSystemWindowInsetBottom() {
         return 0;
-    }
-
-    /**
-     * Return the product version.
-     */
-    public String getProductVersion() {
-        return "";
     }
 }

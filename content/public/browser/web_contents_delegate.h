@@ -26,6 +26,10 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
+
 class GURL;
 
 namespace base {
@@ -469,6 +473,13 @@ class CONTENT_EXPORT WebContentsDelegate {
   virtual void RequestMediaDecodePermission(
       WebContents* web_contents,
       const base::Callback<void(bool)>& callback);
+
+  // Creates a view embedding the video view.
+  virtual base::android::ScopedJavaLocalRef<jobject>
+      GetContentVideoViewEmbedder();
+
+  // Returns true if the given media should be blocked to load.
+  virtual bool ShouldBlockMediaRequest(const GURL& url);
 #endif
 
   // Requests permission to access the PPAPI broker. The delegate should return

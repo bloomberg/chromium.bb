@@ -46,6 +46,7 @@ class ContentVideoView {
 
   explicit ContentVideoView(Client* client,
                             ContentViewCore* content_view_core,
+                            const base::android::JavaRef<jobject>& embedder,
                             const gfx::Size& video_natural_size);
   ~ContentVideoView();
 
@@ -90,8 +91,10 @@ class ContentVideoView {
 
  private:
   // Creates the corresponding ContentVideoView Java object.
-  JavaObjectWeakGlobalRef CreateJavaObject(ContentViewCore* content_view_core,
-                                           const gfx::Size& video_natural_size);
+  JavaObjectWeakGlobalRef CreateJavaObject(
+      ContentViewCore* content_view_core,
+      const base::android::JavaRef<jobject>& j_content_video_view_embedder,
+      const gfx::Size& video_natural_size);
 
   Client* client_;
 

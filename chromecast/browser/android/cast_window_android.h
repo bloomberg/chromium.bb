@@ -69,6 +69,8 @@ class CastWindowAndroid : public content::WebContentsDelegate,
                            int32_t line_no,
                            const base::string16& source_id) override;
   void ActivateContents(content::WebContents* contents) override;
+  base::android::ScopedJavaLocalRef<jobject>
+      GetContentVideoViewEmbedder() override;
 
   // content::WebContentsObserver implementation:
   void RenderProcessGone(base::TerminationStatus status) override;

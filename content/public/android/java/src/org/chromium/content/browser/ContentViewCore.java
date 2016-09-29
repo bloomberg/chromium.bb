@@ -312,6 +312,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
     }
 
     private final Context mContext;
+    private final String mProductVersion;
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
     private WebContents mWebContents;
@@ -477,8 +478,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      *
      * @param context The context used to create this.
      */
-    public ContentViewCore(Context context) {
+    public ContentViewCore(Context context, String productVersion) {
         mContext = context;
+        mProductVersion = productVersion;
         mRenderCoordinates = new RenderCoordinates();
         mJoystickScrollProvider = new JoystickScrollProvider(this);
         mAccessibilityManager = (AccessibilityManager)
@@ -2930,7 +2932,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
             @Override
             public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
                 viewRoot.setClassName("");
-                viewRoot.setHint(mContentViewClient.getProductVersion());
+                viewRoot.setHint(mProductVersion);
                 if (root == null) {
                     viewRoot.asyncCommit();
                     return;
@@ -3198,15 +3200,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         mPotentiallyActiveFlingCount = 0;
         if (touchScrollInProgress) updateGestureStateListener(GestureEventType.SCROLL_END);
         if (potentiallyActiveFlingCount > 0) updateGestureStateListener(GestureEventType.FLING_END);
-    }
-
-    ContentVideoViewEmbedder getContentVideoViewEmbedder() {
-        return getContentViewClient().getContentVideoViewEmbedder();
-    }
-
-    @CalledByNative
-    private boolean shouldBlockMediaRequest(String url) {
-        return getContentViewClient().shouldBlockMediaRequest(url);
     }
 
     @CalledByNative

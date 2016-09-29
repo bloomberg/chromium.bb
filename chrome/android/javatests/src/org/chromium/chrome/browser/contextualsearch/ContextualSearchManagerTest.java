@@ -463,7 +463,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         private boolean mIsFocusedNodeEditable;
 
         public StubbedContentViewCore(Context context) {
-            super(context);
+            super(context, "");
         }
 
         /**

@@ -16,6 +16,7 @@
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::UserMetricsAction;
@@ -49,11 +50,12 @@ ContentVideoView* ContentVideoView::GetInstance() {
 
 ContentVideoView::ContentVideoView(Client* client,
                                    ContentViewCore* content_view_core,
+                                   const JavaRef<jobject>& video_embedder,
                                    const gfx::Size& video_natural_size)
     : client_(client), weak_factory_(this) {
   DCHECK(!g_content_video_view);
   j_content_video_view_ =
-      CreateJavaObject(content_view_core, video_natural_size);
+      CreateJavaObject(content_view_core, video_embedder, video_natural_size);
   g_content_video_view = this;
 }
 
@@ -162,16 +164,19 @@ void ContentVideoView::RecordExitFullscreenPlayback(
 
 JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject(
     ContentViewCore* content_view_core,
+    const JavaRef<jobject>& j_content_video_view_embedder,
     const gfx::Size& video_natural_size) {
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> j_content_view_core =
       content_view_core->GetJavaObject();
+
   if (j_content_view_core.is_null())
     return JavaObjectWeakGlobalRef(env, nullptr);
 
   return JavaObjectWeakGlobalRef(
       env, Java_ContentVideoView_createContentVideoView(
-               env, j_content_view_core, reinterpret_cast<intptr_t>(this),
+               env, j_content_view_core, j_content_video_view_embedder,
+               reinterpret_cast<intptr_t>(this),
                video_natural_size.width(), video_natural_size.height())
                .obj());
 }

@@ -546,6 +546,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwAutofillClient.java",
     "java/src/org/chromium/android_webview/AwBrowserContext.java",
     "java/src/org/chromium/android_webview/AwBrowserProcess.java",
+    "java/src/org/chromium/android_webview/AwContentVideoViewEmbedder.java",
     "java/src/org/chromium/android_webview/AwContentViewClient.java",
     "java/src/org/chromium/android_webview/AwContents.java",
     "java/src/org/chromium/android_webview/AwContentsBackgroundThreadClient.java",

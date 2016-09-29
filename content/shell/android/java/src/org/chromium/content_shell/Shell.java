@@ -4,6 +4,7 @@
 
 package org.chromium.content_shell;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ClipDrawable;
 import android.text.TextUtils;
@@ -22,6 +23,8 @@ import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
+import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -287,7 +290,7 @@ public class Shell extends LinearLayout {
     @CalledByNative
     private void initFromNativeTabContents(WebContents webContents) {
         Context context = getContext();
-        mContentViewCore = new ContentViewCore(context);
+        mContentViewCore = new ContentViewCore(context, "");
         ContentView cv = ContentView.createContentView(context, mContentViewCore);
         mContentViewCore.initialize(ViewAndroidDelegate.createBasicDelegate(cv), cv,
                 webContents, mWindow);
@@ -304,6 +307,23 @@ public class Shell extends LinearLayout {
                         FrameLayout.LayoutParams.MATCH_PARENT));
         cv.requestFocus();
         mContentViewRenderView.setCurrentContentViewCore(mContentViewCore);
+    }
+
+    @CalledByNative
+    public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+        return new ActivityContentVideoViewEmbedder((Activity) getContext()) {
+            @Override
+            public void enterFullscreenVideo(View view, boolean isVideoLoaded) {
+                super.enterFullscreenVideo(view, isVideoLoaded);
+                mContentViewRenderView.setOverlayVideoMode(true);
+            }
+
+            @Override
+            public void exitFullscreenVideo() {
+                super.exitFullscreenVideo();
+                mContentViewRenderView.setOverlayVideoMode(false);
+            }
+        };
     }
 
     /**

@@ -214,14 +214,11 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
           // small chunks of data.
           RequestDecoderResources(media_player_params.player_id, true);
 #if !defined(USE_AURA)
-      ContentViewCoreImpl* content_view_core_impl =
-          static_cast<ContentViewCoreImpl*>(
-              ContentViewCore::FromWebContents(web_contents_));
-      if (!content_view_core_impl) {
-        extract_metadata = false;
+      if (WebContentsDelegate* delegate = web_contents_->GetDelegate()) {
+        should_block =
+            delegate->ShouldBlockMediaRequest(media_player_params.url);
       } else {
-        should_block = content_view_core_impl->ShouldBlockMediaRequest(
-            media_player_params.url);
+        extract_metadata = false;
       }
 #endif
       if (!extract_metadata) {
@@ -455,8 +452,16 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
         gfx::Size(player->GetVideoWidth(), player->GetVideoHeight());
   }
 
+  if (!web_contents()->GetDelegate())
+    return;
+
+  base::android::ScopedJavaLocalRef<jobject> embedder(
+      web_contents()->GetDelegate()->GetContentVideoViewEmbedder());
   video_view_.reset(
-      new ContentVideoView(this, GetContentViewCore(), natural_video_size));
+      new ContentVideoView(this,
+                           GetContentViewCore(),
+                           embedder,
+                           natural_video_size));
 
   base::android::ScopedJavaLocalRef<jobject> j_content_video_view =
       video_view_->GetJavaObject(base::android::AttachCurrentThread());

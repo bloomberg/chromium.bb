@@ -90,9 +90,7 @@ import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
 import org.chromium.content.browser.ChildProcessLauncher;
-import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -155,6 +153,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /** Used for logging. */
     private static final String TAG = "Tab";
+
+    private static final String PRODUCT_VERSION = ChromeVersionInfo.getProductVersion();
 
     private long mNativeTabAndroid;
 
@@ -484,42 +484,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                 return activity.getInsetObserverView().getSystemWindowInsetsBottom();
             }
             return 0;
-        }
-
-        @Override
-        public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
-            return new ActivityContentVideoViewEmbedder(getActivity()) {
-                @Override
-                public void enterFullscreenVideo(View view, boolean isVideoLoaded) {
-                    super.enterFullscreenVideo(view, isVideoLoaded);
-                    FullscreenManager fullscreenManager = getFullscreenManager();
-                    if (fullscreenManager != null) {
-                        fullscreenManager.setOverlayVideoMode(true);
-                        // Disable double tap for video.
-                        if (getContentViewCore() != null) {
-                            getContentViewCore().updateDoubleTapSupport(false);
-                        }
-                    }
-                }
-
-                @Override
-                public void exitFullscreenVideo() {
-                    FullscreenManager fullscreenManager = getFullscreenManager();
-                    if (fullscreenManager != null) {
-                        fullscreenManager.setOverlayVideoMode(false);
-                        // Disable double tap for video.
-                        if (getContentViewCore() != null) {
-                            getContentViewCore().updateDoubleTapSupport(true);
-                        }
-                    }
-                    super.exitFullscreenVideo();
-                }
-            };
-        }
-
-        @Override
-        public String getProductVersion() {
-            return ChromeVersionInfo.getProductVersion();
         }
     }
 
@@ -1855,7 +1819,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *                    {@link ContentViewCore}.
      */
     protected void initContentViewCore(WebContents webContents) {
-        ContentViewCore cvc = new ContentViewCore(mThemedApplicationContext);
+        ContentViewCore cvc = new ContentViewCore(mThemedApplicationContext, PRODUCT_VERSION);
         ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
         cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
@@ -2535,7 +2499,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     @CalledByNative
     public void swapWebContents(
             WebContents webContents, boolean didStartLoad, boolean didFinishLoad) {
-        ContentViewCore cvc = new ContentViewCore(mThemedApplicationContext);
+        ContentViewCore cvc = new ContentViewCore(mThemedApplicationContext, PRODUCT_VERSION);
         ContentView cv = ContentView.createContentView(mThemedApplicationContext, cvc);
         cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                 R.string.accessibility_content_view));
