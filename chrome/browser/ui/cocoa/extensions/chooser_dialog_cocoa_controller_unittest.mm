@@ -72,6 +72,8 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
     ASSERT_TRUE(chooser_dialog_controller_);
     chooser_content_view_ = [chooser_dialog_controller_ chooserContentView];
     ASSERT_TRUE(chooser_content_view_);
+    adapter_off_help_button_ = [chooser_content_view_ adapterOffHelpButton];
+    ASSERT_TRUE(adapter_off_help_button_);
     table_view_ = [chooser_content_view_ tableView];
     ASSERT_TRUE(table_view_);
     spinner_ = [chooser_content_view_ spinner];
@@ -156,6 +158,7 @@ class ChooserDialogCocoaControllerTest : public CocoaProfileTest {
   MockChooserController* mock_chooser_controller_;
   ChooserDialogCocoaController* chooser_dialog_controller_;
   ChooserContentViewCocoa* chooser_content_view_;
+  NSButton* adapter_off_help_button_;
   NSTableView* table_view_;
   SpinnerView* spinner_;
   NSTextField* status_;
@@ -188,6 +191,8 @@ TEST_F(ChooserDialogCocoaControllerTest, InitialState) {
   EXPECT_FALSE(connect_button_.enabled);
   EXPECT_TRUE(cancel_button_.enabled);
   EXPECT_TRUE(help_button_.enabled);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_DEVICE_CHOOSER_GET_HELP_LINK_TEXT),
+              help_button_.title);
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, AddOption) {
@@ -879,6 +884,7 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
 
   mock_chooser_controller_->OnAdapterPresenceChanged(
       content::BluetoothChooser::AdapterPresence::POWERED_ON);
+  EXPECT_TRUE(adapter_off_help_button_.hidden);
   EXPECT_FALSE(table_view_.hidden);
   // There is no option shown now. But since "No devices found."
   // needs to be displayed on the |table_view_|, the number of rows is 1.
@@ -894,6 +900,8 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN),
+              rescan_button_.title);
   EXPECT_FALSE(connect_button_.enabled);
   EXPECT_TRUE(cancel_button_.enabled);
 
@@ -920,19 +928,11 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
 
   mock_chooser_controller_->OnAdapterPresenceChanged(
       content::BluetoothChooser::AdapterPresence::POWERED_OFF);
-  EXPECT_FALSE(table_view_.hidden);
-  // Since "Bluetooth turned off." needs to be displayed on the |table_view_|,
-  // the number of rows is 1.
-  EXPECT_EQ(1, table_view_.numberOfRows);
-  // |table_view_| should be disabled since there is no option shown.
-  EXPECT_FALSE(table_view_.enabled);
-  // No option selected.
-  EXPECT_EQ(-1, table_view_.selectedRow);
-  ExpectNoRowImage(0);
-  // TODO(juncai): test the row text is "Turn on Bluetooth to allow pairing"
-  // after the Mac implementation is done.
-  // https://crbug.com/644168
-  EXPECT_FALSE(IsRowPaired(0));
+  EXPECT_FALSE(adapter_off_help_button_.hidden);
+  EXPECT_NSEQ(
+      l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_TURN_ADAPTER_OFF),
+      adapter_off_help_button_.title);
+  EXPECT_TRUE(table_view_.hidden);
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_TRUE(rescan_button_.hidden);
@@ -944,6 +944,8 @@ TEST_F(ChooserDialogCocoaControllerTest, AdapterOnAndOffAndOn) {
 
   mock_chooser_controller_->OnAdapterPresenceChanged(
       content::BluetoothChooser::AdapterPresence::POWERED_ON);
+  EXPECT_TRUE(adapter_off_help_button_.hidden);
+  EXPECT_FALSE(table_view_.hidden);
   ExpectNoRowImage(0);
   ExpectRowTextIs(
       0, l10n_util::GetNSString(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT));
@@ -1008,6 +1010,8 @@ TEST_F(ChooserDialogCocoaControllerTest, DiscoveringAndNoOptionAddedAndIdle) {
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN),
+              rescan_button_.title);
   // OK button is disabled since the chooser refreshed options.
   EXPECT_FALSE(connect_button_.enabled);
   EXPECT_TRUE(cancel_button_.enabled);
@@ -1070,8 +1074,17 @@ TEST_F(ChooserDialogCocoaControllerTest,
   EXPECT_TRUE(spinner_.hidden);
   EXPECT_TRUE(status_.hidden);
   EXPECT_FALSE(rescan_button_.hidden);
+  EXPECT_NSEQ(l10n_util::GetNSString(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN),
+              rescan_button_.title);
   EXPECT_TRUE(connect_button_.enabled);
   EXPECT_TRUE(cancel_button_.enabled);
+}
+
+TEST_F(ChooserDialogCocoaControllerTest, PressAdapterOffHelpButton) {
+  CreateChooserDialog();
+
+  EXPECT_CALL(*mock_chooser_controller_, OpenAdapterOffHelpUrl()).Times(1);
+  [adapter_off_help_button_ performClick:chooser_dialog_controller_];
 }
 
 TEST_F(ChooserDialogCocoaControllerTest, PressRescanButton) {
