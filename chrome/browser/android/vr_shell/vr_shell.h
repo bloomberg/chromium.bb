@@ -141,7 +141,9 @@ class VrShell : public device::GvrDelegate {
 
   gvr::Quatf controller_quat_;
   bool controller_active_ = false;
-  gvr::Vec3f look_at_vector_;
+
+  gvr::Vec3f target_point_;
+  const ContentRectangle* target_element_ = nullptr;
   int ui_tex_width_ = 0;
   int ui_tex_height_ = 0;
 

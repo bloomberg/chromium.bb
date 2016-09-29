@@ -60,9 +60,14 @@ static constexpr gvr::Vec3f kOrigin = {0.0f, 0.0f, 0.0f};
 // TODO(mthiesse): Handedness options.
 static constexpr gvr::Vec3f kHandPosition = {0.2f, -0.5f, -0.2f};
 
-// Fraction of the z-distance to the object the cursor is drawn at to avoid
+// Fraction of the distance to the object the cursor is drawn at to avoid
 // rounding errors drawing the cursor behind the object.
-static constexpr float kReticleZOffset = 0.99f;
+static constexpr float kReticleOffset = 0.99f;
+
+// Limit the rendering distance of the reticle to the distance to a corner of
+// the content quad, times this value.  This lets the rendering distance
+// adjust according to content quad placement.
+static constexpr float kReticleDistanceMultiplier = 1.5f;
 
 // UI element 0 is the browser content rectangle.
 static constexpr int kBrowserUiElementId = 0;
@@ -70,6 +75,37 @@ static constexpr int kBrowserUiElementId = 0;
 vr_shell::VrShell* g_instance;
 
 static const char kVrShellUIURL[] = "chrome://vr-shell-ui";
+
+float Distance(const gvr::Vec3f& vec1, const gvr::Vec3f& vec2) {
+  float xdiff = (vec1.x - vec2.x);
+  float ydiff = (vec1.y - vec2.y);
+  float zdiff = (vec1.z - vec2.z);
+  float scale = xdiff * xdiff + ydiff * ydiff + zdiff * zdiff;
+  return std::sqrt(scale);
+}
+
+// Generate a quaternion representing the rotation from the negative Z axis
+// (0, 0, -1) to a specified vector.  This is an optimized version of a more
+// general vector-to-vector calculation.
+gvr::Quatf GetRotationFromZAxis(gvr::Vec3f vec) {
+  vr_shell::NormalizeVector(vec);
+  gvr::Quatf quat;
+  quat.qw = 1.0f - vec.z;
+  if (quat.qw < 1e-6f) {
+    // Degenerate case: vectors are exactly opposite. Replace by an
+    // arbitrary 180 degree rotation to avoid invalid normalization.
+    quat.qx = 1.0f;
+    quat.qy = 0.0f;
+    quat.qz = 0.0f;
+    quat.qw = 0.0f;
+  } else {
+    quat.qx = vec.y;
+    quat.qy = -vec.x;
+    quat.qz = 0.0f;
+    vr_shell::NormalizeQuat(quat);
+  }
+  return quat;
+}
 
 }  // namespace
 
@@ -84,7 +120,6 @@ VrShell::VrShell(JNIEnv* env,
     : desktop_screen_tilt_(kDesktopScreenTiltDefault),
       desktop_height_(kDesktopHeightDefault),
       desktop_position_(kDesktopPositionDefault),
-      cursor_distance_(-kDesktopPositionDefault.z),
       content_cvc_(content_cvc),
       ui_cvc_(ui_cvc),
       delegate_(nullptr),
@@ -175,49 +210,40 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   if (!controller_active_) {
     // No controller detected, set up a gaze cursor that tracks the
     // forward direction.
-    //
-    // Make a rotation quaternion that rotates forward_vector to (0, 0, -1).
-    gvr::Quatf gaze_quat;
-    gaze_quat.qw = 1 - forward_vector.z;
-    if (gaze_quat.qw < 1e-6) {
-      // Degenerate case: vectors are exactly opposite. Replace by an
-      // arbitrary 180 degree rotation to avoid invalid normalization.
-      gaze_quat.qx = 1.0f;
-      gaze_quat.qy = 0.0f;
-      gaze_quat.qz = 0.0f;
-      gaze_quat.qw = 0.0f;
-    } else {
-      gaze_quat.qx = forward_vector.y;
-      gaze_quat.qy = -forward_vector.x;
-      gaze_quat.qz = 0.0f;
-      NormalizeQuat(gaze_quat);
-    }
-    controller_quat_ = gaze_quat;
+    controller_quat_ = GetRotationFromZAxis(forward_vector);
   }
 
   gvr::Mat4f mat = QuatToMatrix(controller_quat_);
   gvr::Vec3f forward = MatrixVectorMul(mat, kNeutralPose);
   gvr::Vec3f origin = kHandPosition;
 
-  // Use the eye midpoint as the origin for Cardboard mode.
-  if (!controller_active_) {
-    origin = kOrigin;
-  }
-
-  float desktop_dist = scene_.GetUiElementById(kBrowserUiElementId)
+  target_element_ = nullptr;;
+  float distance = scene_.GetUiElementById(kBrowserUiElementId)
       ->GetRayDistance(origin, forward);
-  gvr::Vec3f cursor_position = GetRayPoint(origin, forward, desktop_dist);
-  look_at_vector_ = cursor_position;
-  cursor_distance_ = desktop_dist;
+
+  // Find distance to a corner of the content quad, and limit the cursor
+  // distance to a multiple of that distance.  This lets us keep the reticle on
+  // the content plane near the content window, and on the surface of a sphere
+  // in other directions.
+  // TODO(cjgrant): Note that this approach uses distance from controller,
+  // rather than eye, for simplicity.  This will make the sphere slightly
+  // off-center.
+  gvr::Vec3f corner = {0.5f, 0.5f, 0.0f};
+  corner = MatrixVectorMul(desktop_plane_->transform.to_world, corner);
+  float max_distance = Distance(origin, corner) * kReticleDistanceMultiplier;
+  if (distance > max_distance || distance <= 0.0f) {
+    distance = max_distance;
+  }
+  target_point_ = GetRayPoint(origin, forward, distance);
 
   // Determine which UI element (if any) the cursor is pointing to.
   float closest_element = std::numeric_limits<float>::infinity();
-
   for (std::size_t i = 0; i < scene_.GetUiElements().size(); ++i) {
     const ContentRectangle& plane = *scene_.GetUiElements()[i].get();
-    float distance_to_plane = plane.GetRayDistance(kOrigin, cursor_position);
+    float distance_to_plane = plane.GetRayDistance(origin, forward);
     gvr::Vec3f plane_intersection_point =
-        GetRayPoint(kOrigin, cursor_position, distance_to_plane);
+        GetRayPoint(origin, forward, distance_to_plane);
+
     gvr::Vec3f rect_2d_point =
         MatrixVectorMul(plane.transform.from_world, plane_intersection_point);
     float x = rect_2d_point.x + 0.5f;
@@ -226,8 +252,8 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
       bool is_inside = x >= 0.0f && x < 1.0f && y >= 0.0f && y < 1.0f;
       if (is_inside) {
         closest_element = distance_to_plane;
-        cursor_distance_ = desktop_dist * distance_to_plane;
-        look_at_vector_ = plane_intersection_point;
+        target_point_ = plane_intersection_point;
+        target_element_ = &plane;
       }
     }
   }
@@ -379,27 +405,35 @@ void VrShell::DrawCursor(const gvr::Mat4f& render_matrix) {
   gvr::Mat4f mat;
   SetIdentityM(mat);
 
-  // Scale the pointer to have a fixed FOV size at any distance.
-  ScaleM(mat, mat, kReticleWidth * cursor_distance_,
-         kReticleHeight * cursor_distance_, 1.0f);
+  // Draw the reticle.
 
-  // Place the pointer at the screen plane intersection point.
-  TranslateM(mat, mat, look_at_vector_.x * kReticleZOffset,
-             look_at_vector_.y * kReticleZOffset,
-             look_at_vector_.z * kReticleZOffset);
+  // Scale the pointer to have a fixed FOV size at any distance.
+  const float eye_to_target = Distance(target_point_, kOrigin);
+  ScaleM(mat, mat, kReticleWidth * eye_to_target,
+         kReticleHeight * eye_to_target, 1.0f);
+
+  gvr::Quatf rotation;
+  if (target_element_ != nullptr) {
+    // Make the reticle planar to the element it's hitting.
+    rotation = GetRotationFromZAxis(target_element_->GetNormal());
+  } else {
+    // Rotate the cursor to directly face the eyes.
+    rotation = GetRotationFromZAxis(target_point_);
+  }
+  mat = MatrixMul(QuatToMatrix(rotation), mat);
+
+  // Place the pointer slightly in front of the plane intersection point.
+  TranslateM(mat, mat, target_point_.x * kReticleOffset,
+             target_point_.y * kReticleOffset,
+             target_point_.z * kReticleOffset);
+
   gvr::Mat4f transform = MatrixMul(render_matrix, mat);
   vr_shell_renderer_->GetReticleRenderer()->Draw(transform);
 
-  // Draw the laser only for controllers.
-  if (!controller_active_) {
-    return;
-  }
+  // Draw the laser.
+
   // Find the length of the beam (from hand to target).
-  float xdiff = (kHandPosition.x - look_at_vector_.x);
-  float ydiff = (kHandPosition.y - look_at_vector_.y);
-  float zdiff = (kHandPosition.z - look_at_vector_.z);
-  float scale = xdiff * xdiff + ydiff * ydiff + zdiff * zdiff;
-  float laser_length = std::sqrt(scale);
+  float laser_length = Distance(kHandPosition, target_point_);
 
   // Build a beam, originating from the origin.
   SetIdentityM(mat);
