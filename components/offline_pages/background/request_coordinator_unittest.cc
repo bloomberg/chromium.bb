@@ -81,11 +81,15 @@ class OfflinerStub : public Offliner {
   OfflinerStub()
       : request_(kRequestId1, kUrl1, kClientId1, base::Time::Now(),
                  kUserRequested),
+        disable_loading_(false),
         enable_callback_(false),
         cancel_called_(false) {}
 
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& callback) override {
+    if (disable_loading_)
+      return false;
+
     callback_ = callback;
     request_ = request;
     // Post the callback on the run loop.
@@ -99,6 +103,10 @@ class OfflinerStub : public Offliner {
 
   void Cancel() override { cancel_called_ = true; }
 
+  void disable_loading() {
+    disable_loading_ = true;
+  }
+
   void enable_callback(bool enable) {
     enable_callback_ = enable;
   }
@@ -108,6 +116,7 @@ class OfflinerStub : public Offliner {
  private:
   CompletionCallback callback_;
   SavePageRequest request_;
+  bool disable_loading_;
   bool enable_callback_;
   bool cancel_called_;
 };
@@ -254,6 +263,10 @@ class RequestCoordinatorTest
   const RequestQueue::UpdateMultipleRequestResults& last_remove_results()
       const {
     return last_remove_results_;
+  }
+
+  void DisableLoading() {
+    offliner_->disable_loading();
   }
 
   void EnableOfflinerCallback(bool enable) {
@@ -689,6 +702,32 @@ TEST_F(RequestCoordinatorTest, SchedulerGetsLeastRestrictiveConditions) {
             coordinator()->policy()->UnmeteredNetworkRequired(kUserRequested));
 }
 
+TEST_F(RequestCoordinatorTest, StartProcessingWithLoadingDisabled) {
+  // Add a request to the queue, wait for callbacks to finish.
+  offline_pages::SavePageRequest request(
+      kRequestId1, kUrl1, kClientId1, base::Time::Now(), kUserRequested);
+  coordinator()->queue()->AddRequest(
+      request,
+      base::Bind(&RequestCoordinatorTest::AddRequestDone,
+                 base::Unretained(this)));
+  PumpLoop();
+
+  DeviceConditions device_conditions(false, 75,
+                                     net::NetworkChangeNotifier::CONNECTION_3G);
+  DisableLoading();
+  base::Callback<void(bool)> callback =
+      base::Bind(
+          &RequestCoordinatorTest::EmptyCallbackFunction,
+          base::Unretained(this));
+  EXPECT_TRUE(coordinator()->StartProcessing(device_conditions, callback));
+
+  // Let the async callbacks in the request coordinator run.
+  PumpLoop();
+
+  EXPECT_FALSE(is_starting());
+  EXPECT_EQ(Offliner::PRERENDERING_NOT_STARTED, last_offlining_status());
+}
+
 // This tests a StopProcessing call before we have actually started the
 // prerenderer.
 TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
@@ -711,7 +750,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingImmediately) {
   EXPECT_TRUE(is_starting());
 
   // Now, quick, before it can do much (we haven't called PumpLoop), cancel it.
-  coordinator()->StopProcessing();
+  coordinator()->StopProcessing(Offliner::REQUEST_COORDINATOR_CANCELED);
 
   // Let the async callbacks in the request coordinator run.
   PumpLoop();
@@ -758,7 +797,7 @@ TEST_F(RequestCoordinatorTest, StartProcessingThenStopProcessingLater) {
   EXPECT_FALSE(is_starting());
 
   // Now we cancel it while the prerenderer is busy.
-  coordinator()->StopProcessing();
+  coordinator()->StopProcessing(Offliner::REQUEST_COORDINATOR_CANCELED);
 
   // Let the async callbacks in the cancel run.
   PumpLoop();

@@ -109,7 +109,7 @@ class RequestCoordinator : public KeyedService,
   // caller to abort processing; otherwise, processing will complete on
   // its own. In either case, the callback will be called when processing
   // is stopped or complete.
-  void StopProcessing();
+  void StopProcessing(Offliner::RequestStatus stop_status);
 
   const Scheduler::TriggerConditions GetTriggerConditions(
       const bool user_requested);
@@ -219,8 +219,6 @@ class RequestCoordinator : public KeyedService,
   void RequestNotPicked(bool non_user_requested_tasks_remaining);
 
   void HandleWatchdogTimeout();
-
-  void StopProcessingWithStatus(Offliner::RequestStatus stop_status);
 
   // Cancels an in progress pre-rendering, and updates state appropriately.
   void StopPrerendering(Offliner::RequestStatus stop_status);

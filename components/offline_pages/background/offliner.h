@@ -40,6 +40,8 @@ class Offliner {
     FOREGROUND_CANCELED = 7,
     // RequestCoordinator canceled request attempt per time limit.
     REQUEST_COORDINATOR_TIMED_OUT = 8,
+    // The loader did not accept/start the request.
+    PRERENDERING_NOT_STARTED = 9,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };
