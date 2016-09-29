@@ -5,18 +5,12 @@
 package org.chromium.chromoting.help;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.Parcel;
-import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -26,7 +20,6 @@ import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import org.chromium.base.Log;
 import org.chromium.chromoting.ChromotingUtil;
 import org.chromium.chromoting.R;
 import org.chromium.ui.UiUtils;
@@ -35,14 +28,7 @@ import org.chromium.ui.UiUtils;
  * The Activity for showing the Help screen.
  */
 public class HelpActivity extends AppCompatActivity {
-    private static final String TAG = "Chromoting";
-
     private static final String PLAY_STORE_URL = "market://details?id=";
-
-    private static final String FEEDBACK_PACKAGE = "com.google.android.gms";
-
-    private static final String FEEDBACK_CLASS =
-            "com.google.android.gms.feedback.LegacyBugReportService";
 
     /**
      * Maximum dimension for the screenshot to be sent to the Send Feedback handler.  This size
@@ -58,39 +44,6 @@ public class HelpActivity extends AppCompatActivity {
 
     /** WebView used to display help content. */
     private WebView mWebView;
-
-    /** Constant used to send the feedback parcel to the system feedback service. */
-    private static final int SEND_FEEDBACK_INFO = Binder.FIRST_CALL_TRANSACTION;
-
-    private void sendFeedback() {
-        Intent intent = new Intent(Intent.ACTION_BUG_REPORT);
-        intent.setComponent(new ComponentName(FEEDBACK_PACKAGE, FEEDBACK_CLASS));
-        if (getPackageManager().resolveService(intent, 0) == null) {
-            Log.e(TAG, "Unable to resolve Feedback service.");
-            return;
-        }
-
-        ServiceConnection conn = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                try {
-                    Parcel parcel = Parcel.obtain();
-                    if (sScreenshot != null) {
-                        sScreenshot.writeToParcel(parcel, 0);
-                    }
-                    service.transact(SEND_FEEDBACK_INFO, parcel, null, 0);
-                    parcel.recycle();
-                } catch (RemoteException ex) {
-                    Log.e(TAG, "Unexpected error sending feedback: ", ex);
-                }
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {}
-        };
-
-        bindService(intent, conn, BIND_AUTO_CREATE);
-    }
 
     /** Launches the Help activity. */
     public static void launch(Activity activity, String helpUrl) {
@@ -164,7 +117,7 @@ public class HelpActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.actionbar_feedback) {
-            sendFeedback();
+            FeedbackSender.sendFeedback(this, sScreenshot);
             return true;
         }
         if (id == R.id.actionbar_play_store) {

@@ -4,12 +4,20 @@
 
 package org.chromium.chromoting;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import org.chromium.chromoting.help.CreditsActivity;
+import org.chromium.chromoting.help.FeedbackSender;
+import org.chromium.chromoting.help.HelpContext;
+import org.chromium.chromoting.help.HelpSingleton;
 
 /**
  * Describes the appearance and behavior of the navigation menu. This also implements
@@ -27,6 +35,42 @@ public class NavigationMenuAdapter extends ArrayAdapter<NavigationMenuAdapter.Na
             mLayoutResourceId = layoutResourceId;
             mCallback = callback;
         }
+    }
+
+    public static ListView createNavigationMenu(final Activity activity) {
+        ListView navigationMenu = (ListView) activity.getLayoutInflater()
+                .inflate(R.layout.navigation_list, null);
+
+        NavigationMenuItem creditsItem = new NavigationMenuItem(R.menu.credits_list_item,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        activity.startActivity(new Intent(activity, CreditsActivity.class));
+                    }
+                });
+
+        NavigationMenuItem feedbackItem = new NavigationMenuItem(R.menu.feedback_list_item,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        FeedbackSender.sendFeedback(activity);
+                    }
+                });
+
+        NavigationMenuItem helpItem = new NavigationMenuItem(R.menu.help_list_item,
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        HelpSingleton.getInstance().launchHelp(activity,
+                                HelpContext.HOST_LIST);
+                    }
+                });
+
+        NavigationMenuItem[] navigationMenuItems = { creditsItem, feedbackItem, helpItem };
+        NavigationMenuAdapter adapter = new NavigationMenuAdapter(activity, navigationMenuItems);
+        navigationMenu.setAdapter(adapter);
+        navigationMenu.setOnItemClickListener(adapter);
+        return navigationMenu;
     }
 
     public NavigationMenuAdapter(Context context, NavigationMenuItem[] objects) {

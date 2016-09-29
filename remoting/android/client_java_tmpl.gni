@@ -62,6 +62,7 @@ template("remoting_android_client_java_tmpl") {
       "accountswitcher/AccountSwitcherFactory.java",
       "base/OAuthTokenFetcher.java",
       "help/CreditsActivity.java",
+      "help/FeedbackSender.java",
       "help/HelpActivity.java",
       "help/HelpAndFeedback.java",
       "help/HelpAndFeedbackBasic.java",
