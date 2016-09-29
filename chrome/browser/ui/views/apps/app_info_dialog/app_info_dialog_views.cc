@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -77,13 +76,6 @@ void ShowAppInfoInAppList(gfx::NativeWindow parent,
                           Profile* profile,
                           const extensions::Extension* app,
                           const base::Closure& close_callback) {
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForType",
-                            app->GetType(),
-                            extensions::Manifest::NUM_LOAD_TYPES);
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForLocation",
-                            app->location(),
-                            extensions::Manifest::NUM_LOCATIONS);
-
   views::View* app_info_view = new AppInfoDialog(parent, profile, app);
   views::DialogDelegate* dialog =
       CreateAppListContainerForView(app_info_view, close_callback);
@@ -123,13 +115,6 @@ AppInfoDialog::AppInfoDialog(gfx::NativeWindow parent_window,
       profile_(profile),
       app_id_(app->id()),
       extension_registry_(NULL) {
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForType",
-                            app->GetType(),
-                            extensions::Manifest::NUM_LOAD_TYPES);
-  UMA_HISTOGRAM_ENUMERATION("Apps.AppInfoDialogOpenedForLocation",
-                            app->location(),
-                            extensions::Manifest::NUM_LOCATIONS);
-
   views::BoxLayout* layout =
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0);
   SetLayoutManager(layout);
