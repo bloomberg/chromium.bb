@@ -82,8 +82,10 @@ class RasterizeAndRecordMicro(legacy_page_test.LegacyPageTest):
     record_time_caching_disabled = data['record_time_caching_disabled_ms']
     record_time_construction_disabled = \
         data['record_time_construction_disabled_ms']
+    # TODO(wangxianzhu): Remove this workaround when reference builds get past
+    # r367465.
     record_time_subsequence_caching_disabled = \
-        data['record_time_subsequence_caching_disabled_ms']
+        data.get('record_time_subsequence_caching_disabled_ms', 0)
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'record_time_painting_disabled', 'ms',
         record_time_painting_disabled))
