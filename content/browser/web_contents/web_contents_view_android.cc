@@ -245,12 +245,24 @@ void WebContentsViewAndroid::StartDragging(
     return;
   }
 
+  const SkBitmap* bitmap = image.bitmap();
+  SkBitmap dummy_bitmap;
+
+  if (image.size().IsEmpty()) {
+    // An empty drag image is possible if the Javascript sets an empty drag
+    // image on purpose.
+    // Create a dummy 1x1 pixel image to avoid crashes when converting to java
+    // bitmap.
+    dummy_bitmap.allocN32Pixels(1, 1);
+    dummy_bitmap.eraseColor(0);
+    bitmap = &dummy_bitmap;
+  }
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jtext =
       ConvertUTF16ToJavaString(env, drop_data.text.string());
 
-  if (!native_view->StartDragAndDrop(
-          jtext, gfx::ConvertToJavaBitmap(image.bitmap()))) {
+  if (!native_view->StartDragAndDrop(jtext, gfx::ConvertToJavaBitmap(bitmap))) {
     // Need to clear drag and drop state in blink.
     OnDragEnded();
     return;
