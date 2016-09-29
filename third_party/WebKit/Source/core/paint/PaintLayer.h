@@ -52,7 +52,6 @@
 #include "core/paint/PaintLayerFilterInfo.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "core/paint/PaintLayerPainter.h"
-#include "core/paint/PaintLayerReflectionInfo.h"
 #include "core/paint/PaintLayerScrollableArea.h"
 #include "core/paint/PaintLayerStackingNode.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
@@ -131,8 +130,6 @@ struct PaintLayerRareData {
     // grouped CompositedLayerMapping. It's null if the layer is not composited or
     // paints into its own backing.
     CompositedLayerMapping* groupedMapping;
-
-    std::unique_ptr<PaintLayerReflectionInfo> reflectionInfo;
 
     Persistent<PaintLayerFilterInfo> filterInfo;
 
@@ -245,10 +242,6 @@ public:
     bool isSelfPaintingOnlyBecauseIsCompositedPart() const;
 
     bool isTransparent() const { return layoutObject()->isTransparent() || layoutObject()->style()->hasBlendMode() || layoutObject()->hasMask(); }
-
-    bool isReflection() const { return layoutObject()->isReplica(); }
-    PaintLayerReflectionInfo* reflectionInfo() { return m_rareData ? m_rareData->reflectionInfo.get() : nullptr; }
-    const PaintLayerReflectionInfo* reflectionInfo() const { return const_cast<PaintLayer*>(this)->reflectionInfo(); }
 
     const PaintLayer* root() const
     {
@@ -369,7 +362,7 @@ public:
     // Bounding box relative to some ancestor layer. Pass offsetFromRoot if known.
     LayoutRect physicalBoundingBox(const LayoutPoint& offsetFromRoot) const;
     LayoutRect physicalBoundingBox(const PaintLayer* ancestorLayer) const;
-    LayoutRect physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot, CalculateBoundsOptions = MaybeIncludeTransformForAncestorLayer) const;
+    LayoutRect physicalBoundingBoxIncludingStackingChildren(const LayoutPoint& offsetFromRoot, CalculateBoundsOptions = MaybeIncludeTransformForAncestorLayer) const;
     LayoutRect fragmentsBoundingBox(const PaintLayer* ancestorLayer) const;
 
     FloatRect boxForFilter() const;
@@ -415,7 +408,7 @@ public:
     void filterNeedsPaintInvalidation();
 
     // Returns |true| if any property that renders using filter operations is
-    // used (including, but not limited to, 'filter').
+    // used (including, but not limited to, 'filter' and 'box-reflect').
     bool hasFilterInducingProperty() const { return layoutObject()->hasFilterInducingProperty(); }
 
     void* operator new(size_t);
@@ -789,7 +782,6 @@ private:
     void updateStackingNode();
 
     FilterOperations addReflectionToFilterOperations(const ComputedStyle&) const;
-    void updateReflectionInfo(const ComputedStyle*);
     FilterEffect* updateFilterEffect() const;
 
     // FIXME: We could lazily allocate our ScrollableArea based on style properties ('overflow', ...)

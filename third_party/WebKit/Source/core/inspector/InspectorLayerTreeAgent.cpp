@@ -116,8 +116,6 @@ static std::unique_ptr<protocol::LayerTree::Layer> buildObjectForLayer(GraphicsL
         layerObject->setBackendNodeId(nodeId);
 
     GraphicsLayer* parent = graphicsLayer->parent();
-    if (!parent)
-        parent = graphicsLayer->replicatedLayer();
     if (parent)
         layerObject->setParentLayerId(idForLayer(parent));
     if (!graphicsLayer->contentsAreVisible())
@@ -246,8 +244,6 @@ void InspectorLayerTreeAgent::gatherGraphicsLayers(GraphicsLayer* root, HashMap<
     if (m_pageOverlayLayerIds.find(layerId) != WTF::kNotFound)
         return;
     layers->addItem(buildObjectForLayer(root, layerIdToNodeIdMap.get(layerId), hasWheelEventHandlers && layerId == scrollingLayerId));
-    if (GraphicsLayer* replica = root->replicaLayer())
-        gatherGraphicsLayers(replica, layerIdToNodeIdMap, layers, hasWheelEventHandlers, scrollingLayerId);
     for (size_t i = 0, size = root->children().size(); i < size; ++i)
         gatherGraphicsLayers(root->children()[i], layerIdToNodeIdMap, layers, hasWheelEventHandlers, scrollingLayerId);
 }
@@ -273,10 +269,6 @@ static GraphicsLayer* findLayerById(GraphicsLayer* root, int layerId)
 {
     if (root->platformLayer()->id() == layerId)
         return root;
-    if (root->replicaLayer()) {
-        if (GraphicsLayer* layer = findLayerById(root->replicaLayer(), layerId))
-            return layer;
-    }
     for (size_t i = 0, size = root->children().size(); i < size; ++i) {
         if (GraphicsLayer* layer = findLayerById(root->children()[i], layerId))
             return layer;

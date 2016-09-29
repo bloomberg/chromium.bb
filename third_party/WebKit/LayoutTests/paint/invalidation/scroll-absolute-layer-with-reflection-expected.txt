@@ -27,11 +27,6 @@
           "object": "LayoutBlockFlow DIV class='green'",
           "rect": [250, 230, 100, 100],
           "reason": "subtree"
-        },
-        {
-          "object": "LayoutReplica (anonymous)",
-          "rect": [250, 230, 100, 100],
-          "reason": "subtree"
         }
       ]
     }
@@ -47,10 +42,6 @@
     },
     {
       "object": "LayoutBlockFlow DIV class='green'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutReplica (anonymous)",
       "reason": "subtree"
     },
     {

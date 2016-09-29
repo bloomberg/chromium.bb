@@ -14,11 +14,6 @@
           "reason": "subtree"
         },
         {
-          "object": "LayoutReplica (anonymous)",
-          "rect": [0, 0, 100, 220],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
           "rect": [400, 10, 50, 200],
           "reason": "subtree"
@@ -33,10 +28,6 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV id='positioned'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutReplica (anonymous)",
       "reason": "subtree"
     }
   ]

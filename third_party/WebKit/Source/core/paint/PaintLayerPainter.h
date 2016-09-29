@@ -51,7 +51,7 @@ public:
 private:
     enum ClipState { HasNotClipped, HasClipped };
 
-    PaintResult paintLayerContentsAndReflection(GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags, FragmentPolicy = AllowMultipleFragments);
+    PaintResult paintLayerContentsCompositingAllPhases(GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags, FragmentPolicy = AllowMultipleFragments);
     PaintResult paintLayerWithTransform(GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags);
     PaintResult paintFragmentByApplyingTransform(GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& fragmentTranslation);
 

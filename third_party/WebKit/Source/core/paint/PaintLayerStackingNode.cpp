@@ -124,10 +124,8 @@ void PaintLayerStackingNode::rebuildZOrderLists()
     ASSERT(m_layerListMutationAllowed);
     ASSERT(isDirtyStackingContext());
 
-    for (PaintLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
-        if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
-            child->stackingNode()->collectLayers(m_posZOrderList, m_negZOrderList);
-    }
+    for (PaintLayer* child = layer()->firstChild(); child; child = child->nextSibling())
+        child->stackingNode()->collectLayers(m_posZOrderList, m_negZOrderList);
 
     // Sort the two lists.
     if (m_posZOrderList)
@@ -176,10 +174,8 @@ void PaintLayerStackingNode::collectLayers(std::unique_ptr<Vector<PaintLayerStac
     }
 
     if (!isStackingContext()) {
-        for (PaintLayer* child = layer()->firstChild(); child; child = child->nextSibling()) {
-            if (!layer()->reflectionInfo() || layer()->reflectionInfo()->reflectionLayer() != child)
-                child->stackingNode()->collectLayers(posBuffer, negBuffer);
-        }
+        for (PaintLayer* child = layer()->firstChild(); child; child = child->nextSibling())
+            child->stackingNode()->collectLayers(posBuffer, negBuffer);
     }
 }
 
@@ -216,12 +212,6 @@ void PaintLayerStackingNode::updateStackingParentForZOrderLists(PaintLayerStacki
 void PaintLayerStackingNode::updateLayerListsIfNeeded()
 {
     updateZOrderLists();
-
-    if (!layer()->reflectionInfo())
-        return;
-
-    PaintLayer* reflectionLayer = layer()->reflectionInfo()->reflectionLayer();
-    reflectionLayer->stackingNode()->updateZOrderLists();
 }
 
 void PaintLayerStackingNode::styleDidChange(const ComputedStyle* oldStyle)

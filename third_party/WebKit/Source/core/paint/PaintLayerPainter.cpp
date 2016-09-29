@@ -85,33 +85,19 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(GraphicsContext& co
         paintFlags |= PaintLayerHaveTransparency;
 
     // Transforms will be applied by property nodes directly for SPv2.
-    // PaintLayerAppliedTransform is used in LayoutReplica, to avoid applying the transform twice.
     if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_paintLayer.paintsWithTransform(paintingInfo.getGlobalPaintFlags()) && !(paintFlags & PaintLayerAppliedTransform))
         return paintLayerWithTransform(context, paintingInfo, paintFlags);
 
-    return paintLayerContentsAndReflection(context, paintingInfo, paintFlags);
+    return paintLayerContentsCompositingAllPhases(context, paintingInfo, paintFlags);
 }
 
-PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContentsAndReflection(GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
+PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContentsCompositingAllPhases(GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags, FragmentPolicy fragmentPolicy)
 {
     ASSERT(m_paintLayer.isSelfPaintingLayer() || m_paintLayer.hasSelfPaintingLayerDescendant());
 
     PaintLayerFlags localPaintFlags = paintFlags & ~(PaintLayerAppliedTransform);
-
-    PaintResult result = FullyPainted;
-
-    // Paint the reflection first if we have one.
-    if (m_paintLayer.reflectionInfo() && !RuntimeEnabledFeatures::cssBoxReflectFilterEnabled()) {
-        DisplayItemCacheSkipper skipper(context);
-        if (m_paintLayer.reflectionInfo()->paint(context, paintingInfo, localPaintFlags) == MayBeClippedByPaintDirtyRect)
-            result = MayBeClippedByPaintDirtyRect;
-    }
-
     localPaintFlags |= PaintLayerPaintingCompositingAllPhases;
-    if (paintLayerContents(context, paintingInfo, localPaintFlags, fragmentPolicy) == MayBeClippedByPaintDirtyRect)
-        result = MayBeClippedByPaintDirtyRect;
-
-    return result;
+    return paintLayerContents(context, paintingInfo, localPaintFlags, fragmentPolicy);
 }
 
 static bool shouldCreateSubsequence(const PaintLayer& paintLayer, GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
@@ -130,7 +116,7 @@ static bool shouldCreateSubsequence(const PaintLayer& paintLayer, GraphicsContex
     // Don't create subsequence during special painting to avoid cache conflict with normal painting.
     if (paintingInfo.getGlobalPaintFlags() & GlobalPaintFlattenCompositingLayers)
         return false;
-    if (paintFlags & (PaintLayerPaintingReflection | PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars | PaintLayerUncachedClipRects))
+    if (paintFlags & (PaintLayerPaintingRootBackgroundOnly | PaintLayerPaintingOverlayScrollbars | PaintLayerUncachedClipRects))
         return false;
 
     // Create subsequence for only stacking contexts whose painting are atomic.
@@ -543,7 +529,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintFragmentByApplyingTransfo
     if (&m_paintLayer != paintingInfo.rootLayer)
         paintFlags &= ~PaintLayerPaintingSkipRootBackground;
 
-    return paintLayerContentsAndReflection(context, transformedPaintingInfo, paintFlags, ForceSingleFragment);
+    return paintLayerContentsCompositingAllPhases(context, transformedPaintingInfo, paintFlags, ForceSingleFragment);
 }
 
 PaintLayerPainter::PaintResult PaintLayerPainter::paintChildren(unsigned childrenToVisit, GraphicsContext& context, const PaintLayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
@@ -592,8 +578,7 @@ bool PaintLayerPainter::shouldPaintLayerInSoftwareMode(const GlobalPaintFlags gl
     DisableCompositingQueryAsserts disabler;
 
     return m_paintLayer.compositingState() == NotComposited
-        || (globalPaintFlags & GlobalPaintFlattenCompositingLayers)
-        || ((paintFlags & PaintLayerPaintingReflection) && !m_paintLayer.has3DTransform());
+        || (globalPaintFlags & GlobalPaintFlattenCompositingLayers);
 }
 
 void PaintLayerPainter::paintOverflowControlsForFragments(const PaintLayerFragments& layerFragments, GraphicsContext& context, const PaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags)

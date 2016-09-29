@@ -31,8 +31,6 @@ static void paintLayers(GraphicsLayer& layer, SimDisplayItemList& displayList)
         paintLayers(*maskLayer, displayList);
     if (GraphicsLayer* contentsClippingMaskLayer = layer.contentsClippingMaskLayer())
         paintLayers(*contentsClippingMaskLayer, displayList);
-    if (GraphicsLayer* replicaLayer = layer.replicaLayer())
-        paintLayers(*replicaLayer, displayList);
 
     for (auto child : layer.children())
         paintLayers(*child, displayList);

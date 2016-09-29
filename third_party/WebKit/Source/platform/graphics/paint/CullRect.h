@@ -44,7 +44,6 @@ private:
     friend class FramePainter;
     friend class GridPainter;
     friend class SVGInlineTextBoxPainter;
-    friend class ReplicaPainter;
     friend class SVGPaintContext;
     friend class SVGRootInlineBoxPainter;
     friend class SVGShapePainter;

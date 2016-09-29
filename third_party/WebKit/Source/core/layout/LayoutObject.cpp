@@ -834,16 +834,10 @@ inline void LayoutObject::invalidateContainerPreferredLogicalWidths()
     }
 }
 
-bool LayoutObject::hasFilterOrReflection() const
+LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped, bool* filterSkipped) const
 {
-    return (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasReflection())
-        || (hasLayer() && toLayoutBoxModelObject(this)->layer()->hasFilterInducingProperty());
-}
-
-LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped, bool* filterOrReflectionSkipped) const
-{
-    ASSERT(!ancestorSkipped || !*ancestorSkipped);
-    ASSERT(!filterOrReflectionSkipped || !*filterOrReflectionSkipped);
+    DCHECK(!ancestorSkipped || !*ancestorSkipped);
+    DCHECK(!filterSkipped || !*filterSkipped);
 
     // We technically just want our containing block, but
     // we may not have one if we're part of an uninstalled
@@ -855,25 +849,25 @@ LayoutObject* LayoutObject::containerForAbsolutePosition(const LayoutBoxModelObj
         if (ancestorSkipped && object == ancestor)
             *ancestorSkipped = true;
 
-        if (filterOrReflectionSkipped && object->hasFilterOrReflection())
-            *filterOrReflectionSkipped = true;
+        if (filterSkipped && object->hasFilterInducingProperty())
+            *filterSkipped = true;
     }
     return nullptr;
 }
 
-LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped, bool* filterOrReflectionSkipped) const
+LayoutBlock* LayoutObject::containerForFixedPosition(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped, bool* filterSkipped) const
 {
-    ASSERT(!ancestorSkipped || !*ancestorSkipped);
-    ASSERT(!filterOrReflectionSkipped || !*filterOrReflectionSkipped);
-    ASSERT(!isText());
+    DCHECK(!ancestorSkipped || !*ancestorSkipped);
+    DCHECK(!filterSkipped || !*filterSkipped);
+    DCHECK(!isText());
 
     LayoutObject* object = parent();
     for (; object && !object->canContainFixedPositionObjects(); object = object->parent()) {
         if (ancestorSkipped && object == ancestor)
             *ancestorSkipped = true;
 
-        if (filterOrReflectionSkipped && object->hasFilterOrReflection())
-            *filterOrReflectionSkipped = true;
+        if (filterSkipped && object->hasFilterInducingProperty())
+            *filterSkipped = true;
     }
 
     ASSERT(!object || !object->isAnonymousBlock());
@@ -2265,12 +2259,12 @@ RespectImageOrientationEnum LayoutObject::shouldRespectImageOrientation(const La
     return DoNotRespectImageOrientation;
 }
 
-LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped, bool* filterOrReflectionSkipped) const
+LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool* ancestorSkipped, bool* filterSkipped) const
 {
     if (ancestorSkipped)
         *ancestorSkipped = false;
-    if (filterOrReflectionSkipped)
-        *filterOrReflectionSkipped = false;
+    if (filterSkipped)
+        *filterSkipped = false;
 
     LayoutObject* o = parent();
 
@@ -2279,21 +2273,21 @@ LayoutObject* LayoutObject::container(const LayoutBoxModelObject* ancestor, bool
 
     EPosition pos = m_style->position();
     if (pos == FixedPosition)
-        return containerForFixedPosition(ancestor, ancestorSkipped, filterOrReflectionSkipped);
+        return containerForFixedPosition(ancestor, ancestorSkipped, filterSkipped);
 
     if (pos == AbsolutePosition)
-        return containerForAbsolutePosition(ancestor, ancestorSkipped, filterOrReflectionSkipped);
+        return containerForAbsolutePosition(ancestor, ancestorSkipped, filterSkipped);
 
     if (isColumnSpanAll()) {
         LayoutObject* multicolContainer = spannerPlaceholder()->container();
-        if ((ancestorSkipped && ancestor) || filterOrReflectionSkipped) {
+        if ((ancestorSkipped && ancestor) || filterSkipped) {
             // We jumped directly from the spanner to the multicol container. Need to check if
             // we skipped |ancestor| or filter/reflection on the way.
             for (LayoutObject* walker = parent(); walker && walker != multicolContainer; walker = walker->parent()) {
                 if (ancestorSkipped && walker == ancestor)
                     *ancestorSkipped = true;
-                if (filterOrReflectionSkipped && walker->hasFilterOrReflection())
-                    *filterOrReflectionSkipped = true;
+                if (filterSkipped && walker->hasFilterInducingProperty())
+                    *filterSkipped = true;
             }
         }
         return multicolContainer;

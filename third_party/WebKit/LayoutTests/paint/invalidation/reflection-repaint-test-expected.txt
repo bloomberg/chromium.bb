@@ -37,10 +37,6 @@
     {
       "object": "InlineTextBox 'PASS'",
       "reason": "full"
-    },
-    {
-      "object": "LayoutReplica (anonymous)",
-      "reason": "location change"
     }
   ]
 }

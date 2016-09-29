@@ -788,9 +788,6 @@ bool ComputedStyle::diffNeedsFullLayout(const ComputedStyle& other) const
             || m_rareNonInheritedData->m_justifySelf != other.m_rareNonInheritedData->m_justifySelf
             || m_rareNonInheritedData->m_contain != other.m_rareNonInheritedData->m_contain)
             return true;
-
-        if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !m_rareNonInheritedData->reflectionDataEquivalent(*other.m_rareNonInheritedData.get()))
-            return true;
     }
 
     return false;
@@ -808,9 +805,6 @@ bool ComputedStyle::diffNeedsPaintInvalidationSubtree(const ComputedStyle& other
 
         if (m_rareNonInheritedData->m_mask != other.m_rareNonInheritedData->m_mask
             || m_rareNonInheritedData->m_maskBoxImage != other.m_rareNonInheritedData->m_maskBoxImage)
-            return true;
-
-        if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !m_rareNonInheritedData->reflectionDataEquivalent(*other.m_rareNonInheritedData.get()))
             return true;
     }
 
@@ -916,7 +910,7 @@ void ComputedStyle::updatePropertySpecificDifferences(const ComputedStyle& other
         if (m_rareNonInheritedData->m_backdropFilter != other.m_rareNonInheritedData->m_backdropFilter)
             diff.setBackdropFilterChanged();
 
-        if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && !m_rareNonInheritedData->reflectionDataEquivalent(*other.m_rareNonInheritedData.get()))
+        if (!m_rareNonInheritedData->reflectionDataEquivalent(*other.m_rareNonInheritedData.get()))
             diff.setFilterChanged();
     }
 

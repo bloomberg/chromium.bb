@@ -58,7 +58,7 @@ PaintLayerStackingNode* PaintLayerStackingNodeIterator::next()
 
     if (m_remainingChildren & NormalFlowChildren) {
         for (; m_currentNormalFlowChild; m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling()) {
-            if (!m_currentNormalFlowChild->stackingNode()->isStacked() && !m_currentNormalFlowChild->isReflection()) {
+            if (!m_currentNormalFlowChild->stackingNode()->isStacked()) {
                 PaintLayer* normalFlowChild = m_currentNormalFlowChild;
                 m_currentNormalFlowChild = m_currentNormalFlowChild->nextSibling();
                 return normalFlowChild->stackingNode();
@@ -95,7 +95,7 @@ PaintLayerStackingNode* PaintLayerStackingNodeReverseIterator::next()
 
     if (m_remainingChildren & NormalFlowChildren) {
         for (; m_currentNormalFlowChild; m_currentNormalFlowChild = m_currentNormalFlowChild->previousSibling()) {
-            if (!m_currentNormalFlowChild->stackingNode()->isStacked() && !m_currentNormalFlowChild->isReflection()) {
+            if (!m_currentNormalFlowChild->stackingNode()->isStacked()) {
                 PaintLayer* normalFlowChild = m_currentNormalFlowChild;
                 m_currentNormalFlowChild = m_currentNormalFlowChild->previousSibling();
                 return normalFlowChild->stackingNode();

@@ -136,9 +136,6 @@ SquashingDisallowedReasons CompositingLayerAssigner::getReasonsPreventingSquashi
     if (layer->layoutObject()->isLayoutPart() || squashingLayer.layoutObject()->isLayoutPart())
         return SquashingDisallowedReasonSquashingLayoutPartIsDisallowed;
 
-    if (layer->reflectionInfo())
-        return SquashingDisallowedReasonSquashingReflectionIsDisallowed;
-
     if (squashingWouldExceedSparsityTolerance(layer, squashingState))
         return SquashingDisallowedReasonSquashingSparsityExceeded;
 
@@ -233,22 +230,6 @@ void CompositingLayerAssigner::updateSquashingAssignment(PaintLayer* layer, Squa
     }
 }
 
-void CompositingLayerAssigner::assignLayersToBackingsForReflectionLayer(PaintLayer* reflectionLayer, Vector<PaintLayer*>& layersNeedingPaintInvalidation)
-{
-    CompositingStateTransitionType compositedLayerUpdate = computeCompositedLayerUpdate(reflectionLayer);
-    if (compositedLayerUpdate != NoCompositingStateChange) {
-        TRACE_LAYER_INVALIDATION(reflectionLayer, InspectorLayerInvalidationTrackingEvent::ReflectionLayerChanged);
-        layersNeedingPaintInvalidation.append(reflectionLayer);
-        m_layersChanged = true;
-        m_compositor->allocateOrClearCompositedLayerMapping(reflectionLayer, compositedLayerUpdate);
-    }
-    m_compositor->updateDirectCompositingReasons(reflectionLayer);
-
-    // FIXME: Why do we updateGraphicsLayerConfiguration here instead of in the GraphicsLayerUpdater?
-    if (reflectionLayer->hasCompositedLayerMapping())
-        reflectionLayer->compositedLayerMapping()->updateGraphicsLayerConfiguration();
-}
-
 static ScrollingCoordinator* scrollingCoordinatorFromLayer(PaintLayer& layer)
 {
     Page* page = layer.layoutObject()->frame()->page();
@@ -276,10 +257,6 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(PaintLayer* layer,
                 scrollingCoordinator->frameViewFixedObjectsDidChange(layer->layoutObject()->view()->frameView());
         }
     }
-
-    // FIXME: special-casing reflection layers here is not right.
-    if (layer->reflectionInfo())
-        assignLayersToBackingsForReflectionLayer(layer->reflectionInfo()->reflectionLayer(), layersNeedingPaintInvalidation);
 
     // Add this layer to a squashing backing if needed.
     updateSquashingAssignment(layer, squashingState, compositedLayerUpdate, layersNeedingPaintInvalidation);

@@ -252,7 +252,6 @@ private:
     void updateTransformGeometry(const IntPoint& snappedOffsetFromCompositedAncestor, const IntRect& relativeCompositingBounds);
     void updateForegroundLayerGeometry(const FloatSize& relativeCompositingBoundsSize, const IntRect& clippingBox);
     void updateBackgroundLayerGeometry(const FloatSize& relativeCompositingBoundsSize);
-    void updateReflectionLayerGeometry(Vector<PaintLayer*>& layersNeedingPaintInvalidation);
     void updateScrollingLayerGeometry(const IntRect& localCompositingBounds);
     void updateChildClippingMaskLayerGeometry();
 

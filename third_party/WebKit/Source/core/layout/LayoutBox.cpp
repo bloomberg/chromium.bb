@@ -44,7 +44,6 @@
 #include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutPart.h"
-#include "core/layout/LayoutReplica.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
@@ -1549,7 +1548,8 @@ void LayoutBox::imageChanged(WrappedImagePtr image, const IntRect*)
 {
     // TODO(chrishtr): support PaintInvalidationDelayedFull for animated border images.
     if ((styleRef().borderImage().image() && styleRef().borderImage().image()->data() == image)
-        || (styleRef().maskBoxImage().image() && styleRef().maskBoxImage().image()->data() == image)) {
+        || (styleRef().maskBoxImage().image() && styleRef().maskBoxImage().image()->data() == image)
+        || (styleRef().boxReflect() && styleRef().boxReflect()->mask().image() && styleRef().boxReflect()->mask().image()->data() == image)) {
         setShouldDoFullPaintInvalidation();
     } else {
         for (const FillLayer* layer = &styleRef().maskLayers(); layer; layer = layer->next()) {
@@ -1647,16 +1647,6 @@ PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidati
 PaintInvalidationReason LayoutBox::invalidatePaintIfNeeded(const PaintInvalidatorContext& context) const
 {
     return BoxPaintInvalidator(*this, context).invalidatePaintIfNeeded();
-}
-
-void LayoutBox::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
-{
-    LayoutBoxModelObject::invalidatePaintOfSubtreesIfNeeded(childPaintInvalidationState);
-
-    if (PaintLayer* layer = this->layer()) {
-        if (PaintLayerReflectionInfo* reflectionInfo = layer->reflectionInfo())
-            reflectionInfo->reflection()->invalidateTreeIfNeeded(childPaintInvalidationState);
-    }
 }
 
 LayoutRect LayoutBox::overflowClipRect(const LayoutPoint& location, OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const
@@ -2132,7 +2122,7 @@ LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const
     return selfVisualOverflowRect();
 }
 
-void LayoutBox::inflateVisualRectForReflectionAndFilterUnderContainer(LayoutRect& rect, const LayoutObject& container, const LayoutBoxModelObject* ancestorToStopAt) const
+void LayoutBox::inflateVisualRectForFilterUnderContainer(LayoutRect& rect, const LayoutObject& container, const LayoutBoxModelObject* ancestorToStopAt) const
 {
     // Apply visual overflow caused by reflections and filters defined on objects between this object
     // and container (not included) or ancestorToStopAt (included).
@@ -2143,7 +2133,7 @@ void LayoutBox::inflateVisualRectForReflectionAndFilterUnderContainer(LayoutRect
             // Convert rect into coordinate space of parent to apply parent's reflection and filter.
             LayoutSize parentOffset = parent->offsetFromAncestorContainer(&container);
             rect.move(-parentOffset);
-            toLayoutBox(parent)->inflateVisualRectForReflectionAndFilter(rect);
+            toLayoutBox(parent)->inflateVisualRectForFilter(rect);
             rect.move(parentOffset);
         }
         if (parent == ancestorToStopAt)
@@ -2154,14 +2144,14 @@ void LayoutBox::inflateVisualRectForReflectionAndFilterUnderContainer(LayoutRect
 
 bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisualRectFlags visualRectFlags) const
 {
-    inflateVisualRectForReflectionAndFilter(rect);
+    inflateVisualRectForFilter(rect);
 
     if (ancestor == this)
         return true;
 
     bool ancestorSkipped;
-    bool filterOrReflectionSkipped;
-    LayoutObject* container = this->container(ancestor, &ancestorSkipped, &filterOrReflectionSkipped);
+    bool filterSkipped;
+    LayoutObject* container = this->container(ancestor, &ancestorSkipped, &filterSkipped);
     LayoutBox* tableRowContainer = nullptr;
     // Skip table row because cells and rows are in the same coordinate space
     // (see below, however for more comments about when |ancestor| is the table row).
@@ -2176,8 +2166,8 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
     if (!container)
         return true;
 
-    if (filterOrReflectionSkipped)
-        inflateVisualRectForReflectionAndFilterUnderContainer(rect, *container, ancestor);
+    if (filterSkipped)
+        inflateVisualRectForFilterUnderContainer(rect, *container, ancestor);
 
     // We are now in our parent container's coordinate space.  Apply our transform to obtain a bounding box
     // in the parent's coordinate space that encloses us.
@@ -2237,11 +2227,8 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ances
         return container->mapToVisualRectInAncestorSpace(ancestor, rect, visualRectFlags);
 }
 
-void LayoutBox::inflateVisualRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const
+void LayoutBox::inflateVisualRectForFilter(LayoutRect& paintInvalidationRect) const
 {
-    if (!RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasReflection())
-        paintInvalidationRect.unite(reflectedRect(paintInvalidationRect));
-
     if (layer() && layer()->hasFilterInducingProperty())
         paintInvalidationRect = layer()->mapLayoutRectForFilter(paintInvalidationRect);
 }

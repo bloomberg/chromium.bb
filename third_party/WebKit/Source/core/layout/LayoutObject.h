@@ -505,7 +505,6 @@ public:
     bool isLayoutMultiColumnSpannerPlaceholder() const { return isOfType(LayoutObjectLayoutMultiColumnSpannerPlaceholder); }
     bool isLayoutScrollbarPart() const { return isOfType(LayoutObjectLayoutScrollbarPart); }
     bool isLayoutView() const { return isOfType(LayoutObjectLayoutView); }
-    bool isReplica() const { return isOfType(LayoutObjectReplica); }
     bool isRuby() const { return isOfType(LayoutObjectRuby); }
     bool isRubyBase() const { return isOfType(LayoutObjectRubyBase); }
     bool isRubyRun() const { return isOfType(LayoutObjectRubyRun); }
@@ -714,11 +713,10 @@ public:
     bool hasBackdropFilter() const { return style() && style()->hasBackdropFilter(); }
 
     // Returns |true| if any property that renders using filter operations is
-    // used (including, but not limited to, 'filter').
-    bool hasFilterInducingProperty() const
-    {
-        return (style() && style()->hasFilter()) || (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasReflection());
-    }
+    // used (including, but not limited to, 'filter' and 'box-reflect').
+    // Not calling style()->hasFilterInducingProperty because some objects force
+    // to ignore reflection style (e.g. LayoutInline).
+    bool hasFilterInducingProperty() const { return (style() && style()->hasFilter()) || hasReflection(); }
 
     bool hasShapeOutside() const { return style() && style()->shapeOutside(); }
 
@@ -770,8 +768,6 @@ public:
     // of flex box. crbug.com/226252.
     bool behavesLikeBlockContainer() const { return isLayoutBlockFlow() || isLayoutButton(); }
 
-    bool hasFilterOrReflection() const;
-
     // This function returns the containing block of the object.
     // Due to CSS being inconsistent, a containing block can be a relatively
     // positioned inline, thus we can't return a LayoutBlock from this function.
@@ -794,9 +790,9 @@ public:
     //
     // If |ancestor| and |ancestorSkipped| are not null, on return *ancestorSkipped
     // is true if the layoutObject returned is an ancestor of |ancestor|.
-    LayoutObject* container(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterOrReflectionSkipped = nullptr) const;
+    LayoutObject* container(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterSkipped = nullptr) const;
     // Finds the container as if this object is fixed-position.
-    LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterOrReflectionSkipped = nullptr) const;
+    LayoutBlock* containerForFixedPosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterSkipped = nullptr) const;
     // Finds the containing block as if this object is absolute-position.
     LayoutBlock* containingBlockForAbsolutePosition() const;
 
@@ -1439,7 +1435,6 @@ protected:
         LayoutObjectLayoutPart,
         LayoutObjectLayoutScrollbarPart,
         LayoutObjectLayoutView,
-        LayoutObjectReplica,
         LayoutObjectRuby,
         LayoutObjectRubyBase,
         LayoutObjectRubyRun,
@@ -1601,7 +1596,7 @@ private:
 
     void invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer);
 
-    LayoutObject* containerForAbsolutePosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterOrReflectionSkipped = nullptr) const;
+    LayoutObject* containerForAbsolutePosition(const LayoutBoxModelObject* ancestor = nullptr, bool* ancestorSkipped = nullptr, bool* filterSkipped = nullptr) const;
 
     const LayoutBoxModelObject* enclosingCompositedContainer() const;
 

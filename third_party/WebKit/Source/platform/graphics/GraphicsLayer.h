@@ -106,13 +106,6 @@ public:
     GraphicsLayer* contentsClippingMaskLayer() const { return m_contentsClippingMaskLayer; }
     void setContentsClippingMaskLayer(GraphicsLayer*);
 
-    // The given layer will replicate this layer and its children; the replica layoutObjects behind this layer.
-    void setReplicatedByLayer(GraphicsLayer*);
-    // The layer that replicates this layer (if any).
-    GraphicsLayer* replicaLayer() const { return m_replicaLayer; }
-    // The layer being replicated.
-    GraphicsLayer* replicatedLayer() const { return m_replicatedLayer; }
-
     enum ShouldSetNeedsDisplay {
         DontSetNeedsDisplay,
         SetNeedsDisplay
@@ -281,8 +274,6 @@ private:
     bool hasAncestor(GraphicsLayer*) const;
 #endif
 
-    void setReplicatedLayer(GraphicsLayer* layer) { m_replicatedLayer = layer; }
-
     void incrementPaintCount() { ++m_paintCount; }
 
     void notifyFirstPaintToClient();
@@ -342,12 +333,6 @@ private:
 
     GraphicsLayer* m_maskLayer; // Reference to mask layer. We don't own this.
     GraphicsLayer* m_contentsClippingMaskLayer; // Reference to clipping mask layer. We don't own this.
-
-    // A layer that replicates this layer. We only allow one, for now.
-    // The replica is not parented; this is the primary reference to it.
-    GraphicsLayer* m_replicaLayer;
-    GraphicsLayer* m_replicatedLayer; // For a replica layer, a reference to the original layer.
-    FloatPoint m_replicatedLayerPosition; // For a replica layer, the position of the replica.
 
     IntRect m_contentsRect;
 

@@ -107,8 +107,6 @@ blink_core_sources("layout") {
     "LayoutQuote.cpp",
     "LayoutQuote.h",
     "LayoutReplaced.cpp",
-    "LayoutReplica.cpp",
-    "LayoutReplica.h",
     "LayoutRuby.cpp",
     "LayoutRuby.h",
     "LayoutRubyBase.cpp",

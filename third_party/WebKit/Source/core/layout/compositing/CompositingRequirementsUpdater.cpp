@@ -420,14 +420,6 @@ void CompositingRequirementsUpdater::updateRecursive(PaintLayer* ancestorLayer, 
         if (willBeCompositedOrSquashed)
             reasonsToComposite |= layer->potentialCompositingReasonsFromStyle() & CompositingReasonInlineTransform;
 
-        // If the original layer is composited, the reflection needs to be, too.
-        if (layer->reflectionInfo()) {
-            // FIXME: Shouldn't we call computeCompositingRequirements to handle a reflection overlapping with another layoutObject?
-            PaintLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
-            CompositingReasons reflectionCompositingReason = willBeCompositedOrSquashed ? CompositingReasonReflectionOfCompositedParent : CompositingReasonNone;
-            reflectionLayer->setCompositingReasons(reflectionCompositingReason, CompositingReasonReflectionOfCompositedParent);
-        }
-
         if (willBeCompositedOrSquashed && layer->layoutObject()->style()->hasBlendMode())
             currentRecursionData.m_hasUnisolatedCompositedBlendingDescendant = true;
 

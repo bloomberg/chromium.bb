@@ -465,11 +465,6 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     // so it is legitimate to compute and cache the composited bounds for this layer.
     updateCompositedBounds();
 
-    if (PaintLayerReflectionInfo* reflection = m_owningLayer.reflectionInfo()) {
-        if (reflection->reflectionLayer()->hasCompositedLayerMapping())
-            reflection->reflectionLayer()->compositedLayerMapping()->updateCompositedBounds();
-    }
-
     PaintLayerCompositor* compositor = this->compositor();
     LayoutObject* layoutObject = this->layoutObject();
     const ComputedStyle& style = layoutObject->styleRef();
@@ -583,16 +578,6 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
     if (hasScrollingLayer())
         scrollingLayer()->setMaskLayer(layerToApplyChildClippingMask == scrollingLayer() ? m_childClippingMaskLayer.get() : nullptr);
     m_graphicsLayer->setContentsClippingMaskLayer(shouldApplyChildClippingMaskOnContents ? m_childClippingMaskLayer.get() : nullptr);
-
-    if (m_owningLayer.reflectionInfo() && !RuntimeEnabledFeatures::cssBoxReflectFilterEnabled()) {
-        if (m_owningLayer.reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping()) {
-            GraphicsLayer* reflectionLayer = m_owningLayer.reflectionInfo()->reflectionLayer()->compositedLayerMapping()->mainGraphicsLayer();
-            m_graphicsLayer->setReplicatedByLayer(reflectionLayer);
-            UseCounter::count(m_owningLayer.layoutObject()->document(), UseCounter::CompositedReplication);
-        }
-    } else {
-        m_graphicsLayer->setReplicatedByLayer(nullptr);
-    }
 
     updateBackgroundColor();
 
@@ -824,7 +809,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry(const PaintLayer* compo
     updateTransformGeometry(snappedOffsetFromCompositedAncestor, relativeCompositingBounds);
     updateForegroundLayerGeometry(contentsSize, clippingBox);
     updateBackgroundLayerGeometry(contentsSize);
-    updateReflectionLayerGeometry(layersNeedingPaintInvalidation);
     updateScrollingLayerGeometry(localCompositingBounds);
     updateChildClippingMaskLayerGeometry();
 
@@ -1041,15 +1025,6 @@ void CompositedLayerMapping::updateTransformGeometry(const IntPoint& snappedOffs
             0.f);
         m_graphicsLayer->setTransformOrigin(compositedTransformOrigin);
     }
-}
-
-void CompositedLayerMapping::updateReflectionLayerGeometry(Vector<PaintLayer*>& layersNeedingPaintInvalidation)
-{
-    if (!m_owningLayer.reflectionInfo() || !m_owningLayer.reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping())
-        return;
-
-    CompositedLayerMapping* reflectionCompositedLayerMapping = m_owningLayer.reflectionInfo()->reflectionLayer()->compositedLayerMapping();
-    reflectionCompositedLayerMapping->updateGraphicsLayerGeometry(&m_owningLayer, &m_owningLayer, layersNeedingPaintInvalidation);
 }
 
 void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCompositingBounds)
@@ -1974,9 +1949,6 @@ bool CompositedLayerMapping::hasVisibleNonCompositingDescendant(PaintLayer* pare
 
 bool CompositedLayerMapping::containsPaintedContent() const
 {
-    if (m_owningLayer.isReflection())
-        return false;
-
     if (layoutObject()->isImage() && isDirectlyCompositedImage())
         return false;
 

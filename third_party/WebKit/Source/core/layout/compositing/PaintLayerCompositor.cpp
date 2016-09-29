@@ -538,17 +538,6 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(PaintLayer* lay
     // PutInSquashingLayer means you might have to remove the composited layer mapping first.
     case PutInSquashingLayer:
         if (layer->hasCompositedLayerMapping()) {
-            // If we're removing the compositedLayerMapping from a reflection, clear the source GraphicsLayer's pointer to
-            // its replica GraphicsLayer. In practice this should never happen because reflectee and reflection
-            // are both either composited, or not composited.
-            if (layer->isReflection()) {
-                PaintLayer* sourceLayer = toLayoutBoxModelObject(layer->layoutObject()->parent())->layer();
-                if (sourceLayer->hasCompositedLayerMapping()) {
-                    ASSERT(sourceLayer->compositedLayerMapping()->mainGraphicsLayer()->replicaLayer() == layer->compositedLayerMapping()->mainGraphicsLayer());
-                    sourceLayer->compositedLayerMapping()->mainGraphicsLayer()->setReplicatedByLayer(nullptr);
-                }
-            }
-
             layer->clearCompositedLayerMapping();
             compositedLayerMappingChanged = true;
         }
@@ -942,9 +931,6 @@ static void setTracksPaintInvalidationsRecursive(GraphicsLayer* graphicsLayer, b
 
     for (size_t i = 0; i < graphicsLayer->children().size(); ++i)
         setTracksPaintInvalidationsRecursive(graphicsLayer->children()[i], tracksPaintInvalidations);
-
-    if (GraphicsLayer* replicaLayer = graphicsLayer->replicaLayer())
-        setTracksPaintInvalidationsRecursive(replicaLayer, tracksPaintInvalidations);
 
     if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
         setTracksPaintInvalidationsRecursive(maskLayer, tracksPaintInvalidations);

@@ -60,7 +60,6 @@
 #include "core/layout/LayoutFlowThread.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutPart.h"
-#include "core/layout/LayoutReplica.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutPartItem.h"
@@ -215,8 +214,6 @@ PaintLayer::~PaintLayer()
 
 String PaintLayer::debugName() const
 {
-    if (isReflection())
-        return layoutObject()->parent()->debugName() + " (reflection)";
     return layoutObject()->debugName();
 }
 
@@ -305,9 +302,6 @@ void PaintLayer::updateLayerPositionsAfterLayout()
 void PaintLayer::updateLayerPositionRecursive()
 {
     updateLayerPosition();
-
-    if (m_rareData && m_rareData->reflectionInfo)
-        m_rareData->reflectionInfo->reflection()->layout();
 
     // FIXME(400589): We would like to do this in PaintLayerScrollableArea::updateAfterLayout,
     // but it depends on the size computed by updateLayerPosition.
@@ -1068,10 +1062,8 @@ static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, cons
     if (!layer->layoutObject()->hasMask()) {
         // Note: we don't have to walk z-order lists since transparent elements always establish
         // a stacking container. This means we can just walk the layer tree directly.
-        for (PaintLayer* curr = layer->firstChild(); curr; curr = curr->nextSibling()) {
-            if (!layer->reflectionInfo() || layer->reflectionInfo()->reflectionLayer() != curr)
-                clipRect.unite(PaintLayer::transparencyClipBox(curr, rootLayer, transparencyBehavior, PaintLayer::DescendantsOfTransparencyClipBox, subPixelAccumulation, globalPaintFlags));
-        }
+        for (PaintLayer* curr = layer->firstChild(); curr; curr = curr->nextSibling())
+            clipRect.unite(PaintLayer::transparencyClipBox(curr, rootLayer, transparencyBehavior, PaintLayer::DescendantsOfTransparencyClipBox, subPixelAccumulation, globalPaintFlags));
     }
 
     // If we have a reflection, then we need to account for that when we push the clip.  Reflect our entire
@@ -1277,11 +1269,6 @@ void PaintLayer::removeOnlyThisLayerAfterStyleChange()
 
     PaintLayer* nextSib = nextSibling();
 
-    // Remove the child reflection layer before moving other child layers.
-    // The reflection layer should not be moved to the parent.
-    if (PaintLayerReflectionInfo* reflectionInfo = this->reflectionInfo())
-        removeChild(reflectionInfo->reflectionLayer());
-
     // Now walk our kids and reattach them to our parent.
     PaintLayer* current = m_first;
     while (current) {
@@ -1306,7 +1293,7 @@ void PaintLayer::insertOnlyThisLayerAfterStyleChange()
         // Find our enclosingLayer and add ourselves.
         PaintLayer* parentLayer = layoutObject()->parent()->enclosingLayer();
         ASSERT(parentLayer);
-        PaintLayer* beforeChild = !parentLayer->reflectionInfo() || parentLayer->reflectionInfo()->reflectionLayer() != this ? layoutObject()->parent()->findNextLayer(parentLayer, layoutObject()) : 0;
+        PaintLayer* beforeChild = layoutObject()->parent()->findNextLayer(parentLayer, layoutObject());
         parentLayer->addChild(this, beforeChild);
     }
 
@@ -1442,18 +1429,6 @@ void PaintLayer::didUpdateNeedsCompositedScrolling()
     // if it becomes self-painting, it should paint itself and no ancestor should paint it.
     if (wasSelfPaintingLayer != isSelfPaintingLayer() && m_layoutObject->isFloating())
         LayoutBlockFlow::setAncestorShouldPaintFloatingObject(*layoutBox());
-}
-
-void PaintLayer::updateReflectionInfo(const ComputedStyle* oldStyle)
-{
-    ASSERT(!oldStyle || !layoutObject()->style()->reflectionDataEquivalent(oldStyle));
-    if (layoutObject()->hasReflection()) {
-        if (!ensureRareData().reflectionInfo)
-            m_rareData->reflectionInfo = wrapUnique(new PaintLayerReflectionInfo(*layoutBox()));
-        m_rareData->reflectionInfo->updateAfterStyleChange(oldStyle);
-    } else if (m_rareData && m_rareData->reflectionInfo) {
-        m_rareData->reflectionInfo = nullptr;
-    }
 }
 
 void PaintLayer::updateStackingNode()
@@ -2076,7 +2051,7 @@ PaintLayer* PaintLayer::hitTestChildren(ChildrenIteration childrentoVisit, Paint
 
 FloatRect PaintLayer::boxForFilter() const
 {
-    return FloatRect(physicalBoundingBoxIncludingReflectionAndStackingChildren(
+    return FloatRect(physicalBoundingBoxIncludingStackingChildren(
         LayoutPoint(), PaintLayer::CalculateBoundsOptions::IncludeTransformsAndCompositedChildLayers));
 }
 
@@ -2204,19 +2179,11 @@ LayoutRect PaintLayer::boundingBoxForCompositingOverlapTest() const
 
 bool PaintLayer::overlapBoundsIncludeChildren() const
 {
-    const auto* style = layoutObject()->style();
-    if (style && style->filter().hasFilterThatMovesPixels())
-        return true;
-    if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && layoutObject()->hasReflection())
-        return true;
-    return false;
+    return hasFilterThatMovesPixels();
 }
 
-static void expandRectForReflectionAndStackingChildren(const PaintLayer* ancestorLayer, LayoutRect& result, PaintLayer::CalculateBoundsOptions options)
+static void expandRectForStackingChildren(const PaintLayer* ancestorLayer, LayoutRect& result, PaintLayer::CalculateBoundsOptions options)
 {
-    if (ancestorLayer->reflectionInfo() && !ancestorLayer->reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping() && !RuntimeEnabledFeatures::cssBoxReflectFilterEnabled())
-        result.unite(ancestorLayer->reflectionInfo()->reflectionLayer()->boundingBoxForCompositing(ancestorLayer));
-
     ASSERT(ancestorLayer->stackingNode()->isStackingContext() || !ancestorLayer->stackingNode()->hasPositiveZOrderList());
 
 #if ENABLE(ASSERT)
@@ -2236,13 +2203,13 @@ static void expandRectForReflectionAndStackingChildren(const PaintLayer* ancesto
     }
 }
 
-LayoutRect PaintLayer::physicalBoundingBoxIncludingReflectionAndStackingChildren(const LayoutPoint& offsetFromRoot, CalculateBoundsOptions options) const
+LayoutRect PaintLayer::physicalBoundingBoxIncludingStackingChildren(const LayoutPoint& offsetFromRoot, CalculateBoundsOptions options) const
 {
     LayoutRect result = physicalBoundingBox(LayoutPoint());
 
     const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-    expandRectForReflectionAndStackingChildren(this, result, options);
+    expandRectForStackingChildren(this, result, options);
 
     result.moveBy(offsetFromRoot);
     return result;
@@ -2280,15 +2247,7 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
 
         const_cast<PaintLayer*>(this)->stackingNode()->updateLayerListsIfNeeded();
 
-        // Reflections are implemented with Layers that hang off of the reflected layer. However,
-        // the reflection layer subtree does not include the subtree of the parent Layer, so
-        // a recursive computation of stacking children yields no results. This breaks cases when there are stacking
-        // children of the parent, that need to be included in reflected composited bounds.
-        // Fix this by including composited bounds of stacking children of the reflected Layer.
-        if (hasCompositedLayerMapping() && parent() && parent()->reflectionInfo() && parent()->reflectionInfo()->reflectionLayer() == this)
-            expandRectForReflectionAndStackingChildren(parent(), result, options);
-        else
-            expandRectForReflectionAndStackingChildren(this, result, options);
+        expandRectForStackingChildren(this, result, options);
 
         // Only enlarge by the filter outsets if we know the filter is going to be rendered in software.
         // Accelerated filters will handle their own outsets.
@@ -2604,10 +2563,6 @@ bool PaintLayer::attemptDirectCompositingUpdate(StyleDifference diff, const Comp
     // a corresponding StyleDifference if an animation started or ended.
     if (potentialCompositingReasonsFromStyle() != oldPotentialCompositingReasonsFromStyle)
         return false;
-    // We could add support for reflections if we updated the transform on
-    // the reflection layers.
-    if (layoutObject()->hasReflection())
-        return false;
     // If we're unwinding a scheduleSVGFilterLayerUpdateHack(), then we can't
     // perform a direct compositing update because the filters code is going
     // to produce different output this time around. We can remove this code
@@ -2668,12 +2623,6 @@ void PaintLayer::styleDidChange(StyleDifference diff, const ComputedStyle* oldSt
     // to recompute the bit once scrollbars have been updated.
     updateSelfPaintingLayer();
 
-    if (!oldStyle || !layoutObject()->style()->reflectionDataEquivalent(oldStyle)) {
-        // A full layout is required for non-filter-based reflections.
-        DCHECK(!oldStyle || diff.needsFullLayout() || RuntimeEnabledFeatures::cssBoxReflectFilterEnabled());
-        updateReflectionInfo(oldStyle);
-    }
-
     updateDescendantDependentFlags();
 
     updateTransform(oldStyle, layoutObject()->styleRef());
@@ -2693,7 +2642,7 @@ bool PaintLayer::scrollsOverflow() const
 FilterOperations PaintLayer::addReflectionToFilterOperations(const ComputedStyle& style) const
 {
     FilterOperations filterOperations = style.filter();
-    if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && layoutObject()->hasReflection() && layoutObject()->isBox()) {
+    if (layoutObject()->hasReflection() && layoutObject()->isBox()) {
         BoxReflection reflection = boxReflectionForPaintLayer(*this, style);
         filterOperations.operations().append(BoxReflectFilterOperation::create(reflection));
     }
@@ -2815,7 +2764,7 @@ bool PaintLayer::hasFilterThatMovesPixels() const
     const ComputedStyle& style = layoutObject()->styleRef();
     if (style.hasFilter() && style.filter().hasFilterThatMovesPixels())
         return true;
-    if (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && style.hasBoxReflect())
+    if (style.hasBoxReflect())
         return true;
     return false;
 }

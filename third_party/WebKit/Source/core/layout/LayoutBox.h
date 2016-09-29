@@ -1014,7 +1014,6 @@ protected:
 
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidationState&) override;
     PaintInvalidationReason invalidatePaintIfNeeded(const PaintInvalidatorContext&) const override;
-    void invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState) override;
 
     bool columnFlexItemHasStretchAlignment() const;
     bool isStretchingColumnFlexItem() const;
@@ -1108,8 +1107,8 @@ private:
     // min/max.
     mutable LayoutUnit m_intrinsicContentLogicalHeight;
 
-    void inflateVisualRectForReflectionAndFilter(LayoutRect&) const;
-    void inflateVisualRectForReflectionAndFilterUnderContainer(LayoutRect&, const LayoutObject& container, const LayoutBoxModelObject* ancestorToStopAt) const;
+    void inflateVisualRectForFilter(LayoutRect&) const;
+    void inflateVisualRectForFilterUnderContainer(LayoutRect&, const LayoutObject& container, const LayoutBoxModelObject* ancestorToStopAt) const;
 
     LayoutRectOutsets m_marginBoxOutsets;
 

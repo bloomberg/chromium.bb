@@ -22,11 +22,6 @@
           "object": "LayoutBlockFlow (positioned) DIV id='moveMe' class='fixed clipped'",
           "rect": [250, 280, 100, 100],
           "reason": "subtree"
-        },
-        {
-          "object": "LayoutReplica (anonymous)",
-          "rect": [250, 280, 100, 100],
-          "reason": "subtree"
         }
       ]
     }
@@ -38,10 +33,6 @@
     },
     {
       "object": "LayoutBlockFlow (positioned) DIV class='absolute green reflected'",
-      "reason": "subtree"
-    },
-    {
-      "object": "LayoutReplica (anonymous)",
       "reason": "subtree"
     },
     {

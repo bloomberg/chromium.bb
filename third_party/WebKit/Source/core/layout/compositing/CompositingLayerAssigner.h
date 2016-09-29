@@ -84,7 +84,6 @@ private:
     };
 
     void assignLayersToBackingsInternal(PaintLayer*, SquashingState&, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
-    void assignLayersToBackingsForReflectionLayer(PaintLayer* reflectionLayer, Vector<PaintLayer*>& layersNeedingPaintInvalidation);
     SquashingDisallowedReasons getReasonsPreventingSquashing(const PaintLayer*, const SquashingState&);
     bool squashingWouldExceedSparsityTolerance(const PaintLayer* candidate, const SquashingState&);
     void updateSquashingAssignment(PaintLayer*, SquashingState&, CompositingStateTransitionType, Vector<PaintLayer*>& layersNeedingPaintInvalidation);

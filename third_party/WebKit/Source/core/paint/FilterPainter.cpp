@@ -59,7 +59,7 @@ FilterPainter::FilterPainter(PaintLayer& layer, GraphicsContext& context, const 
         // the layer's filter. See crbug.com/502026.
         if (compositorFilterOperations.isEmpty())
             return;
-        LayoutRect visualBounds(layer.physicalBoundingBoxIncludingReflectionAndStackingChildren(offsetFromRoot));
+        LayoutRect visualBounds(layer.physicalBoundingBoxIncludingStackingChildren(offsetFromRoot));
         if (layer.enclosingPaginationLayer()) {
             // Filters are set up before pagination, so we need to make the bounding box visual on our own.
             visualBounds.moveBy(-offsetFromRoot);

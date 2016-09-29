@@ -2270,8 +2270,8 @@ public:
     void applyTransform(TransformationMatrix&, const FloatRect& boundingBox, ApplyTransformOrigin, ApplyMotionPath, ApplyIndependentTransformProperties) const;
 
     // Returns |true| if any property that renders using filter operations is
-    // used (including, but not limited to, 'filter').
-    bool hasFilterInducingProperty() const { return hasFilter() || (RuntimeEnabledFeatures::cssBoxReflectFilterEnabled() && hasBoxReflect()); }
+    // used (including, but not limited to, 'filter' and 'box-reflect').
+    bool hasFilterInducingProperty() const { return hasFilter() || hasBoxReflect(); }
 
     // Returns |true| if opacity should be considered to have non-initial value for the purpose
     // of creating stacking contexts.

@@ -1,11 +1,5 @@
 # Expectations for slimmingPaintInvalidation feature
 
-# Reflection implemented with filters
-paint/invalidation/reflection-invalidation-positioned-child.html [ NeedsRebaseline ]
-paint/invalidation/reflection-repaint-test.html [ NeedsRebaseline ]
-paint/invalidation/scroll-absolute-layer-with-reflection.html [ NeedsRebaseline ]
-paint/invalidation/scroll-fixed-layer-with-reflection.html [ NeedsRebaseline ]
-
 # More accurate clipping
 paint/invalidation/outline-clip-change.html [ NeedsRebaseline ]
 paint/invalidation/scroll-in-transformed-layer.html [ NeedsRebaseline ]
@@ -14,6 +8,7 @@ paint/invalidation/shift-relative-positioned-container-with-image-addition.html 
 
 crbug.com/648769 paint/invalidation/invalidation-with-scale-transform.html [ Failure ]
 crbug.com/648769 paint/invalidation/transform-inline-layered-child.html [ Failure ]
+crbug.com/648769 paint/invalidation/transform-layout-repaint.html [ Failure ]
 crbug.com/648769 paint/invalidation/svg/animated-path-inside-transformed-html.xhtml [ Failure ]
 crbug.com/648769 paint/invalidation/svg/js-late-gradient-and-object-creation.svg [ Failure ]
 crbug.com/648769 paint/invalidation/svg/js-late-pattern-and-object-creation.svg [ Failure ]

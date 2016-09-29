@@ -2776,8 +2776,6 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer)
             synchronizedPaintRecursively(maskLayer);
         if (GraphicsLayer* contentsClippingMaskLayer = graphicsLayer->contentsClippingMaskLayer())
             synchronizedPaintRecursively(contentsClippingMaskLayer);
-        if (GraphicsLayer* replicaLayer = graphicsLayer->replicaLayer())
-            synchronizedPaintRecursively(replicaLayer);
     }
 
     for (auto& child : graphicsLayer->children())

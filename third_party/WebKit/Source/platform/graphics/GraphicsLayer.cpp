@@ -128,8 +128,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_parent(0)
     , m_maskLayer(0)
     , m_contentsClippingMaskLayer(0)
-    , m_replicaLayer(0)
-    , m_replicatedLayer(0)
     , m_paintCount(0)
     , m_contentsLayer(0)
     , m_contentsLayerId(0)
@@ -157,12 +155,6 @@ GraphicsLayer::~GraphicsLayer()
     if (m_client)
         m_client->verifyNotPainting();
 #endif
-
-    if (m_replicaLayer)
-        m_replicaLayer->setReplicatedLayer(0);
-
-    if (m_replicatedLayer)
-        m_replicatedLayer->setReplicatedByLayer(0);
 
     removeAllChildren();
     removeFromParent();
@@ -280,23 +272,6 @@ void GraphicsLayer::removeFromParent()
     }
 
     platformLayer()->removeFromParent();
-}
-
-void GraphicsLayer::setReplicatedByLayer(GraphicsLayer* layer)
-{
-    // FIXME: this could probably be a full early exit.
-    if (m_replicaLayer != layer) {
-        if (m_replicaLayer)
-            m_replicaLayer->setReplicatedLayer(0);
-
-        if (layer)
-            layer->setReplicatedLayer(this);
-
-        m_replicaLayer = layer;
-    }
-
-    WebLayer* webReplicaLayer = layer ? layer->platformLayer() : 0;
-    platformLayer()->setReplicaLayer(webReplicaLayer);
 }
 
 void GraphicsLayer::setOffsetFromLayoutObject(const IntSize& offset, ShouldSetNeedsDisplay shouldSetNeedsDisplay)
@@ -748,12 +723,6 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(LayerTreeFlag
 
     if (!m_transform.isIdentity())
         json->setArray("transform", transformAsJSONArray(m_transform));
-
-    if (m_replicaLayer)
-        json->setObject("replicaLayer", m_replicaLayer->layerTreeAsJSONInternal(flags, renderingContextMap));
-
-    if (m_replicatedLayer)
-        json->setString("replicatedLayer", flags & LayerTreeIncludesDebugInfo ? pointerAsString(m_replicatedLayer) : "");
 
     PaintInvalidationTrackingMap::iterator it = paintInvalidationTrackingMap().find(this);
     if (it != paintInvalidationTrackingMap().end()) {
