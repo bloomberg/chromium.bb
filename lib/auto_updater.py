@@ -668,7 +668,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """Return numeric cgpt value for the specified flag, kernel, device."""
     cmd = ['cgpt', 'show', '-n', '-i', '%d' % kernel['kernel'], flag, dev]
     return int(self.device.RunCommand(
-        cmd, capture_output=True).output.strip())
+        cmd, capture_output=True, log_output=True).output.strip())
 
   def _GetKernelPriority(self, kernel):
     """Return numeric priority for the specified kernel.
@@ -709,7 +709,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """Get release version of the device."""
     lsb_release_content = self.device.RunCommand(
         ['cat', '/etc/lsb-release'],
-        capture_output=True).output.strip()
+        capture_output=True, log_output=True).output.strip()
     return auto_update_util.GetChromeosReleaseVersion(
         lsb_release_content=lsb_release_content)
 
@@ -778,7 +778,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
           period=5)
     except timeout_util.TimeoutError:
       services_status = self.device.RunCommand(
-          ['status', 'system-services'], capture_output=True).output
+          ['status', 'system-services'], capture_output=True,
+          log_output=True).output
       logging.debug('System services_status: %r' % services_status)
       if services_status != 'system-services start/running\n':
         event = ('Chrome failed to reach login screen')
