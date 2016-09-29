@@ -989,3 +989,4 @@ layer at (0,0) size 800x1299 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               LayoutText {#text} at (269,0) size 527x27
                 text run at (269,0) width 527: "Amazingly few discotheques provide jukeboxes."
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0

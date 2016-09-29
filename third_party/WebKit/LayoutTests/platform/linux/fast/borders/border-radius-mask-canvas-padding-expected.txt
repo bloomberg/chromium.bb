@@ -17,5 +17,6 @@ layer at (0,0) size 800x406
             text run at (0,0) width 374: "the 10px gray background is visible around the canvas content"
       LayoutBlockFlow (anonymous) at (0,97.72) size 784x282
         LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,116) size 277x277
   LayoutHTMLCanvas {CANVAS} at (0,0) size 277x277 [bgcolor=#808080]

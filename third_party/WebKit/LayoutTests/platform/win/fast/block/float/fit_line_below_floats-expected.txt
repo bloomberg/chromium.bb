@@ -11,6 +11,7 @@ layer at (0,0) size 800x260
           LayoutBlockFlow {DIV} at (30,50) size 101x30 [bgcolor=#00FFFF]
           LayoutText {#text} at (131,66) size 4x17
             text run at (131,66) width 4: " "
+          LayoutText {#text} at (0,0) size 0x0
           LayoutBlockFlow (floating) {DIV} at (0,50) size 30x30 [bgcolor=#0000FF]
           LayoutText {#text} at (135,66) size 199x53
             text run at (135,66) width 37: "Some"
@@ -24,6 +25,7 @@ layer at (0,0) size 800x260
           LayoutBlockFlow {DIV} at (20,50) size 101x30 [bgcolor=#00FFFF]
           LayoutText {#text} at (121,66) size 4x17
             text run at (121,66) width 4: " "
+          LayoutText {#text} at (0,0) size 0x0
           LayoutBlockFlow (floating) {DIV} at (170,50) size 30x30 [bgcolor=#0000FF]
           LayoutText {#text} at (125,66) size 199x53
             text run at (125,66) width 37: "Some"

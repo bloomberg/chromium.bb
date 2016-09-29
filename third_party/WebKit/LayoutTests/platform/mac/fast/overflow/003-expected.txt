@@ -22,6 +22,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (10,56) width 201: "Array Generator, a visual tool for"
           text run at (10,71) width 62: "creating..."
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,169) size 265x82 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 180x15
         LayoutText {#text} at (10,11) size 180x15
@@ -35,6 +36,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (10,41) width 226: "Entries. Very cool, and uses the DOM"
           text run at (10,56) width 243: "and JavaScript to reveal the extended..."
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,261) size 265x82 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 166x15
         LayoutText {#text} at (10,11) size 166x15
@@ -47,6 +49,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (10,26) width 217: "if you're using the DOM to generate"
           text run at (10,41) width 203: "TABLE elements, you have to use"
           text run at (10,56) width 158: "setAttribute() to set the..."
+      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,353) size 265x97 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 181x15
@@ -62,6 +65,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (10,56) width 225: "WYSIWYG XML-editor) have released"
           text run at (10,71) width 132: "code that simulates..."
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,460) size 265x82 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 182x30
         LayoutText {#text} at (10,11) size 182x30
@@ -74,6 +78,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (83,26) width 168: "Tim Morgan is working on a"
           text run at (10,41) width 235: "Flash-like timeline/keyframe extension"
           text run at (10,56) width 148: "for his DHTML toolset...."
+      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,552) size 265x97 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 157x30
@@ -89,6 +94,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (10,56) width 240: "browser DHTML library, and is available"
           text run at (10,71) width 204: "at Dan Steinman's original site...."
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,659) size 265x67 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 155x15
         LayoutText {#text} at (10,11) size 155x15
@@ -100,6 +106,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (168,11) width 42: "Milov's"
           text run at (10,26) width 217: "!lineDraw bookmarklet is in fact the"
           text run at (10,41) width 174: "Coolest Bookmarklet Ever...."
+      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,736) size 265x97 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 204x15
@@ -115,6 +122,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (10,56) width 199: "finds a not-quite-DOM-compliant"
           text run at (10,71) width 196: "replacement for innerHTML. It..."
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,843) size 265x67 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 104x15
         LayoutText {#text} at (10,11) size 104x15
@@ -126,6 +134,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (117,11) width 132: "I'm late for this train:"
           text run at (10,26) width 235: "Mozilla 1.0 Release Candidate 2 is now"
           text run at (10,41) width 71: "available...."
+      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,920) size 265x97 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 239x30
@@ -141,6 +150,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (10,56) width 232: "deprecated. Don't use it. javascript: is"
           text run at (10,71) width 147: "deprecated. Don't use..."
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,1027) size 265x67 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 178x15
         LayoutText {#text} at (10,11) size 178x15
@@ -150,6 +160,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
         LayoutText {#text} at (10,26) size 236x30
           text run at (10,26) width 236: "Webreference: DOM-Based Conditional"
           text run at (10,41) width 181: "Script Loading in JavaScript..."
+      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,1104) size 265x82 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 117x15
@@ -164,6 +175,7 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (10,41) width 243: "comparisons between the Web as a text"
           text run at (10,56) width 161: "medium and the Web as..."
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
     LayoutBlockFlow {item} at (1,1196) size 265x97 [bgcolor=#FFFFFF] [border: (1px solid #CCCCCC) none (1px solid #CCCCCC) none]
       LayoutInline {title} at (0,0) size 167x15
         LayoutText {#text} at (10,11) size 167x15
@@ -177,4 +189,5 @@ layer at (10,10) size 282x302 clip at (11,11) size 265x300 scrollHeight 1302
           text run at (10,41) width 195: "Dreamweaver compatibility with"
           text run at (10,56) width 245: "Netscape 6 Stylesheets and MIME Types"
           text run at (10,71) width 66: "in Gecko..."
+      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0

@@ -7,3 +7,4 @@ layer at (0,0) size 800x600
         LayoutBlockFlow {DIV} at (0,0) size 50x0
           LayoutBlockFlow {DIV} at (0,0) size 50x50 [bgcolor=#008000]
         LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0

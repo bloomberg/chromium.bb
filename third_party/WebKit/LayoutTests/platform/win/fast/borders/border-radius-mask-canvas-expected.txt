@@ -17,5 +17,6 @@ layer at (0,0) size 800x380
             text run at (0,0) width 194: "gray background is not visible"
       LayoutBlockFlow (anonymous) at (0,92.72) size 784x261
         LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,111) size 257x257
   LayoutHTMLCanvas {CANVAS} at (0,0) size 257x257 [bgcolor=#808080]

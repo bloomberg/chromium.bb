@@ -1,4 +1,5 @@
 Verifies show/hide HTML comments setting.
+
 HTML comments shown:
   <!-- comment 1 -->
 - <html>

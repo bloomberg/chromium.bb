@@ -11,6 +11,7 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (484,144) size 4x17
         text run at (484,144) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (240,288) size 4x17
         text run at (240,288) width 4: " "
       LayoutBR {BR} at (244,302) size 0x0

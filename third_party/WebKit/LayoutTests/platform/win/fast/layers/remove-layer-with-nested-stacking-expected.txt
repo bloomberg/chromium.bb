@@ -10,6 +10,8 @@ layer at (0,0) size 800x600
       LayoutBlockFlow (anonymous) at (0,68) size 784x100
       LayoutBlockFlow (anonymous) at (0,168) size 784x0
         LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,76) size 100x100
   LayoutBlockFlow {DIV} at (0,0) size 100x100
     LayoutText {#text} at (0,0) size 0x0

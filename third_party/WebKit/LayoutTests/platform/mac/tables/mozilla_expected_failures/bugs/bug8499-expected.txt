@@ -26,6 +26,7 @@ layer at (0,0) size 800x600
                             LayoutTableCell {TD} at (2,2) size 4x4 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
                               LayoutInline {APPLET} at (0,0) size 0x0
                                 LayoutText {#text} at (0,0) size 0x0
+                                LayoutText {#text} at (0,0) size 0x0
                               LayoutText {#text} at (0,0) size 0x0
                       LayoutBlockFlow {P} at (2,30) size 772x36
                         LayoutText {#text} at (0,0) size 737x36

@@ -38,6 +38,7 @@ layer at (0,0) size 800x600
             [feTurbulence type="TURBULENCE" baseFrequency="0.05, 0.05" seed="0.00" numOctaves="2" stitchTiles="0"]
       LayoutText {#text} at (0,45) size 2x12
         text run at (0,45) width 2: " "
+      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (92,45) size 2x12
         text run at (92,45) width 2: " "
       LayoutText {#text} at (184,45) size 2x12

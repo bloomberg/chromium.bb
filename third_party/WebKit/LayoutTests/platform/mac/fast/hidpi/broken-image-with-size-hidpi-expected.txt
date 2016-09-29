@@ -9,6 +9,7 @@ layer at (0,0) size 800x188
       LayoutBlockFlow (anonymous) at (0,18) size 784x154
         LayoutBlockFlow {IMG} at (0,0) size 300x150
         LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 300x150 clip at (9,27) size 298x148
   LayoutBlockFlow {DIV} at (0,0) size 300x150 [border: (1px solid #C0C0C0)]
     LayoutImage (floating) {IMG} at (2,2) size 16x16

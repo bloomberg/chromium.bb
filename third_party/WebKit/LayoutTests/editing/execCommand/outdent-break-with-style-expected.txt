@@ -6,5 +6,3 @@ This test outdents an empty paragraph with inline style.
 | <b>
 |   <#selection-caret>
 |   <br>
-| "
-"

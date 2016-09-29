@@ -7,6 +7,7 @@ layer at (0,0) size 785x623 backgroundClip at (0,0) size 785x600 clip at (0,0) s
         text run at (46,61) width 4: " "
       LayoutText {#text} at (129,61) size 4x17
         text run at (129,61) width 4: " "
+      LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (180,61) size 4x17
         text run at (180,61) width 4: " "
       LayoutText {#text} at (250,61) size 4x17

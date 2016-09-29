@@ -7,6 +7,7 @@ Actual checkboxes:
 Broccoli
 Asparagus
 This test PASSES in DumpRenderTree. The role is AXRole: AXCheckBox
+
 The following should be a button:
 
 X
@@ -14,6 +15,7 @@ X
 Actual button:
 
 Hello This test PASSES in DumpRenderTree. The role is AXRole: AXButton
+
 The following should be a heading:
 
 X
@@ -23,6 +25,7 @@ Actual heading:
 Hello
 
 This test PASSES in DumpRenderTree. The role is AXRole: AXHeading
+
 The following should be a link:
 
 X
@@ -30,6 +33,7 @@ X
 Actual link:
 
 Hello This test PASSES in DumpRenderTree. The role is AXRole: AXLink
+
 The following should be a radio button:
 
 X
@@ -39,6 +43,7 @@ Actual radio buttons:
 Broccoli
 Asparagus
 This test PASSES in DumpRenderTree. The role is AXRole: AXRadioButton
+
 The following should be a text box:
 
 X
@@ -46,6 +51,7 @@ X
 Actual text box:
 
  This test PASSES in DumpRenderTree. The role is AXRole: AXTextField
+
 The following should be an image:
 
 X
@@ -53,6 +59,7 @@ X
 Actual image:
 
  This test PASSES in DumpRenderTree. The role is AXRole: AXImage
+
 The following should be a list:
 
 X
@@ -62,6 +69,7 @@ Actual list:
 Broccoli
 Beets
 This test PASSES in DumpRenderTree. The role is AXRole: AXList
+
 The following should be a dialog:
 
 X

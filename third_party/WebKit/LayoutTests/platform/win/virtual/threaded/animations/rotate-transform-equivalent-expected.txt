@@ -8,6 +8,7 @@ layer at (0,0) size 800x600
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (8,26) size 106x106
   LayoutBlockFlow (positioned) {DIV} at (8,26) size 106x106 [color=#FF0000] [border: (3px solid #FF0000)]
     LayoutText {#text} at (3,5) size 56x111

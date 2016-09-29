@@ -25,5 +25,6 @@ layer at (0,0) size 800x486
             text run at (0,0) width 372: "the bottom right corner of canvas content is NOT rounded"
       LayoutBlockFlow (anonymous) at (0,128.72) size 784x331
         LayoutText {#text} at (0,0) size 0x0
+        LayoutText {#text} at (0,0) size 0x0
 layer at (28,167) size 287x287
   LayoutHTMLCanvas {CANVAS} at (20,20) size 287x287 [bgcolor=#808080] [border: (5px solid #FF0000)]

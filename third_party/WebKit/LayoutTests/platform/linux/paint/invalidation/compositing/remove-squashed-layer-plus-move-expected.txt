@@ -112,6 +112,10 @@
     {
       "object": "LayoutText #text",
       "reason": "location change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "location change"
     }
   ]
 }

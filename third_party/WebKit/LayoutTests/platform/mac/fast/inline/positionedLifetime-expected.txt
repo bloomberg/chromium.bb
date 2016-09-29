@@ -8,5 +8,7 @@ layer at (0,0) size 800x600
         text run at (17,0) width 5: " "
       LayoutBR {BR} at (21,14) size 1x0
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
 layer at (8,27) size 0x0
   LayoutBlockFlow (positioned) {DIV} at (8,27) size 0x0

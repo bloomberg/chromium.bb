@@ -14,7 +14,8 @@ layer at (0,0) size 800x600
       LayoutBR {BR} at (164,103) size 1x0
       LayoutText {#text} at (155,160) size 4x17
         text run at (155,160) width 4: " "
-      LayoutBR {BR} at (159,174) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutBR {BR} at (0,0) size 0x0
       LayoutText {#text} at (0,178) size 217x17
         text run at (0,178) width 217: "dynamic insert of selected option:"
       LayoutBR {BR} at (216,192) size 1x0
@@ -40,7 +41,8 @@ layer at (0,0) size 800x600
             text run at (4,1) width 134: "this should be selected"
       LayoutText {#text} at (158,324) size 4x17
         text run at (158,324) width 4: " "
-      LayoutBR {BR} at (162,338) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutBR {BR} at (0,0) size 0x0
       LayoutText {#text} at (0,343) size 217x17
         text run at (0,343) width 217: "dynamic insert of selected option:"
       LayoutBR {BR} at (216,357) size 1x0

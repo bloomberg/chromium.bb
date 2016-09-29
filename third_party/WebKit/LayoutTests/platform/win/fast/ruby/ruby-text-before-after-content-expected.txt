@@ -22,3 +22,4 @@ layer at (0,0) size 800x86
             LayoutText {#text} at (0,0) size 22x36
               text run at (0,0) width 22: "B"
       LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
