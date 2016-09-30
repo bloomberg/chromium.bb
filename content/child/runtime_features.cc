@@ -230,8 +230,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableWebFontsInterventionTrigger))
     WebRuntimeFeatures::enableWebFontsInterventionTrigger(true);
 
-  if (base::FeatureList::IsEnabled(features::kScrollAnchoring))
-    WebRuntimeFeatures::enableScrollAnchoring(true);
+  WebRuntimeFeatures::enableScrollAnchoring(
+      base::FeatureList::IsEnabled(features::kScrollAnchoring));
 
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
     WebRuntimeFeatures::enableSlimmingPaintV2(true);
