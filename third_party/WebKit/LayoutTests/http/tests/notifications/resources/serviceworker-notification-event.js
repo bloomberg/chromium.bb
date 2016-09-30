@@ -30,10 +30,12 @@ function runTest(notification) {
       assert_equals(event.bubbles, false);
       assert_equals(event.notification, notification);
       assert_equals(event.action, '');
+      assert_equals(event.reply, '');
       assert_inherits(event, 'waitUntil');
 
       const customEvent = new NotificationEvent('NotificationEvent', {
                               notification: notification,
+                              reply: 'my reply',
                               bubbles: true,
                               cancelable: true });
 
@@ -41,6 +43,7 @@ function runTest(notification) {
       assert_equals(customEvent.cancelable, true);
       assert_equals(customEvent.bubbles, true);
       assert_equals(customEvent.notification, notification);
+      assert_equals(customEvent.reply, 'my reply');
     } catch (e) {
       result.success = false;
       result.message = e.message + '\n' + e.stack;

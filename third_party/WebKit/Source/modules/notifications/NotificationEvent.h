@@ -31,6 +31,7 @@ public:
 
     Notification* getNotification() const { return m_notification.get(); }
     String action() const { return m_action; }
+    String reply() const { return m_reply; }
 
     const AtomicString& interfaceName() const override;
 
@@ -42,6 +43,7 @@ private:
 
     Member<Notification> m_notification;
     String m_action;
+    String m_reply;
 };
 
 } // namespace blink
