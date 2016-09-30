@@ -429,6 +429,8 @@ cr.define('cr.login', function() {
         // eventually be followed by onCompleteLogin_() which does set it.
         this.apiToken_ = call.token;
         this.apiPasswordBytes_ = call.passwordBytes;
+
+        this.dispatchEvent(new CustomEvent('apiPasswordAdded'));
       } else if (call.method == 'confirm') {
         if (call.token != this.apiToken_)
           console.error('SamlHandler.onAPICall_: token mismatch');

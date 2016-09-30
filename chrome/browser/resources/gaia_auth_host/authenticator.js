@@ -163,6 +163,9 @@ cr.define('cr.login', function() {
     this.samlHandler_.addEventListener(
         'videoEnabled',
         this.onVideoEnabled_.bind(this));
+    this.samlHandler_.addEventListener(
+        'apiPasswordAdded',
+        this.onSamlApiPasswordAdded_.bind(this));
 
     this.webview_.addEventListener('droplink', this.onDropLink_.bind(this));
     this.webview_.addEventListener(
@@ -762,6 +765,18 @@ cr.define('cr.login', function() {
    */
   Authenticator.prototype.onVideoEnabled_ = function(e) {
     this.videoEnabled = true;
+  };
+
+  /**
+   * Invoked when |samlHandler_| fires 'apiPasswordAdded' event.
+   * @private
+   */
+  Authenticator.prototype.onSamlApiPasswordAdded_ = function(e) {
+    // Saml API 'add' password might be received after the 'loadcommit' event.
+    // In such case, maybeCompleteAuth_ should be attempted again if oauth code
+    // is available.
+    if (this.oauthCode_)
+      this.maybeCompleteAuth_();
   };
 
   /**
