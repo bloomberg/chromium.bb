@@ -4,6 +4,10 @@
 
 #include "chrome/browser/printing/print_job.h"
 
+#include <memory>
+#include <utility>
+
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -16,48 +20,57 @@
 #include "printing/printed_pages_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace printing {
+
 namespace {
 
-class TestSource : public printing::PrintedPagesSource {
+class TestSource : public PrintedPagesSource {
  public:
   base::string16 RenderSourceName() override { return base::string16(); }
 };
 
-class TestPrintJobWorker : public printing::PrintJobWorker {
+class TestPrintJobWorker : public PrintJobWorker {
  public:
-  explicit TestPrintJobWorker(printing::PrintJobWorkerOwner* owner)
-      : printing::PrintJobWorker(content::ChildProcessHost::kInvalidUniqueID,
-                                 content::ChildProcessHost::kInvalidUniqueID,
-                                 owner) {}
+  explicit TestPrintJobWorker(PrintJobWorkerOwner* owner)
+      : PrintJobWorker(content::ChildProcessHost::kInvalidUniqueID,
+                       content::ChildProcessHost::kInvalidUniqueID,
+                       owner) {}
   friend class TestOwner;
 };
 
-class TestOwner : public printing::PrintJobWorkerOwner {
+class TestOwner : public PrintJobWorkerOwner {
  public:
-  void GetSettingsDone(const printing::PrintSettings& new_settings,
-                       printing::PrintingContext::Result result) override {
+  TestOwner() {}
+
+  void GetSettingsDone(const PrintSettings& new_settings,
+                       PrintingContext::Result result) override {
     EXPECT_FALSE(true);
   }
-  printing::PrintJobWorker* DetachWorker(
-      printing::PrintJobWorkerOwner* new_owner) override {
+
+  std::unique_ptr<PrintJobWorker> DetachWorker(
+      PrintJobWorkerOwner* new_owner) override {
     // We're screwing up here since we're calling worker from the main thread.
     // That's fine for testing. It is actually simulating PrinterQuery behavior.
-    TestPrintJobWorker* worker(new TestPrintJobWorker(new_owner));
+    auto worker = base::MakeUnique<TestPrintJobWorker>(new_owner);
     EXPECT_TRUE(worker->Start());
     worker->printing_context()->UseDefaultSettings();
     settings_ = worker->printing_context()->settings();
-    return worker;
+    return std::move(worker);
   }
-  const printing::PrintSettings& settings() const override { return settings_; }
+
+  const PrintSettings& settings() const override { return settings_; }
+
   int cookie() const override { return 42; }
 
  private:
   ~TestOwner() override {}
 
-  printing::PrintSettings settings_;
+  PrintSettings settings_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestOwner);
 };
 
-class TestPrintJob : public printing::PrintJob {
+class TestPrintJob : public PrintJob {
  public:
   explicit TestPrintJob(volatile bool* check) : check_(check) {
   }
@@ -66,7 +79,7 @@ class TestPrintJob : public printing::PrintJob {
   volatile bool* check_;
 };
 
-class TestPrintNotifObserv : public content::NotificationObserver {
+class TestPrintNotificationObserver : public content::NotificationObserver {
  public:
   // content::NotificationObserver
   void Observe(int type,
@@ -84,12 +97,12 @@ TEST(PrintJobTest, SimplePrint) {
 
   content::TestBrowserThreadBundle thread_bundle_;
   content::NotificationRegistrar registrar_;
-  TestPrintNotifObserv observ;
-  registrar_.Add(&observ,
+  TestPrintNotificationObserver observer;
+  registrar_.Add(&observer,
                  content::NOTIFICATION_ALL,
                  content::NotificationService::AllSources());
   volatile bool check = false;
-  scoped_refptr<printing::PrintJob> job(new TestPrintJob(&check));
+  scoped_refptr<PrintJob> job(new TestPrintJob(&check));
   EXPECT_TRUE(job->RunsTasksOnCurrentThread());
   scoped_refptr<TestOwner> owner(new TestOwner);
   TestSource source;
@@ -99,7 +112,7 @@ TEST(PrintJobTest, SimplePrint) {
     base::RunLoop().RunUntilIdle();
   }
   EXPECT_FALSE(job->document());
-  job = NULL;
+  job = nullptr;
   while (!check) {
     base::RunLoop().RunUntilIdle();
   }
@@ -109,8 +122,8 @@ TEST(PrintJobTest, SimplePrint) {
 TEST(PrintJobTest, SimplePrintLateInit) {
   volatile bool check = false;
   base::MessageLoop current;
-  scoped_refptr<printing::PrintJob> job(new TestPrintJob(&check));
-  job = NULL;
+  scoped_refptr<PrintJob> job(new TestPrintJob(&check));
+  job = nullptr;
   EXPECT_TRUE(check);
   /* TODO(maruel): Test these.
   job->Initialize()
@@ -120,7 +133,7 @@ TEST(PrintJobTest, SimplePrintLateInit) {
   job->message_loop();
   job->settings();
   job->cookie();
-  job->GetSettings(printing::DEFAULTS, printing::ASK_USER, NULL);
+  job->GetSettings(DEFAULTS, ASK_USER, nullptr);
   job->StartPrinting();
   job->Stop();
   job->Cancel();
@@ -130,10 +143,12 @@ TEST(PrintJobTest, SimplePrintLateInit) {
   job->is_job_pending();
   job->document();
   // Private
-  job->UpdatePrintedDocument(NULL);
-  scoped_refptr<printing::JobEventDetails> event_details;
+  job->UpdatePrintedDocument(nullptr);
+  scoped_refptr<JobEventDetails> event_details;
   job->OnNotifyPrintJobEvent(event_details);
   job->OnDocumentDone();
   job->ControlledWorkerShutdown();
   */
 }
+
+}  // namespace printing

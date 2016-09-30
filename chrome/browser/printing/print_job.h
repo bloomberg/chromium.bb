@@ -56,7 +56,8 @@ class PrintJob : public PrintJobWorkerOwner,
   // PrintJobWorkerOwner implementation.
   void GetSettingsDone(const PrintSettings& new_settings,
                        PrintingContext::Result result) override;
-  PrintJobWorker* DetachWorker(PrintJobWorkerOwner* new_owner) override;
+  std::unique_ptr<PrintJobWorker> DetachWorker(
+      PrintJobWorkerOwner* new_owner) override;
   const PrintSettings& settings() const override;
   int cookie() const override;
 

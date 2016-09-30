@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -162,7 +163,8 @@ void PrintViewManagerBase::OnDidPrintPage(
       web_contents()->Stop();
       return;
     }
-    shared_buf.reset(new base::SharedMemory(params.metafile_data_handle, true));
+    shared_buf =
+        base::MakeUnique<base::SharedMemory>(params.metafile_data_handle, true);
     if (!shared_buf->Map(params.data_size)) {
       NOTREACHED() << "couldn't map";
       web_contents()->Stop();

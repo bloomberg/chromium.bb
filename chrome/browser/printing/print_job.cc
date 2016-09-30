@@ -73,7 +73,7 @@ void PrintJob::Initialize(PrintJobWorkerOwner* job,
   DCHECK(!is_canceling_);
   DCHECK(!document_.get());
   source_ = source;
-  worker_.reset(job->DetachWorker(this));
+  worker_ = job->DetachWorker(this);
   settings_ = job->settings();
 
   PrintedDocument* new_doc =
@@ -103,7 +103,8 @@ void PrintJob::GetSettingsDone(const PrintSettings& new_settings,
   NOTREACHED();
 }
 
-PrintJobWorker* PrintJob::DetachWorker(PrintJobWorkerOwner* new_owner) {
+std::unique_ptr<PrintJobWorker> PrintJob::DetachWorker(
+    PrintJobWorkerOwner* new_owner) {
   NOTREACHED();
   return nullptr;
 }

@@ -24,6 +24,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/md5.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -213,7 +214,7 @@ class PrintPreviewObserver : public WebContentsObserver {
 
   // Saves the print preview settings to be sent to the print preview dialog.
   void SetPrintPreviewSettings(const PrintPreviewSettings& settings) {
-    settings_.reset(new PrintPreviewSettings(settings));
+    settings_ = base::MakeUnique<PrintPreviewSettings>(settings);
   }
 
   // Returns the setting that could not be set in the preview dialog.
@@ -466,8 +467,8 @@ class PrintPreviewPdfGeneratedBrowserTest : public InProcessBrowserTest {
         browser()->tab_strip_model()->GetActiveWebContents();
     ASSERT_TRUE(tab);
 
-    print_preview_observer_.reset(
-        new PrintPreviewObserver(browser(), tab, pdf_file_save_path_));
+    print_preview_observer_ = base::MakeUnique<PrintPreviewObserver>(
+        browser(), tab, pdf_file_save_path_);
     chrome::DuplicateTab(browser());
 
     WebContents* initiator =

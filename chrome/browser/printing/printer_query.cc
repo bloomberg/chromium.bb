@@ -5,6 +5,7 @@
 #include "chrome/browser/printing/printer_query.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -27,7 +28,7 @@ PrinterQuery::~PrinterQuery() {
   // The job should be finished (or at least canceled) when it is destroyed.
   DCHECK(!is_print_dialog_box_shown_);
   // If this fires, it is that this pending printer context has leaked.
-  DCHECK(!worker_.get());
+  DCHECK(!worker_);
 }
 
 void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
@@ -49,12 +50,13 @@ void PrinterQuery::GetSettingsDone(const PrintSettings& new_settings,
   }
 }
 
-PrintJobWorker* PrinterQuery::DetachWorker(PrintJobWorkerOwner* new_owner) {
+std::unique_ptr<PrintJobWorker> PrinterQuery::DetachWorker(
+    PrintJobWorkerOwner* new_owner) {
   DCHECK(callback_.is_null());
-  DCHECK(worker_.get());
+  DCHECK(worker_);
 
   worker_->SetNewOwner(new_owner);
-  return worker_.release();
+  return std::move(worker_);
 }
 
 const PrintSettings& PrinterQuery::settings() const {
@@ -100,7 +102,7 @@ void PrinterQuery::SetSettings(
 
 void PrinterQuery::StartWorker(const base::Closure& callback) {
   DCHECK(callback_.is_null());
-  DCHECK(worker_.get());
+  DCHECK(worker_);
 
   // Lazily create the worker thread. There is one worker thread per print job.
   if (!worker_->IsRunning())
@@ -110,7 +112,7 @@ void PrinterQuery::StartWorker(const base::Closure& callback) {
 }
 
 void PrinterQuery::StopWorker() {
-  if (worker_.get()) {
+  if (worker_) {
     // http://crbug.com/66082: We're blocking on the PrinterQuery's worker
     // thread.  It's not clear to me if this may result in blocking the current
     // thread for an unacceptable time.  We should probably fix it.
@@ -125,7 +127,7 @@ bool PrinterQuery::is_callback_pending() const {
 }
 
 bool PrinterQuery::is_valid() const {
-  return worker_.get() != NULL;
+  return !!worker_;
 }
 
 }  // namespace printing
