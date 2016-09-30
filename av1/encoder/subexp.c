@@ -27,7 +27,7 @@ static const uint8_t update_bits[255] = {
   10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
   10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
   10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
-  10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 11 - CONFIG_MISC_FIXES,
+  10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10,
   11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
   11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
   11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
@@ -90,7 +90,7 @@ static int prob_diff_update_cost(aom_prob newp, aom_prob oldp) {
 
 static void encode_uniform(aom_writer *w, int v) {
   const int l = 8;
-  const int m = (1 << l) - 191 + CONFIG_MISC_FIXES;
+  const int m = (1 << l) - 190;
   if (v < m) {
     aom_write_literal(w, v, l - 1);
   } else {

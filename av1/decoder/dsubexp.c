@@ -28,14 +28,14 @@ static int inv_recenter_nonneg(int v, int m) {
 
 static int decode_uniform_(aom_reader *r ACCT_STR_PARAM) {
   const int l = 8;
-  const int m = (1 << l) - 191 + CONFIG_MISC_FIXES;
+  const int m = (1 << l) - 190;
   const int v = aom_read_literal(r, l - 1, ACCT_STR_NAME);
   return v < m ? v : (v << 1) - m + aom_read_bit(r, ACCT_STR_NAME);
 }
 
 static int inv_remap_prob(int v, int m) {
   /* clang-format off */
-  static uint8_t inv_map_table[MAX_PROB - CONFIG_MISC_FIXES] = {
+  static uint8_t inv_map_table[MAX_PROB - 1] = {
       7,  20,  33,  46,  59,  72,  85,  98, 111, 124, 137, 150, 163, 176, 189,
     202, 215, 228, 241, 254,   1,   2,   3,   4,   5,   6,   8,   9,  10,  11,
      12,  13,  14,  15,  16,  17,  18,  19,  21,  22,  23,  24,  25,  26,  27,
@@ -52,10 +52,7 @@ static int inv_remap_prob(int v, int m) {
     191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 203, 204, 205, 206,
     207, 208, 209, 210, 211, 212, 213, 214, 216, 217, 218, 219, 220, 221, 222,
     223, 224, 225, 226, 227, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238,
-    239, 240, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253,
-#if !CONFIG_MISC_FIXES
-    253
-#endif
+    239, 240, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253
   }; /* clang-format on */
   assert(v < (int)(sizeof(inv_map_table) / sizeof(inv_map_table[0])));
   v = inv_map_table[v];
