@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_manager_delegate_for_test.h"
@@ -40,7 +41,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
     num_queues_ = num_queues;
     manager_ = base::MakeUnique<TaskQueueManager>(
         TaskQueueManagerDelegateForTest::Create(
-            base::MessageLoop::current()->task_runner(),
+            base::ThreadTaskRunnerHandle::Get(),
             base::WrapUnique(new base::DefaultTickClock())),
         "fake.category", "fake.category", "fake.category.debug");
     manager_->AddTaskTimeObserver(&test_task_time_observer_);

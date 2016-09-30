@@ -15,10 +15,12 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/shortcut.h"
@@ -201,9 +203,10 @@ class SelectFileDialogImpl : public ui::SelectFileDialog,
           file_type_index(file_type_index),
           default_extension(default_extension),
           run_state(run_state),
-          ui_task_runner(base::MessageLoopForUI::current()->task_runner()),
+          ui_task_runner(base::ThreadTaskRunnerHandle::Get()),
           owner(owner),
           params(params) {
+      DCHECK(base::MessageLoopForUI::IsCurrent());
       if (file_types)
         this->file_types = *file_types;
     }

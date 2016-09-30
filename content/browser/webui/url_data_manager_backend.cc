@@ -23,6 +23,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -326,7 +327,7 @@ void URLRequestChromeJob::Start() {
 
   // Start reading asynchronously so that all error reporting and data
   // callbacks happen as they would for network requests.
-  base::MessageLoop::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&URLRequestChromeJob::StartAsync, weak_factory_.GetWeakPtr()));
 

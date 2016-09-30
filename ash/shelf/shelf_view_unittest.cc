@@ -2624,12 +2624,12 @@ class ScopedMockTaskRunnerWrapper {
  public:
   ScopedMockTaskRunnerWrapper() {
     mock_task_runner_ = new base::TestMockTimeTaskRunner;
-    previous_task_runner_ = base::MessageLoop::current()->task_runner();
+    previous_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     base::MessageLoop::current()->SetTaskRunner(mock_task_runner_);
   }
 
   ~ScopedMockTaskRunnerWrapper() {
-    DCHECK_EQ(mock_task_runner_, base::MessageLoop::current()->task_runner());
+    DCHECK_EQ(mock_task_runner_, base::ThreadTaskRunnerHandle::Get());
     mock_task_runner_->ClearPendingTasks();
     base::MessageLoop::current()->SetTaskRunner(previous_task_runner_);
   }

@@ -5,9 +5,11 @@
 #include "ui/views/controls/menu/menu_controller.h"
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
@@ -271,6 +273,7 @@ class MenuControllerTest : public ViewsTestBase {
   void SetUp() override {
     ViewsTestBase::SetUp();
     Init();
+    ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
   }
 
   void TearDown() override {
@@ -612,7 +615,7 @@ class MenuControllerTest : public ViewsTestBase {
 // Tests that an event targeter which blocks events will be honored by the menu
 // event dispatcher.
 TEST_F(MenuControllerTest, EventTargeter) {
-  base::MessageLoopForUI::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&MenuControllerTest::TestEventTargeter,
                             base::Unretained(this)));
   RunMenu();
@@ -635,11 +638,11 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
   event_generator()->PressTouchId(1);
   event_generator()->ReleaseTouchId(0);
 
-  base::MessageLoopForUI::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&MenuControllerTest::ReleaseTouchId,
                             base::Unretained(this), 1));
 
-  base::MessageLoopForUI::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&MenuControllerTest::PressKey,
                             base::Unretained(this), ui::VKEY_ESCAPE));
 
@@ -1221,7 +1224,7 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
 TEST_F(MenuControllerTest, AsynchronousNestedExitAll) {
   InstallTestMenuMessageLoop();
 
-  base::MessageLoopForUI::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&MenuControllerTest::TestAsynchronousNestedExitAll,
                             base::Unretained(this)));
 
@@ -1234,7 +1237,7 @@ TEST_F(MenuControllerTest, AsynchronousNestedExitAll) {
 TEST_F(MenuControllerTest, AsynchronousNestedExitOutermost) {
   InstallTestMenuMessageLoop();
 
-  base::MessageLoopForUI::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MenuControllerTest::TestAsynchronousNestedExitOutermost,
                  base::Unretained(this)));
@@ -1333,7 +1336,7 @@ TEST_F(MenuControllerTest, NestedMessageLoopDiesWithNestedMenu) {
   std::unique_ptr<TestMenuControllerDelegate> nested_delegate(
       new TestMenuControllerDelegate());
   // This will nest an asynchronous menu, and then kill the nested message loop.
-  base::MessageLoopForUI::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MenuControllerTest::TestNestedMessageLoopKillsItself,
                  base::Unretained(this), nested_delegate.get()));
@@ -1352,7 +1355,7 @@ TEST_F(MenuControllerTest, NestedMessageLoopDiesWithNestedMenu) {
 TEST_F(MenuControllerTest, SynchronousCancelEvent) {
   ExitMenuRun();
   // Post actual test to run once the menu has created a nested message loop.
-  base::MessageLoopForUI::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MenuControllerTest::TestCancelEvent, base::Unretained(this)));
   int mouse_event_flags = 0;

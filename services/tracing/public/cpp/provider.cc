@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
@@ -107,7 +108,7 @@ void Provider::ForceEnableTracing() {
       base::trace_event::TraceConfig("*", base::trace_event::RECORD_UNTIL_FULL),
       base::trace_event::TraceLog::RECORDING_MODE);
   tracing_forced_ = true;
-  base::MessageLoop::current()->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&Provider::DelayedStop, weak_factory_.GetWeakPtr()));
 }
@@ -116,7 +117,7 @@ void Provider::DelayedStop() {
   // We use this indirection to account for cases where the Initialize method
   // takes more than one second to finish; thus we start the countdown only when
   // the current thread is unblocked.
-  base::MessageLoop::current()->task_runner()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&Provider::StopIfForced, weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(1));

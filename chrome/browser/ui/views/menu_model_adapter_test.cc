@@ -233,7 +233,8 @@ class MenuModelAdapterTest : public ViewEventTestBase,
 
     menu_model_adapter_.BuildMenu(menu_);
 
-    base::MessageLoopForUI::current()->task_runner()->PostTask(
+    ASSERT_TRUE(base::MessageLoopForUI::IsCurrent());
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, CreateEventTask(this, &MenuModelAdapterTest::Step3));
   }
 

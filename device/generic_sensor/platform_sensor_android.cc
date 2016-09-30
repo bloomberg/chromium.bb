@@ -6,7 +6,7 @@
 
 #include "base/android/context_utils.h"
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "jni/PlatformSensor_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -26,7 +26,7 @@ PlatformSensorAndroid::PlatformSensorAndroid(
     PlatformSensorProvider* provider,
     const JavaRef<jobject>& java_sensor)
     : PlatformSensor(type, std::move(mapping), provider),
-      task_runner_(base::MessageLoop::current()->task_runner()) {
+      task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   JNIEnv* env = AttachCurrentThread();
   j_object_.Reset(java_sensor);
 

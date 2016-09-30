@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/update_client/component_patcher.h"
 #include "components/update_client/component_patcher_operation.h"
@@ -69,7 +70,7 @@ ComponentPatcherOperationTest::ComponentPatcherOperationTest() {
   EXPECT_TRUE(input_dir_.CreateUniqueTempDir());
   EXPECT_TRUE(installed_dir_.CreateUniqueTempDir());
   installer_ = new ReadOnlyTestInstaller(installed_dir_.GetPath());
-  task_runner_ = base::MessageLoop::current()->task_runner();
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
 ComponentPatcherOperationTest::~ComponentPatcherOperationTest() {

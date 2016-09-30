@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_client.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
@@ -71,9 +72,8 @@ class MockFaviconService : public FaviconService {
     favicon_base::FaviconRawBitmapResult mock_result =
         mock_result_queue_.front();
     mock_result_queue_.pop_front();
-    return tracker->PostTask(
-        base::MessageLoop::current()->task_runner().get(), FROM_HERE,
-        base::Bind(callback, mock_result));
+    return tracker->PostTask(base::ThreadTaskRunnerHandle::Get().get(),
+                             FROM_HERE, base::Bind(callback, mock_result));
   }
 
   void InjectResult(const favicon_base::FaviconRawBitmapResult& mock_result) {
@@ -96,7 +96,7 @@ class TestLargeIconService : public LargeIconService {
  public:
   explicit TestLargeIconService(MockFaviconService* mock_favicon_service)
       : LargeIconService(mock_favicon_service,
-                         base::MessageLoop::current()->task_runner()) {}
+                         base::ThreadTaskRunnerHandle::Get()) {}
   ~TestLargeIconService() override {
   }
 

@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
 
@@ -43,7 +44,7 @@ void Tracer::Start(const std::string& categories,
         << "Could not parse --trace-startup-duration value "
         << duration_seconds_str;
   }
-  base::MessageLoop::current()->task_runner()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&Tracer::StopAndFlushToFile, base::Unretained(this)),
       base::TimeDelta::FromSeconds(trace_duration_secs));

@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 
@@ -88,7 +89,8 @@ bool WaylandConnection::StartProcessingEvents() {
 void WaylandConnection::ScheduleFlush() {
   if (scheduled_flush_ || !watching_)
     return;
-  base::MessageLoopForUI::current()->task_runner()->PostTask(
+  DCHECK(base::MessageLoopForUI::IsCurrent());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&WaylandConnection::Flush, base::Unretained(this)));
   scheduled_flush_ = true;
 }

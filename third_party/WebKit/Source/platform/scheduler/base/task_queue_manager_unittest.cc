@@ -16,6 +16,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/blame_context.h"
 #include "base/trace_event/trace_buffer.h"
 #include "cc/test/ordered_simple_task_runner.h"
@@ -65,9 +66,8 @@ class MessageLoopTaskRunner : public TaskQueueManagerDelegateForTest {
 
  private:
   explicit MessageLoopTaskRunner(std::unique_ptr<base::TickClock> tick_clock)
-      : TaskQueueManagerDelegateForTest(
-            base::MessageLoop::current()->task_runner(),
-            std::move(tick_clock)) {}
+      : TaskQueueManagerDelegateForTest(base::ThreadTaskRunnerHandle::Get(),
+                                        std::move(tick_clock)) {}
   ~MessageLoopTaskRunner() override {}
 };
 

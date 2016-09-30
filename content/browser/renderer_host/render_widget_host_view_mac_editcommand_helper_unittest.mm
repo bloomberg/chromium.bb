@@ -10,6 +10,7 @@
 
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -135,8 +136,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   base::mac::ScopedNSAutoreleasePool pool;
 
   base::MessageLoop message_loop;
-  ui::WindowResizeHelperMac::Get()->Init(
-    base::MessageLoop::current()->task_runner());
+  ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 
   // Owned by its |cocoa_view()|, i.e. |rwhv_cocoa|.
   RenderWidgetHostViewMac* rwhv_mac = new RenderWidgetHostViewMac(

@@ -8,7 +8,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/safe_browsing_db/v4_database.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -28,8 +28,8 @@ void V4Database::Create(
   DCHECK(base_path.IsAbsolute());
   DCHECK(!list_infos.empty());
 
-  const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner =
-      base::MessageLoop::current()->task_runner();
+  const scoped_refptr<base::SingleThreadTaskRunner> callback_task_runner =
+      base::ThreadTaskRunnerHandle::Get();
   db_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&V4Database::CreateOnTaskRunner, db_task_runner, base_path,
@@ -107,8 +107,8 @@ void V4Database::ApplyUpdate(
 
   // Post the V4Store update task on the task runner but get the callback on the
   // current thread.
-  const scoped_refptr<base::SingleThreadTaskRunner>& current_task_runner =
-      base::MessageLoop::current()->task_runner();
+  const scoped_refptr<base::SingleThreadTaskRunner> current_task_runner =
+      base::ThreadTaskRunnerHandle::Get();
   for (std::unique_ptr<ListUpdateResponse>& response :
        *parsed_server_response) {
     ListIdentifier identifier(*response);

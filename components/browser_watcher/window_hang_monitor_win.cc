@@ -9,9 +9,9 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/message_window.h"
 
 namespace browser_watcher {
@@ -75,7 +75,7 @@ WindowHangMonitor::~WindowHangMonitor() {
 
 void WindowHangMonitor::Initialize(base::Process process) {
   window_process_ = std::move(process);
-  timer_.SetTaskRunner(base::MessageLoop::current()->task_runner());
+  timer_.SetTaskRunner(base::ThreadTaskRunnerHandle::Get());
 
   ScheduleFindWindow();
 }

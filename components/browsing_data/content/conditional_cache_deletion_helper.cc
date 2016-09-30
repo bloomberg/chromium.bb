@@ -79,7 +79,7 @@ void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
       // The iteration finished successfuly or we can no longer iterate
       // (e.g. the cache was destroyed). We cannot distinguish between the two,
       // but we know that there is nothing more that we can do, so we return OK.
-      base::MessageLoop::current()->task_runner()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(completion_callback_, net::OK));
       base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
       return;

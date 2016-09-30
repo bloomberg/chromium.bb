@@ -8,7 +8,9 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
@@ -322,8 +324,8 @@ void ChannelReader::ReceivedBrokerableAttachmentWithId(
 
 void ChannelReader::StartObservingAttachmentBroker() {
 #if USE_ATTACHMENT_BROKER
-  GetAttachmentBroker()->AddObserver(
-      this, base::MessageLoopForIO::current()->task_runner());
+  DCHECK(base::MessageLoopForIO::IsCurrent());
+  GetAttachmentBroker()->AddObserver(this, base::ThreadTaskRunnerHandle::Get());
 #endif  // USE_ATTACHMENT_BROKER
 }
 

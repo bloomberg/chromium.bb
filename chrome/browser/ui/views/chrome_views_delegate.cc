@@ -7,10 +7,12 @@
 #include <memory>
 
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -272,6 +274,8 @@ views::ViewsDelegate::ProcessMenuAcceleratorResult
 ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
     const ui::Accelerator& accelerator) {
 #if defined(USE_ASH)
+  DCHECK(base::MessageLoopForUI::IsCurrent());
+
   // Early return because mash chrome does not have access to ash::Shell
   if (chrome::IsRunningInMash())
     return views::ViewsDelegate::ProcessMenuAcceleratorResult::LEAVE_MENU_OPEN;
@@ -283,7 +287,7 @@ ChromeViewsDelegate::ProcessAcceleratorWhileMenuShowing(
       accelerator);
   if (accelerator_controller->ShouldCloseMenuAndRepostAccelerator(
           accelerator)) {
-    base::MessageLoopForUI::current()->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(ProcessAcceleratorNow, accelerator));
     return views::ViewsDelegate::ProcessMenuAcceleratorResult::CLOSE_MENU;
   }

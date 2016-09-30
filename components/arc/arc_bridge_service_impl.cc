@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
@@ -148,7 +147,7 @@ void ArcBridgeServiceImpl::OnStopped(StopReason stop_reason) {
       // Instead of immediately trying to restart the container, give it some
       // time to finish tearing down in case it is still in the process of
       // stopping.
-      base::MessageLoop::current()->task_runner()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::Bind(&ArcBridgeServiceImpl::PrerequisitesChanged,
                                 weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromSeconds(kReconnectDelayInSeconds));

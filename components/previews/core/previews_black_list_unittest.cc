@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/simple_test_clock.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/previews/core/previews_black_list_item.h"
 #include "components/previews/core/previews_experiments.h"
@@ -53,7 +54,7 @@ class TestPreviewsOptOutStore : public PreviewsOptOutStore {
   void LoadBlackList(LoadBlackListCallback callback) override {
     std::unique_ptr<BlackListItemMap> black_list_item_map(
         new BlackListItemMap());
-    base::MessageLoop::current()->task_runner()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&RunLoadCallback, callback,
                               base::Passed(&black_list_item_map)));
   }

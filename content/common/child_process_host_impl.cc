@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/common/child_process_host_delegate.h"
@@ -184,8 +185,9 @@ std::string ChildProcessHostImpl::CreateChannel() {
 
 bool ChildProcessHostImpl::InitChannel() {
 #if USE_ATTACHMENT_BROKER
+  DCHECK(base::MessageLoopForIO::IsCurrent());
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel_.get(), base::MessageLoopForIO::current()->task_runner());
+      channel_.get(), base::ThreadTaskRunnerHandle::Get());
 #endif
   if (!channel_->Connect()) {
 #if USE_ATTACHMENT_BROKER

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -272,8 +273,7 @@ void RenderViewHostTestHarness::SetUp() {
     BrowserSideNavigationSetUp();
 
 #if defined(OS_MACOSX)
-  ui::WindowResizeHelperMac::Get()->Init(
-    base::MessageLoop::current()->task_runner());
+  ui::WindowResizeHelperMac::Get()->Init(base::ThreadTaskRunnerHandle::Get());
 #endif  // OS_MACOSX
 }
 
