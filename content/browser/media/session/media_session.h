@@ -58,6 +58,13 @@ class MediaSession : public WebContentsObserver,
     CONTENT,
   };
 
+  // Only visible to tests.
+  enum class State {
+    ACTIVE,
+    SUSPENDED,
+    INACTIVE
+  };
+
   // Returns the MediaSession associated to this WebContents. Creates one if
   // none is currently available.
   CONTENT_EXPORT static MediaSession* Get(WebContents* web_contents);
@@ -124,10 +131,22 @@ class MediaSession : public WebContentsObserver,
   // instead of checking if the state is SUSPENDED. In order to not have to
   // change all the callers and make the current refactoring ridiculously huge,
   // this method is introduced temporarily and will be removed later.
-  bool IsReallySuspended() const;
+  CONTENT_EXPORT bool IsReallySuspended() const;
 
   // Returns if the session is currently suspended or inactive.
   CONTENT_EXPORT bool IsSuspended() const;
+
+  // Returns the audio focus type. The type is updated everytime after the
+  // session requests audio focus.
+  CONTENT_EXPORT AudioFocusManager::AudioFocusType audio_focus_type() const {
+    return audio_focus_type_;
+  }
+
+  // Returns whether the session has Pepper instances.
+  bool HasPepper() const;
+
+  // WebContentsObserver implementation
+  void WebContentsDestroyed() override;
 
  private:
   friend class content::WebContentsUserData<MediaSession>;
@@ -139,16 +158,8 @@ class MediaSession : public WebContentsObserver,
   CONTENT_EXPORT void SetDelegateForTests(
       std::unique_ptr<MediaSessionDelegate> delegate);
   CONTENT_EXPORT bool IsActiveForTest() const;
-  CONTENT_EXPORT AudioFocusManager::AudioFocusType audio_focus_type_for_test()
-      const;
   CONTENT_EXPORT void RemoveAllPlayersForTest();
   CONTENT_EXPORT MediaSessionUmaHelper* uma_helper_for_test();
-
-  enum class State {
-    ACTIVE,
-    SUSPENDED,
-    INACTIVE
-  };
 
   // Representation of a player for the MediaSession.
   struct PlayerIdentifier {
@@ -179,12 +190,12 @@ class MediaSession : public WebContentsObserver,
 
   // Requests audio focus to the MediaSessionDelegate.
   // Returns whether the request was granted.
-  bool RequestSystemAudioFocus(
+  CONTENT_EXPORT bool RequestSystemAudioFocus(
       AudioFocusManager::AudioFocusType audio_focus_type);
 
   // To be called after a call to AbandonAudioFocus() in order request the
   // delegate to abandon the audio focus.
-  void AbandonSystemAudioFocusIfNeeded();
+  CONTENT_EXPORT void AbandonSystemAudioFocusIfNeeded();
 
   // Notifies WebContents about the state change of the media session.
   void UpdateWebContents();
@@ -205,8 +216,12 @@ class MediaSession : public WebContentsObserver,
   RegisterMediaSessionStateChangedCallbackForTest(
       const StateChangedCallback& cb);
 
+  CONTENT_EXPORT bool AddPepperPlayer(MediaSessionObserver* observer,
+                                      int player_id);
+
   std::unique_ptr<MediaSessionDelegate> delegate_;
   PlayersMap players_;
+  PlayersMap pepper_players_;
 
   State audio_focus_state_;
   SuspendType suspend_type_;
