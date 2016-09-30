@@ -200,7 +200,6 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
         reportFindInPageSelection(selectionRect, m_activeMatchIndex + 1, identifier);
     }
 
-    m_lastFindRequestCompletedWithNoMatches = false;
     return true;
 }
 
@@ -208,6 +207,7 @@ void TextFinder::clearActiveFindMatch()
 {
     m_currentActiveMatchFrame = false;
     setMarkerActive(m_activeMatch.get(), false);
+    resetActiveMatch();
 }
 
 void TextFinder::stopFindingAndClearSelection()
@@ -285,7 +285,7 @@ void TextFinder::scopeStringMatches(int identifier, const WebString& searchText,
         return;
     }
 
-    if (!shouldScopeMatches(searchText)) {
+    if (!shouldScopeMatches(searchText, options)) {
         finishCurrentScopingEffort(identifier);
         return;
     }
@@ -457,7 +457,7 @@ void TextFinder::increaseMatchCount(int identifier, int count)
 
     // Update the UI with the latest findings.
     if (ownerFrame().client())
-        ownerFrame().client()->reportFindInPageMatchCount(identifier, m_totalMatchCount, !m_frameScoping);
+        ownerFrame().client()->reportFindInPageMatchCount(identifier, m_totalMatchCount, !m_frameScoping || !m_totalMatchCount);
 }
 
 void TextFinder::reportFindInPageSelection(const WebRect& selectionRect, int activeMatchOrdinal, int identifier)
@@ -673,16 +673,22 @@ void TextFinder::unmarkAllTextMatches()
         frame->document()->markers().removeMarkers(DocumentMarker::TextMatch);
 }
 
-bool TextFinder::shouldScopeMatches(const String& searchText)
+bool TextFinder::shouldScopeMatches(const String& searchText, const WebFindOptions& options)
 {
     // Don't scope if we can't find a frame or a view.
     // The user may have closed the tab/application, so abort.
     LocalFrame* frame = ownerFrame().frame();
-    if (!frame || !frame->view() || !frame->page() || !ownerFrame().hasVisibleContent())
+    if (!frame || !frame->view() || !frame->page())
         return false;
 
     DCHECK(frame->document());
     DCHECK(frame->view());
+
+    if (options.force)
+        return true;
+
+    if (!ownerFrame().hasVisibleContent())
+        return false;
 
     // If the frame completed the scoping operation and found 0 matches the last
     // time it was searched, then we don't have to search it again if the user is

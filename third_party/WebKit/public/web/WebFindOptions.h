@@ -53,12 +53,17 @@ struct WebFindOptions {
     // an uppercase letter followed by a lowercase or non-letter. Accepts several other intra-word matches.
     bool medialCapitalAsWordStart;
 
+    // Force a re-search of the frame: typically used when forcing a re-search
+    // after the frame navigates.
+    bool force;
+
     WebFindOptions()
         : forward(true)
         , matchCase(false)
         , findNext(false)
         , wordStart(false)
-        , medialCapitalAsWordStart(false) { }
+        , medialCapitalAsWordStart(false)
+        , force(false) { }
 };
 
 } // namespace blink

@@ -103,6 +103,7 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
   };
 
   // WebContentsObserver implementation.
+  void DidFinishLoad(RenderFrameHost* rfh, const GURL& validated_url) override;
   void RenderFrameDeleted(RenderFrameHost* rfh) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
@@ -145,8 +146,11 @@ class CONTENT_EXPORT FindRequestManager : public WebContentsObserver {
 
   // Adds a frame to the set of frames that are being searched. The new frame
   // will automatically be searched when added, using the same options (stored
-  // in |current_request_.options|).
-  void AddFrame(RenderFrameHost* rfh);
+  // in |current_request_.options|). |force| should be set to true when a
+  // dynamic content change is suspected, which will treat the frame as a newly
+  // added frame even if it has already been searched. This will force a
+  // re-search of the frame.
+  void AddFrame(RenderFrameHost* rfh, bool force);
 
   // Returns whether |rfh| is in the set of frames being searched in the current
   // find session.
