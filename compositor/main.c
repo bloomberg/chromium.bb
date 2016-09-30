@@ -1283,13 +1283,46 @@ load_headless_backend(struct weston_compositor *c,
 }
 
 static void
+rdp_backend_output_configure(struct wl_listener *listener, void *data)
+{
+	struct weston_output *output = data;
+	struct wet_compositor *compositor = to_wet_compositor(output->compositor);
+	struct wet_output_config *parsed_options = compositor->parsed_options;
+	const struct weston_rdp_output_api *api = weston_rdp_output_get_api(output->compositor);
+	int width = 640;
+	int height = 480;
+
+	assert(parsed_options);
+
+	if (!api) {
+		weston_log("Cannot use weston_rdp_output_api.\n");
+		return;
+	}
+
+	if (parsed_options->width)
+		width = parsed_options->width;
+
+	if (parsed_options->height)
+		height = parsed_options->height;
+
+	weston_output_set_scale(output, 1);
+	weston_output_set_transform(output, WL_OUTPUT_TRANSFORM_NORMAL);
+
+	if (api->output_set_size(output, width, height) < 0) {
+		weston_log("Cannot configure output \"%s\" using weston_rdp_output_api.\n",
+			   output->name);
+		return;
+	}
+
+	weston_output_enable(output);
+}
+
+static void
 weston_rdp_backend_config_init(struct weston_rdp_backend_config *config)
 {
 	config->base.struct_version = WESTON_RDP_BACKEND_CONFIG_VERSION;
 	config->base.struct_size = sizeof(struct weston_rdp_backend_config);
 
-	config->width = 640;
-	config->height = 480;
 	config->bind_address = NULL;
 	config->port = 3389;
 	config->rdp_key = NULL;
@@ -1306,12 +1339,16 @@ load_rdp_backend(struct weston_compositor *c,
 	struct weston_rdp_backend_config config  = {{ 0, }};
 	int ret = 0;
 
+	struct wet_output_config *parsed_options = wet_init_parsed_options(c);
+	if (!parsed_options)
+		return -1;
+
 	weston_rdp_backend_config_init(&config);
 
 	const struct weston_option rdp_options[] = {
 		{ WESTON_OPTION_BOOLEAN, "env-socket", 0, &config.env_socket },
-		{ WESTON_OPTION_INTEGER, "width", 0, &config.width },
-		{ WESTON_OPTION_INTEGER, "height", 0, &config.height },
+		{ WESTON_OPTION_INTEGER, "width", 0, &parsed_options->width },
+		{ WESTON_OPTION_INTEGER, "height", 0, &parsed_options->height },
 		{ WESTON_OPTION_STRING,  "address", 0, &config.bind_address },
 		{ WESTON_OPTION_INTEGER, "port", 0, &config.port },
 		{ WESTON_OPTION_BOOLEAN, "no-clients-resize", 0, &config.no_clients_resize },
@@ -1325,10 +1362,17 @@ load_rdp_backend(struct weston_compositor *c,
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_RDP,
 					     &config.base);
 
+	if (ret < 0)
+		goto out;
+
+	wet_set_pending_output_handler(c, rdp_backend_output_configure);
+
+out:
 	free(config.bind_address);
 	free(config.rdp_key);
 	free(config.server_cert);
 	free(config.server_key);
+
 	return ret;
 }
 

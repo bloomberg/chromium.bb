@@ -25,6 +25,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -371,15 +372,6 @@ rdp_output_repaint(struct weston_output *output_base, pixman_region32_t *damage)
 	return 0;
 }
 
-static void
-rdp_output_destroy(struct weston_output *output_base)
-{
-	struct rdp_output *output = to_rdp_output(output_base);
-
-	wl_event_source_remove(output->finish_frame_timer);
-	free(output);
-}
-
 static int
 finish_frame_handler(void *data)
 {
@@ -471,16 +463,15 @@ rdp_switch_mode(struct weston_output *output, struct weston_mode *target_mode)
 }
 
 static int
-rdp_backend_create_output(struct rdp_backend *b, int width, int height)
+rdp_output_set_size(struct weston_output *base,
+		    int width, int height)
 {
-	struct rdp_output *output;
-	struct wl_event_loop *loop;
+	struct rdp_output *output = to_rdp_output(base);
 	struct weston_mode *currentMode;
 	struct weston_mode initMode;
 
-	output = zalloc(sizeof *output);
-	if (output == NULL)
-		return -1;
+	/* We can only be called once. */
+	assert(!output->base.current_mode);
 
 	wl_list_init(&output->peers);
 	wl_list_init(&output->base.mode_list);
@@ -492,48 +483,100 @@ rdp_backend_create_output(struct rdp_backend *b, int width, int height)
 
 	currentMode = ensure_matching_mode(&output->base, &initMode);
 	if (!currentMode)
-		goto out_free_output;
+		return -1;
 
 	output->base.current_mode = output->base.native_mode = currentMode;
-	weston_output_init(&output->base, b->compositor, 0, 0, width, height,
-			   WL_OUTPUT_TRANSFORM_NORMAL, 1);
-
 	output->base.make = "weston";
 	output->base.model = "rdp";
-	output->shadow_surface = pixman_image_create_bits(PIXMAN_x8r8g8b8,
-			width, height,
-		    NULL,
-		    width * 4);
-	if (output->shadow_surface == NULL) {
-		weston_log("Failed to create surface for frame buffer.\n");
-		goto out_output;
-	}
 
-	if (pixman_renderer_output_create(&output->base) < 0)
-		goto out_shadow_surface;
-
-	loop = wl_display_get_event_loop(b->compositor->wl_display);
-	output->finish_frame_timer = wl_event_loop_add_timer(loop, finish_frame_handler, output);
+	/* XXX: Calculate proper size. */
+	output->base.mm_width = width;
+	output->base.mm_height = height;
 
 	output->base.start_repaint_loop = rdp_output_start_repaint_loop;
 	output->base.repaint = rdp_output_repaint;
-	output->base.destroy = rdp_output_destroy;
 	output->base.assign_planes = NULL;
 	output->base.set_backlight = NULL;
 	output->base.set_dpms = NULL;
 	output->base.switch_mode = rdp_switch_mode;
+
+	return 0;
+}
+
+static int
+rdp_output_enable(struct weston_output *base)
+{
+	struct rdp_output *output = to_rdp_output(base);
+	struct rdp_backend *b = to_rdp_backend(base->compositor);
+	struct wl_event_loop *loop;
+
+	output->shadow_surface = pixman_image_create_bits(PIXMAN_x8r8g8b8,
+							  output->base.current_mode->width,
+							  output->base.current_mode->height,
+							  NULL,
+							  output->base.current_mode->width * 4);
+	if (output->shadow_surface == NULL) {
+		weston_log("Failed to create surface for frame buffer.\n");
+		return -1;
+	}
+
+	if (pixman_renderer_output_create(&output->base) < 0) {
+		pixman_image_unref(output->shadow_surface);
+		return -1;
+	}
+
+	loop = wl_display_get_event_loop(b->compositor->wl_display);
+	output->finish_frame_timer = wl_event_loop_add_timer(loop, finish_frame_handler, output);
+
 	b->output = output;
 
-	weston_compositor_add_output(b->compositor, &output->base);
 	return 0;
+}
 
-out_shadow_surface:
-	pixman_image_unref(output->shadow_surface);
-out_output:
+static int
+rdp_output_disable(struct weston_output *base)
+{
+	struct rdp_output *output = to_rdp_output(base);
+	struct rdp_backend *b = to_rdp_backend(base->compositor);
+
+	if (!output->base.enabled)
+		return 0;
+
+	wl_event_source_remove(output->finish_frame_timer);
+	b->output = NULL;
+
+	return 0;
+}
+
+static void
+rdp_output_destroy(struct weston_output *base)
+{
+	struct rdp_output *output = to_rdp_output(base);
+
+	rdp_output_disable(&output->base);
 	weston_output_destroy(&output->base);
-out_free_output:
+
 	free(output);
-	return -1;
+}
+
+static int
+rdp_backend_create_output(struct weston_compositor *compositor)
+{
+	struct rdp_output *output;
+
+	output = zalloc(sizeof *output);
+	if (output == NULL)
+		return -1;
+
+	output->base.name =  strdup("rdp");
+	output->base.destroy = rdp_output_destroy;
+	output->base.disable = rdp_output_disable;
+	output->base.enable = rdp_output_enable;
+
+	weston_output_init_pending(&output->base, compositor);
+	weston_compositor_add_pending_output(&output->base, compositor);
+
+	return 0;
 }
 
 static void
@@ -1216,6 +1259,10 @@ rdp_incoming_peer(freerdp_listener *instance, freerdp_peer *client)
 	FREERDP_CB_RETURN(TRUE);
 }
 
+static const struct weston_rdp_output_api api = {
+	rdp_output_set_size,
+};
+
 static struct rdp_backend *
 rdp_backend_create(struct weston_compositor *compositor,
 		   struct weston_rdp_backend_config *config)
@@ -1223,7 +1270,7 @@ rdp_backend_create(struct weston_compositor *compositor,
 	struct rdp_backend *b;
 	char *fd_str;
 	char *fd_tail;
-	int fd;
+	int fd, ret;
 
 	b = zalloc(sizeof *b);
 	if (b == NULL)
@@ -1251,7 +1298,7 @@ rdp_backend_create(struct weston_compositor *compositor,
 	if (pixman_renderer_init(compositor) < 0)
 		goto err_compositor;
 
-	if (rdp_backend_create_output(b, config->width, config->height) < 0)
+	if (rdp_backend_create_output(compositor) < 0)
 		goto err_compositor;
 
 	compositor->capabilities |= WESTON_CAP_ARBITRARY_MODES;
@@ -1282,6 +1329,15 @@ rdp_backend_create(struct weston_compositor *compositor,
 	}
 
 	compositor->backend = &b->base;
+
+	ret = weston_plugin_api_register(compositor, WESTON_RDP_OUTPUT_API_NAME,
+					 &api, sizeof(api));
+
+	if (ret < 0) {
+		weston_log("Failed to register output API.\n");
+		goto err_output;
+	}
+
 	return b;
 
 err_listener:
@@ -1301,8 +1357,6 @@ err_free_strings:
 static void
 config_init_to_defaults(struct weston_rdp_backend_config *config)
 {
-	config->width = 640;
-	config->height = 480;
 	config->bind_address = NULL;
 	config->port = 3389;
 	config->rdp_key = NULL;
