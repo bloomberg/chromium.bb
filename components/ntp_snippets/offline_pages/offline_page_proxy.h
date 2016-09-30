@@ -54,6 +54,8 @@ class OfflinePageProxy : public offline_pages::OfflinePageModel::Observer,
   void RemoveObserver(Observer* observer);
 
  private:
+  friend class base::RefCounted<OfflinePageProxy>;
+
   ~OfflinePageProxy() override;
 
   // OfflinePageModel::Observer implementation.

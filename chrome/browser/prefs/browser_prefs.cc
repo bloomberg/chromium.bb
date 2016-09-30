@@ -158,7 +158,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/notifications/notification_platform_bridge_android.h"
-#include "components/ntp_snippets/offline_pages/offline_page_suggestions_provider.h"
+#include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #else
 #include "chrome/browser/services/gcm/gcm_product_util.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -576,7 +576,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(OS_ANDROID)
   NotificationPlatformBridgeAndroid::RegisterProfilePrefs(registry);
-  ntp_snippets::OfflinePageSuggestionsProvider::RegisterProfilePrefs(registry);
+  ntp_snippets::RecentTabSuggestionsProvider::RegisterProfilePrefs(registry);
 #else
   browser_sync::ForeignSessionHandler::RegisterProfilePrefs(registry);
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);

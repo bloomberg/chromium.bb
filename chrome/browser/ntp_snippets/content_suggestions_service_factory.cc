@@ -54,12 +54,14 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/ntp/ntp_snippets_launcher.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
-#include "components/ntp_snippets/offline_pages/offline_page_suggestions_provider.h"
+#include "components/ntp_snippets/offline_pages/offline_page_proxy.h"
+#include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 #include "components/offline_pages/offline_page_model.h"
 
-using ntp_snippets::OfflinePageSuggestionsProvider;
+using ntp_snippets::OfflinePageProxy;
 using ntp_snippets::PhysicalWebPageSuggestionsProvider;
+using ntp_snippets::RecentTabSuggestionsProvider;
 using offline_pages::OfflinePageModel;
 using offline_pages::OfflinePageModelFactory;
 #endif  // OS_ANDROID
@@ -93,23 +95,14 @@ void ClearScheduledTasks() {
 }
 
 #if defined(OS_ANDROID)
-void RegisterOfflinePageProvider(OfflinePageModel* offline_page_model,
-                                 ContentSuggestionsService* service,
-                                 CategoryFactory* category_factory,
-                                 PrefService* pref_service) {
-  bool recent_tabs_enabled = base::FeatureList::IsEnabled(
-      ntp_snippets::kRecentOfflineTabSuggestionsFeature);
-  bool downloads_enabled =
-      base::FeatureList::IsEnabled(ntp_snippets::kDownloadSuggestionsFeature);
-  bool download_manager_ui_enabled =
-      base::FeatureList::IsEnabled(chrome::android::kDownloadsUiFeature);
-  std::unique_ptr<OfflinePageSuggestionsProvider>
-      offline_page_suggestions_provider =
-          base::MakeUnique<OfflinePageSuggestionsProvider>(
-              recent_tabs_enabled, downloads_enabled,
-              download_manager_ui_enabled, service, category_factory,
-              offline_page_model, pref_service);
-  service->RegisterProvider(std::move(offline_page_suggestions_provider));
+void RegisterRecentTabProvider(
+    const scoped_refptr<OfflinePageProxy>& offline_page_proxy,
+    ContentSuggestionsService* service,
+    CategoryFactory* category_factory,
+    PrefService* pref_service) {
+  auto provider = base::MakeUnique<RecentTabSuggestionsProvider>(
+      service, category_factory, offline_page_proxy, pref_service);
+  service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID
 
@@ -117,20 +110,17 @@ void RegisterBookmarkProvider(BookmarkModel* bookmark_model,
                               ContentSuggestionsService* service,
                               CategoryFactory* category_factory,
                               PrefService* pref_service) {
-  std::unique_ptr<BookmarkSuggestionsProvider> bookmark_suggestions_provider =
-      base::MakeUnique<BookmarkSuggestionsProvider>(
-          service, category_factory, bookmark_model, pref_service);
-  service->RegisterProvider(std::move(bookmark_suggestions_provider));
+  auto provider = base::MakeUnique<BookmarkSuggestionsProvider>(
+      service, category_factory, bookmark_model, pref_service);
+  service->RegisterProvider(std::move(provider));
 }
 
 #if defined(OS_ANDROID)
 void RegisterPhysicalWebPageProvider(ContentSuggestionsService* service,
                                      CategoryFactory* category_factory) {
-  std::unique_ptr<PhysicalWebPageSuggestionsProvider>
-      physical_web_page_suggestions_provider =
-          base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
-              service, category_factory);
-  service->RegisterProvider(std::move(physical_web_page_suggestions_provider));
+  auto provider = base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
+      service, category_factory);
+  service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID
 
@@ -158,24 +148,21 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
-  std::unique_ptr<NTPSnippetsService> ntp_snippets_service =
-      base::MakeUnique<NTPSnippetsService>(
-          service, service->category_factory(), pref_service,
-          suggestions_service, g_browser_process->GetApplicationLocale(),
-          scheduler,
-          base::MakeUnique<NTPSnippetsFetcher>(
-              signin_manager, token_service, request_context, pref_service,
-              category_factory, base::Bind(&safe_json::SafeJsonParser::Parse),
-              is_stable_channel ? google_apis::GetAPIKey()
-                                : google_apis::GetNonStableAPIKey()),
-          base::MakeUnique<ImageFetcherImpl>(
-              base::MakeUnique<ImageDecoderImpl>(), request_context.get()),
-          base::MakeUnique<ImageDecoderImpl>(),
-          base::MakeUnique<NTPSnippetsDatabase>(database_dir, task_runner),
-          base::MakeUnique<NTPSnippetsStatusService>(signin_manager,
-                                                     pref_service));
-  service->set_ntp_snippets_service(ntp_snippets_service.get());
-  service->RegisterProvider(std::move(ntp_snippets_service));
+  auto provider = base::MakeUnique<NTPSnippetsService>(
+      service, service->category_factory(), pref_service, suggestions_service,
+      g_browser_process->GetApplicationLocale(), scheduler,
+      base::MakeUnique<NTPSnippetsFetcher>(
+          signin_manager, token_service, request_context, pref_service,
+          category_factory, base::Bind(&safe_json::SafeJsonParser::Parse),
+          is_stable_channel ? google_apis::GetAPIKey()
+                            : google_apis::GetNonStableAPIKey()),
+      base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
+                                         request_context.get()),
+      base::MakeUnique<ImageDecoderImpl>(),
+      base::MakeUnique<NTPSnippetsDatabase>(database_dir, task_runner),
+      base::MakeUnique<NTPSnippetsStatusService>(signin_manager, pref_service));
+  service->set_ntp_snippets_service(provider.get());
+  service->RegisterProvider(std::move(provider));
 }
 
 void RegisterForeignSessionsProvider(SyncService* sync_service,
@@ -184,11 +171,9 @@ void RegisterForeignSessionsProvider(SyncService* sync_service,
                                      PrefService* pref_service) {
   std::unique_ptr<TabDelegateSyncAdapter> sync_adapter =
       base::MakeUnique<TabDelegateSyncAdapter>(sync_service);
-  std::unique_ptr<ForeignSessionsSuggestionsProvider>
-      foreign_sessions_suggestions_provider =
-          base::MakeUnique<ForeignSessionsSuggestionsProvider>(
-              service, category_factory, std::move(sync_adapter), pref_service);
-  service->RegisterProvider(std::move(foreign_sessions_suggestions_provider));
+  auto provider = base::MakeUnique<ForeignSessionsSuggestionsProvider>(
+      service, category_factory, std::move(sync_adapter), pref_service);
+  service->RegisterProvider(std::move(provider));
 }
 
 }  // namespace
@@ -257,6 +242,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(profile);
+  scoped_refptr<OfflinePageProxy> offline_page_proxy(
+      new OfflinePageProxy(offline_page_model));
 #endif  // OS_ANDROID
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
@@ -270,13 +257,10 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
 
 #if defined(OS_ANDROID)
-  bool recent_tabs_enabled = base::FeatureList::IsEnabled(
-      ntp_snippets::kRecentOfflineTabSuggestionsFeature);
-  bool downloads_enabled =
-      base::FeatureList::IsEnabled(ntp_snippets::kDownloadSuggestionsFeature);
-  if (recent_tabs_enabled || downloads_enabled) {
-    RegisterOfflinePageProvider(offline_page_model, service, category_factory,
-                                pref_service);
+  if (base::FeatureList::IsEnabled(
+          ntp_snippets::kRecentOfflineTabSuggestionsFeature)) {
+    RegisterRecentTabProvider(offline_page_proxy, service, category_factory,
+                              pref_service);
   }
 #endif  // OS_ANDROID
 
