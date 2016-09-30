@@ -32,6 +32,8 @@ static String removeSVGPrefix(const String& property)
 
 CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(const String& property, const Document& document)
 {
+    // TODO(crbug.com/644148): Allow custom properties that begin with "--".
+
     // Disallow prefixed properties.
     if (property[0] == '-' || isASCIIUpper(property[0]))
         return CSSPropertyInvalid;

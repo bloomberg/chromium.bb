@@ -13,7 +13,7 @@ class StyleImage;
 
 class CSSImageInterpolationType : public CSSInterpolationType {
 public:
-    CSSImageInterpolationType(CSSPropertyID property)
+    CSSImageInterpolationType(PropertyHandle property)
         : CSSInterpolationType(property)
     { }
 

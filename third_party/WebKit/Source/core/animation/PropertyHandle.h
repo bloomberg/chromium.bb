@@ -21,6 +21,13 @@ public:
         , m_cssProperty(property)
     {
         DCHECK_NE(property, CSSPropertyInvalid);
+        DCHECK_NE(property, CSSPropertyVariable);
+    }
+
+    explicit PropertyHandle(const AtomicString& propertyName)
+        : m_handleType(HandleCSSCustomProperty)
+        , m_propertyName(propertyName.impl())
+    {
     }
 
     explicit PropertyHandle(const QualifiedName& attributeName)
@@ -34,8 +41,11 @@ public:
 
     unsigned hash() const;
 
-    bool isCSSProperty() const { return m_handleType == HandleCSSProperty; }
-    CSSPropertyID cssProperty() const { DCHECK(isCSSProperty()); return m_cssProperty; }
+    bool isCSSProperty() const { return m_handleType == HandleCSSProperty || isCSSCustomProperty(); }
+    CSSPropertyID cssProperty() const { DCHECK(isCSSProperty()); return m_handleType == HandleCSSProperty ? m_cssProperty : CSSPropertyVariable; }
+
+    bool isCSSCustomProperty() const { return m_handleType == HandleCSSCustomProperty; }
+    AtomicString customPropertyName() const { DCHECK(isCSSCustomProperty()); return AtomicString(m_propertyName); }
 
     bool isPresentationAttribute() const { return m_handleType == HandlePresentationAttribute; }
     CSSPropertyID presentationAttribute() const { DCHECK(isPresentationAttribute()); return m_cssProperty; }
@@ -48,6 +58,7 @@ private:
         HandleEmptyValueForHashTraits,
         HandleDeletedValueForHashTraits,
         HandleCSSProperty,
+        HandleCSSCustomProperty,
         HandlePresentationAttribute,
         HandleSVGAttribute,
     };
@@ -68,6 +79,7 @@ private:
     union {
         CSSPropertyID m_cssProperty;
         const QualifiedName* m_svgAttribute;
+        StringImpl* m_propertyName;
     };
 
     friend struct ::WTF::HashTraits<blink::PropertyHandle>;

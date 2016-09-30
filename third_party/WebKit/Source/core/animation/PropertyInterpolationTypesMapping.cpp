@@ -66,6 +66,8 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
 
     if (property.isCSSProperty() || property.isPresentationAttribute()) {
         CSSPropertyID cssProperty = property.isCSSProperty() ? property.cssProperty() : property.presentationAttribute();
+        // We treat presentation attributes identically to their CSS property equivalents when interpolating.
+        PropertyHandle usedProperty = property.isCSSProperty() ? property : PropertyHandle(cssProperty);
         switch (cssProperty) {
         case CSSPropertyBaselineShift:
         case CSSPropertyBorderBottomWidth:
@@ -118,7 +120,7 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyWordSpacing:
         case CSSPropertyX:
         case CSSPropertyY:
-            applicableTypes->append(wrapUnique(new CSSLengthInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSLengthInterpolationType(usedProperty)));
             break;
         case CSSPropertyFlexGrow:
         case CSSPropertyFlexShrink:
@@ -134,11 +136,11 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyColumnCount:
         case CSSPropertyWidows:
         case CSSPropertyZIndex:
-            applicableTypes->append(wrapUnique(new CSSNumberInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSNumberInterpolationType(usedProperty)));
             break;
         case CSSPropertyLineHeight:
-            applicableTypes->append(wrapUnique(new CSSLengthInterpolationType(cssProperty)));
-            applicableTypes->append(wrapUnique(new CSSNumberInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSLengthInterpolationType(usedProperty)));
+            applicableTypes->append(wrapUnique(new CSSNumberInterpolationType(usedProperty)));
             break;
         case CSSPropertyBackgroundColor:
         case CSSPropertyBorderBottomColor:
@@ -153,109 +155,109 @@ const InterpolationTypes& PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyTextDecorationColor:
         case CSSPropertyColumnRuleColor:
         case CSSPropertyWebkitTextStrokeColor:
-            applicableTypes->append(wrapUnique(new CSSColorInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSColorInterpolationType(usedProperty)));
             break;
         case CSSPropertyFill:
         case CSSPropertyStroke:
-            applicableTypes->append(wrapUnique(new CSSPaintInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSPaintInterpolationType(usedProperty)));
             break;
         case CSSPropertyD:
-            applicableTypes->append(wrapUnique(new CSSPathInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSPathInterpolationType(usedProperty)));
             break;
         case CSSPropertyBoxShadow:
         case CSSPropertyTextShadow:
-            applicableTypes->append(wrapUnique(new CSSShadowListInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSShadowListInterpolationType(usedProperty)));
             break;
         case CSSPropertyBorderImageSource:
         case CSSPropertyListStyleImage:
         case CSSPropertyWebkitMaskBoxImageSource:
-            applicableTypes->append(wrapUnique(new CSSImageInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSImageInterpolationType(usedProperty)));
             break;
         case CSSPropertyBackgroundImage:
         case CSSPropertyWebkitMaskImage:
-            applicableTypes->append(wrapUnique(new CSSImageListInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSImageListInterpolationType(usedProperty)));
             break;
         case CSSPropertyStrokeDasharray:
-            applicableTypes->append(wrapUnique(new CSSLengthListInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSLengthListInterpolationType(usedProperty)));
             break;
         case CSSPropertyFontWeight:
-            applicableTypes->append(wrapUnique(new CSSFontWeightInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSFontWeightInterpolationType(usedProperty)));
             break;
         case CSSPropertyVisibility:
-            applicableTypes->append(wrapUnique(new CSSVisibilityInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSVisibilityInterpolationType(usedProperty)));
             break;
         case CSSPropertyClip:
-            applicableTypes->append(wrapUnique(new CSSClipInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSClipInterpolationType(usedProperty)));
             break;
         case CSSPropertyOffsetRotation:
-            applicableTypes->append(wrapUnique(new CSSOffsetRotationInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSOffsetRotationInterpolationType(usedProperty)));
             break;
         case CSSPropertyBackgroundPositionX:
         case CSSPropertyBackgroundPositionY:
         case CSSPropertyWebkitMaskPositionX:
         case CSSPropertyWebkitMaskPositionY:
-            applicableTypes->append(wrapUnique(new CSSPositionAxisListInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSPositionAxisListInterpolationType(usedProperty)));
             break;
         case CSSPropertyObjectPosition:
         case CSSPropertyOffsetAnchor:
         case CSSPropertyOffsetPosition:
         case CSSPropertyPerspectiveOrigin:
-            applicableTypes->append(wrapUnique(new CSSPositionInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSPositionInterpolationType(usedProperty)));
             break;
         case CSSPropertyBorderBottomLeftRadius:
         case CSSPropertyBorderBottomRightRadius:
         case CSSPropertyBorderTopLeftRadius:
         case CSSPropertyBorderTopRightRadius:
-            applicableTypes->append(wrapUnique(new CSSLengthPairInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSLengthPairInterpolationType(usedProperty)));
             break;
         case CSSPropertyTranslate:
-            applicableTypes->append(wrapUnique(new CSSTranslateInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSTranslateInterpolationType(usedProperty)));
             break;
         case CSSPropertyTransformOrigin:
-            applicableTypes->append(wrapUnique(new CSSTransformOriginInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSTransformOriginInterpolationType(usedProperty)));
             break;
         case CSSPropertyBackgroundSize:
         case CSSPropertyWebkitMaskSize:
-            applicableTypes->append(wrapUnique(new CSSSizeListInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSSizeListInterpolationType(usedProperty)));
             break;
         case CSSPropertyBorderImageOutset:
         case CSSPropertyBorderImageWidth:
         case CSSPropertyWebkitMaskBoxImageOutset:
         case CSSPropertyWebkitMaskBoxImageWidth:
-            applicableTypes->append(wrapUnique(new CSSBorderImageLengthBoxInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSBorderImageLengthBoxInterpolationType(usedProperty)));
             break;
         case CSSPropertyScale:
-            applicableTypes->append(wrapUnique(new CSSScaleInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSScaleInterpolationType(usedProperty)));
             break;
         case CSSPropertyFontSize:
-            applicableTypes->append(wrapUnique(new CSSFontSizeInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSFontSizeInterpolationType(usedProperty)));
             break;
         case CSSPropertyTextIndent:
-            applicableTypes->append(wrapUnique(new CSSTextIndentInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSTextIndentInterpolationType(usedProperty)));
             break;
         case CSSPropertyBorderImageSlice:
         case CSSPropertyWebkitMaskBoxImageSlice:
-            applicableTypes->append(wrapUnique(new CSSImageSliceInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSImageSliceInterpolationType(usedProperty)));
             break;
         case CSSPropertyClipPath:
         case CSSPropertyShapeOutside:
-            applicableTypes->append(wrapUnique(new CSSBasicShapeInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSBasicShapeInterpolationType(usedProperty)));
             break;
         case CSSPropertyRotate:
-            applicableTypes->append(wrapUnique(new CSSRotateInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSRotateInterpolationType(usedProperty)));
             break;
         case CSSPropertyBackdropFilter:
         case CSSPropertyFilter:
-            applicableTypes->append(wrapUnique(new CSSFilterListInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSFilterListInterpolationType(usedProperty)));
             break;
         case CSSPropertyTransform:
-            applicableTypes->append(wrapUnique(new CSSTransformInterpolationType(cssProperty)));
+            applicableTypes->append(wrapUnique(new CSSTransformInterpolationType(usedProperty)));
             break;
         default:
             DCHECK(!CSSPropertyMetadata::isInterpolableProperty(cssProperty));
         }
 
-        applicableTypes->append(wrapUnique(new CSSValueInterpolationType(cssProperty)));
+        applicableTypes->append(wrapUnique(new CSSValueInterpolationType(usedProperty)));
 
     } else {
         const QualifiedName& attribute = property.svgAttribute();

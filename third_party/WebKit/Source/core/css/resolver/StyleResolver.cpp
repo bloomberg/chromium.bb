@@ -1136,6 +1136,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
 
     const ActiveInterpolationsMap& activeInterpolationsMapForAnimations = state.animationUpdate().activeInterpolationsForAnimations();
     const ActiveInterpolationsMap& activeInterpolationsMapForTransitions = state.animationUpdate().activeInterpolationsForTransitions();
+    // TODO(crbug.com/644148): Apply animations on custom properties.
     applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsMapForAnimations);
     applyAnimatedProperties<HighPropertyPriority>(state, activeInterpolationsMapForTransitions);
 

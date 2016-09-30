@@ -6,6 +6,7 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/animation/css/CSSAnimations.h"
+#include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/style/ComputedStyle.h"
@@ -20,6 +21,11 @@ StringKeyframe::StringKeyframe(const StringKeyframe& copyFrom)
     , m_presentationAttributeMap(copyFrom.m_presentationAttributeMap->mutableCopy())
     , m_svgAttributeMap(copyFrom.m_svgAttributeMap)
 {
+}
+
+void StringKeyframe::setCSSPropertyValue(const AtomicString& propertyName, const String& value, StyleSheetContents* styleSheetContents)
+{
+    m_cssPropertyMap->setProperty(propertyName, value, false, styleSheetContents);
 }
 
 void StringKeyframe::setCSSPropertyValue(CSSPropertyID property, const String& value, StyleSheetContents* styleSheetContents)
@@ -57,7 +63,10 @@ PropertyHandleSet StringKeyframe::properties() const
         StylePropertySet::PropertyReference propertyReference = m_cssPropertyMap->propertyAt(i);
         DCHECK(!isShorthandProperty(propertyReference.id()))
             << "Web Animations: Encountered unexpanded shorthand CSS property (" << propertyReference.id() << ").";
-        properties.add(PropertyHandle(propertyReference.id(), false));
+        if (propertyReference.id() == CSSPropertyVariable)
+            properties.add(PropertyHandle(toCSSCustomPropertyDeclaration(propertyReference.value()).name()));
+        else
+            properties.add(PropertyHandle(propertyReference.id(), false));
     }
 
     for (unsigned i = 0; i < m_presentationAttributeMap->propertyCount(); ++i)
@@ -77,7 +86,7 @@ PassRefPtr<Keyframe> StringKeyframe::clone() const
 PassRefPtr<Keyframe::PropertySpecificKeyframe> StringKeyframe::createPropertySpecificKeyframe(PropertyHandle property) const
 {
     if (property.isCSSProperty())
-        return CSSPropertySpecificKeyframe::create(offset(), &easing(), &cssPropertyValue(property.cssProperty()), composite());
+        return CSSPropertySpecificKeyframe::create(offset(), &easing(), &cssPropertyValue(property), composite());
 
     if (property.isPresentationAttribute())
         return CSSPropertySpecificKeyframe::create(offset(), &easing(), &presentationAttributeValue(property.presentationAttribute()), composite());

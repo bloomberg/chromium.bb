@@ -15,7 +15,7 @@ namespace blink {
 
 class CSSTransformOriginInterpolationType : public CSSLengthListInterpolationType {
 public:
-    CSSTransformOriginInterpolationType(CSSPropertyID property)
+    CSSTransformOriginInterpolationType(PropertyHandle property)
         : CSSLengthListInterpolationType(property)
     { }
 

@@ -41,8 +41,8 @@ private:
     Persistent<const CSSValue> m_resolvedValue;
 };
 
-CSSInterpolationType::CSSInterpolationType(CSSPropertyID property)
-    : InterpolationType(PropertyHandle(property))
+CSSInterpolationType::CSSInterpolationType(PropertyHandle property)
+    : InterpolationType(property)
 {
     DCHECK(!isShorthandProperty(cssProperty()));
 }

@@ -12,7 +12,7 @@ namespace blink {
 
 class CSSImageListInterpolationType : public CSSInterpolationType {
 public:
-    CSSImageListInterpolationType(CSSPropertyID property)
+    CSSImageListInterpolationType(PropertyHandle property)
         : CSSInterpolationType(property)
     { }
 

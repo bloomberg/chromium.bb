@@ -90,8 +90,8 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation)
     EXPECT_EQ(0, keyframes[0]->offset());
     EXPECT_EQ(1, keyframes[1]->offset());
 
-    const CSSValue& keyframe1Width = toStringKeyframe(keyframes[0].get())->cssPropertyValue(CSSPropertyWidth);
-    const CSSValue& keyframe2Width = toStringKeyframe(keyframes[1].get())->cssPropertyValue(CSSPropertyWidth);
+    const CSSValue& keyframe1Width = toStringKeyframe(keyframes[0].get())->cssPropertyValue(PropertyHandle(CSSPropertyWidth));
+    const CSSValue& keyframe2Width = toStringKeyframe(keyframes[1].get())->cssPropertyValue(PropertyHandle(CSSPropertyWidth));
 
     EXPECT_EQ("100px", keyframe1Width.cssText());
     EXPECT_EQ("0px", keyframe2Width.cssText());

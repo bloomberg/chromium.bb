@@ -11,7 +11,7 @@ namespace blink {
 
 class CSSBasicShapeInterpolationType : public CSSInterpolationType {
 public:
-    CSSBasicShapeInterpolationType(CSSPropertyID property)
+    CSSBasicShapeInterpolationType(PropertyHandle property)
         : CSSInterpolationType(property)
     { }
 

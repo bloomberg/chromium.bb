@@ -13,7 +13,7 @@ namespace blink {
 
 class CSSLengthListInterpolationType : public CSSInterpolationType {
 public:
-    CSSLengthListInterpolationType(CSSPropertyID);
+    CSSLengthListInterpolationType(PropertyHandle);
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;

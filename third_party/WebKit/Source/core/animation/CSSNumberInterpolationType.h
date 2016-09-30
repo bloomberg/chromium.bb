@@ -11,7 +11,7 @@ namespace blink {
 
 class CSSNumberInterpolationType : public CSSInterpolationType {
 public:
-    CSSNumberInterpolationType(CSSPropertyID property)
+    CSSNumberInterpolationType(PropertyHandle property)
         : CSSInterpolationType(property)
     { }
 

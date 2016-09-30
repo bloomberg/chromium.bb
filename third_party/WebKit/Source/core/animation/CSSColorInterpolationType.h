@@ -16,7 +16,7 @@ class StyleColor;
 
 class CSSColorInterpolationType : public CSSInterpolationType {
 public:
-    CSSColorInterpolationType(CSSPropertyID property)
+    CSSColorInterpolationType(PropertyHandle property)
         : CSSInterpolationType(property)
     { }
 

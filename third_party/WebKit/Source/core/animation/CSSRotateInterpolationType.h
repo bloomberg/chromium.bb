@@ -11,10 +11,10 @@ namespace blink {
 
 class CSSRotateInterpolationType : public CSSInterpolationType {
 public:
-    CSSRotateInterpolationType(CSSPropertyID property)
+    CSSRotateInterpolationType(PropertyHandle property)
         : CSSInterpolationType(property)
     {
-        DCHECK_EQ(property, CSSPropertyRotate);
+        DCHECK_EQ(cssProperty(), CSSPropertyRotate);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;

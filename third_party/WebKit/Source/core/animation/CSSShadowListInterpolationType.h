@@ -13,7 +13,7 @@ class ShadowList;
 
 class CSSShadowListInterpolationType : public CSSInterpolationType {
 public:
-    CSSShadowListInterpolationType(CSSPropertyID property)
+    CSSShadowListInterpolationType(PropertyHandle property)
         : CSSInterpolationType(property)
     { }
 

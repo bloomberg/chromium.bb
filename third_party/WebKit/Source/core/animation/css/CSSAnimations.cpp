@@ -125,7 +125,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
     for (size_t i = 1; i < keyframes.size(); i++) {
         if (keyframes[i]->offset() == keyframes[targetIndex]->offset()) {
             for (const auto& property : keyframes[i]->properties())
-                keyframes[targetIndex]->setCSSPropertyValue(property.cssProperty(), keyframes[i]->cssPropertyValue(property.cssProperty()));
+                keyframes[targetIndex]->setCSSPropertyValue(property.cssProperty(), keyframes[i]->cssPropertyValue(property));
         } else {
             targetIndex++;
             keyframes[targetIndex] = keyframes[i];

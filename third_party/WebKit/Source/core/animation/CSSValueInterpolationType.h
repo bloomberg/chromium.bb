@@ -13,7 +13,7 @@ namespace blink {
 // A catch all for default for CSSValues.
 class CSSValueInterpolationType : public CSSInterpolationType {
 public:
-    CSSValueInterpolationType(CSSPropertyID property)
+    CSSValueInterpolationType(PropertyHandle property)
         : CSSInterpolationType(property)
     { }
 

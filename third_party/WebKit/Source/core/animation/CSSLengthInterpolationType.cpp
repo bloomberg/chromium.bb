@@ -16,9 +16,9 @@
 
 namespace blink {
 
-CSSLengthInterpolationType::CSSLengthInterpolationType(CSSPropertyID property)
+CSSLengthInterpolationType::CSSLengthInterpolationType(PropertyHandle property)
     : CSSInterpolationType(property)
-    , m_valueRange(LengthPropertyFunctions::getValueRange(property))
+    , m_valueRange(LengthPropertyFunctions::getValueRange(cssProperty()))
 { }
 
 float CSSLengthInterpolationType::effectiveZoom(const ComputedStyle& style) const

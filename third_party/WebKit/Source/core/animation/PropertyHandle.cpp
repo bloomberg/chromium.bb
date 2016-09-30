@@ -15,6 +15,8 @@ bool PropertyHandle::operator==(const PropertyHandle& other) const
     case HandleCSSProperty:
     case HandlePresentationAttribute:
         return m_cssProperty == other.m_cssProperty;
+    case HandleCSSCustomProperty:
+        return m_propertyName == other.m_propertyName;
     case HandleSVGAttribute:
         return m_svgAttribute == other.m_svgAttribute;
     default:
@@ -27,6 +29,8 @@ unsigned PropertyHandle::hash() const
     switch (m_handleType) {
     case HandleCSSProperty:
         return m_cssProperty;
+    case HandleCSSCustomProperty:
+        return m_propertyName->existingHash();
     case HandlePresentationAttribute:
         return -m_cssProperty;
     case HandleSVGAttribute:

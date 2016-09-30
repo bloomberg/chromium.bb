@@ -16,7 +16,7 @@ class CSSToLengthConversionData;
 
 class CSSLengthInterpolationType : public CSSInterpolationType {
 public:
-    CSSLengthInterpolationType(CSSPropertyID);
+    CSSLengthInterpolationType(PropertyHandle);
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;
     void composite(UnderlyingValueOwner&, double underlyingFraction, const InterpolationValue&, double interpolationFraction) const final;

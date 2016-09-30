@@ -22,22 +22,27 @@ public:
         return adoptRef(new StringKeyframe);
     }
 
+    void setCSSPropertyValue(const AtomicString& propertyName, const String& value, StyleSheetContents*);
     void setCSSPropertyValue(CSSPropertyID, const String& value, StyleSheetContents*);
     void setCSSPropertyValue(CSSPropertyID, const CSSValue&);
     void setPresentationAttributeValue(CSSPropertyID, const String& value, StyleSheetContents*);
     void setSVGAttributeValue(const QualifiedName&, const String& value);
 
-    const CSSValue& cssPropertyValue(CSSPropertyID property) const
+    const CSSValue& cssPropertyValue(const PropertyHandle& property) const
     {
-        int index = m_cssPropertyMap->findPropertyIndex(property);
-        RELEASE_ASSERT(index >= 0);
+        int index = -1;
+        if (property.isCSSCustomProperty())
+            index = m_cssPropertyMap->findPropertyIndex(property.customPropertyName());
+        else
+            index = m_cssPropertyMap->findPropertyIndex(property.cssProperty());
+        CHECK_GE(index, 0);
         return m_cssPropertyMap->propertyAt(static_cast<unsigned>(index)).value();
     }
 
     const CSSValue& presentationAttributeValue(CSSPropertyID property) const
     {
         int index = m_presentationAttributeMap->findPropertyIndex(property);
-        RELEASE_ASSERT(index >= 0);
+        CHECK_GE(index, 0);
         return m_presentationAttributeMap->propertyAt(static_cast<unsigned>(index)).value();
     }
 

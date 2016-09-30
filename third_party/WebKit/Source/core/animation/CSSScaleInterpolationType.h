@@ -11,10 +11,10 @@ namespace blink {
 
 class CSSScaleInterpolationType : public CSSInterpolationType {
 public:
-    CSSScaleInterpolationType(CSSPropertyID property)
+    CSSScaleInterpolationType(PropertyHandle property)
         : CSSInterpolationType(property)
     {
-        DCHECK_EQ(property, CSSPropertyScale);
+        DCHECK_EQ(cssProperty(), CSSPropertyScale);
     }
 
     InterpolationValue maybeConvertUnderlyingValue(const InterpolationEnvironment&) const final;

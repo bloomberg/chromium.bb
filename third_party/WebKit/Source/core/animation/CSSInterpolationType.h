@@ -12,7 +12,7 @@ namespace blink {
 
 class CSSInterpolationType : public InterpolationType {
 protected:
-    CSSInterpolationType(CSSPropertyID);
+    CSSInterpolationType(PropertyHandle);
 
     CSSPropertyID cssProperty() const { return getProperty().cssProperty(); }
 
