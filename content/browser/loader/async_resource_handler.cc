@@ -45,7 +45,7 @@ static int kBufferSize = 1024 * 512;
 static int kMinAllocationSize = 1024 * 4;
 static int kMaxAllocationSize = 1024 * 32;
 // The interval for calls to ReportUploadProgress.
-static int kUploadProgressIntervalMsec = 10;
+static int kUploadProgressIntervalMsec = 100;
 
 // Used when kOptimizeLoadingIPCForSmallResources is enabled.
 // Small resource typically issues two Read call: one for the content itself
