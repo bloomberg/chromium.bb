@@ -10,6 +10,7 @@ import static android.net.NetworkCapabilities.NET_CAPABILITY_NOT_VPN;
 import static android.net.NetworkCapabilities.TRANSPORT_VPN;
 
 import android.Manifest.permission;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -41,6 +42,8 @@ import java.util.Arrays;
  * Note that use of this class requires that the app have the platform
  * ACCESS_NETWORK_STATE permission.
  */
+// TODO(crbug.com/635567): Fix this properly.
+@SuppressLint("NewApi")
 public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     static class NetworkState {
         private final boolean mConnected;
@@ -887,6 +890,8 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mObserver.onMaxBandwidthChanged(newMaxBandwidthMbps);
     }
 
+    // TODO(crbug.com/635567): Fix this properly.
+    @SuppressLint({"NewApi", "ParcelCreator"})
     private static class NetworkConnectivityIntentFilter extends IntentFilter {
         NetworkConnectivityIntentFilter() {
             addAction(ConnectivityManager.CONNECTIVITY_ACTION);
