@@ -74,11 +74,13 @@ int ADTSStreamParser::ParseFrameHeader(const uint8_t* data,
   if (sync != 0xfff || layer != 0 || frame_length < bytes_read ||
       sample_rate_index >= kADTSFrequencyTableSize ||
       channel_layout_index >= kADTSChannelLayoutTableSize) {
-    MEDIA_LOG(DEBUG, media_log())
-        << "Invalid header data :" << std::hex << " sync 0x" << sync
-        << " version 0x" << version << " layer 0x" << layer
-        << " sample_rate_index 0x" << sample_rate_index
-        << " channel_layout_index 0x" << channel_layout_index;
+    if (media_log()) {
+      MEDIA_LOG(DEBUG, media_log())
+          << "Invalid header data :" << std::hex << " sync 0x" << sync
+          << " version 0x" << version << " layer 0x" << layer
+          << " sample_rate_index 0x" << sample_rate_index
+          << " channel_layout_index 0x" << channel_layout_index;
+    }
     return -1;
   }
 
