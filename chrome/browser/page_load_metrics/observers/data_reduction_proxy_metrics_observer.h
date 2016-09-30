@@ -33,6 +33,7 @@ extern const char kHistogramDOMContentLoadedEventFiredSuffix[];
 extern const char kHistogramFirstLayoutSuffix[];
 extern const char kHistogramLoadEventFiredSuffix[];
 extern const char kHistogramFirstContentfulPaintSuffix[];
+extern const char kHistogramFirstMeaningfulPaintSuffix[];
 extern const char kHistogramFirstImagePaintSuffix[];
 extern const char kHistogramFirstPaintSuffix[];
 extern const char kHistogramFirstTextPaintSuffix[];
@@ -71,6 +72,9 @@ class DataReductionProxyMetricsObserver
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnFirstContentfulPaint(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
+  void OnFirstMeaningfulPaint(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnParseStart(const page_load_metrics::PageLoadTiming& timing,

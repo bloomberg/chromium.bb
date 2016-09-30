@@ -68,4 +68,8 @@ message PageloadMetrics {
 
   // Time until parsing finished.
   optional Duration parse_stop = 14;
+
+  // Time to first meaningful paint. This measure is unstable and will change
+  // over time.
+  optional Duration experimental_time_to_first_meaningful_paint = 15;
 }

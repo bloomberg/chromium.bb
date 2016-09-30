@@ -94,6 +94,8 @@ class DataReductionProxyPingbackClientTest : public testing::Test {
             base::Optional<base::TimeDelta>(base::TimeDelta::FromMilliseconds(
                 1900)) /* first_contentful_paint */,
             base::Optional<base::TimeDelta>(base::TimeDelta::FromMilliseconds(
+                2000)) /* experimental_first_meaningful_paint */,
+            base::Optional<base::TimeDelta>(base::TimeDelta::FromMilliseconds(
                 100)) /* parse_blocked_on_script_load_duration */,
             base::Optional<base::TimeDelta>(
                 base::TimeDelta::FromMilliseconds(2000)) /* parse_stop */) {}
@@ -167,6 +169,10 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   EXPECT_EQ(timing().first_contentful_paint.value(),
             protobuf_parser::DurationToTimeDelta(
                 pageload_metrics.time_to_first_contentful_paint()));
+  EXPECT_EQ(
+      timing().experimental_first_meaningful_paint.value(),
+      protobuf_parser::DurationToTimeDelta(
+          pageload_metrics.experimental_time_to_first_meaningful_paint()));
   EXPECT_EQ(timing().parse_blocked_on_script_load_duration.value(),
             protobuf_parser::DurationToTimeDelta(
                 pageload_metrics.parse_blocked_on_script_load_duration()));
@@ -232,6 +238,10 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyTwoPingbacksBatchedContent) {
     EXPECT_EQ(timing().first_contentful_paint.value(),
               protobuf_parser::DurationToTimeDelta(
                   pageload_metrics.time_to_first_contentful_paint()));
+    EXPECT_EQ(
+        timing().experimental_first_meaningful_paint.value(),
+        protobuf_parser::DurationToTimeDelta(
+            pageload_metrics.experimental_time_to_first_meaningful_paint()));
     EXPECT_EQ(timing().parse_blocked_on_script_load_duration.value(),
               protobuf_parser::DurationToTimeDelta(
                   pageload_metrics.parse_blocked_on_script_load_duration()));

@@ -136,6 +136,8 @@ class DataReductionProxyMetricsObserverTest
     timing_.response_start = base::TimeDelta::FromSeconds(2);
     timing_.parse_start = base::TimeDelta::FromSeconds(3);
     timing_.first_contentful_paint = base::TimeDelta::FromSeconds(4);
+    timing_.first_paint = base::TimeDelta::FromSeconds(4);
+    timing_.first_meaningful_paint = base::TimeDelta::FromSeconds(8);
     timing_.first_image_paint = base::TimeDelta::FromSeconds(5);
     timing_.first_text_paint = base::TimeDelta::FromSeconds(6);
     timing_.load_event_start = base::TimeDelta::FromSeconds(7);
@@ -175,6 +177,9 @@ class DataReductionProxyMetricsObserverTest
               pingback_client_->timing()->navigation_start);
     ExpectEqualOrUnset(timing_.first_contentful_paint,
               pingback_client_->timing()->first_contentful_paint);
+    ExpectEqualOrUnset(
+        timing_.first_meaningful_paint,
+        pingback_client_->timing()->experimental_first_meaningful_paint);
     ExpectEqualOrUnset(timing_.response_start,
               pingback_client_->timing()->response_start);
     ExpectEqualOrUnset(timing_.load_event_start,
@@ -193,6 +198,8 @@ class DataReductionProxyMetricsObserverTest
                                 timing_.load_event_start);
     ValidateHistogramsForSuffix(internal::kHistogramFirstContentfulPaintSuffix,
                                 timing_.first_contentful_paint);
+    ValidateHistogramsForSuffix(internal::kHistogramFirstMeaningfulPaintSuffix,
+                                timing_.first_meaningful_paint);
     ValidateHistogramsForSuffix(internal::kHistogramFirstImagePaintSuffix,
                                 timing_.first_image_paint);
     ValidateHistogramsForSuffix(internal::kHistogramFirstPaintSuffix,
@@ -295,6 +302,13 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   // Verify that when data reduction proxy was used but first contentful paint
   // is unset, SendPingback is not called.
   timing_.first_contentful_paint = base::nullopt;
+  RunTest(true, false);
+  ValidateTimes();
+
+  ResetTest();
+  // Verify that when data reduction proxy was used but first meaningful paint
+  // is unset, SendPingback is not called.
+  timing_.first_meaningful_paint = base::nullopt;
   RunTest(true, false);
   ValidateTimes();
 

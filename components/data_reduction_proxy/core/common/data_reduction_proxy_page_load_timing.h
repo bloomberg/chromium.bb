@@ -19,6 +19,8 @@ struct DataReductionProxyPageLoadTiming {
       const base::Optional<base::TimeDelta>& first_image_paint,
       const base::Optional<base::TimeDelta>& first_contentful_paint,
       const base::Optional<base::TimeDelta>&
+          experimental_first_meaningful_paint,
+      const base::Optional<base::TimeDelta>&
           parse_blocked_on_script_load_duration,
       const base::Optional<base::TimeDelta>& parse_stop);
 
@@ -40,6 +42,8 @@ struct DataReductionProxyPageLoadTiming {
   const base::Optional<base::TimeDelta> first_image_paint;
   // Time when the first contentful thing (image, text, etc.) is painted.
   const base::Optional<base::TimeDelta> first_contentful_paint;
+  // (Experimental) Time when the page's primary content is painted.
+  const base::Optional<base::TimeDelta> experimental_first_meaningful_paint;
   // Time that parsing was blocked by loading script.
   const base::Optional<base::TimeDelta> parse_blocked_on_script_load_duration;
   // Time when parsing completed.

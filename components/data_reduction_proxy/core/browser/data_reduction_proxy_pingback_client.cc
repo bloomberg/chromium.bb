@@ -49,6 +49,12 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
             timing.first_contentful_paint.value())
             .release());
   }
+  if (timing.experimental_first_meaningful_paint) {
+    request->set_allocated_experimental_time_to_first_meaningful_paint(
+        protobuf_parser::CreateDurationFromTimeDelta(
+            timing.experimental_first_meaningful_paint.value())
+            .release());
+  }
   if (timing.first_image_paint) {
     request->set_allocated_time_to_first_image_paint(
         protobuf_parser::CreateDurationFromTimeDelta(

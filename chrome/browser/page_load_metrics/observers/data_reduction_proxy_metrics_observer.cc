@@ -73,6 +73,8 @@ const char kHistogramLoadEventFiredSuffix[] =
     "DocumentTiming.NavigationToLoadEventFired";
 const char kHistogramFirstContentfulPaintSuffix[] =
     "PaintTiming.NavigationToFirstContentfulPaint";
+const char kHistogramFirstMeaningfulPaintSuffix[] =
+    "Experimental.PaintTiming.NavigationToFirstMeaningfulPaint";
 const char kHistogramFirstImagePaintSuffix[] =
     "PaintTiming.NavigationToFirstImagePaint";
 const char kHistogramFirstPaintSuffix[] = "PaintTiming.NavigationToFirstPaint";
@@ -142,6 +144,7 @@ void DataReductionProxyMetricsObserver::OnComplete(
   base::Optional<base::TimeDelta> load_event_start;
   base::Optional<base::TimeDelta> first_image_paint;
   base::Optional<base::TimeDelta> first_contentful_paint;
+  base::Optional<base::TimeDelta> experimental_first_meaningful_paint;
   base::Optional<base::TimeDelta> parse_blocked_on_script_load_duration;
   base::Optional<base::TimeDelta> parse_stop;
   if (WasStartedInForegroundOptionalEventInForeground(timing.response_start,
@@ -161,6 +164,10 @@ void DataReductionProxyMetricsObserver::OnComplete(
     first_contentful_paint = timing.first_contentful_paint;
   }
   if (WasStartedInForegroundOptionalEventInForeground(
+          timing.first_meaningful_paint, info)) {
+    experimental_first_meaningful_paint = timing.first_meaningful_paint;
+  }
+  if (WasStartedInForegroundOptionalEventInForeground(
           timing.parse_blocked_on_script_load_duration, info)) {
     parse_blocked_on_script_load_duration =
         timing.parse_blocked_on_script_load_duration;
@@ -173,6 +180,7 @@ void DataReductionProxyMetricsObserver::OnComplete(
   DataReductionProxyPageLoadTiming data_reduction_proxy_timing(
       timing.navigation_start, response_start, load_event_start,
       first_image_paint, first_contentful_paint,
+      experimental_first_meaningful_paint,
       parse_blocked_on_script_load_duration, parse_stop);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
@@ -232,6 +240,14 @@ void DataReductionProxyMetricsObserver::OnFirstContentfulPaint(
   RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_contentful_paint,
                                timing.first_contentful_paint.value(), info,
                                internal::kHistogramFirstContentfulPaintSuffix);
+}
+
+void DataReductionProxyMetricsObserver::OnFirstMeaningfulPaint(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  RECORD_HISTOGRAMS_FOR_SUFFIX(data_, timing.first_meaningful_paint,
+                               timing.first_meaningful_paint.value(), info,
+                               internal::kHistogramFirstMeaningfulPaintSuffix);
 }
 
 void DataReductionProxyMetricsObserver::OnParseStart(
