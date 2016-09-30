@@ -128,7 +128,6 @@ var vrShellUi = (function() {
     constructor(meshId, durationMs) {
       this.meshId = meshId;
       this.easing = {};
-      this.from = {};
       this.to = {};
       this.easing.type = Easing.LINEAR;
 
@@ -210,13 +209,13 @@ var vrShellUi = (function() {
         var resize = new Animation(buttonId, 250);
         resize.id = idIndex++;
         resize.setResizeTo(width, height);
-        chrome.send('addAnimations', [resize]);
+        addAnimations([resize]);
       }.bind(undefined, id, buttonWidth * 1.5, buttonHeight * 1.5));
       b.addEventListener('mouseleave', function(buttonId, width, height) {
         var resize = new Animation(buttonId, 250);
         resize.id = idIndex++;
         resize.setResizeTo(width, height);
-        chrome.send('addAnimations', [resize]);
+        addAnimations([resize]);
       }.bind(undefined, id, buttonWidth, buttonHeight));
     }
   }
