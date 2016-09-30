@@ -38,6 +38,10 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/test/test_reg_util_win.h"
+#endif
+
 namespace {
 
 // Extension ID of chrome/test/data/extensions/good.crx
@@ -56,14 +60,27 @@ enum AllowedBuckets {
   ALLOW_ANY
 };
 
+#if defined(OS_WIN)
+base::string16 GetRegistryPathForTestProfile() {
+  base::FilePath profile_dir;
+  EXPECT_TRUE(PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
+  return L"SOFTWARE\\Chromium\\PrefHashBrowserTest\\" +
+         profile_dir.BaseName().value();
+}
+#endif
+
 // Returns the number of times |histogram_name| was reported so far; adding the
 // results of the first 100 buckets (there are only ~19 reporting IDs as of this
 // writing; varies depending on the platform). |allowed_buckets| hints at extra
 // requirements verified in this method (see AllowedBuckets for details).
 int GetTrackedPrefHistogramCount(const char* histogram_name,
+                                 const char* histogram_suffix,
                                  int allowed_buckets) {
+  std::string full_histogram_name(histogram_name);
+  if (*histogram_suffix)
+    full_histogram_name.append(".").append(histogram_suffix);
   const base::HistogramBase* histogram =
-      base::StatisticsRecorder::FindHistogram(histogram_name);
+      base::StatisticsRecorder::FindHistogram(full_histogram_name);
   if (!histogram)
     return 0;
 
@@ -80,6 +97,13 @@ int GetTrackedPrefHistogramCount(const char* histogram_name,
     }
   }
   return sum;
+}
+
+// Helper function to call GetTrackedPrefHistogramCount with no external
+// validation suffix.
+int GetTrackedPrefHistogramCount(const char* histogram_name,
+                                 int allowed_buckets) {
+  return GetTrackedPrefHistogramCount(histogram_name, "", allowed_buckets);
 }
 
 std::unique_ptr<base::DictionaryValue> ReadPrefsDictionary(
@@ -99,6 +123,16 @@ std::unique_ptr<base::DictionaryValue> ReadPrefsDictionary(
   }
   return std::unique_ptr<base::DictionaryValue>(
       static_cast<base::DictionaryValue*>(prefs.release()));
+}
+
+// Returns whether external validation is supported on the platform through
+// storing MACs in the registry.
+bool SupportsRegistryValidation() {
+#if defined(OS_WIN)
+  return true;
+#else
+  return false;
+#endif
 }
 
 #define PREF_HASH_BROWSER_TEST(fixture, test_name)                          \
@@ -233,6 +267,44 @@ class PrefHashBrowserTestBase
     // Bots are on a domain, turn off the domain check for settings hardening in
     // order to be able to test all SettingsEnforcement groups.
     chrome_prefs::DisableDomainCheckForTesting();
+
+#if defined(OS_WIN)
+    // Avoid polluting prefs for the user and the bots by writing to a specific
+    // testing registry path.
+    registry_key_for_external_validation_ = GetRegistryPathForTestProfile();
+    ProfilePrefStoreManager::SetPreferenceValidationRegistryPathForTesting(
+        &registry_key_for_external_validation_);
+
+    // Keys should be unique, but to avoid flakes in the long run make sure an
+    // identical test key wasn't left behind by a previous test.
+    if (IsPRETest()) {
+      base::win::RegKey key;
+      if (key.Open(HKEY_CURRENT_USER,
+                   registry_key_for_external_validation_.c_str(),
+                   KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
+        LONG result = key.DeleteKey(L"");
+        ASSERT_TRUE(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
+      }
+    }
+#endif
+  }
+
+  void TearDown() override {
+#if defined(OS_WIN)
+    // When done, delete the Registry key to avoid polluting the registry.
+    // TODO(proberge): it would be nice to delete keys from interrupted tests
+    // as well.
+    if (!IsPRETest()) {
+      base::string16 registry_key = GetRegistryPathForTestProfile();
+      base::win::RegKey key;
+      if (key.Open(HKEY_CURRENT_USER, registry_key.c_str(),
+                   KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
+        LONG result = key.DeleteKey(L"");
+        ASSERT_TRUE(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
+      }
+    }
+#endif
+    ExtensionBrowserTest::TearDown();
   }
 
   // In the PRE_ test, find the number of tracked preferences that were
@@ -265,6 +337,23 @@ class PrefHashBrowserTestBase
           BEGIN_ALLOW_SINGLE_BUCKET + 5);
       EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
                 num_split_tracked_prefs);
+
+      if (SupportsRegistryValidation()) {
+        // Same checks as above, but for the registry.
+        num_tracked_prefs_ = GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramNullInitialized,
+            user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+            ALLOW_ANY);
+        EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM,
+                  num_tracked_prefs_ > 0);
+
+        int num_split_tracked_prefs = GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramUnchanged,
+            user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+            BEGIN_ALLOW_SINGLE_BUCKET + 5);
+        EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
+                  num_split_tracked_prefs);
+      }
 
       num_tracked_prefs_ += num_split_tracked_prefs;
 
@@ -353,6 +442,10 @@ class PrefHashBrowserTestBase
   }
 
   int num_tracked_prefs_;
+
+#if defined(OS_WIN)
+  base::string16 registry_key_for_external_validation_;
+#endif
 };
 
 }  // namespace
@@ -407,6 +500,17 @@ class PrefHashBrowserTestUnchangedDefault : public PrefHashBrowserTestBase {
         0, GetTrackedPrefHistogramCount(
                user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
                ALLOW_NONE));
+
+    if (SupportsRegistryValidation()) {
+      // Expect all prefs to be reported as Unchanged.
+      EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+                    ? num_tracked_prefs()
+                    : 0,
+                GetTrackedPrefHistogramCount(
+                    user_prefs::tracked::kTrackedPrefHistogramUnchanged,
+                    user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+                    ALLOW_ANY));
+    }
   }
 };
 
@@ -497,6 +601,15 @@ class PrefHashBrowserTestClearedAtomic : public PrefHashBrowserTestBase {
         0, GetTrackedPrefHistogramCount(
                user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
                ALLOW_NONE));
+
+    if (SupportsRegistryValidation()) {
+      // Expect homepage clearance to have been noticed by registry validation.
+      EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
+                GetTrackedPrefHistogramCount(
+                    user_prefs::tracked::kTrackedPrefHistogramCleared,
+                    user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+                    BEGIN_ALLOW_SINGLE_BUCKET + 2));
+    }
   }
 };
 
@@ -619,6 +732,18 @@ class PrefHashBrowserTestUntrustedInitialized : public PrefHashBrowserTestBase {
         0, GetTrackedPrefHistogramCount(
                user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
                ALLOW_NONE));
+
+    if (SupportsRegistryValidation()) {
+      // The MACs have been cleared but the preferences have not been tampered.
+      // The registry should report all prefs as unchanged.
+      EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+                    ? num_tracked_prefs()
+                    : 0,
+                GetTrackedPrefHistogramCount(
+                    user_prefs::tracked::kTrackedPrefHistogramUnchanged,
+                    user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+                    ALLOW_ANY));
+    }
   }
 };
 
@@ -709,6 +834,15 @@ class PrefHashBrowserTestChangedAtomic : public PrefHashBrowserTestBase {
         0, GetTrackedPrefHistogramCount(
                user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
                ALLOW_NONE));
+
+    if (SupportsRegistryValidation()) {
+      // Expect a single Changed event for tracked pref #4 (startup URLs).
+      EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
+                GetTrackedPrefHistogramCount(
+                    user_prefs::tracked::kTrackedPrefHistogramChanged,
+                    user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+                    BEGIN_ALLOW_SINGLE_BUCKET + 4));
+    }
   }
 };
 
@@ -806,6 +940,16 @@ class PrefHashBrowserTestChangedSplitPref : public PrefHashBrowserTestBase {
         0, GetTrackedPrefHistogramCount(
                user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
                ALLOW_NONE));
+
+    if (SupportsRegistryValidation()) {
+      // Expect that the registry validation caught the invalid MAC in split
+      // pref #5 (extensions).
+      EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
+                GetTrackedPrefHistogramCount(
+                    user_prefs::tracked::kTrackedPrefHistogramChanged,
+                    user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+                    BEGIN_ALLOW_SINGLE_BUCKET + 5));
+    }
   }
 };
 
@@ -879,6 +1023,17 @@ class PrefHashBrowserTestUntrustedAdditionToPrefs
         0, GetTrackedPrefHistogramCount(
                user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
                ALLOW_NONE));
+
+    if (SupportsRegistryValidation()) {
+      EXPECT_EQ((protection_level_ > PROTECTION_DISABLED_ON_PLATFORM &&
+                 protection_level_ < PROTECTION_ENABLED_BASIC)
+                    ? changed_expected
+                    : 0,
+                GetTrackedPrefHistogramCount(
+                    user_prefs::tracked::kTrackedPrefHistogramChanged,
+                    user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+                    BEGIN_ALLOW_SINGLE_BUCKET + 3));
+    }
   }
 };
 
@@ -953,8 +1108,66 @@ class PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe
         0, GetTrackedPrefHistogramCount(
                user_prefs::tracked::kTrackedPrefHistogramMigratedLegacyDeviceId,
                ALLOW_NONE));
+
+    if (SupportsRegistryValidation()) {
+      EXPECT_EQ(changed_expected,
+                GetTrackedPrefHistogramCount(
+                    user_prefs::tracked::kTrackedPrefHistogramChanged,
+                    user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+                    BEGIN_ALLOW_SINGLE_BUCKET + 2));
+      EXPECT_EQ(cleared_expected,
+                GetTrackedPrefHistogramCount(
+                    user_prefs::tracked::kTrackedPrefHistogramCleared,
+                    user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+                    BEGIN_ALLOW_SINGLE_BUCKET + 2));
+    }
   }
 };
 
 PREF_HASH_BROWSER_TEST(PrefHashBrowserTestUntrustedAdditionToPrefsAfterWipe,
                        UntrustedAdditionToPrefsAfterWipe);
+
+#if defined(OS_WIN)
+class PrefHashBrowserTestRegistryValidationFailure
+    : public PrefHashBrowserTestBase {
+ public:
+  void SetupPreferences() override {
+    profile()->GetPrefs()->SetString(prefs::kHomePage, "http://example.com");
+  }
+
+  void AttackPreferencesOnDisk(
+      base::DictionaryValue* unprotected_preferences,
+      base::DictionaryValue* protected_preferences) override {
+    base::string16 registry_key =
+        GetRegistryPathForTestProfile() + L"\\PreferenceMACs\\Default";
+    base::win::RegKey key;
+    ASSERT_EQ(ERROR_SUCCESS, key.Open(HKEY_CURRENT_USER, registry_key.c_str(),
+                                      KEY_SET_VALUE | KEY_WOW64_32KEY));
+    // An incorrect hash should still have the correct size.
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.WriteValue(L"homepage", base::string16(64, 'A').c_str()));
+  }
+
+  void VerifyReactionToPrefAttack() override {
+    EXPECT_EQ(
+        protection_level_ > PROTECTION_DISABLED_ON_PLATFORM
+            ? num_tracked_prefs()
+            : 0,
+        GetTrackedPrefHistogramCount(
+            user_prefs::tracked::kTrackedPrefHistogramUnchanged, ALLOW_ANY));
+
+    if (SupportsRegistryValidation()) {
+      // Expect that the registry validation caught the invalid MAC for pref #2
+      // (homepage).
+      EXPECT_EQ(protection_level_ > PROTECTION_DISABLED_ON_PLATFORM ? 1 : 0,
+                GetTrackedPrefHistogramCount(
+                    user_prefs::tracked::kTrackedPrefHistogramChanged,
+                    user_prefs::tracked::kTrackedPrefRegistryValidationSuffix,
+                    BEGIN_ALLOW_SINGLE_BUCKET + 2));
+    }
+  }
+};
+
+PREF_HASH_BROWSER_TEST(PrefHashBrowserTestRegistryValidationFailure,
+                       RegistryValidationFailure);
+#endif

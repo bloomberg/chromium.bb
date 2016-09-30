@@ -12,11 +12,15 @@ class DictionaryValue;
 class Value;
 }
 
+enum class TrackedPreferenceType { ATOMIC, SPLIT };
+
 // A TrackedPreference tracks changes to an individual preference, reporting and
 // reacting to them according to preference-specific and browser-wide policies.
 class TrackedPreference {
  public:
   virtual ~TrackedPreference() {}
+
+  virtual TrackedPreferenceType GetType() const = 0;
 
   // Notifies the underlying TrackedPreference about its new |value| which
   // can update hashes in the corresponding hash store via |transaction|.
@@ -27,10 +31,14 @@ class TrackedPreference {
   // is valid. Responds to verification failures according to
   // preference-specific and browser-wide policy and reports results to via UMA.
   // May use |transaction| to check/modify hashes in the corresponding hash
-  // store.
+  // store. Performs validation and reports results without enforcing for
+  // |external_validation_transaction|. This call assumes exclusive access to
+  // |external_validation_transaction| and its associated state and as such
+  // should only be called before any other subsystem is made aware of it.
   virtual bool EnforceAndReport(
       base::DictionaryValue* pref_store_contents,
-      PrefHashStoreTransaction* transaction) const = 0;
+      PrefHashStoreTransaction* transaction,
+      PrefHashStoreTransaction* external_validation_transaction) const = 0;
 };
 
 #endif  // COMPONENTS_USER_PREFS_TRACKED_TRACKED_PREFERENCE_H_

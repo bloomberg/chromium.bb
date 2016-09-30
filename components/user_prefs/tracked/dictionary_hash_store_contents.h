@@ -31,6 +31,8 @@ class DictionaryHashStoreContents : public HashStoreContents {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // HashStoreContents implementation
+  bool IsCopyable() const override;
+  std::unique_ptr<HashStoreContents> MakeCopy() const override;
   base::StringPiece GetUMASuffix() const override;
   void Reset() override;
   bool GetMac(const std::string& path, std::string* out_value) override;
