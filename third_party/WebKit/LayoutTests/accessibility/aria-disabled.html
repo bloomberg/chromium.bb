@@ -4,8 +4,8 @@
 <script src="../resources/js-test.js"></script>
 </head>
 <body id="body">
-<input type="text" aria-disabled="true" size=20>
-<input type="text" aria-disabled="false" size=20>
+<input id="text1" type="text" aria-disabled="true" size=20>
+<input id="text2" type="text" aria-disabled="false" size=20>
 <div role="group" id="group1" aria-disabled="true">
   <div role="group">
     <a id="link1" href="#">link</a>
@@ -22,12 +22,10 @@
 
     if (window.accessibilityController) {
 
-          var body = document.getElementById("body");
-          body.focus();
-          var textField = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(0);
+          var textField = accessibilityController.accessibleElementById("text1");
           shouldBe("textField.isEnabled", "false");
 
-          textField = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(1);
+          textField = accessibilityController.accessibleElementById("text2");
           shouldBe("textField.isEnabled", "true");
 
           var group = accessibilityController.accessibleElementById("group1");

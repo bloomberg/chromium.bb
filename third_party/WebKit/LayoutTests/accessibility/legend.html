@@ -6,9 +6,9 @@
 </head>
 <body id="body">
 
-<fieldset>
+<fieldset id="fieldset">
     <legend>Choose a shipping method:</legend>
-    <input id="overnight" type="radio" name="shipping" value="overnight" />Overnight
+    <div role="group"><input id="overnight" type="radio" name="shipping" value="overnight" />Overnight</div>
 </fieldset>
 
 <div>End of test</div>
@@ -21,14 +21,12 @@
     description("This tests that a fieldset's title ui element is the legend.");
 
     if (window.accessibilityController) {
-        document.body.focus();
-        var body = accessibilityController.focusedElement;
-        var fieldset = body.childAtIndex(0);
+        var fieldset = accessibilityController.accessibleElementById("fieldset");
         var titleUIElement = fieldset.nameElementAtIndex(0);
 
         // Print out the tree of accessible objects, indicating the titleUIElement so
         // that each platform can verify their expected object has been found
-        buildAccessibilityTree(body, 0, 0, 0, titleUIElement, "<< fieldset's titleUIElement");
+        buildAccessibilityTree(accessibilityController.rootElement, 0, 0, 0, titleUIElement, "<< fieldset's titleUIElement");
 
         // Verify that we have gotten the titleUIElement and it has the expected text,
         // which should be in the last descendant regardless of platform.

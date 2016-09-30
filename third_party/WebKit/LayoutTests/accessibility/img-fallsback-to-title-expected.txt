@@ -18,7 +18,7 @@ Image3 description:
 Image4 name: test4
 Image4 description: 
 
-PASS imagesGroup.childAtIndex(0).childrenCount is 2
+PASS accessibilityController.accessibleElementById('img-ignored') is undefined
 PASS successfullyParsed is true
 
 TEST COMPLETE

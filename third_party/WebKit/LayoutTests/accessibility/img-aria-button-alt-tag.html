@@ -19,8 +19,7 @@
         if (window.accessibilityController) {
             var result = document.getElementById("result");
 
-            var body = document.getElementById("body").focus();
-            var imgUIElement = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(0);
+            var imgUIElement = accessibilityController.accessibleElementById("image");
             shouldBe("imgUIElement.name", "'alternate'");
         }
     </script>

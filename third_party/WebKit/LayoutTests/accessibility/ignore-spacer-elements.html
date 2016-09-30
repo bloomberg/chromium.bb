@@ -7,10 +7,12 @@
  
     <!-- This test makes sure that spacer elements are not returned as elements. There should be at most 4 elements returned -->
  
+<div role="group" id="container">
    <b>First</b>
    <b>Second</b>
    <a href="http://www.apple.com">Apple</a>
    <a href="http://www.yahoo.com">Yahoo</a>
+</div>
 
     
     <div id="result"></div>
@@ -22,11 +24,9 @@
 
             var body = document.getElementById("body");
             body.focus();
-            var container = accessibilityController.focusedElement.childAtIndex(0);
+            var container = accessibilityController.accessibleElementById("container");
 
-            // The Gtk port ATs expect the bold inline text to not have accessible objects.
-            var expectedCount = (testRunner.platformName == "gtk") ? 2 : 4;
-            if (container.childrenCount == expectedCount) {
+            if (container.childrenCount == 4) {
                 result.innerText += "Test passed\n";
             }
             else {

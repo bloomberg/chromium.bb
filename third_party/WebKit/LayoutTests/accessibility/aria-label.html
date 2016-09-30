@@ -4,8 +4,8 @@
 <script src="../resources/js-test.js"></script>
 </head>
 <body id="body">
-<input aria-label="aria label" type="text" size=20>
-<a href="#" aria-label="aria link">test</a>
+<input id="text" aria-label="aria label" type="text" size=20>
+<a id="link" href="#" aria-label="aria link">test</a>
 <p id="description"></p>
 <div id="console"></div>
 
@@ -15,13 +15,11 @@
 
     if (window.accessibilityController) {
 
-          var body = document.getElementById("body");
-          body.focus();
-          var obj = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(0);
+          var obj = accessibilityController.accessibleElementById("text");
           var succeeded = obj.name == "aria label";
           shouldBe("succeeded", "true");
 
-          obj = accessibilityController.focusedElement.childAtIndex(0).childAtIndex(1);
+          obj = accessibilityController.accessibleElementById("link");
           succeeded = obj.name == "aria link";
           shouldBe("succeeded", "true");
     }
