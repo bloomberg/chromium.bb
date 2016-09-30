@@ -24,9 +24,6 @@ from chromite.lib import auth
 from chromite.lib import cros_logging as logging
 from chromite.lib import retry_util
 
-# from third_party
-import httplib2
-
 # Methods
 PUT_METHOD = 'PUT'
 POST_METHOD = 'POST'
@@ -76,9 +73,8 @@ def BuildBucketAuth(service_account=None):
   Returns:
     Http instance with 'Authorization' inforamtion.
   """
-  return auth.Authorize(auth.GetAccessToken,
-                        httplib2.Http(),
-                        service_account_json=service_account)
+  return auth.AuthorizedHttp(auth.GetAccessToken,
+                             service_account_json=service_account)
 
 def GetHost(testjob):
   """Get buildbucket Server host."""
