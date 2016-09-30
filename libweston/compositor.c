@@ -4272,80 +4272,6 @@ weston_output_move(struct weston_output *output, int x, int y)
 	}
 }
 
-/** Initialize a weston_output object's parameters
- *
- * \param output     The weston_output object to initialize
- * \param c          The output's compositor
- * \param x          x coordinate for the output in global coordinate space
- * \param y          y coordinate for the output in global coordinate space
- * \param mm_width   Physical width of the output as reported by the backend
- * \param mm_height  Physical height of the output as reported by the backend
- * \param transform  Rotation of the output
- * \param scale      Native scaling factor for the output
- *
- * Sets up the transformation, zoom, and geometry of the output using
- * the input properties.
- *
- * Establishes a repaint timer for the output with the relevant display
- * object's event loop.  See output_repaint_timer_handler().
- *
- * The output is assigned an ID.  Weston can support up to 32 distinct
- * outputs, with IDs numbered from 0-31; the compositor's output_id_pool
- * is referred to and used to find the first available ID number, and
- * then this ID is marked as used in output_id_pool.
- *
- * The output is also assigned a Wayland global with the wl_output
- * external interface.
- */
-WL_EXPORT void
-weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int mm_width, int mm_height, uint32_t transform,
-		   int32_t scale)
-{
-	struct wl_event_loop *loop;
-
-	/* Verify we haven't reached the limit of 32 available output IDs */
-	assert(ffs(~c->output_id_pool) > 0);
-
-	output->compositor = c;
-	output->x = x;
-	output->y = y;
-	output->mm_width = mm_width;
-	output->mm_height = mm_height;
-	output->dirty = 1;
-	output->original_scale = scale;
-
-	weston_output_transform_scale_init(output, transform, scale);
-	weston_output_init_zoom(output);
-
-	weston_output_init_geometry(output, x, y);
-	weston_output_damage(output);
-
-	wl_signal_init(&output->frame_signal);
-	wl_signal_init(&output->destroy_signal);
-	wl_list_init(&output->animation_list);
-	wl_list_init(&output->resource_list);
-	wl_list_init(&output->feedback_list);
-	wl_list_init(&output->link);
-
-	loop = wl_display_get_event_loop(c->wl_display);
-	output->repaint_timer = wl_event_loop_add_timer(loop,
-					output_repaint_timer_handler, output);
-
-	/* Invert the output id pool and look for the lowest numbered
-	 * switch (the least significant bit).  Take that bit's position
-	 * as our ID, and mark it used in the compositor's output_id_pool.
-	 */
-	output->id = ffs(~output->compositor->output_id_pool) - 1;
-	output->compositor->output_id_pool |= 1u << output->id;
-
-	output->global =
-		wl_global_create(c->wl_display, &wl_output_interface, 3,
-				 output, bind_output);
-
-	output->enabled = true;
-}
-
 /** Adds an output to the compositor's output list and
  *  send the compositor's output_created signal.
  *
@@ -4540,9 +4466,6 @@ weston_compositor_add_pending_output(struct weston_output *output,
 	wl_signal_emit(&compositor->output_pending_signal, output);
 }
 
-/* NOTE: Some documentation is copy/pasted from weston_output_init(), as this
-   is intended to replace it. */
-
 /** Constructs a weston_output object that can be used by the compositor.
  *
  * \param output The weston_output object that needs to be enabled.
@@ -4578,15 +4501,17 @@ weston_compositor_add_pending_output(struct weston_output *output,
 WL_EXPORT int
 weston_output_enable(struct weston_output *output)
 {
+	struct weston_compositor *c = output->compositor;
 	struct weston_output *iterator;
+	struct wl_event_loop *loop;
 	int x = 0, y = 0;
 
 	assert(output->enable);
 
-	iterator = container_of(output->compositor->output_list.prev,
+	iterator = container_of(c->output_list.prev,
 				struct weston_output, link);
 
-	if (!wl_list_empty(&output->compositor->output_list))
+	if (!wl_list_empty(&c->output_list))
 		x = iterator->x + iterator->width;
 
 	/* Make sure the width and height are configured */
@@ -4601,10 +4526,43 @@ weston_output_enable(struct weston_output *output)
 	/* Remove it from pending/disabled output list */
 	wl_list_remove(&output->link);
 
-	/* TODO: Merge weston_output_init here. */
-	weston_output_init(output, output->compositor, x, y,
-			   output->mm_width, output->mm_height,
-			   output->transform, output->scale);
+	/* Verify we haven't reached the limit of 32 available output IDs */
+	assert(ffs(~c->output_id_pool) > 0);
+
+	output->x = x;
+	output->y = y;
+	output->dirty = 1;
+	output->original_scale = output->scale;
+
+	weston_output_transform_scale_init(output, output->transform, output->scale);
+	weston_output_init_zoom(output);
+
+	weston_output_init_geometry(output, x, y);
+	weston_output_damage(output);
+
+	wl_signal_init(&output->frame_signal);
+	wl_signal_init(&output->destroy_signal);
+	wl_list_init(&output->animation_list);
+	wl_list_init(&output->resource_list);
+	wl_list_init(&output->feedback_list);
+	wl_list_init(&output->link);
+
+	loop = wl_display_get_event_loop(c->wl_display);
+	output->repaint_timer = wl_event_loop_add_timer(loop,
+					output_repaint_timer_handler, output);
+
+	/* Invert the output id pool and look for the lowest numbered
+	 * switch (the least significant bit).  Take that bit's position
+	 * as our ID, and mark it used in the compositor's output_id_pool.
+	 */
+	output->id = ffs(~output->compositor->output_id_pool) - 1;
+	output->compositor->output_id_pool |= 1u << output->id;
+
+	output->global =
+		wl_global_create(c->wl_display, &wl_output_interface, 3,
+				 output, bind_output);
+
+	output->enabled = true;
 
 	/* Enable the output (set up the crtc or create a
 	 * window representing the output, set up the
