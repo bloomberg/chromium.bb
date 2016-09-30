@@ -346,7 +346,7 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR, LayoutUnit visibleLef
         }
 
         int offset = offsetForPosition(ellipsisX, false);
-        if (offset == 0) {
+        if (offset == 0 && ltr == flowIsLTR) {
             // No characters should be laid out.  Set ourselves to full truncation and place the ellipsis at the min of our start
             // and the ellipsis edge.
             setTruncation(cFullTruncation);
