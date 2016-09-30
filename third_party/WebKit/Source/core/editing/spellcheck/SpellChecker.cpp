@@ -298,7 +298,7 @@ void SpellChecker::advanceToNextMisspelling(bool startBeforeSelection)
         // a marker so we draw the red squiggle later.
 
         const EphemeralRange misspellingRange = calculateCharacterSubrange(EphemeralRange(spellingSearchStart, spellingSearchEnd), misspellingOffset, misspelledWord.length());
-        frame().selection().setSelection(createVisibleSelection(misspellingRange));
+        frame().selection().setSelection(createVisibleSelectionDeprecated(misspellingRange));
         frame().selection().revealSelection();
         spellCheckerClient().updateSpellingUIWithMisspelledWord(misspelledWord);
         frame().document()->markers().addMarker(misspellingRange.startPosition(), misspellingRange.endPosition(), DocumentMarker::Spelling);
@@ -394,7 +394,7 @@ void SpellChecker::markMisspellingsAfterTypingCommand(const TypingCommand& cmd)
 
     if (cmd.commandTypeOfOpenCommand() == TypingCommand::InsertParagraphSeparator) {
         VisiblePosition nextWord = nextWordPosition(start);
-        VisibleSelection words = createVisibleSelection(wordStartOfPrevious, endOfWord(nextWord));
+        VisibleSelection words = createVisibleSelectionDeprecated(wordStartOfPrevious, endOfWord(nextWord));
         markMisspellingsAfterLineBreak(words);
         return;
     }
@@ -418,7 +418,7 @@ void SpellChecker::markMisspellingsAfterTypingToWord(const VisiblePosition &word
 {
     TRACE_EVENT0("blink", "SpellChecker::markMisspellingsAfterTypingToWord");
 
-    VisibleSelection adjacentWords = createVisibleSelection(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary));
+    VisibleSelection adjacentWords = createVisibleSelectionDeprecated(startOfWord(wordStart, LeftWordIfOnBoundary), endOfWord(wordStart, RightWordIfOnBoundary));
     markMisspellingsAndBadGrammar(adjacentWords);
 }
 
@@ -698,7 +698,7 @@ void SpellChecker::replaceMisspelledRange(const String& text)
     EphemeralRange markerRange = EphemeralRange(Position(caretRange.startPosition().computeContainerNode(), markers[0]->startOffset()), Position(caretRange.endPosition().computeContainerNode(), markers[0]->endOffset()));
     if (markerRange.isNull())
         return;
-    frame().selection().setSelection(createVisibleSelection(markerRange), CharacterGranularity);
+    frame().selection().setSelection(createVisibleSelectionDeprecated(markerRange), CharacterGranularity);
 
     // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
     // needs to be audited.  See http://crbug.com/590369 for more details.
@@ -760,7 +760,7 @@ void SpellChecker::respondToChangedSelection(const VisibleSelection& oldSelectio
         const bool caretBrowsing = frame().settings() && frame().settings()->caretBrowsingEnabled();
         if (newSelection.isContentEditable() || caretBrowsing) {
             const VisiblePosition newStart(newSelection.visibleStart());
-            newAdjacentWords = createVisibleSelection(startOfWord(newStart, LeftWordIfOnBoundary), endOfWord(newStart, RightWordIfOnBoundary));
+            newAdjacentWords = createVisibleSelectionDeprecated(startOfWord(newStart, LeftWordIfOnBoundary), endOfWord(newStart, RightWordIfOnBoundary));
         }
     }
 
@@ -816,7 +816,7 @@ void SpellChecker::spellCheckOldSelection(const VisibleSelection& oldSelection, 
     TRACE_EVENT0("blink", "SpellChecker::spellCheckOldSelection");
 
     VisiblePosition oldStart(oldSelection.visibleStart());
-    VisibleSelection oldAdjacentWords = createVisibleSelection(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
+    VisibleSelection oldAdjacentWords = createVisibleSelectionDeprecated(startOfWord(oldStart, LeftWordIfOnBoundary), endOfWord(oldStart, RightWordIfOnBoundary));
     if (oldAdjacentWords == newAdjacentWords)
         return;
     markMisspellingsAndBadGrammar(oldAdjacentWords);
