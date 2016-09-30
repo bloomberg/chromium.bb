@@ -81,14 +81,13 @@ bool consumeSyntaxType(const String& input, size_t& offset, CSSSyntaxType& type)
 
 bool consumeSyntaxIdent(const String& input, size_t& offset, String& ident)
 {
-    // TODO(timloh): Are CSS-wide keywords allowed here?
     size_t identStart = offset;
     while (isNameCodePoint(input[offset]))
         offset++;
     if (offset == identStart)
         return false;
     ident = input.substring(identStart, offset - identStart);
-    return true;
+    return !CSSPropertyParserHelpers::isCSSWideKeyword(ident);
 }
 
 CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input)

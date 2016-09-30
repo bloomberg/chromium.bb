@@ -73,9 +73,10 @@ PASS syntax:'<length>++', initialValue:'10px' is invalid
 PASS syntax:'<length> | *', initialValue:'10px' is invalid 
 PASS syntax:'*|banana', initialValue:'banana' is invalid 
 PASS syntax:'*+', initialValue:'banana' is invalid 
-FAIL syntax:'initial', initialValue:'initial' is invalid assert_throws: function "() => CSS.registerProperty({name: name, syntax: syntax, initialValue: initialValue})" did not throw
-FAIL syntax:'<length>|initial', initialValue:'10px' is invalid assert_throws: function "() => CSS.registerProperty({name: name, syntax: syntax, initialValue: initialValue})" did not throw
-FAIL syntax:'<length>|INHERIT', initialValue:'10px' is invalid assert_throws: function "() => CSS.registerProperty({name: name, syntax: syntax, initialValue: initialValue})" did not throw
+PASS syntax:'initial', initialValue:'initial' is invalid 
+PASS syntax:'<length>|initial', initialValue:'10px' is invalid 
+PASS syntax:'<length>|INHERIT', initialValue:'10px' is invalid 
+PASS syntax:'<percentage>|defAult', initialValue:'2%' is invalid 
 PASS syntax:'*', initialValue:'initial' is invalid 
 PASS syntax:'*', initialValue:'inherit' is invalid 
 PASS syntax:'*', initialValue:'unset' is invalid 

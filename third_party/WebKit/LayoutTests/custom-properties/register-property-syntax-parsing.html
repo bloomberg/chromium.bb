@@ -106,6 +106,7 @@ assert_invalid("*+", "banana");
 assert_invalid("initial", "initial");
 assert_invalid("<length>|initial", "10px");
 assert_invalid("<length>|INHERIT", "10px");
+assert_invalid("<percentage>|defAult", "2%");
 
 // Invalid initialValue
 assert_invalid("*", "initial");
