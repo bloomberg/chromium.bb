@@ -1762,7 +1762,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     if (cm->error_resilient_mode) {
       cm->reset_frame_context = RESET_FRAME_CONTEXT_ALL;
     } else {
-#if CONFIG_MISC_FIXES
       if (cm->intra_only) {
         cm->reset_frame_context = aom_rb_read_bit(rb)
                                       ? RESET_FRAME_CONTEXT_ALL
@@ -1776,15 +1775,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
                                         ? RESET_FRAME_CONTEXT_ALL
                                         : RESET_FRAME_CONTEXT_CURRENT;
       }
-#else
-      static const RESET_FRAME_CONTEXT_MODE reset_frame_context_conv_tbl[4] = {
-        RESET_FRAME_CONTEXT_NONE, RESET_FRAME_CONTEXT_NONE,
-        RESET_FRAME_CONTEXT_CURRENT, RESET_FRAME_CONTEXT_ALL
-      };
-
-      cm->reset_frame_context =
-          reset_frame_context_conv_tbl[aom_rb_read_literal(rb, 2)];
-#endif
     }
 
     if (cm->intra_only) {
@@ -1870,10 +1860,6 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       cm->refresh_frame_context = aom_rb_read_bit(rb)
                                       ? REFRESH_FRAME_CONTEXT_FORWARD
                                       : REFRESH_FRAME_CONTEXT_BACKWARD;
-#if !CONFIG_MISC_FIXES
-    } else {
-      aom_rb_read_bit(rb);  // parallel decoding mode flag
-#endif
     }
   } else {
     cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_OFF;

@@ -2003,7 +2003,6 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     if (!cm->show_frame) aom_wb_write_bit(wb, cm->intra_only);
 
     if (!cm->error_resilient_mode) {
-#if CONFIG_MISC_FIXES
       if (cm->intra_only) {
         aom_wb_write_bit(wb,
                          cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL);
@@ -2014,12 +2013,6 @@ static void write_uncompressed_header(AV1_COMP *cpi,
           aom_wb_write_bit(wb,
                            cm->reset_frame_context == RESET_FRAME_CONTEXT_ALL);
       }
-#else
-      static const int reset_frame_context_conv_tbl[3] = { 0, 2, 3 };
-
-      aom_wb_write_literal(
-          wb, reset_frame_context_conv_tbl[cm->reset_frame_context], 2);
-#endif
     }
 
 #if CONFIG_EXT_REFS
@@ -2080,9 +2073,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
   if (!cm->error_resilient_mode) {
     aom_wb_write_bit(wb,
                      cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_OFF);
-#if CONFIG_MISC_FIXES
     if (cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_OFF)
-#endif
       aom_wb_write_bit(
           wb, cm->refresh_frame_context != REFRESH_FRAME_CONTEXT_BACKWARD);
   }
