@@ -285,6 +285,7 @@ libwestoninclude_HEADERS =			\
 	libweston/compositor-rdp.h		\
 	libweston/compositor-wayland.h		\
 	libweston/compositor-x11.h		\
+	libweston/windowed-output-api.h		\
 	libweston/plugin-registry.h		\
 	libweston/timeline-object.h		\
 	shared/matrix.h				\
