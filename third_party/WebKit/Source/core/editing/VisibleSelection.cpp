@@ -172,6 +172,7 @@ VisibleSelection createVisibleSelection(const Position& base, const Position& ex
 {
     DCHECK(!needsLayoutTreeUpdate(base));
     DCHECK(!needsLayoutTreeUpdate(extent));
+    DCHECK(base.isNotNull() || extent.isNull());
     return VisibleSelection::create(base, extent, affinity, isDirectional);
 }
 
@@ -191,6 +192,7 @@ VisibleSelection createVisibleSelection(const VisiblePosition& base, const Visib
 {
     DCHECK(base.isValid());
     DCHECK(extent.isValid());
+    DCHECK(base.isNotNull() || extent.isNull());
     return VisibleSelection::create(base.deepEquivalent(), extent.deepEquivalent(), base.affinity(), isDirectional);
 }
 
@@ -211,6 +213,7 @@ VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTree& base
 {
     DCHECK(!needsLayoutTreeUpdate(base));
     DCHECK(!needsLayoutTreeUpdate(extent));
+    DCHECK(base.isNotNull() || extent.isNull());
     return VisibleSelectionInFlatTree::create(base, extent, affinity, isDirectional);
 }
 
@@ -230,6 +233,7 @@ VisibleSelectionInFlatTree createVisibleSelection(const VisiblePositionInFlatTre
 {
     DCHECK(base.isValid());
     DCHECK(extent.isValid());
+    DCHECK(base.isNotNull() || extent.isNull());
     return VisibleSelectionInFlatTree::create(base.deepEquivalent(), extent.deepEquivalent(), base.affinity(), isDirectional);
 }
 

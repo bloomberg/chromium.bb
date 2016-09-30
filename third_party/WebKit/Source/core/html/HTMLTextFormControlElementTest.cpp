@@ -203,10 +203,11 @@ TEST_F(HTMLTextFormControlElementTest, SpellCheckDoesNotCauseUpdateLayout)
     HTMLInputElement* input = toHTMLInputElement(document().getElementById("input"));
     input->focus();
     input->setValue("Hello, input field");
+    document().updateStyleAndLayout();
     VisibleSelection oldSelection = document().frame()->selection().selection();
 
     Position newPosition(input->innerEditorElement()->firstChild(), 3);
-    VisibleSelection newSelection = createVisibleSelectionDeprecated(newPosition, TextAffinity::Downstream);
+    VisibleSelection newSelection = createVisibleSelection(newPosition, TextAffinity::Downstream);
     document().frame()->selection().setSelection(newSelection, FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle | FrameSelection::DoNotUpdateAppearance);
     ASSERT_EQ(3, input->selectionStart());
 

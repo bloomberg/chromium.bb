@@ -254,8 +254,9 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover)
         "document.addEventListener('contextmenu', event => event.preventDefault());",
         ASSERT_NO_EXCEPTION);
     document().body()->appendChild(script);
+    document().updateStyleAndLayout();
     document().frame()->selection().setSelection(
-        createVisibleSelectionDeprecated(Position(document().body(), 0)));
+        createVisibleSelection(Position(document().body(), 0)));
     PlatformMouseEvent mouseDownEvent(
         IntPoint(0, 0),
         IntPoint(100, 200),

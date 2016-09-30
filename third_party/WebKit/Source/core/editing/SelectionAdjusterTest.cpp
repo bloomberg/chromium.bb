@@ -19,7 +19,7 @@ TEST_F(SelectionAdjusterTest, adjustSelectionInFlatTree)
     Node* const sample = document().getElementById("sample");
     Node* const foo = sample->firstChild();
     // Select "foo"
-    VisibleSelection selection = createVisibleSelectionDeprecated(Position(foo, 0), Position(foo, 3));
+    VisibleSelection selection = createVisibleSelection(Position(foo, 0), Position(foo, 3));
     SelectionAdjuster::adjustSelectionInFlatTree(&selectionInFlatTree, selection);
     EXPECT_EQ(PositionInFlatTree(foo, 0), selectionInFlatTree.start());
     EXPECT_EQ(PositionInFlatTree(foo, 3), selectionInFlatTree.end());
@@ -33,7 +33,7 @@ TEST_F(SelectionAdjusterTest, adjustSelectionInDOMTree)
     Node* const sample = document().getElementById("sample");
     Node* const foo = sample->firstChild();
     // Select "foo"
-    VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelectionDeprecated(
+    VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelection(
         PositionInFlatTree(foo, 0),
         PositionInFlatTree(foo, 3));
     SelectionAdjuster::adjustSelectionInDOMTree(&selection, selectionInFlatTree);
