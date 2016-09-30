@@ -9,10 +9,34 @@
 #include "ui/app_list/views/contents_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace app_list {
+
+namespace {
+
+class AllAppsImageSource : public gfx::CanvasImageSource {
+ public:
+  AllAppsImageSource(const gfx::ImageSkia& icon, const gfx::Size& size)
+      : gfx::CanvasImageSource(size, false), icon_(icon) {}
+  ~AllAppsImageSource() override {}
+
+ private:
+  // gfx::CanvasImageSource override:
+  void Draw(gfx::Canvas* canvas) override {
+    canvas->DrawImageInt(icon_, (size().width() - icon_.size().width()) / 2,
+                         (size().height() - icon_.size().height()) / 2);
+  }
+
+  gfx::ImageSkia icon_;
+
+  DISALLOW_COPY_AND_ASSIGN(AllAppsImageSource);
+};
+
+}  // namespace
 
 AllAppsTileItemView::AllAppsTileItemView(ContentsView* contents_view)
     : contents_view_(contents_view) {
@@ -26,7 +50,12 @@ AllAppsTileItemView::~AllAppsTileItemView() {
 
 void AllAppsTileItemView::UpdateIcon() {
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  SetIcon(*rb.GetImageNamed(IDR_ALL_APPS_DROP_DOWN).ToImageSkia());
+  gfx::Size canvas_size = gfx::Size(kTileIconSize, kTileIconSize);
+  AllAppsImageSource* source = new AllAppsImageSource(
+      *rb.GetImageNamed(IDR_ALL_APPS_DROP_DOWN).ToImageSkia(), canvas_size);
+  gfx::ImageSkia image(source, canvas_size);
+
+  SetIcon(image);
 }
 
 void AllAppsTileItemView::ButtonPressed(views::Button* sender,
