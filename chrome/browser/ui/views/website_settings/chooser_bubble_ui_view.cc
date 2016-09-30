@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 #include "components/bubble/bubble_controller.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/table/table_view_observer.h"
@@ -224,7 +225,9 @@ views::View* ChooserBubbleUiView::GetAnchorView() {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
 
   if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
-    return browser_view->GetLocationBarView()->location_icon_view();
+    return browser_view->GetLocationBarView()
+        ->location_icon_view()
+        ->GetImageView();
 
   if (browser_view->IsFullscreenBubbleVisible())
     return browser_view->exclusive_access_bubble()->GetView();
