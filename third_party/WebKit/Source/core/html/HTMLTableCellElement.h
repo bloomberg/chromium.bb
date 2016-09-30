@@ -49,6 +49,7 @@ public:
     const AtomicString& headers() const;
     void setRowSpan(unsigned);
     const AtomicString& scope() const;
+    void setScope(const AtomicString&);
 
 private:
     HTMLTableCellElement(const QualifiedName&, Document&);
