@@ -8,6 +8,7 @@
 #include "core/SVGNames.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "core/frame/Deprecation.h"
 #include "core/svg/SVGElement.h"
@@ -32,10 +33,13 @@ static String removeSVGPrefix(const String& property)
 
 CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(const String& property, const Document& document)
 {
-    // TODO(crbug.com/644148): Allow custom properties that begin with "--".
+    if (CSSVariableParser::isValidVariableName(property))
+        return CSSPropertyVariable;
 
     // Disallow prefixed properties.
-    if (property[0] == '-' || isASCIIUpper(property[0]))
+    if (property[0] == '-')
+        return CSSPropertyInvalid;
+    if (isASCIIUpper(property[0]))
         return CSSPropertyInvalid;
     if (property == "cssFloat")
         return CSSPropertyFloat;

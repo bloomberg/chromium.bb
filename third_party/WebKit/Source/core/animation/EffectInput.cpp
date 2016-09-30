@@ -83,7 +83,10 @@ void setKeyframeValue(Element& element, StringKeyframe& keyframe, const String& 
     StyleSheetContents* styleSheetContents = element.document().elementSheet().contents();
     CSSPropertyID cssProperty = AnimationInputHelpers::keyframeAttributeToCSSProperty(property, element.document());
     if (cssProperty != CSSPropertyInvalid) {
-        keyframe.setCSSPropertyValue(cssProperty, value, styleSheetContents);
+        if (cssProperty == CSSPropertyVariable)
+            keyframe.setCSSPropertyValue(AtomicString(property), value, styleSheetContents);
+        else
+            keyframe.setCSSPropertyValue(cssProperty, value, styleSheetContents);
         return;
     }
     cssProperty = AnimationInputHelpers::keyframeAttributeToPresentationAttribute(property, element);

@@ -69,7 +69,13 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes)
     EXPECT_EQ(CSSPropertyWidth, keyframeAttributeToCSSProperty("width"));
     EXPECT_EQ(CSSPropertyFloat, keyframeAttributeToCSSProperty("float"));
     EXPECT_EQ(CSSPropertyFloat, keyframeAttributeToCSSProperty("cssFloat"));
+    EXPECT_EQ(CSSPropertyVariable, keyframeAttributeToCSSProperty("--"));
+    EXPECT_EQ(CSSPropertyVariable, keyframeAttributeToCSSProperty("---"));
+    EXPECT_EQ(CSSPropertyVariable, keyframeAttributeToCSSProperty("--x"));
+    EXPECT_EQ(CSSPropertyVariable, keyframeAttributeToCSSProperty("--webkit-custom-property"));
 
+    EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty(""));
+    EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("-"));
     EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("line-height"));
     EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("border-topWidth"));
     EXPECT_EQ(CSSPropertyInvalid, keyframeAttributeToCSSProperty("Width"));
