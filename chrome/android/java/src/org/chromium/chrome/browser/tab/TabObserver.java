@@ -50,20 +50,6 @@ public interface TabObserver {
     void onContentChanged(Tab tab);
 
     /**
-     * Called when a {@link ContentViewCore} overlay is attached to {@code tab}.
-     * @param tab     The notifying {@link Tab}.
-     * @param content The {@link ContentViewCore} being added.
-     */
-    void onOverlayContentViewCoreAdded(Tab tab, ContentViewCore content);
-
-    /**
-     * Called when a {@link ContentViewCore} overlay is detached from {@code tab}.
-     * @param tab     The notifying {@link Tab}.
-     * @param content The {@link ContentViewCore} being removed.
-     */
-    void onOverlayContentViewCoreRemoved(Tab tab, ContentViewCore content);
-
-    /**
      * Called when loadUrl is triggered on a a {@link Tab}.
      * @param tab      The notifying {@link Tab}.
      * @param params   The params describe the page being loaded.

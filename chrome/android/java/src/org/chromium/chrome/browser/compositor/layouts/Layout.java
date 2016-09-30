@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.ui.resources.ResourceManager;
 
 import java.util.ArrayList;
@@ -217,42 +216,6 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         if (tab == null) return null;
 
         return tab.getView();
-    }
-
-    /**
-     * TODO(dtrainor): Remove after method is no longer used downstream.
-     * Used to get a list of Android {@link View}s that represent both the normal content as well as
-     * overlays.
-     * @param views A {@link List} that will be populated with {@link View}s that represent all of
-     *                the content in this {@link Layout}.
-     */
-    public void getAllViews(List<View> views) {
-        getAllContentViews(views);
-    }
-
-    /**
-     * Used to get a list of Android {@link View}s that represent both the normal content as well as
-     * overlays.
-     * @param views A {@link List} that will be populated with {@link View}s that represent all of
-     *                the content in this {@link Layout}.
-     */
-    public void getAllContentViews(List<View> views) {
-        Tab tab = mTabModelSelector.getCurrentTab();
-        if (tab == null) return;
-        tab.getAllContentViews(views);
-    }
-
-    /**
-     * Used to get a list of {@link ContentViewCore}s that represent both the normal content as well
-     * as overlays.  These are all {@link ContentViewCore}s currently showing or rendering content
-     * for this {@link Layout}.
-     * @param contents A {@link List} that will be populated with {@link ContentViewCore}s currently
-     *                 rendering content related to this {@link Layout}.
-     */
-    public void getAllContentViewCores(List<ContentViewCore> contents) {
-        Tab tab = mTabModelSelector.getCurrentTab();
-        if (tab == null) return;
-        tab.getAllContentViewCores(contents);
     }
 
     /**

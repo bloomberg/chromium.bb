@@ -74,8 +74,6 @@ import java.util.List;
  */
 public class CompositorViewHolder extends CoordinatorLayout
         implements LayoutManagerHost, LayoutRenderHost, Invalidator.Host, FullscreenListener {
-    private static List<View> sCachedViewList = new ArrayList<View>();
-    private static List<ContentViewCore> sCachedCVCList = new ArrayList<ContentViewCore>();
 
     private boolean mIsKeyboardShowing = false;
 
@@ -196,12 +194,6 @@ public class CompositorViewHolder extends CoordinatorLayout
             @Override
             public void onContentChanged(Tab tab) {
                 CompositorViewHolder.this.onContentChanged();
-            }
-
-            @Override
-            public void onOverlayContentViewCoreAdded(Tab tab, ContentViewCore content) {
-                initializeContentViewCore(content);
-                setSizeOfUnattachedView(content.getContainerView());
             }
         };
 
@@ -417,34 +409,29 @@ public class CompositorViewHolder extends CoordinatorLayout
         return mCompositorView;
     }
 
+    private View getActiveView() {
+        if (mLayoutManager == null || mTabModelSelector == null) return null;
+        Tab tab = mTabModelSelector.getCurrentTab();
+        return tab != null ? tab.getContentView() : null;
+    }
+
+    private ContentViewCore getActiveContent() {
+        if (mLayoutManager == null || mTabModelSelector == null) return null;
+        Tab tab = mTabModelSelector.getCurrentTab();
+        return tab != null ? tab.getActiveContentViewCore() : null;
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        if (mLayoutManager == null) return;
-
-        sCachedViewList.clear();
-        mLayoutManager.getActiveLayout().getAllViews(sCachedViewList);
-
-        boolean resized = false;
-        for (int i = 0; i < sCachedViewList.size(); i++) {
-            resized |= setSizeOfUnattachedView(sCachedViewList.get(i));
-        }
-        sCachedViewList.clear();
-
-        if (resized) requestRender();
+        View view = getActiveView();
+        if (view != null && setSizeOfUnattachedView(view)) requestRender();
     }
 
     @Override
     public void onPhysicalBackingSizeChanged(int width, int height) {
-        if (mLayoutManager == null) return;
-
-        sCachedCVCList.clear();
-        mLayoutManager.getActiveLayout().getAllContentViewCores(sCachedCVCList);
-
-        for (int i = 0; i < sCachedCVCList.size(); i++) {
-            adjustPhysicalBackingSize(sCachedCVCList.get(i), width, height);
-        }
-        sCachedCVCList.clear();
+        ContentViewCore content = getActiveContent();
+        if (content != null) adjustPhysicalBackingSize(content, width, height);
     }
 
     /**
@@ -785,11 +772,7 @@ public class CompositorViewHolder extends CoordinatorLayout
 
     private void updateContentOverlayVisibility(boolean show) {
         if (mView == null) return;
-
-        sCachedCVCList.clear();
-        if (mLayoutManager != null) {
-            mLayoutManager.getActiveLayout().getAllContentViewCores(sCachedCVCList);
-        }
+        ContentViewCore content = getActiveContent();
         if (show) {
             if (mView.getParent() != this) {
                 // During tab creation, we temporarily add the new tab's view to a FrameLayout to
@@ -797,8 +780,7 @@ public class CompositorViewHolder extends CoordinatorLayout
                 // Therefore we should remove the view from that temporary FrameLayout here.
                 UiUtils.removeViewFromParent(mView);
 
-                for (int i = 0; i < sCachedCVCList.size(); i++) {
-                    ContentViewCore content = sCachedCVCList.get(i);
+                if (content != null) {
                     assert content.isAlive();
                     content.getContainerView().setVisibility(View.VISIBLE);
                     if (mFullscreenManager != null) {
@@ -832,14 +814,12 @@ public class CompositorViewHolder extends CoordinatorLayout
                 setFocusable(true);
                 setFocusableInTouchMode(true);
 
-                for (int i = 0; i < sCachedCVCList.size(); i++) {
-                    ContentViewCore content = sCachedCVCList.get(i);
+                if (content != null) {
                     if (content.isAlive()) content.getContainerView().setVisibility(View.INVISIBLE);
                 }
                 removeView(mView);
             }
         }
-        sCachedCVCList.clear();
     }
 
     @Override
@@ -884,34 +864,16 @@ public class CompositorViewHolder extends CoordinatorLayout
     }
 
     /**
-     * Sets the correct size for all {@link View}s on {@code tab} and sets the correct rendering
-     * parameters on all {@link ContentViewCore}s on {@code tab}.
+     * Sets the correct size for {@link View} on {@code tab} and sets the correct rendering
+     * parameters on {@link ContentViewCore} on {@code tab}.
      * @param tab The {@link Tab} to initialize.
      */
     private void initializeTab(Tab tab) {
-        sCachedCVCList.clear();
-        if (mLayoutManager != null) {
-            mLayoutManager.getActiveLayout().getAllContentViewCores(sCachedCVCList);
-        }
+        ContentViewCore content = tab.getActiveContentViewCore();
+        if (content != null) initializeContentViewCore(content);
 
-        for (int i = 0; i < sCachedCVCList.size(); i++) {
-            initializeContentViewCore(sCachedCVCList.get(i));
-        }
-        sCachedCVCList.clear();
-
-        sCachedViewList.clear();
-        tab.getAllContentViews(sCachedViewList);
-
-        for (int i = 0; i < sCachedViewList.size(); i++) {
-            View view = sCachedViewList.get(i);
-            // Calling View#measure() and View#layout() on a View before adding it to the view
-            // hierarchy seems to cause issues with compound drawables on some versions of Android.
-            // We don't need to proactively size the NTP as we don't need the Android view to render
-            // if it's not actually attached to the view hierarchy (http://crbug.com/462114).
-            if (view == tab.getView() && tab.isNativePage()) continue;
-            setSizeOfUnattachedView(view);
-        }
-        sCachedViewList.clear();
+        View view = tab.getContentView();
+        if (view != tab.getView() || !tab.isNativePage()) setSizeOfUnattachedView(view);
     }
 
     /**

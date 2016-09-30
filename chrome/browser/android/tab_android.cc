@@ -885,33 +885,6 @@ void TabAndroid::AttachToTabContentManager(
     tab_content_manager_->AttachLiveLayer(GetAndroidId(), GetContentLayer());
 }
 
-void TabAndroid::AttachOverlayWebContents(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jweb_contents,
-    jboolean visible) {
-  WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  DCHECK(web_contents);
-  DCHECK(web_contents->GetNativeView());
-
-  web_contents->GetNativeView()->GetLayer()->SetHideLayerAndSubtree(!visible);
-  content_layer_->AddChild(web_contents->GetNativeView()->GetLayer());
-}
-
-void TabAndroid::DetachOverlayWebContents(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& jweb_contents) {
-  WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  DCHECK(web_contents);
-  DCHECK(web_contents->GetNativeView());
-
-  if (web_contents->GetNativeView()->GetLayer()->parent() == content_layer_)
-    web_contents->GetNativeView()->GetLayer()->RemoveFromParent();
-}
-
 static void Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   TRACE_EVENT0("native", "TabAndroid::Init");
   // This will automatically bind to the Java object and pass ownership there.
