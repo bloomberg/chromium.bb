@@ -61,6 +61,8 @@ class WindowManager : public ui::WindowManagerDelegate,
 
   WmShellMus* shell() { return shell_.get(); }
 
+  display::ScreenBase* screen() { return screen_.get(); }
+
   ui::WindowTreeClient* window_tree_client() {
     return window_tree_client_.get();
   }

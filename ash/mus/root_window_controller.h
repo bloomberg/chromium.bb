@@ -13,6 +13,10 @@
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/display/display.h"
 
+namespace gfx {
+class Insets;
+}
+
 namespace shell {
 class Connector;
 }
@@ -55,6 +59,8 @@ class RootWindowController {
   ui::Window* GetWindowForContainer(mojom::Container container);
 
   WmWindowMus* GetWindowByShellWindowId(int id);
+
+  void SetWorkAreaInests(const gfx::Insets& insets);
 
   WindowManager* window_manager() { return window_manager_; }
 

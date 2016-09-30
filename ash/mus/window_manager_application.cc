@@ -124,6 +124,8 @@ void WindowManagerApplication::InitWindowManager(
   statistics_provider_->SetMachineStatistic("keyboard_layout", "");
 #endif
   window_manager_->Init(std::move(window_tree_client), blocking_pool);
+  native_widget_factory_mus_ =
+      base::MakeUnique<NativeWidgetFactoryMus>(window_manager_.get());
 }
 
 void WindowManagerApplication::OnStart(const shell::Identity& identity) {
@@ -144,9 +146,6 @@ void WindowManagerApplication::OnStart(const shell::Identity& identity) {
       base::MakeUnique<ui::WindowTreeClient>(window_manager_.get(),
                                              window_manager_.get());
   window_tree_client->ConnectAsWindowManager(connector());
-
-  native_widget_factory_mus_.reset(
-      new NativeWidgetFactoryMus(window_manager_.get()));
 
   const size_t kMaxNumberThreads = 3u;  // Matches that of content.
   const char kThreadNamePrefix[] = "MashBlocking";

@@ -271,7 +271,11 @@ bool WmShellMus::IsForceMaximizeOnFirstRun() {
 
 void WmShellMus::SetDisplayWorkAreaInsets(WmWindow* window,
                                           const gfx::Insets& insets) {
-  NOTIMPLEMENTED();
+  RootWindowController* root_window_controller =
+      GetRootWindowControllerWithDisplayId(
+          WmWindowMus::GetMusWindow(window)->display_id())
+          ->root_window_controller();
+  root_window_controller->SetWorkAreaInests(insets);
 }
 
 bool WmShellMus::IsPinned() {

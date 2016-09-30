@@ -22,6 +22,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_list.h"
 #include "ui/display/screen_base.h"
+#include "ui/views/test/test_views_delegate.h"
 
 namespace ash {
 namespace mus {
@@ -81,6 +82,8 @@ WmTestHelper::~WmTestHelper() {
 void WmTestHelper::Init() {
   ui::MaterialDesignController::Initialize();
   ash::MaterialDesignController::Initialize();
+
+  views_delegate_ = base::MakeUnique<views::TestViewsDelegate>();
 
   window_manager_app_ = base::MakeUnique<WindowManagerApplication>();
 
@@ -161,12 +164,10 @@ void WmTestHelper::UpdateDisplay(RootWindowController* root_window_controller,
   gfx::Rect bounds = ParseDisplayBounds(display_spec);
   bounds.set_x(*next_x);
   *next_x += bounds.size().width();
+  gfx::Insets work_area_insets =
+      root_window_controller->display_.GetWorkAreaInsets();
   root_window_controller->display_.set_bounds(bounds);
-  gfx::Rect work_area(bounds);
-  // Offset the height slightly to give a different work area. -20 is arbitrary,
-  // it could be anything.
-  work_area.set_height(std::max(0, work_area.height() - 20));
-  root_window_controller->display_.set_work_area(work_area);
+  root_window_controller->display_.UpdateWorkAreaFromInsets(work_area_insets);
   root_window_controller->root()->SetBounds(gfx::Rect(bounds.size()));
   display::ScreenBase* screen =
       window_manager_app_->window_manager()->screen_.get();

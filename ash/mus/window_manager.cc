@@ -196,10 +196,23 @@ void WindowManager::Shutdown() {
   FOR_EACH_OBSERVER(WindowManagerObserver, observers_,
                     OnWindowTreeClientDestroyed());
 
-  // Destroy the roots of the RootWindowControllers, which triggers removal
-  // in OnWindowDestroyed().
-  while (!root_window_controllers_.empty())
-    DestroyRootWindowController(root_window_controllers_.begin()->get());
+  // Primary RootWindowController must be destroyed last.
+  RootWindowController* primary_root_window_controller =
+      GetPrimaryRootWindowController();
+  std::set<RootWindowController*> secondary_root_window_controllers;
+  for (auto& root_window_controller_ptr : root_window_controllers_) {
+    if (root_window_controller_ptr.get() != primary_root_window_controller)
+      secondary_root_window_controllers.insert(
+          root_window_controller_ptr.get());
+  }
+  for (RootWindowController* root_window_controller :
+       secondary_root_window_controllers) {
+    DestroyRootWindowController(root_window_controller);
+  }
+  if (primary_root_window_controller)
+    DestroyRootWindowController(primary_root_window_controller);
+
+  DCHECK(root_window_controllers_.empty());
 
   lookup_.reset();
   shell_->Shutdown();

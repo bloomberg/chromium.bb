@@ -41,6 +41,8 @@
 #include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/cpp/window_tree_host_factory.h"
+#include "ui/display/display_list.h"
+#include "ui/display/screen_base.h"
 
 using ash::mojom::Container;
 
@@ -134,6 +136,21 @@ ui::Window* RootWindowController::GetWindowForContainer(Container container) {
 WmWindowMus* RootWindowController::GetWindowByShellWindowId(int id) {
   return WmWindowMus::AsWmWindowMus(
       WmWindowMus::Get(root_)->GetChildByShellWindowId(id));
+}
+
+void RootWindowController::SetWorkAreaInests(const gfx::Insets& insets) {
+  display_.UpdateWorkAreaFromInsets(insets);
+  display::DisplayList* display_list =
+      window_manager_->screen()->display_list();
+  auto iter = display_list->FindDisplayById(display_.id());
+  DCHECK(iter != display_list->displays().end());
+  const display::DisplayList::Type display_type =
+      iter == display_list->GetPrimaryDisplayIterator()
+          ? display::DisplayList::Type::PRIMARY
+          : display::DisplayList::Type::NOT_PRIMARY;
+  display_list->UpdateDisplay(display_, display_type);
+  // TODO(kylechar): needs to push to DisplayController.
+  NOTIMPLEMENTED();
 }
 
 gfx::Rect RootWindowController::CalculateDefaultBounds(

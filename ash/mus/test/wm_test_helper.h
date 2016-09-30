@@ -25,6 +25,10 @@ class Window;
 class WindowTreeClientPrivate;
 }
 
+namespace views {
+class ViewsDelegate;
+}
+
 namespace ash {
 namespace mus {
 
@@ -69,6 +73,7 @@ class WmTestHelper {
       RootWindowController* root_window_controller);
 
   std::unique_ptr<base::MessageLoop> message_loop_;
+  std::unique_ptr<views::ViewsDelegate> views_delegate_;
   ui::TestWindowTreeClientSetup window_tree_client_setup_;
   std::unique_ptr<WindowManagerApplication> window_manager_app_;
   std::unique_ptr<ui::WindowTreeClientPrivate> window_tree_client_private_;
