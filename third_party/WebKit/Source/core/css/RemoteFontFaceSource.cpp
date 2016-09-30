@@ -285,6 +285,19 @@ void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResour
     }
 }
 
+void RemoteFontFaceSource::FontLoadHistograms::maySetDataSource(DataSource dataSource)
+{
+    if (m_dataSource != FromUnknown)
+        return;
+    // Classify as memory cache hit if |m_loadStartTime| is not set, i.e.
+    // this RemoteFontFaceSource instance didn't trigger FontResource
+    // loading.
+    if (m_loadStartTime == 0)
+        m_dataSource = FromMemoryCache;
+    else
+        m_dataSource = dataSource;
+}
+
 void RemoteFontFaceSource::FontLoadHistograms::recordLoadTimeHistogram(const FontResource* font, int duration)
 {
     CHECK_NE(FromUnknown, m_dataSource);
