@@ -53,14 +53,15 @@
               <paper-icon-button icon="cr:more-vert"
                   class="dropdown-trigger">
               </paper-icon-button>
-              <paper-menu id="actionMenu" class="dropdown-content"
+              <paper-menu id="actionMenu" class="dropdown-content" actionable
                   on-iron-activate="onActionMenuIronActivate_"
                   attr-for-selected="menu-value">
                 <paper-item menu-value$="[[menuActions_.SET_DEFAULT]]"
-                    hidden$="[[isDefault_(index, protocol.default_handler)]]">
+                    hidden$="[[isDefault_(index, protocol.default_handler)]]"
+                    actionable>
                   $i18n{handlerSetDefault}
                 </paper-item>
-                <paper-item menu-value$="[[menuActions_.REMOVE]]">
+                <paper-item menu-value$="[[menuActions_.REMOVE]]" actionable>
                   $i18n{handlerRemove}
                 </paper-item>
               </paper-menu>

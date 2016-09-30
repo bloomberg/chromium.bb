@@ -68,22 +68,22 @@
                   on-iron-activate="onActionMenuIronActivate_"
                   attr-for-selected="menu-value">
                 <paper-item
-                    hidden="[[!showAllowAction_]]"
+                    hidden="[[!showAllowAction_]]" actionable
                     menu-value$="[[PermissionValues.ALLOW]]">
                   $i18n{siteSettingsActionAllow}
                 </paper-item>
                 <paper-item
-                    hidden="[[!showBlockAction_]]"
+                    hidden="[[!showBlockAction_]]" actionable
                     menu-value$="[[PermissionValues.BLOCK]]">
                   $i18n{siteSettingsActionBlock}
                 </paper-item>
                 <paper-item
-                    hidden="[[!showSessionOnlyActionForSite_(item)]]"
+                    hidden="[[!showSessionOnlyActionForSite_(item)]]" actionable
                     menu-value$="[[PermissionValues.SESSION_ONLY]]">
                   $i18n{siteSettingsActionSessionOnly}
                 </paper-item>
                 <paper-item
-                    menu-value$="[[PermissionValues.DEFAULT]]">
+                    menu-value$="[[PermissionValues.DEFAULT]]" actionable>
                   $i18n{siteSettingsActionReset}
                 </paper-item>
               </paper-menu>
