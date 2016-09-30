@@ -4,8 +4,6 @@
 
 #include "components/sync/test/mock_invalidation.h"
 
-#include <stdint.h>
-
 #include "base/logging.h"
 #include "components/sync/test/mock_invalidation_tracker.h"
 

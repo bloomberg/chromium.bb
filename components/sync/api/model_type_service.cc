@@ -6,9 +6,6 @@
 
 #include <utility>
 
-#include "components/sync/api/data_type_error_handler.h"
-#include "components/sync/api/model_type_change_processor.h"
-
 namespace syncer_v2 {
 
 ModelTypeService::ModelTypeService(

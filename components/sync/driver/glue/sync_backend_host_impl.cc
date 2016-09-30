@@ -4,9 +4,7 @@
 
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
 
-#include <map>
 #include <utility>
-#include <vector>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -22,7 +20,6 @@
 #include "components/sync/core/http_bridge.h"
 #include "components/sync/core/internal_components_factory.h"
 #include "components/sync/core/internal_components_factory_impl.h"
-#include "components/sync/core/sync_manager.h"
 #include "components/sync/core/sync_manager_factory.h"
 #include "components/sync/driver/glue/sync_backend_host_core.h"
 #include "components/sync/driver/glue/sync_backend_registrar.h"

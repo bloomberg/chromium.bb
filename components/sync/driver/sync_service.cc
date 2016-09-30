@@ -5,7 +5,6 @@
 #include "components/sync/driver/sync_service.h"
 
 #include "components/sync/core/sync_manager.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace sync_driver {
 

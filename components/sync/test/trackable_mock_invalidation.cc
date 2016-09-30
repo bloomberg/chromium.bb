@@ -4,8 +4,6 @@
 
 #include "components/sync/test/trackable_mock_invalidation.h"
 
-#include <stdint.h>
-
 #include "components/sync/test/mock_invalidation_tracker.h"
 
 namespace syncer {

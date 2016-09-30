@@ -8,7 +8,6 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "components/sync/base/model_type.h"
 
 namespace syncer {
 

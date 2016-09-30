@@ -8,8 +8,6 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/syncable/directory.h"
 
 namespace syncer {

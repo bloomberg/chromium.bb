@@ -6,7 +6,6 @@
 
 #include <set>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -17,7 +16,6 @@
 #include "components/sync/api/sync_error.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/data_batch_impl.h"
-#include "components/sync/core/simple_metadata_change_list.h"
 #include "components/sync/device_info/device_info_util.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"

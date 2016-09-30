@@ -9,7 +9,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/api/data_type_error_handler_impl.h"

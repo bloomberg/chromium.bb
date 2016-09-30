@@ -8,7 +8,8 @@
 #include <map>
 #include <string>
 
-#include "components/sync/driver/data_type_manager.h"
+#include "components/sync/api/sync_error.h"
+#include "components/sync/base/model_type.h"
 
 namespace sync_driver {
 

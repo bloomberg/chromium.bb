@@ -4,8 +4,6 @@
 
 #include "components/sync/syncable/mutable_entry.h"
 
-#include <stdint.h>
-
 #include <memory>
 
 #include "components/sync/base/unique_position.h"

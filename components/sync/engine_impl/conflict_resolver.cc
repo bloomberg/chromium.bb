@@ -5,7 +5,6 @@
 #include "components/sync/engine_impl/conflict_resolver.h"
 
 #include <list>
-#include <set>
 #include <string>
 
 #include "base/metrics/histogram_macros.h"

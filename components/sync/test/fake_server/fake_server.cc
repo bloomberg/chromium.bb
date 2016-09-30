@@ -4,15 +4,10 @@
 
 #include "components/sync/test/fake_server/fake_server.h"
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <limits>
-#include <memory>
 #include <set>
-#include <string>
 #include <utility>
-#include <vector>
 
 #include "base/guid.h"
 #include "base/logging.h"
@@ -21,8 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/bookmark_entity.h"
 #include "components/sync/test/fake_server/permanent_entity.h"
 #include "components/sync/test/fake_server/tombstone_entity.h"

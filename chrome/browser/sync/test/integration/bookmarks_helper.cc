@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"

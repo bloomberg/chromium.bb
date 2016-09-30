@@ -4,11 +4,8 @@
 
 #include "components/sync/syncable/parent_child_index.h"
 
-#include <memory>
-
 #include "base/stl_util.h"
 #include "components/sync/syncable/entry_kernel.h"
-#include "components/sync/syncable/syncable_id.h"
 
 namespace syncer {
 namespace syncable {

@@ -4,8 +4,6 @@
 
 #include "components/sync/engine/model_safe_worker.h"
 
-#include <memory>
-
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/threading/thread_task_runner_handle.h"

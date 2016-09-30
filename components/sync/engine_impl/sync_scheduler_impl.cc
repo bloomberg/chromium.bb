@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -19,7 +18,6 @@
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/logging.h"
 #include "components/sync/engine_impl/backoff_delay_provider.h"
-#include "components/sync/engine_impl/syncer.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
 

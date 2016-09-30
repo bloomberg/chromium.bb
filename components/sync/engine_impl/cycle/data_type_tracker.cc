@@ -4,12 +4,9 @@
 
 #include "components/sync/engine_impl/cycle/data_type_tracker.h"
 
-#include <stddef.h>
-
 #include <algorithm>
 
 #include "base/logging.h"
-#include "components/sync/base/invalidation_interface.h"
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
 
 namespace syncer {

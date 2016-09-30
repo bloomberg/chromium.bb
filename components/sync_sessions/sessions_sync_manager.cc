@@ -17,7 +17,6 @@
 #include "components/sync/api/time.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/syncable/syncable_util.h"
-#include "components/sync_sessions/lost_navigations_recorder.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "components/sync_sessions/synced_window_delegate.h"

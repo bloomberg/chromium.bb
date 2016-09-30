@@ -5,7 +5,6 @@
 #include "components/sync/syncable/directory_unittest.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <cstdlib>
 
@@ -19,7 +18,6 @@
 #include "components/sync/base/mock_unrecoverable_error_handler.h"
 #include "components/sync/syncable/syncable_proto_util.h"
 #include "components/sync/syncable/syncable_util.h"
-#include "components/sync/syncable/syncable_write_transaction.h"
 #include "components/sync/test/engine/test_syncable_utils.h"
 #include "components/sync/test/test_directory_backing_store.h"
 

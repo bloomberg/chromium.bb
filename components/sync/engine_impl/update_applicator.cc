@@ -4,15 +4,10 @@
 
 #include "components/sync/engine_impl/update_applicator.h"
 
-#include <stdint.h>
-
-#include <vector>
-
 #include "base/logging.h"
 #include "components/sync/engine_impl/syncer_util.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"
-#include "components/sync/syncable/syncable_id.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
 
 using std::vector;

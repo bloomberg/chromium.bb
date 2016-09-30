@@ -4,8 +4,6 @@
 
 #include "components/sync/base/time.h"
 
-#include <stdint.h>
-
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 

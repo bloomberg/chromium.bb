@@ -4,8 +4,6 @@
 
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 
-#include <stddef.h>
-
 #include <memory>
 #include <utility>
 

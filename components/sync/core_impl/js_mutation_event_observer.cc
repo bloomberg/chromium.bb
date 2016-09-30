@@ -5,9 +5,6 @@
 #include "components/sync/core_impl/js_mutation_event_observer.h"
 
 #include <stddef.h>
-#include <stdint.h>
-
-#include <string>
 
 #include "base/location.h"
 #include "base/logging.h"

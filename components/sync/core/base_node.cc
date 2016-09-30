@@ -4,8 +4,6 @@
 
 #include "components/sync/core/base_node.h"
 
-#include <stdint.h>
-
 #include <stack>
 
 #include "base/strings/string_number_conversions.h"

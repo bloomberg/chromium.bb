@@ -4,11 +4,9 @@
 
 #include "components/sync/driver/shared_change_processor.h"
 
-#include <memory>
 #include <utility>
 
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/sync_change.h"
 #include "components/sync/api/syncable_service.h"
 #include "components/sync/base/data_type_histogram.h"

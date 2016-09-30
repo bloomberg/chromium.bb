@@ -5,7 +5,6 @@
 #include "components/sync/driver/non_ui_data_type_controller.h"
 
 #include "base/logging.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/api/data_type_error_handler_impl.h"
 #include "components/sync/api/sync_error.h"

@@ -4,12 +4,8 @@
 
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 
-#include <string>
-
 #include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/sync/test/fake_server/bookmark_entity_builder.h"
-#include "url/gurl.h"
 
 using std::string;
 

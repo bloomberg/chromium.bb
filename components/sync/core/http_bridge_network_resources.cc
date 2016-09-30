@@ -4,13 +4,10 @@
 
 #include "components/sync/core/http_bridge_network_resources.h"
 
-#include <memory>
-
 #include "base/memory/ptr_util.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/core/http_bridge.h"
 #include "components/sync/core/http_post_provider_factory.h"
-#include "components/sync/core/network_time_update_callback.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace syncer {

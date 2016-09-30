@@ -4,7 +4,6 @@
 
 #include "components/sync/test/fake_server/android/fake_server_helper_android.h"
 
-#include <jni.h>
 #include <stddef.h>
 
 #include <memory>
@@ -18,7 +17,6 @@
 #include "components/sync/core/network_resources.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
-#include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"

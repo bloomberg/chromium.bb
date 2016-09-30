@@ -4,14 +4,11 @@
 
 #include "components/sync/core_impl/change_reorder_buffer.h"
 
-#include <stdint.h>
-
 #include <limits>
 #include <queue>
 #include <set>
 #include <utility>  // for pair<>
 
-#include "base/macros.h"
 #include "components/sync/core/base_node.h"
 #include "components/sync/core/base_transaction.h"
 #include "components/sync/syncable/entry.h"

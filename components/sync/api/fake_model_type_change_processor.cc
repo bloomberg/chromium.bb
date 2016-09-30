@@ -4,13 +4,9 @@
 
 #include "components/sync/api/fake_model_type_change_processor.h"
 
-#include <memory>
-#include <string>
-
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/api/metadata_batch.h"
-#include "components/sync/api/metadata_change_list.h"
 #include "components/sync/api/model_type_service.h"
 #include "components/sync/api/sync_error.h"
 

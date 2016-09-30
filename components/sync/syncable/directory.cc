@@ -4,9 +4,6 @@
 
 #include "components/sync/syncable/directory.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <algorithm>
 #include <iterator>
 #include <utility>
@@ -20,8 +17,6 @@
 #include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/base/unrecoverable_error_handler.h"
-#include "components/sync/syncable/entry.h"
-#include "components/sync/syncable/entry_kernel.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
 #include "components/sync/syncable/on_disk_directory_backing_store.h"

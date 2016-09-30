@@ -4,13 +4,9 @@
 
 #include "chrome/browser/sync/test/integration/fake_server_invalidation_service.h"
 
-#include <string>
-
-#include "base/macros.h"
 #include "components/invalidation/impl/invalidation_service_util.h"
 #include "components/invalidation/public/invalidation.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/driver/invalidation_helper.h"
 
 namespace fake_server {

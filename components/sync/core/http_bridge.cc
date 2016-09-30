@@ -5,7 +5,6 @@
 #include "components/sync/core/http_bridge.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <vector>
 
@@ -26,7 +25,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
 

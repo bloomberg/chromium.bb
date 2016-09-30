@@ -4,8 +4,6 @@
 
 #include "components/sync/core/read_transaction.h"
 
-#include <stdint.h>
-
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/syncable_read_transaction.h"
 

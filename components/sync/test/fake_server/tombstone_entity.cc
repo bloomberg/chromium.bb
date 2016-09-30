@@ -4,12 +4,6 @@
 
 #include "components/sync/test/fake_server/tombstone_entity.h"
 
-#include <string>
-
-#include "components/sync/base/model_type.h"
-#include "components/sync/protocol/sync.pb.h"
-#include "components/sync/test/fake_server/fake_server_entity.h"
-
 using std::string;
 
 using syncer::ModelType;

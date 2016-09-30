@@ -4,16 +4,12 @@
 
 #include "components/sync/api/sync_data.h"
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <ostream>
 
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/core/attachments/attachment_service_proxy.h"
 #include "components/sync/core/base_node.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"

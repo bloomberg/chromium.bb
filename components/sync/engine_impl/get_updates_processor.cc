@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include <map>
-
 #include "base/trace_event/trace_event.h"
 #include "components/sync/engine/events/get_updates_response_event.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
@@ -15,7 +13,6 @@
 #include "components/sync/engine_impl/get_updates_delegate.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/engine_impl/update_handler.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/nigori_handler.h"
 #include "components/sync/syncable/syncable_read_transaction.h"

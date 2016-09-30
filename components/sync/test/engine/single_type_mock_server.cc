@@ -4,9 +4,6 @@
 
 #include "components/sync/test/engine/single_type_mock_server.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include "components/sync/base/time.h"
 
 using google::protobuf::RepeatedPtrField;

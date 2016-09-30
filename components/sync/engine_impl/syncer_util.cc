@@ -4,12 +4,7 @@
 
 #include "components/sync/engine_impl/syncer_util.h"
 
-#include <stdint.h>
-
 #include <algorithm>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "base/base64.h"
 #include "base/location.h"
@@ -23,14 +18,12 @@
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine_impl/conflict_resolver.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
-#include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
-#include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_changes_version.h"
 #include "components/sync/syncable/syncable_model_neutral_write_transaction.h"
 #include "components/sync/syncable/syncable_proto_util.h"

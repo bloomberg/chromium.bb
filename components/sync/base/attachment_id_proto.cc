@@ -4,9 +4,6 @@
 
 #include "components/sync/base/attachment_id_proto.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <string>
 
 #include "base/guid.h"

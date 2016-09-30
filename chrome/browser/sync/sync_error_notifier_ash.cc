@@ -5,8 +5,6 @@
 #include "chrome/browser/sync/sync_error_notifier_ash.h"
 
 #include "ash/common/system/system_notifier.h"
-#include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"

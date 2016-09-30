@@ -4,10 +4,7 @@
 
 #include "components/sync/protocol/sync_protocol_error.h"
 
-#include <string>
-
 #include "base/logging.h"
-#include "base/values.h"
 
 namespace syncer {
 #define ENUM_CASE(x) \

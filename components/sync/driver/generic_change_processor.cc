@@ -7,14 +7,12 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <string>
 #include <utility>
 
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/sync/api/data_type_error_handler.h"
 #include "components/sync/api/local_change_observer.h"
 #include "components/sync/api/sync_change.h"
 #include "components/sync/api/sync_error.h"

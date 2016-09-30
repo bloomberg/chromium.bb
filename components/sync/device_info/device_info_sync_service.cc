@@ -10,8 +10,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/time/time.h"
-#include "components/sync/api/sync_change.h"
 #include "components/sync/base/time.h"
 #include "components/sync/device_info/device_info_util.h"
 #include "components/sync/device_info/local_device_info_provider.h"

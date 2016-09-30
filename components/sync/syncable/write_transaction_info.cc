@@ -4,9 +4,6 @@
 
 #include "components/sync/syncable/write_transaction_info.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 

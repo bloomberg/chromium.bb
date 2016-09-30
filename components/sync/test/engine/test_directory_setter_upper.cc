@@ -4,7 +4,6 @@
 
 #include "components/sync/test/engine/test_directory_setter_upper.h"
 
-#include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/strings/string_util.h"

@@ -4,13 +4,8 @@
 
 #include "components/sync/test/fake_server/permanent_entity.h"
 
-#include <string>
-
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/protocol/sync.pb.h"
-#include "components/sync/test/fake_server/fake_server_entity.h"
 
 using std::string;
 

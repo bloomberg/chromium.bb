@@ -5,7 +5,6 @@
 #include "components/sync/syncable/directory_backing_store.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <limits>
 #include <unordered_set>
@@ -13,7 +12,6 @@
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
@@ -29,9 +27,7 @@
 #include "components/sync/syncable/syncable_columns.h"
 #include "components/sync/syncable/syncable_id.h"
 #include "components/sync/syncable/syncable_util.h"
-#include "sql/connection.h"
 #include "sql/error_delegate_util.h"
-#include "sql/statement.h"
 #include "sql/transaction.h"
 
 using std::string;

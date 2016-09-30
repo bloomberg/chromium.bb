@@ -5,10 +5,8 @@
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 
 #include <errno.h>
-#include <stdint.h>
 
 #include <ostream>
-#include <string>
 #include <vector>
 
 #include "base/metrics/histogram.h"

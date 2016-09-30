@@ -5,7 +5,6 @@
 #include "components/sync/engine_impl/process_updates_util.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include <string>
 

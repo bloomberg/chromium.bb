@@ -4,7 +4,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
-#include "components/sync/api/sync_change.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync_sessions/lost_navigations_recorder.h"
 

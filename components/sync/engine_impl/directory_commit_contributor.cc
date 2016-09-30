@@ -4,10 +4,7 @@
 
 #include "components/sync/engine_impl/directory_commit_contributor.h"
 
-#include <stddef.h>
-
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
-#include "components/sync/engine_impl/directory_commit_contribution.h"
 
 namespace syncer {
 

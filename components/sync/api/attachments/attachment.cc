@@ -4,8 +4,6 @@
 
 #include "components/sync/api/attachments/attachment.h"
 
-#include <stdint.h>
-
 #include "base/logging.h"
 #include "components/sync/core/attachments/attachment_util.h"
 

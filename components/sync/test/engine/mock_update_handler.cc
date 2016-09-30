@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "components/sync/base/model_type.h"
-
 namespace syncer {
 
 MockUpdateHandler::MockUpdateHandler(ModelType type)

@@ -4,8 +4,6 @@
 
 #include "components/sync/syncable/entry_kernel.h"
 
-#include <stdint.h>
-
 #include <utility>
 
 #include "base/json/string_escape.h"

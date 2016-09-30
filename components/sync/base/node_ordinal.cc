@@ -4,9 +4,6 @@
 
 #include "components/sync/base/node_ordinal.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <algorithm>
 #include <string>
 

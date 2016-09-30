@@ -4,7 +4,6 @@
 
 #include "components/sync/core/base_transaction.h"
 
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/nigori_handler.h"
 

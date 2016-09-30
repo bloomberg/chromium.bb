@@ -6,8 +6,6 @@
 
 #include "components/sync/test/engine/mock_connection_manager.h"
 
-#include <stdint.h>
-
 #include <map>
 
 #include "base/location.h"

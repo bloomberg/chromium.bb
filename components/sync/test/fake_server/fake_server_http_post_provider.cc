@@ -4,14 +4,8 @@
 
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 
-#include <string>
-
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
-#include "base/synchronization/waitable_event.h"
 #include "components/sync/test/fake_server/fake_server.h"
 
 using syncer::HttpPostProviderInterface;

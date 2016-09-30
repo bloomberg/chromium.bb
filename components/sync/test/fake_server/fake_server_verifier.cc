@@ -4,19 +4,13 @@
 
 #include "components/sync/test/fake_server/fake_server_verifier.h"
 
-#include <stddef.h>
-
 #include <map>
 #include <memory>
 #include <set>
 #include <vector>
 
 #include "base/json/json_writer.h"
-#include "base/values.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/test/fake_server/fake_server.h"
-#include "components/sync/test/fake_server/sessions_hierarchy.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using base::JSONWriter;
 using std::string;

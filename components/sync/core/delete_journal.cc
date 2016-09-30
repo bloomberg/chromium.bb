@@ -4,9 +4,6 @@
 
 #include "components/sync/core/delete_journal.h"
 
-#include <stdint.h>
-
-#include <set>
 #include <string>
 
 #include "components/sync/core/base_transaction.h"

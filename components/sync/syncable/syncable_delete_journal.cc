@@ -4,7 +4,6 @@
 
 #include "components/sync/syncable/syncable_delete_journal.h"
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include "base/memory/ptr_util.h"

@@ -4,13 +4,10 @@
 
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
 
-#include <stddef.h>
-
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "components/sync/engine/polling_constants.h"
-#include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
 

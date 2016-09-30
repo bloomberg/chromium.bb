@@ -19,7 +19,6 @@
 #include "components/sync/engine/sync_status.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
-#include "components/version_info/version_info.h"
 
 using base::DictionaryValue;
 using base::ListValue;

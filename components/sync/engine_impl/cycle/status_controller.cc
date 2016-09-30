@@ -4,8 +4,6 @@
 
 #include "components/sync/engine_impl/cycle/status_controller.h"
 
-#include <vector>
-
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 

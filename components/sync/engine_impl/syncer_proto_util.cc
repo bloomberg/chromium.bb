@@ -8,9 +8,7 @@
 
 #include "base/format_macros.h"
 #include "base/strings/stringprintf.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
-#include "components/sync/engine_impl/cycle/sync_cycle.h"
 #include "components/sync/engine_impl/net/server_connection_manager.h"
 #include "components/sync/engine_impl/syncer.h"
 #include "components/sync/engine_impl/syncer_types.h"

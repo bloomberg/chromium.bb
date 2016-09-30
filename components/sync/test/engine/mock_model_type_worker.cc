@@ -4,9 +4,6 @@
 
 #include "components/sync/test/engine/mock_model_type_worker.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include "base/logging.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/syncable/syncable_util.h"

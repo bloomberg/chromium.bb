@@ -5,7 +5,6 @@
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 
 #include "components/sync/base/extensions_activity.h"
-#include "components/sync/engine_impl/cycle/debug_info_getter.h"
 
 namespace syncer {
 

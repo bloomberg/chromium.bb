@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/sync/driver/data_type_manager.h"
 #include "components/sync/driver/data_type_status_table.h"
+
+#include "components/sync/driver/data_type_manager.h"
 
 namespace sync_driver {
 

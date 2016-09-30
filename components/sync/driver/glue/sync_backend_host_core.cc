@@ -26,7 +26,6 @@
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/cycle/update_counters.h"
 #include "components/sync/engine/events/protocol_event.h"
-#include "url/gurl.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.

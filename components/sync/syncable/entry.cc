@@ -4,8 +4,6 @@
 
 #include "components/sync/syncable/entry.h"
 
-#include <stdint.h>
-
 #include <iomanip>
 
 #include "components/sync/syncable/directory.h"

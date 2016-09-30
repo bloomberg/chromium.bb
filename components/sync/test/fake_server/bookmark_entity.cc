@@ -4,14 +4,7 @@
 
 #include "components/sync/test/fake_server/bookmark_entity.h"
 
-#include <stdint.h>
-
-#include <string>
-
 #include "base/guid.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/protocol/sync.pb.h"
-#include "components/sync/test/fake_server/fake_server_entity.h"
 
 using std::string;
 

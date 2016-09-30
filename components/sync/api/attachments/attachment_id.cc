@@ -4,9 +4,6 @@
 
 #include "components/sync/api/attachments/attachment_id.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include "base/logging.h"
 #include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/protocol/sync.pb.h"

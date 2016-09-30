@@ -4,9 +4,6 @@
 
 #include "components/sync/core/internal_components_factory_impl.h"
 
-#include <string>
-#include <vector>
-
 #include "components/sync/engine_impl/backoff_delay_provider.h"
 #include "components/sync/engine_impl/cycle/sync_cycle_context.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"

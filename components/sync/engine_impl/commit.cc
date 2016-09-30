@@ -4,14 +4,11 @@
 
 #include "components/sync/engine_impl/commit.h"
 
-#include <stddef.h>
-
 #include "base/metrics/sparse_histogram.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/engine/events/commit_request_event.h"
 #include "components/sync/engine/events/commit_response_event.h"
-#include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/commit_processor.h"
 #include "components/sync/engine_impl/commit_util.h"
 #include "components/sync/engine_impl/cycle/sync_cycle.h"

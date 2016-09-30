@@ -4,8 +4,6 @@
 
 #include "components/sync/driver/invalidation_adapter.h"
 
-#include <string>
-
 namespace browser_sync {
 
 InvalidationAdapter::InvalidationAdapter(

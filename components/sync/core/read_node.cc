@@ -4,8 +4,6 @@
 
 #include "components/sync/core/read_node.h"
 
-#include <stdint.h>
-
 #include "base/logging.h"
 #include "components/sync/core/base_transaction.h"
 #include "components/sync/syncable/entry.h"

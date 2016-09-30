@@ -4,11 +4,8 @@
 
 #include "components/sync/core/processor_entity_tracker.h"
 
-#include <stdint.h>
-
 #include "base/base64.h"
 #include "base/sha1.h"
-#include "base/time/time.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/syncable/syncable_util.h"

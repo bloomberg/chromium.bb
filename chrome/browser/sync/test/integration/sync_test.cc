@@ -8,8 +8,6 @@
 #include <stdint.h>
 
 #include <limits>
-#include <memory>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -74,7 +72,6 @@
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/engine_impl/sync_scheduler_impl.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"

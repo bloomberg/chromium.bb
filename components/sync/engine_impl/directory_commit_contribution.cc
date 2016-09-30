@@ -4,9 +4,6 @@
 
 #include "components/sync/engine_impl/directory_commit_contribution.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <algorithm>
 #include <set>
 

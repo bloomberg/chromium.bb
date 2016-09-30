@@ -4,7 +4,6 @@
 
 #include "components/sync/engine_impl/model_type_worker.h"
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <utility>
@@ -16,7 +15,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "components/sync/base/cryptographer.h"
 #include "components/sync/base/time.h"
 #include "components/sync/core/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"

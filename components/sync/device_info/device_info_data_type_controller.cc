@@ -5,7 +5,6 @@
 #include "components/sync/device_info/device_info_data_type_controller.h"
 
 #include "base/callback.h"
-#include "components/sync/device_info/local_device_info_provider.h"
 
 namespace sync_driver {
 

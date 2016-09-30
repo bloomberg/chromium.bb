@@ -4,8 +4,6 @@
 
 #include "components/sync/api/stub_model_type_service.h"
 
-#include <string>
-
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/api/fake_model_type_change_processor.h"

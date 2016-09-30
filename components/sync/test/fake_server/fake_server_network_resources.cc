@@ -4,14 +4,10 @@
 
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 
-#include <memory>
-
 #include "base/memory/ptr_util.h"
-#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/core/http_post_provider_factory.h"
-#include "components/sync/core/network_time_update_callback.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
 

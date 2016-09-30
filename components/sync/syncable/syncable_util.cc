@@ -4,8 +4,6 @@
 
 #include "components/sync/syncable/syncable_util.h"
 
-#include <stdint.h>
-
 #include "base/base64.h"
 #include "base/location.h"
 #include "base/logging.h"

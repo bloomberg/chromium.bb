@@ -12,7 +12,6 @@
 #include "components/sync/engine_impl/conflict_resolver.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/cycle/status_controller.h"
-#include "components/sync/engine_impl/process_updates_util.h"
 #include "components/sync/engine_impl/update_applicator.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"

@@ -5,7 +5,6 @@
 #include "components/sync/driver/data_type_controller.h"
 
 #include "components/sync/base/data_type_histogram.h"
-#include "components/sync/base/model_type.h"
 #include "components/sync/core/user_share.h"
 
 namespace sync_driver {

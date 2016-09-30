@@ -4,11 +4,8 @@
 
 #include "components/sync/test/fake_server/fake_server_entity.h"
 
-#include <stdint.h>
-
 #include <limits>
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/guid.h"
@@ -18,8 +15,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "components/sync/base/model_type.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 

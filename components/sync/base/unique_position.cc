@@ -4,9 +4,6 @@
 
 #include "components/sync/base/unique_position.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
 #include <algorithm>
 #include <limits>
 

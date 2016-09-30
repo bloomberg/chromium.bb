@@ -5,9 +5,7 @@
 #include "components/sync/core_impl/sync_manager_impl.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
-#include <string>
 #include <utility>
 
 #include "base/base64.h"
@@ -32,10 +30,8 @@
 #include "components/sync/core/internal_components_factory.h"
 #include "components/sync/core/read_node.h"
 #include "components/sync/core/read_transaction.h"
-#include "components/sync/core/user_share.h"
 #include "components/sync/core/write_node.h"
 #include "components/sync/core/write_transaction.h"
-#include "components/sync/core_impl/change_reorder_buffer.h"
 #include "components/sync/core_impl/model_type_connector_proxy.h"
 #include "components/sync/core_impl/syncapi_internal.h"
 #include "components/sync/core_impl/syncapi_server_connection_manager.h"

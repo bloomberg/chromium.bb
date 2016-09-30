@@ -5,7 +5,6 @@
 #include "components/sync/test/fake_server/sessions_hierarchy.h"
 
 #include <sstream>
-#include <string>
 
 namespace fake_server {
 

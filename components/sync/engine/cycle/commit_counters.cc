@@ -5,7 +5,6 @@
 #include "components/sync/engine/cycle/commit_counters.h"
 
 #include "base/json/json_string_value_serializer.h"
-#include "base/values.h"
 
 namespace syncer {
 

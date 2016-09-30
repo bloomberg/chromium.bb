@@ -4,8 +4,6 @@
 
 #include "components/sync/core/write_transaction.h"
 
-#include <stdint.h>
-
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/mutable_entry.h"
 #include "components/sync/syncable/syncable_write_transaction.h"
