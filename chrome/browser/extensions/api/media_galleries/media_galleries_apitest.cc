@@ -426,8 +426,8 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   base::ScopedTempDir custom_picasa_app_data_root;
   ASSERT_TRUE(custom_picasa_app_data_root.CreateUniqueTempDir());
   ensure_media_directories_exists()->SetCustomPicasaAppDataPath(
-      custom_picasa_app_data_root.path());
-  PopulatePicasaTestData(custom_picasa_app_data_root.path());
+      custom_picasa_app_data_root.GetPath());
+  PopulatePicasaTestData(custom_picasa_app_data_root.GetPath());
 
   base::ListValue custom_args;
   custom_args.AppendInteger(test_jpg_size());
