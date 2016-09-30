@@ -7,10 +7,23 @@
 from __future__ import print_function
 
 import os
+import xml.etree.ElementTree as ElementTree
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.scripts import loman
+
+
+class RunGitMock(partial_mock.PartialCmdMock):
+  """Partial mock for git.RunGit."""
+  TARGET = 'chromite.lib.git'
+  ATTRS = ('RunGit',)
+  DEFAULT_ATTR = 'RunGit'
+
+  def RunGit(self, _git_repo, cmd, _retry=True, **kwargs):
+    return self._results['RunGit'].LookupResult(
+        (cmd,), hook_args=(cmd,), hook_kwargs=kwargs)
 
 
 class ParserTest(cros_test_lib.OutputTestCase):
@@ -95,3 +108,84 @@ class NoMiniayoutTest(cros_test_lib.MockOutputTestCase, ManifestTest):
     cmd = ['add', '-w', 'foo']
     with self.OutputCapturer():
       self.assertRaises(_Error, loman.main, cmd)
+
+
+class IncludeXmlTest(cros_test_lib.MockOutputTestCase, ManifestTest):
+  """End to End tests for reading and producing XML trees."""
+
+  PROJECT = 'chromiumos/repohooks'
+
+  def setUp(self):
+    INCLUDING_XML = 'including.xml'
+    INCLUDED_XML = 'included.xml'
+    osutils.WriteFile(os.path.join('.repo', 'manifests', INCLUDING_XML),
+                      """
+<manifest>
+    <include name="%s" />
+    <project remote="cros-internal" path="crostools" groups="br" name="ct" />
+</manifest>""" % (INCLUDED_XML,))
+
+    osutils.WriteFile(os.path.join('.repo', 'manifests', INCLUDED_XML),
+                      """
+<manifest>
+    <default remote="cros" revision="HEAD" />
+    <remote name="cros" />
+    <remote name="cros-internal" />
+    <project path="src/repohooks" name="%s" groups="minilayout,bt" />
+</manifest>""" % (self.PROJECT,))
+    self._SetManifest(INCLUDING_XML)
+
+    self.git_mock = self.StartPatcher(RunGitMock())
+    self.git_mock.AddCmdResult(
+        ['symbolic-ref', '-q', 'HEAD'], output='default')
+    self.git_mock.AddCmdResult(
+        ['config', '--get-regexp', 'branch\\.default\\.(remote|merge)'],
+        output='branch.default.merge firmware-branch')
+
+    self.git_mock.AddCmdResult(
+        ['config',
+         '-f', os.path.join(self.tempdir, '.repo', 'manifests.git', 'config'),
+         '--get', 'manifest.groups'], output='group1,group2')
+
+  def testAddExistingProject(self):
+    """Add an existing project, check no local_manifest.xml are created."""
+    self.git_mock.AddCmdResult(
+        ['config',
+         '-f', os.path.join(self.tempdir, '.repo', 'manifests.git', 'config'),
+         'manifest.groups',
+         'minilayout,platform-linux,group1,group2,name:%s' % (self.PROJECT,)])
+    cmd = ['add', '-w', self.PROJECT]
+    with self.OutputCapturer():
+      self.assertEqual(loman.main(cmd), 0)
+    self.assertNotExists(os.path.join('.repo', 'local_manifest.xml'))
+
+  def testAddNewProject(self):
+    """Add new project to the repo.
+
+    Check local_manifest.xml is created and valid.
+    """
+    new_project = 'project'
+    self.git_mock.AddCmdResult(
+        ['config',
+         '-f', os.path.join(self.tempdir, '.repo', 'manifests.git', 'config'),
+         'manifest.groups',
+         'minilayout,platform-linux,group1,group2,name:%s' % (new_project,)],)
+    cmd = ['add', new_project, 'path', '-r', 'remote']
+    with self.OutputCapturer():
+      self.assertEqual(loman.main(cmd), 0)
+    expected_local_manifest_nodes = ElementTree.fromstring("""
+<manifest>
+  <project name="project" path="path" remote="remote" workon="False" />
+</manifest>""")
+    with open(os.path.join('.repo', 'local_manifest.xml')) as f:
+      local_manifest_nodes = ElementTree.fromstring(f.read())
+
+    # Read project, check for failure.
+    self.assertEqual(ElementTree.tostring(expected_local_manifest_nodes),
+                     ElementTree.tostring(local_manifest_nodes))
+
+    # Check that re-adding triggers error.
+    cmd = ['add', new_project, 'path', '-r', 'remote']
+    with self.OutputCapturer() as output:
+      self.assertRaises(SystemExit, loman.main, cmd)
+      self.assertIn('conflicts with', '\n'.join(output.GetStderrLines()))

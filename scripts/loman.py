@@ -15,7 +15,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 
 
-class Manifest(object):
+class LocalManifest(object):
   """Class which provides an abstraction for manipulating the local manifest."""
 
   @classmethod
@@ -72,10 +72,10 @@ class Manifest(object):
     return list(self.nodes.findall('project'))
 
 
-def _AddProjectsToManifestGroups(options, *args):
+def _AddProjectsToManifestGroups(options, new_group):
   """Enable the given manifest groups for the configured repository."""
 
-  groups_to_enable = ['name:%s' % x for x in args]
+  groups_to_enable = ['name:%s' % x for x in new_group]
 
   git_config = options.git_config
 
@@ -143,10 +143,9 @@ def main(argv):
 
   options.git_config = os.path.join(repo_dir, 'manifests.git', 'config')
   options.local_manifest_path = os.path.join(repo_dir, 'local_manifest.xml')
-  options.manifest_sym_path = os.path.join(repo_dir, 'manifest.xml')
 
-  if (os.path.basename(os.readlink(options.manifest_sym_path)) ==
-      'minilayout.xml'):
+  manifest_sym_path = os.path.join(repo_dir, 'manifest.xml')
+  if os.path.basename(os.readlink(manifest_sym_path)) == 'minilayout.xml':
     _AssertNotMiniLayout()
 
   # For now, we only support the add command.
@@ -161,33 +160,39 @@ def main(argv):
       parser.error('Adding non-workon projects requires a path.')
   name = options.project
   path = options.path
-
   revision = options.revision
   if revision is not None:
     if (not git.IsRefsTags(revision) and
         not git.IsSHA1(revision)):
       revision = git.StripRefsHeads(revision, False)
 
-  main_manifest = Manifest.FromPath(options.manifest_sym_path,
-                                    empty_if_missing=False)
-  local_manifest = Manifest.FromPath(options.local_manifest_path)
+  main_manifest = git.ManifestCheckout(os.getcwd())
+  main_element = main_manifest.FindCheckouts(name)
+  if path is not None:
+    main_element_from_path = main_manifest.FindCheckoutFromPath(
+        path, strict=False)
+    if main_element_from_path is not None:
+      main_element.append(main_element_from_path)
 
-  main_element = main_manifest.GetProject(name, path=path)
+  local_manifest = LocalManifest.FromPath(options.local_manifest_path)
 
   if options.workon:
-    if main_element is None:
+    if not main_element:
       parser.error('No project named %r in the default manifest.' % name)
-    _AddProjectsToManifestGroups(options, main_element.attrib['name'])
+    _AddProjectsToManifestGroups(
+        options, [checkout['name'] for checkout in main_element])
 
-  elif main_element is not None:
+  elif main_element:
     if options.remote is not None:
       # Likely this project wasn't meant to be remote, so workon main element
       print("Project already exists in manifest. Using that as workon project.")
-      _AddProjectsToManifestGroups(options, main_element.attrib['name'])
+      _AddProjectsToManifestGroups(
+          options, [checkout['name'] for checkout in main_element])
     else:
       # Conflict will occur; complain.
       parser.error("Requested project name=%r path=%r will conflict with "
-                   "your current manifest %s" % (name, path, active_manifest))
+                   "your current manifest %s" % (
+                       name, path, main_manifest.manifest_path))
 
   elif local_manifest.GetProject(name, path=path) is not None:
     parser.error("Requested project name=%r path=%r conflicts with "
@@ -197,7 +202,7 @@ def main(argv):
     element = local_manifest.AddNonWorkonProject(name=name, path=path,
                                                  remote=options.remote,
                                                  revision=revision)
-    _AddProjectsToManifestGroups(options, element.attrib['name'])
+    _AddProjectsToManifestGroups(options, [element.attrib['name']])
 
     with open(options.local_manifest_path, 'w') as f:
       f.write(local_manifest.ToString())
