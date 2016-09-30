@@ -67,9 +67,8 @@ class SetupSingleton {
     DISALLOW_COPY_AND_ASSIGN(ScopedHoldMutex);
   };
 
-  // |sync_primitive_name_suffix| is a suffix for the name of |setup_mutex_| and
-  // |exit_event_|.
-  explicit SetupSingleton(const base::string16& sync_primitive_name_suffix);
+  SetupSingleton(base::win::ScopedHandle setup_mutex,
+                 base::win::ScopedHandle exit_event);
 
   // A mutex that must be held to modify the Chrome installation directory.
   base::win::ScopedHandle setup_mutex_;

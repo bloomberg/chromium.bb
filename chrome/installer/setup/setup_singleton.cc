@@ -4,9 +4,14 @@
 
 #include "chrome/installer/setup/setup_singleton.h"
 
+#include <functional>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/installer/util/installation_state.h"
@@ -23,6 +28,12 @@ enum SetupSingletonAcquisitionResult {
   SETUP_SINGLETON_ACQUISITION_EXIT_EVENT_MUTEX_TIMEOUT = 1,
   // Acquisition of the setup mutex timed out.
   SETUP_SINGLETON_ACQUISITION_SETUP_MUTEX_TIMEOUT = 2,
+  // Creation of the setup mutex failed.
+  SETUP_SINGLETON_ACQUISITION_SETUP_MUTEX_CREATION_FAILED = 3,
+  // Creation of the exit event failed.
+  SETUP_SINGLETON_ACQUISITION_EXIT_EVENT_CREATION_FAILED = 4,
+  // Creation of the exit event mutex failed.
+  SETUP_SINGLETON_ACQUISITION_EXIT_EVENT_MUTEX_CREATION_FAILED = 5,
   SETUP_SINGLETON_ACQUISITION_RESULT_COUNT,
 };
 
@@ -46,8 +57,26 @@ std::unique_ptr<SetupSingleton> SetupSingleton::Acquire(
       base::SizeTToString16(std::hash<base::FilePath::StringType>()(
           installer_state->target_path().value())));
 
-  std::unique_ptr<SetupSingleton> setup_singleton(
-      new SetupSingleton(sync_primitive_name_suffix));
+  base::win::ScopedHandle setup_mutex(::CreateMutex(
+      nullptr, FALSE,
+      (L"Global\\ChromeSetupMutex_" + sync_primitive_name_suffix).c_str()));
+  if (!setup_mutex.IsValid()) {
+    RecordSetupSingletonAcquisitionResultHistogram(
+        SETUP_SINGLETON_ACQUISITION_SETUP_MUTEX_CREATION_FAILED);
+    return nullptr;
+  }
+
+  base::win::ScopedHandle exit_event(::CreateEvent(
+      nullptr, TRUE, FALSE,
+      (L"Global\\ChromeSetupExitEvent_" + sync_primitive_name_suffix).c_str()));
+  if (!exit_event.IsValid()) {
+    RecordSetupSingletonAcquisitionResultHistogram(
+        SETUP_SINGLETON_ACQUISITION_EXIT_EVENT_CREATION_FAILED);
+    return nullptr;
+  }
+
+  auto setup_singleton = base::WrapUnique(
+      new SetupSingleton(std::move(setup_mutex), std::move(exit_event)));
 
   {
     // Acquire a mutex to ensure that a single call to SetupSingleton::Acquire()
@@ -57,7 +86,12 @@ std::unique_ptr<SetupSingleton> SetupSingleton::Acquire(
         nullptr, FALSE,
         (L"Global\\ChromeSetupExitEventMutex_" + sync_primitive_name_suffix)
             .c_str()));
-    DCHECK(exit_event_mutex.IsValid());
+    if (!exit_event_mutex.IsValid()) {
+      RecordSetupSingletonAcquisitionResultHistogram(
+          SETUP_SINGLETON_ACQUISITION_EXIT_EVENT_MUTEX_CREATION_FAILED);
+      return nullptr;
+    }
+
     ScopedHoldMutex scoped_hold_exit_event_mutex;
     if (!scoped_hold_exit_event_mutex.Acquire(exit_event_mutex.Get())) {
       RecordSetupSingletonAcquisitionResultHistogram(
@@ -121,17 +155,9 @@ bool SetupSingleton::ScopedHoldMutex::Acquire(HANDLE mutex) {
   return false;
 }
 
-SetupSingleton::SetupSingleton(const base::string16& sync_primitive_name_suffix)
-    : setup_mutex_(::CreateMutex(
-          nullptr,
-          FALSE,
-          (L"Global\\ChromeSetupMutex_" + sync_primitive_name_suffix).c_str())),
-      exit_event_(base::win::ScopedHandle(::CreateEvent(
-          nullptr,
-          TRUE,
-          FALSE,
-          (L"Global\\ChromeSetupExitEvent_" + sync_primitive_name_suffix)
-              .c_str()))) {
+SetupSingleton::SetupSingleton(base::win::ScopedHandle setup_mutex,
+                               base::win::ScopedHandle exit_event)
+    : setup_mutex_(std::move(setup_mutex)), exit_event_(std::move(exit_event)) {
   DCHECK(setup_mutex_.IsValid());
 }
 
