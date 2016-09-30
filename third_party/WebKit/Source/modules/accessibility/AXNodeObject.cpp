@@ -1103,8 +1103,8 @@ bool AXNodeObject::canSetFocusAttribute() const
         return true;
 
     // Children of elements with an aria-activedescendant attribute should be
-    // focusable if they have an ARIA role.
-    if (ariaRoleAttribute() != UnknownRole && ancestorExposesActiveDescendant())
+    // focusable if they have a (non-presentational) ARIA role.
+    if (!isPresentational() && ariaRoleAttribute() != UnknownRole && ancestorExposesActiveDescendant())
         return true;
 
     // NOTE: It would be more accurate to ask the document whether setFocusedNode() would

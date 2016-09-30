@@ -983,6 +983,11 @@ void AXObjectCacheImpl::handleAriaSelectedChanged(Node* node)
 
 void AXObjectCacheImpl::handleActiveDescendantChanged(Node* node)
 {
+    // Changing the active descendant should trigger recomputing all
+    // cached values even if it doesn't result in a notification, because
+    // it can affect what's focusable or not.
+    m_modificationCount++;
+
     if (AXObject* obj = getOrCreate(node))
         obj->handleActiveDescendantChanged();
 }
