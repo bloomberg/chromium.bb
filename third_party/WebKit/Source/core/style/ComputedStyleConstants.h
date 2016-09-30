@@ -394,8 +394,8 @@ enum EEmptyCells {
     EmptyCellsShow, EmptyCellsHide
 };
 
-enum ECaptionSide {
-    CaptionSideTop, CaptionSideBottom, CaptionSideLeft, CaptionSideRight
+enum class ECaptionSide : unsigned {
+    Top, Bottom, Left, Right
 };
 
 enum EListStylePosition { ListStylePositionOutside, ListStylePositionInside };

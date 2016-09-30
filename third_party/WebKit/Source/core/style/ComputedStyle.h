@@ -342,7 +342,7 @@ protected:
     {
         ComputedStyleBase::setBitDefaults();
         m_inheritedData.m_emptyCells = initialEmptyCells();
-        m_inheritedData.m_captionSide = initialCaptionSide();
+        m_inheritedData.m_captionSide = static_cast<unsigned>(initialCaptionSide());
         m_inheritedData.m_listStyleType = initialListStyleType();
         m_inheritedData.m_listStylePosition = initialListStylePosition();
         m_inheritedData.m_textAlign = initialTextAlign();
@@ -1355,9 +1355,9 @@ public:
     void setVerticalBorderSpacing(short);
 
     // caption-side (aka -epub-caption-side)
-    static ECaptionSide initialCaptionSide() { return CaptionSideTop; }
+    static ECaptionSide initialCaptionSide() { return ECaptionSide::Top; }
     ECaptionSide captionSide() const { return static_cast<ECaptionSide>(m_inheritedData.m_captionSide); }
-    void setCaptionSide(ECaptionSide v) { m_inheritedData.m_captionSide = v; }
+    void setCaptionSide(ECaptionSide v) { m_inheritedData.m_captionSide = static_cast<unsigned>(v); }
 
     // cursor
     static ECursor initialCursor() { return CURSOR_AUTO; }

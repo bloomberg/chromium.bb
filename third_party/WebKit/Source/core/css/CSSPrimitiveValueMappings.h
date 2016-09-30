@@ -964,16 +964,16 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(ECaptionSide e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case CaptionSideLeft:
+    case ECaptionSide::Left:
         m_value.valueID = CSSValueLeft;
         break;
-    case CaptionSideRight:
+    case ECaptionSide::Right:
         m_value.valueID = CSSValueRight;
         break;
-    case CaptionSideTop:
+    case ECaptionSide::Top:
         m_value.valueID = CSSValueTop;
         break;
-    case CaptionSideBottom:
+    case ECaptionSide::Bottom:
         m_value.valueID = CSSValueBottom;
         break;
     }
@@ -984,19 +984,19 @@ template<> inline ECaptionSide CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueLeft:
-        return CaptionSideLeft;
+        return ECaptionSide::Left;
     case CSSValueRight:
-        return CaptionSideRight;
+        return ECaptionSide::Right;
     case CSSValueTop:
-        return CaptionSideTop;
+        return ECaptionSide::Top;
     case CSSValueBottom:
-        return CaptionSideBottom;
+        return ECaptionSide::Bottom;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return CaptionSideTop;
+    return ECaptionSide::Top;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EClear e)

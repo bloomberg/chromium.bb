@@ -507,7 +507,7 @@ void LayoutTable::layout()
         // FIXME: Collapse caption margin.
         if (!m_captions.isEmpty()) {
             for (unsigned i = 0; i < m_captions.size(); i++) {
-                if (m_captions[i]->style()->captionSide() == CaptionSideBottom)
+                if (m_captions[i]->style()->captionSide() == ECaptionSide::Bottom)
                     continue;
                 layoutCaption(*m_captions[i]);
             }
@@ -591,7 +591,7 @@ void LayoutTable::layout()
         setLogicalHeight(logicalHeight() + borderAndPaddingAfter);
 
         for (unsigned i = 0; i < m_captions.size(); i++) {
-            if (m_captions[i]->style()->captionSide() != CaptionSideBottom)
+            if (m_captions[i]->style()->captionSide() != ECaptionSide::Bottom)
                 continue;
             layoutCaption(*m_captions[i]);
         }
@@ -691,7 +691,7 @@ void LayoutTable::subtractCaptionRect(LayoutRect& rect) const
 {
     for (unsigned i = 0; i < m_captions.size(); i++) {
         LayoutUnit captionLogicalHeight = m_captions[i]->logicalHeight() + m_captions[i]->marginBefore() + m_captions[i]->marginAfter();
-        bool captionIsBefore = (m_captions[i]->style()->captionSide() != CaptionSideBottom) ^ style()->isFlippedBlocksWritingMode();
+        bool captionIsBefore = (m_captions[i]->style()->captionSide() != ECaptionSide::Bottom) ^ style()->isFlippedBlocksWritingMode();
         if (style()->isHorizontalWritingMode()) {
             rect.setHeight(rect.height() - captionLogicalHeight);
             if (captionIsBefore)
