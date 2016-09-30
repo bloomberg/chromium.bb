@@ -1124,7 +1124,7 @@ void DevToolsWindow::CloseWindow() {
 }
 
 void DevToolsWindow::Inspect(scoped_refptr<content::DevToolsAgentHost> host) {
-  DevToolsWindow::OpenDevToolsWindow(host, nullptr);
+  DevToolsWindow::OpenDevToolsWindow(host, profile_);
 }
 
 void DevToolsWindow::SetInspectedPageBounds(const gfx::Rect& rect) {
