@@ -40,9 +40,6 @@ class ConditionEventListener;
 class SMILTimeContainer;
 class SVGSMILElement;
 
-template<typename T> class EventSender;
-using SMILEventSender = EventSender<SVGSMILElement>;
-
 // This class implements SMIL interval timing model as needed for SVG animation.
 class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
     USING_GARBAGE_COLLECTED_MIXIN(SVGSMILElement);
@@ -120,8 +117,9 @@ public:
     void connectSyncBaseConditions();
     void connectEventBaseConditions();
 
-    void dispatchPendingEvent(SMILEventSender*);
-    void dispatchRepeatEvents(unsigned);
+    void scheduleEvent(const AtomicString& eventType);
+    void scheduleRepeatEvents(unsigned);
+    void dispatchPendingEvent(const AtomicString& eventType);
 
     virtual bool isSVGDiscardElement() const { return false; }
 

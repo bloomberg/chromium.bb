@@ -29,9 +29,9 @@
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/XLinkNames.h"
 #include "core/dom/Document.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/EventListener.h"
-#include "core/events/EventSender.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGURIReference.h"
@@ -75,30 +75,6 @@ inline RepeatEvent* toRepeatEvent(Event* event)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!event || event->type() == "repeatn");
     return static_cast<RepeatEvent*>(event);
-}
-
-static SMILEventSender& smilEndEventSender()
-{
-    DEFINE_STATIC_LOCAL(SMILEventSender, sender, (SMILEventSender::create(EventTypeNames::endEvent)));
-    return sender;
-}
-
-static SMILEventSender& smilBeginEventSender()
-{
-    DEFINE_STATIC_LOCAL(SMILEventSender, sender, (SMILEventSender::create(EventTypeNames::beginEvent)));
-    return sender;
-}
-
-static SMILEventSender& smilRepeatEventSender()
-{
-    DEFINE_STATIC_LOCAL(SMILEventSender, sender, (SMILEventSender::create(EventTypeNames::repeatEvent)));
-    return sender;
-}
-
-static SMILEventSender& smilRepeatNEventSender()
-{
-    DEFINE_STATIC_LOCAL(SMILEventSender, sender, (SMILEventSender::create(AtomicString("repeatn"))));
-    return sender;
 }
 
 // This is used for duration type time values that can't be negative.
@@ -1170,36 +1146,36 @@ bool SVGSMILElement::progress(SMILTime elapsed, bool seekToTime)
 
     if (animationIsContributing) {
         if (oldActiveState == Inactive || restartedInterval == DidRestartInterval) {
-            smilBeginEventSender().dispatchEventSoon(this);
+            scheduleEvent(EventTypeNames::beginEvent);
             startedActiveInterval();
         }
 
         if (repeat && repeat != m_lastRepeat)
-            dispatchRepeatEvents(repeat);
+            scheduleRepeatEvents(repeat);
 
         m_lastPercent = percent;
         m_lastRepeat = repeat;
     }
 
     if ((oldActiveState == Active && m_activeState != Active) || restartedInterval == DidRestartInterval) {
-        smilEndEventSender().dispatchEventSoon(this);
+        scheduleEvent(EventTypeNames::endEvent);
         endedActiveInterval();
     }
 
     // Triggering all the pending events if the animation timeline is changed.
     if (seekToTime) {
         if (m_activeState == Inactive)
-            smilBeginEventSender().dispatchEventSoon(this);
+            scheduleEvent(EventTypeNames::beginEvent);
 
         if (repeat) {
             for (unsigned repeatEventCount = 1; repeatEventCount < repeat; repeatEventCount++)
-                dispatchRepeatEvents(repeatEventCount);
+                scheduleRepeatEvents(repeatEventCount);
             if (m_activeState == Inactive)
-                dispatchRepeatEvents(repeat);
+                scheduleRepeatEvents(repeat);
         }
 
         if (m_activeState == Inactive || m_activeState == Frozen)
-            smilEndEventSender().dispatchEventSoon(this);
+            scheduleEvent(EventTypeNames::endEvent);
     }
 
     m_nextProgressTime = calculateNextProgressTime(elapsed);
@@ -1292,17 +1268,21 @@ void SVGSMILElement::endedActiveInterval()
     clearTimesWithDynamicOrigins(m_endTimes);
 }
 
-void SVGSMILElement::dispatchRepeatEvents(unsigned count)
+void SVGSMILElement::scheduleRepeatEvents(unsigned count)
 {
     m_repeatEventCountList.append(count);
-    smilRepeatEventSender().dispatchEventSoon(this);
-    smilRepeatNEventSender().dispatchEventSoon(this);
+    scheduleEvent(EventTypeNames::repeatEvent);
+    scheduleEvent(AtomicString("repeatn"));
 }
 
-void SVGSMILElement::dispatchPendingEvent(SMILEventSender* eventSender)
+void SVGSMILElement::scheduleEvent(const AtomicString& eventType)
 {
-    ASSERT(eventSender == &smilEndEventSender() || eventSender == &smilBeginEventSender() || eventSender == &smilRepeatEventSender() || eventSender == &smilRepeatNEventSender());
-    const AtomicString& eventType = eventSender->eventType();
+    TaskRunnerHelper::get(TaskType::DOMManipulation, &document())->postTask(BLINK_FROM_HERE, WTF::bind(&SVGSMILElement::dispatchPendingEvent, wrapPersistent(this), eventType));
+}
+
+void SVGSMILElement::dispatchPendingEvent(const AtomicString& eventType)
+{
+    DCHECK(eventType == EventTypeNames::endEvent || eventType == EventTypeNames::beginEvent || eventType == EventTypeNames::repeatEvent || eventType == "repeatn");
     if (eventType == "repeatn") {
         unsigned repeatEventCount = m_repeatEventCountList.first();
         m_repeatEventCountList.remove(0);
