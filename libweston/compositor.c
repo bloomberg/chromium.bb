@@ -4514,9 +4514,6 @@ weston_output_enable(struct weston_output *output)
 	if (!wl_list_empty(&c->output_list))
 		x = iterator->x + iterator->width;
 
-	/* Make sure the width and height are configured */
-	assert(output->mm_width && output->mm_height);
-
 	/* Make sure the scale is set up */
 	assert(output->scale);
 
