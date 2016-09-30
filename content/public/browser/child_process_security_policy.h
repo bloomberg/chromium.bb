@@ -34,35 +34,11 @@ class ChildProcessSecurityPolicy {
   static CONTENT_EXPORT ChildProcessSecurityPolicy* GetInstance();
 
   // Web-safe schemes can be requested by any child process.  Once a web-safe
-  // scheme has been registered, any child process can request URLs whose
-  // origins use that scheme. There is no mechanism for revoking web-safe
-  // schemes.
-  //
-  // Only call this function if URLs of this scheme are okay to host in
-  // any ordinary renderer process.
-  //
-  // Registering 'your-scheme' as web-safe also causes 'blob:your-scheme://'
-  // and 'filesystem:your-scheme://' URLs to be considered web-safe.
+  // scheme has been registered, any child process can request URLs with
+  // that scheme.  There is no mechanism for revoking web-safe schemes.
   virtual void RegisterWebSafeScheme(const std::string& scheme) = 0;
 
-  // More restrictive variant of RegisterWebSafeScheme; URLs with this scheme
-  // may be requested by any child process, but navigations to this scheme may
-  // only commit in child processes that have been explicitly granted
-  // permission to do so.
-  //
-  // |always_allow_in_origin_headers| controls whether this scheme is allowed to
-  // appear as the Origin HTTP header in outbound requests, even if the
-  // originating process does not have permission to commit this scheme. This
-  // may be necessary if the scheme is used in conjunction with blink's
-  // IsolatedWorldSecurityOrigin mechanism, as for extension content scripts.
-  virtual void RegisterWebSafeIsolatedScheme(
-      const std::string& scheme,
-      bool always_allow_in_origin_headers) = 0;
-
   // Returns true iff |scheme| has been registered as a web-safe scheme.
-  // TODO(nick): https://crbug.com/651534 This function does not have enough
-  // information to render an appropriate judgment for blob and filesystem URLs;
-  // change it to accept an URL instead.
   virtual bool IsWebSafeScheme(const std::string& scheme) = 0;
 
   // This permission grants only read access to a file.
@@ -81,17 +57,6 @@ class ChildProcessSecurityPolicy {
 
   // This permission grants delete permission for |dir|.
   virtual void GrantDeleteFrom(int child_id, const base::FilePath& dir) = 0;
-
-  // Determine whether the process has the capability to request the URL.
-  // Before servicing a child process's request for a URL, the content layer
-  // calls this method to determine whether it is safe.
-  virtual bool CanRequestURL(int child_id, const GURL& url) = 0;
-
-  // Whether the process is allowed to commit a document from the given URL.
-  // This is more restrictive than CanRequestURL, since CanRequestURL allows
-  // requests that might lead to cross-process navigations or external protocol
-  // handlers.
-  virtual bool CanCommitURL(int child_id, const GURL& url) = 0;
 
   // These methods verify whether or not the child process has been granted
   // permissions perform these functions on |file|.

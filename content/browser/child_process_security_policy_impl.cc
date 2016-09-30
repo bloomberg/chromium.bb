@@ -202,8 +202,6 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
 
   // Determine whether permission has been granted to commit |url|.
   bool CanCommitURL(const GURL& url) {
-    DCHECK(!url.SchemeIsBlob() && !url.SchemeIsFileSystem())
-        << "inner_url extraction should be done already.";
     // Having permission to a scheme implies permission to all of its URLs.
     SchemeMap::const_iterator scheme_judgment(
         scheme_policy_.find(url.scheme()));
@@ -328,10 +326,6 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
   RegisterWebSafeScheme(url::kFtpScheme);
   RegisterWebSafeScheme(url::kDataScheme);
   RegisterWebSafeScheme("feed");
-
-  // TODO(nick): https://crbug.com/651534 blob: and filesystem: schemes embed
-  // other origins, so we should not treat them as web safe. Remove callers of
-  // IsWebSafeScheme(), and then eliminate the next two lines.
   RegisterWebSafeScheme(url::kBlobScheme);
   RegisterWebSafeScheme(url::kFileSystemScheme);
 
@@ -344,6 +338,9 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
 }
 
 ChildProcessSecurityPolicyImpl::~ChildProcessSecurityPolicyImpl() {
+  web_safe_schemes_.clear();
+  pseudo_schemes_.clear();
+  security_state_.clear();
 }
 
 // static
@@ -376,43 +373,25 @@ void ChildProcessSecurityPolicyImpl::Remove(int child_id) {
 void ChildProcessSecurityPolicyImpl::RegisterWebSafeScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
-  DCHECK_EQ(0U, schemes_okay_to_request_in_any_process_.count(scheme))
-      << "Add schemes at most once.";
+  DCHECK_EQ(0U, web_safe_schemes_.count(scheme)) << "Add schemes at most once.";
   DCHECK_EQ(0U, pseudo_schemes_.count(scheme))
       << "Web-safe implies not pseudo.";
 
-  schemes_okay_to_request_in_any_process_.insert(scheme);
-  schemes_okay_to_commit_in_any_process_.insert(scheme);
-}
-
-void ChildProcessSecurityPolicyImpl::RegisterWebSafeIsolatedScheme(
-    const std::string& scheme,
-    bool always_allow_in_origin_headers) {
-  base::AutoLock lock(lock_);
-  DCHECK_EQ(0U, schemes_okay_to_request_in_any_process_.count(scheme))
-      << "Add schemes at most once.";
-  DCHECK_EQ(0U, pseudo_schemes_.count(scheme))
-      << "Web-safe implies not pseudo.";
-
-  schemes_okay_to_request_in_any_process_.insert(scheme);
-  if (always_allow_in_origin_headers)
-    schemes_okay_to_appear_as_origin_headers_.insert(scheme);
+  web_safe_schemes_.insert(scheme);
 }
 
 bool ChildProcessSecurityPolicyImpl::IsWebSafeScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
 
-  return base::ContainsKey(schemes_okay_to_request_in_any_process_, scheme);
+  return base::ContainsKey(web_safe_schemes_, scheme);
 }
 
 void ChildProcessSecurityPolicyImpl::RegisterPseudoScheme(
     const std::string& scheme) {
   base::AutoLock lock(lock_);
   DCHECK_EQ(0U, pseudo_schemes_.count(scheme)) << "Add schemes at most once.";
-  DCHECK_EQ(0U, schemes_okay_to_request_in_any_process_.count(scheme))
-      << "Pseudo implies not web-safe.";
-  DCHECK_EQ(0U, schemes_okay_to_commit_in_any_process_.count(scheme))
+  DCHECK_EQ(0U, web_safe_schemes_.count(scheme))
       << "Pseudo implies not web-safe.";
 
   pseudo_schemes_.insert(scheme);
@@ -436,10 +415,6 @@ void ChildProcessSecurityPolicyImpl::GrantRequestURL(
 
   if (IsPseudoScheme(url.scheme())) {
     return;  // Can't grant the capability to request pseudo schemes.
-  }
-
-  if (url.SchemeIsBlob() || url.SchemeIsFileSystem()) {
-    return;  // Don't grant blanket access to blob: or filesystem: schemes.
   }
 
   {
@@ -631,19 +606,8 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     return false;
   }
 
-  // Blob and filesystem URLs require special treatment, since they embed an
-  // inner origin.
-  if (url.SchemeIsBlob() || url.SchemeIsFileSystem()) {
-    if (IsMalformedBlobUrl(url))
-      return false;
-
-    url::Origin origin(url);
-    return origin.unique() || IsWebSafeScheme(origin.scheme()) ||
-           CanCommitURL(child_id, GURL(origin.Serialize()));
-  }
-
-  if (IsWebSafeScheme(url.scheme()))
-    return true;
+  if (IsMalformedBlobUrl(url))
+    return false;
 
   // If the process can commit the URL, it can request it.
   if (CanCommitURL(child_id, url))
@@ -663,32 +627,18 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
   if (IsPseudoScheme(url.scheme()))
     return base::LowerCaseEqualsASCII(url.spec(), url::kAboutBlankURL);
 
-  // Blob and filesystem URLs require special treatment; validate the inner
-  // origin they embed.
-  if (url.SchemeIsBlob() || url.SchemeIsFileSystem()) {
-    if (IsMalformedBlobUrl(url))
-      return false;
+  if (IsMalformedBlobUrl(url))
+    return false;
 
-    url::Origin origin(url);
-    return origin.unique() || CanCommitURL(child_id, GURL(origin.Serialize()));
-  }
+  // TODO(creis): Tighten this for Site Isolation, so that a URL from a site
+  // that is isolated can only be committed in a process dedicated to that site.
+  // CanRequestURL should still allow all web-safe schemes. See
+  // https://crbug.com/515309.
+  if (IsWebSafeScheme(url.scheme()))
+    return true;  // The scheme has been white-listed for every child process.
 
   {
     base::AutoLock lock(lock_);
-
-    // Most schemes can commit in any process. Note that we check
-    // schemes_okay_to_commit_in_any_process_ here, which is stricter than
-    // IsWebSafeScheme().
-    //
-    // TODO(creis, nick): https://crbug.com/515309: in generalized Site
-    // Isolation and/or --site-per-process, there will be no such thing as a
-    // scheme that is okay to commit in any process. Instead, an URL from a site
-    // that is isolated may only be committed in a process dedicated to that
-    // site, so CanCommitURL will need to rely on explicit, per-process grants.
-    // Note how today, even with extension isolation, the line below does not
-    // enforce that http pages cannot commit in an extension process.
-    if (base::ContainsKey(schemes_okay_to_commit_in_any_process_, url.scheme()))
-      return true;
 
     SecurityStateMap::iterator state = security_state_.find(child_id);
     if (state == security_state_.end())
@@ -712,21 +662,7 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
     return true;
   }
 
-  // If this process can commit |url|, it can use |url| as an origin for
-  // outbound requests.
-  if (CanCommitURL(child_id, url))
-    return true;
-
-  // Allow schemes which may come from scripts executing in isolated worlds;
-  // XHRs issued by such scripts reflect the script origin rather than the
-  // document origin.
-  {
-    base::AutoLock lock(lock_);
-    if (base::ContainsKey(schemes_okay_to_appear_as_origin_headers_,
-                          url.scheme()))
-      return true;
-  }
-  return false;
+  return CanCommitURL(child_id, url);
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadFile(int child_id,
