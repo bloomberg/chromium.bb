@@ -1418,7 +1418,7 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
       dev_installer_prebuilts=False,
       upload_hw_test_artifacts=True,
       upload_symbols=False,
-      useflags=['chromeless_tty'],
+      useflags=append_useflags(['chromeless_tty']),
       signer_tests=False,
       trybot_list=False,
       paygen=False,
