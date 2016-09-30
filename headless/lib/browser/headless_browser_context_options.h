@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "headless/public/headless_browser.h"
@@ -47,6 +48,11 @@ class HeadlessBrowserContextOptions {
   // Since ProtocolHandlerMap is move-only, this method takes ownership of them.
   ProtocolHandlerMap TakeProtocolHandlers();
 
+  // Callback that is invoked to override WebPreferences for RenderViews
+  // created within this HeadlessBrowserContext.
+  const base::Callback<void(WebPreferences*)>&
+  override_web_preferences_callback() const;
+
  private:
   friend class HeadlessBrowserContext::Builder;
 
@@ -62,6 +68,7 @@ class HeadlessBrowserContextOptions {
   base::Optional<bool> incognito_mode_;
 
   ProtocolHandlerMap protocol_handlers_;
+  base::Callback<void(WebPreferences*)> override_web_preferences_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContextOptions);
 };

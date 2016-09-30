@@ -11,7 +11,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/optional.h"
+#include "content/public/common/web_preferences.h"
 #include "headless/public/headless_export.h"
 #include "headless/public/headless_web_contents.h"
 #include "net/base/host_port_pair.h"
@@ -24,6 +26,10 @@ class FilePath;
 namespace headless {
 class HeadlessBrowserImpl;
 class HeadlessBrowserContextOptions;
+
+// Imported into headless namespace for
+// Builder::SetOverrideWebPreferencesCallback().
+using content::WebPreferences;
 
 using ProtocolHandlerMap = std::unordered_map<
     std::string,
@@ -96,6 +102,15 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   // things you intend have access to mojo.
   Builder& EnableUnsafeNetworkAccessWithMojoBindings(
       bool enable_http_and_https_if_mojo_used);
+
+  // Set a callback that is invoked to override WebPreferences for RenderViews
+  // created within this HeadlessBrowserContext. Called whenever the
+  // WebPreferences of a RenderView change. Executed on the browser main thread.
+  //
+  // WARNING: We cannot provide any guarantees about the stability of the
+  // exposed WebPreferences API, so use with care.
+  Builder& SetOverrideWebPreferencesCallback(
+      base::Callback<void(WebPreferences*)> callback);
 
   // By default |HeadlessBrowserContext| inherits the following options from
   // the browser instance. The methods below can be used to override these

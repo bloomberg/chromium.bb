@@ -70,4 +70,9 @@ ProtocolHandlerMap HeadlessBrowserContextOptions::TakeProtocolHandlers() {
   return std::move(protocol_handlers_);
 }
 
+const base::Callback<void(WebPreferences*)>&
+HeadlessBrowserContextOptions::override_web_preferences_callback() const {
+  return override_web_preferences_callback_;
+}
+
 }  // namespace headless

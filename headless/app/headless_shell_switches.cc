@@ -15,6 +15,9 @@ const char kDeterministicFetch[] = "deterministic-fetch";
 // Instructs headless_shell to print document.body.innerHTML to stdout.
 const char kDumpDom[] = "dump-dom";
 
+// Hide scrollbars from screenshots.
+const char kHideScrollbars[] = "hide-scrollbars";
+
 // Uses a specified proxy server, overrides system settings. This switch only
 // affects HTTP and HTTPS requests.
 const char kProxyServer[] = "proxy-server";

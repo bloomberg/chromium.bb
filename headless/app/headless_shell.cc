@@ -75,6 +75,8 @@ class HeadlessShell : public HeadlessWebContents::Observer,
   void OnStart(HeadlessBrowser* browser) {
     browser_ = browser;
 
+    HeadlessBrowserContext::Builder context_builder =
+        browser_->CreateBrowserContextBuilder();
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             headless::switches::kDeterministicFetch)) {
       deterministic_dispatcher_.reset(
@@ -88,12 +90,16 @@ class HeadlessShell : public HeadlessWebContents::Observer,
           base::MakeUnique<headless::DeterministicHttpProtocolHandler>(
               deterministic_dispatcher_.get(), browser->BrowserIOThread());
 
-      browser_context_ = browser_->CreateBrowserContextBuilder()
-                             .SetProtocolHandlers(std::move(protocol_handlers))
-                             .Build();
-    } else {
-      browser_context_ = browser_->CreateBrowserContextBuilder().Build();
+      context_builder.SetProtocolHandlers(std::move(protocol_handlers));
     }
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            headless::switches::kHideScrollbars)) {
+      context_builder.SetOverrideWebPreferencesCallback(
+          base::Bind([](headless::WebPreferences* preferences) {
+            preferences->hide_scrollbars = true;
+          }));
+    }
+    browser_context_ = context_builder.Build();
 
     HeadlessWebContents::Builder builder(
         browser_context_->CreateWebContentsBuilder());

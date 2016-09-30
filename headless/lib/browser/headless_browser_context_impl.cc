@@ -105,7 +105,13 @@ HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
 // static
 HeadlessBrowserContextImpl* HeadlessBrowserContextImpl::From(
     HeadlessBrowserContext* browser_context) {
-  return reinterpret_cast<HeadlessBrowserContextImpl*>(browser_context);
+  return static_cast<HeadlessBrowserContextImpl*>(browser_context);
+}
+
+// static
+HeadlessBrowserContextImpl* HeadlessBrowserContextImpl::From(
+    content::BrowserContext* browser_context) {
+  return static_cast<HeadlessBrowserContextImpl*>(browser_context);
 }
 
 // static
@@ -360,6 +366,13 @@ HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::EnableUnsafeNetworkAccessWithMojoBindings(
     bool enable_http_and_https_if_mojo_used) {
   enable_http_and_https_if_mojo_used_ = enable_http_and_https_if_mojo_used;
+  return *this;
+}
+
+HeadlessBrowserContext::Builder&
+HeadlessBrowserContext::Builder::SetOverrideWebPreferencesCallback(
+    base::Callback<void(WebPreferences*)> callback) {
+  options_->override_web_preferences_callback_ = std::move(callback);
   return *this;
 }
 

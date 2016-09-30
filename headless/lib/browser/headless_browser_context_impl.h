@@ -31,6 +31,8 @@ class HeadlessBrowserContextImpl : public HeadlessBrowserContext,
 
   static HeadlessBrowserContextImpl* From(
       HeadlessBrowserContext* browser_context);
+  static HeadlessBrowserContextImpl* From(
+      content::BrowserContext* browser_context);
 
   static std::unique_ptr<HeadlessBrowserContextImpl> Create(
       HeadlessBrowserContext::Builder* builder);

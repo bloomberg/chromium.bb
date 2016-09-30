@@ -8,7 +8,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
+#include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/public/domains/runtime.h"
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
@@ -265,6 +268,32 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, IncognitoMode) {
   // Similar to test above, but now we are in incognito mode,
   // so nothing should be written to this directory.
   EXPECT_TRUE(base::IsDirectoryEmpty(user_data_dir.GetPath()));
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextWebPreferences) {
+  // By default, hide_scrollbars should be false.
+  EXPECT_FALSE(WebPreferences().hide_scrollbars);
+
+  // Set hide_scrollbars preference to true for a new BrowserContext.
+  HeadlessBrowserContext* browser_context =
+      browser()
+          ->CreateBrowserContextBuilder()
+          .SetOverrideWebPreferencesCallback(
+              base::Bind([](headless::WebPreferences* preferences) {
+                preferences->hide_scrollbars = true;
+              }))
+          .Build();
+  HeadlessWebContents* web_contents =
+      browser_context->CreateWebContentsBuilder()
+          .SetInitialURL(GURL("about:blank"))
+          .Build();
+
+  // Verify that the preference takes effect.
+  HeadlessWebContentsImpl* contents_impl =
+      HeadlessWebContentsImpl::From(web_contents);
+  EXPECT_TRUE(contents_impl->web_contents()
+                  ->GetRenderViewHost()
+                  ->GetWebkitPreferences().hide_scrollbars);
 }
 
 }  // namespace headless

@@ -6,8 +6,13 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
+#include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_browser_main_parts.h"
 #include "headless/lib/browser/headless_devtools_manager_delegate.h"
@@ -26,6 +31,17 @@ content::BrowserMainParts* HeadlessContentBrowserClient::CreateBrowserMainParts(
       base::MakeUnique<HeadlessBrowserMainParts>(browser_);
   browser_->set_browser_main_parts(browser_main_parts.get());
   return browser_main_parts.release();
+}
+
+void HeadlessContentBrowserClient::OverrideWebkitPrefs(
+    content::RenderViewHost* render_view_host,
+    content::WebPreferences* prefs) {
+  auto browser_context = HeadlessBrowserContextImpl::From(
+      render_view_host->GetProcess()->GetBrowserContext());
+  const base::Callback<void(headless::WebPreferences*)>& callback =
+      browser_context->options()->override_web_preferences_callback();
+  if (callback)
+    callback.Run(prefs);
 }
 
 content::DevToolsManagerDelegate*
