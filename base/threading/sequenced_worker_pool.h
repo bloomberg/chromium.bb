@@ -166,6 +166,14 @@ class BASE_EXPORT SequencedWorkerPool : public TaskRunner {
 
   // Returns the SequencedWorkerPool that owns this thread, or null if the
   // current thread is not a SequencedWorkerPool worker thread.
+  //
+  // Always returns nullptr when SequencedWorkerPool is redirected to
+  // TaskScheduler.
+  //
+  // DEPRECATED. Use SequencedTaskRunnerHandle::Get() instead. Consequentially
+  // the only remaining use case is in sequenced_task_runner_handle.cc to
+  // implement that and will soon be removed along with SequencedWorkerPool:
+  // http://crbug.com/622400.
   static scoped_refptr<SequencedWorkerPool> GetWorkerPoolForCurrentThread();
 
   // Returns a unique token that can be used to sequence tasks posted to
