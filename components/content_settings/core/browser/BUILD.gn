@@ -8,7 +8,6 @@ static_library("browser") {
   sources = [
     "content_settings_binary_value_map.cc",
     "content_settings_binary_value_map.h",
-    "content_settings_client.h",
     "content_settings_default_provider.cc",
     "content_settings_default_provider.h",
     "content_settings_details.cc",

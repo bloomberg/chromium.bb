@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/chrome_content_settings_client.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/data_use_measurement/data_use_web_contents_observer.h"
 #include "chrome/browser/engagement/site_engagement_helper.h"
@@ -158,7 +157,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
   chrome_browser_net::PredictorTabHelper::CreateForWebContents(web_contents);
-  ChromeContentSettingsClient::CreateForWebContents(web_contents);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       web_contents,
       autofill::ChromeAutofillClient::FromWebContents(web_contents));
