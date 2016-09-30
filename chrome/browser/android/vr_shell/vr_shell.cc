@@ -119,7 +119,6 @@ VrShell::VrShell(JNIEnv* env,
                  ui::WindowAndroid* ui_window)
     : desktop_screen_tilt_(kDesktopScreenTiltDefault),
       desktop_height_(kDesktopHeightDefault),
-      desktop_position_(kDesktopPositionDefault),
       content_cvc_(content_cvc),
       ui_cvc_(ui_cvc),
       delegate_(nullptr),
@@ -134,6 +133,7 @@ VrShell::VrShell(JNIEnv* env,
   std::unique_ptr<ContentRectangle> rect(new ContentRectangle());
   rect->id = kBrowserUiElementId;
   rect->size = {screen_width, screen_height, 1.0f};
+  rect->translation = kDesktopPositionDefault;
   scene_.AddUiElement(rect);
 
   desktop_plane_ = scene_.GetUiElementById(kBrowserUiElementId);
@@ -319,8 +319,6 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void VrShell::DrawVrShell(const gvr::Mat4f& head_pose) {
   float screen_tilt = desktop_screen_tilt_ * M_PI / 180.0f;
-
-  desktop_plane_->translation = desktop_position_;
 
   HandleQueuedTasks();
 

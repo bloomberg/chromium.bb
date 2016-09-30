@@ -115,7 +115,6 @@ class VrShell : public device::GvrDelegate {
   float desktop_height_;
 
   ContentRectangle* desktop_plane_;
-  gvr::Vec3f desktop_position_;
 
   UiScene scene_;
 
