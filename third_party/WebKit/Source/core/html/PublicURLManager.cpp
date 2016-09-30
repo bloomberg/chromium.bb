@@ -53,9 +53,7 @@ String PublicURLManager::registerURL(ExecutionContext* context, URLRegistrable* 
 {
     SecurityOrigin* origin = context->getSecurityOrigin();
     const KURL& url = BlobURL::createPublicURL(origin);
-    if (url.isEmpty())
-        return String();
-
+    DCHECK(!url.isEmpty());
     const String& urlString = url.getString();
 
     if (!m_isStopped) {

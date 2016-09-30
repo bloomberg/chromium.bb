@@ -35,5 +35,5 @@
 // https://github.com/w3c/mediacapture-main/issues/404
 
 partial interface URL {
-    [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ExecutionContext] static DOMString? createObjectURL(MediaStream stream);
+    [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ExecutionContext] static DOMString createObjectURL(MediaStream stream);
 };
