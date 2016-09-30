@@ -826,6 +826,10 @@ void CompositorImpl::SetNeedsAnimate() {
   host_->SetNeedsAnimate();
 }
 
+uint32_t CompositorImpl::GetSurfaceClientId() {
+  return surface_id_allocator_->client_id();
+}
+
 bool CompositorImpl::HavePendingReadbacks() {
   return !readback_layer_tree_->children().empty();
 }

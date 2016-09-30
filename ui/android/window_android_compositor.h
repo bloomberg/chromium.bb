@@ -30,6 +30,7 @@ class UI_ANDROID_EXPORT WindowAndroidCompositor {
                        base::TimeDelta vsync_period) = 0;
   virtual void SetNeedsAnimate() = 0;
   virtual ResourceManager& GetResourceManager() = 0;
+  virtual uint32_t GetSurfaceClientId() = 0;
 };
 
 }  // namespace ui

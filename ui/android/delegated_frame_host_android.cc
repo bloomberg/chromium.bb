@@ -93,6 +93,7 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
 DelegatedFrameHostAndroid::~DelegatedFrameHostAndroid() {
   DestroyDelegatedContent();
   surface_factory_.reset();
+  UnregisterSurfaceNamespaceHierarchy();
   surface_manager_->InvalidateSurfaceClientId(
       surface_id_allocator_->client_id());
   background_layer_->RemoveFromParent();
@@ -221,6 +222,27 @@ void DelegatedFrameHostAndroid::UpdateContainerSizeinDIP(
   UpdateBackgroundLayer();
 }
 
+void DelegatedFrameHostAndroid::RegisterSurfaceNamespaceHierarchy(
+    uint32_t parent_id) {
+  if (registered_parent_client_id_ != 0u)
+    UnregisterSurfaceNamespaceHierarchy();
+  registered_parent_client_id_ = parent_id;
+  surface_manager_->RegisterSurfaceFactoryClient(
+      surface_id_allocator_->client_id(), this);
+  surface_manager_->RegisterSurfaceNamespaceHierarchy(
+      parent_id, surface_id_allocator_->client_id());
+}
+
+void DelegatedFrameHostAndroid::UnregisterSurfaceNamespaceHierarchy() {
+  if (registered_parent_client_id_ == 0u)
+    return;
+  surface_manager_->UnregisterSurfaceFactoryClient(
+      surface_id_allocator_->client_id());
+  surface_manager_->UnregisterSurfaceNamespaceHierarchy(
+      registered_parent_client_id_, surface_id_allocator_->client_id());
+  registered_parent_client_id_ = 0u;
+}
+
 void DelegatedFrameHostAndroid::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   return_resources_callback_.Run(resources);
@@ -228,7 +250,8 @@ void DelegatedFrameHostAndroid::ReturnResources(
 
 void DelegatedFrameHostAndroid::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
-  // TODO(tansell): Hook this up.
+  // TODO(enne): hook this up instead of making RWHVAndroid a
+  // WindowAndroidObserver.
 }
 
 void DelegatedFrameHostAndroid::UpdateBackgroundLayer() {

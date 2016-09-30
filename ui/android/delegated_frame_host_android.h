@@ -64,6 +64,11 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   void UpdateContainerSizeinDIP(const gfx::Size& size_in_dip);
 
+  // Called when this DFH is attached/detached from a parent browser compositor
+  // and needs to be attached to the surface hierarchy.
+  void RegisterSurfaceNamespaceHierarchy(uint32_t parent_id);
+  void UnregisterSurfaceNamespaceHierarchy();
+
  private:
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;
@@ -75,6 +80,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   cc::SurfaceManager* surface_manager_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
+  uint32_t registered_parent_client_id_ = 0u;
   ReturnResourcesCallback return_resources_callback_;
 
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;

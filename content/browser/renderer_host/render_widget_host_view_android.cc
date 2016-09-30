@@ -1387,6 +1387,13 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   uint32_t outstanding_vsync_requests = outstanding_vsync_requests_;
   outstanding_vsync_requests_ = 0;
   RequestVSyncUpdate(outstanding_vsync_requests);
+
+  ui::WindowAndroidCompositor* compositor =
+      content_view_core_->GetWindowAndroid()->GetCompositor();
+  if (compositor) {
+    delegated_frame_host_->RegisterSurfaceNamespaceHierarchy(
+        compositor->GetSurfaceClientId());
+  }
 }
 
 void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
@@ -1405,6 +1412,10 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
   if (host_)
     host_->Send(new ViewMsg_SetBeginFramePaused(host_->GetRoutingID(), true));
   content_view_core_->GetWindowAndroid()->RemoveObserver(this);
+  // If the DFH has already been destroyed, it will have cleaned itself up.
+  // This happens in some WebView cases.
+  if (delegated_frame_host_)
+    delegated_frame_host_->UnregisterSurfaceNamespaceHierarchy();
 }
 
 void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
@@ -1801,6 +1812,10 @@ void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   if (!overscroll_controller_)
     overscroll_controller_ = CreateOverscrollController(
         content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
+  ui::WindowAndroidCompositor* compositor =
+      content_view_core_->GetWindowAndroid()->GetCompositor();
+  delegated_frame_host_->RegisterSurfaceNamespaceHierarchy(
+      compositor->GetSurfaceClientId());
 }
 
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
@@ -1808,6 +1823,7 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   DCHECK(using_browser_compositor_);
   RunAckCallbacks();
   overscroll_controller_.reset();
+  delegated_frame_host_->UnregisterSurfaceNamespaceHierarchy();
 }
 
 void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
