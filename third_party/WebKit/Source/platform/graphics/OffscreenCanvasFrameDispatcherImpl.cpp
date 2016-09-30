@@ -11,6 +11,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/returned_resource.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
@@ -54,8 +55,9 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(RefPtr<StaticBitmapImage>
     cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
     sqs->SetAll(gfx::Transform(), bounds.size(), bounds, bounds, false, 1.f, SkXfermode::kSrcOver_Mode, 0);
 
-    if (!image->isTextureBacked()) {
-        // TODO(xlai): Make unaccelerated 2d canvas work. See crbug.com/563858
+    if (!image->isTextureBacked() && !isMainThread()) {
+        // TODO(xlai): Implement unaccelerated 2d canvas on worker.
+        // See crbug.com/563858.
         // This is a temporary code that submits a solidColor frame.
         cc::SolidColorDrawQuad* quad = pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
         const bool forceAntialiasingOff = false;
@@ -67,18 +69,36 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(RefPtr<StaticBitmapImage>
         // TODO(crbug.com/645590): filter should respect the image-rendering CSS property of associated canvas element.
         resource.filter = GL_LINEAR;
         resource.size = gfx::Size(m_width, m_height);
-        image->ensureMailbox();
-        resource.mailbox_holder = gpu::MailboxHolder(image->getMailbox(), image->getSyncToken(), GL_TEXTURE_2D);
-        resource.read_lock_fences_enabled = false;
-        resource.is_software = false;
+        if (!image->isTextureBacked()) {
+            std::unique_ptr<cc::SharedBitmap> bitmap = Platform::current()->allocateSharedBitmap(IntSize(m_width, m_height));
+            if (!bitmap)
+                return;
+            unsigned char* pixels = bitmap->pixels();
+            DCHECK(pixels);
+            SkImageInfo imageInfo = SkImageInfo::Make(m_width, m_height, kN32_SkColorType, image->isPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
+            // TODO(xlai): Optimize to avoid copying pixels. See crbug.com/651456.
+            image->imageForCurrentFrame()->readPixels(imageInfo, pixels, imageInfo.minRowBytes(), 0, 0);
+            resource.mailbox_holder.mailbox = bitmap->id();
+            resource.is_software = true;
+
+            // Hold ref to |bitmap|, to keep it alive until the browser ReturnResources.
+            // It guarantees that the shared bitmap is not re-used or deleted.
+            m_sharedBitmaps.add(getNextResourceIdAndIncrement(), std::move(bitmap));
+        } else {
+            image->ensureMailbox();
+            resource.mailbox_holder = gpu::MailboxHolder(image->getMailbox(), image->getSyncToken(), GL_TEXTURE_2D);
+            resource.read_lock_fences_enabled = false;
+            resource.is_software = false;
+
+            // Hold ref to |image|, to keep it alive until the browser ReturnResources.
+            // It guarantees that the resource is not re-used or deleted.
+            m_cachedImages.add(getNextResourceIdAndIncrement(), std::move(image));
+        }
         // TODO(crbug.com/646022): making this overlay-able.
         resource.is_overlay_candidate = false;
 
         frame.delegated_frame_data->resource_list.push_back(std::move(resource));
 
-        // Hold ref to |image|, to keep it alive until the browser ReturnResources.
-        // It guarantees that the resource is not re-used or deleted.
-        m_cachedImages.add(m_nextResourceId++, std::move(image));
 
         cc::TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
         gfx::Size rectSize(m_width, m_height);
@@ -103,8 +123,10 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(RefPtr<StaticBitmapImage>
 
 void OffscreenCanvasFrameDispatcherImpl::ReturnResources(Vector<cc::mojom::blink::ReturnedResourcePtr> resources)
 {
-    for (const auto& resource : resources)
+    for (const auto& resource : resources) {
         m_cachedImages.remove(resource->id);
+        m_sharedBitmaps.remove(resource->id);
+    }
 }
 
 bool OffscreenCanvasFrameDispatcherImpl::verifyImageSize(const sk_sp<SkImage>& image)

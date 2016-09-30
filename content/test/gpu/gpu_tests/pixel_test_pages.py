@@ -164,19 +164,29 @@ def ExperimentalCanvasFeaturesPages(base_name):
       browser_args=browser_args),
 
     PixelTestPage(
-      'pixel_acceleratedOffscreen2d_commit_main.html',
+      'pixel_offscreenCanvas_2d_commit_main.html',
       base_name + '_OffscreenCanvasAccelerated2D',
       test_rect=[0, 0, 350, 350],
       revision=1,
       browser_args=browser_args),
 
     PixelTestPage(
-      'pixel_acceleratedOffscreen2d_commit_worker.html',
+      'pixel_offscreenCanvas_2d_commit_worker.html',
       base_name + '_OffscreenCanvasAccelerated2DWorker',
       test_rect=[0, 0, 350, 350],
       revision=1,
       browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_offscreenCanvas_2d_commit_main.html',
+      base_name + '_OffscreenCanvasUnaccelerated2D',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      browser_args=browser_args + [
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu-compositing']),
   ]
+
 
 # Pages that should be run with various macOS specific command line
 # arguments.

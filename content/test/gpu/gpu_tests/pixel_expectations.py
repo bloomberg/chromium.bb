@@ -31,5 +31,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CSSFilterEffects', ['mac'], bug=581526)
     self.Fail('Pixel_CSSFilterEffects_NoOverlays', ['mac'], bug=581526)
 
+    # TODO(xlai) check / generate reference images.
+    self.Fail('Pixel_OffscreenCanvasUnaccelerated2D', bug=563852)
+
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)

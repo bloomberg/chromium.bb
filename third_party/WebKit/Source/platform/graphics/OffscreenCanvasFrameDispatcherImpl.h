@@ -6,6 +6,7 @@
 #define OffscreenCanvasFrameDispatcherImpl_h
 
 #include "cc/ipc/mojo_compositor_frame_sink.mojom-blink.h"
+#include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
@@ -33,7 +34,9 @@ private:
     const int m_height;
 
     unsigned m_nextResourceId;
+    unsigned getNextResourceIdAndIncrement() { return m_nextResourceId++; }
     HashMap<unsigned, RefPtr<StaticBitmapImage>> m_cachedImages;
+    HashMap<unsigned, std::unique_ptr<cc::SharedBitmap>> m_sharedBitmaps;
 
     bool verifyImageSize(const sk_sp<SkImage>&);
 

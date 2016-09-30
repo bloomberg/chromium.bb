@@ -118,7 +118,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
       expectations=expectations))
 
     self.AddStory(PixelTestsPage(
-      url='file://../../data/gpu/pixel_acceleratedOffscreen2d_commit_main.html',
+      url='file://../../data/gpu/pixel_offscreenCanvas_2d_commit_main.html',
       name=base_name + '.OffscreenCanvasAccelerated2D',
       test_rect=[0, 0, 350, 350],
       revision=1,
@@ -127,7 +127,7 @@ class PixelTestsStorySet(story_set_module.StorySet):
       expectations=expectations))
 
     self.AddStory(PixelTestsPage(
-      url='file://../../data/gpu/pixel_acceleratedOffscreen2d_commit_worker.html',
+      url='file://../../data/gpu/pixel_offscreenCanvas_2d_commit_worker.html',
       name=base_name + '.OffscreenCanvasAccelerated2DWorker',
       test_rect=[0, 0, 350, 350],
       revision=1,
