@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.ntp.LogoBridge.Logo;
 import org.chromium.chrome.browser.ntp.LogoBridge.LogoObserver;
 import org.chromium.chrome.browser.ntp.MostVisitedItem.MostVisitedItemManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
+import org.chromium.chrome.browser.ntp.cards.CardsVariationParameters;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
@@ -346,7 +347,7 @@ public class NewTabPageView extends FrameLayout
             stub.setLayoutResource(R.layout.new_tab_page_scroll_view);
             mScrollView = (NewTabPageScrollView) stub.inflate();
             mScrollView.setBackgroundColor(
-                    NtpColorUtils.getBackgroundColorResource(getResources(), false));
+                    NtpStyleUtils.getBackgroundColorResource(getResources(), false));
             mScrollView.enableBottomShadow(SHADOW_COLOR);
             mNewTabPageLayout = (NewTabPageLayout) findViewById(R.id.ntp_content);
         }
@@ -363,7 +364,7 @@ public class NewTabPageView extends FrameLayout
 
         initializeSearchBoxTextView();
         initializeVoiceSearchButton();
-        initializeToolbar();
+        initializeBottomToolbar();
 
         mNewTabPageLayout.addOnLayoutChangeListener(this);
         setSearchProviderHasLogo(searchProviderHasLogo);
@@ -377,6 +378,12 @@ public class NewTabPageView extends FrameLayout
             mNewTabPageAdapter = NewTabPageAdapter.create(mManager, mNewTabPageLayout, mUiConfig);
             mRecyclerView.setAdapter(mNewTabPageAdapter);
             mRecyclerView.scrollToPosition(scrollPosition);
+
+            if (CardsVariationParameters.isScrollBelowTheFoldEnabled()) {
+                int searchBoxHeight = NtpStyleUtils.getSearchBoxHeight(getResources());
+                mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
+                        mNewTabPageAdapter.getFirstHeaderPosition(), searchBoxHeight);
+            }
 
             // Set up swipe-to-dismiss
             ItemTouchHelper helper =
@@ -451,7 +458,7 @@ public class NewTabPageView extends FrameLayout
      * Sets up event listeners for the bottom toolbar if it is enabled. Removes the bottom toolbar
      * if it is disabled.
      */
-    private void initializeToolbar() {
+    private void initializeBottomToolbar() {
         NewTabPageToolbar toolbar = (NewTabPageToolbar) findViewById(R.id.ntp_toolbar);
         if (SnippetsConfig.isEnabled()) {
             ((ViewGroup) toolbar.getParent()).removeView(toolbar);
@@ -908,19 +915,28 @@ public class NewTabPageView extends FrameLayout
             final String[] whitelistIconPaths, final int[] sources) {
         Set<String> urlSet = new HashSet<>(Arrays.asList(urls));
 
+        // If no Most Visited items have been built yet, this is the initial load. Build the Most
+        // Visited items immediately so the layout is stable during initial rendering. They can be
+        // replaced later if there are offline urls, but that will not affect the layout widths and
+        // heights. A stable layout enables reliable scroll position initialization.
+        if (!mHasReceivedMostVisitedSites) {
+            buildMostVisitedItems(titles, urls, whitelistIconPaths, null, sources);
+        }
+
         // TODO(https://crbug.com/607573): We should show offline-available content in a nonblocking
         // way so that responsiveness of the NTP does not depend on ready availability of offline
         // pages.
         mManager.getUrlsAvailableOffline(urlSet, new Callback<Set<String>>() {
             @Override
             public void onResult(Set<String> offlineUrls) {
-                onOfflineUrlsAvailable(titles, urls, whitelistIconPaths, offlineUrls, sources);
+                buildMostVisitedItems(titles, urls, whitelistIconPaths, offlineUrls, sources);
             }
         });
     }
 
-    private void onOfflineUrlsAvailable(final String[] titles, final String[] urls,
-            final String[] whitelistIconPaths, final Set<String> offlineUrls, final int[] sources) {
+    private void buildMostVisitedItems(final String[] titles, final String[] urls,
+            final String[] whitelistIconPaths, @Nullable final Set<String> offlineUrls,
+            final int[] sources) {
         mMostVisitedLayout.removeAllViews();
 
         MostVisitedItem[] oldItems = mMostVisitedItems;
@@ -937,7 +953,7 @@ public class NewTabPageView extends FrameLayout
             final String whitelistIconPath = whitelistIconPaths[i];
             final int source = sources[i];
 
-            boolean offlineAvailable = offlineUrls.contains(url);
+            boolean offlineAvailable = offlineUrls != null && offlineUrls.contains(url);
 
             // Look for an existing item to reuse.
             MostVisitedItem item = null;

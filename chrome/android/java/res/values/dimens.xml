@@ -263,6 +263,7 @@
     <dimen name="most_visited_icon_size">48dp</dimen>
     <dimen name="most_visited_offline_badge_size">24dp</dimen>
     <dimen name="ntp_logo_height">116dp</dimen>
+    <dimen name="ntp_search_box_height">48dp</dimen>
     <dimen name="ntp_search_box_material_margin_left">10dp</dimen>
     <dimen name="ntp_search_box_material_margin_right">10dp</dimen>
     <dimen name="ntp_search_box_material_margin_top">0dp</dimen>

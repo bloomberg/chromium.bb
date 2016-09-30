@@ -257,6 +257,10 @@ public class NewTabPageRecyclerView extends RecyclerView {
         return (NewTabPageAdapter) getAdapter();
     }
 
+    public LinearLayoutManager getLinearLayoutManager() {
+        return mLayoutManager;
+    }
+
     /**
      * Returns the approximate adapter position that the user has scrolled to. The purpose of this
      * value is that it can be stored and later retrieved to restore a scroll position that is

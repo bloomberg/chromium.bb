@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import android.text.TextUtils;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.components.variations.VariationsAssociatedData;
 
@@ -23,22 +22,18 @@ public final class CardsVariationParameters {
     private static final String PARAM_FIRST_CARD_OFFSET = "first_card_offset";
     private static final String PARAM_FAVICON_SERVICE_NAME = "favicons_fetch_from_service";
     private static final String PARAM_DISABLED_VALUE = "off";
+    private static final String PARAM_SCROLL_BELOW_THE_FOLD = "scroll_below_the_fold";
 
-    private CardsVariationParameters() {
-    }
+    private CardsVariationParameters() {}
 
     /**
      * Provides the value of the field trial to offset the peeking card (can be overridden
      * with a command line flag). It will return 0 if there is no such field trial.
      */
     public static int getFirstCardOffsetDp() {
-        String value = CommandLine.getInstance().getSwitchValue(PARAM_FIRST_CARD_OFFSET);
-
-        if (TextUtils.isEmpty(value)) {
-            // TODO(jkrcal): Get parameter by feature name, not field trial name.
-            value = VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME,
-                    PARAM_FIRST_CARD_OFFSET);
-        }
+        // TODO(jkrcal): Get parameter by feature name, not field trial name.
+        String value = VariationsAssociatedData.getVariationParamValue(
+                FIELD_TRIAL_NAME, PARAM_FIRST_CARD_OFFSET);
 
         if (!TextUtils.isEmpty(value)) {
             try {
@@ -49,6 +44,14 @@ public final class CardsVariationParameters {
         }
 
         return 0;
+    }
+
+    /**
+     * @return Whether the NTP should initially be scrolled below the fold.
+     */
+    public static boolean isScrollBelowTheFoldEnabled() {
+        return Boolean.parseBoolean(VariationsAssociatedData.getVariationParamValue(
+                FIELD_TRIAL_NAME, PARAM_SCROLL_BELOW_THE_FOLD));
     }
 
     public static boolean isFaviconServiceEnabled() {

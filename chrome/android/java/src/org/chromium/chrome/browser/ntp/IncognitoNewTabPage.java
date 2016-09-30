@@ -57,7 +57,7 @@ public class IncognitoNewTabPage implements NativePage, InvalidationAwareThumbna
         mActivity = activity;
 
         mTitle = activity.getResources().getString(R.string.button_new_tab);
-        mBackgroundColor = NtpColorUtils.getBackgroundColorResource(activity.getResources(), true);
+        mBackgroundColor = NtpStyleUtils.getBackgroundColorResource(activity.getResources(), true);
         mThemeColor = ApiCompatibilityUtils.getColor(activity.getResources(),
                 R.color.incognito_primary_color);
 

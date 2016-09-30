@@ -10,7 +10,7 @@ import android.graphics.Color;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.ntp.NtpColorUtils;
+import org.chromium.chrome.browser.ntp.NtpStyleUtils;
 import org.chromium.chrome.browser.tab.Tab;
 
 /**
@@ -61,7 +61,7 @@ public class ColorUtils {
             // NTP should have no visible textbox in the toolbar, so just return the toolbar's
             // background color.
             if (tab.getNativePage() instanceof NewTabPage) {
-                return NtpColorUtils.getToolbarBackgroundColorResource(res);
+                return NtpStyleUtils.getToolbarBackgroundColorResource(res);
             }
 
             return Color.WHITE;

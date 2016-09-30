@@ -254,7 +254,7 @@ public class NewTabPageLayout extends LinearLayout {
      * Set the search box style, adding a shadow if required.
      */
     private void setSearchBoxStyle() {
-        if (!NtpColorUtils.shouldUseMaterialColors()) return;
+        if (!NtpStyleUtils.shouldUseMaterialDesign()) return;
 
         Resources resources = getContext().getResources();
 
