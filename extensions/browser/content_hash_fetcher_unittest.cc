@@ -148,7 +148,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
   scoped_refptr<Extension> UnzipToTempDirAndLoad(
       const base::FilePath& extension_zip) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath destination = temp_dir_.path();
+    base::FilePath destination = temp_dir_.GetPath();
     EXPECT_TRUE(zip::Unzip(extension_zip, destination));
 
     std::string error;

@@ -49,7 +49,7 @@ TEST(QuarantineWinTest, MissingFile) {
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
 
   EXPECT_EQ(QuarantineFileResult::FILE_MISSING,
-            QuarantineFile(test_dir.path().AppendASCII("does-not-exist.exe"),
+            QuarantineFile(test_dir.GetPath().AppendASCII("does-not-exist.exe"),
                            GURL(kDummySourceUrl), GURL(kDummyReferrerUrl),
                            kDummyClientGuid));
 }
@@ -63,7 +63,7 @@ TEST(QuarantineWinTest, LocalFile_DependsOnLocalConfig) {
   base::HistogramTester histogram_tester;
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
-  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
 
   const char* const kLocalSourceURLs[] = {
     "http://localhost/foo",
@@ -108,7 +108,7 @@ TEST(QuarantineWinTest, DownloadedFile_DependsOnLocalConfig) {
   base::HistogramTester histogram_tester;
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
-  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
 
   for (const auto source_url : kUntrustedURLs) {
     SCOPED_TRACE(::testing::Message() << "Trying URL " << source_url);
@@ -140,7 +140,7 @@ TEST(QuarantineWinTest, UnsafeReferrer_DependsOnLocalConfig) {
   base::HistogramTester histogram_tester;
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
-  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
 
   std::vector<std::string> unsafe_referrers(std::begin(kUntrustedURLs),
                                             std::end(kUntrustedURLs));
@@ -181,7 +181,7 @@ TEST(QuarantineWinTest, EmptySource_DependsOnLocalConfig) {
   base::HistogramTester histogram_tester;
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
-  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
   ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
             base::WriteFile(test_file, kTestData, arraysize(kTestData)));
 
@@ -206,7 +206,7 @@ TEST(QuarantineWinTest, EmptyFile) {
   base::HistogramTester histogram_tester;
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
-  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
   ASSERT_EQ(0, base::WriteFile(test_file, "", 0u));
 
   EXPECT_EQ(QuarantineFileResult::OK,
@@ -228,7 +228,7 @@ TEST(QuarantineWinTest, EmptyFile) {
 TEST(QuarantineWinTest, NoClientGuid) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
-  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
   ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
             base::WriteFile(test_file, kTestData, arraysize(kTestData)));
 
@@ -247,7 +247,7 @@ TEST(QuarantineWinTest, NoClientGuid) {
 TEST(QuarantineWinTest, SuperLongURL) {
   base::ScopedTempDir test_dir;
   ASSERT_TRUE(test_dir.CreateUniqueTempDir());
-  base::FilePath test_file = test_dir.path().AppendASCII("foo.exe");
+  base::FilePath test_file = test_dir.GetPath().AppendASCII("foo.exe");
   ASSERT_EQ(static_cast<int>(arraysize(kTestData)),
             base::WriteFile(test_file, kTestData, arraysize(kTestData)));
 

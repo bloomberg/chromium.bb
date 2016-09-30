@@ -49,9 +49,9 @@ TEST(BaseFileWin, AnnotateWithSourceInformation) {
   base::ScopedTempDir target_directory;
   ASSERT_TRUE(target_directory.CreateUniqueTempDir());
 
-  ASSERT_EQ(6,
-            base::WriteFile(target_directory.path().AppendASCII("exists.txt"),
-                            "Exists", 6));
+  ASSERT_EQ(
+      6, base::WriteFile(target_directory.GetPath().AppendASCII("exists.txt"),
+                         "Exists", 6));
 
   for (const auto& test_case : kTestCases) {
     GURL url(test_case.url);
@@ -61,8 +61,8 @@ TEST(BaseFileWin, AnnotateWithSourceInformation) {
     if (url.SchemeIsFile()) {
       base::FilePath relative_path =
           base::FilePath().AppendASCII(url.path().substr(1));
-      url =
-          net::FilePathToFileURL(target_directory.path().Append(relative_path));
+      url = net::FilePathToFileURL(
+          target_directory.GetPath().Append(relative_path));
     }
 
     SCOPED_TRACE(::testing::Message() << "Source URL: " << url.spec()
@@ -70,13 +70,13 @@ TEST(BaseFileWin, AnnotateWithSourceInformation) {
 
     BaseFile base_file((net::NetLogWithSource()));
     ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-              base_file.Initialize(base::FilePath(), target_directory.path(),
+              base_file.Initialize(base::FilePath(), target_directory.GetPath(),
                                    base::File(), 0, std::string(),
                                    std::unique_ptr<crypto::SecureHash>()));
     ASSERT_FALSE(base_file.full_path().empty());
-    ASSERT_EQ(
-        DOWNLOAD_INTERRUPT_REASON_NONE,
-        base_file.Rename(target_directory.path().AppendASCII("test_file.doc")));
+    ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
+              base_file.Rename(
+                  target_directory.GetPath().AppendASCII("test_file.doc")));
     ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
               base_file.AnnotateWithSourceInformation(
                   "7B2CEE7C-DC81-4160-86F1-9C968597118F", url, referrer));
