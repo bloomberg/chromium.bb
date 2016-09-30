@@ -19,6 +19,11 @@ inline HTMLMenuItemElement::HTMLMenuItemElement(Document& document)
     UseCounter::count(document, UseCounter::MenuItemElement);
 }
 
+bool HTMLMenuItemElement::isURLAttribute(const Attribute& attribute) const
+{
+    return attribute.name() == iconAttr || HTMLElement::isURLAttribute(attribute);
+}
+
 void HTMLMenuItemElement::defaultEventHandler(Event* event)
 {
     if (event->type() == EventTypeNames::click) {

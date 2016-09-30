@@ -9,7 +9,7 @@
 ] interface HTMLMenuItemElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString type;
     [CEReactions, Reflect] attribute DOMString label;
-    [CEReactions, Reflect] attribute DOMString icon;
+    [CEReactions, Reflect, URL] attribute DOMString icon;
     [CEReactions, Reflect] attribute boolean disabled;
     [CEReactions, Reflect] attribute boolean checked;
     [CEReactions, Reflect] attribute DOMString radiogroup;

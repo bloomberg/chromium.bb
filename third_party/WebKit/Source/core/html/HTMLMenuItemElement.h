@@ -16,6 +16,7 @@ public:
 
 private:
     explicit HTMLMenuItemElement(Document&);
+    bool isURLAttribute(const Attribute&) const override;
     void defaultEventHandler(Event*) override;
 };
 
