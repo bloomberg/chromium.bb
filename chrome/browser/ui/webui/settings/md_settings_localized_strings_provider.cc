@@ -1047,6 +1047,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
                            base::FormatNumber(int64_t{j}));
   }
 
+  html_source->AddString("syncLearnMoreUrl", chrome::kSyncLearnMoreURL);
   html_source->AddString("autofillHelpURL", autofill::kHelpURL);
   html_source->AddString("supervisedUsersUrl",
                          chrome::kLegacySupervisedUserManagementURL);

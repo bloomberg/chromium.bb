@@ -117,7 +117,12 @@
         </div>
         <div class="settings-box two-line"
             hidden="[[!showSignin_(syncStatus)]]">
-          $i18n{syncOverview}
+          <div>
+            $i18n{syncOverview}
+            <a target="_blank" href="$i18n{syncLearnMoreUrl}">
+              $i18n{learnMore}
+            </a>
+          </div>
         </div>
 
 <if expr="not chromeos">
