@@ -22,7 +22,10 @@ cr.define('md_history', function() {
 Polymer({
   is: 'history-app',
 
-  behaviors: [Polymer.IronScrollTargetBehavior],
+  behaviors: [
+    Polymer.IronScrollTargetBehavior,
+    WebUIListenerBehavior,
+  ],
 
   properties: {
     // Used to display notices for profile sign-in status.
@@ -103,6 +106,12 @@ Polymer({
     cr.ui.decorate('command', cr.ui.Command);
     document.addEventListener('canExecute', this.onCanExecute_.bind(this));
     document.addEventListener('command', this.onCommand_.bind(this));
+  },
+
+  /** @override */
+  attached: function() {
+    this.addWebUIListener('sign-in-state-updated',
+                          this.updateSignInState.bind(this));
   },
 
   onFirstRender: function() {

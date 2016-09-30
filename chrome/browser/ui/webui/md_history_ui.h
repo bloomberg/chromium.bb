@@ -17,9 +17,6 @@ class ListValue;
 class RefCountedMemory;
 }
 
-namespace content {
-class WebUIDataSource;
-}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -45,10 +42,10 @@ class MdHistoryUI : public content::WebUIController {
 
   static bool use_test_title_;
 
+  void CreateDataSource();
+
   // Handler for the "menuPromoShown" message from the page. No arguments.
   void HandleMenuPromoShown(const base::ListValue* args);
-
-  content::WebUIDataSource* data_source_;  // weak
 
   DISALLOW_COPY_AND_ASSIGN(MdHistoryUI);
 };

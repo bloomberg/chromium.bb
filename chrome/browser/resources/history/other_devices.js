@@ -585,6 +585,8 @@ function load() {
   $('search-field').addEventListener('search', doSearch);
   $('search-button').addEventListener('click', doSearch);
 
+  cr.addWebUIListener('sign-in-state-updated', updateSignInState);
+
   chrome.send('otherDevicesInitialized');
 }
 

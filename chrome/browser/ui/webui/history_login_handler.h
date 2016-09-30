@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -15,7 +16,7 @@ class ProfileInfoWatcher;
 // The handler for login-related messages from chrome://history.
 class HistoryLoginHandler : public content::WebUIMessageHandler {
  public:
-  HistoryLoginHandler();
+  explicit HistoryLoginHandler(const base::Closure& signin_callback);
   ~HistoryLoginHandler() override;
 
   // WebUIMessageHandler implementation.
@@ -34,6 +35,8 @@ class HistoryLoginHandler : public content::WebUIMessageHandler {
   // Watches this web UI's profile for info changes (e.g. authenticated username
   // changes).
   std::unique_ptr<ProfileInfoWatcher> profile_info_watcher_;
+
+  base::Closure signin_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryLoginHandler);
 };

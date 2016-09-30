@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -16,7 +17,9 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
-HistoryLoginHandler::HistoryLoginHandler() {}
+HistoryLoginHandler::HistoryLoginHandler(const base::Closure& signin_callback)
+    : signin_callback_(signin_callback) {}
+
 HistoryLoginHandler::~HistoryLoginHandler() {}
 
 void HistoryLoginHandler::RegisterMessages() {
@@ -36,13 +39,20 @@ void HistoryLoginHandler::RegisterMessages() {
 
 void HistoryLoginHandler::HandleOtherDevicesInitialized(
     const base::ListValue* /*args*/) {
+  AllowJavascript();
   ProfileInfoChanged();
 }
 
 void HistoryLoginHandler::ProfileInfoChanged() {
   bool signed_in = !profile_info_watcher_->GetAuthenticatedUsername().empty();
-  web_ui()->CallJavascriptFunctionUnsafe("updateSignInState",
-                                         base::FundamentalValue(signed_in));
+  if (!signin_callback_.is_null())
+    signin_callback_.Run();
+
+  if (IsJavascriptAllowed()) {
+    CallJavascriptFunction("cr.webUIListenerCallback",
+                           base::StringValue("sign-in-state-updated"),
+                           base::FundamentalValue(signed_in));
+  }
 }
 
 void HistoryLoginHandler::HandleStartSignInFlow(

@@ -180,7 +180,8 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 #if !defined(OS_ANDROID)
   if (search::IsInstantExtendedAPIEnabled()) {
     web_ui->AddMessageHandler(new browser_sync::ForeignSessionHandler());
-    web_ui->AddMessageHandler(new HistoryLoginHandler());
+    web_ui->AddMessageHandler(new HistoryLoginHandler(
+        base::Bind(&HistoryUI::CreateDataSource, base::Unretained(this))));
   }
 #endif
 
@@ -199,8 +200,7 @@ HistoryUI::HistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   }
 
   // Set up the chrome://history-frame/ source.
-  Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateHistoryUIHTMLSource(profile));
+  CreateDataSource();
 }
 
 HistoryUI::~HistoryUI() {}
@@ -210,4 +210,12 @@ base::RefCountedMemory* HistoryUI::GetFaviconResourceBytes(
       ui::ScaleFactor scale_factor) {
   return ResourceBundle::GetSharedInstance().
       LoadDataResourceBytesForScale(IDR_HISTORY_FAVICON, scale_factor);
+}
+
+// TODO(lshang): Change to not re-create data source every time after we use
+// unique_ptr instead of raw pointers for data source.
+void HistoryUI::CreateDataSource() {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  content::WebUIDataSource* data_source = CreateHistoryUIHTMLSource(profile);
+  content::WebUIDataSource::Add(profile, data_source);
 }
