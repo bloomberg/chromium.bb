@@ -254,8 +254,7 @@ void RemoteFontFaceSource::FontLoadHistograms::fontLoaded(bool isInterventionTri
 void RemoteFontFaceSource::FontLoadHistograms::longLimitExceeded(bool isInterventionTriggered)
 {
     m_isLongLimitExceeded = true;
-    if (m_dataSource == FromUnknown)
-        m_dataSource = FromNetwork;
+    maySetDataSource(FromNetwork);
     recordInterventionResult(isInterventionTriggered);
 }
 
@@ -275,6 +274,7 @@ void RemoteFontFaceSource::FontLoadHistograms::recordRemoteFont(const FontResour
     cacheHitHistogram.count(dataSourceMetricsValue());
 
     if (m_dataSource == FromDiskCache || m_dataSource == FromNetwork) {
+        DCHECK_NE(m_loadStartTime, 0);
         int duration = static_cast<int>(currentTimeMS() - m_loadStartTime);
         recordLoadTimeHistogram(font, duration);
 

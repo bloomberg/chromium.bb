@@ -74,7 +74,10 @@ private:
         void recordRemoteFont(const FontResource*);
         bool hadBlankText() { return m_blankPaintTime; }
         DataSource dataSource() { return m_dataSource; }
-        void maySetDataSource(DataSource dataSource) { m_dataSource = (m_dataSource != FromUnknown) ? m_dataSource : dataSource; }
+        // Classify as memory cache hit if |m_loadStartTime| is not set, i.e.
+        // this RemoteFontFaceSource instance didn't trigger FontResource
+        // loading.
+        void maySetDataSource(DataSource dataSource) { m_dataSource = (m_dataSource != FromUnknown) ? m_dataSource : (m_loadStartTime == 0) ? FromMemoryCache : dataSource; }
     private:
         void recordLoadTimeHistogram(const FontResource*, int duration);
         void recordInterventionResult(bool isTriggered);
