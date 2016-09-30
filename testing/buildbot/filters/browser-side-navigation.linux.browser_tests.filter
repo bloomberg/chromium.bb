@@ -12,7 +12,6 @@
 -ContinueWhereILeftOffTest.PostWithPassword
 -ContinueWhereILeftOffTest.PostWithPasswordBrowserClose
 -ContinueWhereILeftOffTest.PostWithPasswordCloseAllBrowsers
--CrashRecoveryBrowserTest.*
 -CrazyExtensionTest.Crazy
 -DevToolsSanityTest.TestNetworkRawHeadersText
 -ErrorPageTest.IFrameDNSError_JavaScript
