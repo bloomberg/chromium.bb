@@ -242,6 +242,59 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
     error.clear();
   }
 
+  // Verify that a platform app with a safe manifest entry under "app" can be
+  // installed.
+  {
+    base::DictionaryValue values;
+    values.SetString("app.content_security_policy", "something2");
+    extension = CreatePlatformAppWithExtraValues(
+        &values,
+        extensions::Manifest::EXTERNAL_POLICY,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
+  }
+
+  // Verify that a hosted app with a safe manifest entry under "app" can be
+  // installed.
+  {
+    base::DictionaryValue values;
+    values.Set(extensions::manifest_keys::kApp, new base::DictionaryValue);
+    values.Set(extensions::manifest_keys::kWebURLs, new base::ListValue);
+    values.SetString("app.content_security_policy", "something2");
+    extension = CreateExtensionFromValues(
+        std::string(),
+        extensions::Manifest::EXTERNAL_POLICY,
+        &values,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
+  }
+
+  // Verify that a theme with a safe manifest entry under "app" cannot be
+  // installed.
+  {
+    base::DictionaryValue values;
+    values.Set("theme", new base::DictionaryValue());
+    values.SetString("app.content_security_policy", "something2");
+    extension = CreateExtensionFromValues(
+        std::string(),
+        extensions::Manifest::EXTERNAL_POLICY,
+        &values,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_NE(base::string16(), error);
+    error.clear();
+  }
+
   // Verify that a platform app with an unknown permission entry cannot be
   // installed.
   {
@@ -416,6 +469,70 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
     extension = CreatePlatformAppWithExtraValues(
         &values,
         extensions::Manifest::EXTERNAL_POLICY,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_NE(base::string16(), error);
+    error.clear();
+  }
+
+  // Verify that an extension can be installed.
+  {
+    base::DictionaryValue values;
+    extension = CreateExtensionFromValues(
+        std::string(),
+        extensions::Manifest::EXTERNAL_POLICY,
+        &values,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
+  }
+
+  // Verify that a shared_module can be installed.
+  {
+    base::DictionaryValue values;
+    values.Set("export.whitelist", new base::ListValue());
+    extension = CreateExtensionFromValues(
+        std::string(),
+        extensions::Manifest::EXTERNAL_POLICY,
+        &values,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
+  }
+
+  // Verify that a theme can be installed.
+  {
+    base::DictionaryValue values;
+    values.Set("theme", new base::DictionaryValue());
+    extension = CreateExtensionFromValues(
+        std::string(),
+        extensions::Manifest::EXTERNAL_POLICY,
+        &values,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
+  }
+
+  // Verify that a legacy_packaged_app cannot be installed and that it cannot
+  // have an "app" manifest entry.
+  {
+    base::DictionaryValue values;
+    values.SetString("app.launch.local_path", "something");
+    extension = CreateExtensionFromValues(
+        std::string(),
+        extensions::Manifest::EXTERNAL_POLICY,
+        &values,
         extensions::Extension::NO_FLAGS);
     ASSERT_TRUE(extension);
 
