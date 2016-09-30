@@ -1,6 +1,6 @@
 # Expectations for slimmingPaintInvalidation feature
 
-# More accurate clipping
+# SlimmingPaintInvalidation has more accurate clipping
 paint/invalidation/outline-clip-change.html [ NeedsRebaseline ]
 paint/invalidation/scroll-in-transformed-layer.html [ NeedsRebaseline ]
 paint/invalidation/scroll-with-transformed-parent-layer.html [ NeedsRebaseline ]
@@ -9,9 +9,19 @@ paint/invalidation/shift-relative-positioned-container-with-image-addition.html 
 crbug.com/648769 paint/invalidation/invalidation-with-scale-transform.html [ Failure ]
 crbug.com/648769 paint/invalidation/transform-inline-layered-child.html [ Failure ]
 crbug.com/648769 paint/invalidation/transform-layout-repaint.html [ Failure ]
-crbug.com/648769 paint/invalidation/svg/animated-path-inside-transformed-html.xhtml [ Failure ]
-crbug.com/648769 paint/invalidation/svg/js-late-gradient-and-object-creation.svg [ Failure ]
-crbug.com/648769 paint/invalidation/svg/js-late-pattern-and-object-creation.svg [ Failure ]
-crbug.com/648769 paint/invalidation/svg/tabgroup.svg [ Failure ]
-crbug.com/648769 paint/invalidation/svg/window.svg [ Failure ]
-crbug.com/648769 paint/invalidation/transform-layout-repaint.html [ Failure ]
+
+# We use FrameView::x() and FrameView::y() which are integers to generate FrameView
+# preTranslation, but the old path uses offsets in the layout tree. Not sure if it's
+# a bug of new path or the old path.
+paint/invalidation/repaint-during-scroll-with-zoom.html [ Failure ]
+
+# Missing SVG transform enclosingIntRect.
+crbug.com/651521 paint/invalidation/svg/absolute-sized-document-no-scrollbars.svg [ Failure ]
+crbug.com/651521 paint/invalidation/svg/tabgroup.svg [ Failure ]
+crbug.com/651521 paint/invalidation/svg/window.svg [ Failure ]
+crbug.com/651521 paint/invalidation/svg/animated-path-inside-transformed-html.xhtml [ Failure ]
+crbug.com/651521 paint/invalidation/svg/js-late-gradient-and-object-creation.svg [ Failure ]
+crbug.com/651521 paint/invalidation/svg/js-late-pattern-and-object-creation.svg [ Failure ]
+
+# Missing SVG hairline stroke padding.
+crbug.com/651511 paint/invalidation/svg/hairline-stroke-squarecap.svg [ Failure ]
