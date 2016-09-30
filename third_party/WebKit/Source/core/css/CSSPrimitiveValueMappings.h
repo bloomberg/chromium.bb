@@ -1264,10 +1264,10 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EEmptyCells e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case EmptyCellsShow:
+    case EEmptyCells::Show:
         m_value.valueID = CSSValueShow;
         break;
-    case EmptyCellsHide:
+    case EEmptyCells::Hide:
         m_value.valueID = CSSValueHide;
         break;
     }
@@ -1278,15 +1278,15 @@ template<> inline EEmptyCells CSSPrimitiveValue::convertTo() const
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueShow:
-        return EmptyCellsShow;
+        return EEmptyCells::Show;
     case CSSValueHide:
-        return EmptyCellsHide;
+        return EEmptyCells::Hide;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return EmptyCellsShow;
+    return EEmptyCells::Show;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EFlexDirection e)

@@ -390,8 +390,8 @@ enum EBreak {
     BreakAlways // Only needed by {page,-webkit-column}-break-{after,before} shorthands.
 };
 
-enum EEmptyCells {
-    EmptyCellsShow, EmptyCellsHide
+enum class EEmptyCells : unsigned {
+    Show, Hide
 };
 
 enum class ECaptionSide : unsigned {

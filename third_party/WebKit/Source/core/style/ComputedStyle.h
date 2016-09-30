@@ -341,7 +341,7 @@ protected:
     void setBitDefaults()
     {
         ComputedStyleBase::setBitDefaults();
-        m_inheritedData.m_emptyCells = initialEmptyCells();
+        m_inheritedData.m_emptyCells = static_cast<unsigned>(initialEmptyCells());
         m_inheritedData.m_captionSide = static_cast<unsigned>(initialCaptionSide());
         m_inheritedData.m_listStyleType = initialListStyleType();
         m_inheritedData.m_listStylePosition = initialListStylePosition();
@@ -1370,9 +1370,9 @@ public:
     void setDirection(TextDirection v) { m_inheritedData.m_direction = v; }
 
     // empty-cells
-    static EEmptyCells initialEmptyCells() { return EmptyCellsShow; }
+    static EEmptyCells initialEmptyCells() { return EEmptyCells::Show; }
     EEmptyCells emptyCells() const { return static_cast<EEmptyCells>(m_inheritedData.m_emptyCells); }
-    void setEmptyCells(EEmptyCells v) { m_inheritedData.m_emptyCells = v; }
+    void setEmptyCells(EEmptyCells v) { m_inheritedData.m_emptyCells = static_cast<unsigned>(v); }
 
     // color
     static Color initialColor() { return Color::black; }
