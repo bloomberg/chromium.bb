@@ -441,6 +441,12 @@ void RenderFrameMessageFilter::GetCookies(int render_frame_id,
         net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
   }
 
+  // If we crash here, figure out what URL the renderer was requesting.
+  // http://crbug.com/99242
+  char url_buf[128];
+  base::strlcpy(url_buf, url.spec().c_str(), arraysize(url_buf));
+  base::debug::Alias(url_buf);
+
   net::URLRequestContext* context = GetRequestContextForURL(url);
   context->cookie_store()->GetCookieListWithOptionsAsync(
       url, options,
