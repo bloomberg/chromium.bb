@@ -238,7 +238,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 // Moving task back before closing the tab allows back button to function better
                 // when Chrome was an intermediate link redirector between two apps.
                 // crbug.com/487938.
-                mTab.getActivity().moveTaskToBack(true);
+                mTab.getActivity().moveTaskToBack(false);
             }
             mTab.getTabModelSelector().closeTab(mTab);
         } else if (mTab.getTabRedirectHandler().isOnNavigation()) {
