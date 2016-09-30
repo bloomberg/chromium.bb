@@ -47,14 +47,17 @@ const char kActionBackupAndRestoreMode[] = "setBackupAndRestoreMode";
 const char kActionLocationServiceMode[] = "setLocationServiceMode";
 const char kActionSetWindowBounds[] = "setWindowBounds";
 const char kActionStartLso[] = "startLso";
-const char kActionCancelAuthCode[] = "cancelAuthCode";
 const char kActionSetAuthCode[] = "setAuthCode";
 const char kActionEnableMetrics[] = "enableMetrics";
 const char kActionSendFeedback[] = "sendFeedback";
 const char kActionSetBackupRestore[] = "setBackupRestore";
 const char kActionSetLocationService[] = "setLocationService";
-const char kActionCloseUI[] = "closeUI";
+const char kActionCloseWindow[] = "closeWindow";
 const char kActionShowPage[] = "showPage";
+
+// Fired when the extension window is closed.
+const char kActionOnWindowClosed[] = "onWindowClosed";
+
 }  // namespace
 
 // static
@@ -109,12 +112,24 @@ ArcSupportHost::~ArcSupportHost() {
     arc_auth_service->RemoveObserver(this);
 }
 
+void ArcSupportHost::Close() {
+  if (!client_)
+    return;
+
+  close_requested_ = true;
+  base::DictionaryValue response;
+  response.SetString(kAction, kActionCloseWindow);
+  std::string response_string;
+  base::JSONWriter::Write(response, &response_string);
+  client_->PostMessageFromNativeHost(response_string);
+}
+
 void ArcSupportHost::Start(Client* client) {
   DCHECK(!client_);
   client_ = client;
 
   if (!Initialize()) {
-    OnOptInUIClose();
+    Close();
     return;
   }
 
@@ -285,14 +300,7 @@ void ArcSupportHost::SendLocationServicesMode() {
 }
 
 void ArcSupportHost::OnOptInUIClose() {
-  if (!client_)
-    return;
-
-  base::DictionaryValue response;
-  response.SetString(kAction, kActionCloseUI);
-  std::string response_string;
-  base::JSONWriter::Write(response, &response_string);
-  client_->PostMessageFromNativeHost(response_string);
+  Close();
 }
 
 void ArcSupportHost::OnOptInUIShowPage(arc::ArcAuthService::UIPage page,
@@ -354,8 +362,9 @@ void ArcSupportHost::OnMessage(const std::string& request_string) {
       return;
     }
     arc_auth_service->SetAuthCodeAndStartArc(code);
-  } else if (action == kActionCancelAuthCode) {
-    arc_auth_service->CancelAuthCode();
+  } else if (action == kActionOnWindowClosed) {
+    if (!close_requested_)
+      arc_auth_service->CancelAuthCode();
   } else if (action == kActionEnableMetrics) {
     bool is_enabled;
     if (!request->GetBoolean(kEnabled, &is_enabled)) {

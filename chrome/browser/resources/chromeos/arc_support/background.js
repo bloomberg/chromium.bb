@@ -41,19 +41,6 @@ var termsView = null;
 var port = null;
 
 /**
- * Indicates that window was closed internally and it is not required to send
- * closure notification.
- * @type {boolean}
- */
-var windowClosedInternally = false;
-
-/**
- * Timer for terms reload.
- * @type {Object}
- */
-var termsReloadTimeout = null;
-
-/**
  * Stores current device id.
  * @type {string}
  */
@@ -89,16 +76,6 @@ var INNER_WIDTH = 960;
  */
 var INNER_HEIGHT = 688;
 
-
-/**
- * Closes current window in response to request from native code. This does not
- * issue 'cancelAuthCode' message to native code.
- */
-function closeWindowInternally() {
-  windowClosedInternally = true;
-  appWindow.close();
-  appWindow = null;
-}
 
 /**
  * Sends a native message to ArcSupportHost.
@@ -301,8 +278,10 @@ function onNativeMessage(message) {
     setBackupRestoreMode(message.enabled, message.managed);
   } else if (message.action == 'setLocationServiceMode') {
     setLocationServiceMode(message.enabled, message.managed);
-  } else if (message.action == 'closeUI') {
-    closeWindowInternally();
+  } else if (message.action == 'closeWindow') {
+    if (appWindow) {
+      appWindow.close();
+    }
   } else if (message.action == 'showPage') {
     showPageWithStatus(message.page, message.status);
   } else if (message.action == 'setWindowBounds') {
@@ -320,17 +299,12 @@ function connectPort() {
 }
 
 /**
- * Shows requested page and hide others. Show appWindow if it was hidden before
- * for non 'none' pages. For 'none' page this closes host window.
+ * Shows requested page and hide others. Show appWindow if it was hidden before.
+ * 'none' hides all views.
  * @param {string} pageDivId id of divider of the page to show.
  */
 function showPage(pageDivId) {
   if (!appWindow) {
-    return;
-  }
-
-  if (pageDivId == 'none') {
-    closeWindowInternally();
     return;
   }
 
@@ -577,9 +551,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
 
     var onCancel = function() {
       if (appWindow) {
-        windowClosedInternally = false;
         appWindow.close();
-        appWindow = null;
       }
     };
 
@@ -607,24 +579,23 @@ chrome.app.runtime.onLaunched.addListener(function() {
   var onWindowCreated = function(createdWindow) {
     appWindow = createdWindow;
     appWindow.contentWindow.onload = onAppContentLoad;
-    createdWindow.onClosed.addListener(onWindowClosed);
+    appWindow.onClosed.addListener(onWindowClosed);
 
     setWindowBounds();
   };
 
   var onWindowClosed = function() {
-    if (termsReloadTimeout) {
-      clearTimeout(termsReloadTimeout);
-      termsReloadTimeout = null;
-    }
+    appWindow = null;
 
-    if (windowClosedInternally) {
-      return;
-    }
-    sendNativeMessage('cancelAuthCode');
+    // Notify to Chrome.
+    sendNativeMessage('onWindowClosed');
+
+    // On window closed, then dispose the extension. So, close the port
+    // otherwise the background page would be kept alive so that the extension
+    // would not be unloaded.
+    port.disconnect();
+    port = null;
   };
-
-  windowClosedInternally = false;
 
   var options = {
     'id': 'play_store_wnd',

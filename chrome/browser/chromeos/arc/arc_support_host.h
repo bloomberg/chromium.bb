@@ -25,12 +25,16 @@ class ArcSupportHost : public extensions::NativeMessageHost,
 
   ~ArcSupportHost() override;
 
+  // Requests to close the extension window.
+  void Close();
+
   // Overrides NativeMessageHost:
   void Start(Client* client) override;
   void OnMessage(const std::string& request_string) override;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() const override;
 
   // Overrides arc::ArcAuthService::Observer:
+  // TODO(hidehiko): Get rid of Observer interface.
   void OnOptInUIClose() override;
   void OnOptInUIShowPage(arc::ArcAuthService::UIPage page,
                          const base::string16& status) override;
@@ -59,6 +63,15 @@ class ArcSupportHost : public extensions::NativeMessageHost,
 
   // Unowned pointer.
   Client* client_ = nullptr;
+
+  // Keep if Close() is requested from the browser.
+  // TODO(hidehiko): Remove this. This is temporarily introduced for checking
+  // if ArcAuthService::CancelAuthCode() needs to be invoked or not.
+  // ArcAuthService should know its own state and the transition so moving to
+  // there should simplify the structure. However, it is blocked by the current
+  // dependency. For the clean up, more refactoring is needed, which can be
+  // bigger changes.
+  bool close_requested_ = false;
 
   // Used to track metrics preference.
   PrefChangeRegistrar pref_local_change_registrar_;
