@@ -410,41 +410,5 @@ test_with_window((w) => {
   assert_false( observedAttributes_invoked, 'Get(constructor, observedAttributes) should not be invoked');
 }, 'Get(constructor, observedAttributes) should not execute if ' +
    'attributeChangedCallback is undefined');
-
-// TODO(dominicc): I think the order and timing of checks the tests
-// below exercise has changed. Update these tests. crbug.com/643052
-
-// step 2
-// 2. If constructor is an interface object whose corresponding interface either is
-//    HTMLElement or has HTMLElement in its set of inherited interfaces, throw
-//    a TypeError and abort these steps.
-// 3. If name is not a valid custom element name, then throw a "SyntaxError" DOMException
-//    and abort these steps.
-test_with_window((w) => {
-  let invalid_name = 'annotation-xml';
-  // TODO(davaajav): change this to TypeError, when we add a failure expectation to this file
-  assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
-    w.customElements.define(invalid_name, HTMLElement);
-  }, 'defining a constructor that is an interface object whose interface is HTMLElement' +
-     'should throw TypeError not SyntaxError');
-}, 'Invalid constructor');
-
-// step 2
-test_with_window((w) => {
-  let invalid_name = 'annotation-xml';
-  assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
-    w.customElements.define(invalid_name, HTMLButtonElement);
-  }, 'defining a constructor that is an interface object who has HTMLElement' +
-     'in its set of inhertied interfaces should throw TypeError not SyntaxError');
-}, 'Invalid constructor');
-
-// step 2
-test_with_window((w) => {
-  let invalid_name = 'annotation-xml';
-  assert_throws_dom_exception(w, 'SYNTAX_ERR', () => {
-    w.customElements.define(invalid_name, class extends HTMLElement {});
-  }, 'defining author-defined custom element constructor should pass this ' +
-     'step without throwing TypeError');
-}, 'Invalid constructor');
 </script>
 </body>
