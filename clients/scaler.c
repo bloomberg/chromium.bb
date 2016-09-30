@@ -86,6 +86,16 @@ set_my_viewport(struct box *box)
 
 	switch (box->mode){
 	case MODE_SRC_ONLY:
+		/* In SRC_ONLY mode we're just cropping - in order
+		 * for the surface size to remain an integer, the
+		 * compositor will generate an error if we use a
+		 * fractional width or height.
+		 *
+		 * We use fractional width/height for the other cases
+		 * to ensure fractional values are still tested.
+		 */
+		src_width = wl_fixed_from_int(RECT_W / BUFFER_SCALE);
+		src_height = wl_fixed_from_int(RECT_H / BUFFER_SCALE);
 		wp_viewport_set_source(box->viewport, src_x, src_y,
 				       src_width, src_height);
 		break;
