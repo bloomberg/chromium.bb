@@ -694,20 +694,6 @@ enum weston_capability {
 	WESTON_CAP_VIEW_CLIP_MASK		= 0x0010,
 };
 
-/* Configuration struct for an output.
- *
- * This struct is used to pass the configuration for an output
- * to the compositor backend when creating a new output.
- * The backend can subclass this struct to handle backend
- * specific data.
- */
-struct weston_backend_output_config {
-	uint32_t transform;
-	uint32_t width;
-	uint32_t height;
-	uint32_t scale;
-};
-
 /* Configuration struct for a backend.
  *
  * This struct carries the configuration for a backend, and it's
