@@ -26,6 +26,10 @@ AURA_EXPORT extern const WindowProperty<bool>* const kAlwaysOnTopKey;
 // of value is an int.
 AURA_EXPORT extern const WindowProperty<bool>* const kAnimationsDisabledKey;
 
+// A property key to store the type of window that will be used to record
+// pointer metrics. See AppType in ash/shared/app_types.h for more details.
+AURA_EXPORT extern const WindowProperty<int>* const kAppType;
+
 // A property key to store the can-maximize flag.
 AURA_EXPORT extern const WindowProperty<bool>* const kCanMaximizeKey;
 

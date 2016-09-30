@@ -14,6 +14,7 @@
 #include "ash/common/wm_window_property.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/shared/app_types.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
@@ -384,6 +385,9 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   // Check if we have controller for this task.
   if (GetAppWindowForTask(task_id))
     return;
+
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(ash::AppType::ARC_APP));
 
   // Create controller if we have task info.
   TaskIdToShelfAppIdMap::iterator it = task_id_to_shelf_app_id_.find(task_id);

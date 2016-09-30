@@ -17,6 +17,10 @@ namespace ash {
 
 class DesktopTaskSwitchMetricRecorder;
 
+#if defined(OS_CHROMEOS)
+class PointerMetricsRecorder;
+#endif
+
 namespace test {
 class UserMetricsRecorderTestAPI;
 }
@@ -77,6 +81,11 @@ class ASH_EXPORT UserMetricsRecorder {
   // clicks or touchscreen taps.
   std::unique_ptr<DesktopTaskSwitchMetricRecorder>
       desktop_task_switch_metric_recorder_;
+
+#if defined(OS_CHROMEOS)
+  // Metric recorder to track pointer down events.
+  std::unique_ptr<PointerMetricsRecorder> pointer_metrics_recorder_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(UserMetricsRecorder);
 };

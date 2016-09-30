@@ -122,6 +122,8 @@ class WmWindowMus : public WmWindow, public ui::WindowObserver {
   int GetShellWindowId() const override;
   WmWindow* GetChildByShellWindowId(int id) override;
   ui::wm::WindowType GetType() const override;
+  int GetAppType() const override;
+  void SetAppType(int app_type) const override;
   bool IsBubble() override;
   ui::Layer* GetLayer() override;
   display::Display GetDisplayNearestWindow() override;

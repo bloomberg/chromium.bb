@@ -188,6 +188,14 @@ ui::wm::WindowType WmWindowAura::GetType() const {
   return window_->type();
 }
 
+int WmWindowAura::GetAppType() const {
+  return window_->GetProperty(aura::client::kAppType);
+}
+
+void WmWindowAura::SetAppType(int app_type) const {
+  window_->SetProperty(aura::client::kAppType, app_type);
+}
+
 bool WmWindowAura::IsBubble() {
   views::Widget* widget = views::Widget::GetWidgetForNativeView(window_);
   return widget->widget_delegate()->AsBubbleDialogDelegate() != nullptr;

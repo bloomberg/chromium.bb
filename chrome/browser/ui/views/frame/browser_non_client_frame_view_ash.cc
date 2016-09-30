@@ -56,6 +56,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
+#if defined(OS_CHROMEOS)
+#include "ash/shared/app_types.h"
+#endif
+
 namespace {
 
 // Space between right edge of tabstrip and maximize button.
@@ -137,6 +141,16 @@ void BrowserNonClientFrameViewAsh::Init() {
     header_painter->Init(frame(), browser_view(), this, window_icon_,
                          caption_button_container_);
   }
+
+#if defined(OS_CHROMEOS)
+  if (browser_view()->browser()->is_app()) {
+    frame()->GetNativeWindow()->SetProperty(
+        aura::client::kAppType, static_cast<int>(ash::AppType::CHROME_APP));
+  } else {
+    frame()->GetNativeWindow()->SetProperty(
+        aura::client::kAppType, static_cast<int>(ash::AppType::BROWSER));
+  }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

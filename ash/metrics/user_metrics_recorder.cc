@@ -18,9 +18,14 @@
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/aura/window.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/common/metrics/pointer_metrics_recorder.h"
+#endif
 
 namespace ash {
 
@@ -595,10 +600,20 @@ void UserMetricsRecorder::OnShellInitialized() {
     desktop_task_switch_metric_recorder_.reset(
         new DesktopTaskSwitchMetricRecorder());
   }
+#if defined(OS_CHROMEOS)
+  pointer_metrics_recorder_ = base::MakeUnique<PointerMetricsRecorder>();
+#endif
 }
 
 void UserMetricsRecorder::OnShellShuttingDown() {
   desktop_task_switch_metric_recorder_.reset();
+
+#if defined(OS_CHROMEOS)
+  // To clean up pointer_metrics_recorder_ properly, a valid shell instance is
+  // required, so explicitly delete it before the shell instance becomes
+  // invalid.
+  pointer_metrics_recorder_.reset();
+#endif
 }
 
 void UserMetricsRecorder::RecordPeriodicMetrics() {

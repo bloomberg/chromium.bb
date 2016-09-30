@@ -13,11 +13,14 @@
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_observer.h"
 #include "ash/screen_util.h"
+#include "ash/shared/app_types.h"
 #include "ash/shared/immersive_fullscreen_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/panels/panel_frame_view.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
+#include "chrome/browser/chromeos/note_taking_app_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -131,6 +134,16 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
   if (create_params.state == ui::SHOW_STATE_DOCKED) {
     widget()->GetNativeWindow()->SetProperty(aura::client::kShowStateKey,
                                              create_params.state);
+  }
+
+  if (!app_window->window_type_is_panel()) {
+    ash::AppType app_type = ash::AppType::CHROME_APP;
+    Profile* profile =
+        Profile::FromBrowserContext(app_window->browser_context());
+    if (profile && chromeos::IsNoteTakingAppWindow(app_window, profile))
+      app_type = ash::AppType::DEFAULT_NOTE_TAKING_APP;
+    widget()->GetNativeWindow()->SetProperty(aura::client::kAppType,
+                                             static_cast<int>(app_type));
   }
 }
 

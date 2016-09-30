@@ -112,7 +112,6 @@ struct ShellInitParams;
 class SlowAnimationEventFilter;
 class StatusAreaWidget;
 class StickyKeysController;
-class StylusMetricsRecorder;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
@@ -536,8 +535,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<ui::EventHandler> magnifier_key_scroll_handler_;
   std::unique_ptr<ui::EventHandler> speech_feedback_handler_;
-  std::unique_ptr<StylusMetricsRecorder> stylus_metrics_recorder_;
-
   std::unique_ptr<LaserPointerController> laser_pointer_controller_;
   std::unique_ptr<PartialMagnificationController>
       partial_magnification_controller_;

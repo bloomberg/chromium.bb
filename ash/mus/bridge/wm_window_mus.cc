@@ -220,6 +220,17 @@ ui::wm::WindowType WmWindowMus::GetType() const {
   return is_wm_window_type_set_ ? wm_window_type_ : GetWmWindowType(window_);
 }
 
+int WmWindowMus::GetAppType() const {
+  // TODO: Need support for window property kAppType: http://crbug.com/651206.
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+void WmWindowMus::SetAppType(int app_type) const {
+  // TODO: Need support for window property kAppType: http://crbug.com/651206.
+  NOTIMPLEMENTED();
+}
+
 bool WmWindowMus::IsBubble() {
   return GetWindowType(window_) == ui::mojom::WindowType::BUBBLE;
 }

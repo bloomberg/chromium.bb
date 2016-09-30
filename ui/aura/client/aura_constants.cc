@@ -24,6 +24,7 @@ namespace client {
 
 DEFINE_WINDOW_PROPERTY_KEY(bool, kAlwaysOnTopKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kAnimationsDisabledKey, false);
+DEFINE_WINDOW_PROPERTY_KEY(int, kAppType, 0);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kCanMaximizeKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kCanMinimizeKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kCanResizeKey, true);

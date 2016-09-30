@@ -11,6 +11,10 @@ namespace base {
 class FilePath;
 }  // namespace base
 
+namespace extensions {
+class AppWindow;
+}  // namespace extensions
+
 namespace chromeos {
 
 // Returns true if an app that can be used to take notes is available.
@@ -21,6 +25,9 @@ bool IsNoteTakingAppAvailable(Profile* profile);
 // called first.
 void LaunchNoteTakingAppForNewNote(Profile* profile,
                                    const base::FilePath& path);
+
+// Returns true if |app_window| belongs to the default note-taking app.
+bool IsNoteTakingAppWindow(extensions::AppWindow* app_window, Profile* profile);
 
 }  // namespace chromeos
 

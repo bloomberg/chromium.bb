@@ -89,6 +89,8 @@ class ASH_EXPORT WmWindow {
   virtual WmWindow* GetChildByShellWindowId(int id) = 0;
 
   virtual ui::wm::WindowType GetType() const = 0;
+  virtual int GetAppType() const = 0;
+  virtual void SetAppType(int app_type) const = 0;
 
   virtual bool IsBubble() = 0;
 
