@@ -137,6 +137,12 @@ void QuirksManager::RequestIccProfilePath(
     const RequestFinishedCallback& on_request_finished) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  if (!product_id) {
+    VLOG(1) << "Could not determine display information (product id = 0)";
+    on_request_finished.Run(base::FilePath(), false);
+    return;
+  }
+
   std::string name = IdToFileName(product_id);
   base::PostTaskAndReplyWithResult(
       blocking_pool_.get(), FROM_HERE,

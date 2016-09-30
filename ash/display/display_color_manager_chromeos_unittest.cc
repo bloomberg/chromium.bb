@@ -297,7 +297,8 @@ TEST_F(DisplayColorManagerTest, NoMatchProductID) {
   EXPECT_TRUE(
       base::MatchPattern(log_->GetActionsAndClear(), kResetGammaAction));
 
-  WaitOnColorCalibration();
+  // NOTE: If product_id == 0, there is no thread switching in Quirks or Display
+  // code, so we shouldn't call WaitOnColorCalibration().
   EXPECT_STREQ("", log_->GetActionsAndClear().c_str());
 }
 
