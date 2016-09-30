@@ -1236,6 +1236,11 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
         mContentsClientAdapter.setWebViewClient(client);
     }
 
+    // TODO(ntfschr): add @Override once the next Android is released (http://crbug.com/627248)
+    public WebViewClient getWebViewClient() {
+        return mContentsClientAdapter.getWebViewClient();
+    }
+
     @Override
     public void setDownloadListener(DownloadListener listener) {
         mContentsClientAdapter.setDownloadListener(listener);
@@ -1245,6 +1250,11 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     public void setWebChromeClient(WebChromeClient client) {
         mWebSettings.getAwSettings().setFullscreenSupported(doesSupportFullscreen(client));
         mContentsClientAdapter.setWebChromeClient(client);
+    }
+
+    // TODO(ntfschr): add @Override once the next Android is released (http://crbug.com/627248)
+    public WebChromeClient getWebChromeClient() {
+        return mContentsClientAdapter.getWebChromeClient();
     }
 
     /**

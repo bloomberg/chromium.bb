@@ -171,8 +171,17 @@ public class WebViewContentsClientAdapter extends AwContentsClient {
         }
     }
 
+    WebViewClient getWebViewClient() {
+        // If this hasn't been set yet, return null instead of exposing sNullWebViewClient
+        return mWebViewClient == sNullWebViewClient ? null : mWebViewClient;
+    }
+
     void setWebChromeClient(WebChromeClient client) {
         mWebChromeClient = client;
+    }
+
+    WebChromeClient getWebChromeClient() {
+        return mWebChromeClient;
     }
 
     void setDownloadListener(DownloadListener listener) {
