@@ -23,6 +23,9 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
+
+class InstallAttributes;
+
 namespace attestation {
 class AttestationPolicyObserver;
 }
@@ -34,7 +37,6 @@ class PrefService;
 namespace policy {
 
 class DeviceCloudPolicyStoreChromeOS;
-class EnterpriseInstallAttributes;
 class HeartbeatScheduler;
 class StatusUploader;
 class SystemLogUploader;
@@ -101,7 +103,7 @@ class DeviceCloudPolicyManagerChromeOS : public CloudPolicyManager {
 
   // Starts the connection via |client_to_connect|.
   void StartConnection(std::unique_ptr<CloudPolicyClient> client_to_connect,
-                       EnterpriseInstallAttributes* install_attributes);
+                       chromeos::InstallAttributes* install_attributes);
 
   // Sends the unregister request. |callback| is invoked with a boolean
   // parameter indicating the result when done.

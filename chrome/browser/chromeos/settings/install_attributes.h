@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_POLICY_ENTERPRISE_INSTALL_ATTRIBUTES_H_
-#define CHROME_BROWSER_CHROMEOS_POLICY_ENTERPRISE_INSTALL_ATTRIBUTES_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_INSTALL_ATTRIBUTES_H_
+#define CHROME_BROWSER_CHROMEOS_SETTINGS_INSTALL_ATTRIBUTES_H_
 
 #include <map>
 #include <string>
@@ -18,15 +18,13 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
-namespace policy {
+namespace chromeos {
 
-// Brokers access to the enterprise-related installation-time attributes on
-// ChromeOS.
-// TODO(zelidrag, mnissler): Rename + move this class - http://crbug.com/249513.
-class EnterpriseInstallAttributes {
+// Brokers access to the installation-time attributes on Chrome OS.
+class InstallAttributes {
  public:
-  // EnterpriseInstallAttributes status codes.  Do not change the numeric ids or
-  // the meaning of the existing codes to preserve the interpretability of old
+  // InstallAttributes status codes.  Do not change the numeric ids or the
+  // meaning of the existing codes to preserve the interpretability of old
   // logfiles.
   enum LockResult {
     LOCK_SUCCESS = 0,          // Success.
@@ -48,9 +46,8 @@ class EnterpriseInstallAttributes {
   static std::string GetEnterpriseOwnedInstallAttributesBlobForTesting(
       const std::string& user_name);
 
-  explicit EnterpriseInstallAttributes(
-      chromeos::CryptohomeClient* cryptohome_client);
-  ~EnterpriseInstallAttributes();
+  explicit InstallAttributes(CryptohomeClient* cryptohome_client);
+  ~InstallAttributes();
 
   // Tries to read install attributes from the cache file which is created early
   // during the boot process.  The cache file is used to work around slow
@@ -70,7 +67,7 @@ class EnterpriseInstallAttributes {
   // |callback| must not be null and is called with the result.  Must not be
   // called while a previous LockDevice() invocation is still pending.
   void LockDevice(const std::string& user,
-                  DeviceMode device_mode,
+                  policy::DeviceMode device_mode,
                   const std::string& device_id,
                   const LockResultCallback& callback);
 
@@ -91,7 +88,7 @@ class EnterpriseInstallAttributes {
 
   // Gets the mode the device was enrolled to. The return value for devices that
   // are not locked yet will be DEVICE_MODE_UNKNOWN.
-  DeviceMode GetMode();
+  policy::DeviceMode GetMode();
 
  protected:
   // True if install attributes have been read successfully.  False if read
@@ -110,18 +107,15 @@ class EnterpriseInstallAttributes {
   std::string registration_user_;
   std::string registration_domain_;
   std::string registration_device_id_;
-  DeviceMode registration_mode_;
+  policy::DeviceMode registration_mode_;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
-                           DeviceLockedFromOlderVersion);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
-                           GetRegistrationUser);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest, Init);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
-                           InitForConsumerKiosk);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest, LockCanonicalize);
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseInstallAttributesTest,
+  FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, DeviceLockedFromOlderVersion);
+  FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, GetRegistrationUser);
+  FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, Init);
+  FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, InitForConsumerKiosk);
+  FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest, LockCanonicalize);
+  FRIEND_TEST_ALL_PREFIXES(InstallAttributesTest,
                            VerifyFakeInstallAttributesCache);
 
   // Constants for the possible device modes that can be stored in the lockbox.
@@ -144,30 +138,28 @@ class EnterpriseInstallAttributes {
   void OnCryptohomeServiceInitiallyAvailable(bool service_is_ready);
 
   // Translates DeviceMode constants to strings used in the lockbox.
-  std::string GetDeviceModeString(DeviceMode mode);
+  std::string GetDeviceModeString(policy::DeviceMode mode);
 
   // Translates strings used in the lockbox to DeviceMode values.
-  DeviceMode GetDeviceModeFromString(const std::string& mode);
+  policy::DeviceMode GetDeviceModeFromString(const std::string& mode);
 
   // Decodes the install attributes provided in |attr_map|.
   void DecodeInstallAttributes(
       const std::map<std::string, std::string>& attr_map);
 
   // Helper for ReadImmutableAttributes.
-  void ReadAttributesIfReady(
-      const base::Closure& callback,
-      chromeos::DBusMethodCallStatus call_status,
-      bool result);
+  void ReadAttributesIfReady(const base::Closure& callback,
+                             DBusMethodCallStatus call_status,
+                             bool result);
 
   // Helper for LockDevice(). Handles the result of InstallAttributesIsReady()
   // and continue processing LockDevice if the result is true.
-  void LockDeviceIfAttributesIsReady(
-      const std::string& user,
-      DeviceMode device_mode,
-      const std::string& device_id,
-      const LockResultCallback& callback,
-      chromeos::DBusMethodCallStatus call_status,
-      bool result);
+  void LockDeviceIfAttributesIsReady(const std::string& user,
+                                     policy::DeviceMode device_mode,
+                                     const std::string& device_id,
+                                     const LockResultCallback& callback,
+                                     DBusMethodCallStatus call_status,
+                                     bool result);
 
   // Confirms the registered user and invoke the callback.
   void OnReadImmutableAttributes(const std::string& user,
@@ -181,20 +173,20 @@ class EnterpriseInstallAttributes {
   // Callback for TpmIsOwned() DBUS call.  Generates UMA or schedules retry in
   // case of DBUS error.
   void OnTpmOwnerCheckCompleted(int dbus_retries_remaining,
-                                chromeos::DBusMethodCallStatus call_status,
+                                DBusMethodCallStatus call_status,
                                 bool result);
 
   // Gets the user that registered the device. Returns an empty string if the
   // device is not an enterprise device.
   std::string GetRegistrationUser() const;
 
-  chromeos::CryptohomeClient* cryptohome_client_;
+  CryptohomeClient* cryptohome_client_;
 
-  base::WeakPtrFactory<EnterpriseInstallAttributes> weak_ptr_factory_;
+  base::WeakPtrFactory<InstallAttributes> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseInstallAttributes);
+  DISALLOW_COPY_AND_ASSIGN(InstallAttributes);
 };
 
-}  // namespace policy
+}  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_POLICY_ENTERPRISE_INSTALL_ATTRIBUTES_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SETTINGS_INSTALL_ATTRIBUTES_H_

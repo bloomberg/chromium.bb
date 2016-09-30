@@ -366,32 +366,32 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
       break;
     case policy::EnrollmentStatus::STATUS_LOCK_ERROR:
       switch (status.lock_status()) {
-        case policy::EnterpriseInstallAttributes::LOCK_SUCCESS:
-        case policy::EnterpriseInstallAttributes::LOCK_NOT_READY:
+        case InstallAttributes::LOCK_SUCCESS:
+        case InstallAttributes::LOCK_NOT_READY:
           NOTREACHED();
           break;
-        case policy::EnterpriseInstallAttributes::LOCK_TIMEOUT:
+        case InstallAttributes::LOCK_TIMEOUT:
           UMA(policy::kMetricEnrollmentLockboxTimeoutError);
           break;
-        case policy::EnterpriseInstallAttributes::LOCK_BACKEND_INVALID:
+        case InstallAttributes::LOCK_BACKEND_INVALID:
           UMA(policy::kMetricEnrollmentLockBackendInvalid);
           break;
-        case policy::EnterpriseInstallAttributes::LOCK_ALREADY_LOCKED:
+        case InstallAttributes::LOCK_ALREADY_LOCKED:
           UMA(policy::kMetricEnrollmentLockAlreadyLocked);
           break;
-        case policy::EnterpriseInstallAttributes::LOCK_SET_ERROR:
+        case InstallAttributes::LOCK_SET_ERROR:
           UMA(policy::kMetricEnrollmentLockSetError);
           break;
-        case policy::EnterpriseInstallAttributes::LOCK_FINALIZE_ERROR:
+        case InstallAttributes::LOCK_FINALIZE_ERROR:
           UMA(policy::kMetricEnrollmentLockFinalizeError);
           break;
-        case policy::EnterpriseInstallAttributes::LOCK_READBACK_ERROR:
+        case InstallAttributes::LOCK_READBACK_ERROR:
           UMA(policy::kMetricEnrollmentLockReadbackError);
           break;
-        case policy::EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN:
+        case InstallAttributes::LOCK_WRONG_DOMAIN:
           UMA(policy::kMetricEnrollmentLockDomainMismatch);
           break;
-        case policy::EnterpriseInstallAttributes::LOCK_WRONG_MODE:
+        case InstallAttributes::LOCK_WRONG_MODE:
           UMA(policy::kMetricEnrollmentLockModeMismatch);
           break;
       }

@@ -302,27 +302,27 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
       return;
     case policy::EnrollmentStatus::STATUS_LOCK_ERROR:
       switch (status.lock_status()) {
-        case policy::EnterpriseInstallAttributes::LOCK_SUCCESS:
-        case policy::EnterpriseInstallAttributes::LOCK_NOT_READY:
+        case InstallAttributes::LOCK_SUCCESS:
+        case InstallAttributes::LOCK_NOT_READY:
           // LOCK_SUCCESS is in contradiction of STATUS_LOCK_ERROR.
           // LOCK_NOT_READY is transient, if retries are given up, LOCK_TIMEOUT
           // is reported instead.  This piece of code is unreached.
           LOG(FATAL) << "Invalid lock status.";
           return;
-        case policy::EnterpriseInstallAttributes::LOCK_TIMEOUT:
+        case InstallAttributes::LOCK_TIMEOUT:
           ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_TIMEOUT, false);
           return;
-        case policy::EnterpriseInstallAttributes::LOCK_BACKEND_INVALID:
-        case policy::EnterpriseInstallAttributes::LOCK_ALREADY_LOCKED:
-        case policy::EnterpriseInstallAttributes::LOCK_SET_ERROR:
-        case policy::EnterpriseInstallAttributes::LOCK_FINALIZE_ERROR:
-        case policy::EnterpriseInstallAttributes::LOCK_READBACK_ERROR:
+        case InstallAttributes::LOCK_BACKEND_INVALID:
+        case InstallAttributes::LOCK_ALREADY_LOCKED:
+        case InstallAttributes::LOCK_SET_ERROR:
+        case InstallAttributes::LOCK_FINALIZE_ERROR:
+        case InstallAttributes::LOCK_READBACK_ERROR:
           ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_ERROR, false);
           return;
-        case policy::EnterpriseInstallAttributes::LOCK_WRONG_DOMAIN:
+        case InstallAttributes::LOCK_WRONG_DOMAIN:
           ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_USER, true);
           return;
-        case policy::EnterpriseInstallAttributes::LOCK_WRONG_MODE:
+        case InstallAttributes::LOCK_WRONG_MODE:
           ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_MODE, true);
           return;
       }

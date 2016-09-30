@@ -13,8 +13,8 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -219,7 +219,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
   NiceMock<chromeos::attestation::MockAttestationFlow> mock_attestation_flow_;
   chromeos::ScopedCrosSettingsTestHelper settings_helper_;
   scoped_refptr<extensions::Extension> extension_;
-  policy::StubEnterpriseInstallAttributes stub_install_attributes_;
+  chromeos::StubInstallAttributes stub_install_attributes_;
   TestingProfileManager profile_manager_;
   // fake_user_manager_ is owned by user_manager_enabler_.
   chromeos::FakeChromeUserManager* fake_user_manager_;

@@ -19,13 +19,15 @@ namespace base {
 class SequencedTaskRunner;
 }
 
+namespace chromeos {
+class InstallAttributes;
+}
+
 namespace enterprise_management {
 class PolicyFetchResponse;
 }
 
 namespace policy {
-
-class EnterpriseInstallAttributes;
 
 // CloudPolicyStore implementation for device policy on Chrome OS. Policy is
 // stored/loaded via DBus to/from session_manager.
@@ -35,7 +37,7 @@ class DeviceCloudPolicyStoreChromeOS
  public:
   DeviceCloudPolicyStoreChromeOS(
       chromeos::DeviceSettingsService* device_settings_service,
-      EnterpriseInstallAttributes* install_attributes,
+      chromeos::InstallAttributes* install_attributes,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   ~DeviceCloudPolicyStoreChromeOS() override;
 
@@ -73,7 +75,7 @@ class DeviceCloudPolicyStoreChromeOS
   void UpdateFromService();
 
   chromeos::DeviceSettingsService* device_settings_service_;
-  EnterpriseInstallAttributes* install_attributes_;
+  chromeos::InstallAttributes* install_attributes_;
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 

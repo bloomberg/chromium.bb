@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "extensions/common/extension_builder.h"
 #endif
 #include "chrome/browser/extensions/api/identity/identity_api.h"
@@ -1595,8 +1595,8 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
 
     // Set up fake install attributes to make the device appeared as
     // enterprise-managed.
-     std::unique_ptr<policy::StubEnterpriseInstallAttributes> attributes(
-         new policy::StubEnterpriseInstallAttributes());
+     std::unique_ptr<chromeos::StubInstallAttributes> attributes
+         = base::MakeUnique<chromeos::StubInstallAttributes>();
      attributes->SetDomain("example.com");
      attributes->SetRegistrationUser("user@example.com");
      policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(

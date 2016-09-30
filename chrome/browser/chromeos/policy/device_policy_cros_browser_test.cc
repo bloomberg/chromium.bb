@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -37,7 +37,7 @@ void DevicePolicyCrosTestHelper::MarkAsEnterpriseOwnedBy(
   OverridePaths();
 
   const std::string install_attrs_blob(
-      EnterpriseInstallAttributes::
+      chromeos::InstallAttributes::
           GetEnterpriseOwnedInstallAttributesBlobForTesting(user_name));
 
   base::FilePath install_attrs_file;

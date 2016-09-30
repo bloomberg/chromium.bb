@@ -21,6 +21,9 @@ class PrefRegistrySimple;
 class PrefService;
 
 namespace chromeos {
+
+class InstallAttributes;
+
 namespace attestation {
 class AttestationFlow;
 }
@@ -40,7 +43,6 @@ class DeviceCloudPolicyInitializer;
 class DeviceLocalAccountPolicyService;
 class DeviceManagementService;
 struct EnrollmentConfig;
-class EnterpriseInstallAttributes;
 class NetworkConfigurationUpdater;
 class ProxyPolicyProvider;
 class ServerBackedStateKeysBroker;
@@ -102,7 +104,7 @@ class BrowserPolicyConnectorChromeOS
     return device_local_account_policy_service_.get();
   }
 
-  EnterpriseInstallAttributes* GetInstallAttributes() const {
+  chromeos::InstallAttributes* GetInstallAttributes() const {
     return install_attributes_.get();
   }
 
@@ -129,7 +131,7 @@ class BrowserPolicyConnectorChromeOS
   // is created. RemoveInstallAttributesForTesting must be called after the test
   // to free the attributes.
   static void SetInstallAttributesForTesting(
-      EnterpriseInstallAttributes* attributes);
+      chromeos::InstallAttributes* attributes);
   static void RemoveInstallAttributesForTesting();
 
   // Registers device refresh rate pref.
@@ -156,7 +158,7 @@ class BrowserPolicyConnectorChromeOS
 
   // Components of the device cloud policy implementation.
   std::unique_ptr<ServerBackedStateKeysBroker> state_keys_broker_;
-  std::unique_ptr<EnterpriseInstallAttributes> install_attributes_;
+  std::unique_ptr<chromeos::InstallAttributes> install_attributes_;
   std::unique_ptr<AffiliatedInvalidationServiceProvider>
       affiliated_invalidation_service_provider_;
   DeviceCloudPolicyManagerChromeOS* device_cloud_policy_manager_;

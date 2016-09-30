@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_validator.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
@@ -59,7 +59,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // enrollment handler.
   EnrollmentHandlerChromeOS(
       DeviceCloudPolicyStoreChromeOS* store,
-      EnterpriseInstallAttributes* install_attributes,
+      chromeos::InstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
       chromeos::attestation::AttestationFlow* attestation_flow,
       std::unique_ptr<CloudPolicyClient> client,
@@ -145,7 +145,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   // Handle callback from InstallAttributes::LockDevice() and retry on failure.
   void HandleLockDeviceResult(
-      EnterpriseInstallAttributes::LockResult lock_result);
+      chromeos::InstallAttributes::LockResult lock_result);
 
   // Initiates storing of robot auth token.
   void StartStoreRobotAuth();
@@ -160,7 +160,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   void ReportResult(EnrollmentStatus status);
 
   DeviceCloudPolicyStoreChromeOS* store_;
-  EnterpriseInstallAttributes* install_attributes_;
+  chromeos::InstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
   chromeos::attestation::AttestationFlow* attestation_flow_;
   std::unique_ptr<CloudPolicyClient> client_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 
 #include <stddef.h>
 
@@ -23,9 +23,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
-namespace policy {
-
-namespace cryptohome_util = chromeos::cryptohome_util;
+namespace chromeos {
 
 namespace {
 
@@ -50,44 +48,43 @@ bool ReadMapKey(const std::map<std::string, std::string>& map,
 
 // static
 std::string
-EnterpriseInstallAttributes::GetEnterpriseOwnedInstallAttributesBlobForTesting(
+InstallAttributes::GetEnterpriseOwnedInstallAttributesBlobForTesting(
     const std::string& user_name) {
   cryptohome::SerializedInstallAttributes install_attrs_proto;
-  cryptohome::SerializedInstallAttributes::Attribute* attribute = NULL;
+  cryptohome::SerializedInstallAttributes::Attribute* attribute = nullptr;
 
   attribute = install_attrs_proto.add_attributes();
-  attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseOwned);
+  attribute->set_name(InstallAttributes::kAttrEnterpriseOwned);
   attribute->set_value("true");
 
   attribute = install_attrs_proto.add_attributes();
-  attribute->set_name(EnterpriseInstallAttributes::kAttrEnterpriseUser);
+  attribute->set_name(InstallAttributes::kAttrEnterpriseUser);
   attribute->set_value(user_name);
 
   return install_attrs_proto.SerializeAsString();
 }
 
-EnterpriseInstallAttributes::EnterpriseInstallAttributes(
-    chromeos::CryptohomeClient* cryptohome_client)
+InstallAttributes::InstallAttributes(CryptohomeClient* cryptohome_client)
     : device_locked_(false),
       consistency_check_running_(false),
       device_lock_running_(false),
-      registration_mode_(DEVICE_MODE_PENDING),
+      registration_mode_(policy::DEVICE_MODE_PENDING),
       cryptohome_client_(cryptohome_client),
       weak_ptr_factory_(this) {
 }
 
-EnterpriseInstallAttributes::~EnterpriseInstallAttributes() {}
+InstallAttributes::~InstallAttributes() {}
 
-void EnterpriseInstallAttributes::Init(const base::FilePath& cache_file) {
+void InstallAttributes::Init(const base::FilePath& cache_file) {
   DCHECK(!device_locked_);
 
   // Mark the consistency check as running to ensure that LockDevice() is
   // blocked, but wait for the cryptohome service to be available before
   // actually calling TriggerConsistencyCheck().
   consistency_check_running_ = true;
-  cryptohome_client_->WaitForServiceToBeAvailable(base::Bind(
-      &EnterpriseInstallAttributes::OnCryptohomeServiceInitiallyAvailable,
-      weak_ptr_factory_.GetWeakPtr()));
+  cryptohome_client_->WaitForServiceToBeAvailable(
+      base::Bind(&InstallAttributes::OnCryptohomeServiceInitiallyAvailable,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   if (!base::PathExists(cache_file))
     return;
@@ -122,25 +119,22 @@ void EnterpriseInstallAttributes::Init(const base::FilePath& cache_file) {
   DecodeInstallAttributes(attr_map);
 }
 
-void EnterpriseInstallAttributes::ReadImmutableAttributes(
-    const base::Closure& callback) {
+void InstallAttributes::ReadImmutableAttributes(const base::Closure& callback) {
   if (device_locked_) {
     callback.Run();
     return;
   }
 
   cryptohome_client_->InstallAttributesIsReady(
-      base::Bind(&EnterpriseInstallAttributes::ReadAttributesIfReady,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+      base::Bind(&InstallAttributes::ReadAttributesIfReady,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void EnterpriseInstallAttributes::ReadAttributesIfReady(
-    const base::Closure& callback,
-    chromeos::DBusMethodCallStatus call_status,
-    bool result) {
-  if (call_status == chromeos::DBUS_METHOD_CALL_SUCCESS && result) {
-    registration_mode_ = DEVICE_MODE_NOT_SET;
+void InstallAttributes::ReadAttributesIfReady(const base::Closure& callback,
+                                              DBusMethodCallStatus call_status,
+                                              bool result) {
+  if (call_status == DBUS_METHOD_CALL_SUCCESS && result) {
+    registration_mode_ = policy::DEVICE_MODE_NOT_SET;
     if (!cryptohome_util::InstallAttributesIsInvalid() &&
         !cryptohome_util::InstallAttributesIsFirstInstall()) {
       device_locked_ = true;
@@ -167,15 +161,14 @@ void EnterpriseInstallAttributes::ReadAttributesIfReady(
   callback.Run();
 }
 
-void EnterpriseInstallAttributes::LockDevice(
-    const std::string& user,
-    DeviceMode device_mode,
-    const std::string& device_id,
-    const LockResultCallback& callback) {
+void InstallAttributes::LockDevice(const std::string& user,
+                                   policy::DeviceMode device_mode,
+                                   const std::string& device_id,
+                                   const LockResultCallback& callback) {
   DCHECK(!callback.is_null());
   CHECK_EQ(device_lock_running_, false);
-  CHECK_NE(device_mode, DEVICE_MODE_PENDING);
-  CHECK_NE(device_mode, DEVICE_MODE_NOT_SET);
+  CHECK_NE(device_mode, policy::DEVICE_MODE_PENDING);
+  CHECK_NE(device_mode, policy::DEVICE_MODE_NOT_SET);
 
   // Check for existing lock first.
   if (device_locked_) {
@@ -185,8 +178,8 @@ void EnterpriseInstallAttributes::LockDevice(
     }
 
     switch (registration_mode_) {
-      case DEVICE_MODE_ENTERPRISE:
-      case DEVICE_MODE_LEGACY_RETAIL_MODE: {
+      case policy::DEVICE_MODE_ENTERPRISE:
+      case policy::DEVICE_MODE_LEGACY_RETAIL_MODE: {
         // Check domain match for enterprise devices.
         std::string domain = gaia::ExtractDomainName(user);
         if (registration_domain_.empty() || domain != registration_domain_) {
@@ -195,13 +188,13 @@ void EnterpriseInstallAttributes::LockDevice(
         }
         break;
       }
-      case DEVICE_MODE_NOT_SET:
-      case DEVICE_MODE_PENDING:
+      case policy::DEVICE_MODE_NOT_SET:
+      case policy::DEVICE_MODE_PENDING:
         // This case can't happen due to the CHECK_NE asserts above.
         NOTREACHED();
         break;
-      case DEVICE_MODE_CONSUMER:
-      case DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
+      case policy::DEVICE_MODE_CONSUMER:
+      case policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
         // The user parameter is ignored for consumer devices.
         break;
     }
@@ -216,7 +209,7 @@ void EnterpriseInstallAttributes::LockDevice(
   // device locking must wait for TPM initialization anyways.
   if (consistency_check_running_) {
     CHECK(post_check_action_.is_null());
-    post_check_action_ = base::Bind(&EnterpriseInstallAttributes::LockDevice,
+    post_check_action_ = base::Bind(&InstallAttributes::LockDevice,
                                     weak_ptr_factory_.GetWeakPtr(),
                                     user,
                                     device_mode,
@@ -227,7 +220,7 @@ void EnterpriseInstallAttributes::LockDevice(
 
   device_lock_running_ = true;
   cryptohome_client_->InstallAttributesIsReady(
-      base::Bind(&EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady,
+      base::Bind(&InstallAttributes::LockDeviceIfAttributesIsReady,
                  weak_ptr_factory_.GetWeakPtr(),
                  user,
                  device_mode,
@@ -235,14 +228,14 @@ void EnterpriseInstallAttributes::LockDevice(
                  callback));
 }
 
-void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
+void InstallAttributes::LockDeviceIfAttributesIsReady(
     const std::string& user,
-    DeviceMode device_mode,
+    policy::DeviceMode device_mode,
     const std::string& device_id,
     const LockResultCallback& callback,
-    chromeos::DBusMethodCallStatus call_status,
+    DBusMethodCallStatus call_status,
     bool result) {
-  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS || !result) {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS || !result) {
     device_lock_running_ = false;
     callback.Run(LOCK_NOT_READY);
     return;
@@ -275,7 +268,7 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   if (!user.empty())
     registration_user = gaia::CanonicalizeEmail(user);
 
-  if (device_mode == DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH) {
+  if (device_mode == policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH) {
     // Set values in the InstallAttrs and lock it.
     if (!cryptohome_util::InstallAttributesSet(kAttrConsumerKioskEnabled,
                                                "true")) {
@@ -290,8 +283,7 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
     if (!cryptohome_util::InstallAttributesSet(kAttrEnterpriseOwned, "true") ||
         !cryptohome_util::InstallAttributesSet(kAttrEnterpriseUser,
                                                registration_user) ||
-        !cryptohome_util::InstallAttributesSet(kAttrEnterpriseDomain,
-                                               domain) ||
+        !cryptohome_util::InstallAttributesSet(kAttrEnterpriseDomain, domain) ||
         !cryptohome_util::InstallAttributesSet(kAttrEnterpriseMode, mode) ||
         !cryptohome_util::InstallAttributesSet(kAttrEnterpriseDeviceId,
                                                device_id)) {
@@ -311,13 +303,13 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   }
 
   ReadImmutableAttributes(
-      base::Bind(&EnterpriseInstallAttributes::OnReadImmutableAttributes,
+      base::Bind(&InstallAttributes::OnReadImmutableAttributes,
                  weak_ptr_factory_.GetWeakPtr(),
                  registration_user,
                  callback));
 }
 
-void EnterpriseInstallAttributes::OnReadImmutableAttributes(
+void InstallAttributes::OnReadImmutableAttributes(
     const std::string& registration_user,
     const LockResultCallback& callback) {
 
@@ -332,57 +324,56 @@ void EnterpriseInstallAttributes::OnReadImmutableAttributes(
   callback.Run(LOCK_SUCCESS);
 }
 
-bool EnterpriseInstallAttributes::IsEnterpriseDevice() const {
+bool InstallAttributes::IsEnterpriseDevice() const {
   return device_locked_ && !registration_user_.empty();
 }
 
-bool EnterpriseInstallAttributes::IsConsumerKioskDeviceWithAutoLaunch() {
+bool InstallAttributes::IsConsumerKioskDeviceWithAutoLaunch() {
   return device_locked_ &&
-         registration_mode_ == DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
+         registration_mode_ == policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
 }
 
-std::string EnterpriseInstallAttributes::GetDomain() const {
+std::string InstallAttributes::GetDomain() const {
   if (!IsEnterpriseDevice())
     return std::string();
 
   return registration_domain_;
 }
 
-std::string EnterpriseInstallAttributes::GetDeviceId() {
+std::string InstallAttributes::GetDeviceId() {
   if (!IsEnterpriseDevice())
     return std::string();
 
   return registration_device_id_;
 }
 
-DeviceMode EnterpriseInstallAttributes::GetMode() {
+policy::DeviceMode InstallAttributes::GetMode() {
   return registration_mode_;
 }
 
-void EnterpriseInstallAttributes::TriggerConsistencyCheck(int dbus_retries) {
+void InstallAttributes::TriggerConsistencyCheck(int dbus_retries) {
   cryptohome_client_->TpmIsOwned(
-      base::Bind(&EnterpriseInstallAttributes::OnTpmOwnerCheckCompleted,
+      base::Bind(&InstallAttributes::OnTpmOwnerCheckCompleted,
                  weak_ptr_factory_.GetWeakPtr(),
                  dbus_retries));
 }
 
-void EnterpriseInstallAttributes::OnTpmOwnerCheckCompleted(
+void InstallAttributes::OnTpmOwnerCheckCompleted(
     int dbus_retries_remaining,
-    chromeos::DBusMethodCallStatus call_status,
+    DBusMethodCallStatus call_status,
     bool result) {
-  if (call_status != chromeos::DBUS_METHOD_CALL_SUCCESS &&
-      dbus_retries_remaining) {
+  if (call_status != DBUS_METHOD_CALL_SUCCESS && dbus_retries_remaining) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&EnterpriseInstallAttributes::TriggerConsistencyCheck,
+        base::Bind(&InstallAttributes::TriggerConsistencyCheck,
                    weak_ptr_factory_.GetWeakPtr(), dbus_retries_remaining - 1),
         base::TimeDelta::FromSeconds(kDbusRetryIntervalInSeconds));
     return;
   }
 
   base::HistogramBase::Sample state = device_locked_;
-  state |= 0x2 * (registration_mode_ == DEVICE_MODE_ENTERPRISE);
-  if (call_status == chromeos::DBUS_METHOD_CALL_SUCCESS)
+  state |= 0x2 * (registration_mode_ == policy::DEVICE_MODE_ENTERPRISE);
+  if (call_status == DBUS_METHOD_CALL_SUCCESS)
     state |= 0x4 * result;
   else
     state = 0x8;  // This case is not a bit mask.
@@ -401,27 +392,22 @@ void EnterpriseInstallAttributes::OnTpmOwnerCheckCompleted(
 // in the protobuf with a trailing zero.  Also note that some of these constants
 // have been copied to login_manager/device_policy_service.cc.  Please make sure
 // that all changes to the constants are reflected there as well.
-const char EnterpriseInstallAttributes::kConsumerDeviceMode[] = "consumer";
-const char EnterpriseInstallAttributes::kEnterpriseDeviceMode[] = "enterprise";
-const char EnterpriseInstallAttributes::kLegacyRetailDeviceMode[] = "kiosk";
-const char EnterpriseInstallAttributes::kConsumerKioskDeviceMode[] =
-    "consumer_kiosk";
-const char EnterpriseInstallAttributes::kUnknownDeviceMode[] = "unknown";
+const char InstallAttributes::kConsumerDeviceMode[] = "consumer";
+const char InstallAttributes::kEnterpriseDeviceMode[] = "enterprise";
+const char InstallAttributes::kLegacyRetailDeviceMode[] = "kiosk";
+const char InstallAttributes::kConsumerKioskDeviceMode[] = "consumer_kiosk";
+const char InstallAttributes::kUnknownDeviceMode[] = "unknown";
 
-const char EnterpriseInstallAttributes::kAttrEnterpriseDeviceId[] =
+const char InstallAttributes::kAttrEnterpriseDeviceId[] =
     "enterprise.device_id";
-const char EnterpriseInstallAttributes::kAttrEnterpriseDomain[] =
-    "enterprise.domain";
-const char EnterpriseInstallAttributes::kAttrEnterpriseMode[] =
-    "enterprise.mode";
-const char EnterpriseInstallAttributes::kAttrEnterpriseOwned[] =
-    "enterprise.owned";
-const char EnterpriseInstallAttributes::kAttrEnterpriseUser[] =
-    "enterprise.user";
-const char EnterpriseInstallAttributes::kAttrConsumerKioskEnabled[] =
+const char InstallAttributes::kAttrEnterpriseDomain[] = "enterprise.domain";
+const char InstallAttributes::kAttrEnterpriseMode[] = "enterprise.mode";
+const char InstallAttributes::kAttrEnterpriseOwned[] = "enterprise.owned";
+const char InstallAttributes::kAttrEnterpriseUser[] = "enterprise.user";
+const char InstallAttributes::kAttrConsumerKioskEnabled[] =
     "consumer.app_kiosk_enabled";
 
-void EnterpriseInstallAttributes::OnCryptohomeServiceInitiallyAvailable(
+void InstallAttributes::OnCryptohomeServiceInitiallyAvailable(
     bool service_is_ready) {
   if (!service_is_ready)
     LOG(ERROR) << "Failed waiting for cryptohome D-Bus service availability.";
@@ -431,39 +417,39 @@ void EnterpriseInstallAttributes::OnCryptohomeServiceInitiallyAvailable(
   TriggerConsistencyCheck(kDbusRetryCount);
 }
 
-std::string EnterpriseInstallAttributes::GetDeviceModeString(DeviceMode mode) {
+std::string InstallAttributes::GetDeviceModeString(policy::DeviceMode mode) {
   switch (mode) {
-    case DEVICE_MODE_CONSUMER:
-      return EnterpriseInstallAttributes::kConsumerDeviceMode;
-    case DEVICE_MODE_ENTERPRISE:
-      return EnterpriseInstallAttributes::kEnterpriseDeviceMode;
-    case DEVICE_MODE_LEGACY_RETAIL_MODE:
-      return EnterpriseInstallAttributes::kLegacyRetailDeviceMode;
-    case DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
-      return EnterpriseInstallAttributes::kConsumerKioskDeviceMode;
-    case DEVICE_MODE_PENDING:
-    case DEVICE_MODE_NOT_SET:
+    case policy::DEVICE_MODE_CONSUMER:
+      return InstallAttributes::kConsumerDeviceMode;
+    case policy::DEVICE_MODE_ENTERPRISE:
+      return InstallAttributes::kEnterpriseDeviceMode;
+    case policy::DEVICE_MODE_LEGACY_RETAIL_MODE:
+      return InstallAttributes::kLegacyRetailDeviceMode;
+    case policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH:
+      return InstallAttributes::kConsumerKioskDeviceMode;
+    case policy::DEVICE_MODE_PENDING:
+    case policy::DEVICE_MODE_NOT_SET:
       break;
   }
   NOTREACHED() << "Invalid device mode: " << mode;
-  return EnterpriseInstallAttributes::kUnknownDeviceMode;
+  return InstallAttributes::kUnknownDeviceMode;
 }
 
-DeviceMode EnterpriseInstallAttributes::GetDeviceModeFromString(
+policy::DeviceMode InstallAttributes::GetDeviceModeFromString(
     const std::string& mode) {
-  if (mode == EnterpriseInstallAttributes::kConsumerDeviceMode)
-    return DEVICE_MODE_CONSUMER;
-  else if (mode == EnterpriseInstallAttributes::kEnterpriseDeviceMode)
-    return DEVICE_MODE_ENTERPRISE;
-  else if (mode == EnterpriseInstallAttributes::kLegacyRetailDeviceMode)
-    return DEVICE_MODE_LEGACY_RETAIL_MODE;
-  else if (mode == EnterpriseInstallAttributes::kConsumerKioskDeviceMode)
-    return DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
+  if (mode == InstallAttributes::kConsumerDeviceMode)
+    return policy::DEVICE_MODE_CONSUMER;
+  else if (mode == InstallAttributes::kEnterpriseDeviceMode)
+    return policy::DEVICE_MODE_ENTERPRISE;
+  else if (mode == InstallAttributes::kLegacyRetailDeviceMode)
+    return policy::DEVICE_MODE_LEGACY_RETAIL_MODE;
+  else if (mode == InstallAttributes::kConsumerKioskDeviceMode)
+    return policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
   NOTREACHED() << "Unknown device mode string: " << mode;
-  return DEVICE_MODE_NOT_SET;
+  return policy::DEVICE_MODE_NOT_SET;
 }
 
-void EnterpriseInstallAttributes::DecodeInstallAttributes(
+void InstallAttributes::DecodeInstallAttributes(
     const std::map<std::string, std::string>& attr_map) {
   std::string enterprise_owned;
   std::string enterprise_user;
@@ -476,7 +462,7 @@ void EnterpriseInstallAttributes::DecodeInstallAttributes(
 
     // Initialize the mode to the legacy enterprise mode here and update
     // below if more information is present.
-    registration_mode_ = DEVICE_MODE_ENTERPRISE;
+    registration_mode_ = policy::DEVICE_MODE_ENTERPRISE;
 
     // If we could extract basic setting we should try to extract the
     // extended ones too. We try to set these to defaults as good as
@@ -496,18 +482,18 @@ void EnterpriseInstallAttributes::DecodeInstallAttributes(
                         kAttrConsumerKioskEnabled,
                         &consumer_kiosk_enabled) &&
              consumer_kiosk_enabled == "true") {
-    registration_mode_ = DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
+    registration_mode_ = policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
   } else if (enterprise_user.empty() && enterprise_owned != "true") {
     // |registration_user_| is empty on consumer devices.
-    registration_mode_ = DEVICE_MODE_CONSUMER;
+    registration_mode_ = policy::DEVICE_MODE_CONSUMER;
   }
 }
 
-std::string EnterpriseInstallAttributes::GetRegistrationUser() const {
+std::string InstallAttributes::GetRegistrationUser() const {
   if (!device_locked_)
     return std::string();
 
   return registration_user_;
 }
 
-}  // namespace policy
+}  // namespace chromeos

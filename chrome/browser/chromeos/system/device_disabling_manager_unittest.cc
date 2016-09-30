@@ -15,9 +15,9 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
-#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
@@ -71,7 +71,7 @@ class DeviceDisablingManagerTestBase : public testing::Test,
   }
 
  private:
-  policy::ScopedStubEnterpriseInstallAttributes install_attributes_;
+  chromeos::ScopedStubInstallAttributes install_attributes_;
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   user_manager::FakeUserManager fake_user_manager_;
@@ -103,10 +103,12 @@ void DeviceDisablingManagerTestBase::UpdateInstallAttributes(
     const std::string& enrollment_domain,
     const std::string& registration_user,
     policy::DeviceMode device_mode) {
-  policy::StubEnterpriseInstallAttributes* install_attributes =
-      static_cast<policy::StubEnterpriseInstallAttributes*>(
-          TestingBrowserProcess::GetGlobal()->platform_part()->
-              browser_policy_connector_chromeos()->GetInstallAttributes());
+  chromeos::StubInstallAttributes* install_attributes =
+      static_cast<chromeos::StubInstallAttributes*>(
+          TestingBrowserProcess::GetGlobal()
+              ->platform_part()
+              ->browser_policy_connector_chromeos()
+              ->GetInstallAttributes());
   install_attributes->SetDomain(enrollment_domain);
   install_attributes->SetRegistrationUser(registration_user);
   install_attributes->SetMode(device_mode);
@@ -257,7 +259,7 @@ class DeviceDisablingManagerTest : public DeviceDisablingManagerTestBase,
   void CreateDeviceDisablingManager() override;
   void DestroyDeviceDisablingManager() override;
 
-  //DeviceDisablingManager::Observer:
+  // DeviceDisablingManager::Observer:
   MOCK_METHOD1(OnDisabledMessageChanged, void(const std::string&));
 
   void SetUnowned();

@@ -21,8 +21,8 @@
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/attestation.pb.h"
@@ -59,7 +59,7 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     PrefService* local_state,
     DeviceManagementService* enterprise_service,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    EnterpriseInstallAttributes* install_attributes,
+    chromeos::InstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
     DeviceCloudPolicyStoreChromeOS* device_store,
     DeviceCloudPolicyManagerChromeOS* manager,

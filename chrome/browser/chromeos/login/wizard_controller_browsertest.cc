@@ -41,8 +41,8 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
-#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -746,7 +746,7 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 
  private:
-  policy::ScopedStubEnterpriseInstallAttributes install_attributes_;
+  ScopedStubInstallAttributes install_attributes_;
 
   DISALLOW_COPY_AND_ASSIGN(WizardControllerDeviceStateTest);
 };

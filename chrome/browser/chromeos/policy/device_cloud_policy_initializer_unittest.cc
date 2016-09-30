@@ -9,7 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
-#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
@@ -56,7 +56,7 @@ class DeviceCloudPolicyInitializerTest
 
   chromeos::system::ScopedFakeStatisticsProvider statistics_provider_;
   TestingPrefServiceSimple local_state_;
-  StubEnterpriseInstallAttributes install_attributes_;
+  chromeos::StubInstallAttributes install_attributes_;
   DeviceCloudPolicyInitializer device_cloud_policy_initializer_;
 };
 

@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -68,8 +68,8 @@ const char kDMRegisterRequest[] = "/device_management?request=register";
 const char kDMPolicyRequest[] = "/device_management?request=policy";
 
 void CopyLockResult(base::RunLoop* loop,
-                    policy::EnterpriseInstallAttributes::LockResult* out,
-                    policy::EnterpriseInstallAttributes::LockResult result) {
+                    InstallAttributes::LockResult* out,
+                    InstallAttributes::LockResult result) {
   *out = result;
   loop->Quit();
 }
@@ -140,12 +140,12 @@ class BlockingLoginTest
 
   void EnrollDevice(const std::string& username) {
     base::RunLoop loop;
-    policy::EnterpriseInstallAttributes::LockResult result;
+    InstallAttributes::LockResult result;
     browser_policy_connector()->GetInstallAttributes()->LockDevice(
         username, policy::DEVICE_MODE_ENTERPRISE, "100200300",
         base::Bind(&CopyLockResult, &loop, &result));
     loop.Run();
-    EXPECT_EQ(policy::EnterpriseInstallAttributes::LOCK_SUCCESS, result);
+    EXPECT_EQ(InstallAttributes::LOCK_SUCCESS, result);
     RunUntilIdle();
   }
 

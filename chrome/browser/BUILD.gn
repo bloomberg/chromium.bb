@@ -4143,10 +4143,10 @@ static_library("test_support") {
       "chromeos/policy/fake_device_cloud_policy_initializer.h",
       "chromeos/policy/fake_device_cloud_policy_manager.cc",
       "chromeos/policy/fake_device_cloud_policy_manager.h",
-      "chromeos/policy/stub_enterprise_install_attributes.cc",
-      "chromeos/policy/stub_enterprise_install_attributes.h",
       "chromeos/settings/device_settings_test_helper.cc",
       "chromeos/settings/device_settings_test_helper.h",
+      "chromeos/settings/stub_install_attributes.cc",
+      "chromeos/settings/stub_install_attributes.h",
     ]
     configs += [ "//build/config/linux/dbus" ]
     deps += [ "//chromeos:test_support" ]

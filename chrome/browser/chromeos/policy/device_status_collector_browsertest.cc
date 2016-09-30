@@ -30,8 +30,8 @@
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -412,7 +412,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
 
-  ScopedStubEnterpriseInstallAttributes install_attributes_;
+  chromeos::ScopedStubInstallAttributes install_attributes_;
   TestingPrefServiceSimple prefs_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   DiskMountManager::MountPointMap mount_point_map_;

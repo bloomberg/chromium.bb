@@ -286,11 +286,11 @@ bool KioskAppManager::IsConsumerKioskDeviceWithAutoLaunch() {
 
 void KioskAppManager::OnLockDevice(
     const KioskAppManager::EnableKioskAutoLaunchCallback& callback,
-    policy::EnterpriseInstallAttributes::LockResult result) {
+    InstallAttributes::LockResult result) {
   if (callback.is_null())
     return;
 
-  callback.Run(result == policy::EnterpriseInstallAttributes::LOCK_SUCCESS);
+  callback.Run(result == InstallAttributes::LOCK_SUCCESS);
 }
 
 void KioskAppManager::OnOwnerFileChecked(
@@ -319,8 +319,7 @@ void KioskAppManager::OnReadImmutableAttributes(
       CONSUMER_KIOSK_AUTO_LAUNCH_DISABLED;
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  policy::EnterpriseInstallAttributes* attributes =
-      connector->GetInstallAttributes();
+  InstallAttributes* attributes = connector->GetInstallAttributes();
   switch (attributes->GetMode()) {
     case policy::DEVICE_MODE_NOT_SET: {
       if (!base::SysInfo::IsRunningOnChromeOS()) {

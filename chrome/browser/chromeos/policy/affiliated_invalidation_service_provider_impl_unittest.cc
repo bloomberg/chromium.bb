@@ -13,10 +13,10 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -133,7 +133,7 @@ class AffiliatedInvalidationServiceProviderImplTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
   chromeos::ScopedUserManagerEnabler user_manager_enabler_;
-  ScopedStubEnterpriseInstallAttributes install_attributes_;
+  chromeos::ScopedStubInstallAttributes install_attributes_;
   std::unique_ptr<chromeos::ScopedTestDeviceSettingsService>
       test_device_settings_service_;
   std::unique_ptr<chromeos::ScopedTestCrosSettings> test_cros_settings_;

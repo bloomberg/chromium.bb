@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -79,11 +80,10 @@ void ConsumerKioskModeLockCheck(
   runner_quit_task.Run();
 }
 
-// Helper EnterpriseInstallAttributes::LockResultCallback implementation.
-void OnEnterpriseDeviceLock(
-    policy::EnterpriseInstallAttributes::LockResult* out_locked,
-    const base::Closure& runner_quit_task,
-    policy::EnterpriseInstallAttributes::LockResult in_locked) {
+// Helper InstallAttributes::LockResultCallback implementation.
+void OnEnterpriseDeviceLock(InstallAttributes::LockResult* out_locked,
+                            const base::Closure& runner_quit_task,
+                            InstallAttributes::LockResult in_locked) {
   LOG(INFO) << "Enterprise lock  = " << in_locked;
   *out_locked = in_locked;
   runner_quit_task.Run();
@@ -283,10 +283,10 @@ class KioskAppManagerTest : public InProcessBrowserTest {
   }
 
   // Locks device for enterprise.
-  policy::EnterpriseInstallAttributes::LockResult LockDeviceForEnterprise() {
-    std::unique_ptr<policy::EnterpriseInstallAttributes::LockResult>
-        lock_result(new policy::EnterpriseInstallAttributes::LockResult(
-            policy::EnterpriseInstallAttributes::LOCK_NOT_READY));
+  InstallAttributes::LockResult LockDeviceForEnterprise() {
+    std::unique_ptr<InstallAttributes::LockResult> lock_result =
+        base::MakeUnique<InstallAttributes::LockResult>(
+            InstallAttributes::LOCK_NOT_READY);
     scoped_refptr<content::MessageLoopRunner> runner =
         new content::MessageLoopRunner;
     policy::BrowserPolicyConnectorChromeOS* connector =
@@ -817,8 +817,7 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, EnableConsumerKiosk) {
 IN_PROC_BROWSER_TEST_F(KioskAppManagerTest,
                        PreventEnableConsumerKioskForEnterprise) {
   // First, lock the device as enterprise.
-  EXPECT_EQ(LockDeviceForEnterprise(),
-            policy::EnterpriseInstallAttributes::LOCK_SUCCESS);
+  EXPECT_EQ(LockDeviceForEnterprise(), InstallAttributes::LOCK_SUCCESS);
 
   std::unique_ptr<KioskAppManager::ConsumerKioskAutoLaunchStatus> status(
       new KioskAppManager::ConsumerKioskAutoLaunchStatus(

@@ -26,6 +26,9 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
+
+class InstallAttributes;
+
 namespace attestation {
 class AttestationFlow;
 }
@@ -43,7 +46,6 @@ class DeviceManagementService;
 struct EnrollmentConfig;
 class EnrollmentHandlerChromeOS;
 class EnrollmentStatus;
-class EnterpriseInstallAttributes;
 
 // This class connects DCPM to the correct device management service, and
 // handles the enrollment process.
@@ -57,7 +59,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
       PrefService* local_state,
       DeviceManagementService* enterprise_service,
       const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-      EnterpriseInstallAttributes* install_attributes,
+      chromeos::InstallAttributes* install_attributes,
       ServerBackedStateKeysBroker* state_keys_broker,
       DeviceCloudPolicyStoreChromeOS* device_store,
       DeviceCloudPolicyManagerChromeOS* manager,
@@ -135,7 +137,7 @@ class DeviceCloudPolicyInitializer : public CloudPolicyStore::Observer {
   PrefService* local_state_;
   DeviceManagementService* enterprise_service_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-  EnterpriseInstallAttributes* install_attributes_;
+  chromeos::InstallAttributes* install_attributes_;
   ServerBackedStateKeysBroker* state_keys_broker_;
   DeviceCloudPolicyStoreChromeOS* device_store_;
   DeviceCloudPolicyManagerChromeOS* manager_;

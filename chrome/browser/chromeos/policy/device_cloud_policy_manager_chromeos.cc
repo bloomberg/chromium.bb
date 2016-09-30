@@ -23,12 +23,12 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_status_collector.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/heartbeat_scheduler.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_commands_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 #include "chrome/browser/chromeos/policy/status_uploader.h"
 #include "chrome/browser/chromeos/policy/system_log_uploader.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
@@ -272,7 +272,7 @@ DeviceCloudPolicyManagerChromeOS::GetZeroTouchEnrollmentMode() {
 
 void DeviceCloudPolicyManagerChromeOS::StartConnection(
     std::unique_ptr<CloudPolicyClient> client_to_connect,
-    EnterpriseInstallAttributes* install_attributes) {
+    chromeos::InstallAttributes* install_attributes) {
   CHECK(!service());
 
   // Set state keys here so the first policy fetch submits them to the server.

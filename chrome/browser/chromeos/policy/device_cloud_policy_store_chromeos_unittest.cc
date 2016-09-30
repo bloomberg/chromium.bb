@@ -12,9 +12,9 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
@@ -33,8 +33,8 @@ namespace policy {
 namespace {
 
 void CopyLockResult(base::RunLoop* loop,
-                    EnterpriseInstallAttributes::LockResult* out,
-                    EnterpriseInstallAttributes::LockResult result) {
+                    chromeos::InstallAttributes::LockResult* out,
+                    chromeos::InstallAttributes::LockResult result) {
   *out = result;
   loop->Quit();
 }
@@ -48,7 +48,7 @@ class DeviceCloudPolicyStoreChromeOSTest
       : local_state_(TestingBrowserProcess::GetGlobal()),
         fake_cryptohome_client_(new chromeos::FakeCryptohomeClient()),
         install_attributes_(
-            new EnterpriseInstallAttributes(fake_cryptohome_client_)),
+            new chromeos::InstallAttributes(fake_cryptohome_client_)),
         store_(new DeviceCloudPolicyStoreChromeOS(
             &device_settings_service_,
             install_attributes_.get(),
@@ -61,14 +61,14 @@ class DeviceCloudPolicyStoreChromeOSTest
         std::unique_ptr<chromeos::CryptohomeClient>(fake_cryptohome_client_));
 
     base::RunLoop loop;
-    EnterpriseInstallAttributes::LockResult result;
+    chromeos::InstallAttributes::LockResult result;
     install_attributes_->LockDevice(
         PolicyBuilder::kFakeUsername,
         DEVICE_MODE_ENTERPRISE,
         PolicyBuilder::kFakeDeviceId,
         base::Bind(&CopyLockResult, &loop, &result));
     loop.Run();
-    ASSERT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS, result);
+    ASSERT_EQ(chromeos::InstallAttributes::LOCK_SUCCESS, result);
   }
 
   void ExpectFailure(CloudPolicyStore::Status expected_status) {
@@ -112,7 +112,7 @@ class DeviceCloudPolicyStoreChromeOSTest
     chromeos::cryptohome_util::InstallAttributesSet("enterprise.owned",
                                                     std::string());
     install_attributes_.reset(
-        new EnterpriseInstallAttributes(fake_cryptohome_client_));
+        new chromeos::InstallAttributes(fake_cryptohome_client_));
     store_.reset(new DeviceCloudPolicyStoreChromeOS(
         &device_settings_service_, install_attributes_.get(),
         base::ThreadTaskRunnerHandle::Get()));
@@ -120,7 +120,7 @@ class DeviceCloudPolicyStoreChromeOSTest
 
   ScopedTestingLocalState local_state_;
   chromeos::FakeCryptohomeClient* fake_cryptohome_client_;
-  std::unique_ptr<EnterpriseInstallAttributes> install_attributes_;
+  std::unique_ptr<chromeos::InstallAttributes> install_attributes_;
 
   std::unique_ptr<DeviceCloudPolicyStoreChromeOS> store_;
 

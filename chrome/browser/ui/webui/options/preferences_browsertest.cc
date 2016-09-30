@@ -42,9 +42,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/net/proxy_config_handler.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/stub_enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
@@ -722,8 +722,8 @@ class ManagedPreferencesBrowserTest : public PreferencesBrowserTest {
   // PreferencesBrowserTest implementation:
   void SetUpInProcessBrowserTestFixture() override {
     // Set up fake install attributes.
-    std::unique_ptr<policy::StubEnterpriseInstallAttributes> attributes(
-        new policy::StubEnterpriseInstallAttributes());
+    std::unique_ptr<chromeos::StubInstallAttributes> attributes =
+        base::MakeUnique<chromeos::StubInstallAttributes>();
     attributes->SetDomain("example.com");
     attributes->SetRegistrationUser("user@example.com");
     policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
