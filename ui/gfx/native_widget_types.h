@@ -195,22 +195,22 @@ typedef intptr_t NativeViewId;
 // AcceleratedWidget provides a surface to compositors to paint pixels.
 #if defined(OS_WIN)
 typedef HWND AcceleratedWidget;
-const AcceleratedWidget kNullAcceleratedWidget = NULL;
+constexpr AcceleratedWidget kNullAcceleratedWidget = NULL;
 #elif defined(USE_X11)
 typedef unsigned long AcceleratedWidget;
-const AcceleratedWidget kNullAcceleratedWidget = 0;
+constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(OS_IOS)
 typedef UIView* AcceleratedWidget;
-const AcceleratedWidget kNullAcceleratedWidget = 0;
+constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(OS_MACOSX)
 typedef NSView* AcceleratedWidget;
-const AcceleratedWidget kNullAcceleratedWidget = 0;
+constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(OS_ANDROID)
 typedef ANativeWindow* AcceleratedWidget;
-const AcceleratedWidget kNullAcceleratedWidget = 0;
+constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #elif defined(USE_OZONE)
 typedef int32_t AcceleratedWidget;
-const AcceleratedWidget kNullAcceleratedWidget = 0;
+constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
 #else
 #error unknown platform
 #endif

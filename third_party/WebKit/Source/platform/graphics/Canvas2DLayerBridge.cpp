@@ -29,6 +29,7 @@
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
@@ -59,6 +60,22 @@ enum {
 } // namespace
 
 namespace blink {
+
+#if USE_IOSURFACE_FOR_2D_CANVAS
+struct Canvas2DLayerBridge::ImageInfo : public RefCounted<ImageInfo> {
+    ImageInfo(std::unique_ptr<gfx::GpuMemoryBuffer>, GLuint imageId, GLuint textureId);
+    ~ImageInfo();
+
+    // The backing buffer.
+    std::unique_ptr<gfx::GpuMemoryBuffer> m_gpuMemoryBuffer;
+
+    // The id of the CHROMIUM image.
+    const GLuint m_imageId;
+
+    // The id of the texture bound to the CHROMIUM image.
+    const GLuint m_textureId;
+};
+#endif // USE_IOSURFACE_FOR_2D_CANVAS
 
 static sk_sp<SkSurface> createSkSurface(GrContext* gr, const IntSize& size, int msaaSampleCount, OpacityMode opacityMode, sk_sp<SkColorSpace> colorSpace, bool* surfaceIsAccelerated)
 {
@@ -194,8 +211,8 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, cc::T
     GrContext* grContext = m_contextProvider->grContext();
     grContext->flush();
 
-    ImageInfo imageInfo = createIOSurfaceBackedTexture();
-    if (imageInfo.empty())
+    RefPtr<ImageInfo> imageInfo = createIOSurfaceBackedTexture();
+    if (!imageInfo)
         return false;
 
     gpu::gles2::GLES2Interface* gl = contextGL();
@@ -203,13 +220,13 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, cc::T
         return false;
 
     GLuint imageTexture = skia::GrBackendObjectToGrGLTextureInfo(image->getTextureHandle(true))->fID;
-    gl->CopySubTextureCHROMIUM(imageTexture, imageInfo.m_textureId, 0, 0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
+    gl->CopySubTextureCHROMIUM(imageTexture, imageInfo->m_textureId, 0, 0, 0, 0, m_size.width(), m_size.height(), GL_FALSE, GL_FALSE, GL_FALSE);
 
     MailboxInfo& info = m_mailboxes.first();
     uint32_t textureTarget = GC3D_TEXTURE_RECTANGLE_ARB;
     gpu::Mailbox mailbox;
     gl->GenMailboxCHROMIUM(mailbox.name);
-    gl->ProduceTextureDirectCHROMIUM(imageInfo.m_textureId, textureTarget, mailbox.name);
+    gl->ProduceTextureDirectCHROMIUM(imageInfo->m_textureId, textureTarget, mailbox.name);
 
     const GLuint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
     gl->Flush();
@@ -220,7 +237,13 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, cc::T
     bool isOverlayCandidate = true;
     bool secureOutputOnly = false;
     info.m_mailbox = mailbox;
-    *outMailbox = cc::TextureMailbox(mailbox, syncToken, textureTarget, gfx::Size(m_size.width(), m_size.height()), isOverlayCandidate, secureOutputOnly);
+
+    *outMailbox = cc::TextureMailbox(mailbox, syncToken, textureTarget, gfx::Size(m_size), isOverlayCandidate, secureOutputOnly);
+    if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+        gfx::ColorSpace colorSpace = gfx::ColorSpace::FromSkColorSpace(m_colorSpace);
+        outMailbox->set_color_space(colorSpace);
+        imageInfo->m_gpuMemoryBuffer->SetColorSpaceForScanout(colorSpace);
+    }
 
     gl->BindTexture(GC3D_TEXTURE_RECTANGLE_ARB, 0);
 
@@ -231,21 +254,31 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, cc::T
     return true;
 }
 
-Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture()
+RefPtr<Canvas2DLayerBridge::ImageInfo> Canvas2DLayerBridge::createIOSurfaceBackedTexture()
 {
     if (!m_imageInfoCache.isEmpty()) {
-        Canvas2DLayerBridge::ImageInfo info = m_imageInfoCache.last();
+        RefPtr<Canvas2DLayerBridge::ImageInfo> info = m_imageInfoCache.last();
         m_imageInfoCache.removeLast();
         return info;
     }
 
     gpu::gles2::GLES2Interface* gl = contextGL();
     if (!gl)
-        return Canvas2DLayerBridge::ImageInfo();
+        return nullptr;
 
-    GLuint imageId = gl->CreateGpuMemoryBufferImageCHROMIUM(m_size.width(), m_size.height(), GL_RGBA, GC3D_SCANOUT_CHROMIUM);
+    gpu::GpuMemoryBufferManager* gpuMemoryBufferManager = Platform::current()->getGpuMemoryBufferManager();
+    if (!gpuMemoryBufferManager)
+        return nullptr;
+
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpuMemoryBuffer = gpuMemoryBufferManager->AllocateGpuMemoryBuffer(
+        gfx::Size(m_size), gfx::BufferFormat::RGBA_8888, gfx::BufferUsage::SCANOUT, gpu::kNullSurfaceHandle);
+    if (!gpuMemoryBuffer)
+        return nullptr;
+
+    GLuint imageId = gl->CreateImageCHROMIUM(
+        gpuMemoryBuffer->AsClientBuffer(), m_size.width(), m_size.height(), GL_RGBA);
     if (!imageId)
-        return Canvas2DLayerBridge::ImageInfo();
+        return nullptr;
 
     GLuint textureId;
     gl->GenTextures(1, &textureId);
@@ -257,21 +290,22 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
     gl->TexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     gl->BindTexImage2DCHROMIUM(target, imageId);
 
-    return Canvas2DLayerBridge::ImageInfo(imageId, textureId);
+    return adoptRef(new Canvas2DLayerBridge::ImageInfo(std::move(gpuMemoryBuffer), imageId, textureId));
 }
 
-void Canvas2DLayerBridge::deleteCHROMIUMImage(ImageInfo info)
+void Canvas2DLayerBridge::deleteCHROMIUMImage(RefPtr<ImageInfo> info)
 {
     gpu::gles2::GLES2Interface* gl = contextGL();
     if (!gl)
         return;
 
     GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
-    gl->BindTexture(target, info.m_textureId);
-    gl->ReleaseTexImage2DCHROMIUM(target, info.m_imageId);
-    gl->DestroyImageCHROMIUM(info.m_imageId);
-    gl->DeleteTextures(1, &info.m_textureId);
+    gl->BindTexture(target, info->m_textureId);
+    gl->ReleaseTexImage2DCHROMIUM(target, info->m_imageId);
+    gl->DestroyImageCHROMIUM(info->m_imageId);
+    gl->DeleteTextures(1, &info->m_textureId);
     gl->BindTexture(target, 0);
+    info->m_gpuMemoryBuffer.reset();
 
     resetSkiaTextureBinding();
 }
@@ -870,7 +904,7 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
         // Invalidate texture state in case the compositor altered it since the copy-on-write.
         if (releasedMailboxInfo->m_image) {
 #if USE_IOSURFACE_FOR_2D_CANVAS
-            DCHECK(releasedMailboxInfo->m_imageInfo.empty());
+            DCHECK(!releasedMailboxInfo->m_imageInfo);
 #endif // USE_IOSURFACE_FOR_2D_CANVAS
             if (syncToken.HasData()) {
                 contextGL()->WaitSyncTokenCHROMIUM(syncToken.GetConstData());
@@ -890,7 +924,7 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
         }
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
-        if (!releasedMailboxInfo->m_imageInfo.empty() && !lostResource) {
+        if (releasedMailboxInfo->m_imageInfo && !lostResource) {
             m_imageInfoCache.append(releasedMailboxInfo->m_imageInfo);
         }
 #endif // USE_IOSURFACE_FOR_2D_CANVAS
@@ -1007,15 +1041,18 @@ void Canvas2DLayerBridge::willOverwriteCanvas()
 }
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
-Canvas2DLayerBridge::ImageInfo::ImageInfo(GLuint imageId, GLuint textureId) : m_imageId(imageId), m_textureId(textureId)
+Canvas2DLayerBridge::ImageInfo::ImageInfo(std::unique_ptr<gfx::GpuMemoryBuffer> gpuMemoryBuffer, GLuint imageId, GLuint textureId)
+    : m_gpuMemoryBuffer(std::move(gpuMemoryBuffer))
+    , m_imageId(imageId)
+    , m_textureId(textureId)
 {
-    DCHECK(imageId);
-    DCHECK(textureId);
+    DCHECK(m_gpuMemoryBuffer);
+    DCHECK(m_imageId);
+    DCHECK(m_textureId);
 }
 
-bool Canvas2DLayerBridge::ImageInfo::empty()
+Canvas2DLayerBridge::ImageInfo::~ImageInfo()
 {
-    return m_imageId == 0;
 }
 #endif // USE_IOSURFACE_FOR_2D_CANVAS
 

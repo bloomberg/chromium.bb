@@ -58,6 +58,10 @@
 
 class GrContext;
 
+namespace gpu {
+class GpuMemoryBufferManager;
+}
+
 namespace v8 {
 class Context;
 template<class T> class Local;
@@ -443,6 +447,8 @@ public:
     // backed by the process-wide shared main thread context. Returns null if
     // the context cannot be created or initialized.
     virtual WebGraphicsContext3DProvider* createSharedOffscreenGraphicsContext3DProvider() { return nullptr; }
+
+    virtual gpu::GpuMemoryBufferManager* getGpuMemoryBufferManager() { return nullptr; }
 
     virtual std::unique_ptr<cc::SharedBitmap> allocateSharedBitmap(const WebSize& size) { return nullptr; }
 

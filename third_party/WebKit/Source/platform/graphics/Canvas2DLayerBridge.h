@@ -160,19 +160,7 @@ public:
 private:
 #if USE_IOSURFACE_FOR_2D_CANVAS
     // All information associated with a CHROMIUM image.
-    struct ImageInfo {
-        ImageInfo() {}
-        ImageInfo(GLuint imageId, GLuint textureId);
-
-        // Whether this structure holds references to a CHROMIUM image.
-        bool empty();
-
-        // The id of the CHROMIUM image.
-        GLuint m_imageId = 0;
-
-        // The id of the texture bound to the CHROMIUM image.
-        GLuint m_textureId = 0;
-    };
+    struct ImageInfo;
 #endif // USE_IOSURFACE_FOR_2D_CANVAS
 
     struct MailboxInfo {
@@ -184,7 +172,7 @@ private:
 #if USE_IOSURFACE_FOR_2D_CANVAS
         // If this mailbox wraps an IOSurface-backed texture, the ids of the
         // CHROMIUM image and the texture.
-        ImageInfo m_imageInfo;
+        RefPtr<ImageInfo> m_imageInfo;
 #endif // USE_IOSURFACE_FOR_2D_CANVAS
 
         MailboxInfo(const MailboxInfo&);
@@ -218,10 +206,10 @@ private:
 
     // Creates an IOSurface-backed texture. Returns an ImageInfo, which is empty
     // on failure. The caller takes ownership of both the texture and the image.
-    ImageInfo createIOSurfaceBackedTexture();
+    RefPtr<ImageInfo> createIOSurfaceBackedTexture();
 
     // Releases all resources associated with a CHROMIUM image.
-    void deleteCHROMIUMImage(ImageInfo);
+    void deleteCHROMIUMImage(RefPtr<ImageInfo>);
 
     // Releases all resources in the CHROMIUM image cache.
     void clearCHROMIUMImageCache();
@@ -286,7 +274,7 @@ private:
     // Each element in this vector represents an IOSurface backed texture that
     // is ready to be reused.
     // Elements in this vector can safely be purged in low memory conditions.
-    Vector<ImageInfo> m_imageInfoCache;
+    Vector<RefPtr<ImageInfo>> m_imageInfoCache;
 #endif // USE_IOSURFACE_FOR_2D_CANVAS
 };
 

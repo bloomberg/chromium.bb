@@ -29,10 +29,10 @@ namespace gpu {
 // be defined, because some APIs that use it are referenced there.
 #if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
 using SurfaceHandle = gfx::AcceleratedWidget;
-const SurfaceHandle kNullSurfaceHandle = gfx::kNullAcceleratedWidget;
+constexpr SurfaceHandle kNullSurfaceHandle = gfx::kNullAcceleratedWidget;
 #elif defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_NACL)
 using SurfaceHandle = int32_t;
-const SurfaceHandle kNullSurfaceHandle = 0;
+constexpr SurfaceHandle kNullSurfaceHandle = 0;
 #else
 #error Platform not supported.
 #endif

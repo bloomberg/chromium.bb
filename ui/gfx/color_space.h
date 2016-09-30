@@ -164,6 +164,7 @@ class GFX_EXPORT ColorSpace {
 
   // Note that this may return nullptr.
   sk_sp<SkColorSpace> ToSkColorSpace() const;
+  static ColorSpace FromSkColorSpace(const sk_sp<SkColorSpace>& sk_color_space);
 
  private:
   PrimaryID primaries_ = PrimaryID::UNSPECIFIED;

@@ -154,4 +154,13 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   return result;
 }
 
+ColorSpace ColorSpace::FromSkColorSpace(
+    const sk_sp<SkColorSpace>& sk_color_space) {
+  if (!sk_color_space)
+    return gfx::ColorSpace();
+
+  // TODO(crbug.com/634102): Add conversion to gfx::ColorSpace.
+  return gfx::ColorSpace();
+}
+
 }  // namespace gfx
