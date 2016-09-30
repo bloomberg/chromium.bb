@@ -79,7 +79,7 @@ Polymer({
     var lastVisitTime = 0;
     if (incremental) {
       var lastVisit = this.queryResult.results.slice(-1)[0];
-      lastVisitTime = lastVisit ? lastVisit.time : 0;
+      lastVisitTime = lastVisit ? Math.floor(lastVisit.time) : 0;
     }
 
     var maxResults =
