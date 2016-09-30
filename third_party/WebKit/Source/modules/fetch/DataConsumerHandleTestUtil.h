@@ -10,7 +10,6 @@
 #include "gin/public/isolate_holder.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
-#include "modules/fetch/FetchDataLoader.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -338,33 +337,6 @@ public:
             destruct();
         }
         MOCK_METHOD0(destruct, void());
-    };
-
-    class MockFetchDataLoaderClient : public GarbageCollectedFinalized<MockFetchDataLoaderClient>, public FetchDataLoader::Client {
-        USING_GARBAGE_COLLECTED_MIXIN(MockFetchDataLoaderClient);
-    public:
-        static ::testing::StrictMock<MockFetchDataLoaderClient>* create() { return new ::testing::StrictMock<MockFetchDataLoaderClient>; }
-
-        DEFINE_INLINE_VIRTUAL_TRACE()
-        {
-            FetchDataLoader::Client::trace(visitor);
-        }
-
-        MOCK_METHOD1(didFetchDataLoadedBlobHandleMock, void(RefPtr<BlobDataHandle>));
-        MOCK_METHOD1(didFetchDataLoadedArrayBufferMock, void(DOMArrayBuffer*));
-        MOCK_METHOD1(didFetchDataLoadedString, void(const String&));
-        MOCK_METHOD0(didFetchDataLoadStream, void());
-        MOCK_METHOD0(didFetchDataLoadFailed, void());
-
-        void didFetchDataLoadedArrayBuffer(DOMArrayBuffer* arrayBuffer) override
-        {
-            didFetchDataLoadedArrayBufferMock(arrayBuffer);
-        }
-        // In mock methods we use RefPtr<> rather than PassRefPtr<>.
-        void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
-        {
-            didFetchDataLoadedBlobHandleMock(blobDataHandle);
-        }
     };
 
     class Command final {

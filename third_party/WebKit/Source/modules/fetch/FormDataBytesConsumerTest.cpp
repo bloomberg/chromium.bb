@@ -27,6 +27,7 @@ using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Return;
 using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
+using MockBytesConsumer = BytesConsumerTestUtil::MockBytesConsumer;
 
 String toString(const Vector<char>& v)
 {
@@ -55,24 +56,6 @@ class NoopClient final : public GarbageCollectedFinalized<NoopClient>, public By
     USING_GARBAGE_COLLECTED_MIXIN(NoopClient);
 public:
     void onStateChange() override {}
-};
-
-class MockBytesConsumer : public BytesConsumer {
-public:
-    static MockBytesConsumer* create() { return new ::testing::StrictMock<MockBytesConsumer>(); }
-
-    MOCK_METHOD2(beginRead, Result(const char**, size_t*));
-    MOCK_METHOD1(endRead, Result(size_t));
-    MOCK_METHOD1(setClient, void(Client*));
-    MOCK_METHOD0(clearClient, void());
-    MOCK_METHOD0(cancel, void());
-    MOCK_CONST_METHOD0(getPublicState, PublicState());
-    MOCK_CONST_METHOD0(getError, Error());
-
-    String debugName() const override { return "MockBytesConsumer"; }
-
-protected:
-    MockBytesConsumer() = default;
 };
 
 class FormDataBytesConsumerTest : public ::testing::Test {
@@ -324,21 +307,24 @@ TEST_F(FormDataBytesConsumerTest, BeginReadAffectsDrainingWithComplexFormData)
     EXPECT_CALL(*underlying, beginRead(&buffer, &available)).WillOnce(Return(Result::Ok));
     EXPECT_CALL(*underlying, endRead(0)).WillOnce(Return(Result::Ok));
     EXPECT_CALL(checkpoint, Call(2));
-    // drainAsFormData / drainAsBlobDataHandle should not be called here.
+    // drainAsFormData should not be called here.
     EXPECT_CALL(checkpoint, Call(3));
+    EXPECT_CALL(*underlying, drainAsBlobDataHandle(_));
+    EXPECT_CALL(checkpoint, Call(4));
     // |consumer| delegates the getPublicState call to |underlying|.
     EXPECT_CALL(*underlying, getPublicState()).WillOnce(Return(BytesConsumer::PublicState::ReadableOrWaiting));
-    EXPECT_CALL(checkpoint, Call(4));
+    EXPECT_CALL(checkpoint, Call(5));
 
     checkpoint.Call(1);
     ASSERT_EQ(Result::Ok, consumer->beginRead(&buffer, &available));
     ASSERT_EQ(Result::Ok, consumer->endRead(0));
     checkpoint.Call(2);
     EXPECT_FALSE(consumer->drainAsFormData());
-    EXPECT_FALSE(consumer->drainAsBlobDataHandle());
     checkpoint.Call(3);
-    EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting, consumer->getPublicState());
+    EXPECT_FALSE(consumer->drainAsBlobDataHandle());
     checkpoint.Call(4);
+    EXPECT_EQ(BytesConsumer::PublicState::ReadableOrWaiting, consumer->getPublicState());
+    checkpoint.Call(5);
 }
 
 TEST_F(FormDataBytesConsumerTest, SetClientWithComplexFormData)

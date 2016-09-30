@@ -6,7 +6,10 @@
 #define BytesConsumerTestUtil_h
 
 #include "modules/fetch/BytesConsumer.h"
+#include "modules/fetch/FetchDataLoader.h"
 #include "platform/heap/Handle.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/Deque.h"
 #include "wtf/Vector.h"
 
@@ -17,6 +20,53 @@ class ExecutionContext;
 class BytesConsumerTestUtil {
     STATIC_ONLY(BytesConsumerTestUtil);
 public:
+    class MockBytesConsumer : public BytesConsumer {
+    public:
+        static MockBytesConsumer* create() { return new ::testing::StrictMock<MockBytesConsumer>(); }
+
+        MOCK_METHOD2(beginRead, Result(const char**, size_t*));
+        MOCK_METHOD1(endRead, Result(size_t));
+        MOCK_METHOD1(drainAsBlobDataHandle, PassRefPtr<BlobDataHandle>(BlobSizePolicy));
+        MOCK_METHOD0(drainAsFormData, PassRefPtr<EncodedFormData>());
+        MOCK_METHOD1(setClient, void(Client*));
+        MOCK_METHOD0(clearClient, void());
+        MOCK_METHOD0(cancel, void());
+        MOCK_CONST_METHOD0(getPublicState, PublicState());
+        MOCK_CONST_METHOD0(getError, Error());
+
+        String debugName() const override { return "MockBytesConsumer"; }
+
+    protected:
+        MockBytesConsumer();
+    };
+
+    class MockFetchDataLoaderClient : public GarbageCollectedFinalized<MockFetchDataLoaderClient>, public FetchDataLoader::Client {
+        USING_GARBAGE_COLLECTED_MIXIN(MockFetchDataLoaderClient);
+    public:
+        static ::testing::StrictMock<MockFetchDataLoaderClient>* create() { return new ::testing::StrictMock<MockFetchDataLoaderClient>; }
+
+        DEFINE_INLINE_VIRTUAL_TRACE()
+        {
+            FetchDataLoader::Client::trace(visitor);
+        }
+
+        MOCK_METHOD1(didFetchDataLoadedBlobHandleMock, void(RefPtr<BlobDataHandle>));
+        MOCK_METHOD1(didFetchDataLoadedArrayBufferMock, void(DOMArrayBuffer*));
+        MOCK_METHOD1(didFetchDataLoadedString, void(const String&));
+        MOCK_METHOD0(didFetchDataLoadStream, void());
+        MOCK_METHOD0(didFetchDataLoadFailed, void());
+
+        void didFetchDataLoadedArrayBuffer(DOMArrayBuffer* arrayBuffer) override
+        {
+            didFetchDataLoadedArrayBufferMock(arrayBuffer);
+        }
+        // In mock methods we use RefPtr<> rather than PassRefPtr<>.
+        void didFetchDataLoadedBlobHandle(PassRefPtr<BlobDataHandle> blobDataHandle) override
+        {
+            didFetchDataLoadedBlobHandleMock(blobDataHandle);
+        }
+    };
+
     class Command final {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:

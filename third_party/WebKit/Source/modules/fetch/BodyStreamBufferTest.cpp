@@ -31,7 +31,7 @@ using ::testing::SaveArg;
 using Checkpoint = ::testing::StrictMock<::testing::MockFunction<void(int)>>;
 using Command = DataConsumerHandleTestUtil::Command;
 using ReplayingHandle = DataConsumerHandleTestUtil::ReplayingHandle;
-using MockFetchDataLoaderClient = DataConsumerHandleTestUtil::MockFetchDataLoaderClient;
+using MockFetchDataLoaderClient = BytesConsumerTestUtil::MockFetchDataLoaderClient;
 
 class BodyStreamBufferTest : public ::testing::Test {
 protected:

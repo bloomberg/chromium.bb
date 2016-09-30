@@ -11,6 +11,7 @@
 #include "core/frame/Frame.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/BodyStreamBuffer.h"
+#include "modules/fetch/BytesConsumerTestUtil.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchResponseData.h"
@@ -170,8 +171,8 @@ void checkResponseStream(ScriptState* scriptState, Response* response, bool chec
         EXPECT_FALSE(response->bodyBuffer());
         EXPECT_FALSE(clonedResponse->bodyBuffer());
     }
-    DataConsumerHandleTestUtil::MockFetchDataLoaderClient* client1 = new DataConsumerHandleTestUtil::MockFetchDataLoaderClient();
-    DataConsumerHandleTestUtil::MockFetchDataLoaderClient* client2 = new DataConsumerHandleTestUtil::MockFetchDataLoaderClient();
+    BytesConsumerTestUtil::MockFetchDataLoaderClient* client1 = new BytesConsumerTestUtil::MockFetchDataLoaderClient();
+    BytesConsumerTestUtil::MockFetchDataLoaderClient* client2 = new BytesConsumerTestUtil::MockFetchDataLoaderClient();
     EXPECT_CALL(*client1, didFetchDataLoadedString(String("Hello, world")));
     EXPECT_CALL(*client2, didFetchDataLoadedString(String("Hello, world")));
 
@@ -248,8 +249,8 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError)
     Response* clonedResponse = response->clone(scope.getScriptState(), exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
 
-    DataConsumerHandleTestUtil::MockFetchDataLoaderClient* client1 = new DataConsumerHandleTestUtil::MockFetchDataLoaderClient();
-    DataConsumerHandleTestUtil::MockFetchDataLoaderClient* client2 = new DataConsumerHandleTestUtil::MockFetchDataLoaderClient();
+    BytesConsumerTestUtil::MockFetchDataLoaderClient* client1 = new BytesConsumerTestUtil::MockFetchDataLoaderClient();
+    BytesConsumerTestUtil::MockFetchDataLoaderClient* client2 = new BytesConsumerTestUtil::MockFetchDataLoaderClient();
     EXPECT_CALL(*client1, didFetchDataLoadFailed());
     EXPECT_CALL(*client2, didFetchDataLoadFailed());
 
