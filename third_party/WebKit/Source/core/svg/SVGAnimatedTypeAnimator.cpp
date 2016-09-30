@@ -26,7 +26,6 @@
 #include "core/svg/SVGLength.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGNumber.h"
-#include "core/svg/SVGPointList.h"
 #include "core/svg/SVGString.h"
 #include "core/svg/SVGTransformList.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
@@ -38,7 +37,7 @@ SVGAnimatedTypeAnimator::SVGAnimatedTypeAnimator(SVGAnimationElement* animationE
     , m_contextElement(nullptr)
     , m_type(AnimatedUnknown)
 {
-    ASSERT(m_animationElement);
+    DCHECK(m_animationElement);
 }
 
 void SVGAnimatedTypeAnimator::clear()
@@ -50,7 +49,7 @@ void SVGAnimatedTypeAnimator::clear()
 
 void SVGAnimatedTypeAnimator::reset(SVGElement* contextElement)
 {
-    ASSERT(contextElement);
+    DCHECK(contextElement);
     m_contextElement = contextElement;
 
     const QualifiedName& attributeName = m_animationElement->attributeName();
@@ -63,37 +62,31 @@ void SVGAnimatedTypeAnimator::reset(SVGElement* contextElement)
     if (m_type == AnimatedTransformList && !isSVGAnimateTransformElement(*m_animationElement))
         m_type = AnimatedUnknown;
 
-    ASSERT(m_type != AnimatedPoint
+    DCHECK(m_type != AnimatedPoint
         && m_type != AnimatedStringList
         && m_type != AnimatedTransform);
 }
 
-SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForAnimation(const String& value)
+SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForAttributeAnimation(const String& value) const
 {
-    ASSERT(m_contextElement);
-
-    if (isAnimatingSVGDom()) {
-        // SVG DOM animVal animation code-path.
-
-        if (m_type == AnimatedTransformList) {
-            // TransformList must be animated via <animateTransform>,
-            // and its {from,by,to} attribute values needs to be parsed w.r.t. its "type" attribute.
-            // Spec: http://www.w3.org/TR/SVG/single-page.html#animate-AnimateTransformElement
-            ASSERT(m_animationElement);
-            SVGTransformType transformType = toSVGAnimateTransformElement(m_animationElement)->transformType();
-            return SVGTransformList::create(transformType, value);
-        }
-
-        ASSERT(m_animatedProperty);
-        return m_animatedProperty->currentValueBase()->cloneForAnimation(value);
+    // SVG DOM animVal animation code-path.
+    if (m_type == AnimatedTransformList) {
+        // TransformList must be animated via <animateTransform>,
+        // and its {from,by,to} attribute values needs to be parsed w.r.t. its "type" attribute.
+        // Spec: http://www.w3.org/TR/SVG/single-page.html#animate-AnimateTransformElement
+        DCHECK(m_animationElement);
+        SVGTransformType transformType = toSVGAnimateTransformElement(m_animationElement)->transformType();
+        return SVGTransformList::create(transformType, value);
     }
+    DCHECK(m_animatedProperty);
+    return m_animatedProperty->currentValueBase()->cloneForAnimation(value);
+}
 
-    ASSERT(isAnimatingCSSProperty());
-
+SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForCSSAnimation(const String& value) const
+{
     // CSS properties animation code-path.
     // Create a basic instance of the corresponding SVG property.
     // The instance will not have full context info. (e.g. SVGLengthMode)
-
     switch (m_type) {
     case AnimatedColor:
         return SVGColorProperty::create(value);
@@ -117,8 +110,9 @@ SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForAnimation(const Strin
         property->setValueAsString(value);
         return property;
     }
-
-    // These types don't appear in the table in SVGElement::animatedPropertyTypeForCSSAttribute() and thus don't need support.
+    // These types don't appear in the table in
+    // SVGElement::animatedPropertyTypeForCSSAttribute() and thus don't need
+    // support.
     case AnimatedAngle:
     case AnimatedBoolean:
     case AnimatedEnumeration:
@@ -134,83 +128,28 @@ SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForAnimation(const Strin
     case AnimatedStringList:
     case AnimatedTransform:
     case AnimatedTransformList:
-        ASSERT_NOT_REACHED();
-
     case AnimatedUnknown:
-        ASSERT_NOT_REACHED();
-    };
-
-    ASSERT_NOT_REACHED();
+        break;
+    }
+    NOTREACHED();
     return nullptr;
 }
 
-SVGPropertyBase* SVGAnimatedTypeAnimator::createAnimatedValueFromString(const String& value)
+SVGPropertyBase* SVGAnimatedTypeAnimator::createPropertyForAnimation(const String& value) const
 {
-    return createPropertyForAnimation(value);
+    DCHECK(m_contextElement);
+    if (isAnimatingSVGDom())
+        return createPropertyForAttributeAnimation(value);
+    DCHECK(isAnimatingCSSProperty());
+    return createPropertyForCSSAnimation(value);
 }
 
-void SVGAnimatedTypeAnimator::calculateFromAndToValues(Member<SVGPropertyBase>& from, Member<SVGPropertyBase>& to, const String& fromString, const String& toString)
-{
-    from = createAnimatedValueFromString(fromString);
-    to = createAnimatedValueFromString(toString);
-}
-
-void SVGAnimatedTypeAnimator::calculateFromAndByValues(Member<SVGPropertyBase>& from, Member<SVGPropertyBase>& to, const String& fromString, const String& byString)
-{
-    from = createAnimatedValueFromString(fromString);
-    to = createAnimatedValueFromString(byString);
-    to->add(from, m_contextElement);
-}
-
-SVGPropertyBase* SVGAnimatedTypeAnimator::createAnimatedValue()
+SVGPropertyBase* SVGAnimatedTypeAnimator::createAnimatedValue() const
 {
     DCHECK(isAnimatingSVGDom());
     SVGPropertyBase* animatedValue = m_animatedProperty->createAnimatedValue();
     DCHECK_EQ(animatedValue->type(), m_type);
     return animatedValue;
-}
-
-class ParsePropertyFromString {
-    STACK_ALLOCATED();
-public:
-    explicit ParsePropertyFromString(SVGAnimatedTypeAnimator* animator)
-        : m_animator(animator)
-    {
-    }
-
-    SVGPropertyBase* operator()(SVGAnimationElement*, const String& value)
-    {
-        return m_animator->createPropertyForAnimation(value);
-    }
-
-private:
-    SVGAnimatedTypeAnimator* m_animator;
-};
-
-void SVGAnimatedTypeAnimator::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGPropertyBase* from, SVGPropertyBase* to, SVGPropertyBase* toAtEndOfDuration, SVGPropertyBase* animated)
-{
-    ASSERT(m_animationElement);
-    ASSERT(m_contextElement);
-
-    SVGPropertyBase* fromValue = m_animationElement->getAnimationMode() == ToAnimation ? animated : from;
-    SVGPropertyBase* toValue = to;
-    SVGPropertyBase* toAtEndOfDurationValue = toAtEndOfDuration;
-    SVGPropertyBase* animatedValue = animated;
-
-    // Apply CSS inheritance rules.
-    ParsePropertyFromString parsePropertyFromString(this);
-    m_animationElement->adjustForInheritance<SVGPropertyBase*, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->fromPropertyValueType(), fromValue, m_contextElement);
-    m_animationElement->adjustForInheritance<SVGPropertyBase*, ParsePropertyFromString>(parsePropertyFromString, m_animationElement->toPropertyValueType(), toValue, m_contextElement);
-
-    animatedValue->calculateAnimatedValue(m_animationElement, percentage, repeatCount, fromValue, toValue, toAtEndOfDurationValue, m_contextElement);
-}
-
-float SVGAnimatedTypeAnimator::calculateDistance(const String& fromString, const String& toString)
-{
-    ASSERT(m_contextElement);
-    SVGPropertyBase* fromValue = createPropertyForAnimation(fromString);
-    SVGPropertyBase* toValue = createPropertyForAnimation(toString);
-    return fromValue->calculateDistance(toValue, m_contextElement);
 }
 
 DEFINE_TRACE(SVGAnimatedTypeAnimator)

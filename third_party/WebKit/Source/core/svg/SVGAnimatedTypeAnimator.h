@@ -40,14 +40,8 @@ public:
     void clear();
     void reset(SVGElement* contextElement);
 
-    SVGPropertyBase* createAnimatedValue();
-    SVGPropertyBase* createAnimatedValueFromString(const String&);
-
-    void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*);
-    float calculateDistance(const String& fromString, const String& toString);
-
-    void calculateFromAndToValues(Member<SVGPropertyBase>& from, Member<SVGPropertyBase>& to, const String& fromString, const String& toString);
-    void calculateFromAndByValues(Member<SVGPropertyBase>& from, Member<SVGPropertyBase>& to, const String& fromString, const String& byString);
+    SVGPropertyBase* createAnimatedValue() const;
+    SVGPropertyBase* createPropertyForAnimation(const String&) const;
 
     void setContextElement(SVGElement* contextElement) { m_contextElement = contextElement; }
     AnimatedPropertyType type() const { return m_type; }
@@ -58,8 +52,8 @@ public:
     DECLARE_TRACE();
 
 private:
-    friend class ParsePropertyFromString;
-    SVGPropertyBase* createPropertyForAnimation(const String&);
+    SVGPropertyBase* createPropertyForAttributeAnimation(const String&) const;
+    SVGPropertyBase* createPropertyForCSSAnimation(const String&) const;
 
     Member<SVGAnimationElement> m_animationElement;
     Member<SVGElement> m_contextElement;

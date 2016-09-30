@@ -85,6 +85,27 @@ bool SVGAnimateElement::hasValidAttributeType()
     return animatedPropertyType() != AnimatedUnknown && !hasInvalidCSSAttributeType();
 }
 
+namespace {
+
+class ParsePropertyFromString {
+    STACK_ALLOCATED();
+public:
+    explicit ParsePropertyFromString(SVGAnimatedTypeAnimator* animator)
+        : m_animator(animator)
+    {
+    }
+
+    SVGPropertyBase* operator()(SVGAnimationElement*, const String& value)
+    {
+        return m_animator->createPropertyForAnimation(value);
+    }
+
+private:
+    SVGAnimatedTypeAnimator* m_animator;
+};
+
+}
+
 void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeatCount, SVGSMILElement* resultElement)
 {
     ASSERT(resultElement);
@@ -112,16 +133,31 @@ void SVGAnimateElement::calculateAnimatedValue(float percentage, unsigned repeat
     // Target element might have changed.
     m_animator.setContextElement(targetElement);
 
-    // Values-animation accumulates using the last values entry corresponding to the end of duration time.
-    SVGPropertyBase* toAtEndOfDurationProperty = m_toAtEndOfDurationProperty ? m_toAtEndOfDurationProperty.get() : m_toProperty.get();
-    m_animator.calculateAnimatedValue(percentage, repeatCount, m_fromProperty.get(), m_toProperty.get(), toAtEndOfDurationProperty, resultAnimationElement->m_animatedProperty.get());
+    // Values-animation accumulates using the last values entry corresponding to
+    // the end of duration time.
+    SVGPropertyBase* animatedValue = resultAnimationElement->m_animatedProperty;
+    SVGPropertyBase* toAtEndOfDurationValue =
+        m_toAtEndOfDurationProperty ? m_toAtEndOfDurationProperty : m_toProperty;
+    SVGPropertyBase* fromValue =
+        getAnimationMode() == ToAnimation ? animatedValue : m_fromProperty.get();
+    SVGPropertyBase* toValue = m_toProperty;
+
+    // Apply CSS inheritance rules.
+    ParsePropertyFromString parsePropertyFromString(&m_animator);
+    adjustForInheritance<SVGPropertyBase*, ParsePropertyFromString>(
+        parsePropertyFromString, fromPropertyValueType(), fromValue, targetElement);
+    adjustForInheritance<SVGPropertyBase*, ParsePropertyFromString>(
+        parsePropertyFromString, toPropertyValueType(), toValue, targetElement);
+
+    animatedValue->calculateAnimatedValue(
+        this, percentage, repeatCount, fromValue, toValue, toAtEndOfDurationValue, targetElement);
 }
 
 bool SVGAnimateElement::calculateToAtEndOfDurationValue(const String& toAtEndOfDurationString)
 {
     if (toAtEndOfDurationString.isEmpty())
         return false;
-    m_toAtEndOfDurationProperty = m_animator.createAnimatedValueFromString(toAtEndOfDurationString);
+    m_toAtEndOfDurationProperty = m_animator.createPropertyForAnimation(toAtEndOfDurationString);
     return true;
 }
 
@@ -132,7 +168,8 @@ bool SVGAnimateElement::calculateFromAndToValues(const String& fromString, const
         return false;
 
     determinePropertyValueTypes(fromString, toString);
-    m_animator.calculateFromAndToValues(m_fromProperty, m_toProperty, fromString, toString);
+    m_fromProperty = m_animator.createPropertyForAnimation(fromString);
+    m_toProperty = m_animator.createPropertyForAnimation(toString);
     return true;
 }
 
@@ -152,7 +189,9 @@ bool SVGAnimateElement::calculateFromAndByValues(const String& fromString, const
     ASSERT(!isSVGSetElement(*this));
 
     determinePropertyValueTypes(fromString, byString);
-    m_animator.calculateFromAndByValues(m_fromProperty, m_toProperty, fromString, byString);
+    m_fromProperty = m_animator.createPropertyForAnimation(fromString);
+    m_toProperty = m_animator.createPropertyForAnimation(byString);
+    m_toProperty->add(m_fromProperty, targetElement);
     return true;
 }
 
@@ -179,7 +218,7 @@ void SVGAnimateElement::resetAnimatedType()
     DCHECK(isTargetAttributeCSSProperty(targetElement, attributeName));
     computeCSSPropertyValue(targetElement, cssPropertyID(attributeName.localName()), baseValue);
 
-    m_animatedProperty = m_animator.createAnimatedValueFromString(baseValue);
+    m_animatedProperty = m_animator.createPropertyForAnimation(baseValue);
 }
 
 void SVGAnimateElement::clearAnimatedType()
@@ -278,8 +317,9 @@ float SVGAnimateElement::calculateDistance(const String& fromString, const Strin
     SVGElement* targetElement = this->targetElement();
     if (!targetElement)
         return -1;
-
-    return m_animator.calculateDistance(fromString, toString);
+    SVGPropertyBase* fromValue = m_animator.createPropertyForAnimation(fromString);
+    SVGPropertyBase* toValue = m_animator.createPropertyForAnimation(toString);
+    return fromValue->calculateDistance(toValue, targetElement);
 }
 
 void SVGAnimateElement::setTargetElement(SVGElement* target)
