@@ -5,15 +5,19 @@
 #ifndef CSSStyleImageValue_h
 #define CSSStyleImageValue_h
 
+#include "core/CoreExport.h"
+#include "core/css/CSSImageValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/cssom/CSSResourceValue.h"
+#include "core/css/cssom/CSSStyleValue.h"
 #include "core/fetch/ImageResource.h"
+#include "core/html/canvas/CanvasImageSource.h"
+#include "core/imagebitmap/ImageBitmapSource.h"
 #include "core/style/StyleImage.h"
-
 
 namespace blink {
 
-class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue {
+class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue, public CanvasImageSource {
     WTF_MAKE_NONCOPYABLE(CSSStyleImageValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -21,9 +25,24 @@ public:
 
     StyleValueType type() const override { return ImageType; }
 
-    double intrinsicWidth(bool& isNull);
-    double intrinsicHeight(bool& isNull);
+    double intrinsicWidth(bool& isNull) const;
+    double intrinsicHeight(bool& isNull) const;
     double intrinsicRatio(bool& isNull);
+
+    // CanvasImageSource
+    bool isCSSImageValue() const final { return true; }
+    int sourceWidth() final;
+    int sourceHeight() final;
+    bool wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const final
+    {
+        return true;
+    }
+    FloatSize elementSize(const FloatSize& defaultObjectSize) const final;
+    PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*, AccelerationHint, SnapshotReason, const FloatSize&) const final
+    {
+        return image();
+    }
+    bool isAccelerated() const override;
 
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
@@ -54,6 +73,9 @@ protected:
             return Resource::Status::NotStarted;
         return m_imageValue->cachedImage()->cachedImage()->getStatus();
     }
+
+private:
+    PassRefPtr<Image> image() const;
 };
 
 } // namespace blink

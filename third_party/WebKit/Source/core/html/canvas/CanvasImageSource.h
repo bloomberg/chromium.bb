@@ -54,6 +54,7 @@ public:
     // another canvas, which may not be already tainted.
     virtual bool wouldTaintOrigin(SecurityOrigin* destinationSecurityOrigin) const = 0;
 
+    virtual bool isCSSImageValue() const { return false; }
     virtual bool isVideoElement() const { return false; }
     virtual bool isCanvasElement() const { return false; }
     virtual bool isSVGSource() const { return false; }

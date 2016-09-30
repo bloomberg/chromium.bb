@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "core/css/cssom/CSSURLImageValue.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/HTMLCanvasElement.h"
@@ -19,6 +20,7 @@
 #include "modules/canvas2d/CanvasStyle.h"
 #include "modules/canvas2d/Path2D.h"
 #include "platform/Histogram.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
@@ -867,6 +869,12 @@ static inline void clipRectsToImageRect(const FloatRect& imageRect, FloatRect* s
 
 static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUnion& value, ExceptionState& exceptionState)
 {
+    if (value.isCSSImageValue()) {
+        if (RuntimeEnabledFeatures::cssPaintAPIEnabled())
+            return value.getAsCSSImageValue();
+        exceptionState.throwTypeError("CSSImageValue is not yet supported");
+        return nullptr;
+    }
     if (value.isHTMLImageElement())
         return value.getAsHTMLImageElement();
     if (value.isHTMLVideoElement())
