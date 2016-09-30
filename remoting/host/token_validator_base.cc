@@ -43,6 +43,43 @@ namespace {
 const int kBufferSize = 4096;
 const char kCertIssuerWildCard[] = "*";
 
+// The certificate is valid if:
+// * The certificate issuer matches exactly |issuer| or the |issuer| is a
+//   wildcard. And
+// * |now| is within [valid_start, valid_expiry].
+bool IsCertificateValid(const std::string& issuer,
+                        const base::Time& now,
+                        const scoped_refptr<net::X509Certificate>& cert) {
+  return (issuer == kCertIssuerWildCard ||
+      issuer == cert->issuer().common_name) &&
+      cert->valid_start() <= now && cert->valid_expiry() > now;
+}
+
+// Returns true if the certificate |c1| is worse than |c2|.
+//
+// Criteria:
+// 1. An invalid certificate is always worse than a valid certificate.
+// 2. Invalid certificates are equally bad, in which case false will be
+//    returned.
+// 3. A certificate with earlier |valid_start| time is worse.
+// 4. When |valid_start| are the same, the certificate with earlier
+//    |valid_expiry| is worse.
+bool WorseThan(const std::string& issuer,
+               const base::Time& now,
+               const scoped_refptr<net::X509Certificate>& c1,
+               const scoped_refptr<net::X509Certificate>& c2) {
+  if (!IsCertificateValid(issuer, now, c2))
+    return false;
+
+  if (!IsCertificateValid(issuer, now, c1))
+    return true;
+
+  if (c1->valid_start() != c2->valid_start())
+    return c1->valid_start() < c2->valid_start();
+
+  return c1->valid_expiry() < c2->valid_expiry();
+}
+
 }  // namespace
 
 namespace remoting {
@@ -174,17 +211,29 @@ void TokenValidatorBase::OnCertificatesSelected(
     net::ClientCertStore* unused) {
   const std::string& issuer =
       third_party_auth_config_.token_validation_cert_issuer;
+
+  base::Time now = base::Time::Now();
+
+  auto best_match_position =
+      std::max_element(selected_certs->begin(), selected_certs->end(),
+                       std::bind(&WorseThan, issuer, now, std::placeholders::_1,
+                                 std::placeholders::_2));
+
+  if (best_match_position == selected_certs->end() ||
+      !IsCertificateValid(issuer, now, *best_match_position)) {
+    ContinueWithCertificate(nullptr, nullptr);
+  } else {
+    ContinueWithCertificate(
+        best_match_position->get(),
+        net::FetchClientCertPrivateKey(best_match_position->get()).get());
+  }
+}
+
+void TokenValidatorBase::ContinueWithCertificate(
+    net::X509Certificate* client_cert,
+    net::SSLPrivateKey* client_private_key) {
   if (request_) {
-    for (size_t i = 0; i < selected_certs->size(); ++i) {
-      net::X509Certificate* cert = (*selected_certs)[i].get();
-      if (issuer == kCertIssuerWildCard ||
-          issuer == cert->issuer().common_name) {
-        request_->ContinueWithCertificate(
-            cert, net::FetchClientCertPrivateKey(cert).get());
-        return;
-      }
-    }
-    request_->ContinueWithCertificate(nullptr, nullptr);
+    request_->ContinueWithCertificate(client_cert, client_private_key);
   }
 }
 

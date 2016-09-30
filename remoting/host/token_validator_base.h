@@ -57,6 +57,8 @@ class TokenValidatorBase
                               net::ClientCertStore* unused);
 
   virtual void StartValidateRequest(const std::string& token) = 0;
+  virtual void ContinueWithCertificate(net::X509Certificate* client_cert,
+                                       net::SSLPrivateKey* client_private_key);
   virtual bool IsValidScope(const std::string& token_scope);
   std::string ProcessResponse(int net_result);
 

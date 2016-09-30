@@ -525,6 +525,7 @@ source_set("unit_tests") {
     "setup/oauth_helper_unittest.cc",
     "setup/pin_validator_unittest.cc",
     "third_party_auth_config_unittest.cc",
+    "token_validator_base_unittest.cc",
     "token_validator_factory_impl_unittest.cc",
     "touch_injector_win_unittest.cc",
   ]
