@@ -41,24 +41,23 @@ std::unique_ptr<BookmarkModel> TestBookmarkClient::CreateModelWithClient(
 
 void TestBookmarkClient::SetExtraNodesToLoad(
     BookmarkPermanentNodeList extra_nodes) {
-  extra_nodes_to_load_ = std::move(extra_nodes);
-  // Keep a copy in |extra_nodes_| for the acessor.
-  extra_nodes_ = extra_nodes_to_load_.get();
+  extra_nodes_ = std::move(extra_nodes);
+  // Keep a copy of the nodes in |unowned_extra_nodes_| for the accessor
+  // functions.
+  for (const auto& node : extra_nodes_)
+    unowned_extra_nodes_.push_back(node.get());
 }
 
 bool TestBookmarkClient::IsExtraNodeRoot(const BookmarkNode* node) {
-  for (size_t i = 0; i < extra_nodes_.size(); ++i) {
-    if (node == extra_nodes_[i])
-      return true;
-  }
-  return false;
+  return std::find(unowned_extra_nodes_.begin(), unowned_extra_nodes_.end(),
+                   node) != unowned_extra_nodes_.end();
 }
 
 bool TestBookmarkClient::IsAnExtraNode(const BookmarkNode* node) {
   if (!node)
     return false;
-  for (size_t i = 0; i < extra_nodes_.size(); ++i) {
-    if (node->HasAncestor(extra_nodes_[i]))
+  for (const auto* extra_node : unowned_extra_nodes_) {
+    if (node->HasAncestor(extra_node))
       return true;
   }
   return false;
@@ -78,7 +77,7 @@ void TestBookmarkClient::RecordAction(const base::UserMetricsAction& action) {
 
 LoadExtraCallback TestBookmarkClient::GetLoadExtraNodesCallback() {
   return base::Bind(&TestBookmarkClient::LoadExtraNodes,
-                    base::Passed(&extra_nodes_to_load_));
+                    base::Passed(&extra_nodes_));
 }
 
 bool TestBookmarkClient::CanSetPermanentNodeTitle(

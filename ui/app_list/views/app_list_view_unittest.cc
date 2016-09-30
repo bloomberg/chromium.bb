@@ -414,7 +414,7 @@ void AppListViewTestContext::RunStartPageTest() {
 
   // Check tiles hide and show on deletion and addition.
   EXPECT_TRUE(SetAppListState(AppListModel::STATE_START));
-  model->results()->Add(new TestStartPageSearchResult());
+  model->results()->Add(base::MakeUnique<TestStartPageSearchResult>());
   start_page_view->UpdateForTesting();
   EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
   model->results()->DeleteAll();
@@ -424,7 +424,7 @@ void AppListViewTestContext::RunStartPageTest() {
   // Tiles should not update when the start page is not active but should be
   // correct once the start page is shown.
   EXPECT_TRUE(SetAppListState(AppListModel::STATE_APPS));
-  model->results()->Add(new TestStartPageSearchResult());
+  model->results()->Add(base::MakeUnique<TestStartPageSearchResult>());
   start_page_view->UpdateForTesting();
   EXPECT_EQ(0u, GetVisibleViews(start_page_view->tile_views()));
   EXPECT_TRUE(SetAppListState(AppListModel::STATE_START));
@@ -488,13 +488,16 @@ void AppListViewTestContext::RunProfileChangeTest() {
   EXPECT_NO_FATAL_FAILURE(CheckView(start_page_view));
 
   // New model updates should be processed by the start page view.
-  delegate_->GetTestModel()->results()->Add(new TestStartPageSearchResult());
+  delegate_->GetTestModel()->results()->Add(
+      base::MakeUnique<TestStartPageSearchResult>());
   start_page_view->UpdateForTesting();
   EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
 
   // Old model updates should be ignored.
-  original_test_model->results()->Add(new TestStartPageSearchResult());
-  original_test_model->results()->Add(new TestStartPageSearchResult());
+  original_test_model->results()->Add(
+      base::MakeUnique<TestStartPageSearchResult>());
+  original_test_model->results()->Add(
+      base::MakeUnique<TestStartPageSearchResult>());
   start_page_view->UpdateForTesting();
   EXPECT_EQ(1u, GetVisibleViews(start_page_view->tile_views()));
 

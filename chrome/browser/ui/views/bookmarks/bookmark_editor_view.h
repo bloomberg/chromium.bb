@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -62,8 +63,8 @@ class BookmarkEditorView : public BookmarkEditor,
   // empty strings. Public purely for testing.
   class EditorTreeModel : public ui::TreeNodeModel<EditorNode> {
    public:
-    explicit EditorTreeModel(EditorNode* root)
-        : ui::TreeNodeModel<EditorNode>(root) {}
+    explicit EditorTreeModel(std::unique_ptr<EditorNode> root)
+        : ui::TreeNodeModel<EditorNode>(std::move(root)) {}
 
     void SetTitle(ui::TreeModelNode* node,
                   const base::string16& title) override;
@@ -169,7 +170,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Creates a returns the new root node. This invokes CreateNodes to do
   // the real work.
-  EditorNode* CreateRootNode();
+  std::unique_ptr<EditorNode> CreateRootNode();
 
   // Adds and creates a child node in b_node for all children of bb_node that
   // are folders.
@@ -209,7 +210,7 @@ class BookmarkEditorView : public BookmarkEditor,
 
   // Creates a new folder as a child of the selected node. If no node is
   // selected, the new folder is added as a child of the bookmark node. Starts
-  // editing on the new gorup as well.
+  // editing on the new group as well.
   void NewFolder();
 
   // Creates a new EditorNode as the last child of parent. The new node is

@@ -14,7 +14,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "ui/base/models/tree_model.h"
 
@@ -38,16 +37,19 @@ namespace ui {
 // The following example creates a TreeNode with two children and then
 // creates a TreeNodeModel from it:
 //
-// TreeNodeWithValue<int>* root = new TreeNodeWithValue<int>();
-// root->Add(new TreeNodeWithValue<int>(ASCIIToUTF16("child 1"), 0));
-// root->Add(new TreeNodeWithValue<int>(ASCIIToUTF16("child 2"), 1));
-// TreeNodeModel<TreeNodeWithValue<int> > model(root);
+// std::unique_ptr<TreeNodeWithValue<int>> root =
+//     base::MakeUnique<TreeNodeWithValue<int>>();
+// root->Add(
+//     base::MakeUnique<TreeNodeWithValue<int>>(ASCIIToUTF16("child 1"), 0));
+// root->Add(
+//     base::MakeUnique<TreeNodeWithValue<int>>(ASCIIToUTF16("child 2"), 1));
+// TreeNodeModel<TreeNodeWithValue<int>> model(std::move(root));
 //
 // Two variants of TreeNode are provided here:
 //
 // . TreeNode itself is intended for subclassing. It has one type parameter
 //   that corresponds to the type of the node. When subclassing use your class
-//   name as the type parameter, eg:
+//   name as the type parameter, e.g.:
 //   class MyTreeNode : public TreeNode<MyTreeNode> .
 // . TreeNodeWithValue is a trivial subclass of TreeNode that has one type
 //   type parameter: a value type that is associated with the node.
@@ -64,58 +66,48 @@ namespace ui {
 template <class NodeType>
 class TreeNode : public TreeModelNode {
  public:
-  TreeNode() : parent_(NULL) {}
+  TreeNode() : parent_(nullptr) {}
 
   explicit TreeNode(const base::string16& title)
-      : title_(title), parent_(NULL) {}
+      : title_(title), parent_(nullptr) {}
 
-  ~TreeNode() override { base::STLDeleteElements(&children_); }
+  ~TreeNode() override {}
 
-  // Adds |node| as a child of this node, at |index|.
-  virtual void Add(NodeType* node, int index) {
+  // Adds |node| as a child of this node, at |index|. Returns a raw pointer to
+  // the node.
+  virtual NodeType* Add(std::unique_ptr<NodeType> node, int index) {
     DCHECK(node);
     DCHECK_GE(index, 0);
     DCHECK_LE(index, child_count());
-    // If |node| has a parent, remove it from its parent.
-    NodeType* parent = node->parent_;
-    if (parent)
-      parent->Remove(node);
+    DCHECK(!node->parent_);
     node->parent_ = static_cast<NodeType*>(this);
-    children_.insert(children_.begin() + index, node);
+    NodeType* node_ptr = node.get();
+    children_.insert(children_.begin() + index, std::move(node));
+    return node_ptr;
   }
 
-  // Removes |node| from this node and returns it. It's up to the caller to
-  // delete it.
-  virtual NodeType* Remove(NodeType* node) {
-    typename std::vector<NodeType*>::iterator i =
-        std::find(children_.begin(), children_.end(), node);
+  // Removes |node| from this node and returns it.
+  virtual std::unique_ptr<NodeType> Remove(NodeType* node) {
+    auto i = std::find_if(children_.begin(), children_.end(),
+                          [node](const std::unique_ptr<NodeType>& ptr) {
+                            return ptr.get() == node;
+                          });
     DCHECK(i != children_.end());
-    node->parent_ = NULL;
+    node->parent_ = nullptr;
+    std::unique_ptr<NodeType> ptr = std::move(*i);
     children_.erase(i);
-    return node;
+    return ptr;
   }
 
-  // Removes all the children from this node. This does NOT delete the nodes.
-  void RemoveAll() {
-    for (size_t i = 0; i < children_.size(); ++i)
-      children_[i]->parent_ = NULL;
-    children_.clear();
-  }
+  // Removes all the children from this node.
+  void DeleteAll() { children_.clear(); }
 
-  // Removes all existing children without deleting the nodes and adds all nodes
-  // contained in |children| into this node as children.
-  void SetChildren(const std::vector<NodeType*>& children) {
-    RemoveAll();
-    for (size_t i = 0; i < children.size(); ++i)
-      Add(children[i], static_cast<int>(i));
-  }
-
-  // Returns the parent node, or NULL if this is the root node.
+  // Returns the parent node, or nullptr if this is the root node.
   const NodeType* parent() const { return parent_; }
   NodeType* parent() { return parent_; }
 
   // Returns true if this is the root node.
-  bool is_root() const { return parent_ == NULL; }
+  bool is_root() const { return parent_ == nullptr; }
 
   // Returns the number of children.
   int child_count() const { return static_cast<int>(children_.size()); }
@@ -127,8 +119,8 @@ class TreeNode : public TreeModelNode {
   // including this node.
   int GetTotalNodeCount() const {
     int count = 1;  // Start with one to include the node itself.
-    for (size_t i = 0; i < children_.size(); ++i)
-      count += children_[i]->GetTotalNodeCount();
+    for (const auto& child : children_)
+      count += child->GetTotalNodeCount();
     return count;
   }
 
@@ -136,7 +128,7 @@ class TreeNode : public TreeModelNode {
   const NodeType* GetChild(int index) const {
     DCHECK_GE(index, 0);
     DCHECK_LT(index, child_count());
-    return children_[index];
+    return children_[index].get();
   }
   NodeType* GetChild(int index) {
     return const_cast<NodeType*>(
@@ -146,8 +138,10 @@ class TreeNode : public TreeModelNode {
   // Returns the index of |node|, or -1 if |node| is not a child of this.
   int GetIndexOf(const NodeType* node) const {
     DCHECK(node);
-    typename std::vector<NodeType*>::const_iterator i =
-        std::find(children_.begin(), children_.end(), node);
+    auto i = std::find_if(children_.begin(), children_.end(),
+                          [node](const std::unique_ptr<NodeType>& ptr) {
+                            return ptr.get() == node;
+                          });
     return i != children_.end() ? static_cast<int>(i - children_.begin()) : -1;
   }
 
@@ -168,7 +162,7 @@ class TreeNode : public TreeModelNode {
   }
 
  protected:
-  std::vector<NodeType*>& children() { return children_; }
+  std::vector<std::unique_ptr<NodeType>>& children() { return children_; }
 
  private:
   // Title displayed in the tree.
@@ -178,7 +172,7 @@ class TreeNode : public TreeModelNode {
   NodeType* parent_;
 
   // This node's children.
-  std::vector<NodeType*> children_;
+  typename std::vector<std::unique_ptr<NodeType>> children_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeNode);
 };
@@ -186,7 +180,7 @@ class TreeNode : public TreeModelNode {
 // TreeNodeWithValue ----------------------------------------------------------
 
 template <class ValueType>
-class TreeNodeWithValue : public TreeNode< TreeNodeWithValue<ValueType> > {
+class TreeNodeWithValue : public TreeNode<TreeNodeWithValue<ValueType>> {
  public:
   TreeNodeWithValue() {}
 
@@ -199,7 +193,7 @@ class TreeNodeWithValue : public TreeNode< TreeNodeWithValue<ValueType> > {
   ValueType value;
 
  private:
-  typedef TreeNode< TreeNodeWithValue<ValueType> > ParentType;
+  using ParentType = TreeNode<TreeNodeWithValue<ValueType>>;
 
   DISALLOW_COPY_AND_ASSIGN(TreeNodeWithValue);
 };
@@ -210,27 +204,28 @@ class TreeNodeWithValue : public TreeNode< TreeNodeWithValue<ValueType> > {
 template <class NodeType>
 class TreeNodeModel : public TreeModel {
  public:
-  // Creates a TreeNodeModel with the specified root node. The root is owned
-  // by the TreeNodeModel.
-  explicit TreeNodeModel(NodeType* root) : root_(root) {}
+  // Creates a TreeNodeModel with the specified root node.
+  explicit TreeNodeModel(std::unique_ptr<NodeType> root)
+      : root_(std::move(root)) {}
   virtual ~TreeNodeModel() override {}
 
   NodeType* AsNode(TreeModelNode* model_node) {
     return static_cast<NodeType*>(model_node);
   }
 
-  void Add(NodeType* parent, NodeType* node, int index) {
+  NodeType* Add(NodeType* parent, std::unique_ptr<NodeType> node, int index) {
     DCHECK(parent && node);
-    parent->Add(node, index);
+    NodeType* node_ptr = parent->Add(std::move(node), index);
     NotifyObserverTreeNodesAdded(parent, index, 1);
+    return node_ptr;
   }
 
-  NodeType* Remove(NodeType* parent, NodeType* node) {
+  std::unique_ptr<NodeType> Remove(NodeType* parent, NodeType* node) {
     DCHECK(parent);
     int index = parent->GetIndexOf(node);
-    NodeType* delete_node = parent->Remove(node);
+    std::unique_ptr<NodeType> owned_node = parent->Remove(node);
     NotifyObserverTreeNodesRemoved(parent, index, 1);
-    return delete_node;
+    return owned_node;
   }
 
   void NotifyObserverTreeNodesAdded(NodeType* parent, int start, int count) {

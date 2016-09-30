@@ -175,9 +175,10 @@ const BookmarkNode* PartnerBookmarksShim::GetPartnerBookmarksRoot() const {
   return g_partner_model_keeper.Get().partner_bookmarks_root.get();
 }
 
-void PartnerBookmarksShim::SetPartnerBookmarksRoot(BookmarkNode* root_node) {
+void PartnerBookmarksShim::SetPartnerBookmarksRoot(
+    std::unique_ptr<bookmarks::BookmarkNode> root_node) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  g_partner_model_keeper.Get().partner_bookmarks_root.reset(root_node);
+  g_partner_model_keeper.Get().partner_bookmarks_root = std::move(root_node);
   g_partner_model_keeper.Get().loaded = true;
   FOR_EACH_OBSERVER(PartnerBookmarksShim::Observer, observers_,
                     PartnerShimLoaded(this));

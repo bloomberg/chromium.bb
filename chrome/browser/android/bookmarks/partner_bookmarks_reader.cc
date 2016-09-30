@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -121,7 +122,7 @@ void PartnerBookmarksReader::PartnerBookmarksCreationComplete(
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   partner_bookmarks_shim_->SetPartnerBookmarksRoot(
-      wip_partner_bookmarks_root_.release());
+      std::move(wip_partner_bookmarks_root_));
   wip_next_available_id_ = 0;
 }
 
@@ -153,22 +154,23 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
   if (jtitle)
     title = ConvertJavaStringToUTF16(env, jtitle);
 
-  BookmarkNode* node = NULL;
+  jlong node_id = 0;
   if (wip_partner_bookmarks_root_.get()) {
-    node = new BookmarkNode(wip_next_available_id_++, GURL(url));
+    std::unique_ptr<BookmarkNode> node =
+        base::MakeUnique<BookmarkNode>(wip_next_available_id_++, GURL(url));
     node->set_type(is_folder ? BookmarkNode::FOLDER : BookmarkNode::URL);
     node->SetTitle(title);
 
     // Handle favicon and touchicon
-    if (profile_ != NULL && (favicon != NULL || touchicon != NULL)) {
-      jbyteArray icon = (touchicon != NULL) ? touchicon : favicon;
+    if (profile_ != nullptr && (favicon != nullptr || touchicon != nullptr)) {
+      jbyteArray icon = (touchicon != nullptr) ? touchicon : favicon;
       const favicon_base::IconType icon_type =
           touchicon ? favicon_base::TOUCH_ICON : favicon_base::FAVICON;
       const int icon_len = env->GetArrayLength(icon);
-      jbyte* icon_bytes = env->GetByteArrayElements(icon, NULL);
+      jbyte* icon_bytes = env->GetByteArrayElements(icon, nullptr);
       if (icon_bytes)
-        PrepareAndSetFavicon(env, icon_bytes, icon_len,
-                             node, profile_, icon_type);
+        PrepareAndSetFavicon(env, icon_bytes, icon_len, node.get(), profile_,
+                             icon_type);
       env->ReleaseByteArrayElements(icon, icon_bytes, JNI_ABORT);
     }
 
@@ -179,13 +181,17 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
                    << parent_id << ": adding to the root";
       parent = wip_partner_bookmarks_root_.get();
     }
-    const_cast<BookmarkNode*>(parent)->Add(node, parent->child_count());
+    node_id = node->id();
+    const_cast<BookmarkNode*>(parent)->Add(std::move(node),
+                                           parent->child_count());
   } else {
-    node = new BookmarkPermanentNode(wip_next_available_id_++);
+    std::unique_ptr<BookmarkPermanentNode> node =
+        base::MakeUnique<BookmarkPermanentNode>(wip_next_available_id_++);
+    node_id = node->id();
     node->SetTitle(title);
-    wip_partner_bookmarks_root_.reset(node);
+    wip_partner_bookmarks_root_ = std::move(node);
   }
-  return node->id();
+  return node_id;
 }
 
 // static

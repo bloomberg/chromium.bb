@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -69,20 +70,18 @@ typedef TreeNodeWithValue<int> TestNode;
 //     +-- foo2
 // +-- child2
 TEST_F(TreeNodeModelTest, AddNode) {
-  TestNode* root = new TestNode;
-  TreeNodeModel<TestNode > model(root);
+  TreeNodeModel<TestNode> model(base::MakeUnique<TestNode>());
+  TestNode* root = model.GetRoot();
   model.AddObserver(this);
 
-  TestNode* child1 = new TestNode;
-  model.Add(root, child1, 0);
+  TestNode* child1 = model.Add(root, base::MakeUnique<TestNode>(), 0);
 
   EXPECT_EQ("added=1 removed=0 changed=0", GetObserverCountStateAndClear());
 
   for (int i = 0; i < 2; ++i)
-    child1->Add(new TestNode, i);
+    child1->Add(base::MakeUnique<TestNode>(), i);
 
-  TestNode* child2 = new TestNode;
-  model.Add(root, child2, 1);
+  TestNode* child2 = model.Add(root, base::MakeUnique<TestNode>(), 1);
 
   EXPECT_EQ("added=1 removed=0 changed=0", GetObserverCountStateAndClear());
 
@@ -94,17 +93,16 @@ TEST_F(TreeNodeModelTest, AddNode) {
 // Verifies if the model is properly removing a node from the tree
 // and notifying the observers.
 TEST_F(TreeNodeModelTest, RemoveNode) {
-  TestNode* root = new TestNode;
-  TreeNodeModel<TestNode > model(root);
+  TreeNodeModel<TestNode> model(base::MakeUnique<TestNode>());
+  TestNode* root = model.GetRoot();
   model.AddObserver(this);
 
-  TestNode* child1 = new TestNode;
-  root->Add(child1, 0);
+  TestNode* child1 = root->Add(base::MakeUnique<TestNode>(), 0);
 
   EXPECT_EQ(1, model.GetChildCount(root));
 
   // Now remove |child1| from |root| and release the memory.
-  delete model.Remove(root, child1);
+  model.Remove(root, child1);
 
   EXPECT_EQ("added=0 removed=1 changed=0", GetObserverCountStateAndClear());
 
@@ -112,8 +110,7 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
 }
 
 // Verifies if the nodes added under the root are all deleted when calling
-// RemoveAll. Note that is responsability of the caller to free the memory
-// of the nodes removed after RemoveAll is called.
+// DeleteAll.
 // The tree looks like this:
 // root
 // +-- child1
@@ -123,36 +120,28 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
 //         +-- bar2
 // +-- child2
 // +-- child3
-TEST_F(TreeNodeModelTest, RemoveAllNodes) {
+TEST_F(TreeNodeModelTest, DeleteAllNodes) {
   TestNode root;
 
-  TestNode child1;
-  TestNode child2;
-  TestNode child3;
+  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), 0);
+  root.Add(base::MakeUnique<TestNode>(), 1);  // child2
+  root.Add(base::MakeUnique<TestNode>(), 2);  // child3
 
-  root.Add(&child1, 0);
-  root.Add(&child2, 1);
-  root.Add(&child3, 2);
-
-  TestNode* foo = new TestNode;
-  child1.Add(foo, 0);
+  TestNode* foo = child1->Add(base::MakeUnique<TestNode>(), 0);
 
   // Add some nodes to |foo|.
   for (int i = 0; i < 3; ++i)
-    foo->Add(new TestNode, i);
+    foo->Add(base::MakeUnique<TestNode>(), i);  // bar[n]
 
   EXPECT_EQ(3, root.child_count());
-  EXPECT_EQ(1, child1.child_count());
+  EXPECT_EQ(1, child1->child_count());
   EXPECT_EQ(3, foo->child_count());
 
   // Now remove the child nodes from root.
-  root.RemoveAll();
+  root.DeleteAll();
 
   EXPECT_EQ(0, root.child_count());
   EXPECT_TRUE(root.empty());
-
-  EXPECT_EQ(1, child1.child_count());
-  EXPECT_EQ(3, foo->child_count());
 }
 
 // Verifies if GetIndexOf() returns the correct index for the specified node.
@@ -164,14 +153,9 @@ TEST_F(TreeNodeModelTest, RemoveAllNodes) {
 TEST_F(TreeNodeModelTest, GetIndexOf) {
   TestNode root;
 
-  TestNode* child1 = new TestNode;
-  root.Add(child1, 0);
-
-  TestNode* child2 = new TestNode;
-  root.Add(child2, 1);
-
-  TestNode* foo1 = new TestNode;
-  child1->Add(foo1, 0);
+  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), 0);
+  TestNode* child2 = root.Add(base::MakeUnique<TestNode>(), 1);
+  TestNode* foo1 = child1->Add(base::MakeUnique<TestNode>(), 0);
 
   EXPECT_EQ(-1, root.GetIndexOf(&root));
   EXPECT_EQ(0, root.GetIndexOf(child1));
@@ -197,14 +181,11 @@ TEST_F(TreeNodeModelTest, GetIndexOf) {
 // +-- child2
 TEST_F(TreeNodeModelTest, HasAncestor) {
   TestNode root;
-  TestNode* child1 = new TestNode;
-  TestNode* child2 = new TestNode;
 
-  root.Add(child1, 0);
-  root.Add(child2, 1);
+  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), 0);
+  TestNode* child2 = root.Add(base::MakeUnique<TestNode>(), 1);
 
-  TestNode* foo1 = new TestNode;
-  child1->Add(foo1, 0);
+  TestNode* foo1 = child1->Add(base::MakeUnique<TestNode>(), 0);
 
   EXPECT_TRUE(root.HasAncestor(&root));
   EXPECT_FALSE(root.HasAncestor(child1));
@@ -228,7 +209,7 @@ TEST_F(TreeNodeModelTest, HasAncestor) {
 }
 
 // Verifies if GetTotalNodeCount returns the correct number of nodes from the
-// node specifed. The count should include the node itself.
+// node specified. The count should include the node itself.
 // The tree looks like this:
 // root
 // +-- child1
@@ -248,27 +229,16 @@ TEST_F(TreeNodeModelTest, HasAncestor) {
 TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
   TestNode root;
 
-  TestNode* child1 = new TestNode;
-  TestNode* child2 = new TestNode;
-  TestNode* child3 = new TestNode;
+  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), 0);
+  TestNode* child2 = child1->Add(base::MakeUnique<TestNode>(), 0);
+  child2->Add(base::MakeUnique<TestNode>(), 0);  // child3
 
-  root.Add(child1, 0);
-  child1->Add(child2, 0);
-  child2->Add(child3, 0);
+  TestNode* foo1 = root.Add(base::MakeUnique<TestNode>(), 1);
+  TestNode* foo2 = foo1->Add(base::MakeUnique<TestNode>(), 0);
+  foo2->Add(base::MakeUnique<TestNode>(), 0);  // foo3
+  foo1->Add(base::MakeUnique<TestNode>(), 1);  // foo4
 
-  TestNode* foo1 = new TestNode;
-  TestNode* foo2 = new TestNode;
-  TestNode* foo3 = new TestNode;
-  TestNode* foo4 = new TestNode;
-
-  root.Add(foo1, 1);
-  foo1->Add(foo2, 0);
-  foo2->Add(foo3, 0);
-  foo1->Add(foo4, 1);
-
-  TestNode* bar1 = new TestNode;
-
-  root.Add(bar1, 2);
+  TestNode* bar1 = root.Add(base::MakeUnique<TestNode>(), 2);
 
   EXPECT_EQ(9, root.GetTotalNodeCount());
   EXPECT_EQ(3, child1->GetTotalNodeCount());
@@ -280,8 +250,9 @@ TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
 // Makes sure that we are notified when the node is renamed,
 // also makes sure the node is properly renamed.
 TEST_F(TreeNodeModelTest, SetTitle) {
-  TestNode* root = new TestNode(ASCIIToUTF16("root"), 0);
-  TreeNodeModel<TestNode > model(root);
+  TreeNodeModel<TestNode> model(
+      base::MakeUnique<TestNode>(ASCIIToUTF16("root"), 0));
+  TestNode* root = model.GetRoot();
   model.AddObserver(this);
 
   const base::string16 title(ASCIIToUTF16("root2"));
@@ -294,21 +265,19 @@ TEST_F(TreeNodeModelTest, BasicOperations) {
   TestNode root;
   EXPECT_EQ(0, root.child_count());
 
-  TestNode* child1 = new TestNode;
-  root.Add(child1, root.child_count());
+  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), root.child_count());
   EXPECT_EQ(1, root.child_count());
   EXPECT_EQ(&root, child1->parent());
 
-  TestNode* child2 = new TestNode;
-  root.Add(child2, root.child_count());
+  TestNode* child2 = root.Add(base::MakeUnique<TestNode>(), root.child_count());
   EXPECT_EQ(2, root.child_count());
   EXPECT_EQ(child1->parent(), child2->parent());
 
-  std::unique_ptr<TestNode> c2(root.Remove(child2));
+  std::unique_ptr<TestNode> c2 = root.Remove(child2);
   EXPECT_EQ(1, root.child_count());
   EXPECT_EQ(NULL, child2->parent());
 
-  std::unique_ptr<TestNode> c1(root.Remove(child1));
+  std::unique_ptr<TestNode> c1 = root.Remove(child1);
   EXPECT_EQ(0, root.child_count());
 }
 
@@ -316,8 +285,7 @@ TEST_F(TreeNodeModelTest, IsRoot) {
   TestNode root;
   EXPECT_TRUE(root.is_root());
 
-  TestNode* child1 = new TestNode;
-  root.Add(child1, root.child_count());
+  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), root.child_count());
   EXPECT_FALSE(child1->is_root());
 }
 

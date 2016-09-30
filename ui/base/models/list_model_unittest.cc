@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {
@@ -77,15 +78,15 @@ TEST_F(ListModelTest, Add) {
   model.AddObserver(this);
 
   // Append FooItem(0)
-  model.Add(new FooItem(0));
+  model.Add(base::MakeUnique<FooItem>(0));
   ExpectCountsEqual(1, 0, 0, 0);
 
   // Append FooItem(1)
-  model.Add(new FooItem(1));
+  model.Add(base::MakeUnique<FooItem>(1));
   ExpectCountsEqual(2, 0, 0, 0);
 
   // Insert FooItem(2) at position 0
-  model.AddAt(0, new FooItem(2));
+  model.AddAt(0, base::MakeUnique<FooItem>(2));
   ExpectCountsEqual(3, 0, 0, 0);
 
   // Total 3 items in model.
@@ -101,9 +102,9 @@ TEST_F(ListModelTest, Remove) {
   ListModel<FooItem> model;
   model.AddObserver(this);
 
-  model.Add(new FooItem(0));
-  model.Add(new FooItem(1));
-  model.Add(new FooItem(2));
+  model.Add(base::MakeUnique<FooItem>(0));
+  model.Add(base::MakeUnique<FooItem>(1));
+  model.Add(base::MakeUnique<FooItem>(2));
 
   ClearCounts();
 
@@ -120,22 +121,18 @@ TEST_F(ListModelTest, Remove) {
   ExpectCountsEqual(0, 3, 0, 0);
 }
 
-TEST_F(ListModelTest, RemoveAll) {
+TEST_F(ListModelTest, DeleteAll) {
   ListModel<FooItem> model;
   model.AddObserver(this);
 
-  std::unique_ptr<FooItem> foo0(new FooItem(0));
-  std::unique_ptr<FooItem> foo1(new FooItem(1));
-  std::unique_ptr<FooItem> foo2(new FooItem(2));
-
-  model.Add(foo0.get());
-  model.Add(foo1.get());
-  model.Add(foo2.get());
+  model.Add(base::MakeUnique<FooItem>(0));
+  model.Add(base::MakeUnique<FooItem>(1));
+  model.Add(base::MakeUnique<FooItem>(2));
 
   ClearCounts();
 
-  // Remove all items and scoped_ptr above would release memory.
-  model.RemoveAll();
+  // Delete all items.
+  model.DeleteAll();
   ExpectCountsEqual(0, 3, 0, 0);
 }
 
@@ -143,9 +140,9 @@ TEST_F(ListModelTest, Move) {
   ListModel<FooItem> model;
   model.AddObserver(this);
 
-  model.Add(new FooItem(0));
-  model.Add(new FooItem(1));
-  model.Add(new FooItem(2));
+  model.Add(base::MakeUnique<FooItem>(0));
+  model.Add(base::MakeUnique<FooItem>(1));
+  model.Add(base::MakeUnique<FooItem>(2));
 
   ClearCounts();
 
@@ -161,9 +158,9 @@ TEST_F(ListModelTest, FakeUpdate) {
   ListModel<FooItem> model;
   model.AddObserver(this);
 
-  model.Add(new FooItem(0));
-  model.Add(new FooItem(1));
-  model.Add(new FooItem(2));
+  model.Add(base::MakeUnique<FooItem>(0));
+  model.Add(base::MakeUnique<FooItem>(1));
+  model.Add(base::MakeUnique<FooItem>(2));
 
   ClearCounts();
 

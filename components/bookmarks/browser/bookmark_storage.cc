@@ -101,7 +101,7 @@ void LoadCallback(const base::FilePath& path,
     AddBookmarksToIndex(details.get(), details->other_folder_node());
     AddBookmarksToIndex(details.get(), details->mobile_folder_node());
     for (size_t i = 0; i < extra_nodes.size(); ++i)
-      AddBookmarksToIndex(details.get(), extra_nodes[i]);
+      AddBookmarksToIndex(details.get(), extra_nodes[i].get());
     UMA_HISTOGRAM_TIMES("Bookmarks.CreateBookmarkIndexTime",
                         TimeTicks::Now() - start_time);
   }

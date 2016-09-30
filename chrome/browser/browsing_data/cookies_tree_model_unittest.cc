@@ -422,7 +422,7 @@ class CookiesTreeModelTest : public testing::Test {
     node->DeleteStoredObjects();
     CookieTreeNode* parent_node = node->parent();
     DCHECK(parent_node);
-    delete parent_node->GetModel()->Remove(parent_node, node);
+    parent_node->GetModel()->Remove(parent_node, node);
   }
 
  protected:

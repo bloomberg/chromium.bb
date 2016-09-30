@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -417,9 +418,9 @@ TEST_F(BookmarkUtilsTest, MAYBE_CutToClipboard) {
 TEST_F(BookmarkUtilsTest, PasteNonEditableNodes) {
   // Load a model with an extra node that is not editable.
   std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
-  BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
   BookmarkPermanentNodeList extra_nodes;
-  extra_nodes.push_back(extra_node);
+  extra_nodes.push_back(base::MakeUnique<BookmarkPermanentNode>(100));
+  BookmarkPermanentNode* extra_node = extra_nodes.back().get();
   client->SetExtraNodesToLoad(std::move(extra_nodes));
 
   std::unique_ptr<BookmarkModel> model(
@@ -568,9 +569,9 @@ TEST_F(BookmarkUtilsTest, CloneFolderResetsNonClonedKey) {
 TEST_F(BookmarkUtilsTest, RemoveAllBookmarks) {
   // Load a model with an extra node that is not editable.
   std::unique_ptr<TestBookmarkClient> client(new TestBookmarkClient());
-  BookmarkPermanentNode* extra_node = new BookmarkPermanentNode(100);
   BookmarkPermanentNodeList extra_nodes;
-  extra_nodes.push_back(extra_node);
+  extra_nodes.push_back(base::MakeUnique<BookmarkPermanentNode>(100));
+  BookmarkPermanentNode* extra_node = extra_nodes.back().get();
   client->SetExtraNodesToLoad(std::move(extra_nodes));
 
   std::unique_ptr<BookmarkModel> model(

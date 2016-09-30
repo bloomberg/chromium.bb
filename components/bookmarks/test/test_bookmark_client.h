@@ -33,8 +33,8 @@ class TestBookmarkClient : public BookmarkClient {
   void SetExtraNodesToLoad(BookmarkPermanentNodeList extra_nodes);
 
   // Returns the current extra_nodes, set via SetExtraNodesToLoad().
-  const std::vector<BookmarkPermanentNode*>& extra_nodes() {
-    return extra_nodes_;
+  const std::vector<BookmarkPermanentNode*> extra_nodes() {
+    return unowned_extra_nodes_;
   }
 
   // Returns true if |node| is one of the |extra_nodes_|.
@@ -57,8 +57,8 @@ class TestBookmarkClient : public BookmarkClient {
       BookmarkPermanentNodeList extra_nodes,
       int64_t* next_id);
 
-  BookmarkPermanentNodeList extra_nodes_to_load_;
-  std::vector<BookmarkPermanentNode*> extra_nodes_;
+  BookmarkPermanentNodeList extra_nodes_;
+  std::vector<BookmarkPermanentNode*> unowned_extra_nodes_;
 
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkClient);
 };

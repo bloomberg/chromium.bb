@@ -354,12 +354,13 @@ class BookmarkModel : public BookmarkUndoProvider,
   // Populates |nodes_ordered_by_url_set_| from root.
   void PopulateNodesByURL(BookmarkNode* node);
 
-  // Removes the node from its parent, but does not delete it. No notifications
+  // Removes the node from its parent and returns it. No notifications
   // are sent. |removed_urls| is populated with the urls which no longer have
   // any bookmarks associated with them.
   // This method should be called after acquiring |url_lock_|.
-  void RemoveNodeAndGetRemovedUrls(BookmarkNode* node,
-                                   std::set<GURL>* removed_urls);
+  std::unique_ptr<BookmarkNode> RemoveNodeAndGetRemovedUrls(
+      BookmarkNode* node,
+      std::set<GURL>* removed_urls);
 
   // Removes the node from its parent, sends notification, and deletes it.
   // type specifies how the node should be removed.
@@ -372,7 +373,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   // observers.
   BookmarkNode* AddNode(BookmarkNode* parent,
                         int index,
-                        BookmarkNode* node);
+                        std::unique_ptr<BookmarkNode> node);
 
   // Adds the |node| to |nodes_ordered_by_url_set_| and |index_|.
   void AddNodeToInternalMaps(BookmarkNode* node);

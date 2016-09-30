@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
@@ -61,10 +62,11 @@ class SearchResultPageViewTest : public views::ViewsTestBase,
       // the earlier groups have higher relevance, and therefore appear first).
       relevance -= 1.0;
       for (int i = 0; i < data.second; ++i) {
-        TestSearchResult* result = new TestSearchResult();
+        std::unique_ptr<TestSearchResult> result =
+            base::MakeUnique<TestSearchResult>();
         result->set_display_type(data.first);
         result->set_relevance(relevance);
-        results->Add(result);
+        results->Add(std::move(result));
       }
     }
 
@@ -220,18 +222,18 @@ TEST_F(SearchResultPageViewTest, ResultsSorted) {
   TestSearchResult* tile_result = new TestSearchResult();
   tile_result->set_display_type(SearchResult::DISPLAY_TILE);
   tile_result->set_relevance(1.0);
-  results->Add(tile_result);
+  results->Add(base::WrapUnique(tile_result));
   {
     TestSearchResult* list_result = new TestSearchResult();
     list_result->set_display_type(SearchResult::DISPLAY_LIST);
     list_result->set_relevance(0.5);
-    results->Add(list_result);
+    results->Add(base::WrapUnique(list_result));
   }
   {
     TestSearchResult* list_result = new TestSearchResult();
     list_result->set_display_type(SearchResult::DISPLAY_LIST);
     list_result->set_relevance(0.3);
-    results->Add(list_result);
+    results->Add(base::WrapUnique(list_result));
   }
 
   // Adding results will schedule Update().

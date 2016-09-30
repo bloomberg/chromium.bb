@@ -70,7 +70,7 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
   void ExecuteCommand(int command_id, int event_flags) override;
 
   // The tree view to be tested.
-  TreeView* tree_view_;
+  std::unique_ptr<TreeView> tree_view_;
 
   // Control buttons to modify the model.
   LabelButton* add_;

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -272,6 +273,12 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
     return false;
   }
 
+  // It's not valid to have both a node and a specified parent.
+  if (node && parent) {
+    NOTREACHED();
+    return false;
+  }
+
   std::string id_string;
   int64_t id = 0;
   if (ids_valid_) {
@@ -314,7 +321,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
       return false;  // Node invalid.
 
     if (parent)
-      parent->Add(node, parent->child_count());
+      parent->Add(base::WrapUnique(node), parent->child_count());
     node->set_type(BookmarkNode::URL);
     UpdateChecksumWithUrlNode(id_string, title, url_string);
   } else {
@@ -342,7 +349,7 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
     node->set_date_folder_modified(Time::FromInternalValue(internal_time));
 
     if (parent)
-      parent->Add(node, parent->child_count());
+      parent->Add(base::WrapUnique(node), parent->child_count());
 
     UpdateChecksumWithFolderNode(id_string, title);
 

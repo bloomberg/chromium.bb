@@ -60,9 +60,10 @@ int64_t ManagedBookmarksTracker::LoadInitial(BookmarkNode* folder,
     if (!LoadBookmark(list, i, &title, &url, &children))
       continue;
 
-    BookmarkNode* child = new BookmarkNode(next_node_id++, url);
+    BookmarkNode* child =
+        folder->Add(base::MakeUnique<BookmarkNode>(next_node_id++, url),
+                    folder->child_count());
     child->SetTitle(title);
-    folder->Add(child, folder->child_count());
     if (children) {
       child->set_type(BookmarkNode::FOLDER);
       child->set_date_folder_modified(base::Time::Now());

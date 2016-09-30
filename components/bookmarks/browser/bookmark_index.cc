@@ -13,6 +13,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/memory/scoped_vector.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "build/build_config.h"

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/i18n/rtl.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/ime/input_method.h"
@@ -136,7 +137,7 @@ void TreeView::SetModel(TreeModel* model) {
     model_->AddObserver(this);
     model_->GetIcons(&icons_);
 
-    root_.RemoveAll();
+    root_.DeleteAll();
     ConfigureInternalNode(model_->GetRoot(), &root_);
     LoadChildren(&root_);
     root_.set_is_expanded(true);
@@ -429,9 +430,9 @@ void TreeView::TreeNodesAdded(TreeModel* model,
   if (!parent_node || !parent_node->loaded_children())
     return;
   for (int i = 0; i < count; ++i) {
-    InternalNode* child = new InternalNode;
-    ConfigureInternalNode(model_->GetChild(parent, start + i), child);
-    parent_node->Add(child, start + i);
+    std::unique_ptr<InternalNode> child = base::MakeUnique<InternalNode>();
+    ConfigureInternalNode(model_->GetChild(parent, start + i), child.get());
+    parent_node->Add(std::move(child), start + i);
   }
   if (IsExpanded(parent))
     DrawnNodesChanged();
@@ -450,7 +451,7 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     InternalNode* child_removing = parent_node->GetChild(start);
     if (selected_node_ && selected_node_->HasAncestor(child_removing))
       reset_selection = true;
-    delete parent_node->Remove(child_removing);
+    parent_node->Remove(child_removing);
   }
   if (reset_selection) {
     // selected_node_ is no longer valid (at the time we enter this function
@@ -667,9 +668,9 @@ void TreeView::LoadChildren(InternalNode* node) {
   node->set_loaded_children(true);
   for (int i = 0, child_count = model_->GetChildCount(node->model_node());
        i < child_count; ++i) {
-    InternalNode* child = new InternalNode;
-    ConfigureInternalNode(model_->GetChild(node->model_node(), i), child);
-    node->Add(child, node->child_count());
+    std::unique_ptr<InternalNode> child = base::MakeUnique<InternalNode>();
+    ConfigureInternalNode(model_->GetChild(node->model_node(), i), child.get());
+    node->Add(std::move(child), node->child_count());
   }
 }
 

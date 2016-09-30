@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/models/tree_node_model.h"
@@ -39,7 +40,7 @@ class TestNode : public TreeNode<TestNode> {
 //   'c'
 class TreeViewTest : public ViewsTestBase {
  public:
-  TreeViewTest() : model_(new TestNode) {
+  TreeViewTest() : model_(base::MakeUnique<TestNode>()) {
     static_cast<TestNode*>(model_.GetRoot())->SetTitle(ASCIIToUTF16("root"));
     Add(model_.GetRoot(), 0, "a");
     Add(Add(model_.GetRoot(), 1, "b"), 0, "b1");
@@ -65,7 +66,7 @@ class TreeViewTest : public ViewsTestBase {
   int GetRowCount();
   PrefixSelector* selector() { return tree_.GetPrefixSelector(); }
 
-  ui::TreeNodeModel<TestNode > model_;
+  ui::TreeNodeModel<TestNode> model_;
   TreeView tree_;
 
  private:
@@ -79,10 +80,9 @@ class TreeViewTest : public ViewsTestBase {
 TestNode* TreeViewTest::Add(TestNode* parent,
                             int index,
                             const std::string& title) {
-  TestNode* new_node = new TestNode;
+  std::unique_ptr<TestNode> new_node = base::MakeUnique<TestNode>();
   new_node->SetTitle(ASCIIToUTF16(title));
-  model_.Add(parent, new_node, index);
-  return new_node;
+  return model_.Add(parent, std::move(new_node), index);
 }
 
 std::string TreeViewTest::TreeViewContentsAsString() {
@@ -254,19 +254,19 @@ TEST_F(TreeViewTest, TreeNodesRemoved) {
   // effect the tree.
   tree_.Expand(GetNodeByTitle("b"));
   tree_.Collapse(GetNodeByTitle("b"));
-  delete model_.Remove(GetNodeByTitle("b1")->parent(), GetNodeByTitle("b1"));
+  model_.Remove(GetNodeByTitle("b1")->parent(), GetNodeByTitle("b1"));
   EXPECT_EQ("root [a b c]", TreeViewContentsAsString());
   EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ(4, GetRowCount());
 
   // Remove 'b'.
-  delete model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
+  model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
   EXPECT_EQ("root [a c]", TreeViewContentsAsString());
   EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ(3, GetRowCount());
 
   // Remove 'c11', shouldn't visually change anything.
-  delete model_.Remove(GetNodeByTitle("c11")->parent(), GetNodeByTitle("c11"));
+  model_.Remove(GetNodeByTitle("c11")->parent(), GetNodeByTitle("c11"));
   EXPECT_EQ("root [a c]", TreeViewContentsAsString());
   EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ(3, GetRowCount());
@@ -274,7 +274,7 @@ TEST_F(TreeViewTest, TreeNodesRemoved) {
   // Select 'c1', remove 'c' and make sure selection changes.
   tree_.SetSelectedNode(GetNodeByTitle("c1"));
   EXPECT_EQ("c1", GetSelectedNodeTitle());
-  delete model_.Remove(GetNodeByTitle("c")->parent(), GetNodeByTitle("c"));
+  model_.Remove(GetNodeByTitle("c")->parent(), GetNodeByTitle("c"));
   EXPECT_EQ("root [a]", TreeViewContentsAsString());
   EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ(2, GetRowCount());
@@ -284,7 +284,7 @@ TEST_F(TreeViewTest, TreeNodesRemoved) {
   // selection should change to 'a'.
   Add(GetNodeByTitle("root"), 1, "b");
   tree_.SetSelectedNode(GetNodeByTitle("b"));
-  delete model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
+  model_.Remove(GetNodeByTitle("b")->parent(), GetNodeByTitle("b"));
   EXPECT_EQ("root [a]", TreeViewContentsAsString());
   EXPECT_EQ("a", GetSelectedNodeTitle());
   EXPECT_EQ(1, GetRowCount());

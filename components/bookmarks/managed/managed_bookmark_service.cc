@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+
 #include <utility>
 #include <vector>
 
@@ -69,7 +70,7 @@ BookmarkPermanentNodeList LoadExtraNodes(
     int64_t* next_node_id) {
   BookmarkPermanentNodeList extra_nodes;
   for (auto* loader : loaders)
-    extra_nodes.push_back(loader->Load(next_node_id).release());
+    extra_nodes.push_back(loader->Load(next_node_id));
   return extra_nodes;
 }
 

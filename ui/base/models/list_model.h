@@ -9,11 +9,11 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/base/models/list_model_observer.h"
 
@@ -25,36 +25,42 @@ namespace ui {
 template <class ItemType>
 class ListModel {
  public:
+  using ItemList = std::vector<std::unique_ptr<ItemType>>;
+
   ListModel() {}
   ~ListModel() {}
 
-  // Adds |item| at the |index| into |items_|. Takes ownership of |item|.
-  void AddAt(size_t index, ItemType* item) {
+  // Adds |item| at the |index| into |items_|. Returns a raw pointer.
+  ItemType* AddAt(size_t index, std::unique_ptr<ItemType> item) {
     DCHECK_LE(index, item_count());
-    items_.insert(items_.begin() + index, item);
+    ItemType* item_ptr = item.get();
+    items_.insert(items_.begin() + index, std::move(item));
     NotifyItemsAdded(index, 1);
+    return item_ptr;
   }
 
   // Convenience function to append an item to the model.
-  void Add(ItemType* item) {
-    AddAt(item_count(), item);
+  ItemType* Add(std::unique_ptr<ItemType> item) {
+    return AddAt(item_count(), std::move(item));
   }
 
   // Removes the item at |index| from |items_| without deleting it.
   // Returns a scoped pointer containing the removed item.
   std::unique_ptr<ItemType> RemoveAt(size_t index) {
     DCHECK_LT(index, item_count());
-    ItemType* item = items_[index];
-    items_.weak_erase(items_.begin() + index);
+    std::unique_ptr<ItemType> item = std::move(items_[index]);
+    items_.erase(items_.begin() + index);
     NotifyItemsRemoved(index, 1);
-    return base::WrapUnique<ItemType>(item);
+    return item;
   }
 
-  // Removes all items from the model. This does NOT delete the items.
-  void RemoveAll() {
-    size_t count = item_count();
-    items_.weak_clear();
-    NotifyItemsRemoved(0, count);
+  // Removes all items from the model without deleting them.
+  // Returns a vector containing the removed items.
+  ItemList RemoveAll() {
+    ItemList result;
+    result.swap(items_);
+    NotifyItemsRemoved(0, result.size());
+    return result;
   }
 
   // Removes the item at |index| from |items_| and deletes it.
@@ -65,7 +71,8 @@ class ListModel {
 
   // Removes and deletes all items from the model.
   void DeleteAll() {
-    ScopedVector<ItemType> to_be_deleted(std::move(items_));
+    ItemList to_be_deleted;
+    to_be_deleted.swap(items_);
     NotifyItemsRemoved(0, to_be_deleted.size());
   }
 
@@ -78,9 +85,9 @@ class ListModel {
     if (index == target_index)
       return;
 
-    ItemType* item = items_[index];
-    items_.weak_erase(items_.begin() + index);
-    items_.insert(items_.begin() + target_index, item);
+    std::unique_ptr<ItemType> item = std::move(items_[index]);
+    items_.erase(items_.begin() + index);
+    items_.insert(items_.begin() + target_index, std::move(item));
     NotifyItemMoved(index, target_index);
   }
 
@@ -120,7 +127,7 @@ class ListModel {
 
   const ItemType* GetItemAt(size_t index) const {
     DCHECK_LT(index, item_count());
-    return items_[index];
+    return items_[index].get();
   }
   ItemType* GetItemAt(size_t index) {
     return const_cast<ItemType*>(
@@ -128,17 +135,13 @@ class ListModel {
   }
 
   // Iteration interface.
-  typename ScopedVector<ItemType>::iterator begin() { return items_.begin(); }
-  typename ScopedVector<ItemType>::const_iterator begin() const {
-    return items_.begin();
-  }
-  typename ScopedVector<ItemType>::iterator end() { return items_.end(); }
-  typename ScopedVector<ItemType>::const_iterator end() const {
-    return items_.end();
-  }
+  typename ItemList::iterator begin() { return items_.begin(); }
+  typename ItemList::const_iterator begin() const { return items_.begin(); }
+  typename ItemList::iterator end() { return items_.end(); }
+  typename ItemList::const_iterator end() const { return items_.end(); }
 
  private:
-  ScopedVector<ItemType> items_;
+  ItemList items_;
   base::ObserverList<ListModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ListModel<ItemType>);

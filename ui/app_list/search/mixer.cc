@@ -180,8 +180,6 @@ void Mixer::MixAndPublish(bool is_voice_query,
 
 void Mixer::Publish(const SortedResults& new_results,
                     AppListModel::SearchResults* ui_results) {
-  typedef std::map<std::string, SearchResult*> IdToResultMap;
-
   // The following algorithm is used:
   // 1. Transform the |ui_results| list into an unordered map from result ID
   // to item.
@@ -190,43 +188,37 @@ void Mixer::Publish(const SortedResults& new_results,
   // it from the map afterwards. Otherwise, clone new items from |new_results|.
   // 3. Delete the objects remaining in the map as they are unused.
 
-  // A map of the items in |ui_results| that takes ownership of the items.
-  IdToResultMap ui_results_map;
-  for (SearchResult* ui_result : *ui_results)
-    ui_results_map[ui_result->id()] = ui_result;
   // We have to erase all results at once so that observers are notified with
   // meaningful indexes.
-  ui_results->RemoveAll();
+  auto current_results = ui_results->RemoveAll();
+  std::map<std::string, std::unique_ptr<SearchResult>> ui_results_map;
+  for (std::unique_ptr<SearchResult>& ui_result : current_results)
+    ui_results_map[ui_result->id()] = std::move(ui_result);
 
   // Add items back to |ui_results| in the order of |new_results|.
   for (const SortData& sort_data : new_results) {
     const SearchResult& new_result = *sort_data.result;
-    IdToResultMap::const_iterator ui_result_it =
-        ui_results_map.find(new_result.id());
+    auto ui_result_it = ui_results_map.find(new_result.id());
     if (ui_result_it != ui_results_map.end()) {
       // Update and use the old result if it exists.
-      SearchResult* ui_result = ui_result_it->second;
-      UpdateResult(new_result, ui_result);
+      std::unique_ptr<SearchResult> ui_result = std::move(ui_result_it->second);
+      UpdateResult(new_result, ui_result.get());
       ui_result->set_relevance(sort_data.score);
 
-      // |ui_results| takes back ownership from |ui_results_map| here.
-      ui_results->Add(ui_result);
+      ui_results->Add(std::move(ui_result));
 
       // Remove the item from the map so that it ends up only with unused
       // results.
-      ui_results_map.erase(ui_result->id());
+      ui_results_map.erase(ui_result_it);
     } else {
       std::unique_ptr<SearchResult> result_copy = new_result.Duplicate();
       result_copy->set_relevance(sort_data.score);
       // Copy the result from |new_results| otherwise.
-      ui_results->Add(result_copy.release());
+      ui_results->Add(std::move(result_copy));
     }
   }
 
-  // Delete the results remaining in the map as they are not in the new results.
-  for (const auto& ui_result : ui_results_map) {
-    delete ui_result.second;
-  }
+  // Any remaining results in |ui_results_map| will be automatically deleted.
 }
 
 void Mixer::RemoveDuplicates(SortedResults* results) {

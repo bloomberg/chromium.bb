@@ -178,7 +178,7 @@ class CookieTreeNode : public ui::TreeNode<CookieTreeNode> {
   virtual DetailedInfo GetDetailedInfo() const = 0;
 
  protected:
-  void AddChildSortedByTitle(CookieTreeNode* new_child);
+  void AddChildSortedByTitle(std::unique_ptr<CookieTreeNode> new_child);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CookieTreeNode);
@@ -299,8 +299,8 @@ class CookieTreeCookiesNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddCookieNode(CookieTreeCookieNode* child) {
-    AddChildSortedByTitle(child);
+  void AddCookieNode(std::unique_ptr<CookieTreeCookieNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:
@@ -335,8 +335,8 @@ class CookieTreeAppCachesNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddAppCacheNode(CookieTreeAppCacheNode* child) {
-    AddChildSortedByTitle(child);
+  void AddAppCacheNode(std::unique_ptr<CookieTreeAppCacheNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:
@@ -374,8 +374,8 @@ class CookieTreeDatabasesNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddDatabaseNode(CookieTreeDatabaseNode* child) {
-    AddChildSortedByTitle(child);
+  void AddDatabaseNode(std::unique_ptr<CookieTreeDatabaseNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:
@@ -413,8 +413,8 @@ class CookieTreeFileSystemsNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddFileSystemNode(CookieTreeFileSystemNode* child) {
-    AddChildSortedByTitle(child);
+  void AddFileSystemNode(std::unique_ptr<CookieTreeFileSystemNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:
@@ -451,8 +451,8 @@ class CookieTreeLocalStoragesNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddLocalStorageNode(CookieTreeLocalStorageNode* child) {
-    AddChildSortedByTitle(child);
+  void AddLocalStorageNode(std::unique_ptr<CookieTreeLocalStorageNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:
@@ -490,8 +490,9 @@ class CookieTreeSessionStoragesNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddSessionStorageNode(CookieTreeSessionStorageNode* child) {
-    AddChildSortedByTitle(child);
+  void AddSessionStorageNode(
+      std::unique_ptr<CookieTreeSessionStorageNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:
@@ -528,8 +529,8 @@ class CookieTreeIndexedDBsNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddIndexedDBNode(CookieTreeIndexedDBNode* child) {
-    AddChildSortedByTitle(child);
+  void AddIndexedDBNode(std::unique_ptr<CookieTreeIndexedDBNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:
@@ -586,8 +587,8 @@ class CookieTreeChannelIDsNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddChannelIDNode(CookieTreeChannelIDNode* child) {
-    AddChildSortedByTitle(child);
+  void AddChannelIDNode(std::unique_ptr<CookieTreeChannelIDNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:
@@ -622,8 +623,9 @@ class CookieTreeServiceWorkersNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddServiceWorkerNode(CookieTreeServiceWorkerNode* child) {
-    AddChildSortedByTitle(child);
+  void AddServiceWorkerNode(
+      std::unique_ptr<CookieTreeServiceWorkerNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:
@@ -658,8 +660,8 @@ class CookieTreeCacheStoragesNode : public CookieTreeNode {
 
   DetailedInfo GetDetailedInfo() const override;
 
-  void AddCacheStorageNode(CookieTreeCacheStorageNode* child) {
-    AddChildSortedByTitle(child);
+  void AddCacheStorageNode(std::unique_ptr<CookieTreeCacheStorageNode> child) {
+    AddChildSortedByTitle(std::move(child));
   }
 
  private:

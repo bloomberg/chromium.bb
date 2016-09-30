@@ -5,6 +5,7 @@
 #include "ui/base/models/tree_node_iterator.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/tree_node_model.h"
 
@@ -12,7 +13,7 @@ namespace ui {
 
 namespace {
 
-typedef TreeNodeWithValue<int> TestNode;
+using TestNode = TreeNodeWithValue<int>;
 
 bool PruneOdd(TestNode* node) {
   return node->value % 2;
@@ -24,13 +25,11 @@ bool PruneEven(TestNode* node) {
 
 TEST(TreeNodeIteratorTest, Basic) {
   TestNode root;
-  root.Add(new TestNode(), 0);
-  root.Add(new TestNode(), 1);
-  TestNode* f3 = new TestNode();
-  root.Add(f3, 2);
-  TestNode* f4 = new TestNode();
-  f3->Add(f4, 0);
-  f4->Add(new TestNode(), 0);
+  root.Add(base::MakeUnique<TestNode>(), 0);
+  root.Add(base::MakeUnique<TestNode>(), 1);
+  TestNode* f3 = root.Add(base::MakeUnique<TestNode>(), 2);
+  TestNode* f4 = f3->Add(base::MakeUnique<TestNode>(), 0);
+  f4->Add(base::MakeUnique<TestNode>(), 0);
 
   TreeNodeIterator<TestNode> iterator(&root);
   ASSERT_TRUE(iterator.has_next());
@@ -58,14 +57,12 @@ TEST(TreeNodeIteratorTest, Basic) {
 //       + 7
 TEST(TreeNodeIteratorTest, Prune) {
   TestNode root;
-  root.Add(new TestNode(1), 0);
-  root.Add(new TestNode(2), 1);
-  TestNode* f3 = new TestNode(3);
-  root.Add(f3, 2);
-  TestNode* f4 = new TestNode(4);
-  f3->Add(f4, 0);
-  f4->Add(new TestNode(5), 0);
-  f3->Add(new TestNode(7), 1);
+  root.Add(base::MakeUnique<TestNode>(1), 0);
+  root.Add(base::MakeUnique<TestNode>(2), 1);
+  TestNode* f3 = root.Add(base::MakeUnique<TestNode>(3), 2);
+  TestNode* f4 = f3->Add(base::MakeUnique<TestNode>(4), 0);
+  f4->Add(base::MakeUnique<TestNode>(5), 0);
+  f3->Add(base::MakeUnique<TestNode>(7), 1);
 
   TreeNodeIterator<TestNode> odd_iterator(&root, base::Bind(&PruneOdd));
   ASSERT_TRUE(odd_iterator.has_next());

@@ -4,6 +4,7 @@
 
 #include "ui/views/examples/tree_view_example.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -18,30 +19,27 @@ namespace examples {
 
 TreeViewExample::TreeViewExample()
     : ExampleBase("Tree View"),
-      tree_view_(NULL),
-      model_(new NodeType(ASCIIToUTF16("root"), 1)) {
-}
+      model_(base::MakeUnique<NodeType>(ASCIIToUTF16("root"), 1)) {}
 
 TreeViewExample::~TreeViewExample() {
   // Delete the view before the model.
-  delete tree_view_;
-  tree_view_ = NULL;
+  tree_view_.reset();
 }
 
 void TreeViewExample::CreateExampleView(View* container) {
   // Add some sample data.
-  NodeType* colors_node = new NodeType(ASCIIToUTF16("colors"), 1);
-  model_.GetRoot()->Add(colors_node, 0);
-  colors_node->Add(new NodeType(ASCIIToUTF16("red"), 1), 0);
-  colors_node->Add(new NodeType(ASCIIToUTF16("green"), 1), 1);
-  colors_node->Add(new NodeType(ASCIIToUTF16("blue"), 1), 2);
+  NodeType* colors_node = model_.GetRoot()->Add(
+      base::MakeUnique<NodeType>(ASCIIToUTF16("colors"), 1), 0);
+  colors_node->Add(base::MakeUnique<NodeType>(ASCIIToUTF16("red"), 1), 0);
+  colors_node->Add(base::MakeUnique<NodeType>(ASCIIToUTF16("green"), 1), 1);
+  colors_node->Add(base::MakeUnique<NodeType>(ASCIIToUTF16("blue"), 1), 2);
 
-  NodeType* sheep_node = new NodeType(ASCIIToUTF16("sheep"), 1);
-  model_.GetRoot()->Add(sheep_node, 0);
-  sheep_node->Add(new NodeType(ASCIIToUTF16("Sheep 1"), 1), 0);
-  sheep_node->Add(new NodeType(ASCIIToUTF16("Sheep 2"), 1), 1);
+  NodeType* sheep_node = model_.GetRoot()->Add(
+      base::MakeUnique<NodeType>(ASCIIToUTF16("sheep"), 1), 0);
+  sheep_node->Add(base::MakeUnique<NodeType>(ASCIIToUTF16("Sheep 1"), 1), 0);
+  sheep_node->Add(base::MakeUnique<NodeType>(ASCIIToUTF16("Sheep 2"), 1), 1);
 
-  tree_view_ = new TreeView();
+  tree_view_ = base::MakeUnique<TreeView>();
   tree_view_->set_context_menu_controller(this);
   tree_view_->SetRootShown(false);
   tree_view_->SetModel(&model_);
@@ -85,8 +83,9 @@ void TreeViewExample::AddNewNode() {
       static_cast<NodeType*>(tree_view_->GetSelectedNode());
   if (!selected_node)
     selected_node = model_.GetRoot();
-  NodeType* new_node = new NodeType(selected_node->GetTitle(), 1);
-  model_.Add(selected_node, new_node, selected_node->child_count());
+  NodeType* new_node = model_.Add(
+      selected_node, base::MakeUnique<NodeType>(selected_node->GetTitle(), 1),
+      selected_node->child_count());
   tree_view_->SetSelectedNode(new_node);
 }
 

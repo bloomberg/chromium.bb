@@ -336,7 +336,7 @@ class VIEWS_EXPORT TreeView : public View,
   void CollapseOrSelectParent();
 
   // If the selected node is collapsed, it's expanded. Otherwise the first child
-  // is seleected.
+  // is selected.
   void ExpandOrSelectChild();
 
   // Implementation of Expand(). Returns true if at least one node was expanded
