@@ -1192,9 +1192,8 @@ class CppStyleTest(CppStyleTestBase):
             class Foo {
                 Foo (int f);
             };''',
-            ['Extra space before ( in function call  [whitespace/parens] [4]',
-             'Single-argument constructors should be marked explicit.'
-             '  [runtime/explicit] [5]'])
+            'Single-argument constructors should be marked explicit.'
+            '  [runtime/explicit] [5]')
         # missing explicit, with distracting comment, is still bad
         self.assert_multi_line_lint(
             '''\
@@ -1441,7 +1440,6 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('int a[sizeof(struct Foo)];', '')
         self.assert_lint('int a[128 - sizeof(const bar)];', '')
         self.assert_lint('int a[(sizeof(foo) * 4)];', '')
-        self.assert_lint('int a[(arraysize(fixed_size_array)/2) << 1];', 'Missing spaces around /  [whitespace/operators] [3]')
         self.assert_lint('delete a[some_var];', '')
         self.assert_lint('return a[some_var];', '')
 
@@ -1572,10 +1570,8 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('CHECK(CreateTestFile(dir, (1 >> 20)));', '')
 
         self.assert_lint('CHECK(x<42)',
-                         ['Missing spaces around <'
-                          '  [whitespace/operators] [3]',
-                          'Consider using CHECK_LT instead of CHECK(a < b)'
-                          '  [readability/check] [2]'])
+                         'Consider using CHECK_LT instead of CHECK(a < b)'
+                         '  [readability/check] [2]')
         self.assert_lint('CHECK(x>42)',
                          'Consider using CHECK_GT instead of CHECK(a > b)'
                          '  [readability/check] [2]')
@@ -1616,9 +1612,6 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('ASSERT_NO_EXCEPTIONS', '')
 
     def test_brace_at_begin_of_line(self):
-        self.assert_lint('{',
-                         'This { should be at the end of the previous line'
-                         '  [whitespace/braces] [4]')
         self.assert_multi_line_lint(
             '#endif\n'
             '{\n'
@@ -1630,21 +1623,6 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_multi_line_lint(
             '    MACRO1(macroArg) {',
             '')
-        self.assert_multi_line_lint(
-            'ACCESSOR_GETTER(MessageEventPorts) {',
-            'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'int foo() {',
-            'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'int foo() const {',
-            'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'int foo() override {',
-            'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'int foo() final {',
-            'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
         self.assert_multi_line_lint(
             'int foo() const\n'
             '{\n'
@@ -1729,16 +1707,11 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('( a + b)', 'Extra space after ('
                          '  [whitespace/parens] [2]')
         self.assert_lint('((a+b))', '')
-        self.assert_lint('foo (foo)', 'Extra space before ( in function call'
-                         '  [whitespace/parens] [4]')
         self.assert_lint('#elif (foo(bar))', '')
         self.assert_lint('#elif (foo(bar) && foo(baz))', '')
         self.assert_lint('typedef foo (*foo)(foo)', '')
         self.assert_lint('typedef foo (*foo12bar_)(foo)', '')
         self.assert_lint('typedef foo (Foo::*bar)(foo)', '')
-        self.assert_lint('foo (Foo::*bar)(',
-                         'Extra space before ( in function call'
-                         '  [whitespace/parens] [4]')
         self.assert_lint('typedef foo (Foo::*bar)(', '')
         self.assert_lint('(foo)(bar)', '')
         self.assert_lint('Foo (*foo)(bar)', '')
@@ -1748,10 +1721,6 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_lint('const char32 (*table[])[6];', '')
 
     def test_spacing_before_braces(self):
-        self.assert_lint('if (foo){', 'Missing space before {'
-                         '  [whitespace/braces] [5]')
-        self.assert_lint('for{', 'Missing space before {'
-                         '  [whitespace/braces] [5]')
         self.assert_lint('for {', '')
         self.assert_lint('EXPECT_DEBUG_DEATH({', '')
 
@@ -1763,101 +1732,8 @@ class CppStyleTest(CppStyleTestBase):
     def test_spacing_around_else(self):
         self.assert_lint('}else {', 'Missing space before else'
                          '  [whitespace/braces] [5]')
-        self.assert_lint('} else{', 'Missing space before {'
-                         '  [whitespace/braces] [5]')
         self.assert_lint('} else {', '')
         self.assert_lint('} else if', '')
-
-    def test_spacing_for_binary_ops(self):
-        self.assert_lint('if (foo<=bar) {', 'Missing spaces around <='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('if (foo<bar) {', 'Missing spaces around <'
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('if (foo<bar->baz) {', 'Missing spaces around <'
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('if (foo<bar->bar) {', 'Missing spaces around <'
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('typedef hash_map<Foo, Bar', 'Missing spaces around <'
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('typedef hash_map<FoooooType, BaaaaarType,', '')
-        self.assert_lint('a<Foo> t+=b;', 'Missing spaces around +='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo> t-=b;', 'Missing spaces around -='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t*=b;', 'Missing spaces around *='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t/=b;', 'Missing spaces around /='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t|=b;', 'Missing spaces around |='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t&=b;', 'Missing spaces around &='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t<<=b;', 'Missing spaces around <<='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t>>=b;', 'Missing spaces around >>='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t>>=&b|c;', 'Missing spaces around >>='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t<<=*b/c;', 'Missing spaces around <<='
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo> t -= b;', '')
-        self.assert_lint('a<Foo> t += b;', '')
-        self.assert_lint('a<Foo*> t *= b;', '')
-        self.assert_lint('a<Foo*> t /= b;', '')
-        self.assert_lint('a<Foo*> t |= b;', '')
-        self.assert_lint('a<Foo*> t &= b;', '')
-        self.assert_lint('a<Foo*> t <<= b;', '')
-        self.assert_lint('a<Foo*> t >>= b;', '')
-        self.assert_lint('a<Foo*>&& t = &b;', '')
-        self.assert_lint('a<Foo*> t >>= &b|c;', 'Missing spaces around |'
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t <<= *b/c;', 'Missing spaces around /'
-                         '  [whitespace/operators] [3]')
-        self.assert_lint('a<Foo*> t <<= b/c; //Test', [
-                         'Should have a space between // and comment  '
-                         '[whitespace/comments] [4]', 'Missing'
-                         ' spaces around /  [whitespace/operators] [3]'])
-        self.assert_lint('a<Foo*> t <<= b||c;  //Test', ['One space before end'
-                                                         ' of line comments  [whitespace/comments] [5]',
-                                                         'Should have a space between // and comment  '
-                                                         '[whitespace/comments] [4]',
-                                                         'Missing spaces around ||  [whitespace/operators] [3]'])
-        self.assert_lint('a<Foo*> t <<= b && *c; // Test', '')
-        self.assert_lint('a<Foo*> t <<= b && &c; // Test', '')
-        self.assert_lint('a<Foo*> t <<= b || &c;  /*Test', 'Complex multi-line '
-                         '/*...*/-style comment found. Lint may give bogus '
-                         'warnings.  Consider replacing these with //-style'
-                         ' comments, with #if 0...#endif, or with more clearly'
-                         ' structured multi-line comments.  [readability/multiline_comment] [5]')
-        self.assert_lint('a<Foo&> t <<= &b | &c;', '')
-        self.assert_lint('a<Foo*> t <<= &b & &c; // Test', '')
-        self.assert_lint('a<Foo*> t <<= *b / &c; // Test', '')
-        self.assert_lint('if (a=b == 1)', 'Missing spaces around =  [whitespace/operators] [4]')
-        self.assert_lint('a = 1<<20', 'Missing spaces around <<  [whitespace/operators] [3]')
-        self.assert_lint('a = 1>> 20', 'Missing spaces around >>  [whitespace/operators] [3]')
-        self.assert_lint('a = 1 >>20', 'Missing spaces around >>  [whitespace/operators] [3]')
-        self.assert_lint('a = 1>>20', 'Missing spaces around >>  [whitespace/operators] [3]')
-        self.assert_lint('func(OwnPtr<Vector<Foo>>)', '')
-        self.assert_lint('func(OwnPtr<Vector<Foo>> foo)', '')
-        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar>>>)', '')
-        self.assert_lint('func(OwnPtr<Vector<Foo> >)',
-                         'Use >> for ending template instead of > >.  [readability/templatebrackets] [3]')
-        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar>> >)',
-                         'Use >> for ending template instead of > >.  [readability/templatebrackets] [3]')
-        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar> >>)',
-                         'Use >> for ending template instead of > >.  [readability/templatebrackets] [3]')
-        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar> > >)',
-                         'Use >> for ending template instead of > >.  [readability/templatebrackets] [3]')
-        self.assert_lint('Vector< ::Foo>)', 'Use <:: for template start instead of < ::.  [readability/templatebrackets] [3]')
-        self.assert_lint('Vector<Vector< ::Foo>>)',
-                         'Use <:: for template start instead of < ::.  [readability/templatebrackets] [3]')
-        # FIXME: The following test should not show any error.
-        self.assert_lint('func(OwnPtr<HashMap<Foo, Member<Bar\n    >>>)',
-                         'Missing spaces around <  [whitespace/operators] [3]')
-        self.assert_lint('if (a = b == 1)', '')
-        self.assert_lint('a = 1 << 20', '')
-        self.assert_multi_line_lint('#include <sys/io.h>\n', '')
-        self.assert_multi_line_lint('#import <foo/bar.h>\n', '')
 
     def test_operator_methods(self):
         self.assert_lint('String operator+(const String&, const String&);', '')
@@ -1954,51 +1830,11 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_multi_line_lint('#endif\n    );',
                                     '')
 
-    def test_one_spaces_between_code_and_comments(self):
-        self.assert_lint('} // namespace foo',
-                         '')
-        self.assert_lint('}// namespace foo',
-                         'One space before end of line comments'
-                         '  [whitespace/comments] [5]')
-        self.assert_lint('printf("foo"); // Outside quotes.',
-                         '')
-        self.assert_lint('int i = 0; // Having one space is fine.', '')
-        self.assert_lint('int i = 0;  // Having two spaces is bad.',
-                         'One space before end of line comments'
-                         '  [whitespace/comments] [5]')
-        self.assert_lint('int i = 0;   // Having three spaces is bad.',
-                         'One space before end of line comments'
-                         '  [whitespace/comments] [5]')
-        self.assert_lint('// Top level comment', '')
-        self.assert_lint('    // Line starts with four spaces.', '')
-        self.assert_lint('foo();\n'
-                         '{ // A scope is opening.', '')
-        self.assert_lint('    foo();\n'
-                         '    { // An indented scope is opening.', '')
-        self.assert_lint('if (foo) { // not a pure scope',
-                         '')
-        self.assert_lint('printf("// In quotes.")', '')
-        self.assert_lint('printf("\\"%s // In quotes.")', '')
-        self.assert_lint('printf("%s", "// In quotes.")', '')
-
     def test_line_ending_in_whitespace(self):
         self.assert_lint('int a; // This is a sentence.',
                          '')
         self.assert_lint('int a; // This is a sentence.  ',
                          'Line ends in whitespace.  Consider deleting these extra spaces.  [whitespace/end_of_line] [4]')
-
-    def test_space_after_comment_marker(self):
-        self.assert_lint('//', '')
-        self.assert_lint('//x', 'Should have a space between // and comment'
-                         '  [whitespace/comments] [4]')
-        self.assert_lint('// x', '')
-        self.assert_lint('//----', '')
-        self.assert_lint('//====', '')
-        self.assert_lint('//////', '')
-        self.assert_lint('////// x', '')
-        self.assert_lint('/// x', '')
-        self.assert_lint('////x', 'Should have a space between // and comment'
-                         '  [whitespace/comments] [4]')
 
     def test_newline_at_eof(self):
         def do_test(self, data, is_missing_eof):
@@ -2087,17 +1923,8 @@ class CppStyleTest(CppStyleTestBase):
                                 '',
                                 '}'],
                                error_collector)
-        self.assertEqual(1, error_collector.results().count(
-            'An else should appear on the same line as the preceding }'
-            '  [whitespace/newline] [4]'))
 
     def test_else_clause_not_on_same_line_as_else(self):
-        self.assert_lint('    else DoSomethingElse();',
-                         'Else clause should never be on same line as else '
-                         '(use 2 lines)  [whitespace/newline] [4]')
-        self.assert_lint('    else ifDoSomethingElse();',
-                         'Else clause should never be on same line as else '
-                         '(use 2 lines)  [whitespace/newline] [4]')
         self.assert_lint('    else if (blah) {', '')
         self.assert_lint('    variable_ends_in_else = true;', '')
 
@@ -2133,53 +1960,6 @@ class CppStyleTest(CppStyleTestBase):
                          'Declaration has space between type name and & in int &b  [whitespace/declaration] [3]',
                          'foo.cpp')
         self.assert_lint('return &b;', '', 'foo.cpp')
-
-    def test_indent(self):
-        self.assert_lint('static int noindent;', '')
-        self.assert_lint('    int fourSpaceIndent;', '')
-        self.assert_lint(' int oneSpaceIndent;',
-                         'Weird number of spaces at line-start.  '
-                         'Are you using a 4-space indent?  [whitespace/indent] [3]')
-        self.assert_lint('   int threeSpaceIndent;',
-                         'Weird number of spaces at line-start.  '
-                         'Are you using a 4-space indent?  [whitespace/indent] [3]')
-        self.assert_lint(' char* oneSpaceIndent = "public:";',
-                         'Weird number of spaces at line-start.  '
-                         'Are you using a 4-space indent?  [whitespace/indent] [3]')
-        self.assert_lint(' public:',
-                         'Weird number of spaces at line-start.  '
-                         'Are you using a 4-space indent?  [whitespace/indent] [3]')
-        self.assert_lint('  public:',
-                         'Weird number of spaces at line-start.  '
-                         'Are you using a 4-space indent?  [whitespace/indent] [3]')
-        self.assert_lint('   public:',
-                         'Weird number of spaces at line-start.  '
-                         'Are you using a 4-space indent?  [whitespace/indent] [3]')
-        self.assert_multi_line_lint(
-            'class Foo {\n'
-            'public:\n'
-            '    enum Bar {\n'
-            '        Alpha,\n'
-            '        Beta,\n'
-            '#if ENABLED_BETZ\n'
-            '        Charlie,\n'
-            '#endif\n'
-            '    };\n'
-            '};',
-            '')
-        self.assert_multi_line_lint(
-            'if (true) {\n'
-            '    myFunction(reallyLongParam1, reallyLongParam2,\n'
-            '               reallyLongParam3);\n'
-            '}\n',
-            'Weird number of spaces at line-start.  Are you using a 4-space indent?  [whitespace/indent] [3]')
-
-        self.assert_multi_line_lint(
-            'if (true) {\n'
-            '    myFunction(reallyLongParam1, reallyLongParam2,\n'
-            '            reallyLongParam3);\n'
-            '}\n',
-            'When wrapping a line, only indent 4 spaces.  [whitespace/indent] [3]')
 
     def test_not_alabel(self):
         self.assert_lint('MyVeryLongNamespace::MyVeryLongClassName::', '')
@@ -3421,21 +3201,10 @@ class NoNonVirtualDestructorsTest(CppStyleTestBase):
                 };''',
             '')
         self.assert_multi_line_lint(
-            'class Foo { void foo(); };',
-            'More than one command on the same line  [whitespace/newline] [4]')
-        self.assert_multi_line_lint(
             'class MyClass {\n'
             '    int getIntValue() { DCHECK(m_ptr); return *m_ptr; }\n'
             '};\n',
             '')
-        self.assert_multi_line_lint(
-            'class MyClass {\n'
-            '    int getIntValue()\n'
-            '    {\n'
-            '        DCHECK(m_ptr); return *m_ptr;\n'
-            '    }\n'
-            '};\n',
-            'More than one command on the same line  [whitespace/newline] [4]')
 
         self.assert_multi_line_lint(
             '''\
@@ -3562,10 +3331,8 @@ class NoNonVirtualDestructorsTest(CppStyleTestBase):
                 {
                     virtual void foo();
                 };''',
-            ['This { should be at the end of the previous line  '
-             '[whitespace/braces] [4]',
-             'The class Foo probably needs a virtual destructor due to having '
-             'virtual method(s), one declared at line 3.  [runtime/virtual] [4]'])
+            'The class Foo probably needs a virtual destructor due to having '
+            'virtual method(s), one declared at line 3.  [runtime/virtual] [4]')
 
 
 class PassPtrTest(CppStyleTestBase):
@@ -3756,11 +3523,6 @@ class WebKitStyleTest(CppStyleTestBase):
             '    int goo;\n'
             '};',
             '')
-        self.assert_multi_line_lint(
-            'class Foo {\n'
-            '   int goo;\n'
-            '};',
-            'Weird number of spaces at line-start.  Are you using a 4-space indent?  [whitespace/indent] [3]')
 
         # 3. In a header, code inside a namespace should not be indented.
         self.assert_multi_line_lint(
@@ -3770,33 +3532,6 @@ class WebKitStyleTest(CppStyleTestBase):
             '};\n'
             '}',
             '',
-            'foo.h')
-        self.assert_multi_line_lint(
-            'namespace OuterNamespace {\n'
-            '    namespace InnerNamespace {\n'
-            '    class Document {\n'
-            '};\n'
-            '};\n'
-            '}',
-            'Code inside a namespace should not be indented.  [whitespace/indent] [4]',
-            'foo.h')
-        self.assert_multi_line_lint(
-            'namespace OuterNamespace {\n'
-            '    class Document {\n'
-            '    namespace InnerNamespace {\n'
-            '};\n'
-            '};\n'
-            '}',
-            'Code inside a namespace should not be indented.  [whitespace/indent] [4]',
-            'foo.h')
-        self.assert_multi_line_lint(
-            'namespace WebCore {\n'
-            '#if 0\n'
-            '    class Document {\n'
-            '};\n'
-            '#endif\n'
-            '}',
-            'Code inside a namespace should not be indented.  [whitespace/indent] [4]',
             'foo.h')
         self.assert_multi_line_lint(
             'namespace WebCore {\n'
@@ -3819,49 +3554,6 @@ class WebKitStyleTest(CppStyleTestBase):
             '',
             'foo.cpp')
         self.assert_multi_line_lint(
-            'namespace OuterNamespace {\n'
-            'namespace InnerNamespace {\n'
-            'Document::Foo() { }\n'
-            '    void* p;\n'
-            '}\n'
-            '}\n',
-            'Code inside a namespace should not be indented.  [whitespace/indent] [4]',
-            'foo.cpp')
-        self.assert_multi_line_lint(
-            'namespace OuterNamespace {\n'
-            'namespace InnerNamespace {\n'
-            'Document::Foo() { }\n'
-            '}\n'
-            '    void* p;\n'
-            '}\n',
-            'Code inside a namespace should not be indented.  [whitespace/indent] [4]',
-            'foo.cpp')
-        self.assert_multi_line_lint(
-            'namespace WebCore {\n\n'
-            '    const char* foo = "start:;"\n'
-            '        "dfsfsfs";\n'
-            '}\n',
-            'Code inside a namespace should not be indented.  [whitespace/indent] [4]',
-            'foo.cpp')
-        self.assert_multi_line_lint(
-            'namespace WebCore {\n\n'
-            'const char* foo(void* a = ";", // ;\n'
-            '    void* b);\n'
-            '    void* p;\n'
-            '}\n',
-            'Code inside a namespace should not be indented.  [whitespace/indent] [4]',
-            'foo.cpp')
-        self.assert_multi_line_lint(
-            'namespace WebCore {\n\n'
-            'const char* foo[] = {\n'
-            '    "void* b);", // ;\n'
-            '    "asfdf",\n'
-            '    }\n'
-            '    void* p;\n'
-            '}\n',
-            'Code inside a namespace should not be indented.  [whitespace/indent] [4]',
-            'foo.cpp')
-        self.assert_multi_line_lint(
             'namespace WebCore {\n\n'
             'const char* foo[] = {\n'
             '    "void* b);", // }\n'
@@ -3881,25 +3573,10 @@ class WebKitStyleTest(CppStyleTestBase):
             'foo.cpp')
         self.assert_multi_line_lint(
             'namespace WebCore {\n'
-            '    Document::Foo() { }\n'
-            '}',
-            'Code inside a namespace should not be indented.'
-            '  [whitespace/indent] [4]',
-            'foo.cpp')
-        self.assert_multi_line_lint(
-            'namespace WebCore {\n'
             '#define abc(x) x; \\\n'
             '    x\n'
             '}',
             '',
-            'foo.cpp')
-        self.assert_multi_line_lint(
-            'namespace WebCore {\n'
-            '#define abc(x) x; \\\n'
-            '    x\n'
-            '    void* x;'
-            '}',
-            'Code inside a namespace should not be indented.  [whitespace/indent] [4]',
             'foo.cpp')
 
         # 5. A case label should line up with its switch statement. The
@@ -3931,63 +3608,6 @@ class WebKitStyleTest(CppStyleTestBase):
             '    default: return;\n'
             '    }\n',
             '')
-        self.assert_multi_line_lint(
-            '    switch (condition) {\n'
-            '        case fooCondition:\n'
-            '        case barCondition:\n'
-            '            i++;\n'
-            '            break;\n'
-            '        default:\n'
-            '            i--;\n'
-            '    }\n',
-            'A case label should not be indented, but line up with its switch statement.'
-            '  [whitespace/indent] [4]')
-        self.assert_multi_line_lint(
-            '    switch (condition) {\n'
-            '        case fooCondition:\n'
-            '            break;\n'
-            '    default:\n'
-            '            i--;\n'
-            '    }\n',
-            'A case label should not be indented, but line up with its switch statement.'
-            '  [whitespace/indent] [4]')
-        self.assert_multi_line_lint(
-            '    switch (condition) {\n'
-            '    case fooCondition:\n'
-            '    case barCondition:\n'
-            '        switch (otherCondition) {\n'
-            '            default:\n'
-            '            return;\n'
-            '        }\n'
-            '    default:\n'
-            '        i--;\n'
-            '    }\n',
-            'A case label should not be indented, but line up with its switch statement.'
-            '  [whitespace/indent] [4]')
-        self.assert_multi_line_lint(
-            '    switch (condition) {\n'
-            '    case fooCondition:\n'
-            '    case barCondition:\n'
-            '    i++;\n'
-            '    break;\n\n'
-            '    default:\n'
-            '    i--;\n'
-            '    }\n',
-            'Non-label code inside switch statements should be indented.'
-            '  [whitespace/indent] [4]')
-        self.assert_multi_line_lint(
-            '    switch (condition) {\n'
-            '    case fooCondition:\n'
-            '    case barCondition:\n'
-            '        switch (otherCondition) {\n'
-            '        default:\n'
-            '        return;\n'
-            '        }\n'
-            '    default:\n'
-            '        i--;\n'
-            '    }\n',
-            'Non-label code inside switch statements should be indented.'
-            '  [whitespace/indent] [4]')
 
         # 6. Boolean expressions at the same nesting level that span
         #   multiple lines should have their operators on the left side of
@@ -3996,12 +3616,6 @@ class WebKitStyleTest(CppStyleTestBase):
             '    return attr->name() == srcAttr\n'
             '        || attr->name() == lowsrcAttr;\n',
             '')
-        self.assert_multi_line_lint(
-            '    return attr->name() == srcAttr ||\n'
-            '        attr->name() == lowsrcAttr;\n',
-            'Boolean expressions that span multiple lines should have their '
-            'operators on the left side of the line instead of the right side.'
-            '  [whitespace/operators] [4]')
 
     def test_spacing(self):
         # 1. Do not place spaces around unary operators.
@@ -4031,9 +3645,6 @@ class WebKitStyleTest(CppStyleTestBase):
         self.assert_multi_line_lint(
             'f(a,b);',
             'Missing space after ,  [whitespace/comma] [3]')
-        self.assert_multi_line_lint(
-            'c = a|b;',
-            'Missing spaces around |  [whitespace/operators] [3]')
         # FIXME: We cannot catch this lint error.
         # self.assert_multi_line_lint(
         #     'return condition ? 1:0;',
@@ -4055,9 +3666,6 @@ class WebKitStyleTest(CppStyleTestBase):
             'f(a, b);',
             '')
         self.assert_multi_line_lint(
-            'f (a, b);',
-            'Extra space before ( in function call  [whitespace/parens] [4]')
-        self.assert_multi_line_lint(
             'f( a, b );',
             ['Extra space after ( in function call  [whitespace/parens] [4]',
              'Extra space before )  [whitespace/parens] [2]'])
@@ -4075,15 +3683,8 @@ class WebKitStyleTest(CppStyleTestBase):
             '        doIt();\n',
             '')
         self.assert_multi_line_lint(
-            '    x++; y++;',
-            'More than one command on the same line  [whitespace/newline] [4]')
-        self.assert_multi_line_lint(
             '    if (condition) doIt();\n',
             'More than one command on the same line in if  [whitespace/parens] [4]')
-        # Ensure that having a # in the line doesn't hide the error.
-        self.assert_multi_line_lint(
-            '    x++; char a[] = "#";',
-            'More than one command on the same line  [whitespace/newline] [4]')
         # Ignore preprocessor if's.
         self.assert_multi_line_lint(
             '#if (condition) || (condition2)\n',
@@ -4130,20 +3731,8 @@ class WebKitStyleTest(CppStyleTestBase):
             'WTF_MAKE_NONCOPYABLE(ClassName); WTF_MAKE_FAST_ALLOCATED;\n',
             '')
         self.assert_multi_line_lint(
-            'if (condition) {\n'
-            '    doSomething();\n'
-            '    doSomethingAgain();\n'
-            '}\n'
-            'else {\n'
-            '    doSomethingElse();\n'
-            '    doSomethingElseAgain();\n'
-            '}\n',
-            'An else should appear on the same line as the preceding }  [whitespace/newline] [4]')
-        self.assert_multi_line_lint(
             'if (condition) doSomething(); else doSomethingElse();\n',
-            ['More than one command on the same line  [whitespace/newline] [4]',
-             'Else clause should never be on same line as else (use 2 lines)  [whitespace/newline] [4]',
-             'More than one command on the same line in if  [whitespace/parens] [4]'])
+            'More than one command on the same line in if  [whitespace/parens] [4]')
         self.assert_multi_line_lint(
             'if (condition) doSomething(); else {\n'
             '    doSomethingElse();\n'
@@ -4239,8 +3828,6 @@ class WebKitStyleTest(CppStyleTestBase):
             'else if (greedy)\n'
             '    keep();\n',
             ['If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]',
-             'This { should be at the end of the previous line  [whitespace/braces] [4]',
-             'An else should appear on the same line as the preceding }  [whitespace/newline] [4]',
              'An else if statement should be written as an if statement when the '
              'prior "if" concludes with a return, break, continue or goto statement.'
              '  [readability/control_flow] [4]'])
@@ -4291,11 +3878,6 @@ class WebKitStyleTest(CppStyleTestBase):
             '    doSomething();\n'
             '}\n',
             '')
-        self.assert_multi_line_lint(
-            'int main() {\n'
-            '    doSomething();\n'
-            '}\n',
-            'Place brace on its own line for function definitions.  [whitespace/braces] [4]')
 
         # 2. Other braces: place the open brace on the line preceding the
         #    code block; place the close brace on its own line.
@@ -4314,72 +3896,6 @@ class WebKitStyleTest(CppStyleTestBase):
             '    DoSomething();\n'
             '};\n',
             '')
-        self.assert_multi_line_lint(
-            'class MyClass\n'
-            '{\n'
-            '    int foo;\n'
-            '};\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'if (condition)\n'
-            '{\n'
-            '    int foo;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'for (int i = 0; i < 10; i++)\n'
-            '{\n'
-            '    int foo;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'while (true)\n'
-            '{\n'
-            '    int foo;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'foreach (Foo* foo, foos)\n'
-            '{\n'
-            '    int bar;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'switch (type)\n'
-            '{\n'
-            'case foo: return;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'if (condition)\n'
-            '{\n'
-            '    int foo;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'for (int i = 0; i < 10; i++)\n'
-            '{\n'
-            '    int foo;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'while (true)\n'
-            '{\n'
-            '    int foo;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'switch (type)\n'
-            '{\n'
-            'case foo: return;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
-        self.assert_multi_line_lint(
-            'else if (type)\n'
-            '{\n'
-            'case foo: return;\n'
-            '}\n',
-            'This { should be at the end of the previous line  [whitespace/braces] [4]')
 
         # 3. Curly braces are not required for single-line conditionals and
         #    loop bodies, but are required for single-statement bodies that
@@ -4619,10 +4135,6 @@ class WebKitStyleTest(CppStyleTestBase):
             'for ( ; current; current = current->next) { }\n',
             '')
         self.assert_multi_line_lint(
-            'for ( ; current;\n'
-            '     current = current->next) { }\n',
-            'Weird number of spaces at line-start.  Are you using a 4-space indent?  [whitespace/indent] [3]')
-        self.assert_multi_line_lint(
             'for ( ; current; current = current->next);\n',
             'Semicolon defining empty statement for this loop. Use { } instead.  [whitespace/semicolon] [5]')
         self.assert_multi_line_lint(
@@ -4825,13 +4337,6 @@ class WebKitStyleTest(CppStyleTestBase):
         self.assert_lint(
             'if (UNLIKELY(foo == NULL))',
             'Use 0 instead of NULL.  [readability/null] [5]')
-
-    def test_directive_indentation(self):
-        self.assert_lint(
-            "    #if FOO",
-            "preprocessor directives (e.g., #ifdef, #define, #import) should never be indented."
-            "  [whitespace/indent] [4]",
-            "foo.cpp")
 
     def test_using_std(self):
         self.assert_lint(
@@ -5149,15 +4654,6 @@ class WebKitStyleTest(CppStyleTestBase):
         self.assertEqual(
             '',
             self.perform_lint('void funct(PassRefPtr<ScriptExecutionContext> context)\n{\n}\n', 'test.cpp', parameter_error_rules))
-
-    def test_comments(self):
-        # A comment at the beginning of a line is ok.
-        self.assert_lint('// comment', '')
-        self.assert_lint('    // comment', '')
-
-        self.assert_lint('}  // namespace WebCore',
-                         'One space before end of line comments'
-                         '  [whitespace/comments] [5]')
 
     def test_redundant_virtual(self):
         self.assert_lint('virtual void fooMethod() override;',

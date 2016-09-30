@@ -1540,10 +1540,6 @@ def check_spacing_for_function_call(line, line_number, error):
         elif search(r'\([ \t]+(?!(\s*\\)|\()', function_call):
             error(line_number, 'whitespace/parens', 2,
                   'Extra space after (')
-        if (search(r'\w\s+\(', function_call)
-                and not match(r'\s*(#|typedef)', function_call)):
-            error(line_number, 'whitespace/parens', 4,
-                  'Extra space before ( in function call')
         # If the ) is followed only by a newline or a { + newline, assume it's
         # part of a control statement (if/while/etc), and don't complain
         if search(r'[^)\s]\s+\)(?!\s*$|{\s*$)', function_call):
@@ -1896,34 +1892,6 @@ def check_spacing(file_extension, clean_lines, line_number, error):
                 error(line_number, 'whitespace/blank_line', 3,
                       'Blank line at the end of a code block.  Is this needed?')
 
-    # Next, we check for proper spacing with respect to comments.
-    comment_position = line.find('//')
-    if comment_position != -1:
-        # Check if the // may be in quotes.  If so, ignore it
-        # Comparisons made explicit for clarity
-        if (line.count('"', 0, comment_position) - line.count('\\"', 0, comment_position)) % 2 == 0:   # not in quotes
-            # Allow one space before end of line comment.
-            if (not match(r'^\s*$', line[:comment_position])
-                and (comment_position >= 1
-                     and ((line[comment_position - 1] not in string.whitespace)
-                          or (comment_position >= 2
-                              and line[comment_position - 2] in string.whitespace)))):
-                error(line_number, 'whitespace/comments', 5,
-                      'One space before end of line comments')
-            # There should always be a space between the // and the comment
-            commentend = comment_position + 2
-            if commentend < len(line) and not line[commentend] == ' ':
-                # but some lines are exceptions -- e.g. if they're big
-                # comment delimiters like:
-                # //----------------------------------------------------------
-                # or they begin with multiple slashes followed by a space:
-                # //////// Header comment
-                matched = (search(r'[=/-]{4,}\s*$', line[commentend:])
-                           or search(r'^/+ ', line[commentend:]))
-                if not matched:
-                    error(line_number, 'whitespace/comments', 4,
-                          'Should have a space between // and comment')
-
     line = clean_lines.elided[line_number]  # get rid of comments and strings
 
     # Don't try to do spacing checks for operator methods
@@ -1935,33 +1903,6 @@ def check_spacing(file_extension, clean_lines, line_number, error):
     if search(r'[\w.]=[\w.]', line):
         error(line_number, 'whitespace/operators', 4,
               'Missing spaces around =')
-
-    # FIXME: It's not ok to have spaces around binary operators like .
-
-    # You should always have whitespace around binary operators.
-    # Alas, we can't test < or > because they're legitimately used sans spaces
-    # (a->b, vector<int> a).  The only time we can tell is a < with no >, and
-    # only if it's not template params list spilling into the next line.
-    matched = search(r'[^<>=!\s](==|!=|\+=|-=|\*=|/=|/|\|=|&=|<<=|>>=|<=|>=|\|\||\||<<)[^<>=!\s]', line)
-    if not matched:
-        # Note that while it seems that the '<[^<]*' term in the following
-        # regexp could be simplified to '<.*', which would indeed match
-        # the same class of strings, the [^<] means that searching for the
-        # regexp takes linear rather than quadratic time.
-        if not search(r'<[^<]*,\s*$', line):  # template params spill
-            matched = search(r'[^<>=!\s](<)[^<>=!\s]([^>]|->)*$', line)
-    if not matched:
-        # Regardless of template arguments or operator>>, \w should not
-        # follow >>.
-        matched = search(r'(>>)\w', line)
-        # If the line has no template arguments, >> is operator>>.
-        # FIXME: This doesn't handle line-breaks inside template arguments.
-        if not matched and not search(r'<', line):
-            matched = search(r'\w(>>)', line)
-
-    if matched:
-        error(line_number, 'whitespace/operators', 3,
-              'Missing spaces around %s' % matched.group(1))
 
     # There shouldn't be space around unary operators
     matched = search(r'(!\s|~\s|[\s]--[\s;]|[\s]\+\+[\s;])', line)
@@ -2033,13 +1974,6 @@ def check_spacing(file_extension, clean_lines, line_number, error):
 
     # Next we will look for issues with function calls.
     check_spacing_for_function_call(line, line_number, error)
-
-    # Except after an opening paren, you should have spaces before your braces.
-    # And since you should never have braces at the beginning of a line, this is
-    # an easy test.
-    if search(r'[^ ({]{', line):
-        error(line_number, 'whitespace/braces', 5,
-              'Missing space before {')
 
     # Make sure '} else {' has spaces.
     if search(r'}else', line):
@@ -2134,11 +2068,6 @@ def check_namespace_indentation(clean_lines, line_number, file_extension, file_s
         if not current_line.strip():
             continue
         if not current_indentation_level:
-            if not (in_preprocessor_directive or looking_for_semicolon):
-                if not match(r'\S', current_line) and not file_state.did_inside_namespace_indent_warning():
-                    file_state.set_did_inside_namespace_indent_warning()
-                    error(line_number + line_offset, 'whitespace/indent', 4,
-                          'Code inside a namespace should not be indented.')
             if in_preprocessor_directive or (current_line.strip()[0] == '#'):  # This takes care of preprocessor directive syntax.
                 in_preprocessor_directive = current_line[-1] == '\\'
             else:
@@ -2167,49 +2096,11 @@ def check_enum_casing(clean_lines, line_number, enum_state, error):
               'enum members should use InterCaps with an initial capital letter.')
 
 
-def check_directive_indentation(clean_lines, line_number, file_state, error):
-    """Looks for indentation of preprocessor directives.
-
-    Args:
-      clean_lines: A CleansedLines instance containing the file.
-      line_number: The number of the line to check.
-      file_state: A _FileState instance which maintains information about
-                  the state of things in the file.
-      error: The function to call with any errors found.
-    """
-
-    line = clean_lines.elided[line_number]  # Get rid of comments and strings.
-
-    indented_preprocessor_directives = match(r'\s+#', line)
-    if not indented_preprocessor_directives:
-        return
-
-    error(line_number, 'whitespace/indent', 4, 'preprocessor directives (e.g., #ifdef, #define, #import) should never be indented.')
-
-
 def get_initial_spaces_for_line(clean_line):
     initial_spaces = 0
     while initial_spaces < len(clean_line) and clean_line[initial_spaces] == ' ':
         initial_spaces += 1
     return initial_spaces
-
-
-def check_indentation_amount(clean_lines, line_number, error):
-    line = clean_lines.elided[line_number]
-    initial_spaces = get_initial_spaces_for_line(line)
-
-    if initial_spaces % 4:
-        error(line_number, 'whitespace/indent', 3,
-              'Weird number of spaces at line-start.  Are you using a 4-space indent?')
-        return
-
-    previous_line = get_previous_non_blank_line(clean_lines, line_number)[0]
-    if not previous_line.strip() or match(r'\s*\w+\s*:\s*$', previous_line) or previous_line[0] == '#':
-        return
-
-    previous_line_initial_spaces = get_initial_spaces_for_line(previous_line)
-    if initial_spaces > previous_line_initial_spaces + 4:
-        error(line_number, 'whitespace/indent', 3, 'When wrapping a line, only indent 4 spaces.')
 
 
 def check_using_std(clean_lines, line_number, file_state, error):
@@ -2295,76 +2186,6 @@ def check_ctype_functions(clean_lines, line_number, file_state, error):
           % (ctype_function))
 
 
-def check_switch_indentation(clean_lines, line_number, error):
-    """Looks for indentation errors inside of switch statements.
-
-    Args:
-      clean_lines: A CleansedLines instance containing the file.
-      line_number: The number of the line to check.
-      error: The function to call with any errors found.
-    """
-
-    line = clean_lines.elided[line_number]  # Get rid of comments and strings.
-
-    switch_match = match(r'(?P<switch_indentation>\s*)switch\s*\(.+\)\s*{\s*$', line)
-    if not switch_match:
-        return
-
-    switch_indentation = switch_match.group('switch_indentation')
-    inner_indentation = switch_indentation + ' ' * 4
-    line_offset = 0
-    encountered_nested_switch = False
-
-    for current_line in clean_lines.elided[line_number + 1:]:
-        line_offset += 1
-
-        # Skip not only empty lines but also those with preprocessor directives.
-        if current_line.strip() == '' or current_line.startswith('#'):
-            continue
-
-        if match(r'\s*switch\s*\(.+\)\s*{\s*$', current_line):
-            # Complexity alarm - another switch statement nested inside the one
-            # that we're currently testing. We'll need to track the extent of
-            # that inner switch if the upcoming label tests are still supposed
-            # to work correctly. Let's not do that; instead, we'll finish
-            # checking this line, and then leave it like that. Assuming the
-            # indentation is done consistently (even if incorrectly), this will
-            # still catch all indentation issues in practice.
-            encountered_nested_switch = True
-
-        current_indentation_match = match(r'(?P<indentation>\s*)(?P<remaining_line>.*)$', current_line)
-        current_indentation = current_indentation_match.group('indentation')
-        remaining_line = current_indentation_match.group('remaining_line')
-
-        # End the check at the end of the switch statement.
-        if remaining_line.startswith('}') and current_indentation == switch_indentation:
-            break
-        # Case and default branches should not be indented. The regexp also
-        # catches single-line cases like "default: break;" but does not trigger
-        # on stuff like "Document::Foo();".
-        elif match(r'(default|case\s+.*)\s*:([^:].*)?$', remaining_line):
-            if current_indentation != switch_indentation:
-                error(line_number + line_offset, 'whitespace/indent', 4,
-                      'A case label should not be indented, but line up with its switch statement.')
-                # Don't throw an error for multiple badly indented labels,
-                # one should be enough to figure out the problem.
-                break
-        # We ignore goto labels at the very beginning of a line.
-        elif match(r'\w+\s*:\s*$', remaining_line):
-            continue
-        # It's not a goto label, so check if it's indented at least as far as
-        # the switch statement plus one more level of indentation.
-        elif not current_indentation.startswith(inner_indentation):
-            error(line_number + line_offset, 'whitespace/indent', 4,
-                  'Non-label code inside switch statements should be indented.')
-            # Don't throw an error for multiple badly indented statements,
-            # one should be enough to figure out the problem.
-            break
-
-        if encountered_nested_switch:
-            break
-
-
 def check_braces(clean_lines, line_number, error):
     """Looks for misplaced braces (e.g. at the end of line).
 
@@ -2375,46 +2196,6 @@ def check_braces(clean_lines, line_number, error):
     """
 
     line = clean_lines.elided[line_number]  # Get rid of comments and strings.
-
-    if match(r'\s*{\s*$', line):
-        # We allow an open brace to start a line in the case where someone
-        # is using braces for function definition or in a block to
-        # explicitly create a new scope, which is commonly used to control
-        # the lifetime of stack-allocated variables.  We don't detect this
-        # perfectly: we just don't complain if the last non-whitespace
-        # character on the previous non-blank line is ';', ':', '{', '}',
-        # ')' or is like a function declaration, and doesn't begin with
-        # 'if|for|while|switch|else' without a beginning '{'.
-        # We also allow '#' for #endif and '=' for array initialization.
-        previous_line = get_previous_non_blank_line(clean_lines, line_number)[0]
-        if ((not search(r'[;:}{)=]\s*$|\)\s*((const|override|final)\s*)*\s*(->\s*.+)?$', previous_line)
-             or search(r'^\s*\b(if|for|foreach|while|switch|else)\b.*[^{]\s*$', previous_line))
-                and previous_line.find('#') < 0):
-            error(line_number, 'whitespace/braces', 4,
-                  'This { should be at the end of the previous line')
-    elif (search(r'\)\s*(((const|override|final)\s*)*\s*)?{\s*$', line)
-          and line.count('(') == line.count(')')
-          and not search(r'\b(if|for|foreach|while|switch)\b', line)
-          and not match(r'\s+[A-Z_][A-Z_0-9]+\b', line)):
-        error(line_number, 'whitespace/braces', 4,
-              'Place brace on its own line for function definitions.')
-
-    # An else clause should be on the same line as the preceding closing brace.
-    if match(r'\s*else\s*', line):
-        previous_line = get_previous_non_blank_line(clean_lines, line_number)[0]
-        if match(r'\s*}\s*$', previous_line):
-            error(line_number, 'whitespace/newline', 4,
-                  'An else should appear on the same line as the preceding }')
-
-    # Likewise, an else should never have the else clause on the same line
-    if search(r'\belse [^\s{]', line) and not search(r'\belse if\b', line):
-        error(line_number, 'whitespace/newline', 4,
-              'Else clause should never be on same line as else (use 2 lines)')
-
-    # In the same way, a do/while should never be on one line
-    if match(r'\s*do [^\s{]', line):
-        error(line_number, 'whitespace/newline', 4,
-              'do/while clauses should not be on a single line')
 
     # Braces shouldn't be followed by a ; unless they're defining a struct
     # or initializing an array.
@@ -2922,38 +2703,11 @@ def check_style(clean_lines, line_number, file_extension, class_state, file_stat
         error(line_number, 'whitespace/end_of_line', 4,
               'Line ends in whitespace.  Consider deleting these extra spaces.')
 
-    if (cleansed_line.count(';') > 1
-        # for loops are allowed two ;'s (and may run over two lines).
-        and 'for' not in cleansed_line
-        and (get_previous_non_blank_line(clean_lines, line_number)[0].find('for') == -1
-             or get_previous_non_blank_line(clean_lines, line_number)[0].find(';') != -1)
-        # It's ok to have many commands in a switch case that fits in 1 line
-        and not (('case ' in cleansed_line
-                  or 'default:' in cleansed_line)
-                 and 'break;' in cleansed_line)
-        # Also it's ok to have many commands in trivial single-line accessors in class definitions.
-        and not (match(r'.*\(.*\).*{.*.}', line)
-                 and class_state.classinfo_stack
-                 and line.count('{') == line.count('}'))
-        and not cleansed_line.startswith('#define ')
-        # It's ok to use use WTF_MAKE_NONCOPYABLE and WTF_MAKE_FAST_ALLOCATED macros in 1 line
-        and not (cleansed_line.find("WTF_MAKE_NONCOPYABLE") != -1
-                 and cleansed_line.find("WTF_MAKE_FAST_ALLOCATED") != -1)):
-        error(line_number, 'whitespace/newline', 4,
-              'More than one command on the same line')
-
-    if cleansed_line.strip().endswith('||') or cleansed_line.strip().endswith('&&'):
-        error(line_number, 'whitespace/operators', 4,
-              'Boolean expressions that span multiple lines should have their '
-              'operators on the left side of the line instead of the right side.')
-
     # Some more style checks
     check_namespace_indentation(clean_lines, line_number, file_extension, file_state, error)
-    check_directive_indentation(clean_lines, line_number, file_state, error)
     check_using_std(clean_lines, line_number, file_state, error)
     check_max_min_macros(clean_lines, line_number, file_state, error)
     check_ctype_functions(clean_lines, line_number, file_state, error)
-    check_switch_indentation(clean_lines, line_number, error)
     check_braces(clean_lines, line_number, error)
     check_exit_statement_simplifications(clean_lines, line_number, error)
     check_spacing(file_extension, clean_lines, line_number, error)
@@ -2961,7 +2715,6 @@ def check_style(clean_lines, line_number, file_extension, class_state, file_stat
     check_deprecated_macros(clean_lines, line_number, error)
     check_for_comparisons_to_boolean(clean_lines, line_number, error)
     check_for_null(clean_lines, line_number, file_state, error)
-    check_indentation_amount(clean_lines, line_number, error)
     check_enum_casing(clean_lines, line_number, enum_state, error)
 
 
@@ -4123,13 +3876,11 @@ class CppChecker(object):
         'whitespace/blank_line',
         'whitespace/braces',
         'whitespace/comma',
-        'whitespace/comments',
         'whitespace/declaration',
         'whitespace/end_of_line',
         'whitespace/ending_newline',
         'whitespace/indent',
         'whitespace/line_length',
-        'whitespace/newline',
         'whitespace/operators',
         'whitespace/parens',
         'whitespace/semicolon',

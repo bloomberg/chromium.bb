@@ -98,6 +98,7 @@ def _CommonChecks(input_api, output_api):
     results.extend(input_api.canned_checks.PanProjectChecks(
         input_api, output_api, excluded_paths=_EXCLUDED_PATHS,
         maxlen=800, license_header=license_header))
+    results.extend(input_api.canned_checks.CheckPatchFormatted(input_api, output_api))
     results.extend(_CheckForNonBlinkVariantMojomIncludes(input_api, output_api))
     results.extend(_CheckForVersionControlConflicts(input_api, output_api))
     results.extend(_CheckPatchFiles(input_api, output_api))
