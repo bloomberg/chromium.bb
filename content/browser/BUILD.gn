@@ -1718,6 +1718,8 @@ source_set("browser") {
     sources -= [
       "browser_ipc_logging.cc",
       "device_sensors/data_fetcher_shared_memory_default.cc",
+      "media/session/audio_focus_manager.cc",
+      "media/session/audio_focus_manager.h",
       "media/session/media_session_delegate_default.cc",
       "power_usage_monitor_impl.cc",
       "power_usage_monitor_impl.h",
