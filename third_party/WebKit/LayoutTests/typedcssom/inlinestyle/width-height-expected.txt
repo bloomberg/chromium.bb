@@ -3,10 +3,10 @@ PASS Setting width, height works with a SimpleLength.
 PASS Setting width, height works with a Simple percentage. 
 PASS Setting width, height works with a CalcLength containing a percentage. 
 PASS Getting width works with a SimpleLength. 
-FAIL Getting width works with a simple percentage. assert_equals: expected function "function CSSSimpleLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
+PASS Getting width works with a simple percentage. 
 FAIL Getting width works with a CalcLength. assert_equals: expected function "function CSSCalcLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
 PASS Getting height works with a SimpleLength. 
-FAIL Getting height works with a simple percentage. assert_equals: expected function "function CSSSimpleLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
+PASS Getting height works with a simple percentage. 
 FAIL Getting height works with a CalcLength. assert_equals: expected function "function CSSCalcLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
 Harness: the test ran to completion.
 

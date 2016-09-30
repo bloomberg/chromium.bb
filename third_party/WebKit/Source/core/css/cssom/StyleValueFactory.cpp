@@ -23,7 +23,7 @@ CSSStyleValue* styleValueForPrimitiveValue(const CSSPrimitiveValue& primitiveVal
 {
     if (primitiveValue.isNumber())
         return CSSNumberValue::create(primitiveValue.getDoubleValue());
-    if (primitiveValue.isLength())
+    if (primitiveValue.isLength() || primitiveValue.isPercentage())
         return CSSSimpleLength::fromCSSValue(primitiveValue);
 
     return nullptr;

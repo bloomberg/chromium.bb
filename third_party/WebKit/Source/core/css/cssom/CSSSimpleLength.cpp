@@ -23,13 +23,22 @@ CSSSimpleLength* CSSSimpleLength::create(double value, const String& type, Excep
 
 CSSSimpleLength* CSSSimpleLength::fromCSSValue(const CSSPrimitiveValue& value)
 {
-    DCHECK(value.isLength());
+    DCHECK(value.isLength() || value.isPercentage());
+    if (value.isPercentage())
+        return new CSSSimpleLength(value.getDoubleValue(), CSSPrimitiveValue::UnitType::Percentage);
     return new CSSSimpleLength(value.getDoubleValue(), value.typeWithCalcResolved());
 }
 
 bool CSSSimpleLength::containsPercent() const
 {
     return lengthUnit() == CSSPrimitiveValue::UnitType::Percentage;
+}
+
+String CSSSimpleLength::unit() const
+{
+    if (lengthUnit() == CSSPrimitiveValue::UnitType::Percentage)
+        return "percent";
+    return CSSPrimitiveValue::unitTypeToString(m_unit);
 }
 
 CSSLengthValue* CSSSimpleLength::addInternal(const CSSLengthValue* other)

@@ -26,7 +26,7 @@ public:
     bool containsPercent() const override;
 
     double value() const { return m_value; }
-    String unit() const { return String(CSSPrimitiveValue::unitTypeToString(m_unit)); }
+    String unit() const;
     CSSPrimitiveValue::UnitType lengthUnit() const { return m_unit; }
 
     StyleValueType type() const override { return StyleValueType::SimpleLengthType; }

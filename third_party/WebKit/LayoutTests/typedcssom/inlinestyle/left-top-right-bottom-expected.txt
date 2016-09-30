@@ -6,10 +6,10 @@ PASS Getting left works with a SimpleLength
 PASS Getting top works with a SimpleLength 
 PASS Getting right works with a SimpleLength 
 PASS Getting bottom works with a SimpleLength 
-FAIL Getting left works with a simple percent assert_equals: expected function "function CSSSimpleLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
-FAIL Getting top works with a simple percent assert_equals: expected function "function CSSSimpleLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
-FAIL Getting right works with a simple percent assert_equals: expected function "function CSSSimpleLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
-FAIL Getting bottom works with a simple percent assert_equals: expected function "function CSSSimpleLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
+PASS Getting left works with a simple percent 
+PASS Getting top works with a simple percent 
+PASS Getting right works with a simple percent 
+PASS Getting bottom works with a simple percent 
 FAIL Getting left works with a simple percent assert_equals: expected function "function CSSCalcLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
 FAIL Getting top works with a simple percent assert_equals: expected function "function CSSCalcLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"
 FAIL Getting right works with a simple percent assert_equals: expected function "function CSSSimpleLength() { [native code] }" but got function "function CSSStyleValue() { [native code] }"

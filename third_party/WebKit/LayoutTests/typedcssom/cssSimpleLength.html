@@ -5,6 +5,26 @@
 <script>
 
 test(function() {
+  var simpleLength = new CSSSimpleLength(1, 'px');
+  assert_equals(simpleLength.value, 1);
+  assert_equals(simpleLength.type, 'px');
+  
+  simpleLength.value = 2;
+  simpleLength.type = 'em';
+
+  assert_equals(simpleLength.value, 1);
+  assert_equals(simpleLength.type, 'px');
+}, 'CSSSimpleLengths are immutable');
+
+test(function() {
+  var units = ['px', 'percent', 'em', 'ex', 'ch', 'rem', 'vw', 'vh', 'vmin', 'vmax', 'cm', 'mm', 'in', 'pc', 'pt'];
+  for (var i = 0; i < units.length; ++i) {
+    var simpleLength = new CSSSimpleLength(i, units[i]);
+    assert_equals(simpleLength.type, units[i]);
+  }
+}, 'Each unit type is returned according to the spec');
+
+test(function() {
   var simpleLength1 = new CSSSimpleLength(5.1, 'px');
   var simpleLength2 = new CSSSimpleLength(10, 'px');
 
