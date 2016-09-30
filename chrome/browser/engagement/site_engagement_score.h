@@ -158,7 +158,7 @@ class SiteEngagementScore {
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PopulatedDictionary);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, Reset);
   friend class ChromePluginServiceFilterTest;
-  friend class FlashPermissionTestConfig;
+  friend class FlashPermissionBrowserTest;
   friend class ImportantSitesUtilTest;
   friend class SiteEngagementHelperTest;
   friend class SiteEngagementScoreTest;
