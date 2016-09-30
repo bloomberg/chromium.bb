@@ -81,7 +81,7 @@ bool ChunkDemuxerStream::IsSeekWaitingForData() const {
   base::AutoLock auto_lock(lock_);
 
   // This method should not be called for text tracks. See the note in
-  // MediaSourceState::IsSeekWaitingForData().
+  // SourceBufferState::IsSeekWaitingForData().
   DCHECK_NE(type_, DemuxerStream::TEXT);
 
   return stream_->IsSeekPending();
@@ -596,13 +596,13 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
                                     base::Unretained(this)),
                          media_log_));
 
-  std::unique_ptr<MediaSourceState> source_state(
-      new MediaSourceState(std::move(stream_parser), std::move(frame_processor),
-                           base::Bind(&ChunkDemuxer::CreateDemuxerStream,
-                                      base::Unretained(this), id),
-                           media_log_));
+  std::unique_ptr<SourceBufferState> source_state(new SourceBufferState(
+      std::move(stream_parser), std::move(frame_processor),
+      base::Bind(&ChunkDemuxer::CreateDemuxerStream, base::Unretained(this),
+                 id),
+      media_log_));
 
-  MediaSourceState::NewTextTrackCB new_text_track_cb;
+  SourceBufferState::NewTextTrackCB new_text_track_cb;
 
   if (enable_text_) {
     new_text_track_cb = base::Bind(&ChunkDemuxer::OnNewTextTrack,
@@ -611,15 +611,15 @@ ChunkDemuxer::Status ChunkDemuxer::AddId(const std::string& id,
 
   pending_source_init_ids_.insert(id);
 
-  std::string expected_mss_codecs = codecs;
+  std::string expected_sbs_codecs = codecs;
   if (codecs == "" && type == "audio/aac")
-    expected_mss_codecs = "aac";
+    expected_sbs_codecs = "aac";
   if (codecs == "" && (type == "audio/mpeg" || type == "audio/mp3"))
-    expected_mss_codecs = "mp3";
+    expected_sbs_codecs = "mp3";
 
   source_state->Init(
       base::Bind(&ChunkDemuxer::OnSourceInitDone, base::Unretained(this), id),
-      expected_mss_codecs, encrypted_media_init_data_cb_, new_text_track_cb);
+      expected_sbs_codecs, encrypted_media_init_data_cb_, new_text_track_cb);
 
   source_state_map_[id] = std::move(source_state);
   return kOk;
@@ -1271,13 +1271,13 @@ Ranges<TimeDelta> ChunkDemuxer::GetBufferedRanges_Locked() const {
   bool ended = state_ == ENDED;
   // TODO(acolwell): When we start allowing SourceBuffers that are not active,
   // we'll need to update this loop to only add ranges from active sources.
-  MediaSourceState::RangesList ranges_list;
+  SourceBufferState::RangesList ranges_list;
   for (auto itr = source_state_map_.begin(); itr != source_state_map_.end();
        ++itr) {
     ranges_list.push_back(itr->second->GetBufferedRanges(duration_, ended));
   }
 
-  return MediaSourceState::ComputeRangesIntersection(ranges_list, ended);
+  return SourceBufferState::ComputeRangesIntersection(ranges_list, ended);
 }
 
 void ChunkDemuxer::StartReturningData() {

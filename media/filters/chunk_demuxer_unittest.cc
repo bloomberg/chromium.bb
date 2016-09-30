@@ -4716,7 +4716,7 @@ TEST_F(ChunkDemuxerTest, RemovingIdMustRemoveStreams) {
 }
 
 // TODO(servolk): Add a unit test with multiple audio/video tracks using the
-// same codec type in a single SourceBuffer/MediaSourceState, when WebM parser
-// supports multiple tracks. crbug.com/646900
+// same codec type in a single SourceBufferState, when WebM parser supports
+// multiple tracks. crbug.com/646900
 
 }  // namespace media

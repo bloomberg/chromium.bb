@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/media_source_state.h"
+#include "media/filters/source_buffer_state.h"
 
 #include <set>
 
@@ -59,7 +59,7 @@ bool CheckBytestreamTrackIds(
 
 // List of time ranges for each SourceBuffer.
 // static
-Ranges<TimeDelta> MediaSourceState::ComputeRangesIntersection(
+Ranges<TimeDelta> SourceBufferState::ComputeRangesIntersection(
     const RangesList& active_ranges,
     bool ended) {
   // TODO(servolk): Perhaps this can be removed in favor of blink implementation
@@ -115,7 +115,7 @@ Ranges<TimeDelta> MediaSourceState::ComputeRangesIntersection(
   return intersection_ranges;
 }
 
-MediaSourceState::MediaSourceState(
+SourceBufferState::SourceBufferState(
     std::unique_ptr<StreamParser> stream_parser,
     std::unique_ptr<FrameProcessor> frame_processor,
     const CreateDemuxerStreamCB& create_demuxer_stream_cb,
@@ -132,11 +132,11 @@ MediaSourceState::MediaSourceState(
   DCHECK(frame_processor_);
 }
 
-MediaSourceState::~MediaSourceState() {
+SourceBufferState::~SourceBufferState() {
   Shutdown();
 }
 
-void MediaSourceState::Init(
+void SourceBufferState::Init(
     const StreamParser::InitCB& init_cb,
     const std::string& expected_codecs,
     const StreamParser::EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
@@ -166,42 +166,42 @@ void MediaSourceState::Init(
 
   state_ = PENDING_PARSER_CONFIG;
   stream_parser_->Init(
-      base::Bind(&MediaSourceState::OnSourceInitDone, base::Unretained(this)),
-      base::Bind(&MediaSourceState::OnNewConfigs, base::Unretained(this),
+      base::Bind(&SourceBufferState::OnSourceInitDone, base::Unretained(this)),
+      base::Bind(&SourceBufferState::OnNewConfigs, base::Unretained(this),
                  expected_codecs),
-      base::Bind(&MediaSourceState::OnNewBuffers, base::Unretained(this)),
+      base::Bind(&SourceBufferState::OnNewBuffers, base::Unretained(this)),
       new_text_track_cb_.is_null(), encrypted_media_init_data_cb,
-      base::Bind(&MediaSourceState::OnNewMediaSegment, base::Unretained(this)),
-      base::Bind(&MediaSourceState::OnEndOfMediaSegment,
+      base::Bind(&SourceBufferState::OnNewMediaSegment, base::Unretained(this)),
+      base::Bind(&SourceBufferState::OnEndOfMediaSegment,
                  base::Unretained(this)),
       media_log_);
 }
 
-void MediaSourceState::SetSequenceMode(bool sequence_mode) {
+void SourceBufferState::SetSequenceMode(bool sequence_mode) {
   DCHECK(!parsing_media_segment_);
 
   frame_processor_->SetSequenceMode(sequence_mode);
 }
 
-void MediaSourceState::SetGroupStartTimestampIfInSequenceMode(
+void SourceBufferState::SetGroupStartTimestampIfInSequenceMode(
     base::TimeDelta timestamp_offset) {
   DCHECK(!parsing_media_segment_);
 
   frame_processor_->SetGroupStartTimestampIfInSequenceMode(timestamp_offset);
 }
 
-void MediaSourceState::SetTracksWatcher(
+void SourceBufferState::SetTracksWatcher(
     const Demuxer::MediaTracksUpdatedCB& tracks_updated_cb) {
   DCHECK(init_segment_received_cb_.is_null());
   DCHECK(!tracks_updated_cb.is_null());
   init_segment_received_cb_ = tracks_updated_cb;
 }
 
-bool MediaSourceState::Append(const uint8_t* data,
-                              size_t length,
-                              TimeDelta append_window_start,
-                              TimeDelta append_window_end,
-                              TimeDelta* timestamp_offset) {
+bool SourceBufferState::Append(const uint8_t* data,
+                               size_t length,
+                               TimeDelta append_window_start,
+                               TimeDelta append_window_end,
+                               TimeDelta* timestamp_offset) {
   append_in_progress_ = true;
   DCHECK(timestamp_offset);
   DCHECK(!timestamp_offset_during_append_);
@@ -223,9 +223,9 @@ bool MediaSourceState::Append(const uint8_t* data,
   return result;
 }
 
-void MediaSourceState::ResetParserState(TimeDelta append_window_start,
-                                        TimeDelta append_window_end,
-                                        base::TimeDelta* timestamp_offset) {
+void SourceBufferState::ResetParserState(TimeDelta append_window_start,
+                                         TimeDelta append_window_end,
+                                         base::TimeDelta* timestamp_offset) {
   DCHECK(timestamp_offset);
   DCHECK(!timestamp_offset_during_append_);
   timestamp_offset_during_append_ = timestamp_offset;
@@ -240,9 +240,9 @@ void MediaSourceState::ResetParserState(TimeDelta append_window_start,
   media_segment_has_data_for_track_.clear();
 }
 
-void MediaSourceState::Remove(TimeDelta start,
-                              TimeDelta end,
-                              TimeDelta duration) {
+void SourceBufferState::Remove(TimeDelta start,
+                               TimeDelta end,
+                               TimeDelta duration) {
   for (const auto& it : audio_streams_) {
     it.second->Remove(start, end, duration);
   }
@@ -256,8 +256,8 @@ void MediaSourceState::Remove(TimeDelta start,
   }
 }
 
-bool MediaSourceState::EvictCodedFrames(DecodeTimestamp media_time,
-                                        size_t newDataSize) {
+bool SourceBufferState::EvictCodedFrames(DecodeTimestamp media_time,
+                                         size_t newDataSize) {
   size_t total_buffered_size = 0;
   for (const auto& it : audio_streams_)
     total_buffered_size += it.second->GetBufferedSize();
@@ -306,8 +306,8 @@ bool MediaSourceState::EvictCodedFrames(DecodeTimestamp media_time,
   return success;
 }
 
-Ranges<TimeDelta> MediaSourceState::GetBufferedRanges(TimeDelta duration,
-                                                      bool ended) const {
+Ranges<TimeDelta> SourceBufferState::GetBufferedRanges(TimeDelta duration,
+                                                       bool ended) const {
   RangesList ranges_list;
   for (const auto& it : audio_streams_)
     ranges_list.push_back(it.second->GetBufferedRanges(duration));
@@ -321,7 +321,7 @@ Ranges<TimeDelta> MediaSourceState::GetBufferedRanges(TimeDelta duration,
   return ComputeRangesIntersection(ranges_list, ended);
 }
 
-TimeDelta MediaSourceState::GetHighestPresentationTimestamp() const {
+TimeDelta SourceBufferState::GetHighestPresentationTimestamp() const {
   TimeDelta max_pts;
 
   for (const auto& it : audio_streams_) {
@@ -339,7 +339,7 @@ TimeDelta MediaSourceState::GetHighestPresentationTimestamp() const {
   return max_pts;
 }
 
-TimeDelta MediaSourceState::GetMaxBufferedDuration() const {
+TimeDelta SourceBufferState::GetMaxBufferedDuration() const {
   TimeDelta max_duration;
 
   for (const auto& it : audio_streams_) {
@@ -357,7 +357,7 @@ TimeDelta MediaSourceState::GetMaxBufferedDuration() const {
   return max_duration;
 }
 
-void MediaSourceState::StartReturningData() {
+void SourceBufferState::StartReturningData() {
   for (const auto& it : audio_streams_) {
     it.second->StartReturningData();
   }
@@ -371,7 +371,7 @@ void MediaSourceState::StartReturningData() {
   }
 }
 
-void MediaSourceState::AbortReads() {
+void SourceBufferState::AbortReads() {
   for (const auto& it : audio_streams_) {
     it.second->AbortReads();
   }
@@ -385,7 +385,7 @@ void MediaSourceState::AbortReads() {
   }
 }
 
-void MediaSourceState::Seek(TimeDelta seek_time) {
+void SourceBufferState::Seek(TimeDelta seek_time) {
   for (const auto& it : audio_streams_) {
     it.second->Seek(seek_time);
   }
@@ -399,7 +399,7 @@ void MediaSourceState::Seek(TimeDelta seek_time) {
   }
 }
 
-void MediaSourceState::CompletePendingReadIfPossible() {
+void SourceBufferState::CompletePendingReadIfPossible() {
   for (const auto& it : audio_streams_) {
     it.second->CompletePendingReadIfPossible();
   }
@@ -413,7 +413,7 @@ void MediaSourceState::CompletePendingReadIfPossible() {
   }
 }
 
-void MediaSourceState::OnSetDuration(TimeDelta duration) {
+void SourceBufferState::OnSetDuration(TimeDelta duration) {
   for (const auto& it : audio_streams_) {
     it.second->OnSetDuration(duration);
   }
@@ -427,7 +427,7 @@ void MediaSourceState::OnSetDuration(TimeDelta duration) {
   }
 }
 
-void MediaSourceState::MarkEndOfStream() {
+void SourceBufferState::MarkEndOfStream() {
   for (const auto& it : audio_streams_) {
     it.second->MarkEndOfStream();
   }
@@ -441,7 +441,7 @@ void MediaSourceState::MarkEndOfStream() {
   }
 }
 
-void MediaSourceState::UnmarkEndOfStream() {
+void SourceBufferState::UnmarkEndOfStream() {
   for (const auto& it : audio_streams_) {
     it.second->UnmarkEndOfStream();
   }
@@ -455,7 +455,7 @@ void MediaSourceState::UnmarkEndOfStream() {
   }
 }
 
-void MediaSourceState::Shutdown() {
+void SourceBufferState::Shutdown() {
   for (const auto& it : audio_streams_) {
     it.second->Shutdown();
   }
@@ -469,8 +469,8 @@ void MediaSourceState::Shutdown() {
   }
 }
 
-void MediaSourceState::SetMemoryLimits(DemuxerStream::Type type,
-                                       size_t memory_limit) {
+void SourceBufferState::SetMemoryLimits(DemuxerStream::Type type,
+                                        size_t memory_limit) {
   switch (type) {
     case DemuxerStream::AUDIO:
       for (const auto& it : audio_streams_) {
@@ -494,7 +494,7 @@ void MediaSourceState::SetMemoryLimits(DemuxerStream::Type type,
   }
 }
 
-bool MediaSourceState::IsSeekWaitingForData() const {
+bool SourceBufferState::IsSeekWaitingForData() const {
   for (const auto& it : audio_streams_) {
     if (it.second->IsSeekWaitingForData())
       return true;
@@ -515,7 +515,7 @@ bool MediaSourceState::IsSeekWaitingForData() const {
   return false;
 }
 
-bool MediaSourceState::OnNewConfigs(
+bool SourceBufferState::OnNewConfigs(
     std::string expected_codecs,
     std::unique_ptr<MediaTracks> tracks,
     const StreamParser::TextTrackConfigMap& text_configs) {
@@ -774,7 +774,7 @@ bool MediaSourceState::OnNewConfigs(
   return success;
 }
 
-void MediaSourceState::SetStreamMemoryLimits() {
+void SourceBufferState::SetStreamMemoryLimits() {
   auto cmd_line = base::CommandLine::ForCurrentProcess();
 
   std::string audio_buf_limit_switch =
@@ -804,14 +804,14 @@ void MediaSourceState::SetStreamMemoryLimits() {
   }
 }
 
-void MediaSourceState::OnNewMediaSegment() {
+void SourceBufferState::OnNewMediaSegment() {
   DVLOG(2) << "OnNewMediaSegment()";
   DCHECK_EQ(state_, PARSER_INITIALIZED);
   parsing_media_segment_ = true;
   media_segment_has_data_for_track_.clear();
 }
 
-void MediaSourceState::OnEndOfMediaSegment() {
+void SourceBufferState::OnEndOfMediaSegment() {
   DVLOG(2) << "OnEndOfMediaSegment()";
   DCHECK_EQ(state_, PARSER_INITIALIZED);
   parsing_media_segment_ = false;
@@ -838,7 +838,7 @@ void MediaSourceState::OnEndOfMediaSegment() {
   }
 }
 
-bool MediaSourceState::OnNewBuffers(
+bool SourceBufferState::OnNewBuffers(
     const StreamParser::BufferQueueMap& buffer_queue_map) {
   DVLOG(2) << __func__ << " buffer_queues=" << buffer_queue_map.size();
   DCHECK_EQ(state_, PARSER_INITIALIZED);
@@ -886,7 +886,7 @@ bool MediaSourceState::OnNewBuffers(
 
   return true;
 }
-void MediaSourceState::OnSourceInitDone(
+void SourceBufferState::OnSourceInitDone(
     const StreamParser::InitParameters& params) {
   DCHECK_EQ(state_, PENDING_PARSER_INIT);
   state_ = PARSER_INITIALIZED;

@@ -46,7 +46,7 @@ class MEDIA_EXPORT MediaTrack {
   // unique only within the scope of single bytestream's initialization segment.
   // But we might have multiple bytestreams (MediaSource might have multiple
   // SourceBuffers attached to it, which translates into ChunkDemuxer having
-  // multiple MediaSourceStates and multiple bytestreams) or subsequent init
+  // multiple SourceBufferStates and multiple bytestreams) or subsequent init
   // segments may redefine the bytestream ids. Thus bytestream track ids are not
   // guaranteed to be unique at the Demuxer and HTMLMediaElement level. So we
   // generate truly unique media track |id_| on the Demuxer level.

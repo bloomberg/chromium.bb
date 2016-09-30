@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_MEDIA_SOURCE_STATE_H_
-#define MEDIA_FILTERS_MEDIA_SOURCE_STATE_H_
+#ifndef MEDIA_FILTERS_SOURCE_BUFFER_STATE_H_
+#define MEDIA_FILTERS_SOURCE_BUFFER_STATE_H_
 
 #include <list>
 
@@ -26,7 +26,7 @@ class ChunkDemuxerStream;
 class FrameProcessor;
 
 // Contains state belonging to a source id.
-class MEDIA_EXPORT MediaSourceState {
+class MEDIA_EXPORT SourceBufferState {
  public:
   // Callback signature used to create ChunkDemuxerStreams.
   typedef base::Callback<ChunkDemuxerStream*(DemuxerStream::Type)>
@@ -35,12 +35,12 @@ class MEDIA_EXPORT MediaSourceState {
   typedef base::Callback<void(ChunkDemuxerStream*, const TextTrackConfig&)>
       NewTextTrackCB;
 
-  MediaSourceState(std::unique_ptr<StreamParser> stream_parser,
-                   std::unique_ptr<FrameProcessor> frame_processor,
-                   const CreateDemuxerStreamCB& create_demuxer_stream_cb,
-                   const scoped_refptr<MediaLog>& media_log);
+  SourceBufferState(std::unique_ptr<StreamParser> stream_parser,
+                    std::unique_ptr<FrameProcessor> frame_processor,
+                    const CreateDemuxerStreamCB& create_demuxer_stream_cb,
+                    const scoped_refptr<MediaLog>& media_log);
 
-  ~MediaSourceState();
+  ~SourceBufferState();
 
   void Init(const StreamParser::InitCB& init_cb,
             const std::string& expected_codecs,
@@ -221,9 +221,9 @@ class MEDIA_EXPORT MediaSourceState {
   // changes to MSE spec. See http://crbug.com/371499.
   bool auto_update_timestamp_offset_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaSourceState);
+  DISALLOW_COPY_AND_ASSIGN(SourceBufferState);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_MEDIA_SOURCE_STATE_H_
+#endif  // MEDIA_FILTERS_SOURCE_BUFFER_STATE_H_

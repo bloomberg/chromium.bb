@@ -23,7 +23,7 @@
 #include "media/base/media_tracks.h"
 #include "media/base/ranges.h"
 #include "media/base/stream_parser.h"
-#include "media/filters/media_source_state.h"
+#include "media/filters/source_buffer_state.h"
 #include "media/filters/source_buffer_stream.h"
 
 namespace media {
@@ -345,11 +345,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // false if any can not.
   bool CanEndOfStream_Locked() const;
 
-  // MediaSourceState callbacks.
+  // SourceBufferState callbacks.
   void OnSourceInitDone(const std::string& source_id,
                         const StreamParser::InitParameters& params);
 
-  // Creates a DemuxerStream of the specified |type| for the MediaSourceState
+  // Creates a DemuxerStream of the specified |type| for the SourceBufferState
   // with the given |source_id|.
   // Returns a pointer to a new ChunkDemuxerStream instance, which is owned by
   // ChunkDemuxer.
@@ -435,11 +435,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::Time timeline_offset_;
   DemuxerStream::Liveness liveness_;
 
-  std::map<std::string, std::unique_ptr<MediaSourceState>> source_state_map_;
+  std::map<std::string, std::unique_ptr<SourceBufferState>> source_state_map_;
 
   std::map<std::string, std::vector<ChunkDemuxerStream*>> id_to_streams_map_;
   // Used to hold alive the demuxer streams that were created for removed /
-  // released MediaSourceState objects. Demuxer clients might still have
+  // released SourceBufferState objects. Demuxer clients might still have
   // references to these streams, so we need to keep them alive. But they'll be
   // in a shut down state, so reading from them will return EOS.
   std::vector<std::unique_ptr<ChunkDemuxerStream>> removed_streams_;

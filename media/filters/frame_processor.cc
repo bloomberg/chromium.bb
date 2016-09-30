@@ -459,7 +459,7 @@ bool FrameProcessor::ProcessFrame(
   //     index.html#sourcebuffer-coded-frame-processing
   while (true) {
     // 1. Loop Top:
-    // Otherwise case: (See MediaSourceState's |auto_update_timestamp_offset_|,
+    // Otherwise case: (See SourceBufferState's |auto_update_timestamp_offset_|,
     // too).
     // 1.1. Let presentation timestamp be a double precision floating point
     //      representation of the coded frame's presentation timestamp in
@@ -735,7 +735,7 @@ bool FrameProcessor::ProcessFrame(
       group_end_timestamp_ = frame_end_timestamp;
     DCHECK(group_end_timestamp_ >= base::TimeDelta());
 
-    // Step 21 is currently handled differently. See MediaSourceState's
+    // Step 21 is currently handled differently. See SourceBufferState's
     // |auto_update_timestamp_offset_|.
     return true;
   }
