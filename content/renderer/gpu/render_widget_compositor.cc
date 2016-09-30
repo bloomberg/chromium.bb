@@ -382,17 +382,11 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
   if (base::SysInfo::IsLowEndDevice())
     settings.gpu_rasterization_enabled = false;
   settings.using_synchronous_renderer_compositor = using_synchronous_compositor;
-  if (using_synchronous_compositor) {
-    // Android WebView uses system scrollbars, so make ours invisible.
-    settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
-    settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
-  } else {
-    settings.scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
-    settings.scrollbar_fade_delay_ms = 300;
-    settings.scrollbar_fade_resize_delay_ms = 2000;
-    settings.scrollbar_fade_duration_ms = 300;
-    settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
-  }
+  settings.scrollbar_animator = cc::LayerTreeSettings::LINEAR_FADE;
+  settings.scrollbar_fade_delay_ms = 300;
+  settings.scrollbar_fade_resize_delay_ms = 2000;
+  settings.scrollbar_fade_duration_ms = 300;
+  settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
   settings.renderer_settings.highp_threshold_min = 2048;
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings = using_synchronous_compositor;

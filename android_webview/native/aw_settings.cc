@@ -435,6 +435,9 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   // possible API breakage because of disabling insecure use of geolocation.
   web_prefs->allow_geolocation_on_insecure_origins =
       Java_AwSettings_getAllowGeolocationOnInsecureOrigins(env, obj);
+
+  // We use system scrollbars, so make Blink's scrollbars invisible.
+  web_prefs->hide_scrollbars = true;
 }
 
 static jlong Init(JNIEnv* env,
