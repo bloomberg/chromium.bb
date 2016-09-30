@@ -4153,41 +4153,6 @@ weston_compositor_reflow_outputs(struct weston_compositor *compositor,
 }
 
 WL_EXPORT void
-weston_output_destroy(struct weston_output *output)
-{
-	struct wl_resource *resource;
-	struct weston_view *view;
-
-	output->destroying = 1;
-
-	wl_list_for_each(view, &output->compositor->view_list, link) {
-		if (view->output_mask & (1u << output->id))
-			weston_view_assign_output(view);
-	}
-
-	wl_event_source_remove(output->repaint_timer);
-
-	weston_presentation_feedback_discard_list(&output->feedback_list);
-
-	weston_compositor_reflow_outputs(output->compositor, output, output->width);
-	wl_list_remove(&output->link);
-
-	wl_signal_emit(&output->compositor->output_destroyed_signal, output);
-	wl_signal_emit(&output->destroy_signal, output);
-
-	free(output->name);
-	pixman_region32_fini(&output->region);
-	pixman_region32_fini(&output->previous_damage);
-	output->compositor->output_id_pool &= ~(1u << output->id);
-
-	wl_resource_for_each(resource, &output->resource_list) {
-		wl_resource_set_destructor(resource, NULL);
-	}
-
-	wl_global_destroy(output->global);
-}
-
-WL_EXPORT void
 weston_output_update_matrix(struct weston_output *output)
 {
 	float magnification;
@@ -4377,6 +4342,8 @@ weston_output_init(struct weston_output *output, struct weston_compositor *c,
 	output->global =
 		wl_global_create(c->wl_display, &wl_output_interface, 3,
 				 output, bind_output);
+
+	output->enabled = true;
 }
 
 /** Adds an output to the compositor's output list and
@@ -4413,6 +4380,325 @@ weston_output_transform_coordinate(struct weston_output *output,
 
 	*x = p.f[0] / p.f[3];
 	*y = p.f[1] / p.f[3];
+}
+
+/** Undoes changes to an output done by weston_output_enable()
+ *
+ * \param output The weston_output object that needs the changes undone.
+ *
+ * Removes the repaint timer.
+ * Destroys the Wayland global assigned to the output.
+ * Destroys pixman regions allocated to the output.
+ * Deallocates output's ID and updates compositor's output_id_pool.
+ */
+static void
+weston_output_enable_undo(struct weston_output *output)
+{
+	wl_event_source_remove(output->repaint_timer);
+
+	wl_global_destroy(output->global);
+
+	pixman_region32_fini(&output->region);
+	pixman_region32_fini(&output->previous_damage);
+	output->compositor->output_id_pool &= ~(1u << output->id);
+
+	output->enabled = false;
+}
+
+/** Removes output from compositor's output list
+ *
+ * \param output The weston_output object that is being removed.
+ *
+ * Presentation feedback is discarded.
+ * Compositor is notified that outputs were changed and
+ * applies the necessary changes.
+ * All views assigned to the weston_output object are
+ * moved to a new output.
+ * Signal is emited to notify all users of the weston_output
+ * object that the output is being destroyed.
+ * wl_output protocol objects referencing this weston_output
+ * are made inert.
+ */
+static void
+weston_compositor_remove_output(struct weston_output *output)
+{
+	struct wl_resource *resource;
+	struct weston_view *view;
+
+	assert(output->destroying);
+
+	wl_list_for_each(view, &output->compositor->view_list, link) {
+		if (view->output_mask & (1u << output->id))
+			weston_view_assign_output(view);
+	}
+
+	weston_presentation_feedback_discard_list(&output->feedback_list);
+
+	weston_compositor_reflow_outputs(output->compositor, output, output->width);
+	wl_list_remove(&output->link);
+
+	wl_signal_emit(&output->compositor->output_destroyed_signal, output);
+	wl_signal_emit(&output->destroy_signal, output);
+
+	wl_resource_for_each(resource, &output->resource_list) {
+		wl_resource_set_destructor(resource, NULL);
+	}
+}
+
+/** Sets the output scale for a given output.
+ *
+ * \param output The weston_output object that the scale is set for.
+ * \param scale  Scale factor for the given output.
+ *
+ * It only supports setting scale for an output that
+ * is not enabled and it can only be ran once.
+ */
+WL_EXPORT void
+weston_output_set_scale(struct weston_output *output,
+			int32_t scale)
+{
+	/* We can only set scale on a disabled output */
+	assert(!output->enabled);
+
+	/* We only want to set scale once */
+	assert(!output->scale);
+
+	output->scale = scale;
+}
+
+/** Sets the output transform for a given output.
+ *
+ * \param output    The weston_output object that the transform is set for.
+ * \param transform Transform value for the given output.
+ *
+ * It only supports setting transform for an output that is
+ * not enabled and it can only be ran once.
+ *
+ * Refer to wl_output::transform section located at
+ * https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_output
+ * for list of values that can be passed to this function.
+ */
+WL_EXPORT void
+weston_output_set_transform(struct weston_output *output,
+			    uint32_t transform)
+{
+	/* We can only set transform on a disabled output */
+	assert(!output->enabled);
+
+	/* We only want to set transform once */
+	assert(output->transform == UINT32_MAX);
+
+	output->transform = transform;
+}
+
+/** Initializes a weston_output object with enough data so
+ ** an output can be configured.
+ *
+ * \param output     The weston_output object to initialize
+ * \param compositor The compositor instance.
+ *
+ * Sets initial values for fields that are expected to be
+ * configured either by compositors or backends.
+ */
+WL_EXPORT void
+weston_output_init_pending(struct weston_output *output,
+			   struct weston_compositor *compositor)
+{
+	output->compositor = compositor;
+	output->destroying = 0;
+
+	/* Backends must set output->name */
+	assert(output->name);
+
+	wl_list_init(&output->link);
+
+	output->enabled = false;
+
+	/* Add some (in)sane defaults which can be used
+	 * for checking if an output was properly configured
+	 */
+	output->mm_width = 0;
+	output->mm_height = 0;
+	output->scale = 0;
+	/* Can't use -1 on uint32_t and 0 is valid enum value */
+	output->transform = UINT32_MAX;
+}
+
+/** Adds weston_output object to pending output list.
+ *
+ * \param output     The weston_output object to add
+ * \param compositor The compositor instance.
+ *
+ * Also notifies the compositor that an output is pending for
+ * configuration.
+ */
+WL_EXPORT void
+weston_compositor_add_pending_output(struct weston_output *output,
+				     struct weston_compositor *compositor)
+{
+	wl_list_insert(compositor->pending_output_list.prev, &output->link);
+	wl_signal_emit(&compositor->output_pending_signal, output);
+}
+
+/* NOTE: Some documentation is copy/pasted from weston_output_init(), as this
+   is intended to replace it. */
+
+/** Constructs a weston_output object that can be used by the compositor.
+ *
+ * \param output The weston_output object that needs to be enabled.
+ *
+ * Output coordinates are calculated and each new output is by default
+ * assigned to the right of previous one.
+ *
+ * Sets up the transformation, zoom, and geometry of the output using
+ * the properties that need to be configured by the compositor.
+ *
+ * Establishes a repaint timer for the output with the relevant display
+ * object's event loop. See output_repaint_timer_handler().
+ *
+ * The output is assigned an ID. Weston can support up to 32 distinct
+ * outputs, with IDs numbered from 0-31; the compositor's output_id_pool
+ * is referred to and used to find the first available ID number, and
+ * then this ID is marked as used in output_id_pool.
+ *
+ * The output is also assigned a Wayland global with the wl_output
+ * external interface.
+ *
+ * Backend specific function is called to set up the output output.
+ *
+ * Output is added to the compositor's output list
+ *
+ * If the backend specific function fails, the weston_output object
+ * is returned to a state it was before calling this function and
+ * is added to the compositor's pending_output_list in case it needs
+ * to be reconfigured or just so it can be destroyed at shutdown.
+ *
+ * 0 is returned on success, -1 on failure.
+ */
+WL_EXPORT int
+weston_output_enable(struct weston_output *output)
+{
+	struct weston_output *iterator;
+	int x = 0, y = 0;
+
+	assert(output->enable);
+
+	iterator = container_of(output->compositor->output_list.prev,
+				struct weston_output, link);
+
+	if (!wl_list_empty(&output->compositor->output_list))
+		x = iterator->x + iterator->width;
+
+	/* Make sure the width and height are configured */
+	assert(output->mm_width && output->mm_height);
+
+	/* Make sure the scale is set up */
+	assert(output->scale);
+
+	/* Make sure we have a transform set */
+	assert(output->transform != UINT32_MAX);
+
+	/* Remove it from pending/disabled output list */
+	wl_list_remove(&output->link);
+
+	/* TODO: Merge weston_output_init here. */
+	weston_output_init(output, output->compositor, x, y,
+			   output->mm_width, output->mm_height,
+			   output->transform, output->scale);
+
+	/* Enable the output (set up the crtc or create a
+	 * window representing the output, set up the
+	 * renderer, etc)
+	 */
+	if (output->enable(output) < 0) {
+		weston_log("Enabling output \"%s\" failed.\n", output->name);
+
+		weston_output_enable_undo(output);
+		wl_list_insert(output->compositor->pending_output_list.prev,
+			       &output->link);
+		return -1;
+	}
+
+	weston_compositor_add_output(output->compositor, output);
+
+	return 0;
+}
+
+/** Converts a weston_output object to a pending output state, so it
+ ** can be configured again or destroyed.
+ *
+ * \param output The weston_output object that needs to be disabled.
+ *
+ * See weston_output_init_pending() for more information on the
+ * state output is returned to.
+ *
+ * Calls a backend specific function to disable an output, in case
+ * such function exists.
+ *
+ * If the output is being used by the compositor, it is first removed
+ * from weston's output_list (see weston_compositor_remove_output())
+ * and is returned to a state it was before weston_output_enable()
+ * was ran (see weston_output_enable_undo()).
+ *
+ * Output is added to pending_output_list so it will get destroyed
+ * if the output does not get configured again when the compositor
+ * shuts down. If an output is to be used immediately, it needs to
+ * be manually removed from the list (the compositor specific functions
+ * for handling pending outputs will take care of that).
+ *
+ * If backend specific disable function returns negative value,
+ * this function will return too. It can be used as an indicator
+ * that output cannot be disabled at the present time. In that case
+ * backend needs to make sure the output is disabled when it is
+ * possible.
+ */
+WL_EXPORT void
+weston_output_disable(struct weston_output *output)
+{
+	assert(output->disable);
+
+	/* Should we rename this? */
+	output->destroying = 1;
+
+	if (output->disable(output) < 0)
+		return;
+
+	if (output->enabled) {
+		weston_compositor_remove_output(output);
+		weston_output_enable_undo(output);
+
+		/* We need to preserve it somewhere so it can be destroyed on shutdown
+		   if nobody wants to configure it again */
+		wl_list_insert(output->compositor->pending_output_list.prev, &output->link);
+	}
+
+	output->destroying = 0;
+}
+
+/** Emits a signal to indicate that there are outputs waiting to be configured.
+ *
+ * \param compositor The compositor instance
+ */
+WL_EXPORT void
+weston_pending_output_coldplug(struct weston_compositor *compositor)
+{
+	struct weston_output *output, *next;
+
+	wl_list_for_each_safe(output, next, &compositor->pending_output_list, link)
+		wl_signal_emit(&compositor->output_pending_signal, output);
+}
+
+WL_EXPORT void
+weston_output_destroy(struct weston_output *output)
+{
+	output->destroying = 1;
+
+	if (output->enabled) {
+		weston_compositor_remove_output(output);
+		weston_output_enable_undo(output);
+	}
+
+	free(output->name);
 }
 
 static void
@@ -4752,6 +5038,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	wl_signal_init(&ec->hide_input_panel_signal);
 	wl_signal_init(&ec->update_input_panel_signal);
 	wl_signal_init(&ec->seat_created_signal);
+	wl_signal_init(&ec->output_pending_signal);
 	wl_signal_init(&ec->output_created_signal);
 	wl_signal_init(&ec->output_destroyed_signal);
 	wl_signal_init(&ec->output_moved_signal);
@@ -4787,6 +5074,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	wl_list_init(&ec->plane_list);
 	wl_list_init(&ec->layer_list);
 	wl_list_init(&ec->seat_list);
+	wl_list_init(&ec->pending_output_list);
 	wl_list_init(&ec->output_list);
 	wl_list_init(&ec->key_binding_list);
 	wl_list_init(&ec->modifier_binding_list);
@@ -4829,6 +5117,10 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 
 	/* Destroy all outputs associated with this compositor */
 	wl_list_for_each_safe(output, next, &ec->output_list, link)
+		output->destroy(output);
+
+	/* Destroy all pending outputs associated with this compositor */
+	wl_list_for_each_safe(output, next, &ec->pending_output_list, link)
 		output->destroy(output);
 
 	if (ec->renderer)

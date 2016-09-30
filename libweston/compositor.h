@@ -218,6 +218,12 @@ struct weston_output {
 			  uint16_t *b);
 
 	struct weston_timeline_object timeline;
+
+	bool enabled;
+	int scale;
+
+	int (*enable)(struct weston_output *output);
+	int (*disable)(struct weston_output *output);
 };
 
 enum weston_pointer_motion_mask {
@@ -767,6 +773,7 @@ struct weston_compositor {
 	struct wl_signal update_input_panel_signal;
 
 	struct wl_signal seat_created_signal;
+	struct wl_signal output_pending_signal;
 	struct wl_signal output_created_signal;
 	struct wl_signal output_destroyed_signal;
 	struct wl_signal output_moved_signal;
@@ -778,6 +785,7 @@ struct weston_compositor {
 	struct weston_layer fade_layer;
 	struct weston_layer cursor_layer;
 
+	struct wl_list pending_output_list;
 	struct wl_list output_list;
 	struct wl_list seat_list;
 	struct wl_list layer_list;
@@ -1812,6 +1820,31 @@ weston_seat_set_keyboard_focus(struct weston_seat *seat,
 
 int
 weston_compositor_load_xwayland(struct weston_compositor *compositor);
+
+void
+weston_output_set_scale(struct weston_output *output,
+			int32_t scale);
+
+void
+weston_output_set_transform(struct weston_output *output,
+			    uint32_t transform);
+
+void
+weston_output_init_pending(struct weston_output *output,
+			   struct weston_compositor *compositor);
+
+void
+weston_compositor_add_pending_output(struct weston_output *output,
+				     struct weston_compositor *compositor);
+
+int
+weston_output_enable(struct weston_output *output);
+
+void
+weston_output_disable(struct weston_output *output);
+
+void
+weston_pending_output_coldplug(struct weston_compositor *compositor);
 
 #ifdef  __cplusplus
 }
