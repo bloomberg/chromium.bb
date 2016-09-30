@@ -653,10 +653,23 @@ bool MediaControlDownloadButtonElement::shouldDisplayDownloadButton()
 {
     const KURL& url = mediaElement().currentSrc();
 
-    if (!url.isNull() && !url.isEmpty() && !HTMLMediaElement::isMediaStreamURL(url.getString()) && !url.protocolIs("blob") && !HTMLMediaSource::lookup(url)) {
-        return true;
-    }
-    return false;
+    // URLs that lead to nowhere are ignored.
+    if (url.isNull() || url.isEmpty())
+        return false;
+
+    // Local files and blobs should not have a download button.
+    if (url.isLocalFile() || url.protocolIs("blob"))
+        return false;
+
+    // MediaStream can't be downloaded.
+    if (HTMLMediaElement::isMediaStreamURL(url.getString()))
+        return false;
+
+    // MediaSource can't be downloaded.
+    if (HTMLMediaSource::lookup(url))
+        return false;
+
+    return true;
 }
 
 void MediaControlDownloadButtonElement::defaultEventHandler(Event* event)

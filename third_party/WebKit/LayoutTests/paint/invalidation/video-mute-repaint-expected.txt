@@ -31,32 +31,32 @@
               "paintInvalidations": [
                 {
                   "object": "LayoutBlockFlow DIV id='track'",
-                  "rect": [530, 485, 106, 48],
+                  "rect": [562, 485, 106, 48],
                   "reason": "subtree"
                 },
                 {
                   "object": "LayoutFlexibleBox DIV",
-                  "rect": [548, 508, 70, 2],
+                  "rect": [580, 508, 70, 2],
                   "reason": "subtree"
                 },
                 {
                   "object": "LayoutSlider INPUT",
-                  "rect": [548, 508, 70, 2],
+                  "rect": [580, 508, 70, 2],
                   "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='thumb'",
-                  "rect": [600, 485, 36, 48],
+                  "rect": [632, 485, 36, 48],
                   "reason": "subtree"
                 },
                 {
                   "object": "LayoutBlockFlow DIV id='thumb'",
-                  "rect": [530, 485, 36, 48],
+                  "rect": [562, 485, 36, 48],
                   "reason": "subtree"
                 },
                 {
                   "object": "LayoutButton INPUT",
-                  "rect": [498, 493, 32, 32],
+                  "rect": [530, 493, 32, 32],
                   "reason": "subtree"
                 }
               ]
