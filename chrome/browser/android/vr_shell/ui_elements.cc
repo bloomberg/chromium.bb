@@ -54,7 +54,7 @@ void ReversibleTransform::Rotate(gvr::Quatf quat) {
 void ReversibleTransform::Rotate(float ax, float ay, float az, float rad) {
   // TODO(klausw): use specialized rotation code? Constructing the matrix
   // via axis-angle quaternion is inefficient.
-  Rotate(QuatFromAxisAngle(ax, ay, az, rad));
+  Rotate(QuatFromAxisAngle({ax, ay, az}, rad));
 }
 
 void ReversibleTransform::Translate(float tx, float ty, float tz) {

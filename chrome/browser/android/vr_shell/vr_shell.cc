@@ -294,7 +294,7 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   gvr::Mat4f head_pose =
       gvr_api_->GetHeadPoseInStartSpace(target_time);
 
-  gvr::Vec3f position = getTranslation(head_pose);
+  gvr::Vec3f position = GetTranslation(head_pose);
   if (position.x == 0.0f && position.y == 0.0f && position.z == 0.0f) {
     // This appears to be a 3DOF pose without a neck model. Add one.
     // The head pose has redundant data. Assume we're only using the
@@ -327,7 +327,7 @@ void VrShell::DrawVrShell(const gvr::Mat4f& head_pose) {
   // Update the render position of all UI elements (including desktop).
   scene_.UpdateTransforms(screen_tilt, UiScene::TimeInMicroseconds());
 
-  UpdateController(getForwardVector(head_pose));
+  UpdateController(GetForwardVector(head_pose));
 
   // Everything should be positioned now, ready for drawing.
   gvr::Mat4f left_eye_view_matrix =
@@ -439,11 +439,11 @@ void VrShell::DrawCursor(const gvr::Mat4f& render_matrix) {
   SetIdentityM(mat);
 
   // Move the beam half its height so that its end sits on the origin.
-  TranslateM(mat, mat, 0, 0.5, 0);
+  TranslateM(mat, mat, 0.0f, 0.5f, 0.0f);
   ScaleM(mat, mat, kLaserWidth, laser_length, 1);
 
   // Tip back 90 degrees to flat, pointing at the scene.
-  auto q = QuatFromAxisAngle(1, 0, 0, -M_PI / 2);
+  auto q = QuatFromAxisAngle({1.0f, 0.0f, 0.0f}, -M_PI / 2);
   auto m = QuatToMatrix(q);
   mat = MatrixMul(m, mat);
 

@@ -62,10 +62,9 @@ gvr::Mat4f PerspectiveMatrixFromView(const gvr::Rectf& fov,
                                      float z_far);
 
 // Provides the direction the head is looking towards as a 3x1 unit vector.
-gvr::Vec3f getForwardVector(const gvr::Mat4f& matrix);
+gvr::Vec3f GetForwardVector(const gvr::Mat4f& matrix);
 
-// Provides the relative translation of the head as a 3x1 vector.
-gvr::Vec3f getTranslation(const gvr::Mat4f& matrix);
+gvr::Vec3f GetTranslation(const gvr::Mat4f& matrix);
 
 gvr::Quatf QuatMultiply(const gvr::Quatf& a, const gvr::Quatf& b);
 
@@ -73,13 +72,14 @@ gvr::Mat4f QuatToMatrix(const gvr::Quatf& quat);
 
 float VectorLength(const gvr::Vec3f& vec);
 
-void NormalizeVector(gvr::Vec3f& vec);
+// Normalize a vector, and return its original length.
+float NormalizeVector(gvr::Vec3f& vec);
 
 float VectorDot(const gvr::Vec3f& a, const gvr::Vec3f& b);
 
 void NormalizeQuat(gvr::Quatf& quat);
 
-gvr::Quatf QuatFromAxisAngle(float x, float y, float z, float angle);
+gvr::Quatf QuatFromAxisAngle(const gvr::Vec3f& axis, float angle);
 
 gvr::Vec3f GetRayPoint(const gvr::Vec3f& rayOrigin,
                        const gvr::Vec3f& rayVector,

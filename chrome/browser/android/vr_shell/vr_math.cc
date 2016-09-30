@@ -207,40 +207,26 @@ gvr::Mat4f PerspectiveMatrixFromView(const gvr::Rectf& fov,
   return result;
 }
 
-gvr::Vec3f getForwardVector(const gvr::Mat4f& matrix) {
-  gvr::Vec3f forward;
-  float* fp = &forward.x;
+gvr::Vec3f GetForwardVector(const gvr::Mat4f& matrix) {
   // Same as multiplying the inverse of the rotation component of the matrix by
   // (0, 0, -1, 0).
-  for (int i = 0; i < 3; ++i) {
-    fp[i] = -matrix.m[2][i];
-  }
-  return forward;
+  return {-matrix.m[2][0], -matrix.m[2][1], -matrix.m[2][2]};
 }
 
-/**
- * Provides the relative translation of the head as a 3x1 vector.
- *
- */
-gvr::Vec3f getTranslation(const gvr::Mat4f& matrix) {
-  gvr::Vec3f translation;
-  float* tp = &translation.x;
-  // Same as multiplying the matrix by (0, 0, 0, 1).
-  for (int i = 0; i < 3; ++i) {
-    tp[i] = matrix.m[i][3];
-  }
-  return translation;
+gvr::Vec3f GetTranslation(const gvr::Mat4f& matrix) {
+  return {matrix.m[0][3], matrix.m[1][3], matrix.m[2][3]};
 }
 
 float VectorLength(const gvr::Vec3f& vec) {
   return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
-void NormalizeVector(gvr::Vec3f& vec) {
+float NormalizeVector(gvr::Vec3f& vec) {
   float len = VectorLength(vec);
   vec.x /= len;
   vec.y /= len;
   vec.z /= len;
+  return len;
 }
 
 float VectorDot(const gvr::Vec3f& a, const gvr::Vec3f& b) {
@@ -256,12 +242,17 @@ void NormalizeQuat(gvr::Quatf& quat) {
   quat.qw /= len;
 }
 
-gvr::Quatf QuatFromAxisAngle(float x, float y, float z, float angle) {
+gvr::Quatf QuatFromAxisAngle(const gvr::Vec3f& axis, float angle) {
+  // Rotation angle is the product of |angle| and the magnitude of |axis|.
+  gvr::Vec3f normal = axis;
+  float length = NormalizeVector(normal);
+  angle *= length;
+
   gvr::Quatf res;
   float s = sin(angle / 2);
-  res.qx = x * s;
-  res.qy = y * s;
-  res.qz = z * s;
+  res.qx = normal.x * s;
+  res.qy = normal.y * s;
+  res.qz = normal.z * s;
   res.qw = cos(angle / 2);
   return res;
 }
@@ -296,10 +287,8 @@ gvr::Mat4f QuatToMatrix(const gvr::Quatf& quat) {
   const float m32 = 2.0f * (yz + xw);
   const float m33 = 1.0f - 2.0f * x2 - 2.0f * y2;
 
-  float ret[16] = {m11, m12, m13, 0.0f, m21,  m22,  m23,  0.0f,
-                   m31, m32, m33, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f};
-
-  return *((gvr::Mat4f*)&ret);
+  return {{{m11, m12, m13, 0.0f}, {m21, m22, m23, 0.0f},
+          {m31, m32, m33, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}}};
 }
 
 gvr::Vec3f GetRayPoint(const gvr::Vec3f& rayOrigin,
