@@ -28,7 +28,7 @@ namespace password_manager {
 // passwords has just started or ended.
 void ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
     PasswordStore* password_store,
-    sync_driver::SyncService* sync_service,
+    syncer::SyncService* sync_service,
     net::URLRequestContextGetter* request_context_getter,
     const base::FilePath& profile_path,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread_runner);

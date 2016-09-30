@@ -18,7 +18,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // static
 base::LazyInstance<ModelTypeStoreBackend::BackendMap>
@@ -142,4 +142,4 @@ ModelTypeStore::Result ModelTypeStoreBackend::WriteModifications(
                      : ModelTypeStore::Result::UNSPECIFIED_ERROR;
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

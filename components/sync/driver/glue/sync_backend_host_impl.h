@@ -36,35 +36,28 @@ class GURL;
 
 namespace base {
 class MessageLoop;
-}
+}  // base
 
 namespace invalidation {
 class InvalidationService;
-}
+}  // namespace invalidation
 
 namespace syncer {
-class SyncManagerFactory;
-class UnrecoverableErrorHandler;
-}
-
-namespace sync_driver {
-class SyncClient;
-class SyncPrefs;
-}
-
-namespace browser_sync {
 
 class ChangeProcessor;
 class SyncBackendHostCore;
 class SyncBackendRegistrar;
+class SyncClient;
+class SyncManagerFactory;
+class SyncPrefs;
+class UnrecoverableErrorHandler;
 struct DoInitializeOptions;
 
 // The only real implementation of the SyncBackendHost.  See that interface's
 // definition for documentation of public methods.
-class SyncBackendHostImpl : public SyncBackendHost,
-                            public syncer::InvalidationHandler {
+class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
  public:
-  typedef syncer::SyncStatus Status;
+  typedef SyncStatus Status;
 
   // Create a SyncBackendHost with a reference to the |frontend| that
   // it serves and communicates to via the SyncFrontend interface (on
@@ -72,84 +65,77 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // |sync_prefs|.
   SyncBackendHostImpl(
       const std::string& name,
-      sync_driver::SyncClient* sync_client,
+      SyncClient* sync_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+      const base::WeakPtr<SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder);
   ~SyncBackendHostImpl() override;
 
   // SyncBackendHost implementation.
   void Initialize(
-      sync_driver::SyncFrontend* frontend,
+      SyncFrontend* frontend,
       std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
-      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
+      const WeakHandle<JsEventHandler>& event_handler,
       const GURL& service_url,
       const std::string& sync_user_agent,
-      const syncer::SyncCredentials& credentials,
+      const SyncCredentials& credentials,
       bool delete_sync_data_folder,
-      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-      const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
-          unrecoverable_error_handler,
+      std::unique_ptr<SyncManagerFactory> sync_manager_factory,
+      const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
-          saved_nigori_state) override;
-  void TriggerRefresh(const syncer::ModelTypeSet& types) override;
-  void UpdateCredentials(const syncer::SyncCredentials& credentials) override;
+      std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state)
+      override;
+  void TriggerRefresh(const ModelTypeSet& types) override;
+  void UpdateCredentials(const SyncCredentials& credentials) override;
   void StartSyncingWithServer() override;
   void SetEncryptionPassphrase(const std::string& passphrase,
                                bool is_explicit) override;
   bool SetDecryptionPassphrase(const std::string& passphrase) override
       WARN_UNUSED_RESULT;
   void StopSyncingForShutdown() override;
-  std::unique_ptr<base::Thread> Shutdown(
-      syncer::ShutdownReason reason) override;
+  std::unique_ptr<base::Thread> Shutdown(ShutdownReason reason) override;
   void UnregisterInvalidationIds() override;
-  syncer::ModelTypeSet ConfigureDataTypes(
-      syncer::ConfigureReason reason,
+  ModelTypeSet ConfigureDataTypes(
+      ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
-          ready_task,
+      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) override;
-  void ActivateDirectoryDataType(
-      syncer::ModelType type,
-      syncer::ModelSafeGroup group,
-      sync_driver::ChangeProcessor* change_processor) override;
-  void DeactivateDirectoryDataType(syncer::ModelType type) override;
-  void ActivateNonBlockingDataType(
-      syncer::ModelType type,
-      std::unique_ptr<syncer_v2::ActivationContext>) override;
-  void DeactivateNonBlockingDataType(syncer::ModelType type) override;
+  void ActivateDirectoryDataType(ModelType type,
+                                 ModelSafeGroup group,
+                                 ChangeProcessor* change_processor) override;
+  void DeactivateDirectoryDataType(ModelType type) override;
+  void ActivateNonBlockingDataType(ModelType type,
+                                   std::unique_ptr<ActivationContext>) override;
+  void DeactivateNonBlockingDataType(ModelType type) override;
   void EnableEncryptEverything() override;
-  syncer::UserShare* GetUserShare() const override;
+  UserShare* GetUserShare() const override;
   Status GetDetailedStatus() override;
-  syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
+  SyncCycleSnapshot GetLastCycleSnapshot() const override;
   bool HasUnsyncedItems() const override;
   bool IsNigoriEnabled() const override;
-  syncer::PassphraseType GetPassphraseType() const override;
+  PassphraseType GetPassphraseType() const override;
   base::Time GetExplicitPassphraseTime() const override;
-  bool IsCryptographerReady(
-      const syncer::BaseTransaction* trans) const override;
-  void GetModelSafeRoutingInfo(
-      syncer::ModelSafeRoutingInfo* out) const override;
+  bool IsCryptographerReady(const BaseTransaction* trans) const override;
+  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const override;
   void FlushDirectory() const override;
   void RequestBufferedProtocolEventsAndEnableForwarding() override;
   void DisableProtocolEventForwarding() override;
   void EnableDirectoryTypeDebugInfoForwarding() override;
   void DisableDirectoryTypeDebugInfoForwarding() override;
   base::MessageLoop* GetSyncLoopForTesting() override;
-  void RefreshTypesForTest(syncer::ModelTypeSet types) override;
+  void RefreshTypesForTest(ModelTypeSet types) override;
   void ClearServerData(
-      const syncer::SyncManager::ClearServerDataCallback& callback) override;
+      const SyncManager::ClearServerDataCallback& callback) override;
   void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
 
   // InvalidationHandler implementation.
-  void OnInvalidatorStateChange(syncer::InvalidatorState state) override;
+  void OnInvalidatorStateChange(InvalidatorState state) override;
   void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) override;
+      const ObjectIdInvalidationMap& invalidation_map) override;
   std::string GetOwnerName() const override;
 
  protected:
@@ -162,24 +148,22 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // Request the syncer to reconfigure with the specfied params.
   // Virtual for testing.
   virtual void RequestConfigureSyncer(
-      syncer::ConfigureReason reason,
-      syncer::ModelTypeSet to_download,
-      syncer::ModelTypeSet to_purge,
-      syncer::ModelTypeSet to_journal,
-      syncer::ModelTypeSet to_unapply,
-      syncer::ModelTypeSet to_ignore,
-      const syncer::ModelSafeRoutingInfo& routing_info,
-      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
-          ready_task,
+      ConfigureReason reason,
+      ModelTypeSet to_download,
+      ModelTypeSet to_purge,
+      ModelTypeSet to_journal,
+      ModelTypeSet to_unapply,
+      ModelTypeSet to_ignore,
+      const ModelSafeRoutingInfo& routing_info,
+      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
       const base::Closure& retry_callback);
 
   // Called when the syncer has finished performing a configuration.
   void FinishConfigureDataTypesOnFrontendLoop(
-      const syncer::ModelTypeSet enabled_types,
-      const syncer::ModelTypeSet succeeded_configuration_types,
-      const syncer::ModelTypeSet failed_configuration_types,
-      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
-          ready_task);
+      const ModelTypeSet enabled_types,
+      const ModelTypeSet succeeded_configuration_types,
+      const ModelTypeSet failed_configuration_types,
+      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task);
 
   // Reports backend initialization success.  Includes some objects from sync
   // manager initialization to be passed back to the UI thread.
@@ -187,45 +171,43 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // |model_type_connector| is our ModelTypeConnector, which is owned because in
   // production it is a proxy object to the real ModelTypeConnector.
   virtual void HandleInitializationSuccessOnFrontendLoop(
-      const syncer::WeakHandle<syncer::JsBackend> js_backend,
-      const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>
-          debug_info_listener,
-      std::unique_ptr<syncer_v2::ModelTypeConnector> model_type_connector,
+      const WeakHandle<JsBackend> js_backend,
+      const WeakHandle<DataTypeDebugInfoListener> debug_info_listener,
+      std::unique_ptr<ModelTypeConnector> model_type_connector,
       const std::string& cache_guid);
 
   // Forwards a ProtocolEvent to the frontend.  Will not be called unless a
   // call to SetForwardProtocolEvents() explicitly requested that we start
   // forwarding these events.
-  void HandleProtocolEventOnFrontendLoop(
-      std::unique_ptr<syncer::ProtocolEvent> event);
+  void HandleProtocolEventOnFrontendLoop(std::unique_ptr<ProtocolEvent> event);
 
   // Forwards a directory commit counter update to the frontend loop.  Will not
   // be called unless a call to EnableDirectoryTypeDebugInfoForwarding()
   // explicitly requested that we start forwarding these events.
   void HandleDirectoryCommitCountersUpdatedOnFrontendLoop(
-      syncer::ModelType type,
-      const syncer::CommitCounters& counters);
+      ModelType type,
+      const CommitCounters& counters);
 
   // Forwards a directory update counter update to the frontend loop.  Will not
   // be called unless a call to EnableDirectoryTypeDebugInfoForwarding()
   // explicitly requested that we start forwarding these events.
   void HandleDirectoryUpdateCountersUpdatedOnFrontendLoop(
-      syncer::ModelType type,
-      const syncer::UpdateCounters& counters);
+      ModelType type,
+      const UpdateCounters& counters);
 
   // Forwards a directory status counter update to the frontend loop.  Will not
   // be called unless a call to EnableDirectoryTypeDebugInfoForwarding()
   // explicitly requested that we start forwarding these events.
   void HandleDirectoryStatusCountersUpdatedOnFrontendLoop(
-      syncer::ModelType type,
-      const syncer::StatusCounters& counters);
+      ModelType type,
+      const StatusCounters& counters);
 
   // Overwrites the kSyncInvalidationVersions preference with the most recent
   // set of invalidation versions for each type.
   void UpdateInvalidationVersions(
-      const std::map<syncer::ModelType, int64_t>& invalidation_versions);
+      const std::map<ModelType, int64_t>& invalidation_versions);
 
-  sync_driver::SyncFrontend* frontend() { return frontend_; }
+  SyncFrontend* frontend() { return frontend_; }
 
  private:
   friend class SyncBackendHostCore;
@@ -241,7 +223,7 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // Called from Core::OnSyncCycleCompleted to handle updating frontend
   // thread components.
   void HandleSyncCycleCompletedOnFrontendLoop(
-      const syncer::SyncCycleSnapshot& snapshot);
+      const SyncCycleSnapshot& snapshot);
 
   // Called when the syncer failed to perform a configuration and will
   // eventually retry. FinishingConfigurationOnFrontendLoop(..) will be called
@@ -253,17 +235,17 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // passphrase.  |token| must be valid UTF-8 as we use the PrefService for
   // storage.
   void PersistEncryptionBootstrapToken(const std::string& token,
-                                       syncer::BootstrapTokenType token_type);
+                                       BootstrapTokenType token_type);
 
   // For convenience, checks if initialization state is INITIALIZED.
   bool initialized() const { return initialized_; }
 
   // Let the front end handle the actionable error event.
   void HandleActionableErrorEventOnFrontendLoop(
-      const syncer::SyncProtocolError& sync_error);
+      const SyncProtocolError& sync_error);
 
   // Handle a migration request.
-  void HandleMigrationRequestedOnFrontendLoop(const syncer::ModelTypeSet types);
+  void HandleMigrationRequestedOnFrontendLoop(const ModelTypeSet types);
 
   // Checks if |passphrase| can be used to decrypt the cryptographer's pending
   // keys that were cached during NotifyPassphraseRequired. Returns true if
@@ -278,7 +260,7 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // cached by the frontend. If there are no pending keys, or if the passphrase
   // required reason is REASON_ENCRYPTION, an empty EncryptedData object is
   // passed.
-  void NotifyPassphraseRequired(syncer::PassphraseRequiredReason reason,
+  void NotifyPassphraseRequired(PassphraseRequiredReason reason,
                                 sync_pb::EncryptedData pending_keys);
 
   // Invoked when the passphrase provided by the user has been accepted.
@@ -286,7 +268,7 @@ class SyncBackendHostImpl : public SyncBackendHost,
 
   // Invoked when the set of encrypted types or the encrypt
   // everything flag changes.
-  void NotifyEncryptedTypesChanged(syncer::ModelTypeSet encrypted_types,
+  void NotifyEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                    bool encrypt_everything);
 
   // Invoked when sync finishes encrypting new datatypes.
@@ -298,25 +280,24 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // |explicit_passphrase_time| is the time at which that passphrase was set
   // (if available).
   void HandlePassphraseTypeChangedOnFrontendLoop(
-      syncer::PassphraseType type,
+      PassphraseType type,
       base::Time explicit_passphrase_time);
 
   void HandleLocalSetPassphraseEncryptionOnFrontendLoop(
-      const syncer::SyncEncryptionHandler::NigoriState& nigori_state);
+      const SyncEncryptionHandler::NigoriState& nigori_state);
 
   // Dispatched to from OnConnectionStatusChange to handle updating
   // frontend UI components.
-  void HandleConnectionStatusChangeOnFrontendLoop(
-      syncer::ConnectionStatus status);
+  void HandleConnectionStatusChangeOnFrontendLoop(ConnectionStatus status);
 
   void ClearServerDataDoneOnFrontendLoop(
-      const syncer::SyncManager::ClearServerDataCallback& frontend_callback);
+      const SyncManager::ClearServerDataCallback& frontend_callback);
 
   // A reference to the TaskRUnner used to construct |this|, so we know how to
   // safely talk back to the SyncFrontend.
   scoped_refptr<base::SingleThreadTaskRunner> const frontend_task_runner_;
 
-  sync_driver::SyncClient* const sync_client_;
+  SyncClient* const sync_client_;
 
   // The UI thread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
@@ -331,16 +312,16 @@ class SyncBackendHostImpl : public SyncBackendHost,
 
   // A handle referencing the main interface for non-blocking sync types. This
   // object is owned because in production code it is a proxy object.
-  std::unique_ptr<syncer_v2::ModelTypeConnector> model_type_connector_;
+  std::unique_ptr<ModelTypeConnector> model_type_connector_;
 
   bool initialized_;
 
-  const base::WeakPtr<sync_driver::SyncPrefs> sync_prefs_;
+  const base::WeakPtr<SyncPrefs> sync_prefs_;
 
   std::unique_ptr<SyncBackendRegistrar> registrar_;
 
   // The frontend which we serve (and are owned by).
-  sync_driver::SyncFrontend* frontend_;
+  SyncFrontend* frontend_;
 
   // We cache the cryptographer's pending keys whenever NotifyPassphraseRequired
   // is called. This way, before the UI calls SetDecryptionPassphrase on the
@@ -356,14 +337,14 @@ class SyncBackendHostImpl : public SyncBackendHost,
   // in the nigori node. Updated whenever a new nigori node arrives or the user
   // manually changes their passphrase state. Cached so we can synchronously
   // check it from the UI thread.
-  syncer::PassphraseType cached_passphrase_type_;
+  PassphraseType cached_passphrase_type_;
 
   // If an explicit passphrase is in use, the time at which the passphrase was
   // first set (if available).
   base::Time cached_explicit_passphrase_time_;
 
   // UI-thread cache of the last SyncCycleSnapshot received from syncapi.
-  syncer::SyncCycleSnapshot last_snapshot_;
+  SyncCycleSnapshot last_snapshot_;
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_;
@@ -373,6 +354,6 @@ class SyncBackendHostImpl : public SyncBackendHost,
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHostImpl);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_IMPL_H_

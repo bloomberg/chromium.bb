@@ -87,25 +87,28 @@
 #include "components/sync/core/read_transaction.h"
 #endif
 
-using sync_driver::ChangeProcessor;
-using sync_driver::DataTypeController;
-using sync_driver::DataTypeManager;
-using sync_driver::DataTypeStatusTable;
-using sync_driver::DeviceInfoSyncService;
-using sync_driver_v2::DeviceInfoService;
 using sync_sessions::SessionsSyncManager;
-using syncer::ModelType;
-using syncer::ModelTypeSet;
+using syncer::BackendMigrator;
+using syncer::ChangeProcessor;
+using syncer::DataTypeController;
+using syncer::DataTypeManager;
+using syncer::DataTypeStatusTable;
+using syncer::DeviceInfoService;
+using syncer::DeviceInfoSyncService;
 using syncer::JsBackend;
 using syncer::JsController;
 using syncer::JsEventDetails;
 using syncer::JsEventHandler;
 using syncer::ModelSafeRoutingInfo;
+using syncer::ModelType;
+using syncer::ModelTypeSet;
+using syncer::ModelTypeStore;
+using syncer::ProtocolEventObserver;
+using syncer::SharedModelTypeProcessor;
+using syncer::SyncBackendHost;
 using syncer::SyncCredentials;
 using syncer::SyncProtocolError;
 using syncer::WeakHandle;
-using syncer_v2::ModelTypeStore;
-using syncer_v2::SharedModelTypeProcessor;
 
 namespace browser_sync {
 
@@ -191,8 +194,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       sync_client_(std::move(init_params.sync_client)),
       sync_prefs_(sync_client_->GetPrefService()),
       sync_service_url_(
-          GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
-                            init_params.channel)),
+          syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
+                                    init_params.channel)),
       network_time_update_callback_(
           std::move(init_params.network_time_update_callback)),
       base_directory_(init_params.base_directory),
@@ -258,7 +261,7 @@ void ProfileSyncService::Initialize() {
 
   // We don't pass StartupController an Unretained reference to future-proof
   // against the controller impl changing to post tasks.
-  startup_controller_.reset(new StartupController(
+  startup_controller_.reset(new syncer::StartupController(
       &sync_prefs_,
       base::Bind(&ProfileSyncService::CanBackendStart, base::Unretained(this)),
       base::Bind(&ProfileSyncService::StartUpSlowBackendComponents,
@@ -267,9 +270,9 @@ void ProfileSyncService::Initialize() {
       sync_client_->GetSyncSessionsClient()->GetLocalSessionEventRouter());
   local_device_ = sync_client_->GetSyncApiComponentFactory()
                       ->CreateLocalDeviceInfoProvider();
-  sync_stopped_reporter_.reset(new SyncStoppedReporter(
+  sync_stopped_reporter_.reset(new syncer::SyncStoppedReporter(
       sync_service_url_, local_device_->GetSyncUserAgent(),
-      url_request_context_, SyncStoppedReporter::ResultCallback()));
+      url_request_context_, syncer::SyncStoppedReporter::ResultCallback()));
   sessions_sync_manager_.reset(new SessionsSyncManager(
       sync_client_->GetSyncSessionsClient(), &sync_prefs_, local_device_.get(),
       std::move(router),
@@ -299,7 +302,7 @@ void ProfileSyncService::Initialize() {
         new DeviceInfoSyncService(local_device_.get()));
   }
 
-  sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
+  syncer::SyncApiComponentFactory::RegisterDataTypesMethod
       register_platform_types_callback =
           sync_client_->GetRegisterPlatformTypesCallback();
   sync_client_->GetSyncApiComponentFactory()->RegisterDataTypes(
@@ -361,7 +364,7 @@ void ProfileSyncService::Initialize() {
 #if !defined(OS_ANDROID)
   DCHECK(sync_error_controller_ == NULL)
       << "Initialize() called more than once.";
-  sync_error_controller_.reset(new SyncErrorController(this));
+  sync_error_controller_.reset(new syncer::SyncErrorController(this));
   AddObserver(sync_error_controller_.get());
 #endif
 
@@ -407,7 +410,7 @@ void ProfileSyncService::UnregisterAuthNotifications() {
 }
 
 void ProfileSyncService::RegisterDataTypeController(
-    std::unique_ptr<sync_driver::DataTypeController> data_type_controller) {
+    std::unique_ptr<syncer::DataTypeController> data_type_controller) {
   DCHECK_EQ(data_type_controllers_.count(data_type_controller->type()), 0U);
   data_type_controllers_[data_type_controller->type()] =
       std::move(data_type_controller);
@@ -433,8 +436,7 @@ sync_sessions::FaviconCache* ProfileSyncService::GetFaviconCache() {
   return sessions_sync_manager_->GetFaviconCache();
 }
 
-sync_driver::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
-    const {
+syncer::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker() const {
   // One of the two should always be non-null after initialization is done.
   if (device_info_service_) {
     return device_info_service_.get();
@@ -443,7 +445,7 @@ sync_driver::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
   }
 }
 
-sync_driver::LocalDeviceInfoProvider*
+syncer::LocalDeviceInfoProvider*
 ProfileSyncService::GetLocalDeviceInfoProvider() const {
   return local_device_.get();
 }
@@ -511,7 +513,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       std::unique_ptr<syncer::SyncManagerFactory>(
           new syncer::SyncManagerFactory()),
       MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr()),
-      base::Bind(ChromeReportUnrecoverableError, channel_),
+      base::Bind(syncer::ChromeReportUnrecoverableError, channel_),
       http_post_provider_factory_getter, std::move(saved_nigori_state_));
 }
 
@@ -827,17 +829,16 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 }
 
 void ProfileSyncService::NotifyObservers() {
-  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
-                    OnStateChanged());
+  FOR_EACH_OBSERVER(syncer::SyncServiceObserver, observers_, OnStateChanged());
 }
 
 void ProfileSyncService::NotifySyncCycleCompleted() {
-  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
+  FOR_EACH_OBSERVER(syncer::SyncServiceObserver, observers_,
                     OnSyncCycleCompleted());
 }
 
 void ProfileSyncService::NotifyForeignSessionUpdated() {
-  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
+  FOR_EACH_OBSERVER(syncer::SyncServiceObserver, observers_,
                     OnForeignSessionUpdated());
 }
 
@@ -1324,7 +1325,7 @@ void ProfileSyncService::OnConfigureDone(
   }
 
   // Notify listeners that configuration is done.
-  FOR_EACH_OBSERVER(sync_driver::SyncServiceObserver, observers_,
+  FOR_EACH_OBSERVER(syncer::SyncServiceObserver, observers_,
                     OnSyncConfigurationCompleted());
 
   DVLOG(1) << "PSS OnConfigureDone called with status: " << configure_status_;
@@ -1470,7 +1471,7 @@ bool ProfileSyncService::IsFirstSetupInProgress() const {
   return !IsFirstSetupComplete() && startup_controller_->IsSetupInProgress();
 }
 
-std::unique_ptr<sync_driver::SyncSetupInProgressHandle>
+std::unique_ptr<syncer::SyncSetupInProgressHandle>
 ProfileSyncService::GetSetupInProgressHandle() {
   if (++outstanding_setup_in_progress_handles_ == 1) {
     DCHECK(!startup_controller_->IsSetupInProgress());
@@ -1479,8 +1480,8 @@ ProfileSyncService::GetSetupInProgressHandle() {
     NotifyObservers();
   }
 
-  return std::unique_ptr<sync_driver::SyncSetupInProgressHandle>(
-      new sync_driver::SyncSetupInProgressHandle(
+  return std::unique_ptr<syncer::SyncSetupInProgressHandle>(
+      new syncer::SyncSetupInProgressHandle(
           base::Bind(&ProfileSyncService::OnSetupInProgressHandleDestroyed,
                      weak_factory_.GetWeakPtr())));
 }
@@ -1568,17 +1569,17 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
   // Only log the data types that are shown in the sync settings ui.
   // Note: the order of these types must match the ordering of
   // the respective types in ModelType
-  const sync_driver::user_selectable_type::UserSelectableSyncType
+  const syncer::user_selectable_type::UserSelectableSyncType
       user_selectable_types[] = {
-          sync_driver::user_selectable_type::BOOKMARKS,
-          sync_driver::user_selectable_type::PREFERENCES,
-          sync_driver::user_selectable_type::PASSWORDS,
-          sync_driver::user_selectable_type::AUTOFILL,
-          sync_driver::user_selectable_type::THEMES,
-          sync_driver::user_selectable_type::TYPED_URLS,
-          sync_driver::user_selectable_type::EXTENSIONS,
-          sync_driver::user_selectable_type::APPS,
-          sync_driver::user_selectable_type::PROXY_TABS,
+          syncer::user_selectable_type::BOOKMARKS,
+          syncer::user_selectable_type::PREFERENCES,
+          syncer::user_selectable_type::PASSWORDS,
+          syncer::user_selectable_type::AUTOFILL,
+          syncer::user_selectable_type::THEMES,
+          syncer::user_selectable_type::TYPED_URLS,
+          syncer::user_selectable_type::EXTENSIONS,
+          syncer::user_selectable_type::APPS,
+          syncer::user_selectable_type::PROXY_TABS,
       };
 
   static_assert(39 == syncer::MODEL_TYPE_COUNT,
@@ -1600,7 +1601,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
         // Selected type has changed - log it.
         UMA_HISTOGRAM_ENUMERATION(
             "Sync.CustomSync", user_selectable_types[i],
-            sync_driver::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
+            syncer::user_selectable_type::SELECTABLE_DATATYPE_COUNT + 1);
       }
     }
   }
@@ -1609,7 +1610,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
 #if defined(OS_CHROMEOS)
 void ProfileSyncService::RefreshSpareBootstrapToken(
     const std::string& passphrase) {
-  sync_driver::SystemEncryptor encryptor;
+  syncer::SystemEncryptor encryptor;
   syncer::Cryptographer temp_cryptographer(&encryptor);
   // The first 2 params (hostname and username) doesn't have any effect here.
   syncer::KeyParams key_params = {"localhost", "dummy", passphrase};
@@ -1661,7 +1662,7 @@ syncer::ModelTypeSet ProfileSyncService::GetActiveDataTypes() const {
   return Difference(preferred_types, failed_types);
 }
 
-sync_driver::SyncClient* ProfileSyncService::GetSyncClient() const {
+syncer::SyncClient* ProfileSyncService::GetSyncClient() const {
   return sync_client_.get();
 }
 
@@ -1702,7 +1703,7 @@ bool ProfileSyncService::IsUsingSecondaryPassphrase() const {
 }
 
 std::string ProfileSyncService::GetCustomPassphraseKey() const {
-  sync_driver::SystemEncryptor encryptor;
+  syncer::SystemEncryptor encryptor;
   syncer::Cryptographer cryptographer(&encryptor);
   cryptographer.Bootstrap(sync_prefs_.GetEncryptionBootstrapToken());
   return cryptographer.GetDefaultNigoriKeyData();
@@ -2091,13 +2092,11 @@ void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
   backend_->OnCookieJarChanged(cookie_jar_mismatch, cookie_jar_empty);
 }
 
-void ProfileSyncService::AddObserver(
-    sync_driver::SyncServiceObserver* observer) {
+void ProfileSyncService::AddObserver(syncer::SyncServiceObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void ProfileSyncService::RemoveObserver(
-    sync_driver::SyncServiceObserver* observer) {
+void ProfileSyncService::RemoveObserver(syncer::SyncServiceObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -2137,21 +2136,21 @@ void ProfileSyncService::RemoveTypeDebugInfoObserver(
 }
 
 void ProfileSyncService::AddPreferenceProvider(
-    SyncTypePreferenceProvider* provider) {
+    syncer::SyncTypePreferenceProvider* provider) {
   DCHECK(!HasPreferenceProvider(provider))
       << "Providers may only be added once!";
   preference_providers_.insert(provider);
 }
 
 void ProfileSyncService::RemovePreferenceProvider(
-    SyncTypePreferenceProvider* provider) {
+    syncer::SyncTypePreferenceProvider* provider) {
   DCHECK(HasPreferenceProvider(provider))
       << "Only providers that have been added before can be removed!";
   preference_providers_.erase(provider);
 }
 
 bool ProfileSyncService::HasPreferenceProvider(
-    SyncTypePreferenceProvider* provider) const {
+    syncer::SyncTypePreferenceProvider* provider) const {
   return preference_providers_.count(provider) > 0;
 }
 
@@ -2239,15 +2238,15 @@ void ProfileSyncService::GetAllNodes(
     } else {
       // Control Types
       helper->OnReceivedNodesForType(
-          it.Get(), sync_driver::DirectoryDataTypeController::
-                        GetAllNodesForTypeFromDirectory(
-                            it.Get(), GetUserShare()->directory.get()));
+          it.Get(),
+          syncer::DirectoryDataTypeController::GetAllNodesForTypeFromDirectory(
+              it.Get(), GetUserShare()->directory.get()));
     }
   }
 }
 
 bool ProfileSyncService::HasObserver(
-    const sync_driver::SyncServiceObserver* observer) const {
+    const syncer::SyncServiceObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
@@ -2323,7 +2322,7 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
 syncer::ModelTypeSet ProfileSyncService::GetDataTypesFromPreferenceProviders()
     const {
   syncer::ModelTypeSet types;
-  for (std::set<SyncTypePreferenceProvider*>::const_iterator it =
+  for (std::set<syncer::SyncTypePreferenceProvider*>::const_iterator it =
            preference_providers_.begin();
        it != preference_providers_.end(); ++it) {
     types.PutAll((*it)->GetPreferredDataTypes());
@@ -2365,12 +2364,12 @@ syncer::SyncableService* ProfileSyncService::GetDeviceInfoSyncableService() {
   return device_info_sync_service_.get();
 }
 
-syncer_v2::ModelTypeService* ProfileSyncService::GetDeviceInfoService() {
+syncer::ModelTypeService* ProfileSyncService::GetDeviceInfoService() {
   return device_info_service_.get();
 }
 
-sync_driver::SyncService::SyncTokenStatus
-ProfileSyncService::GetSyncTokenStatus() const {
+syncer::SyncService::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus()
+    const {
   SyncTokenStatus status;
   status.connection_status_update_time = connection_status_update_time_;
   status.connection_status = connection_status_;

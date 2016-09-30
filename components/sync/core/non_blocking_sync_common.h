@@ -14,7 +14,7 @@
 #include "components/sync/api/entity_data.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 static const int64_t kUncommittedVersion = -1;
 
@@ -60,6 +60,6 @@ typedef std::vector<CommitRequestData> CommitRequestDataList;
 typedef std::vector<CommitResponseData> CommitResponseDataList;
 typedef std::vector<UpdateResponseData> UpdateResponseDataList;
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_NON_BLOCKING_SYNC_COMMON_H_

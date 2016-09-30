@@ -11,7 +11,7 @@
 #include "base/sha1.h"
 #include "components/sync/engine/commit_queue.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 MockModelTypeProcessor::MockModelTypeProcessor() : is_synchronous_(true) {}
 
@@ -273,4 +273,4 @@ void MockModelTypeProcessor::SetServerAssignedId(const std::string& tag_hash,
   assigned_ids_[tag_hash] = id;
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

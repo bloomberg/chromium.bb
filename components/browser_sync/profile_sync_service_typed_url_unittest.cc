@@ -61,7 +61,7 @@ const char kDummySavingBrowserHistoryDisabled[] = "dummyPref";
 static const int EXPIRED_VISIT = -1;
 
 ACTION(ReturnNewDataTypeManager) {
-  return new sync_driver::DataTypeManagerImpl(arg0, arg1, arg2, arg3, arg4);
+  return new syncer::DataTypeManagerImpl(arg0, arg1, arg2, arg3, arg4);
 }
 
 class HistoryBackendMock : public HistoryBackend {
@@ -216,7 +216,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     // because after shutdown the Sync thread is not returned to the sync
     // service, so we could not get the thread's message loop to wait for the
     // deletions to be finished.
-    sync_service()->RequestStop(sync_driver::SyncService::CLEAR_DATA);
+    sync_service()->RequestStop(syncer::SyncService::CLEAR_DATA);
     // Spin the sync thread.
     {
       base::RunLoop run_loop;
@@ -381,7 +381,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   std::unique_ptr<HistoryServiceMock> history_service_;
   syncer::DataTypeErrorHandlerMock error_handler_;
   std::unique_ptr<TestTypedUrlSyncableService> syncable_service_;
-  std::unique_ptr<sync_driver::FakeSyncClient> sync_client_;
+  std::unique_ptr<syncer::FakeSyncClient> sync_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceTypedUrlTest);
 };

@@ -20,7 +20,7 @@
 
 browser_sync::ProfileSyncService::InitParams
 CreateProfileSyncServiceParamsForTest(
-    std::unique_ptr<sync_driver::SyncClient> sync_client,
+    std::unique_ptr<syncer::SyncClient> sync_client,
     ios::ChromeBrowserState* browser_state) {
   browser_sync::ProfileSyncService::InitParams init_params;
 

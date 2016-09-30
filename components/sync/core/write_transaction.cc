@@ -37,7 +37,7 @@ syncable::BaseTransaction* WriteTransaction::GetWrappedTrans() const {
 
 void WriteTransaction::SetDataTypeContext(
     ModelType type,
-    syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
+    SyncChangeProcessor::ContextRefreshStatus refresh_status,
     const std::string& context) {
   DCHECK(ProtocolTypes().Has(type));
   int field_number = GetSpecificsFieldNumberFromModelType(type);
@@ -54,7 +54,7 @@ void WriteTransaction::SetDataTypeContext(
   local_context.set_version(local_context.version() + 1);
   local_context.set_context(context);
   GetDirectory()->SetDataTypeContext(transaction_, type, local_context);
-  if (refresh_status == syncer::SyncChangeProcessor::REFRESH_NEEDED) {
+  if (refresh_status == SyncChangeProcessor::REFRESH_NEEDED) {
     DVLOG(1) << "Forcing refresh of type " << ModelTypeToString(type);
     // Clear the progress token from the progress markers. Preserve all other
     // state, in case a GC directive was present.

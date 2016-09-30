@@ -11,7 +11,7 @@
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/ui_data_type_controller.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // DataTypeController for DEVICE_INFO model type.
 class DeviceInfoDataTypeController : public UIDataTypeController {
@@ -37,6 +37,6 @@ class DeviceInfoDataTypeController : public UIDataTypeController {
   DISALLOW_COPY_AND_ASSIGN(DeviceInfoDataTypeController);
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_DATA_TYPE_CONTROLLER_H_

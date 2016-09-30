@@ -16,7 +16,7 @@ namespace browser_sync {
 AutofillDataTypeController::AutofillDataTypeController(
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
     const base::Closure& dump_stack,
-    sync_driver::SyncClient* sync_client,
+    syncer::SyncClient* sync_client,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
     : NonUIDataTypeController(syncer::AUTOFILL, dump_stack, sync_client),
       db_thread_(db_thread),

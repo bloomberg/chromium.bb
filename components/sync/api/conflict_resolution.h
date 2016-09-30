@@ -9,7 +9,7 @@
 
 #include "components/sync/api/entity_data.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // A simple class to represent the resolution of a data conflict. We either:
 // 1) Use the local client data and update the server.
@@ -52,6 +52,6 @@ class ConflictResolution {
   DISALLOW_COPY_AND_ASSIGN(ConflictResolution);
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_API_CONFLICT_RESOLUTION_H_

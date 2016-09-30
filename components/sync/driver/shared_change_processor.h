@@ -24,16 +24,13 @@
 #include "components/sync/engine/model_safe_worker.h"
 
 namespace syncer {
-class SyncableService;
-struct UserShare;
-}  // namespace syncer
-
-namespace sync_driver {
 
 class ChangeProcessor;
 class GenericChangeProcessor;
 class GenericChangeProcessorFactory;
 class SyncClient;
+class SyncableService;
+struct UserShare;
 
 // A ref-counted wrapper around a GenericChangeProcessor for use with datatypes
 // that don't live on the UI thread.
@@ -55,32 +52,30 @@ class SyncClient;
 class SharedChangeProcessor
     : public base::RefCountedThreadSafe<SharedChangeProcessor> {
  public:
-  typedef base::Callback<void(
-      DataTypeController::ConfigureResult start_result,
-      const syncer::SyncMergeResult& local_merge_result,
-      const syncer::SyncMergeResult& syncer_merge_result)>
+  typedef base::Callback<void(DataTypeController::ConfigureResult start_result,
+                              const SyncMergeResult& local_merge_result,
+                              const SyncMergeResult& syncer_merge_result)>
       StartDoneCallback;
 
   // Create an uninitialized SharedChangeProcessor.
-  explicit SharedChangeProcessor(syncer::ModelType type);
+  explicit SharedChangeProcessor(ModelType type);
 
-  void StartAssociation(
-      StartDoneCallback start_done,
-      SyncClient* const sync_client,
-      syncer::UserShare* user_share,
-      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler);
+  void StartAssociation(StartDoneCallback start_done,
+                        SyncClient* const sync_client,
+                        UserShare* user_share,
+                        std::unique_ptr<DataTypeErrorHandler> error_handler);
 
   // Connect to the Syncer and prepare to handle changes for |type|. Will
   // create and store a new GenericChangeProcessor and return a weak pointer to
-  // the syncer::SyncableService associated with |type|.
+  // the SyncableService associated with |type|.
   // Note: If this SharedChangeProcessor has been disconnected, or the
-  // syncer::SyncableService was not alive, will return a null weak pointer.
-  virtual base::WeakPtr<syncer::SyncableService> Connect(
+  // SyncableService was not alive, will return a null weak pointer.
+  virtual base::WeakPtr<SyncableService> Connect(
       SyncClient* sync_client,
       GenericChangeProcessorFactory* processor_factory,
-      syncer::UserShare* user_share,
-      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
-      const base::WeakPtr<syncer::SyncMergeResult>& merge_result);
+      UserShare* user_share,
+      std::unique_ptr<DataTypeErrorHandler> error_handler,
+      const base::WeakPtr<SyncMergeResult>& merge_result);
 
   // Disconnects from the generic change processor. May be called from any
   // thread. After this, all attempts to interact with the change processor by
@@ -95,19 +90,18 @@ class SharedChangeProcessor
   // GenericChangeProcessor stubs (with disconnect support).
   // Should only be called on the same thread the datatype resides.
   virtual int GetSyncCount();
-  virtual syncer::SyncError ProcessSyncChanges(
+  virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list);
-  virtual syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const;
-  virtual syncer::SyncError GetAllSyncDataReturnError(
-      syncer::ModelType type,
-      syncer::SyncDataList* data) const;
-  virtual syncer::SyncError UpdateDataTypeContext(
-      syncer::ModelType type,
-      syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
+      const SyncChangeList& change_list);
+  virtual SyncDataList GetAllSyncData(ModelType type) const;
+  virtual SyncError GetAllSyncDataReturnError(ModelType type,
+                                              SyncDataList* data) const;
+  virtual SyncError UpdateDataTypeContext(
+      ModelType type,
+      SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context);
-  virtual void AddLocalChangeObserver(syncer::LocalChangeObserver* observer);
-  virtual void RemoveLocalChangeObserver(syncer::LocalChangeObserver* observer);
+  virtual void AddLocalChangeObserver(LocalChangeObserver* observer);
+  virtual void RemoveLocalChangeObserver(LocalChangeObserver* observer);
   virtual bool SyncModelHasUserCreatedNodes(bool* has_nodes);
   virtual bool CryptoReadyIfNecessary();
 
@@ -116,7 +110,7 @@ class SharedChangeProcessor
   // set, returns false.
   virtual bool GetDataTypeContext(std::string* context) const;
 
-  virtual syncer::SyncError CreateAndUploadError(
+  virtual SyncError CreateAndUploadError(
       const tracked_objects::Location& location,
       const std::string& message);
 
@@ -142,7 +136,7 @@ class SharedChangeProcessor
   bool disconnected_;
 
   // The sync datatype we process changes for.
-  const syncer::ModelType type_;
+  const ModelType type_;
 
   // The frontend / UI MessageLoop this object is constructed on. May also be
   // destructed and/or disconnected on this loop, see ~SharedChangeProcessor.
@@ -155,15 +149,15 @@ class SharedChangeProcessor
   // Used only on |backend_loop_|.
   GenericChangeProcessor* generic_change_processor_;
 
-  std::unique_ptr<syncer::DataTypeErrorHandler> error_handler_;
+  std::unique_ptr<DataTypeErrorHandler> error_handler_;
 
   // The local service for this type. Only set if the DTC for the type uses
   // SharedChangeProcessor::StartAssociation().
-  base::WeakPtr<syncer::SyncableService> local_service_;
+  base::WeakPtr<SyncableService> local_service_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedChangeProcessor);
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SHARED_CHANGE_PROCESSOR_H_

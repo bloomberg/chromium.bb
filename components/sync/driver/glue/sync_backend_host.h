@@ -25,31 +25,26 @@ class GURL;
 
 namespace base {
 class MessageLoop;
-}
+}  // namespace base
 
 namespace syncer {
+
 class CancelationSignal;
+class ChangeProcessor;
 class HttpPostProviderFactory;
+class SyncFrontend;
 class SyncManagerFactory;
 class UnrecoverableErrorHandler;
-}
-
-namespace sync_driver {
-class ChangeProcessor;
-class SyncFrontend;
-}
-
-namespace browser_sync {
 
 // An API to "host" the top level SyncAPI element.
 //
 // This class handles dispatch of potentially blocking calls to appropriate
 // threads and ensures that the SyncFrontend is only accessed on the UI loop.
-class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
+class SyncBackendHost : public BackendDataTypeConfigurer {
  public:
-  typedef syncer::SyncStatus Status;
-  typedef base::Callback<std::unique_ptr<syncer::HttpPostProviderFactory>(
-      syncer::CancelationSignal*)>
+  typedef SyncStatus Status;
+  typedef base::Callback<std::unique_ptr<HttpPostProviderFactory>(
+      CancelationSignal*)>
       HttpPostProviderFactoryGetter;
 
   // Stubs used by implementing classes.
@@ -63,29 +58,27 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // |saved_nigori_state| is optional nigori state to restore from a previous
   // backend instance. May be null.
   virtual void Initialize(
-      sync_driver::SyncFrontend* frontend,
+      SyncFrontend* frontend,
       std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& file_thread,
-      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
+      const WeakHandle<JsEventHandler>& event_handler,
       const GURL& service_url,
       const std::string& sync_user_agent,
-      const syncer::SyncCredentials& credentials,
+      const SyncCredentials& credentials,
       bool delete_sync_data_folder,
-      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-      const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
-          unrecoverable_error_handler,
+      std::unique_ptr<SyncManagerFactory> sync_manager_factory,
+      const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
       const base::Closure& report_unrecoverable_error_function,
       const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+      std::unique_ptr<SyncEncryptionHandler::NigoriState>
           saved_nigori_state) = 0;
 
   // Called on the frontend's thread to trigger a refresh.
-  virtual void TriggerRefresh(const syncer::ModelTypeSet& types) = 0;
+  virtual void TriggerRefresh(const ModelTypeSet& types) = 0;
 
   // Called on the frontend's thread to update SyncCredentials.
-  virtual void UpdateCredentials(
-      const syncer::SyncCredentials& credentials) = 0;
+  virtual void UpdateCredentials(const SyncCredentials& credentials) = 0;
 
   // This starts the SyncerThread running a Syncer object to communicate with
   // sync servers.  Until this is called, no changes will leave or enter this
@@ -132,8 +125,7 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   //   later, initialization of new backend is serialized on previous sync
   //   thread after cleanup of previous backend to avoid old/new backends
   //   interfere with each other.
-  virtual std::unique_ptr<base::Thread> Shutdown(
-      syncer::ShutdownReason reason) = 0;
+  virtual std::unique_ptr<base::Thread> Shutdown(ShutdownReason reason) = 0;
 
   // Removes all current registrations from the backend on the
   // InvalidationService.
@@ -146,11 +138,10 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // Returns the set of types that are ready to start without needing any
   // further sync activity.
   // BackendDataTypeConfigurer implementation.
-  syncer::ModelTypeSet ConfigureDataTypes(
-      syncer::ConfigureReason reason,
+  ModelTypeSet ConfigureDataTypes(
+      ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,
-      const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
-          ready_task,
+      const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) override = 0;
 
   // Turns on encryption of all present and future sync data.
@@ -159,12 +150,12 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // Called on |frontend_loop_| to obtain a handle to the UserShare needed for
   // creating transactions.  Should not be called before we signal
   // initialization is complete with OnBackendInitialized().
-  virtual syncer::UserShare* GetUserShare() const = 0;
+  virtual UserShare* GetUserShare() const = 0;
 
   // Called from any thread to obtain current status information in detailed or
   // summarized form.
   virtual Status GetDetailedStatus() = 0;
-  virtual syncer::SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
+  virtual SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
 
   // Determines if the underlying sync engine has made any local changes to
   // items that have not yet been synced with the server.
@@ -176,7 +167,7 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
 
   // Returns the type of passphrase being used to encrypt data. See
   // sync_encryption_handler.h.
-  virtual syncer::PassphraseType GetPassphraseType() const = 0;
+  virtual PassphraseType GetPassphraseType() const = 0;
 
   // If an explicit passphrase is in use, returns the time at which that
   // passphrase was set (if available).
@@ -185,11 +176,9 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   // True if the cryptographer has any keys available to attempt decryption.
   // Could mean we've downloaded and loaded Nigori objects, or we bootstrapped
   // using a token previously received.
-  virtual bool IsCryptographerReady(
-      const syncer::BaseTransaction* trans) const = 0;
+  virtual bool IsCryptographerReady(const BaseTransaction* trans) const = 0;
 
-  virtual void GetModelSafeRoutingInfo(
-      syncer::ModelSafeRoutingInfo* out) const = 0;
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const = 0;
 
   // Send a message to the sync thread to persist the Directory to disk.
   virtual void FlushDirectory() const = 0;
@@ -214,11 +203,11 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   virtual base::MessageLoop* GetSyncLoopForTesting() = 0;
 
   // Triggers sync cycle to update |types|.
-  virtual void RefreshTypesForTest(syncer::ModelTypeSet types) = 0;
+  virtual void RefreshTypesForTest(ModelTypeSet types) = 0;
 
   // See SyncManager::ClearServerData.
   virtual void ClearServerData(
-      const syncer::SyncManager::ClearServerDataCallback& callback) = 0;
+      const SyncManager::ClearServerDataCallback& callback) = 0;
 
   // Notify the syncer that the cookie jar has changed.
   // See SyncManager::OnCookieJarChanged.
@@ -228,6 +217,6 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_HOST_H_

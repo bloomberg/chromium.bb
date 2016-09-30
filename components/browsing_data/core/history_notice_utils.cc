@@ -60,7 +60,7 @@ bool g_override_other_forms_of_browsing_history_query = false;
 }  // namespace testing
 
 void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
-    const sync_driver::SyncService* sync_service,
+    const syncer::SyncService* sync_service,
     history::WebHistoryService* history_service,
     base::Callback<void(bool)> callback) {
   if (!sync_service ||
@@ -77,7 +77,7 @@ void ShouldShowNoticeAboutOtherFormsOfBrowsingHistory(
 }
 
 void ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
-    const sync_driver::SyncService* sync_service,
+    const syncer::SyncService* sync_service,
     history::WebHistoryService* history_service,
     version_info::Channel channel,
     base::Callback<void(bool)> callback) {

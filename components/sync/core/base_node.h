@@ -175,7 +175,7 @@ class BaseNode {
   int GetPositionIndex() const;
 
   // Returns this item's attachment ids.
-  const syncer::AttachmentIdList GetAttachmentIds() const;
+  const AttachmentIdList GetAttachmentIds() const;
 
   // Returns a base::DictionaryValue serialization of this node.
   base::DictionaryValue* ToValue() const;

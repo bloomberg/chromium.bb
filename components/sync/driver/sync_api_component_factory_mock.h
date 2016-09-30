@@ -14,63 +14,60 @@
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace sync_driver {
+namespace syncer {
+
 class AssociatorInterface;
 class ChangeProcessor;
 class DataTypeEncryptionHandler;
 class DataTypeStatusTable;
 class SyncClient;
-}
 
-class SyncApiComponentFactoryMock
-    : public sync_driver::SyncApiComponentFactory {
+class SyncApiComponentFactoryMock : public SyncApiComponentFactory {
  public:
   SyncApiComponentFactoryMock();
-  SyncApiComponentFactoryMock(
-      sync_driver::AssociatorInterface* model_associator,
-      sync_driver::ChangeProcessor* change_processor);
+  SyncApiComponentFactoryMock(AssociatorInterface* model_associator,
+                              ChangeProcessor* change_processor);
   ~SyncApiComponentFactoryMock() override;
 
   MOCK_METHOD2(RegisterDataTypes,
-               void(sync_driver::SyncService* sync_service,
-                    const RegisterDataTypesMethod&));
+               void(SyncService* sync_service, const RegisterDataTypesMethod&));
   MOCK_METHOD5(CreateDataTypeManager,
-               sync_driver::DataTypeManager*(
-                   const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,
-                   const sync_driver::DataTypeController::TypeMap*,
-                   const sync_driver::DataTypeEncryptionHandler*,
-                   browser_sync::SyncBackendHost*,
-                   sync_driver::DataTypeManagerObserver* observer));
+               DataTypeManager*(const WeakHandle<DataTypeDebugInfoListener>&,
+                                const DataTypeController::TypeMap*,
+                                const DataTypeEncryptionHandler*,
+                                SyncBackendHost*,
+                                DataTypeManagerObserver* observer));
   MOCK_METHOD4(CreateSyncBackendHost,
-               browser_sync::SyncBackendHost*(
-                   const std::string& name,
-                   invalidation::InvalidationService* invalidator,
-                   const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
-                   const base::FilePath& sync_folder));
+               SyncBackendHost*(const std::string& name,
+                                invalidation::InvalidationService* invalidator,
+                                const base::WeakPtr<SyncPrefs>& sync_prefs,
+                                const base::FilePath& sync_folder));
 
-  std::unique_ptr<sync_driver::LocalDeviceInfoProvider>
-  CreateLocalDeviceInfoProvider() override;
+  std::unique_ptr<LocalDeviceInfoProvider> CreateLocalDeviceInfoProvider()
+      override;
   void SetLocalDeviceInfoProvider(
-      std::unique_ptr<sync_driver::LocalDeviceInfoProvider> local_device);
+      std::unique_ptr<LocalDeviceInfoProvider> local_device);
 
-  std::unique_ptr<syncer::AttachmentService> CreateAttachmentService(
-      std::unique_ptr<syncer::AttachmentStoreForSync> attachment_store,
-      const syncer::UserShare& user_share,
+  std::unique_ptr<AttachmentService> CreateAttachmentService(
+      std::unique_ptr<AttachmentStoreForSync> attachment_store,
+      const UserShare& user_share,
       const std::string& store_birthday,
-      syncer::ModelType model_type,
-      syncer::AttachmentService::Delegate* delegate) override;
+      ModelType model_type,
+      AttachmentService::Delegate* delegate) override;
   SyncComponents CreateBookmarkSyncComponents(
-      sync_driver::SyncService* sync_service,
-      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler) override;
+      SyncService* sync_service,
+      std::unique_ptr<DataTypeErrorHandler> error_handler) override;
 
  private:
-  sync_driver::SyncApiComponentFactory::SyncComponents MakeSyncComponents();
+  SyncApiComponentFactory::SyncComponents MakeSyncComponents();
 
-  std::unique_ptr<sync_driver::AssociatorInterface> model_associator_;
-  std::unique_ptr<sync_driver::ChangeProcessor> change_processor_;
+  std::unique_ptr<AssociatorInterface> model_associator_;
+  std::unique_ptr<ChangeProcessor> change_processor_;
   // LocalDeviceInfoProvider is initially owned by this class,
   // transferred to caller when CreateLocalDeviceInfoProvider is called.
-  std::unique_ptr<sync_driver::LocalDeviceInfoProvider> local_device_;
+  std::unique_ptr<LocalDeviceInfoProvider> local_device_;
 };
+
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_API_COMPONENT_FACTORY_MOCK_H__

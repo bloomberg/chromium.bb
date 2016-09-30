@@ -15,7 +15,7 @@
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // Manages the pending commit and update state for an entity on the sync
 // thread.
@@ -33,7 +33,7 @@ class WorkerEntityTracker {
  public:
   // Initializes the entity tracker's main fields. Does not initialize state
   // related to a pending commit.
-  WorkerEntityTracker(const std::string& client_tag_hash);
+  explicit WorkerEntityTracker(const std::string& client_tag_hash);
 
   ~WorkerEntityTracker();
 
@@ -119,6 +119,6 @@ class WorkerEntityTracker {
   DISALLOW_COPY_AND_ASSIGN(WorkerEntityTracker);
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_ENGINE_IMPL_WORKER_ENTITY_TRACKER_H_

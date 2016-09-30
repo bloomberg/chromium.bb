@@ -81,7 +81,7 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(ChromePasswordManagerClient);
 
 namespace {
 
-const sync_driver::SyncService* GetSyncService(Profile* profile) {
+const syncer::SyncService* GetSyncService(Profile* profile) {
   if (ProfileSyncServiceFactory::HasProfileSyncService(profile))
     return ProfileSyncServiceFactory::GetForProfile(profile);
   return nullptr;

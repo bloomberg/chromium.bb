@@ -7,7 +7,7 @@
 
 class PrefService;
 
-namespace sync_driver {
+namespace syncer {
 
 class SyncService;
 
@@ -16,6 +16,6 @@ class SyncService;
 bool IsTabSyncEnabledAndUnencrypted(SyncService* sync_service,
                                     PrefService* pref_service);
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_SERVICE_UTILS_H_

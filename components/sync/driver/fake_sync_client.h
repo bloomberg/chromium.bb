@@ -11,7 +11,8 @@
 #include "components/sync/driver/sync_client.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 
-namespace sync_driver {
+namespace syncer {
+
 class FakeSyncService;
 
 // Fake implementation of SyncClient interface for tests.
@@ -29,33 +30,33 @@ class FakeSyncClient : public SyncClient {
   favicon::FaviconService* GetFaviconService() override;
   history::HistoryService* GetHistoryService() override;
   base::Closure GetPasswordStateChangedCallback() override;
-  sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
+  SyncApiComponentFactory::RegisterDataTypesMethod
   GetRegisterPlatformTypesCallback() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   BookmarkUndoService* GetBookmarkUndoServiceIfExists() override;
   invalidation::InvalidationService* GetInvalidationService() override;
-  scoped_refptr<syncer::ExtensionsActivity> GetExtensionsActivity() override;
+  scoped_refptr<ExtensionsActivity> GetExtensionsActivity() override;
   sync_sessions::SyncSessionsClient* GetSyncSessionsClient() override;
-  base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
-      syncer::ModelType type) override;
-  base::WeakPtr<syncer_v2::ModelTypeService> GetModelTypeServiceForType(
-      syncer::ModelType type) override;
-  scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
-      syncer::ModelSafeGroup group,
-      syncer::WorkerLoopDestructionObserver* observer) override;
+  base::WeakPtr<SyncableService> GetSyncableServiceForType(
+      ModelType type) override;
+  base::WeakPtr<ModelTypeService> GetModelTypeServiceForType(
+      ModelType type) override;
+  scoped_refptr<ModelSafeWorker> CreateModelWorkerForGroup(
+      ModelSafeGroup group,
+      WorkerLoopDestructionObserver* observer) override;
   SyncApiComponentFactory* GetSyncApiComponentFactory() override;
 
-  void SetModelTypeService(syncer_v2::ModelTypeService* model_type_service);
+  void SetModelTypeService(ModelTypeService* model_type_service);
 
  private:
   syncable_prefs::TestingPrefServiceSyncable pref_service_;
-  syncer_v2::ModelTypeService* model_type_service_;
+  ModelTypeService* model_type_service_;
   SyncApiComponentFactory* factory_;
   std::unique_ptr<FakeSyncService> sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncClient);
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_FAKE_SYNC_CLIENT_H_

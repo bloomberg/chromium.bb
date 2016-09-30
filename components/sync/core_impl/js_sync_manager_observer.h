@@ -37,10 +37,10 @@ class JsSyncManagerObserver : public SyncManager::Observer {
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       bool success,
-      syncer::ModelTypeSet restored_types) override;
+      ModelTypeSet restored_types) override;
   void OnActionableError(const SyncProtocolError& sync_protocol_error) override;
   void OnProtocolEvent(const ProtocolEvent& event) override;
-  void OnMigrationRequested(syncer::ModelTypeSet types) override;
+  void OnMigrationRequested(ModelTypeSet types) override;
 
  private:
   void HandleJsEvent(const tracked_objects::Location& from_here,

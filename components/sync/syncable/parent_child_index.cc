@@ -4,6 +4,8 @@
 
 #include "components/sync/syncable/parent_child_index.h"
 
+#include <utility>
+
 #include "base/stl_util.h"
 #include "components/sync/syncable/entry_kernel.h"
 
@@ -80,8 +82,7 @@ bool ParentChildIndex::Insert(EntryKernel* entry) {
   // theoretically be sufficient but in practice many tests don't properly
   // initialize entries so TypeSupportsHierarchy ends up failing. Consider
   // tweaking TypeSupportsHierarchy and fixing all related test code.
-  if (parent_id.IsRoot() && entry->ref(IS_DIR) &&
-      syncer::IsRealDataType(model_type) &&
+  if (parent_id.IsRoot() && entry->ref(IS_DIR) && IsRealDataType(model_type) &&
       !TypeSupportsHierarchy(model_type)) {
     const Id& type_root_id = entry->ref(ID);
 
@@ -173,7 +174,7 @@ bool ParentChildIndex::ShouldUseParentId(const Id& parent_id,
   // entries, this returns true any entries directly under root and for entries
   // of UNSPECIFIED model type.
   return parent_id.IsRoot() || TypeSupportsHierarchy(model_type) ||
-         !syncer::IsRealDataType(model_type);
+         !IsRealDataType(model_type);
 }
 
 const OrderedChildSetRef ParentChildIndex::GetChildSet(EntryKernel* e) const {

@@ -6,13 +6,13 @@
 
 #include "components/sync/driver/data_type_manager.h"
 
-namespace sync_driver {
+namespace syncer {
 
 namespace {
 
-syncer::ModelTypeSet GetTypesFromErrorMap(
+ModelTypeSet GetTypesFromErrorMap(
     const DataTypeStatusTable::TypeErrorMap& errors) {
-  syncer::ModelTypeSet result;
+  ModelTypeSet result;
   for (DataTypeStatusTable::TypeErrorMap::const_iterator it = errors.begin();
        it != errors.end(); ++it) {
     DCHECK(!result.Has(it->first));
@@ -35,25 +35,25 @@ void DataTypeStatusTable::UpdateFailedDataTypes(const TypeErrorMap& errors) {
 
   for (TypeErrorMap::const_iterator iter = errors.begin(); iter != errors.end();
        ++iter) {
-    syncer::SyncError::ErrorType failure_type = iter->second.error_type();
+    SyncError::ErrorType failure_type = iter->second.error_type();
     switch (failure_type) {
-      case syncer::SyncError::UNSET:
+      case SyncError::UNSET:
         NOTREACHED();
         break;
-      case syncer::SyncError::UNRECOVERABLE_ERROR:
+      case SyncError::UNRECOVERABLE_ERROR:
         unrecoverable_errors_.insert(*iter);
         break;
-      case syncer::SyncError::DATATYPE_ERROR:
-      case syncer::SyncError::DATATYPE_POLICY_ERROR:
+      case SyncError::DATATYPE_ERROR:
+      case SyncError::DATATYPE_POLICY_ERROR:
         data_type_errors_.insert(*iter);
         break;
-      case syncer::SyncError::CRYPTO_ERROR:
+      case SyncError::CRYPTO_ERROR:
         crypto_errors_.insert(*iter);
         break;
-      case syncer::SyncError::PERSISTENCE_ERROR:
+      case SyncError::PERSISTENCE_ERROR:
         persistence_errors_.insert(*iter);
         break;
-      case syncer::SyncError::UNREADY_ERROR:
+      case SyncError::UNREADY_ERROR:
         unready_errors_.insert(*iter);
         break;
     }
@@ -74,18 +74,18 @@ void DataTypeStatusTable::ResetCryptoErrors() {
 }
 
 void DataTypeStatusTable::ResetPersistenceErrorsFrom(
-    syncer::ModelTypeSet purged_types) {
-  for (syncer::ModelTypeSet::Iterator iter = purged_types.First(); iter.Good();
+    ModelTypeSet purged_types) {
+  for (ModelTypeSet::Iterator iter = purged_types.First(); iter.Good();
        iter.Inc()) {
     persistence_errors_.erase(iter.Get());
   }
 }
 
-bool DataTypeStatusTable::ResetDataTypeErrorFor(syncer::ModelType type) {
+bool DataTypeStatusTable::ResetDataTypeErrorFor(ModelType type) {
   return data_type_errors_.erase(type) > 0;
 }
 
-bool DataTypeStatusTable::ResetUnreadyErrorFor(syncer::ModelType type) {
+bool DataTypeStatusTable::ResetUnreadyErrorFor(ModelType type) {
   return unready_errors_.erase(type) > 0;
 }
 
@@ -99,47 +99,47 @@ DataTypeStatusTable::TypeErrorMap DataTypeStatusTable::GetAllErrors() const {
   return result;
 }
 
-syncer::ModelTypeSet DataTypeStatusTable::GetFailedTypes() const {
-  syncer::ModelTypeSet result = GetFatalErrorTypes();
+ModelTypeSet DataTypeStatusTable::GetFailedTypes() const {
+  ModelTypeSet result = GetFatalErrorTypes();
   result.PutAll(GetCryptoErrorTypes());
   result.PutAll(GetUnreadyErrorTypes());
   return result;
 }
 
-syncer::ModelTypeSet DataTypeStatusTable::GetFatalErrorTypes() const {
-  syncer::ModelTypeSet result;
+ModelTypeSet DataTypeStatusTable::GetFatalErrorTypes() const {
+  ModelTypeSet result;
   result.PutAll(GetTypesFromErrorMap(data_type_errors_));
   result.PutAll(GetTypesFromErrorMap(unrecoverable_errors_));
   return result;
 }
 
-syncer::ModelTypeSet DataTypeStatusTable::GetCryptoErrorTypes() const {
-  syncer::ModelTypeSet result = GetTypesFromErrorMap(crypto_errors_);
+ModelTypeSet DataTypeStatusTable::GetCryptoErrorTypes() const {
+  ModelTypeSet result = GetTypesFromErrorMap(crypto_errors_);
   return result;
 }
 
-syncer::ModelTypeSet DataTypeStatusTable::GetPersistenceErrorTypes() const {
-  syncer::ModelTypeSet result = GetTypesFromErrorMap(persistence_errors_);
+ModelTypeSet DataTypeStatusTable::GetPersistenceErrorTypes() const {
+  ModelTypeSet result = GetTypesFromErrorMap(persistence_errors_);
   return result;
 }
 
-syncer::ModelTypeSet DataTypeStatusTable::GetUnreadyErrorTypes() const {
-  syncer::ModelTypeSet result = GetTypesFromErrorMap(unready_errors_);
+ModelTypeSet DataTypeStatusTable::GetUnreadyErrorTypes() const {
+  ModelTypeSet result = GetTypesFromErrorMap(unready_errors_);
   return result;
 }
 
-syncer::ModelTypeSet DataTypeStatusTable::GetUnrecoverableErrorTypes() const {
-  syncer::ModelTypeSet result = GetTypesFromErrorMap(unrecoverable_errors_);
+ModelTypeSet DataTypeStatusTable::GetUnrecoverableErrorTypes() const {
+  ModelTypeSet result = GetTypesFromErrorMap(unrecoverable_errors_);
   return result;
 }
 
-syncer::SyncError DataTypeStatusTable::GetUnrecoverableError() const {
+SyncError DataTypeStatusTable::GetUnrecoverableError() const {
   // Just return the first one. It is assumed all the unrecoverable errors
   // have the same cause. The others are just tracked to know which types
   // were involved.
   return (unrecoverable_errors_.empty()
-              ? syncer::SyncError()
+              ? SyncError()
               : unrecoverable_errors_.begin()->second);
 }
 
-}  // namespace sync_driver
+}  // namespace syncer

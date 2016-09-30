@@ -19,7 +19,7 @@
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // Mocks the ModelTypeProcessor.
 //
@@ -146,6 +146,6 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   DISALLOW_COPY_AND_ASSIGN(MockModelTypeProcessor);
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_PROCESSOR_H_

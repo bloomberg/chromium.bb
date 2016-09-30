@@ -15,9 +15,9 @@ class NudgeHandler {
   NudgeHandler();
   virtual ~NudgeHandler();
 
-  virtual void NudgeForInitialDownload(syncer::ModelType type) = 0;
-  virtual void NudgeForCommit(syncer::ModelType type) = 0;
-  virtual void NudgeForRefresh(syncer::ModelType type) = 0;
+  virtual void NudgeForInitialDownload(ModelType type) = 0;
+  virtual void NudgeForCommit(ModelType type) = 0;
+  virtual void NudgeForRefresh(ModelType type) = 0;
 };
 
 }  // namespace syncer

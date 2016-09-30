@@ -8,7 +8,7 @@ namespace browser_sync {
 
 SearchEngineDataTypeController::SearchEngineDataTypeController(
     const base::Closure& dump_stack,
-    sync_driver::SyncClient* sync_client,
+    syncer::SyncClient* sync_client,
     TemplateURLService* template_url_service)
     : UIDataTypeController(syncer::SEARCH_ENGINES, dump_stack, sync_client),
       template_url_service_(template_url_service) {}

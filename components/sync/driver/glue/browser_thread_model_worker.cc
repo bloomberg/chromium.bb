@@ -11,17 +11,17 @@
 using base::SingleThreadTaskRunner;
 using base::WaitableEvent;
 
-namespace browser_sync {
+namespace syncer {
 
 BrowserThreadModelWorker::BrowserThreadModelWorker(
     const scoped_refptr<SingleThreadTaskRunner>& runner,
-    syncer::ModelSafeGroup group,
-    syncer::WorkerLoopDestructionObserver* observer)
+    ModelSafeGroup group,
+    WorkerLoopDestructionObserver* observer)
     : ModelSafeWorker(observer), runner_(runner), group_(group) {}
 
-syncer::SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDoneImpl(
-    const syncer::WorkCallback& work) {
-  syncer::SyncerError error = syncer::UNSET;
+SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDoneImpl(
+    const WorkCallback& work) {
+  SyncerError error = UNSET;
   if (runner_->BelongsToCurrentThread()) {
     DLOG(WARNING) << "Already on thread " << runner_;
     return work.Run();
@@ -32,14 +32,14 @@ syncer::SyncerError BrowserThreadModelWorker::DoWorkAndWaitUntilDoneImpl(
           base::Bind(&BrowserThreadModelWorker::CallDoWorkAndSignalTask, this,
                      work, work_done_or_stopped(), &error))) {
     DLOG(WARNING) << "Failed to post task to runner " << runner_;
-    error = syncer::CANNOT_DO_WORK;
+    error = CANNOT_DO_WORK;
     return error;
   }
   work_done_or_stopped()->Wait();
   return error;
 }
 
-syncer::ModelSafeGroup BrowserThreadModelWorker::GetModelSafeGroup() {
+ModelSafeGroup BrowserThreadModelWorker::GetModelSafeGroup() {
   return group_;
 }
 
@@ -55,14 +55,13 @@ void BrowserThreadModelWorker::RegisterForLoopDestruction() {
   }
 }
 
-void BrowserThreadModelWorker::CallDoWorkAndSignalTask(
-    const syncer::WorkCallback& work,
-    WaitableEvent* done,
-    syncer::SyncerError* error) {
+void BrowserThreadModelWorker::CallDoWorkAndSignalTask(const WorkCallback& work,
+                                                       WaitableEvent* done,
+                                                       SyncerError* error) {
   DCHECK(runner_->BelongsToCurrentThread());
   if (!IsStopped())
     *error = work.Run();
   done->Signal();
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

@@ -15,6 +15,7 @@
 #include "components/sync/syncable/entry.h"
 
 namespace syncer {
+
 class WriteNode;
 
 namespace syncable {
@@ -105,7 +106,7 @@ class ModelNeutralMutableEntry : public Entry {
 
  private:
   friend class syncer::WriteNode;
-  friend class Directory;
+  friend class syncer::syncable::Directory;
 
   // Don't allow creation on heap, except by sync API wrappers.
   void* operator new(size_t size) { return (::operator new)(size); }

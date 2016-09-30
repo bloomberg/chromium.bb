@@ -10,10 +10,7 @@
 #include "components/version_info/version_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_driver::DeviceInfo;
-using sync_driver::LocalDeviceInfoProvider;
-
-namespace browser_sync {
+namespace syncer {
 
 const char kLocalDeviceGuid[] = "foo";
 const char kSigninScopedDeviceId[] = "device_id";
@@ -90,7 +87,7 @@ TEST_F(LocalDeviceInfoProviderTest, GetLocalDeviceInfo) {
   EXPECT_EQ(std::string(kLocalDeviceGuid), local_device_info->guid());
   EXPECT_EQ(std::string(kSigninScopedDeviceId),
             local_device_info->signin_scoped_device_id());
-  EXPECT_EQ(syncer::GetSessionNameSynchronouslyForTesting(),
+  EXPECT_EQ(GetSessionNameSynchronouslyForTesting(),
             local_device_info->client_name());
 
   EXPECT_EQ(provider_->GetSyncUserAgent(),
@@ -143,4 +140,4 @@ TEST_F(LocalDeviceInfoProviderTest, InitClearInitRace) {
   EXPECT_EQ(guid2, provider_->GetLocalSyncCacheGUID());
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

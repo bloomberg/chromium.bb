@@ -6,19 +6,17 @@
 #define COMPONENTS_SYNC_DRIVER_PROTOCOL_EVENT_OBSERVER_H_
 
 namespace syncer {
-class ProtocolEvent;
-}
 
-namespace browser_sync {
+class ProtocolEvent;
 
 class ProtocolEventObserver {
  public:
   ProtocolEventObserver();
   virtual ~ProtocolEventObserver();
 
-  virtual void OnProtocolEvent(const syncer::ProtocolEvent& event) = 0;
+  virtual void OnProtocolEvent(const ProtocolEvent& event) = 0;
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_PROTOCOL_EVENT_OBSERVER_H_

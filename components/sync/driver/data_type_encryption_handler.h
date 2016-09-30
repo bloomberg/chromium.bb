@@ -7,7 +7,7 @@
 
 #include "components/sync/base/model_type.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // The DataTypeEncryptionHandler provides the status of datatype encryption.
 class DataTypeEncryptionHandler {
@@ -20,9 +20,9 @@ class DataTypeEncryptionHandler {
   virtual bool IsPassphraseRequired() const = 0;
 
   // Returns the current set of encrypted data types.
-  virtual syncer::ModelTypeSet GetEncryptedDataTypes() const = 0;
+  virtual ModelTypeSet GetEncryptedDataTypes() const = 0;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_ENCRYPTION_HANDLER_H_

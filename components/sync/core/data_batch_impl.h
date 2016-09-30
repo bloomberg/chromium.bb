@@ -16,7 +16,7 @@
 #include "components/sync/api/data_batch.h"
 #include "components/sync/api/entity_data.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // An implementation of DataBatch that's purpose is to transfer ownership of
 // EntityData objects. As soon as this batch recieves the EntityData, it owns
@@ -45,6 +45,6 @@ class DataBatchImpl : public DataBatch {
   DISALLOW_COPY_AND_ASSIGN(DataBatchImpl);
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_DATA_BATCH_IMPL_H_

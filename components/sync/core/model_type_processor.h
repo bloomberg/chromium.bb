@@ -10,7 +10,7 @@
 #include "components/sync/core/non_blocking_sync_common.h"
 #include "components/sync/protocol/data_type_state.pb.h"
 
-namespace syncer_v2 {
+namespace syncer {
 class CommitQueue;
 
 // Interface used by sync backend to issue requests to a synced data type.
@@ -42,6 +42,6 @@ class ModelTypeProcessor {
                                 const UpdateResponseDataList& updates) = 0;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_MODEL_TYPE_PROCESSOR_H_

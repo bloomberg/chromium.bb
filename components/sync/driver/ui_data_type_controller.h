@@ -17,15 +17,13 @@
 
 namespace base {
 class TimeDelta;
-}
+}  // namespace base
 
 namespace syncer {
+
 class SyncableService;
 class SyncClient;
 class SyncError;
-}
-
-namespace sync_driver {
 
 // Implementation for datatypes that reside on the (UI thread). This is the same
 // thread we perform initialization on, so we don't have to worry about thread
@@ -34,7 +32,7 @@ namespace sync_driver {
 class UIDataTypeController : public DirectoryDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  UIDataTypeController(syncer::ModelType type,
+  UIDataTypeController(ModelType type,
                        const base::Closure& dump_stack,
                        SyncClient* sync_client);
   ~UIDataTypeController() override;
@@ -43,7 +41,7 @@ class UIDataTypeController : public DirectoryDataTypeController {
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
-  syncer::ModelSafeGroup model_safe_group() const override;
+  ModelSafeGroup model_safe_group() const override;
   ChangeProcessor* GetChangeProcessor() const override;
   std::string name() const override;
   State state() const override;
@@ -71,8 +69,8 @@ class UIDataTypeController : public DirectoryDataTypeController {
 
   // Helper method for cleaning up state and invoking the start callback.
   virtual void StartDone(ConfigureResult result,
-                         const syncer::SyncMergeResult& local_merge_result,
-                         const syncer::SyncMergeResult& syncer_merge_result);
+                         const SyncMergeResult& local_merge_result,
+                         const SyncMergeResult& syncer_merge_result);
 
   // Record association time.
   virtual void RecordAssociationTime(base::TimeDelta time);
@@ -84,7 +82,7 @@ class UIDataTypeController : public DirectoryDataTypeController {
   // us know that it is safe to start associating.
   void OnModelLoaded();
 
-  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
+  std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;
 
   State state_;
 
@@ -102,7 +100,7 @@ class UIDataTypeController : public DirectoryDataTypeController {
   //
   // Note: we use refcounting here primarily so that we can keep a uniform
   // SyncableService API, whether the datatype lives on the UI thread or not
-  // (a syncer::SyncableService takes ownership of its SyncChangeProcessor when
+  // (a SyncableService takes ownership of its SyncChangeProcessor when
   // MergeDataAndStartSyncing is called). This will help us eventually merge the
   // two datatype controller implementations (for ui and non-ui thread
   // datatypes).
@@ -112,7 +110,7 @@ class UIDataTypeController : public DirectoryDataTypeController {
 
   // A weak pointer to the actual local syncable service, which performs all the
   // real work. We do not own the object.
-  base::WeakPtr<syncer::SyncableService> local_service_;
+  base::WeakPtr<SyncableService> local_service_;
 
  private:
   // Associate the sync model with the service's model, then start syncing.
@@ -120,11 +118,11 @@ class UIDataTypeController : public DirectoryDataTypeController {
 
   virtual void AbortModelLoad();
 
-  void OnUnrecoverableError(const syncer::SyncError& error);
+  void OnUnrecoverableError(const SyncError& error);
 
   DISALLOW_COPY_AND_ASSIGN(UIDataTypeController);
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_UI_DATA_TYPE_CONTROLLER_H_

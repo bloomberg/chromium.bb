@@ -8,7 +8,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 class ModelTypeStoreBackendTest : public testing::Test {
  public:
@@ -187,4 +187,4 @@ TEST_F(ModelTypeStoreBackendTest, TwoDifferentBackendTest) {
   ASSERT_FALSE(BackendExistsForPath("/test_db2"));
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

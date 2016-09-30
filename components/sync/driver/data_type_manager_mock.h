@@ -9,18 +9,17 @@
 #include "components/sync/driver/data_type_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace sync_driver {
+namespace syncer {
 
 class DataTypeManagerMock : public DataTypeManager {
  public:
   DataTypeManagerMock();
   virtual ~DataTypeManagerMock();
 
-  MOCK_METHOD2(Configure, void(syncer::ModelTypeSet, syncer::ConfigureReason));
-  MOCK_METHOD1(ReenableType, void(syncer::ModelType));
+  MOCK_METHOD2(Configure, void(ModelTypeSet, ConfigureReason));
+  MOCK_METHOD1(ReenableType, void(ModelType));
   MOCK_METHOD0(ResetDataTypeErrors, void());
-  MOCK_METHOD2(PurgeForMigration,
-               void(syncer::ModelTypeSet, syncer::ConfigureReason));
+  MOCK_METHOD2(PurgeForMigration, void(ModelTypeSet, ConfigureReason));
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(controllers, const DataTypeController::TypeMap&());
   MOCK_CONST_METHOD0(state, State());
@@ -29,6 +28,6 @@ class DataTypeManagerMock : public DataTypeManager {
   DataTypeManager::ConfigureResult result_;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_MOCK_H__

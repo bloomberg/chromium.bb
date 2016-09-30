@@ -10,7 +10,7 @@ using google::protobuf::RepeatedPtrField;
 
 namespace syncer {
 
-SingleTypeMockServer::SingleTypeMockServer(syncer::ModelType type)
+SingleTypeMockServer::SingleTypeMockServer(ModelType type)
     : type_(type), type_root_id_(ModelTypeToRootTag(type)) {}
 
 SingleTypeMockServer::~SingleTypeMockServer() {}

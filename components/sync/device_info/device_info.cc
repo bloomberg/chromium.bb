@@ -6,7 +6,7 @@
 
 #include "base/values.h"
 
-namespace sync_driver {
+namespace syncer {
 
 DeviceInfo::DeviceInfo(const std::string& guid,
                        const std::string& client_name,
@@ -110,4 +110,4 @@ void DeviceInfo::set_public_id(const std::string& id) {
   public_id_ = id;
 }
 
-}  // namespace sync_driver
+}  // namespace syncer

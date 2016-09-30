@@ -15,7 +15,7 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace sync_driver {
+namespace syncer {
 
 // A class that holds information regarding the properties of a device.
 class DeviceInfo {
@@ -96,6 +96,6 @@ class DeviceInfo {
   DISALLOW_COPY_AND_ASSIGN(DeviceInfo);
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DEVICE_INFO_DEVICE_INFO_H_

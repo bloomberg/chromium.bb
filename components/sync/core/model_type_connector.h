@@ -9,7 +9,7 @@
 
 #include "components/sync/base/model_type.h"
 
-namespace syncer_v2 {
+namespace syncer {
 struct ActivationContext;
 
 // An interface into the core parts of sync for USS model types. Handles
@@ -25,7 +25,7 @@ class ModelTypeConnector {
   // processor proxy that forwards calls to the model thread and is safe to call
   // from the sync thread.
   virtual void ConnectType(
-      syncer::ModelType type,
+      ModelType type,
       std::unique_ptr<ActivationContext> activation_context) = 0;
 
   // Disconnects the worker from |type|'s processor and stop syncing the type.
@@ -33,9 +33,9 @@ class ModelTypeConnector {
   // This is the sync thread's chance to clear state associated with the type.
   // It also causes the syncer to stop requesting updates for this type, and to
   // abort any in-progress commit requests.
-  virtual void DisconnectType(syncer::ModelType type) = 0;
+  virtual void DisconnectType(ModelType type) = 0;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_MODEL_TYPE_CONNECTOR_H_

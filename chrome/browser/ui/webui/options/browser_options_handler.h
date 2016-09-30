@@ -58,7 +58,7 @@ namespace options {
 class BrowserOptionsHandler
     : public OptionsPageUIHandler,
       public ProfileAttributesStorage::Observer,
-      public sync_driver::SyncServiceObserver,
+      public syncer::SyncServiceObserver,
       public SigninManagerBase::Observer,
       public ui::SelectFileDialog::Listener,
 #if defined(OS_CHROMEOS)
@@ -81,7 +81,7 @@ class BrowserOptionsHandler
   void RegisterMessages() override;
   void Uninitialize() override;
 
-  // sync_driver::SyncServiceObserver implementation.
+  // syncer::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // SigninManagerBase::Observer implementation.

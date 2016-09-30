@@ -11,7 +11,7 @@
 #include "components/sync/api/stub_model_type_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // A mock MTCP that lets us know when DisableSync is called.
 class MockModelTypeChangeProcessor : public FakeModelTypeChangeProcessor {
@@ -48,7 +48,7 @@ class MockModelTypeService : public StubModelTypeService {
 
  private:
   std::unique_ptr<ModelTypeChangeProcessor> CreateProcessor(
-      syncer::ModelType type,
+      ModelType type,
       ModelTypeService* service) {
     return base::MakeUnique<MockModelTypeChangeProcessor>(base::Bind(
         &MockModelTypeService::OnProcessorDisableSync, base::Unretained(this)));
@@ -69,7 +69,7 @@ class ModelTypeServiceTest : public ::testing::Test {
 
   void OnSyncStarting() {
     service_.OnSyncStarting(
-        base::MakeUnique<syncer::DataTypeErrorHandlerMock>(),
+        base::MakeUnique<DataTypeErrorHandlerMock>(),
         base::Bind(&ModelTypeServiceTest::OnProcessorStarted,
                    base::Unretained(this)));
   }
@@ -79,7 +79,7 @@ class ModelTypeServiceTest : public ::testing::Test {
 
  private:
   void OnProcessorStarted(
-      syncer::SyncError error,
+      SyncError error,
       std::unique_ptr<ActivationContext> activation_context) {
     start_callback_called_ = true;
   }
@@ -152,4 +152,4 @@ TEST_F(ModelTypeServiceTest, DefaultConflictResolution) {
             service()->ResolveConflict(local_data, remote_data).type());
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

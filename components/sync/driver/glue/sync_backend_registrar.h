@@ -28,29 +28,23 @@ class MessageLoop;
 }
 
 namespace syncer {
-struct UserShare;
-}  // namespace syncer
 
-namespace sync_driver {
 class ChangeProcessor;
 class SyncClient;
-}
-
-namespace browser_sync {
-
 class UIModelWorker;
+struct UserShare;
 
 // A class that keep track of the workers, change processors, and
 // routing info for the enabled sync types, and also routes change
 // events to the right processors.
-class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
-                             public syncer::WorkerLoopDestructionObserver {
+class SyncBackendRegistrar : public SyncManager::ChangeDelegate,
+                             public WorkerLoopDestructionObserver {
  public:
   // |name| is used for debugging.  Does not take ownership of |profile|.
   // Must be created on the UI thread.
   SyncBackendRegistrar(
       const std::string& name,
-      sync_driver::SyncClient* sync_client,
+      SyncClient* sync_client,
       std::unique_ptr<base::Thread> sync_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
@@ -73,17 +67,17 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // GROUP_NON_BLOCKING model safe group and will be treated differently in
   // ModelTypeRegistry. Unlike directory types, non-blocking types always stay
   // assigned to GROUP_NON_BLOCKING group.
-  void RegisterNonBlockingType(syncer::ModelType type);
+  void RegisterNonBlockingType(ModelType type);
 
   // Informs the SyncBackendRegistrar of the currently enabled set of types.
   // These types will be placed in the passive group.  This function should be
   // called exactly once during startup.
-  void SetInitialTypes(syncer::ModelTypeSet initial_types);
+  void SetInitialTypes(ModelTypeSet initial_types);
 
   // Informs SyncBackendRegistrar about non-blocking type loaded from local
   // storage. Initial sync was already performed for this type, therefore its
   // data shouldn't be downloaded as part of configuration.
-  void AddRestoredNonBlockingType(syncer::ModelType type);
+  void AddRestoredNonBlockingType(ModelType type);
 
   // Returns whether or not we are currently syncing encryption keys.
   // Must be called on the UI thread.
@@ -94,13 +88,13 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // not already there (initially put in the passive group).
   // |types_to_remove| and |types_to_add| must be disjoint.  Returns
   // the set of newly-added types.  Must be called on the UI thread.
-  syncer::ModelTypeSet ConfigureDataTypes(syncer::ModelTypeSet types_to_add,
-                                          syncer::ModelTypeSet types_to_remove);
+  ModelTypeSet ConfigureDataTypes(ModelTypeSet types_to_add,
+                                  ModelTypeSet types_to_remove);
 
   // Returns the set of enabled types as of the last configuration. Note that
   // this might be different from the current types in the routing info due
   // to DeactiveDataType being called separately from ConfigureDataTypes.
-  syncer::ModelTypeSet GetLastConfiguredTypes() const;
+  ModelTypeSet GetLastConfiguredTypes() const;
 
   // Must be called from the UI thread. (See destructor comment.)
   void RequestWorkerStopOnUIThread();
@@ -108,34 +102,33 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // Activates the given data type (which should belong to the given
   // group) and starts the given change processor.  Must be called
   // from |group|'s native thread.
-  void ActivateDataType(syncer::ModelType type,
-                        syncer::ModelSafeGroup group,
-                        sync_driver::ChangeProcessor* change_processor,
-                        syncer::UserShare* user_share);
+  void ActivateDataType(ModelType type,
+                        ModelSafeGroup group,
+                        ChangeProcessor* change_processor,
+                        UserShare* user_share);
 
   // Deactivates the given type if necessary.  Must be called from the
   // UI thread and not |type|'s native thread.  Yes, this is
   // surprising: see http://crbug.com/92804.
-  void DeactivateDataType(syncer::ModelType type);
+  void DeactivateDataType(ModelType type);
 
   // Returns true only between calls to ActivateDataType(type, ...)
   // and DeactivateDataType(type).  Used only by tests.
-  bool IsTypeActivatedForTest(syncer::ModelType type) const;
+  bool IsTypeActivatedForTest(ModelType type) const;
 
   // SyncManager::ChangeDelegate implementation.  May be called from
   // any thread.
-  void OnChangesApplied(
-      syncer::ModelType model_type,
-      int64_t model_version,
-      const syncer::BaseTransaction* trans,
-      const syncer::ImmutableChangeRecordList& changes) override;
-  void OnChangesComplete(syncer::ModelType model_type) override;
+  void OnChangesApplied(ModelType model_type,
+                        int64_t model_version,
+                        const BaseTransaction* trans,
+                        const ImmutableChangeRecordList& changes) override;
+  void OnChangesComplete(ModelType model_type) override;
 
-  void GetWorkers(std::vector<scoped_refptr<syncer::ModelSafeWorker>>* out);
-  void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out);
+  void GetWorkers(std::vector<scoped_refptr<ModelSafeWorker>>* out);
+  void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out);
 
-  // syncer::WorkerLoopDestructionObserver implementation.
-  void OnWorkerLoopDestroyed(syncer::ModelSafeGroup group) override;
+  // WorkerLoopDestructionObserver implementation.
+  void OnWorkerLoopDestroyed(ModelSafeGroup group) override;
 
   // Release ownership of |sync_thread_|. Called when sync is disabled.
   std::unique_ptr<base::Thread> ReleaseSyncThread();
@@ -146,50 +139,45 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   base::Thread* sync_thread();
 
  private:
-  typedef std::map<syncer::ModelSafeGroup,
-                   scoped_refptr<syncer::ModelSafeWorker>>
-      WorkerMap;
-  typedef std::map<syncer::ModelType, sync_driver::ChangeProcessor*>
-      ProcessorMap;
+  typedef std::map<ModelSafeGroup, scoped_refptr<ModelSafeWorker>> WorkerMap;
+  typedef std::map<ModelType, ChangeProcessor*> ProcessorMap;
 
   // Add a worker for |group| to the worker map if one can be created.
-  void MaybeAddWorker(syncer::ModelSafeGroup group);
+  void MaybeAddWorker(ModelSafeGroup group);
 
   // Callback after workers unregister from observing destruction of their
   // working loops.
-  void OnWorkerUnregistrationDone(syncer::ModelSafeGroup group);
+  void OnWorkerUnregistrationDone(ModelSafeGroup group);
 
-  void RemoveWorker(syncer::ModelSafeGroup group);
+  void RemoveWorker(ModelSafeGroup group);
 
   // Returns the change processor for the given model, or NULL if none
   // exists.  Must be called from |group|'s native thread.
-  sync_driver::ChangeProcessor* GetProcessor(syncer::ModelType type) const;
+  ChangeProcessor* GetProcessor(ModelType type) const;
 
   // Must be called with |lock_| held.  Simply returns the change
   // processor for the given type, if it exists.  May be called from
   // any thread.
-  sync_driver::ChangeProcessor* GetProcessorUnsafe(
-      syncer::ModelType type) const;
+  ChangeProcessor* GetProcessorUnsafe(ModelType type) const;
 
   // Return true if |model_type| lives on the current thread.  Must be
   // called with |lock_| held.  May be called on any thread.
-  bool IsCurrentThreadSafeForModel(syncer::ModelType model_type) const;
+  bool IsCurrentThreadSafeForModel(ModelType model_type) const;
 
   // Returns true if the current thread is the native thread for the
   // given group (or if it is undeterminable).
-  bool IsOnThreadForGroup(syncer::ModelType type,
-                          syncer::ModelSafeGroup group) const;
+  bool IsOnThreadForGroup(ModelType type, ModelSafeGroup group) const;
 
   // Returns model safe group that should be assigned to type when it is first
   // configured (before activation). Returns GROUP_PASSIVE for directory types
   // and GROUP_NON_BLOCKING for non-blocking types.
-  syncer::ModelSafeGroup GetInitialGroupForType(syncer::ModelType type) const;
+  ModelSafeGroup GetInitialGroupForType(ModelType type) const;
 
   // Name used for debugging.
   const std::string name_;
 
   // A pointer to the sync client.
-  sync_driver::SyncClient* const sync_client_;
+  SyncClient* const sync_client_;
 
   // Protects all variables below.
   mutable base::Lock lock_;
@@ -201,21 +189,21 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
   // destroyed.  Unless a worker is no longer needed because all types
   // that get routed to it have been disabled (from syncing). In that
   // case, we'll destroy on demand *after* routing any dependent types
-  // to syncer::GROUP_PASSIVE, so that the syncapi doesn't call into garbage.
+  // to GROUP_PASSIVE, so that the syncapi doesn't call into garbage.
   // If a key is present, it means at least one ModelType that routes
   // to that model safe group is being synced.
   WorkerMap workers_;
-  syncer::ModelSafeRoutingInfo routing_info_;
+  ModelSafeRoutingInfo routing_info_;
 
   // The change processors that handle the different data types.
   ProcessorMap processors_;
 
   // The types that were enabled as of the last configuration. Updated on each
   // call to ConfigureDataTypes as well as SetInitialTypes.
-  syncer::ModelTypeSet last_configured_types_;
+  ModelTypeSet last_configured_types_;
 
   // Parks stopped workers because they may still be referenced by syncer.
-  std::vector<scoped_refptr<syncer::ModelSafeWorker>> stopped_workers_;
+  std::vector<scoped_refptr<ModelSafeWorker>> stopped_workers_;
 
   // References to the thread task runners that sync depends on.
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
@@ -230,11 +218,11 @@ class SyncBackendRegistrar : public syncer::SyncManager::ChangeDelegate,
 
   // Set of types with non-blocking implementation (as opposed to directory
   // based).
-  syncer::ModelTypeSet non_blocking_types_;
+  ModelTypeSet non_blocking_types_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendRegistrar);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_GLUE_SYNC_BACKEND_REGISTRAR_H_

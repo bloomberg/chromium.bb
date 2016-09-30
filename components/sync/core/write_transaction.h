@@ -37,7 +37,7 @@ class WriteTransaction : public BaseTransaction {
   WriteTransaction(const tracked_objects::Location& from_here,
                    UserShare* share);
   // |transaction_version| stores updated model and nodes version if model
-  // is changed by the transaction, or syncer::syncable::kInvalidTransaction
+  // is changed by the transaction, or syncable::kInvalidTransaction
   // if not after transaction is closed. This constructor is used for model
   // types that support embassy data.
   WriteTransaction(const tracked_objects::Location& from_here,
@@ -54,7 +54,7 @@ class WriteTransaction : public BaseTransaction {
   // setting the version of all synced entities to 1).
   void SetDataTypeContext(
       ModelType type,
-      syncer::SyncChangeProcessor::ContextRefreshStatus refresh_status,
+      SyncChangeProcessor::ContextRefreshStatus refresh_status,
       const std::string& context);
 
   // Update all entries that refer to |attachment_id| indicating that

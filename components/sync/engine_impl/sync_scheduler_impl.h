@@ -57,10 +57,10 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
       ModelTypeSet types,
       const tracked_objects::Location& nudge_location) override;
   void ScheduleInvalidationNudge(
-      syncer::ModelType type,
+      ModelType type,
       std::unique_ptr<InvalidationInterface> invalidation,
       const tracked_objects::Location& nudge_location) override;
-  void ScheduleInitialSyncNudge(syncer::ModelType model_type) override;
+  void ScheduleInitialSyncNudge(ModelType model_type) override;
   void SetNotificationsEnabled(bool notifications_enabled) override;
 
   void OnCredentialsUpdated() override;
@@ -81,7 +81,7 @@ class SyncSchedulerImpl : public SyncScheduler, public base::NonThreadSafe {
   void OnSyncProtocolError(
       const SyncProtocolError& sync_protocol_error) override;
   void OnReceivedGuRetryDelay(const base::TimeDelta& delay) override;
-  void OnReceivedMigrationRequest(syncer::ModelTypeSet types) override;
+  void OnReceivedMigrationRequest(ModelTypeSet types) override;
 
   // Returns true if the client is currently in exponential backoff.
   bool IsBackingOff() const;

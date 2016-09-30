@@ -97,7 +97,7 @@ PasswordManagerSettingMigratorService::
     ~PasswordManagerSettingMigratorService() {}
 
 void PasswordManagerSettingMigratorService::InitializeMigration(
-    sync_driver::SyncService* sync_service) {
+    syncer::SyncService* sync_service) {
   if (force_disabled_for_testing_)
     return;
   SaveCurrentPrefState(prefs_, &initial_new_pref_value_,

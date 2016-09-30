@@ -19,8 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using browser_sync::UIModelWorker;
-using syncer::SyncerError;
+namespace syncer {
 
 class UIModelWorkerVisitor {
  public:
@@ -28,11 +27,11 @@ class UIModelWorkerVisitor {
       : quit_loop_when_run_(quit_loop), was_run_(was_run) {}
   virtual ~UIModelWorkerVisitor() {}
 
-  virtual syncer::SyncerError DoWork() {
+  virtual SyncerError DoWork() {
     was_run_->Signal();
     if (quit_loop_when_run_)
       base::MessageLoop::current()->QuitWhenIdle();
-    return syncer::SYNCER_OK;
+    return SYNCER_OK;
   }
 
  private:
@@ -49,7 +48,7 @@ class Syncer {
 
   void SyncShare(UIModelWorkerVisitor* visitor) {
     // We wait until the callback is executed. So it is safe to use Unretained.
-    syncer::WorkCallback c =
+    WorkCallback c =
         base::Bind(&UIModelWorkerVisitor::DoWork, base::Unretained(visitor));
     worker_->DoWorkAndWaitUntilDone(c);
   }
@@ -100,3 +99,5 @@ TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
   base::RunLoop().Run();
   syncer_thread()->Stop();
 }
+
+}  // namespace syncer

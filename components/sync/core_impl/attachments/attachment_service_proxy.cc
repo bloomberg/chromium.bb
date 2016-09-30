@@ -32,7 +32,7 @@ AttachmentServiceProxy::AttachmentServiceProxy() {}
 
 AttachmentServiceProxy::AttachmentServiceProxy(
     const scoped_refptr<base::SequencedTaskRunner>& wrapped_task_runner,
-    const base::WeakPtr<syncer::AttachmentService>& wrapped)
+    const base::WeakPtr<AttachmentService>& wrapped)
     : wrapped_task_runner_(wrapped_task_runner), core_(new Core(wrapped)) {
   DCHECK(wrapped_task_runner_.get());
 }
@@ -71,7 +71,7 @@ void AttachmentServiceProxy::UploadAttachments(
 }
 
 AttachmentServiceProxy::Core::Core(
-    const base::WeakPtr<syncer::AttachmentService>& wrapped)
+    const base::WeakPtr<AttachmentService>& wrapped)
     : wrapped_(wrapped) {}
 
 AttachmentServiceProxy::Core::~Core() {}

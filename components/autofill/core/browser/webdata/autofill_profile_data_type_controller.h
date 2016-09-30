@@ -21,14 +21,14 @@ namespace browser_sync {
 
 // Controls syncing of the AUTOFILL_PROFILE data type.
 class AutofillProfileDataTypeController
-    : public sync_driver::NonUIDataTypeController,
+    : public syncer::NonUIDataTypeController,
       public autofill::PersonalDataManagerObserver {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   AutofillProfileDataTypeController(
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
       const base::Closure& dump_stack,
-      sync_driver::SyncClient* sync_client,
+      syncer::SyncClient* sync_client,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
   ~AutofillProfileDataTypeController() override;
 
@@ -53,7 +53,7 @@ class AutofillProfileDataTypeController
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
 
   // A pointer to the sync client.
-  sync_driver::SyncClient* const sync_client_;
+  syncer::SyncClient* const sync_client_;
 
   // A reference to the AutofillWebDataService for this controller.
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;

@@ -15,9 +15,9 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-namespace sync_driver {
+namespace syncer {
 class FakeSyncService;
-}
+}  // namespace syncer
 
 namespace ios {
 
@@ -29,11 +29,11 @@ class FakeSyncServiceFactory : public BrowserStateKeyedServiceFactory {
   static FakeSyncServiceFactory* GetInstance();
 
   // Returns the FakeSyncService associated to |browser_state|.
-  static sync_driver::FakeSyncService* GetForBrowserState(
+  static syncer::FakeSyncService* GetForBrowserState(
       ios::ChromeBrowserState* browser_state);
 
   // Returns the FakeSyncService associated to |browser_state|, if it exists.
-  static sync_driver::FakeSyncService* GetForBrowserStateIfExists(
+  static syncer::FakeSyncService* GetForBrowserStateIfExists(
       ios::ChromeBrowserState* browser_state);
 
  private:

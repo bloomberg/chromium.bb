@@ -6,11 +6,11 @@
 
 #include <utility>
 
-namespace syncer_v2 {
+namespace syncer {
 
 ModelTypeService::ModelTypeService(
     const ChangeProcessorFactory& change_processor_factory,
-    syncer::ModelType type)
+    ModelType type)
     : change_processor_factory_(change_processor_factory), type_(type) {}
 
 ModelTypeService::~ModelTypeService() {}
@@ -27,7 +27,7 @@ ConflictResolution ModelTypeService::ResolveConflict(
 }
 
 void ModelTypeService::OnSyncStarting(
-    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
+    std::unique_ptr<DataTypeErrorHandler> error_handler,
     const ModelTypeChangeProcessor::StartCallback& start_callback) {
   CreateChangeProcessor();
   change_processor_->OnSyncStarting(std::move(error_handler), start_callback);
@@ -55,4 +55,4 @@ void ModelTypeService::clear_change_processor() {
   change_processor_.reset();
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

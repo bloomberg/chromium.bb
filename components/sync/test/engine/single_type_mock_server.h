@@ -27,7 +27,7 @@ namespace syncer {
 // This class is useful for testing UpdateHandlers and CommitContributors.
 class SingleTypeMockServer {
  public:
-  explicit SingleTypeMockServer(syncer::ModelType type);
+  explicit SingleTypeMockServer(ModelType type);
   ~SingleTypeMockServer();
 
   // Generates a SyncEntity representing a server-delivered update containing

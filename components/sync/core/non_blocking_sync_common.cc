@@ -4,7 +4,7 @@
 
 #include "components/sync/core/non_blocking_sync_common.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 CommitRequestData::CommitRequestData() {}
 
@@ -26,4 +26,4 @@ UpdateResponseData::UpdateResponseData(const UpdateResponseData& other) =
 
 UpdateResponseData::~UpdateResponseData() {}
 
-}  // namespace syncer_v2
+}  // namespace syncer

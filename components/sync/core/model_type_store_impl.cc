@@ -17,7 +17,7 @@
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 namespace {
 
@@ -35,13 +35,13 @@ void NoOpForBackendDtor(scoped_refptr<ModelTypeStoreBackend> backend) {
 }  // namespace
 
 // static
-std::string ModelTypeStoreImpl::FormatDataPrefix(const syncer::ModelType type) {
-  return std::string(syncer::GetModelTypeRootTag(type)) + kDataPrefix;
+std::string ModelTypeStoreImpl::FormatDataPrefix(const ModelType type) {
+  return std::string(GetModelTypeRootTag(type)) + kDataPrefix;
 }
 
 // static
-std::string ModelTypeStoreImpl::FormatMetaPrefix(const syncer::ModelType type) {
-  return std::string(syncer::GetModelTypeRootTag(type)) + kMetadataPrefix;
+std::string ModelTypeStoreImpl::FormatMetaPrefix(const ModelType type) {
+  return std::string(GetModelTypeRootTag(type)) + kMetadataPrefix;
 }
 
 // static
@@ -59,7 +59,7 @@ std::string ModelTypeStoreImpl::FormatMetadataKey(const std::string& id) {
 }
 
 ModelTypeStoreImpl::ModelTypeStoreImpl(
-    const syncer::ModelType type,
+    const ModelType type,
     scoped_refptr<ModelTypeStoreBackend> backend,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : backend_(backend),
@@ -79,7 +79,7 @@ ModelTypeStoreImpl::~ModelTypeStoreImpl() {
 
 // static
 void ModelTypeStoreImpl::CreateStore(
-    const syncer::ModelType type,
+    const ModelType type,
     const std::string& path,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback) {
@@ -116,16 +116,15 @@ void ModelTypeStoreImpl::CreateInMemoryStoreForTest(
 
   auto task = base::Bind(&ModelTypeStoreBackend::GetOrCreateBackend, path,
                          base::Passed(&env), result.get());
-  auto reply =
-      base::Bind(&ModelTypeStoreImpl::BackendInitDone, syncer::UNSPECIFIED,
-                 base::Passed(&result), task_runner, callback);
+  auto reply = base::Bind(&ModelTypeStoreImpl::BackendInitDone, UNSPECIFIED,
+                          base::Passed(&result), task_runner, callback);
 
   base::PostTaskAndReplyWithResult(task_runner.get(), FROM_HERE, task, reply);
 }
 
 // static
 void ModelTypeStoreImpl::BackendInitDone(
-    const syncer::ModelType type,
+    const ModelType type,
     std::unique_ptr<Result> result,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     const InitCallback& callback,
@@ -341,4 +340,4 @@ ModelTypeStoreImpl::WriteBatchImpl::WriteBatchImpl() {
 
 ModelTypeStoreImpl::WriteBatchImpl::~WriteBatchImpl() {}
 
-}  // namespace syncer_v2
+}  // namespace syncer

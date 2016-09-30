@@ -30,9 +30,9 @@ bool IsArcEnabled(Profile* profile) {
 ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
     syncer::ModelType type,
     const base::Closure& dump_stack,
-    sync_driver::SyncClient* sync_client,
+    syncer::SyncClient* sync_client,
     Profile* profile)
-    : sync_driver::UIDataTypeController(type, dump_stack, sync_client),
+    : syncer::UIDataTypeController(type, dump_stack, sync_client),
       profile_(profile),
       sync_client_(sync_client) {
   pref_registrar_.Init(profile_->GetPrefs());
@@ -97,13 +97,13 @@ void ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged() {
 }
 
 void ArcPackageSyncDataTypeController::EnableDataType() {
-  sync_driver::SyncService* sync_service = sync_client_->GetSyncService();
+  syncer::SyncService* sync_service = sync_client_->GetSyncService();
   DCHECK(sync_service);
   sync_service->ReenableDatatype(type());
 }
 
 bool ArcPackageSyncDataTypeController::ShouldSyncArc() const {
-  sync_driver::SyncService* sync_service = sync_client_->GetSyncService();
+  syncer::SyncService* sync_service = sync_client_->GetSyncService();
   DCHECK(sync_service);
   return sync_service->GetPreferredDataTypes().Has(type());
 }

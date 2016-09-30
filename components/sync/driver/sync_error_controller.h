@@ -10,12 +10,12 @@
 #include "base/observer_list.h"
 #include "components/sync/driver/sync_service_observer.h"
 
-namespace sync_driver {
+namespace syncer {
+
 class SyncService;
-}
 
 // Keep track of sync errors and expose them to observers in the UI.
-class SyncErrorController : public sync_driver::SyncServiceObserver {
+class SyncErrorController : public SyncServiceObserver {
  public:
   // The observer class for SyncErrorController lets the controller notify
   // observers when an error arises or changes.
@@ -25,7 +25,7 @@ class SyncErrorController : public sync_driver::SyncServiceObserver {
     virtual void OnErrorChanged() = 0;
   };
 
-  explicit SyncErrorController(sync_driver::SyncService* service);
+  explicit SyncErrorController(SyncService* service);
   ~SyncErrorController() override;
 
   // True if there exists an error worth elevating to the user.
@@ -34,14 +34,16 @@ class SyncErrorController : public sync_driver::SyncServiceObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // sync_driver::SyncServiceObserver:
+  // SyncServiceObserver:
   void OnStateChanged() override;
 
  private:
-  sync_driver::SyncService* service_;
+  SyncService* service_;
   base::ObserverList<Observer, true> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncErrorController);
 };
+
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_ERROR_CONTROLLER_H_

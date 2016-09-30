@@ -25,7 +25,7 @@ struct BookmarkDeleteJournal {
 };
 typedef std::vector<BookmarkDeleteJournal> BookmarkDeleteJournalList;
 
-// Static APIs for passing delete journals between syncer::syncable namspace
+// Static APIs for passing delete journals between syncable namspace
 // and syncer namespace.
 class DeleteJournal {
  public:

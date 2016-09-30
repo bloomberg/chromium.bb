@@ -21,7 +21,7 @@
 #include "components/sync/engine/model_safe_worker.h"
 #include "components/sync/engine_impl/nudge_handler.h"
 
-namespace syncer_v2 {
+namespace syncer {
 struct DataTypeState;
 class ModelTypeProcessor;
 class ModelTypeWorker;
@@ -45,7 +45,7 @@ typedef std::map<ModelType, DirectoryTypeDebugInfoEmitter*>
     DirectoryTypeDebugInfoEmitterMap;
 
 // Keeps track of the sets of active update handlers and commit contributors.
-class ModelTypeRegistry : public syncer_v2::ModelTypeConnector,
+class ModelTypeRegistry : public ModelTypeConnector,
                           public SyncEncryptionHandler::Observer {
  public:
   // Constructs a ModelTypeRegistry that supports directory types.
@@ -61,15 +61,15 @@ class ModelTypeRegistry : public syncer_v2::ModelTypeConnector,
   // and its task_runner to the newly created worker.
   //
   // Expects that the proxy's ModelType is not currently enabled.
-  void ConnectType(syncer::ModelType type,
-                   std::unique_ptr<syncer_v2::ActivationContext>
-                       activation_context) override;
+  void ConnectType(
+      ModelType type,
+      std::unique_ptr<ActivationContext> activation_context) override;
 
   // Disables the syncing of an off-thread type.
   //
   // Expects that the type is currently enabled.
   // Deletes the worker associated with the type.
-  void DisconnectType(syncer::ModelType type) override;
+  void DisconnectType(ModelType type) override;
 
   // Implementation of SyncEncryptionHandler::Observer.
   void OnPassphraseRequired(
@@ -99,12 +99,11 @@ class ModelTypeRegistry : public syncer_v2::ModelTypeConnector,
   CommitContributorMap* commit_contributor_map();
   DirectoryTypeDebugInfoEmitterMap* directory_type_debug_info_emitter_map();
 
-  void RegisterDirectoryTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer);
+  void RegisterDirectoryTypeDebugInfoObserver(TypeDebugInfoObserver* observer);
   void UnregisterDirectoryTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer);
+      TypeDebugInfoObserver* observer);
   bool HasDirectoryTypeDebugInfoObserver(
-      const syncer::TypeDebugInfoObserver* observer) const;
+      const TypeDebugInfoObserver* observer) const;
   void RequestEmitDebugInfo();
 
   base::WeakPtr<ModelTypeConnector> AsWeakPtr();
@@ -121,7 +120,7 @@ class ModelTypeRegistry : public syncer_v2::ModelTypeConnector,
   ScopedVector<DirectoryTypeDebugInfoEmitter>
       directory_type_debug_info_emitters_;
 
-  ScopedVector<syncer_v2::ModelTypeWorker> model_type_workers_;
+  ScopedVector<ModelTypeWorker> model_type_workers_;
 
   // Maps of UpdateHandlers and CommitContributors.
   // They do not own any of the objects they point to.

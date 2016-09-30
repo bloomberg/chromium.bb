@@ -143,12 +143,12 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   browser_sync::ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
   std::unique_ptr<base::DictionaryValue> sync_logs(
-      sync_driver::sync_ui_util::ConstructAboutInformation(
+      syncer::sync_ui_util::ConstructAboutInformation(
           service, service->signin(), chrome::GetChannel()));
 
   // Remove identity section.
   base::ListValue* details = NULL;
-  sync_logs->GetList(sync_driver::sync_ui_util::kDetailsKey, &details);
+  sync_logs->GetList(syncer::sync_ui_util::kDetailsKey, &details);
   if (!details)
     return;
   for (base::ListValue::iterator it = details->begin();
@@ -157,7 +157,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
     if ((*it)->GetAsDictionary(&dict)) {
       std::string title;
       dict->GetString("title", &title);
-      if (title == sync_driver::sync_ui_util::kIdentityTitle) {
+      if (title == syncer::sync_ui_util::kIdentityTitle) {
         details->Erase(it, NULL);
         break;
       }

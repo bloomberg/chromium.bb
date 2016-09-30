@@ -15,18 +15,14 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/directory.h"  // TODO(tim): Bug 131130.
 
-using syncer::ModelTypeSet;
-
-namespace browser_sync {
-
-using syncer::ModelTypeToString;
+namespace syncer {
 
 MigrationObserver::~MigrationObserver() {}
 
 BackendMigrator::BackendMigrator(const std::string& name,
-                                 syncer::UserShare* user_share,
-                                 sync_driver::SyncService* service,
-                                 sync_driver::DataTypeManager* manager,
+                                 UserShare* user_share,
+                                 SyncService* service,
+                                 DataTypeManager* manager,
                                  const base::Closure& migration_done_callback)
     : name_(name),
       user_share_(user_share),
@@ -45,7 +41,7 @@ BackendMigrator::~BackendMigrator() {}
 
 #define SDVLOG(verbose_level) DVLOG(verbose_level) << name_ << ": "
 
-void BackendMigrator::MigrateTypes(syncer::ModelTypeSet types) {
+void BackendMigrator::MigrateTypes(ModelTypeSet types) {
   const ModelTypeSet old_to_migrate = to_migrate_;
   to_migrate_.PutAll(types);
   SDVLOG(1) << "MigrateTypes called with " << ModelTypeSetToString(types)
@@ -91,7 +87,7 @@ void BackendMigrator::ChangeState(State new_state) {
 
 bool BackendMigrator::TryStart() {
   DCHECK_EQ(state_, WAITING_TO_START);
-  if (manager_->state() == sync_driver::DataTypeManager::CONFIGURED) {
+  if (manager_->state() == DataTypeManager::CONFIGURED) {
     RestartMigration();
     return true;
   }
@@ -104,11 +100,11 @@ void BackendMigrator::RestartMigration() {
   SDVLOG(1) << "BackendMigrator disabling types "
             << ModelTypeSetToString(to_migrate_);
 
-  manager_->PurgeForMigration(to_migrate_, syncer::CONFIGURE_REASON_MIGRATION);
+  manager_->PurgeForMigration(to_migrate_, CONFIGURE_REASON_MIGRATION);
 }
 
 void BackendMigrator::OnConfigureDone(
-    const sync_driver::DataTypeManager::ConfigureResult& result) {
+    const DataTypeManager::ConfigureResult& result) {
   if (state_ == IDLE)
     return;
 
@@ -122,12 +118,11 @@ void BackendMigrator::OnConfigureDone(
 
 namespace {
 
-syncer::ModelTypeSet GetUnsyncedDataTypes(syncer::UserShare* user_share) {
-  syncer::ReadTransaction trans(FROM_HERE, user_share);
-  syncer::ModelTypeSet unsynced_data_types;
-  for (int i = syncer::FIRST_REAL_MODEL_TYPE; i < syncer::MODEL_TYPE_COUNT;
-       ++i) {
-    syncer::ModelType type = syncer::ModelTypeFromInt(i);
+ModelTypeSet GetUnsyncedDataTypes(UserShare* user_share) {
+  ReadTransaction trans(FROM_HERE, user_share);
+  ModelTypeSet unsynced_data_types;
+  for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {
+    ModelType type = ModelTypeFromInt(i);
     sync_pb::DataTypeProgressMarker progress_marker;
     trans.GetDirectory()->GetDownloadProgress(type, &progress_marker);
     if (progress_marker.token().empty()) {
@@ -140,7 +135,7 @@ syncer::ModelTypeSet GetUnsyncedDataTypes(syncer::UserShare* user_share) {
 }  // namespace
 
 void BackendMigrator::OnConfigureDoneImpl(
-    const sync_driver::DataTypeManager::ConfigureResult& result) {
+    const DataTypeManager::ConfigureResult& result) {
   SDVLOG(1) << "OnConfigureDone with requested types "
             << ModelTypeSetToString(result.requested_types) << ", status "
             << result.status
@@ -163,7 +158,7 @@ void BackendMigrator::OnConfigureDoneImpl(
     return;
   }
 
-  if (result.status != sync_driver::DataTypeManager::OK) {
+  if (result.status != DataTypeManager::OK) {
     // If this fails, and we're disabling types, a type may or may not be
     // disabled until the user restarts the browser.  If this wasn't an abort,
     // any failure will be reported as an unrecoverable error to the UI. If it
@@ -178,13 +173,12 @@ void BackendMigrator::OnConfigureDoneImpl(
   }
 
   if (state_ == DISABLING_TYPES) {
-    const syncer::ModelTypeSet unsynced_types =
-        GetUnsyncedDataTypes(user_share_);
+    const ModelTypeSet unsynced_types = GetUnsyncedDataTypes(user_share_);
     if (!unsynced_types.HasAll(to_migrate_)) {
       SLOG(WARNING) << "Set of unsynced types: "
-                    << syncer::ModelTypeSetToString(unsynced_types)
+                    << ModelTypeSetToString(unsynced_types)
                     << " does not contain types to migrate: "
-                    << syncer::ModelTypeSetToString(to_migrate_)
+                    << ModelTypeSetToString(to_migrate_)
                     << "; not re-enabling yet";
       return;
     }
@@ -194,14 +188,14 @@ void BackendMigrator::OnConfigureDoneImpl(
     // may have chosen to disable types during the migration.
     const ModelTypeSet full_set = service_->GetPreferredDataTypes();
     SDVLOG(1) << "BackendMigrator re-enabling types: "
-              << syncer::ModelTypeSetToString(full_set);
-    manager_->Configure(full_set, syncer::CONFIGURE_REASON_MIGRATION);
+              << ModelTypeSetToString(full_set);
+    manager_->Configure(full_set, CONFIGURE_REASON_MIGRATION);
   } else if (state_ == REENABLING_TYPES) {
     // We're done!
     ChangeState(IDLE);
 
     SDVLOG(1) << "BackendMigrator: Migration complete for: "
-              << syncer::ModelTypeSetToString(to_migrate_);
+              << ModelTypeSetToString(to_migrate_);
     to_migrate_.Clear();
 
     if (!migration_done_callback_.is_null())
@@ -213,7 +207,7 @@ BackendMigrator::State BackendMigrator::state() const {
   return state_;
 }
 
-syncer::ModelTypeSet BackendMigrator::GetPendingMigrationTypesForTest() const {
+ModelTypeSet BackendMigrator::GetPendingMigrationTypesForTest() const {
   return to_migrate_;
 }
 

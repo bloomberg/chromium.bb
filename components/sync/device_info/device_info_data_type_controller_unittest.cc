@@ -15,7 +15,7 @@
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_driver {
+namespace syncer {
 
 namespace {
 
@@ -23,7 +23,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
  public:
   DeviceInfoDataTypeControllerTest()
       : load_finished_(false),
-        last_type_(syncer::UNSPECIFIED),
+        last_type_(UNSPECIFIED),
         weak_ptr_factory_(this) {}
   ~DeviceInfoDataTypeControllerTest() override {}
 
@@ -36,8 +36,8 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
         base::Closure(), &sync_client_, local_device_.get()));
 
     load_finished_ = false;
-    last_type_ = syncer::UNSPECIFIED;
-    last_error_ = syncer::SyncError();
+    last_type_ = UNSPECIFIED;
+    last_error_ = SyncError();
   }
 
   void TearDown() override {
@@ -51,7 +51,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
-  void OnLoadFinished(syncer::ModelType type, const syncer::SyncError& error) {
+  void OnLoadFinished(ModelType type, const SyncError& error) {
     load_finished_ = true;
     last_type_ = type;
     last_error_ = error;
@@ -68,7 +68,7 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
              << last_error_.ToString();
     }
 
-    if (last_type_ != syncer::DEVICE_INFO) {
+    if (last_type_ != DEVICE_INFO) {
       return testing::AssertionFailure()
              << "OnLoadFinished was called with a wrong sync type: "
              << last_type_;
@@ -84,8 +84,8 @@ class DeviceInfoDataTypeControllerTest : public testing::Test {
 
  private:
   base::MessageLoopForUI message_loop_;
-  syncer::ModelType last_type_;
-  syncer::SyncError last_error_;
+  ModelType last_type_;
+  SyncError last_error_;
   FakeSyncClient sync_client_;
   base::WeakPtrFactory<DeviceInfoDataTypeControllerTest> weak_ptr_factory_;
 };
@@ -122,4 +122,4 @@ TEST_F(DeviceInfoDataTypeControllerTest, DestructionWithDelayedStart) {
 
 }  // namespace
 
-}  // namespace sync_driver
+}  // namespace syncer

@@ -7,6 +7,7 @@
 
 namespace syncer {
 namespace syncable {
+
 enum DirOpenResult {
   NOT_INITIALIZED,
   OPENED,                     // success.
@@ -19,6 +20,7 @@ enum DirOpenResult {
   FAILED_IN_UNITTEST,         // For tests.
   FAILED_INITIAL_WRITE,       // Early write to DB failed.
 };
+
 }  // namespace syncable
 }  // namespace syncer
 

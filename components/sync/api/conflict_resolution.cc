@@ -4,7 +4,7 @@
 
 #include "components/sync/api/conflict_resolution.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // static
 ConflictResolution ConflictResolution::UseLocal() {
@@ -38,4 +38,4 @@ ConflictResolution::ConflictResolution(Type type,
                                        std::unique_ptr<EntityData> data)
     : type_(type), data_(std::move(data)) {}
 
-}  // namespace syncer_v2
+}  // namespace syncer

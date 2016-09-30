@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_MULTI_CLIENT_STATUS_CHANGE_CHECKER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_MULTI_CLIENT_STATUS_CHANGE_CHECKER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -20,7 +21,7 @@ class ProfileSyncService;
 // observe many ProfileSyncServices.  This class is abstract.  Its descendants
 // are expected to provide additional functionality.
 class MultiClientStatusChangeChecker : public StatusChangeChecker,
-                                       public sync_driver::SyncServiceObserver {
+                                       public syncer::SyncServiceObserver {
  public:
   explicit MultiClientStatusChangeChecker(
       std::vector<browser_sync::ProfileSyncService*> services);
@@ -32,7 +33,7 @@ class MultiClientStatusChangeChecker : public StatusChangeChecker,
   // Blocks until the exit condition is satisfied or a timeout occurs.
   void Wait();
 
-  // sync_driver::SyncServiceObserver implementation.
+  // syncer::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // StatusChangeChecker implementations and stubs.

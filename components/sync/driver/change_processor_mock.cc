@@ -6,10 +6,10 @@
 
 #include "base/compiler_specific.h"
 
-namespace sync_driver {
+namespace syncer {
 
 ChangeProcessorMock::ChangeProcessorMock() : ChangeProcessor(nullptr) {}
 
 ChangeProcessorMock::~ChangeProcessorMock() {}
 
-}  // namespace sync_driver
+}  // namespace syncer

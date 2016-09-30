@@ -74,7 +74,7 @@ class GetUpdatesProcessor {
                               StatusController* status);
 
   // Processes a GetUpdates responses for each type.
-  syncer::SyncerError ProcessGetUpdatesResponse(
+  SyncerError ProcessGetUpdatesResponse(
       ModelTypeSet gu_types,
       const sync_pb::GetUpdatesResponse& gu_response,
       StatusController* status_controller);

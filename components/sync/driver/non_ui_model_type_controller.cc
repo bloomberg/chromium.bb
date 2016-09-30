@@ -4,16 +4,14 @@
 
 #include "components/sync/driver/non_ui_model_type_controller.h"
 
-namespace sync_driver_v2 {
-
-using sync_driver::SyncClient;
+namespace syncer {
 
 NonUIModelTypeController::NonUIModelTypeController(
-    syncer::ModelType type,
+    ModelType type,
     const base::Closure& dump_stack,
     SyncClient* sync_client)
     : NonBlockingDataTypeController(type, dump_stack, sync_client) {}
 
 NonUIModelTypeController::~NonUIModelTypeController() {}
 
-}  // namespace sync_driver_v2
+}  // namespace syncer

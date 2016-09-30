@@ -22,15 +22,15 @@ namespace browser_sync {
 
 namespace {
 
-class BundleSyncClient : public sync_driver::FakeSyncClient {
+class BundleSyncClient : public syncer::FakeSyncClient {
  public:
-  BundleSyncClient(sync_driver::SyncApiComponentFactory* factory,
+  BundleSyncClient(syncer::SyncApiComponentFactory* factory,
                    PrefService* pref_service,
                    sync_sessions::SyncSessionsClient* sync_sessions_client,
                    autofill::PersonalDataManager* personal_data_manager,
                    const base::Callback<base::WeakPtr<syncer::SyncableService>(
                        syncer::ModelType type)>& get_syncable_service_callback,
-                   const base::Callback<sync_driver::SyncService*(void)>&
+                   const base::Callback<syncer::SyncService*(void)>&
                        get_sync_service_callback,
                    const base::Callback<bookmarks::BookmarkModel*(void)>&
                        get_bookmark_model_callback,
@@ -45,7 +45,7 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) override;
-  sync_driver::SyncService* GetSyncService() override;
+  syncer::SyncService* GetSyncService() override;
   scoped_refptr<syncer::ModelSafeWorker> CreateModelWorkerForGroup(
       syncer::ModelSafeGroup group,
       syncer::WorkerLoopDestructionObserver* observer) override;
@@ -59,8 +59,7 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
   const base::Callback<base::WeakPtr<syncer::SyncableService>(
       syncer::ModelType type)>
       get_syncable_service_callback_;
-  const base::Callback<sync_driver::SyncService*(void)>
-      get_sync_service_callback_;
+  const base::Callback<syncer::SyncService*(void)> get_sync_service_callback_;
   const base::Callback<bookmarks::BookmarkModel*(void)>
       get_bookmark_model_callback_;
   // These task runners, if not null, are used in CreateModelWorkerForGroup.
@@ -70,20 +69,19 @@ class BundleSyncClient : public sync_driver::FakeSyncClient {
 };
 
 BundleSyncClient::BundleSyncClient(
-    sync_driver::SyncApiComponentFactory* factory,
+    syncer::SyncApiComponentFactory* factory,
     PrefService* pref_service,
     sync_sessions::SyncSessionsClient* sync_sessions_client,
     autofill::PersonalDataManager* personal_data_manager,
     const base::Callback<base::WeakPtr<syncer::SyncableService>(
         syncer::ModelType type)>& get_syncable_service_callback,
-    const base::Callback<sync_driver::SyncService*(void)>&
-        get_sync_service_callback,
+    const base::Callback<syncer::SyncService*(void)>& get_sync_service_callback,
     const base::Callback<bookmarks::BookmarkModel*(void)>&
         get_bookmark_model_callback,
     scoped_refptr<base::SingleThreadTaskRunner> db_thread,
     scoped_refptr<base::SingleThreadTaskRunner> file_thread,
     history::HistoryService* history_service)
-    : sync_driver::FakeSyncClient(factory),
+    : syncer::FakeSyncClient(factory),
       pref_service_(pref_service),
       sync_sessions_client_(sync_sessions_client),
       personal_data_manager_(personal_data_manager),
@@ -113,13 +111,13 @@ autofill::PersonalDataManager* BundleSyncClient::GetPersonalDataManager() {
 base::WeakPtr<syncer::SyncableService>
 BundleSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
   if (get_syncable_service_callback_.is_null())
-    return sync_driver::FakeSyncClient::GetSyncableServiceForType(type);
+    return syncer::FakeSyncClient::GetSyncableServiceForType(type);
   return get_syncable_service_callback_.Run(type);
 }
 
-sync_driver::SyncService* BundleSyncClient::GetSyncService() {
+syncer::SyncService* BundleSyncClient::GetSyncService() {
   if (get_sync_service_callback_.is_null())
-    return sync_driver::FakeSyncClient::GetSyncService();
+    return syncer::FakeSyncClient::GetSyncService();
   return get_sync_service_callback_.Run();
 }
 
@@ -132,13 +130,14 @@ BundleSyncClient::CreateModelWorkerForGroup(
   DCHECK(file_thread_) << "DB thread was specified but FILE thread was not.";
   switch (group) {
     case syncer::GROUP_DB:
-      return new BrowserThreadModelWorker(db_thread_, syncer::GROUP_DB,
-                                          observer);
+      return new syncer::BrowserThreadModelWorker(db_thread_, syncer::GROUP_DB,
+                                                  observer);
     case syncer::GROUP_FILE:
-      return new BrowserThreadModelWorker(file_thread_, syncer::GROUP_FILE,
-                                          observer);
+      return new syncer::BrowserThreadModelWorker(file_thread_,
+                                                  syncer::GROUP_FILE, observer);
     case syncer::GROUP_UI:
-      return new UIModelWorker(base::ThreadTaskRunnerHandle::Get(), observer);
+      return new syncer::UIModelWorker(base::ThreadTaskRunnerHandle::Get(),
+                                       observer);
     case syncer::GROUP_PASSIVE:
       return new syncer::PassiveModelWorker(observer);
     case syncer::GROUP_HISTORY: {
@@ -174,7 +173,7 @@ void EmptyNetworkTimeUpdate(const base::Time&,
 
 void RegisterPrefsForProfileSyncService(
     user_prefs::PrefRegistrySyncable* registry) {
-  sync_driver::SyncPrefs::RegisterProfilePrefs(registry);
+  syncer::SyncPrefs::RegisterProfilePrefs(registry);
   AccountTrackerService::RegisterPrefs(registry);
   SigninManagerBase::RegisterProfilePrefs(registry);
   SigninManagerBase::RegisterPrefs(registry);
@@ -200,7 +199,7 @@ void ProfileSyncServiceBundle::SyncClientBuilder::SetSyncableServiceCallback(
 
 // The client will call this callback to produce the service.
 void ProfileSyncServiceBundle::SyncClientBuilder::SetSyncServiceCallback(
-    const base::Callback<sync_driver::SyncService*(void)>&
+    const base::Callback<syncer::SyncService*(void)>&
         get_sync_service_callback) {
   get_sync_service_callback_ = get_sync_service_callback;
 }
@@ -216,7 +215,7 @@ void ProfileSyncServiceBundle::SyncClientBuilder::SetBookmarkModelCallback(
   get_bookmark_model_callback_ = get_bookmark_model_callback;
 }
 
-std::unique_ptr<sync_driver::FakeSyncClient>
+std::unique_ptr<syncer::FakeSyncClient>
 ProfileSyncServiceBundle::SyncClientBuilder::Build() {
   return base::MakeUnique<BundleSyncClient>(
       bundle_->component_factory(), bundle_->pref_service(),
@@ -252,7 +251,7 @@ ProfileSyncServiceBundle::~ProfileSyncServiceBundle() {}
 
 ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
     ProfileSyncService::StartBehavior start_behavior,
-    std::unique_ptr<sync_driver::SyncClient> sync_client) {
+    std::unique_ptr<syncer::SyncClient> sync_client) {
   ProfileSyncService::InitParams init_params;
 
   init_params.start_behavior = start_behavior;

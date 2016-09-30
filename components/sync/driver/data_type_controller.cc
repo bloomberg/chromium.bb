@@ -7,9 +7,9 @@
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/core/user_share.h"
 
-namespace sync_driver {
+namespace syncer {
 
-DataTypeController::DataTypeController(syncer::ModelType type,
+DataTypeController::DataTypeController(ModelType type,
                                        const base::Closure& dump_stack)
     : dump_stack_(dump_stack), type_(type) {}
 
@@ -31,4 +31,4 @@ bool DataTypeController::CalledOnValidThread() const {
   return thread_checker_.CalledOnValidThread();
 }
 
-}  // namespace sync_driver
+}  // namespace syncer

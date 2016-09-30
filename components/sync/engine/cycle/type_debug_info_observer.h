@@ -19,11 +19,11 @@ class TypeDebugInfoObserver {
   TypeDebugInfoObserver();
   virtual ~TypeDebugInfoObserver();
 
-  virtual void OnCommitCountersUpdated(syncer::ModelType type,
+  virtual void OnCommitCountersUpdated(ModelType type,
                                        const CommitCounters& counters) = 0;
-  virtual void OnUpdateCountersUpdated(syncer::ModelType type,
+  virtual void OnUpdateCountersUpdated(ModelType type,
                                        const UpdateCounters& counters) = 0;
-  virtual void OnStatusCountersUpdated(syncer::ModelType type,
+  virtual void OnStatusCountersUpdated(ModelType type,
                                        const StatusCounters& counters) = 0;
 };
 

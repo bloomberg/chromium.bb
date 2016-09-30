@@ -303,7 +303,7 @@ PersonalDataManager::~PersonalDataManager() {
 }
 
 void PersonalDataManager::OnSyncServiceInitialized(
-    sync_driver::SyncService* sync_service) {
+    syncer::SyncService* sync_service) {
   // We want to know when, if at all, we need to run autofill profile de-
   // duplication: now or after waiting until sync has started.
   if (!is_autofill_profile_dedupe_pending_) {

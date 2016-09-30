@@ -23,7 +23,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
-using sync_driver::DeviceInfo;
+using syncer::DeviceInfo;
 namespace extensions {
 
 namespace {

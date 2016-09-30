@@ -12,9 +12,9 @@
 #include "components/sync/js/js_event_handler.h"
 #include "components/sync/test/engine/test_id_factory.h"
 
-namespace sync_driver {
+namespace syncer {
 class SyncPrefs;
-}  // namespace sync_driver
+}  // namespace syncer
 
 namespace browser_sync {
 
@@ -25,7 +25,7 @@ class TestProfileSyncService : public ProfileSyncService {
   ~TestProfileSyncService() override;
 
   void OnConfigureDone(
-      const sync_driver::DataTypeManager::ConfigureResult& result) override;
+      const syncer::DataTypeManager::ConfigureResult& result) override;
 
   // We implement our own version to avoid some DCHECKs.
   syncer::UserShare* GetUserShare() const override;
@@ -35,7 +35,7 @@ class TestProfileSyncService : public ProfileSyncService {
   // Raise visibility to ease testing.
   using ProfileSyncService::NotifyObservers;
 
-  sync_driver::SyncPrefs* sync_prefs() { return &sync_prefs_; }
+  syncer::SyncPrefs* sync_prefs() { return &sync_prefs_; }
 
  protected:
   // Return NULL handle to use in backend initialization to avoid receiving

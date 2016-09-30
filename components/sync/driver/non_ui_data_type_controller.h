@@ -15,18 +15,15 @@
 #include "components/sync/driver/shared_change_processor.h"
 
 namespace syncer {
-class SyncableService;
-struct UserShare;
-}
-
-namespace sync_driver {
 
 class SyncClient;
+class SyncableService;
+struct UserShare;
 
 class NonUIDataTypeController : public DirectoryDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  NonUIDataTypeController(syncer::ModelType type,
+  NonUIDataTypeController(ModelType type,
                           const base::Closure& dump_stack,
                           SyncClient* sync_client);
   ~NonUIDataTypeController() override;
@@ -35,7 +32,7 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
-  syncer::ModelSafeGroup model_safe_group() const override = 0;
+  ModelSafeGroup model_safe_group() const override = 0;
   ChangeProcessor* GetChangeProcessor() const override;
   std::string name() const override;
   State state() const override;
@@ -67,8 +64,8 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
 
   // Start up complete, update the state and invoke the callback.
   virtual void StartDone(DataTypeController::ConfigureResult start_result,
-                         const syncer::SyncMergeResult& local_merge_result,
-                         const syncer::SyncMergeResult& syncer_merge_result);
+                         const SyncMergeResult& local_merge_result,
+                         const SyncMergeResult& syncer_merge_result);
 
   // Kick off the association process.
   virtual bool StartAssociationAsync();
@@ -85,7 +82,7 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // us know that it is safe to start associating.
   void OnModelLoaded();
 
-  std::unique_ptr<syncer::DataTypeErrorHandler> CreateErrorHandler() override;
+  std::unique_ptr<DataTypeErrorHandler> CreateErrorHandler() override;
 
  private:
   // Posted on the backend thread by StartAssociationAsync().
@@ -104,11 +101,11 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // Disable this type with the sync service. Should only be invoked in case of
   // an unrecoverable error.
   // Note: this is performed on the UI thread.
-  void DisableImpl(const syncer::SyncError& error);
+  void DisableImpl(const SyncError& error);
 
   // UserShare is stored in StartAssociating while on UI thread and
   // passed to SharedChangeProcessor::Connect on the model thread.
-  syncer::UserShare* user_share_;
+  UserShare* user_share_;
 
   // State of this datatype controller.
   State state_;
@@ -133,6 +130,6 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_NON_UI_DATA_TYPE_CONTROLLER_H_

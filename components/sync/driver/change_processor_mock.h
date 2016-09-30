@@ -16,16 +16,16 @@
 #include "components/sync/driver/change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace sync_driver {
+namespace syncer {
 
 class ChangeProcessorMock : public ChangeProcessor {
  public:
   ChangeProcessorMock();
   virtual ~ChangeProcessorMock();
   MOCK_METHOD3(ApplyChangesFromSyncModel,
-               void(const syncer::BaseTransaction*,
+               void(const BaseTransaction*,
                     int64_t,
-                    const syncer::ImmutableChangeRecordList&));
+                    const ImmutableChangeRecordList&));
   MOCK_METHOD0(CommitChangesFromSyncModel, void());
   MOCK_METHOD0(StartImpl, void());
   MOCK_CONST_METHOD0(IsRunning, bool());
@@ -33,6 +33,6 @@ class ChangeProcessorMock : public ChangeProcessor {
                void(const tracked_objects::Location&, const std::string&));
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_CHANGE_PROCESSOR_MOCK_H_

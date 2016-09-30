@@ -7,12 +7,16 @@
 
 #include "components/sync/base/model_type.h"
 
+namespace syncer {
+
 class SyncTypePreferenceProvider {
  public:
-  virtual syncer::ModelTypeSet GetPreferredDataTypes() const = 0;
+  virtual ModelTypeSet GetPreferredDataTypes() const = 0;
 
  protected:
   virtual ~SyncTypePreferenceProvider() {}
 };
+
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_TYPE_PREFERENCE_PROVIDER_H_

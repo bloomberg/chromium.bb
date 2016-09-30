@@ -10,7 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace {
+namespace syncer {
 
 TEST(SyncUtilTest, GetSyncServiceURLWithoutCommandLineSwitch) {
   // If the command line is not set the url is one of two constants chosen based
@@ -48,4 +48,4 @@ TEST(SyncUtilTest, FormatUserAgentForSync) {
                                base::CompareCase::SENSITIVE));
 }
 
-}  // namespace
+}  // namespace syncer

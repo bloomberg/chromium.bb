@@ -88,6 +88,6 @@ class FakeServerHttpPostProviderFactory
   DISALLOW_COPY_AND_ASSIGN(FakeServerHttpPostProviderFactory);
 };
 
-}  //  namespace fake_server
+}  // namespace fake_server
 
 #endif  // COMPONENTS_SYNC_TEST_FAKE_SERVER_FAKE_SERVER_HTTP_POST_PROVIDER_H_

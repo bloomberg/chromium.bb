@@ -262,7 +262,7 @@ ModelType BaseNode::GetModelType() const {
   return GetEntry()->GetModelType();
 }
 
-const syncer::AttachmentIdList BaseNode::GetAttachmentIds() const {
+const AttachmentIdList BaseNode::GetAttachmentIds() const {
   AttachmentIdList result;
   const sync_pb::AttachmentMetadata& metadata =
       GetEntry()->GetAttachmentMetadata();

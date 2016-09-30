@@ -64,15 +64,15 @@ class NudgeTracker {
   // Takes note of the receipt of an invalidation notice from the server.
   // Returns the current nudge delay for a remote invalidation.
   base::TimeDelta RecordRemoteInvalidation(
-      syncer::ModelType type,
+      ModelType type,
       std::unique_ptr<InvalidationInterface> invalidation);
 
   // Take note that an initial sync is pending for this type.
-  void RecordInitialSyncRequired(syncer::ModelType type);
+  void RecordInitialSyncRequired(ModelType type);
 
   // Takes note that the conflict happended for this type, need to sync to
   // resolve conflict locally.
-  void RecordCommitConflict(syncer::ModelType type);
+  void RecordCommitConflict(ModelType type);
 
   // These functions should be called to keep this class informed of the status
   // of the connection to the invalidations server.

@@ -15,7 +15,7 @@
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace browser_sync {
+namespace syncer {
 
 // These are coupled to the implementation of StartupController's
 // GetBackendInitializationStateString which is used by about:sync. We use it
@@ -30,14 +30,14 @@ class StartupControllerTest : public testing::Test {
   StartupControllerTest() : can_start_(false), started_(false) {}
 
   void SetUp() override {
-    sync_driver::SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
-    sync_prefs_.reset(new sync_driver::SyncPrefs(&pref_service_));
+    SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+    sync_prefs_.reset(new SyncPrefs(&pref_service_));
     controller_.reset(new StartupController(
         sync_prefs_.get(),
         base::Bind(&StartupControllerTest::CanStart, base::Unretained(this)),
         base::Bind(&StartupControllerTest::FakeStartBackend,
                    base::Unretained(this))));
-    controller_->Reset(syncer::UserTypes());
+    controller_->Reset(UserTypes());
     controller_->OverrideFallbackTimeoutForTest(
         base::TimeDelta::FromSeconds(0));
   }
@@ -75,14 +75,14 @@ class StartupControllerTest : public testing::Test {
   bool started() const { return started_; }
   void clear_started() { started_ = false; }
   StartupController* controller() { return controller_.get(); }
-  sync_driver::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
+  SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
 
  private:
   bool can_start_;
   bool started_;
   base::MessageLoop message_loop_;
   syncable_prefs::TestingPrefServiceSyncable pref_service_;
-  std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
+  std::unique_ptr<SyncPrefs> sync_prefs_;
   std::unique_ptr<StartupController> controller_;
 };
 
@@ -108,7 +108,7 @@ TEST_F(StartupControllerTest, DefersAfterFirstSetupComplete) {
 TEST_F(StartupControllerTest, NoDeferralDataTypeTrigger) {
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
-  controller()->OnDataTypeRequestsSyncStartup(syncer::SESSIONS);
+  controller()->OnDataTypeRequestsSyncStartup(SESSIONS);
   ExpectStarted();
 }
 
@@ -120,7 +120,7 @@ TEST_F(StartupControllerTest, DataTypeTriggerInterruptsDeferral) {
   controller()->TryStart();
   ExpectStartDeferred();
 
-  controller()->OnDataTypeRequestsSyncStartup(syncer::SESSIONS);
+  controller()->OnDataTypeRequestsSyncStartup(SESSIONS);
   ExpectStarted();
 
   // The fallback timer shouldn't result in another invocation of the closure
@@ -144,15 +144,15 @@ TEST_F(StartupControllerTest, FallbackTimer) {
 
 // Test that we start immediately if sessions is disabled.
 TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
-  syncer::ModelTypeSet types(syncer::UserTypes());
+  ModelTypeSet types(UserTypes());
   // Disabling sessions means disabling 4 types due to groupings.
-  types.Remove(syncer::SESSIONS);
-  types.Remove(syncer::PROXY_TABS);
-  types.Remove(syncer::TYPED_URLS);
-  types.Remove(syncer::SUPERVISED_USER_SETTINGS);
+  types.Remove(SESSIONS);
+  types.Remove(PROXY_TABS);
+  types.Remove(TYPED_URLS);
+  types.Remove(SUPERVISED_USER_SETTINGS);
   sync_prefs()->SetKeepEverythingSynced(false);
-  sync_prefs()->SetPreferredDataTypes(syncer::UserTypes(), types);
-  controller()->Reset(syncer::UserTypes());
+  sync_prefs()->SetPreferredDataTypes(UserTypes(), types);
+  controller()->Reset(UserTypes());
 
   sync_prefs()->SetFirstSetupComplete();
   SetCanStart(true);
@@ -204,10 +204,10 @@ TEST_F(StartupControllerTest, ResetDuringSetup) {
   controller()->SetSetupInProgress(true);
 
   // This could happen if the UI triggers a stop-syncing permanently call.
-  controller()->Reset(syncer::UserTypes());
+  controller()->Reset(UserTypes());
 
   // From the UI's point of view, setup is still in progress.
   EXPECT_TRUE(controller()->IsSetupInProgress());
 }
 
-}  // namespace browser_sync
+}  // namespace syncer

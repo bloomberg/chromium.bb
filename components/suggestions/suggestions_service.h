@@ -24,24 +24,24 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
+class OAuth2TokenService;
+class SigninManagerBase;
+
 namespace gfx {
 class Image;
-}
+}  // namespce gfx
 
 namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
-namespace sync_driver {
+namespace syncer {
 class SyncService;
-}
+}  // namespace syncer
 
 namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
-
-class OAuth2TokenService;
-class SigninManagerBase;
 
 namespace suggestions {
 
@@ -52,7 +52,7 @@ class SuggestionsStore;
 // An interface to fetch server suggestions asynchronously.
 class SuggestionsService : public KeyedService,
                            public net::URLFetcherDelegate,
-                           public sync_driver::SyncServiceObserver {
+                           public syncer::SyncServiceObserver {
  public:
   using ResponseCallback = base::Callback<void(const SuggestionsProfile&)>;
   using BitmapCallback = base::Callback<void(const GURL&, const gfx::Image&)>;
@@ -62,7 +62,7 @@ class SuggestionsService : public KeyedService,
 
   SuggestionsService(const SigninManagerBase* signin_manager,
                      OAuth2TokenService* token_service,
-                     sync_driver::SyncService* sync_service,
+                     syncer::SyncService* sync_service,
                      net::URLRequestContextGetter* url_request_context,
                      std::unique_ptr<SuggestionsStore> suggestions_store,
                      std::unique_ptr<ImageManager> thumbnail_manager,
@@ -137,7 +137,7 @@ class SuggestionsService : public KeyedService,
   static GURL BuildSuggestionsBlacklistURL(const GURL& candidate_url);
   static GURL BuildSuggestionsBlacklistClearURL();
 
-  // sync_driver::SyncServiceObserver implementation.
+  // syncer::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
   // Sets default timestamp for suggestions which do not have expiry timestamp.
@@ -188,8 +188,8 @@ class SuggestionsService : public KeyedService,
 
   base::ThreadChecker thread_checker_;
 
-  sync_driver::SyncService* sync_service_;
-  ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>
+  syncer::SyncService* sync_service_;
+  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
 
   net::URLRequestContextGetter* url_request_context_;

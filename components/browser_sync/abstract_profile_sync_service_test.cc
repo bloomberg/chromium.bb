@@ -22,6 +22,7 @@
 #include "components/sync/protocol/sync.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 
+using syncer::SyncBackendHostImpl;
 using syncer::ModelType;
 using testing::_;
 using testing::Return;
@@ -34,10 +35,10 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
  public:
   SyncBackendHostForProfileSyncTest(
       const base::FilePath& temp_dir,
-      sync_driver::SyncClient* sync_client,
+      syncer::SyncClient* sync_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+      const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
       const base::Closure& callback);
   ~SyncBackendHostForProfileSyncTest() override;
 
@@ -54,7 +55,7 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
       const base::Closure& retry_callback) override;
 
  protected:
-  void InitCore(std::unique_ptr<DoInitializeOptions> options) override;
+  void InitCore(std::unique_ptr<syncer::DoInitializeOptions> options) override;
 
  private:
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
@@ -67,10 +68,10 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
 
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     const base::FilePath& temp_dir,
-    sync_driver::SyncClient* sync_client,
+    syncer::SyncClient* sync_client,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     invalidation::InvalidationService* invalidator,
-    const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
+    const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
     const base::Closure& callback)
     : SyncBackendHostImpl(
           "dummy_debug_name",
@@ -84,7 +85,7 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}
 
 void SyncBackendHostForProfileSyncTest::InitCore(
-    std::unique_ptr<DoInitializeOptions> options) {
+    std::unique_ptr<syncer::DoInitializeOptions> options) {
   options->http_bridge_factory =
       std::unique_ptr<syncer::HttpPostProviderFactory>(
           new TestHttpBridgeFactory());
@@ -137,7 +138,7 @@ void SyncBackendHostForProfileSyncTest::RequestConfigureSyncer(
 }
 
 // Helper function for return-type-upcasting of the callback.
-sync_driver::SyncService* GetSyncService(
+syncer::SyncService* GetSyncService(
     base::Callback<TestProfileSyncService*(void)> get_sync_service_callback) {
   return get_sync_service_callback.Run();
 }
@@ -184,7 +185,7 @@ bool AbstractProfileSyncServiceTest::CreateRoot(ModelType model_type) {
 }
 
 void AbstractProfileSyncServiceTest::CreateSyncService(
-    std::unique_ptr<sync_driver::SyncClient> sync_client,
+    std::unique_ptr<syncer::SyncClient> sync_client,
     const base::Closure& initialization_success_callback) {
   DCHECK(sync_client);
   ProfileSyncService::InitParams init_params =
@@ -193,7 +194,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
   sync_service_ =
       base::MakeUnique<TestProfileSyncService>(std::move(init_params));
 
-  SyncApiComponentFactoryMock* components =
+  syncer::SyncApiComponentFactoryMock* components =
       profile_sync_service_bundle_.component_factory();
   EXPECT_CALL(*components, CreateSyncBackendHost(_, _, _, _))
       .WillOnce(Return(new SyncBackendHostForProfileSyncTest(
@@ -206,7 +207,7 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
   sync_service_->SetFirstSetupComplete();
 }
 
-base::Callback<sync_driver::SyncService*(void)>
+base::Callback<syncer::SyncService*(void)>
 AbstractProfileSyncServiceTest::GetSyncServiceCallback() {
   return base::Bind(GetSyncService,
                     base::Bind(&AbstractProfileSyncServiceTest::sync_service,

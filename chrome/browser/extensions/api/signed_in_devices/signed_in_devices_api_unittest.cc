@@ -26,8 +26,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using sync_driver::DeviceInfo;
-using sync_driver::DeviceInfoTracker;
+using syncer::DeviceInfo;
+using syncer::DeviceInfoTracker;
 using testing::Return;
 
 namespace extensions {

@@ -10,7 +10,6 @@
 #include "components/sync/test/fake_server/permanent_entity.h"
 
 using std::string;
-
 using syncer::GetModelTypeFromSpecifics;
 using syncer::ModelType;
 using syncer::syncable::GenerateSyncableHash;

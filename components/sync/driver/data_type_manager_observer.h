@@ -7,7 +7,7 @@
 
 #include "components/sync/driver/data_type_manager.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // Various data type configuration events can be consumed by observing the
 // DataTypeManager through this interface.
@@ -21,6 +21,6 @@ class DataTypeManagerObserver {
   virtual ~DataTypeManagerObserver() {}
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_DATA_TYPE_MANAGER_OBSERVER_H_

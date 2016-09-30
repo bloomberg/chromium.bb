@@ -557,7 +557,7 @@ bool IsControlType(ModelType model_type) {
 }
 
 ModelTypeSet CoreTypes() {
-  syncer::ModelTypeSet result;
+  ModelTypeSet result;
   result.PutAll(PriorityCoreTypes());
 
   // The following are low priority core types.
@@ -570,7 +570,7 @@ ModelTypeSet CoreTypes() {
 }
 
 ModelTypeSet PriorityCoreTypes() {
-  syncer::ModelTypeSet result;
+  ModelTypeSet result;
   result.PutAll(ControlTypes());
 
   // The following are non-control core types.
@@ -673,7 +673,7 @@ ModelTypeSet ModelTypeSetFromString(const std::string& model_types_string) {
     } else {
       type_str = working_copy.substr(0, end);
     }
-    syncer::ModelType type = ModelTypeFromString(type_str);
+    ModelType type = ModelTypeFromString(type_str);
     if (IsRealDataType(type))
       model_types.Put(type);
     working_copy = working_copy.substr(end + 1);

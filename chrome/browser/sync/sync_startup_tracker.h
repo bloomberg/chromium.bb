@@ -17,7 +17,7 @@ class Profile;
 // but now that sync initialization is no longer a required part of signin,
 // it has been broken out of that class so only those places that care about
 // sync initialization depend on it.
-class SyncStartupTracker : public sync_driver::SyncServiceObserver {
+class SyncStartupTracker : public syncer::SyncServiceObserver {
  public:
   // Observer interface used to notify observers when sync has started up.
   class Observer {
@@ -45,7 +45,7 @@ class SyncStartupTracker : public sync_driver::SyncServiceObserver {
   // Returns the current state of the sync service.
   static SyncServiceState GetSyncServiceState(Profile* profile);
 
-  // sync_driver::SyncServiceObserver implementation.
+  // syncer::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
  private:

@@ -28,7 +28,7 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   auto sync_client = base::MakeUnique<browser_sync::ChromeSyncClient>(profile);
 
   sync_client->SetSyncApiComponentFactoryForTesting(
-      base::MakeUnique<SyncApiComponentFactoryMock>());
+      base::MakeUnique<syncer::SyncApiComponentFactoryMock>());
 
   ProfileSyncService::InitParams init_params =
       CreateProfileSyncServiceParamsForTest(std::move(sync_client), profile);
@@ -37,7 +37,7 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
 }
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
-    std::unique_ptr<sync_driver::SyncClient> sync_client,
+    std::unique_ptr<syncer::SyncClient> sync_client,
     Profile* profile) {
   ProfileSyncService::InitParams init_params;
 

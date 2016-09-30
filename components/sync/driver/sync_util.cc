@@ -45,6 +45,7 @@ std::string GetSystemString(bool is_tablet) {
 
 }  // namespace
 
+namespace syncer {
 namespace internal {
 
 const char* kSyncServerUrl = "https://clients4.google.com/chrome-sync";
@@ -104,3 +105,5 @@ std::string MakeUserAgentForSync(version_info::Channel channel,
   std::string system = GetSystemString(is_tablet);
   return internal::FormatUserAgentForSync(system, channel);
 }
+
+}  // namespace syncer

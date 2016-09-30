@@ -31,7 +31,7 @@ namespace extensions {
 // thread and they are expecting public method calls from the UI thread.
 class ExternalPrefLoader : public ExternalLoader,
                            public syncable_prefs::PrefServiceSyncableObserver,
-                           public sync_driver::SyncServiceObserver {
+                           public syncer::SyncServiceObserver {
  public:
   enum Options {
     NONE = 0,
@@ -74,7 +74,7 @@ class ExternalPrefLoader : public ExternalLoader,
   // syncable_prefs::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
-  // sync_driver::SyncServiceObserver
+  // syncer::SyncServiceObserver
   void OnStateChanged() override;
 
   // If priority sync ready posts LoadOnFileThread and return true.

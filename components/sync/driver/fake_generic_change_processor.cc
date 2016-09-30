@@ -11,14 +11,14 @@
 #include "components/sync/api/syncable_service.h"
 #include "components/sync/core/attachments/attachment_service_impl.h"
 
-namespace sync_driver {
+namespace syncer {
 
-FakeGenericChangeProcessor::FakeGenericChangeProcessor(syncer::ModelType type,
+FakeGenericChangeProcessor::FakeGenericChangeProcessor(ModelType type,
                                                        SyncClient* sync_client)
     : GenericChangeProcessor(type,
                              NULL,
-                             base::WeakPtr<syncer::SyncableService>(),
-                             base::WeakPtr<syncer::SyncMergeResult>(),
+                             base::WeakPtr<SyncableService>(),
+                             base::WeakPtr<SyncMergeResult>(),
                              NULL,
                              sync_client,
                              nullptr),
@@ -36,15 +36,15 @@ void FakeGenericChangeProcessor::set_sync_model_has_user_created_nodes_success(
   sync_model_has_user_created_nodes_success_ = success;
 }
 
-syncer::SyncError FakeGenericChangeProcessor::ProcessSyncChanges(
+SyncError FakeGenericChangeProcessor::ProcessSyncChanges(
     const tracked_objects::Location& from_here,
-    const syncer::SyncChangeList& change_list) {
-  return syncer::SyncError();
+    const SyncChangeList& change_list) {
+  return SyncError();
 }
 
-syncer::SyncError FakeGenericChangeProcessor::GetAllSyncDataReturnError(
-    syncer::SyncDataList* current_sync_data) const {
-  return syncer::SyncError();
+SyncError FakeGenericChangeProcessor::GetAllSyncDataReturnError(
+    SyncDataList* current_sync_data) const {
+  return SyncError();
 }
 
 bool FakeGenericChangeProcessor::GetDataTypeContext(
@@ -73,13 +73,13 @@ FakeGenericChangeProcessorFactory::~FakeGenericChangeProcessorFactory() {}
 
 std::unique_ptr<GenericChangeProcessor>
 FakeGenericChangeProcessorFactory::CreateGenericChangeProcessor(
-    syncer::ModelType type,
-    syncer::UserShare* user_share,
-    std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
-    const base::WeakPtr<syncer::SyncableService>& local_service,
-    const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
+    ModelType type,
+    UserShare* user_share,
+    std::unique_ptr<DataTypeErrorHandler> error_handler,
+    const base::WeakPtr<SyncableService>& local_service,
+    const base::WeakPtr<SyncMergeResult>& merge_result,
     SyncClient* sync_client) {
   return std::move(processor_);
 }
 
-}  // namespace sync_driver
+}  // namespace syncer

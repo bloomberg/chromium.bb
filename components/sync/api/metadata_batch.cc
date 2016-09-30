@@ -6,7 +6,7 @@
 
 #include <utility>
 
-namespace syncer_v2 {
+namespace syncer {
 
 MetadataBatch::MetadataBatch() {}
 MetadataBatch::~MetadataBatch() {}
@@ -28,4 +28,4 @@ void MetadataBatch::SetDataTypeState(const sync_pb::DataTypeState& state) {
   state_ = state;
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

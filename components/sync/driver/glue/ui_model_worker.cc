@@ -11,14 +11,14 @@
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_restrictions.h"
 
-namespace browser_sync {
+namespace syncer {
 
 namespace {
 
 // A simple callback to signal a waitable event after running a closure.
-void CallDoWorkAndSignalCallback(const syncer::WorkCallback& work,
+void CallDoWorkAndSignalCallback(const WorkCallback& work,
                                  base::WaitableEvent* work_done,
-                                 syncer::SyncerError* error_info) {
+                                 SyncerError* error_info) {
   if (work.is_null()) {
     // This can happen during tests or cases where there are more than just the
     // default UIModelWorker in existence and it gets destroyed before
@@ -40,17 +40,17 @@ void CallDoWorkAndSignalCallback(const syncer::WorkCallback& work,
 
 UIModelWorker::UIModelWorker(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-    syncer::WorkerLoopDestructionObserver* observer)
-    : syncer::ModelSafeWorker(observer), ui_thread_(ui_thread) {}
+    WorkerLoopDestructionObserver* observer)
+    : ModelSafeWorker(observer), ui_thread_(ui_thread) {}
 
 void UIModelWorker::RegisterForLoopDestruction() {
   CHECK(ui_thread_->BelongsToCurrentThread());
   SetWorkingLoopToCurrent();
 }
 
-syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
-    const syncer::WorkCallback& work) {
-  syncer::SyncerError error_info;
+SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
+    const WorkCallback& work) {
+  SyncerError error_info;
   if (ui_thread_->BelongsToCurrentThread()) {
     DLOG(WARNING) << "DoWorkAndWaitUntilDone called from "
                   << "ui_loop_. Probably a nested invocation?";
@@ -61,7 +61,7 @@ syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
                             base::Bind(&CallDoWorkAndSignalCallback, work,
                                        work_done_or_stopped(), &error_info))) {
     DLOG(WARNING) << "Could not post work to UI loop.";
-    error_info = syncer::CANNOT_DO_WORK;
+    error_info = CANNOT_DO_WORK;
     return error_info;
   }
   work_done_or_stopped()->Wait();
@@ -69,10 +69,10 @@ syncer::SyncerError UIModelWorker::DoWorkAndWaitUntilDoneImpl(
   return error_info;
 }
 
-syncer::ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
-  return syncer::GROUP_UI;
+ModelSafeGroup UIModelWorker::GetModelSafeGroup() {
+  return GROUP_UI;
 }
 
 UIModelWorker::~UIModelWorker() {}
 
-}  // namespace browser_sync
+}  // namespace syncer

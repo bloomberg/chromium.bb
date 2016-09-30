@@ -165,7 +165,7 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
         "Usage: %s --%s=foo@bar.com --%s=token\n"
         "[--%s=host:port] [--%s] [--%s]\n"
         "Run chrome and set a breakpoint on\n"
-        "syncer::SyncManagerImpl::UpdateCredentials() "
+        "SyncManagerImpl::UpdateCredentials() "
         "after logging into\n"
         "sync to get the token to pass into this utility.\n",
         argv[0], kEmailSwitch, kTokenSwitch, kHostPortSwitch,
@@ -179,9 +179,8 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
 
   const notifier::NotifierOptions& notifier_options = ParseNotifierOptions(
       command_line, new MyTestURLRequestContextGetter(io_thread.task_runner()));
-  syncer::NetworkChannelCreator network_channel_creator =
-      syncer::NonBlockingInvalidator::MakePushClientChannelCreator(
-          notifier_options);
+  NetworkChannelCreator network_channel_creator =
+      NonBlockingInvalidator::MakePushClientChannelCreator(notifier_options);
   const char kClientInfo[] = "sync_listen_notifications";
   NullInvalidationStateTracker null_invalidation_state_tracker;
   std::unique_ptr<Invalidator> invalidator(new NonBlockingInvalidator(

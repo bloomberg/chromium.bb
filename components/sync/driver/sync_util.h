@@ -15,6 +15,7 @@ namespace base {
 class CommandLine;
 }
 
+namespace syncer {
 namespace internal {
 
 // Default sync server URL. Visible for testing.
@@ -37,5 +38,7 @@ GURL GetSyncServiceURL(const base::CommandLine& command_line,
 // the syncapi for any HTTP communication. This string is used by the sync
 // backend for classifying client types when calculating statistics.
 std::string MakeUserAgentForSync(version_info::Channel channel, bool is_tablet);
+
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_UTIL_H_

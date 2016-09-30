@@ -170,7 +170,7 @@ enum ModelType {
 typedef EnumSet<ModelType, FIRST_REAL_MODEL_TYPE, LAST_REAL_MODEL_TYPE>
     ModelTypeSet;
 typedef EnumSet<ModelType, UNSPECIFIED, LAST_REAL_MODEL_TYPE> FullModelTypeSet;
-typedef std::map<syncer::ModelType, const char*> ModelTypeNameMap;
+typedef std::map<ModelType, const char*> ModelTypeNameMap;
 
 inline ModelType ModelTypeFromInt(int i) {
   DCHECK_GE(i, 0);

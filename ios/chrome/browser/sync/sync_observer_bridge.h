@@ -11,7 +11,7 @@
 #include "base/scoped_observer.h"
 #include "components/sync/driver/sync_service_observer.h"
 
-namespace sync_driver {
+namespace syncer {
 class SyncService;
 }
 
@@ -22,21 +22,21 @@ class SyncService;
 @end
 
 // C++ class to monitor profile sync status in Objective-C type.
-class SyncObserverBridge : public sync_driver::SyncServiceObserver {
+class SyncObserverBridge : public syncer::SyncServiceObserver {
  public:
   // |service| must outlive the SyncObserverBridge.
   SyncObserverBridge(id<SyncObserverModelBridge> delegate,
-                     sync_driver::SyncService* service);
+                     syncer::SyncService* service);
 
   ~SyncObserverBridge() override;
 
  private:
-   // sync_driver::SyncServiceObserver implementation:
-   void OnStateChanged() override;
-   void OnSyncConfigurationCompleted() override;
+  // syncer::SyncServiceObserver implementation:
+  void OnStateChanged() override;
+  void OnSyncConfigurationCompleted() override;
 
   base::WeakNSProtocol<id<SyncObserverModelBridge>> delegate_;
-  ScopedObserver<sync_driver::SyncService, sync_driver::SyncServiceObserver>
+  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       scoped_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncObserverBridge);

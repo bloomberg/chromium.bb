@@ -15,9 +15,9 @@
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/version_info/version_info.h"
 
-namespace browser_sync {
+namespace syncer {
 
-class LocalDeviceInfoProviderImpl : public sync_driver::LocalDeviceInfoProvider,
+class LocalDeviceInfoProviderImpl : public LocalDeviceInfoProvider,
                                     public base::NonThreadSafe {
  public:
   LocalDeviceInfoProviderImpl(version_info::Channel channel,
@@ -26,7 +26,7 @@ class LocalDeviceInfoProviderImpl : public sync_driver::LocalDeviceInfoProvider,
   ~LocalDeviceInfoProviderImpl() override;
 
   // LocalDeviceInfoProvider implementation.
-  const sync_driver::DeviceInfo* GetLocalDeviceInfo() const override;
+  const DeviceInfo* GetLocalDeviceInfo() const override;
   std::string GetSyncUserAgent() const override;
   std::string GetLocalSyncCacheGUID() const override;
   void Initialize(
@@ -53,13 +53,13 @@ class LocalDeviceInfoProviderImpl : public sync_driver::LocalDeviceInfoProvider,
   const bool is_tablet_;
 
   std::string cache_guid_;
-  std::unique_ptr<sync_driver::DeviceInfo> local_device_info_;
+  std::unique_ptr<DeviceInfo> local_device_info_;
   base::CallbackList<void(void)> callback_list_;
   base::WeakPtrFactory<LocalDeviceInfoProviderImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDeviceInfoProviderImpl);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DEVICE_INFO_LOCAL_DEVICE_INFO_PROVIDER_IMPL_H_

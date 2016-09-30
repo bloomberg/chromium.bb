@@ -118,7 +118,7 @@ SuggestionsProfile CreateSuggestionsProfileWithExpiryTimestamps() {
   return profile;
 }
 
-class MockSyncService : public sync_driver::FakeSyncService {
+class MockSyncService : public syncer::FakeSyncService {
  public:
   MockSyncService() {}
   virtual ~MockSyncService() {}

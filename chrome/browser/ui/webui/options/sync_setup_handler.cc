@@ -877,7 +877,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
     // the sync types behind a checkbox are force-enabled? crbug.com/403326
   }
   PrefService* pref_service = GetProfile()->GetPrefs();
-  sync_driver::SyncPrefs sync_prefs(pref_service);
+  syncer::SyncPrefs sync_prefs(pref_service);
   args.SetBoolean("passphraseFailed", passphrase_failed);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
   args.SetBoolean("syncNothing", false);  // Always false during initial setup.

@@ -113,9 +113,9 @@ TEST_F(ModelTypeTest, ModelTypeHistogramMapping) {
 }
 
 TEST_F(ModelTypeTest, ModelTypeSetFromString) {
-  syncer::ModelTypeSet empty;
-  syncer::ModelTypeSet one(BOOKMARKS);
-  syncer::ModelTypeSet two(BOOKMARKS, TYPED_URLS);
+  ModelTypeSet empty;
+  ModelTypeSet one(BOOKMARKS);
+  ModelTypeSet two(BOOKMARKS, TYPED_URLS);
 
   EXPECT_EQ(empty, ModelTypeSetFromString(ModelTypeSetToString(empty)));
   EXPECT_EQ(one, ModelTypeSetFromString(ModelTypeSetToString(one)));
@@ -123,12 +123,12 @@ TEST_F(ModelTypeTest, ModelTypeSetFromString) {
 }
 
 TEST_F(ModelTypeTest, DefaultFieldValues) {
-  syncer::ModelTypeSet types = syncer::ProtocolTypes();
+  ModelTypeSet types = ProtocolTypes();
   for (ModelTypeSet::Iterator it = types.First(); it.Good(); it.Inc()) {
     SCOPED_TRACE(ModelTypeToString(it.Get()));
 
     sync_pb::EntitySpecifics specifics;
-    syncer::AddDefaultFieldValue(it.Get(), &specifics);
+    AddDefaultFieldValue(it.Get(), &specifics);
     EXPECT_TRUE(specifics.IsInitialized());
 
     std::string tmp;
@@ -138,7 +138,7 @@ TEST_F(ModelTypeTest, DefaultFieldValues) {
     EXPECT_TRUE(from_string.ParseFromString(tmp));
     EXPECT_TRUE(from_string.IsInitialized());
 
-    EXPECT_EQ(it.Get(), syncer::GetModelTypeFromSpecifics(from_string));
+    EXPECT_EQ(it.Get(), GetModelTypeFromSpecifics(from_string));
   }
 }
 

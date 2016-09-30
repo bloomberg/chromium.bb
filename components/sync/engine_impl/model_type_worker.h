@@ -28,7 +28,7 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace syncer_v2 {
+namespace syncer {
 
 class ModelTypeProcessor;
 class WorkerEntityTracker;
@@ -53,40 +53,39 @@ class WorkerEntityTracker;
 // example, if the sync server sends down an update for a sync entity that is
 // currently pending for commit, this object will detect this condition and
 // cancel the pending commit.
-class ModelTypeWorker : public syncer::UpdateHandler,
-                        public syncer::CommitContributor,
+class ModelTypeWorker : public UpdateHandler,
+                        public CommitContributor,
                         public CommitQueue {
  public:
-  ModelTypeWorker(syncer::ModelType type,
+  ModelTypeWorker(ModelType type,
                   const sync_pb::DataTypeState& initial_state,
-                  std::unique_ptr<syncer::Cryptographer> cryptographer,
-                  syncer::NudgeHandler* nudge_handler,
+                  std::unique_ptr<Cryptographer> cryptographer,
+                  NudgeHandler* nudge_handler,
                   std::unique_ptr<ModelTypeProcessor> model_type_processor);
   ~ModelTypeWorker() override;
 
-  syncer::ModelType GetModelType() const;
+  ModelType GetModelType() const;
 
-  void UpdateCryptographer(
-      std::unique_ptr<syncer::Cryptographer> cryptographer);
+  void UpdateCryptographer(std::unique_ptr<Cryptographer> cryptographer);
 
   // UpdateHandler implementation.
   bool IsInitialSyncEnded() const override;
   void GetDownloadProgress(
       sync_pb::DataTypeProgressMarker* progress_marker) const override;
   void GetDataTypeContext(sync_pb::DataTypeContext* context) const override;
-  syncer::SyncerError ProcessGetUpdatesResponse(
+  SyncerError ProcessGetUpdatesResponse(
       const sync_pb::DataTypeProgressMarker& progress_marker,
       const sync_pb::DataTypeContext& mutated_context,
       const SyncEntityList& applicable_updates,
-      syncer::StatusController* status) override;
-  void ApplyUpdates(syncer::StatusController* status) override;
-  void PassiveApplyUpdates(syncer::StatusController* status) override;
+      StatusController* status) override;
+  void ApplyUpdates(StatusController* status) override;
+  void PassiveApplyUpdates(StatusController* status) override;
 
   // CommitQueue implementation.
   void EnqueueForCommit(const CommitRequestDataList& request_list) override;
 
   // CommitContributor implementation.
-  std::unique_ptr<syncer::CommitContribution> GetContribution(
+  std::unique_ptr<CommitContribution> GetContribution(
       size_t max_entries) override;
 
   // Callback for when our contribution gets a response.
@@ -143,7 +142,7 @@ class ModelTypeWorker : public syncer::UpdateHandler,
   // Gets the entity tracker for |data| or creates one if it doesn't exist.
   WorkerEntityTracker* GetOrCreateEntityTracker(const EntityData& data);
 
-  syncer::ModelType type_;
+  ModelType type_;
 
   // State that applies to the entire model type.
   sync_pb::DataTypeState data_type_state_;
@@ -154,10 +153,10 @@ class ModelTypeWorker : public syncer::UpdateHandler,
   // A private copy of the most recent cryptographer known to sync.
   // Initialized at construction time and updated with UpdateCryptographer().
   // NULL if encryption is not enabled for this type.
-  std::unique_ptr<syncer::Cryptographer> cryptographer_;
+  std::unique_ptr<Cryptographer> cryptographer_;
 
   // Interface used to access and send nudges to the sync scheduler. Not owned.
-  syncer::NudgeHandler* nudge_handler_;
+  NudgeHandler* nudge_handler_;
 
   // A map of per-entity information, keyed by client_tag_hash.
   //
@@ -178,6 +177,6 @@ class ModelTypeWorker : public syncer::UpdateHandler,
   base::WeakPtrFactory<ModelTypeWorker> weak_ptr_factory_;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_ENGINE_IMPL_MODEL_TYPE_WORKER_H_

@@ -512,8 +512,8 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistory(
       callback);
 
   // Find the Sync request URL.
-  GURL url =
-      GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(), channel);
+  GURL url = syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
+                                       channel);
   GURL::Replacements replace_path;
   std::string new_path =
       url.path() + kQueryOtherFormsOfBrowsingHistoryUrlSuffix;
@@ -524,7 +524,7 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistory(
   Request* request = CreateRequest(url, completion_callback);
 
   // Set the Sync-specific user agent.
-  std::string user_agent = MakeUserAgentForSync(
+  std::string user_agent = syncer::MakeUserAgentForSync(
       channel, ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
   request->SetUserAgent(user_agent);
 

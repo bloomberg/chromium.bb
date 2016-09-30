@@ -10,7 +10,7 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace sync_driver {
+namespace syncer {
 
 namespace {
 
@@ -36,4 +36,4 @@ TEST_F(SystemEncryptorTest, EncryptDecrypt) {
 
 }  // namespace
 
-}  // namespace sync_driver
+}  // namespace syncer

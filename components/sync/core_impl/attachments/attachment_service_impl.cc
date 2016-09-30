@@ -144,16 +144,15 @@ AttachmentServiceImpl::~AttachmentServiceImpl() {
 }
 
 // Static.
-std::unique_ptr<syncer::AttachmentService>
-AttachmentServiceImpl::CreateForTest() {
-  std::unique_ptr<syncer::AttachmentStore> attachment_store =
+std::unique_ptr<AttachmentService> AttachmentServiceImpl::CreateForTest() {
+  std::unique_ptr<AttachmentStore> attachment_store =
       AttachmentStore::CreateInMemoryStore();
   std::unique_ptr<AttachmentUploader> attachment_uploader(
       new FakeAttachmentUploader);
   std::unique_ptr<AttachmentDownloader> attachment_downloader(
       new FakeAttachmentDownloader());
-  std::unique_ptr<syncer::AttachmentService> attachment_service(
-      new syncer::AttachmentServiceImpl(
+  std::unique_ptr<AttachmentService> attachment_service(
+      new AttachmentServiceImpl(
           attachment_store->CreateAttachmentStoreForSync(),
           std::move(attachment_uploader), std::move(attachment_downloader),
           NULL, base::TimeDelta(), base::TimeDelta()));

@@ -20,7 +20,7 @@
 #include "components/sync/protocol/data_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 // Receives and records commit requests sent through the ModelTypeWorker.
 //
@@ -123,6 +123,6 @@ class MockModelTypeWorker : public CommitQueue {
   DISALLOW_COPY_AND_ASSIGN(MockModelTypeWorker);
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_TEST_ENGINE_MOCK_MODEL_TYPE_WORKER_H_

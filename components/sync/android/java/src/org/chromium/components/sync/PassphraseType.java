@@ -15,7 +15,7 @@ import java.util.Set;
  *
  * It implements the Android {@link Parcelable} interface so it is easy to pass around in intents.
  *
- * It maps the native enum syncer::PassphraseType.
+ * It maps the native enum PassphraseType.
  */
 public enum PassphraseType implements Parcelable {
     IMPLICIT_PASSPHRASE(0), // GAIA-based passphrase (deprecated).

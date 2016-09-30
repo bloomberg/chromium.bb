@@ -35,7 +35,7 @@ void StartSyncOnUIThread(const base::FilePath& browser_state_path,
     return;
   }
 
-  sync_driver::SyncService* sync_service =
+  syncer::SyncService* sync_service =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state);
   if (!sync_service) {
     DVLOG(2) << "No SyncService for browser state, can't start sync.";

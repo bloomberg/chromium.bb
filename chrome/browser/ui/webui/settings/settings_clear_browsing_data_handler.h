@@ -30,7 +30,7 @@ namespace settings {
 
 // Chrome browser startup settings handler.
 class ClearBrowsingDataHandler : public SettingsPageUIHandler,
-                                 public sync_driver::SyncServiceObserver {
+                                 public syncer::SyncServiceObserver {
  public:
   explicit ClearBrowsingDataHandler(content::WebUI* webui);
   ~ClearBrowsingDataHandler() override;
@@ -93,8 +93,7 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
 
   // ProfileSyncService to observe sync state changes.
   browser_sync::ProfileSyncService* sync_service_;
-  ScopedObserver<browser_sync::ProfileSyncService,
-                 sync_driver::SyncServiceObserver>
+  ScopedObserver<browser_sync::ProfileSyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
 
   // Used to listen for pref changes to allow / disallow deleting browsing data.

@@ -12,11 +12,11 @@ class Profile;
 
 namespace browser_sync {
 
-class ThemeDataTypeController : public sync_driver::UIDataTypeController {
+class ThemeDataTypeController : public syncer::UIDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   ThemeDataTypeController(const base::Closure& dump_stack,
-                          sync_driver::SyncClient* sync_client,
+                          syncer::SyncClient* sync_client,
                           Profile* profile);
   ~ThemeDataTypeController() override;
 

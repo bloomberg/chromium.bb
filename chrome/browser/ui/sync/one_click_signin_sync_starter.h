@@ -29,9 +29,9 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace sync_driver {
+namespace syncer {
 class SyncSetupInProgressHandle;
-}  // namespace sync_driver
+}  // namespace syncer
 
 // Waits for successful sign-in notification from the signin manager and then
 // starts the sync machine.  Instances of this class delete themselves once
@@ -246,7 +246,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   bool first_account_added_to_cookie_;
 
   // Prevents Sync from running until configuration is complete.
-  std::unique_ptr<sync_driver::SyncSetupInProgressHandle> sync_blocker_;
+  std::unique_ptr<syncer::SyncSetupInProgressHandle> sync_blocker_;
 
   base::WeakPtrFactory<OneClickSigninSyncStarter> weak_pointer_factory_;
 

@@ -20,7 +20,7 @@ namespace browsing_data {
 HistoryCounter::HistoryCounter(
     history::HistoryService* history_service,
     const GetUpdatedWebHistoryServiceCallback& callback,
-    sync_driver::SyncService* sync_service)
+    syncer::SyncService* sync_service)
     : history_service_(history_service),
       web_history_service_callback_(callback),
       sync_service_(sync_service),

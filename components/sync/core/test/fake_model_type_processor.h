@@ -9,7 +9,7 @@
 
 #include "components/sync/core/model_type_processor.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 class FakeModelTypeProcessor : public ModelTypeProcessor {
  public:
@@ -25,6 +25,6 @@ class FakeModelTypeProcessor : public ModelTypeProcessor {
                         const UpdateResponseDataList& updates) override;
 };
 
-}  // namespace syncer_v2
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_CORE_TEST_FAKE_MODEL_TYPE_PROCESSOR_H_

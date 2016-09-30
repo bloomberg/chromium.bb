@@ -7,7 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <memory>
+#include <string>
+#include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -96,7 +97,7 @@ ProfileSyncServiceAndroid::ProfileSyncServiceAndroid(JNIEnv* env, jobject obj)
     return;
   }
 
-  sync_prefs_.reset(new sync_driver::SyncPrefs(profile_->GetPrefs()));
+  sync_prefs_.reset(new syncer::SyncPrefs(profile_->GetPrefs()));
 
   sync_service_ =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
@@ -467,7 +468,7 @@ ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::GetAboutInfoForTest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::unique_ptr<base::DictionaryValue> about_info =
-      sync_driver::sync_ui_util::ConstructAboutInformation(
+      syncer::sync_ui_util::ConstructAboutInformation(
           sync_service_, sync_service_->signin(), chrome::GetChannel());
   std::string about_info_json;
   base::JSONWriter::Write(*about_info, &about_info_json);
@@ -482,7 +483,7 @@ jlong ProfileSyncServiceAndroid::GetLastSyncedTimeForTest(
   // conversion, since SyncPrefs::GetLastSyncedTime() converts the stored value
   // to to base::Time.
   return static_cast<jlong>(
-      profile_->GetPrefs()->GetInt64(sync_driver::prefs::kSyncLastSyncedTime));
+      profile_->GetPrefs()->GetInt64(syncer::prefs::kSyncLastSyncedTime));
 }
 
 void ProfileSyncServiceAndroid::OverrideNetworkResourcesForTest(

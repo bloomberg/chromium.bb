@@ -15,12 +15,12 @@
 #include "components/sync/driver/generic_change_processor_factory.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 
-namespace sync_driver {
+namespace syncer {
 
 // A fake GenericChangeProcessor that can return arbitrary values.
 class FakeGenericChangeProcessor : public GenericChangeProcessor {
  public:
-  FakeGenericChangeProcessor(syncer::ModelType type, SyncClient* sync_client);
+  FakeGenericChangeProcessor(ModelType type, SyncClient* sync_client);
   ~FakeGenericChangeProcessor() override;
 
   // Setters for GenericChangeProcessor implementation results.
@@ -28,11 +28,9 @@ class FakeGenericChangeProcessor : public GenericChangeProcessor {
   void set_sync_model_has_user_created_nodes_success(bool success);
 
   // GenericChangeProcessor implementations.
-  syncer::SyncError ProcessSyncChanges(
-      const tracked_objects::Location& from_here,
-      const syncer::SyncChangeList& change_list) override;
-  syncer::SyncError GetAllSyncDataReturnError(
-      syncer::SyncDataList* data) const override;
+  SyncError ProcessSyncChanges(const tracked_objects::Location& from_here,
+                               const SyncChangeList& change_list) override;
+  SyncError GetAllSyncDataReturnError(SyncDataList* data) const override;
   bool GetDataTypeContext(std::string* context) const override;
   int GetSyncCount() override;
   bool SyncModelHasUserCreatedNodes(bool* has_nodes) override;
@@ -50,11 +48,11 @@ class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
       std::unique_ptr<FakeGenericChangeProcessor> processor);
   ~FakeGenericChangeProcessorFactory() override;
   std::unique_ptr<GenericChangeProcessor> CreateGenericChangeProcessor(
-      syncer::ModelType type,
-      syncer::UserShare* user_share,
-      std::unique_ptr<syncer::DataTypeErrorHandler> error_handler,
-      const base::WeakPtr<syncer::SyncableService>& local_service,
-      const base::WeakPtr<syncer::SyncMergeResult>& merge_result,
+      ModelType type,
+      UserShare* user_share,
+      std::unique_ptr<DataTypeErrorHandler> error_handler,
+      const base::WeakPtr<SyncableService>& local_service,
+      const base::WeakPtr<SyncMergeResult>& merge_result,
       SyncClient* sync_client) override;
 
  private:
@@ -62,6 +60,6 @@ class FakeGenericChangeProcessorFactory : public GenericChangeProcessorFactory {
   DISALLOW_COPY_AND_ASSIGN(FakeGenericChangeProcessorFactory);
 };
 
-}  // namespace sync_driver
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_FAKE_GENERIC_CHANGE_PROCESSOR_H_

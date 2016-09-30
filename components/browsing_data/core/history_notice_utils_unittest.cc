@@ -25,7 +25,7 @@ namespace browsing_data {
 
 namespace {
 
-class TestSyncService : public sync_driver::FakeSyncService {
+class TestSyncService : public syncer::FakeSyncService {
  public:
   // Getters (FakeSyncService implementation). ---------------------------------
   bool IsSyncActive() const override {

@@ -14,23 +14,22 @@
 #include "components/sync/base/unrecoverable_error_info.h"
 #include "components/sync/engine/model_safe_worker.h"
 
-namespace browser_sync {
+namespace syncer {
 
-// A syncer::ModelSafeWorker for UI models (e.g. bookmarks) that
+// A ModelSafeWorker for UI models (e.g. bookmarks) that
 // accepts work requests from the syncapi that need to be fulfilled
 // from the MessageLoop home to the native model.
-class UIModelWorker : public syncer::ModelSafeWorker {
+class UIModelWorker : public ModelSafeWorker {
  public:
   UIModelWorker(const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
-                syncer::WorkerLoopDestructionObserver* observer);
+                WorkerLoopDestructionObserver* observer);
 
-  // syncer::ModelSafeWorker implementation. Called on syncapi SyncerThread.
+  // ModelSafeWorker implementation. Called on syncapi SyncerThread.
   void RegisterForLoopDestruction() override;
-  syncer::ModelSafeGroup GetModelSafeGroup() override;
+  ModelSafeGroup GetModelSafeGroup() override;
 
  protected:
-  syncer::SyncerError DoWorkAndWaitUntilDoneImpl(
-      const syncer::WorkCallback& work) override;
+  SyncerError DoWorkAndWaitUntilDoneImpl(const WorkCallback& work) override;
 
  private:
   ~UIModelWorker() override;
@@ -41,6 +40,6 @@ class UIModelWorker : public syncer::ModelSafeWorker {
   DISALLOW_COPY_AND_ASSIGN(UIModelWorker);
 };
 
-}  // namespace browser_sync
+}  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_DRIVER_GLUE_UI_MODEL_WORKER_H_

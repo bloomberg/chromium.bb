@@ -42,9 +42,9 @@
 using content::WebContents;
 using sessions::SerializedNavigationEntry;
 using sessions::SerializedNavigationEntryTestHelper;
-using sync_driver::DeviceInfo;
-using sync_driver::LocalDeviceInfoProvider;
-using sync_driver::LocalDeviceInfoProviderMock;
+using syncer::DeviceInfo;
+using syncer::LocalDeviceInfoProvider;
+using syncer::LocalDeviceInfoProviderMock;
 using syncer::SyncChange;
 using syncer::SyncData;
 
@@ -332,7 +332,7 @@ class SessionsSyncManagerTest
         new NotificationServiceSessionsRouter(
             profile(), GetSyncSessionsClient(),
             syncer::SyncableService::StartSyncFlare()));
-    sync_prefs_.reset(new sync_driver::SyncPrefs(profile()->GetPrefs()));
+    sync_prefs_.reset(new syncer::SyncPrefs(profile()->GetPrefs()));
     manager_.reset(new SessionsSyncManager(
         GetSyncSessionsClient(), sync_prefs_.get(), local_device_.get(),
         std::unique_ptr<LocalSessionEventRouter>(router),
@@ -408,7 +408,7 @@ class SessionsSyncManagerTest
     return sessions_client_shim_.get();
   }
 
-  sync_driver::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
+  syncer::SyncPrefs* sync_prefs() { return sync_prefs_.get(); }
 
   SyncedWindowDelegatesGetter* get_synced_window_getter() {
     return manager()->synced_window_delegates_getter();
@@ -466,7 +466,7 @@ class SessionsSyncManagerTest
  private:
   std::unique_ptr<browser_sync::ChromeSyncClient> sync_client_;
   std::unique_ptr<SyncSessionsClientShim> sessions_client_shim_;
-  std::unique_ptr<sync_driver::SyncPrefs> sync_prefs_;
+  std::unique_ptr<syncer::SyncPrefs> sync_prefs_;
   SessionNotificationObserver observer_;
   std::unique_ptr<SessionsSyncManager> manager_;
   SessionSyncTestHelper helper_;

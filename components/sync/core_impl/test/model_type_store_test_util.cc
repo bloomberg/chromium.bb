@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace syncer_v2 {
+namespace syncer {
 
 using Result = ModelTypeStore::Result;
 
@@ -47,4 +47,4 @@ void ModelTypeStoreTestUtil::MoveStoreToCallback(
   callback.Run(Result::SUCCESS, std::move(store));
 }
 
-}  // namespace syncer_v2
+}  // namespace syncer

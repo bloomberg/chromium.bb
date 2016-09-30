@@ -123,7 +123,7 @@ void StartSyncingPref(syncable_prefs::PrefServiceSyncable* prefs,
                                      new syncer::SyncErrorFactoryMock));
 }
 
-class SyncServiceMock : public sync_driver::FakeSyncService {
+class SyncServiceMock : public syncer::FakeSyncService {
  public:
   bool IsFirstSetupComplete() const override { return true; }
 

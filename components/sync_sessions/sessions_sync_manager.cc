@@ -24,8 +24,8 @@
 #include "components/variations/variations_associated_data.h"
 
 using sessions::SerializedNavigationEntry;
-using sync_driver::DeviceInfo;
-using sync_driver::LocalDeviceInfoProvider;
+using syncer::DeviceInfo;
+using syncer::LocalDeviceInfoProvider;
 using syncer::SyncChange;
 using syncer::SyncData;
 
@@ -79,7 +79,7 @@ std::string TagFromSpecifics(const sync_pb::SessionSpecifics& specifics) {
 // lifetime of SessionSyncManager.
 SessionsSyncManager::SessionsSyncManager(
     sync_sessions::SyncSessionsClient* sessions_client,
-    sync_driver::SyncPrefs* sync_prefs,
+    syncer::SyncPrefs* sync_prefs,
     LocalDeviceInfoProvider* local_device,
     std::unique_ptr<LocalSessionEventRouter> router,
     const base::Closure& sessions_updated_callback,

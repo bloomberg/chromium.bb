@@ -68,7 +68,7 @@ Id GetOnlyEntryWithName(BaseTransaction* rtrans,
 void CreateTypeRoot(WriteTransaction* trans,
                     syncable::Directory* dir,
                     ModelType type) {
-  std::string tag_name = syncer::ModelTypeToRootTag(type);
+  std::string tag_name = ModelTypeToRootTag(type);
   syncable::MutableEntry node(trans, syncable::CREATE, type,
                               TestIdFactory::root(), tag_name);
   DCHECK(node.good());
@@ -80,9 +80,9 @@ void CreateTypeRoot(WriteTransaction* trans,
   node.PutServerVersion(20);
   node.PutBaseVersion(20);
   node.PutIsDel(false);
-  node.PutId(syncer::TestIdFactory::MakeServer(tag_name));
+  node.PutId(TestIdFactory::MakeServer(tag_name));
   sync_pb::EntitySpecifics specifics;
-  syncer::AddDefaultFieldValue(type, &specifics);
+  AddDefaultFieldValue(type, &specifics);
   node.PutServerSpecifics(specifics);
   node.PutSpecifics(specifics);
 }
