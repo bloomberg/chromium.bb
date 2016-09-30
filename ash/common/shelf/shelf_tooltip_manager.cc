@@ -250,8 +250,11 @@ void ShelfTooltipManager::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
 }
 
 bool ShelfTooltipManager::ShouldShowTooltipForView(views::View* view) {
-  return shelf_view_ && shelf_view_->ShouldShowTooltipForView(view) &&
-         shelf_view_->wm_shelf()->GetVisibilityState() == SHELF_VISIBLE;
+  WmShelf* shelf = shelf_view_ ? shelf_view_->wm_shelf() : nullptr;
+  return shelf && shelf_view_->ShouldShowTooltipForView(view) &&
+         (shelf->GetVisibilityState() == SHELF_VISIBLE ||
+          (shelf->GetVisibilityState() == SHELF_AUTO_HIDE &&
+           shelf->GetAutoHideState() == SHELF_AUTO_HIDE_SHOWN));
 }
 
 }  // namespace ash

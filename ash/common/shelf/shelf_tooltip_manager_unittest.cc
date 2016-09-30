@@ -123,14 +123,16 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsHidden) {
   EXPECT_FALSE(IsTimerRunning());
 }
 
-TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHide) {
-  // Create a visible window so auto-hide behavior is enforced.
+TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHideHidden) {
+  // Create a visible window so auto-hide behavior can actually hide the shelf.
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
   tooltip_manager_->ShowTooltip(shelf_view_->GetAppListButton());
   ASSERT_TRUE(tooltip_manager_->IsVisible());
 
   GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   GetPrimaryShelf()->UpdateAutoHideState();
+  ASSERT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            GetPrimaryShelf()->auto_hide_behavior());
   ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
 
   // Tooltip visibility change for auto hide may take time.
@@ -145,6 +147,21 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHide) {
   // ShowTooltipWithDelay doesn't even run the timer for the hidden shelf.
   tooltip_manager_->ShowTooltipWithDelay(shelf_view_->GetAppListButton());
   EXPECT_FALSE(IsTimerRunning());
+
+  // Close the window to show the auto-hide shelf; tooltips should now show.
+  widget.reset();
+  GetPrimaryShelf()->UpdateAutoHideState();
+  ASSERT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
+            GetPrimaryShelf()->auto_hide_behavior());
+  ASSERT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
+
+  // The tooltip should show for an auto-hide-shown shelf.
+  tooltip_manager_->ShowTooltip(shelf_view_->GetAppListButton());
+  EXPECT_TRUE(tooltip_manager_->IsVisible());
+
+  // ShowTooltipWithDelay should run the timer for an auto-hide-shown shelf.
+  tooltip_manager_->ShowTooltipWithDelay(shelf_view_->GetAppListButton());
+  EXPECT_TRUE(IsTimerRunning());
 }
 
 TEST_F(ShelfTooltipManagerTest, HideForEvents) {
