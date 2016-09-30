@@ -29,6 +29,7 @@
  */
 
 enum TestEnum {"", "EnumValue1", "EnumValue2", "EnumValue3"};
+enum TestEnum2 {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 
 callback VoidCallbackFunction = void ();
 callback AnyCallbackFunctionOptionalAnyArg = any (optional any optionalAnyArg);
@@ -398,6 +399,7 @@ interface TestObject {
     // Enumerations
     TestEnum testEnumMethod();
     void voidMethodTestEnumArg(TestEnum testEnumTypeArg);
+    void voidMethodTestMultipleEnumArg(TestEnum testEnumTypeArg, TestEnum2 testEnumTypeArg2);
     // Exceptional types
     Dictionary dictionaryMethod();
     TestDictionary testDictionaryMethod();

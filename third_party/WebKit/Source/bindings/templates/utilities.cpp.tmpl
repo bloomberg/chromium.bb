@@ -31,8 +31,8 @@ if ({{item.check_expression}})
 {% endmacro %}
 
 
-{% macro declare_enum_validation_variable(enum_values) %}
-const char* validValues[] = {
+{% macro declare_enum_validation_variable(enum_values, enum_variable='validValues') %}
+const char* {{enum_variable}}[] = {
 {% for enum_value in enum_values %}
     "{{enum_value}}",
 {% endfor %}

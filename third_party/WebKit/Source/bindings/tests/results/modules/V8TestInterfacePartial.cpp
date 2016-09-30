@@ -316,11 +316,11 @@ static void partialVoidTestEnumModulesArgMethodMethod(const v8::FunctionCallback
     arg = info[0];
     if (!arg.prepare())
         return;
-    const char* validValues[] = {
+    const char* validArgValues[] = {
         "EnumModulesValue1",
         "EnumModulesValue2",
     };
-    if (!isValidEnum(arg, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnumModules", exceptionState)) {
+    if (!isValidEnum(arg, validArgValues, WTF_ARRAY_LENGTH(validArgValues), "TestEnumModules", exceptionState)) {
         return;
     }
 

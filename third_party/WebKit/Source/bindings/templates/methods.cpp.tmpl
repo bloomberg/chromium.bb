@@ -217,8 +217,9 @@ if (!{{argument.name}}{% if argument.is_nullable %} && !isUndefinedOrNull(info[{
 }
 {% elif argument.enum_values %}
 {# Invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
-{{declare_enum_validation_variable(argument.enum_values)}}
-if (!isValidEnum({{argument.name}}, validValues, WTF_ARRAY_LENGTH(validValues), "{{argument.enum_type}}", exceptionState)) {
+{% set enum_variable = 'valid' + argument.name[0].upper() + argument.name[1:] + 'Values' %}
+{{declare_enum_validation_variable(argument.enum_values, enum_variable)}}
+if (!isValidEnum({{argument.name}}, {{enum_variable}}, WTF_ARRAY_LENGTH({{enum_variable}}), "{{argument.enum_type}}", exceptionState)) {
     return;
 }
 {% elif argument.idl_type == 'Promise' %}
