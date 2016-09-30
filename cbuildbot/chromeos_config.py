@@ -1049,7 +1049,7 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
   # This adds Chrome branding.
   site_config.AddTemplate(
       'official_chrome',
-      useflags=[constants.USE_CHROME_INTERNAL],
+      useflags=append_useflags([constants.USE_CHROME_INTERNAL]),
   )
 
   # This sets chromeos_official.
@@ -1513,13 +1513,6 @@ def CreateBoardConfigs(site_config, ge_build_config):
     if board in _beaglebone_boards:
       board_config.apply(site_config.templates.beaglebone)
 
-    # Note: board_config configs should not specify a useflag list. Convert any
-    # useflags that this board_config config has accrued (for instance,
-    # 'chrome_internal', via official_chrome) into an append_useflags callable.
-    # This is because the board board_config config is the last config to be
-    # derived from when creating a board-specific config,
-    if 'useflags' in board_config:
-      board_config['useflags'] = append_useflags(board_config.useflags)
     result[board] = board_config
 
   return result
