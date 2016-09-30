@@ -33,10 +33,6 @@
         position: relative;
       }
 
-      :host(:not([embedded])) #sizing-container {
-        @apply(--card-sizing);
-      }
-
       :host([is-card-end]) #main-container {
         margin-bottom: var(--card-padding-between);
       }
@@ -207,53 +203,51 @@
       }
     </style>
 
-    <div id="sizing-container">
-      <div id="main-container">
-        <div id="background-clip">
-          <div id="background"></div>
-        </div>
-        <div id="date-accessed" class="card-title">
-          [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
-        </div>
-        <div id="item-container">
-          <button is="paper-icon-button-light" id="checkbox"
-              on-mousedown="onCheckboxMousedown_"
-              on-click="onCheckboxSelected_"
-              disabled="[[selectionNotAllowed_()]]"
-              role="checkbox"
-              aria-checked$="[[getAriaChecked_(selected)]]"
-              aria-label$="[[getEntrySummary_(item)]]">
-            <div id="checkmark"></div>
-          </button>
-          <span id="time-accessed">[[item.readableTimestamp]]</span>
-          <div class="website-icon" id="icon"></div>
-          <div id="title-and-domain">
-            <a href="[[item.url]]" id="title" class="website-title"
-                title="[[item.title]]" on-click="onLinkClick_"
-                on-contextmenu="onLinkRightClick_">
-              <history-searched-label title="[[item.title]]"
-                  search-term="[[searchTerm]]"></history-searched-label>
-            </a>
-            <span id="domain">[[item.domain]]</span>
-          </div>
-          <div id="star-container">
-            <template is="dom-if" if="[[item.starred]]">
-              <button is="paper-icon-button-light" id="bookmark-star"
-                  title="$i18n{removeBookmark}" on-click="onRemoveBookmarkTap_">
-                <iron-icon icon="cr:star"></iron-icon>
-              </button>
-            </template>
-          </div>
-          <button is="paper-icon-button-light" id="menu-button"
-              class="more-vert-button" title="$i18n{moreActionsButton}"
-              on-click="onMenuButtonTap_">
-            <div></div>
-            <div></div>
-            <div></div>
-          </button>
-        </div>
-        <div id="time-gap-separator" hidden="[[!hasTimeGap]]"></div>
+    <div id="main-container">
+      <div id="background-clip">
+        <div id="background"></div>
       </div>
+      <div id="date-accessed" class="card-title">
+        [[cardTitle_(numberOfItems, item.dateRelativeDay, searchTerm)]]
+      </div>
+      <div id="item-container">
+        <button is="paper-icon-button-light" id="checkbox"
+            on-mousedown="onCheckboxMousedown_"
+            on-click="onCheckboxSelected_"
+            disabled="[[selectionNotAllowed_()]]"
+            role="checkbox"
+            aria-checked$="[[getAriaChecked_(selected)]]"
+            aria-label$="[[getEntrySummary_(item)]]">
+          <div id="checkmark"></div>
+        </button>
+        <span id="time-accessed">[[item.readableTimestamp]]</span>
+        <div class="website-icon" id="icon"></div>
+        <div id="title-and-domain">
+          <a href="[[item.url]]" id="title" class="website-title"
+              title="[[item.title]]" on-click="onLinkClick_"
+              on-contextmenu="onLinkRightClick_">
+            <history-searched-label title="[[item.title]]"
+                search-term="[[searchTerm]]"></history-searched-label>
+          </a>
+          <span id="domain">[[item.domain]]</span>
+        </div>
+        <div id="star-container">
+          <template is="dom-if" if="[[item.starred]]">
+            <button is="paper-icon-button-light" id="bookmark-star"
+                title="$i18n{removeBookmark}" on-click="onRemoveBookmarkTap_">
+              <iron-icon icon="cr:star"></iron-icon>
+            </button>
+          </template>
+        </div>
+        <button is="paper-icon-button-light" id="menu-button"
+            class="more-vert-button" title="$i18n{moreActionsButton}"
+            on-click="onMenuButtonTap_">
+          <div></div>
+          <div></div>
+          <div></div>
+        </button>
+      </div>
+      <div id="time-gap-separator" hidden="[[!hasTimeGap]]"></div>
     </div>
   </template>
   <script src="chrome://history/history_item.js"></script>

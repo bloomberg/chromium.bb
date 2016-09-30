@@ -124,7 +124,7 @@ cr.define('md_history', function() {
     attached: function() {
       Polymer.RenderStatus.afterNextRender(this, function() {
         this.row_ = new HistoryFocusRow(
-            this.$['sizing-container'], null, new FocusRowDelegate(this));
+            this.$['main-container'], null, new FocusRowDelegate(this));
         this.row_.makeActive(this.ironListTabIndex == 0);
         this.listen(this, 'focus', 'onFocus_');
         this.listen(this, 'dom-change', 'onDomChange_');
