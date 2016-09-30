@@ -4,7 +4,6 @@ Tests file system project.
 Running: testFileSystems
 Adding first file system.
 Adding second file system.
-Adding file mappings.
 Adding files to file systems.
 
 UISourceCode: file:///var/www/localhost/foo.js

@@ -56,31 +56,35 @@ function test()
         {
             InspectorTest.addResult("Adding first file system.");
             var fs1 = new InspectorTest.TestFileSystem("file:///var/www");
+            fs1.addFileMapping("http://localhost/", "/localhost/");
             var fs2 = new InspectorTest.TestFileSystem("file:///foo/bar");
+            fs2.addFileMapping("http://www.example.com/", "/");
             InspectorTest.addResult("Adding second file system.");
+
+            InspectorTest.addResult("Adding files to file systems.");
+
+            var localhostDir = fs1.root.mkdir("localhost");
+            localhostDir.addFile("foo.js", "<foo content>");
+            fs1.root.addFile("bar.js", "<bark content>");
+
+            fs2.root.addFile("baz.js", "<bazzz content>");
+            fs1.reportCreated(function() {});
+            fs2.reportCreated(function() {});
+
+            WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, onUISourceCode);
+
+            var count = 3;
+            function onUISourceCode()
+            {
+                if (--count)
+                    return;
+                WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, onUISourceCode);
+                onUISourceCodesLoaded();
+            }
 
             var uiSourceCodes;
 
-            fs1.reportCreated(function() {});
-            fs2.reportCreated(fileSystemCreated);
-
-            function fileSystemCreated()
-            {
-                InspectorTest.addResult("Adding file mappings.");
-                WebInspector.fileSystemMapping.addFileMapping("file:///var/www", "http://localhost/", "/localhost/");
-                WebInspector.fileSystemMapping.addFileMapping("file:///foo/bar", "http://www.example.com/", "/");
-
-                InspectorTest.addResult("Adding files to file systems.");
-
-                var localhostDir = fs1.root.mkdir("localhost");
-                localhostDir.addFile("foo.js", "<foo content>");
-                fs1.root.addFile("bar.js", "<bark content>");
-
-                fs2.root.addFile("baz.js", "<bazzz content>");
-                InspectorTest.refreshFileSystemProjects(onProjectsRefreshed);
-            }
-
-            function onProjectsRefreshed()
+            function onUISourceCodesLoaded()
             {
                 uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
                 dumpUISourceCodes(uiSourceCodes, uiSourceCodesDumped);
