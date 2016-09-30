@@ -3655,7 +3655,10 @@ interface KeyboardEvent : UIEvent
     method constructor
     method getModifierState
     method initKeyboardEvent
-interface KeyframeEffect : AnimationEffectReadOnly
+interface KeyframeEffect : KeyframeEffectReadOnly
+    attribute @@toStringTag
+    method constructor
+interface KeyframeEffectReadOnly : AnimationEffectReadOnly
     attribute @@toStringTag
     method constructor
 interface Location

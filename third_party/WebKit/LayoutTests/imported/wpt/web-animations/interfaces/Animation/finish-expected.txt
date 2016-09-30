@@ -12,7 +12,7 @@ PASS Test finish() while play-pending
 PASS Test finish() during aborted pause 
 PASS Test resetting of computed style 
 PASS Test finish() resolves finished promise synchronously 
-FAIL Test finish() resolves finished promise synchronously with an animation without a target KeyframeEffectReadOnly is not defined
-FAIL Test normally finished animation resolves finished promise synchronously with an animation without a target KeyframeEffectReadOnly is not defined
+FAIL Test finish() resolves finished promise synchronously with an animation without a target Animation is not defined
+FAIL Test normally finished animation resolves finished promise synchronously with an animation without a target Animation is not defined
 Harness: the test ran to completion.
 

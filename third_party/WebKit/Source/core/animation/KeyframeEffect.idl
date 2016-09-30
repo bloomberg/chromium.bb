@@ -37,5 +37,5 @@
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI,
-] interface KeyframeEffect : AnimationEffectReadOnly {
+] interface KeyframeEffect : KeyframeEffectReadOnly {
 };

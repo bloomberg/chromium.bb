@@ -32,9 +32,9 @@
 #define KeyframeEffect_h
 
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffectReadOnly.h"
 #include "core/animation/EffectInput.h"
 #include "core/animation/EffectModel.h"
+#include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/TimingInput.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefPtr.h"
@@ -50,7 +50,7 @@ class SampledEffect;
 
 // Represents the effect of an Animation on an Element's properties.
 // http://w3c.github.io/web-animations/#keyframe-effect
-class CORE_EXPORT KeyframeEffect final : public AnimationEffectReadOnly {
+class CORE_EXPORT KeyframeEffect final : public KeyframeEffectReadOnly {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum Priority { DefaultPriority, TransitionPriority };
@@ -106,12 +106,7 @@ protected:
 private:
     KeyframeEffect(Element*, EffectModel*, const Timing&, Priority, EventDelegate*);
 
-    Member<Element> m_target;
-    Member<EffectModel> m_model;
-    Member<SampledEffect> m_sampledEffect;
-
     Priority m_priority;
-
     Vector<int> m_compositorAnimationIds;
 
     friend class AnimationAnimationV8Test;

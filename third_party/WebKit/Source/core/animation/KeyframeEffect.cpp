@@ -39,6 +39,7 @@
 #include "core/animation/Interpolation.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/KeyframeEffectOptions.h"
+#include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/PropertyHandle.h"
 #include "core/dom/Element.h"
 #include "core/dom/NodeComputedStyle.h"
@@ -48,7 +49,7 @@
 
 namespace blink {
 
-KeyframeEffect* KeyframeEffect::create(Element* target, EffectModel* model, const Timing& timing, Priority priority, EventDelegate* eventDelegate)
+KeyframeEffect* KeyframeEffect::create(Element* target, EffectModel* model, const Timing& timing, KeyframeEffect::Priority priority, EventDelegate* eventDelegate)
 {
     return new KeyframeEffect(target, model, timing, priority, eventDelegate);
 }
@@ -84,11 +85,8 @@ KeyframeEffect* KeyframeEffect::create(ExecutionContext* executionContext, Eleme
     return create(element, EffectInput::convert(element, effectInput, executionContext, exceptionState), Timing());
 }
 
-KeyframeEffect::KeyframeEffect(Element* target, EffectModel* model, const Timing& timing, Priority priority, EventDelegate* eventDelegate)
-    : AnimationEffectReadOnly(timing, eventDelegate)
-    , m_target(target)
-    , m_model(model)
-    , m_sampledEffect(nullptr)
+KeyframeEffect::KeyframeEffect(Element* target, EffectModel* model, const Timing& timing, KeyframeEffect::Priority priority, EventDelegate* eventDelegate)
+    : KeyframeEffectReadOnly(target, model, timing, eventDelegate)
     , m_priority(priority)
 {
 }
@@ -363,10 +361,7 @@ void KeyframeEffect::attachCompositedLayers()
 
 DEFINE_TRACE(KeyframeEffect)
 {
-    visitor->trace(m_target);
-    visitor->trace(m_model);
-    visitor->trace(m_sampledEffect);
-    AnimationEffectReadOnly::trace(visitor);
+    KeyframeEffectReadOnly::trace(visitor);
 }
 
 } // namespace blink
