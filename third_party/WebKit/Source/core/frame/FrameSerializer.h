@@ -133,6 +133,8 @@ private:
     Vector<SerializedResource>* m_resources;
     HashSet<KURL> m_resourceURLs;
 
+    bool m_isSerializingCss;
+
     Delegate& m_delegate;
 };
 

@@ -53,7 +53,8 @@ class MHTMLGenerationManager {
       RenderFrameHostImpl* sender,
       int job_id,
       bool mhtml_generation_in_renderer_succeeded,
-      const std::set<std::string>& digests_of_uris_of_serialized_resources);
+      const std::set<std::string>& digests_of_uris_of_serialized_resources,
+      base::TimeDelta renderer_main_thread_time);
 
  private:
   friend struct base::DefaultSingletonTraits<MHTMLGenerationManager>;

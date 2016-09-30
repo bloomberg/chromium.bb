@@ -713,7 +713,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSerializeAsMHTMLResponse(
       int job_id,
       bool success,
-      const std::set<std::string>& digests_of_uris_of_serialized_resources);
+      const std::set<std::string>& digests_of_uris_of_serialized_resources,
+      base::TimeDelta renderer_main_thread_time);
 
 #if defined(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);

@@ -1496,11 +1496,12 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
                     bool /* end of data? */)
 
 // Response to FrameMsg_SerializeAsMHTML.
-IPC_MESSAGE_ROUTED3(
+IPC_MESSAGE_ROUTED4(
     FrameHostMsg_SerializeAsMHTMLResponse,
     int /* job_id (used to match responses to requests) */,
     bool /* true if success, false if error */,
-    std::set<std::string> /* digests of uris of serialized resources */)
+    std::set<std::string> /* digests of uris of serialized resources */,
+    base::TimeDelta /* how much time of the main render thread was used */)
 
 // Sent when the renderer updates hint for importance of a tab.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdatePageImportanceSignals,

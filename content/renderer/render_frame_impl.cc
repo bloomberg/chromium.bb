@@ -5195,13 +5195,15 @@ void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
 void RenderFrameImpl::OnSerializeAsMHTML(
     const FrameMsg_SerializeAsMHTML_Params& params) {
   TRACE_EVENT0("page-serialization", "RenderFrameImpl::OnSerializeAsMHTML");
+  base::TimeTicks start_time = base::TimeTicks::Now();
   // Unpack IPC payload.
   base::File file = IPC::PlatformFileForTransitToFile(params.destination_file);
   const WebString mhtml_boundary =
       WebString::fromUTF8(params.mhtml_boundary_marker);
   DCHECK(!mhtml_boundary.isEmpty());
 
-  WebData data;
+  // Three WebData instances for header, parts and footer.
+  WebData mhtml_contents[3];
   std::set<std::string> digests_of_uris_of_serialized_resources;
   MHTMLPartsGenerationDelegate delegate(
       params, &digests_of_uris_of_serialized_resources);
@@ -5215,12 +5217,9 @@ void RenderFrameImpl::OnSerializeAsMHTML(
     // |data| can be empty if the main frame should be skipped.  If the main
     // frame is skipped, then the whole archive is bad, so bail to the error
     // condition.
-    WebData data = WebFrameSerializer::generateMHTMLHeader(
+    mhtml_contents[0] = WebFrameSerializer::generateMHTMLHeader(
         mhtml_boundary, GetWebFrame(), &delegate);
-    if (data.isEmpty() ||
-        file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
-      success = false;
-    }
+    success = !mhtml_contents[0].isEmpty();
   }
 
   // Generate MHTML parts.  Note that if this is not the main frame, then even
@@ -5230,33 +5229,42 @@ void RenderFrameImpl::OnSerializeAsMHTML(
     TRACE_EVENT0("page-serialization",
                  "RenderFrameImpl::OnSerializeAsMHTML parts serialization");
     // |data| can be empty if the frame should be skipped, but this is OK.
-    data = WebFrameSerializer::generateMHTMLParts(mhtml_boundary, GetWebFrame(),
-                                                  &delegate);
-    // TODO(jcivelli): write the chunks in deferred tasks to give a chance to
-    //                 the message loop to process other events.
-    TRACE_EVENT0("page-serialization",
-                 "RenderFrameImpl::OnSerializeAsMHTML parts file writing");
-    if (!data.isEmpty() &&
-        file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
-      success = false;
-    }
+    mhtml_contents[1] = WebFrameSerializer::generateMHTMLParts(
+        mhtml_boundary, GetWebFrame(), &delegate);
   }
 
   // Generate MHTML footer if needed.
   if (success && params.is_last_frame) {
     TRACE_EVENT0("page-serialization",
                  "RenderFrameImpl::OnSerializeAsMHTML footer");
-    data = WebFrameSerializer::generateMHTMLFooter(mhtml_boundary);
-    if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
-      success = false;
+    mhtml_contents[2] = WebFrameSerializer::generateMHTMLFooter(mhtml_boundary);
+  }
+
+  // Writes all serialized data to file.
+  // TODO(jcivelli): write the chunks in deferred tasks to give a chance to
+  //                 the message loop to process other events.
+  if (success) {
+    TRACE_EVENT0("page-serialization",
+                 "RenderFrameImpl::OnSerializeAsMHTML writing to file");
+    SCOPED_UMA_HISTOGRAM_TIMER(
+        "PageSerialization.MhtmlGeneration.WriteToDiskTime.SingleFrame");
+    for (const WebData& data : mhtml_contents) {
+      if (file.WriteAtCurrentPos(data.data(), data.size()) < 0) {
+        success = false;
+        break;
+      }
     }
   }
 
   // Cleanup and notify the browser process about completion.
   file.Close();  // Need to flush file contents before sending IPC response.
+  base::TimeDelta main_thread_use_time = base::TimeTicks::Now() - start_time;
   Send(new FrameHostMsg_SerializeAsMHTMLResponse(
       routing_id_, params.job_id, success,
-      digests_of_uris_of_serialized_resources));
+      digests_of_uris_of_serialized_resources, main_thread_use_time));
+  UMA_HISTOGRAM_TIMES(
+      "PageSerialization.MhtmlGeneration.RendererMainThreadTime.SingleFrame",
+      main_thread_use_time);
 }
 
 void RenderFrameImpl::OnFind(int request_id,

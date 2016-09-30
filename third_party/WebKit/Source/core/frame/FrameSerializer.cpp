@@ -59,6 +59,7 @@
 #include "core/html/ImageDocument.h"
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleImage.h"
+#include "platform/Histogram.h"
 #include "platform/SerializedResource.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/Image.h"
@@ -68,6 +69,13 @@
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
+
+namespace {
+
+const int32_t secondsToMicroseconds = 1000 * 1000;
+const int32_t maxSerializationTimeUmaMicroseconds = 10 * secondsToMicroseconds;
+
+} // namespace
 
 namespace blink {
 
@@ -243,6 +251,7 @@ FrameSerializer::FrameSerializer(
     Vector<SerializedResource>& resources,
     Delegate& delegate)
     : m_resources(&resources)
+    , m_isSerializingCss(false)
     , m_delegate(delegate)
 {
 }
@@ -261,14 +270,16 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame)
         return;
     }
 
-    TRACE_EVENT_BEGIN0("page-serialization", "FrameSerializer::serializeFrame HTML");
     HeapVector<Member<Node>> serializedNodes;
-    SerializerMarkupAccumulator accumulator(m_delegate, document, serializedNodes);
-    String text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
+    {
+        TRACE_EVENT0("page-serialization", "FrameSerializer::serializeFrame HTML");
+        SCOPED_BLINK_UMA_HISTOGRAM_TIMER("PageSerialization.SerializationTime.Html");
+        SerializerMarkupAccumulator accumulator(m_delegate, document, serializedNodes);
+        String text = serializeNodes<EditingStrategy>(accumulator, document, IncludeNode);
 
-    CString frameHTML = document.encoding().encode(text, WTF::EntitiesForUnencodables);
-    m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
-    TRACE_EVENT_END0("page-serialization", "FrameSerializer::serializeFrame HTML");
+        CString frameHTML = document.encoding().encode(text, WTF::EntitiesForUnencodables);
+        m_resources->append(SerializedResource(url, document.suggestedMIMEType(), SharedBuffer::create(frameHTML.data(), frameHTML.length())));
+    }
 
     for (Node* node: serializedNodes) {
         ASSERT(node);
@@ -312,6 +323,13 @@ void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KU
 {
     TRACE_EVENT2("page-serialization", "FrameSerializer::serializeCSSStyleSheet",
         "type", "CSS", "url", url.elidedString().utf8().data());
+    // Only report UMA metric if this is not a reentrant CSS serialization call.
+    double cssStartTime = 0;
+    if (!m_isSerializingCss) {
+        m_isSerializingCss = true;
+        cssStartTime = monotonicallyIncreasingTime();
+    }
+
     StringBuilder cssText;
     cssText.append("@charset \"");
     cssText.append(styleSheet.contents()->charset().lower());
@@ -337,6 +355,12 @@ void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KU
         CString text = textEncoding.encode(textString, WTF::CSSEncodedEntitiesForUnencodables);
         m_resources->append(SerializedResource(url, String("text/css"), SharedBuffer::create(text.data(), text.length())));
         m_resourceURLs.add(url);
+    }
+
+    if (cssStartTime != 0) {
+        m_isSerializingCss = false;
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, cssHistogram, ("PageSerialization.SerializationTime.CSSElement", 0, maxSerializationTimeUmaMicroseconds, 50));
+        cssHistogram.count(static_cast<int64_t>((monotonicallyIncreasingTime() - cssStartTime) * secondsToMicroseconds));
     }
 }
 
@@ -414,8 +438,17 @@ void FrameSerializer::addImageToResources(ImageResource* image, const KURL& url)
 
     TRACE_EVENT2("page-serialization", "FrameSerializer::addImageToResources",
         "type", "image", "url", url.elidedString().utf8().data());
+    double imageStartTime = monotonicallyIncreasingTime();
+
     RefPtr<const SharedBuffer> data = image->getImage()->data();
     addToResources(*image, data, url);
+
+    // If we're already reporting time for CSS serialization don't report it for
+    // this image to avoid reporting the same time twice.
+    if (!m_isSerializingCss) {
+        DEFINE_STATIC_LOCAL(CustomCountHistogram, imageHistogram, ("PageSerialization.SerializationTime.ImageElement", 0, maxSerializationTimeUmaMicroseconds, 50));
+        imageHistogram.count(static_cast<int64_t>((monotonicallyIncreasingTime() - imageStartTime) * secondsToMicroseconds));
+    }
 }
 
 void FrameSerializer::addFontToResources(FontResource* font)
