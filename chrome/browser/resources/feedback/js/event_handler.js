@@ -21,7 +21,7 @@ var FEEDBACK_HEIGHT = 585;
  */
 var FEEDBACK_DEFAULT_WINDOW_ID = 'default_window';
 
-// To generate a hashed extension ID, use a sha-256 hash, all in lower case.
+// To generate a hashed extension ID, use a sha-1 hash, all in lower case.
 // Example:
 //   echo -n 'abcdefghijklmnopqrstuvwxyzabcdef' | sha1sum | \
 //       awk '{print toupper($1)}'
