@@ -149,7 +149,7 @@ NSAttributedString* WebSubstringUtil::attributedWordAtPoint(WebFrameWidget* fram
         return nil;
 
     // Expand to word under point.
-    VisibleSelection selection = createVisibleSelectionDeprecated(range);
+    VisibleSelection selection = createVisibleSelection(range);
     selection.expandUsingGranularity(WordGranularity);
     const EphemeralRange wordRange = selection.toNormalizedEphemeralRange();
 
