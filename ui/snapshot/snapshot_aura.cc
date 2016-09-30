@@ -12,6 +12,7 @@
 #include "cc/output/copy_output_request.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
@@ -42,18 +43,48 @@ static void MakeAsyncCopyRequest(
   window->layer()->RequestCopyOfOutput(std::move(request));
 }
 
+static void FinishedAsyncCopyRequest(
+    std::unique_ptr<aura::WindowTracker> tracker,
+    const gfx::Rect& source_rect,
+    const cc::CopyOutputRequest::CopyOutputRequestCallback& callback,
+    int retry_count,
+    std::unique_ptr<cc::CopyOutputResult> result) {
+  static const int kMaxRetries = 5;
+  // Retry the copy request if the previous one failed for some reason.
+  if (!tracker->windows().empty() && (retry_count < kMaxRetries) &&
+      result->IsEmpty()) {
+    MakeAsyncCopyRequest(
+        tracker->windows()[0], source_rect,
+        base::Bind(&FinishedAsyncCopyRequest, base::Passed(&tracker),
+                   source_rect, callback, retry_count + 1));
+    return;
+  }
+
+  callback.Run(std::move(result));
+}
+
+static void MakeInitialAsyncCopyRequest(
+    gfx::NativeWindow window,
+    const gfx::Rect& source_rect,
+    const cc::CopyOutputRequest::CopyOutputRequestCallback& callback) {
+  auto tracker = base::MakeUnique<aura::WindowTracker>();
+  tracker->Add(window);
+  MakeAsyncCopyRequest(
+      window, source_rect,
+      base::Bind(&FinishedAsyncCopyRequest, base::Passed(&tracker), source_rect,
+                 callback, 0));
+}
+
 void GrabWindowSnapshotAndScaleAsync(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
     const gfx::Size& target_size,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncCallback& callback) {
-  MakeAsyncCopyRequest(window,
-                       source_rect,
-                       base::Bind(&SnapshotAsync::ScaleCopyOutputResult,
-                                  callback,
-                                  target_size,
-                                  background_task_runner));
+  MakeInitialAsyncCopyRequest(
+      window, source_rect,
+      base::Bind(&SnapshotAsync::ScaleCopyOutputResult, callback, target_size,
+                 background_task_runner));
 }
 
 void GrabWindowSnapshotAsync(
@@ -61,11 +92,9 @@ void GrabWindowSnapshotAsync(
     const gfx::Rect& source_rect,
     scoped_refptr<base::TaskRunner> background_task_runner,
     const GrabWindowSnapshotAsyncPNGCallback& callback) {
-  MakeAsyncCopyRequest(window,
-                       source_rect,
-                       base::Bind(&SnapshotAsync::EncodeCopyOutputResult,
-                                  callback,
-                                  background_task_runner));
+  MakeInitialAsyncCopyRequest(window, source_rect,
+                              base::Bind(&SnapshotAsync::EncodeCopyOutputResult,
+                                         callback, background_task_runner));
 }
 
 void GrabViewSnapshotAsync(
