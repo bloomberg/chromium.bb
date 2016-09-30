@@ -59,6 +59,7 @@
 #include "pixman-renderer.h"
 #include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
+#include "windowed-output-api.h"
 
 #define DEFAULT_AXIS_STEP_DISTANCE 10
 
@@ -75,6 +76,8 @@ struct x11_backend {
 	struct xkb_keymap	*xkb_keymap;
 	unsigned int		 has_xkb;
 	uint8_t			 xkb_event_base;
+	int			 fullscreen;
+	int			 no_input;
 	int			 use_pixman;
 
 	int			 has_net_wm_state_fullscreen;
@@ -516,30 +519,6 @@ x11_output_deinit_shm(struct x11_backend *b, struct x11_output *output)
 }
 
 static void
-x11_output_destroy(struct weston_output *output_base)
-{
-	struct x11_output *output = to_x11_output(output_base);
-	struct x11_backend *backend =
-		to_x11_backend(output->base.compositor);
-
-	wl_event_source_remove(output->finish_frame_timer);
-
-	if (backend->use_pixman) {
-		pixman_renderer_output_destroy(output_base);
-		x11_output_deinit_shm(backend, output);
-	} else
-		gl_renderer->output_destroy(output_base);
-
-	xcb_destroy_window(backend->conn, output->window);
-
-	xcb_flush(backend->conn);
-
-	weston_output_destroy(&output->base);
-
-	free(output);
-}
-
-static void
 x11_output_set_wm_protocols(struct x11_backend *b,
 			    struct x11_output *output)
 {
@@ -789,20 +768,54 @@ x11_output_init_shm(struct x11_backend *b, struct x11_output *output,
 	return 0;
 }
 
-static struct x11_output *
-x11_backend_create_output(struct x11_backend *b, int x, int y,
-			     int width, int height, int fullscreen,
-			     int no_input, char *configured_name,
-			     uint32_t transform, int32_t scale)
+static int
+x11_output_disable(struct weston_output *base)
 {
+	struct x11_output *output = to_x11_output(base);
+	struct x11_backend *backend = to_x11_backend(base->compositor);
+
+	if (!output->base.enabled)
+		return 0;
+
+	wl_event_source_remove(output->finish_frame_timer);
+
+	if (backend->use_pixman) {
+		pixman_renderer_output_destroy(&output->base);
+		x11_output_deinit_shm(backend, output);
+	} else {
+		gl_renderer->output_destroy(&output->base);
+	}
+
+	xcb_destroy_window(backend->conn, output->window);
+	xcb_flush(backend->conn);
+
+	return 0;
+}
+
+static void
+x11_output_destroy(struct weston_output *base)
+{
+	struct x11_output *output = to_x11_output(base);
+
+	x11_output_disable(&output->base);
+	weston_output_destroy(&output->base);
+
+	free(output);
+}
+
+static int
+x11_output_enable(struct weston_output *base)
+{
+	struct x11_output *output = to_x11_output(base);
+	struct x11_backend *b = to_x11_backend(base->compositor);
+
 	static const char name[] = "Weston Compositor";
 	static const char class[] = "weston-1\0Weston Compositor";
 	char *title = NULL;
-	struct x11_output *output;
 	xcb_screen_t *screen;
 	struct wm_normal_hints normal_hints;
 	struct wl_event_loop *loop;
-	int output_width, output_height, width_mm, height_mm;
+
 	int ret;
 	uint32_t mask = XCB_CW_EVENT_MASK | XCB_CW_CURSOR;
 	xcb_atom_t atom_list[1];
@@ -812,10 +825,7 @@ x11_backend_create_output(struct x11_backend *b, int x, int y,
 		0
 	};
 
-	output_width = width * scale;
-	output_height = height * scale;
-
-	if (!no_input)
+	if (!b->no_input)
 		values[0] |=
 			XCB_EVENT_MASK_KEY_PRESS |
 			XCB_EVENT_MASK_KEY_RELEASE |
@@ -827,22 +837,6 @@ x11_backend_create_output(struct x11_backend *b, int x, int y,
 			XCB_EVENT_MASK_KEYMAP_STATE |
 			XCB_EVENT_MASK_FOCUS_CHANGE;
 
-	output = zalloc(sizeof *output);
-	if (output == NULL) {
-		perror("zalloc");
-		return NULL;
-	}
-
-	output->mode.flags =
-		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-
-	output->mode.width = output_width;
-	output->mode.height = output_height;
-	output->mode.refresh = 60000;
-	output->scale = scale;
-	wl_list_init(&output->base.mode_list);
-	wl_list_insert(&output->base.mode_list, &output->mode.link);
-
 	values[1] = b->null_cursor;
 	output->window = xcb_generate_id(b->conn);
 	screen = x11_compositor_get_default_screen(b);
@@ -851,13 +845,14 @@ x11_backend_create_output(struct x11_backend *b, int x, int y,
 			  output->window,
 			  screen->root,
 			  0, 0,
-			  output_width, output_height,
+			  output->base.current_mode->width,
+			  output->base.current_mode->height,
 			  0,
 			  XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			  screen->root_visual,
 			  mask, values);
 
-	if (fullscreen) {
+	if (b->fullscreen) {
 		atom_list[0] = b->atom.net_wm_state_fullscreen;
 		xcb_change_property(b->conn, XCB_PROP_MODE_REPLACE,
 				    output->window,
@@ -869,10 +864,10 @@ x11_backend_create_output(struct x11_backend *b, int x, int y,
 		memset(&normal_hints, 0, sizeof normal_hints);
 		normal_hints.flags =
 			WM_NORMAL_HINTS_MAX_SIZE | WM_NORMAL_HINTS_MIN_SIZE;
-		normal_hints.min_width = output_width;
-		normal_hints.min_height = output_height;
-		normal_hints.max_width = output_width;
-		normal_hints.max_height = output_height;
+		normal_hints.min_width = output->base.current_mode->width;
+		normal_hints.min_height = output->base.current_mode->height;
+		normal_hints.max_width = output->base.current_mode->width;
+		normal_hints.max_height = output->base.current_mode->height;
 		xcb_change_property(b->conn, XCB_PROP_MODE_REPLACE, output->window,
 				    b->atom.wm_normal_hints,
 				    b->atom.wm_size_hints, 32,
@@ -881,8 +876,8 @@ x11_backend_create_output(struct x11_backend *b, int x, int y,
 	}
 
 	/* Set window name.  Don't bother with non-EWMH WMs. */
-	if (configured_name) {
-		if (asprintf(&title, "%s - %s", name, configured_name) < 0)
+	if (output->base.name) {
+		if (asprintf(&title, "%s - %s", name, output->base.name) < 0)
 			title = NULL;
 	} else {
 		title = strdup(name);
@@ -894,9 +889,7 @@ x11_backend_create_output(struct x11_backend *b, int x, int y,
 				    strlen(title), title);
 		free(title);
 	} else {
-		xcb_destroy_window(b->conn, output->window);
-		free(output);
-		return NULL;
+		goto err;
 	}
 
 	xcb_change_property(b->conn, XCB_PROP_MODE_REPLACE, output->window,
@@ -909,44 +902,20 @@ x11_backend_create_output(struct x11_backend *b, int x, int y,
 
 	xcb_map_window(b->conn, output->window);
 
-	if (fullscreen)
+	if (b->fullscreen)
 		x11_output_wait_for_map(b, output);
-
-	output->base.start_repaint_loop = x11_output_start_repaint_loop;
-	if (b->use_pixman)
-		output->base.repaint = x11_output_repaint_shm;
-	else
-		output->base.repaint = x11_output_repaint_gl;
-	output->base.destroy = x11_output_destroy;
-	output->base.assign_planes = NULL;
-	output->base.set_backlight = NULL;
-	output->base.set_dpms = NULL;
-	output->base.switch_mode = NULL;
-	output->base.current_mode = &output->mode;
-	output->base.make = "weston-X11";
-	output->base.model = "none";
-
-	if (configured_name)
-		output->base.name = strdup(configured_name);
-
-	width_mm = width * b->screen->width_in_millimeters /
-		b->screen->width_in_pixels;
-	height_mm = height * b->screen->height_in_millimeters /
-		b->screen->height_in_pixels;
-	weston_output_init(&output->base, b->compositor,
-			   x, y, width_mm, height_mm, transform, scale);
 
 	if (b->use_pixman) {
 		if (x11_output_init_shm(b, output,
-					output->mode.width,
-					output->mode.height) < 0) {
+					output->base.current_mode->width,
+					output->base.current_mode->height) < 0) {
 			weston_log("Failed to initialize SHM for the X11 output\n");
-			return NULL;
+			goto err;
 		}
 		if (pixman_renderer_output_create(&output->base) < 0) {
 			weston_log("Failed to create pixman renderer for output\n");
 			x11_output_deinit_shm(b, output);
-			return NULL;
+			goto err;
 		}
 	} else {
 		/* eglCreatePlatformWindowSurfaceEXT takes a Window*
@@ -960,19 +929,112 @@ x11_backend_create_output(struct x11_backend *b, int x, int y,
 						 NULL,
 						 0);
 		if (ret < 0)
-			return NULL;
+			goto err;
 	}
 
 	loop = wl_display_get_event_loop(b->compositor->wl_display);
 	output->finish_frame_timer =
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
-	weston_compositor_add_output(b->compositor, &output->base);
-
 	weston_log("x11 output %dx%d, window id %d\n",
-		   width, height, output->window);
+		   output->base.current_mode->width,
+		   output->base.current_mode->height,
+		   output->window);
 
-	return output;
+	return 0;
+
+err:
+	xcb_destroy_window(b->conn, output->window);
+	xcb_flush(b->conn);
+
+	return -1;
+}
+
+static int
+x11_output_set_size(struct weston_output *base, int width, int height)
+{
+	struct x11_output *output = to_x11_output(base);
+	struct x11_backend *b = to_x11_backend(base->compositor);
+	int output_width, output_height;
+
+	/* We can only be called once. */
+	assert(!output->base.current_mode);
+
+	/* Make sure we have scale set. */
+	assert(output->base.scale);
+
+	if (width < 1) {
+		weston_log("Invalid width \"%d\" for output %s\n",
+			   width, output->base.name);
+		return -1;
+	}
+
+	if (height < 1) {
+		weston_log("Invalid height \"%d\" for output %s\n",
+			   height, output->base.name);
+		return -1;
+	}
+
+	output_width = width * output->base.scale;
+	output_height = height * output->base.scale;
+
+	output->mode.flags =
+		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+
+	output->mode.width = output_width;
+	output->mode.height = output_height;
+	output->mode.refresh = 60000;
+	output->scale = output->base.scale;
+	wl_list_init(&output->base.mode_list);
+	wl_list_insert(&output->base.mode_list, &output->mode.link);
+
+	output->base.current_mode = &output->mode;
+	output->base.make = "weston-X11";
+	output->base.model = "none";
+
+	output->base.mm_width = width * b->screen->width_in_millimeters /
+		b->screen->width_in_pixels;
+	output->base.mm_height = height * b->screen->height_in_millimeters /
+		b->screen->height_in_pixels;
+
+	if (b->use_pixman)
+		output->base.repaint = x11_output_repaint_shm;
+	else
+		output->base.repaint = x11_output_repaint_gl;
+
+	output->base.start_repaint_loop = x11_output_start_repaint_loop;
+	output->base.assign_planes = NULL;
+	output->base.set_backlight = NULL;
+	output->base.set_dpms = NULL;
+	output->base.switch_mode = NULL;
+
+	return 0;
+}
+
+static int
+x11_output_create(struct weston_compositor *compositor,
+		  const char *name)
+{
+	struct x11_output *output;
+
+	/* name can't be NULL. */
+	assert(name);
+
+	output = zalloc(sizeof *output);
+	if (output == NULL) {
+		perror("zalloc");
+		return -1;
+	}
+
+	output->base.name = strdup(name);
+	output->base.destroy = x11_output_destroy;
+	output->base.disable = x11_output_disable;
+	output->base.enable = x11_output_enable;
+
+	weston_output_init_pending(&output->base, compositor);
+	weston_compositor_add_pending_output(&output->base, compositor);
+
+	return 0;
 }
 
 static struct x11_output *
@@ -1588,21 +1650,27 @@ init_gl_renderer(struct x11_backend *b)
 	return ret;
 }
 
+static const struct weston_windowed_output_api api = {
+	x11_output_set_size,
+	x11_output_create,
+};
+
 static struct x11_backend *
 x11_backend_create(struct weston_compositor *compositor,
 		   struct weston_x11_backend_config *config)
 {
 	struct x11_backend *b;
-	struct x11_output *output;
 	struct wl_event_loop *loop;
-	int x = 0;
-	unsigned i;
+	int ret;
 
 	b = zalloc(sizeof *b);
 	if (b == NULL)
 		return NULL;
 
 	b->compositor = compositor;
+	b->fullscreen = config->fullscreen;
+	b->no_input = config->no_input;
+
 	if (weston_compositor_set_presentation_clock_software(compositor) < 0)
 		goto err_free;
 
@@ -1648,44 +1716,6 @@ x11_backend_create(struct weston_compositor *compositor,
 		goto err_renderer;
 	}
 
-	for (i = 0; i < config->num_outputs; ++i) {
-		struct weston_x11_backend_output_config *output_iterator =
-			&config->outputs[i];
-
-		if (output_iterator->name == NULL) {
-			continue;
-		}
-
-		if (output_iterator->width < 1) {
-			weston_log("Invalid width \"%d\" for output %s\n",
-				   output_iterator->width, output_iterator->name);
-			goto err_x11_input;
-		}
-
-		if (output_iterator->height < 1) {
-			weston_log("Invalid height \"%d\" for output %s\n",
-				   output_iterator->height, output_iterator->name);
-			goto err_x11_input;
-		}
-
-		output = x11_backend_create_output(b,
-						   x,
-						   0,
-						   output_iterator->width,
-						   output_iterator->height,
-						   config->fullscreen,
-						   config->no_input,
-						   output_iterator->name,
-						   output_iterator->transform,
-						   output_iterator->scale);
-		if (output == NULL) {
-			weston_log("Failed to create configured x11 output\n");
-			goto err_x11_input;
-		}
-
-		x = pixman_region32_extents(&output->base.region)->x2;
-	}
-
 	loop = wl_display_get_event_loop(compositor->wl_display);
 	b->xcb_source =
 		wl_event_loop_add_fd(loop,
@@ -1701,6 +1731,14 @@ x11_backend_create(struct weston_compositor *compositor,
 	}
 
 	compositor->backend = &b->base;
+
+	ret = weston_plugin_api_register(compositor, WESTON_WINDOWED_OUTPUT_API_NAME,
+					 &api, sizeof(api));
+
+	if (ret < 0) {
+		weston_log("Failed to register output API.\n");
+		goto err_x11_input;
+	}
 
 	return b;
 

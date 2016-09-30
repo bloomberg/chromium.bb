@@ -34,15 +34,7 @@ extern "C" {
 
 #include "compositor.h"
 
-#define WESTON_X11_BACKEND_CONFIG_VERSION 1
-
-struct weston_x11_backend_output_config {
-	int width;
-	int height;
-	char *name;
-	uint32_t transform;
-	int32_t scale;
-};
+#define WESTON_X11_BACKEND_CONFIG_VERSION 2
 
 struct weston_x11_backend_config {
 	struct weston_backend_config base;
@@ -52,9 +44,6 @@ struct weston_x11_backend_config {
 
 	/** Whether to use the pixman renderer instead of the OpenGL ES renderer. */
 	bool use_pixman;
-
-	uint32_t num_outputs;
-	struct weston_x11_backend_output_config *outputs;
 };
 
 #ifdef  __cplusplus
