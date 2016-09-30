@@ -25,8 +25,6 @@ class SwiffyPage(page_module.Page):
         'var meta = document.createElement("meta");'
         'meta.name = "viewport";'
         'meta.content = "width=device-width";'
-        'if (!document.getElementsByTagName("head"))'
-        '  document.body.appendChild(document.createElement("head"));'
         'document.getElementsByTagName("head")[0].appendChild(meta);')
     action_runner.EvaluateJavaScript(viewport_js)
 
