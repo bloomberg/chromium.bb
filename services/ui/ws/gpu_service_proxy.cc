@@ -25,7 +25,7 @@ const uint64_t kInternalGpuChannelClientTracingId = 1;
 
 GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
     : delegate_(delegate),
-      next_client_id_(kInternalGpuChannelClientId),
+      next_client_id_(kInternalGpuChannelClientId + 1),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       shutdown_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                       base::WaitableEvent::InitialState::NOT_SIGNALED) {
@@ -54,7 +54,6 @@ void GpuServiceProxy::OnInitialized(const gpu::GPUInfo& gpu_info) {
       kInternalGpuChannelClientId, kInternalGpuChannelClientTracingId,
       is_gpu_host, base::Bind(&GpuServiceProxy::OnInternalGpuChannelEstablished,
                              base::Unretained(this)));
-  next_client_id_ = kInternalGpuChannelClientId + 1;
 }
 
 void GpuServiceProxy::OnInternalGpuChannelEstablished(
@@ -83,7 +82,7 @@ void GpuServiceProxy::OnGpuChannelEstablished(
 
 void GpuServiceProxy::EstablishGpuChannel(
     const EstablishGpuChannelCallback& callback) {
-  const int client_id = ++next_client_id_;
+  const int client_id = next_client_id_++;
   // TODO(sad): crbug.com/617415 figure out how to generate a meaningful tracing
   // id.
   const uint64_t client_tracing_id = 0;
