@@ -35,11 +35,6 @@ class ParserTest(cros_test_lib.OutputTestCase):
       self.parser.parse_args(['add', '--workon', 'project'])
       self.parser.parse_args(['add', 'project', 'path', '--remote', 'foo'])
 
-  def testUpgradeMinilayoutCommand(self):
-    """Verify basic upgrade command behavior."""
-    with self.OutputCapturer():
-      self.parser.parse_args(['upgrade-minilayout'])
-
 
 class ManifestTest(cros_test_lib.TempDirTestCase):
   """Tests that need a real .repo/ manifest layout."""
@@ -59,39 +54,9 @@ class ManifestTest(cros_test_lib.TempDirTestCase):
   def _SetManifest(self, manifest):
     """Set active manifest to point to |manifest|."""
     source = os.path.join('.repo', 'manifest.xml')
-    target = os.path.join('.repo', 'manifests', manifest)
+    target = os.path.join('manifests', manifest)
     osutils.SafeUnlink(source)
     os.symlink(target, source)
-
-
-class UpgradeMinilayoutTest(cros_test_lib.MockOutputTestCase, ManifestTest):
-  """Tests for the upgrade minilayout logic."""
-
-  def testNoUpgradeNeeded(self):
-    """Don't run update when it isn't needed."""
-    with self.OutputCapturer():
-      self.PatchObject(loman, '_UpgradeMinilayout', side_effect=Exception)
-      loman.main(['upgrade-minilayout'])
-
-  def testUpgradeNeeded(self):
-    """Run update when it's needed."""
-    class _Exception(Exception):
-      """Custom exception."""
-
-    self._SetManifest('minilayout.xml')
-    with self.OutputCapturer():
-      self.PatchObject(loman, '_UpgradeMinilayout', side_effect=_Exception)
-      self.assertRaises(_Exception, loman.main, ['upgrade-minilayout'])
-
-  def testAutoUpgrade(self):
-    """Run update automatically."""
-    class _Exception(Exception):
-      """Custom exception."""
-
-    self._SetManifest('minilayout.xml')
-    with self.OutputCapturer():
-      self.PatchObject(loman, '_UpgradeMinilayout', side_effect=_Exception)
-      self.assertRaises(_Exception, loman.main, ['add', '--workon', 'proj'])
 
 
 class AddTest(cros_test_lib.MockOutputTestCase, ManifestTest):
@@ -112,3 +77,21 @@ class AddTest(cros_test_lib.MockOutputTestCase, ManifestTest):
     with self.OutputCapturer():
       for cmd in bad_cmds:
         self.assertRaises(SystemExit, loman.main, cmd)
+
+
+class NoMiniayoutTest(cros_test_lib.MockOutputTestCase, ManifestTest):
+  """Check deprecated minilayout setups are detected."""
+
+  def setUp(self):
+    self._SetManifest('minilayout.xml')
+
+  def testMiniLayoutDetected(self):
+    """Check error is raised when repo is setup with minilayout."""
+
+    class _Error(Exception):
+      """Stub for test."""
+
+    self.PatchObject(loman, '_AssertNotMiniLayout', side_effect=_Error)
+    cmd = ['add', '-w', 'foo']
+    with self.OutputCapturer():
+      self.assertRaises(_Error, loman.main, cmd)

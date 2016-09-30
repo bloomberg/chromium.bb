@@ -12,7 +12,6 @@ import xml.etree.ElementTree as ElementTree
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import cros_logging as logging
 from chromite.lib import git
 
 
@@ -106,41 +105,10 @@ def _AddProjectsToManifestGroups(options, *args):
   git.RunGit('.', cmd)
 
 
-def _UpgradeMinilayout(options):
-  """Convert a repo checkout away from minilayout.xml to default.xml."""
-
-  full_tree = Manifest.FromPath(options.default_manifest_path)
-  local_manifest_exists = os.path.exists(options.local_manifest_path)
-
-  new_groups = []
-  if local_manifest_exists:
-    local_tree = Manifest.FromPath(options.local_manifest_path)
-    # Identify which projects need to be transferred across.
-    projects = local_tree.GetProjects()
-    new_groups = [x.attrib['name'] for x in projects]
-    allowed = set(x.attrib['name'] for x in full_tree.GetProjects())
-    transferred = [x for x in projects if x.attrib['name'] in allowed]
-    for project in transferred:
-      # Mangle local_manifest object, removing those projects;
-      # note we'll still be adding those projects to the default groups,
-      # including those that didn't intersect the main manifest.
-      local_tree.nodes.remove(project)
-
-  _AddProjectsToManifestGroups(options, *new_groups)
-
-  if local_manifest_exists:
-    # Rewrite the local_manifest now; if there is no settings left in
-    # the local_manifest, wipe it.
-    if local_tree.nodes.getchildren():
-      with open(options.local_manifest_path, 'w') as f:
-        f.write(local_tree.ToString())
-    else:
-      os.unlink(options.local_manifest_path)
-
-  # Finally, move the symlink.
-  os.unlink(options.manifest_sym_path)
-  os.symlink('manifests/default.xml', options.manifest_sym_path)
-  logging.info("Converted the checkout to manifest groups based minilayout.")
+def _AssertNotMiniLayout():
+  cros_build_lib.Die(
+      "Your repository checkout is using the old minilayout.xml workflow; "
+      "Autoupdate is no longer supported, reinstall your tree.")
 
 
 def GetParser():
@@ -162,47 +130,24 @@ def GetParser():
   subparser.add_argument('project', help='Name of project in the manifest.')
   subparser.add_argument('path', nargs='?', help='Local path to the project.')
 
-  subparser = subparsers.add_parser(
-      'upgrade-minilayout',
-      help='Upgrade a minilayout checkout into a full.xml checkout utilizing '
-           'manifest groups.')
-
   return parser
 
 
 def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
-
   repo_dir = git.FindRepoDir(os.getcwd())
   if not repo_dir:
     parser.error("This script must be invoked from within a repository "
                  "checkout.")
 
   options.git_config = os.path.join(repo_dir, 'manifests.git', 'config')
-  options.repo_dir = repo_dir
   options.local_manifest_path = os.path.join(repo_dir, 'local_manifest.xml')
-  # This constant is used only when we're doing an upgrade away from
-  # minilayout.xml to default.xml.
-  options.default_manifest_path = os.path.join(repo_dir, 'manifests',
-                                               'default.xml')
   options.manifest_sym_path = os.path.join(repo_dir, 'manifest.xml')
 
-  active_manifest = os.path.basename(os.readlink(options.manifest_sym_path))
-  upgrade_required = active_manifest == 'minilayout.xml'
-
-  if options.command == 'upgrade-minilayout':
-    if not upgrade_required:
-      print("This repository checkout isn't using minilayout.xml; "
-            "nothing to do")
-    else:
-      _UpgradeMinilayout(options)
-    return 0
-  elif upgrade_required:
-    logging.warning(
-        "Your repository checkout is using the old minilayout.xml workflow; "
-        "auto-upgrading it.")
-    main(['upgrade-minilayout'])
+  if (os.path.basename(os.readlink(options.manifest_sym_path)) ==
+      'minilayout.xml'):
+    _AssertNotMiniLayout()
 
   # For now, we only support the add command.
   assert options.command == 'add'
