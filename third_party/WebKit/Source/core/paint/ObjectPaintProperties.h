@@ -112,10 +112,12 @@ public:
         const ScrollPaintPropertyNode* scroll;
     };
     const LocalBorderBoxProperties* localBorderBoxProperties() const { return m_localBorderBoxProperties.get(); }
-    // ContentsProperties is the GeometryPropertyTreeState that is the same as in
+    // ContentsPropertyTreeState is the GeometryPropertyTreeState that is the same as in
     // localBorderBoxProperties, except that it is inside any clips and scrolls caused by this
     // object. This GeometryPropertyTreeState is suitable as the destination for paint invalidation.
-    void getContentsProperties(GeometryPropertyTreeState&) const;
+    // |paintOffsetFromState| is the offset from the GeometryPropertyTreeState to this object's
+    // contents space.
+    void getContentsPropertyTreeState(GeometryPropertyTreeState&, LayoutPoint& paintOffsetFromState) const;
 
     void clearPaintOffsetTranslation() { m_paintOffsetTranslation = nullptr; }
     void clearTransform() { m_transform = nullptr; }

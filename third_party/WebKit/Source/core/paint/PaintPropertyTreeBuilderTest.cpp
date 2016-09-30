@@ -95,14 +95,16 @@ do { \
     LayoutRect source((sourceLayoutObject)->localOverflowRectForPaintInvalidation()); \
     source.moveBy((sourceLayoutObject)->objectPaintProperties()->localBorderBoxProperties()->paintOffset); \
     bool success = false; \
-    GeometryPropertyTreeState contentsProperties; \
-    (ancestorLayoutObject)->objectPaintProperties()->getContentsProperties(contentsProperties); \
-    FloatRect actual = geometryMapper.mapToVisualRectInDestinationSpace( \
+    GeometryPropertyTreeState contentsTreeState; \
+    LayoutPoint paintOffsetFromContentsTreeState; \
+    (ancestorLayoutObject)->objectPaintProperties()->getContentsPropertyTreeState(contentsTreeState, paintOffsetFromContentsTreeState); \
+    LayoutRect actual = LayoutRect(geometryMapper.mapToVisualRectInDestinationSpace( \
         FloatRect(source), \
         (sourceLayoutObject)->objectPaintProperties()->localBorderBoxProperties()->geometryPropertyTreeState, \
-        contentsProperties, success); \
+        contentsTreeState, success)); \
     ASSERT_TRUE(success); \
-    EXPECT_EQ(expected, LayoutRect(actual)) << "GeometryMapper: expected: " << expected.toString() << ", actual: " << actual.toString(); \
+    actual.moveBy(-paintOffsetFromContentsTreeState); \
+    EXPECT_EQ(expected, actual) << "GeometryMapper: expected: " << expected.toString() << ", actual: " << actual.toString(); \
 \
     if (slopFactor == LayoutUnit::max()) \
         break; \
@@ -1614,13 +1616,13 @@ TEST_P(PaintPropertyTreeBuilderTest, CachedProperties)
     CHECK_EXACT_VISUAL_RECT(LayoutRect(114, 137, 10, 20), c->layoutObject(), frameView->layoutView());
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsProperties)
+TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsTreeState)
 {
     // This test verifies the tree builder correctly computes and records the property tree context
     // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
     // the painting ancestors.
     setBodyInnerHTML(
-        "<style>body { margin: 0; }</style>"
+        "<style>body { margin: 20px 30px; }</style>"
         "<div id='clipper' style='overflow:hidden; width:400px; height:300px;'>"
         "  <div id='child' style='position:relative; width:500px; height: 600px;'></div>"
         "</div>"
@@ -1636,10 +1638,12 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsProperties)
     EXPECT_EQ(framePreTranslation(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
     EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
-    GeometryPropertyTreeState contentsProperties;
-    clipProperties->getContentsProperties(contentsProperties);
-    EXPECT_EQ(framePreTranslation(), contentsProperties.transform);
-    EXPECT_EQ(clipProperties->overflowClip(), contentsProperties.clip);
+    GeometryPropertyTreeState contentsTreeState;
+    LayoutPoint paintOffsetFromContentsTreeState;
+    clipProperties->getContentsPropertyTreeState(contentsTreeState, paintOffsetFromContentsTreeState);
+    EXPECT_EQ(LayoutPoint(30, 20), paintOffsetFromContentsTreeState);
+    EXPECT_EQ(framePreTranslation(), contentsTreeState.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), contentsTreeState.clip);
 
     EXPECT_EQ(framePreTranslation(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
     EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
@@ -1648,12 +1652,12 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowClipContentsProperties)
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsProperties)
+TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsTreeState)
 {
     setBodyInnerHTML(
-        "<style>body { margin: 0; }</style>"
-        "<div id='clipper' style='contain:paint; width:400px; height:300px;'>"
-        "  <div id='child' style='position:relative; width:500px; height: 600px;'></div>"
+        "<style>body { margin: 20px 30px; }</style>"
+        "<div id='clipper' style='contain:paint; width:300px; height:200px;'>"
+        "  <div id='child' style='position:relative; width:400px; height: 500px;'></div>"
         "</div>"
     );
 
@@ -1667,25 +1671,27 @@ TEST_P(PaintPropertyTreeBuilderTest, ContainsPaintContentsProperties)
     EXPECT_EQ(framePreTranslation(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
     EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
-    GeometryPropertyTreeState contentsProperties;
-    clipProperties->getContentsProperties(contentsProperties);
-    EXPECT_EQ(framePreTranslation(), contentsProperties.transform);
-    EXPECT_EQ(clipProperties->overflowClip(), contentsProperties.clip);
+    GeometryPropertyTreeState contentsTreeState;
+    LayoutPoint paintOffsetFromContentsTreeState;
+    clipProperties->getContentsPropertyTreeState(contentsTreeState, paintOffsetFromContentsTreeState);
+    EXPECT_EQ(LayoutPoint(30, 20), paintOffsetFromContentsTreeState);
+    EXPECT_EQ(framePreTranslation(), contentsTreeState.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), contentsTreeState.clip);
 
     EXPECT_EQ(framePreTranslation(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
     EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
     EXPECT_NE(nullptr, childProperties->localBorderBoxProperties()->geometryPropertyTreeState.effect);
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
+    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 500), child, clipper);
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsProperties)
+TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState)
 {
     // This test verifies the tree builder correctly computes and records the property tree context
     // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
     // the painting ancestors.
     setBodyInnerHTML(
-        "<style>body { margin: 0; }</style>"
+        "<style>body { margin: 20px 30px; }</style>"
         "<div id='clipper' style='overflow:scroll; width:400px; height:300px;'>"
         "  <div id='child' style='position:relative; width:500px; height: 600px;'></div>"
         "  <div style='width: 200px; height: 10000px'></div>"
@@ -1704,10 +1710,12 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsProperties)
     EXPECT_EQ(frameScrollTranslation(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
     EXPECT_EQ(frameContentClip(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
-    GeometryPropertyTreeState contentsProperties;
-    clipProperties->getContentsProperties(contentsProperties);
-    EXPECT_EQ(clipProperties->scrollTranslation(), contentsProperties.transform);
-    EXPECT_EQ(clipProperties->overflowClip(), contentsProperties.clip);
+    GeometryPropertyTreeState contentsTreeState;
+    LayoutPoint paintOffsetFromContentsTreeState;
+    clipProperties->getContentsPropertyTreeState(contentsTreeState, paintOffsetFromContentsTreeState);
+    EXPECT_EQ(LayoutPoint(30, 20), paintOffsetFromContentsTreeState);
+    EXPECT_EQ(clipProperties->scrollTranslation(), contentsTreeState.transform);
+    EXPECT_EQ(clipProperties->overflowClip(), contentsTreeState.clip);
 
     EXPECT_EQ(clipProperties->scrollTranslation(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
     EXPECT_EQ(clipProperties->overflowClip(), childProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
@@ -1715,15 +1723,15 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsProperties)
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsProperties)
+TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState)
 {
     // This test verifies the tree builder correctly computes and records the property tree context
     // for a (pseudo) stacking context that is scrolled by a containing block that is not one of
     // the painting ancestors.
     setBodyInnerHTML(
-        "<style>body { margin: 0; }</style>"
-        "<div id='clipper' style='position: absolute; clip: rect(10px, 80px, 70px, 40px); width:400px; height:300px;'>"
-        "  <div id='child' style='position:relative; width:500px; height: 600px;'></div>"
+        "<style>body { margin: 20px 30px; }</style>"
+        "<div id='clipper' style='position: absolute; clip: rect(10px, 80px, 70px, 40px); width:300px; height:200px;'>"
+        "  <div id='child' style='position:relative; width:400px; height: 500px;'></div>"
         "</div>"
     );
 
@@ -1737,20 +1745,22 @@ TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsProperties)
     // CSS clip on an element causes it to clip itself, not just descendants.
     EXPECT_EQ(clipProperties->cssClip(), clipProperties->localBorderBoxProperties()->geometryPropertyTreeState.clip);
 
-    GeometryPropertyTreeState contentsProperties;
-    clipProperties->getContentsProperties(contentsProperties);
-    EXPECT_EQ(framePreTranslation(), contentsProperties.transform);
-    EXPECT_EQ(clipProperties->cssClip(), contentsProperties.clip);
+    GeometryPropertyTreeState contentsTreeState;
+    LayoutPoint paintOffsetFromContentsTreeState;
+    clipProperties->getContentsPropertyTreeState(contentsTreeState, paintOffsetFromContentsTreeState);
+    EXPECT_EQ(LayoutPoint(30, 20), paintOffsetFromContentsTreeState);
+    EXPECT_EQ(framePreTranslation(), contentsTreeState.transform);
+    EXPECT_EQ(clipProperties->cssClip(), contentsTreeState.clip);
 
-    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
+    CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 400, 500), child, clipper);
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, SvgLocalToBorderBoxTransformContentsProperties)
+TEST_P(PaintPropertyTreeBuilderTest, SvgLocalToBorderBoxTransformContentsTreeState)
 {
     setBodyInnerHTML(
         "<style>"
         "  body {"
-        "    margin: 0px;"
+        "    margin: 20px 30px;"
         "  }"
         "  svg {"
         "    position: absolute;"
@@ -1768,9 +1778,11 @@ TEST_P(PaintPropertyTreeBuilderTest, SvgLocalToBorderBoxTransformContentsPropert
 
     EXPECT_EQ(framePreTranslation(), svgWithViewBoxProperties->localBorderBoxProperties()->geometryPropertyTreeState.transform);
 
-    GeometryPropertyTreeState contentsProperties;
-    svgWithViewBoxProperties->getContentsProperties(contentsProperties);
-    EXPECT_EQ(svgWithViewBoxProperties->svgLocalToBorderBoxTransform(), contentsProperties.transform);
+    GeometryPropertyTreeState contentsTreeState;
+    LayoutPoint paintOffsetFromContentsTreeState;
+    svgWithViewBoxProperties->getContentsPropertyTreeState(contentsTreeState, paintOffsetFromContentsTreeState);
+    EXPECT_EQ(LayoutPoint(), paintOffsetFromContentsTreeState);
+    EXPECT_EQ(svgWithViewBoxProperties->svgLocalToBorderBoxTransform(), contentsTreeState.transform);
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowHiddenScrollProperties)
