@@ -12,6 +12,8 @@ blink_modules_sources("compositorworker") {
     "AnimationWorklet.h",
     "AnimationWorkletGlobalScope.cpp",
     "AnimationWorkletGlobalScope.h",
+    "AnimationWorkletMessagingProxy.cpp",
+    "AnimationWorkletMessagingProxy.h",
     "AnimationWorkletThread.cpp",
     "AnimationWorkletThread.h",
     "CompositorWorker.cpp",

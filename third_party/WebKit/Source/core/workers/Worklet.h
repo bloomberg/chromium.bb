@@ -24,6 +24,9 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>, public Sc
     USING_GARBAGE_COLLECTED_MIXIN(Worklet);
     WTF_MAKE_NONCOPYABLE(Worklet);
 public:
+    virtual void initialize() {}
+    virtual bool isInitialized() const { return true; }
+
     virtual WorkletGlobalScopeProxy* workletGlobalScopeProxy() const = 0;
 
     // Worklet

@@ -5,8 +5,10 @@
 #include "modules/compositorworker/AnimationWorklet.h"
 
 #include "bindings/core/v8/V8Binding.h"
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
-#include "core/workers/ThreadedWorkletGlobalScopeProxy.h"
+#include "modules/compositorworker/AnimationWorkletMessagingProxy.h"
+#include "modules/compositorworker/AnimationWorkletThread.h"
 
 namespace blink {
 
@@ -20,17 +22,36 @@ AnimationWorklet* AnimationWorklet::create(LocalFrame* frame)
 
 AnimationWorklet::AnimationWorklet(LocalFrame* frame)
     : Worklet(frame)
-    , m_workletGlobalScopeProxy(new ThreadedWorkletGlobalScopeProxy())
+    , m_workletMessagingProxy(nullptr)
 {
 }
 
 AnimationWorklet::~AnimationWorklet()
 {
+    if (m_workletMessagingProxy)
+        m_workletMessagingProxy->parentObjectDestroyed();
+}
+
+void AnimationWorklet::initialize()
+{
+    AnimationWorkletThread::ensureSharedBackingThread();
+
+    DCHECK(!m_workletMessagingProxy);
+    DCHECK(getExecutionContext());
+
+    m_workletMessagingProxy = new AnimationWorkletMessagingProxy(getExecutionContext());
+    m_workletMessagingProxy->initialize();
+}
+
+bool AnimationWorklet::isInitialized() const
+{
+    return m_workletMessagingProxy;
 }
 
 WorkletGlobalScopeProxy* AnimationWorklet::workletGlobalScopeProxy() const
 {
-    return m_workletGlobalScopeProxy.get();
+    DCHECK(m_workletMessagingProxy);
+    return m_workletMessagingProxy;
 }
 
 DEFINE_TRACE(AnimationWorklet)

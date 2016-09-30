@@ -27,6 +27,10 @@ Worklet::Worklet(LocalFrame* frame)
 
 ScriptPromise Worklet::import(ScriptState* scriptState, const String& url)
 {
+    if (!isInitialized()) {
+        initialize();
+    }
+
     KURL scriptURL = getExecutionContext()->completeURL(url);
     if (!scriptURL.isValid()) {
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(SyntaxError, "'" + url + "' is not a valid URL."));
@@ -56,7 +60,10 @@ void Worklet::notifyFinished(WorkletScriptLoader* scriptLoader)
 
 void Worklet::stop()
 {
-    workletGlobalScopeProxy()->terminateWorkletGlobalScope();
+    if (isInitialized()) {
+        workletGlobalScopeProxy()->terminateWorkletGlobalScope();
+    }
+
     for (const auto& scriptLoader : m_scriptLoaders) {
         scriptLoader->cancel();
     }
