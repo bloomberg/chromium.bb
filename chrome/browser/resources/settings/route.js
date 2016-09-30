@@ -199,9 +199,10 @@ cr.define('settings', function() {
   r.RESET = r.ADVANCED.createSection('/reset', 'reset');
 
 <if expr="chromeos">
-  r.INPUT_METHODS = r.LANGUAGES.createChild('/inputMethods');
-  r.DETAILED_BUILD_INFO = r.ABOUT.createChild('/help/details');
-  r.DETAILED_BUILD_INFO.section = 'about';
+  // "About" is the only section in About, but we still need to create the route
+  // in order to show the subpage on Chrome OS.
+  r.ABOUT_ABOUT = r.ABOUT.createSection('/help/about', 'about');
+  r.DETAILED_BUILD_INFO = r.ABOUT_ABOUT.createChild('/help/details');
 </if>
 
   var routeObservers_ = new Set();
