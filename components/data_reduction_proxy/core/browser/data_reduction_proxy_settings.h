@@ -127,8 +127,8 @@ class DataReductionProxySettings : public DataReductionProxyServiceObserver,
   // on main frame requests.
   void SetLoFiModeActiveOnMainFrame(bool lo_fi_mode_active);
 
-  // Returns true if Lo-Fi was active on the main frame request. Returns false
-  // if the user is using Lo-Fi previews.
+  // Returns true if Lo-Fi image replacement was active on the main frame
+  // request. Returns false if the user is using lite pages.
   bool WasLoFiModeActiveOnMainFrame() const;
 
   // Returns true if a "Load image" context menu request has not been made since

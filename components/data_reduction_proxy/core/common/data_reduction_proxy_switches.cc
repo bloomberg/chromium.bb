@@ -79,11 +79,11 @@ const char kEnableDataReductionProxyBypassWarning[] =
 const char kEnableDataReductionProxyCarrierTest[] =
     "enable-data-reduction-proxy-carrier-test";
 
-// Enables preview mode for Lo-Fi. This means a preview should be requested
-// instead of placeholders whenever Lo-Fi mode is on. Lo-Fi must also be enabled
-// via a flag or field trial.
-const char kEnableDataReductionProxyLoFiPreview[] =
-    "enable-data-reduction-proxy-lo-fi-preview";
+// Enables lite page from the data reduction proxy. This means a lite page
+// should be requested instead of placeholders whenever Lo-Fi mode is on. Lo-fi
+// must also be enabled via a flag or field trial.
+const char kEnableDataReductionProxyLitePage[] =
+    "enable-data-reduction-proxy-lite-page";
 
 // Enables sending a pageload metrics pingback after every page load.
 const char kEnableDataReductionProxyForcePingback[] =

@@ -1213,7 +1213,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     @SmallTest
     @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
-            "enable-data-reduction-proxy-lo-fi-preview"})
+            "enable-data-reduction-proxy-lite-page"})
     @RetryOnFailure
     public void testLaunchWebLiteURL() throws Exception {
         final String testUrl = WEBLITE_PREFIX + mTestPage;
@@ -1243,7 +1243,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * Reduction Proxy is not using Lo-Fi.
      */
     @SmallTest
-    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "enable-data-reduction-proxy-lo-fi-preview"})
+    @CommandLineFlags.Add({"enable-spdy-proxy-auth", "enable-data-reduction-proxy-lite-page"})
     @RetryOnFailure
     public void testLaunchWebLiteURLNoLoFi() throws Exception {
         final String testUrl = WEBLITE_PREFIX + mTestPage;
@@ -1259,7 +1259,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     @SmallTest
     @CommandLineFlags.Add({"data-reduction-proxy-lo-fi=always-on",
-            "enable-data-reduction-proxy-lo-fi-preview"})
+            "enable-data-reduction-proxy-lite-page"})
     @RetryOnFailure
     public void testLaunchWebLiteURLNoDataReductionProxy() throws Exception {
         final String testUrl = WEBLITE_PREFIX + mTestPage;
@@ -1275,7 +1275,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     @SmallTest
     @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
-            "enable-data-reduction-proxy-lo-fi-preview"})
+            "enable-data-reduction-proxy-lite-page"})
     @RetryOnFailure
     public void testLaunchHttpsWebLiteURL() throws Exception {
         final String testUrl = WEBLITE_PREFIX + mTestPage.replaceFirst("http", "https");
@@ -1291,7 +1291,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      */
     @SmallTest
     @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
-            "enable-data-reduction-proxy-lo-fi-preview"})
+            "enable-data-reduction-proxy-lite-page"})
     @RetryOnFailure
     public void testLaunchNonWebLiteURL() throws Exception {
         final String testUrl = mTestPage2 + "/?lite_url=" + mTestPage;

@@ -140,25 +140,25 @@ class ContentLoFiDeciderTest : public testing::Test {
         header_value.find(chrome_proxy_lo_fi_directive()) != std::string::npos);
   }
 
-  static void VerifyLoFiPreviewHeader(bool expected_lofi_preview_used,
-                                      const net::HttpRequestHeaders& headers) {
+  static void VerifyLitePageHeader(bool expected_lite_page_used,
+                                   const net::HttpRequestHeaders& headers) {
     EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
     std::string header_value;
     headers.GetHeader(chrome_proxy_header(), &header_value);
-    EXPECT_EQ(expected_lofi_preview_used,
-              header_value.find(chrome_proxy_lo_fi_preview_directive()) !=
+    EXPECT_EQ(expected_lite_page_used,
+              header_value.find(chrome_proxy_lite_page_directive()) !=
                   std::string::npos);
   }
 
-  static void VerifyLoFiIgnorePreviewBlacklistHeader(
-      bool expected_lofi_preview_used,
+  static void VerifyLitePageIgnoreBlacklistHeader(
+      bool expected_lite_page_used,
       const net::HttpRequestHeaders& headers) {
     EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
     std::string header_value;
     headers.GetHeader(chrome_proxy_header(), &header_value);
-    EXPECT_EQ(expected_lofi_preview_used,
+    EXPECT_EQ(expected_lite_page_used,
               header_value.find(
-                  chrome_proxy_lo_fi_ignore_preview_blacklist_directive()) !=
+                  chrome_proxy_lite_page_ignore_blacklist_directive()) !=
                   std::string::npos);
   }
 
@@ -176,7 +176,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
   // Enable Lo-Fi.
   const struct {
     bool is_using_lofi;
-    bool is_using_previews;
+    bool is_using_lite_page;
     bool is_main_frame;
   } tests[] = {
       {false, false, false}, {false, false, true}, {true, false, true},
@@ -189,20 +189,19 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
         CreateRequest(tests[i].is_using_lofi);
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->InitFromArgv(command_line->argv());
-    if (tests[i].is_using_previews) {
-      command_line->AppendSwitch(
-          switches::kEnableDataReductionProxyLoFiPreview);
+    if (tests[i].is_using_lite_page) {
+      command_line->AppendSwitch(switches::kEnableDataReductionProxyLitePage);
     }
 
     // No flags or field trials. The Lo-Fi header should not be added.
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
-    VerifyLoFiPreviewHeader(false, headers);
-    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    VerifyLitePageHeader(false, headers);
+    VerifyLitePageIgnoreBlacklistHeader(false, headers);
 
     // The Lo-Fi flag is "always-on", Lo-Fi is being used, and it's a main frame
-    // request. Lo-Fi preview header should be added.
+    // request. Lo-Fi or lite page header should be added.
     command_line->AppendSwitchASCII(
         switches::kDataReductionProxyLoFi,
         switches::kDataReductionProxyLoFiValueAlwaysOn);
@@ -211,17 +210,17 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
                             net::LOAD_MAIN_FRAME_DEPRECATED);
     headers.Clear();
     NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews &&
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_lite_page &&
                          !tests[i].is_main_frame,
                      headers);
-    VerifyLoFiPreviewHeader(tests[i].is_using_lofi &&
-                                tests[i].is_using_previews &&
-                                tests[i].is_main_frame,
-                            headers);
-    VerifyLoFiIgnorePreviewBlacklistHeader(tests[i].is_using_lofi &&
-                                               tests[i].is_using_previews &&
-                                               tests[i].is_main_frame,
-                                           headers);
+    VerifyLitePageHeader(tests[i].is_using_lofi &&
+                             tests[i].is_using_lite_page &&
+                             tests[i].is_main_frame,
+                         headers);
+    VerifyLitePageIgnoreBlacklistHeader(tests[i].is_using_lofi &&
+                                            tests[i].is_using_lite_page &&
+                                            tests[i].is_main_frame,
+                                        headers);
     DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
     // |lofi_requested| should be set to false when Lo-Fi is enabled using
     // flags.
@@ -232,10 +231,10 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     request->SetLoadFlags(0);
     headers.Clear();
     NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_lite_page,
                      headers);
-    VerifyLoFiPreviewHeader(false, headers);
-    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    VerifyLitePageHeader(false, headers);
+    VerifyLitePageIgnoreBlacklistHeader(false, headers);
 
     // The Lo-Fi flag is "cellular-only" and Lo-Fi is being used. Lo-Fi header
     // should be added.
@@ -244,10 +243,10 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
         switches::kDataReductionProxyLoFiValueCellularOnly);
     headers.Clear();
     NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_lite_page,
                      headers);
-    VerifyLoFiPreviewHeader(false, headers);
-    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    VerifyLitePageHeader(false, headers);
+    VerifyLitePageIgnoreBlacklistHeader(false, headers);
     data = DataReductionProxyData::GetData(*request);
     // |lofi_requested| should be set to false when Lo-Fi is enabled using
     // flags.
@@ -260,10 +259,10 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
         switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
     headers.Clear();
     NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_lite_page,
                      headers);
-    VerifyLoFiPreviewHeader(false, headers);
-    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    VerifyLitePageHeader(false, headers);
+    VerifyLitePageIgnoreBlacklistHeader(false, headers);
     data = DataReductionProxyData::GetData(*request);
     // |lofi_requested| should be set to false when Lo-Fi is enabled using
     // flags.
@@ -291,8 +290,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_main_frame,
                      headers);
-    VerifyLoFiPreviewHeader(false, headers);
-    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    VerifyLitePageHeader(false, headers);
+    VerifyLitePageIgnoreBlacklistHeader(false, headers);
     DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
     EXPECT_EQ(tests[i].is_using_lofi, data->lofi_requested()) << i;
   }
@@ -317,14 +316,14 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
-    VerifyLoFiPreviewHeader(false, headers);
-    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    VerifyLitePageHeader(false, headers);
+    VerifyLitePageIgnoreBlacklistHeader(false, headers);
     DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
     EXPECT_EQ(tests[i].is_using_lofi, data->lofi_requested()) << i;
   }
 }
 
-TEST_F(ContentLoFiDeciderTest, LoFiPreviewFieldTrial) {
+TEST_F(ContentLoFiDeciderTest, LitePageFieldTrial) {
   base::FieldTrialList field_trial_list(nullptr);
   base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
                                          "Enabled_Preview");
@@ -345,9 +344,9 @@ TEST_F(ContentLoFiDeciderTest, LoFiPreviewFieldTrial) {
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
-    VerifyLoFiPreviewHeader(tests[i].is_using_lofi && tests[i].is_main_frame,
-                            headers);
-    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
+    VerifyLitePageHeader(tests[i].is_using_lofi && tests[i].is_main_frame,
+                         headers);
+    VerifyLitePageIgnoreBlacklistHeader(false, headers);
     DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
     EXPECT_EQ(tests[i].is_using_lofi, data->lofi_requested()) << i;
   }

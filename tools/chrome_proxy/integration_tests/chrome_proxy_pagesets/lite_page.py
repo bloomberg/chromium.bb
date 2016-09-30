@@ -6,25 +6,25 @@ from telemetry.page import page as page_module
 from telemetry import story
 
 
-class LoFiPreviewPage(page_module.Page):
+class LitePagePage(page_module.Page):
   """
-  A test page for the chrome proxy Lo-Fi preview tests.
-  Checks that a LoFi preview page is served.
+  A test page for the chrome proxy lite page tests.
+  Checks that a lite page is served.
   """
 
   def __init__(self, url, page_set):
-    super(LoFiPreviewPage, self).__init__(url=url, page_set=page_set)
+    super(LitePagePage, self).__init__(url=url, page_set=page_set)
 
 
-class LoFiPreviewStorySet(story.StorySet):
+class LitePageStorySet(story.StorySet):
   """ Chrome proxy test sites """
 
   def __init__(self):
-    super(LoFiPreviewStorySet, self).__init__()
+    super(LitePageStorySet, self).__init__()
 
     urls_list = [
       'http://check.googlezip.net/test.html',
     ]
 
     for url in urls_list:
-      self.AddStory(LoFiPreviewPage(url, self))
+      self.AddStory(LitePagePage(url, self))

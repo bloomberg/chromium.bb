@@ -24,7 +24,7 @@ namespace {
 const char kEnabled[] = "Enabled";
 const char kControl[] = "Control";
 const char kDisabled[] = "Disabled";
-const char kPreview[] = "Enabled_Preview";
+const char kLitePage[] = "Enabled_Preview";
 const char kDefaultSpdyOrigin[] = "https://proxy.googlezip.net:443";
 // A one-off change, until the Data Reduction Proxy configuration service is
 // available.
@@ -105,10 +105,10 @@ bool IsIncludedInLoFiControlFieldTrial() {
                           kControl, base::CompareCase::SENSITIVE);
 }
 
-bool IsIncludedInLoFiPreviewFieldTrial() {
+bool IsIncludedInLitePageFieldTrial() {
   return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
          base::StartsWith(FieldTrialList::FindFullName(GetLoFiFieldTrialName()),
-                          kPreview, base::CompareCase::SENSITIVE);
+                          kLitePage, base::CompareCase::SENSITIVE);
 }
 
 bool IsIncludedInServerExperimentsFieldTrial() {
@@ -162,9 +162,9 @@ bool IsLoFiDisabledViaFlags() {
          data_reduction_proxy::switches::kDataReductionProxyLoFiValueDisabled;
 }
 
-bool AreLoFiPreviewsEnabledViaFlags() {
+bool AreLitePagesEnabledViaFlags() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      data_reduction_proxy::switches::kEnableDataReductionProxyLoFiPreview);
+      data_reduction_proxy::switches::kEnableDataReductionProxyLitePage);
 }
 
 bool IsForcePingbackEnabledViaFlags() {

@@ -42,7 +42,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   if (headers &&
       headers->HasHeaderValue(
           data_reduction_proxy::chrome_proxy_header(),
-          data_reduction_proxy::chrome_proxy_lo_fi_preview_directive())) {
+          data_reduction_proxy::chrome_proxy_lite_page_directive())) {
     PreviewsInfoBarDelegate::Create(navigation_handle->GetWebContents(),
                                     PreviewsInfoBarDelegate::LITE_PAGE);
   }

@@ -304,10 +304,10 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
 
     super(ChromeProxyMetric, self).AddResults(tab, results)
 
-  def AddResultsForLoFiPreview(self, tab, results):
-    lo_fi_preview_request_count = 0
-    lo_fi_preview_exp_request_count = 0
-    lo_fi_preview_response_count = 0
+  def AddResultsForLitePage(self, tab, results):
+    lite_page_request_count = 0
+    lite_page_exp_request_count = 0
+    lite_page_response_count = 0
 
     for resp in self.IterResponses(tab):
       if '/csi?' in resp.response.url:
@@ -317,45 +317,45 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
       if resp.response.url.startswith('data:'):
         continue
 
-      if resp.HasChromeProxyLoFiPreviewRequest():
-        lo_fi_preview_request_count += 1
+      if resp.HasChromeProxyLitePageRequest():
+        lite_page_request_count += 1
 
-      if resp.HasChromeProxyLoFiPreviewExpRequest():
-        lo_fi_preview_exp_request_count += 1
+      if resp.HasChromeProxyLitePageExpRequest():
+        lite_page_exp_request_count += 1
 
-      if resp.HasChromeProxyLoFiPreviewResponse():
-        lo_fi_preview_response_count += 1
+      if resp.HasChromeProxyLitePageResponse():
+        lite_page_response_count += 1
 
       if resp.HasChromeProxyLoFiRequest():
         raise ChromeProxyMetricException, (
-        '%s: Lo-Fi directive should not be in preview request header.' %
+        '%s: Lo-Fi directive should not be in lite page request header.' %
         (resp.response.url))
 
-    if lo_fi_preview_request_count == 0:
+    if lite_page_request_count == 0:
       raise ChromeProxyMetricException, (
-          'Expected at least one LoFi preview request, but zero such requests '
-          'were sent.')
-    if lo_fi_preview_exp_request_count == 0:
+          'Expected at least one lite page request, but zero such requests were'
+          ' sent.')
+    if lite_page_exp_request_count == 0:
       raise ChromeProxyMetricException, (
-          'Expected at least one LoFi preview exp=ignore_preview_blacklist '
-          'request, but zero such requests were sent.')
-    if lo_fi_preview_response_count == 0:
+          'Expected at least one lite page exp=ignore_preview_blacklist request'
+          ', but zero such requests were sent.')
+    if lite_page_response_count == 0:
       raise ChromeProxyMetricException, (
-          'Expected at least one LoFi preview response, but zero such '
-          'responses were received.')
+          'Expected at least one lite page response, but zero such responses '
+          'were received.')
 
     results.AddValue(
         scalar.ScalarValue(
-            results.current_page, 'lo_fi_preview_request',
-            'count', lo_fi_preview_request_count))
+            results.current_page, 'lite_page_request',
+            'count', lite_page_request_count))
     results.AddValue(
         scalar.ScalarValue(
-            results.current_page, 'lo_fi_preview_exp_request',
-            'count', lo_fi_preview_exp_request_count))
+            results.current_page, 'lite_page_exp_request',
+            'count', lite_page_exp_request_count))
     results.AddValue(
         scalar.ScalarValue(
-            results.current_page, 'lo_fi_preview_response',
-            'count', lo_fi_preview_response_count))
+            results.current_page, 'lite_page_response',
+            'count', lite_page_response_count))
     super(ChromeProxyMetric, self).AddResults(tab, results)
 
   def AddResultsForPassThrough(self, tab, results):

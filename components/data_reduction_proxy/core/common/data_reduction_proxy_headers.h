@@ -71,17 +71,17 @@ struct DataReductionProxyInfo {
 // Gets the header used for data reduction proxy requests and responses.
 const char* chrome_proxy_header();
 
-// Gets the Chrome-Proxy directive used by data reduction proxy Lo-Fi requests
-// and responses.
-const char* chrome_proxy_lo_fi_directive();
-
 // Gets the Chrome-Proxy directive used by data reduction proxy Lo-Fi preview
 // requests and responses.
-const char* chrome_proxy_lo_fi_preview_directive();
+const char* chrome_proxy_lo_fi_directive();
 
-// Gets the Chrome-Proxy directive used by data reduction proxy Lo-Fi preview
-// experiment to ignore the blacklist.
-const char* chrome_proxy_lo_fi_ignore_preview_blacklist_directive();
+// Gets the Chrome-Proxy directive used by data reduction proxy lite page
+// preview requests and responses.
+const char* chrome_proxy_lite_page_directive();
+
+// Gets the Chrome-Proxy directive used by data reduction proxy lite page
+// preview experiment to ignore the blacklist.
+const char* chrome_proxy_lite_page_ignore_blacklist_directive();
 
 // Returns true if the Chrome-Proxy header is present and contains a bypass
 // delay. Sets |proxy_info->bypass_duration| to the specified delay if greater

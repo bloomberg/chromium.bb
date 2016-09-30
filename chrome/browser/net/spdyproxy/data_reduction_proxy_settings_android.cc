@@ -141,9 +141,9 @@ jboolean DataReductionProxySettingsAndroid::IsDataReductionProxyUnreachable(
 jboolean DataReductionProxySettingsAndroid::AreLoFiPreviewsEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  return data_reduction_proxy::params::IsIncludedInLoFiPreviewFieldTrial() ||
+  return data_reduction_proxy::params::IsIncludedInLitePageFieldTrial() ||
       (data_reduction_proxy::params::IsLoFiOnViaFlags() &&
-          data_reduction_proxy::params::AreLoFiPreviewsEnabledViaFlags());
+          data_reduction_proxy::params::AreLitePagesEnabledViaFlags());
 }
 
 // static

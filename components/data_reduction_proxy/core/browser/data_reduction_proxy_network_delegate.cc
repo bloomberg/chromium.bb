@@ -319,16 +319,15 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
         *request);
   } else if (data_reduction_proxy_io_data_ && request->response_headers() &&
              request->response_headers()->HasHeaderValue(
-                 chrome_proxy_header(),
-                 chrome_proxy_lo_fi_preview_directive())) {
-    RecordLoFiTransformationType(PREVIEW);
+                 chrome_proxy_header(), chrome_proxy_lite_page_directive())) {
+    RecordLitePageTransformationType(LITE_PAGE);
   } else if (request->GetFullRequestHeaders(&request_headers) &&
              request_headers.HasHeader(chrome_proxy_header())) {
     std::string header_value;
     request_headers.GetHeader(chrome_proxy_header(), &header_value);
-    if (header_value.find(chrome_proxy_lo_fi_preview_directive()) !=
+    if (header_value.find(chrome_proxy_lite_page_directive()) !=
         std::string::npos) {
-      RecordLoFiTransformationType(NO_TRANSFORMATION_PREVIEW_REQUESTED);
+      RecordLitePageTransformationType(NO_TRANSFORMATION_LITE_PAGE_REQUESTED);
     }
   }
 
@@ -431,10 +430,10 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
   }
 }
 
-void DataReductionProxyNetworkDelegate::RecordLoFiTransformationType(
-    LoFiTransformationType type) {
+void DataReductionProxyNetworkDelegate::RecordLitePageTransformationType(
+    LitePageTransformationType type) {
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.LoFi.TransformationType", type,
-                            LO_FI_TRANSFORMATION_TYPES_INDEX_BOUNDARY);
+                            LITE_PAGE_TRANSFORMATION_TYPES_INDEX_BOUNDARY);
 }
 
 bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(

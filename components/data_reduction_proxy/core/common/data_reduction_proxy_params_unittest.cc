@@ -334,7 +334,7 @@ TEST_F(DataReductionProxyParamsTest, LoFiEnabledFieldTrial) {
     std::string trial_group_name;
     bool expected_enabled;
     bool expected_control;
-    bool expected_preview_enabled;
+    bool expected_lite_page_enabled;
   } tests[] = {
       {"Enabled", true, false, false},
       {"Enabled_Control", true, false, false},
@@ -353,8 +353,8 @@ TEST_F(DataReductionProxyParamsTest, LoFiEnabledFieldTrial) {
     EXPECT_EQ(test.expected_control,
               params::IsIncludedInLoFiControlFieldTrial())
         << test.trial_group_name;
-    EXPECT_EQ(test.expected_preview_enabled,
-              params::IsIncludedInLoFiPreviewFieldTrial())
+    EXPECT_EQ(test.expected_lite_page_enabled,
+              params::IsIncludedInLitePageFieldTrial())
         << test.trial_group_name;
   }
 }
@@ -365,7 +365,7 @@ TEST_F(DataReductionProxyParamsTest, LoFiControlFieldTrial) {
     std::string trial_group_name;
     bool expected_enabled;
     bool expected_control;
-    bool expected_preview_enabled;
+    bool expected_lite_page_enabled;
   } tests[] = {
       {"Control", false, true, false},
       {"Control_Enabled", false, true, false},
@@ -384,8 +384,8 @@ TEST_F(DataReductionProxyParamsTest, LoFiControlFieldTrial) {
     EXPECT_EQ(test.expected_control,
               params::IsIncludedInLoFiControlFieldTrial())
         << test.trial_group_name;
-    EXPECT_EQ(test.expected_preview_enabled,
-              params::IsIncludedInLoFiPreviewFieldTrial())
+    EXPECT_EQ(test.expected_lite_page_enabled,
+              params::IsIncludedInLitePageFieldTrial())
         << test.trial_group_name;
   }
 }
@@ -396,7 +396,7 @@ TEST_F(DataReductionProxyParamsTest, LoFiPreviewFieldTrial) {
     std::string trial_group_name;
     bool expected_enabled;
     bool expected_control;
-    bool expected_preview_enabled;
+    bool expected_lite_page_enabled;
   } tests[] = {
       {"Enabled_Preview", true, false, true},
       {"Enabled_Preview_Control", true, false, true},
@@ -415,8 +415,8 @@ TEST_F(DataReductionProxyParamsTest, LoFiPreviewFieldTrial) {
     EXPECT_EQ(test.expected_control,
               params::IsIncludedInLoFiControlFieldTrial())
         << test.trial_group_name;
-    EXPECT_EQ(test.expected_preview_enabled,
-              params::IsIncludedInLoFiPreviewFieldTrial())
+    EXPECT_EQ(test.expected_lite_page_enabled,
+              params::IsIncludedInLitePageFieldTrial())
         << test.trial_group_name;
   }
 }

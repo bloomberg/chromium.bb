@@ -30,8 +30,8 @@ const char kChromeProxyHeader[] = "chrome-proxy";
 const char kActionValueDelimiter = '=';
 
 const char kChromeProxyLoFiDirective[] = "q=low";
-const char kChromeProxyLoFiPreviewDirective[] = "q=preview";
-const char kChromeProxyLoFiIngorePreviewBlacklistDirective[] =
+const char kChromeProxyLitePageDirective[] = "q=preview";
+const char kChromeProxyLitePageIngoreBlacklistDirective[] =
     "exp=ignore_preview_blacklist";
 
 const char kChromeProxyActionBlockOnce[] = "block-once";
@@ -79,12 +79,12 @@ const char* chrome_proxy_lo_fi_directive() {
   return kChromeProxyLoFiDirective;
 }
 
-const char* chrome_proxy_lo_fi_preview_directive() {
-  return kChromeProxyLoFiPreviewDirective;
+const char* chrome_proxy_lite_page_directive() {
+  return kChromeProxyLitePageDirective;
 }
 
-const char* chrome_proxy_lo_fi_ignore_preview_blacklist_directive() {
-  return kChromeProxyLoFiIngorePreviewBlacklistDirective;
+const char* chrome_proxy_lite_page_ignore_blacklist_directive() {
+  return kChromeProxyLitePageIngoreBlacklistDirective;
 }
 
 bool GetDataReductionProxyActionValue(const net::HttpResponseHeaders* headers,

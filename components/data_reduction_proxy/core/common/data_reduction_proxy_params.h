@@ -69,7 +69,7 @@ bool IsIncludedInLoFiControlFieldTrial();
 
 // Returns true if this client is part of the "Preview" group of the Lo-Fi field
 // trial.
-bool IsIncludedInLoFiPreviewFieldTrial();
+bool IsIncludedInLitePageFieldTrial();
 
 // Returns true if this client is part of the field trial that should enable
 // server experiments for the data reduction proxy.
@@ -99,10 +99,10 @@ bool IsLoFiSlowConnectionsOnlyViaFlags();
 // mode.
 bool IsLoFiDisabledViaFlags();
 
-// Returns true if this client has the command line switch to enable Lo-Fi
-// previews. This means a preview should be requested instead of placeholders
-// whenever Lo-Fi mode is on.
-bool AreLoFiPreviewsEnabledViaFlags();
+// Returns true if this client has the command line switch to enable lite pages.
+// This means a preview should be requested instead of placeholders whenever
+// Lo-Fi mode is on.
+bool AreLitePagesEnabledViaFlags();
 
 // Returns true if this client has the command line switch to enable forced
 // pageload metrics pingbacks on every page load.

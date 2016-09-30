@@ -840,7 +840,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   FetchURLRequest(GURL("http://www.google.com/"), &request_headers,
                   std::string(), 140);
   histogram_tester.ExpectBucketCount(kLoFiTransformationTypeHistogram,
-                                     NO_TRANSFORMATION_PREVIEW_REQUESTED, 1);
+                                     NO_TRANSFORMATION_LITE_PAGE_REQUESTED, 1);
 
   std::string response_headers =
       "HTTP/1.1 200 OK\r\n"
@@ -854,8 +854,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   FetchURLRequest(GURL("http://www.google.com/"), nullptr, response_headers,
                   140);
 
-  histogram_tester.ExpectBucketCount(kLoFiTransformationTypeHistogram, PREVIEW,
-                                     1);
+  histogram_tester.ExpectBucketCount(kLoFiTransformationTypeHistogram,
+                                     LITE_PAGE, 1);
 }
 
 }  // namespace

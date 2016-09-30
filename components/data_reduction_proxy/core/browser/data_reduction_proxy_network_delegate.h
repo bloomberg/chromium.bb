@@ -49,10 +49,10 @@ class DataUseGroup;
 // This enum must remain synchronized with
 // DataReductionProxyLoFiTransformationType in
 // metrics/histograms/histograms.xml.
-enum LoFiTransformationType {
-  PREVIEW = 0,
-  NO_TRANSFORMATION_PREVIEW_REQUESTED,
-  LO_FI_TRANSFORMATION_TYPES_INDEX_BOUNDARY,
+enum LitePageTransformationType {
+  LITE_PAGE = 0,
+  NO_TRANSFORMATION_LITE_PAGE_REQUESTED,
+  LITE_PAGE_TRANSFORMATION_TYPES_INDEX_BOUNDARY,
 };
 
 // DataReductionProxyNetworkDelegate is a LayeredNetworkDelegate that wraps a
@@ -136,9 +136,9 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
                            DataReductionProxyRequestType request_type,
                            int64_t original_content_length);
 
-  // Records UMA that counts how many pages were transformed by various Lo-Fi
-  // transformations.
-  void RecordLoFiTransformationType(LoFiTransformationType type);
+  // Records UMA that counts how many pages were transformed by various lite
+  // page transformations.
+  void RecordLitePageTransformationType(LitePageTransformationType type);
 
   // Returns whether |request| would have used the data reduction proxy server
   // if the holdback fieldtrial weren't enabled. |proxy_info| is the list of

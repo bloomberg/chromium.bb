@@ -49,9 +49,9 @@ bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
   bool lofi_enabled_via_flag_or_field_trial =
       params::IsLoFiOnViaFlags() || params::IsIncludedInLoFiEnabledFieldTrial();
 
-  bool lofi_preview_via_flag_or_field_trial =
-      params::AreLoFiPreviewsEnabledViaFlags() ||
-      params::IsIncludedInLoFiPreviewFieldTrial();
+  bool lite_page_via_flag_or_field_trial =
+      params::AreLitePagesEnabledViaFlags() ||
+      params::IsIncludedInLitePageFieldTrial();
 
   // User is not using Lo-Fi or is part of the "Control" group.
   if (!request_info->IsUsingLoFi() || !lofi_enabled_via_flag_or_field_trial)
@@ -65,16 +65,16 @@ bool ContentLoFiDecider::MaybeAddLoFiDirectiveToHeaders(
     header_value += ", ";
   }
 
-  // If in the preview field trial or the preview flag is enabled, only add the
+  // If in the lite page field trial or flag is enabled, only add the
   // "q=preview" directive on main frame requests. Do not add Lo-Fi directives
-  // to other requests when previews are enabled.
-  if (lofi_preview_via_flag_or_field_trial) {
+  // to other requests when lite pages are enabled.
+  if (lite_page_via_flag_or_field_trial) {
     if (request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
-      if (params::AreLoFiPreviewsEnabledViaFlags()) {
-        header_value += chrome_proxy_lo_fi_ignore_preview_blacklist_directive();
+      if (params::AreLitePagesEnabledViaFlags()) {
+        header_value += chrome_proxy_lite_page_ignore_blacklist_directive();
         header_value += ", ";
       }
-      header_value += chrome_proxy_lo_fi_preview_directive();
+      header_value += chrome_proxy_lite_page_directive();
     }
   } else if (!(request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED)) {
     // If previews are not enabled, add "q=low" for requests that are not main

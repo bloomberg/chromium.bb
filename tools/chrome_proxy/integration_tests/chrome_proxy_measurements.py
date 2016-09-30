@@ -415,24 +415,24 @@ class ChromeProxyCacheProxyDisabled(ChromeProxyValidation):
       tab.ExecuteJavaScript('window.location.reload()')
       util.WaitFor(tab.HasReachedQuiescence, 3)
 
-class ChromeProxyLoFiPreview(ChromeProxyValidation):
-  """Correctness measurement for Lo-Fi preview in Chrome-Proxy header."""
+class ChromeProxyLitePage(ChromeProxyValidation):
+  """Correctness measurement for lite pages in the Chrome-Proxy header."""
 
   def __init__(self):
-    super(ChromeProxyLoFiPreview, self).__init__(
+    super(ChromeProxyLitePage, self).__init__(
         restart_after_each_page=True,
         metrics=metrics.ChromeProxyMetric())
 
   def CustomizeBrowserOptions(self, options):
-    super(ChromeProxyLoFiPreview, self).CustomizeBrowserOptions(options)
+    super(ChromeProxyLitePage, self).CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArgs(
         '--data-reduction-proxy-lo-fi=always-on')
     options.AppendExtraBrowserArgs(
-        '--enable-data-reduction-proxy-lo-fi-preview')
+        '--enable-data-reduction-proxy-lite-page')
     options.AppendExtraBrowserArgs('--disable-quic')
 
   def AddResults(self, tab, results):
-    self._metrics.AddResultsForLoFiPreview(tab, results)
+    self._metrics.AddResultsForLitePage(tab, results)
 
 class ChromeProxyExpDirective(ChromeProxyValidation):
   """Correctness measurement for experiment directives in Chrome-Proxy header.

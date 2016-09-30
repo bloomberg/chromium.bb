@@ -69,7 +69,7 @@ class PreviewsInfoBarTabHelperUnitTest
     std::string headers = base::StringPrintf(
         "HTTP/1.1 200 OK\n%s: %s\n\n",
         data_reduction_proxy::chrome_proxy_header(),
-        data_reduction_proxy::chrome_proxy_lo_fi_preview_directive());
+        data_reduction_proxy::chrome_proxy_lite_page_directive());
     test_handle_->CallWillProcessResponseForTesting(
         main_rfh(),
         net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));

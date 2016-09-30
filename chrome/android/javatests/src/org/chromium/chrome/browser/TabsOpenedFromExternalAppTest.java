@@ -710,7 +710,7 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      */
     @MediumTest
     @CommandLineFlags.Add({"enable-spdy-proxy-auth", "data-reduction-proxy-lo-fi=always-on",
-            "enable-data-reduction-proxy-lo-fi-preview"})
+            "enable-data-reduction-proxy-lite-page"})
     public void testLaunchWebLiteURL() throws InterruptedException {
         startMainActivityFromLauncher();
 
