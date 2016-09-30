@@ -202,27 +202,36 @@ bool requiresSubtreeInvalidation(const CSSSelector& selector)
     }
 }
 
-template<class Map>
-InvalidationSet& ensureInvalidationSet(Map& map, const typename Map::KeyType& key, InvalidationType type)
+InvalidationSet& storedInvalidationSet(RefPtr<InvalidationSet>& invalidationSet, InvalidationType type)
 {
-    typename Map::AddResult addResult = map.add(key, nullptr);
-    if (addResult.isNewEntry) {
+    if (!invalidationSet) {
         if (type == InvalidateDescendants)
-            addResult.storedValue->value = DescendantInvalidationSet::create();
+            invalidationSet = DescendantInvalidationSet::create();
         else
-            addResult.storedValue->value = SiblingInvalidationSet::create(nullptr);
-        return *addResult.storedValue->value;
+            invalidationSet = SiblingInvalidationSet::create(nullptr);
+        return *invalidationSet;
     }
-    if (addResult.storedValue->value->type() == type)
-        return *addResult.storedValue->value;
+    if (invalidationSet->type() == type)
+        return *invalidationSet;
 
     if (type == InvalidateDescendants)
-        return toSiblingInvalidationSet(addResult.storedValue->value.get())->ensureDescendants();
+        return toSiblingInvalidationSet(*invalidationSet).ensureDescendants();
 
-    RefPtr<InvalidationSet> descendants = addResult.storedValue->value;
-    RefPtr<InvalidationSet> siblings = SiblingInvalidationSet::create(toDescendantInvalidationSet(descendants.get()));
-    addResult.storedValue->value = siblings;
-    return *addResult.storedValue->value;
+    RefPtr<InvalidationSet> descendants = invalidationSet;
+    invalidationSet = SiblingInvalidationSet::create(toDescendantInvalidationSet(descendants.get()));
+    return *invalidationSet;
+}
+
+InvalidationSet& ensureInvalidationSet(HashMap<AtomicString, RefPtr<InvalidationSet>>& map, const AtomicString& key, InvalidationType type)
+{
+    RefPtr<InvalidationSet>& invalidationSet = map.add(key, nullptr).storedValue->value;
+    return storedInvalidationSet(invalidationSet, type);
+}
+
+InvalidationSet& ensureInvalidationSet(HashMap<CSSSelector::PseudoType, RefPtr<InvalidationSet>, WTF::IntHash<unsigned>, WTF::UnsignedWithZeroKeyHashTraits<unsigned>>& map, CSSSelector::PseudoType key, InvalidationType type)
+{
+    RefPtr<InvalidationSet>& invalidationSet = map.add(key, nullptr).storedValue->value;
+    return storedInvalidationSet(invalidationSet, type);
 }
 
 void extractInvalidationSets(InvalidationSet* invalidationSet, DescendantInvalidationSet*& descendants, SiblingInvalidationSet*& siblings)
