@@ -497,7 +497,13 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         m_workerReportingProxy.didCreateWorkerGlobalScope(globalScope());
         m_workerInspectorController = WorkerInspectorController::create(this);
 
-        globalScope()->scriptController()->initializeContextIfNeeded();
+        // TODO(nhiroki): Handle a case where the script controller fails to
+        // initialize the context.
+        if (globalScope()->scriptController()->initializeContextIfNeeded()) {
+            m_workerReportingProxy.didInitializeWorkerContext();
+            v8::HandleScope handleScope(isolate());
+            Platform::current()->workerContextCreated(globalScope()->scriptController()->context());
+        }
 
         setThreadState(lock, ThreadState::Running);
     }
@@ -511,12 +517,6 @@ void WorkerThread::initializeOnWorkerThread(std::unique_ptr<WorkerThreadStartupD
         // debugger tasks. performShutdownOnWorkerThread() will be called soon.
         prepareForShutdownOnWorkerThread();
         return;
-    }
-
-    if (globalScope()->scriptController()->isContextInitialized()) {
-        m_workerReportingProxy.didInitializeWorkerContext();
-        v8::HandleScope handleScope(isolate());
-        Platform::current()->workerContextCreated(globalScope()->scriptController()->context());
     }
 
     if (globalScope()->isWorkerGlobalScope()) {

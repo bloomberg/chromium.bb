@@ -274,6 +274,7 @@ TEST_P(WorkerThreadTest, AsyncTerminateAndThenSyncTerminate_WhileTaskIsRunning)
 TEST_P(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization)
 {
     EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
+    EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(1);
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
     EXPECT_CALL(*m_lifecycleObserver, contextDestroyed()).Times(1);

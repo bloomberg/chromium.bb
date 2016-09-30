@@ -63,7 +63,8 @@ public:
     // Prevents future JavaScript execution.
     void forbidExecution();
 
-    // Used by WorkerThread:
+    // Used by WorkerThread. Returns true if the context is successfully
+    // initialized or already initialized.
     bool initializeContextIfNeeded();
 
     // Used by WorkerGlobalScope:
