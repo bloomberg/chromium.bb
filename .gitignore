@@ -38,6 +38,7 @@ ctags
 /missing
 /stamp-h1
 /test-driver
+/tests/output/
 Makefile
 Makefile.in
 exec-fd-leak-checker

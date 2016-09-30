@@ -169,7 +169,15 @@ if ENABLE_CPP_TEST
 built_test_programs += cpp-compile-test
 endif
 
-TESTS = $(built_test_programs)
+AM_TESTS_ENVIRONMENT =							\
+	export WAYLAND_SCANNER='$(top_builddir)/wayland-scanner'	\
+	TEST_DATA_DIR='$(top_srcdir)/tests/data'			\
+	TEST_OUTPUT_DIR='$(top_builddir)/tests/output'			\
+	SED=$(SED)							\
+	;
+
+TESTS = $(built_test_programs)			\
+	tests/scanner-test.sh
 
 noinst_PROGRAMS =				\
 	$(built_test_programs)			\
@@ -246,4 +254,23 @@ os_wrappers_test_LDADD = libtest-runner.la
 
 exec_fd_leak_checker_SOURCES = tests/exec-fd-leak-checker.c
 exec_fd_leak_checker_LDADD = libtest-runner.la
+
+EXTRA_DIST += tests/scanner-test.sh			\
+	tests/data/example.xml				\
+	tests/data/example-client.h			\
+	tests/data/example-server.h			\
+	tests/data/example-code.c			\
+	tests/data/small.xml				\
+	tests/data/small-code.c				\
+	tests/data/small-client.h			\
+	tests/data/small-server.h			\
+	tests/data/small-code-core.c			\
+	tests/data/small-client-core.h			\
+	tests/data/small-server-core.h
+
+tests/scanner-test.sh: $(top_builddir)/wayland-scanner
+
+clean-local:
+	-rm -rf tests/output
+
 endif #ENABLE_LIBRARIES
