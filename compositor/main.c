@@ -63,11 +63,21 @@
 #include "compositor-fbdev.h"
 #include "compositor-x11.h"
 #include "compositor-wayland.h"
+#include "windowed-output-api.h"
 
 #define WINDOW_TITLE "Weston Compositor"
 
+struct wet_output_config {
+	int width;
+	int height;
+	int32_t scale;
+	uint32_t transform;
+};
+
 struct wet_compositor {
 	struct weston_config *config;
+	struct wet_output_config *parsed_options;
+	struct wl_listener pending_output_listener;
 };
 
 static FILE *weston_logfile = NULL;
@@ -423,6 +433,39 @@ static struct wet_compositor *
 to_wet_compositor(struct weston_compositor *compositor)
 {
 	return weston_compositor_get_user_data(compositor);
+}
+
+static void
+wet_set_pending_output_handler(struct weston_compositor *ec,
+			       wl_notify_func_t handler)
+{
+	struct wet_compositor *compositor = to_wet_compositor(ec);
+
+	compositor->pending_output_listener.notify = handler;
+	wl_signal_add(&ec->output_pending_signal, &compositor->pending_output_listener);
+}
+
+static struct wet_output_config *
+wet_init_parsed_options(struct weston_compositor *ec)
+{
+	struct wet_compositor *compositor = to_wet_compositor(ec);
+	struct wet_output_config *config;
+
+	config = zalloc(sizeof *config);
+
+	if (!config) {
+		perror("out of memory");
+		return NULL;
+	}
+
+	config->width = 0;
+	config->height = 0;
+	config->scale = 0;
+	config->transform = UINT32_MAX;
+
+	compositor->parsed_options = config;
+
+	return config;
 }
 
 WL_EXPORT struct weston_config *
@@ -938,6 +981,110 @@ static void
 handle_exit(struct weston_compositor *c)
 {
 	wl_display_terminate(c->wl_display);
+}
+
+static void
+wet_output_set_scale(struct weston_output *output,
+		     struct weston_config_section *section,
+		     int32_t default_scale,
+		     int32_t parsed_scale)
+{
+	int32_t scale = default_scale;
+
+	if (section)
+		weston_config_section_get_int(section, "scale", &scale, default_scale);
+
+	if (parsed_scale)
+		scale = parsed_scale;
+
+	weston_output_set_scale(output, scale);
+}
+
+/* UINT32_MAX is treated as invalid because 0 is a valid
+ * enumeration value and the parameter is unsigned
+ */
+static void
+wet_output_set_transform(struct weston_output *output,
+			 struct weston_config_section *section,
+			 uint32_t default_transform,
+			 uint32_t parsed_transform)
+{
+	char *t;
+	uint32_t transform = default_transform;
+
+	if (section) {
+		weston_config_section_get_string(section,
+						 "transform", &t, "normal");
+
+		if (weston_parse_transform(t, &transform) < 0) {
+			weston_log("Invalid transform \"%s\" for output %s\n",
+				   t, output->name);
+			transform = default_transform;
+		}
+		free(t);
+	}
+
+	if (parsed_transform != UINT32_MAX)
+		transform = parsed_transform;
+
+	weston_output_set_transform(output, transform);
+}
+
+static int
+wet_configure_windowed_output_from_config(struct weston_output *output,
+					  struct wet_output_config *defaults)
+{
+	const struct weston_windowed_output_api *api =
+		weston_windowed_output_get_api(output->compositor);
+
+	struct weston_config *wc = wet_get_config(output->compositor);
+	struct weston_config_section *section = NULL;
+	struct wet_compositor *compositor = to_wet_compositor(output->compositor);
+	struct wet_output_config *parsed_options = compositor->parsed_options;
+	int width = defaults->width;
+	int height = defaults->height;
+
+	assert(parsed_options);
+
+	if (!api) {
+		weston_log("Cannot use weston_windowed_output_api.\n");
+		return -1;
+	}
+
+	section = weston_config_get_section(wc, "output", "name", output->name);
+
+	if (section) {
+		char *mode;
+
+		weston_config_section_get_string(section, "mode", &mode, NULL);
+		if (!mode || sscanf(mode, "%dx%d", &width,
+				    &height) != 2) {
+			weston_log("Invalid mode for output %s. Using defaults.\n",
+				   output->name);
+			width = defaults->width;
+			height = defaults->height;
+		}
+		free(mode);
+	}
+
+	if (parsed_options->width)
+		width = parsed_options->width;
+
+	if (parsed_options->height)
+		height = parsed_options->height;
+
+	wet_output_set_scale(output, section, defaults->scale, parsed_options->scale);
+	wet_output_set_transform(output, section, defaults->transform, parsed_options->transform);
+
+	if (api->output_set_size(output, width, height) < 0) {
+		weston_log("Cannot configure output \"%s\" using weston_windowed_output_api.\n",
+			   output->name);
+		return -1;
+	}
+
+	weston_output_enable(output);
+
+	return 0;
 }
 
 static enum weston_drm_backend_output_mode
@@ -1659,6 +1806,7 @@ int main(int argc, char *argv[])
 	if (load_configuration(&config, noconfig, config_file) < 0)
 		goto out_signals;
 	user_data.config = config;
+	user_data.parsed_options = NULL;
 
 	section = weston_config_get_section(config, "core", NULL, NULL);
 
@@ -1682,6 +1830,8 @@ int main(int argc, char *argv[])
 		weston_log("fatal: failed to create compositor backend\n");
 		goto out;
 	}
+
+	weston_pending_output_coldplug(ec);
 
 	catch_signals();
 	segv_compositor = ec;
@@ -1766,6 +1916,9 @@ int main(int argc, char *argv[])
 	ret = ec->exit_code;
 
 out:
+	/* free(NULL) is valid, and it won't be NULL if it's used */
+	free(user_data.parsed_options);
+
 	weston_compositor_destroy(ec);
 
 out_signals:
