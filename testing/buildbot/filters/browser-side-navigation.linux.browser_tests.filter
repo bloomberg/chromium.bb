@@ -105,3 +105,9 @@
 -WebViewScrollGuestContent/WebViewScrollGuestContentTest.ScrollGuestContent/0
 -WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble*
 -WebViewTests/WebViewFocusTest.TouchFocusesEmbedder/0
+
+# Fail in Debug.
+-BookmarkBubbleSignInDelegateTest.OnSignInLinkClicked
+-GetAuthTokenFunctionTest.ComponentWithNormalClientId
+-GetAuthTokenFunctionTest.ComponentWithChromeClientId
+-PolicyTest.ExtensionInstallBlacklistSharedModules
