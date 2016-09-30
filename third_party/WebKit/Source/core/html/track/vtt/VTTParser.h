@@ -58,6 +58,8 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 };
 
+// Implementation of the WebVTT parser algorithm.
+// https://w3c.github.io/webvtt/#webvtt-parser-algorithm
 class VTTParser final : public GarbageCollectedFinalized<VTTParser> {
 public:
     enum ParseState {
@@ -87,7 +89,9 @@ public:
     }
     static inline bool isASpace(UChar c)
     {
-        // WebVTT space characters are U+0020 SPACE, U+0009 CHARACTER TABULATION (tab), U+000A LINE FEED (LF), U+000C FORM FEED (FF), and U+000D CARRIAGE RETURN    (CR).
+        // WebVTT space characters are U+0020 SPACE, U+0009 CHARACTER
+        // TABULATION (tab), U+000A LINE FEED (LF), U+000C FORM FEED (FF), and
+        // U+000D CARRIAGE RETURN (CR).
         return c == ' ' || c == '\t' || c == '\n' || c == '\f' || c == '\r';
     }
     static inline bool isValidSettingDelimiter(UChar c)

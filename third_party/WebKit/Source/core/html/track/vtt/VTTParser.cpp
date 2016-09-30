@@ -37,6 +37,7 @@
 #include "core/html/track/vtt/VTTScanner.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/SegmentedString.h"
+#include "wtf/text/CharacterNames.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -201,14 +202,20 @@ void VTTParser::flushPendingCue()
 
 bool VTTParser::hasRequiredFileIdentifier(const String& line)
 {
-    // A WebVTT file identifier consists of an optional BOM character,
-    // the string "WEBVTT" followed by an optional space or tab character,
-    // and any number of characters that are not line terminators ...
+    // WebVTT parser algorithm step 6:
+    // If input is more than six characters long but the first six characters
+    // do not exactly equal "WEBVTT", or the seventh character is not a U+0020
+    // SPACE character, a U+0009 CHARACTER TABULATION (tab) character, or a
+    // U+000A LINE FEED (LF) character, then abort these steps.
     if (!line.startsWith("WEBVTT"))
         return false;
-    if (line.length() > fileIdentifierLength && !isASpace(line[fileIdentifierLength]))
-        return false;
-
+    if (line.length() > fileIdentifierLength) {
+        UChar maybeSeparator = line[fileIdentifierLength];
+        // The line reader handles the line break characters, so we don't need
+        // to check for LF here.
+        if (maybeSeparator != spaceCharacter && maybeSeparator != tabulationCharacter)
+            return false;
+    }
     return true;
 }
 
