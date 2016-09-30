@@ -75,9 +75,7 @@ class TranslateRanker {
                         const std::string& country);
 
   // Called when the model download has completed.
-  void OnModelDataFetchComplete(int id,
-                                bool success,
-                                const std::string& model_data);
+  void ParseModel(int id, bool success, const std::string& model_data);
 
   // The translation ranker model.
   std::unique_ptr<chrome_intelligence::TranslateRankerModel> model_;
@@ -88,6 +86,10 @@ class TranslateRanker {
   // The next time before which no new attempts to download the model should be
   // attempted.
   base::Time next_earliest_download_time_;
+
+  // Tracks the last time the translate ranker attempted to download its model.
+  // Used for UMA reporting of timing.
+  base::Time download_start_time_;
 
   FRIEND_TEST_ALL_PREFIXES(TranslateRankerTest, CalculateScore);
 

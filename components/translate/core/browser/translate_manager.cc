@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -144,6 +145,11 @@ base::WeakPtr<TranslateManager> TranslateManager::GetWeakPtr() {
 }
 
 void TranslateManager::InitiateTranslation(const std::string& page_lang) {
+  // TODO(rogerm): Remove ScopedTracker below once crbug.com/646711 is closed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "646711 translate::TranslateManager::InitiateTranslation"));
+
   // Short-circuit out if not in a state where initiating translation makes
   // sense (this method may be called muhtiple times for a given page).
   if (!language_state_.page_needs_translation() ||

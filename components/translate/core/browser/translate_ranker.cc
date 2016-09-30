@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "components/translate/core/browser/proto/translate_ranker_model.pb.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -101,7 +102,7 @@ std::unique_ptr<TranslateRanker> TranslateRanker::CreateForTesting(
     const std::string& model_data) {
   std::unique_ptr<TranslateRanker> ranker(new TranslateRanker());
   CHECK(ranker != nullptr);
-  ranker->OnModelDataFetchComplete(0, true, model_data);
+  ranker->ParseModel(0, true, model_data);
   CHECK(ranker->model_ != nullptr);
   return ranker;
 }
@@ -124,6 +125,13 @@ bool TranslateRanker::ShouldOfferTranslation(
   }
 
   DCHECK(model_->has_logistic_regression_model());
+
+  SCOPED_UMA_HISTOGRAM_TIMER("Translate.Ranker.Timer.ShouldOfferTranslation");
+
+  // TODO(rogerm): Remove ScopedTracker below once crbug.com/646711 is closed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "646711 translate::TranslateRanker::ShouldOfferTranslation"));
 
   const std::string& app_locale =
       TranslateDownloadManager::GetInstance()->application_locale();
@@ -175,6 +183,7 @@ double TranslateRanker::CalculateScore(double accept_ratio,
                                        const std::string& dst_lang,
                                        const std::string& locale,
                                        const std::string& country) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Translate.Ranker.Timer.CalculateScore");
   DCHECK(model_ != nullptr);
   DCHECK(model_->has_logistic_regression_model());
   const chrome_intelligence::TranslateRankerModel::LogisticRegressionModel&
@@ -219,10 +228,10 @@ void TranslateRanker::FetchModelData() {
 
   DVLOG(2) << "TranslateRanker: Downloading model...";
 
+  download_start_time_ = base::Time::Now();
   bool result = model_fetcher_->Request(
       GetTranslateRankerURL(),
-      base::Bind(&TranslateRanker::OnModelDataFetchComplete,
-                 base::Unretained(this)));
+      base::Bind(&TranslateRanker::ParseModel, base::Unretained(this)));
 
   if (!result) {
     ReportModelStatus(MODEL_STATUS_DOWNLOAD_THROTTLED);
@@ -232,9 +241,14 @@ void TranslateRanker::FetchModelData() {
   }
 }
 
-void TranslateRanker::OnModelDataFetchComplete(int /* id */,
-                                               bool success,
-                                               const std::string& data) {
+void TranslateRanker::ParseModel(int /* id */,
+                                 bool success,
+                                 const std::string& data) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Translate.Ranker.Timer.DownloadModel",
+                             base::Time::Now() - download_start_time_);
+
+  SCOPED_UMA_HISTOGRAM_TIMER("Translate.Ranker.Timer.ParseModel");
+
   // We should not be here if the model has already been downloaded and parsed.
   DCHECK(model_ == nullptr);
 
