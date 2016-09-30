@@ -1592,13 +1592,6 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
     settings->gpu_rasterization_forced = true;
   }
 
-  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    if (num_draws_ < 2) {
-      PostSetNeedsRedrawRectToMainThread(invalid_rect_);
-      num_draws_++;
-    }
-  }
-
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
     if (num_draws_ == 2) {
       auto* pending_tree = host_impl->pending_tree();
@@ -1618,7 +1611,6 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
       EXPECT_EQ(
           pending_tiling->TilingDataForTesting().max_texture_size().width(),
           active_tiling->TilingDataForTesting().max_texture_size().width());
-      EndTest();
     }
   }
 
@@ -1626,6 +1618,13 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
     // On the second commit, resize the viewport.
     if (num_draws_ == 1) {
       layer_tree()->SetViewportSize(gfx::Size(400, 64));
+    }
+    if (num_draws_ < 2) {
+      layer_tree_host()->SetNeedsRedrawRect(invalid_rect_);
+      layer_tree_host()->SetNeedsCommit();
+      num_draws_++;
+    } else {
+      EndTest();
     }
   }
 
@@ -1641,8 +1640,7 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
 
 // As there's no pending tree in single-threaded case, this test should run
 // only for multi-threaded case.
-// Disabled because its timing out flakily. crbug.com/598491
-// MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
 
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
