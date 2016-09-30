@@ -1087,48 +1087,6 @@ wet_configure_windowed_output_from_config(struct weston_output *output,
 	return 0;
 }
 
-static enum weston_drm_backend_output_mode
-drm_configure_output(struct weston_compositor *c,
-		     bool use_current_mode,
-		     const char *name,
-		     struct weston_drm_backend_output_config *config)
-{
-	struct weston_config *wc = wet_get_config(c);
-	struct weston_config_section *section;
-	char *s;
-	int scale;
-	enum weston_drm_backend_output_mode mode =
-		WESTON_DRM_BACKEND_OUTPUT_PREFERRED;
-
-	section = weston_config_get_section(wc, "output", "name", name);
-	weston_config_section_get_string(section, "mode", &s, "preferred");
-	if (strcmp(s, "off") == 0) {
-		free(s);
-		return WESTON_DRM_BACKEND_OUTPUT_OFF;
-	}
-
-	if (use_current_mode || strcmp(s, "current") == 0) {
-		mode = WESTON_DRM_BACKEND_OUTPUT_CURRENT;
-	} else if (strcmp(s, "preferred") != 0) {
-		config->modeline = s;
-		s = NULL;
-	}
-	free(s);
-
-	weston_config_section_get_int(section, "scale", &scale, 1);
-	config->base.scale = scale >= 1 ? scale : 1;
-	weston_config_section_get_string(section, "transform", &s, "normal");
-	if (weston_parse_transform(s, &config->base.transform) < 0)
-		weston_log("Invalid transform \"%s\" for output %s\n",
-			   s, name);
-	free(s);
-
-	weston_config_section_get_string(section,
-					 "gbm-format", &config->gbm_format, NULL);
-	weston_config_section_get_string(section, "seat", &config->seat, "");
-	return mode;
-}
-
 static void
 configure_input_device(struct weston_compositor *compositor,
 		       struct libinput_device *device)
@@ -1151,6 +1109,65 @@ configure_input_device(struct weston_compositor *compositor,
 		libinput_device_config_tap_set_enabled(device,
 						       enable_tap);
 	}
+}
+
+static void
+drm_backend_output_configure(struct wl_listener *listener, void *data)
+{
+	struct weston_output *output = data;
+	struct weston_config *wc = wet_get_config(output->compositor);
+	struct weston_config_section *section;
+	const struct weston_drm_output_api *api = weston_drm_output_get_api(output->compositor);
+	enum weston_drm_backend_output_mode mode =
+		WESTON_DRM_BACKEND_OUTPUT_PREFERRED;
+
+	char *s;
+	char *modeline = NULL;
+	char *gbm_format = NULL;
+	char *seat = NULL;
+
+	if (!api) {
+		weston_log("Cannot use weston_drm_output_api.\n");
+		return;
+	}
+
+	section = weston_config_get_section(wc, "output", "name", output->name);
+	weston_config_section_get_string(section, "mode", &s, "preferred");
+
+	if (strcmp(s, "off") == 0) {
+		weston_output_disable(output);
+		free(s);
+		return;
+	} else if (strcmp(s, "current") == 0) {
+		mode = WESTON_DRM_BACKEND_OUTPUT_CURRENT;
+	} else if (strcmp(s, "preferred") != 0) {
+		modeline = s;
+		s = NULL;
+	}
+	free(s);
+
+	if (api->set_mode(output, mode, modeline) < 0) {
+		weston_log("Cannot configure an output using weston_drm_output_api.\n");
+		free(modeline);
+		return;
+	}
+	free(modeline);
+
+	wet_output_set_scale(output, section, 1, 0);
+	wet_output_set_transform(output, section, WL_OUTPUT_TRANSFORM_NORMAL, UINT32_MAX);
+
+	weston_config_section_get_string(section,
+					 "gbm-format", &gbm_format, NULL);
+
+	api->set_gbm_format(output, gbm_format);
+	free(gbm_format);
+
+	weston_config_section_get_string(section, "seat", &seat, "");
+
+	api->set_seat(output, seat);
+	free(seat);
+
+	weston_output_enable(output);
 }
 
 static int
@@ -1178,11 +1195,12 @@ load_drm_backend(struct weston_compositor *c,
 
 	config.base.struct_version = WESTON_DRM_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_drm_backend_config);
-	config.configure_output = drm_configure_output;
 	config.configure_device = configure_input_device;
 
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_DRM,
 					     &config.base);
+
+	wet_set_pending_output_handler(c, drm_backend_output_configure);
 
 	free(config.gbm_format);
 	free(config.seat_id);
