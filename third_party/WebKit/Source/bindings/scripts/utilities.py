@@ -183,8 +183,8 @@ class ComponentInfoProviderModules(ComponentInfoProvider):
 
     @property
     def callback_functions(self):
-        # TODO(lkawai): Make callback functions defined in core/ be usable in modules/.
-        return self._component_info_modules['callback_functions']
+        return dict(self._component_info_core['callback_functions'].items() +
+                    self._component_info_modules['callback_functions'].items())
 
     @property
     def specifier_for_export(self):

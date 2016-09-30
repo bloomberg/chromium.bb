@@ -370,6 +370,8 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
             return ()
         outputs = set()
         for callback_function_dict in callback_functions.itervalues():
+            if callback_function_dict['component_dir'] != self.target_component:
+                continue
             callback_function = callback_function_dict['callback_function']
             path = callback_function_dict['full_path']
             outputs.update(self.generate_code_internal(callback_function, path))

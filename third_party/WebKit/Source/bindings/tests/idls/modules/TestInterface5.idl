@@ -32,6 +32,7 @@
 // Also used as a target by TestObject
 
 enum TestEnumModules { "EnumModulesValue1", "EnumModulesValue2" };
+[ExperimentalCallbackFunction] callback VoidCallbackFunctionModules = void ();
 
 [
     ActiveScriptWrappable,
@@ -91,6 +92,10 @@ enum TestEnumModules { "EnumModulesValue1", "EnumModulesValue2" };
     // Union types
     void voidMethodBooleanOrDOMStringArg((boolean or DOMString) arg);
     void voidMethodDoubleOrDOMStringArg((double or DOMString) arg);
+
+    // Callback functions
+    void voidMethodVoidExperimentalCallbackFunction(VoidExperimentalCallbackFunction arg);
+    void voidMethodVoidCallbackFunctionModulesArg(VoidCallbackFunctionModules arg);
 
     iterable<any>;
 };

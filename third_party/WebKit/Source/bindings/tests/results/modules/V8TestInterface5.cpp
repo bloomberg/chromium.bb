@@ -15,9 +15,11 @@
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
 #include "bindings/core/v8/V8TestInterfaceEmpty.h"
+#include "bindings/core/v8/V8VoidExperimentalCallbackFunction.h"
 #include "bindings/modules/v8/BooleanOrString.h"
 #include "bindings/modules/v8/DoubleOrString.h"
 #include "bindings/modules/v8/V8TestInterface5.h"
+#include "bindings/modules/v8/V8VoidCallbackFunctionModules.h"
 #include "core/dom/Document.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/GetPtr.h"
@@ -608,6 +610,56 @@ static void voidMethodDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallb
     TestInterface5ImplementationV8Internal::voidMethodDoubleOrDOMStringArgMethod(info);
 }
 
+static void voidMethodVoidExperimentalCallbackFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+
+    if (UNLIKELY(info.Length() < 1)) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidExperimentalCallbackFunction", "TestInterface5", ExceptionMessages::notEnoughArguments(1, info.Length())));
+        return;
+    }
+
+    V8VoidExperimentalCallbackFunction* arg;
+    if (!info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidExperimentalCallbackFunction", "TestInterface5", "The callback provided as parameter 1 is not a function."));
+
+        return;
+    }
+    arg = V8VoidExperimentalCallbackFunction::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+
+    impl->voidMethodVoidExperimentalCallbackFunction(arg);
+}
+
+static void voidMethodVoidExperimentalCallbackFunctionMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterface5ImplementationV8Internal::voidMethodVoidExperimentalCallbackFunctionMethod(info);
+}
+
+static void voidMethodVoidCallbackFunctionModulesArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterface5Implementation* impl = V8TestInterface5::toImpl(info.Holder());
+
+    if (UNLIKELY(info.Length() < 1)) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidCallbackFunctionModulesArg", "TestInterface5", ExceptionMessages::notEnoughArguments(1, info.Length())));
+        return;
+    }
+
+    V8VoidCallbackFunctionModules* arg;
+    if (!info[0]->IsFunction()) {
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodVoidCallbackFunctionModulesArg", "TestInterface5", "The callback provided as parameter 1 is not a function."));
+
+        return;
+    }
+    arg = V8VoidCallbackFunctionModules::create(info.GetIsolate(), v8::Local<v8::Function>::Cast(info[0]));
+
+    impl->voidMethodVoidCallbackFunctionModulesArg(arg);
+}
+
+static void voidMethodVoidCallbackFunctionModulesArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestInterface5ImplementationV8Internal::voidMethodVoidCallbackFunctionModulesArgMethod(info);
+}
+
 static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestInterface5", "keys");
@@ -930,6 +982,8 @@ const V8DOMConfiguration::MethodConfiguration V8TestInterface5Methods[] = {
     {"alwaysExposedStaticMethod", TestInterface5ImplementationV8Internal::alwaysExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
     {"voidMethodBooleanOrDOMStringArg", TestInterface5ImplementationV8Internal::voidMethodBooleanOrDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"voidMethodDoubleOrDOMStringArg", TestInterface5ImplementationV8Internal::voidMethodDoubleOrDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"voidMethodVoidExperimentalCallbackFunction", TestInterface5ImplementationV8Internal::voidMethodVoidExperimentalCallbackFunctionMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
+    {"voidMethodVoidCallbackFunctionModulesArg", TestInterface5ImplementationV8Internal::voidMethodVoidCallbackFunctionModulesArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"keys", TestInterface5ImplementationV8Internal::keysMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"values", TestInterface5ImplementationV8Internal::valuesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"entries", TestInterface5ImplementationV8Internal::entriesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
