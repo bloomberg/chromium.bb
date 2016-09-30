@@ -27,7 +27,7 @@ ScriptWrappableVisitor::~ScriptWrappableVisitor()
 {
 }
 
-void ScriptWrappableVisitor::TracePrologue()
+void ScriptWrappableVisitor::TracePrologue(v8::EmbedderReachableReferenceReporter* reporter)
 {
     performCleanup();
 
@@ -36,7 +36,10 @@ void ScriptWrappableVisitor::TracePrologue()
     DCHECK(m_headersToUnmark.isEmpty());
     DCHECK(m_markingDeque.isEmpty());
     DCHECK(m_verifierDeque.isEmpty());
+    DCHECK(!m_reporter);
+    DCHECK(reporter);
     m_tracingInProgress = true;
+    m_reporter = reporter;
 }
 
 void ScriptWrappableVisitor::EnterFinalPause()
@@ -87,6 +90,7 @@ void ScriptWrappableVisitor::performCleanup()
     m_verifierDeque.clear();
     m_shouldCleanup = false;
     m_tracingInProgress = false;
+    m_reporter = nullptr;
 }
 
 void ScriptWrappableVisitor::scheduleIdleLazyCleanup()
@@ -195,7 +199,8 @@ bool ScriptWrappableVisitor::markWrapperHeader(HeapObjectHeader* header) const
 
 void ScriptWrappableVisitor::markWrappersInAllWorlds(const ScriptWrappable* scriptWrappable) const
 {
-    DOMWrapperWorld::markWrappersInAllWorlds(const_cast<ScriptWrappable*>(scriptWrappable), this);
+    DCHECK(m_reporter);
+    DOMWrapperWorld::markWrappersInAllWorlds(const_cast<ScriptWrappable*>(scriptWrappable), this, m_reporter);
 }
 
 void ScriptWrappableVisitor::traceWrappers(const ScopedPersistent<v8::Value>* scopedPersistent) const
@@ -210,12 +215,14 @@ void ScriptWrappableVisitor::traceWrappers(const ScopedPersistent<v8::Object>* s
 
 void ScriptWrappableVisitor::markWrapper(const v8::PersistentBase<v8::Value>* handle) const
 {
-    handle->RegisterExternalReference(m_isolate);
+    DCHECK(m_reporter);
+    handle->RegisterExternalReference(m_reporter);
 }
 
 void ScriptWrappableVisitor::markWrapper(const v8::PersistentBase<v8::Object>* handle) const
 {
-    handle->RegisterExternalReference(m_isolate);
+    DCHECK(m_reporter);
+    handle->RegisterExternalReference(m_reporter);
 }
 
 void ScriptWrappableVisitor::dispatchTraceWrappers(const ScriptWrappable* wrappable) const

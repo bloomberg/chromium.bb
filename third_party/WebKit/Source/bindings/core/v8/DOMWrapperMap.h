@@ -93,9 +93,9 @@ public:
         m_map.Remove(key);
     }
 
-    void markWrapper(KeyType* object)
+    void markWrapper(v8::EmbedderReachableReferenceReporter* reporter, KeyType* object)
     {
-        m_map.RegisterExternallyReferencedObject(object);
+        m_map.RegisterExternallyReferencedObject(reporter, object);
     }
 
 private:

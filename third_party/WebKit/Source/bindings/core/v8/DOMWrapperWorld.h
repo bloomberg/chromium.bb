@@ -71,7 +71,7 @@ public:
 
     static bool isolatedWorldsExist() { return isolatedWorldCount; }
     static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld>>& worlds);
-    static void markWrappersInAllWorlds(ScriptWrappable*, const WrapperVisitor*);
+    static void markWrappersInAllWorlds(ScriptWrappable*, const ScriptWrappableVisitor*, v8::EmbedderReachableReferenceReporter*);
     static void setWrapperReferencesInAllWorlds(const v8::Persistent<v8::Object>& parent, ScriptWrappable*, v8::Isolate*);
 
     static DOMWrapperWorld& world(v8::Local<v8::Context> context)

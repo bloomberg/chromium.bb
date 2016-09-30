@@ -99,7 +99,7 @@ public:
      */
     static void performCleanup(v8::Isolate*);
 
-    void TracePrologue() override;
+    void TracePrologue(v8::EmbedderReachableReferenceReporter*) override;
     void RegisterV8References(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers) override;
     void RegisterV8Reference(const std::pair<void*, void*>& internalFields);
     bool AdvanceTracing(double deadlineInMs, v8::EmbedderHeapTracer::AdvanceTracingActions) override;
@@ -216,6 +216,12 @@ private:
      */
     mutable WTF::Vector<HeapObjectHeader*> m_headersToUnmark;
     v8::Isolate* m_isolate;
+
+    /**
+     * A reporter instance set in TracePrologue and cleared in TraceEpilogue,
+     * which is used to report all reachable references back to v8.
+     */
+    v8::EmbedderReachableReferenceReporter* m_reporter = nullptr;
 };
 
 }
