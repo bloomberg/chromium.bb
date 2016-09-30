@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_math.h"
 #include "base/process/memory.h"
@@ -179,6 +180,7 @@ HostDiscardableSharedMemoryManager::HostDiscardableSharedMemoryManager()
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "HostDiscardableSharedMemoryManager",
       base::ThreadTaskRunnerHandle::Get());
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 HostDiscardableSharedMemoryManager::~HostDiscardableSharedMemoryManager() {
@@ -344,6 +346,24 @@ size_t HostDiscardableSharedMemoryManager::GetBytesAllocated() {
   base::AutoLock lock(lock_);
 
   return bytes_allocated_;
+}
+
+void HostDiscardableSharedMemoryManager::OnMemoryStateChange(
+    base::MemoryState state) {
+  switch (state) {
+    case base::MemoryState::NORMAL:
+      SetMemoryLimit(GetDefaultMemoryLimit());
+      break;
+    case base::MemoryState::THROTTLED:
+      SetMemoryLimit(0);
+      break;
+    case base::MemoryState::SUSPENDED:
+      // Note that SUSPENDED never occurs in the main browser process so far.
+      // Fall through.
+    case base::MemoryState::UNKNOWN:
+      NOTREACHED();
+      break;
+  }
 }
 
 void HostDiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
