@@ -1328,6 +1328,12 @@ public:
         CreateObjectURLBlob = 1604,
         CreateObjectURLMediaSource = 1605,
         CreateObjectURLMediaStream = 1606,
+        DocumentCreateTouchWindowNull = 1607,
+        DocumentCreateTouchWindowWrongType = 1608,
+        DocumentCreateTouchTargetNull = 1609,
+        DocumentCreateTouchTargetWrongType = 1610,
+        DocumentCreateTouchLessThanSevenArguments = 1611,
+        DocumentCreateTouchMoreThanSevenArguments = 1612,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

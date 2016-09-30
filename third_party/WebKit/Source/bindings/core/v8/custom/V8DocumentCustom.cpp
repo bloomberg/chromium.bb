@@ -40,6 +40,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLIFrameElement.h"
@@ -89,6 +90,32 @@ void V8Document::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& inf
     document->open(enteredDOMWindow(info.GetIsolate())->document(), exceptionState);
 
     v8SetReturnValue(info, info.Holder());
+}
+
+void V8Document::createTouchMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>& info, Document*)
+{
+    v8::Local<v8::Value> v8Window = info[0];
+    if (isUndefinedOrNull(v8Window)) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+            UseCounter::DocumentCreateTouchWindowNull);
+    } else if (!toDOMWindow(info.GetIsolate(), v8Window)) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+            UseCounter::DocumentCreateTouchWindowWrongType);
+    }
+
+    v8::Local<v8::Value> v8Target = info[1];
+    if (isUndefinedOrNull(v8Target)) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+            UseCounter::DocumentCreateTouchTargetNull);
+    } else if (!toEventTarget(info.GetIsolate(), v8Target)) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+            UseCounter::DocumentCreateTouchTargetWrongType);
+    }
+
+    if (info.Length() < 7) {
+        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
+            UseCounter::DocumentCreateTouchLessThanSevenArguments);
+    }
 }
 
 } // namespace blink

@@ -156,17 +156,18 @@ interface Document : Node {
     // Touch Events
     // http://rawgit.com/w3c/touch-events/v1-errata/touchevents.html#extensions-to-the-document-interface
     // FIXME: The arguments should not be optional.
-    [RuntimeEnabled=Touch, Measure, LegacyInterfaceTypeChecking] Touch createTouch([Default=Undefined] optional Window window,
-                                                                                   [Default=Undefined] optional EventTarget target,
-                                                                                   [Default=Undefined] optional long identifier,
-                                                                                   [Default=Undefined] optional unrestricted double pageX,
-                                                                                   [Default=Undefined] optional unrestricted double pageY,
-                                                                                   [Default=Undefined] optional unrestricted double screenX,
-                                                                                   [Default=Undefined] optional unrestricted double screenY,
-                                                                                   [Default=Undefined] optional unrestricted double radiusX,
-                                                                                   [Default=Undefined] optional unrestricted double radiusY,
-                                                                                   [Default=Undefined] optional unrestricted float rotationAngle,
-                                                                                   [Default=Undefined] optional unrestricted float force);
+    [RuntimeEnabled=Touch, Measure, LegacyInterfaceTypeChecking, Custom=CallPrologue]
+    Touch createTouch([Default=Undefined] optional Window window,
+                      [Default=Undefined] optional EventTarget target,
+                      [Default=Undefined] optional long identifier,
+                      [Default=Undefined] optional unrestricted double pageX,
+                      [Default=Undefined] optional unrestricted double pageY,
+                      [Default=Undefined] optional unrestricted double screenX,
+                      [Default=Undefined] optional unrestricted double screenY,
+                      [Default=Undefined] optional unrestricted double radiusX,
+                      [Default=Undefined] optional unrestricted double radiusY,
+                      [Default=Undefined] optional unrestricted float rotationAngle,
+                      [Default=Undefined] optional unrestricted float force);
     [RuntimeEnabled=Touch] TouchList createTouchList(Touch... touches);
 
     // Custom Elements

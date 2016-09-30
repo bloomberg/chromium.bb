@@ -5521,6 +5521,9 @@ Touch* Document::createTouch(DOMWindow* window, EventTarget* target, int identif
     if (!std::isfinite(force))
         force = 0;
 
+    if (radiusX || radiusY || rotationAngle || force)
+        UseCounter::count(*this, UseCounter::DocumentCreateTouchMoreThanSevenArguments);
+
     // FIXME: It's not clear from the documentation at
     // http://developer.apple.com/library/safari/#documentation/UserExperience/Reference/DocumentAdditionsReference/DocumentAdditions/DocumentAdditions.html
     // when this method should throw and nor is it by inspection of iOS behavior. It would be nice to verify any cases where it throws under iOS
