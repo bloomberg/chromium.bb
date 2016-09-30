@@ -172,6 +172,7 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
 
     if (output_)
       output_->insert(output_->end(), change_list.begin(), change_list.end());
+    NotifyLocalChangeObservers();
 
     return syncer::SyncError();
   }
@@ -180,9 +181,19 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
     return sync_data_to_return_;
   }
 
-  void AddLocalChangeObserver(syncer::LocalChangeObserver* observer) override {}
+  void AddLocalChangeObserver(syncer::LocalChangeObserver* observer) override {
+    local_change_observers_.AddObserver(observer);
+  }
   void RemoveLocalChangeObserver(
-      syncer::LocalChangeObserver* observer) override {}
+      syncer::LocalChangeObserver* observer) override {
+    local_change_observers_.RemoveObserver(observer);
+  }
+
+  void NotifyLocalChangeObservers() {
+    const syncer::SyncChange empty_change;
+    FOR_EACH_OBSERVER(syncer::LocalChangeObserver, local_change_observers_,
+                      OnLocalChange(NULL, empty_change));
+  }
 
   void FailProcessSyncChangesWith(const syncer::SyncError& error) {
     error_ = error;
@@ -196,6 +207,7 @@ class TestSyncProcessorStub : public syncer::SyncChangeProcessor {
   syncer::SyncError error_;
   syncer::SyncChangeList* output_;
   syncer::SyncDataList sync_data_to_return_;
+  base::ObserverList<syncer::LocalChangeObserver> local_change_observers_;
 };
 
 void ExpectAllOfChangesType(const syncer::SyncChangeList& changes,

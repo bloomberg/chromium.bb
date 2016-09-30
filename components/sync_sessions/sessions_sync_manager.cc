@@ -122,9 +122,14 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
   error_handler_ = std::move(error_handler);
   sync_processor_ = std::move(sync_processor);
 
-  lost_navigations_recorder_ =
-      base::MakeUnique<sync_sessions::LostNavigationsRecorder>();
-  sync_processor_->AddLocalChangeObserver(lost_navigations_recorder_.get());
+  // It's possible(via RebuildAssociations) for lost_navigations_recorder_ to
+  // persist between sync being stopped and started. If it did persist, it's
+  // already associated with |sync_processor|, so leave it alone.
+  if (!lost_navigations_recorder_.get()) {
+    lost_navigations_recorder_ =
+        base::MakeUnique<sync_sessions::LostNavigationsRecorder>();
+    sync_processor_->AddLocalChangeObserver(lost_navigations_recorder_.get());
+  }
 
   local_session_header_node_id_ = TabNodePool::kInvalidTabNodeID;
 
@@ -445,10 +450,10 @@ void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
   if (sync_processor_.get() && lost_navigations_recorder_.get()) {
     sync_processor_->RemoveLocalChangeObserver(
         lost_navigations_recorder_.get());
+    lost_navigations_recorder_.reset();
   }
   sync_processor_.reset(NULL);
   error_handler_.reset();
-  lost_navigations_recorder_.reset();
   session_tracker_.Clear();
   local_tab_map_.clear();
   local_tab_pool_.Clear();
