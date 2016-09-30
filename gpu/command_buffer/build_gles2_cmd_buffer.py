@@ -2564,6 +2564,8 @@ _FUNCTION_INFO = {
     'trace_level': 2,
   },
   'CopyBufferSubData': {
+    'decoder_func': 'DoCopyBufferSubData',
+    'unit_test': False,
     'unsafe': True,
   },
   'CoverageModulationCHROMIUM': {

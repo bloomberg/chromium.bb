@@ -942,6 +942,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLsizei width,
       GLsizei height);
 
+  // Wrapper for glCopyBufferSubData.
+  void DoCopyBufferSubData(GLenum readtarget,
+                           GLenum writetarget,
+                           GLintptr readoffset,
+                           GLintptr writeoffset,
+                           GLsizeiptr size);
+
   void DoCopyTextureCHROMIUM(GLuint source_id,
                              GLuint dest_id,
                              GLenum internal_format,
@@ -8970,6 +8977,16 @@ void GLES2DecoderImpl::DoCopyTexImageIfNeeded(Texture* texture,
       RestoreCurrentTextureBindings(&state_, textarget);
     }
   }
+}
+
+void GLES2DecoderImpl::DoCopyBufferSubData(GLenum readtarget,
+                                           GLenum writetarget,
+                                           GLintptr readoffset,
+                                           GLintptr writeoffset,
+                                           GLsizeiptr size) {
+  // Just delegate it. Some validation is actually done before this.
+  buffer_manager()->ValidateAndDoCopyBufferSubData(
+      &state_, readtarget, writetarget, readoffset, writeoffset, size);
 }
 
 bool GLES2DecoderImpl::PrepareTexturesForRender() {

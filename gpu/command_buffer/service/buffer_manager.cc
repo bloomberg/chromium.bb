@@ -10,6 +10,7 @@
 
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/numerics/safe_math.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -179,17 +180,17 @@ void Buffer::SetInfo(GLsizeiptr size,
   mapped_range_.reset(nullptr);
 }
 
-bool Buffer::CheckRange(
-    GLintptr offset, GLsizeiptr size) const {
-  int32_t end = 0;
-  return offset >= 0 && size >= 0 &&
-         offset <= std::numeric_limits<int32_t>::max() &&
-         size <= std::numeric_limits<int32_t>::max() &&
-         SafeAddInt32(offset, size, &end) && end <= size_;
+bool Buffer::CheckRange(GLintptr offset, GLsizeiptr size) const {
+  if (offset < 0 || offset > std::numeric_limits<int32_t>::max() ||
+      size < 0 || size > std::numeric_limits<int32_t>::max()) {
+    return false;
+  }
+  base::CheckedNumeric<int32_t> max = offset;
+  max += size;
+  return max.IsValid() && max.ValueOrDefault(0) <= size_;
 }
 
-bool Buffer::SetRange(
-    GLintptr offset, GLsizeiptr size, const GLvoid * data) {
+bool Buffer::SetRange(GLintptr offset, GLsizeiptr size, const GLvoid * data) {
   if (!CheckRange(offset, size)) {
     return false;
   }
@@ -201,8 +202,7 @@ bool Buffer::SetRange(
   return true;
 }
 
-const void* Buffer::GetRange(
-    GLintptr offset, GLsizeiptr size) const {
+const void* Buffer::GetRange(GLintptr offset, GLsizeiptr size) const {
   if (shadow_.empty()) {
     return NULL;
   }
@@ -437,7 +437,7 @@ void BufferManager::DoBufferData(
     const GLvoid* data) {
   // Stage the shadow buffer first if we are using a shadow buffer so that we
   // validate what we store internally.
-  const bool use_shadow = UseShadowBuffer(target, usage);
+  const bool use_shadow = UseShadowBuffer(buffer->initial_target(), usage);
   data = buffer->StageShadow(use_shadow, size, data);
 
   ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state, "glBufferData");
@@ -459,11 +459,19 @@ void BufferManager::DoBufferData(
 void BufferManager::ValidateAndDoBufferSubData(
   ContextState* context_state, GLenum target, GLintptr offset, GLsizeiptr size,
   const GLvoid * data) {
+  const char* func_name = "glBufferSubData";
+
   ErrorState* error_state = context_state->GetErrorState();
   Buffer* buffer = GetBufferInfoForTarget(context_state, target);
   if (!buffer) {
-    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, "glBufferSubData",
-                            "unknown buffer");
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, func_name,
+        "unknown buffer");
+    return;
+  }
+
+  if (buffer->GetMappedRange()) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
+        "buffer is mapped");
     return;
   }
 
@@ -486,6 +494,89 @@ void BufferManager::DoBufferSubData(
   if (!buffer->IsClientSideArray()) {
     glBufferSubData(target, offset, size, data);
   }
+}
+
+void BufferManager::ValidateAndDoCopyBufferSubData(
+    ContextState* context_state, GLenum readtarget, GLenum writetarget,
+    GLintptr readoffset, GLintptr writeoffset, GLsizeiptr size) {
+  const char* func_name = "glCopyBufferSubData";
+  ErrorState* error_state = context_state->GetErrorState();
+
+  Buffer* readbuffer = GetBufferInfoForTarget(context_state, readtarget);
+  if (!readbuffer) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
+        "no buffer is bound to readtarget");
+    return;
+  }
+  if (readbuffer->GetMappedRange()) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
+        "buffer bound to readtarget is mapped");
+    return;
+  }
+  if (!readbuffer->CheckRange(readoffset, size)) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, func_name,
+        "readoffset/size out of range");
+    return;
+  }
+
+  Buffer* writebuffer = GetBufferInfoForTarget(context_state, writetarget);
+  if (!writebuffer) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
+        "no buffer is bound to writetarget");
+    return;
+  }
+  if (writebuffer->GetMappedRange()) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
+        "buffer bound to writetarget is mapped");
+    return;
+  }
+  if (!writebuffer->CheckRange(writeoffset, size)) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, func_name,
+        "writeoffset/size out of range");
+    return;
+  }
+
+  if (readbuffer == writebuffer &&
+      ((writeoffset >= readoffset && writeoffset < readoffset + size) ||
+       (readoffset >= writeoffset && readoffset < writeoffset + size))) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_VALUE, func_name,
+        "read/write ranges overlap");
+    return;
+  }
+
+  if (!allow_buffers_on_multiple_targets_) {
+    if ((readbuffer->initial_target() == GL_ELEMENT_ARRAY_BUFFER &&
+         writebuffer->initial_target() != GL_ELEMENT_ARRAY_BUFFER) ||
+        (writebuffer->initial_target() == GL_ELEMENT_ARRAY_BUFFER &&
+         readbuffer->initial_target() != GL_ELEMENT_ARRAY_BUFFER)) {
+      ERRORSTATE_SET_GL_ERROR(error_state, GL_INVALID_OPERATION, func_name,
+          "copying between ELEMENT_ARRAY_BUFFER and another buffer type");
+      return;
+    }
+  }
+
+  DoCopyBufferSubData(readbuffer, readtarget, readoffset,
+                      writebuffer, writetarget, writeoffset, size);
+}
+
+void BufferManager::DoCopyBufferSubData(
+    Buffer* readbuffer,
+    GLenum readtarget,
+    GLintptr readoffset,
+    Buffer* writebuffer,
+    GLenum writetarget,
+    GLintptr writeoffset,
+    GLsizeiptr size) {
+  DCHECK(readbuffer);
+  DCHECK(writebuffer);
+  const bool use_shadow = UseShadowBuffer(writetarget, writebuffer->usage());
+  if (use_shadow) {
+    const void* data = readbuffer->GetRange(readoffset, size);
+    DCHECK(data);
+    writebuffer->SetRange(writeoffset, size, data);
+  }
+
+  glCopyBufferSubData(readtarget, writetarget, readoffset, writeoffset, size);
 }
 
 void BufferManager::ValidateAndDoGetBufferParameteri64v(

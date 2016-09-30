@@ -268,19 +268,6 @@ TEST_P(GLES2DecoderTest1, ColorMaskValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES2DecoderTest1, CopyBufferSubDataValidArgs) {
-  EXPECT_CALL(*gl_,
-              CopyBufferSubData(GL_ARRAY_BUFFER, GL_ARRAY_BUFFER, 3, 4, 5));
-  SpecializedSetup<cmds::CopyBufferSubData, 0>(true);
-  cmds::CopyBufferSubData cmd;
-  cmd.Init(GL_ARRAY_BUFFER, GL_ARRAY_BUFFER, 3, 4, 5);
-  decoder_->set_unsafe_es3_apis_enabled(true);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  decoder_->set_unsafe_es3_apis_enabled(false);
-  EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
-}
-
 TEST_P(GLES2DecoderTest1, CopyTexSubImage2DValidArgs) {
   EXPECT_CALL(*gl_, CopyTexSubImage2D(GL_TEXTURE_2D, 2, 3, 4, 5, 6, 7, 8));
   SpecializedSetup<cmds::CopyTexSubImage2D, 0>(true);

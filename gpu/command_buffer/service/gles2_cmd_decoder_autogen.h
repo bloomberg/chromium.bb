@@ -982,7 +982,7 @@ error::Error GLES2DecoderImpl::HandleCopyBufferSubData(
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCopyBufferSubData", "size < 0");
     return error::kNoError;
   }
-  glCopyBufferSubData(readtarget, writetarget, readoffset, writeoffset, size);
+  DoCopyBufferSubData(readtarget, writetarget, readoffset, writeoffset, size);
   return error::kNoError;
 }
 

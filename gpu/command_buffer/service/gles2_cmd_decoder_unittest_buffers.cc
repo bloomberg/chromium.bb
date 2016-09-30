@@ -551,5 +551,56 @@ TEST_P(GLES2DecoderTest, MapUnmapBufferInvalidTarget) {
   }
 }
 
+TEST_P(GLES3DecoderTest, CopyBufferSubDataValidArgs) {
+  const GLenum kTarget = GL_ELEMENT_ARRAY_BUFFER;
+  const GLsizeiptr kSize = 64;
+  const GLsizeiptr kHalfSize = kSize / 2;
+  const GLintptr kReadOffset = 0;
+  const GLintptr kWriteOffset = kHalfSize;
+  const GLsizeiptr kCopySize = 5;
+  const char kValue0 = 3;
+  const char kValue1 = 21;
+
+  // Set up the buffer so first half is kValue0 and second half is kValue1.
+  DoBindBuffer(kTarget, client_buffer_id_, kServiceBufferId);
+  DoBufferData(kTarget, kSize);
+  std::unique_ptr<char[]> data(new char[kHalfSize]);
+  memset(data.get(), kValue0, kHalfSize);
+  DoBufferSubData(kTarget, 0, kHalfSize, data.get());
+  memset(data.get(), kValue1, kHalfSize);
+  DoBufferSubData(kTarget, kHalfSize, kHalfSize, data.get());
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  Buffer* buffer = GetBuffer(client_buffer_id_);
+  EXPECT_TRUE(buffer);
+  const char* shadow_data = reinterpret_cast<const char*>(
+      buffer->GetRange(0, kSize));
+  EXPECT_TRUE(shadow_data);
+  // Verify the shadow data is initialized.
+  for (GLsizeiptr ii = 0; ii < kHalfSize; ++ii) {
+    EXPECT_EQ(kValue0, shadow_data[ii]);
+  }
+  for (GLsizeiptr ii = kHalfSize; ii < kSize; ++ii) {
+    EXPECT_EQ(kValue1, shadow_data[ii]);
+  }
+
+  EXPECT_CALL(*gl_, CopyBufferSubData(kTarget, kTarget,
+                                      kReadOffset, kWriteOffset, kCopySize));
+  cmds::CopyBufferSubData cmd;
+  cmd.Init(kTarget, kTarget, kReadOffset, kWriteOffset, kCopySize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  // Verify the shadow data is updated.
+  for (GLsizeiptr ii = 0; ii < kHalfSize; ++ii) {
+    EXPECT_EQ(kValue0, shadow_data[ii]);
+  }
+  for (GLsizeiptr ii = kHalfSize; ii < kSize; ++ii) {
+    if (ii >= kWriteOffset && ii < kWriteOffset + kCopySize) {
+      EXPECT_EQ(kValue0, shadow_data[ii]);
+    } else {
+      EXPECT_EQ(kValue1, shadow_data[ii]);
+    }
+  }
+}
+
 }  // namespace gles2
 }  // namespace gpu

@@ -248,18 +248,25 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   // Validates a glBufferData, and then calls DoBufferData if validation was
   // successful.
   void ValidateAndDoBufferData(
-    ContextState* context_state, GLenum target, GLsizeiptr size,
-    const GLvoid * data, GLenum usage);
+      ContextState* context_state, GLenum target, GLsizeiptr size,
+      const GLvoid * data, GLenum usage);
+
+  // Validates a glCopyBufferSubData, and then calls DoCopyBufferSubData if
+  // validation was successful.
+  void ValidateAndDoCopyBufferSubData(
+      ContextState* context_state, GLenum readtarget, GLenum writetarget,
+      GLintptr readoffset, GLintptr writeoffset, GLsizeiptr size);
 
   // Validates a glGetBufferParameteri64v, and then calls GetBufferParameteri64v
   // if validation was successful.
   void ValidateAndDoGetBufferParameteri64v(
-    ContextState* context_state, GLenum target, GLenum pname, GLint64* params);
+      ContextState* context_state, GLenum target, GLenum pname,
+      GLint64* params);
 
   // Validates a glGetBufferParameteriv, and then calls GetBufferParameteriv if
   // validation was successful.
   void ValidateAndDoGetBufferParameteriv(
-    ContextState* context_state, GLenum target, GLenum pname, GLint* params);
+      ContextState* context_state, GLenum target, GLenum pname, GLint* params);
 
   // Sets the target of a buffer. Returns false if the target can not be set.
   bool SetTarget(Buffer* buffer, GLenum target);
@@ -304,7 +311,7 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
   void StartTracking(Buffer* buffer);
   void StopTracking(Buffer* buffer);
 
-  // Does a glBufferSubData and updates the approriate accounting.
+  // Does a glBufferSubData and updates the appropriate accounting.
   // Assumes the values have already been validated.
   void DoBufferSubData(
       ErrorState* error_state,
@@ -314,7 +321,7 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
       GLsizeiptr size,
       const GLvoid* data);
 
-  // Does a glBufferData and updates the approprate accounting. Currently
+  // Does a glBufferData and updates the appropriate accounting.
   // Assumes the values have already been validated.
   void DoBufferData(
       ErrorState* error_state,
@@ -323,6 +330,17 @@ class GPU_EXPORT BufferManager : public base::trace_event::MemoryDumpProvider {
       GLsizeiptr size,
       GLenum usage,
       const GLvoid* data);
+
+  // Does a glCopyBufferSubData and updates the appropriate accounting.
+  // Assumes the values have already been validated.
+  void DoCopyBufferSubData(
+      Buffer* readbuffer,
+      GLenum readtarget,
+      GLintptr readoffset,
+      Buffer* writebuffer,
+      GLenum writetarget,
+      GLintptr writeoffset,
+      GLsizeiptr size);
 
   // Tests whether a shadow buffer needs to be used.
   bool UseShadowBuffer(GLenum target, GLenum usage);
