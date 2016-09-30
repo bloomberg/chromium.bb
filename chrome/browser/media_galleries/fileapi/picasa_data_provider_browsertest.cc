@@ -223,8 +223,12 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
                    base::Unretained(this)));
   }
 
-  const base::FilePath& test_folder_1_path() { return test_folder_1_.path(); }
-  const base::FilePath& test_folder_2_path() { return test_folder_2_.path(); }
+  const base::FilePath& test_folder_1_path() {
+    return test_folder_1_.GetPath();
+  }
+  const base::FilePath& test_folder_2_path() {
+    return test_folder_2_.GetPath();
+  }
 
   TestPicasaDataProvider* data_provider() const {
     return picasa_data_provider_.get();
