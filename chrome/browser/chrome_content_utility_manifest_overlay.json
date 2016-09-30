@@ -1,0 +1,14 @@
+{
+  "name": "exe:content_utility",
+  "capabilities": {
+    "provided": {
+      "browser": [
+        "mojom::ImageDecoder",
+        "mojom::ResourceUsageReporter",
+        "mojom::ShellHandler",
+        "net::interfaces::ProxyResolverFactory",
+        "safe_json::mojom::SafeJsonParser"
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "exe:content_utility",
+  "capabilities": {
+    "provided": {
+      "browser": [
+        "content::mojom::TestMojoService"
+      ]
+    }
+  }
+}

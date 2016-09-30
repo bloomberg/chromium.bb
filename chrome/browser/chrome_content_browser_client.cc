@@ -3039,7 +3039,11 @@ ChromeContentBrowserClient::GetServiceManifestOverlay(
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   int id = -1;
   if (name == content::kBrowserMojoApplicationName)
-    id = IDR_CONTENT_BROWSER_MANIFEST_OVERLAY;
+    id = IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY;
+  else if (name == content::kGpuMojoApplicationName)
+    id = IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY;
+  else if (name == content::kUtilityMojoApplicationName)
+    id = IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY;
   if (id == -1)
     return nullptr;
 

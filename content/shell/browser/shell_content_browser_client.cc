@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_names.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/test_mojo_app.h"
@@ -35,7 +37,9 @@
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
+#include "grit/shell_resources.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -196,6 +200,25 @@ void ShellContentBrowserClient::RegisterOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) {
   apps->insert(std::make_pair(kTestMojoAppUrl,
                               base::UTF8ToUTF16("Test Mojo App")));
+}
+
+std::unique_ptr<base::Value>
+ShellContentBrowserClient::GetServiceManifestOverlay(
+    const std::string& name) {
+  int id = -1;
+  if (name == content::kBrowserMojoApplicationName)
+    id = IDR_CONTENT_SHELL_BROWSER_MANIFEST_OVERLAY;
+  else if (name == content::kRendererMojoApplicationName)
+    id = IDR_CONTENT_SHELL_RENDERER_MANIFEST_OVERLAY;
+  else if (name == content::kUtilityMojoApplicationName)
+    id = IDR_CONTENT_SHELL_UTILITY_MANIFEST_OVERLAY;
+  if (id == -1)
+    return nullptr;
+
+  base::StringPiece manifest_contents =
+      ui::ResourceBundle::GetSharedInstance().GetRawDataResourceForScale(
+          id, ui::ScaleFactor::SCALE_FACTOR_NONE);
+  return base::JSONReader::Read(manifest_contents);
 }
 
 void ShellContentBrowserClient::AppendExtraCommandLineSwitches(

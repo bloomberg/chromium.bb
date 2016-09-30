@@ -4,7 +4,7 @@
   "display_name": "Content Utility",
   "capabilities": {
     "provided": {
-      "all_interfaces": [ "*" ]
+      "browser": [ "IPC::mojom::ChannelBootstrap" ]
     }
   }
 }

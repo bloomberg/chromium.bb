@@ -40,6 +40,8 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       StaticMojoApplicationMap* apps) override;
   void RegisterOutOfProcessMojoApplications(
       OutOfProcessMojoApplicationMap* apps) override;
+  std::unique_ptr<base::Value> GetServiceManifestOverlay(
+      const std::string& name) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   void ResourceDispatcherHostCreated() override;
@@ -51,7 +53,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
       std::unique_ptr<ClientCertificateDelegate> delegate) override;
-
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
   net::NetLog* GetNetLog() override;

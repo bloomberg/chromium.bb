@@ -592,7 +592,9 @@
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_H" file="resources\input_ime\ime_window_close_hover.png" type="BINDATA" />
       </if>
-      <include name="IDR_CONTENT_BROWSER_MANIFEST_OVERLAY" file="content_browser_manifest_overlay.json" type="BINDATA" />
+      <include name="IDR_CHROME_CONTENT_BROWSER_MANIFEST_OVERLAY" file="chrome_content_browser_manifest_overlay.json" type="BINDATA" />
+      <include name="IDR_CHROME_CONTENT_GPU_MANIFEST_OVERLAY" file="chrome_content_gpu_manifest_overlay.json" type="BINDATA" />
+      <include name="IDR_CHROME_CONTENT_UTILITY_MANIFEST_OVERLAY" file="chrome_content_utility_manifest_overlay.json" type="BINDATA" />
     </includes>
   </release>
 </grit>

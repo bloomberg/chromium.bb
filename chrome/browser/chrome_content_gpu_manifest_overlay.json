@@ -1,0 +1,11 @@
+{
+  "name": "exe:content_gpu",
+  "capabilities": {
+    "provided": {
+      "browser": [
+        "arc::mojom::VideoAcceleratorService",
+        "arc::mojom::VideoAcceleratorServiceClient"
+      ]
+    }
+  }
+}
