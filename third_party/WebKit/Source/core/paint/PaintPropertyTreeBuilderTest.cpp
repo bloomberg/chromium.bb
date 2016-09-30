@@ -1723,6 +1723,51 @@ TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollContentsTreeState)
     CHECK_EXACT_VISUAL_RECT(LayoutRect(0, 0, 500, 600), child, clipper);
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, OverflowScrollWithRoundedRect)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "  * { margin: 0; }"
+        "  ::-webkit-scrollbar {"
+        "    width: 13px;"
+        "    height: 13px;"
+        "  }"
+        "  #roundedBox {"
+        "    width: 200px;"
+        "    height: 200px;"
+        "    border-radius: 100px;"
+        "    background-color: red;"
+        "    border: 50px solid green;"
+        "    overflow: scroll;"
+        "  }"
+        "  #roundedBoxChild {"
+        "    width: 200px;"
+        "    height: 200px;"
+        "    background-color: orange;"
+        "  }"
+        "</style>"
+        "<div id='roundedBox'>"
+        "  <div id='roundedBoxChild'></div>"
+        "</div>"
+    );
+
+    LayoutObject& roundedBox = *document().getElementById("roundedBox")->layoutObject();
+    const ObjectPaintProperties* roundedBoxProperties = roundedBox.objectPaintProperties();
+    EXPECT_EQ(
+        FloatRoundedRect(
+            FloatRect(50, 50, 200, 200),
+            FloatSize(50, 50),
+            FloatSize(50, 50),
+            FloatSize(50, 50),
+            FloatSize(50, 50)),
+        roundedBoxProperties->innerBorderRadiusClip()->clipRect());
+
+    // Unlike the inner border radius clip, the overflow clip is inset by the scrollbars (13px).
+    EXPECT_EQ(FloatRoundedRect(50, 50, 187, 187), roundedBoxProperties->overflowClip()->clipRect());
+    EXPECT_EQ(frameContentClip(), roundedBoxProperties->innerBorderRadiusClip()->parent());
+    EXPECT_EQ(roundedBoxProperties->innerBorderRadiusClip(), roundedBoxProperties->overflowClip()->parent());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, CssClipContentsTreeState)
 {
     // This test verifies the tree builder correctly computes and records the property tree context

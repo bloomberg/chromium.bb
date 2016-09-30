@@ -365,20 +365,20 @@ void PaintPropertyTreeBuilder::updateOverflowClip(const LayoutObject& object, Pa
     } else if (box.hasOverflowClip() || box.styleRef().containsPaint() || (box.isSVGRoot() && toLayoutSVGRoot(box).shouldApplyViewportClip())) {
         clipRect = box.overflowClipRect(context.current.paintOffset);
     } else {
-        if (ObjectPaintProperties* properties = object.getMutableForPainting().objectPaintProperties())
+        if (ObjectPaintProperties* properties = object.getMutableForPainting().objectPaintProperties()) {
+            properties->clearInnerBorderRadiusClip();
             properties->clearOverflowClip();
+        }
         return;
     }
 
-    // TODO(pdr): We should create an entry in ObjectPaintProperties for border radius to ensure
-    // the owership model of properties is simple for incremental updates.
-    // This need to be in top-level block to hold the reference until we finish creating the normal clip node.
-    RefPtr<ClipPaintPropertyNode> borderRadiusClip;
     if (box.styleRef().hasBorderRadius()) {
         auto innerBorder = box.styleRef().getRoundedInnerBorderFor(
             LayoutRect(context.current.paintOffset, box.size()));
-        borderRadiusClip = ClipPaintPropertyNode::create(context.current.clip, context.current.transform, innerBorder);
-        context.current.clip = borderRadiusClip.get();
+        context.current.clip = object.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateInnerBorderRadiusClip(
+            context.current.clip, context.current.transform, innerBorder);
+    } else if (ObjectPaintProperties* properties = object.getMutableForPainting().objectPaintProperties()) {
+        properties->clearInnerBorderRadiusClip();
     }
 
     context.current.clip = object.getMutableForPainting().ensureObjectPaintProperties().createOrUpdateOverflowClip(

@@ -180,6 +180,8 @@ public:
             printer.addPropertyNode(cssClip, "CssClip (" + object.debugName() + ")");
         if (const ClipPaintPropertyNode* cssClipFixedPosition = paintProperties.cssClipFixedPosition())
             printer.addPropertyNode(cssClipFixedPosition, "CssClipFixedPosition (" + object.debugName() + ")");
+        if (const ClipPaintPropertyNode* innerBorderRadiusClip = paintProperties.innerBorderRadiusClip())
+            printer.addPropertyNode(innerBorderRadiusClip, "InnerBorderRadiusClip (" + object.debugName() + ")");
         if (const ClipPaintPropertyNode* overflowClip = paintProperties.overflowClip())
             printer.addPropertyNode(overflowClip, "OverflowClip (" + object.debugName() + ")");
     }
@@ -410,6 +412,8 @@ private:
             writePaintPropertyNode(*cssClipFixedPosition, &object, "cssClipFixedPosition");
         const ClipPaintPropertyNode* overflowClip = properties->overflowClip();
         if (overflowClip) {
+            if (const ClipPaintPropertyNode* innerBorderRadiusClip = properties->innerBorderRadiusClip())
+                writePaintPropertyNode(*innerBorderRadiusClip, &object, "innerBorderRadiusClip");
             writePaintPropertyNode(*overflowClip, &object, "overflowClip");
             if (object.isLayoutView() && overflowClip->parent())
                 writePaintPropertyNode(*overflowClip->parent(), nullptr, "rootClip");

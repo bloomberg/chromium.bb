@@ -92,10 +92,12 @@ public:
     // The hierarchy of the clip subtree created by a LayoutObject is as follows:
     // [ css clip ]
     // [ css clip fixed position]
-    // |
-    // +--- [ overflow clip ]
+    // [ inner border radius clip ] Clip created by a rounded border with overflow clip. This clip
+    //                              is not inset by scrollbars.
+    // +--- [ overflow clip ]       Clip created by overflow clip and is inset by the scrollbars.
     const ClipPaintPropertyNode* cssClip() const { return m_cssClip.get(); }
     const ClipPaintPropertyNode* cssClipFixedPosition() const { return m_cssClipFixedPosition.get(); }
+    const ClipPaintPropertyNode* innerBorderRadiusClip() const { return m_innerBorderRadiusClip.get(); }
     const ClipPaintPropertyNode* overflowClip() const { return m_overflowClip.get(); }
 
     // This is a complete set of property nodes that should be used as a starting point to paint
@@ -124,6 +126,7 @@ public:
     void clearEffect() { m_effect = nullptr; }
     void clearCssClip() { m_cssClip = nullptr; }
     void clearCssClipFixedPosition() { m_cssClipFixedPosition = nullptr; }
+    void clearInnerBorderRadiusClip() { m_innerBorderRadiusClip = nullptr; }
     void clearOverflowClip() { m_overflowClip = nullptr; }
     void clearPerspective() { m_perspective = nullptr; }
     void clearSvgLocalToBorderBoxTransform() { m_svgLocalToBorderBoxTransform = nullptr; }
@@ -149,6 +152,7 @@ public:
     template <typename... Args> EffectPaintPropertyNode* createOrUpdateEffect(Args&&... args) { return createOrUpdateProperty(m_effect, std::forward<Args>(args)...); }
     template <typename... Args> ClipPaintPropertyNode* createOrUpdateCssClip(Args&&... args) { return createOrUpdateProperty(m_cssClip, std::forward<Args>(args)...); }
     template <typename... Args> ClipPaintPropertyNode* createOrUpdateCssClipFixedPosition(Args&&... args) { return createOrUpdateProperty(m_cssClipFixedPosition, std::forward<Args>(args)...); }
+    template <typename... Args> ClipPaintPropertyNode* createOrUpdateInnerBorderRadiusClip(Args&&... args) { return createOrUpdateProperty(m_innerBorderRadiusClip, std::forward<Args>(args)...); }
     template <typename... Args> ClipPaintPropertyNode* createOrUpdateOverflowClip(Args&&... args) { return createOrUpdateProperty(m_overflowClip, std::forward<Args>(args)...); }
 
     void setLocalBorderBoxProperties(std::unique_ptr<LocalBorderBoxProperties> properties) { m_localBorderBoxProperties = std::move(properties); }
@@ -171,6 +175,7 @@ private:
     RefPtr<EffectPaintPropertyNode> m_effect;
     RefPtr<ClipPaintPropertyNode> m_cssClip;
     RefPtr<ClipPaintPropertyNode> m_cssClipFixedPosition;
+    RefPtr<ClipPaintPropertyNode> m_innerBorderRadiusClip;
     RefPtr<ClipPaintPropertyNode> m_overflowClip;
     RefPtr<TransformPaintPropertyNode> m_perspective;
     // TODO(pdr): Only LayoutSVGRoot needs this and it should be moved there.
