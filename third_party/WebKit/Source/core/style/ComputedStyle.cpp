@@ -193,6 +193,7 @@ static StyleRecalcChange diffPseudoStyles(const ComputedStyle& oldStyle, const C
 
 StyleRecalcChange ComputedStyle::stylePropagationDiff(const ComputedStyle* oldStyle, const ComputedStyle* newStyle)
 {
+    // If the style has changed from display none or to display none, then the layout subtree needs to be reattached
     if ((!oldStyle && newStyle) || (oldStyle && !newStyle))
         return Reattach;
 
