@@ -53,7 +53,7 @@ static const uint32_t vce_create[] = {
 	0x000000a0,
 	0x000000a0,
 	0x00000010,
-	0x00000000,
+	0x00000201,
 };
 
 static const uint32_t vce_rate_ctrl[] = {
