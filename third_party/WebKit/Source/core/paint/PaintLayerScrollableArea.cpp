@@ -954,7 +954,7 @@ IntRect PaintLayerScrollableArea::rectForHorizontalScrollbar(const IntRect& bord
     return IntRect(horizontalScrollbarStart(borderBoxRect.x()),
         borderBoxRect.maxY() - box().borderBottom() - horizontalScrollbar()->height(),
         borderBoxRect.width() - (box().borderLeft() + box().borderRight()) - scrollCorner.width(),
-        horizontalScrollbar()->height());
+        horizontalScrollbar()->scrollbarThickness());
 }
 
 IntRect PaintLayerScrollableArea::rectForVerticalScrollbar(const IntRect& borderBoxRect) const
@@ -966,7 +966,7 @@ IntRect PaintLayerScrollableArea::rectForVerticalScrollbar(const IntRect& border
 
     return IntRect(verticalScrollbarStart(borderBoxRect.x(), borderBoxRect.maxX()),
         borderBoxRect.y() + box().borderTop(),
-        verticalScrollbar()->width(),
+        verticalScrollbar()->scrollbarThickness(),
         borderBoxRect.height() - (box().borderTop() + box().borderBottom()) - scrollCorner.height());
 }
 
