@@ -7,13 +7,13 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/display_manager.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"

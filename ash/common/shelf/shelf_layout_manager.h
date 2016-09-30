@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/session/session_state_observer.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/wm/background_animator.h"
@@ -18,6 +17,7 @@
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_types.h"
 #include "ash/common/wm_activation_observer.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"

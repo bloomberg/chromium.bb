@@ -1391,6 +1391,7 @@ split_static_library("ui") {
       "//ash",
       "//ash:ash_with_content",
       "//ash/common/strings",
+      "//ash/public/cpp",
       "//ash/public/interfaces",
       "//components/user_manager",
       "//ui/app_list/presenter",

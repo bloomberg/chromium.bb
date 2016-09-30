@@ -4,11 +4,11 @@
 
 #include "ash/shared/immersive_fullscreen_controller.h"
 
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shared/immersive_fullscreen_controller_delegate.h"
 #include "ash/shell.h"

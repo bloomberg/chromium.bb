@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/wm/background_animator.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 

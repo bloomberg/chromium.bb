@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ash/common/shelf/shelf_types.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/strings/string16.h"
 
 namespace views {

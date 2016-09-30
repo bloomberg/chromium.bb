@@ -6,7 +6,6 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
@@ -21,6 +20,7 @@
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/system/tray/tray_popup_label_button.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/bind.h"
 #include "grit/ash_resources.h"

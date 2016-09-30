@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/wm/cursor_manager_chromeos.h"
 #include "ash/wm/system_modal_container_event_filter_delegate.h"
 #include "base/gtest_prod_util.h"

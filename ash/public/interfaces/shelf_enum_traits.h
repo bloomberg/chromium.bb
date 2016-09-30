@@ -5,7 +5,7 @@
 #ifndef ASH_PUBLIC_INTERFACES_SHELF_ENUM_TRAITS_H_
 #define ASH_PUBLIC_INTERFACES_SHELF_ENUM_TRAITS_H_
 
-#include "ash/common/shelf/shelf_types.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 
 namespace mojo {

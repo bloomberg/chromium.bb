@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 
 mojom = "//ash/public/interfaces/shelf.mojom"
-public_headers = [ "//ash/common/shelf/shelf_types.h" ]
+public_headers = [ "//ash/public/cpp/shelf_types.h" ]
 traits_headers = [ "//ash/public/interfaces/shelf_enum_traits.h" ]
 public_deps = [
-  "//ash",
+  "//ash/public/cpp",
 ]
 type_mappings = [
   "ash.mojom.ShelfAlignment=ash::ShelfAlignment",

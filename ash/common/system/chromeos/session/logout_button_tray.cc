@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
@@ -16,6 +15,7 @@
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/system/user/login_status.h"
 #include "ash/common/wm_shell.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/logging.h"
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"

@@ -5,12 +5,12 @@
 #include "ash/common/system/overview/overview_button_tray.h"
 
 #include "ash/common/login_status.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/display_manager.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"

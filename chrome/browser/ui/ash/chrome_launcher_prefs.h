@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/common/shelf/shelf_types.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
 

@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
-#include "ash/common/shelf/shelf_types.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/observer_list.h"
 
 namespace gfx {

@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_observer.h"
 #include "ash/common/shell_observer.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"

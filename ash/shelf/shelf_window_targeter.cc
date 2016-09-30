@@ -6,9 +6,9 @@
 
 #include "ash/aura/wm_window_aura.h"
 #include "ash/common/shelf/shelf_constants.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/shelf_types.h"
 
 namespace ash {
 

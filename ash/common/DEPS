@@ -2,6 +2,7 @@ include_rules = [
   "-ash",
   "+ash/ash_export.h",
   "+ash/common",
+  "+ash/public",
   "+ash/resources",
   "+ash/shared",
   "+ui",

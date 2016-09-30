@@ -6,7 +6,7 @@
 #define ASH_COMMON_SYSTEM_STATUS_AREA_WIDGET_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_types.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/accessible_pane_view.h"

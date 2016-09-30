@@ -4,10 +4,10 @@
 
 #include "ash/common/system/tray/tray_item_view.h"
 
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/controls/image_view.h"

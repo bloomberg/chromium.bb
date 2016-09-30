@@ -6,8 +6,8 @@
 #define ASH_COMMON_SHELF_WM_SHELF_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_types.h"
 #include "ash/common/wm/background_animator.h"
+#include "ash/public/cpp/shelf_types.h"
 
 namespace ash {
 
