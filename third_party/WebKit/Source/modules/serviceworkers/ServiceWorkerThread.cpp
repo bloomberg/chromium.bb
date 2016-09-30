@@ -45,7 +45,7 @@ std::unique_ptr<ServiceWorkerThread> ServiceWorkerThread::create(PassRefPtr<Work
 
 ServiceWorkerThread::ServiceWorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
     : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy)
-    , m_workerBackingThread(WorkerBackingThread::create("ServiceWorker Thread", BlinkGC::MainThreadHeapMode))
+    , m_workerBackingThread(WorkerBackingThread::create("ServiceWorker Thread", BlinkGC::PerThreadHeapMode))
 {
 }
 
