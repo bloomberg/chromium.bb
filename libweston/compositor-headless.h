@@ -34,19 +34,13 @@ extern "C" {
 
 #include "compositor.h"
 
-#define WESTON_HEADLESS_BACKEND_CONFIG_VERSION 1
+#define WESTON_HEADLESS_BACKEND_CONFIG_VERSION 2
 
 struct weston_headless_backend_config {
 	struct weston_backend_config base;
 
-	int width;
-	int height;
-
 	/** Whether to use the pixman renderer instead of the OpenGL ES renderer. */
 	int use_pixman;
-
-	uint32_t transform;
-	bool no_outputs;
 };
 
 #ifdef  __cplusplus

@@ -26,6 +26,7 @@
 
 #include "config.h"
 
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +38,7 @@
 #include "shared/helpers.h"
 #include "pixman-renderer.h"
 #include "presentation-time-server-protocol.h"
+#include "windowed-output-api.h"
 
 struct headless_backend {
 	struct weston_backend base;
@@ -105,12 +107,14 @@ headless_output_repaint(struct weston_output *output_base,
 	return 0;
 }
 
-static void
-headless_output_destroy(struct weston_output *output_base)
+static int
+headless_output_disable(struct weston_output *base)
 {
-	struct headless_output *output = to_headless_output(output_base);
-	struct headless_backend *b =
-			to_headless_backend(output->base.compositor);
+	struct headless_output *output = to_headless_output(base);
+	struct headless_backend *b = to_headless_backend(base->compositor);
+
+	if (!output->base.enabled)
+		return 0;
 
 	wl_event_source_remove(output->finish_frame_timer);
 
@@ -120,71 +124,123 @@ headless_output_destroy(struct weston_output *output_base)
 		free(output->image_buf);
 	}
 
+	return 0;
+}
+
+static void
+headless_output_destroy(struct weston_output *base)
+{
+	struct headless_output *output = to_headless_output(base);
+
+	headless_output_disable(&output->base);
 	weston_output_destroy(&output->base);
 
 	free(output);
-
-	return;
 }
 
 static int
-headless_backend_create_output(struct headless_backend *b,
-			       struct weston_headless_backend_config *config)
+headless_output_enable(struct weston_output *base)
 {
-	struct weston_compositor *c = b->compositor;
-	struct headless_output *output;
+	struct headless_output *output = to_headless_output(base);
+	struct headless_backend *b = to_headless_backend(base->compositor);
 	struct wl_event_loop *loop;
 
-	output = zalloc(sizeof *output);
-	if (output == NULL)
-		return -1;
-
-	output->mode.flags =
-		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
-	output->mode.width = config->width;
-	output->mode.height = config->height;
-	output->mode.refresh = 60000;
-	wl_list_init(&output->base.mode_list);
-	wl_list_insert(&output->base.mode_list, &output->mode.link);
-
-	output->base.current_mode = &output->mode;
-	weston_output_init(&output->base, c, 0, 0, config->width,
-			   config->height, config->transform, 1);
-
-	output->base.make = "weston";
-	output->base.model = "headless";
-
-	loop = wl_display_get_event_loop(c->wl_display);
+	loop = wl_display_get_event_loop(b->compositor->wl_display);
 	output->finish_frame_timer =
 		wl_event_loop_add_timer(loop, finish_frame_handler, output);
 
-	output->base.start_repaint_loop = headless_output_start_repaint_loop;
-	output->base.repaint = headless_output_repaint;
-	output->base.destroy = headless_output_destroy;
-	output->base.assign_planes = NULL;
-	output->base.set_backlight = NULL;
-	output->base.set_dpms = NULL;
-	output->base.switch_mode = NULL;
-
 	if (b->use_pixman) {
-		output->image_buf = malloc(config->width * config->height * 4);
+		output->image_buf = malloc(output->base.current_mode->width *
+					   output->base.current_mode->height * 4);
 		if (!output->image_buf)
-			return -1;
+			goto err_malloc;
 
 		output->image = pixman_image_create_bits(PIXMAN_x8r8g8b8,
-							 config->width,
-							 config->height,
+							 output->base.current_mode->width,
+							 output->base.current_mode->height,
 							 output->image_buf,
-							 config->width * 4);
+							 output->base.current_mode->width * 4);
 
 		if (pixman_renderer_output_create(&output->base) < 0)
-			return -1;
+			goto err_renderer;
 
 		pixman_renderer_output_set_buffer(&output->base,
 						  output->image);
 	}
 
-	weston_compositor_add_output(c, &output->base);
+	return 0;
+
+err_renderer:
+	pixman_image_unref(output->image);
+	free(output->image_buf);
+err_malloc:
+	wl_event_source_remove(output->finish_frame_timer);
+
+	return -1;
+}
+
+static int
+headless_output_set_size(struct weston_output *base,
+			 int width, int height)
+{
+	struct headless_output *output = to_headless_output(base);
+	int output_width, output_height;
+
+	/* We can only be called once. */
+	assert(!output->base.current_mode);
+
+	/* Make sure we have scale set. */
+	assert(output->base.scale);
+
+	output_width = width * output->base.scale;
+	output_height = height * output->base.scale;
+
+	output->mode.flags =
+		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
+	output->mode.width = output_width;
+	output->mode.height = output_height;
+	output->mode.refresh = 60000;
+	wl_list_init(&output->base.mode_list);
+	wl_list_insert(&output->base.mode_list, &output->mode.link);
+
+	output->base.current_mode = &output->mode;
+	output->base.make = "weston";
+	output->base.model = "headless";
+
+	/* XXX: Calculate proper size. */
+	output->base.mm_width = width;
+	output->base.mm_height = height;
+
+	output->base.start_repaint_loop = headless_output_start_repaint_loop;
+	output->base.repaint = headless_output_repaint;
+	output->base.assign_planes = NULL;
+	output->base.set_backlight = NULL;
+	output->base.set_dpms = NULL;
+	output->base.switch_mode = NULL;
+
+	return 0;
+}
+
+static int
+headless_output_create(struct weston_compositor *compositor,
+		       const char *name)
+{
+	struct headless_output *output;
+
+	/* name can't be NULL. */
+	assert(name);
+
+	output = zalloc(sizeof *output);
+	if (output == NULL)
+		return -1;
+
+	output->base.name = strdup(name);
+	output->base.destroy = headless_output_destroy;
+	output->base.disable = headless_output_disable;
+	output->base.enable = headless_output_enable;
+
+	weston_output_init_pending(&output->base, compositor);
+	weston_compositor_add_pending_output(&output->base, compositor);
 
 	return 0;
 }
@@ -204,11 +260,17 @@ headless_destroy(struct weston_compositor *ec)
 	free(b);
 }
 
+static const struct weston_windowed_output_api api = {
+	headless_output_set_size,
+	headless_output_create,
+};
+
 static struct headless_backend *
 headless_backend_create(struct weston_compositor *compositor,
 			struct weston_headless_backend_config *config)
 {
 	struct headless_backend *b;
+	int ret;
 
 	b = zalloc(sizeof *b);
 	if (b == NULL)
@@ -226,15 +288,19 @@ headless_backend_create(struct weston_compositor *compositor,
 		pixman_renderer_init(compositor);
 	}
 
-	if (!config->no_outputs) {
-		if (headless_backend_create_output(b, config) < 0)
-			goto err_input;
-	}
-
 	if (!b->use_pixman && noop_renderer_init(compositor) < 0)
 		goto err_input;
 
 	compositor->backend = &b->base;
+
+	ret = weston_plugin_api_register(compositor, WESTON_WINDOWED_OUTPUT_API_NAME,
+					 &api, sizeof(api));
+
+	if (ret < 0) {
+		weston_log("Failed to register output API.\n");
+		goto err_input;
+	}
+
 	return b;
 
 err_input:
