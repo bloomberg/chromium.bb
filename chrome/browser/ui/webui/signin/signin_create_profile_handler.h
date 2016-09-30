@@ -57,6 +57,8 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
                            CustodianHasAuthError);
   FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
                            NotAllowedToCreateSupervisedUser);
+  FRIEND_TEST_ALL_PREFIXES(SigninCreateProfileHandlerTest,
+                           CreateProfileWithForceSignin);
 #endif
 
   // WebUIMessageHandler implementation.
@@ -139,6 +141,9 @@ class SigninCreateProfileHandler : public content::WebUIMessageHandler,
   // Opens a new window for |profile|.
   virtual void OpenNewWindowForProfile(Profile* profile,
                                        Profile::CreateStatus status);
+
+  // Opens a new signin dialog for |profile|.
+  virtual void OpenSigninDialogForProfile(Profile* profile);
 
   // This callback is run after a new browser (but not the window) has been
   // created for the new profile.

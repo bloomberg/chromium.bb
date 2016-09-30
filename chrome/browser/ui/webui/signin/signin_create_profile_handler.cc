@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -366,7 +367,8 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
   dict.SetString("name", profile->GetPrefs()->GetString(prefs::kProfileName));
   dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
 
-  bool open_new_window = true;
+  bool is_force_signin_enabled = signin::IsForceSigninEnabled();
+  bool open_new_window = !is_force_signin_enabled;
 
 #if defined(ENABLE_SUPERVISED_USERS)
   // If the new profile is a supervised user, instead of opening a new window
@@ -374,8 +376,12 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
   // dialog. If we are importing an existing supervised profile or creating a
   // new non-supervised user profile we don't show any confirmation, so open
   // the new window now.
-  open_new_window = profile_creation_type_ != SUPERVISED_PROFILE_CREATION;
-  dict.SetBoolean("showConfirmation", !open_new_window);
+
+  open_new_window =
+      open_new_window && profile_creation_type_ != SUPERVISED_PROFILE_CREATION;
+
+  dict.SetBoolean("showConfirmation",
+                  profile_creation_type_ == SUPERVISED_PROFILE_CREATION);
 
   bool is_supervised = profile_creation_type_ == SUPERVISED_PROFILE_CREATION ||
                        profile_creation_type_ == SUPERVISED_PROFILE_IMPORT;
@@ -398,6 +404,8 @@ void SigninCreateProfileHandler::CreateShortcutAndShowSuccess(
     // Opening the new window must be the last action, after all callbacks
     // have been run, to give them a chance to initialize the profile.
     OpenNewWindowForProfile(profile, Profile::CREATE_STATUS_INITIALIZED);
+  } else if (is_force_signin_enabled) {
+    OpenSigninDialogForProfile(profile);
   }
   profile_creation_type_ = NO_CREATION_IN_PROGRESS;
 }
@@ -412,6 +420,14 @@ void SigninCreateProfileHandler::OpenNewWindowForProfile(
       true,  // Create a first run window.
       profile,
       status);
+}
+
+void SigninCreateProfileHandler::OpenSigninDialogForProfile(Profile* profile) {
+// TODO(zmin): Remove the switcher once the UserManager API is finished on Mac.
+#if !defined(OS_MACOSX)
+  UserManager::ShowSigninDialog(web_ui()->GetWebContents()->GetBrowserContext(),
+                                profile->GetPath());
+#endif
 }
 
 void SigninCreateProfileHandler::ShowProfileCreationError(

@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -131,6 +132,10 @@ class TestSigninCreateProfileHandler : public SigninCreateProfileHandler {
   // the newly created/imported profile is made.
   MOCK_METHOD2(OpenNewWindowForProfile,
                void(Profile* profile, Profile::CreateStatus status));
+
+  // Mock this method so that we don't actually open the signin dialog during
+  // the test.
+  MOCK_METHOD1(OpenSigninDialogForProfile, void(Profile* profile));
 
   // We don't actually need to register supervised users in the test. Mock this
   // method to fake the registration part.
@@ -341,6 +346,9 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfile) {
   // Expect a new browser window for the new profile to be opened.
   EXPECT_CALL(*handler(), OpenNewWindowForProfile(_, _));
 
+  // Expect no signin dialog opened for the new profile.
+  EXPECT_CALL(*handler(), OpenSigninDialogForProfile(_)).Times(0);
+
   // Create a non-supervised profile.
   base::ListValue list_args;
   list_args.AppendString(kTestProfileName);
@@ -369,6 +377,57 @@ TEST_F(SigninCreateProfileHandlerTest, CreateProfile) {
   bool is_supervised;
   ASSERT_TRUE(profile->GetBoolean("isSupervised", &is_supervised));
   ASSERT_FALSE(is_supervised);
+}
+
+TEST_F(SigninCreateProfileHandlerTest, CreateProfileWithForceSignin) {
+  g_browser_process->local_state()->SetBoolean(prefs::kForceBrowserSignin,
+                                               true);
+  ASSERT_TRUE(signin::IsForceSigninEnabled());
+
+  // Expect the call to create the profile.
+  EXPECT_CALL(*handler(), DoCreateProfile(_, _, _, _, _))
+      .WillOnce(Invoke(handler(),
+                       &TestSigninCreateProfileHandler::RealDoCreateProfile));
+
+  // Expect no calls to register a supervised user.
+  EXPECT_CALL(*handler(), RegisterSupervisedUser(_, _, _, _)).Times(0);
+
+  // Expect no new browser window for the new profile.
+  EXPECT_CALL(*handler(), OpenNewWindowForProfile(_, _)).Times(0);
+
+  // Expect a signin dialog opened for the new profile.
+  EXPECT_CALL(*handler(), OpenSigninDialogForProfile(_)).Times(1);
+
+  base::ListValue list_args;
+  list_args.AppendString(kTestProfileName);
+  list_args.AppendString(profiles::GetDefaultAvatarIconUrl(0));
+  list_args.AppendBoolean(false);  // create_shortcut
+  list_args.AppendBoolean(false);  // is_supervised
+  handler()->CreateProfile(&list_args);
+
+  // Expect a JS callbacks with the new profile information.
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+
+  EXPECT_EQ(kTestWebUIResponse, web_ui()->call_data()[0]->function_name());
+
+  std::string callback_name;
+  ASSERT_TRUE(web_ui()->call_data()[0]->arg1()->GetAsString(&callback_name));
+  EXPECT_EQ("create-profile-success", callback_name);
+
+  const base::DictionaryValue* profile;
+  ASSERT_TRUE(web_ui()->call_data()[0]->arg2()->GetAsDictionary(&profile));
+  std::string profile_name;
+  ASSERT_TRUE(profile->GetString("name", &profile_name));
+  EXPECT_NE("", profile_name);
+  std::string profile_path;
+  ASSERT_TRUE(profile->GetString("filePath", &profile_path));
+  EXPECT_NE("", profile_path);
+  bool is_supervised;
+  ASSERT_TRUE(profile->GetBoolean("isSupervised", &is_supervised));
+  ASSERT_FALSE(is_supervised);
+  bool show_confirmation;
+  ASSERT_TRUE(profile->GetBoolean("showConfirmation", &show_confirmation));
+  ASSERT_FALSE(show_confirmation);
 }
 
 #if defined(ENABLE_SUPERVISED_USERS)
