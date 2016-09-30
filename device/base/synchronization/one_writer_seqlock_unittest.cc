@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/one_writer_seqlock.h"
+#include "device/base/synchronization/one_writer_seqlock.h"
 
 #include <stdlib.h>
 
@@ -13,7 +13,7 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace base {
+namespace device {
 
 // Basic test to make sure that basic operation works correctly.
 
@@ -21,21 +21,20 @@ struct TestData {
   unsigned a, b, c;
 };
 
-class BasicSeqLockTestThread : public PlatformThread::Delegate {
+class BasicSeqLockTestThread : public base::PlatformThread::Delegate {
  public:
   BasicSeqLockTestThread() {}
 
-  void Init(
-      content::OneWriterSeqLock* seqlock,
-      TestData* data,
-      base::AtomicRefCount* ready) {
+  void Init(OneWriterSeqLock* seqlock,
+            TestData* data,
+            base::AtomicRefCount* ready) {
     seqlock_ = seqlock;
     data_ = data;
     ready_ = ready;
   }
   void ThreadMain() override {
-    while (AtomicRefCountIsZero(ready_)) {
-      PlatformThread::YieldCurrentThread();
+    while (base::AtomicRefCountIsZero(ready_)) {
+      base::PlatformThread::YieldCurrentThread();
     }
 
     for (unsigned i = 0; i < 1000; ++i) {
@@ -50,11 +49,11 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
       EXPECT_EQ(copy.c, copy.b + copy.a);
     }
 
-    AtomicRefCountDec(ready_);
+    base::AtomicRefCountDec(ready_);
   }
 
  private:
-  content::OneWriterSeqLock* seqlock_;
+  OneWriterSeqLock* seqlock_;
   TestData* data_;
   base::AtomicRefCount* ready_;
 
@@ -67,20 +66,20 @@ class BasicSeqLockTestThread : public PlatformThread::Delegate {
 #define MAYBE_ManyThreads ManyThreads
 #endif
 TEST(OneWriterSeqLockTest, MAYBE_ManyThreads) {
-  content::OneWriterSeqLock seqlock;
-  TestData data = { 0, 0, 0 };
+  OneWriterSeqLock seqlock;
+  TestData data = {0, 0, 0};
   base::AtomicRefCount ready = 0;
 
   ANNOTATE_BENIGN_RACE_SIZED(&data, sizeof(data), "Racey reads are discarded");
 
   static const unsigned kNumReaderThreads = 10;
   BasicSeqLockTestThread threads[kNumReaderThreads];
-  PlatformThreadHandle handles[kNumReaderThreads];
+  base::PlatformThreadHandle handles[kNumReaderThreads];
 
   for (unsigned i = 0; i < kNumReaderThreads; ++i)
     threads[i].Init(&seqlock, &data, &ready);
   for (unsigned i = 0; i < kNumReaderThreads; ++i)
-    ASSERT_TRUE(PlatformThread::Create(0, &threads[i], &handles[i]));
+    ASSERT_TRUE(base::PlatformThread::Create(0, &threads[i], &handles[i]));
 
   // The main thread is the writer, and the spawned are readers.
   unsigned counter = 0;
@@ -94,12 +93,12 @@ TEST(OneWriterSeqLockTest, MAYBE_ManyThreads) {
     if (counter == 1)
       base::AtomicRefCountIncN(&ready, kNumReaderThreads);
 
-    if (AtomicRefCountIsZero(&ready))
+    if (base::AtomicRefCountIsZero(&ready))
       break;
   }
 
   for (unsigned i = 0; i < kNumReaderThreads; ++i)
-    PlatformThread::Join(handles[i]);
+    base::PlatformThread::Join(handles[i]);
 }
 
-}  // namespace base
+}  // namespace device

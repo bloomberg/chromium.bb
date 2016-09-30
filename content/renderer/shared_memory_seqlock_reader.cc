@@ -26,9 +26,11 @@ SharedMemorySeqLockReaderBase::InitializeSharedMemory(
 }
 
 bool SharedMemorySeqLockReaderBase::FetchFromBuffer(
-    content::OneWriterSeqLock* seqlock, void* final, void* temp, void* from,
+    device::OneWriterSeqLock* seqlock,
+    void* final,
+    void* temp,
+    void* from,
     size_t size) {
-
   if (!base::SharedMemory::IsHandleValid(renderer_shared_memory_handle_))
     return false;
 

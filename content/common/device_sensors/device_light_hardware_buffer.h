@@ -6,11 +6,12 @@
 #define CONTENT_COMMON_DEVICE_SENSORS_DEVICE_LIGHT_HARDWARE_BUFFER_H_
 
 #include "content/common/device_sensors/device_light_data.h"
-#include "content/common/shared_memory_seqlock_buffer.h"
+#include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 
 namespace content {
 
-typedef SharedMemorySeqLockBuffer<DeviceLightData> DeviceLightHardwareBuffer;
+typedef device::SharedMemorySeqLockBuffer<DeviceLightData>
+    DeviceLightHardwareBuffer;
 
 }  // namespace content
 

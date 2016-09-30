@@ -416,6 +416,7 @@ target(link_target_type, "renderer") {
     "//content/public/common:feature_h264_with_openh264_ffmpeg",
     "//content/public/common:features",
     "//crypto:platform",
+    "//device/base/synchronization",
     "//device/battery:mojo_bindings",
     "//device/bluetooth",
     "//device/time_zone_monitor/public/interfaces",

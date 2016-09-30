@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ONE_WRITER_SEQLOCK_H_
-#define CONTENT_COMMON_ONE_WRITER_SEQLOCK_H_
+#ifndef DEVICE_BASE_SYNCHRONIZATION_ONE_WRITER_SEQLOCK_H_
+#define DEVICE_BASE_SYNCHRONIZATION_ONE_WRITER_SEQLOCK_H_
 
 #include "base/atomicops.h"
 #include "base/macros.h"
 #include "base/threading/platform_thread.h"
-#include "content/common/content_export.h"
 
-namespace content {
+namespace device {
 
 // This SeqLock handles only *one* writer and multiple readers. It may be
 // suitable for low-contention with relatively infrequent writes, and many
@@ -29,7 +28,7 @@ namespace content {
 // garbage, or indices could be out of range. Probably the only suitable thing
 // to do during the read loop is to make a copy of the data, and operate on it
 // only after the read was found to be consistent.
-class CONTENT_EXPORT OneWriterSeqLock {
+class OneWriterSeqLock {
  public:
   OneWriterSeqLock();
   base::subtle::Atomic32 ReadBegin();
@@ -42,6 +41,6 @@ class CONTENT_EXPORT OneWriterSeqLock {
   DISALLOW_COPY_AND_ASSIGN(OneWriterSeqLock);
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_COMMON_ONE_WRITER_SEQLOCK_H_
+#endif  // DEVICE_BASE_SYNCHRONIZATION_ONE_WRITER_SEQLOCK_H_

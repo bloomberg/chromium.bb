@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SHARED_MEMORY_SEQLOCK_BUFFER_H_
-#define CONTENT_COMMON_SHARED_MEMORY_SEQLOCK_BUFFER_H_
+#ifndef DEVICE_BASE_SYNCHRONIZATION_SHARED_MEMORY_SEQLOCK_BUFFER_H_
+#define DEVICE_BASE_SYNCHRONIZATION_SHARED_MEMORY_SEQLOCK_BUFFER_H_
 
-#include "content/common/one_writer_seqlock.h"
+#include "device/base/synchronization/one_writer_seqlock.h"
 
-namespace content {
+namespace device {
 
 // This structure is stored in shared memory that's shared between the browser
 // which does the hardware polling, and the consumers of the data,
@@ -18,13 +18,13 @@ namespace content {
 // Writer and reader operate on the same buffer assuming contention is low, and
 // contention is detected by using the associated SeqLock.
 
-template<class Data>
+template <class Data>
 class SharedMemorySeqLockBuffer {
  public:
   OneWriterSeqLock seqlock;
   Data data;
 };
 
-}  // namespace content
+}  // namespace device
 
-#endif  // CONTENT_COMMON_SHARED_MEMORY_SEQLOCK_BUFFER_H_
+#endif  // DEVICE_CORE_SHARED_MEMORY_SEQLOCK_BUFFER_H_

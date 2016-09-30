@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/one_writer_seqlock.h"
+#include "device/base/synchronization/one_writer_seqlock.h"
 
-namespace content {
+namespace device {
 
-OneWriterSeqLock::OneWriterSeqLock()
-  : sequence_(0) {
-}
+OneWriterSeqLock::OneWriterSeqLock() : sequence_(0) {}
 
 base::subtle::Atomic32 OneWriterSeqLock::ReadBegin() {
   base::subtle::Atomic32 version;
@@ -46,4 +44,4 @@ void OneWriterSeqLock::WriteEnd() {
   base::subtle::Barrier_AtomicIncrement(&sequence_, 1);
 }
 
-} // namespace content
+}  // namespace device
