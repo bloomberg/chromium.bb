@@ -144,6 +144,8 @@ class ArcAuthService : public ArcService,
   void GetAuthCodeDeprecated(
       const GetAuthCodeDeprecatedCallback& callback) override;
   void GetAuthCode(const GetAuthCodeCallback& callback) override;
+  void GetAuthCodeAndAccountType(
+      const GetAuthCodeAndAccountTypeCallback& callback) override;
   void OnSignInComplete() override;
   void OnSignInFailed(arc::mojom::ArcSignInFailureReason reason) override;
   // Callback is called with a bool that indicates the management status of the
@@ -234,6 +236,7 @@ class ArcAuthService : public ArcService,
   std::unique_ptr<ArcAppLauncher> playstore_launcher_;
   std::string auth_code_;
   GetAuthCodeCallback auth_callback_;
+  GetAuthCodeAndAccountTypeCallback auth_account_callback_;
   bool initial_opt_in_ = false;
   bool disable_arc_from_ui_ = false;
   UIPage ui_page_ = UIPage::NO_PAGE;

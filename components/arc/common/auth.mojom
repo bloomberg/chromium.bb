@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 5
+
 module arc.mojom;
 
 // These values describe failure reason of sign-in.
 [Extensible]
 enum ArcSignInFailureReason {
   // Negative values are reserved for internal use.
-  // The values are shuffled to keep the backward compatibility.
+  // The values are shuffled to keep the backward compatibility and don't match
+  // ProvisioningResult in arc_optin_uma.h
   // Next value: 15.
   UNKNOWN_ERROR = 0,
 
@@ -60,12 +63,30 @@ enum ArcSignInFailureReason {
   CLOUD_PROVISION_FLOW_INTERNAL_ERROR = 14,
 };
 
+// These values describe the type of the Chrome account to provision.
+[Extensible]
+enum ChromeAccountType {
+    // Next value: 3
+    UNKNOWN = 0,
+
+    // Chrome login account type is a user account.
+    USER_ACCOUNT = 1,
+
+    // Chrome login account type is a robot (service) account.
+    ROBOT_ACCOUNT = 2,
+};
+
 interface AuthHost {
+  // Next Method ID: 6.
   // Returns an authorization code, which can be used to sign in.
   GetAuthCodeDeprecated@0() => (string auth_code);
   // Returns an authorization code in case is_enforced is set, which can be used
-  // to sign in.
+  // to sign in. By default the ChromeAccountType is USER_ACCOUNT.
   [MinVersion=1] GetAuthCode@1() => (string auth_code, bool is_enforced);
+  // Returns an authorization code and its ChromeAccountType in case
+  // is_enforced is set, which can be used to sign in.
+  [MinVersion=4] GetAuthCodeAndAccountType@5() => (
+          string auth_code, bool is_enforced, ChromeAccountType account_type);
   // Gets whether the account is managed from Chrome OS.
   [MinVersion=3] GetIsAccountManaged@4() => (bool is_managed);
   // Notifies Chrome that the sign-in is completed successfully.

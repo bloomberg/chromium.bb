@@ -298,21 +298,42 @@ void ArcAuthService::GetAuthCodeDeprecated(
     const GetAuthCodeDeprecatedCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!IsOptInVerificationDisabled());
-  callback.Run(mojo::String(GetAndResetAuthCode()));
+  callback.Run(GetAndResetAuthCode());
 }
 
 void ArcAuthService::GetAuthCode(const GetAuthCodeCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // GetAuthCodeAndAccountType operation must not be in progress.
+  DCHECK(!auth_account_callback_.is_null());
 
   const std::string auth_code = GetAndResetAuthCode();
   const bool verification_disabled = IsOptInVerificationDisabled();
   if (!auth_code.empty() || verification_disabled) {
-    callback.Run(mojo::String(auth_code), !verification_disabled);
+    callback.Run(auth_code, !verification_disabled);
     return;
   }
 
   initial_opt_in_ = false;
   auth_callback_ = callback;
+  StartUI();
+}
+
+void ArcAuthService::GetAuthCodeAndAccountType(
+    const GetAuthCodeAndAccountTypeCallback& callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // GetAuthCode operation must not be in progress.
+  DCHECK(!auth_callback_.is_null());
+
+  const std::string auth_code = GetAndResetAuthCode();
+  const bool verification_disabled = IsOptInVerificationDisabled();
+  if (!auth_code.empty() || verification_disabled) {
+    callback.Run(auth_code, !verification_disabled,
+                 mojom::ChromeAccountType::USER_ACCOUNT);
+    return;
+  }
+
+  initial_opt_in_ = false;
+  auth_account_callback_ = callback;
   StartUI();
 }
 
@@ -609,6 +630,7 @@ void ArcAuthService::ShutdownBridge() {
   arc_sign_in_timer_.Stop();
   playstore_launcher_.reset();
   auth_callback_.Reset();
+  auth_account_callback_.Reset();
   android_management_checker_.reset();
   auth_code_fetcher_.reset();
   arc_bridge_service()->Shutdown();
@@ -671,16 +693,22 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!auth_code.empty());
 
-  if (!auth_callback_.is_null()) {
+  if (!auth_callback_.is_null() || !auth_account_callback_.is_null()) {
     DCHECK_EQ(state_, State::FETCHING_CODE);
     SetState(State::ACTIVE);
-    auth_callback_.Run(mojo::String(auth_code), !IsOptInVerificationDisabled());
-    auth_callback_.Reset();
-    return;
+    if (!auth_callback_.is_null()) {
+      auth_callback_.Run(auth_code, !IsOptInVerificationDisabled());
+      auth_callback_.Reset();
+      return;
+    } else {
+      auth_account_callback_.Run(auth_code, !IsOptInVerificationDisabled(),
+                                 mojom::ChromeAccountType::USER_ACCOUNT);
+      auth_account_callback_.Reset();
+      return;
+    }
   }
 
-  State state = state_;
-  if (state != State::FETCHING_CODE) {
+  if (state_ != State::FETCHING_CODE) {
     ShutdownBridgeAndCloseUI();
     return;
   }
