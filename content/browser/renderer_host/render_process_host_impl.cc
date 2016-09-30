@@ -861,9 +861,10 @@ bool RenderProcessHostImpl::Init() {
   if (channel_)
     return true;
 
-  // Ensure that the RouteProvider proxy is re-initialized on next access since
-  // it's associated with a specific Channel instance.
+  // Ensure that the remote associated interfaces are re-initialized on next
+  // access since they're associated with a specific Channel instance.
   remote_route_provider_.reset();
+  renderer_interface_.reset();
 
   base::CommandLine::StringType renderer_prefix;
   // A command prefix is something prepended to the command line of the spawned
@@ -1417,6 +1418,14 @@ mojom::RouteProvider* RenderProcessHostImpl::GetRemoteRouteProvider() {
     channel_->GetRemoteAssociatedInterface(&remote_route_provider_);
   }
   return remote_route_provider_.get();
+}
+
+mojom::Renderer* RenderProcessHostImpl::GetRendererInterface() {
+  if (!renderer_interface_) {
+    DCHECK(channel_);
+    channel_->GetRemoteAssociatedInterface(&renderer_interface_);
+  }
+  return renderer_interface_.get();
 }
 
 void RenderProcessHostImpl::AddRoute(int32_t routing_id,

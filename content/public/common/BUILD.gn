@@ -240,6 +240,7 @@ source_set("common_sources") {
     "//services/shell/public/interfaces",
     "//third_party/WebKit/public:blink_headers",
     "//ui/accessibility",
+    "//ui/surface",
     "//url/ipc:url_ipc",
   ]
   deps = [
@@ -262,7 +263,6 @@ source_set("common_sources") {
     "//ui/gfx/ipc/color",
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
-    "//ui/surface",
   ]
 
   # //content/common needs to include public headers.

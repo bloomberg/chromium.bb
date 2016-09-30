@@ -23,6 +23,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
@@ -80,7 +81,7 @@ base::LazyInstance<FrameProxyCreationCallback>::Leaky
 using WebViewTestProxyType =
     test_runner::WebViewTestProxy<RenderViewImpl,
                                   CompositorDependencies*,
-                                  const ViewMsg_New_Params&>;
+                                  const mojom::CreateViewParams&>;
 using WebWidgetTestProxyType =
     test_runner::WebWidgetTestProxy<RenderWidget,
                                     CompositorDependencies*,
@@ -94,7 +95,7 @@ using WebFrameTestProxyType =
                                    const RenderFrameImpl::CreateParams&>;
 
 RenderViewImpl* CreateWebViewTestProxy(CompositorDependencies* compositor_deps,
-                                       const ViewMsg_New_Params& params) {
+                                       const mojom::CreateViewParams& params) {
   WebViewTestProxyType* render_view_proxy =
       new WebViewTestProxyType(compositor_deps, params);
   if (g_view_test_proxy_callback == 0)

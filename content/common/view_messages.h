@@ -363,75 +363,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(int, flags)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewMsg_New_Params)
-  // Renderer-wide preferences.
-  IPC_STRUCT_MEMBER(content::RendererPreferences, renderer_preferences)
-
-  // Preferences for this view.
-  IPC_STRUCT_MEMBER(content::WebPreferences, web_preferences)
-
-  // The ID of the view to be created.
-  IPC_STRUCT_MEMBER(int32_t, view_id, MSG_ROUTING_NONE)
-
-  // The ID of the main frame hosted in the view.
-  IPC_STRUCT_MEMBER(int32_t, main_frame_routing_id, MSG_ROUTING_NONE)
-
-  // The ID of the widget for the main frame.
-  IPC_STRUCT_MEMBER(int32_t, main_frame_widget_routing_id, MSG_ROUTING_NONE)
-
-  // The session storage namespace ID this view should use.
-  IPC_STRUCT_MEMBER(int64_t, session_storage_namespace_id)
-
-  // The route ID of the opener RenderFrame or RenderFrameProxy, if we need to
-  // set one (MSG_ROUTING_NONE otherwise).
-  IPC_STRUCT_MEMBER(int, opener_frame_route_id, MSG_ROUTING_NONE)
-
-  // Whether the RenderView should initially be swapped out.
-  IPC_STRUCT_MEMBER(bool, swapped_out)
-
-  // Carries replicated information, such as frame name and sandbox flags, for
-  // this view's main frame, which will be a proxy in |swapped_out|
-  // views when in --site-per-process mode, or a RenderFrame in all other
-  // cases.
-  IPC_STRUCT_MEMBER(content::FrameReplicationState, replicated_frame_state)
-
-  // The ID of the proxy object for the main frame in this view. It is only
-  // used if |swapped_out| is true.
-  IPC_STRUCT_MEMBER(int32_t, proxy_routing_id, MSG_ROUTING_NONE)
-
-  // Whether the RenderView should initially be hidden.
-  IPC_STRUCT_MEMBER(bool, hidden)
-
-  // Whether the RenderView will never be visible.
-  IPC_STRUCT_MEMBER(bool, never_visible)
-
-  // Whether the window associated with this view was created with an opener.
-  IPC_STRUCT_MEMBER(bool, window_was_created_with_opener)
-
-  // The initial page ID to use for this view, which must be larger than any
-  // existing navigation that might be loaded in the view.  Page IDs are unique
-  // to a view and are only updated by the renderer after this initial value.
-  IPC_STRUCT_MEMBER(int32_t, next_page_id)
-
-  // The initial renderer size.
-  IPC_STRUCT_MEMBER(content::ResizeParams, initial_size)
-
-  // Whether to enable auto-resize.
-  IPC_STRUCT_MEMBER(bool, enable_auto_resize)
-
-  // The minimum size to layout the page if auto-resize is enabled.
-  IPC_STRUCT_MEMBER(gfx::Size, min_size)
-
-  // The maximum size to layout the page if auto-resize is enabled.
-  IPC_STRUCT_MEMBER(gfx::Size, max_size)
-
-  // The page zoom level.
-  IPC_STRUCT_MEMBER(double, page_zoom_level)
-
-  // The ICC profile of the output color space to use for image decode.
-  IPC_STRUCT_MEMBER(gfx::ICCProfile, image_decode_color_space)
-IPC_STRUCT_END()
-
 #if defined(OS_MACOSX)
 IPC_STRUCT_BEGIN(ViewMsg_UpdateScrollbarTheme_Params)
   IPC_STRUCT_MEMBER(float, initial_button_delay)
@@ -462,13 +393,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_LockMouse_ACK,
                     bool /* succeeded */)
 // Tells the render side that the mouse has been unlocked.
 IPC_MESSAGE_ROUTED0(ViewMsg_MouseLockLost)
-
-// Tells the renderer to create a new view.
-// This message is slightly different, the view it takes (via
-// ViewMsg_New_Params) is the view to create, the message itself is sent as a
-// non-view control message.
-IPC_MESSAGE_CONTROL1(ViewMsg_New,
-                     ViewMsg_New_Params)
 
 // Sends updated preferences to the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetRendererPrefs,

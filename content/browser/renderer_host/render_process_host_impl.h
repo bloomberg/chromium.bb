@@ -26,6 +26,7 @@
 #include "content/browser/webrtc/webrtc_eventlog_host.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_export.h"
+#include "content/common/renderer.mojom.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -176,6 +177,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void PurgeAndSuspend() override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();
+  mojom::Renderer* GetRendererInterface();
 
   // IPC::Sender via RenderProcessHost.
   bool Send(IPC::Message* msg) override;
@@ -579,6 +581,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
 
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
+  mojom::RendererAssociatedPtr renderer_interface_;
 
   // A WeakPtrFactory which is reset every time Cleanup() runs. Used to vend
   // WeakPtrs which are invalidated any time the RPHI is recycled.

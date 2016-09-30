@@ -293,7 +293,7 @@ const size_t kContentIntentDelayMilliseconds = 700;
 
 static RenderViewImpl* (*g_create_render_view_impl)(
     CompositorDependencies* compositor_deps,
-    const ViewMsg_New_Params&) = nullptr;
+    const mojom::CreateViewParams&) = nullptr;
 
 // static
 Referrer RenderViewImpl::GetReferrerFromRequest(
@@ -660,7 +660,7 @@ class AlwaysDrawSwapPromise : public cc::SwapPromise {
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
-                               const ViewMsg_New_Params& params)
+                               const mojom::CreateViewParams& params)
     : RenderWidget(compositor_deps,
                    blink::WebPopupTypeNone,
                    params.initial_size.screen_info,
@@ -700,7 +700,7 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
   GetWidget()->set_owner_delegate(this);
 }
 
-void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
+void RenderViewImpl::Initialize(const mojom::CreateViewParams& params,
                                 bool was_created_by_renderer) {
   SetRoutingID(params.view_id);
 
@@ -1189,7 +1189,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
 /*static*/
 RenderViewImpl* RenderViewImpl::Create(CompositorDependencies* compositor_deps,
-                                       const ViewMsg_New_Params& params,
+                                       const mojom::CreateViewParams& params,
                                        bool was_created_by_renderer) {
   DCHECK(params.view_id != MSG_ROUTING_NONE);
   RenderViewImpl* render_view = NULL;
@@ -1205,7 +1205,7 @@ RenderViewImpl* RenderViewImpl::Create(CompositorDependencies* compositor_deps,
 // static
 void RenderViewImpl::InstallCreateHook(RenderViewImpl* (
     *create_render_view_impl)(CompositorDependencies* compositor_deps,
-                              const ViewMsg_New_Params&)) {
+                              const mojom::CreateViewParams&)) {
   CHECK(!g_create_render_view_impl);
   g_create_render_view_impl = create_render_view_impl;
 }
@@ -1574,7 +1574,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   // return from this call synchronously, we just have to make our best guess
   // and rely on the browser sending a WasHidden / WasShown message if it
   // disagrees.
-  ViewMsg_New_Params view_params;
+  mojom::CreateViewParams view_params;
 
   RenderFrameImpl* creator_frame = RenderFrameImpl::FromWebFrame(creator);
   view_params.opener_frame_route_id = creator_frame->GetRoutingID();

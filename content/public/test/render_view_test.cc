@@ -17,6 +17,7 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/resize_params.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
@@ -287,7 +288,7 @@ void RenderViewTest::SetUp() {
   compositor_deps_.reset(new FakeCompositorDependencies);
   mock_process_.reset(new MockRenderProcess);
 
-  ViewMsg_New_Params view_params;
+  mojom::CreateViewParams view_params;
   view_params.opener_frame_route_id = MSG_ROUTING_NONE;
   view_params.window_was_created_with_opener = false;
   view_params.renderer_preferences = RendererPreferences();

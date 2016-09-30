@@ -3,8 +3,10 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//content/common/native_types.typemap",
+  "//content/common/service_worker/embedded_worker.typemap",
   "//content/common/url_loader_status.typemap",
   "//content/common/url_request.typemap",
   "//content/common/url_response_head.typemap",
-  "//content/common/service_worker/embedded_worker.typemap",
+  "//content/common/web_preferences.typemap",
 ]

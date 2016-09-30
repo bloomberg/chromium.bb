@@ -75,7 +75,6 @@
 
 class SkBitmap;
 struct PP_NetAddress_Private;
-struct ViewMsg_New_Params;
 struct ViewMsg_StopFinding_Params;
 
 namespace base {
@@ -132,6 +131,10 @@ struct FileChooserFileInfo;
 struct RenderViewImplParams;
 struct ResizeParams;
 
+namespace mojom {
+class CreateViewParams;
+}
+
 #if defined(OS_ANDROID)
 class WebMediaPlayerProxyAndroid;
 #endif
@@ -159,14 +162,14 @@ class CONTENT_EXPORT RenderViewImpl
   // |proxy_routing_id| is specified, so a RenderFrameProxy can be created for
   // this RenderView's main RenderFrame.
   static RenderViewImpl* Create(CompositorDependencies* compositor_deps,
-                                const ViewMsg_New_Params& params,
+                                const mojom::CreateViewParams& params,
                                 bool was_created_by_renderer);
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderViewImpls.
   static void InstallCreateHook(RenderViewImpl* (*create_render_view_impl)(
       CompositorDependencies* compositor_deps,
-      const ViewMsg_New_Params&));
+      const mojom::CreateViewParams&));
 
   // Returns the RenderViewImpl containing the given WebView.
   static RenderViewImpl* FromWebView(blink::WebView* webview);
@@ -434,9 +437,9 @@ class CONTENT_EXPORT RenderViewImpl
   void ResizeWebWidget() override;
 
   RenderViewImpl(CompositorDependencies* compositor_deps,
-                 const ViewMsg_New_Params& params);
+                 const mojom::CreateViewParams& params);
 
-  void Initialize(const ViewMsg_New_Params& params,
+  void Initialize(const mojom::CreateViewParams& params,
                   bool was_created_by_renderer);
   void SetScreenMetricsEmulationParameters(
       bool enabled,

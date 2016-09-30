@@ -3145,8 +3145,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
 
   // Check that b.com frame's location.ancestorOrigins contains the correct
   // origin for the parent.  The origin should have been replicated as part of
-  // the ViewMsg_New message that created the parent's RenderFrameProxy in
-  // b.com's process.
+  // the mojom::Renderer::CreateView message that created the parent's
+  // RenderFrameProxy in b.com's process.
   int ancestor_origins_length = 0;
   EXPECT_TRUE(ExecuteScriptAndExtractInt(
       tiptop_child,
@@ -3162,9 +3162,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
 
   // Check that c.com frame's location.ancestorOrigins contains the correct
   // origin for its two ancestors. The topmost parent origin should be
-  // replicated as part of ViewMsg_New, and the middle frame (b.com's) origin
-  // should be replicated as part of FrameMsg_NewFrameProxy sent for b.com's
-  // frame in c.com's process.
+  // replicated as part of mojom::Renderer::CreateView, and the middle frame
+  // (b.com's) origin should be replicated as part of FrameMsg_NewFrameProxy
+  // sent for b.com's frame in c.com's process.
   EXPECT_TRUE(ExecuteScriptAndExtractInt(
       middle_child,
       "window.domAutomationController.send(location.ancestorOrigins.length);",

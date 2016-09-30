@@ -24,17 +24,20 @@
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
+#include "content/common/associated_interface_registry_impl.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/render_frame_message_filter.mojom.h"
 #include "content/common/render_message_filter.mojom.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"
 #include "content/renderer/layout_test_dependencies.h"
 #include "device/time_zone_monitor/public/interfaces/time_zone_monitor.mojom.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/network_change_notifier.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
@@ -48,7 +51,6 @@
 class GrContext;
 class SkBitmap;
 struct FrameMsg_NewFrame_Params;
-struct ViewMsg_New_Params;
 struct ViewMsg_UpdateScrollbarTheme_Params;
 struct WorkerProcessMsg_CreateWorker_Params;
 
@@ -153,6 +155,7 @@ class CONTENT_EXPORT RenderThreadImpl
       public gpu::GpuChannelHostFactory,
       public blink::scheduler::RendererScheduler::RAILModeObserver,
       public ChildMemoryCoordinatorDelegate,
+      NON_EXPORTED_BASE(public mojom::Renderer),
       // TODO(blundell): Separate this impl out into Blink.
       NON_EXPORTED_BASE(public device::mojom::TimeZoneMonitorClient),
       NON_EXPORTED_BASE(public CompositorDependencies) {
@@ -207,6 +210,11 @@ class CONTENT_EXPORT RenderThreadImpl
   bool ResolveProxy(const GURL& url, std::string* proxy_list) override;
   base::WaitableEvent* GetShutdownEvent() override;
 
+  // IPC::Listener implementation via ChildThreadImpl:
+  void OnAssociatedInterfaceRequest(
+      const std::string& name,
+      mojo::ScopedInterfaceEndpointHandle handle) override;
+
   // CompositorDependencies implementation.
   bool IsGpuRasterizationForced() override;
   bool IsGpuRasterizationEnabled() override;
@@ -244,6 +252,8 @@ class CONTENT_EXPORT RenderThreadImpl
       int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
       const GURL& url);
+
+  AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 
   std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
       int32_t routing_id,
@@ -497,7 +507,6 @@ class CONTENT_EXPORT RenderThreadImpl
                              int opener_routing_id,
                              int parent_routing_id,
                              const FrameReplicationState& replicated_state);
-  void OnCreateNewView(const ViewMsg_New_Params& params);
   void OnTransferBitmap(const SkBitmap& bitmap, int resource_id);
 #if defined(ENABLE_PLUGINS)
   void OnPurgePluginListCache(bool reload_pages);
@@ -506,6 +515,9 @@ class CONTENT_EXPORT RenderThreadImpl
       net::NetworkChangeNotifier::ConnectionType type,
       double max_bandwidth_mbps);
   void OnGetAccessibilityTree();
+
+  // mojom::Renderer:
+  void CreateView(mojom::CreateViewParamsPtr params) override;
 
   // device::mojom::TimeZoneClient:
   void OnTimeZoneChange(const std::string& zoneId) override;
@@ -534,6 +546,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   std::unique_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
       int routing_id);
+
+  void OnRendererInterfaceRequest(mojom::RendererAssociatedRequest request);
 
   // These objects live solely on the render thread.
   std::unique_ptr<AppCacheDispatcher> appcache_dispatcher_;
@@ -713,6 +727,10 @@ class CONTENT_EXPORT RenderThreadImpl
   PendingFrameCreateMap pending_frame_creates_;
 
   mojom::StoragePartitionServicePtr storage_partition_service_;
+
+  AssociatedInterfaceRegistryImpl associated_interfaces_;
+
+  mojo::AssociatedBinding<mojom::Renderer> renderer_binding_;
 
   mojom::RenderFrameMessageFilterAssociatedPtr render_frame_message_filter_;
   mojom::RenderMessageFilterAssociatedPtr render_message_filter_;

@@ -347,8 +347,9 @@ class FrameFactoryImpl : public mojom::FrameFactory {
 
     RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(frame_routing_id);
     // We can receive a GetServiceProviderForFrame message for a frame not yet
-    // created due to a race between the message and a ViewMsg_New IPC that
-    // triggers creation of the RenderFrame we want.
+    // created due to a race between the message and a
+    // mojom::Renderer::CreateView IPC that triggers creation of the RenderFrame
+    // we want.
     if (!frame) {
       RenderThreadImpl::current()->RegisterPendingFrameCreate(
           frame_routing_id, std::move(frame_request), std::move(frame_host));
@@ -605,7 +606,8 @@ RenderThreadImpl::RenderThreadImpl(
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
       time_zone_monitor_binding_(this),
-      categorized_worker_pool_(new CategorizedWorkerPool()) {
+      categorized_worker_pool_(new CategorizedWorkerPool()),
+      renderer_binding_(this) {
   Init(resource_task_queue);
 }
 
@@ -622,7 +624,8 @@ RenderThreadImpl::RenderThreadImpl(
       renderer_scheduler_(std::move(scheduler)),
       time_zone_monitor_binding_(this),
       main_message_loop_(std::move(main_message_loop)),
-      categorized_worker_pool_(new CategorizedWorkerPool()) {
+      categorized_worker_pool_(new CategorizedWorkerPool()),
+      renderer_binding_(this) {
   scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
   Init(test_task_counter);
 }
@@ -735,6 +738,10 @@ void RenderThreadImpl::Init(
   StartMojoShellConnection();
 
   GetContentClient()->renderer()->RenderThreadStarted();
+
+  GetAssociatedInterfaceRegistry()->AddInterface(
+      base::Bind(&RenderThreadImpl::OnRendererInterfaceRequest,
+                 base::Unretained(this)));
 
   InitSkiaEventTracer();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
@@ -1565,6 +1572,12 @@ base::WaitableEvent* RenderThreadImpl::GetShutdownEvent() {
   return ChildProcess::current()->GetShutDownEvent();
 }
 
+void RenderThreadImpl::OnAssociatedInterfaceRequest(
+    const std::string& name,
+    mojo::ScopedInterfaceEndpointHandle handle) {
+  associated_interfaces_.BindRequest(name, std::move(handle));
+}
+
 bool RenderThreadImpl::IsGpuRasterizationForced() {
   return is_gpu_rasterization_forced_;
 }
@@ -1724,7 +1737,6 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_NewFrameProxy, OnCreateNewFrameProxy)
     // TODO(port): removed from render_messages_internal.h;
     // is there a new non-windows message I should add here?
-    IPC_MESSAGE_HANDLER(ViewMsg_New, OnCreateNewView)
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkConnectionChanged,
                         OnNetworkConnectionChanged)
     IPC_MESSAGE_HANDLER(WorkerProcessMsg_CreateWorker, OnCreateNewSharedWorker)
@@ -1809,12 +1821,6 @@ void RenderThreadImpl::OnCreateNewFrameProxy(
   RenderFrameProxy::CreateFrameProxy(routing_id, render_view_routing_id,
                                      opener_routing_id, parent_routing_id,
                                      replicated_state);
-}
-
-void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
-  CompositorDependencies* compositor_deps = this;
-  // When bringing in render_view, also bring in webkit's glue and jsbindings.
-  RenderViewImpl::Create(compositor_deps, params, false);
 }
 
 scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
@@ -1983,6 +1989,11 @@ RenderThreadImpl::CreateCompositorFrameSink(
       std::move(worker_context_provider), std::move(frame_swap_message_queue)));
 }
 
+AssociatedInterfaceRegistry*
+RenderThreadImpl::GetAssociatedInterfaceRegistry() {
+  return &associated_interfaces_;
+}
+
 std::unique_ptr<cc::SwapPromise>
 RenderThreadImpl::RequestCopyOfOutputForLayoutTest(
     int32_t routing_id,
@@ -2058,6 +2069,12 @@ void RenderThreadImpl::OnNetworkConnectionChanged(
       RenderThreadObserver, observers_, NetworkStateChanged(online));
   WebNetworkStateNotifier::setWebConnection(
       NetConnectionTypeToWebConnectionType(type), max_bandwidth_mbps);
+}
+
+void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
+  CompositorDependencies* compositor_deps = this;
+  // When bringing in render_view, also bring in webkit's glue and jsbindings.
+  RenderViewImpl::Create(compositor_deps, *params, false);
 }
 
 void RenderThreadImpl::OnTimeZoneChange(const std::string& zone_id) {
@@ -2314,5 +2331,10 @@ void RenderThreadImpl::OnTrimMemoryImmediately() {
   }
 }
 
+void RenderThreadImpl::OnRendererInterfaceRequest(
+    mojom::RendererAssociatedRequest request) {
+  DCHECK(!renderer_binding_.is_bound());
+  renderer_binding_.Bind(std::move(request));
+}
 
 }  // namespace content

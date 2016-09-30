@@ -35,10 +35,10 @@ struct StructTraits<shell::mojom::CapabilityRequest::DataView,
     ArrayDataView<StringDataView> interfaces_data_view;
     data.GetInterfacesDataView(&interfaces_data_view);
     for (size_t i = 0; i < interfaces_data_view.size(); ++i) {
-      std::string interface;
-      if (!interfaces_data_view.Read(i, &interface))
+      std::string interface_name;
+      if (!interfaces_data_view.Read(i, &interface_name))
         return false;
-      out->interfaces.insert(std::move(interface));
+      out->interfaces.insert(std::move(interface_name));
     }
     return true;
   }
@@ -70,8 +70,8 @@ struct StructTraits<shell::mojom::CapabilitySpec::DataView,
       if (!provided_data_view.values().Read(i, &interfaces_vec))
         return false;
       std::set<std::string> interfaces;
-      for (const auto& interface : interfaces_vec)
-        interfaces.insert(interface);
+      for (const auto& interface_name : interfaces_vec)
+        interfaces.insert(interface_name);
 
       out->provided[clazz] = std::move(interfaces);
     }

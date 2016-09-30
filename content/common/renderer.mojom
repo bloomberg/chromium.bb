@@ -1,0 +1,87 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "content/common/native_types.mojom";
+import "ipc/ipc.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/icc_profile.mojom";
+
+struct CreateViewParams {
+  // Renderer-wide preferences.
+  RendererPreferences renderer_preferences;
+
+  // Preferences for this view.
+  WebPreferences web_preferences;
+
+  // The ID of the view to be created.
+  int32 view_id = IPC.mojom.kRoutingIdNone;
+
+  // The ID of the main frame hosted in the view.
+  int32 main_frame_routing_id = IPC.mojom.kRoutingIdNone;
+
+  // The ID of the widget for the main frame.
+  int32 main_frame_widget_routing_id = IPC.mojom.kRoutingIdNone;
+
+  // The session storage namespace ID this view should use.
+  int64 session_storage_namespace_id;
+
+  // The route ID of the opener RenderFrame or RenderFrameProxy, if we need to
+  // set one (MSG_ROUTING_NONE otherwise).
+  int32 opener_frame_route_id = IPC.mojom.kRoutingIdNone;
+
+  // Whether the RenderView should initially be swapped out.
+  bool swapped_out;
+
+  // Carries replicated information, such as frame name and sandbox flags, for
+  // this view's main frame, which will be a proxy in |swapped_out|
+  // views when in --site-per-process mode, or a RenderFrame in all other
+  // cases.
+  FrameReplicationState replicated_frame_state;
+
+  // The ID of the proxy object for the main frame in this view. It is only
+  // used if |swapped_out| is true.
+  int32 proxy_routing_id = IPC.mojom.kRoutingIdNone;
+
+  // Whether the RenderView should initially be hidden.
+  bool hidden;
+
+  // Whether the RenderView will never be visible.
+  bool never_visible;
+
+  // Whether the window associated with this view was created with an opener.
+  bool window_was_created_with_opener;
+
+  // The initial page ID to use for this view, which must be larger than any
+  // existing navigation that might be loaded in the view.  Page IDs are unique
+  // to a view and are only updated by the renderer after this initial value.
+  int32 next_page_id;
+
+  // The initial renderer size.
+  ResizeParams initial_size;
+
+  // Whether to enable auto-resize.
+  bool enable_auto_resize;
+
+  // The minimum size to layout the page if auto-resize is enabled.
+  gfx.mojom.Size min_size;
+
+  // The maximum size to layout the page if auto-resize is enabled.
+  gfx.mojom.Size max_size;
+
+  // The page zoom level.
+  double page_zoom_level;
+
+  // The ICC profile of the output color space to use for image decode.
+  gfx.mojom.ICCProfile image_decode_color_space;
+};
+
+// The primordial Channel-associated interface implemented by a render process.
+// This should be used for implementing browser-to-renderer control messages
+// which need to retain FIFO with respect to legacy IPC messages.
+interface Renderer {
+  // Tells the renderer to create a new view.
+  CreateView(CreateViewParams params);
+};

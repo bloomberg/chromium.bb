@@ -49,6 +49,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/render_message_filter.mojom.h"
+#include "content/common/renderer.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/speech_recognition_messages.h"
 #include "content/common/swapped_out_messages.h"
@@ -340,43 +341,45 @@ bool RenderViewHostImpl::CreateRenderView(
   if (max_page_id > -1)
     next_page_id = max_page_id + 1;
 
-  ViewMsg_New_Params params;
-  params.renderer_preferences =
+  mojom::CreateViewParamsPtr params = mojom::CreateViewParams::New();
+  params->renderer_preferences =
       delegate_->GetRendererPrefs(GetProcess()->GetBrowserContext());
 #if defined(OS_WIN)
-  GetWindowsSpecificPrefs(&params.renderer_preferences);
+  GetWindowsSpecificPrefs(&params->renderer_preferences);
 #endif
-  params.web_preferences = GetWebkitPreferences();
-  params.view_id = GetRoutingID();
-  params.main_frame_routing_id = main_frame_routing_id_;
+  params->web_preferences = GetWebkitPreferences();
+  params->view_id = GetRoutingID();
+  params->main_frame_routing_id = main_frame_routing_id_;
   if (main_frame_routing_id_ != MSG_ROUTING_NONE) {
     RenderFrameHostImpl* main_rfh = RenderFrameHostImpl::FromID(
         GetProcess()->GetID(), main_frame_routing_id_);
     DCHECK(main_rfh);
     RenderWidgetHostImpl* main_rwh = main_rfh->GetRenderWidgetHost();
-    params.main_frame_widget_routing_id = main_rwh->GetRoutingID();
+    params->main_frame_widget_routing_id = main_rwh->GetRoutingID();
   }
-  params.session_storage_namespace_id =
+  params->session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();
   // Ensure the RenderView sets its opener correctly.
-  params.opener_frame_route_id = opener_frame_route_id;
-  params.swapped_out = !is_active_;
-  params.replicated_frame_state = replicated_frame_state;
-  params.proxy_routing_id = proxy_route_id;
-  params.hidden = GetWidget()->is_hidden();
-  params.never_visible = delegate_->IsNeverVisible();
-  params.window_was_created_with_opener = window_was_created_with_opener;
-  params.next_page_id = next_page_id;
-  params.enable_auto_resize = GetWidget()->auto_resize_enabled();
-  params.min_size = GetWidget()->min_size_for_auto_resize();
-  params.max_size = GetWidget()->max_size_for_auto_resize();
-  params.page_zoom_level = delegate_->GetPendingPageZoomLevel();
-  params.image_decode_color_space = gfx::ICCProfile::FromBestMonitor();
-  GetWidget()->GetResizeParams(&params.initial_size);
+  params->opener_frame_route_id = opener_frame_route_id;
+  params->swapped_out = !is_active_;
+  params->replicated_frame_state = replicated_frame_state;
+  params->proxy_routing_id = proxy_route_id;
+  params->hidden = GetWidget()->is_hidden();
+  params->never_visible = delegate_->IsNeverVisible();
+  params->window_was_created_with_opener = window_was_created_with_opener;
+  params->next_page_id = next_page_id;
+  params->enable_auto_resize = GetWidget()->auto_resize_enabled();
+  params->min_size = GetWidget()->min_size_for_auto_resize();
+  params->max_size = GetWidget()->max_size_for_auto_resize();
+  params->page_zoom_level = delegate_->GetPendingPageZoomLevel();
+  params->image_decode_color_space = gfx::ICCProfile::FromBestMonitor();
 
-  if (!Send(new ViewMsg_New(params)))
-    return false;
-  GetWidget()->SetInitialRenderSizeParams(params.initial_size);
+  GetWidget()->GetResizeParams(&params->initial_size);
+  GetWidget()->SetInitialRenderSizeParams(params->initial_size);
+
+  RenderProcessHostImpl* process =
+      static_cast<RenderProcessHostImpl*>(GetProcess());
+  process->GetRendererInterface()->CreateView(std::move(params));
 
   // If the RWHV has not yet been set, the surface ID namespace will get
   // passed down by the call to SetView().
