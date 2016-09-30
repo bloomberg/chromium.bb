@@ -76,10 +76,10 @@ VisibleSelectionInFlatTree PendingSelection::calcVisibleSelection(const VisibleS
     if (paintBlockCursor) {
         VisiblePositionInFlatTree visibleExtent = createVisiblePosition(end, affinity);
         visibleExtent = nextPositionOf(visibleExtent, CanSkipOverEditingBoundary);
-        return createVisibleSelectionDeprecated(visibleStart, visibleExtent);
+        return createVisibleSelection(visibleStart, visibleExtent);
     }
     const VisiblePositionInFlatTree visibleEnd = createVisiblePosition(end, selectionType == SelectionType::RangeSelection ? TextAffinity::Upstream : affinity);
-    return createVisibleSelectionDeprecated(visibleStart, visibleEnd);
+    return createVisibleSelection(visibleStart, visibleEnd);
 }
 
 void PendingSelection::commit(LayoutView& layoutView)
