@@ -425,8 +425,8 @@ void InlineSigninHelper::ConfirmEmailAction(
         handler_->SyncStarterCallback(
             OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
       }
-      chrome::ShowSettingsSubPage(browser,
-                                  std::string(chrome::kCreateProfileSubPage));
+      UserManager::Show(base::FilePath(), profiles::USER_MANAGER_NO_TUTORIAL,
+                        profiles::USER_MANAGER_OPEN_CREATE_USER_PAGE);
       break;
     case InlineSigninHelper::START_SYNC:
       content::RecordAction(

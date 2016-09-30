@@ -404,7 +404,7 @@ private:
 void UserManager::Show(
     const base::FilePath& profile_path_to_focus,
     profiles::UserManagerTutorialMode tutorial_mode,
-    profiles::UserManagerProfileSelected profile_open_action) {
+    profiles::UserManagerAction user_manager_action) {
   DCHECK(profile_path_to_focus != ProfileManager::GetGuestProfilePath());
 
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::OPEN_USER_MANAGER);
@@ -428,7 +428,7 @@ void UserManager::Show(
   profiles::CreateSystemProfileForUserManager(
       profile_path_to_focus,
       tutorial_mode,
-      profile_open_action,
+      user_manager_action,
       base::Bind(&UserManagerMac::OnSystemProfileCreated, base::Time::Now()));
 }
 

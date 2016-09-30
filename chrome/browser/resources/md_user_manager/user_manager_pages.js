@@ -30,17 +30,27 @@ Polymer({
   },
 
   listeners: {
-    'change-page': 'changePage_'
+    'change-page': 'onChangePage_'
   },
 
   /**
-   * Changes the currently selected page.
-   * @param {Event} e The event containing ID of the selected page.
+   * Handler for the change-page event.
+   * @param {Event} e The event containing ID of the page that is to be selected
+   *     and the optional data to be passed to the page.
    * @private
    */
-  changePage_: function(e) {
-    this.pageData_ = e.detail.data || null;
-    this.selectedPage_ = e.detail.page;
+  onChangePage_: function(e) {
+    this.setSelectedPage(e.detail.page, e.detail.data);
+  },
+
+  /**
+   * Sets the selected page.
+   * @param {string} pageId ID of the page that is to be selected.
+   * @param {Object=} opt_pageData Optional data to be passed to the page.
+   */
+  setSelectedPage: function(pageId, opt_pageData) {
+    this.pageData_ = opt_pageData || null;
+    this.selectedPage_ = pageId;
   },
 
   /**

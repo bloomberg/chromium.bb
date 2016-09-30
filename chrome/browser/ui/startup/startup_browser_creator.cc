@@ -287,7 +287,7 @@ bool ShowUserManagerOnStartupIfNeeded(
   }
 
   // Show the User Manager.
-  profiles::UserManagerProfileSelected action =
+  profiles::UserManagerAction action =
       command_line.HasSwitch(switches::kShowAppList) ?
           profiles::USER_MANAGER_SELECT_PROFILE_APP_LAUNCHER :
           profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION;

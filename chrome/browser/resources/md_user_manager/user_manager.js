@@ -108,6 +108,10 @@ cr.define('cr.ui', function() {
 
     if (window.location.hash == '#tutorial')
       document.querySelector('user-manager-tutorial').startTutorial();
+    else if (window.location.hash == '#create-user') {
+      document.querySelector('user-manager-pages').setSelectedPage(
+          'create-user-page');
+    }
   };
 
   /**

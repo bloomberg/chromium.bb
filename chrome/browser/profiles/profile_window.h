@@ -25,8 +25,12 @@ enum UserManagerTutorialMode {
   USER_MANAGER_TUTORIAL_LOCK,      // TODO(noms): To be implemented.
 };
 
-// Different actions to perform after the user manager selects a profile.
-enum UserManagerProfileSelected {
+// Different actions to perform after the user manager selects a profile as well
+// as actions to perform when user manager window opens. The former have a
+// USER_MANAGER_SELECT_PROFILE_ prefix and the later a USER_MANAGER_OPEN_
+// prefix.
+enum UserManagerAction {
+  USER_MANAGER_OPEN_CREATE_USER_PAGE,
   USER_MANAGER_SELECT_PROFILE_NO_ACTION,
   USER_MANAGER_SELECT_PROFILE_TASK_MANAGER,
   USER_MANAGER_SELECT_PROFILE_ABOUT_CHROME,
@@ -35,6 +39,7 @@ enum UserManagerProfileSelected {
 };
 
 extern const char kUserManagerDisplayTutorial[];
+extern const char kUserManagerOpenCreateUserPage[];
 extern const char kUserManagerSelectProfileTaskManager[];
 extern const char kUserManagerSelectProfileAboutChrome[];
 extern const char kUserManagerSelectProfileChromeSettings[];
@@ -116,13 +121,14 @@ bool IsLockAvailable(Profile* profile);
 // the value of |tutorial_mode|, the user manager can show a specific
 // tutorial, or no tutorial at all. If a tutorial is not shown, then
 // |profile_path_to_focus| could be used to specify which user should be
-// focused. After a profile is opened from the user manager, perform
-// |profile_open_action|. |callback| is run with the custom url to be displayed,
-// as well as a pointer to the guest profile.
+// focused. Depending on the value of |user_manager_action|, executes an action
+// once the user manager displays or after a profile is opened. |callback| is
+// run with the custom url to be displayed, as well as a pointer to the guest
+// profile.
 void CreateSystemProfileForUserManager(
     const base::FilePath& profile_path_to_focus,
     profiles::UserManagerTutorialMode tutorial_mode,
-    profiles::UserManagerProfileSelected profile_open_action,
+    profiles::UserManagerAction user_manager_action,
     const base::Callback<void(Profile*, const std::string&)>& callback);
 
 // Based on the |profile| preferences, determines whether a user manager
