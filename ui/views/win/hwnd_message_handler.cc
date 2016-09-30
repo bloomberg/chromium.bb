@@ -786,8 +786,7 @@ void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
 }
 
 void HWNDMessageHandler::FrameTypeChanged() {
-  if (!custom_window_region_.is_valid() &&
-      delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN)
+  if (!custom_window_region_.is_valid() && IsFrameSystemDrawn())
     dwm_transition_desired_ = true;
   if (!dwm_transition_desired_ || !IsFullscreen())
     PerformDwmTransition();
@@ -1156,8 +1155,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   // the delegate to allow for a custom hit mask.
   if ((window_ex_style() & WS_EX_COMPOSITED) == 0 &&
       !custom_window_region_.is_valid() &&
-      (delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN ||
-       !delegate_->HasNonClientView())) {
+      (IsFrameSystemDrawn() || !delegate_->HasNonClientView())) {
     if (force)
       SetWindowRgn(hwnd(), NULL, redraw);
     return;
@@ -1263,9 +1261,14 @@ void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
   InvalidateRect(hwnd(), NULL, FALSE);
 }
 
+bool HWNDMessageHandler::IsFrameSystemDrawn() const {
+  FrameMode frame_mode = delegate_->GetFrameMode();
+  return frame_mode == FrameMode::SYSTEM_DRAWN ||
+         frame_mode == FrameMode::SYSTEM_DRAWN_NO_CONTROLS;
+}
+
 bool HWNDMessageHandler::HasSystemFrame() const {
-  return delegate_->HasFrame() &&
-         delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN;
+  return delegate_->HasFrame() && IsFrameSystemDrawn();
 }
 
 // Message handlers ------------------------------------------------------------
@@ -1748,7 +1751,7 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
     if (autohide_edges & ViewsDelegate::EDGE_LEFT)
       client_rect->left += kAutoHideTaskbarThicknessPx;
     if (autohide_edges & ViewsDelegate::EDGE_TOP) {
-      if (delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
+      if (IsFrameSystemDrawn()) {
         // Tricky bit.  Due to a bug in DwmDefWindowProc()'s handling of
         // WM_NCHITTEST, having any nonclient area atop the window causes the
         // caption buttons to draw onscreen but not respond to mouse
@@ -1809,7 +1812,8 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
 
   // If the DWM is rendering the window controls, we need to give the DWM's
   // default window procedure first chance to handle hit testing.
-  if (HasSystemFrame()) {
+  if (HasSystemFrame() &&
+      delegate_->GetFrameMode() != FrameMode::SYSTEM_DRAWN_NO_CONTROLS) {
     LRESULT result;
     if (DwmDefWindowProc(hwnd(), WM_NCHITTEST, 0,
                          MAKELPARAM(point.x(), point.y()), &result)) {
@@ -1853,8 +1857,7 @@ void HWNDMessageHandler::OnNCPaint(HRGN rgn) {
   // We only do non-client painting if we're not using the system frame.
   // It's required to avoid some native painting artifacts from appearing when
   // the window is resized.
-  if (!delegate_->HasNonClientView() ||
-      delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
+  if (!delegate_->HasNonClientView() || IsFrameSystemDrawn()) {
     if (ui::win::IsAeroGlassEnabled()) {
       // The default WM_NCPAINT handler under Aero Glass doesn't clear the
       // nonclient area, so it'll remain the default white color. That area is
@@ -2541,7 +2544,7 @@ void HWNDMessageHandler::PerformDwmTransition() {
   // The non-client view needs to update too.
   delegate_->HandleFrameChanged();
 
-  if (IsVisible() && delegate_->GetFrameMode() == FrameMode::SYSTEM_DRAWN) {
+  if (IsVisible() && IsFrameSystemDrawn()) {
     // For some reason, we need to hide the window after we change from a custom
     // frame to a native frame.  If we don't, the client area will be filled
     // with black.  This seems to be related to an interaction between DWM and

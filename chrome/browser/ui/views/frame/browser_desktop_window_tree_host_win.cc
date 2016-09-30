@@ -203,19 +203,24 @@ void BrowserDesktopWindowTreeHostWin::PostHandleMSG(UINT message,
 }
 
 views::FrameMode BrowserDesktopWindowTreeHostWin::GetFrameMode() const {
+  const views::FrameMode system_frame_mode =
+      browser_frame_->CustomDrawSystemTitlebar()
+          ? views::FrameMode::SYSTEM_DRAWN_NO_CONTROLS
+          : views::FrameMode::SYSTEM_DRAWN;
+
   // We don't theme popup or app windows, so regardless of whether or not a
   // theme is active for normal browser windows, we don't want to use the custom
   // frame for popups/apps.
   if (!browser_view_->IsBrowserTypeNormal() &&
       DesktopWindowTreeHostWin::GetFrameMode() ==
           views::FrameMode::SYSTEM_DRAWN) {
-    return views::FrameMode::SYSTEM_DRAWN;
+    return system_frame_mode;
   }
 
   // Otherwise, we use the native frame when we're told we should by the theme
   // provider (e.g. no custom theme is active).
   return GetWidget()->GetThemeProvider()->ShouldUseNativeFrame()
-             ? views::FrameMode::SYSTEM_DRAWN
+             ? system_frame_mode
              : views::FrameMode::CUSTOM_DRAWN;
 }
 
@@ -248,6 +253,10 @@ void BrowserDesktopWindowTreeHostWin::UpdateDWMFrame() {
   // With a custom titlebar we want the margins to always be 2 pixels, because
   // that gives us the 1 pixel accent color border around the window (a 1 pixel
   // margin is not sufficient, it will draw a messed-up-looking border instead).
+  // The other pixel ends up being 1-pixel-thick native titlebar (including
+  // caption buttons) but since we draw over that pixel in
+  // GlassBrowserFrameView::PaintTitlebar() it will be invisible and won't get
+  // mouse events.
   if (browser_frame_->CustomDrawSystemTitlebar() && ShouldUseNativeFrame() &&
       !GetWidget()->IsFullscreen()) {
     MARGINS margins = {2, 2, 2, 2};

@@ -318,6 +318,11 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // onscreen.
   void ForceRedrawWindow(int attempts);
 
+  // Returns whether Windows should help with frame rendering (i.e. we're using
+  // the glass frame).
+  bool IsFrameSystemDrawn() const;
+
+  // Returns true if IsFrameSystemDrawn() and there's actually a frame to draw.
   bool HasSystemFrame() const;
 
   // Adds or removes the frame extension into client area with
