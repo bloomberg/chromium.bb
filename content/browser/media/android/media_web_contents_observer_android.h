@@ -20,7 +20,6 @@ enum class MediaContentType;
 
 namespace content {
 
-class BrowserCdmManager;
 class BrowserMediaPlayerManager;
 class BrowserMediaSessionManager;
 class BrowserSurfaceViewManager;
@@ -82,16 +81,11 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
   bool OnMediaPlayerMessageReceived(const IPC::Message& message,
                                     RenderFrameHost* render_frame_host);
 
-  bool OnMediaPlayerSetCdmMessageReceived(const IPC::Message& message,
-                                          RenderFrameHost* render_frame_host);
-
   bool OnMediaSessionMessageReceived(const IPC::Message& message,
                                      RenderFrameHost* render_frame_host);
 
   bool OnSurfaceViewManagerMessageReceived(const IPC::Message& message,
                                      RenderFrameHost* render_frame_host);
-
-  void OnSetCdm(RenderFrameHost* render_frame_host, int player_id, int cdm_id);
 
   // Map from RenderFrameHost* to BrowserMediaPlayerManager.
   using MediaPlayerManagerMap =

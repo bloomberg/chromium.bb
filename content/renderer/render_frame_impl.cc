@@ -230,9 +230,6 @@
 #if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
 #include "content/renderer/media/cdm/render_cdm_factory.h"
-#elif defined(ENABLE_BROWSER_CDMS)
-#include "content/renderer/media/cdm/render_cdm_factory.h"
-#include "content/renderer/media/cdm/renderer_cdm_manager.h"
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA)
@@ -823,10 +820,9 @@ bool UseWebMediaPlayerImpl(const GURL& url) {
 #if defined(ENABLE_MOJO_CDM)
 // Returns whether mojo CDM should be used at runtime. Note that even when mojo
 // CDM is enabled at compile time (ENABLE_MOJO_CDM is defined), there are cases
-// where we want to choose other CDM types. For example, on Android when we use
-// WebMediaPlayerAndroid, we still want to use ProxyMediaKeys. In the future,
-// when we experiment mojo CDM on desktop, we will choose between mojo CDM and
-// pepper CDM at runtime.
+// where we want to choose other CDM types. For example, in the future, when we
+// experiment mojo CDM on desktop, we will choose between mojo CDM and pepper
+// CDM at runtime.
 // TODO(xhwang): Remove this when we use mojo CDM for all remote CDM cases by
 // default.
 bool UseMojoCdm() {
@@ -1062,9 +1058,6 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       media_session_manager_(NULL),
 #endif
       media_surface_manager_(nullptr),
-#if defined(ENABLE_BROWSER_CDMS)
-      cdm_manager_(NULL),
-#endif
       devtools_agent_(nullptr),
       push_messaging_dispatcher_(NULL),
       presentation_dispatcher_(NULL),
@@ -6250,10 +6243,6 @@ media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
   DCHECK(frame_);
   cdm_factory_.reset(
       new RenderCdmFactory(base::Bind(&PepperCdmWrapperImpl::Create, frame_)));
-#elif defined(ENABLE_BROWSER_CDMS)
-  if (!cdm_manager_)
-    cdm_manager_ = new RendererCdmManager(this);
-  cdm_factory_.reset(new RenderCdmFactory(cdm_manager_));
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
   return cdm_factory_.get();

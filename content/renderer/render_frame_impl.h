@@ -1190,13 +1190,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // process. Always use the GetRemoterFactory() accessor instead of this.
   media::mojom::RemoterFactoryPtr remoter_factory_;
 
-#if defined(ENABLE_BROWSER_CDMS)
-  // Manage all CDMs in this render frame for communicating with the real CDM in
-  // the browser process. It's okay to use a raw pointer since it's a
-  // RenderFrameObserver.
-  RendererCdmManager* cdm_manager_;
-#endif
-
   // The CDM and decoder factory attached to this frame, lazily initialized.
   std::unique_ptr<media::CdmFactory> cdm_factory_;
   std::unique_ptr<media::DecoderFactory> decoder_factory_;

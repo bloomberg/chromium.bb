@@ -1899,13 +1899,6 @@ source_set("browser") {
     deps += [ "//dbus" ]
   }
 
-  if (enable_browser_cdms) {
-    sources += [
-      "media/cdm/browser_cdm_manager.cc",
-      "media/cdm/browser_cdm_manager.h",
-    ]
-  }
-
   if (is_linux) {
     deps += [ "//third_party/boringssl" ]
   }

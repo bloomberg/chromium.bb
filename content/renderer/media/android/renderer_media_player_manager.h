@@ -84,11 +84,6 @@ class RendererMediaPlayerManager :
   // Requests the player to enter fullscreen.
   void EnterFullscreen(int player_id);
 
-  // Requests the player with |player_id| to use the CDM with |cdm_id|.
-  // Does nothing if |cdm_id| is kInvalidCdmId.
-  // TODO(xhwang): Update this when we implement setCdm(0).
-  void SetCdm(int player_id, int cdm_id);
-
   // Registers and unregisters a WebMediaPlayerAndroid object.
   int RegisterMediaPlayer(media::RendererMediaPlayerInterface* player) override;
   void UnregisterMediaPlayer(int player_id) override;

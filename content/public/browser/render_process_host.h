@@ -287,13 +287,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const = 0;
 
-#if defined(ENABLE_BROWSER_CDMS)
-  // Returns the CDM instance associated with |render_frame_id| and |cdm_id|,
-  // or nullptr if not found.
-  virtual scoped_refptr<media::MediaKeys> GetCdm(int render_frame_id,
-                                                 int cdm_id) const = 0;
-#endif
-
   // Returns true if this process currently has backgrounded priority.
   virtual bool IsProcessBackgrounded() const = 0;
 

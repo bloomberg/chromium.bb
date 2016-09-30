@@ -29,10 +29,6 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/storage_partition.h"
 
-#if defined(ENABLE_BROWSER_CDMS)
-#include "media/base/media_keys.h"
-#endif
-
 namespace content {
 
 MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
@@ -273,14 +269,6 @@ const base::TimeTicks& MockRenderProcessHost::GetInitTimeForNavigationMetrics()
   static base::TimeTicks dummy_time = base::TimeTicks::Now();
   return dummy_time;
 }
-
-#if defined(ENABLE_BROWSER_CDMS)
-scoped_refptr<media::MediaKeys> MockRenderProcessHost::GetCdm(
-    int render_frame_id,
-    int cdm_id) const {
-  return nullptr;
-}
-#endif
 
 bool MockRenderProcessHost::IsProcessBackgrounded() const {
   return is_process_backgrounded_;

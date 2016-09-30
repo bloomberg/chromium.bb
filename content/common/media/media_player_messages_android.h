@@ -176,8 +176,3 @@ IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlayback,
 // Control media playing on a remote device.
 IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_RequestRemotePlaybackControl,
                     int /* player_id */)
-
-// Requests the player with |player_id| to use the CDM with |cdm_id|.
-IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_SetCdm,
-                    int /* player_id */,
-                    int /* cdm_id */)

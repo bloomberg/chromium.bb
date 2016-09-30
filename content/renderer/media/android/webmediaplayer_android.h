@@ -57,7 +57,6 @@ struct MailboxHolder;
 }
 
 namespace media {
-class CdmContext;
 class MediaLog;
 class WebContentDecryptionModuleImpl;
 }
