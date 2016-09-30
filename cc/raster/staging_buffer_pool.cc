@@ -144,18 +144,25 @@ StagingBufferPool::StagingBufferPool(base::SequencedTaskRunner* task_runner,
   reduce_memory_usage_callback_ = base::Bind(
       &StagingBufferPool::ReduceMemoryUsage, weak_ptr_factory_.GetWeakPtr());
 
-  // Register this component with base::MemoryCoordinatorClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&StagingBufferPool::RegisterMemoryCoordinatorClient,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 StagingBufferPool::~StagingBufferPool() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-  // Unregister this component with memory_coordinator::ClientRegistry.
-  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
+}
+
+void StagingBufferPool::RegisterMemoryCoordinatorClient() {
+  // Register this component with base::MemoryCoordinatorClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
 void StagingBufferPool::Shutdown() {
+  // Unregister this component with memory_coordinator::ClientRegistry.
+  base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
+
   base::AutoLock lock(lock_);
   if (buffers_.empty())
     return;
@@ -425,10 +432,11 @@ void StagingBufferPool::OnMemoryStateChange(base::MemoryState state) {
       // TODO(tasak): make the limits of this component's caches smaller to
       // save memory usage.
       break;
-    case base::MemoryState::SUSPENDED:
+    case base::MemoryState::SUSPENDED: {
+      base::AutoLock lock(lock_);
       // Release all buffers, regardless of how recently they were used.
       ReleaseBuffersNotUsedSince(base::TimeTicks() + base::TimeDelta::Max());
-      break;
+    } break;
     case base::MemoryState::UNKNOWN:
       // NOT_REACHED.
       break;
