@@ -57,7 +57,7 @@ class _MediaStory(system_health_story.SystemHealthStory):
 ################################################################################
 
 
-@benchmark.Disabled('win')  # crbug.com/649392
+@benchmark.Disabled('all')  # crbug.com/649392
 class GooglePlayMusicDesktopStory(_MediaStory):
   NAME = 'play:media:google_play_music'
   URL = 'https://music.google.com'
