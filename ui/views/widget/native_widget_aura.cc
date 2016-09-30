@@ -35,6 +35,7 @@
 #include "ui/views/drag_utils.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/drop_helper.h"
+#include "ui/views/widget/focus_manager_event_handler.h"
 #include "ui/views/widget/native_widget_delegate.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
@@ -199,6 +200,11 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   if (params.type != Widget::InitParams::TYPE_TOOLTIP &&
       params.type != Widget::InitParams::TYPE_POPUP) {
     aura::client::SetDragDropDelegate(window_, this);
+  }
+
+  if (params.type == Widget::InitParams::TYPE_WINDOW) {
+    focus_manager_event_handler_ =
+        base::MakeUnique<FocusManagerEventHandler>(GetWidget(), window_);
   }
 
   aura::client::SetActivationDelegate(window_, this);
@@ -868,6 +874,8 @@ void NativeWidgetAura::OnWindowDestroying(aura::Window* window) {
 
   // If the aura::Window is destroyed, we can no longer show tooltips.
   tooltip_manager_.reset();
+
+  focus_manager_event_handler_.reset();
 }
 
 void NativeWidgetAura::OnWindowDestroyed(aura::Window* window) {

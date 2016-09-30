@@ -30,6 +30,7 @@ class FontList;
 namespace views {
 
 class DropHelper;
+class FocusManagerEventHandler;
 class TooltipManagerAura;
 class WindowReorderer;
 
@@ -200,8 +201,6 @@ class VIEWS_EXPORT NativeWidgetAura
   internal::NativeWidgetDelegate* delegate() { return delegate_; }
 
  private:
-  class ActiveWindowObserver;
-
   bool IsDocked() const;
   void SetInitialFocus(ui::WindowShowState show_state);
 
@@ -231,6 +230,9 @@ class VIEWS_EXPORT NativeWidgetAura
 
   std::unique_ptr<DropHelper> drop_helper_;
   int last_drop_operation_;
+
+  // Native widget's handler to receive events before the event target.
+  std::unique_ptr<FocusManagerEventHandler> focus_manager_event_handler_;
 
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.

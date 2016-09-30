@@ -37,6 +37,7 @@
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/drop_helper.h"
+#include "ui/views/widget/focus_manager_event_handler.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager_aura.h"
@@ -208,27 +209,6 @@ class DesktopNativeWidgetAuraWindowTreeClient :
 
 }  // namespace
 
-class FocusManagerEventHandler : public ui::EventHandler {
- public:
-  explicit FocusManagerEventHandler(
-      DesktopNativeWidgetAura* desktop_native_widget_aura)
-      : desktop_native_widget_aura_(desktop_native_widget_aura) {}
-
-  // Implementation of ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override {
-    Widget* widget = desktop_native_widget_aura_->GetWidget();
-    if (widget && widget->GetFocusManager()->GetFocusedView() &&
-        !widget->GetFocusManager()->OnKeyEvent(*event)) {
-      event->StopPropagation();
-    }
-  }
-
- private:
-  DesktopNativeWidgetAura* desktop_native_widget_aura_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusManagerEventHandler);
-};
-
 class RootWindowDestructionObserver : public aura::WindowObserver {
  public:
   explicit RootWindowDestructionObserver(DesktopNativeWidgetAura* parent)
@@ -315,6 +295,8 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   window_tree_client_.reset();  // Uses host_->dispatcher() at destruction.
 
   capture_client_.reset();  // Uses host_->dispatcher() at destruction.
+
+  focus_manager_event_handler_.reset();
 
   // FocusController uses |content_window_|. Destroy it now so that we don't
   // have to worry about the possibility of FocusController attempting to use
@@ -515,8 +497,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   }
 
   if (params.type == Widget::InitParams::TYPE_WINDOW) {
-    focus_manager_event_handler_.reset(new FocusManagerEventHandler(this));
-    host_->window()->AddPreTargetHandler(focus_manager_event_handler_.get());
+    focus_manager_event_handler_ = base::MakeUnique<FocusManagerEventHandler>(
+        GetWidget(), host_->window());
   }
 
   event_client_.reset(new DesktopEventClient);

@@ -527,11 +527,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, MAYBE_PasteWithoutTextChange) {
   EXPECT_TRUE(details.number_of_matches() > 0);
 }
 
-#if defined(OS_WIN)
-// TODO(phajdan.jr): Disabling due to possible timing issues on XP
-// interactive_ui_tests.
-// http://crbug.com/311363
-IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_CtrlEnter) {
+IN_PROC_BROWSER_TEST_F(FindInPageTest, CtrlEnter) {
   ui_test_utils::NavigateToURL(browser(),
                                GURL("data:text/html,This is some text with a "
                                     "<a href=\"about:blank\">link</a>."));
@@ -558,4 +554,3 @@ IN_PROC_BROWSER_TEST_F(FindInPageTest, DISABLED_CtrlEnter) {
 
   observer.Wait();
 }
-#endif

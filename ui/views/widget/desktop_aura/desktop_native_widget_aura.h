@@ -232,7 +232,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
                    const gfx::Point& new_origin) override;
 
  private:
-  friend class FocusManagerEventHandler;
   friend class RootWindowDestructionObserver;
 
   // To save a clear on platforms where the window is never transparent, the

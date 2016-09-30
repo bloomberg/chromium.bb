@@ -528,6 +528,8 @@ component("views") {
       "view_constants_aura.cc",
       "view_constants_aura.h",
       "views_touch_selection_controller_factory_aura.cc",
+      "widget/focus_manager_event_handler.cc",
+      "widget/focus_manager_event_handler.h",
       "widget/native_widget_aura.cc",
       "widget/native_widget_aura.h",
       "widget/tooltip_manager_aura.cc",
