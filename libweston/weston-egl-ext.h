@@ -135,6 +135,10 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC) (EGLDisplay
 #define EGL_NO_CONFIG_MESA                      ((EGLConfig)0)
 #endif
 
+#ifndef EGL_NO_CONFIG_KHR
+#define EGL_NO_CONFIG_KHR ((EGLConfig)0)
+#endif
+
 #ifndef EGL_EXT_platform_base
 #define EGL_EXT_platform_base 1
 typedef EGLDisplay (EGLAPIENTRYP PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform, void *native_display, const EGLint *attrib_list);
