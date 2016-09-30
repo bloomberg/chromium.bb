@@ -27,4 +27,4 @@ class SharedMemorySeqLockBuffer {
 
 }  // namespace device
 
-#endif  // DEVICE_CORE_SHARED_MEMORY_SEQLOCK_BUFFER_H_
+#endif  // DEVICE_BASE_SYNCHRONIZATION_SHARED_MEMORY_SEQLOCK_BUFFER_H_
