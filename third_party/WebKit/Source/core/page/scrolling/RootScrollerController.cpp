@@ -88,6 +88,19 @@ void RootScrollerController::didUpdateLayout()
     recomputeEffectiveRootScroller();
 }
 
+void RootScrollerController::didDisposePaintLayerScrollableArea(
+    PaintLayerScrollableArea& area)
+{
+    // If the document is being torn down we'll skip a bunch of notifications
+    // so recomputing the effective root scroller could touch dead objects.
+    // (e.g. ScrollAnchor keeps a pointer to dead LayoutObjects).
+    if (!m_effectiveRootScroller || area.box().documentBeingDestroyed())
+        return;
+
+    if (&area.box() == m_effectiveRootScroller->layoutObject())
+        recomputeEffectiveRootScroller();
+}
+
 void RootScrollerController::recomputeEffectiveRootScroller()
 {
     bool rootScrollerValid =
@@ -150,8 +163,11 @@ PaintLayer* RootScrollerController::rootScrollerPaintLayer() const
     // PaintLayer (i.e. the PaintLayerCompositor's root layer). The reason the root
     // scroller is the <html> layer and not #document is because the latter is a Node
     // but not an Element.
-    if (m_effectiveRootScroller->isSameNode(m_document->documentElement()))
+    if (m_effectiveRootScroller->isSameNode(m_document->documentElement())) {
+        if (!layer || !layer->compositor())
+            return nullptr;
         return layer->compositor()->rootLayer();
+    }
 
     return layer;
 }

@@ -52,6 +52,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/RootFrameViewport.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
@@ -67,6 +68,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "platform/PlatformGestureEvent.h"
@@ -155,6 +157,9 @@ void PaintLayerScrollableArea::dispose()
         if (FrameView* frameView = frame->view())
             frameView->removeResizerArea(box());
     }
+
+    if (RootScrollerController* controller = box().document().rootScrollerController())
+        controller->didDisposePaintLayerScrollableArea(*this);
 
     m_scrollbarManager.dispose();
 

@@ -4,6 +4,7 @@
 
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/RootFrameViewport.h"
 #include "core/frame/TopControls.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
@@ -949,6 +950,42 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers)
             ->masksToBounds());
     }
 }
+
+// Tests that removing the root scroller element from the DOM resets the
+// effective root scroller without waiting for any lifecycle events.
+TEST_F(RootScrollerTest, RemoveRootScrollerFromDom)
+{
+    initialize("root-scroller-iframe.html");
+
+    {
+        HTMLFrameOwnerElement* iframe = toHTMLFrameOwnerElement(
+            mainFrame()->document()->getElementById("iframe"));
+        Element* innerContainer =
+            iframe->contentDocument()->getElementById("container");
+
+        NonThrowableExceptionState exceptionState;
+        mainFrame()->document()->setRootScroller(iframe, exceptionState);
+        iframe->contentDocument()->setRootScroller(
+            innerContainer, exceptionState);
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(iframe, mainFrame()->document()->rootScroller());
+        ASSERT_EQ(iframe, effectiveRootScroller(mainFrame()->document()));
+        ASSERT_EQ(innerContainer, iframe->contentDocument()->rootScroller());
+        ASSERT_EQ(innerContainer,
+            effectiveRootScroller(iframe->contentDocument()));
+
+        iframe->contentDocument()->body()->setInnerHTML("", exceptionState);
+
+        // If the root scroller wasn't updated by the DOM removal above, this
+        // will touch the disposed root scroller's ScrollableArea.
+        mainFrameView()->getRootFrameViewport()->serviceScrollAnimations(0);
+
+        EXPECT_EQ(iframe->contentDocument()->documentElement(),
+            effectiveRootScroller(iframe->contentDocument()));
+    }
+}
+
 
 } // namespace
 

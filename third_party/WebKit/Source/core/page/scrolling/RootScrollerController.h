@@ -14,6 +14,7 @@ class Document;
 class Element;
 class GraphicsLayer;
 class PaintLayer;
+class PaintLayerScrollableArea;
 class ScrollableArea;
 class ScrollStateCallback;
 
@@ -69,6 +70,10 @@ public:
     // determine if the current root scroller is still valid or if it must be
     // replaced by the default root scroller.
     void didUpdateLayout();
+
+    // PaintLayerScrollableAreas need to notify this class when they're being
+    // disposed so that we can remove them as the root scroller.
+    void didDisposePaintLayerScrollableArea(PaintLayerScrollableArea&);
 
     // Returns the PaintLayer associated with the currently effective root
     // scroller.

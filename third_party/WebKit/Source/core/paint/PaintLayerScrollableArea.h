@@ -47,6 +47,7 @@
 #include "core/CoreExport.h"
 #include "core/layout/ScrollAnchor.h"
 #include "core/layout/ScrollEnums.h"
+#include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintLayerFragment.h"
 #include "platform/heap/Handle.h"
