@@ -88,10 +88,7 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
   }
   gfx::RectF drawable_content_rect = MathUtil::MapClippedRect(
       draw_transform(), gfx::RectF(surface_content_rect));
-  if (HasReplica()) {
-    drawable_content_rect.Union(MathUtil::MapClippedRect(
-        replica_draw_transform(), gfx::RectF(surface_content_rect)));
-  } else if (!filters.IsEmpty() && is_clipped()) {
+  if (!filters.IsEmpty() && is_clipped()) {
     // Filter could move pixels around, but still need to be clipped.
     drawable_content_rect.Intersect(gfx::RectF(clip_rect()));
   }
@@ -119,35 +116,12 @@ SkColor RenderSurfaceImpl::GetDebugBorderColor() const {
   return DebugColors::SurfaceBorderColor();
 }
 
-SkColor RenderSurfaceImpl::GetReplicaDebugBorderColor() const {
-  return DebugColors::SurfaceReplicaBorderColor();
-}
-
 float RenderSurfaceImpl::GetDebugBorderWidth() const {
   return DebugColors::SurfaceBorderWidth(owning_layer_->layer_tree_impl());
 }
 
-float RenderSurfaceImpl::GetReplicaDebugBorderWidth() const {
-  return DebugColors::SurfaceReplicaBorderWidth(
-      owning_layer_->layer_tree_impl());
-}
-
 int RenderSurfaceImpl::OwningLayerId() const {
   return owning_layer_ ? owning_layer_->id() : 0;
-}
-
-bool RenderSurfaceImpl::HasReplica() const {
-  return OwningEffectNode()->replica_layer_id != EffectTree::kInvalidNodeId;
-}
-
-const LayerImpl* RenderSurfaceImpl::ReplicaLayer() const {
-  int replica_layer_id = OwningEffectNode()->replica_layer_id;
-  return owning_layer_->layer_tree_impl()->LayerById(replica_layer_id);
-}
-
-LayerImpl* RenderSurfaceImpl::ReplicaLayer() {
-  int replica_layer_id = OwningEffectNode()->replica_layer_id;
-  return owning_layer_->layer_tree_impl()->LayerById(replica_layer_id);
 }
 
 LayerImpl* RenderSurfaceImpl::MaskLayer() {
@@ -157,16 +131,6 @@ LayerImpl* RenderSurfaceImpl::MaskLayer() {
 
 bool RenderSurfaceImpl::HasMask() const {
   return OwningEffectNode()->mask_layer_id != EffectTree::kInvalidNodeId;
-}
-
-LayerImpl* RenderSurfaceImpl::ReplicaMaskLayer() {
-  int replica_mask_layer_id = OwningEffectNode()->replica_mask_layer_id;
-  return owning_layer_->layer_tree_impl()->LayerById(replica_mask_layer_id);
-}
-
-bool RenderSurfaceImpl::HasReplicaMask() const {
-  return OwningEffectNode()->replica_mask_layer_id !=
-         EffectTree::kInvalidNodeId;
 }
 
 const FilterOperations& RenderSurfaceImpl::Filters() const {
@@ -227,7 +191,7 @@ void RenderSurfaceImpl::SetContentRectForTesting(const gfx::Rect& rect) {
 }
 
 gfx::Rect RenderSurfaceImpl::CalculateClippedAccumulatedContentRect() {
-  if (ReplicaLayer() || HasCopyRequest() || !is_clipped())
+  if (HasCopyRequest() || !is_clipped())
     return accumulated_content_rect();
 
   if (accumulated_content_rect().IsEmpty())

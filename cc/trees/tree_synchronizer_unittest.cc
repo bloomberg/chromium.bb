@@ -108,23 +108,6 @@ void ExpectTreesAreIdentical(Layer* root_layer,
           effect_tree.Node(layer_impl->effect_tree_index())->mask_layer_id);
     }
 
-    if (layer->replica_layer()) {
-      SCOPED_TRACE("replica_layer");
-      int replica_layer_id = layer->replica_layer()->id();
-      EXPECT_TRUE(tree_impl->LayerById(layer->replica_layer()->id()));
-      EXPECT_EQ(
-          replica_layer_id,
-          effect_tree.Node(layer_impl->effect_tree_index())->replica_layer_id);
-      if (layer->replica_layer()->mask_layer()) {
-        SCOPED_TRACE("replica_mask_layer");
-        int replica_mask_layer_id = layer->replica_layer()->mask_layer()->id();
-        EXPECT_TRUE(tree_impl->LayerById(replica_mask_layer_id));
-        EXPECT_EQ(replica_mask_layer_id,
-                  effect_tree.Node(layer_impl->effect_tree_index())
-                      ->replica_mask_layer_id);
-      }
-    }
-
     const Layer* layer_scroll_parent = layer->scroll_parent();
 
     if (layer_scroll_parent) {
@@ -455,8 +438,8 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeThenDestroy) {
               layer_impl_destruction_list.end());
 }
 
-// Constructs+syncs a tree with mask, replica, and replica mask layers.
-TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
+// Constructs+syncs a tree with mask layer.
+TEST_F(TreeSynchronizerTest, SyncMaskLayer) {
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   layer_tree_root->AddChild(Layer::Create());
   layer_tree_root->AddChild(Layer::Create());
@@ -465,17 +448,6 @@ TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
   // First child gets a mask layer.
   scoped_refptr<Layer> mask_layer = Layer::Create();
   layer_tree_root->children()[0]->SetMaskLayer(mask_layer.get());
-
-  // Second child gets a replica layer.
-  scoped_refptr<Layer> replica_layer = Layer::Create();
-  layer_tree_root->children()[1]->SetReplicaLayer(replica_layer.get());
-
-  // Third child gets a replica layer with a mask layer.
-  scoped_refptr<Layer> replica_layer_with_mask = Layer::Create();
-  scoped_refptr<Layer> replica_mask_layer = Layer::Create();
-  replica_layer_with_mask->SetMaskLayer(replica_mask_layer.get());
-  layer_tree_root->children()[2]->SetReplicaLayer(
-      replica_layer_with_mask.get());
 
   host_->SetRootLayer(layer_tree_root);
   host_->BuildPropertyTreesForTesting();
@@ -495,19 +467,9 @@ TEST_F(TreeSynchronizerTest, SyncMaskReplicaAndReplicaMaskLayers) {
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
 
-  // Remove the replica layer.
-  layer_tree_root->children()[1]->SetReplicaLayer(NULL);
-  host_->BuildPropertyTreesForTesting();
-  host_->CommitAndCreateLayerImplTree();
-
   layer_impl_tree_root = host_->active_tree()->root_layer_for_testing();
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,
                           host_->active_tree());
-
-  // Remove the replica mask.
-  replica_layer_with_mask->SetMaskLayer(NULL);
-  host_->BuildPropertyTreesForTesting();
-  host_->CommitAndCreateLayerImplTree();
 
   layer_impl_tree_root = host_->active_tree()->root_layer_for_testing();
   ExpectTreesAreIdentical(layer_tree_root.get(), layer_impl_tree_root,

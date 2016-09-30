@@ -84,12 +84,6 @@ const char kUIShowSurfaceDamageRects[] = "ui-show-surface-damage-rects";
 const char kShowScreenSpaceRects[] = "show-screenspace-rects";
 const char kUIShowScreenSpaceRects[] = "ui-show-screenspace-rects";
 
-// Show rects in the HUD around the screen-space transformed bounds of every
-// layer's replica, when they have one.
-const char kShowReplicaScreenSpaceRects[] = "show-replica-screenspace-rects";
-const char kUIShowReplicaScreenSpaceRects[] =
-    "ui-show-replica-screenspace-rects";
-
 // Switches cc machinery to use layer lists instead of layer trees
 const char kEnableLayerLists[] = "enable-layer-lists";
 const char kUIEnableLayerLists[] = "ui-enable-layer-lists";

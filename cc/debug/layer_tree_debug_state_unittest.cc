@@ -26,7 +26,6 @@ TEST(LayerTreeDebugStateTest, AllFieldsTrue) {
   state.show_property_changed_rects = true;
   state.show_surface_damage_rects = true;
   state.show_screen_space_rects = true;
-  state.show_replica_screen_space_rects = true;
   state.show_touch_event_handler_rects = true;
   state.show_wheel_event_handler_rects = true;
   state.show_scroll_event_handler_rects = true;
@@ -47,7 +46,6 @@ TEST(LayerTreeDebugStateTest, ArbitraryFieldValues) {
   state.show_property_changed_rects = true;
   state.show_surface_damage_rects = false;
   state.show_screen_space_rects = false;
-  state.show_replica_screen_space_rects = true;
   state.show_touch_event_handler_rects = true;
   state.show_wheel_event_handler_rects = true;
   state.show_scroll_event_handler_rects = false;

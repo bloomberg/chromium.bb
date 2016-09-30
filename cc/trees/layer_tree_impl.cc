@@ -1012,26 +1012,12 @@ bool LayerTreeImpl::UpdateDrawProperties(
          it != end; ++it) {
       occlusion_tracker.EnterLayer(it);
 
-      bool inside_replica = it->InsideReplica();
-
-      // Don't use occlusion if a layer will appear in a replica, since the
-      // tile raster code does not know how to look for the replica and would
-      // consider it occluded even though the replica is visible.
-      // Since occlusion is only used for browser compositor (i.e.
-      // use_occlusion_for_tile_prioritization) and it won't use replicas,
-      // this should matter not.
-
       if (it.represents_itself()) {
-        Occlusion occlusion =
-            inside_replica ? Occlusion()
-                           : occlusion_tracker.GetCurrentOcclusionForLayer(
-                                 it->DrawTransform());
-        it->draw_properties().occlusion_in_content_space = occlusion;
+        it->draw_properties().occlusion_in_content_space =
+            occlusion_tracker.GetCurrentOcclusionForLayer(it->DrawTransform());
       }
 
       if (it.represents_contributing_render_surface()) {
-        // Surfaces aren't used by the tile raster code, so they can have
-        // occlusion regardless of replicas.
         const RenderSurfaceImpl* occlusion_surface =
             occlusion_tracker.OcclusionSurfaceForContributingSurface();
         gfx::Transform draw_transform;
@@ -1065,17 +1051,9 @@ bool LayerTreeImpl::UpdateDrawProperties(
         // the same occlusion as the surface (nothing inside the surface
         // occludes them).
         if (LayerImpl* mask = it->render_surface()->MaskLayer()) {
-          Occlusion mask_occlusion =
-              inside_replica
-                  ? Occlusion()
-                  : occlusion_tracker.GetCurrentOcclusionForContributingSurface(
-                        draw_transform * it->DrawTransform());
-          mask->draw_properties().occlusion_in_content_space = mask_occlusion;
-        }
-        if (LayerImpl* replica_mask =
-                it->render_surface()->ReplicaMaskLayer()) {
-          replica_mask->draw_properties().occlusion_in_content_space =
-              Occlusion();
+          mask->draw_properties().occlusion_in_content_space =
+              occlusion_tracker.GetCurrentOcclusionForContributingSurface(
+                  draw_transform * it->DrawTransform());
         }
       }
 
@@ -2094,7 +2072,7 @@ void LayerTreeImpl::ScrollAnimationAbort(bool needs_completion) {
 
 void LayerTreeImpl::ResetAllChangeTracking() {
   layers_that_should_push_properties_.clear();
-  // Iterate over all layers, including masks and replicas.
+  // Iterate over all layers, including masks.
   for (auto& layer : *layers_)
     layer->ResetChangeTracking();
   property_trees_.ResetAllChangeTracking();

@@ -727,11 +727,6 @@ void HeadsUpDisplayLayerImpl::DrawDebugRects(
         fill_color = DebugColors::SurfaceDamageRectFillColor();
         stroke_width = DebugColors::SurfaceDamageRectBorderWidth();
         break;
-      case REPLICA_SCREEN_SPACE_RECT_TYPE:
-        stroke_color = DebugColors::ScreenSpaceSurfaceReplicaRectBorderColor();
-        fill_color = DebugColors::ScreenSpaceSurfaceReplicaRectFillColor();
-        stroke_width = DebugColors::ScreenSpaceSurfaceReplicaRectBorderWidth();
-        break;
       case SCREEN_SPACE_RECT_TYPE:
         stroke_color = DebugColors::ScreenSpaceLayerRectBorderColor();
         fill_color = DebugColors::ScreenSpaceLayerRectFillColor();

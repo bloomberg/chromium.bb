@@ -82,7 +82,6 @@ public:
     virtual bool masksToBounds() const = 0;
 
     virtual void setMaskLayer(WebLayer*) = 0;
-    virtual void setReplicaLayer(WebLayer*) = 0;
 
     virtual void setOpacity(float) = 0;
     virtual float opacity() const = 0;

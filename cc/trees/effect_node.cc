@@ -34,9 +34,7 @@ EffectNode::EffectNode()
       transform_id(0),
       clip_id(0),
       target_id(0),
-      mask_layer_id(-1),
-      replica_layer_id(-1),
-      replica_mask_layer_id(-1) {}
+      mask_layer_id(-1) {}
 
 EffectNode::EffectNode(const EffectNode& other) = default;
 
@@ -65,9 +63,7 @@ bool EffectNode::operator==(const EffectNode& other) const {
          effect_changed == other.effect_changed &&
          num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
          transform_id == other.transform_id && clip_id == other.clip_id &&
-         target_id == other.target_id && mask_layer_id == other.mask_layer_id &&
-         replica_layer_id == other.replica_layer_id &&
-         replica_mask_layer_id == other.replica_mask_layer_id;
+         target_id == other.target_id && mask_layer_id == other.mask_layer_id;
 }
 
 void EffectNode::ToProtobuf(proto::TreeNode* proto) const {
@@ -96,8 +92,6 @@ void EffectNode::ToProtobuf(proto::TreeNode* proto) const {
   data->set_clip_id(clip_id);
   data->set_target_id(target_id);
   data->set_mask_layer_id(mask_layer_id);
-  data->set_replica_layer_id(replica_layer_id);
-  data->set_replica_mask_layer_id(replica_mask_layer_id);
   Vector2dFToProto(surface_contents_scale,
                    data->mutable_surface_contents_scale());
   SizeToProto(unscaled_mask_target_size,
@@ -132,8 +126,6 @@ void EffectNode::FromProtobuf(const proto::TreeNode& proto) {
   clip_id = data.clip_id();
   target_id = data.target_id();
   mask_layer_id = data.mask_layer_id();
-  replica_layer_id = data.replica_layer_id();
-  replica_mask_layer_id = data.replica_mask_layer_id();
   surface_contents_scale = ProtoToVector2dF(data.surface_contents_scale());
 }
 
@@ -157,8 +149,6 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("clip_id", clip_id);
   value->SetInteger("target_id", target_id);
   value->SetInteger("mask_layer_id", mask_layer_id);
-  value->SetInteger("replica_layer_id", replica_layer_id);
-  value->SetInteger("replica_mask_layer_id", replica_mask_layer_id);
 }
 
 }  // namespace cc

@@ -360,8 +360,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       cmd.HasSwitch(cc::switches::kShowSurfaceDamageRects);
   settings.initial_debug_state.show_screen_space_rects =
       cmd.HasSwitch(cc::switches::kShowScreenSpaceRects);
-  settings.initial_debug_state.show_replica_screen_space_rects =
-      cmd.HasSwitch(cc::switches::kShowReplicaScreenSpaceRects);
 
   settings.initial_debug_state.SetRecordRenderingStats(
       cmd.HasSwitch(cc::switches::kEnableGpuBenchmarking));

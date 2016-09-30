@@ -50,8 +50,6 @@ static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
     return;
   DCHECK_EQ(effect_node->mask_layer_id, EffectTree::kInvalidNodeId)
       << "layer: " << layer->id();
-  DCHECK_EQ(effect_node->replica_layer_id, EffectTree::kInvalidNodeId)
-      << "layer: " << layer->id();
   DCHECK(effect_node->filters.IsEmpty());
   DCHECK(effect_node->background_filters.IsEmpty());
 }
@@ -750,13 +748,8 @@ void FindLayersThatNeedUpdates(LayerTree* layer_tree,
 
     // Append mask layers to the update layer list. They don't have valid
     // visible rects, so need to get added after the above calculation.
-    // Replica layers don't need to be updated.
     if (Layer* mask_layer = layer->mask_layer())
       update_layer_list->push_back(mask_layer);
-    if (Layer* replica_layer = layer->replica_layer()) {
-      if (Layer* mask_layer = replica_layer->mask_layer())
-        update_layer_list->push_back(mask_layer);
-    }
   }
 }
 
@@ -1473,42 +1466,6 @@ static gfx::Rect LayerDrawableContentRect(
   return layer_bounds_in_target_space;
 }
 
-static gfx::Transform ReplicaToSurfaceTransform(
-    const RenderSurfaceImpl* render_surface,
-    const PropertyTrees* property_trees) {
-  gfx::Transform replica_to_surface;
-  if (!render_surface->HasReplica())
-    return replica_to_surface;
-  const LayerImpl* replica_layer = render_surface->ReplicaLayer();
-  const EffectTree& effect_tree = property_trees->effect_tree;
-  const EffectNode* surface_effect_node =
-      effect_tree.Node(render_surface->EffectTreeIndex());
-  if (render_surface->EffectTreeIndex() != EffectTree::kContentsRootNodeId) {
-    replica_to_surface.Scale(surface_effect_node->surface_contents_scale.x(),
-                             surface_effect_node->surface_contents_scale.y());
-#if DCHECK_IS_ON()
-    const TransformTree& transform_tree = property_trees->transform_tree;
-    VerifySurfaceContentsScalesMatch(render_surface->EffectTreeIndex(),
-                                     render_surface->TransformTreeIndex(),
-                                     effect_tree, transform_tree);
-#endif
-  }
-  replica_to_surface.Translate(replica_layer->offset_to_transform_parent().x(),
-                               replica_layer->offset_to_transform_parent().y());
-  gfx::Transform replica_transform_node_to_surface;
-  property_trees->ComputeTransformToTarget(
-      replica_layer->transform_tree_index(), render_surface->EffectTreeIndex(),
-      &replica_transform_node_to_surface);
-  replica_to_surface.PreconcatTransform(replica_transform_node_to_surface);
-  if (surface_effect_node->surface_contents_scale.x() != 0 &&
-      surface_effect_node->surface_contents_scale.y() != 0) {
-    replica_to_surface.Scale(
-        1.0 / surface_effect_node->surface_contents_scale.x(),
-        1.0 / surface_effect_node->surface_contents_scale.y());
-  }
-  return replica_to_surface;
-}
-
 void ComputeLayerDrawProperties(LayerImpl* layer,
                                 const PropertyTrees* property_trees) {
   const TransformNode* transform_node =
@@ -1562,18 +1519,6 @@ void ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
       property_trees->ToScreenSpaceTransformWithoutSurfaceContentsScale(
           render_surface->TransformTreeIndex(),
           render_surface->EffectTreeIndex()));
-
-  if (render_surface->HasReplica()) {
-    gfx::Transform replica_to_surface =
-        ReplicaToSurfaceTransform(render_surface, property_trees);
-    render_surface->SetReplicaDrawTransform(render_surface->draw_transform() *
-                                            replica_to_surface);
-    render_surface->SetReplicaScreenSpaceTransform(
-        render_surface->screen_space_transform() * replica_to_surface);
-  } else {
-    render_surface->SetReplicaDrawTransform(gfx::Transform());
-    render_surface->SetReplicaScreenSpaceTransform(gfx::Transform());
-  }
 
   SetSurfaceClipRect(property_trees->clip_tree.parent(clip_node),
                      property_trees, render_surface);

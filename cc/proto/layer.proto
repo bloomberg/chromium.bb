@@ -43,7 +43,6 @@ message LayerNode {
   // A List of all the children of the current LayerNode.
   repeated LayerNode children = 4;
   optional LayerNode mask_layer = 5;
-  optional LayerNode replica_layer = 6;
 }
 
 // A container for a list of dirty layers.

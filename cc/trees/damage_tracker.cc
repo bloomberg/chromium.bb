@@ -366,7 +366,6 @@ void DamageTracker::ExtendDamageForRenderSurface(
       RectDataForSurface(render_surface->OwningLayerId(), &surface_is_new);
   gfx::Rect old_surface_rect = data.rect_;
 
-  // The drawableContextRect() already includes the replica if it exists.
   gfx::Rect surface_rect_in_target_space =
       gfx::ToEnclosingRect(render_surface->DrawableContentRect());
   data.Update(surface_rect_in_target_space, mailboxId_);
@@ -389,37 +388,7 @@ void DamageTracker::ExtendDamageForRenderSurface(
       gfx::Rect damage_rect_in_target_space = MathUtil::MapEnclosingClippedRect(
           draw_transform, damage_rect_in_local_space);
       target_damage_rect->Union(damage_rect_in_target_space);
-
-      if (render_surface->HasReplica()) {
-        const gfx::Transform& replica_draw_transform =
-            render_surface->replica_draw_transform();
-        target_damage_rect->Union(MathUtil::MapEnclosingClippedRect(
-            replica_draw_transform, damage_rect_in_local_space));
-      }
     }
-  }
-
-  // If there was damage on the replica's mask, then the target surface receives
-  // that damage as well.
-  if (render_surface->HasReplicaMask()) {
-    LayerImpl* replica_mask_layer = render_surface->ReplicaMaskLayer();
-
-    bool replica_is_new = false;
-    LayerRectMapData& data =
-        RectDataForLayer(replica_mask_layer->id(), &replica_is_new);
-
-    const gfx::Transform& replica_draw_transform =
-        render_surface->replica_draw_transform();
-    gfx::Rect replica_mask_layer_rect = MathUtil::MapEnclosingClippedRect(
-        replica_draw_transform, gfx::Rect(replica_mask_layer->bounds()));
-    data.Update(replica_mask_layer_rect, mailboxId_);
-
-    // In the current implementation, a change in the replica mask damages the
-    // entire replica region.
-    if (replica_is_new ||
-        replica_mask_layer->LayerPropertyChanged() ||
-        !replica_mask_layer->update_rect().IsEmpty())
-      target_damage_rect->Union(replica_mask_layer_rect);
   }
 
   // If the layer has a background filter, this may cause pixels in our surface

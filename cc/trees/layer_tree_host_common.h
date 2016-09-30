@@ -187,11 +187,6 @@ void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTree* host,
     function(layer);
     if (Layer* mask_layer = layer->mask_layer())
       function(mask_layer);
-    if (Layer* replica_layer = layer->replica_layer()) {
-      function(replica_layer);
-      if (Layer* mask_layer = replica_layer->mask_layer())
-        function(mask_layer);
-    }
   }
 }
 
@@ -201,8 +196,7 @@ void LayerTreeHostCommon::CallFunctionForEveryLayer(LayerTreeImpl* tree_impl,
   for (auto* layer : *tree_impl)
     function(layer);
 
-  for (int id :
-       tree_impl->property_trees()->effect_tree.mask_replica_layer_ids()) {
+  for (int id : tree_impl->property_trees()->effect_tree.mask_layer_ids()) {
     function(tree_impl->LayerById(id));
   }
 }

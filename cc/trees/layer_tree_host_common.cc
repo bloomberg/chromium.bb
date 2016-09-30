@@ -224,26 +224,17 @@ static inline void SetMaskLayersAreDrawnRenderSurfaceLayerListMembers(
     RenderSurfaceImpl* surface,
     PropertyTrees* property_trees) {
   LayerImpl* mask_layer = surface->MaskLayer();
-  LayerImpl* replica_mask_layer = surface->ReplicaMaskLayer();
   if (mask_layer) {
     mask_layer->set_is_drawn_render_surface_layer_list_member(true);
     draw_property_utils::ComputeMaskDrawProperties(mask_layer, property_trees);
-  }
-  if (replica_mask_layer) {
-    replica_mask_layer->set_is_drawn_render_surface_layer_list_member(true);
-    draw_property_utils::ComputeMaskDrawProperties(replica_mask_layer,
-                                                   property_trees);
   }
 }
 
 static inline void ClearMaskLayersAreDrawnRenderSurfaceLayerListMembers(
     RenderSurfaceImpl* surface) {
   LayerImpl* mask_layer = surface->MaskLayer();
-  LayerImpl* replica_mask_layer = surface->ReplicaMaskLayer();
   if (mask_layer)
     mask_layer->set_is_drawn_render_surface_layer_list_member(false);
-  if (replica_mask_layer)
-    replica_mask_layer->set_is_drawn_render_surface_layer_list_member(false);
 }
 
 static inline void ClearIsDrawnRenderSurfaceLayerListMember(
@@ -405,15 +396,15 @@ static void ComputeInitialRenderSurfaceLayerList(
 
       // Ignore occlusion from outside the surface when surface contents need to
       // be fully drawn. Layers with copy-request need to be complete.  We could
-      // be smarter about layers with replica and exclude regions where both
-      // layer and the replica are occluded, but this seems like overkill. The
-      // same is true for layers with filters that move pixels.
+      // be smarter about layers with filters that move pixels and exclude
+      // regions where both layers and the filters are occluded, but this seems
+      // like overkill.
       // TODO(senorblanco): make this smarter for the SkImageFilter case (check
       // for pixel-moving filters)
       const FilterOperations& filters = surface->Filters();
-      bool is_occlusion_immune =
-          surface->HasCopyRequest() || surface->HasReplica() ||
-          filters.HasReferenceFilter() || filters.HasFilterThatMovesPixels();
+      bool is_occlusion_immune = surface->HasCopyRequest() ||
+                                 filters.HasReferenceFilter() ||
+                                 filters.HasFilterThatMovesPixels();
       if (is_occlusion_immune) {
         surface->SetNearestOcclusionImmuneAncestor(surface);
       } else if (is_root) {

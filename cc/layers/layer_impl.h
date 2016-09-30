@@ -248,8 +248,6 @@ class CC_EXPORT LayerImpl {
   void ClearRenderSurfaceLayerList();
   void SetHasRenderSurface(bool has_render_surface);
 
-  void SetForceRenderSurface(bool has_render_surface);
-
   RenderSurfaceImpl* render_surface() const { return render_surface_.get(); }
 
   // The render surface which this layer draws into. This can be either owned by
@@ -435,8 +433,6 @@ class CC_EXPORT LayerImpl {
   void UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
 
   bool IsHidden() const;
-
-  bool InsideReplica() const;
 
   float GetIdealContentsScale() const;
 

@@ -270,13 +270,6 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
           stack_[last_index].occlusion_from_inside_target,
           old_surface->is_clipped(), old_surface->clip_rect(),
           old_surface->draw_transform());
-  if (old_surface->HasReplica() && !old_surface->HasReplicaMask()) {
-    old_occlusion_from_inside_target_in_new_target.Union(
-        TransformSurfaceOpaqueRegion(
-            stack_[last_index].occlusion_from_inside_target,
-            old_surface->is_clipped(), old_surface->clip_rect(),
-            old_surface->replica_draw_transform()));
-  }
 
   SimpleEnclosedRegion old_occlusion_from_outside_target_in_new_target =
       TransformSurfaceOpaqueRegion(
@@ -284,18 +277,11 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
           old_surface->draw_transform());
 
   gfx::Rect unoccluded_surface_rect;
-  gfx::Rect unoccluded_replica_rect;
   if (old_surface->BackgroundFilters().HasFilterThatMovesPixels()) {
     Occlusion surface_occlusion = GetCurrentOcclusionForContributingSurface(
         old_surface->draw_transform());
     unoccluded_surface_rect =
         surface_occlusion.GetUnoccludedContentRect(old_surface->content_rect());
-    if (old_surface->HasReplica()) {
-      Occlusion replica_occlusion = GetCurrentOcclusionForContributingSurface(
-          old_surface->replica_draw_transform());
-      unoccluded_replica_rect = replica_occlusion.GetUnoccludedContentRect(
-          old_surface->content_rect());
-    }
   }
 
   if (surface_will_be_at_top_after_pop) {
@@ -330,15 +316,6 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
                               &stack_.back().occlusion_from_inside_target);
   ReduceOcclusionBelowSurface(old_surface, unoccluded_surface_rect,
                               old_surface->draw_transform(),
-                              &stack_.back().occlusion_from_outside_target);
-
-  if (!old_surface->HasReplica())
-    return;
-  ReduceOcclusionBelowSurface(old_surface, unoccluded_replica_rect,
-                              old_surface->replica_draw_transform(),
-                              &stack_.back().occlusion_from_inside_target);
-  ReduceOcclusionBelowSurface(old_surface, unoccluded_replica_rect,
-                              old_surface->replica_draw_transform(),
                               &stack_.back().occlusion_from_outside_target);
 }
 

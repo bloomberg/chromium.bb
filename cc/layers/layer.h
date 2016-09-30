@@ -318,17 +318,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetFiltersOrigin(const gfx::PointF& origin);
   gfx::PointF filters_origin() const { return inputs_.filters_origin; }
 
-  void SetReplicaLayer(Layer* layer);
-  Layer* replica_layer() { return inputs_.replica_layer.get(); }
-  const Layer* replica_layer() const { return inputs_.replica_layer.get(); }
-
   bool has_mask() const { return !!inputs_.mask_layer.get(); }
-  bool has_replica() const { return !!inputs_.replica_layer.get(); }
-  bool replica_has_mask() const {
-    return inputs_.replica_layer.get() &&
-           (inputs_.mask_layer.get() ||
-            inputs_.replica_layer->inputs_.mask_layer.get());
-  }
 
   int NumDescendantsThatDrawContent() const;
 
@@ -628,9 +618,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     bool masks_to_bounds;
 
     scoped_refptr<Layer> mask_layer;
-
-    // Replica layer used for reflections.
-    scoped_refptr<Layer> replica_layer;
 
     float opacity;
     SkXfermode::Mode blend_mode;

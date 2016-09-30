@@ -76,11 +76,11 @@ class LayerTestCommon {
     }
 
     template <typename T>
-    T* AddReplicaLayer(LayerImpl* origin) {
+    T* AddMaskLayer(LayerImpl* origin) {
       std::unique_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
       T* ptr = layer.get();
-      origin->test_properties()->SetReplicaLayer(std::move(layer));
+      origin->test_properties()->SetMaskLayer(std::move(layer));
       return ptr;
     }
 

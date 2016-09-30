@@ -172,18 +172,17 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
   /* Testing serialization of properties for a tree that looks like this:
           root+
           /  \
-         a*   b*+[mask:*,replica]
+         a*   b*+[mask:*]
         /      \
        c        d*
      Layers marked with * have changed properties.
      Layers marked with + have descendants with changed properties.
-     Layer b also has a mask layer and a replica layer.
+     Layer b also has a mask layer layer.
   */
   scoped_refptr<Layer> layer_src_root = Layer::Create();
   scoped_refptr<Layer> layer_src_a = Layer::Create();
   scoped_refptr<Layer> layer_src_b = Layer::Create();
   scoped_refptr<Layer> layer_src_b_mask = Layer::Create();
-  scoped_refptr<Layer> layer_src_b_replica = Layer::Create();
   scoped_refptr<Layer> layer_src_c = Layer::Create();
   scoped_refptr<Layer> layer_src_d = Layer::Create();
   layer_src_root->SetLayerTreeHost(layer_tree_host_.get());
@@ -192,7 +191,6 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
   layer_src_a->AddChild(layer_src_c);
   layer_src_b->AddChild(layer_src_d);
   layer_src_b->SetMaskLayer(layer_src_b_mask.get());
-  layer_src_b->SetReplicaLayer(layer_src_b_replica.get());
 
   proto::LayerUpdate layer_update;
   LayerProtoConverter::SerializeLayerProperties(
@@ -209,16 +207,13 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
   EXPECT_FALSE(
       layer_src_b_mask->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           layer_src_b_mask.get()));
-  EXPECT_FALSE(
-      layer_src_b_replica->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
-          layer_src_b_replica.get()));
   EXPECT_FALSE(layer_src_c->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
       layer_src_c.get()));
   EXPECT_FALSE(layer_src_d->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
       layer_src_d.get()));
 
   // All layers needs to push properties as their layer tree host changed.
-  ASSERT_EQ(7, layer_update.layers_size());
+  ASSERT_EQ(6, layer_update.layers_size());
   layer_update.Clear();
 
   std::unordered_set<int> dirty_layer_ids;
@@ -245,9 +240,6 @@ TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
   EXPECT_FALSE(
       layer_src_b_mask->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
           layer_src_b_mask.get()));
-  EXPECT_FALSE(
-      layer_src_b_replica->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
-          layer_src_b_replica.get()));
   EXPECT_FALSE(layer_src_c->GetLayerTree()->LayerNeedsPushPropertiesForTesting(
       layer_src_c.get()));
   EXPECT_FALSE(layer_src_d->GetLayerTree()->LayerNeedsPushPropertiesForTesting(

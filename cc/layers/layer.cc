@@ -48,7 +48,6 @@ Layer::Inputs::Inputs()
       layer_id(g_next_layer_id.GetNext() + 1),
       masks_to_bounds(false),
       mask_layer(nullptr),
-      replica_layer(nullptr),
       opacity(1.f),
       blend_mode(SkXfermode::kSrcOver_Mode),
       is_root_for_isolated_group(false),
@@ -117,10 +116,6 @@ Layer::~Layer() {
     DCHECK_EQ(this, inputs_.mask_layer->parent());
     inputs_.mask_layer->RemoveFromParent();
   }
-  if (inputs_.replica_layer.get()) {
-    DCHECK_EQ(this, inputs_.replica_layer->parent());
-    inputs_.replica_layer->RemoveFromParent();
-  }
 }
 
 void Layer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -158,8 +153,6 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
 
   if (inputs_.mask_layer.get())
     inputs_.mask_layer->SetLayerTreeHost(host);
-  if (inputs_.replica_layer.get())
-    inputs_.replica_layer->SetLayerTreeHost(host);
 
   const bool has_any_animation =
       layer_tree_host_ ? GetAnimationHost()->HasAnyAnimation(element_id())
@@ -273,12 +266,6 @@ void Layer::RemoveChildOrDependent(Layer* child) {
   if (inputs_.mask_layer.get() == child) {
     inputs_.mask_layer->SetParent(nullptr);
     inputs_.mask_layer = nullptr;
-    SetNeedsFullTreeSync();
-    return;
-  }
-  if (inputs_.replica_layer.get() == child) {
-    inputs_.replica_layer->SetParent(nullptr);
-    inputs_.replica_layer = nullptr;
     SetNeedsFullTreeSync();
     return;
   }
@@ -435,24 +422,6 @@ void Layer::SetMaskLayer(Layer* mask_layer) {
     DCHECK(!inputs_.mask_layer->parent());
     inputs_.mask_layer->SetParent(this);
     inputs_.mask_layer->SetIsMask(true);
-  }
-  SetSubtreePropertyChanged();
-  SetNeedsFullTreeSync();
-}
-
-void Layer::SetReplicaLayer(Layer* layer) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.replica_layer.get() == layer)
-    return;
-  if (inputs_.replica_layer.get()) {
-    DCHECK_EQ(this, inputs_.replica_layer->parent());
-    inputs_.replica_layer->RemoveFromParent();
-  }
-  inputs_.replica_layer = layer;
-  if (inputs_.replica_layer.get()) {
-    DCHECK(!inputs_.replica_layer->parent());
-    inputs_.replica_layer->RemoveFromParent();
-    inputs_.replica_layer->SetParent(this);
   }
   SetSubtreePropertyChanged();
   SetNeedsFullTreeSync();
@@ -1261,8 +1230,6 @@ void Layer::ToLayerNodeProto(proto::LayerNode* proto) const {
 
   if (inputs_.mask_layer)
     inputs_.mask_layer->ToLayerNodeProto(proto->mutable_mask_layer());
-  if (inputs_.replica_layer)
-    inputs_.replica_layer->ToLayerNodeProto(proto->mutable_replica_layer());
 }
 
 void Layer::ClearLayerTreePropertiesForDeserializationAndAddToMap(
@@ -1289,12 +1256,6 @@ void Layer::ClearLayerTreePropertiesForDeserializationAndAddToMap(
         layer_map);
     inputs_.mask_layer = nullptr;
   }
-
-  if (inputs_.replica_layer) {
-    inputs_.replica_layer
-        ->ClearLayerTreePropertiesForDeserializationAndAddToMap(layer_map);
-    inputs_.replica_layer = nullptr;
-  }
 }
 
 void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
@@ -1303,7 +1264,6 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
   DCHECK(!layer_tree_host_);
   DCHECK(inputs_.children.empty());
   DCHECK(!inputs_.mask_layer);
-  DCHECK(!inputs_.replica_layer);
   DCHECK(layer_tree_host);
   DCHECK(proto.has_id());
 
@@ -1332,14 +1292,6 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
     inputs_.mask_layer->parent_ = this;
     inputs_.mask_layer->FromLayerNodeProto(proto.mask_layer(), layer_map,
                                            layer_tree_host_);
-  }
-
-  if (proto.has_replica_layer()) {
-    inputs_.replica_layer = LayerProtoConverter::FindOrAllocateAndConstruct(
-        proto.replica_layer(), layer_map);
-    inputs_.replica_layer->parent_ = this;
-    inputs_.replica_layer->FromLayerNodeProto(proto.replica_layer(), layer_map,
-                                              layer_tree_host_);
   }
 }
 

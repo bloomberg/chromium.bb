@@ -1073,21 +1073,6 @@ bool LayerImpl::IsHidden() const {
   return node->screen_space_opacity == 0.f;
 }
 
-bool LayerImpl::InsideReplica() const {
-  // There are very few render targets so this should be cheap to do for each
-  // layer instead of something more complicated.
-  EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
-  EffectNode* node = effect_tree.Node(effect_tree_index_);
-
-  while (node->id > 0) {
-    if (node->replica_layer_id != EffectTree::kInvalidNodeId)
-      return true;
-    node = effect_tree.Node(node->target_id);
-  }
-
-  return false;
-}
-
 float LayerImpl::GetIdealContentsScale() const {
   float page_scale = IsAffectedByPageScale()
                          ? layer_tree_impl()->current_page_scale_factor()

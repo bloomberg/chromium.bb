@@ -1032,7 +1032,6 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   scoped_refptr<Layer> child2 = Layer::Create();
   scoped_refptr<Layer> grand_child = Layer::Create();
   scoped_refptr<Layer> dummy_layer1 = Layer::Create();
-  scoped_refptr<Layer> dummy_layer2 = Layer::Create();
 
   layer_tree_->SetRootLayer(root);
   root->AddChild(child);
@@ -1053,8 +1052,6 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       LayerImpl::Create(host_impl_.active_tree(), grand_child->id());
   std::unique_ptr<LayerImpl> dummy_layer1_impl =
       LayerImpl::Create(host_impl_.active_tree(), dummy_layer1->id());
-  std::unique_ptr<LayerImpl> dummy_layer2_impl =
-      LayerImpl::Create(host_impl_.active_tree(), dummy_layer2->id());
 
   EXPECT_CALL(*layer_tree_, SetNeedsFullTreeSync()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMaskLayer(dummy_layer1.get()));
@@ -1081,15 +1078,6 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get()));
 
-  EXPECT_CALL(*layer_tree_, SetNeedsFullTreeSync()).Times(1);
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetReplicaLayer(dummy_layer2.get()));
-  EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
-      root->PushPropertiesTo(root_impl.get());
-      child->PushPropertiesTo(child_impl.get());
-      child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get());
-      dummy_layer2->PushPropertiesTo(dummy_layer2_impl.get()));
-
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetShouldFlattenTransform(false));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
@@ -1104,8 +1092,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
       child2->PushPropertiesTo(child2_impl.get());
-      grand_child->PushPropertiesTo(grand_child_impl.get());
-      dummy_layer2->PushPropertiesTo(dummy_layer2_impl.get()));
+      grand_child->PushPropertiesTo(grand_child_impl.get()));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetDoubleSided(false));
@@ -1699,7 +1686,6 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetIsDrawable(true));
 
   scoped_refptr<Layer> dummy_layer1 = Layer::Create();
-  scoped_refptr<Layer> dummy_layer2 = Layer::Create();
 
   // sanity check of initial test condition
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
@@ -1740,8 +1726,6 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
 
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, test_layer->SetMaskLayer(
       dummy_layer1.get()));
-  EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, test_layer->SetReplicaLayer(
-      dummy_layer2.get()));
 
   // The above tests should not have caused a change to the needs_display flag.
   EXPECT_FALSE(test_layer->NeedsDisplayForTesting());
@@ -1815,39 +1799,21 @@ TEST_F(LayerTest, PushPropertiesCausesLayerPropertyChangedForOpacity) {
   EXPECT_TRUE(impl_layer->LayerPropertyChanged());
 }
 
-TEST_F(LayerTest, MaskAndReplicaHasParent) {
+TEST_F(LayerTest, MaskHasParent) {
   scoped_refptr<Layer> parent = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
   scoped_refptr<Layer> mask = Layer::Create();
-  scoped_refptr<Layer> replica = Layer::Create();
-  scoped_refptr<Layer> replica_mask = Layer::Create();
   scoped_refptr<Layer> mask_replacement = Layer::Create();
-  scoped_refptr<Layer> replica_replacement = Layer::Create();
-  scoped_refptr<Layer> replica_mask_replacement = Layer::Create();
 
   parent->AddChild(child);
   child->SetMaskLayer(mask.get());
-  child->SetReplicaLayer(replica.get());
-  replica->SetMaskLayer(replica_mask.get());
 
   EXPECT_EQ(parent.get(), child->parent());
   EXPECT_EQ(child.get(), mask->parent());
-  EXPECT_EQ(child.get(), replica->parent());
-  EXPECT_EQ(replica.get(), replica_mask->parent());
-
-  replica->SetMaskLayer(replica_mask_replacement.get());
-  EXPECT_EQ(nullptr, replica_mask->parent());
-  EXPECT_EQ(replica.get(), replica_mask_replacement->parent());
 
   child->SetMaskLayer(mask_replacement.get());
   EXPECT_EQ(nullptr, mask->parent());
   EXPECT_EQ(child.get(), mask_replacement->parent());
-
-  child->SetReplicaLayer(replica_replacement.get());
-  EXPECT_EQ(nullptr, replica->parent());
-  EXPECT_EQ(child.get(), replica_replacement->parent());
-
-  EXPECT_EQ(replica.get(), replica->mask_layer()->parent());
 }
 
 class LayerTreeHostFactory {
@@ -1886,9 +1852,6 @@ void AssertLayerTreeHostMatchesForSubtree(Layer* layer, LayerTreeHost* host) {
 
   if (layer->mask_layer())
     AssertLayerTreeHostMatchesForSubtree(layer->mask_layer(), host);
-
-  if (layer->replica_layer())
-    AssertLayerTreeHostMatchesForSubtree(layer->replica_layer(), host);
 }
 
 class LayerLayerTreeHostTest : public testing::Test {};
@@ -1897,15 +1860,11 @@ TEST_F(LayerLayerTreeHostTest, EnteringTree) {
   scoped_refptr<Layer> parent = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
   scoped_refptr<Layer> mask = Layer::Create();
-  scoped_refptr<Layer> replica = Layer::Create();
-  scoped_refptr<Layer> replica_mask = Layer::Create();
 
   // Set up a detached tree of layers. The host pointer should be nil for these
   // layers.
   parent->AddChild(child);
   child->SetMaskLayer(mask.get());
-  child->SetReplicaLayer(replica.get());
-  replica->SetMaskLayer(replica_mask.get());
 
   AssertLayerTreeHostMatchesForSubtree(parent.get(), nullptr);
 
@@ -1941,13 +1900,9 @@ TEST_F(LayerLayerTreeHostTest, AddingLayerSubtree) {
   scoped_refptr<Layer> grand_child = Layer::Create();
   child->AddChild(grand_child);
 
-  // Masks, replicas, and replica masks should pick up the new host too.
+  // Masks should pick up the new host too.
   scoped_refptr<Layer> child_mask = Layer::Create();
   child->SetMaskLayer(child_mask.get());
-  scoped_refptr<Layer> child_replica = Layer::Create();
-  child->SetReplicaLayer(child_replica.get());
-  scoped_refptr<Layer> child_replica_mask = Layer::Create();
-  child_replica->SetMaskLayer(child_replica_mask.get());
 
   parent->AddChild(child);
   AssertLayerTreeHostMatchesForSubtree(parent.get(), layer_tree_host.get());
@@ -1959,14 +1914,10 @@ TEST_F(LayerLayerTreeHostTest, ChangeHost) {
   scoped_refptr<Layer> parent = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
   scoped_refptr<Layer> mask = Layer::Create();
-  scoped_refptr<Layer> replica = Layer::Create();
-  scoped_refptr<Layer> replica_mask = Layer::Create();
 
   // Same setup as the previous test.
   parent->AddChild(child);
   child->SetMaskLayer(mask.get());
-  child->SetReplicaLayer(replica.get());
-  replica->SetMaskLayer(replica_mask.get());
 
   LayerTreeHostFactory factory;
   std::unique_ptr<LayerTreeHost> first_layer_tree_host = factory.Create();
@@ -2023,19 +1974,14 @@ TEST_F(LayerLayerTreeHostTest, ChangeHostInSubtree) {
   second_layer_tree_host->GetLayerTree()->SetRootLayer(nullptr);
 }
 
-TEST_F(LayerLayerTreeHostTest, ReplaceMaskAndReplicaLayer) {
+TEST_F(LayerLayerTreeHostTest, ReplaceMaskLayer) {
   scoped_refptr<Layer> parent = Layer::Create();
   scoped_refptr<Layer> mask = Layer::Create();
-  scoped_refptr<Layer> replica = Layer::Create();
   scoped_refptr<Layer> mask_child = Layer::Create();
-  scoped_refptr<Layer> replica_child = Layer::Create();
   scoped_refptr<Layer> mask_replacement = Layer::Create();
-  scoped_refptr<Layer> replica_replacement = Layer::Create();
 
   parent->SetMaskLayer(mask.get());
-  parent->SetReplicaLayer(replica.get());
   mask->AddChild(mask_child);
-  replica->AddChild(replica_child);
 
   LayerTreeHostFactory factory;
   std::unique_ptr<LayerTreeHost> layer_tree_host = factory.Create();
@@ -2047,11 +1993,6 @@ TEST_F(LayerLayerTreeHostTest, ReplaceMaskAndReplicaLayer) {
   parent->SetMaskLayer(mask_replacement.get());
   EXPECT_EQ(nullptr, mask->GetLayerTreeHostForTesting());
   EXPECT_EQ(nullptr, mask_child->GetLayerTreeHostForTesting());
-
-  // Same for replacing a replica layer.
-  parent->SetReplicaLayer(replica_replacement.get());
-  EXPECT_EQ(nullptr, replica->GetLayerTreeHostForTesting());
-  EXPECT_EQ(nullptr, replica_child->GetLayerTreeHostForTesting());
 
   // Test over, cleanup time.
   layer_tree_host->GetLayerTree()->SetRootLayer(nullptr);
@@ -2244,19 +2185,17 @@ TEST_F(LayerTest, RecursiveHierarchySerialization) {
          a    b
                \
                 c
-     Layer c also has a mask layer and a replica layer.
+     Layer c also has a mask layer.
   */
   scoped_refptr<Layer> layer_src_root = Layer::Create();
   scoped_refptr<Layer> layer_src_a = Layer::Create();
   scoped_refptr<Layer> layer_src_b = Layer::Create();
   scoped_refptr<Layer> layer_src_c = Layer::Create();
   scoped_refptr<Layer> layer_src_c_mask = Layer::Create();
-  scoped_refptr<Layer> layer_src_c_replica = Layer::Create();
   layer_src_root->AddChild(layer_src_a);
   layer_src_root->AddChild(layer_src_b);
   layer_src_b->AddChild(layer_src_c);
   layer_src_c->SetMaskLayer(layer_src_c_mask.get());
-  layer_src_c->SetReplicaLayer(layer_src_c_replica.get());
 
   proto::LayerNode proto;
   layer_src_root->ToLayerNodeProto(&proto);
@@ -2285,7 +2224,6 @@ TEST_F(LayerTest, RecursiveHierarchySerialization) {
   EXPECT_EQ(layer_src_b->id(), layer_dest_c->parent()->id());
   EXPECT_EQ(0u, layer_dest_c->children().size());
   EXPECT_EQ(layer_src_c_mask->id(), layer_dest_c->mask_layer()->id());
-  EXPECT_EQ(layer_src_c_replica->id(), layer_dest_c->replica_layer()->id());
 
   layer_dest_root->SetLayerTreeHost(nullptr);
 }
@@ -2417,12 +2355,10 @@ TEST_F(LayerTest, DeletingSubtreeDeletesLayers) {
   layer_dest_root->SetLayerTreeHost(nullptr);
 }
 
-TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
+TEST_F(LayerTest, DeleteMaskLayer) {
   scoped_refptr<Layer> layer_src_root = Layer::Create();
   scoped_refptr<Layer> layer_src_mask = Layer::Create();
-  scoped_refptr<Layer> layer_src_replica = Layer::Create();
   layer_src_root->SetMaskLayer(layer_src_mask.get());
-  layer_src_root->SetReplicaLayer(layer_src_replica.get());
 
   // Serialization 1.
   proto::LayerNode proto1;
@@ -2436,16 +2372,12 @@ TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
   ASSERT_TRUE(layer_dest_root->mask_layer());
-  ASSERT_TRUE(layer_dest_root->replica_layer());
   EXPECT_EQ(layer_src_root->mask_layer()->id(),
             layer_dest_root->mask_layer()->id());
   // TODO(nyquist): Add test for is_mask_ when PictureLayer is supported.
-  EXPECT_EQ(layer_src_root->replica_layer()->id(),
-            layer_dest_root->replica_layer()->id());
 
-  // Clear mask and replica layers.
+  // Clear mask layer.
   layer_src_root->mask_layer()->RemoveFromParent();
-  layer_src_root->replica_layer()->RemoveFromParent();
 
   // Serialization 2.
   proto::LayerNode proto2;
@@ -2458,7 +2390,6 @@ TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
                                       layer_tree_host_.get());
 
   EXPECT_EQ(nullptr, layer_dest_root->mask_layer());
-  EXPECT_EQ(nullptr, layer_dest_root->replica_layer());
 
   layer_dest_root->SetLayerTreeHost(nullptr);
 }

@@ -16,7 +16,6 @@ message LayerTreeDebugState {
   optional bool show_property_changed_rects = 4;
   optional bool show_surface_damage_rects = 5;
   optional bool show_screen_space_rects = 6;
-  optional bool show_replica_screen_space_rects = 7;
   optional bool show_touch_event_handler_rects = 8;
   optional bool show_wheel_event_handler_rects = 9;
   optional bool show_scroll_event_handler_rects = 10;

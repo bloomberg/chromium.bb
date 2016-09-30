@@ -941,7 +941,7 @@ EffectTree::~EffectTree() {}
 
 void EffectTree::clear() {
   PropertyTree<EffectNode>::clear();
-  mask_replica_layer_ids_.clear();
+  mask_layer_ids_.clear();
 
 #if DCHECK_IS_ON()
   EffectTree tree;
@@ -1189,8 +1189,8 @@ int EffectTree::ClosestAncestorWithCopyRequest(int id) const {
     return -1;
 }
 
-void EffectTree::AddMaskOrReplicaLayerId(int id) {
-  mask_replica_layer_ids_.push_back(id);
+void EffectTree::AddMaskLayerId(int id) {
+  mask_layer_ids_.push_back(id);
 }
 
 bool EffectTree::ContributesToDrawnSurface(int id) {
@@ -1258,7 +1258,7 @@ void ClipTree::FromProtobuf(
 
 EffectTree& EffectTree::operator=(const EffectTree& from) {
   PropertyTree::operator=(from);
-  mask_replica_layer_ids_ = from.mask_replica_layer_ids_;
+  mask_layer_ids_ = from.mask_layer_ids_;
   // copy_requests_ are omitted here, since these need to be moved rather
   // than copied or assigned.
   return *this;
@@ -1266,7 +1266,7 @@ EffectTree& EffectTree::operator=(const EffectTree& from) {
 
 bool EffectTree::operator==(const EffectTree& other) const {
   return PropertyTree::operator==(other) &&
-         mask_replica_layer_ids_ == other.mask_replica_layer_ids_;
+         mask_layer_ids_ == other.mask_layer_ids_;
 }
 
 void EffectTree::ToProtobuf(proto::PropertyTree* proto) const {
@@ -1276,8 +1276,8 @@ void EffectTree::ToProtobuf(proto::PropertyTree* proto) const {
   PropertyTree::ToProtobuf(proto);
   proto::EffectTreeData* data = proto->mutable_effect_tree_data();
 
-  for (auto i : mask_replica_layer_ids_)
-    data->add_mask_replica_layer_ids(i);
+  for (auto i : mask_layer_ids_)
+    data->add_mask_layer_ids(i);
 }
 
 void EffectTree::FromProtobuf(
@@ -1289,9 +1289,9 @@ void EffectTree::FromProtobuf(
   PropertyTree::FromProtobuf(proto, node_id_to_index_map);
   const proto::EffectTreeData& data = proto.effect_tree_data();
 
-  DCHECK(mask_replica_layer_ids_.empty());
-  for (int i = 0; i < data.mask_replica_layer_ids_size(); ++i) {
-    mask_replica_layer_ids_.push_back(data.mask_replica_layer_ids(i));
+  DCHECK(mask_layer_ids_.empty());
+  for (int i = 0; i < data.mask_layer_ids_size(); ++i) {
+    mask_layer_ids_.push_back(data.mask_layer_ids(i));
   }
 }
 

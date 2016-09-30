@@ -64,10 +64,7 @@ class CC_EXPORT RenderSurfaceImpl {
   }
 
   SkColor GetDebugBorderColor() const;
-  SkColor GetReplicaDebugBorderColor() const;
-
   float GetDebugBorderWidth() const;
-  float GetReplicaDebugBorderWidth() const;
 
   void SetDrawTransform(const gfx::Transform& draw_transform) {
     draw_properties_.draw_transform = draw_transform;
@@ -81,22 +78,6 @@ class CC_EXPORT RenderSurfaceImpl {
   }
   const gfx::Transform& screen_space_transform() const {
     return draw_properties_.screen_space_transform;
-  }
-
-  void SetReplicaDrawTransform(const gfx::Transform& replica_draw_transform) {
-    draw_properties_.replica_draw_transform = replica_draw_transform;
-  }
-  const gfx::Transform& replica_draw_transform() const {
-    return draw_properties_.replica_draw_transform;
-  }
-
-  void SetReplicaScreenSpaceTransform(
-      const gfx::Transform& replica_screen_space_transform) {
-    draw_properties_.replica_screen_space_transform =
-        replica_screen_space_transform;
-  }
-  const gfx::Transform& replica_screen_space_transform() const {
-    return draw_properties_.replica_screen_space_transform;
   }
 
   void SetIsClipped(bool is_clipped) {
@@ -144,15 +125,9 @@ class CC_EXPORT RenderSurfaceImpl {
   void ClearLayerLists();
 
   int OwningLayerId() const;
-  bool HasReplica() const;
-  const LayerImpl* ReplicaLayer() const;
-  LayerImpl* ReplicaLayer();
 
   LayerImpl* MaskLayer();
   bool HasMask() const;
-
-  LayerImpl* ReplicaMaskLayer();
-  bool HasReplicaMask() const;
 
   const FilterOperations& Filters() const;
   const FilterOperations& BackgroundFilters() const;
@@ -206,11 +181,6 @@ class CC_EXPORT RenderSurfaceImpl {
     gfx::Transform draw_transform;
     // Transforms from the surface's own space to the viewport.
     gfx::Transform screen_space_transform;
-
-    // If the surface has a replica, these transform from the replica's space to
-    // the space of the target surface and the viewport.
-    gfx::Transform replica_draw_transform;
-    gfx::Transform replica_screen_space_transform;
 
     // This is in the surface's own space.
     gfx::Rect content_rect;

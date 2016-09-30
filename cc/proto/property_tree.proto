@@ -117,8 +117,6 @@ message EffectNodeData {
   optional int64 clip_id = 10;
   optional int64 target_id = 12;
   optional int64 mask_layer_id = 17;
-  optional int64 replica_layer_id = 18;
-  optional int64 replica_mask_layer_id = 19;
   optional Vector2dF surface_contents_scale = 20;
   // TODO(nyquist): Add support for FilterOperation. See crbug.com/541321.
   // repeated FilterOperation filters = 23;
@@ -212,7 +210,7 @@ message TransformTreeData {
 
 // Proto for data members of class EffectTree.
 message EffectTreeData {
-  repeated int64 mask_replica_layer_ids = 1 [packed = true];
+  repeated int64 mask_layer_ids = 1 [packed = true];
 }
 
 // Proto for class PropertyTrees.

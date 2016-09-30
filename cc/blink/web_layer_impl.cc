@@ -107,11 +107,6 @@ void WebLayerImpl::setMaskLayer(WebLayer* maskLayer) {
       maskLayer ? static_cast<WebLayerImpl*>(maskLayer)->layer() : 0);
 }
 
-void WebLayerImpl::setReplicaLayer(WebLayer* replica_layer) {
-  layer_->SetReplicaLayer(
-      replica_layer ? static_cast<WebLayerImpl*>(replica_layer)->layer() : 0);
-}
-
 void WebLayerImpl::setOpacity(float opacity) {
   layer_->SetOpacity(opacity);
 }

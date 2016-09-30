@@ -17,7 +17,6 @@ LayerTreeDebugState::LayerTreeDebugState()
       show_property_changed_rects(false),
       show_surface_damage_rects(false),
       show_screen_space_rects(false),
-      show_replica_screen_space_rects(false),
       show_touch_event_handler_rects(false),
       show_wheel_event_handler_rects(false),
       show_scroll_event_handler_rects(false),
@@ -48,9 +47,9 @@ bool LayerTreeDebugState::ShowHudInfo() const {
 bool LayerTreeDebugState::ShowHudRects() const {
   return show_paint_rects || show_property_changed_rects ||
          show_surface_damage_rects || show_screen_space_rects ||
-         show_replica_screen_space_rects || show_touch_event_handler_rects ||
-         show_wheel_event_handler_rects || show_scroll_event_handler_rects ||
-         show_non_fast_scrollable_rects || show_layer_animation_bounds_rects;
+         show_touch_event_handler_rects || show_wheel_event_handler_rects ||
+         show_scroll_event_handler_rects || show_non_fast_scrollable_rects ||
+         show_layer_animation_bounds_rects;
 }
 
 bool LayerTreeDebugState::ShowMemoryStats() const {
@@ -64,7 +63,6 @@ void LayerTreeDebugState::ToProtobuf(proto::LayerTreeDebugState* proto) const {
   proto->set_show_property_changed_rects(show_property_changed_rects);
   proto->set_show_surface_damage_rects(show_surface_damage_rects);
   proto->set_show_screen_space_rects(show_screen_space_rects);
-  proto->set_show_replica_screen_space_rects(show_replica_screen_space_rects);
   proto->set_show_touch_event_handler_rects(show_touch_event_handler_rects);
   proto->set_show_wheel_event_handler_rects(show_wheel_event_handler_rects);
   proto->set_show_scroll_event_handler_rects(show_scroll_event_handler_rects);
@@ -85,7 +83,6 @@ void LayerTreeDebugState::FromProtobuf(
   show_property_changed_rects = proto.show_property_changed_rects();
   show_surface_damage_rects = proto.show_surface_damage_rects();
   show_screen_space_rects = proto.show_screen_space_rects();
-  show_replica_screen_space_rects = proto.show_replica_screen_space_rects();
   show_touch_event_handler_rects = proto.show_touch_event_handler_rects();
   show_wheel_event_handler_rects = proto.show_wheel_event_handler_rects();
   show_scroll_event_handler_rects = proto.show_scroll_event_handler_rects();
@@ -106,7 +103,6 @@ bool LayerTreeDebugState::Equal(const LayerTreeDebugState& a,
       a.show_property_changed_rects == b.show_property_changed_rects &&
       a.show_surface_damage_rects == b.show_surface_damage_rects &&
       a.show_screen_space_rects == b.show_screen_space_rects &&
-      a.show_replica_screen_space_rects == b.show_replica_screen_space_rects &&
       a.show_touch_event_handler_rects == b.show_touch_event_handler_rects &&
       a.show_wheel_event_handler_rects == b.show_wheel_event_handler_rects &&
       a.show_scroll_event_handler_rects == b.show_scroll_event_handler_rects &&
@@ -130,7 +126,6 @@ LayerTreeDebugState LayerTreeDebugState::Unite(const LayerTreeDebugState& a,
   r.show_property_changed_rects |= b.show_property_changed_rects;
   r.show_surface_damage_rects |= b.show_surface_damage_rects;
   r.show_screen_space_rects |= b.show_screen_space_rects;
-  r.show_replica_screen_space_rects |= b.show_replica_screen_space_rects;
   r.show_touch_event_handler_rects |= b.show_touch_event_handler_rects;
   r.show_wheel_event_handler_rects |= b.show_wheel_event_handler_rects;
   r.show_scroll_event_handler_rects |= b.show_scroll_event_handler_rects;

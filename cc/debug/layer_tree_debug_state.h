@@ -26,7 +26,6 @@ class CC_EXPORT LayerTreeDebugState {
   bool show_property_changed_rects;
   bool show_surface_damage_rects;
   bool show_screen_space_rects;
-  bool show_replica_screen_space_rects;
   bool show_touch_event_handler_rects;
   bool show_wheel_event_handler_rects;
   bool show_scroll_event_handler_rects;

@@ -143,8 +143,6 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       command_line->HasSwitch(cc::switches::kUIShowSurfaceDamageRects);
   settings.initial_debug_state.show_screen_space_rects =
       command_line->HasSwitch(cc::switches::kUIShowScreenSpaceRects);
-  settings.initial_debug_state.show_replica_screen_space_rects =
-      command_line->HasSwitch(cc::switches::kUIShowReplicaScreenSpaceRects);
 
   settings.initial_debug_state.SetRecordRenderingStats(
       command_line->HasSwitch(cc::switches::kEnableGpuBenchmarking));

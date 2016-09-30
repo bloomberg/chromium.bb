@@ -720,30 +720,6 @@ static void AppendQuadsForRenderSurfaceLayer(
   surface->AppendQuads(target_render_pass, draw_transform, occlusion,
                        debug_border_color, debug_border_width, mask_layer,
                        append_quads_data, contributing_render_pass->id);
-
-  // Add replica after the surface so that it appears below the surface.
-  if (surface->HasReplica()) {
-    const gfx::Transform& replica_draw_transform =
-        surface->replica_draw_transform();
-    Occlusion replica_occlusion = occlusion.GetOcclusionWithGivenDrawTransform(
-        surface->replica_draw_transform());
-    SkColor replica_debug_border_color = surface->GetReplicaDebugBorderColor();
-    float replica_debug_border_width = surface->GetReplicaDebugBorderWidth();
-    // TODO(danakj): By using the same RenderSurfaceImpl for both the
-    // content and its reflection, it's currently not possible to apply a
-    // separate mask to the reflection layer or correctly handle opacity in
-    // reflections (opacity must be applied after drawing both the layer and its
-    // reflection). The solution is to introduce yet another RenderSurfaceImpl
-    // to draw the layer and its reflection in. For now we only apply a separate
-    // reflection mask if the contents don't have a mask of their own.
-    LayerImpl* replica_mask_layer =
-        surface->HasMask() ? surface->MaskLayer() : surface->ReplicaMaskLayer();
-
-    surface->AppendQuads(target_render_pass, replica_draw_transform,
-                         replica_occlusion, replica_debug_border_color,
-                         replica_debug_border_width, replica_mask_layer,
-                         append_quads_data, contributing_render_pass->id);
-  }
 }
 
 static void AppendQuadsToFillScreen(const gfx::Rect& root_scroll_layer_rect,

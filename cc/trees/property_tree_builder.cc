@@ -233,14 +233,6 @@ static LayerImpl* MaskLayer(LayerImpl* layer) {
   return layer->test_properties()->mask_layer;
 }
 
-static Layer* ReplicaLayer(Layer* layer) {
-  return layer->replica_layer();
-}
-
-static LayerImpl* ReplicaLayer(LayerImpl* layer) {
-  return layer->test_properties()->replica_layer;
-}
-
 static const gfx::Transform& Transform(Layer* layer) {
   return layer->transform();
 }
@@ -451,9 +443,6 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   }
 
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
-  // TODO(awoloszyn): Right now when we hit a node with a replica, we reset the
-  // clip for all children since we may need to draw. We need to figure out a
-  // better way, since we will need both the clipped and unclipped versions.
 }
 
 template <typename LayerType>
@@ -868,14 +857,8 @@ bool ShouldCreateRenderSurface(LayerType* layer,
   if (is_root)
     return true;
 
-  // If the layer uses a mask and the layer is not a replica layer.
-  // TODO(weiliangc): After slimming paint there won't be replica layers.
-  if (MaskLayer(layer) && ReplicaLayer(Parent(layer)) != layer) {
-    return true;
-  }
-
-  // If the layer has a reflection.
-  if (ReplicaLayer(layer)) {
+  // If the layer uses a mask.
+  if (MaskLayer(layer)) {
     return true;
   }
 
@@ -1038,15 +1021,7 @@ bool AddEffectNodeIfNeeded(
   EffectTree& effect_tree = data_for_children->property_trees->effect_tree;
   if (MaskLayer(layer)) {
     node.mask_layer_id = MaskLayer(layer)->id();
-    effect_tree.AddMaskOrReplicaLayerId(node.mask_layer_id);
-  }
-  if (ReplicaLayer(layer)) {
-    node.replica_layer_id = ReplicaLayer(layer)->id();
-    effect_tree.AddMaskOrReplicaLayerId(node.replica_layer_id);
-    if (MaskLayer(ReplicaLayer(layer))) {
-      node.replica_mask_layer_id = MaskLayer(ReplicaLayer(layer))->id();
-      effect_tree.AddMaskOrReplicaLayerId(node.replica_mask_layer_id);
-    }
+    effect_tree.AddMaskLayerId(node.mask_layer_id);
   }
 
   if (!is_root) {
@@ -1289,13 +1264,6 @@ void BuildPropertyTreesInternal(
                                  &data_from_child);
       data_to_parent->Merge(data_from_child);
     }
-  }
-
-  if (ReplicaLayer(layer)) {
-    DataForRecursionFromChild<LayerType> data_from_child;
-    BuildPropertyTreesInternal(ReplicaLayer(layer), data_for_children,
-                               &data_from_child);
-    data_to_parent->Merge(data_from_child);
   }
 
   if (MaskLayer(layer)) {

@@ -1189,8 +1189,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
 bool GLRenderer::UpdateRPDQWithSkiaFilters(
     DrawRenderPassDrawQuadParams* params) {
   const RenderPassDrawQuad* quad = params->quad;
-  // TODO(senorblanco): Cache this value so that we don't have to do it for both
-  // the surface and its replica.  Apply filters to the contents texture.
+  // Apply filters to the contents texture.
   if (!quad->filters.IsEmpty()) {
     sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, gfx::SizeF(params->contents_texture->size()));

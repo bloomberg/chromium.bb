@@ -121,9 +121,6 @@ class LayerTreeHostSerializationTest : public testing::Test {
               layer_tree_dst->inputs_.root_layer->GetLayerTreeHostForTesting());
     EXPECT_EQ(layer_tree_src->inputs_.root_layer->double_sided(),
               layer_tree_dst->inputs_.root_layer->double_sided());
-    EXPECT_EQ(
-        layer_tree_host_src_->debug_state_.show_replica_screen_space_rects,
-        layer_tree_host_dst_->debug_state_.show_replica_screen_space_rects);
     EXPECT_EQ(layer_tree_src->inputs_.device_viewport_size,
               layer_tree_dst->inputs_.device_viewport_size);
     EXPECT_EQ(layer_tree_src->inputs_.top_controls_shrink_blink_size,
@@ -235,8 +232,6 @@ class LayerTreeHostSerializationTest : public testing::Test {
     layer_tree_host_dst_->SetRootLayer(Layer::Create());
     root_layer_src->SetDoubleSided(!root_layer_src->double_sided());
 
-    layer_tree_host_src_->debug_state_.show_replica_screen_space_rects =
-        !layer_tree_host_src_->debug_state_.show_replica_screen_space_rects;
     layer_tree_src->inputs_.device_viewport_size = gfx::Size(3, 14);
     layer_tree_src->inputs_.top_controls_shrink_blink_size =
         !layer_tree_src->inputs_.top_controls_shrink_blink_size;

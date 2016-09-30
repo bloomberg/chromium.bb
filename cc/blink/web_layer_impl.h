@@ -73,7 +73,6 @@ class CC_BLINK_EXPORT WebLayerImpl : public NON_EXPORTED_BASE(blink::WebLayer) {
   void setMasksToBounds(bool masks_to_bounds) override;
   bool masksToBounds() const override;
   void setMaskLayer(blink::WebLayer* mask) override;
-  void setReplicaLayer(blink::WebLayer* replica) override;
   void setOpacity(float opacity) override;
   float opacity() const override;
   void setBlendMode(blink::WebBlendMode blend_mode) override;

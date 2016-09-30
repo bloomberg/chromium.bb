@@ -373,10 +373,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   int ClosestAncestorWithCopyRequest(int id) const;
 
-  void AddMaskOrReplicaLayerId(int id);
-  const std::vector<int>& mask_replica_layer_ids() const {
-    return mask_replica_layer_ids_;
-  }
+  void AddMaskLayerId(int id);
+  const std::vector<int>& mask_layer_ids() const { return mask_layer_ids_; }
 
   bool ContributesToDrawnSurface(int id);
 
@@ -395,9 +393,8 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   std::unordered_multimap<int, std::unique_ptr<CopyOutputRequest>>
       copy_requests_;
 
-  // Unsorted list of all mask, replica, and replica mask layer ids that
-  // effect nodes refer to.
-  std::vector<int> mask_replica_layer_ids_;
+  // Unsorted list of all mask layer ids that effect nodes refer to.
+  std::vector<int> mask_layer_ids_;
 };
 
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {

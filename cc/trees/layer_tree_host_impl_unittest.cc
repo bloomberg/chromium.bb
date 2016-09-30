@@ -10843,26 +10843,13 @@ TEST_F(LayerTreeHostImplTest, DidBecomeActive) {
   EXPECT_EQ(2u, raw_pending_layer->did_become_active_call_count());
   EXPECT_EQ(1u, raw_mask_layer->did_become_active_call_count());
 
-  std::unique_ptr<FakePictureLayerImpl> replica_layer =
-      FakePictureLayerImpl::Create(pending_tree, 12);
-  std::unique_ptr<FakePictureLayerImpl> replica_mask_layer =
-      FakePictureLayerImpl::Create(pending_tree, 13);
-  FakePictureLayerImpl* raw_replica_mask_layer = replica_mask_layer.get();
-  replica_layer->test_properties()->SetMaskLayer(std::move(replica_mask_layer));
-  raw_pending_layer->test_properties()->SetReplicaLayer(
-      std::move(replica_layer));
-  ASSERT_EQ(raw_replica_mask_layer, raw_pending_layer->test_properties()
-                                        ->replica_layer->test_properties()
-                                        ->mask_layer);
   pending_tree->BuildPropertyTreesForTesting();
 
   EXPECT_EQ(2u, raw_pending_layer->did_become_active_call_count());
   EXPECT_EQ(1u, raw_mask_layer->did_become_active_call_count());
-  EXPECT_EQ(0u, raw_replica_mask_layer->did_become_active_call_count());
   pending_tree->DidBecomeActive();
   EXPECT_EQ(3u, raw_pending_layer->did_become_active_call_count());
   EXPECT_EQ(2u, raw_mask_layer->did_become_active_call_count());
-  EXPECT_EQ(1u, raw_replica_mask_layer->did_become_active_call_count());
 }
 
 TEST_F(LayerTreeHostImplTest, WheelScrollWithPageScaleFactorOnInnerLayer) {

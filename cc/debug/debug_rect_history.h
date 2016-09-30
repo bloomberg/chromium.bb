@@ -33,15 +33,11 @@ class LayerTreeImpl;
 // paint rects, (2) property- changed rects, and (3) newly exposed areas.
 //
 // - Screen space rects: this is the region the contents occupy in screen space.
-//
-// - Replica screen space rects: this is the region the replica's contents
-// occupy in screen space.
 enum DebugRectType {
   PAINT_RECT_TYPE,
   PROPERTY_CHANGED_RECT_TYPE,
   SURFACE_DAMAGE_RECT_TYPE,
   SCREEN_SPACE_RECT_TYPE,
-  REPLICA_SCREEN_SPACE_RECT_TYPE,
   TOUCH_EVENT_HANDLER_RECT_TYPE,
   WHEEL_EVENT_HANDLER_RECT_TYPE,
   SCROLL_EVENT_HANDLER_RECT_TYPE,

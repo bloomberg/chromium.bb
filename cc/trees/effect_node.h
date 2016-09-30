@@ -69,8 +69,6 @@ struct CC_EXPORT EffectNode {
   // Effect node id of which this effect contributes to.
   int target_id;
   int mask_layer_id;
-  int replica_layer_id;
-  int replica_mask_layer_id;
 
   bool operator==(const EffectNode& other) const;
 

@@ -204,13 +204,6 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
         shared_state, rect, visible_rect, child_pass, resource5,
         gfx::Vector2dF(1.f, 1.f), resource5_size, FilterOperations(),
         gfx::Vector2dF(), gfx::PointF(), FilterOperations());
-
-    RenderPassDrawQuad* render_pass_replica_quad =
-        to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-    render_pass_replica_quad->SetNew(
-        shared_state, rect, visible_rect, child_pass, resource5,
-        gfx::Vector2dF(1.f, 1.f), resource5_size, FilterOperations(),
-        gfx::Vector2dF(), gfx::PointF(), FilterOperations());
   }
 
   SolidColorDrawQuad* solid_color_quad =

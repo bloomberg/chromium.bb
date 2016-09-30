@@ -802,59 +802,6 @@ TEST_F(LayerTreeHostCommonTest, TransformsWhenCannotRenderToSeparateSurface) {
                                   grand_child->ScreenSpaceTransform());
 }
 
-TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* parent = AddChildToRoot<LayerImpl>();
-  LayerImpl* child = AddChild<LayerImpl>(parent);
-  LayerImpl* grand_child = AddChild<LayerImpl>(child);
-  std::unique_ptr<LayerImpl> child_replica =
-      LayerImpl::Create(host_impl()->active_tree(), 100);
-
-  gfx::Transform parent_layer_transform;
-  parent_layer_transform.Scale3d(2.0, 2.0, 1.0);
-  gfx::Transform parent_translation_to_anchor;
-  parent_translation_to_anchor.Translate(2.5, 3.0);
-  gfx::Transform parent_composite_transform =
-      parent_translation_to_anchor * parent_layer_transform *
-      Inverse(parent_translation_to_anchor);
-  gfx::Transform replica_layer_transform;
-  replica_layer_transform.Scale3d(3.0, 3.0, 1.0);
-  gfx::Vector2dF parent_composite_scale =
-      MathUtil::ComputeTransform2dScaleComponents(parent_composite_transform,
-                                                  1.f);
-  gfx::Transform surface_sublayer_transform;
-  surface_sublayer_transform.Scale(parent_composite_scale.x(),
-                                   parent_composite_scale.y());
-  gfx::Transform replica_composite_transform =
-      parent_composite_transform * replica_layer_transform *
-      Inverse(surface_sublayer_transform);
-
-  root->SetBounds(gfx::Size(1, 2));
-  parent->test_properties()->transform_origin = gfx::Point3F(2.5f, 3.0f, 0.f);
-  parent->test_properties()->transform = parent_layer_transform;
-  parent->SetBounds(gfx::Size(10, 12));
-  child->SetBounds(gfx::Size(16, 18));
-  child->test_properties()->force_render_surface = true;
-  grand_child->SetPosition(gfx::PointF(-0.5f, -0.5f));
-  grand_child->SetBounds(gfx::Size(1, 1));
-
-  child_replica->test_properties()->transform = replica_layer_transform;
-  child->test_properties()->SetReplicaLayer(std::move(child_replica));
-
-  ExecuteCalculateDrawProperties(root);
-
-  // Render surface should have been created now.
-  ASSERT_TRUE(child->render_surface());
-  ASSERT_EQ(child->render_surface(), child->render_target());
-
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      replica_composite_transform,
-      child->render_target()->replica_draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(replica_composite_transform,
-                                  child->render_target()
-                                      ->replica_screen_space_transform());
-}
-
 TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   // This test creates a more complex tree and verifies it all at once. This
   // covers the following cases:
@@ -862,8 +809,6 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   //   transforms described w.r.t. that surface
   //   - A render surface described w.r.t. an ancestor render surface: should
   //   have a draw transform described w.r.t. that ancestor surface
-  //   - Replicas of a render surface are described w.r.t. the replica's
-  //   transform around its anchor, along with the surface itself.
   //   - Sanity check on recursion: verify transforms of layers described w.r.t.
   //   a render surface that is described w.r.t. an ancestor render surface.
   //   - verifying that each layer has a reference to the correct render surface
@@ -889,30 +834,20 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   LayerImpl* grand_child_of_rs2 = AddChild<LayerImpl>(child_of_rs2);
   grand_child_of_rs2->SetDrawsContent(true);
 
-  std::unique_ptr<LayerImpl> replica_of_rs1 =
-      LayerImpl::Create(host_impl()->active_tree(), 101);
-  std::unique_ptr<LayerImpl> replica_of_rs2 =
-      LayerImpl::Create(host_impl()->active_tree(), 102);
-
   // In combination with descendant draws content, opacity != 1 forces the layer
   // to have a new render surface.
   render_surface1->test_properties()->opacity = 0.5f;
   render_surface2->test_properties()->opacity = 0.33f;
 
   // All layers in the tree are initialized with an anchor at .25 and a size of
-  // (10,10).  matrix "A" is the composite layer transform used in all layers,
-  // Matrix "R" is the composite replica transform used in all replica layers.
+  // (10,10).  Matrix "A" is the composite layer transform used in all layers.
   gfx::Transform translation_to_anchor;
   translation_to_anchor.Translate(2.5, 0.0);
   gfx::Transform layer_transform;
   layer_transform.Translate(1.0, 1.0);
-  gfx::Transform replica_layer_transform;
-  replica_layer_transform.Scale3d(-2.0, 5.0, 1.0);
 
   gfx::Transform A =
       translation_to_anchor * layer_transform * Inverse(translation_to_anchor);
-  gfx::Transform R = A * translation_to_anchor * replica_layer_transform *
-                     Inverse(translation_to_anchor);
 
   gfx::Vector2dF surface1_parent_transform_scale =
       MathUtil::ComputeTransform2dScaleComponents(A, 1.f);
@@ -976,20 +911,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
       gfx::Point3F(2.5f, 0.f, 0.f);
   grand_child_of_rs2->test_properties()->transform = layer_transform;
   grand_child_of_rs2->SetBounds(gfx::Size(10, 10));
-  replica_of_rs1->test_properties()->transform_origin =
-      gfx::Point3F(2.5f, 0.f, 0.f);
-  replica_of_rs1->test_properties()->transform = replica_layer_transform;
-  replica_of_rs2->test_properties()->transform_origin =
-      gfx::Point3F(2.5f, 0.f, 0.f);
-  replica_of_rs2->test_properties()->transform = replica_layer_transform;
 
-  // We need to set parent on replica layers for property tree building.
-  replica_of_rs1->test_properties()->parent = render_surface1;
-  replica_of_rs2->test_properties()->parent = render_surface2;
-  render_surface1->test_properties()->SetReplicaLayer(
-      std::move(replica_of_rs1));
-  render_surface2->test_properties()->SetReplicaLayer(
-      std::move(replica_of_rs2));
   ExecuteCalculateDrawProperties(root);
 
   // Only layers that are associated with render surfaces should have an actual
@@ -1068,25 +990,14 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       A * A * S1, render_surface1->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      A * R * S1, render_surface1->render_surface()->replica_draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
       A * A * S1, render_surface1->render_surface()->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      A * R * S1,
-      render_surface1->render_surface()->replica_screen_space_transform());
   // Draw transform of render surface 2 is described with respect to render
   // surface 1.
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       SS1 * A * S2, render_surface2->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
-      SS1 * R * S2,
-      render_surface2->render_surface()->replica_draw_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
       A * A * A * S2,
       render_surface2->render_surface()->screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      A * A * R * S2,
-      render_surface2->render_surface()->replica_screen_space_transform());
 
   // Sanity check. If these fail there is probably a bug in the test itself.  It
   // is expected that we correctly set up transforms so that the y-component of
@@ -4259,11 +4170,9 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
       AddChild<LayerImpl>(back_facing_surface);
   // Opacity will not force creation of render surfaces in this case because of
   // the preserve-3d transform style. Instead, an example of when a surface
-  // would be created with preserve-3d is when there is a replica layer.
-  LayerImpl* dummy_replica_layer1 =
-      AddReplicaLayer<LayerImpl>(front_facing_surface);
-  LayerImpl* dummy_replica_layer2 =
-      AddReplicaLayer<LayerImpl>(back_facing_surface);
+  // would be created with preserve-3d is when there is a mask layer.
+  LayerImpl* dummy_mask_layer1 = AddMaskLayer<LayerImpl>(front_facing_surface);
+  LayerImpl* dummy_mask_layer2 = AddMaskLayer<LayerImpl>(back_facing_surface);
 
   // Nothing is double-sided
   front_facing_child->test_properties()->double_sided = false;
@@ -4288,8 +4197,8 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithPreserves3d) {
   back_facing_child_of_front_facing_surface->SetDrawsContent(true);
   front_facing_child_of_back_facing_surface->SetDrawsContent(true);
   back_facing_child_of_back_facing_surface->SetDrawsContent(true);
-  dummy_replica_layer1->SetDrawsContent(true);
-  dummy_replica_layer2->SetDrawsContent(true);
+  dummy_mask_layer1->SetDrawsContent(true);
+  dummy_mask_layer2->SetDrawsContent(true);
 
   gfx::Transform backface_matrix;
   backface_matrix.Translate(50.0, 50.0);
@@ -4748,18 +4657,6 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   child->SetDrawsContent(true);
   child->test_properties()->force_render_surface = true;
 
-  gfx::Transform replica_transform;
-  replica_transform.Scale(1.0, -1.0);
-
-  std::unique_ptr<LayerImpl> replica =
-      LayerImpl::Create(host_impl()->active_tree(), 7);
-  replica->SetPosition(gfx::PointF(2.f, 2.f));
-  replica->test_properties()->transform = replica_transform;
-
-  // We need to set parent on replica layer for property tree building.
-  replica->test_properties()->parent = child;
-  child->test_properties()->SetReplicaLayer(std::move(replica));
-
   // This layer should end up in the same surface as child, with the same draw
   // and screen space transforms.
   LayerImpl* duplicate_child_non_owner = AddChild<LayerImpl>(child);
@@ -4770,7 +4667,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   ExecuteCalculateDrawProperties(parent, device_scale_factor);
 
   // We should have two render surfaces. The root's render surface and child's
-  // render surface (it needs one because it has a replica layer).
+  // render surface (it needs one because of force_render_surface).
   EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
 
   gfx::Transform expected_parent_transform;
@@ -4823,25 +4720,6 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceTransformsInHighDPI) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected_surface_screen_space_transform,
       child->render_surface()->screen_space_transform());
-
-  gfx::Transform expected_replica_draw_transform;
-  expected_replica_draw_transform.matrix().set(1, 1, -1.0);
-  expected_replica_draw_transform.matrix().set(0, 3, 6.0);
-  expected_replica_draw_transform.matrix().set(1, 3, 6.0);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_replica_draw_transform,
-      child->render_surface()->replica_draw_transform());
-
-  gfx::Transform expected_replica_screen_space_transform;
-  expected_replica_screen_space_transform.matrix().set(1, 1, -1.0);
-  expected_replica_screen_space_transform.matrix().set(0, 3, 6.0);
-  expected_replica_screen_space_transform.matrix().set(1, 3, 6.0);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_replica_screen_space_transform,
-      child->render_surface()->replica_screen_space_transform());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_replica_screen_space_transform,
-      child->render_surface()->replica_screen_space_transform());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -4855,18 +4733,11 @@ TEST_F(LayerTreeHostCommonTest,
   child->SetDrawsContent(true);
   child->test_properties()->force_render_surface = true;
 
-  gfx::Transform replica_transform;
-  replica_transform.Scale(1.0, -1.0);
-  std::unique_ptr<LayerImpl> replica =
-      LayerImpl::Create(host_impl()->active_tree(), 7);
-  replica->test_properties()->transform = replica_transform;
-  child->test_properties()->SetReplicaLayer(std::move(replica));
-
   float device_scale_factor = 1.7f;
   ExecuteCalculateDrawProperties(parent, device_scale_factor);
 
   // We should have two render surfaces. The root's render surface and child's
-  // render surface (it needs one because it has a replica layer).
+  // render surface (it needs one because of force_render_surface).
   EXPECT_EQ(2u, render_surface_layer_list_impl()->size());
 
   EXPECT_TRANSFORMATION_MATRIX_EQ(gfx::Transform(),
@@ -4875,18 +4746,6 @@ TEST_F(LayerTreeHostCommonTest,
                                   child->render_surface()->draw_transform());
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       gfx::Transform(), child->render_surface()->screen_space_transform());
-
-  gfx::Transform expected_replica_draw_transform;
-  expected_replica_draw_transform.matrix().set(1, 1, -1.0);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_replica_draw_transform,
-      child->render_surface()->replica_draw_transform());
-
-  gfx::Transform expected_replica_screen_space_transform;
-  expected_replica_screen_space_transform.matrix().set(1, 1, -1.0);
-  EXPECT_TRANSFORMATION_MATRIX_EQ(
-      expected_replica_screen_space_transform,
-      child->render_surface()->replica_screen_space_transform());
 }
 
 TEST_F(LayerTreeHostCommonTest, LayerSearch) {
@@ -4894,9 +4753,7 @@ TEST_F(LayerTreeHostCommonTest, LayerSearch) {
   scoped_refptr<Layer> child = Layer::Create();
   scoped_refptr<Layer> grand_child = Layer::Create();
   scoped_refptr<Layer> mask_layer = Layer::Create();
-  scoped_refptr<Layer> replica_layer = Layer::Create();
 
-  grand_child->SetReplicaLayer(replica_layer.get());
   child->AddChild(grand_child.get());
   child->SetMaskLayer(mask_layer.get());
   root->AddChild(child.get());
@@ -4909,7 +4766,6 @@ TEST_F(LayerTreeHostCommonTest, LayerSearch) {
   EXPECT_EQ(child.get(), layer_tree->LayerById(child->id()));
   EXPECT_EQ(grand_child.get(), layer_tree->LayerById(grand_child->id()));
   EXPECT_EQ(mask_layer.get(), layer_tree->LayerById(mask_layer->id()));
-  EXPECT_EQ(replica_layer.get(), layer_tree->LayerById(replica_layer->id()));
   EXPECT_FALSE(layer_tree->LayerById(nonexistent_id));
 }
 
@@ -7771,8 +7627,6 @@ static void GatherDrawnLayers(const LayerImplList* rsll,
 
     if (layer->render_surface()->MaskLayer())
       drawn_layers->insert(layer->render_surface()->MaskLayer());
-    if (layer->render_surface()->ReplicaMaskLayer())
-      drawn_layers->insert(layer->render_surface()->ReplicaMaskLayer());
   }
 }
 
@@ -7913,14 +7767,6 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
   EXPECT_EQ(expected, actual);
 
-  // Add replica mask layer.
-  std::unique_ptr<LayerImpl> replica_layer =
-      LayerImpl::Create(host_impl.active_tree(), 20);
-  replica_layer->test_properties()->SetMaskLayer(
-      LayerImpl::Create(host_impl.active_tree(), 21));
-  child_raw->test_properties()->SetReplicaLayer(std::move(replica_layer));
-  child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
-
   ExecuteCalculateDrawProperties(grand_parent_raw);
 
   EXPECT_FALSE(grand_parent_raw->is_drawn_render_surface_layer_list_member());
@@ -7928,24 +7774,17 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   EXPECT_FALSE(child_raw->is_drawn_render_surface_layer_list_member());
   EXPECT_TRUE(child_raw->test_properties()
                   ->mask_layer->is_drawn_render_surface_layer_list_member());
-  EXPECT_TRUE(child_raw->test_properties()
-                  ->replica_layer->test_properties()
-                  ->mask_layer->is_drawn_render_surface_layer_list_member());
   EXPECT_FALSE(grand_child1_raw->is_drawn_render_surface_layer_list_member());
   EXPECT_TRUE(grand_child2_raw->is_drawn_render_surface_layer_list_member());
 
   expected.clear();
   expected.insert(grand_child2_raw);
   expected.insert(child_raw->test_properties()->mask_layer);
-  expected.insert(child_raw->test_properties()
-                      ->replica_layer->test_properties()
-                      ->mask_layer);
 
   actual.clear();
   GatherDrawnLayers(render_surface_layer_list_impl(), &actual);
   EXPECT_EQ(expected, actual);
 
-  child_raw->test_properties()->SetReplicaLayer(nullptr);
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   // With nothing drawing, we should have no layers.
@@ -8049,12 +7888,6 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   child1_layer->test_properties()->SetMaskLayer(
       LayerImpl::Create(host_impl.active_tree(), 4));
 
-  std::unique_ptr<LayerImpl> replica_layer =
-      LayerImpl::Create(host_impl.active_tree(), 5);
-  replica_layer->test_properties()->SetMaskLayer(
-      LayerImpl::Create(host_impl.active_tree(), 6));
-  child1_layer->test_properties()->SetReplicaLayer(std::move(replica_layer));
-
   root->test_properties()->AddChild(std::move(child1));
   root->test_properties()->AddChild(std::move(child2));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
@@ -8111,9 +7944,6 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   EXPECT_FLOAT_EQ(
       9.f,
       child1_layer->test_properties()->mask_layer->GetIdealContentsScale());
-  EXPECT_FLOAT_EQ(9.f, child1_layer->test_properties()
-                           ->replica_layer->test_properties()
-                           ->mask_layer->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(15.f, child2_layer->GetIdealContentsScale());
 
   EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(root_layer));
@@ -8134,9 +7964,6 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   EXPECT_FLOAT_EQ(
       36.f,
       child1_layer->test_properties()->mask_layer->GetIdealContentsScale());
-  EXPECT_FLOAT_EQ(36.f, child1_layer->test_properties()
-                            ->replica_layer->test_properties()
-                            ->mask_layer->GetIdealContentsScale());
   EXPECT_FLOAT_EQ(60.f, child2_layer->GetIdealContentsScale());
 
   EXPECT_FLOAT_EQ(0.f, GetMaximumAnimationScale(root_layer));
@@ -9799,56 +9626,6 @@ TEST_F(LayerTreeHostCommonTest, MaskLayerDrawProperties) {
   ExecuteCalculateDrawProperties(root);
   EXPECT_TRANSFORMATION_MATRIX_EQ(transform, mask->ScreenSpaceTransform());
   EXPECT_EQ(gfx::Rect(20, 20), mask->visible_layer_rect());
-}
-
-TEST_F(LayerTreeHostCommonTest, ReplicaMaskLayerDrawProperties) {
-  // Tests that a replica mask layer's draw properties are computed correctly.
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* child = AddChild<LayerImpl>(root);
-  child->test_properties()->SetReplicaLayer(
-      LayerImpl::Create(root->layer_tree_impl(), 100));
-  LayerImpl* replica = child->test_properties()->replica_layer;
-  replica->test_properties()->parent = child;
-  replica->test_properties()->SetMaskLayer(
-      LayerImpl::Create(root->layer_tree_impl(), 200));
-  LayerImpl* replica_mask = replica->test_properties()->mask_layer;
-
-  gfx::Transform transform;
-  transform.Translate(10, 10);
-
-  gfx::PointF replica_position(3.f, 3.f);
-
-  root->SetBounds(gfx::Size(40, 40));
-  root->SetDrawsContent(true);
-  child->test_properties()->transform = transform;
-  child->SetBounds(gfx::Size(30, 30));
-  replica->SetPosition(replica_position);
-  replica_mask->SetBounds(gfx::Size(20, 20));
-
-  ExecuteCalculateDrawProperties(root);
-
-  // The render surface created for the replica has no contributing content, so
-  // the replica's mask isn't a drawn RSLL member. This means it has an empty
-  // visible rect, but its screen space transform can still be computed
-  // correctly on-demand.
-  EXPECT_FALSE(replica_mask->is_drawn_render_surface_layer_list_member());
-  EXPECT_EQ(gfx::Rect(), replica_mask->visible_layer_rect());
-
-  gfx::Transform expected_screen_space_transform = transform;
-  expected_screen_space_transform.Translate(replica_position.x(),
-                                            replica_position.y());
-
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_screen_space_transform,
-                                  replica_mask->ScreenSpaceTransform());
-
-  // Make the child's render surface have contributing content.
-  child->SetDrawsContent(true);
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(root);
-  EXPECT_TRUE(replica_mask->is_drawn_render_surface_layer_list_member());
-  EXPECT_EQ(gfx::Rect(20, 20), replica_mask->visible_layer_rect());
-  EXPECT_TRANSFORMATION_MATRIX_EQ(expected_screen_space_transform,
-                                  replica_mask->ScreenSpaceTransform());
 }
 
 TEST_F(LayerTreeHostCommonTest,
