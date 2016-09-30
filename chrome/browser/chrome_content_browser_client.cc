@@ -629,6 +629,20 @@ void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
   popup_helper->AddBlockedPopup(params);
 }
 
+#if defined(ENABLE_PLUGINS)
+void HandleFlashDownloadActionOnUIThread(int render_process_id,
+                                         int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHost* render_frame_host =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  if (!render_frame_host)
+    return;
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  FlashDownloadInterception::InterceptFlashDownloadNavigation(web_contents);
+}
+#endif  // defined(ENABLE_PLUGINS)
+
 // An implementation of the SSLCertReporter interface used by
 // SSLErrorHandler. Uses the SafeBrowsing UI manager to send invalid
 // certificate reports.
@@ -2283,7 +2297,10 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   if (FlashDownloadInterception::ShouldStopFlashDownloadAction(
           content_settings, opener_top_level_frame_url, target_url,
           user_gesture)) {
-    // TODO(crbug.com/626728): Implement permission prompt logic.
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&HandleFlashDownloadActionOnUIThread, render_process_id,
+                   opener_render_frame_id));
     return false;
   }
 #endif

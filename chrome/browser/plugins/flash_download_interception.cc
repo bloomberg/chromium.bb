@@ -31,20 +31,25 @@ const char kFlashDownloadURL[] = "get.adobe.com/flash";
 
 void DoNothing(blink::mojom::PermissionStatus result) {}
 
-bool ShouldInterceptNavigation(
+bool InterceptNavigation(
     content::WebContents* source,
     const navigation_interception::NavigationParams& params) {
+  FlashDownloadInterception::InterceptFlashDownloadNavigation(source);
+  return true;
+}
+
+}  // namespace
+
+// static
+void FlashDownloadInterception::InterceptFlashDownloadNavigation(
+    content::WebContents* source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PermissionManager* manager = PermissionManager::Get(
       Profile::FromBrowserContext(source->GetBrowserContext()));
   manager->RequestPermission(
       content::PermissionType::FLASH, source->GetMainFrame(),
       source->GetLastCommittedURL(), true, base::Bind(&DoNothing));
-
-  return true;
 }
-
-}  // namespace
 
 // static
 bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
@@ -92,5 +97,5 @@ FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
   }
 
   return base::MakeUnique<navigation_interception::InterceptNavigationThrottle>(
-      handle, base::Bind(&ShouldInterceptNavigation), true);
+      handle, base::Bind(&InterceptNavigation), true);
 }

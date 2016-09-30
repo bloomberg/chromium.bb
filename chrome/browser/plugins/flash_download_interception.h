@@ -12,6 +12,7 @@
 namespace content {
 class NavigationHandle;
 class NavigationThrottle;
+class WebContents;
 }
 
 class HostContentSettingsMap;
@@ -22,6 +23,7 @@ class GURL;
 // Chrome already ships with it. Note that this is an UI thread class.
 class FlashDownloadInterception {
  public:
+  static void InterceptFlashDownloadNavigation(content::WebContents* source);
   static bool ShouldStopFlashDownloadAction(
       HostContentSettingsMap* host_content_settings_map,
       const GURL& source_url,
