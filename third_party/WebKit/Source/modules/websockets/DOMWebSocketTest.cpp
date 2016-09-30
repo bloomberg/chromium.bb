@@ -89,7 +89,7 @@ public:
 
     WebSocketChannel* createChannel(ExecutionContext*, WebSocketChannelClient*) override
     {
-        ASSERT(!m_hasCreatedChannel);
+        DCHECK(!m_hasCreatedChannel);
         m_hasCreatedChannel = true;
         return m_channel.get();
     }

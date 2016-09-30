@@ -44,8 +44,8 @@ namespace blink {
 
 WebSocketChannel* WebSocketChannel::create(ExecutionContext* context, WebSocketChannelClient* client)
 {
-    ASSERT(context);
-    ASSERT(client);
+    DCHECK(context);
+    DCHECK(client);
 
     std::unique_ptr<SourceLocation> location = SourceLocation::capture(context);
 

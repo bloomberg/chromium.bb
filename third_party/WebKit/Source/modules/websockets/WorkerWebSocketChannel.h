@@ -71,11 +71,11 @@ public:
     void send(PassRefPtr<BlobDataHandle>) override;
     void sendTextAsCharVector(std::unique_ptr<Vector<char>>) override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     void sendBinaryAsCharVector(std::unique_ptr<Vector<char>>) override
     {
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     void close(int code, const String& reason) override;
     void fail(const String& reason, MessageLevel, std::unique_ptr<SourceLocation>) override;

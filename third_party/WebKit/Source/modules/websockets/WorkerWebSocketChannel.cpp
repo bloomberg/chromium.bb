@@ -103,36 +103,36 @@ WorkerWebSocketChannel::WorkerWebSocketChannel(WorkerGlobalScope& workerGlobalSc
 
 WorkerWebSocketChannel::~WorkerWebSocketChannel()
 {
-    ASSERT(!m_bridge);
+    DCHECK(!m_bridge);
 }
 
 bool WorkerWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
-    ASSERT(m_bridge);
+    DCHECK(m_bridge);
     return m_bridge->connect(m_locationAtConnection->clone(), url, protocol);
 }
 
 void WorkerWebSocketChannel::send(const CString& message)
 {
-    ASSERT(m_bridge);
+    DCHECK(m_bridge);
     m_bridge->send(message);
 }
 
 void WorkerWebSocketChannel::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
-    ASSERT(m_bridge);
+    DCHECK(m_bridge);
     m_bridge->send(binaryData, byteOffset, byteLength);
 }
 
 void WorkerWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobData)
 {
-    ASSERT(m_bridge);
+    DCHECK(m_bridge);
     m_bridge->send(std::move(blobData));
 }
 
 void WorkerWebSocketChannel::close(int code, const String& reason)
 {
-    ASSERT(m_bridge);
+    DCHECK(m_bridge);
     m_bridge->close(code, reason);
 }
 
@@ -184,7 +184,7 @@ Peer::~Peer()
 
 bool Peer::initialize(std::unique_ptr<SourceLocation> location, ExecutionContext* context)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (wasContextDestroyedBeforeObserverCreation())
         return false;
     Document* document = toDocument(context);
@@ -194,7 +194,7 @@ bool Peer::initialize(std::unique_ptr<SourceLocation> location, ExecutionContext
 
 bool Peer::connect(const KURL& url, const String& protocol)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (!m_mainWebSocketChannel)
         return false;
     return m_mainWebSocketChannel->connect(url, protocol);
@@ -202,28 +202,28 @@ bool Peer::connect(const KURL& url, const String& protocol)
 
 void Peer::sendTextAsCharVector(std::unique_ptr<Vector<char>> data)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (m_mainWebSocketChannel)
         m_mainWebSocketChannel->sendTextAsCharVector(std::move(data));
 }
 
 void Peer::sendBinaryAsCharVector(std::unique_ptr<Vector<char>> data)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (m_mainWebSocketChannel)
         m_mainWebSocketChannel->sendBinaryAsCharVector(std::move(data));
 }
 
 void Peer::sendBlob(PassRefPtr<BlobDataHandle> blobData)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (m_mainWebSocketChannel)
         m_mainWebSocketChannel->send(std::move(blobData));
 }
 
 void Peer::close(int code, const String& reason)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (!m_mainWebSocketChannel)
         return;
     m_mainWebSocketChannel->close(code, reason);
@@ -231,7 +231,7 @@ void Peer::close(int code, const String& reason)
 
 void Peer::fail(const String& reason, MessageLevel level, std::unique_ptr<SourceLocation> location)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (!m_mainWebSocketChannel)
         return;
     m_mainWebSocketChannel->fail(reason, level, std::move(location));
@@ -239,7 +239,7 @@ void Peer::fail(const String& reason, MessageLevel level, std::unique_ptr<Source
 
 void Peer::disconnect()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (!m_mainWebSocketChannel)
         return;
     m_mainWebSocketChannel->disconnect();
@@ -248,79 +248,79 @@ void Peer::disconnect()
 
 static void workerGlobalScopeDidConnect(Bridge* bridge, const String& subprotocol, const String& extensions, ExecutionContext* context)
 {
-    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    DCHECK(context->isWorkerGlobalScope());
     if (bridge && bridge->client())
         bridge->client()->didConnect(subprotocol, extensions);
 }
 
 void Peer::didConnect(const String& subprotocol, const String& extensions)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidConnect, m_bridge, subprotocol, extensions));
 }
 
 static void workerGlobalScopeDidReceiveTextMessage(Bridge* bridge, const String& payload, ExecutionContext* context)
 {
-    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    DCHECK(context->isWorkerGlobalScope());
     if (bridge && bridge->client())
         bridge->client()->didReceiveTextMessage(payload);
 }
 
 void Peer::didReceiveTextMessage(const String& payload)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidReceiveTextMessage, m_bridge, payload));
 }
 
 static void workerGlobalScopeDidReceiveBinaryMessage(Bridge* bridge, std::unique_ptr<Vector<char>> payload, ExecutionContext* context)
 {
-    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    DCHECK(context->isWorkerGlobalScope());
     if (bridge && bridge->client())
         bridge->client()->didReceiveBinaryMessage(std::move(payload));
 }
 
 void Peer::didReceiveBinaryMessage(std::unique_ptr<Vector<char>> payload)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidReceiveBinaryMessage, m_bridge, passed(std::move(payload))));
 }
 
 static void workerGlobalScopeDidConsumeBufferedAmount(Bridge* bridge, uint64_t consumed, ExecutionContext* context)
 {
-    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    DCHECK(context->isWorkerGlobalScope());
     if (bridge && bridge->client())
         bridge->client()->didConsumeBufferedAmount(consumed);
 }
 
 void Peer::didConsumeBufferedAmount(uint64_t consumed)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidConsumeBufferedAmount, m_bridge, consumed));
 }
 
 static void workerGlobalScopeDidStartClosingHandshake(Bridge* bridge, ExecutionContext* context)
 {
-    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    DCHECK(context->isWorkerGlobalScope());
     if (bridge && bridge->client())
         bridge->client()->didStartClosingHandshake();
 }
 
 void Peer::didStartClosingHandshake()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidStartClosingHandshake, m_bridge));
 }
 
 static void workerGlobalScopeDidClose(Bridge* bridge, WebSocketChannelClient::ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason, ExecutionContext* context)
 {
-    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    DCHECK(context->isWorkerGlobalScope());
     if (bridge && bridge->client())
         bridge->client()->didClose(closingHandshakeCompletion, code, reason);
 }
 
 void Peer::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion, unsigned short code, const String& reason)
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (m_mainWebSocketChannel) {
         m_mainWebSocketChannel->disconnect();
         m_mainWebSocketChannel = nullptr;
@@ -330,14 +330,14 @@ void Peer::didClose(ClosingHandshakeCompletionStatus closingHandshakeCompletion,
 
 static void workerGlobalScopeDidError(Bridge* bridge, ExecutionContext* context)
 {
-    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    DCHECK(context->isWorkerGlobalScope());
     if (bridge && bridge->client())
         bridge->client()->didError();
 }
 
 void Peer::didError()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     m_loaderProxy->postTaskToWorkerGlobalScope(BLINK_FROM_HERE, createCrossThreadTask(&workerGlobalScopeDidError, m_bridge));
 }
 
@@ -367,7 +367,7 @@ Bridge::Bridge(WebSocketChannelClient* client, WorkerGlobalScope& workerGlobalSc
 
 Bridge::~Bridge()
 {
-    ASSERT(!m_peer);
+    DCHECK(!m_peer);
 }
 
 void Bridge::connectOnMainThread(std::unique_ptr<SourceLocation> location, WorkerThreadLifecycleContext* workerThreadLifecycleContext, const KURL& url, const String& protocol, WebSocketChannelSyncHelper* syncHelper, ExecutionContext* context)
@@ -394,7 +394,7 @@ bool Bridge::connect(std::unique_ptr<SourceLocation> location, const KURL& url, 
 
 void Bridge::send(const CString& message)
 {
-    ASSERT(m_peer);
+    DCHECK(m_peer);
     std::unique_ptr<Vector<char>> data = wrapUnique(new Vector<char>(message.length()));
     if (message.length())
         memcpy(data->data(), static_cast<const char*>(message.data()), message.length());
@@ -404,7 +404,7 @@ void Bridge::send(const CString& message)
 
 void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
-    ASSERT(m_peer);
+    DCHECK(m_peer);
     // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied into Vector<char>.
     std::unique_ptr<Vector<char>> data = wrapUnique(new Vector<char>(byteLength));
     if (binaryData.byteLength())
@@ -415,19 +415,19 @@ void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigne
 
 void Bridge::send(PassRefPtr<BlobDataHandle> data)
 {
-    ASSERT(m_peer);
+    DCHECK(m_peer);
     m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::sendBlob, m_peer, std::move(data)));
 }
 
 void Bridge::close(int code, const String& reason)
 {
-    ASSERT(m_peer);
+    DCHECK(m_peer);
     m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::close, m_peer, code, reason));
 }
 
 void Bridge::fail(const String& reason, MessageLevel level, std::unique_ptr<SourceLocation> location)
 {
-    ASSERT(m_peer);
+    DCHECK(m_peer);
     m_loaderProxy->postTaskToLoader(BLINK_FROM_HERE, createCrossThreadTask(&Peer::fail, m_peer, reason, level, passed(location->clone())));
 }
 

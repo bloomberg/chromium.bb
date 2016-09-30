@@ -143,7 +143,7 @@ DocumentWebSocketChannel::DocumentWebSocketChannel(Document* document, WebSocket
 
 DocumentWebSocketChannel::~DocumentWebSocketChannel()
 {
-    ASSERT(!m_blobLoader);
+    DCHECK(!m_blobLoader);
 }
 
 bool DocumentWebSocketChannel::connect(const KURL& url, const String& protocol)
@@ -247,7 +247,7 @@ void DocumentWebSocketChannel::sendBinaryAsCharVector(std::unique_ptr<Vector<cha
 void DocumentWebSocketChannel::close(int code, const String& reason)
 {
     NETWORK_DVLOG(1) << this << " close(" << code << ", " << reason << ")";
-    ASSERT(m_handle);
+    DCHECK(m_handle);
     unsigned short codeToSend = static_cast<unsigned short>(code == CloseEventCodeNotSpecified ? CloseEventCodeNoStatusRcvd : code);
     m_messages.append(new Message(codeToSend, reason));
     processSendQueue();
@@ -299,7 +299,7 @@ DocumentWebSocketChannel::Message::Message(std::unique_ptr<Vector<char>> vectorD
     : type(type)
     , vectorData(std::move(vectorData))
 {
-    ASSERT(type == MessageTypeTextAsCharVector || type == MessageTypeBinaryAsCharVector);
+    DCHECK(type == MessageTypeTextAsCharVector || type == MessageTypeBinaryAsCharVector);
 }
 
 DocumentWebSocketChannel::Message::Message(unsigned short code, const String& reason)
@@ -311,7 +311,7 @@ void DocumentWebSocketChannel::sendInternal(WebSocketHandle::MessageType message
 {
     WebSocketHandle::MessageType frameType =
         m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : messageType;
-    ASSERT(totalSize >= m_sentSizeOfTopMessage);
+    DCHECK_GE(totalSize, m_sentSizeOfTopMessage);
     // The first cast is safe since the result of min() never exceeds
     // the range of size_t. The second cast is necessary to compile
     // min() on ILP32.
@@ -332,7 +332,7 @@ void DocumentWebSocketChannel::sendInternal(WebSocketHandle::MessageType message
 
 void DocumentWebSocketChannel::processSendQueue()
 {
-    ASSERT(m_handle);
+    DCHECK(m_handle);
     uint64_t consumedBufferedAmount = 0;
     while (!m_messages.isEmpty() && !m_blobLoader) {
         Message* message = m_messages.first().get();
@@ -343,7 +343,7 @@ void DocumentWebSocketChannel::processSendQueue()
             sendInternal(WebSocketHandle::MessageTypeText, message->text.data(), message->text.length(), &consumedBufferedAmount);
             break;
         case MessageTypeBlob:
-            ASSERT(!m_blobLoader);
+            DCHECK(!m_blobLoader);
             m_blobLoader = new BlobLoader(message->blobDataHandle, this);
             break;
         case MessageTypeArrayBuffer:
@@ -357,8 +357,8 @@ void DocumentWebSocketChannel::processSendQueue()
             break;
         case MessageTypeClose: {
             // No message should be sent from now on.
-            ASSERT(m_messages.size() == 1);
-            ASSERT(m_sentSizeOfTopMessage == 0);
+            DCHECK_EQ(m_messages.size(), 1u);
+            DCHECK_EQ(m_sentSizeOfTopMessage, 0u);
             m_handle->close(message->code, message->reason);
             m_messages.removeFirst();
             break;
@@ -405,7 +405,7 @@ Document* DocumentWebSocketChannel::document()
 {
     // This context is always a Document. See the constructor.
     ExecutionContext* context = getExecutionContext();
-    ASSERT(context->isDocument());
+    DCHECK(context->isDocument());
     return toDocument(context);
 }
 
@@ -413,9 +413,9 @@ void DocumentWebSocketChannel::didConnect(WebSocketHandle* handle, const String&
 {
     NETWORK_DVLOG(1) << this << " didConnect(" << handle << ", " << String(selectedProtocol) << ", " << String(extensions) << ")";
 
-    ASSERT(m_handle);
-    ASSERT(handle == m_handle.get());
-    ASSERT(m_client);
+    DCHECK(m_handle);
+    DCHECK_EQ(handle, m_handle.get());
+    DCHECK(m_client);
 
     m_client->didConnect(selectedProtocol, extensions);
 }
@@ -424,8 +424,8 @@ void DocumentWebSocketChannel::didStartOpeningHandshake(WebSocketHandle* handle,
 {
     NETWORK_DVLOG(1) << this << " didStartOpeningHandshake(" << handle << ")";
 
-    ASSERT(m_handle);
-    ASSERT(handle == m_handle.get());
+    DCHECK(m_handle);
+    DCHECK_EQ(handle, m_handle.get());
 
     TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketSendHandshakeRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorWebSocketEvent::data(document(), m_identifier));
     InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, request.get());
@@ -436,8 +436,8 @@ void DocumentWebSocketChannel::didFinishOpeningHandshake(WebSocketHandle* handle
 {
     NETWORK_DVLOG(1) << this << " didFinishOpeningHandshake(" << handle << ")";
 
-    ASSERT(m_handle);
-    ASSERT(handle == m_handle.get());
+    DCHECK(m_handle);
+    DCHECK_EQ(handle, m_handle.get());
 
     TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketReceiveHandshakeResponse", TRACE_EVENT_SCOPE_THREAD, "data", InspectorWebSocketEvent::data(document(), m_identifier));
     InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, m_handshakeRequest.get(), response);
@@ -448,8 +448,8 @@ void DocumentWebSocketChannel::didFail(WebSocketHandle* handle, const String& me
 {
     NETWORK_DVLOG(1) << this << " didFail(" << handle << ", " << String(message) << ")";
 
-    ASSERT(m_handle);
-    ASSERT(handle == m_handle.get());
+    DCHECK(m_handle);
+    DCHECK_EQ(handle, m_handle.get());
 
     // This function is called when the browser is required to fail the
     // WebSocketConnection. Hence we fail this channel by calling
@@ -462,23 +462,23 @@ void DocumentWebSocketChannel::didReceiveData(WebSocketHandle* handle, bool fin,
 {
     NETWORK_DVLOG(1) << this << " didReceiveData(" << handle << ", " << fin << ", " << type << ", (" << static_cast<const void*>(data) << ", " << size << "))";
 
-    ASSERT(m_handle);
-    ASSERT(handle == m_handle.get());
-    ASSERT(m_client);
+    DCHECK(m_handle);
+    DCHECK_EQ(handle, m_handle.get());
+    DCHECK(m_client);
     // Non-final frames cannot be empty.
-    ASSERT(fin || size);
+    DCHECK(fin || size);
 
     switch (type) {
     case WebSocketHandle::MessageTypeText:
-        ASSERT(m_receivingMessageData.isEmpty());
+        DCHECK(m_receivingMessageData.isEmpty());
         m_receivingMessageTypeIsText = true;
         break;
     case WebSocketHandle::MessageTypeBinary:
-        ASSERT(m_receivingMessageData.isEmpty());
+        DCHECK(m_receivingMessageData.isEmpty());
         m_receivingMessageTypeIsText = false;
         break;
     case WebSocketHandle::MessageTypeContinuation:
-        ASSERT(!m_receivingMessageData.isEmpty());
+        DCHECK(!m_receivingMessageData.isEmpty());
         break;
     }
 
@@ -513,8 +513,8 @@ void DocumentWebSocketChannel::didClose(WebSocketHandle* handle, bool wasClean, 
 {
     NETWORK_DVLOG(1) << this << " didClose(" << handle << ", " << wasClean << ", " << code << ", " << String(reason) << ")";
 
-    ASSERT(m_handle);
-    ASSERT(handle == m_handle.get());
+    DCHECK(m_handle);
+    DCHECK_EQ(handle, m_handle.get());
 
     m_handle.reset();
 
@@ -532,9 +532,9 @@ void DocumentWebSocketChannel::didReceiveFlowControl(WebSocketHandle* handle, in
 {
     NETWORK_DVLOG(1) << this << " didReceiveFlowControl(" << handle << ", " << quota << ")";
 
-    ASSERT(m_handle);
-    ASSERT(handle == m_handle.get());
-    ASSERT(quota >= 0);
+    DCHECK(m_handle);
+    DCHECK_EQ(handle, m_handle.get());
+    DCHECK_GE(quota, 0);
 
     m_sendingQuota += quota;
     processSendQueue();
@@ -544,8 +544,8 @@ void DocumentWebSocketChannel::didStartClosingHandshake(WebSocketHandle* handle)
 {
     NETWORK_DVLOG(1) << this << " didStartClosingHandshake(" << handle << ")";
 
-    ASSERT(m_handle);
-    ASSERT(handle == m_handle.get());
+    DCHECK(m_handle);
+    DCHECK_EQ(handle, m_handle.get());
 
     if (m_client)
         m_client->didStartClosingHandshake();
@@ -554,9 +554,10 @@ void DocumentWebSocketChannel::didStartClosingHandshake(WebSocketHandle* handle)
 void DocumentWebSocketChannel::didFinishLoadingBlob(DOMArrayBuffer* buffer)
 {
     m_blobLoader.clear();
-    ASSERT(m_handle);
+    DCHECK(m_handle);
     // The loaded blob is always placed on m_messages[0].
-    ASSERT(m_messages.size() > 0 && m_messages.first()->type == MessageTypeBlob);
+    DCHECK_GT(m_messages.size(), 0u);
+    DCHECK_EQ(m_messages.first()->type, MessageTypeBlob);
     // We replace it with the loaded blob.
     m_messages.first() = new Message(buffer);
     processSendQueue();

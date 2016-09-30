@@ -78,15 +78,15 @@ void DOMWebSocket::EventQueue::dispatch(Event* event)
 {
     switch (m_state) {
     case Active:
-        ASSERT(m_events.isEmpty());
-        ASSERT(m_target->getExecutionContext());
+        DCHECK(m_events.isEmpty());
+        DCHECK(m_target->getExecutionContext());
         m_target->dispatchEvent(event);
         break;
     case Suspended:
         m_events.append(event);
         break;
     case Stopped:
-        ASSERT(m_events.isEmpty());
+        DCHECK(m_events.isEmpty());
         // Do nothing.
         break;
     }
@@ -134,8 +134,8 @@ void DOMWebSocket::EventQueue::dispatchQueuedEvents()
     while (!events.isEmpty()) {
         if (m_state == Stopped || m_state == Suspended)
             break;
-        ASSERT(m_state == Active);
-        ASSERT(m_target->getExecutionContext());
+        DCHECK_EQ(m_state, Active);
+        DCHECK(m_target->getExecutionContext());
         m_target->dispatchEvent(events.takeFirst());
         // |this| can be stopped here.
     }
@@ -148,7 +148,7 @@ void DOMWebSocket::EventQueue::dispatchQueuedEvents()
 
 void DOMWebSocket::EventQueue::resumeTimerFired(TimerBase*)
 {
-    ASSERT(m_state == Suspended);
+    DCHECK_EQ(m_state, Suspended);
     m_state = Active;
     dispatchQueuedEvents();
 }
@@ -238,7 +238,7 @@ DOMWebSocket::DOMWebSocket(ExecutionContext* context)
 
 DOMWebSocket::~DOMWebSocket()
 {
-    ASSERT(!m_channel);
+    DCHECK(!m_channel);
 }
 
 void DOMWebSocket::logError(const String& message)
@@ -271,7 +271,7 @@ DOMWebSocket* DOMWebSocket::create(ExecutionContext* context, const String& url,
         protocolsVector.append(protocols.getAsString());
         webSocket->connect(url, protocolsVector, exceptionState);
     } else {
-        ASSERT(protocols.isStringSequence());
+        DCHECK(protocols.isStringSequence());
         webSocket->connect(url, protocols.getAsStringSequence(), exceptionState);
     }
 
@@ -374,7 +374,7 @@ void DOMWebSocket::updateBufferedAmountAfterClose(uint64_t payloadSize)
 
 void DOMWebSocket::reflectBufferedAmountConsumption(TimerBase*)
 {
-    ASSERT(m_bufferedAmount >= m_consumedBufferedAmount);
+    DCHECK_GE(m_bufferedAmount, m_consumedBufferedAmount);
     // Cast to unsigned long long is required since clang doesn't accept
     // combination of %llu and uint64_t (known as unsigned long).
     NETWORK_DVLOG(1) << "WebSocket " << this << " reflectBufferedAmountConsumption() " << m_bufferedAmount << " => " << (m_bufferedAmount - m_consumedBufferedAmount);
@@ -385,7 +385,7 @@ void DOMWebSocket::reflectBufferedAmountConsumption(TimerBase*)
 
 void DOMWebSocket::releaseChannel()
 {
-    ASSERT(m_channel);
+    DCHECK(m_channel);
     m_channel->disconnect();
     m_channel = nullptr;
 }
@@ -414,7 +414,7 @@ void DOMWebSocket::send(const String& message, ExceptionState& exceptionState)
 
     recordSendTypeHistogram(WebSocketSendTypeString);
 
-    ASSERT(m_channel);
+    DCHECK(m_channel);
     m_bufferedAmount += encodedMessage.length();
     m_channel->send(encodedMessage);
 }
@@ -422,7 +422,8 @@ void DOMWebSocket::send(const String& message, ExceptionState& exceptionState)
 void DOMWebSocket::send(DOMArrayBuffer* binaryData, ExceptionState& exceptionState)
 {
     NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending ArrayBuffer " << binaryData;
-    ASSERT(binaryData && binaryData->buffer());
+    DCHECK(binaryData);
+    DCHECK(binaryData->buffer());
     if (m_state == kConnecting) {
         setInvalidStateErrorForSendMethod(exceptionState);
         return;
@@ -433,7 +434,7 @@ void DOMWebSocket::send(DOMArrayBuffer* binaryData, ExceptionState& exceptionSta
     }
     recordSendTypeHistogram(WebSocketSendTypeArrayBuffer);
     recordSendMessageSizeHistogram(WebSocketSendTypeArrayBuffer, binaryData->byteLength());
-    ASSERT(m_channel);
+    DCHECK(m_channel);
     m_bufferedAmount += binaryData->byteLength();
     m_channel->send(*binaryData, 0, binaryData->byteLength());
 }
@@ -441,7 +442,7 @@ void DOMWebSocket::send(DOMArrayBuffer* binaryData, ExceptionState& exceptionSta
 void DOMWebSocket::send(DOMArrayBufferView* arrayBufferView, ExceptionState& exceptionState)
 {
     NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending ArrayBufferView " << arrayBufferView;
-    ASSERT(arrayBufferView);
+    DCHECK(arrayBufferView);
     if (m_state == kConnecting) {
         setInvalidStateErrorForSendMethod(exceptionState);
         return;
@@ -452,7 +453,7 @@ void DOMWebSocket::send(DOMArrayBufferView* arrayBufferView, ExceptionState& exc
     }
     recordSendTypeHistogram(WebSocketSendTypeArrayBufferView);
     recordSendMessageSizeHistogram(WebSocketSendTypeArrayBufferView, arrayBufferView->byteLength());
-    ASSERT(m_channel);
+    DCHECK(m_channel);
     m_bufferedAmount += arrayBufferView->byteLength();
     m_channel->send(*arrayBufferView->buffer(), arrayBufferView->byteOffset(), arrayBufferView->byteLength());
 }
@@ -460,7 +461,7 @@ void DOMWebSocket::send(DOMArrayBufferView* arrayBufferView, ExceptionState& exc
 void DOMWebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
 {
     NETWORK_DVLOG(1) << "WebSocket " << this << " send() Sending Blob " << binaryData->uuid();
-    ASSERT(binaryData);
+    DCHECK(binaryData);
     if (m_state == kConnecting) {
         setInvalidStateErrorForSendMethod(exceptionState);
         return;
@@ -473,7 +474,7 @@ void DOMWebSocket::send(Blob* binaryData, ExceptionState& exceptionState)
     recordSendTypeHistogram(WebSocketSendTypeBlob);
     recordSendMessageSizeHistogram(WebSocketSendTypeBlob, clampTo<size_t>(size, 0, kMaxByteSizeForHistogram));
     m_bufferedAmount += size;
-    ASSERT(m_channel);
+    DCHECK(m_channel);
 
     // When the runtime type of |binaryData| is File,
     // binaryData->blobDataHandle()->size() returns -1. However, in order to
@@ -517,7 +518,7 @@ void DOMWebSocket::closeInternal(int code, const String& reason, ExceptionState&
             return;
         }
         if (!reason.isEmpty() && !reason.is8Bit()) {
-            ASSERT(utf8.length() > 0);
+            DCHECK_GT(utf8.length(), 0u);
             // reason might contain unpaired surrogates. Reconstruct it from
             // utf8.
             cleansedReason = String::fromUTF8(utf8.data(), utf8.length());
@@ -573,7 +574,7 @@ String DOMWebSocket::binaryType() const
     case BinaryTypeArrayBuffer:
         return "arraybuffer";
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return String();
 }
 
@@ -587,7 +588,7 @@ void DOMWebSocket::setBinaryType(const String& binaryType)
         setBinaryTypeInternal(BinaryTypeArrayBuffer);
         return;
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
 }
 
 void DOMWebSocket::setBinaryTypeInternal(BinaryType binaryType)
@@ -702,7 +703,7 @@ void DOMWebSocket::didError()
 
 void DOMWebSocket::didConsumeBufferedAmount(uint64_t consumed)
 {
-    ASSERT(m_bufferedAmount >= consumed + m_consumedBufferedAmount);
+    DCHECK_GE(m_bufferedAmount, consumed + m_consumedBufferedAmount);
     NETWORK_DVLOG(1) << "WebSocket " << this << " didConsumeBufferedAmount(" << consumed << ")";
     if (m_state == kClosed)
         return;
