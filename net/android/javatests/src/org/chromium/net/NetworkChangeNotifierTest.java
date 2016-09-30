@@ -30,6 +30,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.NetworkChangeNotifierAutoDetect.ConnectivityManagerDelegate;
 import org.chromium.net.NetworkChangeNotifierAutoDetect.NetworkState;
+import org.chromium.net.NetworkChangeNotifierAutoDetect.WifiManagerDelegate;
 import org.chromium.net.test.util.NetworkChangeNotifierTestUtil;
 
 import java.lang.reflect.Constructor;
@@ -152,8 +153,11 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         private NetworkCallback mLastRegisteredNetworkCallback;
 
         @Override
-        public NetworkState getNetworkState() {
-            return new NetworkState(mActiveNetworkExists, mNetworkType, mNetworkSubtype);
+        public NetworkState getNetworkState(WifiManagerDelegate wifiManagerDelegate) {
+            return new NetworkState(mActiveNetworkExists, mNetworkType, mNetworkSubtype,
+                    mNetworkType == ConnectivityManager.TYPE_WIFI
+                            ? wifiManagerDelegate.getWifiSsid()
+                            : null);
         }
 
         @Override
@@ -254,12 +258,11 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     /**
      * Mocks out calls to the WifiManager.
      */
-    private static class MockWifiManagerDelegate
-            extends NetworkChangeNotifierAutoDetect.WifiManagerDelegate {
+    private static class MockWifiManagerDelegate extends WifiManagerDelegate {
         private String mWifiSSID;
 
         @Override
-        public String getWifiSSID() {
+        public String getWifiSsid() {
             return mWifiSSID;
         }
 
@@ -660,7 +663,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     public void testConnectivityManagerDelegateDoesNotCrash() {
         ConnectivityManagerDelegate delegate =
                 new ConnectivityManagerDelegate(getInstrumentation().getTargetContext());
-        delegate.getNetworkState();
+        delegate.getNetworkState(new WifiManagerDelegate(getInstrumentation().getTargetContext()));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // getConnectionType(Network) doesn't crash upon invalid Network argument.
             Network invalidNetwork = netIdToNetwork(NetId.INVALID);

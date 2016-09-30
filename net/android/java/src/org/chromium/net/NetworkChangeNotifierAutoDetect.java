@@ -37,6 +37,8 @@ import org.chromium.net.ConnectionType.ConnectionTypeEnum;
 import java.io.IOException;
 import java.util.Arrays;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /**
  * Used by the NetworkChangeNotifier to listens to platform changes in connectivity.
  * Note that use of this class requires that the app have the platform
@@ -49,11 +51,16 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         private final boolean mConnected;
         private final int mType;
         private final int mSubtype;
+        // WIFI SSID of the connection. Always non-null (i.e. instead of null it'll be an empty
+        // string) to facilitate .equals().
+        private final String mWifiSsid;
 
-        public NetworkState(boolean connected, int type, int subtype) {
+        public NetworkState(boolean connected, int type, int subtype, String wifiSsid) {
             mConnected = connected;
             mType = type;
             mSubtype = subtype;
+            assert mType == ConnectivityManager.TYPE_WIFI || wifiSsid == null;
+            mWifiSsid = wifiSsid == null ? "" : wifiSsid;
         }
 
         public boolean isConnected() {
@@ -66,6 +73,11 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
         public int getNetworkSubType() {
             return mSubtype;
+        }
+
+        // WiFi SSID, always non-null to facilitate .equals()
+        public String getWifiSsid() {
+            return mWifiSsid;
         }
     }
 
@@ -88,12 +100,23 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
          * Returns connection type and status information about the current
          * default network.
          */
-        NetworkState getNetworkState() {
+        NetworkState getNetworkState(WifiManagerDelegate wifiManagerDelegate) {
             final NetworkInfo networkInfo = mConnectivityManager.getActiveNetworkInfo();
             if (networkInfo == null || !networkInfo.isConnected()) {
-                return new NetworkState(false, -1, -1);
+                return new NetworkState(false, -1, -1, null);
             }
-            return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype());
+            // If Wifi, then fetch SSID also
+            if (networkInfo.getType() == ConnectivityManager.TYPE_WIFI) {
+                // Since Android 4.2 the SSID can be retrieved from NetworkInfo.getExtraInfo().
+                if (networkInfo.getExtraInfo() != null && !"".equals(networkInfo.getExtraInfo())) {
+                    return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(),
+                            networkInfo.getExtraInfo());
+                }
+                // Fetch WiFi SSID directly from WifiManagerDelegate if not in NetworkInfo.
+                return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(),
+                        wifiManagerDelegate.getWifiSsid());
+            }
+            return new NetworkState(true, networkInfo.getType(), networkInfo.getSubtype(), null);
         }
 
         // Fetches NetworkInfo and records UMA for NullPointerExceptions.
@@ -241,35 +264,64 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     /** Queries the WifiManager for SSID of the current Wifi connection. */
     static class WifiManagerDelegate {
         private final Context mContext;
-        private final WifiManager mWifiManager;
-        private final boolean mHasWifiPermission;
+        // Lock all members below.
+        private final Object mLock = new Object();
+        // Has mHasWifiPermission been calculated.
+        @GuardedBy("mLock")
+        private boolean mHasWifiPermissionComputed;
+        // Only valid when mHasWifiPermissionComputed is set.
+        @GuardedBy("mLock")
+        private boolean mHasWifiPermission;
+        // Only valid when mHasWifiPermission is set.
+        @GuardedBy("mLock")
+        private WifiManager mWifiManager;
 
         WifiManagerDelegate(Context context) {
             mContext = context;
-            // TODO(jkarlin): If the embedder doesn't have ACCESS_WIFI_STATE permission then inform
-            // native code and fail if native NetworkChangeNotifierAndroid::GetMaxBandwidth() is
-            // called.
-            mHasWifiPermission = mContext.getPackageManager().checkPermission(
-                    permission.ACCESS_WIFI_STATE, mContext.getPackageName())
-                    == PackageManager.PERMISSION_GRANTED;
-            mWifiManager = mHasWifiPermission
-                    ? (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE) : null;
         }
 
         // For testing.
         WifiManagerDelegate() {
             // All the methods below should be overridden.
             mContext = null;
-            mWifiManager = null;
-            mHasWifiPermission = false;
         }
 
-        String getWifiSSID() {
+        // Lazily determine if app has ACCESS_WIFI_STATE permission.
+        @GuardedBy("mLock")
+        private boolean hasPermissionLocked() {
+            if (mHasWifiPermissionComputed) {
+                return mHasWifiPermission;
+            }
+            mHasWifiPermission = mContext.getPackageManager().checkPermission(
+                                         permission.ACCESS_WIFI_STATE, mContext.getPackageName())
+                    == PackageManager.PERMISSION_GRANTED;
+            mWifiManager = mHasWifiPermission
+                    ? (WifiManager) mContext.getSystemService(Context.WIFI_SERVICE)
+                    : null;
+            mHasWifiPermissionComputed = true;
+            return mHasWifiPermission;
+        }
+
+        String getWifiSsid() {
+            // Synchronized because this method can be called on multiple threads (e.g. UI thread
+            // from a private caller, and another thread calling a public API like
+            // getCurrentNetworkState) and is otherwise racy.
+            synchronized (mLock) {
+                // If app has permission it's faster to query WifiManager directly.
+                if (hasPermissionLocked()) {
+                    WifiInfo wifiInfo = getWifiInfoLocked();
+                    if (wifiInfo != null) {
+                        return wifiInfo.getSSID();
+                    }
+                    return "";
+                }
+            }
             return AndroidNetworkLibrary.getWifiSSID(mContext);
         }
 
         // Fetches WifiInfo and records UMA for NullPointerExceptions.
-        private WifiInfo getWifiInfo() {
+        @GuardedBy("mLock")
+        private WifiInfo getWifiInfoLocked() {
             try {
                 WifiInfo wifiInfo = mWifiManager.getConnectionInfo();
                 RecordHistogram.recordBooleanHistogram("NCN.getWifiInfo1stSuccess", true);
@@ -574,7 +626,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         }
         final NetworkState networkState = getCurrentNetworkState();
         mConnectionType = convertToConnectionType(networkState);
-        mWifiSSID = getCurrentWifiSSID(networkState);
+        mWifiSSID = networkState.getWifiSsid();
         mMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
         mMaxBandwidthConnectionType = mConnectionType;
         mIntentFilter = new NetworkConnectivityIntentFilter();
@@ -657,7 +709,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     }
 
     public NetworkState getCurrentNetworkState() {
-        return mConnectivityManagerDelegate.getNetworkState();
+        return mConnectivityManagerDelegate.getNetworkState(mWifiManagerDelegate);
     }
 
     /**
@@ -852,11 +904,6 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
                 convertToConnectionSubtype(networkState));
     }
 
-    private String getCurrentWifiSSID(NetworkState networkState) {
-        if (convertToConnectionType(networkState) != ConnectionType.CONNECTION_WIFI) return "";
-        return mWifiManagerDelegate.getWifiSSID();
-    }
-
     // BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -870,7 +917,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     private void connectionTypeChanged(NetworkState networkState) {
         @ConnectionTypeEnum
         int newConnectionType = convertToConnectionType(networkState);
-        String newWifiSSID = getCurrentWifiSSID(networkState);
+        String newWifiSSID = networkState.getWifiSsid();
         if (newConnectionType == mConnectionType && newWifiSSID.equals(mWifiSSID)) return;
 
         mConnectionType = newConnectionType;
