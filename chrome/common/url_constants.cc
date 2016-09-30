@@ -608,13 +608,14 @@ const char kNotificationWelcomeLearnMoreURL[] =
 // Add hosts here to be included in chrome://chrome-urls (about:about).
 // These hosts will also be suggested by BuiltinProvider.
 const char* const kChromeHostURLs[] = {
+  kChromeUIBluetoothInternalsHost,
   kChromeUICacheHost,
   kChromeUIChromeURLsHost,
   kChromeUIComponentsHost,
   kChromeUICrashesHost,
   kChromeUICreditsHost,
-  kChromeUIDeviceLogHost,
   kChromeUIDNSHost,
+  kChromeUIDeviceLogHost,
   kChromeUIFlagsHost,
   kChromeUIGCMInternalsHost,
   kChromeUIHistoryHost,
