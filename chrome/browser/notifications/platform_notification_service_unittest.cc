@@ -260,7 +260,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
       content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
   notification_data.actions[0].title = base::ASCIIToUTF16("Button 1");
   notification_data.actions[1].type =
-      content::PLATFORM_NOTIFICATION_ACTION_TYPE_BUTTON;
+      content::PLATFORM_NOTIFICATION_ACTION_TYPE_TEXT;
   notification_data.actions[1].title = base::ASCIIToUTF16("Button 2");
 
   NotificationResources notification_resources;
@@ -285,7 +285,9 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentNotificationMatches) {
   const auto& buttons = notification.buttons();
   ASSERT_EQ(2u, buttons.size());
   EXPECT_EQ("Button 1", base::UTF16ToUTF8(buttons[0].title));
+  EXPECT_EQ(message_center::ButtonType::BUTTON, buttons[0].type);
   EXPECT_EQ("Button 2", base::UTF16ToUTF8(buttons[1].title));
+  EXPECT_EQ(message_center::ButtonType::TEXT, buttons[1].type);
 }
 
 TEST_F(PlatformNotificationServiceTest, NotificationPermissionLastUsage) {
