@@ -4,12 +4,15 @@
 
 #include "components/metrics/persisted_logs.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/base64.h"
 #include "base/md5.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -18,6 +21,10 @@
 namespace metrics {
 
 namespace {
+
+const char kLogHashKey[] = "hash";
+const char kLogTimestampKey[] = "timestamp";
+const char kLogDataKey[] = "data";
 
 PersistedLogs::LogReadStatus MakeRecallStatusHistogram(
     PersistedLogs::LogReadStatus status) {
@@ -37,16 +44,22 @@ bool ReadBase64String(const base::ListValue& list_value,
   return base::Base64Decode(base64_result, result);
 }
 
-// Base64-encodes |str| and appends the result to |list_value|.
-void AppendBase64String(const std::string& str, base::ListValue* list_value) {
-  std::string base64_str;
-  base::Base64Encode(str, &base64_str);
-  list_value->AppendString(base64_str);
+std::string EncodeToBase64(const std::string& to_convert) {
+  std::string base64_result;
+  base::Base64Encode(to_convert, &base64_result);
+  return base64_result;
+}
+
+std::string DecodeFromBase64(const std::string& to_convert) {
+  std::string result;
+  base::Base64Decode(to_convert, &result);
+  return result;
 }
 
 }  // namespace
 
-void PersistedLogs::LogHashPair::Init(const std::string& log_data) {
+void PersistedLogs::LogInfo::Init(const std::string& log_data,
+                                  const std::string& log_timestamp) {
   DCHECK(!log_data.empty());
 
   if (!compression::GzipCompress(log_data, &compressed_log_data)) {
@@ -59,15 +72,18 @@ void PersistedLogs::LogHashPair::Init(const std::string& log_data) {
       static_cast<int>(100 * compressed_log_data.size() / log_data.size()));
 
   hash = base::SHA1HashString(log_data);
+  timestamp = log_timestamp;
 }
 
 PersistedLogs::PersistedLogs(PrefService* local_state,
                              const char* pref_name,
+                             const char* outdated_pref_name,
                              size_t min_log_count,
                              size_t min_log_bytes,
                              size_t max_log_size)
     : local_state_(local_state),
       pref_name_(pref_name),
+      outdated_pref_name_(outdated_pref_name),
       min_log_count_(min_log_count),
       min_log_bytes_(min_log_bytes),
       max_log_size_(max_log_size != 0 ? max_log_size : static_cast<size_t>(-1)),
@@ -82,15 +98,26 @@ PersistedLogs::~PersistedLogs() {}
 void PersistedLogs::SerializeLogs() const {
   ListPrefUpdate update(local_state_, pref_name_);
   WriteLogsToPrefList(update.Get());
+
+  // After writing all the logs to the new pref remove old outdated pref.
+  // TODO(gayane): Remove when all users are migrated. crbug.com/649440
+  if (local_state_->HasPrefPath(outdated_pref_name_))
+    local_state_->ClearPref(outdated_pref_name_);
 }
 
 PersistedLogs::LogReadStatus PersistedLogs::DeserializeLogs() {
+  // TODO(gayane): Remove the code for reading logs from outdated pref when all
+  // users are migrated. crbug.com/649440
+  if (local_state_->HasPrefPath(outdated_pref_name_)) {
+    return ReadLogsFromOldFormatPrefList(
+        *local_state_->GetList(outdated_pref_name_));
+  }
   return ReadLogsFromPrefList(*local_state_->GetList(pref_name_));
 }
 
 void PersistedLogs::StoreLog(const std::string& log_data) {
-  list_.push_back(LogHashPair());
-  list_.back().Init(log_data);
+  list_.push_back(LogInfo());
+  list_.back().Init(log_data, base::Int64ToString(base::Time::Now().ToTimeT()));
 }
 
 void PersistedLogs::StageLog() {
@@ -107,6 +134,38 @@ void PersistedLogs::DiscardStagedLog() {
   DCHECK_LT(static_cast<size_t>(staged_log_index_), list_.size());
   list_.erase(list_.begin() + staged_log_index_);
   staged_log_index_ = -1;
+}
+
+PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
+    const base::ListValue& list_value) {
+  if (list_value.empty())
+    return MakeRecallStatusHistogram(LIST_EMPTY);
+
+  const size_t log_count = list_value.GetSize();
+
+  DCHECK(list_.empty());
+  list_.resize(log_count);
+
+  for (size_t i = 0; i < log_count; ++i) {
+    const base::DictionaryValue* dict;
+    if (!list_value.GetDictionary(i, &dict) ||
+        !dict->GetString(kLogDataKey, &list_[i].compressed_log_data) ||
+        !dict->GetString(kLogHashKey, &list_[i].hash)) {
+      list_.clear();
+      return MakeRecallStatusHistogram(LOG_STRING_CORRUPTION);
+    }
+
+    list_[i].compressed_log_data =
+        DecodeFromBase64(list_[i].compressed_log_data);
+    list_[i].hash = DecodeFromBase64(list_[i].hash);
+    // Ignoring the success of this step as timestamp might not be there for
+    // older logs.
+    // NOTE: Should be added to the check with other fields once migration is
+    // over.
+    dict->GetString(kLogTimestampKey, &list_[i].timestamp);
+  }
+
+  return MakeRecallStatusHistogram(RECALL_SUCCESS);
 }
 
 void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) const {
@@ -140,14 +199,19 @@ void PersistedLogs::WriteLogsToPrefList(base::ListValue* list_value) const {
       dropped_logs_num++;
       continue;
     }
-    AppendBase64String(list_[i].compressed_log_data, list_value);
-    AppendBase64String(list_[i].hash, list_value);
+    std::unique_ptr<base::DictionaryValue> dict_value(
+        new base::DictionaryValue);
+    dict_value->SetString(kLogHashKey, EncodeToBase64(list_[i].hash));
+    dict_value->SetString(kLogDataKey,
+                          EncodeToBase64(list_[i].compressed_log_data));
+    dict_value->SetString(kLogTimestampKey, list_[i].timestamp);
+    list_value->Append(std::move(dict_value));
   }
   if (dropped_logs_num > 0)
     UMA_HISTOGRAM_COUNTS("UMA.UnsentLogs.Dropped", dropped_logs_num);
 }
 
-PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromPrefList(
+PersistedLogs::LogReadStatus PersistedLogs::ReadLogsFromOldFormatPrefList(
     const base::ListValue& list_value) {
   if (list_value.empty())
     return MakeRecallStatusHistogram(LIST_EMPTY);

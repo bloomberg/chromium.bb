@@ -7,6 +7,21 @@
 namespace metrics {
 namespace prefs {
 
+// Array of strings that are each UMA logs that were supposed to be sent in the
+// first minute of a browser session. These logs include things like crash count
+// info, etc.
+// Deprecated by kMetricsInitialLogs.
+const char kDeprecatedMetricsInitialLogs[] =
+    "user_experience_metrics.initial_logs_list";
+
+// Array of strings that are each UMA logs that were not sent because the
+// browser terminated before these accumulated metrics could be sent. These
+// logs typically include histograms and memory reports, as well as ongoing
+// user activities.
+// Deprecated by kMetricsOngoingLogs.
+const char kDeprecatedMetricsOngoingLogs[] =
+    "user_experience_metrics.ongoing_logs_list";
+
 // Set once, to the current epoch time, on the first run of chrome on this
 // machine. Attached to metrics reports forever thereafter.
 const char kInstallDate[] = "uninstall_metrics.installation_date2";
@@ -23,11 +38,10 @@ const char kMetricsClientID[] = "user_experience_metrics.client_id2";
 // used for the value is metrics::MetricsServiceClient::EnableMetricsDefault.
 const char kMetricsDefaultOptIn[] = "user_experience_metrics.default_opt_in";
 
-// Array of strings that are each UMA logs that were supposed to be sent in the
-// first minute of a browser session. These logs include things like crash count
-// info, etc.
-const char kMetricsInitialLogs[] =
-    "user_experience_metrics.initial_logs_list";
+// Array of dictionaries that are each UMA logs that were supposed to be sent in
+// the first minute of a browser session. These logs include things like crash
+// count info, etc.
+const char kMetricsInitialLogs[] = "user_experience_metrics.initial_logs2";
 
 // The metrics entropy source.
 // Note: The name low_entropy_source2 is a result of creating
@@ -39,12 +53,11 @@ const char kMetricsLowEntropySource[] =
 // stored locally and never transmitted in metrics reports.
 const char kMetricsMachineId[] = "user_experience_metrics.machine_id";
 
-// Array of strings that are each UMA logs that were not sent because the
-// browser terminated before these accumulated metrics could be sent.  These
+// Array of dictionaries that are each UMA logs that were not sent because the
+// browser terminated before these accumulated metrics could be sent. These
 // logs typically include histograms and memory reports, as well as ongoing
 // user activities.
-const char kMetricsOngoingLogs[] =
-    "user_experience_metrics.ongoing_logs_list";
+const char kMetricsOngoingLogs[] = "user_experience_metrics.ongoing_logs2";
 
 // Boolean that indicates a cloned install has been detected and the metrics
 // client id and low entropy source should be reset.

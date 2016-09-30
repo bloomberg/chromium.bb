@@ -22,6 +22,7 @@ namespace metrics {
 namespace {
 
 const char kTestPrefName[] = "TestPref";
+const char kTestOutdatedPrefName[] = "OutdatedTestPref";
 const size_t kLogCountLimit = 3;
 const size_t kLogByteLimit = 1000;
 
@@ -63,9 +64,12 @@ class PersistedLogsTest : public testing::Test {
 class TestPersistedLogs : public PersistedLogs {
  public:
   TestPersistedLogs(PrefService* service, size_t min_log_bytes)
-      : PersistedLogs(service, kTestPrefName, kLogCountLimit, min_log_bytes,
-                      0) {
-  }
+      : PersistedLogs(service,
+                      kTestPrefName,
+                      kTestOutdatedPrefName,
+                      kLogCountLimit,
+                      min_log_bytes,
+                      0) {}
 
   // Stages and removes the next log, while testing it's value.
   void ExpectNextLog(const std::string& expected_log) {
@@ -111,6 +115,8 @@ TEST_F(PersistedLogsTest, SingleElementLogList) {
   EXPECT_EQ(persisted_logs.staged_log(), result_persisted_logs.staged_log());
   EXPECT_EQ(persisted_logs.staged_log_hash(),
             result_persisted_logs.staged_log_hash());
+  EXPECT_EQ(persisted_logs.staged_log_timestamp(),
+            result_persisted_logs.staged_log_timestamp());
 }
 
 // Store a set of logs over the length limit, but smaller than the min number of

@@ -37,7 +37,7 @@ class TestLogPrefService : public TestingPrefServiceSimple {
       list_length = GetList(prefs::kMetricsInitialLogs)->GetSize();
     else
       list_length = GetList(prefs::kMetricsOngoingLogs)->GetSize();
-    return list_length / 2;
+    return list_length;
   }
 };
 
@@ -163,8 +163,8 @@ TEST(MetricsLogManagerTest, StoreAndLoad) {
     // Simulate a log having already been unsent from a previous session.
     {
       std::string log("proto");
-      PersistedLogs ongoing_logs(&pref_service, prefs::kMetricsOngoingLogs, 1,
-                                 1, 0);
+      PersistedLogs ongoing_logs(&pref_service, prefs::kMetricsOngoingLogs,
+                                 prefs::kDeprecatedMetricsOngoingLogs, 1, 1, 0);
       ongoing_logs.StoreLog(log);
       ongoing_logs.SerializeLogs();
     }
