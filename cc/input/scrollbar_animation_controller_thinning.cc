@@ -41,6 +41,7 @@ ScrollbarAnimationControllerThinning::ScrollbarAnimationControllerThinning(
                                    delay_before_starting,
                                    resize_delay_before_starting,
                                    duration),
+      captured_(false),
       mouse_is_over_scrollbar_(false),
       mouse_is_near_scrollbar_(false),
       thickness_change_(NONE),
@@ -65,15 +66,38 @@ void ScrollbarAnimationControllerThinning::RunAnimationFrame(float progress) {
   }
 }
 
+void ScrollbarAnimationControllerThinning::DidCaptureScrollbarBegin() {
+  captured_ = true;
+  ApplyOpacityAndThumbThicknessScale(1, 1.f);
+}
+
+void ScrollbarAnimationControllerThinning::DidCaptureScrollbarEnd() {
+  captured_ = false;
+
+  if (!mouse_is_over_scrollbar_)
+    opacity_change_ = DECREASE;
+  if (!mouse_is_near_scrollbar_)
+    thickness_change_ = DECREASE;
+  StartAnimation();
+}
+
 void ScrollbarAnimationControllerThinning::DidMouseMoveOffScrollbar() {
   mouse_is_over_scrollbar_ = false;
   mouse_is_near_scrollbar_ = false;
+
+  if (captured_)
+    return;
+
   opacity_change_ = DECREASE;
   thickness_change_ = DECREASE;
   StartAnimation();
 }
 
 void ScrollbarAnimationControllerThinning::DidScrollUpdate(bool on_resize) {
+  if (captured_) {
+    return;
+  }
+
   ScrollbarAnimationController::DidScrollUpdate(on_resize);
   ApplyOpacityAndThumbThicknessScale(
       1, mouse_is_near_scrollbar_ ? 1.f : kIdleThicknessScale);
@@ -87,21 +111,27 @@ void ScrollbarAnimationControllerThinning::DidMouseMoveNear(float distance) {
   bool mouse_is_near_scrollbar =
       distance < mouse_move_distance_to_trigger_animation_;
 
-  if (mouse_is_over_scrollbar == mouse_is_over_scrollbar_ &&
-      mouse_is_near_scrollbar == mouse_is_near_scrollbar_)
-    return;
-
-  if (mouse_is_over_scrollbar_ != mouse_is_over_scrollbar) {
-    mouse_is_over_scrollbar_ = mouse_is_over_scrollbar;
-    opacity_change_ = mouse_is_over_scrollbar_ ? INCREASE : DECREASE;
-  }
-
-  if (mouse_is_near_scrollbar_ != mouse_is_near_scrollbar) {
+  if (captured_) {
     mouse_is_near_scrollbar_ = mouse_is_near_scrollbar;
-    thickness_change_ = mouse_is_near_scrollbar_ ? INCREASE : DECREASE;
-  }
+    mouse_is_over_scrollbar_ = mouse_is_over_scrollbar;
+    return;
+  } else {
+    if (mouse_is_over_scrollbar == mouse_is_over_scrollbar_ &&
+        mouse_is_near_scrollbar == mouse_is_near_scrollbar_)
+      return;
 
-  StartAnimation();
+    if (mouse_is_over_scrollbar_ != mouse_is_over_scrollbar) {
+      mouse_is_over_scrollbar_ = mouse_is_over_scrollbar;
+      opacity_change_ = mouse_is_over_scrollbar_ ? INCREASE : DECREASE;
+    }
+
+    if (mouse_is_near_scrollbar_ != mouse_is_near_scrollbar) {
+      mouse_is_near_scrollbar_ = mouse_is_near_scrollbar;
+      thickness_change_ = mouse_is_near_scrollbar_ ? INCREASE : DECREASE;
+    }
+
+    StartAnimation();
+  }
 }
 
 float ScrollbarAnimationControllerThinning::OpacityAtAnimationProgress(

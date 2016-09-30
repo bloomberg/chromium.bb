@@ -176,7 +176,11 @@ class CC_EXPORT LayerTreeHostImpl
       const gfx::ScrollOffset& root_offset) override;
   void ScrollEnd(ScrollState* scroll_state) override;
   InputHandler::ScrollStatus FlingScrollBegin() override;
+
+  void MouseDown() override;
+  void MouseUp() override;
   void MouseMoveAt(const gfx::Point& viewport_point) override;
+
   void PinchGestureBegin() override;
   void PinchGestureUpdate(float magnify_delta,
                           const gfx::Point& anchor) override;
@@ -756,6 +760,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool wheel_scrolling_;
   bool scroll_affects_scroll_handler_;
   int scroll_layer_id_when_mouse_over_scrollbar_;
+  int captured_scrollbar_layer_id_;
+
   std::vector<std::unique_ptr<SwapPromise>>
       swap_promises_for_main_thread_scroll_update_;
 

@@ -149,6 +149,9 @@ class MockInputHandler : public cc::InputHandler {
 
   void BindToClient(cc::InputHandlerClient* client) override {}
 
+  void MouseDown() override {}
+  void MouseUp() override {}
+
   void MouseMoveAt(const gfx::Point& mouse_position) override {}
 
   MOCK_CONST_METHOD2(IsCurrentlyScrollingLayerAt,

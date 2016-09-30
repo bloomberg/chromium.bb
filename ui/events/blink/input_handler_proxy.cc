@@ -374,10 +374,31 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     case WebInputEvent::TouchEnd:
       return HandleTouchEnd(static_cast<const WebTouchEvent&>(event));
 
+    case WebInputEvent::MouseDown: {
+      // Only for check scrollbar captured
+      const WebMouseEvent& mouse_event =
+          static_cast<const WebMouseEvent&>(event);
+
+      if (mouse_event.button == blink::WebMouseEvent::Button::Left) {
+        CHECK(input_handler_);
+        input_handler_->MouseDown();
+      }
+      return DID_NOT_HANDLE;
+    }
+    case WebInputEvent::MouseUp: {
+      // Only for release scrollbar captured
+      const WebMouseEvent& mouse_event =
+          static_cast<const WebMouseEvent&>(event);
+
+      if (mouse_event.button == blink::WebMouseEvent::Button::Left) {
+        CHECK(input_handler_);
+        input_handler_->MouseUp();
+      }
+      return DID_NOT_HANDLE;
+    }
     case WebInputEvent::MouseMove: {
       const WebMouseEvent& mouse_event =
           static_cast<const WebMouseEvent&>(event);
-      // TODO(tony): Ignore when mouse buttons are down?
       // TODO(davemoore): This should never happen, but bug #326635 showed some
       // surprising crashes.
       CHECK(input_handler_);

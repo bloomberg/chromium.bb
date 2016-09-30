@@ -41,6 +41,10 @@ class ScrollbarAnimationControllerThinningTest
   }
 
  protected:
+  const int kDelayBeforeStarting = 2;
+  const int kResizeDelayBeforeStarting = 5;
+  const int kDuration = 3;
+
   void SetUp() override {
     std::unique_ptr<LayerImpl> scroll_layer =
         LayerImpl::Create(host_impl_.active_tree(), 1);
@@ -55,6 +59,7 @@ class ScrollbarAnimationControllerThinningTest
     const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;
     const bool kIsOverlayScrollbar = true;
+
     std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
         SolidColorScrollbarLayerImpl::Create(
             host_impl_.active_tree(), kId, HORIZONTAL, kThumbThickness,
@@ -72,8 +77,10 @@ class ScrollbarAnimationControllerThinningTest
     host_impl_.active_tree()->BuildLayerListAndPropertyTreesForTesting();
 
     scrollbar_controller_ = ScrollbarAnimationControllerThinning::Create(
-        scroll_layer_ptr->id(), this, base::TimeDelta::FromSeconds(2),
-        base::TimeDelta::FromSeconds(5), base::TimeDelta::FromSeconds(3));
+        scroll_layer_ptr->id(), this,
+        base::TimeDelta::FromSeconds(kDelayBeforeStarting),
+        base::TimeDelta::FromSeconds(kResizeDelayBeforeStarting),
+        base::TimeDelta::FromSeconds(kDuration));
   }
 
   FakeImplTaskRunnerProvider task_runner_provider_;
@@ -397,6 +404,118 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MouseNearThenOver) {
   EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   // The thickness now gets big again.
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+}
+
+// First move the pointer on the scrollbar, then press it, then away.
+// Confirm that the bar gets thick and dark. Then mouse up. Confirm that
+// the bar gets thin and light.
+TEST_F(ScrollbarAnimationControllerThinningTest,
+       MouseCaptureAndReleaseOutOfBar) {
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSeconds(1);
+
+  // Move in
+  scrollbar_controller_->DidMouseMoveNear(0);
+
+  // Jump X seconds, first we need to make the time not 0, second we need to
+  // call Animate once to start the animation(initial the last_awaken_time_),
+  // now you can jump x seconds.
+  scrollbar_controller_->Animate(time);
+  time += base::TimeDelta::FromSeconds(kDuration);
+  scrollbar_controller_->Animate(time);
+
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  // Capture
+  scrollbar_controller_->DidCaptureScrollbarBegin();
+  time += base::TimeDelta::FromSeconds(1);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  // test for 10 seconds, stay thick and dark
+  for (int i = 0; i < 10; ++i) {
+    // move away from bar.
+    scrollbar_controller_->DidMouseMoveNear(26 + i);
+    time += base::TimeDelta::FromSeconds(1);
+    scrollbar_controller_->Animate(time);
+    EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+    EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+  }
+
+  // release
+  scrollbar_controller_->DidCaptureScrollbarEnd();
+
+  // get thickness and light
+  time += base::TimeDelta::FromSeconds(1);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  time += base::TimeDelta::FromSeconds(1);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  time += base::TimeDelta::FromSeconds(1);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(0.6f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  time += base::TimeDelta::FromSeconds(1);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
+}
+
+// First move the pointer on the scrollbar, then press it, then away.
+// Confirm that the bar gets thick and dark. Then move point on the
+// scrollbar and mouse up. Confirm that the bar gets thick and dark.
+TEST_F(ScrollbarAnimationControllerThinningTest, MouseCaptureAndReleaseOnBar) {
+  base::TimeTicks time;
+  time += base::TimeDelta::FromSeconds(1);
+
+  // Move in
+  scrollbar_controller_->DidMouseMoveNear(0);
+
+  scrollbar_controller_->Animate(time);
+  time += base::TimeDelta::FromSeconds(kDuration);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  // Capture
+  scrollbar_controller_->DidCaptureScrollbarBegin();
+  time += base::TimeDelta::FromSeconds(1);
+  scrollbar_controller_->Animate(time);
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+
+  // test for 10 seconds, stay thick and dark
+  for (int i = 0; i < 10; ++i) {
+    // move away from bar.
+    scrollbar_controller_->DidMouseMoveNear(26 + i);
+    time += base::TimeDelta::FromSeconds(1);
+    scrollbar_controller_->Animate(time);
+    EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+    EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+  }
+
+  // move to the bar.
+  scrollbar_controller_->DidMouseMoveNear(0);
+
+  // release
+  scrollbar_controller_->DidCaptureScrollbarEnd();
+
+  // stay thick and dark
+  // test for 10 seconds, stay thick and dark
+  for (int i = 0; i < 10; ++i) {
+    time += base::TimeDelta::FromSeconds(1);
+    scrollbar_controller_->Animate(time);
+    EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
+    EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
+  }
 }
 
 }  // namespace

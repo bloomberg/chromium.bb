@@ -209,6 +209,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       wheel_scrolling_(false),
       scroll_affects_scroll_handler_(false),
       scroll_layer_id_when_mouse_over_scrollbar_(Layer::INVALID_ID),
+      captured_scrollbar_layer_id_(Layer::INVALID_ID),
       tile_priorities_dirty_(false),
       settings_(settings),
       visible_(false),
@@ -3206,6 +3207,28 @@ float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
 
   return device_viewport_layer_impl_bounds.ManhattanDistanceToPoint(
       device_viewport_point);
+}
+
+void LayerTreeHostImpl::MouseDown() {
+  if (scroll_layer_id_when_mouse_over_scrollbar_ == Layer::INVALID_ID)
+    return;
+
+  captured_scrollbar_layer_id_ = scroll_layer_id_when_mouse_over_scrollbar_;
+  ScrollbarAnimationController* animation_controller =
+      ScrollbarAnimationControllerForId(captured_scrollbar_layer_id_);
+  if (animation_controller)
+    animation_controller->DidCaptureScrollbarBegin();
+}
+
+void LayerTreeHostImpl::MouseUp() {
+  if (captured_scrollbar_layer_id_ == Layer::INVALID_ID)
+    return;
+
+  ScrollbarAnimationController* animation_controller =
+      ScrollbarAnimationControllerForId(captured_scrollbar_layer_id_);
+  if (animation_controller)
+    animation_controller->DidCaptureScrollbarEnd();
+  captured_scrollbar_layer_id_ = Layer::INVALID_ID;
 }
 
 void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
