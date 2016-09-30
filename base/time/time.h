@@ -21,9 +21,11 @@
 // ThreadTicks will "stand still" whenever the thread has been de-scheduled by
 // the operating system.
 //
-// All time classes are copyable, assignable, and occupy 64-bits per
-// instance. Thus, they can be efficiently passed by-value (as opposed to
-// by-reference).
+// All time classes are copyable, assignable, and occupy 64-bits per instance.
+// As a result, prefer passing them by value:
+//   void MyFunction(TimeDelta arg);
+// If circumstances require, you may also pass by const reference:
+//   void MyFunction(const TimeDelta& arg);  // Not preferred.
 //
 // Definitions of operator<< are provided to make these types work with
 // DCHECK_EQ() and other log macros. For human-readable formatting, see
