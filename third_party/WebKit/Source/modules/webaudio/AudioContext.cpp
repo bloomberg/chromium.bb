@@ -64,7 +64,9 @@ AudioContext* AudioContext::create(Document& document, ExceptionState& exception
     // quantum". NOTE: for now AudioContext does not need an explicit
     // startRendering() call from JavaScript.  We may want to consider
     // requiring it for symmetry with OfflineAudioContext.
-    audioContext->startRendering();
+    audioContext->maybeUnlockUserGesture();
+    if (audioContext->isAllowedToStart())
+        audioContext->startRendering();
     ++s_hardwareContextCount;
 #if DEBUG_AUDIONODE_REFERENCES
     fprintf(stderr, "[%16p]: AudioContext::AudioContext(): %u #%u\n",
@@ -136,14 +138,15 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState)
                 "cannot resume a closed AudioContext"));
     }
 
-    recordUserGestureState();
-
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
     // Restart the destination node to pull on the audio graph.
-    if (destination())
-        startRendering();
+    if (destination()) {
+        maybeUnlockUserGesture();
+        if (isAllowedToStart())
+            startRendering();
+    }
 
     // Save the resolver which will get resolved when the destination node starts pulling on the
     // graph again.

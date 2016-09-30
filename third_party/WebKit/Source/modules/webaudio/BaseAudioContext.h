@@ -244,7 +244,9 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
+    // Start the AudioContext. `isAllowedToStart()` MUST be called before.
     void startRendering();
+
     void notifyStateChange();
 
     // A context is considered closed if:
@@ -258,11 +260,6 @@ public:
     // Get the PeriodicWave for the specified oscillator type.  The table is initialized internally
     // if necessary.
     PeriodicWave* periodicWave(int type);
-
-    // Check whether the AudioContext requires a user gesture and whether the
-    // current stack is processing user gesture and record these information in
-    // a histogram.
-    void recordUserGestureState();
 
 protected:
     explicit BaseAudioContext(Document*);
@@ -292,6 +289,13 @@ protected:
     float closedContextSampleRate() const { return m_closedContextSampleRate; }
 
     void rejectPendingDecodeAudioDataResolvers();
+
+    // If any, unlock user gesture requirements if a user gesture is being
+    // processed.
+    void maybeUnlockUserGesture();
+
+    // Returns whether the AudioContext is allowed to start rendering.
+    bool isAllowedToStart() const;
 
 private:
     bool m_isCleared;

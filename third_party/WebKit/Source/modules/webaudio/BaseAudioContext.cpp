@@ -33,9 +33,10 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/ConsoleTypes.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AnalyserNode.h"
 #include "modules/webaudio/AudioBuffer.h"
@@ -76,18 +77,6 @@
 
 namespace blink {
 
-namespace {
-
-enum UserGestureRecord {
-    UserGestureRequiredAndAvailable = 0,
-    UserGestureRequiredAndNotAvailable,
-    UserGestureNotRequiredAndAvailable,
-    UserGestureNotRequiredAndNotAvailable,
-    UserGestureRecordMax
-};
-
-} // anonymous namespace
-
 BaseAudioContext* BaseAudioContext::create(Document& document, ExceptionState& exceptionState)
 {
     return AudioContext::create(document, exceptionState);
@@ -113,11 +102,12 @@ BaseAudioContext::BaseAudioContext(Document* document)
     , m_periodicWaveSawtooth(nullptr)
     , m_periodicWaveTriangle(nullptr)
 {
-    // TODO(mlamouri): we might want to use other ways of checking for this but
-    // in order to record metrics, re-using the HTMLMediaElement setting is
-    // probably the simplest solution.
-    if (document->settings() && document->settings()->mediaPlaybackRequiresUserGesture())
+    // If mediaPlaybackRequiresUserGesture is enabled, cross origin iframes will
+    // require user gesture for the AudioContext to produce sound.
+    if (document->settings() && document->settings()->mediaPlaybackRequiresUserGesture()
+        && document->frame() && document->frame()->isCrossOriginSubframe()) {
         m_userGestureRequired = true;
+    }
 
     m_destinationNode = DefaultAudioDestinationNode::create(this);
 
@@ -141,11 +131,6 @@ BaseAudioContext::BaseAudioContext(Document* document, unsigned numberOfChannels
     , m_periodicWaveSawtooth(nullptr)
     , m_periodicWaveTriangle(nullptr)
 {
-    // TODO(mlamouri): we might want to use other ways of checking for this but
-    // in order to record metrics, re-using the HTMLMediaElement setting is
-    // probably the simplest solution.
-    if (document->settings() && document->settings()->mediaPlaybackRequiresUserGesture())
-        m_userGestureRequired = true;
 }
 
 BaseAudioContext::~BaseAudioContext()
@@ -543,32 +528,6 @@ PeriodicWave* BaseAudioContext::periodicWave(int type)
     }
 }
 
-void BaseAudioContext::recordUserGestureState()
-{
-    DEFINE_STATIC_LOCAL(EnumerationHistogram, userGestureHistogram, ("WebAudio.UserGesture", UserGestureRecordMax));
-
-    if (!m_userGestureRequired) {
-        if (UserGestureIndicator::processingUserGesture())
-            userGestureHistogram.count(UserGestureNotRequiredAndAvailable);
-        else
-            userGestureHistogram.count(UserGestureNotRequiredAndNotAvailable);
-        return;
-    }
-
-    DCHECK(m_userGestureRequired);
-    if (!UserGestureIndicator::processingUserGesture()) {
-        userGestureHistogram.count(UserGestureRequiredAndNotAvailable);
-
-        Document* document = toDocument(getExecutionContext());
-        if (document)
-            Deprecation::countDeprecationCrossOriginIframe(*document, UseCounter::WebAudioAutoplayCrossOriginIframe);
-
-        return;
-    }
-    userGestureHistogram.count(UserGestureRequiredAndAvailable);
-    m_userGestureRequired = false;
-}
-
 String BaseAudioContext::state() const
 {
     // These strings had better match the strings for AudioContextState in AudioContext.idl.
@@ -782,6 +741,24 @@ void BaseAudioContext::rejectPendingDecodeAudioDataResolvers()
     m_decodeAudioResolvers.clear();
 }
 
+void BaseAudioContext::maybeUnlockUserGesture()
+{
+    if (!m_userGestureRequired || !UserGestureIndicator::processingUserGesture())
+        return;
+
+    UserGestureIndicator::utilizeUserGesture();
+    m_userGestureRequired = false;
+}
+
+bool BaseAudioContext::isAllowedToStart() const
+{
+    if (!m_userGestureRequired)
+        return true;
+
+    toDocument(getExecutionContext())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, "An AudioContext in a cross origin iframe must be created or resumed from a user gesture to enable audio output."));
+    return false;
+}
+
 void BaseAudioContext::rejectPendingResolvers()
 {
     DCHECK(isMainThread());
@@ -812,8 +789,7 @@ void BaseAudioContext::startRendering()
     // This is called for both online and offline contexts.
     DCHECK(isMainThread());
     DCHECK(m_destinationNode);
-
-    recordUserGestureState();
+    DCHECK(isAllowedToStart());
 
     if (m_contextState == Suspended) {
         destination()->audioDestinationHandler().startRendering();

@@ -448,7 +448,8 @@ void AudioBufferSourceHandler::startSource(double when, double grainOffset, doub
 {
     DCHECK(isMainThread());
 
-    context()->recordUserGestureState();
+    // TODO(mlamouri): record when this is called with a user gesture and could
+    // have started the AudioContext if following Safari iOS rules.
 
     if (playbackState() != UNSCHEDULED_STATE) {
         exceptionState.throwDOMException(
