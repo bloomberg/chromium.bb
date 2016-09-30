@@ -1025,8 +1025,6 @@ void DXVAVideoDecodeAccelerator::Reset() {
 
   pending_output_samples_.clear();
 
-  NotifyInputBuffersDropped();
-
   RETURN_AND_NOTIFY_ON_FAILURE(SendMFTMessage(MFT_MESSAGE_COMMAND_FLUSH, 0),
                                "Reset: Failed to send message.",
                                PLATFORM_FAILURE, );
@@ -1037,6 +1035,8 @@ void DXVAVideoDecodeAccelerator::Reset() {
 
   StartDecoderThread();
   SetState(kNormal);
+
+  NotifyInputBuffersDropped();
 }
 
 void DXVAVideoDecodeAccelerator::Destroy() {
