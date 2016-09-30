@@ -640,7 +640,7 @@ static String concatenateFamilyName(CSSParserTokenRange& range)
         }
         builder.append(range.consumeIncludingWhitespace().value());
     }
-    if (!addedSpace && isCSSWideKeyword(firstToken.id()))
+    if (!addedSpace && isCSSWideKeyword(firstToken.value()))
         return String();
     return builder.toString();
 }

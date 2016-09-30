@@ -69,6 +69,8 @@ enum class ConsumeGeneratedImage {
 CSSValue* consumeImage(CSSParserTokenRange&, CSSParserContext, ConsumeGeneratedImage = ConsumeGeneratedImage::Allow);
 CSSValue* consumeImageOrNone(CSSParserTokenRange&, CSSParserContext);
 
+bool isCSSWideKeyword(StringView);
+
 // Template implementations are at the bottom of the file for readability.
 
 template<typename... emptyBaseCase> inline bool identMatches(CSSValueID id) { return false; }
@@ -82,11 +84,6 @@ template<CSSValueID... names> CSSPrimitiveValue* consumeIdent(CSSParserTokenRang
     if (range.peek().type() != IdentToken || !identMatches<names...>(range.peek().id()))
         return nullptr;
     return CSSPrimitiveValue::createIdentifier(range.consumeIncludingWhitespace().id());
-}
-
-static inline bool isCSSWideKeyword(const CSSValueID& id)
-{
-    return id == CSSValueInitial || id == CSSValueInherit || id == CSSValueUnset || id == CSSValueDefault;
 }
 
 } // namespace CSSPropertyParserHelpers

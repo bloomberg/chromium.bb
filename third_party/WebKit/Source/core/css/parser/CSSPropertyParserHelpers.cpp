@@ -313,7 +313,7 @@ CSSPrimitiveValue* consumeIdentRange(CSSParserTokenRange& range, CSSValueID lowe
 
 CSSCustomIdentValue* consumeCustomIdent(CSSParserTokenRange& range)
 {
-    if (range.peek().type() != IdentToken || isCSSWideKeyword(range.peek().id()))
+    if (range.peek().type() != IdentToken || isCSSWideKeyword(range.peek().value()))
         return nullptr;
     return CSSCustomIdentValue::create(range.consumeIncludingWhitespace().value().toAtomicString());
 }
@@ -1108,6 +1108,14 @@ CSSValue* consumeImage(CSSParserTokenRange& range, CSSParserContext context, Con
             return consumeGeneratedImage(range, context);
     }
     return nullptr;
+}
+
+bool isCSSWideKeyword(StringView keyword)
+{
+    return equalIgnoringASCIICase(keyword, "initial")
+        || equalIgnoringASCIICase(keyword, "inherit")
+        || equalIgnoringASCIICase(keyword, "unset")
+        || equalIgnoringASCIICase(keyword, "default");
 }
 
 } // namespace CSSPropertyParserHelpers
