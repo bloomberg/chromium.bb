@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "cc/resources/returned_resource.h"
 #include "content/common/content_export.h"
@@ -57,6 +58,23 @@ class CONTENT_EXPORT SynchronousCompositor {
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Frame);
+  };
+
+  class FrameFuture : public base::RefCountedThreadSafe<FrameFuture> {
+   public:
+    FrameFuture();
+    void setFrame(std::unique_ptr<Frame> frame);
+    std::unique_ptr<Frame> getFrame();
+
+   private:
+    friend class base::RefCountedThreadSafe<FrameFuture>;
+    ~FrameFuture();
+
+    base::WaitableEvent waitable_event_;
+    std::unique_ptr<Frame> frame_;
+#if DCHECK_IS_ON()
+    bool waited_ = false;
+#endif
   };
 
   // "On demand" hardware draw. Parameters are used by compositor for this draw.

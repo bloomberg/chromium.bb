@@ -138,8 +138,18 @@ bool SynchronousCompositorHost::DemandDrawHwReceiveFrame(
     return false;
   uint32_t compositor_frame_sink_id = std::get<0>(param);
   cc::CompositorFrame compositor_frame = std::move(std::get<1>(param));
-  client_->OnDrawHardwareProcessFrame(ProcessHardwareFrame(
-      compositor_frame_sink_id, std::move(compositor_frame)));
+  scoped_refptr<SynchronousCompositor::FrameFuture> frame_future =
+      new FrameFuture();
+  SynchronousCompositor::Frame frame = ProcessHardwareFrame(
+      compositor_frame_sink_id, std::move(compositor_frame));
+  if (!frame.frame)
+    return true;
+  std::unique_ptr<SynchronousCompositor::Frame> frame_ptr =
+      base::MakeUnique<SynchronousCompositor::Frame>();
+  frame_ptr->frame = std::move(frame.frame);
+  frame_ptr->compositor_frame_sink_id = frame.compositor_frame_sink_id;
+  frame_future->setFrame(std::move(frame_ptr));
+  client_->OnDrawHardwareProcessFrameFuture(std::move(frame_future));
   return true;
 }
 

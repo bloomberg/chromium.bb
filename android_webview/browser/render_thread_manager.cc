@@ -13,13 +13,17 @@
 #include "android_webview/browser/hardware_renderer.h"
 #include "android_webview/browser/render_thread_manager_client.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/public/browser/draw_gl.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/output/compositor_frame.h"
 
 namespace android_webview {
 
@@ -97,6 +101,8 @@ RenderThreadManager::RenderThreadManager(
       compositor_frame_producer_(nullptr),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()),
       hardware_renderer_has_frame_(false),
+      async_on_draw_hardware_(base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAsyncOnDrawHardware)),
       inside_hardware_release_(false),
       weak_factory_on_ui_thread_(this) {
   DCHECK(ui_loop_->BelongsToCurrentThread());
@@ -174,21 +180,49 @@ gfx::Vector2d RenderThreadManager::GetScrollOffsetOnRT() {
   return scroll_offset_;
 }
 
-void RenderThreadManager::SetFrameOnUI(std::unique_ptr<ChildFrame> frame) {
+void RenderThreadManager::SetFrameOnUI(
+    std::unique_ptr<ChildFrame> frame,
+    const scoped_refptr<content::SynchronousCompositor::FrameFuture>&
+        frame_future) {
   base::AutoLock lock(lock_);
   DCHECK(!child_frame_.get());
   child_frame_ = std::move(frame);
+  frame_future_ = std::move(frame_future);
+}
+
+std::unique_ptr<ChildFrame> RenderThreadManager::GetSynchronousCompositorFrame(
+    scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
+    std::unique_ptr<ChildFrame> child_frame) {
+  DCHECK(!child_frame->frame.get());
+  std::unique_ptr<content::SynchronousCompositor::Frame> frame =
+      frame_future->getFrame();
+  std::unique_ptr<cc::CompositorFrame> compositor_frame =
+      std::move(frame->frame);
+  return base::MakeUnique<ChildFrame>(
+      frame->compositor_frame_sink_id, std::move(compositor_frame),
+      child_frame->compositor_id,
+      child_frame->viewport_rect_for_tile_priority_empty,
+      child_frame->transform_for_tile_priority,
+      child_frame->offscreen_pre_raster, child_frame->is_layer);
 }
 
 std::unique_ptr<ChildFrame> RenderThreadManager::PassFrameOnRT() {
   base::AutoLock lock(lock_);
   hardware_renderer_has_frame_ =
       hardware_renderer_has_frame_ || child_frame_.get();
+  if (async_on_draw_hardware_ && child_frame_.get()) {
+    return GetSynchronousCompositorFrame(std::move(frame_future_),
+                                         std::move(child_frame_));
+  }
   return std::move(child_frame_);
 }
 
 std::unique_ptr<ChildFrame> RenderThreadManager::PassUncommittedFrameOnUI() {
   base::AutoLock lock(lock_);
+  if (async_on_draw_hardware_ && child_frame_.get()) {
+    return GetSynchronousCompositorFrame(std::move(frame_future_),
+                                         std::move(child_frame_));
+  }
   return std::move(child_frame_);
 }
 

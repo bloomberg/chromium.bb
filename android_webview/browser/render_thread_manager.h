@@ -47,7 +47,10 @@ class RenderThreadManager : public CompositorFrameConsumer {
   void SetCompositorFrameProducer(
       CompositorFrameProducer* compositor_frame_producer) override;
   void SetScrollOffsetOnUI(gfx::Vector2d scroll_offset) override;
-  void SetFrameOnUI(std::unique_ptr<ChildFrame> frame) override;
+  void SetFrameOnUI(
+      std::unique_ptr<ChildFrame> frame,
+      const scoped_refptr<content::SynchronousCompositor::FrameFuture>&
+          frame_future) override;
   void InitializeHardwareDrawIfNeededOnUI() override;
   ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const override;
   void SwapReturnedResourcesOnUI(
@@ -78,6 +81,9 @@ class RenderThreadManager : public CompositorFrameConsumer {
    private:
     RenderThreadManager* render_thread_manager_;
   };
+  static std::unique_ptr<ChildFrame> GetSynchronousCompositorFrame(
+      scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future,
+      std::unique_ptr<ChildFrame> child_frame);
 
   // RT thread method.
   void DidInvokeGLProcess();
@@ -108,6 +114,8 @@ class RenderThreadManager : public CompositorFrameConsumer {
   bool hardware_renderer_has_frame_;
   gfx::Vector2d scroll_offset_;
   std::unique_ptr<ChildFrame> child_frame_;
+  const bool async_on_draw_hardware_;
+  scoped_refptr<content::SynchronousCompositor::FrameFuture> frame_future_;
   bool inside_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
   ReturnedResourcesMap returned_resources_map_;

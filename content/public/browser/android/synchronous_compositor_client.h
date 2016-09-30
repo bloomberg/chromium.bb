@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
@@ -55,8 +56,9 @@ class SynchronousCompositorClient {
 
   virtual ui::TouchHandleDrawable* CreateDrawable() = 0;
 
-  virtual void OnDrawHardwareProcessFrame(
-      content::SynchronousCompositor::Frame frame) = 0;
+  virtual void OnDrawHardwareProcessFrameFuture(
+      const scoped_refptr<content::SynchronousCompositor::FrameFuture>&
+          frame_future) = 0;
 
  protected:
   SynchronousCompositorClient() {}

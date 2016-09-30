@@ -246,21 +246,6 @@ bool BrowserViewRenderer::OnDrawHardware() {
     return current_compositor_frame_consumer_->HasFrameOnUI();
   }
 
-  OnDrawHardwareProcessFrame(std::move(frame));
-  return true;
-}
-
-void BrowserViewRenderer::OnDrawHardwareProcessFrame(
-    content::SynchronousCompositor::Frame frame) {
-  TRACE_EVENT0("android_webview",
-               "BrowserViewRenderer::OnDrawHardwareProcessFrame");
-  if (!frame.frame)
-    return;
-
-  gfx::Transform transform_for_tile_priority =
-      external_draw_constraints_.transform;
-  gfx::Rect viewport_rect_for_tile_priority =
-      ComputeViewportRectForTilePriority();
   std::unique_ptr<ChildFrame> child_frame = base::MakeUnique<ChildFrame>(
       frame.compositor_frame_sink_id, std::move(frame.frame), compositor_id_,
       viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
@@ -268,7 +253,28 @@ void BrowserViewRenderer::OnDrawHardwareProcessFrame(
 
   ReturnUnusedResource(
       current_compositor_frame_consumer_->PassUncommittedFrameOnUI());
-  current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame));
+  current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame),
+                                                   nullptr);
+
+  return true;
+}
+
+void BrowserViewRenderer::OnDrawHardwareProcessFrameFuture(
+    const scoped_refptr<content::SynchronousCompositor::FrameFuture>&
+        frame_future) {
+  gfx::Transform transform_for_tile_priority =
+      external_draw_constraints_.transform;
+  gfx::Rect viewport_rect_for_tile_priority =
+      ComputeViewportRectForTilePriority();
+
+  ReturnUnusedResource(
+      current_compositor_frame_consumer_->PassUncommittedFrameOnUI());
+  current_compositor_frame_consumer_->SetFrameOnUI(
+      base::MakeUnique<ChildFrame>(
+          0, nullptr, compositor_id_, viewport_rect_for_tile_priority.IsEmpty(),
+          transform_for_tile_priority, offscreen_pre_raster_,
+          external_draw_constraints_.is_layer),
+      frame_future);
 }
 
 gfx::Rect BrowserViewRenderer::ComputeViewportRectForTilePriority() {

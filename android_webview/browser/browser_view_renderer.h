@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/android/synchronous_compositor_client.h"
@@ -130,8 +131,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
                      const gfx::Vector2dF& latest_overscroll_delta,
                      const gfx::Vector2dF& current_fling_velocity) override;
   ui::TouchHandleDrawable* CreateDrawable() override;
-  void OnDrawHardwareProcessFrame(
-      content::SynchronousCompositor::Frame frame) override;
+  void OnDrawHardwareProcessFrameFuture(
+      const scoped_refptr<content::SynchronousCompositor::FrameFuture>&
+          frame_future) override;
 
   // CompositorFrameProducer overrides
   void OnParentDrawConstraintsUpdated(
