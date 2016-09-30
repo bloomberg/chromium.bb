@@ -255,7 +255,7 @@ TEST_F(EventHandlerTest, sendContextMenuEventWithHover)
         ASSERT_NO_EXCEPTION);
     document().body()->appendChild(script);
     document().frame()->selection().setSelection(
-        VisibleSelection(Position(document().body(), 0)));
+        createVisibleSelectionDeprecated(Position(document().body(), 0)));
     PlatformMouseEvent mouseDownEvent(
         IntPoint(0, 0),
         IntPoint(100, 200),

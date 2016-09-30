@@ -433,7 +433,7 @@ static bool setSelectionToDragCaret(LocalFrame* frame, VisibleSelection& dragCar
 {
     frame->selection().setSelection(dragCaret);
     if (frame->selection().isNone()) {
-        dragCaret = VisibleSelection(frame->positionForPoint(point));
+        dragCaret = createVisibleSelectionDeprecated(frame->positionForPoint(point));
         frame->selection().setSelection(dragCaret);
         range = createRange(dragCaret.toNormalizedEphemeralRange());
     }
@@ -444,7 +444,7 @@ DispatchEventResult DragController::dispatchTextInputEventFor(LocalFrame* innerF
 {
     ASSERT(m_page->dragCaretController().hasCaret());
     String text = m_page->dragCaretController().isContentRichlyEditable() ? "" : dragData->asPlainText();
-    Element* target = innerFrame->editor().findEventTargetFrom(VisibleSelection(m_page->dragCaretController().caretPosition()));
+    Element* target = innerFrame->editor().findEventTargetFrom(createVisibleSelectionDeprecated(m_page->dragCaretController().caretPosition()));
     return target->dispatchEvent(TextEvent::createForDrop(innerFrame->domWindow(), text));
 }
 
@@ -486,7 +486,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
         return false;
     }
 
-    VisibleSelection dragCaret(m_page->dragCaretController().caretPosition());
+    VisibleSelection dragCaret = createVisibleSelectionDeprecated(m_page->dragCaretController().caretPosition());
     m_page->dragCaretController().clear();
     // |innerFrame| can be removed by event handler called by
     // |dispatchTextInputEventFor()|.
@@ -722,7 +722,7 @@ static void prepareDataTransferForImageDrag(LocalFrame* source, DataTransfer* da
     if (hasRichlyEditableStyle(*node)) {
         Range* range = source->document()->createRange();
         range->selectNode(node, ASSERT_NO_EXCEPTION);
-        source->selection().setSelection(VisibleSelection(EphemeralRange(range)));
+        source->selection().setSelection(createVisibleSelectionDeprecated(EphemeralRange(range)));
     }
     dataTransfer->declareAndWriteDragImage(node, !linkURL.isEmpty() ? linkURL : imageURL, label);
 }

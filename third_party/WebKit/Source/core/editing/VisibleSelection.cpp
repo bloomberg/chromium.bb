@@ -53,12 +53,6 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate()
 }
 
 template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionTemplate<Strategy>& pos, TextAffinity affinity, bool isDirectional)
-    : VisibleSelectionTemplate(pos, pos, affinity, isDirectional)
-{
-}
-
-template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity affinity, bool isDirectional)
     : m_base(base)
     , m_extent(extent)
@@ -67,37 +61,183 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionTempl
     , m_granularity(CharacterGranularity)
     , m_hasTrailingWhitespace(false)
 {
-    Document* document = m_base.document() ? m_base.document() : m_extent.document();
-    if (document) {
-        // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
-        // needs to be audited. see http://crbug.com/590369 for more details.
-        document->updateStyleAndLayoutIgnorePendingStylesheets();
-    }
     validate();
 }
 
 template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionWithAffinityTemplate<Strategy>& pos, bool isDirectional)
-    : VisibleSelectionTemplate(pos.position(), pos.affinity(), isDirectional)
+VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::create(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity affinity, bool isDirectional)
 {
+    return VisibleSelectionTemplate(base, extent, affinity, isDirectional);
 }
 
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& pos, bool isDirectional)
-    : VisibleSelectionTemplate(pos, pos, isDirectional)
+VisibleSelection createVisibleSelectionDeprecated(const Position& pos, TextAffinity affinity, bool isDirectional)
 {
+    if (pos.isNotNull())
+        pos.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelection::create(pos, pos, affinity, isDirectional);
 }
 
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>& base, const VisiblePositionTemplate<Strategy>& extent, bool isDirectional)
-    : VisibleSelectionTemplate(base.deepEquivalent(), extent.deepEquivalent(), base.affinity(), isDirectional)
+VisibleSelection createVisibleSelectionDeprecated(const Position& base, const Position& extent, TextAffinity affinity, bool isDirectional)
 {
+    if (base.isNotNull())
+        base.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    if (extent.isNotNull())
+        extent.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelection::create(base, extent, affinity, isDirectional);
 }
 
-template <typename Strategy>
-VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const EphemeralRangeTemplate<Strategy>& range, TextAffinity affinity, bool isDirectional)
-    : VisibleSelectionTemplate(range.startPosition(), range.endPosition(), affinity, isDirectional)
+VisibleSelection createVisibleSelectionDeprecated(const PositionWithAffinity& pos, bool isDirectional)
 {
+    if (pos.isNotNull())
+        pos.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelection::create(pos.position(), pos.position(), pos.affinity(), isDirectional);
+}
+
+VisibleSelection createVisibleSelectionDeprecated(const VisiblePosition& pos, bool isDirectional)
+{
+    if (pos.isNotNull())
+        pos.deepEquivalent().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelection::create(pos.deepEquivalent(), pos.deepEquivalent(), pos.affinity(), isDirectional);
+}
+
+VisibleSelection createVisibleSelectionDeprecated(const VisiblePosition& base, const VisiblePosition& extent, bool isDirectional)
+{
+    if (base.isNotNull())
+        base.deepEquivalent().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    if (extent.isNotNull())
+        extent.deepEquivalent().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelection::create(base.deepEquivalent(), extent.deepEquivalent(), base.affinity(), isDirectional);
+}
+
+VisibleSelection createVisibleSelectionDeprecated(const EphemeralRange& range, TextAffinity affinity, bool isDirectional)
+{
+    if (range.isNotNull())
+        range.startPosition().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelection::create(range.startPosition(), range.endPosition(), affinity, isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const PositionInFlatTree& pos, TextAffinity affinity, bool isDirectional)
+{
+    if (pos.isNotNull())
+        pos.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelectionInFlatTree::create(pos, pos, affinity, isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const PositionInFlatTree& base, const PositionInFlatTree& extent, TextAffinity affinity, bool isDirectional)
+{
+    if (base.isNotNull())
+        base.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    if (extent.isNotNull())
+        extent.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelectionInFlatTree::create(base, extent, affinity, isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const PositionInFlatTreeWithAffinity& pos, bool isDirectional)
+{
+    if (pos.isNotNull())
+        pos.position().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelectionInFlatTree::create(pos.position(), pos.position(), pos.affinity(), isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const VisiblePositionInFlatTree& pos, bool isDirectional)
+{
+    if (pos.isNotNull())
+        pos.deepEquivalent().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelectionInFlatTree::create(pos.deepEquivalent(), pos.deepEquivalent(), pos.affinity(), isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const VisiblePositionInFlatTree& base, const VisiblePositionInFlatTree& extent, bool isDirectional)
+{
+    if (base.isNotNull())
+        base.deepEquivalent().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    if (extent.isNotNull())
+        extent.deepEquivalent().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelectionInFlatTree::create(base.deepEquivalent(), extent.deepEquivalent(), base.affinity(), isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const EphemeralRangeInFlatTree& range, TextAffinity affinity, bool isDirectional)
+{
+    if (range.isNotNull())
+        range.startPosition().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    return VisibleSelectionInFlatTree::create(range.startPosition(), range.endPosition(), affinity, isDirectional);
+}
+
+VisibleSelection createVisibleSelection(const Position& pos, TextAffinity affinity, bool isDirectional)
+{
+    DCHECK(!needsLayoutTreeUpdate(pos));
+    return VisibleSelection::create(pos, pos, affinity, isDirectional);
+}
+
+VisibleSelection createVisibleSelection(const Position& base, const Position& extent, TextAffinity affinity, bool isDirectional)
+{
+    DCHECK(!needsLayoutTreeUpdate(base));
+    DCHECK(!needsLayoutTreeUpdate(extent));
+    return VisibleSelection::create(base, extent, affinity, isDirectional);
+}
+
+VisibleSelection createVisibleSelection(const PositionWithAffinity& pos, bool isDirectional)
+{
+    DCHECK(!needsLayoutTreeUpdate(pos.position()));
+    return VisibleSelection::create(pos.position(), pos.position(), pos.affinity(), isDirectional);
+}
+
+VisibleSelection createVisibleSelection(const VisiblePosition& pos, bool isDirectional)
+{
+    DCHECK(pos.isValid());
+    return VisibleSelection::create(pos.deepEquivalent(), pos.deepEquivalent(), pos.affinity(), isDirectional);
+}
+
+VisibleSelection createVisibleSelection(const VisiblePosition& base, const VisiblePosition& extent, bool isDirectional)
+{
+    DCHECK(base.isValid());
+    DCHECK(extent.isValid());
+    return VisibleSelection::create(base.deepEquivalent(), extent.deepEquivalent(), base.affinity(), isDirectional);
+}
+
+VisibleSelection createVisibleSelection(const EphemeralRange& range, TextAffinity affinity, bool isDirectional)
+{
+    DCHECK(!needsLayoutTreeUpdate(range.startPosition()));
+    DCHECK(!needsLayoutTreeUpdate(range.endPosition()));
+    return VisibleSelection::create(range.startPosition(), range.endPosition(), affinity, isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTree& pos, TextAffinity affinity, bool isDirectional)
+{
+    DCHECK(!needsLayoutTreeUpdate(pos));
+    return VisibleSelectionInFlatTree::create(pos, pos, affinity, isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTree& base, const PositionInFlatTree& extent, TextAffinity affinity, bool isDirectional)
+{
+    DCHECK(!needsLayoutTreeUpdate(base));
+    DCHECK(!needsLayoutTreeUpdate(extent));
+    return VisibleSelectionInFlatTree::create(base, extent, affinity, isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTreeWithAffinity& pos, bool isDirectional)
+{
+    DCHECK(!needsLayoutTreeUpdate(pos.position()));
+    return VisibleSelectionInFlatTree::create(pos.position(), pos.position(), pos.affinity(), isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelection(const VisiblePositionInFlatTree& pos, bool isDirectional)
+{
+    DCHECK(pos.isValid());
+    return VisibleSelectionInFlatTree::create(pos.deepEquivalent(), pos.deepEquivalent(), pos.affinity(), isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelection(const VisiblePositionInFlatTree& base, const VisiblePositionInFlatTree& extent, bool isDirectional)
+{
+    DCHECK(base.isValid());
+    DCHECK(extent.isValid());
+    return VisibleSelectionInFlatTree::create(base.deepEquivalent(), extent.deepEquivalent(), base.affinity(), isDirectional);
+}
+
+VisibleSelectionInFlatTree createVisibleSelection(const EphemeralRangeInFlatTree& range, TextAffinity affinity, bool isDirectional)
+{
+    DCHECK(!needsLayoutTreeUpdate(range.startPosition()));
+    DCHECK(!needsLayoutTreeUpdate(range.endPosition()));
+    return VisibleSelectionInFlatTree::create(range.startPosition(), range.endPosition(), affinity, isDirectional);
 }
 
 template <typename Strategy>
@@ -154,7 +294,12 @@ template <typename Strategy>
 VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::selectionFromContentsOfNode(Node* node)
 {
     DCHECK(!Strategy::editingIgnoresContent(node));
-    return VisibleSelectionTemplate(PositionTemplate<Strategy>::firstPositionInNode(node), PositionTemplate<Strategy>::lastPositionInNode(node));
+
+    // TODO(xiaochengh): The use of updateStyleAndLayoutIgnorePendingStylesheets
+    // needs to be audited. see http://crbug.com/590369 for more details.
+    node->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+    return VisibleSelectionTemplate::create(PositionTemplate<Strategy>::firstPositionInNode(node), PositionTemplate<Strategy>::lastPositionInNode(node), SelDefaultAffinity, false);
 }
 
 template <typename Strategy>

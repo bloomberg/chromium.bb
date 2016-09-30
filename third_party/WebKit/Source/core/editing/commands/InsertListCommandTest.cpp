@@ -33,7 +33,7 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode)
     setBodyContent("\nd\n<ol>");
     Text* emptyText = document().createTextNode("");
     document().body()->insertBefore(emptyText, document().body()->firstChild());
-    document().frame()->selection().setSelection(VisibleSelection(Position(document().body(), 0), Position(document().body(), 2)));
+    document().frame()->selection().setSelection(createVisibleSelectionDeprecated(Position(document().body(), 0), Position(document().body(), 2)));
 
     InsertListCommand* command = InsertListCommand::create(document(), InsertListCommand::OrderedList);
     // This should not DCHECK.

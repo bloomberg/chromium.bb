@@ -458,7 +458,7 @@ bool TypingCommand::makeEditableRootEmpty(EditingState* editingState)
     addBlockPlaceholderIfNeeded(root, editingState);
     if (editingState->isAborted())
         return false;
-    setEndingSelection(VisibleSelection(Position::firstPositionInNode(root), TextAffinity::Downstream, endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelectionDeprecated(Position::firstPositionInNode(root), TextAffinity::Downstream, endingSelection().isDirectional()));
 
     return true;
 }
@@ -528,7 +528,7 @@ void TypingCommand::deleteKeyPressed(TextGranularity granularity, bool killRing,
             selectionModifier.modify(FrameSelection::AlterationExtend, DirectionBackward, granularity);
         // If the caret is just after a table, select the table and don't delete anything.
         } else if (Element* table = tableElementJustBefore(visibleStart)) {
-            setEndingSelection(VisibleSelection(Position::beforeNode(table), endingSelection().start(), TextAffinity::Downstream, endingSelection().isDirectional()));
+            setEndingSelection(createVisibleSelectionDeprecated(Position::beforeNode(table), endingSelection().start(), TextAffinity::Downstream, endingSelection().isDirectional()));
             typingAddedToOpenCommand(DeleteKey);
             return;
         }
@@ -613,7 +613,7 @@ void TypingCommand::forwardDeleteKeyPressed(TextGranularity granularity, bool ki
             downstreamEnd = mostForwardCaretPosition(nextPositionOf(visibleEnd, CannotCrossEditingBoundary).deepEquivalent());
         // When deleting tables: Select the table first, then perform the deletion
         if (isDisplayInsideTable(downstreamEnd.computeContainerNode()) && downstreamEnd.computeOffsetInContainerNode() <= caretMinOffset(downstreamEnd.computeContainerNode())) {
-            setEndingSelection(VisibleSelection(endingSelection().end(), Position::afterNode(downstreamEnd.computeContainerNode()), TextAffinity::Downstream, endingSelection().isDirectional()));
+            setEndingSelection(createVisibleSelectionDeprecated(endingSelection().end(), Position::afterNode(downstreamEnd.computeContainerNode()), TextAffinity::Downstream, endingSelection().isDirectional()));
             typingAddedToOpenCommand(ForwardDeleteKey);
             return;
         }

@@ -587,7 +587,7 @@ bool SelectionModifier::modify(EAlteration alter, SelectionDirection direction, 
 
     switch (alter) {
     case FrameSelection::AlterationMove:
-        m_selection = VisibleSelection(position, m_selection.isDirectional());
+        m_selection = createVisibleSelectionDeprecated(position, m_selection.isDirectional());
         break;
     case FrameSelection::AlterationExtend:
 
@@ -697,7 +697,7 @@ bool SelectionModifier::modifyWithPageGranularity(EAlteration alter, unsigned ve
 
     switch (alter) {
     case FrameSelection::AlterationMove:
-        m_selection = VisibleSelection(result, m_selection.isDirectional());
+        m_selection = createVisibleSelectionDeprecated(result, m_selection.isDirectional());
         break;
     case FrameSelection::AlterationExtend:
         m_selection.setExtent(result);

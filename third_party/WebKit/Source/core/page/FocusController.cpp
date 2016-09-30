@@ -1001,7 +1001,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
 
     if (caretBrowsing) {
         Position position = firstPositionInOrBeforeNode(element);
-        VisibleSelection newSelection(position, position);
+        VisibleSelection newSelection = createVisibleSelectionDeprecated(position, position);
         frame->selection().setSelection(newSelection);
     }
 

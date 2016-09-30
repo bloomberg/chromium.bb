@@ -101,7 +101,7 @@ bool InsertTextCommand::performTrivialReplace(const String& text, bool selectIns
 
     setEndingSelectionWithoutValidation(start, endPosition);
     if (!selectInsertedText)
-        setEndingSelection(VisibleSelection(endingSelection().visibleEndDeprecated(), endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(endingSelection().visibleEndDeprecated(), endingSelection().isDirectional()));
 
     return true;
 }
@@ -124,7 +124,7 @@ bool InsertTextCommand::performOverwrite(const String& text, bool selectInserted
     Position endPosition = Position(textNode, start.offsetInContainerNode() + text.length());
     setEndingSelectionWithoutValidation(start, endPosition);
     if (!selectInsertedText)
-        setEndingSelection(VisibleSelection(endingSelection().visibleEndDeprecated(), endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(endingSelection().visibleEndDeprecated(), endingSelection().isDirectional()));
 
     return true;
 }
@@ -245,7 +245,7 @@ void InsertTextCommand::doApply(EditingState* editingState)
     }
 
     if (!m_selectInsertedText)
-        setEndingSelection(VisibleSelection(endingSelection().end(), endingSelection().affinity(), endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(endingSelection().end(), endingSelection().affinity(), endingSelection().isDirectional()));
 }
 
 Position InsertTextCommand::insertTab(const Position& pos, EditingState* editingState)

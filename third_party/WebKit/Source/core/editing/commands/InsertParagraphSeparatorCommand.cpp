@@ -284,7 +284,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         if (editingState->isAborted())
             return;
 
-        setEndingSelection(VisibleSelection(Position::firstPositionInNode(parent), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(Position::firstPositionInNode(parent), TextAffinity::Downstream, endingSelection().isDirectional()));
         return;
     }
 
@@ -344,7 +344,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
             return;
 
         // In this case, we need to set the new ending selection.
-        setEndingSelection(VisibleSelection(insertionPosition, TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(insertionPosition, TextAffinity::Downstream, endingSelection().isDirectional()));
         return;
     }
 
@@ -364,7 +364,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         // If the insertion point is a break element, there is nothing else
         // we need to do.
         if (visiblePos.deepEquivalent().anchorNode()->layoutObject()->isBR()) {
-            setEndingSelection(VisibleSelection(insertionPosition, TextAffinity::Downstream, endingSelection().isDirectional()));
+            setEndingSelection(createVisibleSelectionDeprecated(insertionPosition, TextAffinity::Downstream, endingSelection().isDirectional()));
             return;
         }
     }
@@ -480,7 +480,7 @@ void InsertParagraphSeparatorCommand::doApply(EditingState* editingState)
         }
     }
 
-    setEndingSelection(VisibleSelection(Position::firstPositionInNode(blockToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelectionDeprecated(Position::firstPositionInNode(blockToInsert), TextAffinity::Downstream, endingSelection().isDirectional()));
     applyStyleAfterInsertion(startBlock, editingState);
 }
 

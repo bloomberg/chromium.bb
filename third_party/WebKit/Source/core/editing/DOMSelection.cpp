@@ -228,7 +228,7 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
     Range::checkNodeWOffset(node, offset, exceptionState);
     if (exceptionState.hadException())
         return;
-    frame()->selection().setSelection(VisibleSelection(Position(node, offset), frame()->selection().isDirectional()));
+    frame()->selection().setSelection(createVisibleSelectionDeprecated(Position(node, offset), frame()->selection().isDirectional()));
 }
 
 void DOMSelection::collapseToEnd(ExceptionState& exceptionState)
@@ -292,7 +292,7 @@ void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extent
     Position base = createPosition(baseNode, baseOffset);
     Position extent = createPosition(extentNode, extentOffset);
     const bool selectionHasDirection = true;
-    frame()->selection().setSelection(VisibleSelection(base, extent, SelDefaultAffinity, selectionHasDirection));
+    frame()->selection().setSelection(createVisibleSelectionDeprecated(base, extent, SelDefaultAffinity, selectionHasDirection));
 }
 
 void DOMSelection::modify(const String& alterString, const String& directionString, const String& granularityString)
@@ -367,7 +367,7 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
     const Position& base = frame()->selection().base();
     const Position& extent = createPosition(node, offset);
     const bool selectionHasDirection = true;
-    const VisibleSelection newSelection(base, extent, TextAffinity::Downstream, selectionHasDirection);
+    const VisibleSelection newSelection = createVisibleSelectionDeprecated(base, extent, TextAffinity::Downstream, selectionHasDirection);
     frame()->selection().setSelection(newSelection);
 }
 

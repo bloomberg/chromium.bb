@@ -1239,7 +1239,7 @@ void CompositeEditCommand::moveParagraphWithClones(const VisiblePosition& startO
 
     cloneParagraphUnderNewElement(start, end, outerNode, blockElement, editingState);
 
-    setEndingSelection(VisibleSelection(start, end));
+    setEndingSelection(createVisibleSelectionDeprecated(start, end));
     deleteSelection(editingState, false, false, false);
     if (editingState->isAborted())
         return;
@@ -1341,7 +1341,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     // FIXME (5098931): We should add a new insert action "WebViewInsertActionMoved" and call shouldInsertFragment here.
 
-    setEndingSelection(VisibleSelection(start, end));
+    setEndingSelection(createVisibleSelectionDeprecated(start, end));
     document().frame()->spellChecker().clearMisspellingsAndBadGrammarForMovingParagraphs(endingSelection());
     deleteSelection(editingState, false, false, false);
     if (editingState->isAborted())
@@ -1373,7 +1373,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
 
     destinationIndex = TextIterator::rangeLength(Position::firstPositionInNode(document().documentElement()), destination.toParentAnchoredPosition(), true);
 
-    VisibleSelection destinationSelection(destination, originalIsDirectional);
+    VisibleSelection destinationSelection = createVisibleSelectionDeprecated(destination, originalIsDirectional);
     if (endingSelection().isNone()) {
         // We abort executing command since |destination| becomes invisible.
         editingState->abort();
@@ -1417,7 +1417,7 @@ void CompositeEditCommand::moveParagraphs(const VisiblePosition& startOfParagrap
     EphemeralRange endRange = PlainTextRange(destinationIndex + endIndex).createRangeForSelection(*documentElement);
     if (endRange.isNull())
         return;
-    setEndingSelection(VisibleSelection(startRange.startPosition(), endRange.startPosition(), TextAffinity::Downstream, originalIsDirectional));
+    setEndingSelection(createVisibleSelectionDeprecated(startRange.startPosition(), endRange.startPosition(), TextAffinity::Downstream, originalIsDirectional));
 }
 
 // FIXME: Send an appropriate shouldDeleteRange call.
@@ -1490,7 +1490,7 @@ bool CompositeEditCommand::breakOutOfEmptyListItem(EditingState* editingState)
     appendBlockPlaceholder(newBlock, editingState);
     if (editingState->isAborted())
         return false;
-    setEndingSelection(VisibleSelection(Position::firstPositionInNode(newBlock), TextAffinity::Downstream, endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelectionDeprecated(Position::firstPositionInNode(newBlock), TextAffinity::Downstream, endingSelection().isDirectional()));
 
     style->prepareToApplyAt(endingSelection().start());
     if (!style->isEmpty()) {
@@ -1536,7 +1536,7 @@ bool CompositeEditCommand::breakOutOfEmptyMailBlockquotedParagraph(EditingState*
         if (editingState->isAborted())
             return false;
     }
-    setEndingSelection(VisibleSelection(atBR, endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelectionDeprecated(atBR, endingSelection().isDirectional()));
 
     // If this is an empty paragraph there must be a line break here.
     if (!lineBreakExistsAtVisiblePosition(caret))

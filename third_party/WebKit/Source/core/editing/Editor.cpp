@@ -160,7 +160,7 @@ VisibleSelection Editor::selectionForCommand(Event* event)
     HTMLTextFormControlElement* textFromControlOfTarget = isHTMLTextFormControlElement(*event->target()->toNode()) ? toHTMLTextFormControlElement(event->target()->toNode()) : 0;
     if (textFromControlOfTarget && (selection.start().isNull() || textFromControlOfTarget != textFormControlOfSelectionStart)) {
         if (Range* range = textFromControlOfTarget->selection())
-            return VisibleSelection(EphemeralRange(range), TextAffinity::Downstream, selection.isDirectional());
+            return createVisibleSelectionDeprecated(EphemeralRange(range), TextAffinity::Downstream, selection.isDirectional());
     }
     return selection;
 }
@@ -1113,7 +1113,7 @@ void Editor::transpose()
     const EphemeralRange range = makeRange(previous, next);
     if (range.isNull())
         return;
-    VisibleSelection newSelection(range);
+    VisibleSelection newSelection = createVisibleSelectionDeprecated(range);
 
     // Transpose the two characters.
     String text = plainText(range);
@@ -1232,7 +1232,7 @@ bool Editor::findString(const String& target, FindOptions options)
     if (!resultRange)
         return false;
 
-    frame().selection().setSelection(VisibleSelection(EphemeralRange(resultRange)));
+    frame().selection().setSelection(createVisibleSelectionDeprecated(EphemeralRange(resultRange)));
     frame().selection().revealSelection();
     return true;
 }

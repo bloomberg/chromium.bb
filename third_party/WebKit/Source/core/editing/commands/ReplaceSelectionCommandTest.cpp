@@ -33,7 +33,7 @@ TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan)
 
     LocalFrame* frame = document().frame();
     frame->selection().setSelection(
-        VisibleSelection(Position(document().body(), 0)));
+        createVisibleSelectionDeprecated(Position(document().body(), 0)));
 
     DocumentFragment* fragment = document().createDocumentFragment();
     fragment->appendChild(document().createElement("span", ASSERT_NO_EXCEPTION));
@@ -58,7 +58,7 @@ TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent)
 {
     document().setDesignMode("on");
     dummyPageHolder().frame().selection().setSelection(
-        VisibleSelection(Position(document().body(), 0)));
+        createVisibleSelectionDeprecated(Position(document().body(), 0)));
 
     DocumentFragment* fragment = document().createDocumentFragment();
     fragment->parseHTML(

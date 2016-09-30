@@ -1684,7 +1684,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // (a table is itself a paragraph).
     if (Element* table = tableElementJustBefore(endOfSelection)) {
         if (startOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
-            newSelection = VisibleSelection(startOfSelection, previousPositionOf(endOfSelection, CannotCrossEditingBoundary));
+            newSelection = createVisibleSelectionDeprecated(startOfSelection, previousPositionOf(endOfSelection, CannotCrossEditingBoundary));
     }
 
     // If the start of the selection to modify is just before a table,
@@ -1693,7 +1693,7 @@ VisibleSelection selectionForParagraphIteration(const VisibleSelection& original
     // containing the table itself.
     if (Element* table = tableElementJustAfter(startOfSelection)) {
         if (endOfSelection.deepEquivalent().anchorNode()->isDescendantOf(table))
-            newSelection = VisibleSelection(nextPositionOf(startOfSelection, CannotCrossEditingBoundary), endOfSelection);
+            newSelection = createVisibleSelectionDeprecated(nextPositionOf(startOfSelection, CannotCrossEditingBoundary), endOfSelection);
     }
 
     return newSelection;

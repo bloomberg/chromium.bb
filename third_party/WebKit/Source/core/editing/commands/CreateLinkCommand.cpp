@@ -56,7 +56,7 @@ void CreateLinkCommand::doApply(EditingState* editingState)
         appendNode(textNode, anchorElement, editingState);
         if (editingState->isAborted())
             return;
-        setEndingSelection(VisibleSelection(Position::inParentBeforeNode(*anchorElement), Position::inParentAfterNode(*anchorElement), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(Position::inParentBeforeNode(*anchorElement), Position::inParentAfterNode(*anchorElement), TextAffinity::Downstream, endingSelection().isDirectional()));
     }
 }
 

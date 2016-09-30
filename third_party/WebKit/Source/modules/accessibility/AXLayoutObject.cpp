@@ -1915,7 +1915,7 @@ void AXLayoutObject::setSelection(const AXRange& selection)
     if (anchorVisiblePosition.isNull() || focusVisiblePosition.isNull())
         return;
 
-    frame->selection().setSelection(VisibleSelection(anchorVisiblePosition, focusVisiblePosition));
+    frame->selection().setSelection(createVisibleSelection(anchorVisiblePosition, focusVisiblePosition));
 }
 
 bool AXLayoutObject::isValidSelectionBound(const AXObject* boundObject) const

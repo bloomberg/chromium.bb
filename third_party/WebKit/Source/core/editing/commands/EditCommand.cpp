@@ -91,7 +91,7 @@ void EditCommand::setEndingSelection(const VisibleSelection& selection)
 
 void EditCommand::setEndingSelection(const VisiblePosition& position)
 {
-    setEndingSelection(VisibleSelection(position));
+    setEndingSelection(createVisibleSelectionDeprecated(position));
 }
 
 bool EditCommand::isRenderedCharacter(const Position& position)

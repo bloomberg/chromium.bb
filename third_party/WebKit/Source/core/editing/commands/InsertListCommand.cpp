@@ -141,7 +141,7 @@ void InsertListCommand::doApply(EditingState* editingState)
     // margin/padding, but not others.  We should make the gap painting more consistent and
     // then use a left margin/padding rule here.
     if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraphDeprecated(visibleEnd, CanSkipOverEditingBoundary)) {
-        setEndingSelection(VisibleSelection(visibleStart, previousPositionOf(visibleEnd, CannotCrossEditingBoundary), endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(visibleStart, previousPositionOf(visibleEnd, CannotCrossEditingBoundary), endingSelection().isDirectional()));
         if (!endingSelection().rootEditableElement())
             return;
     }
@@ -222,7 +222,7 @@ void InsertListCommand::doApply(EditingState* editingState)
             if (startOfSelection.isNull())
                 return;
         }
-        setEndingSelection(VisibleSelection(startOfSelection, endOfSelection, endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(startOfSelection, endOfSelection, endingSelection().isDirectional()));
         return;
     }
 

@@ -197,7 +197,7 @@ void SVGTextContentElement::selectSubString(unsigned charnum, unsigned nchars, E
     for (unsigned i = 0; i < nchars; ++i)
         end = nextPositionOf(end);
 
-    document().frame()->selection().setSelection(VisibleSelection(start, end));
+    document().frame()->selection().setSelection(createVisibleSelectionDeprecated(start, end));
 }
 
 bool SVGTextContentElement::isPresentationAttribute(const QualifiedName& name) const

@@ -49,17 +49,13 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
     DISALLOW_NEW();
 public:
     VisibleSelectionTemplate();
-    VisibleSelectionTemplate(const PositionTemplate<Strategy>&, TextAffinity, bool isDirectional = false);
-    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-    explicit VisibleSelectionTemplate(const EphemeralRangeTemplate<Strategy>&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
-
-    explicit VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&, bool isDirectional = false);
-    VisibleSelectionTemplate(const VisiblePositionTemplate<Strategy>&, const VisiblePositionTemplate<Strategy>&, bool isDirectional = false);
-
-    explicit VisibleSelectionTemplate(const PositionWithAffinityTemplate<Strategy>&, bool isDirectional = false);
-
     VisibleSelectionTemplate(const VisibleSelectionTemplate&);
     VisibleSelectionTemplate& operator=(const VisibleSelectionTemplate&);
+
+    // Note: |create()| should be used only by |createVisibleSelection| and
+    // |selectionFromContentsOfNode|.
+    // TODO(xiaochengh): Use enum class instead of boolean parameter.
+    static VisibleSelectionTemplate create(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity, bool isDirectional);
 
     static VisibleSelectionTemplate selectionFromContentsOfNode(Node*);
 
@@ -139,6 +135,8 @@ public:
 private:
     friend class SelectionAdjuster;
 
+    VisibleSelectionTemplate(const PositionTemplate<Strategy>& base, const PositionTemplate<Strategy>& extent, TextAffinity, bool isDirectional);
+
     void validate(TextGranularity = CharacterGranularity);
 
     // Support methods for validate()
@@ -183,6 +181,37 @@ extern template class CORE_EXTERN_TEMPLATE_EXPORT VisibleSelectionTemplate<Editi
 
 using VisibleSelection = VisibleSelectionTemplate<EditingStrategy>;
 using VisibleSelectionInFlatTree = VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
+
+// TODO(xiaochengh): Introduce builder class to get rid of these overloads.
+CORE_EXPORT VisibleSelection createVisibleSelection(const Position&, TextAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelection(const Position& base, const Position& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelection(const EphemeralRange&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelection(const VisiblePosition&, const VisiblePosition&, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelection(const PositionWithAffinity&, bool isDirectional = false);
+
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTree&, TextAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTree& base, const PositionInFlatTree& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const EphemeralRangeInFlatTree&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const VisiblePositionInFlatTree&, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const VisiblePositionInFlatTree&, const VisiblePositionInFlatTree&, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelection(const PositionInFlatTreeWithAffinity&, bool isDirectional = false);
+
+// Callers of these functions should ensure clean layout by themselves and then
+// switch to the proper versions (to be introduced).
+CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const Position&, TextAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const Position& base, const Position& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const EphemeralRange&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const VisiblePosition&, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const VisiblePosition&, const VisiblePosition&, bool isDirectional = false);
+CORE_EXPORT VisibleSelection createVisibleSelectionDeprecated(const PositionWithAffinity&, bool isDirectional = false);
+
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const PositionInFlatTree&, TextAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const PositionInFlatTree& base, const PositionInFlatTree& extent, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const EphemeralRangeInFlatTree&, TextAffinity = SelDefaultAffinity, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const VisiblePositionInFlatTree&, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const VisiblePositionInFlatTree&, const VisiblePositionInFlatTree&, bool isDirectional = false);
+CORE_EXPORT VisibleSelectionInFlatTree createVisibleSelectionDeprecated(const PositionInFlatTreeWithAffinity&, bool isDirectional = false);
 
 // We don't yet support multi-range selections, so we only ever have one range
 // to return.

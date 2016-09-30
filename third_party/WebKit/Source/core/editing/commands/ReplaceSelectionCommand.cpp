@@ -1561,9 +1561,9 @@ void ReplaceSelectionCommand::completeHTMLReplacement(const Position &lastPositi
     m_endOfInsertedRange = end;
 
     if (m_selectReplacement)
-        setEndingSelection(VisibleSelection(start, end, SelDefaultAffinity, endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(start, end, SelDefaultAffinity, endingSelection().isDirectional()));
     else
-        setEndingSelection(VisibleSelection(end, SelDefaultAffinity, endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(end, SelDefaultAffinity, endingSelection().isDirectional()));
 }
 
 void ReplaceSelectionCommand::mergeTextNodesAroundPosition(Position& position, Position& positionOnlyToBeUpdated, EditingState* editingState)
@@ -1738,7 +1738,7 @@ bool ReplaceSelectionCommand::performTrivialReplace(const ReplacementFragment& f
     m_startOfInsertedRange = start;
     m_endOfInsertedRange = end;
 
-    VisibleSelection selectionAfterReplace(m_selectReplacement ? start : end, end);
+    VisibleSelection selectionAfterReplace = createVisibleSelectionDeprecated(m_selectReplacement ? start : end, end);
 
     setEndingSelection(selectionAfterReplace);
 

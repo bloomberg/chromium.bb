@@ -65,9 +65,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     VisibleSelectionInFlatTree selectionInFlatTree;
 
     // From a position at distributed node
-    selection = VisibleSelection(createVisiblePosition(Position(one, 1)));
+    selection = createVisibleSelectionDeprecated(createVisiblePosition(Position(one, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(one, 1)));
+    selectionInFlatTree = createVisibleSelectionDeprecated(createVisiblePosition(PositionInFlatTree(one, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(one, 1), selection.base());
@@ -81,9 +81,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     EXPECT_EQ(PositionInFlatTree(five, 5), selectionInFlatTree.end());
 
     // From a position at distributed node
-    selection = VisibleSelection(createVisiblePosition(Position(two, 1)));
+    selection = createVisibleSelectionDeprecated(createVisiblePosition(Position(two, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(two, 1)));
+    selectionInFlatTree = createVisibleSelectionDeprecated(createVisiblePosition(PositionInFlatTree(two, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(two, 1), selection.base());
@@ -97,9 +97,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
     // From a position at node in shadow tree
-    selection = VisibleSelection(createVisiblePosition(Position(three, 1)));
+    selection = createVisibleSelectionDeprecated(createVisiblePosition(Position(three, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(three, 1)));
+    selectionInFlatTree = createVisibleSelectionDeprecated(createVisiblePosition(PositionInFlatTree(three, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(three, 1), selection.base());
@@ -113,9 +113,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
     // From a position at node in shadow tree
-    selection = VisibleSelection(createVisiblePosition(Position(four, 1)));
+    selection = createVisibleSelectionDeprecated(createVisiblePosition(Position(four, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(four, 1)));
+    selectionInFlatTree = createVisibleSelectionDeprecated(createVisiblePosition(PositionInFlatTree(four, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(four, 1), selection.base());
@@ -129,9 +129,9 @@ TEST_F(VisibleSelectionTest, expandUsingGranularity)
     EXPECT_EQ(PositionInFlatTree(four, 4), selectionInFlatTree.end());
 
     // From a position at node in shadow tree
-    selection = VisibleSelection(createVisiblePosition(Position(five, 1)));
+    selection = createVisibleSelectionDeprecated(createVisiblePosition(Position(five, 1)));
     selection.expandUsingGranularity(WordGranularity);
-    selectionInFlatTree = VisibleSelectionInFlatTree(createVisiblePosition(PositionInFlatTree(five, 1)));
+    selectionInFlatTree = createVisibleSelectionDeprecated(createVisiblePosition(PositionInFlatTree(five, 1)));
     selectionInFlatTree.expandUsingGranularity(WordGranularity);
 
     EXPECT_EQ(Position(five, 1), selection.base());
@@ -178,8 +178,8 @@ TEST_F(VisibleSelectionTest, ShadowCrossing)
     Element* one = body->querySelector("#one");
     Element* six = shadowRoot->querySelector("#s6");
 
-    VisibleSelection selection(Position::firstPositionInNode(one), Position::lastPositionInNode(shadowRoot));
-    VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one), PositionInFlatTree::lastPositionInNode(host));
+    VisibleSelection selection = createVisibleSelectionDeprecated(Position::firstPositionInNode(one), Position::lastPositionInNode(shadowRoot));
+    VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelectionDeprecated(PositionInFlatTree::firstPositionInNode(one), PositionInFlatTree::lastPositionInNode(host));
 
     EXPECT_EQ(Position(host, PositionAnchorType::BeforeAnchor), selection.start());
     EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
@@ -199,8 +199,8 @@ TEST_F(VisibleSelectionTest, ShadowV0DistributedNodes)
     Element* two = body->querySelector("#two");
     Element* five = shadowRoot->querySelector("#s5");
 
-    VisibleSelection selection(Position::firstPositionInNode(one), Position::lastPositionInNode(two));
-    VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one), PositionInFlatTree::lastPositionInNode(two));
+    VisibleSelection selection = createVisibleSelectionDeprecated(Position::firstPositionInNode(one), Position::lastPositionInNode(two));
+    VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelectionDeprecated(PositionInFlatTree::firstPositionInNode(one), PositionInFlatTree::lastPositionInNode(two));
 
     EXPECT_EQ(Position(one->firstChild(), 0), selection.start());
     EXPECT_EQ(Position(two->firstChild(), 2), selection.end());
@@ -230,8 +230,8 @@ TEST_F(VisibleSelectionTest, ShadowNested)
     Element* one = body->querySelector("#one");
     Element* eight = shadowRoot2->querySelector("#s8");
 
-    VisibleSelection selection(Position::firstPositionInNode(one), Position::lastPositionInNode(shadowRoot2));
-    VisibleSelectionInFlatTree selectionInFlatTree(PositionInFlatTree::firstPositionInNode(one), PositionInFlatTree::afterNode(eight));
+    VisibleSelection selection = createVisibleSelectionDeprecated(Position::firstPositionInNode(one), Position::lastPositionInNode(shadowRoot2));
+    VisibleSelectionInFlatTree selectionInFlatTree = createVisibleSelectionDeprecated(PositionInFlatTree::firstPositionInNode(one), PositionInFlatTree::afterNode(eight));
 
     EXPECT_EQ(Position(host, PositionAnchorType::BeforeAnchor), selection.start());
     EXPECT_EQ(Position(one->firstChild(), 0), selection.end());
@@ -360,7 +360,7 @@ TEST_F(VisibleSelectionTest, validatePositionsIfNeededWithShadowHost)
     Element* sample = document().getElementById("sample");
 
     // Simulates saving selection in undo stack.
-    VisibleSelection selection(Position(sample->firstChild(), 0));
+    VisibleSelection selection = createVisibleSelectionDeprecated(Position(sample->firstChild(), 0));
     EXPECT_EQ(Position(sample->firstChild(), 0), selection.start());
 
     // Simulates modifying DOM tree to invalidate distribution.

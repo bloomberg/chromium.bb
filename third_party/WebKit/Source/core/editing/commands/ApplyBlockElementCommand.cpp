@@ -73,7 +73,7 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
     // margin/padding, but not others.  We should make the gap painting more
     // consistent and then use a left margin/padding rule here.
     if (visibleEnd.deepEquivalent() != visibleStart.deepEquivalent() && isStartOfParagraphDeprecated(visibleEnd)) {
-        VisibleSelection newSelection(visibleStart, previousPositionOf(visibleEnd, CannotCrossEditingBoundary), endingSelection().isDirectional());
+        VisibleSelection newSelection = createVisibleSelectionDeprecated(visibleStart, previousPositionOf(visibleEnd, CannotCrossEditingBoundary), endingSelection().isDirectional());
         if (newSelection.isNone())
             return;
         setEndingSelection(newSelection);
@@ -102,7 +102,7 @@ void ApplyBlockElementCommand::doApply(EditingState* editingState)
         VisiblePosition start(visiblePositionForIndex(startIndex, startScope));
         VisiblePosition end(visiblePositionForIndex(endIndex, endScope));
         if (start.isNotNull() && end.isNotNull())
-            setEndingSelection(VisibleSelection(start, end, endingSelection().isDirectional()));
+            setEndingSelection(createVisibleSelectionDeprecated(start, end, endingSelection().isDirectional()));
     }
 }
 
@@ -126,7 +126,7 @@ void ApplyBlockElementCommand::formatSelection(const VisiblePosition& startOfSel
         appendNode(placeholder, blockquote, editingState);
         if (editingState->isAborted())
             return;
-        setEndingSelection(VisibleSelection(Position::beforeNode(placeholder), TextAffinity::Downstream, endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(Position::beforeNode(placeholder), TextAffinity::Downstream, endingSelection().isDirectional()));
         return;
     }
 

@@ -70,7 +70,7 @@ void MoveSelectionCommand::doApply(EditingState* editingState)
     if (editingState->isAborted())
         return;
 
-    setEndingSelection(VisibleSelection(pos, endingSelection().affinity(), endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelectionDeprecated(pos, endingSelection().affinity(), endingSelection().isDirectional()));
     if (!pos.isConnected()) {
         // Document was modified out from under us.
         return;

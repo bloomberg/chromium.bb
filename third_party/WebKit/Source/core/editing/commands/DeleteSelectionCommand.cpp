@@ -160,7 +160,7 @@ void DeleteSelectionCommand::setStartingSelectionOnSmartDelete(const Position& s
     bool isBaseFirst = startingSelection().isBaseFirst();
     VisiblePosition newBase = createVisiblePositionDeprecated(isBaseFirst ? start : end);
     VisiblePosition newExtent = createVisiblePositionDeprecated(isBaseFirst ? end : start);
-    setStartingSelection(VisibleSelection(newBase, newExtent, startingSelection().isDirectional()));
+    setStartingSelection(createVisibleSelectionDeprecated(newBase, newExtent, startingSelection().isDirectional()));
 }
 
 void DeleteSelectionCommand::initializePositionData(EditingState* editingState)
@@ -882,7 +882,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
         return;
     if (brResult) {
         calculateTypingStyleAfterDelete();
-        setEndingSelection(VisibleSelection(m_endingPosition, affinity, endingSelection().isDirectional()));
+        setEndingSelection(createVisibleSelectionDeprecated(m_endingPosition, affinity, endingSelection().isDirectional()));
         clearTransientState();
         rebalanceWhitespace();
         return;
@@ -930,7 +930,7 @@ void DeleteSelectionCommand::doApply(EditingState* editingState)
 
     calculateTypingStyleAfterDelete();
 
-    setEndingSelection(VisibleSelection(m_endingPosition, affinity, endingSelection().isDirectional()));
+    setEndingSelection(createVisibleSelectionDeprecated(m_endingPosition, affinity, endingSelection().isDirectional()));
     clearTransientState();
 }
 

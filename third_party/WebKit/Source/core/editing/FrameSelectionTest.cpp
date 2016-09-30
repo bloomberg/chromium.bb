@@ -68,7 +68,7 @@ Text* FrameSelectionTest::appendTextNode(const String& data)
 TEST_F(FrameSelectionTest, SetValidSelection)
 {
     Text* text = appendTextNode("Hello, World!");
-    VisibleSelection validSelection(Position(text, 0), Position(text, 5));
+    VisibleSelection validSelection = createVisibleSelectionDeprecated(Position(text, 0), Position(text, 5));
     EXPECT_FALSE(validSelection.isNone());
     setSelection(validSelection);
     EXPECT_FALSE(selection().isNone());
@@ -79,7 +79,7 @@ TEST_F(FrameSelectionTest, InvalidateCaretRect)
     Text* text = appendTextNode("Hello, World!");
     document().view()->updateAllLifecyclePhases();
 
-    VisibleSelection validSelection(Position(text, 0), Position(text, 0));
+    VisibleSelection validSelection = createVisibleSelectionDeprecated(Position(text, 0), Position(text, 0));
     setSelection(validSelection);
     selection().setCaretRectNeedsUpdate();
     EXPECT_TRUE(selection().isCaretBoundsDirty());
@@ -103,7 +103,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
     document().body()->focus();
     EXPECT_TRUE(document().body()->focused());
 
-    VisibleSelection validSelection(Position(text, 0), Position(text, 0));
+    VisibleSelection validSelection = createVisibleSelectionDeprecated(Position(text, 0), Position(text, 0));
     selection().setCaretVisible(true);
     setSelection(validSelection);
     EXPECT_TRUE(selection().isCaret());
@@ -207,7 +207,7 @@ TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree)
     Node* const two = FlatTreeTraversal::firstChild(*host);
     // Select "two" for selection in DOM tree
     // Select "twoone" for selection in Flat tree
-    selection().setSelection(VisibleSelectionInFlatTree(PositionInFlatTree(host, 0), PositionInFlatTree(document().body(), 2)));
+    selection().setSelection(createVisibleSelectionDeprecated(PositionInFlatTree(host, 0), PositionInFlatTree(document().body(), 2)));
     selection().modify(FrameSelection::AlterationExtend, DirectionForward, WordGranularity);
     EXPECT_EQ(Position(two, 0), visibleSelectionInDOMTree().start());
     EXPECT_EQ(Position(two, 3), visibleSelectionInDOMTree().end());
@@ -220,7 +220,7 @@ TEST_F(FrameSelectionTest, ModifyWithUserTriggered)
     setBodyContent("<div id=sample>abc</div>");
     Element* sample = document().getElementById("sample");
     const Position endOfText(sample->firstChild(), 3);
-    selection().setSelection(VisibleSelection(endOfText));
+    selection().setSelection(createVisibleSelectionDeprecated(endOfText));
 
     EXPECT_FALSE(selection().modify(FrameSelection::AlterationMove, DirectionForward, CharacterGranularity, NotUserTriggered))
         << "Selection.modify() returns false for non-user-triggered call when selection isn't modified.";
@@ -240,7 +240,7 @@ TEST_F(FrameSelectionTest, MoveRangeSelectionTest)
     updateAllLifecyclePhases();
 
     // Itinitializes with "Foo B|a>r Baz," (| means start and > means end).
-    selection().setSelection(VisibleSelection(Position(text, 5), Position(text, 6)));
+    selection().setSelection(createVisibleSelectionDeprecated(Position(text, 5), Position(text, 6)));
     EXPECT_EQ_SELECTED_TEXT("a");
 
     // "Foo B|ar B>az," with the Character granularity.
@@ -269,7 +269,7 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded)
     Node* host = document().getElementById("host");
 
     // top to bottom
-    selection().setNonDirectionalSelectionIfNeeded(VisibleSelectionInFlatTree(PositionInFlatTree(top, 1), PositionInFlatTree(bottom, 3)), CharacterGranularity);
+    selection().setNonDirectionalSelectionIfNeeded(createVisibleSelectionDeprecated(PositionInFlatTree(top, 1), PositionInFlatTree(bottom, 3)), CharacterGranularity);
     EXPECT_EQ(Position(top, 1), visibleSelectionInDOMTree().base());
     EXPECT_EQ(Position::beforeNode(host), visibleSelectionInDOMTree().extent());
     EXPECT_EQ(Position(top, 1), visibleSelectionInDOMTree().start());
@@ -281,7 +281,7 @@ TEST_F(FrameSelectionTest, setNonDirectionalSelectionIfNeeded)
     EXPECT_EQ(PositionInFlatTree(bottom, 3), visibleSelectionInFlatTree().end());
 
     // bottom to top
-    selection().setNonDirectionalSelectionIfNeeded(VisibleSelectionInFlatTree(PositionInFlatTree(bottom, 3), PositionInFlatTree(top, 1)), CharacterGranularity);
+    selection().setNonDirectionalSelectionIfNeeded(createVisibleSelectionDeprecated(PositionInFlatTree(bottom, 3), PositionInFlatTree(top, 1)), CharacterGranularity);
     EXPECT_EQ(Position(bottom, 3), visibleSelectionInDOMTree().base());
     EXPECT_EQ(Position::beforeNode(bottom->parentNode()), visibleSelectionInDOMTree().extent());
     EXPECT_EQ(Position(bottom, 0), visibleSelectionInDOMTree().start());
@@ -306,7 +306,7 @@ TEST_F(FrameSelectionTest, updateIfNeededAndFrameCaret)
     setBodyContent("<style id=sample></style>");
     document().setDesignMode("on");
     Element* sample = document().getElementById("sample");
-    setSelection(VisibleSelection(Position(sample, 0)));
+    setSelection(createVisibleSelectionDeprecated(Position(sample, 0)));
     EXPECT_EQ(Position(document().body(), 0), selection().start());
     EXPECT_EQ(selection().start(), caretPosition().position());
     document().body()->remove();

@@ -250,7 +250,7 @@ void IndentOutdentCommand::outdentRegion(const VisiblePosition& startOfSelection
     while (endOfCurrentParagraph.deepEquivalent() != endAfterSelection.deepEquivalent()) {
         VisiblePosition endOfNextParagraph = endOfParagraphDeprecated(nextPositionOfDeprecated(endOfCurrentParagraph));
         if (endOfCurrentParagraph.deepEquivalent() == endOfLastParagraph.deepEquivalent())
-            setEndingSelection(VisibleSelection(originalSelectionEnd, TextAffinity::Downstream));
+            setEndingSelection(createVisibleSelectionDeprecated(originalSelectionEnd, TextAffinity::Downstream));
         else
             setEndingSelection(endOfCurrentParagraph);
 
