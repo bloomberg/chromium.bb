@@ -10,6 +10,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -234,7 +235,8 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
      */
     public boolean isSignInAllowed() {
         return mSigninAllowedByPolicy && !mFirstRunCheckIsPending && mSignInState == null
-                && ChromeSigninController.get(mContext).getSignedInUser() == null;
+                && ChromeSigninController.get(mContext).getSignedInUser() == null
+                && !ApiCompatibilityUtils.isDemoUser(mContext);
     }
 
     /**
