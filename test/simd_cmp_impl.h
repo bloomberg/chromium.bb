@@ -15,6 +15,8 @@
 #include "test/acm_random.h"
 #include "test/register_state_check.h"
 #include "aom_dsp/aom_simd.h"
+#undef SIMD_INLINE
+#define SIMD_INLINE static  // Don't enforce inlining
 #include "aom_dsp/simd/v64_intrinsics_c.h"
 
 // Machine tuned code goes into this file. This file is included from
@@ -315,6 +317,18 @@ const mapping m[] = { MAP(v64_sad_u8),
                       MAP(v64_hadd_u8),
                       MAP(v64_hadd_s16),
                       MAP(v64_dotp_s16),
+                      MAP(v64_dotp_su8),
+                      MAP(v64_u64),
+                      MAP(v64_low_u32),
+                      MAP(v64_high_u32),
+                      MAP(v64_low_s32),
+                      MAP(v64_high_s32),
+                      MAP(v64_dup_8),
+                      MAP(v64_dup_16),
+                      MAP(v64_dup_32),
+                      MAP(v64_from_32),
+                      MAP(v64_zero),
+                      MAP(v64_from_16),
                       { NULL, NULL, NULL } };
 #undef MAP
 
@@ -441,6 +455,8 @@ int CompareSimd2Args(fptr store, fptr load1, fptr load2, fptr simd, void *d,
   return memcmp(ref_d, d, sizeof(CRet));
 }
 
+}  // namespace
+
 template <typename CRet, typename CArg>
 void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
                   const char *name) {
@@ -474,21 +490,29 @@ void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
           reinterpret_cast<fptr>(v64_load_aligned), simd, d,
           reinterpret_cast<fptr>(c_v64_store_aligned),
           reinterpret_cast<fptr>(c_v64_load_aligned), ref_simd, ref_d, s);
+    } else if (typeid(CRet) == typeid(c_v64) &&
+               typeid(CArg) == typeid(uint32_t)) {
+      // V64_U32
+      error = CompareSimd1Arg<v64, uint32_t, CRet, CArg>(
+          reinterpret_cast<fptr>(v64_store_aligned),
+          reinterpret_cast<fptr>(u32_load_aligned), simd, d,
+          reinterpret_cast<fptr>(c_v64_store_aligned),
+          reinterpret_cast<fptr>(c_u32_load_aligned), ref_simd, ref_d, s);
     } else if (typeid(CRet) == typeid(uint64_t) &&
                typeid(CArg) == typeid(c_v64)) {
       // U64_V64
       error = CompareSimd1Arg<uint64_t, v64, CRet, CArg>(
           reinterpret_cast<fptr>(u64_store_aligned),
           reinterpret_cast<fptr>(v64_load_aligned), simd, d,
-          reinterpret_cast<fptr>(c_v64_store_aligned),
+          reinterpret_cast<fptr>(c_u64_store_aligned),
           reinterpret_cast<fptr>(c_v64_load_aligned), ref_simd, ref_d, s);
-    } else if (typeid(CRet) == typeid(int64_t) &&
+    } else if (typeid(CRet) == typeid(uint32_t) &&
                typeid(CArg) == typeid(c_v64)) {
-      // S64_V64
-      error = CompareSimd1Arg<int64_t, v64, CRet, CArg>(
-          reinterpret_cast<fptr>(u64_store_aligned),
+      // U32_V64
+      error = CompareSimd1Arg<uint32_t, v64, CRet, CArg>(
+          reinterpret_cast<fptr>(u32_store_aligned),
           reinterpret_cast<fptr>(v64_load_aligned), simd, d,
-          reinterpret_cast<fptr>(c_v64_store_aligned),
+          reinterpret_cast<fptr>(c_u32_store_aligned),
           reinterpret_cast<fptr>(c_v64_load_aligned), ref_simd, ref_d, s);
     } else {
       FAIL() << "Internal error: Unknown intrinsic function "
@@ -543,6 +567,18 @@ void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
           reinterpret_cast<fptr>(c_v64_load_aligned),
           reinterpret_cast<fptr>(c_v64_load_aligned),
           reinterpret_cast<fptr>(ref_simd), ref_d, s1, s2);
+    } else if (typeid(CRet) == typeid(c_v64) &&
+               typeid(CArg1) == typeid(uint32_t) &&
+               typeid(CArg2) == typeid(uint32_t)) {
+      // V64_U32U32
+      error = CompareSimd2Args<v64, uint32_t, uint32_t, CRet, CArg1, CArg2>(
+          reinterpret_cast<fptr>(v64_store_aligned),
+          reinterpret_cast<fptr>(u32_load_aligned),
+          reinterpret_cast<fptr>(u32_load_aligned), simd, d,
+          reinterpret_cast<fptr>(c_v64_store_aligned),
+          reinterpret_cast<fptr>(c_u32_load_aligned),
+          reinterpret_cast<fptr>(c_u32_load_aligned),
+          reinterpret_cast<fptr>(ref_simd), ref_d, s1, s2);
     } else if (typeid(CRet) == typeid(uint32_t) &&
                typeid(CArg1) == typeid(c_v64) &&
                typeid(CArg2) == typeid(c_v64)) {
@@ -595,12 +631,16 @@ void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
 }
 
 // Instantiations to make the functions callable from another files
+template void TestSimd1Arg<c_v64, uint32_t>(uint32_t, uint32_t, uint32_t,
+                                            const char *);
 template void TestSimd1Arg<c_v64, c_v64>(uint32_t, uint32_t, uint32_t,
                                          const char *);
-template void TestSimd1Arg<int64_t, c_v64>(uint32_t, uint32_t, uint32_t,
-                                           const char *);
+template void TestSimd1Arg<uint32_t, c_v64>(uint32_t, uint32_t, uint32_t,
+                                            const char *);
 template void TestSimd1Arg<uint64_t, c_v64>(uint32_t, uint32_t, uint32_t,
                                             const char *);
+template void TestSimd2Args<c_v64, uint32_t, uint32_t>(uint32_t, uint32_t,
+                                                       uint32_t, const char *);
 template void TestSimd2Args<c_v64, c_v64, c_v64>(uint32_t, uint32_t, uint32_t,
                                                  const char *);
 template void TestSimd2Args<c_v64, c_v64, uint32_t>(uint32_t, uint32_t,
@@ -610,5 +650,4 @@ template void TestSimd2Args<int64_t, c_v64, c_v64>(uint32_t, uint32_t, uint32_t,
 template void TestSimd2Args<uint32_t, c_v64, c_v64>(uint32_t, uint32_t,
                                                     uint32_t, const char *);
 
-}  // namespace
 }  // namespace SIMD_NAMESPACE
