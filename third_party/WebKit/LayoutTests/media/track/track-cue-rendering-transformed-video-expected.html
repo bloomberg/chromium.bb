@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<script src="../media-file.js"></script>
+<style>
+.container {
+  transform: translate(1px, 0px);
+  position: relative;
+  display: inline-block;
+  width: 320px;
+  height: 240px;
+}
+.cue {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  text-align: start;
+}
+.cue > span {
+  font-family: sans-serif;
+  background: green;
+  color: green;
+  font-size: 50px;
+  padding: 2px;
+}
+</style>
+<div class="container">
+  <video>
+    <script>
+      document.currentScript.parentNode.src = findMediaFile('video', '../content/test');
+    </script>
+  </video>
+  <div class=video><div class="cue"><span>XXX</span></div></div>
+</div>

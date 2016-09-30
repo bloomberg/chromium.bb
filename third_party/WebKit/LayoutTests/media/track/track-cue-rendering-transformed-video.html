@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="../media-file.js"></script>
+<style>
+video {
+  transform: translate(1px, 0px);
+}
+video::cue {
+  font-size: 50px;
+  color: green;
+  background-color: green;
+}
+</style>
+<video></video>
+<script>
+var video = document.querySelector('video');
+var track = video.addTextTrack('subtitles');
+var cue = new VTTCue(0, 10, 'XXX');
+cue.align = 'start';
+cue.line = 0;
+track.addCue(cue);
+track.mode = 'showing';
+video.src = findMediaFile('video', '../content/test');
+</script>

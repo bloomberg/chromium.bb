@@ -33,11 +33,7 @@
 
 namespace blink {
 
-LayoutVTTCue::LayoutVTTCue(ContainerNode* node, float snapToLinesPosition)
-    : LayoutBlockFlow(node)
-    , m_snapToLinesPosition(snapToLinesPosition)
-{
-}
+namespace {
 
 class SnapToLinesLayouter {
     STACK_ALLOCATED();
@@ -82,7 +78,7 @@ InlineFlowBox* SnapToLinesLayouter::findFirstLineBox() const
 LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& step, LayoutUnit maxDimension,
     LayoutUnit margin) const
 {
-    ASSERT(std::isfinite(m_cueBox.snapToLinesPosition()));
+    DCHECK(std::isfinite(m_cueBox.snapToLinesPosition()));
 
     // 6. Let line be cue's computed line.
     // 7. Round line to an integer by adding 0.5 and then flooring it.
@@ -117,25 +113,38 @@ LayoutUnit SnapToLinesLayouter::computeInitialPositionAdjustment(LayoutUnit& ste
     return position;
 }
 
+// We use this helper to make sure all (bounding) boxes used for comparisons
+// are relative to the same coordinate space. If we didn't the (bounding) boxes
+// could be affect by transforms on an ancestor et.c, which could yield
+// incorrect results.
+IntRect contentBoxRelativeToAncestor(
+    const LayoutBox& box, const LayoutBoxModelObject& ancestor)
+{
+    FloatRect cueContentBox(box.contentBoxRect());
+    // We pass UseTransforms here primarily because we use a transform for
+    // non-snap-to-lines positioning (see VTTCue.cpp.)
+    FloatQuad mappedContentQuad = box.localToAncestorQuad(cueContentBox, &ancestor, UseTransforms);
+    return mappedContentQuad.enclosingBoundingBox();
+}
+
+IntRect cueBoundingBox(const LayoutBox& cueBox)
+{
+    return contentBoxRelativeToAncestor(cueBox, *cueBox.containingBlock());
+}
+
 bool SnapToLinesLayouter::isOutside(const IntRect& titleArea) const
 {
-    return !titleArea.contains(m_cueBox.absoluteContentBox());
+    return !titleArea.contains(cueBoundingBox(m_cueBox));
 }
 
 bool SnapToLinesLayouter::isOverlapping() const
 {
-    IntRect cueBoxRect = m_cueBox.absoluteBoundingBoxRect();
-    for (LayoutObject* box = m_cueBox.previousSibling(); box; box = box->previousSibling()) {
-        IntRect boxRect = box->absoluteBoundingBoxRect();
-
-        if (cueBoxRect.intersects(boxRect))
+    IntRect cueBoxRect = cueBoundingBox(m_cueBox);
+    for (LayoutBox* box = m_cueBox.previousSiblingBox(); box; box = box->previousSiblingBox()) {
+        if (cueBoxRect.intersects(cueBoundingBox(*box)))
             return true;
     }
-
-    if (cueBoxRect.intersects(m_controlsRect))
-        return true;
-
-    return false;
+    return cueBoxRect.intersects(m_controlsRect);
 }
 
 bool SnapToLinesLayouter::shouldSwitchDirection(InlineFlowBox* firstLineBox, LayoutUnit step, LayoutUnit margin) const
@@ -211,7 +220,7 @@ void SnapToLinesLayouter::layout()
     // Vertical: Let title area be a box that covers all of the video’s
     // rendering area except for a width of margin at the left of the rendering
     // area and a width of margin at the right of the rendering area.
-    IntRect titleArea = m_cueBox.containingBlock()->absoluteBoundingBoxRect();
+    IntRect titleArea = enclosingIntRect(m_cueBox.containingBlock()->contentBoxRect());
     if (blink::isHorizontalWritingMode(writingMode)) {
         titleArea.move(0, margin.toInt());
         titleArea.contract(0, (2 * margin).toInt());
@@ -264,6 +273,14 @@ void SnapToLinesLayouter::layout()
     }
 }
 
+} // unnamed namespace
+
+LayoutVTTCue::LayoutVTTCue(ContainerNode* node, float snapToLinesPosition)
+    : LayoutBlockFlow(node)
+    , m_snapToLinesPosition(snapToLinesPosition)
+{
+}
+
 void LayoutVTTCue::repositionCueSnapToLinesNotSet()
 {
     // FIXME: Implement overlapping detection when snap-to-lines is not set. http://wkb.ug/84296
@@ -308,30 +325,43 @@ void LayoutVTTCue::repositionCueSnapToLinesNotSet()
     // boxes will unfortunately overlap.)
 }
 
-void LayoutVTTCue::layout()
+IntRect LayoutVTTCue::computeControlsRect() const
 {
-    LayoutBlockFlow::layout();
-
-    ASSERT(firstChild());
-
-    LayoutState state(*this, locationOffset());
-
     // Determine the area covered by the media controls, if any. If the controls
     // are present, they are the next sibling of the text track container, which
     // is our parent. (LayoutMedia ensures that the media controls are laid out
     // before text tracks, so that the layout is up to date here.)
-    ASSERT(parent()->node()->isTextTrackContainer());
-    IntRect controlsRect;
-    if (LayoutObject* parentSibling = parent()->nextSibling()) {
-        // Only a part of the media controls is used for overlap avoidance.
-        MediaControls* controls = toMediaControls(parentSibling->node());
-        if (LayoutObject* controlsLayout = controls->layoutObjectForTextTrackLayout())
-            controlsRect = controlsLayout->absoluteBoundingBoxRect();
-    }
+    DCHECK(parent()->node()->isTextTrackContainer());
+    LayoutObject* controlsContainer = parent()->nextSibling();
+    if (!controlsContainer)
+        return IntRect();
+    // Only a part of the media controls is used for overlap avoidance.
+    MediaControls* controls = toMediaControls(controlsContainer->node());
+    LayoutObject* controlsLayout = controls->layoutObjectForTextTrackLayout();
+    // The (second part of the) following is mostly defensive - in general
+    // there should be a LayoutBox representing the part of the controls that
+    // are relevant for overlap avoidance. (The controls pseudo elements are
+    // generally reachable from outside the shadow tree though, hence the
+    // "mostly".)
+    if (!controlsLayout || !controlsLayout->isBox())
+        return IntRect();
+    // Assume that the controls container are positioned in the same relative
+    // position as the text track container. (LayoutMedia::layout ensures this.)
+    return contentBoxRelativeToAncestor(
+        toLayoutBox(*controlsLayout), toLayoutBox(*controlsContainer));
+}
+
+void LayoutVTTCue::layout()
+{
+    LayoutBlockFlow::layout();
+
+    DCHECK(firstChild());
+
+    LayoutState state(*this, locationOffset());
 
     // http://dev.w3.org/html5/webvtt/#dfn-apply-webvtt-cue-settings - step 13.
     if (!std::isnan(m_snapToLinesPosition))
-        SnapToLinesLayouter(*this, controlsRect).layout();
+        SnapToLinesLayouter(*this, computeControlsRect()).layout();
     else
         repositionCueSnapToLinesNotSet();
 }
