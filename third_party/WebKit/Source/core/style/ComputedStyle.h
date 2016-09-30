@@ -359,7 +359,7 @@ protected:
         m_inheritedData.m_insideLink = NotInsideLink;
         m_inheritedData.m_writingMode = initialWritingMode();
 
-        m_nonInheritedData.m_effectiveDisplay = m_nonInheritedData.m_originalDisplay = initialDisplay();
+        m_nonInheritedData.m_effectiveDisplay = m_nonInheritedData.m_originalDisplay = static_cast<unsigned>(initialDisplay());
         m_nonInheritedData.m_overflowAnchor = initialOverflowAnchor();
         m_nonInheritedData.m_overflowX = initialOverflowX();
         m_nonInheritedData.m_overflowY = initialOverflowY();
@@ -744,11 +744,11 @@ public:
     void setContent(ContentData*);
 
     // display
-    static EDisplay initialDisplay() { return INLINE; }
+    static EDisplay initialDisplay() { return EDisplay::Inline; }
     EDisplay display() const { return static_cast<EDisplay>(m_nonInheritedData.m_effectiveDisplay); }
     EDisplay originalDisplay() const { return static_cast<EDisplay>(m_nonInheritedData.m_originalDisplay); }
-    void setDisplay(EDisplay v) { m_nonInheritedData.m_effectiveDisplay = v; }
-    void setOriginalDisplay(EDisplay v) { m_nonInheritedData.m_originalDisplay = v; }
+    void setDisplay(EDisplay v) { m_nonInheritedData.m_effectiveDisplay = static_cast<unsigned>(v); }
+    void setOriginalDisplay(EDisplay v) { m_nonInheritedData.m_originalDisplay = static_cast<unsigned>(v); }
 
     // Flex properties.
     // flex-basis (aka -webkit-flex-basis)
@@ -2470,31 +2470,31 @@ private:
 
     static bool isDisplayFlexibleBox(EDisplay display)
     {
-        return display == FLEX || display == INLINE_FLEX;
+        return display == EDisplay::Flex || display == EDisplay::InlineFlex;
     }
 
     static bool isDisplayGridBox(EDisplay display)
     {
-        return display == GRID || display == INLINE_GRID;
+        return display == EDisplay::Grid || display == EDisplay::InlineGrid;
     }
 
     static bool isDisplayReplacedType(EDisplay display)
     {
-        return display == INLINE_BLOCK || display == INLINE_BOX || display == INLINE_FLEX
-            || display == INLINE_TABLE || display == INLINE_GRID;
+        return display == EDisplay::InlineBlock || display == EDisplay::InlineBox || display == EDisplay::InlineFlex
+            || display == EDisplay::InlineTable || display == EDisplay::InlineGrid;
     }
 
     static bool isDisplayInlineType(EDisplay display)
     {
-        return display == INLINE || isDisplayReplacedType(display);
+        return display == EDisplay::Inline || isDisplayReplacedType(display);
     }
 
     static bool isDisplayTableType(EDisplay display)
     {
-        return display == TABLE || display == INLINE_TABLE || display == TABLE_ROW_GROUP
-            || display == TABLE_HEADER_GROUP || display == TABLE_FOOTER_GROUP || display == TABLE_ROW
-            || display == TABLE_COLUMN_GROUP || display == TABLE_COLUMN || display == TABLE_CELL
-            || display == TABLE_CAPTION;
+        return display == EDisplay::Table || display == EDisplay::InlineTable || display == EDisplay::TableRowGroup
+            || display == EDisplay::TableHeaderGroup || display == EDisplay::TableFooterGroup || display == EDisplay::TableRow
+            || display == EDisplay::TableColumnGroup || display == EDisplay::TableColumn || display == EDisplay::TableCell
+            || display == EDisplay::TableCaption;
     }
 
     // Color accessors are all private to make sure callers use visitedDependentColor instead to access them.

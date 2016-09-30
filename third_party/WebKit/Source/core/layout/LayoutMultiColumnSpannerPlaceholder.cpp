@@ -23,7 +23,7 @@ LayoutMultiColumnSpannerPlaceholder* LayoutMultiColumnSpannerPlaceholder::create
     LayoutMultiColumnSpannerPlaceholder* newSpanner = new LayoutMultiColumnSpannerPlaceholder(&layoutObjectInFlowThread);
     Document& document = layoutObjectInFlowThread.document();
     newSpanner->setDocumentForAnonymous(&document);
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, EDisplay::Block);
     copyMarginProperties(*newStyle, layoutObjectInFlowThread.styleRef());
     newSpanner->setStyle(newStyle);
     return newSpanner;

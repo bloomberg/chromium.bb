@@ -119,7 +119,7 @@ LayoutTableSection::~LayoutTableSection()
 
 void LayoutTableSection::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
-    DCHECK(style()->display() == TABLE_FOOTER_GROUP || style()->display() == TABLE_ROW_GROUP || style()->display() == TABLE_HEADER_GROUP);
+    DCHECK(style()->display() == EDisplay::TableFooterGroup || style()->display() == EDisplay::TableRowGroup || style()->display() == EDisplay::TableHeaderGroup);
 
     LayoutTableBoxComponent::styleDidChange(diff, oldStyle);
     propagateStyleToAnonymousChildren();
@@ -1696,7 +1696,7 @@ bool LayoutTableSection::nodeAtPoint(HitTestResult& result, const HitTestLocatio
 
 LayoutTableSection* LayoutTableSection::createAnonymousWithParent(const LayoutObject* parent)
 {
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_ROW_GROUP);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), EDisplay::TableRowGroup);
     LayoutTableSection* newSection = new LayoutTableSection(nullptr);
     newSection->setDocumentForAnonymous(&parent->document());
     newSection->setStyle(newStyle.release());

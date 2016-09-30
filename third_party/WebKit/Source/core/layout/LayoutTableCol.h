@@ -68,8 +68,8 @@ public:
     unsigned span() const { return m_span; }
 
     bool isTableColumnGroupWithColumnChildren() { return firstChild(); }
-    bool isTableColumn() const { return style()->display() == TABLE_COLUMN; }
-    bool isTableColumnGroup() const { return style()->display() == TABLE_COLUMN_GROUP; }
+    bool isTableColumn() const { return style()->display() == EDisplay::TableColumn; }
+    bool isTableColumnGroup() const { return style()->display() == EDisplay::TableColumnGroup; }
 
     LayoutTableCol* enclosingColumnGroup() const;
 

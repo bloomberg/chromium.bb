@@ -84,13 +84,13 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e)
 
     // Force inline and table display styles to be inline-block (except for table- which is block)
     ControlPart part = style.appearance();
-    if (style.display() == INLINE || style.display() == INLINE_TABLE || style.display() == TABLE_ROW_GROUP
-        || style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_FOOTER_GROUP
-        || style.display() == TABLE_ROW || style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_COLUMN
-        || style.display() == TABLE_CELL || style.display() == TABLE_CAPTION)
-        style.setDisplay(INLINE_BLOCK);
-    else if (style.display() == LIST_ITEM || style.display() == TABLE)
-        style.setDisplay(BLOCK);
+    if (style.display() == EDisplay::Inline || style.display() == EDisplay::InlineTable || style.display() == EDisplay::TableRowGroup
+        || style.display() == EDisplay::TableHeaderGroup || style.display() == EDisplay::TableFooterGroup
+        || style.display() == EDisplay::TableRow || style.display() == EDisplay::TableColumnGroup || style.display() == EDisplay::TableColumn
+        || style.display() == EDisplay::TableCell || style.display() == EDisplay::TableCaption)
+        style.setDisplay(EDisplay::InlineBlock);
+    else if (style.display() == EDisplay::ListItem || style.display() == EDisplay::Table)
+        style.setDisplay(EDisplay::Block);
 
     if (isControlStyled(style)) {
         if (part == MenulistPart) {

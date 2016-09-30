@@ -20,7 +20,7 @@ DEFINE_NODE_FACTORY(HTMLRTElement)
 
 LayoutObject* HTMLRTElement::createLayoutObject(const ComputedStyle& style)
 {
-    if (style.display() == BLOCK)
+    if (style.display() == EDisplay::Block)
         return new LayoutRubyText(this);
     return LayoutObject::createObject(this, style);
 }

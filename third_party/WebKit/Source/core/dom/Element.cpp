@@ -1434,7 +1434,7 @@ const AtomicString Element::imageSourceURL() const
 
 bool Element::layoutObjectIsNeeded(const ComputedStyle& style)
 {
-    return style.display() != NONE;
+    return style.display() != EDisplay::None;
 }
 
 LayoutObject* Element::createLayoutObject(const ComputedStyle& style)

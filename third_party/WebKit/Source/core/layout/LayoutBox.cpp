@@ -2809,7 +2809,7 @@ bool LayoutBox::skipContainingBlockForPercentHeightCalculation(const LayoutBox* 
     // objects, such as table-cells, will be treated just as if they were non-anonymous.
     if (containingBlock->isAnonymous()) {
         EDisplay display = containingBlock->styleRef().display();
-        return display == BLOCK || display == INLINE_BLOCK;
+        return display == EDisplay::Block || display == EDisplay::InlineBlock;
     }
 
     // For quirks mode, we skip most auto-height containing blocks when computing percentages.

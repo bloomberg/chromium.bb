@@ -392,7 +392,7 @@ int LayoutTableCell::cellBaselinePosition() const
 
 void LayoutTableCell::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
-    ASSERT(style()->display() == TABLE_CELL);
+    DCHECK_EQ(style()->display(), EDisplay::TableCell);
 
     LayoutBlockFlow::styleDidChange(diff, oldStyle);
     setHasBoxDecorationBackground(true);
@@ -1027,7 +1027,7 @@ LayoutTableCell* LayoutTableCell::createAnonymous(Document* document)
 LayoutTableCell* LayoutTableCell::createAnonymousWithParent(const LayoutObject* parent)
 {
     LayoutTableCell* newCell = LayoutTableCell::createAnonymous(&parent->document());
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), TABLE_CELL);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), EDisplay::TableCell);
     newCell->setStyle(newStyle.release());
     return newCell;
 }

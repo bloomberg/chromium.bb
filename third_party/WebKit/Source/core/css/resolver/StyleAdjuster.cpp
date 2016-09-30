@@ -56,39 +56,39 @@ using namespace HTMLNames;
 static EDisplay equivalentBlockDisplay(EDisplay display)
 {
     switch (display) {
-    case BLOCK:
-    case TABLE:
-    case BOX:
-    case FLEX:
-    case GRID:
-    case LIST_ITEM:
+    case EDisplay::Block:
+    case EDisplay::Table:
+    case EDisplay::Box:
+    case EDisplay::Flex:
+    case EDisplay::Grid:
+    case EDisplay::ListItem:
         return display;
-    case INLINE_TABLE:
-        return TABLE;
-    case INLINE_BOX:
-        return BOX;
-    case INLINE_FLEX:
-        return FLEX;
-    case INLINE_GRID:
-        return GRID;
+    case EDisplay::InlineTable:
+        return EDisplay::Table;
+    case EDisplay::InlineBox:
+        return EDisplay::Box;
+    case EDisplay::InlineFlex:
+        return EDisplay::Flex;
+    case EDisplay::InlineGrid:
+        return EDisplay::Grid;
 
-    case INLINE:
-    case INLINE_BLOCK:
-    case TABLE_ROW_GROUP:
-    case TABLE_HEADER_GROUP:
-    case TABLE_FOOTER_GROUP:
-    case TABLE_ROW:
-    case TABLE_COLUMN_GROUP:
-    case TABLE_COLUMN:
-    case TABLE_CELL:
-    case TABLE_CAPTION:
-        return BLOCK;
-    case NONE:
+    case EDisplay::Inline:
+    case EDisplay::InlineBlock:
+    case EDisplay::TableRowGroup:
+    case EDisplay::TableHeaderGroup:
+    case EDisplay::TableFooterGroup:
+    case EDisplay::TableRow:
+    case EDisplay::TableColumnGroup:
+    case EDisplay::TableColumn:
+    case EDisplay::TableCell:
+    case EDisplay::TableCaption:
+        return EDisplay::Block;
+    case EDisplay::None:
         ASSERT_NOT_REACHED();
-        return NONE;
+        return EDisplay::None;
     }
     ASSERT_NOT_REACHED();
-    return BLOCK;
+    return EDisplay::Block;
 }
 
 static bool isOutermostSVGElement(const Element* element)
@@ -102,8 +102,8 @@ static bool isOutermostSVGElement(const Element* element)
 // considered to be atomic inline-level.
 static bool doesNotInheritTextDecoration(const ComputedStyle& style, const Element* element)
 {
-    return style.display() == INLINE_TABLE
-        || style.display() == INLINE_BLOCK || style.display() == INLINE_BOX || isAtShadowBoundary(element)
+    return style.display() == EDisplay::InlineTable
+        || style.display() == EDisplay::InlineBlock || style.display() == EDisplay::InlineBox || isAtShadowBoundary(element)
         || style.isFloating() || style.hasOutOfFlowPosition() || isOutermostSVGElement(element);
 }
 
@@ -138,7 +138,7 @@ static void adjustStyleForFirstLetter(ComputedStyle& style)
         return;
 
     // Force inline display (except for floating first-letters).
-    style.setDisplay(style.isFloating() ? BLOCK : INLINE);
+    style.setDisplay(style.isFloating() ? EDisplay::Block : EDisplay::Inline);
 
     // CSS2 says first-letter can't be positioned.
     style.setPosition(StaticPosition);
@@ -203,7 +203,7 @@ static void adjustStyleForHTMLElement(ComputedStyle& style, HTMLElement& element
         // Frames and framesets never honor position:relative or position:absolute. This is necessary to
         // fix a crash where a site tries to position these objects. They also never honor display.
         style.setPosition(StaticPosition);
-        style.setDisplay(BLOCK);
+        style.setDisplay(EDisplay::Block);
         return;
     }
 
@@ -246,7 +246,7 @@ static void adjustOverflow(ComputedStyle& style)
 {
     ASSERT(style.overflowX() != OverflowVisible || style.overflowY() != OverflowVisible);
 
-    if (style.display() == TABLE || style.display() == INLINE_TABLE) {
+    if (style.display() == EDisplay::Table || style.display() == EDisplay::InlineTable) {
         // Tables only support overflow:hidden and overflow:visible and ignore anything else,
         // see http://dev.w3.org/csswg/css2/visufx.html#overflow. As a table is not a block
         // container box the rules for resolving conflicting x and y values in CSS Overflow Module
@@ -281,39 +281,39 @@ static void adjustOverflow(ComputedStyle& style)
 
 static void adjustStyleForDisplay(ComputedStyle& style, const ComputedStyle& parentStyle, Document* document)
 {
-    if (style.display() == BLOCK && !style.isFloating())
+    if (style.display() == EDisplay::Block && !style.isFloating())
         return;
 
     // FIXME: Don't support this mutation for pseudo styles like first-letter or first-line, since it's not completely
     // clear how that should work.
-    if (style.display() == INLINE && style.styleType() == PseudoIdNone && style.getWritingMode() != parentStyle.getWritingMode())
-        style.setDisplay(INLINE_BLOCK);
+    if (style.display() == EDisplay::Inline && style.styleType() == PseudoIdNone && style.getWritingMode() != parentStyle.getWritingMode())
+        style.setDisplay(EDisplay::InlineBlock);
 
     // After performing the display mutation, check table rows. We do not honor position: relative table rows or cells.
     // This has been established for position: relative in CSS2.1 (and caused a crash in containingBlock()
     // on some sites).
-    if ((style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_ROW_GROUP
-        || style.display() == TABLE_FOOTER_GROUP || style.display() == TABLE_ROW)
+    if ((style.display() == EDisplay::TableHeaderGroup || style.display() == EDisplay::TableRowGroup
+        || style.display() == EDisplay::TableFooterGroup || style.display() == EDisplay::TableRow)
         && style.position() == RelativePosition)
         style.setPosition(StaticPosition);
 
     // Cannot support position: sticky for table columns and column groups because current code is only doing
     // background painting through columns / column groups
-    if ((style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_COLUMN)
+    if ((style.display() == EDisplay::TableColumnGroup || style.display() == EDisplay::TableColumn)
         && style.position() == StickyPosition)
         style.setPosition(StaticPosition);
 
     // writing-mode does not apply to table row groups, table column groups, table rows, and table columns.
     // FIXME: Table cells should be allowed to be perpendicular or flipped with respect to the table, though.
-    if (style.display() == TABLE_COLUMN || style.display() == TABLE_COLUMN_GROUP || style.display() == TABLE_FOOTER_GROUP
-        || style.display() == TABLE_HEADER_GROUP || style.display() == TABLE_ROW || style.display() == TABLE_ROW_GROUP
-        || style.display() == TABLE_CELL)
+    if (style.display() == EDisplay::TableColumn || style.display() == EDisplay::TableColumnGroup || style.display() == EDisplay::TableFooterGroup
+        || style.display() == EDisplay::TableHeaderGroup || style.display() == EDisplay::TableRow || style.display() == EDisplay::TableRowGroup
+        || style.display() == EDisplay::TableCell)
         style.setWritingMode(parentStyle.getWritingMode());
 
     // FIXME: Since we don't support block-flow on flexible boxes yet, disallow setting
     // of block-flow to anything other than TopToBottomWritingMode.
     // https://bugs.webkit.org/show_bug.cgi?id=46418 - Flexible box support.
-    if (style.getWritingMode() != TopToBottomWritingMode && (style.display() == BOX || style.display() == INLINE_BOX))
+    if (style.getWritingMode() != TopToBottomWritingMode && (style.display() == EDisplay::Box || style.display() == EDisplay::InlineBox))
         style.setWritingMode(TopToBottomWritingMode);
 
     if (parentStyle.isDisplayFlexibleOrGridBox()) {
@@ -331,7 +331,7 @@ static void adjustStyleForDisplay(ComputedStyle& style, const ComputedStyle& par
 
 void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyle& parentStyle, Element* element)
 {
-    if (style.display() != NONE) {
+    if (style.display() != EDisplay::None) {
         if (element && element->isHTMLElement())
             adjustStyleForHTMLElement(style, toHTMLElement(*element));
 
@@ -351,8 +351,8 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 
         // Paint containment forces a block formatting context, so we must coerce from inline.
         // https://drafts.csswg.org/css-containment/#containment-paint
-        if (style.containsPaint() && style.display() == INLINE)
-            style.setDisplay(BLOCK);
+        if (style.containsPaint() && style.display() == EDisplay::Inline)
+            style.setDisplay(EDisplay::Block);
     } else {
         adjustStyleForFirstLetter(style);
     }
@@ -401,7 +401,7 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style, const ComputedStyl
 
         // SVG text layout code expects us to be a block-level style element.
         if ((isSVGForeignObjectElement(*element) || isSVGTextElement(*element)) && style.isDisplayInlineType())
-            style.setDisplay(BLOCK);
+            style.setDisplay(EDisplay::Block);
 
         // Columns don't apply to svg text elements.
         if (isSVGTextElement(*element))

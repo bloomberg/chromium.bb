@@ -266,8 +266,8 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
     if (oldStyle && isOutOfFlowPositioned() && parent() && (parent() != containingBlock())
         && (styleRef().position() == oldStyle->position())
         && (styleRef().originalDisplay() != oldStyle->originalDisplay())
-        && ((styleRef().originalDisplay() == BLOCK) || (styleRef().originalDisplay() == INLINE_BLOCK))
-        && ((oldStyle->originalDisplay() == BLOCK) || (oldStyle->originalDisplay() == INLINE_BLOCK)))
+        && ((styleRef().originalDisplay() == EDisplay::Block) || (styleRef().originalDisplay() == EDisplay::InlineBlock))
+        && ((oldStyle->originalDisplay() == EDisplay::Block) || (oldStyle->originalDisplay() == EDisplay::InlineBlock)))
         parent()->setNeedsLayout(LayoutInvalidationReason::ChildChanged, MarkContainerChain);
 
     PaintLayerType type = layerTypeRequired();

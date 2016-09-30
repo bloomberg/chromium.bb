@@ -829,7 +829,7 @@ bool isInline(const Node* node)
         return false;
 
     const ComputedStyle* style = node->computedStyle();
-    return style && style->display() == INLINE;
+    return style && style->display() == EDisplay::Inline;
 }
 
 // TODO(yosin) Deploy this in all of the places where |enclosingBlockFlow()| and
@@ -980,7 +980,7 @@ static bool isSpecialHTMLElement(const Node& n)
     if (!layoutObject)
         return false;
 
-    if (layoutObject->style()->display() == TABLE || layoutObject->style()->display() == INLINE_TABLE)
+    if (layoutObject->style()->display() == EDisplay::Table || layoutObject->style()->display() == EDisplay::InlineTable)
         return true;
 
     if (layoutObject->style()->isFloating())

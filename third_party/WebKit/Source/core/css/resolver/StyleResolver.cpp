@@ -690,7 +690,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document)
     // These are designed to match the user-agent stylesheet values for the document element
     // so that the common case doesn't need to create a new ComputedStyle in
     // Document::inheritHtmlAndBodyElementStyles.
-    documentStyle->setDisplay(BLOCK);
+    documentStyle->setDisplay(EDisplay::Block);
     documentStyle->setPosition(AbsolutePosition);
 
     document.setupFontBuilder(*documentStyle);
@@ -722,7 +722,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(Element* element, const
     if (sharingBehavior == AllowStyleSharing && !document().isRenderingReady() && !element->layoutObject()) {
         if (!s_styleNotYetAvailable) {
             s_styleNotYetAvailable = ComputedStyle::create().leakRef();
-            s_styleNotYetAvailable->setDisplay(NONE);
+            s_styleNotYetAvailable->setDisplay(EDisplay::None);
             s_styleNotYetAvailable->font().update(document().styleEngine().fontSelector());
         }
 

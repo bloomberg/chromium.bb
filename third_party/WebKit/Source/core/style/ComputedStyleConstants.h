@@ -443,15 +443,15 @@ enum ECursor {
 };
 
 // The order of this enum must match the order of the display values in CSSValueKeywords.in.
-enum EDisplay {
-    INLINE, BLOCK, LIST_ITEM, INLINE_BLOCK,
-    TABLE, INLINE_TABLE, TABLE_ROW_GROUP,
-    TABLE_HEADER_GROUP, TABLE_FOOTER_GROUP, TABLE_ROW,
-    TABLE_COLUMN_GROUP, TABLE_COLUMN, TABLE_CELL,
-    TABLE_CAPTION, BOX, INLINE_BOX,
-    FLEX, INLINE_FLEX,
-    GRID, INLINE_GRID,
-    NONE
+enum class EDisplay : unsigned {
+    Inline, Block, ListItem, InlineBlock,
+    Table, InlineTable, TableRowGroup,
+    TableHeaderGroup, TableFooterGroup, TableRow,
+    TableColumnGroup, TableColumn, TableCell,
+    TableCaption, Box, InlineBox,
+    Flex, InlineFlex,
+    Grid, InlineGrid,
+    None
 };
 
 enum EInsideLink {

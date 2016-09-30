@@ -1177,67 +1177,67 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(EDisplay e)
 {
     init(UnitType::ValueID);
     switch (e) {
-    case INLINE:
+    case EDisplay::Inline:
         m_value.valueID = CSSValueInline;
         break;
-    case BLOCK:
+    case EDisplay::Block:
         m_value.valueID = CSSValueBlock;
         break;
-    case LIST_ITEM:
+    case EDisplay::ListItem:
         m_value.valueID = CSSValueListItem;
         break;
-    case INLINE_BLOCK:
+    case EDisplay::InlineBlock:
         m_value.valueID = CSSValueInlineBlock;
         break;
-    case TABLE:
+    case EDisplay::Table:
         m_value.valueID = CSSValueTable;
         break;
-    case INLINE_TABLE:
+    case EDisplay::InlineTable:
         m_value.valueID = CSSValueInlineTable;
         break;
-    case TABLE_ROW_GROUP:
+    case EDisplay::TableRowGroup:
         m_value.valueID = CSSValueTableRowGroup;
         break;
-    case TABLE_HEADER_GROUP:
+    case EDisplay::TableHeaderGroup:
         m_value.valueID = CSSValueTableHeaderGroup;
         break;
-    case TABLE_FOOTER_GROUP:
+    case EDisplay::TableFooterGroup:
         m_value.valueID = CSSValueTableFooterGroup;
         break;
-    case TABLE_ROW:
+    case EDisplay::TableRow:
         m_value.valueID = CSSValueTableRow;
         break;
-    case TABLE_COLUMN_GROUP:
+    case EDisplay::TableColumnGroup:
         m_value.valueID = CSSValueTableColumnGroup;
         break;
-    case TABLE_COLUMN:
+    case EDisplay::TableColumn:
         m_value.valueID = CSSValueTableColumn;
         break;
-    case TABLE_CELL:
+    case EDisplay::TableCell:
         m_value.valueID = CSSValueTableCell;
         break;
-    case TABLE_CAPTION:
+    case EDisplay::TableCaption:
         m_value.valueID = CSSValueTableCaption;
         break;
-    case BOX:
+    case EDisplay::Box:
         m_value.valueID = CSSValueWebkitBox;
         break;
-    case INLINE_BOX:
+    case EDisplay::InlineBox:
         m_value.valueID = CSSValueWebkitInlineBox;
         break;
-    case FLEX:
+    case EDisplay::Flex:
         m_value.valueID = CSSValueFlex;
         break;
-    case INLINE_FLEX:
+    case EDisplay::InlineFlex:
         m_value.valueID = CSSValueInlineFlex;
         break;
-    case GRID:
+    case EDisplay::Grid:
         m_value.valueID = CSSValueGrid;
         break;
-    case INLINE_GRID:
+    case EDisplay::InlineGrid:
         m_value.valueID = CSSValueInlineGrid;
         break;
-    case NONE:
+    case EDisplay::None:
         m_value.valueID = CSSValueNone;
         break;
     }
@@ -1247,15 +1247,15 @@ template<> inline EDisplay CSSPrimitiveValue::convertTo() const
 {
     ASSERT(isValueID());
     if (m_value.valueID == CSSValueNone)
-        return NONE;
+        return EDisplay::None;
 
     if (m_value.valueID == CSSValueWebkitFlex)
-        return FLEX;
+        return EDisplay::Flex;
     if (m_value.valueID == CSSValueWebkitInlineFlex)
-        return INLINE_FLEX;
+        return EDisplay::InlineFlex;
 
     EDisplay display = static_cast<EDisplay>(m_value.valueID - CSSValueInline);
-    ASSERT(display >= INLINE && display <= NONE);
+    // TODO(sashab): Check display is a valid EDisplay here.
     return display;
 }
 

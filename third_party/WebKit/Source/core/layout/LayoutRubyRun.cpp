@@ -188,7 +188,7 @@ void LayoutRubyRun::removeChild(LayoutObject* child)
 LayoutRubyBase* LayoutRubyRun::createRubyBase() const
 {
     LayoutRubyBase* layoutObject = LayoutRubyBase::createAnonymous(&document());
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), BLOCK);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(styleRef(), EDisplay::Block);
     newStyle->setTextAlign(CENTER); // FIXME: use WEBKIT_CENTER?
     layoutObject->setStyle(newStyle.release());
     return layoutObject;
@@ -199,7 +199,7 @@ LayoutRubyRun* LayoutRubyRun::staticCreateRubyRun(const LayoutObject* parentRuby
     ASSERT(parentRuby && parentRuby->isRuby());
     LayoutRubyRun* rr = new LayoutRubyRun();
     rr->setDocumentForAnonymous(&parentRuby->document());
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parentRuby->styleRef(), INLINE_BLOCK);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parentRuby->styleRef(), EDisplay::InlineBlock);
     rr->setStyle(newStyle.release());
     return rr;
 }

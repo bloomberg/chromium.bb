@@ -39,7 +39,7 @@ LayoutObject* SVGGElement::createLayoutObject(const ComputedStyle& style)
     // We still have to create layoutObjects for the <g> & <linearGradient> element, though the
     // subtree may be hidden - we only want the resource layoutObjects to exist so they can be
     // referenced from somewhere else.
-    if (style.display() == NONE)
+    if (style.display() == EDisplay::None)
         return new LayoutSVGHiddenContainer(this);
 
     return new LayoutSVGTransformableContainer(this);

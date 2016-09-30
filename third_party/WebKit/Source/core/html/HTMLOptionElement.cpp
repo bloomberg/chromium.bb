@@ -459,7 +459,7 @@ bool HTMLOptionElement::isDisplayNone() const
     if (!m_style)
         return false;
 
-    if (m_style->display() != NONE) {
+    if (m_style->display() != EDisplay::None) {
         // We need to check the parent's display property.  Parent's
         // display:none doesn't override children's display properties in
         // ComputedStyle.
@@ -467,10 +467,10 @@ bool HTMLOptionElement::isDisplayNone() const
         DCHECK(parent);
         if (isHTMLOptGroupElement(*parent)) {
             const ComputedStyle* parentStyle = parent->computedStyle() ? parent->computedStyle() : parent->ensureComputedStyle();
-            return !parentStyle || parentStyle->display() == NONE;
+            return !parentStyle || parentStyle->display() == EDisplay::None;
         }
     }
-    return m_style->display() == NONE;
+    return m_style->display() == EDisplay::None;
 }
 
 } // namespace blink

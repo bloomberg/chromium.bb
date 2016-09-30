@@ -81,7 +81,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlMultiLine::createInnerEditorStyle(con
     RefPtr<ComputedStyle> textBlockStyle = ComputedStyle::create();
     textBlockStyle->inheritFrom(startStyle);
     adjustInnerEditorStyle(*textBlockStyle);
-    textBlockStyle->setDisplay(BLOCK);
+    textBlockStyle->setDisplay(EDisplay::Block);
     textBlockStyle->setUnique();
 
     return textBlockStyle.release();

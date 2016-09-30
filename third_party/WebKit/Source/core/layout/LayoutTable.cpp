@@ -121,7 +121,7 @@ static inline bool needsTableSection(LayoutObject* object)
     // Return true if 'object' can't exist in an anonymous table without being
     // wrapped in a table section box.
     EDisplay display = object->style()->display();
-    return display != TABLE_CAPTION && display != TABLE_COLUMN_GROUP && display != TABLE_COLUMN;
+    return display != EDisplay::TableCaption && display != EDisplay::TableColumnGroup && display != EDisplay::TableColumn;
 }
 
 void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
@@ -135,7 +135,7 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
         wrapInAnonymousSection = false;
     } else if (child->isTableSection()) {
         switch (child->style()->display()) {
-        case TABLE_HEADER_GROUP:
+        case EDisplay::TableHeaderGroup:
             resetSectionPointerIfNotBefore(m_head, beforeChild);
             if (!m_head) {
                 m_head = toLayoutTableSection(child);
@@ -146,7 +146,7 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
             }
             wrapInAnonymousSection = false;
             break;
-        case TABLE_FOOTER_GROUP:
+        case EDisplay::TableFooterGroup:
             resetSectionPointerIfNotBefore(m_foot, beforeChild);
             if (!m_foot) {
                 m_foot = toLayoutTableSection(child);
@@ -154,7 +154,7 @@ void LayoutTable::addChild(LayoutObject* child, LayoutObject* beforeChild)
                 break;
             }
             // Fall through.
-        case TABLE_ROW_GROUP:
+        case EDisplay::TableRowGroup:
             resetSectionPointerIfNotBefore(m_firstBody, beforeChild);
             if (!m_firstBody)
                 m_firstBody = toLayoutTableSection(child);
@@ -906,11 +906,11 @@ void LayoutTable::recalcSections() const
     for (LayoutObject* child = firstChild(); child; child = nextSibling) {
         nextSibling = child->nextSibling();
         switch (child->style()->display()) {
-        case TABLE_COLUMN:
-        case TABLE_COLUMN_GROUP:
+        case EDisplay::TableColumn:
+        case EDisplay::TableColumnGroup:
             m_hasColElements = true;
             break;
-        case TABLE_HEADER_GROUP:
+        case EDisplay::TableHeaderGroup:
             if (child->isTableSection()) {
                 LayoutTableSection* section = toLayoutTableSection(child);
                 if (!m_head)
@@ -920,7 +920,7 @@ void LayoutTable::recalcSections() const
                 section->recalcCellsIfNeeded();
             }
             break;
-        case TABLE_FOOTER_GROUP:
+        case EDisplay::TableFooterGroup:
             if (child->isTableSection()) {
                 LayoutTableSection* section = toLayoutTableSection(child);
                 if (!m_foot)
@@ -930,7 +930,7 @@ void LayoutTable::recalcSections() const
                 section->recalcCellsIfNeeded();
             }
             break;
-        case TABLE_ROW_GROUP:
+        case EDisplay::TableRowGroup:
             if (child->isTableSection()) {
                 LayoutTableSection* section = toLayoutTableSection(child);
                 if (!m_firstBody)
@@ -1418,7 +1418,7 @@ bool LayoutTable::nodeAtPoint(HitTestResult& result, const HitTestLocation& loca
 
 LayoutTable* LayoutTable::createAnonymousWithParent(const LayoutObject* parent)
 {
-    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), parent->isLayoutInline() ? INLINE_TABLE : TABLE);
+    RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), parent->isLayoutInline() ? EDisplay::InlineTable : EDisplay::Table);
     LayoutTable* newTable = new LayoutTable(nullptr);
     newTable->setDocumentForAnonymous(&parent->document());
     newTable->setStyle(newStyle.release());

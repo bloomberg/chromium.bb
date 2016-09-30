@@ -99,7 +99,7 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(Element
 
     // This is an <img> with no attributes, so don't display anything.
     if (noImageSourceSpecified(element) && !newStyle->width().isSpecifiedOrIntrinsic() && !newStyle->height().isSpecifiedOrIntrinsic() && toHTMLElement(element).altText().isEmpty())
-        newStyle->setDisplay(NONE);
+        newStyle->setDisplay(EDisplay::None);
 
     // This preserves legacy behaviour originally defined when alt-text was managed by LayoutImage.
     if (noImageSourceSpecified(element))

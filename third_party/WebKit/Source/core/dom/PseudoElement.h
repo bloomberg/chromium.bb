@@ -66,7 +66,7 @@ inline bool pseudoElementLayoutObjectIsNeeded(const ComputedStyle* style)
 {
     if (!style)
         return false;
-    if (style->display() == NONE)
+    if (style->display() == EDisplay::None)
         return false;
     if (style->styleType() == PseudoIdFirstLetter || style->styleType() == PseudoIdBackdrop)
         return true;

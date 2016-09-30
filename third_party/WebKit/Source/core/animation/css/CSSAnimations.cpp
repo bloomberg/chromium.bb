@@ -284,7 +284,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update, const E
     for (bool& flag : cancelRunningAnimationFlags)
         flag = true;
 
-    if (animationData && style.display() != NONE) {
+    if (animationData && style.display() != EDisplay::None) {
         const Vector<AtomicString>& nameList = animationData->nameList();
         for (size_t i = 0; i < nameList.size(); ++i) {
             AtomicString name = nameList[i];
@@ -636,7 +636,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update, const 
     std::bitset<numCSSProperties> listedProperties;
     bool anyTransitionHadTransitionAll = false;
     const LayoutObject* layoutObject = animatingElement->layoutObject();
-    if (!animationStyleRecalc && style.display() != NONE && layoutObject && layoutObject->style() && transitionData) {
+    if (!animationStyleRecalc && style.display() != EDisplay::None && layoutObject && layoutObject->style() && transitionData) {
         const ComputedStyle& oldStyle = *layoutObject->style();
 
         for (size_t i = 0; i < transitionData->propertyList().size(); ++i) {

@@ -329,10 +329,10 @@ PassRefPtr<ComputedStyle> MultipleFieldsTemporalInputTypeView::customStyleForLay
 {
     EDisplay originalDisplay = originalStyle->display();
     EDisplay newDisplay = originalDisplay;
-    if (originalDisplay == INLINE || originalDisplay == INLINE_BLOCK)
-        newDisplay = INLINE_FLEX;
-    else if (originalDisplay == BLOCK)
-        newDisplay = FLEX;
+    if (originalDisplay == EDisplay::Inline || originalDisplay == EDisplay::InlineBlock)
+        newDisplay = EDisplay::InlineFlex;
+    else if (originalDisplay == EDisplay::Block)
+        newDisplay = EDisplay::Flex;
     TextDirection contentDirection = computedTextDirection();
     if (originalStyle->direction() == contentDirection && originalDisplay == newDisplay)
         return originalStyle;

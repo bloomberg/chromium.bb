@@ -297,7 +297,7 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& 
     PagePopupClient::addString("style: {\n", data);
     if (style->visibility() == EVisibility::Hidden)
         addProperty("visibility", String("hidden"), data);
-    if (style->display() == NONE)
+    if (style->display() == EDisplay::None)
         addProperty("display", String("none"), data);
     const ComputedStyle& baseStyle = context.baseStyle();
     if (baseStyle.direction() != style->direction())

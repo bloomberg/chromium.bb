@@ -51,7 +51,7 @@ LayoutMultiColumnFlowThread* LayoutMultiColumnFlowThread::createAnonymous(Docume
 {
     LayoutMultiColumnFlowThread* layoutObject = new LayoutMultiColumnFlowThread();
     layoutObject->setDocumentForAnonymous(&document);
-    layoutObject->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
+    layoutObject->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, EDisplay::Block));
     return layoutObject;
 }
 

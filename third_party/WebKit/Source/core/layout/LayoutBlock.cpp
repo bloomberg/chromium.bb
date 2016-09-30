@@ -1747,15 +1747,15 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(const LayoutObject
     // FIXME: Do we need to convert all our inline displays to block-type in the anonymous logic ?
     EDisplay newDisplay;
     LayoutBlock* newBox = nullptr;
-    if (display == FLEX || display == INLINE_FLEX) {
+    if (display == EDisplay::Flex || display == EDisplay::InlineFlex) {
         newBox = LayoutFlexibleBox::createAnonymous(&parent->document());
-        newDisplay = FLEX;
-    } else if (display == GRID || display == INLINE_GRID) {
+        newDisplay = EDisplay::Flex;
+    } else if (display == EDisplay::Grid || display == EDisplay::InlineGrid) {
         newBox = LayoutGrid::createAnonymous(&parent->document());
-        newDisplay = GRID;
+        newDisplay = EDisplay::Grid;
     } else {
         newBox = LayoutBlockFlow::createAnonymous(&parent->document());
-        newDisplay = BLOCK;
+        newDisplay = EDisplay::Block;
     }
 
     RefPtr<ComputedStyle> newStyle = ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(), newDisplay);

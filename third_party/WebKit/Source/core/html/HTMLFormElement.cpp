@@ -127,10 +127,10 @@ bool HTMLFormElement::layoutObjectIsNeeded(const ComputedStyle& style)
         return true;
 
     EDisplay display = style.display();
-    bool formIsTablePart = display == TABLE || display == INLINE_TABLE || display == TABLE_ROW_GROUP
-        || display == TABLE_HEADER_GROUP || display == TABLE_FOOTER_GROUP || display == TABLE_ROW
-        || display == TABLE_COLUMN_GROUP || display == TABLE_COLUMN || display == TABLE_CELL
-        || display == TABLE_CAPTION;
+    bool formIsTablePart = display == EDisplay::Table || display == EDisplay::InlineTable || display == EDisplay::TableRowGroup
+        || display == EDisplay::TableHeaderGroup || display == EDisplay::TableFooterGroup || display == EDisplay::TableRow
+        || display == EDisplay::TableColumnGroup || display == EDisplay::TableColumn || display == EDisplay::TableCell
+        || display == EDisplay::TableCaption;
 
     return formIsTablePart;
 }

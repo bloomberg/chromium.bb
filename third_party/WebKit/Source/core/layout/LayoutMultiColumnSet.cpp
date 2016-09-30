@@ -46,7 +46,7 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::createAnonymous(LayoutFlowThread& fl
     Document& document = flowThread.document();
     LayoutMultiColumnSet* layoutObject = new LayoutMultiColumnSet(&flowThread);
     layoutObject->setDocumentForAnonymous(&document);
-    layoutObject->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, BLOCK));
+    layoutObject->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(parentStyle, EDisplay::Block));
     return layoutObject;
 }
 

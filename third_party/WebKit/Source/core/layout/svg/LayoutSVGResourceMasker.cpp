@@ -81,7 +81,7 @@ sk_sp<const SkPicture> LayoutSVGResourceMasker::createContentPicture(AffineTrans
         if (!layoutObject)
             continue;
         const ComputedStyle* style = layoutObject->style();
-        if (!style || style->display() == NONE || style->visibility() != EVisibility::Visible)
+        if (!style || style->display() == EDisplay::None || style->visibility() != EVisibility::Visible)
             continue;
 
         SVGPaintContext::paintSubtree(pictureBuilder.context(), layoutObject);
@@ -98,7 +98,7 @@ void LayoutSVGResourceMasker::calculateMaskContentPaintInvalidationRect()
         if (!layoutObject)
             continue;
         const ComputedStyle* style = layoutObject->style();
-        if (!style || style->display() == NONE || style->visibility() != EVisibility::Visible)
+        if (!style || style->display() == EDisplay::None || style->visibility() != EVisibility::Visible)
             continue;
         m_maskContentBoundaries.unite(layoutObject->localToSVGParentTransform().mapRect(layoutObject->paintInvalidationRectInLocalSVGCoordinates()));
     }

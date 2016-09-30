@@ -180,41 +180,41 @@ LayoutObject* LayoutObject::createObject(Element* element, const ComputedStyle& 
     }
 
     switch (style.display()) {
-    case NONE:
+    case EDisplay::None:
         return nullptr;
-    case INLINE:
+    case EDisplay::Inline:
         return new LayoutInline(element);
-    case BLOCK:
-    case INLINE_BLOCK:
+    case EDisplay::Block:
+    case EDisplay::InlineBlock:
         if (RuntimeEnabledFeatures::layoutNGEnabled())
             return new LayoutNGBlockFlow(element);
         return new LayoutBlockFlow(element);
-    case LIST_ITEM:
+    case EDisplay::ListItem:
         return new LayoutListItem(element);
-    case TABLE:
-    case INLINE_TABLE:
+    case EDisplay::Table:
+    case EDisplay::InlineTable:
         return new LayoutTable(element);
-    case TABLE_ROW_GROUP:
-    case TABLE_HEADER_GROUP:
-    case TABLE_FOOTER_GROUP:
+    case EDisplay::TableRowGroup:
+    case EDisplay::TableHeaderGroup:
+    case EDisplay::TableFooterGroup:
         return new LayoutTableSection(element);
-    case TABLE_ROW:
+    case EDisplay::TableRow:
         return new LayoutTableRow(element);
-    case TABLE_COLUMN_GROUP:
-    case TABLE_COLUMN:
+    case EDisplay::TableColumnGroup:
+    case EDisplay::TableColumn:
         return new LayoutTableCol(element);
-    case TABLE_CELL:
+    case EDisplay::TableCell:
         return new LayoutTableCell(element);
-    case TABLE_CAPTION:
+    case EDisplay::TableCaption:
         return new LayoutTableCaption(element);
-    case BOX:
-    case INLINE_BOX:
+    case EDisplay::Box:
+    case EDisplay::InlineBox:
         return new LayoutDeprecatedFlexibleBox(*element);
-    case FLEX:
-    case INLINE_FLEX:
+    case EDisplay::Flex:
+    case EDisplay::InlineFlex:
         return new LayoutFlexibleBox(element);
-    case GRID:
-    case INLINE_GRID:
+    case EDisplay::Grid:
+    case EDisplay::InlineGrid:
         return new LayoutGrid(element);
     }
 

@@ -184,8 +184,8 @@ public:
 
     void setSelectionState(SelectionState) override;
 
-    static LayoutBlock* createAnonymousWithParentAndDisplay(const LayoutObject*, EDisplay = BLOCK);
-    LayoutBlock* createAnonymousBlock(EDisplay display = BLOCK) const { return createAnonymousWithParentAndDisplay(this, display); }
+    static LayoutBlock* createAnonymousWithParentAndDisplay(const LayoutObject*, EDisplay = EDisplay::Block);
+    LayoutBlock* createAnonymousBlock(EDisplay display = EDisplay::Block) const { return createAnonymousWithParentAndDisplay(this, display); }
 
     LayoutBox* createAnonymousBoxWithSameTypeAs(const LayoutObject* parent) const override;
 
