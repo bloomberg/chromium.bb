@@ -5,6 +5,7 @@
 #include "printing/printing_context_win.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/memory/free_deleter.h"
@@ -42,8 +43,7 @@ std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
 }
 
 PrintingContextWin::PrintingContextWin(Delegate* delegate)
-    : PrintingContext(delegate), context_(NULL) {
-}
+    : PrintingContext(delegate), context_(nullptr) {}
 
 PrintingContextWin::~PrintingContextWin() {
   ReleaseContext();
@@ -60,14 +60,14 @@ void PrintingContextWin::AskUserForSettings(
 PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   DCHECK(!in_print_job_);
 
-  scoped_refptr<PrintBackend> backend = PrintBackend::CreateInstance(NULL);
+  scoped_refptr<PrintBackend> backend = PrintBackend::CreateInstance(nullptr);
   base::string16 default_printer =
       base::UTF8ToWide(backend->GetDefaultPrinterName());
   if (!default_printer.empty()) {
     ScopedPrinterHandle printer;
     if (printer.OpenPrinter(default_printer.c_str())) {
       std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
-          CreateDevMode(printer.Get(), NULL);
+          CreateDevMode(printer.Get(), nullptr);
       if (InitializeSettings(default_printer, dev_mode.get()) == OK)
         return OK;
     }
@@ -78,26 +78,25 @@ PrintingContext::Result PrintingContextWin::UseDefaultSettings() {
   // No default printer configured, do we have any printers at all?
   DWORD bytes_needed = 0;
   DWORD count_returned = 0;
-  (void)::EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS,
-                       NULL, 2, NULL, 0, &bytes_needed, &count_returned);
+  (void)::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS, nullptr,
+                       2, nullptr, 0, &bytes_needed, &count_returned);
   if (bytes_needed) {
     DCHECK_GE(bytes_needed, count_returned * sizeof(PRINTER_INFO_2));
-    std::unique_ptr<BYTE[]> printer_info_buffer(new BYTE[bytes_needed]);
-    BOOL ret = ::EnumPrinters(PRINTER_ENUM_LOCAL|PRINTER_ENUM_CONNECTIONS,
-                              NULL, 2, printer_info_buffer.get(),
-                              bytes_needed, &bytes_needed,
-                              &count_returned);
+    std::vector<BYTE> printer_info_buffer(bytes_needed);
+    BOOL ret = ::EnumPrinters(PRINTER_ENUM_LOCAL | PRINTER_ENUM_CONNECTIONS,
+                              nullptr, 2, printer_info_buffer.data(),
+                              bytes_needed, &bytes_needed, &count_returned);
     if (ret && count_returned) {  // have printers
       // Open the first successfully found printer.
       const PRINTER_INFO_2* info_2 =
-          reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.get());
+          reinterpret_cast<PRINTER_INFO_2*>(printer_info_buffer.data());
       const PRINTER_INFO_2* info_2_end = info_2 + count_returned;
       for (; info_2 < info_2_end; ++info_2) {
         ScopedPrinterHandle printer;
         if (!printer.OpenPrinter(info_2->pPrinterName))
           continue;
         std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
-            CreateDevMode(printer.Get(), NULL);
+            CreateDevMode(printer.Get(), nullptr);
         if (InitializeSettings(info_2->pPrinterName, dev_mode.get()) == OK)
           return OK;
       }
@@ -229,7 +228,7 @@ PrintingContext::Result PrintingContextWin::InitWithSettings(
     return FAILED;
 
   std::unique_ptr<DEVMODE, base::FreeDeleter> dev_mode =
-      CreateDevMode(printer.Get(), NULL);
+      CreateDevMode(printer.Get(), nullptr);
 
   return InitializeSettings(settings_.device_name(), dev_mode.get());
 }
@@ -320,7 +319,7 @@ void PrintingContextWin::Cancel() {
 void PrintingContextWin::ReleaseContext() {
   if (context_) {
     DeleteDC(context_);
-    context_ = NULL;
+    context_ = nullptr;
   }
 }
 
@@ -345,7 +344,7 @@ PrintingContext::Result PrintingContextWin::InitializeSettings(
     return OnError();
 
   ReleaseContext();
-  context_ = CreateDC(L"WINSPOOL", device_name.c_str(), NULL, dev_mode);
+  context_ = CreateDC(L"WINSPOOL", device_name.c_str(), nullptr, dev_mode);
   if (!context_)
     return OnError();
 
@@ -360,11 +359,11 @@ PrintingContext::Result PrintingContextWin::InitializeSettings(
 }
 
 HWND PrintingContextWin::GetRootWindow(gfx::NativeView view) {
-  HWND window = NULL;
+  HWND window = nullptr;
   if (view && view->GetHost())
     window = view->GetHost()->GetAcceleratedWidget();
   if (!window) {
-    // TODO(maruel):  crbug.com/1214347 Get the right browser window instead.
+    // TODO(maruel):  b/1214347 Get the right browser window instead.
     return GetDesktopWindow();
   }
   return window;

@@ -49,8 +49,6 @@ class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
   virtual Result InitializeSettings(const base::string16& device_name,
                                     DEVMODE* dev_mode);
 
-  HDC contest() const { return context_; }
-
   void set_context(HDC context) { context_ = context; }
 
  private:
