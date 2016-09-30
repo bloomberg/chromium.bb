@@ -542,6 +542,9 @@ rdp_output_disable(struct weston_output *base)
 	if (!output->base.enabled)
 		return 0;
 
+	pixman_image_unref(output->shadow_surface);
+	pixman_renderer_output_destroy(&output->base);
+
 	wl_event_source_remove(output->finish_frame_timer);
 	b->output = NULL;
 
