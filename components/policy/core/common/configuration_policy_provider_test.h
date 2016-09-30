@@ -12,10 +12,15 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_POSIX)
+#include "base/files/file_descriptor_watcher_posix.h"
+#endif
 
 namespace base {
 class DictionaryValue;
@@ -54,8 +59,12 @@ class PolicyTestBase : public testing::Test {
 
   SchemaRegistry schema_registry_;
 
-  // Create an actual IO loop (needed by FilePathWatcher).
+  // Needed by FilePathWatcher, which is used by ConfigDirPolicyLoader and
+  // PolicyLoaderMac.
   base::MessageLoopForIO loop_;
+#if defined(OS_POSIX)
+  base::FileDescriptorWatcher file_descriptor_watcher_;
+#endif
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyTestBase);

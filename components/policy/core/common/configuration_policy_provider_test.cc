@@ -133,7 +133,12 @@ const char kKeyDictionary[] = "DictionaryPolicy";
 
 }  // namespace test_keys
 
-PolicyTestBase::PolicyTestBase() {}
+PolicyTestBase::PolicyTestBase()
+#if defined(OS_POSIX)
+    : file_descriptor_watcher_(&loop_)
+#endif
+{
+}
 
 PolicyTestBase::~PolicyTestBase() {}
 
