@@ -174,4 +174,33 @@ TEST_F(WebMeaningfulLayoutsTest, WithIFrames)
     EXPECT_EQ(1, webViewClient().finishedLoadingLayoutCount());
 }
 
+// NoOverflowInIncrementVisuallyNonEmptyPixelCount tests fail if the number of
+// pixels is calculated in 32-bit integer, because 65536 * 65536 would become 0
+// if it was calculated in 32-bit and thus it would be considered as empty.
+TEST_F(WebMeaningfulLayoutsTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount)
+{
+    SimRequest mainResource("https://example.com/test.html", "text/html");
+    SimRequest svgResource("https://example.com/test.svg", "image/svg+xml");
+
+    loadURL("https://example.com/test.html");
+
+    mainResource.start();
+    mainResource.write("<DOCTYPE html><body><img src=\"test.svg\">");
+    // Run pending tasks to initiate the request to test.svg.
+    testing::runPendingTasks();
+    EXPECT_EQ(0, webViewClient().visuallyNonEmptyLayoutCount());
+
+    // We serve the SVG file and check visuallyNonEmptyLayoutCount() before
+    // mainResource.finish() because finishing the main resource causes
+    // |FrameView::m_isVisuallyNonEmpty| to be true and
+    // visuallyNonEmptyLayoutCount() to be 1 irrespective of the SVG sizes.
+    svgResource.start();
+    svgResource.write("<svg xmlns=\"http://www.w3.org/2000/svg\" height=\"65536\" width=\"65536\"></svg>");
+    svgResource.finish();
+    compositor().beginFrame();
+    EXPECT_EQ(1, webViewClient().visuallyNonEmptyLayoutCount());
+
+    mainResource.finish();
+}
+
 } // namespace blink

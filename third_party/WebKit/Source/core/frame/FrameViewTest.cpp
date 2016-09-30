@@ -112,5 +112,15 @@ TEST_P(FrameViewTest, HideTooltipWhenScrollPositionChanges)
     document().view()->layoutViewportScrollableArea()->setScrollPosition(DoublePoint(1, 1), UserScroll);
 }
 
+// NoOverflowInIncrementVisuallyNonEmptyPixelCount tests fail if the number of
+// pixels is calculated in 32-bit integer, because 65536 * 65536 would become 0
+// if it was calculated in 32-bit and thus it would be considered as empty.
+TEST_P(FrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount)
+{
+    EXPECT_FALSE(document().view()->isVisuallyNonEmpty());
+    document().view()->incrementVisuallyNonEmptyPixelCount(IntSize(65536, 65536));
+    EXPECT_TRUE(document().view()->isVisuallyNonEmpty());
+}
+
 } // namespace
 } // namespace blink
