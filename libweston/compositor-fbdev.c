@@ -498,7 +498,7 @@ fbdev_output_create(struct fbdev_backend *backend,
 	output->base.disable = NULL;
 	output->base.enable = fbdev_output_enable;
 
-	weston_output_init_pending(&output->base, backend->compositor);
+	weston_output_init(&output->base, backend->compositor);
 
 	/* only one static mode in list */
 	output->mode.flags =

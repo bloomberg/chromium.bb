@@ -1155,7 +1155,7 @@ wayland_output_create(struct weston_compositor *compositor, const char *name)
 
 	output->base.name = strdup(name);
 
-	weston_output_init_pending(&output->base, compositor);
+	weston_output_init(&output->base, compositor);
 	weston_compositor_add_pending_output(&output->base, compositor);
 
 	return 0;
@@ -1242,7 +1242,7 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 		goto out;
 	}
 
-	weston_output_init_pending(&output->base, b->compositor);
+	weston_output_init(&output->base, b->compositor);
 
 	output->base.scale = 1;
 	output->base.transform = WL_OUTPUT_TRANSFORM_NORMAL;
@@ -1280,7 +1280,7 @@ wayland_output_create_fullscreen(struct wayland_backend *b)
 
 	output->base.name = strdup("wayland-fullscreen");
 
-	weston_output_init_pending(&output->base, b->compositor);
+	weston_output_init(&output->base, b->compositor);
 
 	output->base.scale = 1;
 	output->base.transform = WL_OUTPUT_TRANSFORM_NORMAL;

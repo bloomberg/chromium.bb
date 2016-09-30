@@ -1611,9 +1611,7 @@ void
 weston_output_update_matrix(struct weston_output *output);
 void
 weston_output_move(struct weston_output *output, int x, int y);
-void
-weston_output_init(struct weston_output *output, struct weston_compositor *c,
-		   int x, int y, int width, int height, uint32_t transform, int32_t scale);
+
 void
 weston_compositor_add_output(struct weston_compositor *compositor,
                              struct weston_output *output);
@@ -1830,8 +1828,8 @@ weston_output_set_transform(struct weston_output *output,
 			    uint32_t transform);
 
 void
-weston_output_init_pending(struct weston_output *output,
-			   struct weston_compositor *compositor);
+weston_output_init(struct weston_output *output,
+		   struct weston_compositor *compositor);
 
 void
 weston_compositor_add_pending_output(struct weston_output *output,

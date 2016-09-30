@@ -239,7 +239,7 @@ headless_output_create(struct weston_compositor *compositor,
 	output->base.disable = headless_output_disable;
 	output->base.enable = headless_output_enable;
 
-	weston_output_init_pending(&output->base, compositor);
+	weston_output_init(&output->base, compositor);
 	weston_compositor_add_pending_output(&output->base, compositor);
 
 	return 0;

@@ -2563,7 +2563,7 @@ create_output_for_connector(struct drm_backend *b,
 	b->crtc_allocator |= (1 << output->crtc_id);
 	b->connector_allocator |= (1 << output->connector_id);
 
-	weston_output_init_pending(&output->base, b->compositor);
+	weston_output_init(&output->base, b->compositor);
 	weston_compositor_add_pending_output(&output->base, b->compositor);
 
 	return 0;
