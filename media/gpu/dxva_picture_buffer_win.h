@@ -46,6 +46,7 @@ class DXVAPictureBuffer {
       int input_buffer_id);
 
   bool available() const { return state_ == UNUSED; }
+  State state() const { return state_; }
 
   int id() const { return picture_buffer_.id(); }
 

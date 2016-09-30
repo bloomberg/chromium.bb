@@ -1018,7 +1018,10 @@ void DXVAVideoDecodeAccelerator::Reset() {
           output_picture_buffers_.find(index->picture_buffer_id);
       if (it != output_picture_buffers_.end()) {
         DXVAPictureBuffer* picture_buffer = it->second.get();
-        picture_buffer->ReusePictureBuffer();
+        if (picture_buffer->state() == DXVAPictureBuffer::State::BOUND ||
+            picture_buffer->state() == DXVAPictureBuffer::State::COPYING) {
+          picture_buffer->ReusePictureBuffer();
+        }
       }
     }
   }
