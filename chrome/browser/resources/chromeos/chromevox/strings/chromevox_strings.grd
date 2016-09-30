@@ -2167,7 +2167,7 @@
         Perform default action
       </message>
       <message desc="Exclamation (!) character description." name="IDS_CHROMEVOX_EXCLAMATION">
-        {COUNT, plural, =1 {exclamation point}other {# exclamation points}}
+        {COUNT, plural, =1 {exclamation}other {# exclamations}}
       </message>
       <message desc="Space ( ) character description." name="IDS_CHROMEVOX_SPACE">
         {COUNT, plural, =1 {space}other {# spaces}}
@@ -2267,6 +2267,9 @@
       </message>
       <message desc="Backslash (\) character description." name="IDS_CHROMEVOX_BACKSLASH">
         {COUNT, plural, =1 {backslash}other {# backslashes}}
+      </message>
+      <message desc="BULLET (•) character description." name="IDS_CHROMEVOX_BULLET">
+        {COUNT, plural, =1 {bullet}other {# bullets}}
       </message>
       <message desc="Describes the braille click command. Displayed in the options page." name="IDS_CHROMEVOX_BRAILLE_ROUTING">
         Click the item under a routing key

@@ -341,7 +341,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeSelectionChanged =
   //   - one to speak
 
   if (this.isPassword) {
-    this.speak((new goog.i18n.MessageFormat(Msgs.getMsg('dot'))
+    this.speak((new goog.i18n.MessageFormat(Msgs.getMsg('bullet'))
         .format({'COUNT': 1})), evt.triggeredByUser);
     return;
   }
@@ -437,7 +437,7 @@ cvox.ChromeVoxEditableTextBase.prototype.describeTextChanged = function(evt) {
     personality = cvox.AbstractTts.PERSONALITY_DELETED;
   }
   if (this.isPassword) {
-    this.speak((new goog.i18n.MessageFormat(Msgs.getMsg('dot'))
+    this.speak((new goog.i18n.MessageFormat(Msgs.getMsg('bullet'))
         .format({'COUNT': 1})), evt.triggeredByUser, personality);
     return;
   }
