@@ -3270,6 +3270,10 @@ Node* LayoutBlockFlow::nodeForHitTest() const
 bool LayoutBlockFlow::hitTestChildren(HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction hitTestAction)
 {
     LayoutPoint scrolledOffset(hasOverflowClip() ? accumulatedOffset - scrolledContentOffset() : accumulatedOffset);
+
+    if (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, scrolledOffset))
+        return true;
+
     if (childrenInline()) {
         if (m_lineBoxes.hitTest(LineLayoutBoxModel(this), result, locationInContainer, scrolledOffset, hitTestAction)) {
             updateHitTestResult(result, flipForWritingMode(toLayoutPoint(locationInContainer.point() - accumulatedOffset)));
@@ -3278,9 +3282,6 @@ bool LayoutBlockFlow::hitTestChildren(HitTestResult& result, const HitTestLocati
     } else if (LayoutBlock::hitTestChildren(result, locationInContainer, accumulatedOffset, hitTestAction)) {
         return true;
     }
-
-    if (hitTestAction == HitTestFloat && hitTestFloats(result, locationInContainer, scrolledOffset))
-        return true;
 
     return false;
 }
