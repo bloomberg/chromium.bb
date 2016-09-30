@@ -87,19 +87,17 @@ void SigninCookieChangedSubscription::RunAsyncOnCookieChanged(
     scoped_refptr<base::TaskRunner> proxy,
     base::WeakPtr<SigninCookieChangedSubscription> subscription,
     const net::CanonicalCookie& cookie,
-    bool removed) {
+    net::CookieStore::ChangeCause cause) {
   proxy->PostTask(FROM_HERE,
                   base::Bind(&SigninCookieChangedSubscription::OnCookieChanged,
-                             subscription,
-                             cookie,
-                             removed));
+                             subscription, cookie, cause));
 }
 
 void SigninCookieChangedSubscription::OnCookieChanged(
     const net::CanonicalCookie& cookie,
-    bool removed) {
+    net::CookieStore::ChangeCause cause) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!callback_.is_null()) {
-    callback_.Run(cookie, removed);
+    callback_.Run(cookie, cause);
   }
 }

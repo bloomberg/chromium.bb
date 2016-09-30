@@ -393,7 +393,7 @@ void GaiaCookieManagerService::ForceOnCookieChangedProcessing() {
       google_url, kGaiaCookieName, std::string(), "." + google_url.host(),
       std::string(), base::Time(), base::Time(), false, false,
       net::CookieSameSite::DEFAULT_MODE, false, net::COOKIE_PRIORITY_DEFAULT));
-  OnCookieChanged(*cookie, true);
+  OnCookieChanged(*cookie, net::CookieStore::ChangeCause::UNKNOWN_DELETION);
 }
 
 void GaiaCookieManagerService::LogOutAllAccounts(const std::string& source) {
@@ -469,7 +469,7 @@ std::string GaiaCookieManagerService::GetSourceForRequest(
 
 void GaiaCookieManagerService::OnCookieChanged(
     const net::CanonicalCookie& cookie,
-    bool removed) {
+    net::CookieStore::ChangeCause cause) {
   DCHECK_EQ(kGaiaCookieName, cookie.Name());
   DCHECK(cookie.IsDomainMatch(GaiaUrls::GetInstance()->google_url().host()));
   list_accounts_stale_ = true;

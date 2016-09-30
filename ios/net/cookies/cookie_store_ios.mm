@@ -967,8 +967,10 @@ void CookieStoreIOS::OnSystemCookiesChanged() {
     std::vector<net::CanonicalCookie> added_cookies;
     if (UpdateCacheForCookieFromSystem(key.first, key.second, &removed_cookies,
                                        &added_cookies)) {
-      RunCallbacksForCookies(key.first, key.second, removed_cookies, true);
-      RunCallbacksForCookies(key.first, key.second, added_cookies, false);
+      RunCallbacksForCookies(key.first, key.second, removed_cookies,
+                             net::CookieStore::ChangeCause::UNKNOWN_DELETION);
+      RunCallbacksForCookies(key.first, key.second, added_cookies,
+                             net::CookieStore::ChangeCause::INSERTED);
     }
   }
 
@@ -1020,7 +1022,7 @@ void CookieStoreIOS::RunCallbacksForCookies(
     const GURL& url,
     const std::string& name,
     const std::vector<net::CanonicalCookie>& cookies,
-    bool removed) {
+    net::CookieStore::ChangeCause cause) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (cookies.empty())
     return;
@@ -1029,7 +1031,7 @@ void CookieStoreIOS::RunCallbacksForCookies(
   CookieChangedCallbackList* callbacks = hook_map_[key].get();
   for (const auto& cookie : cookies) {
     DCHECK_EQ(name, cookie.Name());
-    callbacks->Notify(cookie, removed);
+    callbacks->Notify(cookie, cause);
   }
 }
 
@@ -1062,8 +1064,10 @@ void CookieStoreIOS::GotCookieListFor(const std::pair<GURL, std::string> key,
   std::vector<net::CanonicalCookie> added_cookies;
   if (cookie_cache_->Update(key.first, key.second, filtered, &removed_cookies,
                             &added_cookies)) {
-    RunCallbacksForCookies(key.first, key.second, removed_cookies, true);
-    RunCallbacksForCookies(key.first, key.second, added_cookies, false);
+    RunCallbacksForCookies(key.first, key.second, removed_cookies,
+                           net::CookieStore::ChangeCause::UNKNOWN_DELETION);
+    RunCallbacksForCookies(key.first, key.second, added_cookies,
+                           net::CookieStore::ChangeCause::INSERTED);
   }
 }
 

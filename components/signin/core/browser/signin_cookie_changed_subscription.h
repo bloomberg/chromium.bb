@@ -55,10 +55,11 @@ class SigninCookieChangedSubscription
       scoped_refptr<base::TaskRunner> proxy,
       base::WeakPtr<SigninCookieChangedSubscription> subscription,
       const net::CanonicalCookie& cookie,
-      bool removed);
+      net::CookieStore::ChangeCause cause);
 
   // Handler for cookie changed events.
-  void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed);
+  void OnCookieChanged(const net::CanonicalCookie& cookie,
+                       net::CookieStore::ChangeCause cause);
 
   // The context getter.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;

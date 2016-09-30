@@ -21,7 +21,7 @@ class ExtensionCookieMonsterDelegate : public net::CookieMonsterDelegate {
   void OnCookieChanged(
       const net::CanonicalCookie& cookie,
       bool removed,
-      net::CookieMonsterDelegate::ChangeCause cause) override;
+      net::CookieStore::ChangeCause cause) override;
 
  private:
   ~ExtensionCookieMonsterDelegate() override;
@@ -29,7 +29,7 @@ class ExtensionCookieMonsterDelegate : public net::CookieMonsterDelegate {
   void OnCookieChangedAsyncHelper(
       const net::CanonicalCookie& cookie,
       bool removed,
-      net::CookieMonsterDelegate::ChangeCause cause);
+      net::CookieStore::ChangeCause cause);
 
   const base::Callback<Profile*(void)> profile_getter_;
 

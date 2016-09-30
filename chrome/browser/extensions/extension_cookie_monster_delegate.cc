@@ -34,7 +34,7 @@ ExtensionCookieMonsterDelegate::ExtensionCookieMonsterDelegate(Profile* profile)
 void ExtensionCookieMonsterDelegate::OnCookieChanged(
     const net::CanonicalCookie& cookie,
     bool removed,
-    net::CookieMonsterDelegate::ChangeCause cause) {
+    net::CookieStore::ChangeCause cause) {
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&ExtensionCookieMonsterDelegate::OnCookieChangedAsyncHelper,
@@ -46,7 +46,7 @@ ExtensionCookieMonsterDelegate::~ExtensionCookieMonsterDelegate() {}
 void ExtensionCookieMonsterDelegate::OnCookieChangedAsyncHelper(
     const net::CanonicalCookie& cookie,
     bool removed,
-    net::CookieMonsterDelegate::ChangeCause cause) {
+    net::CookieStore::ChangeCause cause) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   Profile* profile = profile_getter_.Run();
   if (profile) {

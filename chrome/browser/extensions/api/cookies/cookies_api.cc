@@ -143,27 +143,30 @@ void CookiesEventRouter::CookieChanged(
   // Map the internal cause to an external string.
   std::string cause;
   switch (details->cause) {
-    case net::CookieMonsterDelegate::CHANGE_COOKIE_EXPLICIT:
+    // Report an inserted cookie as an "explicit" change cause. All other causes
+    // only make sense for deletions.
+    case net::CookieStore::ChangeCause::INSERTED:
+    case net::CookieStore::ChangeCause::EXPLICIT:
       cause = keys::kExplicitChangeCause;
       break;
 
-    case net::CookieMonsterDelegate::CHANGE_COOKIE_OVERWRITE:
+    case net::CookieStore::ChangeCause::OVERWRITE:
       cause = keys::kOverwriteChangeCause;
       break;
 
-    case net::CookieMonsterDelegate::CHANGE_COOKIE_EXPIRED:
+    case net::CookieStore::ChangeCause::EXPIRED:
       cause = keys::kExpiredChangeCause;
       break;
 
-    case net::CookieMonsterDelegate::CHANGE_COOKIE_EVICTED:
+    case net::CookieStore::ChangeCause::EVICTED:
       cause = keys::kEvictedChangeCause;
       break;
 
-    case net::CookieMonsterDelegate::CHANGE_COOKIE_EXPIRED_OVERWRITE:
+    case net::CookieStore::ChangeCause::EXPIRED_OVERWRITE:
       cause = keys::kExpiredOverwriteChangeCause;
       break;
 
-    default:
+    case net::CookieStore::ChangeCause::UNKNOWN_DELETION:
       NOTREACHED();
   }
   dict->SetString(keys::kCauseKey, cause);

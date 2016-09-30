@@ -349,11 +349,11 @@ namespace {
 void RecordCookieChanges(std::vector<net::CanonicalCookie>* out_cookies,
                          std::vector<bool>* out_removes,
                          const net::CanonicalCookie& cookie,
-                         bool removed) {
+                         net::CookieStore::ChangeCause cause) {
   DCHECK(out_cookies);
   out_cookies->push_back(cookie);
   if (out_removes)
-    out_removes->push_back(removed);
+    out_removes->push_back(net::CookieStore::ChangeCauseIsDeletion(cause));
 }
 
 void IgnoreBoolean(bool ignored) {

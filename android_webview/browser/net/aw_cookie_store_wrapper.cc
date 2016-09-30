@@ -70,10 +70,11 @@ class SubscriptionWrapper {
           url, name, base::Bind(&NestedSubscription::OnChanged, this));
     }
 
-    void OnChanged(const net::CanonicalCookie& cookie, bool removed) {
+    void OnChanged(const net::CanonicalCookie& cookie,
+                   net::CookieStore::ChangeCause cause) {
       client_task_runner_->PostTask(
           FROM_HERE, base::Bind(&SubscriptionWrapper::OnChanged,
-                                subscription_wrapper_, cookie, removed));
+                                subscription_wrapper_, cookie, cause));
     }
 
     base::WeakPtr<SubscriptionWrapper> subscription_wrapper_;
@@ -84,8 +85,9 @@ class SubscriptionWrapper {
     DISALLOW_COPY_AND_ASSIGN(NestedSubscription);
   };
 
-  void OnChanged(const net::CanonicalCookie& cookie, bool removed) {
-    callback_list_.Notify(cookie, removed);
+  void OnChanged(const net::CanonicalCookie& cookie,
+                 net::CookieStore::ChangeCause cause) {
+    callback_list_.Notify(cookie, cause);
   }
 
   // The "list" only had one entry, so can just clean up now.

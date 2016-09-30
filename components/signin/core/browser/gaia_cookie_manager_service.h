@@ -242,7 +242,8 @@ class GaiaCookieManagerService : public KeyedService,
 
   // Called when a cookie changes. If the cookie relates to a GAIA APISID
   // cookie, then we call ListAccounts and fire OnGaiaAccountsInCookieUpdated.
-  void OnCookieChanged(const net::CanonicalCookie& cookie, bool removed);
+  void OnCookieChanged(const net::CanonicalCookie& cookie,
+                       net::CookieStore::ChangeCause cause);
 
   // Overridden from UbertokenConsumer.
   void OnUbertokenSuccess(const std::string& token) override;
