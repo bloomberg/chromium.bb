@@ -31,22 +31,25 @@ bool DeleteTreeWorkItem::DoImpl() {
 
 void DeleteTreeWorkItem::RollbackImpl() {
   if (moved_to_backup_) {
-    base::FilePath backup = GetBackupPath();
+    const base::FilePath& backup = GetBackupPath();
     DCHECK(!backup.empty());
     if (base::PathExists(backup))
       base::Move(backup, root_path_);
   }
 }
 
-base::FilePath DeleteTreeWorkItem::GetBackupPath() {
-  if (backup_path_.path().empty() &&
-      !backup_path_.CreateUniqueTempDirUnderPath(temp_path_)) {
-    PLOG(ERROR) << "Failed to get backup path in folder " << temp_path_.value();
-    return base::FilePath();
+const base::FilePath& DeleteTreeWorkItem::GetBackupPath() {
+  if (backup_path_.empty()) {
+    if (!backup_dir_.CreateUniqueTempDirUnderPath(temp_path_)) {
+      PLOG(ERROR) << "Failed to get backup path in folder "
+                  << temp_path_.value();
+      return backup_path_;
+    }
+    backup_path_ = backup_dir_.GetPath().Append(root_path_.BaseName());
   }
 
-  DCHECK(!backup_path_.path().empty());
-  return backup_path_.path().Append(root_path_.BaseName());
+  DCHECK(!backup_path_.empty());
+  return backup_path_;
 }
 
 bool DeleteTreeWorkItem::DeleteRoot() {
@@ -57,7 +60,7 @@ bool DeleteTreeWorkItem::DeleteRoot() {
 }
 
 bool DeleteTreeWorkItem::MoveRootToBackup() {
-  base::FilePath backup = GetBackupPath();
+  const base::FilePath& backup = GetBackupPath();
   if (backup.empty())
     return false;
   if (base::Move(root_path_, backup)) {

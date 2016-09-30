@@ -142,7 +142,7 @@ class PostmortemReportCollectorCollectAndSubmitTest : public testing::Test {
     testing::Test::SetUp();
     // Create a dummy debug file.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    debug_file_ = temp_dir_.path().AppendASCII("foo-1.pma");
+    debug_file_ = temp_dir_.GetPath().AppendASCII("foo-1.pma");
     {
       base::ScopedFILE file(base::OpenFile(debug_file_, "w"));
       ASSERT_NE(file.get(), nullptr);
@@ -170,7 +170,7 @@ class PostmortemReportCollectorCollectAndSubmitTest : public testing::Test {
     // Expect the call to write the proto to a minidump. This involves
     // requesting a report from the crashpad database, writing the report, then
     // finalizing it with the database.
-    base::FilePath minidump_path = temp_dir_.path().AppendASCII("foo-1.dmp");
+    base::FilePath minidump_path = temp_dir_.GetPath().AppendASCII("foo-1.dmp");
     base::File minidump_file(
         minidump_path, base::File::FLAG_CREATE | base::File::File::FLAG_WRITE);
     crashpad_report_ = {minidump_file.GetPlatformFile(),
@@ -240,25 +240,25 @@ TEST(PostmortemReportCollectorTest, GetDebugStateFilePaths) {
   std::set<base::FilePath> excluded_paths;
   {
     // Matches the pattern.
-    base::FilePath path = temp_dir.path().AppendASCII("foo1.pma");
+    base::FilePath path = temp_dir.GetPath().AppendASCII("foo1.pma");
     base::ScopedFILE file(base::OpenFile(path, "w"));
     ASSERT_NE(file.get(), nullptr);
     expected_paths.push_back(path);
 
     // Matches the pattern, but is excluded.
-    path = temp_dir.path().AppendASCII("foo2.pma");
+    path = temp_dir.GetPath().AppendASCII("foo2.pma");
     file.reset(base::OpenFile(path, "w"));
     ASSERT_NE(file.get(), nullptr);
     ASSERT_TRUE(excluded_paths.insert(path).second);
 
     // Matches the pattern.
-    path = temp_dir.path().AppendASCII("foo3.pma");
+    path = temp_dir.GetPath().AppendASCII("foo3.pma");
     file.reset(base::OpenFile(path, "w"));
     ASSERT_NE(file.get(), nullptr);
     expected_paths.push_back(path);
 
     // Does not match the pattern.
-    path = temp_dir.path().AppendASCII("bar.baz");
+    path = temp_dir.GetPath().AppendASCII("bar.baz");
     file.reset(base::OpenFile(path, "w"));
     ASSERT_NE(file.get(), nullptr);
   }
@@ -266,7 +266,7 @@ TEST(PostmortemReportCollectorTest, GetDebugStateFilePaths) {
   PostmortemReportCollector collector;
   EXPECT_THAT(
       collector.GetDebugStateFilePaths(
-          temp_dir.path(), FILE_PATH_LITERAL("foo*.pma"), excluded_paths),
+          temp_dir.GetPath(), FILE_PATH_LITERAL("foo*.pma"), excluded_paths),
       testing::UnorderedElementsAreArray(expected_paths));
 }
 
@@ -274,7 +274,7 @@ TEST(PostmortemReportCollectorTest, CollectEmptyFile) {
   // Create an empty file.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_path = temp_dir.path().AppendASCII("empty.pma");
+  base::FilePath file_path = temp_dir.GetPath().AppendASCII("empty.pma");
   {
     base::ScopedFILE file(base::OpenFile(file_path, "w"));
     ASSERT_NE(file.get(), nullptr);
@@ -292,7 +292,8 @@ TEST(PostmortemReportCollectorTest, CollectRandomFile) {
   // Create a file with content we don't expect to be valid for a debug file.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath file_path = temp_dir.path().AppendASCII("invalid_content.pma");
+  base::FilePath file_path =
+      temp_dir.GetPath().AppendASCII("invalid_content.pma");
   {
     base::ScopedFILE file(base::OpenFile(file_path, "w"));
     ASSERT_NE(file.get(), nullptr);
@@ -331,7 +332,7 @@ class PostmortemReportCollectorCollectionTest : public testing::Test {
 
     // Create a file backed allocator.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    debug_file_path_ = temp_dir_.path().AppendASCII("debug_file.pma");
+    debug_file_path_ = temp_dir_.GetPath().AppendASCII("debug_file.pma");
     std::unique_ptr<PersistentMemoryAllocator> allocator = CreateAllocator();
     ASSERT_NE(nullptr, allocator);
 

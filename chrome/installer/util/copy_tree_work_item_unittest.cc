@@ -201,7 +201,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileSameContent) {
   EXPECT_TRUE(work_item->Do());
 
   // Get the path of backup file
-  base::FilePath backup_file(work_item->backup_path_.path());
+  base::FilePath backup_file(work_item->backup_path_.GetPath());
   EXPECT_FALSE(backup_file.empty());
   backup_file = backup_file.AppendASCII("File_To.txt");
 
@@ -280,7 +280,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileAndCleanup) {
     EXPECT_TRUE(work_item->Do());
 
     // Get the path of backup file
-    backup_file = work_item->backup_path_.path();
+    backup_file = work_item->backup_path_.GetPath();
     EXPECT_FALSE(backup_file.empty());
     backup_file = backup_file.AppendASCII("File_To.txt");
 
@@ -341,7 +341,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
   EXPECT_TRUE(work_item->Do());
 
   // Get the path of backup file
-  base::FilePath backup_file(work_item->backup_path_.path());
+  base::FilePath backup_file(work_item->backup_path_.GetPath());
   EXPECT_FALSE(backup_file.empty());
   backup_file = backup_file.AppendASCII("File_To");
 
@@ -422,7 +422,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
   EXPECT_TRUE(base::ContentsEqual(exe_full_path, file_name_to));
   // verify that the backup path does not exist
-  EXPECT_TRUE(work_item->backup_path_.path().empty());
+  EXPECT_FALSE(work_item->backup_path_created_);
   EXPECT_TRUE(base::ContentsEqual(file_name_from, alternate_to));
 
   // test rollback()
@@ -432,7 +432,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   EXPECT_TRUE(base::PathExists(file_name_to));
   EXPECT_EQ(0, ReadTextFile(file_name_from.value()).compare(text_content_1));
   EXPECT_TRUE(base::ContentsEqual(exe_full_path, file_name_to));
-  EXPECT_TRUE(work_item->backup_path_.path().empty());
+  EXPECT_FALSE(work_item->backup_path_created_);
   // the alternate file should be gone after rollback
   EXPECT_FALSE(base::PathExists(alternate_to));
 
@@ -453,7 +453,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
   EXPECT_TRUE(work_item->Do());
 
   // Get the path of backup file
-  base::FilePath backup_file(work_item->backup_path_.path());
+  base::FilePath backup_file(work_item->backup_path_.GetPath());
   EXPECT_FALSE(backup_file.empty());
   backup_file = backup_file.AppendASCII("File_To");
 
@@ -606,7 +606,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyFileInUseAndCleanup) {
     EXPECT_TRUE(work_item->Do());
 
     // Get the path of backup file
-    backup_file = work_item->backup_path_.path();
+    backup_file = work_item->backup_path_.GetPath();
     EXPECT_FALSE(backup_file.empty());
     backup_file = backup_file.AppendASCII("File_To");
 

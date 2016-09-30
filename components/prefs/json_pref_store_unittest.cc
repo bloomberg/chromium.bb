@@ -1081,7 +1081,7 @@ class JsonPrefStoreCallbackTest : public JsonPrefStoreTest {
  protected:
   void SetUp() override {
     JsonPrefStoreTest::SetUp();
-    test_file_ = temp_dir_.path().AppendASCII("test.json");
+    test_file_ = temp_dir_.GetPath().AppendASCII("test.json");
   }
 
   scoped_refptr<JsonPrefStore> CreatePrefStore() {

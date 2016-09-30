@@ -121,40 +121,35 @@ class InstallShortcutTest : public testing::Test {
     ASSERT_TRUE(fake_user_quick_launch_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_start_menu_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_common_start_menu_.CreateUniqueTempDir());
-    user_desktop_override_.reset(
-        new base::ScopedPathOverride(base::DIR_USER_DESKTOP,
-                                     fake_user_desktop_.path()));
-    common_desktop_override_.reset(
-        new base::ScopedPathOverride(base::DIR_COMMON_DESKTOP,
-                                     fake_common_desktop_.path()));
-    user_quick_launch_override_.reset(
-        new base::ScopedPathOverride(base::DIR_USER_QUICK_LAUNCH,
-                                     fake_user_quick_launch_.path()));
-    start_menu_override_.reset(
-        new base::ScopedPathOverride(base::DIR_START_MENU,
-                                     fake_start_menu_.path()));
-    common_start_menu_override_.reset(
-        new base::ScopedPathOverride(base::DIR_COMMON_START_MENU,
-                                     fake_common_start_menu_.path()));
+    user_desktop_override_.reset(new base::ScopedPathOverride(
+        base::DIR_USER_DESKTOP, fake_user_desktop_.GetPath()));
+    common_desktop_override_.reset(new base::ScopedPathOverride(
+        base::DIR_COMMON_DESKTOP, fake_common_desktop_.GetPath()));
+    user_quick_launch_override_.reset(new base::ScopedPathOverride(
+        base::DIR_USER_QUICK_LAUNCH, fake_user_quick_launch_.GetPath()));
+    start_menu_override_.reset(new base::ScopedPathOverride(
+        base::DIR_START_MENU, fake_start_menu_.GetPath()));
+    common_start_menu_override_.reset(new base::ScopedPathOverride(
+        base::DIR_COMMON_START_MENU, fake_common_start_menu_.GetPath()));
 
     base::string16 shortcut_name(dist_->GetShortcutName() + installer::kLnkExt);
 
-    user_desktop_shortcut_ =
-        fake_user_desktop_.path().Append(shortcut_name);
+    user_desktop_shortcut_ = fake_user_desktop_.GetPath().Append(shortcut_name);
     user_quick_launch_shortcut_ =
-        fake_user_quick_launch_.path().Append(shortcut_name);
-    user_start_menu_shortcut_ = fake_start_menu_.path().Append(shortcut_name);
+        fake_user_quick_launch_.GetPath().Append(shortcut_name);
+    user_start_menu_shortcut_ =
+        fake_start_menu_.GetPath().Append(shortcut_name);
     user_start_menu_subdir_shortcut_ =
-        fake_start_menu_.path()
+        fake_start_menu_.GetPath()
             .Append(dist_->GetStartMenuShortcutSubfolder(
                 BrowserDistribution::SUBFOLDER_CHROME))
             .Append(shortcut_name);
     system_desktop_shortcut_ =
-        fake_common_desktop_.path().Append(shortcut_name);
+        fake_common_desktop_.GetPath().Append(shortcut_name);
     system_start_menu_shortcut_ =
-        fake_common_start_menu_.path().Append(shortcut_name);
+        fake_common_start_menu_.GetPath().Append(shortcut_name);
     system_start_menu_subdir_shortcut_ =
-        fake_common_start_menu_.path()
+        fake_common_start_menu_.GetPath()
             .Append(dist_->GetStartMenuShortcutSubfolder(
                 BrowserDistribution::SUBFOLDER_CHROME))
             .Append(shortcut_name);
@@ -376,7 +371,7 @@ TEST_F(InstallShortcutTest, ReplaceAll) {
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &dummy_target));
   dummy_properties.set_target(dummy_target);
-  dummy_properties.set_working_dir(fake_user_desktop_.path());
+  dummy_properties.set_working_dir(fake_user_desktop_.GetPath());
   dummy_properties.set_arguments(L"--dummy --args");
   dummy_properties.set_app_id(L"El.Dummiest");
 
@@ -407,7 +402,7 @@ TEST_F(InstallShortcutTest, ReplaceExisting) {
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &dummy_target));
   dummy_properties.set_target(dummy_target);
-  dummy_properties.set_working_dir(fake_user_desktop_.path());
+  dummy_properties.set_working_dir(fake_user_desktop_.GetPath());
   dummy_properties.set_arguments(L"--dummy --args");
   dummy_properties.set_app_id(L"El.Dummiest");
 
@@ -447,7 +442,7 @@ TEST_P(MigrateShortcutTest, MigrateAwayFromDeprecatedStartMenuTest) {
   ASSERT_TRUE(
       base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &dummy_target));
   dummy_properties.set_target(expected_properties_.target);
-  dummy_properties.set_working_dir(fake_user_desktop_.path());
+  dummy_properties.set_working_dir(fake_user_desktop_.GetPath());
   dummy_properties.set_arguments(L"--dummy --args");
   dummy_properties.set_app_id(L"El.Dummiest");
 

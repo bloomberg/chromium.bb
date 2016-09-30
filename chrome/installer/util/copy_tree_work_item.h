@@ -79,6 +79,9 @@ class CopyTreeWorkItem : public WorkItem {
   // The temporary directory into which the original dest_path_ has been moved.
   base::ScopedTempDir backup_path_;
 
+  // Whether |backup_path_| was created.
+  bool backup_path_created_;
+
   FRIEND_TEST_ALL_PREFIXES(CopyTreeWorkItemTest, CopyFileSameContent);
   FRIEND_TEST_ALL_PREFIXES(CopyTreeWorkItemTest, CopyFileInUse);
   FRIEND_TEST_ALL_PREFIXES(CopyTreeWorkItemTest, CopyFileAndCleanup);

@@ -25,8 +25,8 @@ CopyTreeWorkItem::CopyTreeWorkItem(const base::FilePath& source_path,
       alternative_path_(alternative_path),
       copied_to_dest_path_(false),
       moved_to_backup_(false),
-      copied_to_alternate_path_(false) {
-}
+      copied_to_alternate_path_(false),
+      backup_path_created_(false) {}
 
 bool CopyTreeWorkItem::DoImpl() {
   if (!base::PathExists(source_path_)) {
@@ -76,8 +76,10 @@ bool CopyTreeWorkItem::DoImpl() {
                   << temp_dir_.value();
       return false;
     }
+    backup_path_created_ = true;
 
-    base::FilePath backup = backup_path_.path().Append(dest_path_.BaseName());
+    base::FilePath backup =
+        backup_path_.GetPath().Append(dest_path_.BaseName());
     if (base::Move(dest_path_, backup)) {
       moved_to_backup_ = true;
       VLOG(1) << "Moved destination " << dest_path_.value() <<
@@ -113,7 +115,7 @@ void CopyTreeWorkItem::RollbackImpl() {
     LOG(ERROR) << "Can not delete " << dest_path_.value();
   }
   if (moved_to_backup_) {
-    base::FilePath backup(backup_path_.path().Append(dest_path_.BaseName()));
+    base::FilePath backup(backup_path_.GetPath().Append(dest_path_.BaseName()));
     if (!base::Move(backup, dest_path_)) {
       PLOG(ERROR) << "failed move " << backup.value()
                   << " to " << dest_path_.value();

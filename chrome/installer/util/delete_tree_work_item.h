@@ -33,7 +33,7 @@ class DeleteTreeWorkItem : public WorkItem {
   void RollbackImpl() override;
 
   // Return temporary path for work based on |backup_path_| and |root_path_|.
-  base::FilePath GetBackupPath();
+  const base::FilePath& GetBackupPath();
 
   // Attempts to delete |root_path_|. Returns true on success.
   bool DeleteRoot();
@@ -48,7 +48,11 @@ class DeleteTreeWorkItem : public WorkItem {
   const base::FilePath temp_path_;
 
   // The temporary directory into which the original root_path_ has been moved.
-  base::ScopedTempDir backup_path_;
+  base::ScopedTempDir backup_dir_;
+
+  // Caches the return value of GetBackupPath(). This is empty if |backup_dir_|
+  // has not been created.
+  base::FilePath backup_path_;
 
   // Set to true once root_path_ has been moved into backup_path_.
   bool moved_to_backup_ = false;

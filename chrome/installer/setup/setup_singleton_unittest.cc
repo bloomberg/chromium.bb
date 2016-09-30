@@ -143,7 +143,9 @@ class SetupSingletonTest : public base::MultiProcessTest {
     return SpawnChildWithOptions(process_name, options);
   }
 
-  const base::FilePath& install_dir_path() const { return install_dir_.path(); }
+  const base::FilePath& install_dir_path() const {
+    return install_dir_.GetPath();
+  }
 
  private:
   base::ScopedTempDir install_dir_;

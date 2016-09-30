@@ -1129,18 +1129,17 @@ bool HandleNonInstallCmdLineOptions(const base::FilePath& setup_exe,
           installer::switches::kUpdateSetupExe));
       VLOG(1) << "Opening archive " << compressed_archive.value();
       if (installer::ArchivePatchHelper::UncompressAndPatch(
-              temp_path.path(),
-              compressed_archive,
-              setup_exe,
+              temp_path.GetPath(), compressed_archive, setup_exe,
               cmd_line.GetSwitchValuePath(installer::switches::kNewSetupExe))) {
         status = installer::NEW_VERSION_UPDATED;
       }
       if (!temp_path.Delete()) {
         // PLOG would be nice, but Delete() doesn't leave a meaningful value in
         // the Windows last-error code.
-        LOG(WARNING) << "Scheduling temporary path " << temp_path.path().value()
+        LOG(WARNING) << "Scheduling temporary path "
+                     << temp_path.GetPath().value()
                      << " for deletion at reboot.";
-        ScheduleDirectoryForDeletion(temp_path.path());
+        ScheduleDirectoryForDeletion(temp_path.GetPath());
       }
     }
 
