@@ -100,7 +100,8 @@ class PipelineHelper {
     std::unique_ptr<MediaPipelineBackendDefault> backend =
         base::MakeUnique<MediaPipelineBackendDefault>();
     pipeline_backend_ = backend.get();
-    media_pipeline_.Initialize(kLoadTypeURL, std::move(backend));
+    media_pipeline_ = base::MakeUnique<MediaPipelineImpl>();
+    media_pipeline_->Initialize(kLoadTypeURL, std::move(backend));
 
     if (have_audio_) {
       ::media::AudioDecoderConfig audio_config(
@@ -110,7 +111,7 @@ class PipelineHelper {
       AvPipelineClient client;
       client.eos_cb = base::Bind(&PipelineHelper::OnEos, base::Unretained(this),
                                  STREAM_AUDIO);
-      ::media::PipelineStatus status = media_pipeline_.InitializeAudio(
+      ::media::PipelineStatus status = media_pipeline_->InitializeAudio(
           audio_config, client, CreateFrameProvider());
       ASSERT_EQ(::media::PIPELINE_OK, status);
     }
@@ -124,7 +125,7 @@ class PipelineHelper {
       VideoPipelineClient client;
       client.av_pipeline_client.eos_cb = base::Bind(
           &PipelineHelper::OnEos, base::Unretained(this), STREAM_VIDEO);
-      ::media::PipelineStatus status = media_pipeline_.InitializeVideo(
+      ::media::PipelineStatus status = media_pipeline_->InitializeVideo(
           video_configs, client, CreateFrameProvider());
       ASSERT_EQ(::media::PIPELINE_OK, status);
     }
@@ -132,16 +133,18 @@ class PipelineHelper {
 
   void Start(const base::Closure& eos_cb) {
     eos_cb_ = eos_cb;
-    eos_[STREAM_AUDIO] = !media_pipeline_.HasAudio();
-    eos_[STREAM_VIDEO] = !media_pipeline_.HasVideo();
+    eos_[STREAM_AUDIO] = !media_pipeline_->HasAudio();
+    eos_[STREAM_VIDEO] = !media_pipeline_->HasVideo();
     base::TimeDelta start_time = base::TimeDelta::FromMilliseconds(0);
-    media_pipeline_.StartPlayingFrom(start_time);
-    media_pipeline_.SetPlaybackRate(1.0);
+    media_pipeline_->StartPlayingFrom(start_time);
+    media_pipeline_->SetPlaybackRate(1.0);
   }
-  void SetCdm() { media_pipeline_.SetCdm(cdm_context_.get()); }
-  void Flush(const base::Closure& flush_cb) { media_pipeline_.Flush(flush_cb); }
+  void SetCdm() { media_pipeline_->SetCdm(cdm_context_.get()); }
+  void Flush(const base::Closure& flush_cb) {
+    media_pipeline_->Flush(flush_cb);
+  }
   void Stop() {
-    media_pipeline_.Stop();
+    media_pipeline_.reset();
     base::MessageLoop::current()->QuitWhenIdle();
   }
   void SetCdmLicenseInstalled() { cdm_context_->SetLicenseInstalled(); }
@@ -187,8 +190,8 @@ class PipelineHelper {
   bool encrypted_;
   bool eos_[2];
   base::Closure eos_cb_;
-  MediaPipelineImpl media_pipeline_;
   std::unique_ptr<CastCdmContextForTest> cdm_context_;
+  std::unique_ptr<MediaPipelineImpl> media_pipeline_;
   MediaPipelineBackendDefault* pipeline_backend_;
 
   DISALLOW_COPY_AND_ASSIGN(PipelineHelper);

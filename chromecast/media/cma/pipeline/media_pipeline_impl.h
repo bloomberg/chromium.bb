@@ -57,7 +57,6 @@ class MediaPipelineImpl {
       std::unique_ptr<CodedFrameProvider> frame_provider);
   void StartPlayingFrom(base::TimeDelta time);
   void Flush(const base::Closure& flush_cb);
-  void Stop();
   void SetPlaybackRate(double playback_rate);
   void SetVolume(float volume);
   base::TimeDelta GetMediaTime() const;

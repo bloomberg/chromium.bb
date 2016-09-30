@@ -258,22 +258,9 @@ void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
 
   buffering_controller_->Reset();
 
-  // 1. Stop both the audio and video pipeline so that they stop feeding
-  // buffers to the backend while the pipeline is being flushed.
-  if (audio_pipeline_)
-    audio_pipeline_->Stop();
-  if (video_pipeline_)
-    video_pipeline_->Stop();
-
-  // 2. Stop the backend, so that the backend won't push their pending buffer,
-  // which may be invalidated later, to hardware. (b/25342604)
-  media_pipeline_backend_->Stop();
-  backend_state_ = BACKEND_STATE_INITIALIZED;
-  metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
-      "Cast.Platform.Ended");
-
-  // 3. Flush both the audio and video pipeline. This will flush the frame
-  // provider and invalidate all the unreleased buffers.
+  // Flush both audio and video pipeline. This will flush the frame
+  // provider and stop feeding buffers to the backend.
+  // MediaPipelineImpl::OnFlushDone will stop the backend once flush completes.
   pending_flush_task_.reset(new FlushTask);
   pending_flush_task_->audio_flushed = !audio_pipeline_;
   pending_flush_task_->video_flushed = !video_pipeline_;
@@ -286,33 +273,6 @@ void MediaPipelineImpl::Flush(const base::Closure& flush_cb) {
     video_pipeline_->Flush(
         base::Bind(&MediaPipelineImpl::OnFlushDone, weak_this_, false));
   }
-}
-
-void MediaPipelineImpl::Stop() {
-  CMALOG(kLogControl) << __FUNCTION__;
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(audio_pipeline_ || video_pipeline_);
-  if (backend_state_ != BACKEND_STATE_UNINITIALIZED)
-    metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
-        "Cast.Platform.Ended");
-
-  // Cancel pending flush callbacks since we are about to stop/shutdown
-  // audio/video pipelines. This will ensure A/V Flush won't happen in
-  // stopped state.
-  pending_flush_task_.reset();
-
-  // Stop both the audio and video pipeline.
-  if (audio_pipeline_)
-    audio_pipeline_->Stop();
-  if (video_pipeline_)
-    video_pipeline_->Stop();
-
-  // Release hardware resources on Stop.
-  audio_pipeline_ = nullptr;
-  video_pipeline_ = nullptr;
-  audio_decoder_.reset();
-  media_pipeline_backend_.reset();
-  backend_state_ = BACKEND_STATE_UNINITIALIZED;
 }
 
 void MediaPipelineImpl::SetPlaybackRate(double rate) {
@@ -366,8 +326,7 @@ bool MediaPipelineImpl::HasVideo() const {
 
 void MediaPipelineImpl::OnFlushDone(bool is_audio_stream) {
   CMALOG(kLogControl) << __FUNCTION__ << " is_audio_stream=" << is_audio_stream;
-  if (!pending_flush_task_)
-    return;
+  DCHECK(pending_flush_task_);
 
   if (is_audio_stream) {
     DCHECK(!pending_flush_task_->audio_flushed);
@@ -379,6 +338,13 @@ void MediaPipelineImpl::OnFlushDone(bool is_audio_stream) {
 
   if (pending_flush_task_->audio_flushed &&
       pending_flush_task_->video_flushed) {
+    // Stop the backend, so that the backend won't push their pending buffer,
+    // which may be invalidated later, to hardware. (b/25342604)
+    media_pipeline_backend_->Stop();
+    backend_state_ = BACKEND_STATE_INITIALIZED;
+    metrics::CastMetricsHelper::GetInstance()->RecordApplicationEvent(
+        "Cast.Platform.Ended");
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   pending_flush_task_->done_cb);
     pending_flush_task_.reset();

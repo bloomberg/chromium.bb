@@ -96,7 +96,8 @@ bool AvPipelineImpl::StartPlayingFrom(
   if (buffering_state_.get())
     buffering_state_->SetMediaTime(time);
 
-  // Start feeding the pipeline.
+  // Discard any previously pushed buffer and start feeding the pipeline.
+  pushed_buffer_ = nullptr;
   enable_feeding_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&AvPipelineImpl::FetchBuffer, weak_this_));
@@ -114,18 +115,30 @@ void AvPipelineImpl::Flush(const base::Closure& flush_cb) {
     CMALOG(kLogControl) << __FUNCTION__ << " called while in error state";
     return;
   }
-  DCHECK_EQ(state_, kStopped);
+  DCHECK_EQ(state_, kPlaying);
   set_state(kFlushing);
 
   flush_cb_ = flush_cb;
+  // Stop feeding the pipeline.
+  // Do not invalidate |pushed_buffer_| here since the backend may still be
+  // using it. Invalidate it in StartPlayingFrom on the assumption that
+  // the backend will be stopped after this function returns.
+  enable_feeding_ = false;
   // Remove any pending buffer.
   pending_buffer_ = nullptr;
-  pushed_buffer_ = nullptr;
   // Remove any frames left in the frame provider.
   pending_read_ = false;
   buffered_time_ = ::media::kNoTimestamp;
   playable_buffered_time_ = ::media::kNoTimestamp;
   non_playable_frames_.clear();
+
+  // Drop any pending asynchronous decryption, so any pending
+  // OnBufferDecrypted() callback will not be called. StartPlayingFrom() sets
+  // enable_feeding_ back to true, so if a pending decryption callback from
+  // before Stop() is allowed to complete after StartPlayingFrom() is called
+  // again, it will think everything is fine and try to push a buffer, resulting
+  // in a double push.
+  decrypt_weak_factory_.InvalidateWeakPtrs();
 
   frame_provider_->Flush(base::Bind(&AvPipelineImpl::OnFlushDone, weak_this_));
 }
@@ -141,21 +154,6 @@ void AvPipelineImpl::OnFlushDone() {
   DCHECK_EQ(state_, kFlushing);
   set_state(kFlushed);
   base::ResetAndReturn(&flush_cb_).Run();
-}
-
-void AvPipelineImpl::Stop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  CMALOG(kLogControl) << __FUNCTION__;
-  // Stop feeding the pipeline.
-  enable_feeding_ = false;
-  // Drop any pending asynchronous decryption, so any pending
-  // OnBufferDecrypted() callback will not be called. StartPlayingFrom() sets
-  // enable_feeding_ back to true, so if a pending decryption callback from
-  // before Stop() is allowed to complete after StartPlayingFrom() is called
-  // again, it will think everything is fine and try to push a buffer, resulting
-  // in a double push.
-  decrypt_weak_factory_.InvalidateWeakPtrs();
-  set_state(kStopped);
 }
 
 void AvPipelineImpl::SetCdm(CastCdmContext* cast_cdm_context) {
