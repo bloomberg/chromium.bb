@@ -85,11 +85,13 @@ drv_format_t cros_gralloc_convert_format(int format)
 	return DRV_FORMAT_NONE;
 }
 
-int32_t cros_gralloc_rendernode_open(struct driver **drv)
+static int32_t cros_gralloc_query_rendernode(struct driver **drv,
+					     const char *name)
 {
 	/* TODO(gsingh): Enable render nodes on udl/evdi. */
 	int fd;
-	char const *name = "%s/renderD%d";
+	drmVersionPtr version;
+	char const *str = "%s/renderD%d";
 	int32_t num_nodes = 63;
 	int32_t min_node = 128;
 	int32_t max_node = (min_node + num_nodes);
@@ -97,7 +99,7 @@ int32_t cros_gralloc_rendernode_open(struct driver **drv)
 	for (int i = min_node; i < max_node; i++) {
 		char *node;
 
-		if (asprintf(&node, name, DRM_DIR_NAME, i) < 0)
+		if (asprintf(&node, str, DRM_DIR_NAME, i) < 0)
 			continue;
 
 		fd = open(node, O_RDWR, 0);
@@ -106,6 +108,14 @@ int32_t cros_gralloc_rendernode_open(struct driver **drv)
 		if (fd < 0)
 			continue;
 
+		version = drmGetVersion(fd);
+
+		if (version && name && !strcmp(version->name, name)) {
+			drmFreeVersion(version);
+			continue;
+		}
+
+		drmFreeVersion(version);
 		*drv = drv_create(fd);
 
 		if (*drv)
@@ -113,6 +123,18 @@ int32_t cros_gralloc_rendernode_open(struct driver **drv)
 	}
 
 	return CROS_GRALLOC_ERROR_NO_RESOURCES;
+}
+
+int32_t cros_gralloc_rendernode_open(struct driver **drv)
+{
+	int32_t ret;
+	ret = cros_gralloc_query_rendernode(drv, NULL);
+
+	/* Look for vgem driver if no hardware is found. */
+	if (ret)
+		ret = cros_gralloc_query_rendernode(drv, "vgem");
+
+	return ret;
 }
 
 int32_t cros_gralloc_validate_handle(struct cros_gralloc_handle *hnd)

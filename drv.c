@@ -42,6 +42,7 @@ extern struct backend backend_rockchip;
 extern struct backend backend_tegra;
 #endif
 extern struct backend backend_udl;
+extern struct backend backend_vgem;
 extern struct backend backend_virtio_gpu;
 
 static struct backend *drv_get_backend(int fd)
@@ -80,6 +81,7 @@ static struct backend *drv_get_backend(int fd)
 		&backend_tegra,
 #endif
 		&backend_udl,
+		&backend_vgem,
 		&backend_virtio_gpu,
 	};
 
