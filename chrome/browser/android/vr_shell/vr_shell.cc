@@ -126,8 +126,8 @@ VrShell::VrShell(JNIEnv* env,
       weak_ptr_factory_(this) {
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
-  content_compositor_.reset(new VrCompositor(content_window));
-  ui_compositor_.reset(new VrCompositor(ui_window));
+  content_compositor_.reset(new VrCompositor(content_window, false));
+  ui_compositor_.reset(new VrCompositor(ui_window, true));
 
   float screen_width = kScreenWidthRatio * desktop_height_;
   float screen_height = kScreenHeightRatio * desktop_height_;
@@ -498,7 +498,15 @@ base::WeakPtr<VrShell> VrShell::GetWeakPtr() {
 }
 
 void VrShell::OnDomContentsLoaded() {
-  NOTIMPLEMENTED();
+  // TODO(mthiesse): Setting the background to transparent after the DOM content
+  // has loaded is a hack to work around the background not updating when we set
+  // it to transparent unless we perform a very specific sequence of events.
+  // First the page background must load as not transparent, then we set the
+  // background of the renderer to transparent, then we update the page
+  // background to be transparent. This is probably a bug in blink that we
+  // should fix.
+  ui_cvc_->GetWebContents()->GetRenderWidgetHostView()->SetBackgroundColor(
+      SK_ColorTRANSPARENT);
 }
 
 void VrShell::SetUiTextureSize(int width, int height) {

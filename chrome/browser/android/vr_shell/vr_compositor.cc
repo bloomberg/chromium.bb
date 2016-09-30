@@ -8,17 +8,24 @@
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/window_android.h"
 
 namespace vr_shell {
 
-VrCompositor::VrCompositor(ui::WindowAndroid* window) {
+VrCompositor::VrCompositor(ui::WindowAndroid* window, bool transparent)
+    : background_color_(SK_ColorWHITE),
+      transparent_(transparent) {
   compositor_.reset(content::Compositor::Create(this, window));
+  compositor_->SetHasTransparentBackground(transparent);
 }
 
 VrCompositor::~VrCompositor() {
-  if (layer_parent_ && layer_) {
-    layer_parent_->AddChild(layer_);
+  if (layer_) {
+    layer_->SetBackgroundColor(background_color_);
+    if (layer_parent_) {
+      layer_parent_->AddChild(layer_);
+    }
   }
 }
 
@@ -33,6 +40,12 @@ void VrCompositor::SetLayer(content::ContentViewCore* core) {
   // removing it from its previous parent, so we remember that and restore it to
   // its previous parent on teardown.
   layer_ = view_android->GetLayer();
+
+  // Remember the old background color to be restored later.
+  background_color_ = layer_->background_color();
+  if (transparent_) {
+    layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
+  }
   layer_parent_ = layer_->parent();
   compositor_->SetRootLayer(view_android->GetLayer());
 }

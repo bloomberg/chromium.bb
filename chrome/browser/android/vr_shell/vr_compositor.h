@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "content/public/browser/android/compositor_client.h"
 
+typedef unsigned int SkColor;
+
 namespace cc {
 class Layer;
 }
@@ -28,7 +30,7 @@ namespace vr_shell {
 
 class VrCompositor : public content::CompositorClient {
  public:
-  explicit VrCompositor(ui::WindowAndroid* window);
+  VrCompositor(ui::WindowAndroid* window, bool is_transparent);
   ~VrCompositor() override;
 
   void SurfaceDestroyed();
@@ -46,6 +48,8 @@ class VrCompositor : public content::CompositorClient {
 
   cc::Layer* layer_ = nullptr;
   cc::Layer* layer_parent_ = nullptr;
+  SkColor background_color_;
+  bool transparent_;
 
   DISALLOW_COPY_AND_ASSIGN(VrCompositor);
 };
