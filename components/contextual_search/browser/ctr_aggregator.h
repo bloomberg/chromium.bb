@@ -23,7 +23,7 @@ namespace contextual_search {
 // Number of weeks of data needed for 28 days.
 const int kNumWeeksNeededFor28DayData = 4;
 
-// Usage: Create a CTRAggregator and start recording impressions or reading
+// Usage: Create a CtrAggregator and start recording impressions or reading
 // aggregated data.  Get data from the previous week or previous 4-week period
 // that ended with the previous week.
 // A new week starts at an arbitrary time based on seconds since the Epoch.
@@ -31,18 +31,22 @@ const int kNumWeeksNeededFor28DayData = 4;
 // be complete only if the HasPrevious method returns true.  If one of the data
 // accessors is called when the data is not complete invalid data may be
 // returned.
-class CTRAggregator {
+class CtrAggregator {
  public:
-  // Constructs a CTRAggregator using the given |storage| mechanism.
+  // Constructs a CtrAggregator using the given |storage| mechanism.
   // Data is stored by |storage| typically on persistent device-local storage.
   // A callback through the storage interface may occur at construction time,
   // so the |storage| must be fully initialized when this constructor is
   // called.
-  CTRAggregator(WeeklyActivityStorage& storage);
-  ~CTRAggregator();
+  CtrAggregator(WeeklyActivityStorage& storage);
+  ~CtrAggregator();
 
   // Records an impression.  Records a click if |did_click| is true.
   void RecordImpression(bool did_click);
+
+  // Returns the number for the current week. Useful for checking when the
+  // current week changes.
+  int GetCurrentWeekNumber();
 
   // Returns whether we have the previous week's data for this user.
   bool HasPreviousWeekData();
@@ -55,7 +59,7 @@ class CTRAggregator {
   // Gets the CTR from the previous week.
   // Callers must check if there is previous week's data for this user, or
   // invalid data may be returned.
-  float GetPreviousWeekCTR();
+  float GetPreviousWeekCtr();
 
   // Returns whether we have data from a 28 day period ending in the previous
   // week.
@@ -70,7 +74,7 @@ class CTRAggregator {
   // Gets the CTR from a 28 day period ending in the previous week.
   // Callers must check if there is previous 28 day data for this user, or
   // invalid data may be returned.
-  float GetPrevious28DayCTR();
+  float GetPrevious28DayCtr();
 
  private:
   // This implementation uses a fixed number of bins to store integer impression
@@ -78,15 +82,15 @@ class CTRAggregator {
   // complete weeks).  Another bin keeps track of the current week being
   // written.  Yet another bin records when data was first stored or accessed so
   // we can know when a time period has complete data.
-  friend class CTRAggregatorTest;
-  FRIEND_TEST_ALL_PREFIXES(CTRAggregatorTest, SimpleOperationTest);
-  FRIEND_TEST_ALL_PREFIXES(CTRAggregatorTest, MultiWeekTest);
-  FRIEND_TEST_ALL_PREFIXES(CTRAggregatorTest, SkipOneWeekTest);
-  FRIEND_TEST_ALL_PREFIXES(CTRAggregatorTest, SkipThreeWeeksTest);
-  FRIEND_TEST_ALL_PREFIXES(CTRAggregatorTest, SkipFourWeeksTest);
+  friend class CtrAggregatorTest;
+  FRIEND_TEST_ALL_PREFIXES(CtrAggregatorTest, SimpleOperationTest);
+  FRIEND_TEST_ALL_PREFIXES(CtrAggregatorTest, MultiWeekTest);
+  FRIEND_TEST_ALL_PREFIXES(CtrAggregatorTest, SkipOneWeekTest);
+  FRIEND_TEST_ALL_PREFIXES(CtrAggregatorTest, SkipThreeWeeksTest);
+  FRIEND_TEST_ALL_PREFIXES(CtrAggregatorTest, SkipFourWeeksTest);
 
   // Constructs an instance for testing; sets the week.
-  CTRAggregator(WeeklyActivityStorage& storage, int week_number);
+  CtrAggregator(WeeklyActivityStorage& storage, int week_number);
   // For testing, increments the current week number by |weeks|.
   void IncrementWeek(int weeks);
 
@@ -106,7 +110,7 @@ class CTRAggregator {
   // The current week number, expressed as the number of weeks since Epoch.
   int week_number_;
 
-  DISALLOW_COPY_AND_ASSIGN(CTRAggregator);
+  DISALLOW_COPY_AND_ASSIGN(CtrAggregator);
 };
 
 }  // namespace contextual_search

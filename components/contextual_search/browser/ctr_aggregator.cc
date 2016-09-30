@@ -18,7 +18,7 @@ const int kReasonableMinWeek = 2000;
 
 namespace contextual_search {
 
-CTRAggregator::CTRAggregator(WeeklyActivityStorage& storage)
+CtrAggregator::CtrAggregator(WeeklyActivityStorage& storage)
     : storage_(storage) {
   base::Time now = base::Time::NowFromSystemTime();
   double now_in_seconds = now.ToDoubleT();
@@ -30,29 +30,33 @@ CTRAggregator::CTRAggregator(WeeklyActivityStorage& storage)
 }
 
 // Testing only
-CTRAggregator::CTRAggregator(WeeklyActivityStorage& storage, int week_number)
+CtrAggregator::CtrAggregator(WeeklyActivityStorage& storage, int week_number)
     : storage_(storage), week_number_(week_number) {
   storage_.AdvanceToWeek(week_number_);
 }
 
-CTRAggregator::~CTRAggregator() {}
+CtrAggregator::~CtrAggregator() {}
 
-void CTRAggregator::RecordImpression(bool did_click) {
+void CtrAggregator::RecordImpression(bool did_click) {
   storage_.WriteImpressions(week_number_,
                             1 + storage_.ReadImpressions(week_number_));
   if (did_click)
     storage_.WriteClicks(week_number_, 1 + storage_.ReadClicks(week_number_));
 }
 
-bool CTRAggregator::HasPreviousWeekData() {
+int CtrAggregator::GetCurrentWeekNumber() {
+  return week_number_;
+}
+
+bool CtrAggregator::HasPreviousWeekData() {
   return storage_.HasData(week_number_ - 1);
 }
 
-int CTRAggregator::GetPreviousWeekImpressions() {
+int CtrAggregator::GetPreviousWeekImpressions() {
   return storage_.ReadImpressions(week_number_ - 1);
 }
 
-float CTRAggregator::GetPreviousWeekCTR() {
+float CtrAggregator::GetPreviousWeekCtr() {
   if (!HasPreviousWeekData())
     return NAN;
 
@@ -63,7 +67,7 @@ float CTRAggregator::GetPreviousWeekCTR() {
   return base::saturated_cast<float>(clicks) / impressions;
 }
 
-bool CTRAggregator::HasPrevious28DayData() {
+bool CtrAggregator::HasPrevious28DayData() {
   for (int previous = 1; previous <= kNumWeeksNeededFor28DayData; previous++) {
     if (!storage_.HasData(week_number_ - previous))
       return false;
@@ -71,7 +75,7 @@ bool CTRAggregator::HasPrevious28DayData() {
   return true;
 }
 
-float CTRAggregator::GetPrevious28DayCTR() {
+float CtrAggregator::GetPrevious28DayCtr() {
   if (!HasPrevious28DayData())
     return NAN;
 
@@ -82,7 +86,7 @@ float CTRAggregator::GetPrevious28DayCTR() {
   return base::saturated_cast<float>(clicks) / impressions;
 }
 
-int CTRAggregator::GetPrevious28DayImpressions() {
+int CtrAggregator::GetPrevious28DayImpressions() {
   int impressions = 0;
   for (int previous = 1; previous <= kNumWeeksNeededFor28DayData; previous++) {
     impressions += storage_.ReadImpressions(week_number_ - previous);
@@ -92,11 +96,11 @@ int CTRAggregator::GetPrevious28DayImpressions() {
 
 // private
 
-int CTRAggregator::GetPreviousWeekClicks() {
+int CtrAggregator::GetPreviousWeekClicks() {
   return storage_.ReadClicks(week_number_ - 1);
 }
 
-int CTRAggregator::GetPrevious28DayClicks() {
+int CtrAggregator::GetPrevious28DayClicks() {
   int clicks = 0;
   for (int previous = 1; previous <= kNumWeeksNeededFor28DayData; previous++) {
     clicks += storage_.ReadClicks(week_number_ - previous);
@@ -106,7 +110,7 @@ int CTRAggregator::GetPrevious28DayClicks() {
 
 // Testing only
 
-void CTRAggregator::IncrementWeek(int weeks) {
+void CtrAggregator::IncrementWeek(int weeks) {
   week_number_ += weeks;
   storage_.AdvanceToWeek(week_number_);
 }

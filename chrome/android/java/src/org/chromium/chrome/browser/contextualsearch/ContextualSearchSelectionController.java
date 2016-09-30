@@ -67,6 +67,7 @@ public class ContextualSearchSelectionController {
     private boolean mWasTapGestureDetected;
     // Reflects whether the last tap was valid and whether we still have a tap-based selection.
     private ContextualSearchTapState mLastTapState;
+    private TapSuppressionHeuristics mTapHeuristics;
     private boolean mIsWaitingForInvalidTapDetection;
     private boolean mIsSelectionEstablished;
     private boolean mShouldHandleSelectionModification;
@@ -372,16 +373,18 @@ public class ContextualSearchSelectionController {
             ChromePreferenceManager prefs = ChromePreferenceManager.getInstance(mActivity);
             int adjustedTapsSinceOpen = prefs.getContextualSearchTapCount()
                     - prefs.getContextualSearchTapQuickAnswerCount();
-            TapSuppressionHeuristics tapHeuristics =
+            // Explicitly destroy the old heuristics so native code can dispose data.
+            if (mTapHeuristics != null) mTapHeuristics.destroy();
+            mTapHeuristics =
                     new TapSuppressionHeuristics(this, mLastTapState, x, y, adjustedTapsSinceOpen);
             // TODO(donnd): Move to be called when the panel closes to work with states that change.
-            tapHeuristics.logConditionState();
+            mTapHeuristics.logConditionState();
             // Tell the manager what it needs in order to log metrics on whether the tap would have
             // been suppressed if each of the heuristics were satisfied.
-            mHandler.handleMetricsForWouldSuppressTap(tapHeuristics);
+            mHandler.handleMetricsForWouldSuppressTap(mTapHeuristics);
             mX = x;
             mY = y;
-            boolean shouldSuppressTap = tapHeuristics.shouldSuppressTap();
+            boolean shouldSuppressTap = mTapHeuristics.shouldSuppressTap();
             if (shouldSuppressTap) {
                 mHandler.handleSuppressedTap();
             } else {

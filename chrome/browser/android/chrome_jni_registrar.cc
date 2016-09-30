@@ -35,6 +35,7 @@
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
+#include "chrome/browser/android/contextualsearch/ctr_suppression.h"
 #include "chrome/browser/android/cookies/cookies_fetcher.h"
 #include "chrome/browser/android/data_usage/data_use_tab_ui_manager_android.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer_bridge.h"
@@ -251,6 +252,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"CookiesFetcher", RegisterCookiesFetcher},
     {"CreditCardScannerBridge",
      autofill::CreditCardScannerViewAndroid::Register},
+    {"CtrSuppression", RegisterCtrSuppression},
     {"DataReductionPromoInfoBarDelegate",
      DataReductionPromoInfoBarDelegateAndroid::Register},
     {"DataReductionProxySettings", DataReductionProxySettingsAndroid::Register},

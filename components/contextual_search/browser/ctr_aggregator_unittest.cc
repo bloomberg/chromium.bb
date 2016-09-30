@@ -19,10 +19,10 @@ const int kTestWeek = 2500;
 
 namespace contextual_search {
 
-class CTRAggregatorTest : public testing::Test {
+class CtrAggregatorTest : public testing::Test {
  public:
-  CTRAggregatorTest() {}
-  ~CTRAggregatorTest() override {}
+  CtrAggregatorTest() {}
+  ~CtrAggregatorTest() override {}
 
   class WeeklyActivityStorageStub : public WeeklyActivityStorage {
    public:
@@ -40,7 +40,7 @@ class CTRAggregatorTest : public testing::Test {
   void Fill4Weeks();  // Fill 4 weeks with 2 impressions, 1 click.
 
   // The class under test.
-  std::unique_ptr<CTRAggregator> aggregator_;
+  std::unique_ptr<CtrAggregator> aggregator_;
 
  protected:
   // The storage stub.
@@ -48,30 +48,30 @@ class CTRAggregatorTest : public testing::Test {
 
   void SetUp() override {
     storage_.reset(new WeeklyActivityStorageStub());
-    aggregator_.reset(new CTRAggregator(*storage_.get(), kTestWeek));
+    aggregator_.reset(new CtrAggregator(*storage_.get(), kTestWeek));
   }
 
   void TearDown() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CTRAggregatorTest);
+  DISALLOW_COPY_AND_ASSIGN(CtrAggregatorTest);
 };
 
-CTRAggregatorTest::WeeklyActivityStorageStub::WeeklyActivityStorageStub()
+CtrAggregatorTest::WeeklyActivityStorageStub::WeeklyActivityStorageStub()
     : WeeklyActivityStorage(4) {}
 
-int CTRAggregatorTest::WeeklyActivityStorageStub::ReadStorage(
+int CtrAggregatorTest::WeeklyActivityStorageStub::ReadStorage(
     std::string storage_bucket) {
   return weeks_[storage_bucket];
 }
 
-void CTRAggregatorTest::WeeklyActivityStorageStub::WriteStorage(
+void CtrAggregatorTest::WeeklyActivityStorageStub::WriteStorage(
     std::string storage_bucket,
     int value) {
   weeks_[storage_bucket] = value;
 }
 
-void CTRAggregatorTest::Fill4Weeks() {
+void CtrAggregatorTest::Fill4Weeks() {
   int weeks_to_record = 4;
   for (int i = 0; i < weeks_to_record; i++) {
     aggregator_->RecordImpression(true);
@@ -85,54 +85,54 @@ void CTRAggregatorTest::Fill4Weeks() {
 // NaN has the property that it is not equal to itself.
 #define EXPECT_NAN(x) EXPECT_NE(x, x)
 
-TEST_F(CTRAggregatorTest, SimpleOperationTest) {
+TEST_F(CtrAggregatorTest, SimpleOperationTest) {
   aggregator_->RecordImpression(true);
   aggregator_->RecordImpression(false);
   EXPECT_FALSE(aggregator_->HasPreviousWeekData());
   EXPECT_EQ(0, aggregator_->GetPreviousWeekImpressions());
-  EXPECT_NAN(aggregator_->GetPreviousWeekCTR());
+  EXPECT_NAN(aggregator_->GetPreviousWeekCtr());
 
   aggregator_->IncrementWeek(1);
   EXPECT_TRUE(aggregator_->HasPreviousWeekData());
   EXPECT_EQ(2, aggregator_->GetPreviousWeekImpressions());
-  EXPECT_FLOAT_EQ(0.5f, aggregator_->GetPreviousWeekCTR());
+  EXPECT_FLOAT_EQ(0.5f, aggregator_->GetPreviousWeekCtr());
 }
 
-TEST_F(CTRAggregatorTest, MultiWeekTest) {
+TEST_F(CtrAggregatorTest, MultiWeekTest) {
   Fill4Weeks();
   aggregator_->RecordImpression(false);
   aggregator_->IncrementWeek(1);
   EXPECT_TRUE(aggregator_->HasPrevious28DayData());
   EXPECT_FLOAT_EQ(static_cast<float>(3.0 / 7),
-                  aggregator_->GetPrevious28DayCTR());
+                  aggregator_->GetPrevious28DayCtr());
   aggregator_->RecordImpression(false);
   aggregator_->IncrementWeek(1);
   EXPECT_TRUE(aggregator_->HasPrevious28DayData());
   EXPECT_FLOAT_EQ(static_cast<float>(2.0 / 6),
-                  aggregator_->GetPrevious28DayCTR());
+                  aggregator_->GetPrevious28DayCtr());
 }
 
-TEST_F(CTRAggregatorTest, SkipOneWeekTest) {
+TEST_F(CtrAggregatorTest, SkipOneWeekTest) {
   Fill4Weeks();
   aggregator_->IncrementWeek(1);
-  EXPECT_EQ(0, aggregator_->GetPreviousWeekCTR());
+  EXPECT_EQ(0, aggregator_->GetPreviousWeekCtr());
   EXPECT_FLOAT_EQ(static_cast<float>(3.0 / 6),
-                  aggregator_->GetPrevious28DayCTR());
+                  aggregator_->GetPrevious28DayCtr());
 }
 
-TEST_F(CTRAggregatorTest, SkipThreeWeeksTest) {
+TEST_F(CtrAggregatorTest, SkipThreeWeeksTest) {
   Fill4Weeks();
   aggregator_->IncrementWeek(3);
-  EXPECT_EQ(0, aggregator_->GetPreviousWeekCTR());
+  EXPECT_EQ(0, aggregator_->GetPreviousWeekCtr());
   EXPECT_FLOAT_EQ(static_cast<float>(1.0 / 2),
-                  aggregator_->GetPrevious28DayCTR());
+                  aggregator_->GetPrevious28DayCtr());
 }
 
-TEST_F(CTRAggregatorTest, SkipFourWeeksTest) {
+TEST_F(CtrAggregatorTest, SkipFourWeeksTest) {
   Fill4Weeks();
   aggregator_->IncrementWeek(4);
-  EXPECT_EQ(0, aggregator_->GetPreviousWeekCTR());
-  EXPECT_EQ(0, aggregator_->GetPrevious28DayCTR());
+  EXPECT_EQ(0, aggregator_->GetPreviousWeekCtr());
+  EXPECT_EQ(0, aggregator_->GetPrevious28DayCtr());
 }
 
 }  // namespace contextual_search

@@ -38,6 +38,8 @@ public class ChromePreferenceManager {
             "contextual_search_last_animation_time";
     private static final String CONTEXTUAL_SEARCH_TAP_QUICK_ANSWER_COUNT =
             "contextual_search_tap_quick_answer_count";
+    private static final String CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER =
+            "contextual_search_current_week_number";
     private static final String HERB_FLAVOR_KEY = "herb_flavor";
     private static final String INSTANT_APPS_KEY = "applink.app_link_enabled";
     private static final String WEBAPK_RUNTIME_KEY = "webapk.runtime_enabled";
@@ -307,6 +309,21 @@ public class ChromePreferenceManager {
     }
 
     /**
+     * @return The current week number, persisted for weekly CTR recording.
+     */
+    public int getContextualSearchCurrentWeekNumber() {
+        return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, 0);
+    }
+
+    /**
+     * Sets the current week number to persist.  Used for weekly CTR recording.
+     * @param weekNumber The week number to store.
+     */
+    public void setContextualSearchCurrentWeekNumber(int weekNumber) {
+        writeInt(CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER, weekNumber);
+    }
+
+    /**
      * @return Which UI prototype the user is testing. This is cached from native via
      *         {@link FeatureUtilities#cacheHerbFlavor}.
      */
@@ -357,14 +374,22 @@ public class ChromePreferenceManager {
 
     /**
      * Writes the given int value to the named shared preference.
-     *
      * @param key The name of the preference to modify.
      * @param value The new value for the preference.
      */
-    private void writeInt(String key, int value) {
+    public void writeInt(String key, int value) {
         SharedPreferences.Editor ed = mSharedPreferences.edit();
         ed.putInt(key, value);
         ed.apply();
+    }
+
+    /**
+     * Reads the given int value from the named shared preference.
+     * @param key The name of the preference to return.
+     * @return The value of the preference.
+     */
+    public int readInt(String key) {
+        return mSharedPreferences.getInt(key, 0);
     }
 
     /**

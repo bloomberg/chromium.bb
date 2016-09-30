@@ -8,6 +8,8 @@ package org.chromium.chrome.browser.contextualsearch;
  * A set of {@link ContextualSearchHeuristic}s that support experimentation and logging.
  */
 public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
+    private CtrSuppression mCtrSuppression;
+
     /**
      * Gets all the heuristics needed for Tap suppression.
      * @param selectionController The {@link ContextualSearchSelectionController}.
@@ -19,6 +21,8 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
     TapSuppressionHeuristics(ContextualSearchSelectionController selectionController,
             ContextualSearchTapState previousTapState, int x, int y, int tapsSinceOpen) {
         super();
+        mCtrSuppression = new CtrSuppression(selectionController.getActivity());
+        mHeuristics.add(mCtrSuppression);
         RecentScrollTapSuppression scrollTapExperiment =
                 new RecentScrollTapSuppression(selectionController);
         mHeuristics.add(scrollTapExperiment);
@@ -35,6 +39,17 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
         TapSuppression tapSuppression =
                 new TapSuppression(selectionController, previousTapState, x, y, tapsSinceOpen);
         mHeuristics.add(tapSuppression);
+    }
+
+    /**
+     * This method should be called to clean up storage when an instance of this class is
+     * no longer in use.
+     */
+    public void destroy() {
+        if (mCtrSuppression != null) {
+            mCtrSuppression.destroy();
+            mCtrSuppression = null;
+        }
     }
 
     /**
