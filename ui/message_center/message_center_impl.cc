@@ -616,7 +616,11 @@ void MessageCenterImpl::RemoveNotification(const std::string& id,
 
 void MessageCenterImpl::RemoveNotificationImmediately(
     const std::string& id, bool by_user) {
-  if (FindVisibleNotificationById(id) == NULL)
+  Notification* notification = FindVisibleNotificationById(id);
+  if (notification == NULL)
+    return;
+
+  if (by_user && notification->pinned())
     return;
 
   // In many cases |id| is a reference to an existing notification instance
