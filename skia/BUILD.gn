@@ -560,10 +560,16 @@ if (!skia_build_no_opts) {
         "//build/config/compiler:no_chromium_code",
       ]
     }
-    source_set("skia_opts_avx2") {
-      sources = skia_opts.avx2_sources
+    source_set("skia_opts_hsw") {
+      sources = skia_opts.hsw_sources
       if (!is_win) {
-        cflags = [ "-mavx2" ]
+        cflags = [
+          "-mavx2",
+          "-mbmi",
+          "-mbmi2",
+          "-mf16c",
+          "-mfma",
+        ]
       }
       if (is_win) {
         cflags = [ "/arch:AVX2" ]
@@ -593,7 +599,7 @@ source_set("skia_opts") {
     sources = skia_opts.sse2_sources
     deps += [
       ":skia_opts_avx",
-      ":skia_opts_avx2",
+      ":skia_opts_hsw",
       ":skia_opts_sse3",
       ":skia_opts_sse41",
       ":skia_opts_sse42",
