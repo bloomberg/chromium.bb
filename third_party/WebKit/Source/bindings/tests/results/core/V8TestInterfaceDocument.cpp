@@ -76,12 +76,14 @@ static void locationAttributeSetter(v8::Local<v8::Value> v8Value, const v8::Func
     if (!impl)
         return;
 
+    ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestInterfaceDocument", "location");
+
     // Prepare the value to be set.
     V8StringResource<> cppValue = v8Value;
     if (!cppValue.prepare())
         return;
 
-    impl->setHref(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue);
+    impl->setHref(currentDOMWindow(info.GetIsolate()), enteredDOMWindow(info.GetIsolate()), cppValue, exceptionState);
 }
 
 void locationAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
