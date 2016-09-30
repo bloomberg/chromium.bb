@@ -23,13 +23,10 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/StyleElement.h"
-#include "core/events/EventSender.h"
 #include "core/svg/SVGElement.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
-
-using SVGStyleEventSender = EventSender<SVGStyleElement>;
 
 class SVGStyleElement final : public SVGElement
                             , public StyleElement {
@@ -53,7 +50,7 @@ public:
     String title() const override;
     void setTitle(const AtomicString&);
 
-    void dispatchPendingEvent(SVGStyleEventSender*);
+    void dispatchPendingEvent();
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -24,16 +24,11 @@
 
 #include "core/MediaTypeNames.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
-
-static SVGStyleEventSender& styleErrorEventSender()
-{
-    DEFINE_STATIC_LOCAL(SVGStyleEventSender, sharedErrorEventSender, (SVGStyleEventSender::create(EventTypeNames::error)));
-    return sharedErrorEventSender;
-}
 
 inline SVGStyleElement::SVGStyleElement(Document& document, bool createdByParser)
     : SVGElement(SVGNames::styleTag, document)
@@ -146,12 +141,11 @@ void SVGStyleElement::childrenChanged(const ChildrenChange& change)
 void SVGStyleElement::notifyLoadedSheetAndAllCriticalSubresources(LoadedSheetErrorStatus errorStatus)
 {
     if (errorStatus != NoErrorLoadingSubresource)
-        styleErrorEventSender().dispatchEventSoon(this);
+        TaskRunnerHelper::get(TaskType::DOMManipulation, &document())->postTask(BLINK_FROM_HERE, WTF::bind(&SVGStyleElement::dispatchPendingEvent, wrapPersistent(this)));
 }
 
-void SVGStyleElement::dispatchPendingEvent(SVGStyleEventSender* eventSender)
+void SVGStyleElement::dispatchPendingEvent()
 {
-    ASSERT_UNUSED(eventSender, eventSender == &styleErrorEventSender());
     dispatchEvent(Event::create(EventTypeNames::error));
 }
 
