@@ -1296,13 +1296,26 @@ load_rdp_backend(struct weston_compositor *c,
 	return ret;
 }
 
+static void
+fbdev_backend_output_configure(struct wl_listener *listener, void *data)
+{
+	struct weston_output *output = data;
+	struct weston_config *wc = wet_get_config(output->compositor);
+	struct weston_config_section *section;
+
+	section = weston_config_get_section(wc, "output", "name", "fbdev");
+
+	wet_output_set_transform(output, section, WL_OUTPUT_TRANSFORM_NORMAL, UINT32_MAX);
+	weston_output_set_scale(output, 1);
+
+	weston_output_enable(output);
+}
+
 static int
 load_fbdev_backend(struct weston_compositor *c,
 		      int *argc, char **argv, struct weston_config *wc)
 {
 	struct weston_fbdev_backend_config config = {{ 0, }};
-	struct weston_config_section *section;
-	char *s = NULL;
 	int ret = 0;
 
 	const struct weston_option fbdev_options[] = {
@@ -1315,12 +1328,6 @@ load_fbdev_backend(struct weston_compositor *c,
 	if (!config.device)
 		config.device = strdup("/dev/fb0");
 
-	section = weston_config_get_section(wc, "output", "name", "fbdev");
-	weston_config_section_get_string(section, "transform", &s, "normal");
-	if (weston_parse_transform(s, &config.output_transform) < 0)
-		weston_log("Invalid transform \"%s\" for output fbdev\n", s);
-	free(s);
-
 	config.base.struct_version = WESTON_FBDEV_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_fbdev_backend_config);
 	config.configure_device = configure_input_device;
@@ -1329,8 +1336,13 @@ load_fbdev_backend(struct weston_compositor *c,
 	ret = weston_compositor_load_backend(c, WESTON_BACKEND_FBDEV,
 					     &config.base);
 
-	free(config.device);
+	if (ret < 0)
+		goto out;
 
+	wet_set_pending_output_handler(c, fbdev_backend_output_configure);
+
+out:
+	free(config.device);
 	return ret;
 }
 

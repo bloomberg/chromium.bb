@@ -34,7 +34,7 @@ extern "C" {
 
 #include "compositor.h"
 
-#define WESTON_FBDEV_BACKEND_CONFIG_VERSION 1
+#define WESTON_FBDEV_BACKEND_CONFIG_VERSION 2
 
 struct libinput_device;
 
@@ -43,8 +43,6 @@ struct weston_fbdev_backend_config {
 
 	int tty;
 	char *device;
-
-	uint32_t output_transform;
 
 	/** Callback used to configure input devices.
 	 *

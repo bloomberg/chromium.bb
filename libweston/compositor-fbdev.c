@@ -426,12 +426,56 @@ static void fbdev_output_destroy(struct weston_output *base);
 static void fbdev_output_disable(struct weston_output *base);
 
 static int
+fbdev_output_enable(struct weston_output *base)
+{
+	struct fbdev_output *output = to_fbdev_output(base);
+	struct fbdev_backend *backend = to_fbdev_backend(base->compositor);
+	int fb_fd;
+	struct wl_event_loop *loop;
+
+	/* Create the frame buffer. */
+	fb_fd = fbdev_frame_buffer_open(output, output->device, &output->fb_info);
+	if (fb_fd < 0) {
+		weston_log("Creating frame buffer failed.\n");
+		return -1;
+	}
+
+	if (fbdev_frame_buffer_map(output, fb_fd) < 0) {
+		weston_log("Mapping frame buffer failed.\n");
+		return -1;
+	}
+
+	output->base.start_repaint_loop = fbdev_output_start_repaint_loop;
+	output->base.repaint = fbdev_output_repaint;
+
+	if (pixman_renderer_output_create(&output->base) < 0)
+		goto out_hw_surface;
+
+	loop = wl_display_get_event_loop(backend->compositor->wl_display);
+	output->finish_frame_timer =
+		wl_event_loop_add_timer(loop, finish_frame_handler, output);
+
+	weston_log("fbdev output %d×%d px\n",
+	           output->mode.width, output->mode.height);
+	weston_log_continue(STAMP_SPACE "guessing %d Hz and 96 dpi\n",
+	                    output->mode.refresh / 1000);
+
+	return 0;
+
+out_hw_surface:
+	pixman_image_unref(output->hw_surface);
+	output->hw_surface = NULL;
+	fbdev_frame_buffer_destroy(output);
+
+	return -1;
+}
+
+static int
 fbdev_output_create(struct fbdev_backend *backend,
                     const char *device)
 {
 	struct fbdev_output *output;
 	int fb_fd;
-	struct wl_event_loop *loop;
 
 	weston_log("Creating fbdev output.\n");
 
@@ -449,14 +493,12 @@ fbdev_output_create(struct fbdev_backend *backend,
 		goto out_free;
 	}
 
-	if (fbdev_frame_buffer_map(output, fb_fd) < 0) {
-		weston_log("Mapping frame buffer failed.\n");
-		goto out_free;
-	}
-
-	output->base.start_repaint_loop = fbdev_output_start_repaint_loop;
-	output->base.repaint = fbdev_output_repaint;
+	output->base.name = strdup("fbdev");
 	output->base.destroy = fbdev_output_destroy;
+	output->base.disable = NULL;
+	output->base.enable = fbdev_output_enable;
+
+	weston_output_init_pending(&output->base, backend->compositor);
 
 	/* only one static mode in list */
 	output->mode.flags =
@@ -471,35 +513,16 @@ fbdev_output_create(struct fbdev_backend *backend,
 	output->base.subpixel = WL_OUTPUT_SUBPIXEL_UNKNOWN;
 	output->base.make = "unknown";
 	output->base.model = output->fb_info.id;
-	output->base.name = strdup("fbdev");
 
-	weston_output_init(&output->base, backend->compositor,
-	                   0, 0, output->fb_info.width_mm,
-	                   output->fb_info.height_mm,
-	                   backend->output_transform,
-			   1);
+	output->base.mm_width = output->fb_info.width_mm;
+	output->base.mm_height = output->fb_info.height_mm;
 
-	if (pixman_renderer_output_create(&output->base) < 0)
-		goto out_hw_surface;
+	close(fb_fd);
 
-	loop = wl_display_get_event_loop(backend->compositor->wl_display);
-	output->finish_frame_timer =
-		wl_event_loop_add_timer(loop, finish_frame_handler, output);
-
-	weston_compositor_add_output(backend->compositor, &output->base);
-
-	weston_log("fbdev output %d×%d px\n",
-	           output->mode.width, output->mode.height);
-	weston_log_continue(STAMP_SPACE "guessing %d Hz and 96 dpi\n",
-	                    output->mode.refresh / 1000);
+	weston_compositor_add_pending_output(&output->base, backend->compositor);
 
 	return 0;
 
-out_hw_surface:
-	pixman_image_unref(output->hw_surface);
-	output->hw_surface = NULL;
-	weston_output_destroy(&output->base);
-	fbdev_frame_buffer_destroy(output);
 out_free:
 	free(output->device);
 	free(output);
@@ -721,7 +744,6 @@ fbdev_backend_create(struct weston_compositor *compositor,
 	backend->base.restore = fbdev_restore;
 
 	backend->prev_state = WESTON_COMPOSITOR_ACTIVE;
-	backend->output_transform = param->output_transform;
 
 	weston_setup_vt_switch_bindings(compositor);
 
@@ -757,7 +779,6 @@ config_init_to_defaults(struct weston_fbdev_backend_config *config)
 	 * udev, rather than passing a device node in as a parameter. */
 	config->tty = 0; /* default to current tty */
 	config->device = "/dev/fb0"; /* default frame buffer */
-	config->output_transform = WL_OUTPUT_TRANSFORM_NORMAL;
 }
 
 WL_EXPORT int
