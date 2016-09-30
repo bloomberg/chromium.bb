@@ -45,12 +45,6 @@ static inline IntRect normalizeRect(const IntRect& rect)
         std::max(rect.height(), -rect.height()));
 }
 
-static bool frameIsValid(const SkBitmap& frameBitmap)
-{
-    ASSERT(!frameBitmap.isNull() && !frameBitmap.empty() && frameBitmap.isImmutable());
-    return frameBitmap.colorType() == kN32_SkColorType;
-}
-
 ParsedOptions parseOptions(const ImageBitmapOptions& options, Optional<IntRect> cropRect, IntSize sourceSize)
 {
     ParsedOptions parsedOptions;
@@ -215,10 +209,8 @@ sk_sp<SkImage> ImageBitmap::getSkImageFromDecoder(std::unique_ptr<ImageDecoder> 
     ImageFrame* frame = decoder->frameBufferAtIndex(0);
     if (!frame || frame->getStatus() != ImageFrame::FrameComplete)
         return nullptr;
-    SkBitmap bitmap = frame->bitmap();
-    if (!frameIsValid(bitmap))
-        return nullptr;
-    return SkImage::MakeFromBitmap(bitmap);
+    DCHECK(!frame->bitmap().isNull() && !frame->bitmap().empty());
+    return frame->finalizePixelsAndGetImage();
 }
 
 bool ImageBitmap::isResizeOptionValid(const ImageBitmapOptions& options, ExceptionState& exceptionState)

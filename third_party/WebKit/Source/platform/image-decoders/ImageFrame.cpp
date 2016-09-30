@@ -27,6 +27,7 @@
 #include "platform/image-decoders/ImageFrame.h"
 
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
 
 namespace blink {
@@ -88,12 +89,25 @@ void ImageFrame::zeroFillPixelData()
 
 bool ImageFrame::copyBitmapData(const ImageFrame& other)
 {
-    if (this == &other)
-        return true;
-
+    DCHECK_NE(this, &other);
     m_hasAlpha = other.m_hasAlpha;
     m_bitmap.reset();
     return other.m_bitmap.copyTo(&m_bitmap, other.m_bitmap.colorType());
+}
+
+bool ImageFrame::takeBitmapDataIfWritable(ImageFrame* other)
+{
+    DCHECK(other);
+    DCHECK_EQ(FrameComplete, other->m_status);
+    DCHECK_EQ(FrameEmpty, m_status);
+    DCHECK_NE(this, other);
+    if (other->m_bitmap.isImmutable())
+        return false;
+    m_hasAlpha = other->m_hasAlpha;
+    m_bitmap.reset();
+    m_bitmap.swap(other->m_bitmap);
+    other->m_status = FrameEmpty;
+    return true;
 }
 
 bool ImageFrame::setSizeAndColorProfile(int newWidth, int newHeight, const ICCProfile& newIccProfile)
@@ -124,6 +138,13 @@ bool ImageFrame::hasAlpha() const
     return m_hasAlpha;
 }
 
+sk_sp<SkImage> ImageFrame::finalizePixelsAndGetImage()
+{
+    DCHECK_EQ(FrameComplete, m_status);
+    m_bitmap.setImmutable();
+    return SkImage::MakeFromBitmap(m_bitmap);
+}
+
 void ImageFrame::setHasAlpha(bool alpha)
 {
     m_hasAlpha = alpha;
@@ -136,10 +157,13 @@ void ImageFrame::setStatus(Status status)
     m_status = status;
     if (m_status == FrameComplete) {
         m_bitmap.setAlphaType(computeAlphaType());
-        // Send pending pixels changed notifications now, because we can't do this after
-        // the bitmap has been marked immutable.
+        // Send pending pixels changed notifications now, because we can't do
+        // this after the bitmap has been marked immutable.  We don't set the
+        // bitmap immutable here because it would defeat
+        // takeBitmapDataIfWritable().  Instead we let the bitmap stay mutable
+        // until someone calls finalizePixelsAndGetImage() to actually get the
+        // SkImage.
         notifyBitmapIfPixelsChanged();
-        m_bitmap.setImmutable(); // Tell the bitmap it's done.
     }
 }
 

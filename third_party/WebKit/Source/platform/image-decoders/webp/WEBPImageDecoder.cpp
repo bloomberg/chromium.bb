@@ -252,11 +252,14 @@ bool WEBPImageDecoder::initFrameBuffer(size_t frameIndex)
             return setFailed();
         m_frameBackgroundHasAlpha = !buffer.originalFrameRect().contains(IntRect(IntPoint(), size()));
     } else {
-        const ImageFrame& prevBuffer = m_frameBufferCache[requiredPreviousFrameIndex];
+        ImageFrame& prevBuffer = m_frameBufferCache[requiredPreviousFrameIndex];
         ASSERT(prevBuffer.getStatus() == ImageFrame::FrameComplete);
 
-        // Preserve the last frame as the starting state for this frame.
-        if (!buffer.copyBitmapData(prevBuffer))
+        // Preserve the last frame as the starting state for this frame. We try
+        // to reuse |prevBuffer| as starting state to avoid copying.
+        // For BlendAtopPreviousFrame, both frames are required, so we can't
+        // take over its image data using takeBitmapDataIfWritable.
+        if ((buffer.getAlphaBlendSource() == ImageFrame::BlendAtopPreviousFrame || !buffer.takeBitmapDataIfWritable(&prevBuffer)) && !buffer.copyBitmapData(prevBuffer))
             return setFailed();
 
         if (prevBuffer.getDisposalMethod() == ImageFrame::DisposeOverwriteBgcolor) {

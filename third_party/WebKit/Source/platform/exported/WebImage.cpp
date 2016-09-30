@@ -75,10 +75,7 @@ WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize)
     }
 
     ImageFrame* frame = decoder->frameBufferAtIndex(index);
-    if (!frame)
-        return WebImage();
-
-    return WebImage(frame->bitmap());
+    return (frame && !decoder->failed()) ? WebImage(frame->bitmap()) : WebImage();
 }
 
 WebVector<WebImage> WebImage::framesFromData(const WebData& data)
@@ -108,8 +105,8 @@ WebVector<WebImage> WebImage::framesFromData(const WebData& data)
         if (!frame)
             continue;
 
-        const SkBitmap& bitmap = frame->bitmap();
-        if (!bitmap.isNull() && bitmap.isImmutable())
+        SkBitmap bitmap = frame->bitmap();
+        if (!bitmap.isNull() && frame->getStatus() == ImageFrame::FrameComplete)
             frames.append(WebImage(bitmap));
     }
 

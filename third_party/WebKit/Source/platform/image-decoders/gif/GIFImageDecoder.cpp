@@ -356,11 +356,14 @@ bool GIFImageDecoder::initFrameBuffer(size_t frameIndex)
         if (!buffer->setSizeAndColorProfile(size().width(), size().height(), ImageFrame::ICCProfile()))
             return setFailed();
     } else {
-        const ImageFrame* prevBuffer = &m_frameBufferCache[requiredPreviousFrameIndex];
+        ImageFrame* prevBuffer = &m_frameBufferCache[requiredPreviousFrameIndex];
         ASSERT(prevBuffer->getStatus() == ImageFrame::FrameComplete);
 
-        // Preserve the last frame as the starting state for this frame.
-        if (!buffer->copyBitmapData(*prevBuffer))
+        // We try to reuse |prevBuffer| as starting state to avoid copying.
+        // For DisposeOverwritePrevious, the next frame will also use
+        // |prevBuffer| as its starting state, so we can't take over its image
+        // data using takeBitmapDataIfWritable.  Copy the data instead.
+        if ((buffer->getDisposalMethod() == ImageFrame::DisposeOverwritePrevious || !buffer->takeBitmapDataIfWritable(prevBuffer)) && !buffer->copyBitmapData(*prevBuffer))
             return setFailed();
 
         if (prevBuffer->getDisposalMethod() == ImageFrame::DisposeOverwriteBgcolor) {

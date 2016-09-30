@@ -1947,7 +1947,6 @@ bool frameIsValid(const SkBitmap& frameBitmap)
 {
     return !frameBitmap.isNull()
         && !frameBitmap.empty()
-        && frameBitmap.isImmutable()
         && frameBitmap.colorType() == kN32_SkColorType;
 }
 
@@ -2173,11 +2172,10 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha, b
         if (!frameIsValid(bitmap))
             return;
 
-        // TODO(fmalita): Partial frames are not supported currently: frameIsValid ensures that
-        // only immutable/fully decoded frames make it through.  We could potentially relax this
-        // and allow SkImage::NewFromBitmap to make a copy.
-        ASSERT(bitmap.isImmutable());
-        skiaImage = SkImage::MakeFromBitmap(bitmap);
+        // TODO(fmalita): Partial frames are not supported currently: only fully
+        // decoded frames make it through.  We could potentially relax this and
+        // use SkImage::MakeFromBitmap(bitmap) to make a copy.
+        skiaImage = frame->finalizePixelsAndGetImage();
         info = bitmap.info();
 
         if (hasAlpha && premultiplyAlpha)

@@ -42,6 +42,7 @@
 #include "platform/image-encoders/PNGImageEncoder.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkImageDeserializer.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "wtf/CurrentTime.h"
@@ -58,21 +59,25 @@ PictureSnapshot::PictureSnapshot(sk_sp<const SkPicture> picture)
 {
 }
 
-static bool decodeBitmap(const void* data, size_t length, SkBitmap* result)
-{
-    // No need to copy the data; this decodes immediately.
-    RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkData(SkData::MakeWithoutCopy(data, length));
-    std::unique_ptr<ImageDecoder> imageDecoder = ImageDecoder::create(segmentReader.release(), true,
-        ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
-    if (!imageDecoder)
-        return false;
+class SkiaImageDecoder : public SkImageDeserializer {
+public:
+    sk_sp<SkImage> makeFromMemory(const void* data, size_t length, const SkIRect* subset) override
+    {
+        // No need to copy the data; this decodes immediately.
+        RefPtr<SegmentReader> segmentReader = SegmentReader::createFromSkData(SkData::MakeWithoutCopy(data, length));
+        std::unique_ptr<ImageDecoder> imageDecoder = ImageDecoder::create(segmentReader.release(), true,
+            ImageDecoder::AlphaPremultiplied, ImageDecoder::GammaAndColorProfileIgnored);
+        if (!imageDecoder)
+            return nullptr;
 
-    ImageFrame* frame = imageDecoder->frameBufferAtIndex(0);
-    if (!frame)
-        return true;
-    *result = frame->bitmap();
-    return true;
-}
+        ImageFrame* frame = imageDecoder->frameBufferAtIndex(0);
+        return (frame && !imageDecoder->failed()) ? frame->finalizePixelsAndGetImage() : nullptr;
+    }
+    sk_sp<SkImage> makeFromData(SkData* data, const SkIRect* subset) override
+    {
+        return this->makeFromMemory(data->data(), data->size(), subset);
+    }
+};
 
 PassRefPtr<PictureSnapshot> PictureSnapshot::load(const Vector<RefPtr<TilePictureStream>>& tiles)
 {
@@ -82,7 +87,8 @@ PassRefPtr<PictureSnapshot> PictureSnapshot::load(const Vector<RefPtr<TilePictur
     FloatRect unionRect;
     for (const auto& tileStream : tiles) {
         SkMemoryStream stream(tileStream->data.begin(), tileStream->data.size());
-        sk_sp<SkPicture> picture = SkPicture::MakeFromStream(&stream, decodeBitmap);
+        SkiaImageDecoder factory;
+        sk_sp<SkPicture> picture = SkPicture::MakeFromStream(&stream, &factory);
         if (!picture)
             return nullptr;
         FloatRect cullRect(picture->cullRect());

@@ -32,6 +32,7 @@
 #include "public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
@@ -97,6 +98,11 @@ public:
     // the other.  Returns whether the copy succeeded.
     bool copyBitmapData(const ImageFrame&);
 
+    // Moves the bitmap data from the provided frame to this one, leaving the
+    // provided frame empty.  Operation is successful only if bitmap data is not
+    // marked as done (immutable).  Returns whether the move succeeded.
+    bool takeBitmapDataIfWritable(ImageFrame*);
+
     // Copies the pixel data at [(startX, startY), (endX, startY)) to the
     // same X-coordinates on each subsequent row up to but not including
     // endY.
@@ -125,7 +131,15 @@ public:
     AlphaBlendSource getAlphaBlendSource() const { return m_alphaBlendSource; }
     bool premultiplyAlpha() const { return m_premultiplyAlpha; }
     SkBitmap::Allocator* allocator() const { return m_allocator; }
+
+    // Returns the bitmap that is the output of decoding.
     const SkBitmap& bitmap() const { return m_bitmap; }
+
+    // Create SkImage from bitmap() and return it.  This should be called only
+    // if frame is complete.  The bitmap is set immutable before creating
+    // SkImage to avoid copying bitmap in SkImage::MakeFromBitmap(m_bitmap).
+    sk_sp<SkImage> finalizePixelsAndGetImage();
+
     // Returns true if the pixels changed, but the bitmap has not yet been notified.
     bool pixelsChanged() const { return m_pixelsChanged; }
     size_t requiredPreviousFrameIndex() const { return m_requiredPreviousFrameIndex; }

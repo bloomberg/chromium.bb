@@ -125,7 +125,7 @@ sk_sp<SkImage> DeferredImageDecoder::createFrameAtIndex(size_t index)
     if (!frame || frame->getStatus() == ImageFrame::FrameEmpty)
         return nullptr;
 
-    return SkImage::MakeFromBitmap(frame->bitmap());
+    return (frame->getStatus() == ImageFrame::FrameComplete) ? frame->finalizePixelsAndGetImage() : SkImage::MakeFromBitmap(frame->bitmap());
 }
 
 PassRefPtr<SharedBuffer> DeferredImageDecoder::data()
