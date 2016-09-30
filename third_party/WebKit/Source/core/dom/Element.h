@@ -373,6 +373,9 @@ public:
 
     bool isInDescendantTreeOf(const Element* shadowHost) const;
 
+    // Returns the Element’s ComputedStyle. If the ComputedStyle is not already stored on the Element,
+    // computes the ComputedStyle and stores it on the Element’s ElementRareData. Used for getComputedStyle
+    // when Element is display none.
     const ComputedStyle* ensureComputedStyle(PseudoId = PseudoIdNone);
 
     // Methods for indicating the style is affected by dynamic updates (e.g., children changing, our position changing in our sibling list, etc.)
