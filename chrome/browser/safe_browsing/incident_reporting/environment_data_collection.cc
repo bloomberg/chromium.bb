@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/cpu.h"
+#include "base/logging.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -16,6 +17,7 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
 
@@ -68,8 +70,10 @@ void CollectProcessData(ClientIncidentReport_EnvironmentData_Process* process) {
 
 void CollectEnvironmentData(ClientIncidentReport_EnvironmentData* data) {
   // Toggling priority only makes sense in a thread pool.
-  DCHECK(base::SequencedWorkerPool::GetWorkerPoolForCurrentThread());
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   // Reset priority when done with this task.
+  // TODO(fdoray): Post this task to the TaskScheduler with a BACKGROUND
+  // priority instead of toggling the priority within the task.
   base::ScopedClosureRunner restore_priority(
       base::Bind(&base::PlatformThread::SetCurrentThreadPriority,
                  base::PlatformThread::GetCurrentThreadPriority()));
