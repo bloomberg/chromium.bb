@@ -2031,7 +2031,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif
   }
 
-#if CONFIG_MISC_FIXES
   for (j = 0; j < INTRA_MODES; j++) {
     for (i = 0; i < INTRA_MODES - 1; ++i)
       av1_diff_update_prob(&r, &fc->uv_mode_prob[j][i], ACCT_STR);
@@ -2049,7 +2048,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
                     fc->partition_cdf[j]);
 #endif
   }
-#endif
 
   if (frame_is_intra_only(cm)) {
     av1_copy(cm->kf_y_prob, av1_kf_y_mode_prob);
@@ -2096,17 +2094,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
                       fc->y_mode_cdf[j]);
 #endif
     }
-
-#if !CONFIG_MISC_FIXES
-    for (j = 0; j < PARTITION_CONTEXTS; ++j) {
-      for (i = 0; i < PARTITION_TYPES - 1; ++i)
-        av1_diff_update_prob(&r, &fc->partition_prob[j][i], ACCT_STR);
-#if CONFIG_DAALA_EC
-      av1_tree_to_cdf(av1_partition_tree, fc->partition_prob[j],
-                      fc->partition_cdf[j]);
-#endif
-    }
-#endif
 
 #if CONFIG_REF_MV
     for (i = 0; i < NMV_CONTEXTS; ++i)

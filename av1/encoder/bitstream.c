@@ -2165,7 +2165,6 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
   update_seg_probs(cpi, header_bc);
 
-#if CONFIG_MISC_FIXES
   for (i = 0; i < INTRA_MODES; ++i) {
     prob_diff_update(av1_intra_mode_tree, fc->uv_mode_prob[i],
                      counts->uv_mode[i], INTRA_MODES, probwt, header_bc);
@@ -2183,7 +2182,6 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                     cm->fc->partition_cdf[i]);
 #endif
   }
-#endif
 
   if (frame_is_intra_only(cm)) {
     av1_copy(cm->kf_y_prob, av1_kf_y_mode_prob);
@@ -2265,18 +2263,6 @@ static size_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                       cm->fc->y_mode_cdf[i]);
 #endif
     }
-
-#if !CONFIG_MISC_FIXES
-    for (i = 0; i < PARTITION_CONTEXTS; ++i) {
-      prob_diff_update(av1_partition_tree, fc->partition_prob[i],
-                       counts->partition[i], PARTITION_TYPES, probwt,
-                       header_bc);
-#if CONFIG_DAALA_EC
-      av1_tree_to_cdf(av1_partition_tree, cm->fc->partition_prob[i],
-                      cm->fc->partition_cdf[i]);
-#endif
-    }
-#endif
 
     av1_write_nmv_probs(cm, cm->allow_high_precision_mv, header_bc,
 #if CONFIG_REF_MV

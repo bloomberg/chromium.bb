@@ -1002,17 +1002,6 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
     aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->y_mode_prob[i],
                          counts->y_mode[i], fc->y_mode_prob[i]);
 
-#if !CONFIG_MISC_FIXES
-  for (i = 0; i < INTRA_MODES; ++i)
-    aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->uv_mode_prob[i],
-                         counts->uv_mode[i], fc->uv_mode_prob[i]);
-
-  for (i = 0; i < PARTITION_CONTEXTS; i++) {
-    aom_tree_merge_probs(av1_partition_tree, pre_fc->partition_prob[i],
-                         counts->partition[i], fc->partition_prob[i]);
-  }
-#endif
-
   if (cm->interp_filter == SWITCHABLE) {
     for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++)
       aom_tree_merge_probs(
@@ -1096,7 +1085,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
                          counts->seg.tree_total, fc->seg.tree_probs);
   }
 
-#if CONFIG_MISC_FIXES
   for (i = 0; i < INTRA_MODES; ++i)
     aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->uv_mode_prob[i],
                          counts->uv_mode[i], fc->uv_mode_prob[i]);
@@ -1109,7 +1097,6 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
                     fc->partition_cdf[i]);
 #endif
   }
-#endif
 
 #if CONFIG_DELTA_Q
   for (i = 0; i < DELTA_Q_CONTEXTS; ++i)
