@@ -164,11 +164,6 @@ metrics::MetricsService* AwMetricsServiceClient::GetMetricsService() {
 
 void AwMetricsServiceClient::SetMetricsClientId(const std::string& client_id) {}
 
-bool AwMetricsServiceClient::IsOffTheRecordSessionActive() {
-  // WebView has no incognito mode.
-  return false;
-}
-
 int32_t AwMetricsServiceClient::GetProduct() {
   return ::metrics::ChromeUserMetricsExtension::ANDROID_WEBVIEW;
 }

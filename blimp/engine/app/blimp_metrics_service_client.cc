@@ -94,11 +94,6 @@ metrics::MetricsService* BlimpMetricsServiceClient::GetMetricsService() {
 void BlimpMetricsServiceClient::SetMetricsClientId(
     const std::string& client_id) {}
 
-bool BlimpMetricsServiceClient::IsOffTheRecordSessionActive() {
-  // Blimp does not have incognito mode.
-  return false;
-}
-
 int32_t BlimpMetricsServiceClient::GetProduct() {
   // Indicates product family (e.g. Chrome v Android Webview), not reported
   // platform (e.g. Chrome_Linux, Chrome_Mac).

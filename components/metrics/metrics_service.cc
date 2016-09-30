@@ -654,9 +654,6 @@ void MetricsService::InitializeMetricsState() {
 }
 
 void MetricsService::OnUserAction(const std::string& action) {
-  if (!ShouldLogEvents())
-    return;
-
   log_manager_.current_log()->RecordUserAction(action);
   HandleIdleSinceLastTransmission(false);
 }
@@ -1198,13 +1195,6 @@ void MetricsService::LogCleanShutdown() {
   RecordCurrentState(local_state_);
   local_state_->SetInteger(prefs::kStabilityExecutionPhase,
                            MetricsService::SHUTDOWN_COMPLETE);
-}
-
-bool MetricsService::ShouldLogEvents() {
-  // We simply don't log events to UMA if there is a single incognito
-  // session visible. The problem is that we always notify using the original
-  // profile in order to simplify notification processing.
-  return !client_->IsOffTheRecordSessionActive();
 }
 
 void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {

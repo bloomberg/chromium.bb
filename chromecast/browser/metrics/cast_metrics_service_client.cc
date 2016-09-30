@@ -159,12 +159,6 @@ CastMetricsServiceClient::LoadClientInfo() {
   return std::unique_ptr<::metrics::ClientInfo>();
 }
 
-bool CastMetricsServiceClient::IsOffTheRecordSessionActive() {
-  // Chromecast behaves as "off the record" w/r/t recording browsing state,
-  // but this value is about not disabling metrics because of it.
-  return false;
-}
-
 int32_t CastMetricsServiceClient::GetProduct() {
   // Chromecast currently uses the same product identifier as Chrome.
   return ::metrics::ChromeUserMetricsExtension::CAST;

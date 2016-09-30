@@ -371,9 +371,6 @@ class MetricsService : public base::HistogramFlattener {
   // buffered plugin stability statistics.
   void RecordCurrentState(PrefService* pref);
 
-  // Checks whether events should currently be logged.
-  bool ShouldLogEvents();
-
   // Sets the value of the specified path in prefs and schedules a save.
   void RecordBooleanPrefValue(const char* path, bool value);
 

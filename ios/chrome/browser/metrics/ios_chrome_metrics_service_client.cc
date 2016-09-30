@@ -102,10 +102,6 @@ void IOSChromeMetricsServiceClient::SetMetricsClientId(
   crash_keys::SetMetricsClientIdFromGUID(client_id);
 }
 
-bool IOSChromeMetricsServiceClient::IsOffTheRecordSessionActive() {
-  return ::IsOffTheRecordSessionActive();
-}
-
 int32_t IOSChromeMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::CHROME;
 }

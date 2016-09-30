@@ -31,10 +31,6 @@ void TestMetricsServiceClient::SetMetricsClientId(
   client_id_ = client_id;
 }
 
-bool TestMetricsServiceClient::IsOffTheRecordSessionActive() {
-  return false;
-}
-
 int32_t TestMetricsServiceClient::GetProduct() {
   return product_;
 }

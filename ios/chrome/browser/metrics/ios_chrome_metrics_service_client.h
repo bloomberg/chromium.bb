@@ -53,7 +53,6 @@ class IOSChromeMetricsServiceClient
   // metrics::MetricsServiceClient:
   metrics::MetricsService* GetMetricsService() override;
   void SetMetricsClientId(const std::string& client_id) override;
-  bool IsOffTheRecordSessionActive() override;
   int32_t GetProduct() override;
   std::string GetApplicationLocale() override;
   bool GetBrand(std::string* brand_code) override;

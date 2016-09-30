@@ -302,10 +302,6 @@ void ChromeMetricsServiceClient::SetMetricsClientId(
   crash_keys::SetMetricsClientIdFromGUID(client_id);
 }
 
-bool ChromeMetricsServiceClient::IsOffTheRecordSessionActive() {
-  return chrome::IsIncognitoSessionActive();
-}
-
 int32_t ChromeMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::CHROME;
 }
