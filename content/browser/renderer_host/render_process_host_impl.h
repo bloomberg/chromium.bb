@@ -38,10 +38,6 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
 
-#if defined(OS_ANDROID)
-#include "content/public/browser/android/interface_registry_android.h"
-#endif
-
 namespace base {
 class CommandLine;
 class MessageLoop;
@@ -432,9 +428,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   int connection_filter_id_ = MojoShellConnection::kInvalidConnectionFilterId;
   scoped_refptr<ConnectionFilterController> connection_filter_controller_;
   shell::mojom::ServicePtr test_service_;
-#if defined(OS_ANDROID)
-  std::unique_ptr<InterfaceRegistryAndroid> interface_registry_android_;
-#endif
 
   size_t service_worker_ref_count_;
   size_t shared_worker_ref_count_;

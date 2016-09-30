@@ -17,8 +17,6 @@
 #include "content/browser/android/content_view_render_view.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/browser/android/date_time_chooser_android.h"
-#include "content/browser/android/interface_provider_android_impl.h"
-#include "content/browser/android/interface_registry_android_impl.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/tracing_controller_android.h"
@@ -50,10 +48,6 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ContentViewRenderView",
      content::ContentViewRenderView::RegisterContentViewRenderView},
     {"DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
-    {"InterfaceRegistryAndroid",
-     content::InterfaceRegistryAndroidImpl::Register},
-    {"InterfaceProviderAndroid",
-     content::InterfaceProviderAndroidImpl::Register},
     {"InterstitialPageDelegateAndroid",
      content::InterstitialPageDelegateAndroid::
          RegisterInterstitialPageDelegateAndroid},

@@ -193,7 +193,6 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/child_process_launcher_android.h"
-#include "content/browser/mojo/interface_registrar_android.h"
 #include "content/browser/screen_orientation/screen_orientation_message_filter_android.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "ipc/ipc_sync_channel.h"
@@ -1215,12 +1214,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 void RenderProcessHostImpl::RegisterMojoInterfaces() {
   std::unique_ptr<shell::InterfaceRegistry> registry(
       new shell::InterfaceRegistry);
-#if defined(OS_ANDROID)
-  interface_registry_android_ =
-      InterfaceRegistryAndroid::Create(registry.get());
-  InterfaceRegistrarAndroid::ExposeInterfacesToRenderer(
-      interface_registry_android_.get());
-#endif
 
   channel_->AddAssociatedInterface(
       base::Bind(&RenderProcessHostImpl::OnRouteProviderRequest,

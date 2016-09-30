@@ -128,8 +128,6 @@ static_library("content_shell_lib") {
     "browser/shell_login_dialog.h",
     "browser/shell_login_dialog_mac.mm",
     "browser/shell_mac.mm",
-    "browser/shell_mojo_test_utils_android.cc",
-    "browser/shell_mojo_test_utils_android.h",
     "browser/shell_net_log.cc",
     "browser/shell_net_log.h",
     "browser/shell_network_delegate.cc",

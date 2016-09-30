@@ -46,10 +46,6 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/page_transition_types.h"
 
-#if defined(OS_ANDROID)
-#include "content/public/browser/android/interface_registry_android.h"
-#endif
-
 class GURL;
 struct AccessibilityHostMsg_EventParams;
 struct AccessibilityHostMsg_FindInPageResultParams;
@@ -963,10 +959,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   std::unique_ptr<shell::InterfaceRegistry> interface_registry_;
   std::unique_ptr<shell::InterfaceProvider> remote_interfaces_;
-
-#if defined(OS_ANDROID)
-  std::unique_ptr<InterfaceRegistryAndroid> interface_registry_android_;
-#endif
 
   std::unique_ptr<WebBluetoothServiceImpl> web_bluetooth_service_;
 

@@ -97,7 +97,6 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/mojo/interface_registrar_android.h"
 #include "content/public/browser/android/java_interfaces.h"
 #if defined(ENABLE_MOJO_CDM)
 #include "content/browser/media/android/provision_fetcher_impl.h"
@@ -2543,22 +2542,9 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   remote_interfaces_.reset(new shell::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
   frame_->GetInterfaceProvider(std::move(remote_interfaces_request));
-
-#if defined(OS_ANDROID)
-  interface_registry_android_ =
-      InterfaceRegistryAndroid::Create(interface_registry_.get());
-  InterfaceRegistrarAndroid::ExposeInterfacesToFrame(
-      interface_registry_android_.get(), this);
-#endif
 }
 
 void RenderFrameHostImpl::InvalidateMojoConnection() {
-#if defined(OS_ANDROID)
-  // The Android-specific interface registry has a reference to
-  // |interface_registry_| and thus must be torn down first.
-  interface_registry_android_.reset();
-#endif
-
   interface_registry_.reset();
   frame_.reset();
   frame_host_binding_.Close();
