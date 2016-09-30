@@ -218,11 +218,13 @@ static_library("headless_lib") {
               "public/util/in_memory_request_job.h",
               "public/util/managed_dispatch_url_request_job.cc",
               "public/util/managed_dispatch_url_request_job.h",
-              "public/util/user_agent.cc",
-              "public/util/user_agent.h",
+              "public/util/testing/generic_url_request_mocks.cc",
+              "public/util/testing/generic_url_request_mocks.h",
               "public/util/url_fetcher.cc",
               "public/util/url_fetcher.h",
               "public/util/url_request_dispatcher.h",
+              "public/util/user_agent.cc",
+              "public/util/user_agent.h",
             ]
 
   deps = [
@@ -268,8 +270,6 @@ test("headless_unittests") {
     "public/util/generic_url_request_job_test.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.cc",
     "public/util/testing/fake_managed_dispatch_url_request_job.h",
-    "public/util/testing/generic_url_request_mocks.cc",
-    "public/util/testing/generic_url_request_mocks.h",
   ]
 
   deps = [
