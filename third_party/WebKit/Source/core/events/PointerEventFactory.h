@@ -89,7 +89,9 @@ private:
     typedef struct PointerAttributes {
         IncomingId incomingId;
         bool isActiveButtons;
-        PointerAttributes() {}
+        PointerAttributes()
+        : incomingId()
+        , isActiveButtons(false) {}
         PointerAttributes(IncomingId incomingId, unsigned isActiveButtons)
         : incomingId(incomingId)
         , isActiveButtons(isActiveButtons) {}
