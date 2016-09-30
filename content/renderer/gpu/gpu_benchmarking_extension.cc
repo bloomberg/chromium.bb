@@ -454,6 +454,32 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
   return true;
 }
 
+static void PrintDocument(blink::WebFrame* frame, SkDocument* doc) {
+  const float kPageWidth = 612.0f;   // 8.5 inch
+  const float kPageHeight = 792.0f;  // 11 inch
+  const float kMarginTop = 29.0f;    // 0.40 inch
+  const float kMarginLeft = 29.0f;   // 0.40 inch
+  const int kContentWidth = 555;     // 7.71 inch
+  const int kContentHeight = 735;    // 10.21 inch
+  blink::WebPrintParams params(blink::WebSize(kContentWidth, kContentHeight));
+  params.printerDPI = 300;
+  int page_count = frame->printBegin(params);
+  for (int i = 0; i < page_count; ++i) {
+    SkCanvas* canvas = doc->beginPage(kPageWidth, kPageHeight);
+    SkAutoCanvasRestore auto_restore(canvas, true);
+    canvas->translate(kMarginLeft, kMarginTop);
+
+#if defined(OS_WIN) || defined(OS_MACOSX)
+    float page_shrink = frame->getPrintPageShrink(i);
+    DCHECK(page_shrink > 0);
+    canvas->scale(page_shrink, page_shrink);
+#endif
+
+    frame->printPage(i, canvas);
+  }
+  frame->printEnd();
+}
+
 }  // namespace
 
 gin::WrapperInfo GpuBenchmarking::kWrapperInfo = {gin::kEmbedderNativeGin};
@@ -550,29 +576,10 @@ void GpuBenchmarking::PrintPagesToSkPictures(v8::Isolate* isolate,
         isolate, msg.c_str(), v8::String::kNormalString, msg.length())));
     return;
   }
-  const int kWidth = 612;          // 8.5 inch
-  const int kHeight = 792;         // 11 inch
-  const int kMarginTop = 29;       // 0.40 inch
-  const int kMarginLeft = 29;      // 0.40 inch
-  const int kContentWidth = 555;   // 7.71 inch
-  const int kContentHeight = 735;  // 10.21 inch
-  blink::WebPrintParams params(blink::WebSize(kWidth, kHeight));
-  params.printerDPI = 72;
-  params.printScalingOption = blink::WebPrintScalingOptionSourceSize;
-  params.printContentArea =
-      blink::WebRect(kMarginLeft, kMarginTop, kContentWidth, kContentHeight);
   SkFILEWStream wStream(path.MaybeAsASCII().c_str());
   sk_sp<SkDocument> doc = SkMakeMultiPictureDocument(&wStream);
   context.web_frame()->view()->settings()->setShouldPrintBackgrounds(true);
-  int page_count = context.web_frame()->printBegin(params);
-  for (int i = 0; i < page_count; ++i) {
-    SkCanvas* canvas =
-        doc->beginPage(SkIntToScalar(kWidth), SkIntToScalar(kHeight));
-    SkAutoCanvasRestore auto_restore(canvas, true);
-    canvas->translate(SkIntToScalar(kMarginLeft), SkIntToScalar(kMarginTop));
-    context.web_frame()->printPage(i, canvas);
-  }
-  context.web_frame()->printEnd();
+  PrintDocument(context.web_frame(), doc.get());
   doc->close();
 }
 
