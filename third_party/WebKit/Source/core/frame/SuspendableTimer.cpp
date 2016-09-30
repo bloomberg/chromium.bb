@@ -26,6 +26,8 @@
 
 #include "core/frame/SuspendableTimer.h"
 
+#include "core/dom/TaskRunnerHelper.h"
+
 namespace blink {
 
 namespace {
@@ -34,7 +36,7 @@ const double kNextFireIntervalInvalid = -1.0;
 }
 
 SuspendableTimer::SuspendableTimer(ExecutionContext* context)
-    : TimerBase(TimerBase::getTimerTaskRunner())
+    : TimerBase(TaskRunnerHelper::get(TaskType::Timer, context))
     , ActiveDOMObject(context)
     , m_nextFireInterval(kNextFireIntervalInvalid)
     , m_repeatInterval(0)
@@ -42,6 +44,7 @@ SuspendableTimer::SuspendableTimer(ExecutionContext* context)
     , m_suspended(false)
 #endif
 {
+    DCHECK(context);
 }
 
 SuspendableTimer::~SuspendableTimer()
