@@ -166,8 +166,43 @@ void PaintInvalidator::updatePaintingLayer(const LayoutObject& object, PaintInva
     }
 }
 
+namespace {
+
+// This is temporary to workaround paint invalidation issues in non-rootLayerScrolls mode.
+// It undos FrameView's content clip and scroll for paint invalidation of frame
+// scroll controls and the LayoutView to which the content clip and scroll don't apply.
+class ScopedUndoFrameViewContentClipAndScroll {
+public:
+    ScopedUndoFrameViewContentClipAndScroll(const FrameView& frameView, PaintInvalidatorContext& context)
+        : m_treeBuilderContext(const_cast<PaintPropertyTreeBuilderContext&>(context.treeBuilderContext))
+        , m_savedContext(m_treeBuilderContext.current)
+    {
+        DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
+
+        if (frameView.contentClip() == m_savedContext.clip)
+            m_treeBuilderContext.current.clip = m_savedContext.clip->parent();
+        if (frameView.scroll() == m_savedContext.scroll)
+            m_treeBuilderContext.current.scroll = m_savedContext.scroll->parent();
+        if (frameView.scrollTranslation() == m_savedContext.transform)
+            m_treeBuilderContext.current.transform = m_savedContext.transform->parent();
+    }
+
+    ~ScopedUndoFrameViewContentClipAndScroll()
+    {
+        m_treeBuilderContext.current = m_savedContext;
+    }
+
+private:
+    PaintPropertyTreeBuilderContext& m_treeBuilderContext;
+    PaintPropertyTreeBuilderContext::ContainingBlockContext m_savedContext;
+};
+
+} // namespace
+
 void PaintInvalidator::updateContext(const LayoutObject& object, PaintInvalidatorContext& context)
 {
+    Optional<ScopedUndoFrameViewContentClipAndScroll> undoFrameViewContentClipAndScroll;
+
     if (object.isPaintInvalidationContainer()) {
         context.paintInvalidationContainer = toLayoutBoxModelObject(&object);
         if (object.styleRef().isStackingContext())
@@ -177,6 +212,8 @@ void PaintInvalidator::updateContext(const LayoutObject& object, PaintInvalidato
         // because it doesn't establish stacking context for stacked contents in sub-frames.
         // Contents stacked in the root stacking context in this frame should use this frame's paintInvalidationContainer.
         context.paintInvalidationContainerForStackedContents = context.paintInvalidationContainer;
+        if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+            undoFrameViewContentClipAndScroll.emplace(*toLayoutView(object).frameView(), context);
     } else if (object.styleRef().isStacked()
         // This is to exclude some objects (e.g. LayoutText) inheriting stacked style from parent but aren't actually stacked.
         && object.hasLayer()
@@ -235,17 +272,8 @@ void PaintInvalidator::invalidatePaintIfNeeded(FrameView& frameView, PaintInvali
     context.paintingLayer = layoutView->layer();
 
     if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-        // Undo content clip and scroll before invalidating FrameView scrollbars.
-        PaintPropertyTreeBuilderContext& treeBuilderContext = const_cast<PaintPropertyTreeBuilderContext&>(context.treeBuilderContext);
-        PaintPropertyTreeBuilderContext::ContainingBlockContext savedCurrent = treeBuilderContext.current;
-        if (frameView.contentClip() == savedCurrent.clip)
-            treeBuilderContext.current.clip =  savedCurrent.clip->parent();
-        if (frameView.scroll() == savedCurrent.scroll)
-            treeBuilderContext.current.scroll = savedCurrent.scroll->parent();
-        if (frameView.scrollTranslation() == savedCurrent.transform)
-            treeBuilderContext.current.transform = savedCurrent.transform->parent();
+        ScopedUndoFrameViewContentClipAndScroll undo(frameView, context);
         frameView.invalidatePaintOfScrollControlsIfNeeded(context);
-        treeBuilderContext.current = savedCurrent;
     }
 
     if (frameView.frame().selection().isCaretBoundsDirty())
