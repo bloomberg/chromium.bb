@@ -1093,5 +1093,10 @@ VideoControls.prototype.onFullScreenChanged = function(fullscreen) {
     this.fullscreenButton_.setAttribute('aria-label',
         fullscreen ? str('VIDEO_PLAYER_EXIT_FULL_SCREEN_BUTTON_LABEL')
                    : str('VIDEO_PLAYER_FULL_SCREEN_BUTTON_LABEL'));;
+    // If the fullscreen button has focus on entering fullscreen mode, reset the
+    // focus to make the spacebar toggle play/pause state. This is the
+    // consistent behavior with Youtube Web UI.
+    if (fullscreen)
+      this.fullscreenButton_.blur();
   }
 };
