@@ -553,6 +553,15 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     private String mWifiSSID;
     private double mMaxBandwidthMbps;
     private int mMaxBandwidthConnectionType;
+    // When a BroadcastReceiver is registered for a sticky broadcast that has been sent out at
+    // least once, onReceive() will immediately be called. mIgnoreNextBroadcast is set to true
+    // when this class is registered in such a circumstance, and indicates that the next
+    // invokation of onReceive() can be ignored as the state hasn't actually changed. Immediately
+    // prior to mIgnoreNextBroadcast being set, all internal state is updated to the current device
+    // state so were this initial onReceive() call not ignored, no signals would be passed to
+    // observers anyhow as the state hasn't changed. This is simply an optimization to avoid
+    // useless work.
+    private boolean mIgnoreNextBroadcast;
 
     /**
      * Observer interface by which observer is notified of network changes.
@@ -630,6 +639,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
         mMaxBandwidthConnectionType = mConnectionType;
         mIntentFilter = new NetworkConnectivityIntentFilter();
+        mIgnoreNextBroadcast = false;
         mRegistrationPolicy = policy;
         mRegistrationPolicy.init(this);
     }
@@ -675,7 +685,11 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         final NetworkState networkState = getCurrentNetworkState();
         connectionTypeChanged(networkState);
         maxBandwidthChanged(networkState);
-        mContext.registerReceiver(this, mIntentFilter);
+        // When registering for a sticky broadcast, like CONNECTIVITY_ACTION, if registerReceiver
+        // returns non-null, it means the broadcast was previously issued and onReceive() will be
+        // immediately called with this previous Intent. Since this initial callback doesn't
+        // actually indicate a network change, we can ignore it by setting mIgnoreNextBroadcast.
+        mIgnoreNextBroadcast = mContext.registerReceiver(this, mIntentFilter) != null;
         mRegistered = true;
 
         if (mNetworkCallback != null) {
@@ -907,6 +921,10 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     // BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent) {
+        if (mIgnoreNextBroadcast) {
+            mIgnoreNextBroadcast = false;
+            return;
+        }
         final NetworkState networkState = getCurrentNetworkState();
         if (ConnectivityManager.CONNECTIVITY_ACTION.equals(intent.getAction())) {
             connectionTypeChanged(networkState);
