@@ -48,7 +48,6 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
@@ -1116,13 +1115,10 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
       case IDC_EXTENSIONS_OVERFLOW_MENU: {
         std::unique_ptr<ExtensionToolbarMenuView> extension_toolbar(
             new ExtensionToolbarMenuView(browser_, this, item));
-        if (ui::MaterialDesignController::IsModeMaterial()) {
-          for (int i = 0; i < extension_toolbar->contents()->child_count();
-               ++i) {
-            View* action_view = extension_toolbar->contents()->child_at(i);
-            action_view->set_background(new InMenuButtonBackground(
-                InMenuButtonBackground::ROUNDED_BUTTON));
-          }
+        for (int i = 0; i < extension_toolbar->contents()->child_count(); ++i) {
+          View* action_view = extension_toolbar->contents()->child_at(i);
+          action_view->set_background(new InMenuButtonBackground(
+              InMenuButtonBackground::ROUNDED_BUTTON));
         }
         extension_toolbar_ = extension_toolbar.get();
         item->AddChildView(extension_toolbar.release());

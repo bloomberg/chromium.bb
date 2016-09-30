@@ -165,11 +165,6 @@ class BrowserThemePack : public CustomThemeSupplier {
   // |images|.
   void CreateFrameImages(ImageCache* images) const;
 
-  // Creates button images tinted with |button_tint| and places them in
-  // processed_images.
-  void CreateTintedButtons(const color_utils::HSL& button_tint,
-                           ImageCache* processed_images) const;
-
   // Creates the semi-transparent tab background images, putting the results
   // in |images|. Must be called after GenerateFrameImages().
   void CreateTabBackgroundImages(ImageCache* images) const;

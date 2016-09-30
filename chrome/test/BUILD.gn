@@ -3581,7 +3581,6 @@ test("unit_tests") {
       "../browser/ui/tabs/tab_strip_model_unittest.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.cc",
       "../browser/ui/tabs/test_tab_strip_model_delegate.h",
-      "../browser/ui/toolbar/app_menu_icon_painter_unittest.cc",
       "../browser/ui/toolbar/app_menu_model_unittest.cc",
       "../browser/ui/toolbar/back_forward_menu_model_unittest.cc",
       "../browser/ui/toolbar/mock_component_toolbar_actions_factory.cc",

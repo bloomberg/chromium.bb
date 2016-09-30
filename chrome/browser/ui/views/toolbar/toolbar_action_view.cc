@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_recorder.h"
@@ -54,10 +53,8 @@ ToolbarActionView::ToolbarActionView(
       wants_to_run_(false),
       menu_(nullptr),
       weak_factory_(this) {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetInkDropMode(InkDropMode::ON);
-    SetFocusPainter(nullptr);
-  }
+  SetInkDropMode(InkDropMode::ON);
+  SetFocusPainter(nullptr);
   set_has_ink_drop_action_on_click(true);
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);

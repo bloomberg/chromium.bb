@@ -9,24 +9,8 @@
 #include "ui/gfx/canvas_skia_paint.h"
 #include "ui/gfx/geometry/rect.h"
 
-class AppMenuIconPainterDelegateMac : public AppMenuIconPainter::Delegate {
- public:
-  explicit AppMenuIconPainterDelegateMac(NSCell* cell) : cell_(cell) {}
-  ~AppMenuIconPainterDelegateMac() override {}
-
-  void ScheduleAppMenuIconPaint() override {
-    [[cell_ controlView] setNeedsDisplay:YES];
-  }
-
- private:
-  NSCell* cell_;
-
-  DISALLOW_COPY_AND_ASSIGN(AppMenuIconPainterDelegateMac);
-};
-
 @interface AppToolbarButtonCell ()
 - (void)commonInit;
-- (AppMenuIconPainter::BezelType)currentBezelType;
 @end
 
 @implementation AppToolbarButtonCell
@@ -50,31 +34,11 @@ class AppMenuIconPainterDelegateMac : public AppMenuIconPainter::Delegate {
   canvas.set_composite_alpha(true);
   canvas.SaveLayerAlpha(255 *
                         [self imageAlphaForWindowState:[controlView window]]);
-  const ui::ThemeProvider* themeProvider = [[controlView window] themeProvider];
-  if (themeProvider) {
-    iconPainter_->Paint(&canvas, [[controlView window] themeProvider],
-                        gfx::Rect(NSRectToCGRect(cellFrame)),
-                        [self currentBezelType]);
-  }
+
   canvas.Restore();
 }
 
-- (void)setSeverity:(AppMenuIconPainter::Severity)severity
-      shouldAnimate:(BOOL)shouldAnimate {
-  iconPainter_->SetSeverity(severity, shouldAnimate);
-}
-
 - (void)commonInit {
-  delegate_.reset(new AppMenuIconPainterDelegateMac(self));
-  iconPainter_.reset(new AppMenuIconPainter(delegate_.get()));
-}
-
-- (AppMenuIconPainter::BezelType)currentBezelType {
-  if ([self isHighlighted])
-    return AppMenuIconPainter::BEZEL_PRESSED;
-  if ([self isMouseInside])
-    return AppMenuIconPainter::BEZEL_HOVER;
-  return AppMenuIconPainter::BEZEL_NONE;
 }
 
 @end

@@ -178,44 +178,6 @@ constexpr char kTilingRepeatX[] = "repeat-x";
 constexpr char kTilingRepeatY[] = "repeat-y";
 constexpr char kTilingRepeat[] = "repeat";
 
-// The image resources that will be tinted by the 'button' tint value.
-// If you change this list, you must increment the version number in
-// browser_theme_pack.cc, and you should assign persistent IDs to the
-// data table at the start of said file or else tinted versions of
-// these resources will not be created.
-//
-// TODO(erg): The cocoa port is the last user of the IDR_*_[HP] variants. These
-// should be removed once the cocoa port no longer uses them.
-constexpr int kToolbarButtonIDs[] = {
-    IDR_BACK,
-    IDR_BACK_D,
-    IDR_BACK_H,
-    IDR_BACK_P,
-    IDR_FORWARD,
-    IDR_FORWARD_D,
-    IDR_FORWARD_H,
-    IDR_FORWARD_P,
-#if defined(OS_MACOSX)
-    IDR_HOME,
-    IDR_HOME_H,
-    IDR_HOME_P,
-#endif
-    IDR_RELOAD,
-    IDR_RELOAD_H,
-    IDR_RELOAD_P,
-    IDR_STOP,
-    IDR_STOP_D,
-    IDR_STOP_H,
-    IDR_STOP_P,
-    IDR_TOOLS,
-    IDR_TOOLS_H,
-    IDR_TOOLS_P,
-    IDR_MENU_DROPARROW,
-    IDR_TOOLBAR_BEZEL_HOVER,
-    IDR_TOOLBAR_BEZEL_PRESSED,
-    IDR_TOOLS_BAR,
-};
-
 SkColor TintForUnderline(SkColor input) {
   return SkColorSetA(input, SkColorGetA(input) / 3);
 }
@@ -281,18 +243,6 @@ std::string ThemeProperties::TilingToString(int tiling) {
   if (tiling == REPEAT)
     return kTilingRepeat;
   return kTilingNoRepeat;
-}
-
-// static
-const std::set<int>& ThemeProperties::GetTintableToolbarButtons() {
-  CR_DEFINE_STATIC_LOCAL(std::set<int>, button_set, ());
-  if (button_set.empty()) {
-    button_set = std::set<int>(
-        kToolbarButtonIDs,
-        kToolbarButtonIDs + arraysize(kToolbarButtonIDs));
-  }
-
-  return button_set;
 }
 
 // static

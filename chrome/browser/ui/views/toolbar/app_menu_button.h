@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
-#include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
@@ -25,14 +24,13 @@ class MenuListener;
 
 class ToolbarView;
 
-class AppMenuButton : public views::MenuButton,
-                      public AppMenuIconPainter::Delegate {
+class AppMenuButton : public views::MenuButton {
  public:
   explicit AppMenuButton(ToolbarView* toolbar_view);
   ~AppMenuButton() override;
 
   void SetSeverity(AppMenuIconController::IconType type,
-                   AppMenuIconPainter::Severity severity,
+                   AppMenuIconController::Severity severity,
                    bool animate);
 
   // Shows the app menu. |for_drop| indicates whether the menu is opened for a
@@ -56,11 +54,7 @@ class AppMenuButton : public views::MenuButton,
   // views::MenuButton:
   gfx::Size GetPreferredSize() const override;
 
-  // AppMenuIconPainter::Delegate:
-  void ScheduleAppMenuIconPaint() override;
-
   // Updates the presentation according to |severity_| and the theme provider.
-  // Only used in MD.
   void UpdateIcon();
 
   // Sets |margin_trailing_| when the browser is maximized and updates layout
@@ -86,13 +80,8 @@ class AppMenuButton : public views::MenuButton,
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
-  void OnPaint(gfx::Canvas* canvas) override;
 
-  // Only used in pre-MD.
-  std::unique_ptr<AppMenuIconPainter> icon_painter_;
-
-  // Only used in MD.
-  AppMenuIconPainter::Severity severity_;
+  AppMenuIconController::Severity severity_;
   AppMenuIconController::IconType type_;
 
   // Our owning toolbar view.

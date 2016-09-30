@@ -11,19 +11,15 @@
 
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
-#include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
-
-class AppMenuButtonIconPainterDelegateMac;
 
 // Button for the app toolbar button.
 @interface AppToolbarButton : MenuButton {
  @private
-  std::unique_ptr<AppMenuButtonIconPainterDelegateMac> delegate_;
-  AppMenuIconPainter::Severity severity_;
+  AppMenuIconController::Severity severity_;
   AppMenuIconController::IconType type_;
 }
 
-- (void)setSeverity:(AppMenuIconPainter::Severity)severity
+- (void)setSeverity:(AppMenuIconController::Severity)severity
            iconType:(AppMenuIconController::IconType)iconType
       shouldAnimate:(BOOL)shouldAnimate;
 

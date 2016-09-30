@@ -638,7 +638,7 @@ void ToolbarView::RemovePaneFocus() {
 
 // AppMenuIconController::Delegate:
 void ToolbarView::UpdateSeverity(AppMenuIconController::IconType type,
-                                 AppMenuIconPainter::Severity severity,
+                                 AppMenuIconController::Severity severity,
                                  bool animate) {
   // There's no app menu in tabless windows.
   if (!app_menu_button_)

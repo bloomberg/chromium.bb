@@ -19,24 +19,22 @@
 namespace {
 
 // Maps an upgrade level to a severity level.
-AppMenuIconPainter::Severity SeverityFromUpgradeLevel(
+AppMenuIconController::Severity SeverityFromUpgradeLevel(
     UpgradeDetector::UpgradeNotificationAnnoyanceLevel level) {
   switch (level) {
     case UpgradeDetector::UPGRADE_ANNOYANCE_NONE:
-      return AppMenuIconPainter::SEVERITY_NONE;
+      return AppMenuIconController::Severity::NONE;
     case UpgradeDetector::UPGRADE_ANNOYANCE_LOW:
-      return AppMenuIconPainter::SEVERITY_LOW;
+      return AppMenuIconController::Severity::LOW;
     case UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED:
-      return AppMenuIconPainter::SEVERITY_MEDIUM;
+      return AppMenuIconController::Severity::MEDIUM;
     case UpgradeDetector::UPGRADE_ANNOYANCE_HIGH:
-      return AppMenuIconPainter::SEVERITY_HIGH;
     case UpgradeDetector::UPGRADE_ANNOYANCE_SEVERE:
-      return AppMenuIconPainter::SEVERITY_HIGH;
     case UpgradeDetector::UPGRADE_ANNOYANCE_CRITICAL:
-      return AppMenuIconPainter::SEVERITY_HIGH;
+      return AppMenuIconController::Severity::HIGH;
   }
   NOTREACHED();
-  return AppMenuIconPainter::SEVERITY_NONE;
+  return AppMenuIconController::Severity::NONE;
 }
 
 // Checks if the app menu icon should be animated for the given upgrade level.
@@ -110,7 +108,7 @@ void AppMenuIconController::UpdateDelegate() {
 
   if (ShouldShowIncompatibilityWarning()) {
     delegate_->UpdateSeverity(IconType::INCOMPATIBILITY_WARNING,
-                              AppMenuIconPainter::SEVERITY_MEDIUM, true);
+                              Severity::MEDIUM, true);
     return;
   }
 
@@ -119,12 +117,12 @@ void AppMenuIconController::UpdateDelegate() {
     // If you change the severity here, make sure to also change the menu icon
     // and the bubble icon.
     delegate_->UpdateSeverity(IconType::GLOBAL_ERROR,
-                              AppMenuIconPainter::SEVERITY_MEDIUM, true);
+                              Severity::MEDIUM, true);
     return;
   }
 
   delegate_->UpdateSeverity(IconType::NONE,
-                            AppMenuIconPainter::SEVERITY_NONE, true);
+                            Severity::NONE, true);
 }
 
 #if defined(OS_WIN)

@@ -839,8 +839,6 @@ split_static_library("ui") {
       "task_manager/task_manager_table_model.h",
       "toolbar/app_menu_icon_controller.cc",
       "toolbar/app_menu_icon_controller.h",
-      "toolbar/app_menu_icon_painter.cc",
-      "toolbar/app_menu_icon_painter.h",
       "toolbar/app_menu_model.cc",
       "toolbar/app_menu_model.h",
       "toolbar/back_forward_menu_model.cc",

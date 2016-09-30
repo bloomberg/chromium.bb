@@ -160,7 +160,7 @@ CGFloat BrowserActionsContainerDelegate::GetMaxAllowedWidth() {
 - (void)browserActionsVisibilityChanged:(NSNotification*)notification;
 - (void)browserActionsContainerWillAnimate:(NSNotification*)notification;
 - (void)adjustLocationSizeBy:(CGFloat)dX animate:(BOOL)animate;
-- (void)updateAppMenuButtonSeverity:(AppMenuIconPainter::Severity)severity
+- (void)updateAppMenuButtonSeverity:(AppMenuIconController::Severity)severity
                            iconType:(AppMenuIconController::IconType)iconType
                             animate:(BOOL)animate;
 @end
@@ -204,7 +204,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   void UpdateSeverity() { app_menu_icon_controller_.UpdateDelegate(); }
 
   void UpdateSeverity(AppMenuIconController::IconType type,
-                      AppMenuIconPainter::Severity severity,
+                      AppMenuIconController::Severity severity,
                       bool animate) override {
     [controller_ updateAppMenuButtonSeverity:severity
                                     iconType:type
@@ -751,7 +751,7 @@ class NotificationBridge : public AppMenuIconController::Delegate {
   [appMenuButton_ setAttachedMenu:[appMenuController_ menu]];
 }
 
-- (void)updateAppMenuButtonSeverity:(AppMenuIconPainter::Severity)severity
+- (void)updateAppMenuButtonSeverity:(AppMenuIconController::Severity)severity
                            iconType:(AppMenuIconController::IconType)iconType
                             animate:(BOOL)animate {
   AppToolbarButton* appMenuButton =

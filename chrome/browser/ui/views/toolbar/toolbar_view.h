@@ -167,7 +167,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // AppMenuIconController::Delegate:
   void UpdateSeverity(AppMenuIconController::IconType type,
-                      AppMenuIconPainter::Severity severity,
+                      AppMenuIconController::Severity severity,
                       bool animate) override;
 
   // Used to avoid duplicating the near-identical logic of

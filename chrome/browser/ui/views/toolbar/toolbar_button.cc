@@ -16,9 +16,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/menu_model.h"
-#include "ui/base/theme_provider.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -39,10 +37,8 @@ ToolbarButton::ToolbarButton(Profile* profile,
       show_menu_factory_(this) {
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    SetInkDropMode(InkDropMode::ON);
-    SetFocusPainter(nullptr);
-  }
+  SetInkDropMode(InkDropMode::ON);
+  SetFocusPainter(nullptr);
 }
 
 ToolbarButton::~ToolbarButton() {}
@@ -68,16 +64,8 @@ gfx::Size ToolbarButton::GetPreferredSize() const {
         label_size.width() + GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING),
         0);
   }
-  // For non-material assets the entire size of the button is captured in the
-  // image resource. For Material Design the excess whitespace is being removed
-  // from the image assets. Enlarge the button by the theme provided insets.
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    const ui::ThemeProvider* provider = GetThemeProvider();
-    if (provider) {
-      gfx::Insets insets(GetLayoutInsets(TOOLBAR_BUTTON));
-      size.Enlarge(insets.width(), insets.height());
-    }
-  }
+  gfx::Insets insets(GetLayoutInsets(TOOLBAR_BUTTON));
+  size.Enlarge(insets.width(), insets.height());
   return size;
 }
 

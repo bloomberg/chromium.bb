@@ -173,10 +173,6 @@ class ThemeProperties {
   // generate a CSS value.
   static std::string TilingToString(int tiling);
 
-  // Returns the set of IDR_* resources that should be tinted.
-  // This method is not thread safe.
-  static const std::set<int>& GetTintableToolbarButtons();
-
   // Returns the default tint for the given tint |id| TINT_* enum value.
   // Returns an HSL value of {-1, -1, -1} if |id| is invalid.
   static color_utils::HSL GetDefaultTint(int id, bool otr);
