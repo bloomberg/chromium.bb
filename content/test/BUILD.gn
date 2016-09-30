@@ -1598,7 +1598,6 @@ test("content_unittests") {
       "../renderer/media/android/webmediasession_android_unittest.cc",
     ]
     sources -= [
-      "../browser/media/session/audio_focus_manager_unittest.cc",
       "../browser/power_usage_monitor_impl_unittest.cc",
       "../browser/webui/url_data_manager_backend_unittest.cc",
     ]

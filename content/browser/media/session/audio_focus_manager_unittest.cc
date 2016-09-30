@@ -4,29 +4,13 @@
 
 #include "content/browser/media/session/audio_focus_manager.h"
 
-#include "base/command_line.h"
 #include "content/browser/media/session/media_session.h"
-#include "content/browser/media/session/media_session_observer.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/test/test_web_contents.h"
-#include "media/base/media_content_type.h"
-#include "media/base/media_switches.h"
 
 namespace content {
-
-namespace {
-
-class MockMediaSessionObserver : public MediaSessionObserver {
- public:
-  void OnSuspend(int player_id) override {}
-  void OnResume(int player_id) override {}
-  void OnSetVolumeMultiplier(
-      int player_id, double volume_multiplier) override {}
-};
-
-}  // anonymous namespace
 
 using AudioFocusType = AudioFocusManager::AudioFocusType;
 using SuspendType = MediaSession::SuspendType;
@@ -36,12 +20,9 @@ class AudioFocusManagerTest : public testing::Test {
   AudioFocusManagerTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableDefaultMediaSession);
     rph_factory_.reset(new MockRenderProcessHostFactory());
     SiteInstanceImpl::set_render_process_host_factory(rph_factory_.get());
     browser_context_.reset(new TestBrowserContext());
-    pepper_observer_.reset(new MockMediaSessionObserver());
   }
 
   void TearDown() override {
@@ -50,54 +31,24 @@ class AudioFocusManagerTest : public testing::Test {
     rph_factory_.reset();
   }
 
-  MediaSession* GetAudioFocusedSession() const {
-    const auto& audio_focus_stack =
-        AudioFocusManager::GetInstance()->audio_focus_stack_;
-    for (auto iter = audio_focus_stack.rbegin();
-         iter != audio_focus_stack.rend(); ++iter) {
-      if ((*iter)->audio_focus_type() ==
-          AudioFocusManager::AudioFocusType::Gain)
-        return (*iter);
-    }
-    return nullptr;
+  WebContents* GetAudioFocusedContent() const {
+    if (!AudioFocusManager::GetInstance()->focus_entry_)
+      return nullptr;
+    return AudioFocusManager::GetInstance()->focus_entry_->web_contents();
   }
 
   int GetTransientMaybeDuckCount() const {
-    int count = 0;
-    const auto& audio_focus_stack =
-        AudioFocusManager::GetInstance()->audio_focus_stack_;
-    for (auto iter = audio_focus_stack.rbegin();
-         iter != audio_focus_stack.rend(); ++iter) {
-      if ((*iter)->audio_focus_type() ==
-          AudioFocusManager::AudioFocusType::GainTransientMayDuck) {
-          ++count;
-      } else {
-        break;
-      }
-    }
-
-    return count;
+    return AudioFocusManager::GetInstance()->TransientMayDuckEntriesCount();
   }
 
   double IsSessionDucking(MediaSession* session) {
     return session->is_ducking_;  // Quack! Quack!
   }
 
-  void RequestAudioFocus(MediaSession* session,
-                         AudioFocusManager::AudioFocusType audio_focus_type) {
-    session->RequestSystemAudioFocus(audio_focus_type);
-  }
-
-  void AbandonAudioFocus(MediaSession* session) {
-    session->AbandonSystemAudioFocusIfNeeded();
-  }
-
   WebContents* CreateWebContents() {
     return TestWebContents::Create(browser_context_.get(),
         SiteInstance::SiteInstance::Create(browser_context_.get()));
   }
-
-  std::unique_ptr<MediaSessionObserver> pepper_observer_;
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -123,42 +74,48 @@ TEST_F(AudioFocusManagerTest, RequestAudioFocusGain_ReplaceFocusedEntry) {
   std::unique_ptr<WebContents> web_contents_3(CreateWebContents());
   MediaSession* media_session_3 = MediaSession::Get(web_contents_3.get());
 
-  ASSERT_EQ(nullptr, GetAudioFocusedSession());
+  ASSERT_EQ(nullptr, GetAudioFocusedContent());
 
-  RequestAudioFocus(media_session_1, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(media_session_1, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_1, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_EQ(web_contents_1.get(), GetAudioFocusedContent());
 
-  RequestAudioFocus(media_session_2, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(media_session_2, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_2, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_EQ(web_contents_2.get(), GetAudioFocusedContent());
 
-  RequestAudioFocus(media_session_3, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(media_session_3, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_3, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_EQ(web_contents_3.get(), GetAudioFocusedContent());
 }
 
 TEST_F(AudioFocusManagerTest, RequestAudioFocusGain_Duplicate) {
   std::unique_ptr<WebContents> web_contents(CreateWebContents());
   MediaSession* media_session = MediaSession::Get(web_contents.get());
 
-  ASSERT_EQ(nullptr, GetAudioFocusedSession());
+  ASSERT_EQ(nullptr, GetAudioFocusedContent());
 
-  RequestAudioFocus(media_session, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(media_session, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_EQ(web_contents.get(), GetAudioFocusedContent());
 
-  RequestAudioFocus(media_session, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(media_session, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_EQ(web_contents.get(), GetAudioFocusedContent());
 }
 
 TEST_F(AudioFocusManagerTest, RequestAudioFocusGain_FromTransient) {
   std::unique_ptr<WebContents> web_contents(CreateWebContents());
   MediaSession* media_session = MediaSession::Get(web_contents.get());
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
-  ASSERT_EQ(nullptr, GetAudioFocusedSession());
+  ASSERT_EQ(nullptr, GetAudioFocusedContent());
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
 
-  RequestAudioFocus(media_session, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(media_session, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_EQ(web_contents.get(), GetAudioFocusedContent());
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
 }
 
@@ -166,13 +123,14 @@ TEST_F(AudioFocusManagerTest, RequestAudioFocusTransient_FromGain) {
   std::unique_ptr<WebContents> web_contents(CreateWebContents());
   MediaSession* media_session = MediaSession::Get(web_contents.get());
 
-  RequestAudioFocus(media_session, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(media_session, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_EQ(web_contents.get(), GetAudioFocusedContent());
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
-  ASSERT_EQ(nullptr, GetAudioFocusedSession());
+  ASSERT_EQ(nullptr, GetAudioFocusedContent());
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
   ASSERT_FALSE(IsSessionDucking(media_session));
 }
@@ -184,16 +142,17 @@ TEST_F(AudioFocusManagerTest, RequestAudioFocusTransient_FromGainWhileDucking) {
   std::unique_ptr<WebContents> web_contents_2(CreateWebContents());
   MediaSession* media_session_2 = MediaSession::Get(web_contents_2.get());
 
-  RequestAudioFocus(media_session_1, AudioFocusManager::AudioFocusType::Gain);
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
   ASSERT_FALSE(IsSessionDucking(media_session_1));
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
   ASSERT_TRUE(IsSessionDucking(media_session_1));
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_1, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(2, GetTransientMaybeDuckCount());
   ASSERT_FALSE(IsSessionDucking(media_session_1));
@@ -203,30 +162,31 @@ TEST_F(AudioFocusManagerTest, AbandonAudioFocus_RemovesFocusedEntry) {
   std::unique_ptr<WebContents> web_contents(CreateWebContents());
   MediaSession* media_session = MediaSession::Get(web_contents.get());
 
-  RequestAudioFocus(media_session, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(media_session, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_EQ(web_contents.get(), GetAudioFocusedContent());
 
-  AbandonAudioFocus(media_session);
-  ASSERT_EQ(nullptr, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session);
+  ASSERT_EQ(nullptr, GetAudioFocusedContent());
 }
 
 TEST_F(AudioFocusManagerTest, AbandonAudioFocus_NoAssociatedEntry) {
   std::unique_ptr<WebContents> web_contents(CreateWebContents());
   MediaSession* media_session = MediaSession::Get(web_contents.get());
 
-  AbandonAudioFocus(media_session);
-  ASSERT_EQ(nullptr, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session);
+  ASSERT_EQ(nullptr, GetAudioFocusedContent());
 }
 
 TEST_F(AudioFocusManagerTest, AbandonAudioFocus_RemovesTransientEntry) {
   std::unique_ptr<WebContents> web_contents(CreateWebContents());
   MediaSession* media_session = MediaSession::Get(web_contents.get());
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
 
-  AbandonAudioFocus(media_session);
+  AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
 }
 
@@ -237,22 +197,24 @@ TEST_F(AudioFocusManagerTest, AbandonAudioFocus_WhileDuckingThenResume) {
   std::unique_ptr<WebContents> web_contents_2(CreateWebContents());
   MediaSession* media_session_2 = MediaSession::Get(web_contents_2.get());
 
-  RequestAudioFocus(media_session_1, AudioFocusManager::AudioFocusType::Gain);
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
   ASSERT_FALSE(IsSessionDucking(media_session_1));
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
   ASSERT_TRUE(IsSessionDucking(media_session_1));
 
-  AbandonAudioFocus(media_session_1);
+  AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_1);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
 
-  AbandonAudioFocus(media_session_2);
+  AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_2);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
 
-  RequestAudioFocus(media_session_1, AudioFocusManager::AudioFocusType::Gain);
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_FALSE(IsSessionDucking(media_session_1));
 }
 
@@ -263,16 +225,17 @@ TEST_F(AudioFocusManagerTest, AbandonAudioFocus_StopsDucking) {
   std::unique_ptr<WebContents> web_contents_2(CreateWebContents());
   MediaSession* media_session_2 = MediaSession::Get(web_contents_2.get());
 
-  RequestAudioFocus(media_session_1, AudioFocusManager::AudioFocusType::Gain);
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
   ASSERT_FALSE(IsSessionDucking(media_session_1));
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
   ASSERT_TRUE(IsSessionDucking(media_session_1));
 
-  AbandonAudioFocus(media_session_2);
+  AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_2);
   ASSERT_EQ(0, GetTransientMaybeDuckCount());
   ASSERT_FALSE(IsSessionDucking(media_session_1));
 }
@@ -284,26 +247,28 @@ TEST_F(AudioFocusManagerTest, DuckWhilePlaying) {
   std::unique_ptr<WebContents> web_contents_2(CreateWebContents());
   MediaSession* media_session_2 = MediaSession::Get(web_contents_2.get());
 
-  RequestAudioFocus(media_session_1, AudioFocusManager::AudioFocusType::Gain);
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_FALSE(IsSessionDucking(media_session_1));
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_TRUE(IsSessionDucking(media_session_1));
 }
 
-TEST_F(AudioFocusManagerTest, GainSuspendsTransient) {
+TEST_F(AudioFocusManagerTest, DuckWhenStarting) {
   std::unique_ptr<WebContents> web_contents_1(CreateWebContents());
   MediaSession* media_session_1 = MediaSession::Get(web_contents_1.get());
 
   std::unique_ptr<WebContents> web_contents_2(CreateWebContents());
   MediaSession* media_session_2 = MediaSession::Get(web_contents_2.get());
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
 
-  RequestAudioFocus(media_session_1, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_TRUE(media_session_2->IsSuspended());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_1, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_TRUE(IsSessionDucking(media_session_1));
 }
 
 TEST_F(AudioFocusManagerTest, DuckWithMultipleTransients) {
@@ -316,21 +281,22 @@ TEST_F(AudioFocusManagerTest, DuckWithMultipleTransients) {
   std::unique_ptr<WebContents> web_contents_3(CreateWebContents());
   MediaSession* media_session_3 = MediaSession::Get(web_contents_3.get());
 
-  RequestAudioFocus(media_session_1, AudioFocusManager::AudioFocusType::Gain);
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_FALSE(IsSessionDucking(media_session_1));
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_TRUE(IsSessionDucking(media_session_1));
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_3, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_TRUE(IsSessionDucking(media_session_1));
 
-  AbandonAudioFocus(media_session_2);
+  AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_2);
   ASSERT_TRUE(IsSessionDucking(media_session_1));
 
-  AbandonAudioFocus(media_session_3);
+  AudioFocusManager::GetInstance()->AbandonAudioFocus(media_session_3);
   ASSERT_FALSE(IsSessionDucking(media_session_1));
 }
 
@@ -338,18 +304,19 @@ TEST_F(AudioFocusManagerTest, WebContentsDestroyed_ReleasesFocus) {
   std::unique_ptr<WebContents> web_contents(CreateWebContents());
   MediaSession* media_session = MediaSession::Get(web_contents.get());
 
-  RequestAudioFocus(media_session, AudioFocusManager::AudioFocusType::Gain);
-  ASSERT_EQ(media_session, GetAudioFocusedSession());
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session, AudioFocusManager::AudioFocusType::Gain);
+  ASSERT_EQ(web_contents.get(), GetAudioFocusedContent());
 
   web_contents.reset();
-  ASSERT_EQ(nullptr, GetAudioFocusedSession());
+  ASSERT_EQ(nullptr, GetAudioFocusedContent());
 }
 
 TEST_F(AudioFocusManagerTest, WebContentsDestroyed_ReleasesTransients) {
   std::unique_ptr<WebContents> web_contents(CreateWebContents());
   MediaSession* media_session = MediaSession::Get(web_contents.get());
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
 
@@ -364,72 +331,16 @@ TEST_F(AudioFocusManagerTest, WebContentsDestroyed_StopsDucking) {
   std::unique_ptr<WebContents> web_contents_2(CreateWebContents());
   MediaSession* media_session_2 = MediaSession::Get(web_contents_2.get());
 
-  RequestAudioFocus(media_session_1, AudioFocusManager::AudioFocusType::Gain);
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
+      media_session_1, AudioFocusManager::AudioFocusType::Gain);
   ASSERT_FALSE(IsSessionDucking(media_session_1));
 
-  RequestAudioFocus(
+  AudioFocusManager::GetInstance()->RequestAudioFocus(
       media_session_2, AudioFocusManager::AudioFocusType::GainTransientMayDuck);
   ASSERT_TRUE(IsSessionDucking(media_session_1));
 
   web_contents_2.reset();
   ASSERT_FALSE(IsSessionDucking(media_session_1));
-}
-
-TEST_F(AudioFocusManagerTest, PepperRequestsGainFocus) {
-  std::unique_ptr<WebContents> web_contents(CreateWebContents());
-  MediaSession* media_session = MediaSession::Get(web_contents.get());
-
-  media_session->AddPlayer(
-      pepper_observer_.get(), 0, media::MediaContentType::Pepper);
-  ASSERT_EQ(media_session, GetAudioFocusedSession());
-
-  media_session->RemovePlayer(pepper_observer_.get(), 0);
-  ASSERT_EQ(nullptr, GetAudioFocusedSession());
-}
-
-TEST_F(AudioFocusManagerTest, GainDucksPepper) {
-  std::unique_ptr<WebContents> web_contents_1(CreateWebContents());
-  MediaSession* media_session_1 = MediaSession::Get(web_contents_1.get());
-
-  std::unique_ptr<WebContents> web_contents_2(CreateWebContents());
-  MediaSession* media_session_2 = MediaSession::Get(web_contents_2.get());
-
-  media_session_1->AddPlayer(
-      pepper_observer_.get(), 0, media::MediaContentType::Pepper);
-
-  RequestAudioFocus(
-      media_session_2, AudioFocusManager::AudioFocusType::Gain);
-
-  ASSERT_EQ(media_session_2, GetAudioFocusedSession());
-  ASSERT_TRUE(media_session_1->IsActive());
-  ASSERT_TRUE(IsSessionDucking(media_session_1));
-}
-
-TEST_F(AudioFocusManagerTest, AbandoningGainFocusRevokesTopMostPepperSession) {
-  std::unique_ptr<WebContents> web_contents_1(CreateWebContents());
-  MediaSession* media_session_1 = MediaSession::Get(web_contents_1.get());
-
-  std::unique_ptr<WebContents> web_contents_2(CreateWebContents());
-  MediaSession* media_session_2 = MediaSession::Get(web_contents_2.get());
-
-  std::unique_ptr<WebContents> web_contents_3(CreateWebContents());
-  MediaSession* media_session_3 = MediaSession::Get(web_contents_3.get());
-
-  media_session_1->AddPlayer(
-      pepper_observer_.get(), 0, media::MediaContentType::Pepper);
-
-  RequestAudioFocus(
-      media_session_2, AudioFocusManager::AudioFocusType::Gain);
-  RequestAudioFocus(
-      media_session_3, AudioFocusManager::AudioFocusType::Gain);
-
-  ASSERT_EQ(media_session_3, GetAudioFocusedSession());
-  ASSERT_TRUE(media_session_2->IsReallySuspended());
-  ASSERT_TRUE(media_session_1->IsActive());
-  ASSERT_TRUE(IsSessionDucking(media_session_1));
-
-  AbandonAudioFocus(media_session_3);
-  ASSERT_EQ(media_session_1, GetAudioFocusedSession());
 }
 
 }  // namespace content

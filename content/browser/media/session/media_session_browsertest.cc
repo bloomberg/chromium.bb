@@ -114,7 +114,7 @@ class MediaSessionBrowserTest : public content::ContentBrowserTest {
   bool HasAudioFocus() { return media_session_->IsActiveForTest(); }
 
   content::AudioFocusManager::AudioFocusType GetSessionAudioFocusType() {
-    return media_session_->audio_focus_type();
+    return media_session_->audio_focus_type_for_test();
   }
 
   bool IsControllable() { return media_session_->IsControllable(); }

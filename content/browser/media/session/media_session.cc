@@ -60,19 +60,6 @@ MediaSession::~MediaSession() {
   DCHECK(audio_focus_state_ == State::INACTIVE);
 }
 
-void MediaSession::WebContentsDestroyed() {
-  // This should only work for tests. In production, all the players should have
-  // already been removed before WebContents is destroyed.
-
-  // TODO(zqzhang): refactor MediaSession, maybe move the interface used to talk
-  // with AudioFocusManager out to a seperate class. The AudioFocusManager unit
-  // tests then could mock the interface and abandon audio focus when
-  // WebContents is destroyed. See https://crbug.com/651069
-  players_.clear();
-  pepper_players_.clear();
-  AbandonSystemAudioFocusIfNeeded();
-}
-
 void MediaSession::SetMetadata(const base::Optional<MediaMetadata>& metadata) {
   metadata_ = metadata;
   // TODO(zqzhang): On Android, the metadata is sent though JNI everytime the
@@ -84,9 +71,6 @@ void MediaSession::SetMetadata(const base::Optional<MediaMetadata>& metadata) {
 bool MediaSession::AddPlayer(MediaSessionObserver* observer,
                              int player_id,
                              media::MediaContentType media_content_type) {
-  if (media_content_type == media::MediaContentType::Pepper)
-    return AddPepperPlayer(observer, player_id);
-
   observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
 
   // Determine the audio focus type required for playing the new player.
@@ -112,7 +96,11 @@ bool MediaSession::AddPlayer(MediaSessionObserver* observer,
   }
 
   State old_audio_focus_state = audio_focus_state_;
-  RequestSystemAudioFocus(required_audio_focus_type);
+  State audio_focus_state = RequestSystemAudioFocus(required_audio_focus_type)
+                                ? State::ACTIVE
+                                : State::INACTIVE;
+  SetAudioFocusState(audio_focus_state);
+  audio_focus_type_ = required_audio_focus_type;
 
   if (audio_focus_state_ != State::ACTIVE)
     return false;
@@ -134,24 +122,13 @@ void MediaSession::RemovePlayer(MediaSessionObserver* observer,
   if (it != players_.end())
     players_.erase(it);
 
-  it = pepper_players_.find(PlayerIdentifier(observer, player_id));
-  if (it != pepper_players_.end())
-    pepper_players_.erase(it);
-
   AbandonSystemAudioFocusIfNeeded();
 }
 
 void MediaSession::RemovePlayers(MediaSessionObserver* observer) {
-  for (auto it = players_.begin(); it != players_.end(); ) {
+  for (auto it = players_.begin(); it != players_.end();) {
     if (it->observer == observer)
       players_.erase(it++);
-    else
-      ++it;
-  }
-
-  for (auto it = pepper_players_.begin(); it != pepper_players_.end(); ) {
-    if (it->observer == observer)
-      pepper_players_.erase(it++);
     else
       ++it;
   }
@@ -213,8 +190,8 @@ void MediaSession::Suspend(SuspendType suspend_type) {
 
 void MediaSession::Stop(SuspendType suspend_type) {
   DCHECK(audio_focus_state_ != State::INACTIVE);
+
   DCHECK(suspend_type != SuspendType::CONTENT);
-  DCHECK(!HasPepper());
 
   // TODO(mlamouri): merge the logic between UI and SYSTEM.
   if (suspend_type == SuspendType::SYSTEM) {
@@ -227,7 +204,6 @@ void MediaSession::Stop(SuspendType suspend_type) {
 
   DCHECK(audio_focus_state_ == State::SUSPENDED);
   players_.clear();
-
   AbandonSystemAudioFocusIfNeeded();
 }
 
@@ -247,8 +223,6 @@ void MediaSession::StopDucking() {
 
 void MediaSession::UpdateVolumeMultiplier() {
   for (const auto& it : players_)
-    it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
-  for (const auto& it : pepper_players_)
     it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
 }
 
@@ -276,10 +250,6 @@ bool MediaSession::IsControllable() const {
          audio_focus_type_ == AudioFocusManager::AudioFocusType::Gain;
 }
 
-bool MediaSession::HasPepper() const {
-  return !pepper_players_.empty();
-}
-
 std::unique_ptr<base::CallbackList<void(MediaSession::State)>::Subscription>
 MediaSession::RegisterMediaSessionStateChangedCallbackForTest(
     const StateChangedCallback& cb) {
@@ -295,6 +265,11 @@ bool MediaSession::IsActiveForTest() const {
   return audio_focus_state_ == State::ACTIVE;
 }
 
+AudioFocusManager::AudioFocusType MediaSession::audio_focus_type_for_test()
+    const {
+  return audio_focus_type_;
+}
+
 MediaSessionUmaHelper* MediaSession::uma_helper_for_test() {
   return &uma_helper_;
 }
@@ -306,8 +281,6 @@ void MediaSession::RemoveAllPlayersForTest() {
 
 void MediaSession::OnSuspendInternal(SuspendType suspend_type,
                                      State new_state) {
-  DCHECK(!HasPepper());
-
   DCHECK(new_state == State::SUSPENDED || new_state == State::INACTIVE);
   // UI suspend cannot use State::INACTIVE.
   DCHECK(suspend_type == SuspendType::SYSTEM || new_state == State::SUSPENDED);
@@ -350,9 +323,6 @@ void MediaSession::OnSuspendInternal(SuspendType suspend_type,
       it.observer->OnSuspend(it.player_id);
   }
 
-  for (const auto& it : pepper_players_)
-    it.observer->OnSetVolumeMultiplier(it.player_id, kDuckingVolumeMultiplier);
-
   UpdateWebContents();
 }
 
@@ -364,9 +334,6 @@ void MediaSession::OnResumeInternal(SuspendType suspend_type) {
 
   for (const auto& it : players_)
     it.observer->OnResume(it.player_id);
-
-  for (const auto& it : pepper_players_)
-    it.observer->OnSetVolumeMultiplier(it.player_id, GetVolumeMultiplier());
 
   UpdateWebContents();
 }
@@ -386,19 +353,13 @@ bool MediaSession::RequestSystemAudioFocus(
     AudioFocusManager::AudioFocusType audio_focus_type) {
   bool result = delegate_->RequestAudioFocus(audio_focus_type);
   uma_helper_.RecordRequestAudioFocusResult(result);
-
-  // MediaSession must change its state & audio focus type AFTER requesting
-  // audio focus.
-  SetAudioFocusState(result ? State::ACTIVE : State::INACTIVE);
-  audio_focus_type_ = audio_focus_type;
   return result;
 }
 
 void MediaSession::AbandonSystemAudioFocusIfNeeded() {
-  if (audio_focus_state_ == State::INACTIVE || !players_.empty() ||
-      !pepper_players_.empty()) {
+  if (audio_focus_state_ == State::INACTIVE || !players_.empty())
     return;
-  }
+
   delegate_->AbandonAudioFocus();
 
   SetAudioFocusState(State::INACTIVE);
@@ -426,17 +387,6 @@ void MediaSession::SetAudioFocusState(State audio_focus_state) {
       uma_helper_.OnSessionInactive();
       break;
   }
-}
-
-bool MediaSession::AddPepperPlayer(MediaSessionObserver* observer,
-                                   int player_id) {
-  DCHECK(RequestSystemAudioFocus(AudioFocusManager::AudioFocusType::Gain));
-
-  pepper_players_.insert(PlayerIdentifier(observer, player_id));
-
-  observer->OnSetVolumeMultiplier(player_id, GetVolumeMultiplier());
-
-  return true;
 }
 
 }  // namespace content

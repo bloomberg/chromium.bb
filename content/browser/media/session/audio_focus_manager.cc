@@ -4,11 +4,27 @@
 
 #include "content/browser/media/session/audio_focus_manager.h"
 
-#include "base/memory/ptr_util.h"
 #include "content/browser/media/session/media_session.h"
 #include "content/public/browser/web_contents.h"
 
 namespace content {
+
+AudioFocusManager::AudioFocusEntry::AudioFocusEntry(
+    WebContents* web_contents,
+    AudioFocusManager* audio_focus_manager,
+    AudioFocusType type)
+    : WebContentsObserver(web_contents),
+      audio_focus_manager_(audio_focus_manager) {}
+
+AudioFocusManager::AudioFocusType
+AudioFocusManager::AudioFocusEntry::type() const {
+  return type_;
+}
+
+void AudioFocusManager::AudioFocusEntry::WebContentsDestroyed() {
+  audio_focus_manager_->OnWebContentsDestroyed(web_contents());
+  // |this| will be destroyed now.
+}
 
 // static
 AudioFocusManager* AudioFocusManager::GetInstance() {
@@ -17,77 +33,83 @@ AudioFocusManager* AudioFocusManager::GetInstance() {
 
 void AudioFocusManager::RequestAudioFocus(MediaSession* media_session,
                                           AudioFocusType type) {
-  if (!audio_focus_stack_.empty() &&
-      audio_focus_stack_.back() == media_session &&
-      audio_focus_stack_.back()->audio_focus_type() == type &&
-      audio_focus_stack_.back()->IsActive()) {
-    // Early returning if |media_session| is already on top (has focus) and is
-    // active.
+  WebContents* web_contents = media_session->web_contents();
+
+  if (type == AudioFocusType::GainTransientMayDuck) {
+    MaybeRemoveFocusEntry(web_contents);
+    transient_entries_[web_contents].reset(
+        new AudioFocusEntry(web_contents, this, type));
+    MaybeStartDucking();
     return;
   }
 
-  MaybeRemoveFocusEntry(media_session);
-
-  // TODO(zqzhang): It seems like MediaSession is exposed to AudioFocusManager
-  // too much. Maybe it's better to do some abstraction and refactoring to clean
-  // up the relation between AudioFocusManager and MediaSession.
-  // See https://crbug.com/651069
-  if (type == AudioFocusType::GainTransientMayDuck) {
-    for (const auto old_session : audio_focus_stack_) {
-      old_session->StartDucking();
-    }
-  } else {
-    for (const auto old_session : audio_focus_stack_) {
-      if (old_session->IsActive()) {
-        if (old_session->HasPepper())
-          old_session->StartDucking();
-        else
-          old_session->Suspend(MediaSession::SuspendType::SYSTEM);
-      }
-    }
-  }
-
-  audio_focus_stack_.push_back(media_session);
-  audio_focus_stack_.back()->StopDucking();
+  DCHECK(type == AudioFocusType::Gain);
+  RequestAudioFocusGain(web_contents);
 }
 
 void AudioFocusManager::AbandonAudioFocus(MediaSession* media_session) {
-  if (audio_focus_stack_.empty())
-    return;
-
-  if (audio_focus_stack_.back() != media_session) {
-    MaybeRemoveFocusEntry(media_session);
-    return;
-  }
-
-  audio_focus_stack_.pop_back();
-  if (audio_focus_stack_.empty())
-    return;
-
-  // Allow the top-most MediaSession having Pepper to unduck pepper even if it's
-  // not active.
-  for (auto iter = audio_focus_stack_.rbegin();
-       iter != audio_focus_stack_.rend(); ++iter) {
-    if (!(*iter)->HasPepper())
-      continue;
-
-    MediaSession* pepper_session = *iter;
-    pepper_session->StopDucking();
-    MaybeRemoveFocusEntry(pepper_session);
-    audio_focus_stack_.push_back(pepper_session);
-    return;
-  }
-  // Only try to unduck the new MediaSession on top. The session might be still
-  // inactive but it will not be resumed (so it doesn't surprise the user).
-  audio_focus_stack_.back()->StopDucking();
+  AbandonAudioFocusInternal(media_session->web_contents());
 }
 
 AudioFocusManager::AudioFocusManager() = default;
 
 AudioFocusManager::~AudioFocusManager() = default;
 
-void AudioFocusManager::MaybeRemoveFocusEntry(MediaSession* media_session) {
-  audio_focus_stack_.remove(media_session);
+void AudioFocusManager::RequestAudioFocusGain(WebContents* web_contents) {
+  MaybeRemoveTransientEntry(web_contents);
+
+  if (focus_entry_) {
+    if (focus_entry_->web_contents() == web_contents)
+      return;
+
+    MediaSession* other_session =
+        MediaSession::Get(focus_entry_->web_contents());
+    if (other_session->IsActive())
+      other_session->Suspend(MediaSession::SuspendType::SYSTEM);
+  }
+
+  focus_entry_.reset(
+      new AudioFocusEntry(web_contents, this, AudioFocusType::Gain));
+  MaybeStartDucking();
+}
+
+void AudioFocusManager::OnWebContentsDestroyed(WebContents* web_contents) {
+  AbandonAudioFocusInternal(web_contents);
+}
+
+void AudioFocusManager::AbandonAudioFocusInternal(WebContents* web_contents) {
+  MaybeRemoveTransientEntry(web_contents);
+  MaybeRemoveFocusEntry(web_contents);
+}
+
+void AudioFocusManager::MaybeStartDucking() const {
+  if (TransientMayDuckEntriesCount() != 1 || !focus_entry_)
+    return;
+
+  MediaSession::Get(focus_entry_->web_contents())->StartDucking();
+}
+
+void AudioFocusManager::MaybeStopDucking() const {
+  if (TransientMayDuckEntriesCount() != 0 || !focus_entry_)
+    return;
+
+  MediaSession::Get(focus_entry_->web_contents())->StopDucking();
+}
+
+int AudioFocusManager::TransientMayDuckEntriesCount() const {
+  return transient_entries_.size();
+}
+
+void AudioFocusManager::MaybeRemoveTransientEntry(WebContents* web_contents) {
+  transient_entries_.erase(web_contents);
+  MaybeStopDucking();
+}
+
+void AudioFocusManager::MaybeRemoveFocusEntry(WebContents* web_contents) {
+  if (focus_entry_ && focus_entry_->web_contents() == web_contents) {
+    MediaSession::Get(focus_entry_->web_contents())->StopDucking();
+    focus_entry_.reset();
+  }
 }
 
 }  // namespace content
