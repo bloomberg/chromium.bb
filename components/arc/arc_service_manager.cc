@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/audio/arc_audio_bridge.h"
@@ -52,8 +51,7 @@ ArcServiceManager::ArcServiceManager(
     arc_bridge_service_.reset(g_arc_bridge_service_for_testing);
     g_arc_bridge_service_for_testing = nullptr;
   } else {
-    arc_bridge_service_.reset(new ArcBridgeServiceImpl(
-        ArcBridgeBootstrap::Create()));
+    arc_bridge_service_.reset(new ArcBridgeServiceImpl());
   }
 
   AddService(base::MakeUnique<ArcAudioBridge>(arc_bridge_service()));

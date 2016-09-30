@@ -18,7 +18,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_host_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -31,14 +30,12 @@ namespace {
 constexpr int64_t kReconnectDelayInSeconds = 5;
 }  // namespace
 
-ArcBridgeServiceImpl::ArcBridgeServiceImpl(
-    std::unique_ptr<ArcBridgeBootstrap> bootstrap)
-    : bootstrap_(std::move(bootstrap)),
-      session_started_(false),
+ArcBridgeServiceImpl::ArcBridgeServiceImpl()
+    : session_started_(false),
+      factory_(base::Bind(ArcBridgeBootstrap::Create)),
       weak_factory_(this) {
   DCHECK(!g_arc_bridge_service);
   g_arc_bridge_service = this;
-  bootstrap_->set_delegate(this);
 }
 
 ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
@@ -64,6 +61,13 @@ void ArcBridgeServiceImpl::Shutdown() {
   PrerequisitesChanged();
 }
 
+void ArcBridgeServiceImpl::SetArcBridgeBootstrapFactoryForTesting(
+    const ArcBridgeBootstrapFactory& factory) {
+  DCHECK(!factory.is_null());
+  factory_ = factory;
+}
+
+
 void ArcBridgeServiceImpl::DisableReconnectDelayForTesting() {
   use_delay_before_reconnecting_ = false;
 }
@@ -78,7 +82,10 @@ void ArcBridgeServiceImpl::PrerequisitesChanged() {
       return;
     VLOG(0) << "Prerequisites met, starting ARC";
     SetStopReason(StopReason::SHUTDOWN);
+
     SetState(State::CONNECTING);
+    bootstrap_ = factory_.Run();
+    bootstrap_->set_delegate(this);
     bootstrap_->Start();
   } else {
     if (session_started_)
@@ -95,13 +102,16 @@ void ArcBridgeServiceImpl::StopInstance() {
     return;
   }
 
-  VLOG(1) << "Stopping ARC";
-  SetState(State::STOPPING);
-  arc_bridge_host_.reset();
-  bootstrap_->Stop();
-
   // We were explicitly asked to stop, so do not reconnect.
   reconnect_ = false;
+
+  VLOG(1) << "Stopping ARC";
+  DCHECK(bootstrap_.get());
+  SetState(State::STOPPING);
+  arc_bridge_host_.reset();
+
+  // Note: this can call OnStopped() internally as a callback.
+  bootstrap_->Stop();
 }
 
 void ArcBridgeServiceImpl::OnConnectionEstablished(
@@ -123,10 +133,11 @@ void ArcBridgeServiceImpl::OnConnectionEstablished(
 
 void ArcBridgeServiceImpl::OnStopped(StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
+  VLOG(0) << "ARC stopped: " << stop_reason;
   arc_bridge_host_.reset();
+  bootstrap_.reset();
   SetStopReason(stop_reason);
   SetState(State::STOPPED);
-  VLOG(0) << "ARC stopped";
 
   if (reconnect_) {
     // There was a previous invocation and it crashed for some reason. Try

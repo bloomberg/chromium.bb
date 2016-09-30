@@ -215,7 +215,6 @@
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_bridge_bootstrap.h"
-#include "components/arc/test/fake_arc_bridge_instance.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -4120,10 +4119,10 @@ class ArcPolicyTest : public PolicyTest {
         std::unique_ptr<chromeos::SessionManagerClient>(
             fake_session_manager_client_));
 
-    fake_arc_bridge_instance_.reset(new arc::FakeArcBridgeInstance);
-    arc::ArcServiceManager::SetArcBridgeServiceForTesting(
-        base::MakeUnique<arc::ArcBridgeServiceImpl>(base::WrapUnique(
-            new arc::FakeArcBridgeBootstrap(fake_arc_bridge_instance_.get()))));
+    auto service = base::MakeUnique<arc::ArcBridgeServiceImpl>();
+    service->SetArcBridgeBootstrapFactoryForTesting(
+        base::Bind(arc::FakeArcBridgeBootstrap::Create));
+    arc::ArcServiceManager::SetArcBridgeServiceForTesting(std::move(service));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -4134,7 +4133,6 @@ class ArcPolicyTest : public PolicyTest {
 
  private:
   chromeos::FakeSessionManagerClient *fake_session_manager_client_;
-  std::unique_ptr<arc::FakeArcBridgeInstance> fake_arc_bridge_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcPolicyTest);
 };

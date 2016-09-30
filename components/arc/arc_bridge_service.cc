@@ -88,4 +88,22 @@ bool ArcBridgeService::CalledOnValidThread() {
   return thread_checker_.CalledOnValidThread();
 }
 
+std::ostream& operator<<(
+    std::ostream& os, ArcBridgeService::StopReason reason) {
+  switch (reason) {
+#define CASE_IMPL(val) \
+    case ArcBridgeService::StopReason::val: \
+      return os << #val
+
+    CASE_IMPL(SHUTDOWN);
+    CASE_IMPL(GENERIC_BOOT_FAILURE);
+    CASE_IMPL(LOW_DISK_SPACE);
+    CASE_IMPL(CRASH);
+#undef CASE_IMPL
+  }
+
+  // In case of unexpected value, output the int value.
+  return os << "StopReason(" << static_cast<int>(reason) << ")";
+}
+
 }  // namespace arc

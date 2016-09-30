@@ -4,37 +4,59 @@
 
 #include "components/arc/test/fake_arc_bridge_bootstrap.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
-#include "components/arc/common/arc_bridge.mojom.h"
-#include "components/arc/test/fake_arc_bridge_instance.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "base/memory/ptr_util.h"
 
 namespace arc {
 
-FakeArcBridgeBootstrap::FakeArcBridgeBootstrap(FakeArcBridgeInstance* instance)
-    : instance_(instance) {
-  instance_->set_delegate(this);
-}
+FakeArcBridgeBootstrap::FakeArcBridgeBootstrap() = default;
+
+FakeArcBridgeBootstrap::~FakeArcBridgeBootstrap() = default;
 
 void FakeArcBridgeBootstrap::Start() {
   DCHECK(delegate_);
-  mojom::ArcBridgeInstancePtr instance;
-  instance_->Bind(mojo::GetProxy(&instance));
-  delegate_->OnConnectionEstablished(std::move(instance));
+  if (boot_failure_emulation_enabled_) {
+    delegate_->OnStopped(boot_failure_reason_);
+  } else if (!boot_suspended_) {
+    mojom::ArcBridgeInstancePtr instance_ptr;
+    instance_.Bind(mojo::GetProxy(&instance_ptr));
+    delegate_->OnConnectionEstablished(std::move(instance_ptr));
+  }
 }
 
 void FakeArcBridgeBootstrap::Stop() {
-  DCHECK(delegate_);
-  instance_->Unbind();
-  delegate_->OnStopped(ArcBridgeService::StopReason::SHUTDOWN);
+  StopWithReason(ArcBridgeService::StopReason::SHUTDOWN);
 }
 
-void FakeArcBridgeBootstrap::OnStopped(ArcBridgeService::StopReason reason) {
+void FakeArcBridgeBootstrap::StopWithReason(
+    ArcBridgeService::StopReason reason) {
   DCHECK(delegate_);
-  instance_->Unbind();
+  instance_.Unbind();
   delegate_->OnStopped(reason);
+}
+
+void FakeArcBridgeBootstrap::EnableBootFailureEmulation(
+    ArcBridgeService::StopReason reason) {
+  DCHECK(!boot_failure_emulation_enabled_);
+  DCHECK(!boot_suspended_);
+
+  boot_failure_emulation_enabled_ = true;
+  boot_failure_reason_ = reason;
+}
+
+void FakeArcBridgeBootstrap::SuspendBoot() {
+  DCHECK(!boot_failure_emulation_enabled_);
+  DCHECK(!boot_suspended_);
+
+  boot_suspended_ = true;
+}
+
+// static
+std::unique_ptr<ArcBridgeBootstrap> FakeArcBridgeBootstrap::Create() {
+  return base::MakeUnique<FakeArcBridgeBootstrap>();
 }
 
 }  // namespace arc

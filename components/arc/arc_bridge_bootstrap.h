@@ -18,15 +18,25 @@ namespace arc {
 // Starts the ARC instance and bootstraps the bridge connection.
 // Clients should implement the Delegate to be notified upon communications
 // being available.
+// The instance can be safely removed 1) before Start() is called, or 2) after
+// OnStopped() is called.
+// The number of instances must be at most one. Otherwise, ARC instances will
+// conflict.
+// TODO(hidehiko): This class manages more than "bootstrap" procedure now.
+// Rename this to ArcSession.
 class ArcBridgeBootstrap {
  public:
+  // TODO(hidehiko): Switch to Observer style, which fits more for this design.
   class Delegate {
    public:
     // Called when the connection with ARC instance has been established.
+    // TODO(hidehiko): Moving ArcBridgeHost to the ArcBridgeBootstrapImpl
+    // so that this can be replaced by OnReady() simply.
     virtual void OnConnectionEstablished(
         mojom::ArcBridgeInstancePtr instance_ptr) = 0;
 
-    // Called when ARC instance is stopped.
+    // Called when ARC instance is stopped. This is called exactly once
+    // per instance which is Start()ed.
     virtual void OnStopped(ArcBridgeService::StopReason reason) = 0;
   };
 
@@ -41,9 +51,11 @@ class ArcBridgeBootstrap {
   // Starts and bootstraps a connection with the instance. The Delegate's
   // OnConnectionEstablished() will be called if the bootstrapping is
   // successful, or OnStopped() if it is not.
+  // Start() should not be called twice or more.
   virtual void Start() = 0;
 
-  // Stops the currently-running instance.
+  // Requests to stop the currently-running instance.
+  // The completion is notified via OnStopped() of the Delegate.
   virtual void Stop() = 0;
 
  protected:

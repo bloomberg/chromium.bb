@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 #define COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -233,6 +234,10 @@ class ArcBridgeService {
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);
 };
+
+// Defines "<<" operator for LOGging purpose.
+std::ostream& operator<<(
+    std::ostream& os, ArcBridgeService::StopReason reason);
 
 }  // namespace arc
 

@@ -27,12 +27,25 @@ namespace arc {
 class ArcBridgeServiceImpl : public ArcBridgeService,
                              public ArcBridgeBootstrap::Delegate {
  public:
-  explicit ArcBridgeServiceImpl(std::unique_ptr<ArcBridgeBootstrap> bootstrap);
+  // This is the factory interface to inject ArcBridgeBootstrap instance
+  // for testing purpose.
+  using ArcBridgeBootstrapFactory =
+      base::Callback<std::unique_ptr<ArcBridgeBootstrap>()>;
+
+  ArcBridgeServiceImpl();
   ~ArcBridgeServiceImpl() override;
 
   void HandleStartup() override;
 
   void Shutdown() override;
+
+  // Inject a factory to create ArcBridgeBootstrap instance for testing
+  // purpose. |factory| must not be null.
+  void SetArcBridgeBootstrapFactoryForTesting(
+      const ArcBridgeBootstrapFactory& factory);
+
+  // Returns the current bootstrap instance for testing purpose.
+  ArcBridgeBootstrap* GetBootstrapForTesting() { return bootstrap_.get(); }
 
   // Normally, reconnecting after connection shutdown happens after a short
   // delay. When testing, however, we'd like it to happen immediately to avoid
@@ -71,6 +84,9 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
 
   // Delay the reconnection.
   bool use_delay_before_reconnecting_ = true;
+
+  // Factory to inject a fake ArcBridgeBootstrap instance for testing.
+  ArcBridgeBootstrapFactory factory_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcBridgeServiceImpl> weak_factory_;

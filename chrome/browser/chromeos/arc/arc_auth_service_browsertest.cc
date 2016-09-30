@@ -32,7 +32,6 @@
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_bridge_bootstrap.h"
-#include "components/arc/test/fake_arc_bridge_instance.h"
 #include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
@@ -140,10 +139,10 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
             fake_session_manager_client));
 
     // Mock out ARC bridge.
-    fake_arc_bridge_instance_.reset(new FakeArcBridgeInstance);
-    ArcServiceManager::SetArcBridgeServiceForTesting(
-        base::MakeUnique<ArcBridgeServiceImpl>(base::WrapUnique(
-            new FakeArcBridgeBootstrap(fake_arc_bridge_instance_.get()))));
+    auto service = base::MakeUnique<ArcBridgeServiceImpl>();
+    service->SetArcBridgeBootstrapFactoryForTesting(
+        base::Bind(FakeArcBridgeBootstrap::Create));
+    ArcServiceManager::SetArcBridgeServiceForTesting(std::move(service));
   }
 
   void SetUpOnMainThread() override {
@@ -206,7 +205,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<policy::LocalPolicyTestServer> test_server_;
-  std::unique_ptr<FakeArcBridgeInstance> fake_arc_bridge_instance_;
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<TestingProfile> profile_;
