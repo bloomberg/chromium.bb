@@ -173,10 +173,13 @@ cr.define('settings', function() {
 
           // Some types, like quota, have no description nodes.
           var dataType = '';
-          if (descriptionNode.data_.type != undefined)
+          if (descriptionNode.data_.type != undefined) {
             dataType = descriptionNode.data_.type;
-          else
-            dataType = descriptionNode.children_[0].data_.type;
+          } else {
+            // A description node might not have children when it's deleted.
+            if (descriptionNode.children_.length > 0)
+              dataType = descriptionNode.children_[0].data_.type;
+          }
 
           var count =
               (dataType == 'cookie') ? descriptionNode.children_.length : 0;

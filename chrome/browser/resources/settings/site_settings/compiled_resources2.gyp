@@ -79,6 +79,7 @@
     {
       'target_name': 'site_data_details_dialog',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_dialog/compiled_resources2.gyp:cr_dialog',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         'cookie_tree_node',
         'site_settings_behavior',

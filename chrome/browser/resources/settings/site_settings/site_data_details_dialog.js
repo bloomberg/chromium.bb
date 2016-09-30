@@ -57,6 +57,15 @@ Polymer({
   },
 
   /**
+   * Closes the dialog, if open.
+   */
+  close: function() {
+    var dialog = /** @type {!CrDialogElement} */(this.$.dialog);
+    if (dialog.open)
+      dialog.close();
+  },
+
+  /**
    * Populates the dialog with the data about the site.
    * @private
    */
@@ -128,8 +137,8 @@ Polymer({
    */
   onTreeItemRemoved_: function(args) {
     this.entries_ = this.site_.getCookieList();
-    if (args.id == this.site_.data_.id || this.entries_.length == 0) {
-      this.$.dialog.close();
+    if (this.site_.children_.length == 0 || this.entries_.length == 0) {
+      this.close();
       return;
     }
 
@@ -183,7 +192,7 @@ Polymer({
   onRemoveAll_: function(event) {
     cr.removeWebUIListener(this.listener_);
     this.browserProxy.removeCookie(this.site_.data_.id);
-    this.$.dialog.close();
+    this.close();
   },
 
   /** @private */
