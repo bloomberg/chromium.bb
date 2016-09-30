@@ -335,7 +335,7 @@ public class DownloadNotificationService extends Service {
             String downloadGuid, String fileName, long systemDownloadId, boolean isOfflinePage) {
         int notificationId = getNotificationId(downloadGuid);
         NotificationCompat.Builder builder = buildNotification(
-                android.R.drawable.stat_sys_download_done, fileName,
+                R.drawable.offline_pin, fileName,
                 mContext.getResources().getString(R.string.download_notification_completed));
         ComponentName component = new ComponentName(
                 mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
