@@ -117,9 +117,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
   }
 
   // Transfer metadata keys.
-  base::DictionaryValue original_metadata;
-  frame->metadata()->MergeInternalValuesInto(&original_metadata);
-  new_frame->metadata()->MergeInternalValuesFrom(original_metadata);
+  new_frame->metadata()->MergeMetadataFrom(frame->metadata());
   return new_frame;
 }
 

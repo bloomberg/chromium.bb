@@ -500,12 +500,8 @@ TEST(VideoFrameMetadata, PassMetadataViaIntermediary) {
     expected.SetInteger(key, i);
   }
 
-  base::DictionaryValue tmp;
-  expected.MergeInternalValuesInto(&tmp);
-  EXPECT_EQ(static_cast<size_t>(VideoFrameMetadata::NUM_KEYS), tmp.size());
-
   VideoFrameMetadata result;
-  result.MergeInternalValuesFrom(tmp);
+  result.MergeMetadataFrom(&expected);
 
   for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
     const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);

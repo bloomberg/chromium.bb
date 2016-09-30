@@ -506,9 +506,7 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
 
   // Copy all metadata.
   // (May be enough to copy color space)
-  base::DictionaryValue tmp;
-  video_frame->metadata()->MergeInternalValuesInto(&tmp);
-  ret->metadata()->MergeInternalValuesFrom(tmp);
+  ret->metadata()->MergeMetadataFrom(video_frame->metadata());
 
   for (int plane = VideoFrame::kYPlane; plane <= VideoFrame::kVPlane; ++plane) {
     int width = ret->row_bytes(plane);
