@@ -432,6 +432,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_containsPlugins(false)
     , m_updateFocusAppearanceSelectionBahavior(SelectionBehaviorOnFocus::Reset)
     , m_ignoreDestructiveWriteCount(0)
+    , m_throwOnDynamicMarkupInsertionCount(0)
     , m_markers(new DocumentMarkerController(*this))
     , m_updateFocusAppearanceTimer(this, &Document::updateFocusAppearanceTimerFired)
     , m_cssTarget(nullptr)
@@ -2391,6 +2392,11 @@ void Document::open(Document* enteredDocument, ExceptionState& exceptionState)
         return;
     }
 
+    if (m_throwOnDynamicMarkupInsertionCount) {
+        exceptionState.throwDOMException(InvalidStateError, "Custom Element constructor should not use open().");
+        return;
+    }
+
     if (enteredDocument) {
         if (!getSecurityOrigin()->canAccess(enteredDocument->getSecurityOrigin())) {
             exceptionState.throwSecurityError("Can only call open() on same-origin documents.");
@@ -2585,6 +2591,11 @@ void Document::close(ExceptionState& exceptionState)
 
     if (!isHTMLDocument()) {
         exceptionState.throwDOMException(InvalidStateError, "Only HTML documents support close().");
+        return;
+    }
+
+    if (m_throwOnDynamicMarkupInsertionCount) {
+        exceptionState.throwDOMException(InvalidStateError, "Custom Element constructor should not use close().");
         return;
     }
 
@@ -2848,6 +2859,11 @@ void Document::write(const SegmentedString& text, Document* enteredDocument, Exc
 
     if (!isHTMLDocument()) {
         exceptionState.throwDOMException(InvalidStateError, "Only HTML documents support write().");
+        return;
+    }
+
+    if (m_throwOnDynamicMarkupInsertionCount) {
+        exceptionState.throwDOMException(InvalidStateError, "Custom Element constructor should not use write().");
         return;
     }
 

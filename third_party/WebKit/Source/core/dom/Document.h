@@ -1123,6 +1123,7 @@ protected:
 
 private:
     friend class IgnoreDestructiveWriteCountIncrementer;
+    friend class ThrowOnDynamicMarkupInsertionCountIncrementer;
     friend class NthIndexCache;
 
     bool isDocumentFragment() const = delete; // This will catch anyone doing an unnecessary check.
@@ -1294,6 +1295,8 @@ private:
 
     // http://www.whatwg.org/specs/web-apps/current-work/#ignore-destructive-writes-counter
     unsigned m_ignoreDestructiveWriteCount;
+    // https://html.spec.whatwg.org/#throw-on-dynamic-markup-insertion-counter
+    unsigned m_throwOnDynamicMarkupInsertionCount;
 
     String m_title;
     String m_rawTitle;

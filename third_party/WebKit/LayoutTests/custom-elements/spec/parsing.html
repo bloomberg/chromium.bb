@@ -124,11 +124,17 @@ test_with_content((w) => {
   <script>
   // Custom element constructors do not set the insertion point, which
   // makes document.write() "destructive." However they increment the
-  // ignore-destructive-writes counter, which blocks document.write.
+  // throw-on-dynamic-insertion counter, which blocks document.write and
+  // throws "InvalidStateError" DOMException.
   // https://html.spec.whatwg.org/#create-an-element-for-the-token
-  // https://github.com/whatwg/html/issues/1630
   // https://html.spec.whatwg.org/#document.write()
   'use strict';
+
+  window.errors = [];
+  window.onerror = function (event, source, lineno, colno, error) {
+    errors.push(error.name);
+    return true; // Cancel the error event.
+  };
 
   window.invocations = [];
   customElements.define('a-a', class extends HTMLElement {
@@ -155,19 +161,30 @@ test_with_content((w) => {
 test_with_content((w) => {
   assert_array_equals(
       w.invocations,
-      ['constructor', 'connected', 'parsed'],
-      'the destructive document.write content should have been ignored');
+      ['constructor', 'parsed'],
+      'the destructive document.write content should have been ignored; ' +
+      'connectedCallback should not be executed, since the constructor threw');
+  assert_array_equals(
+      w.errors,
+      ['InvalidStateError'],
+      'create an element for the token should report the exception');
 });
 </script>
 
 <template data-test="non-destructive writes are not blocked">
   <script>
   // Script running sets the insertion point, which makes makes
-  // document.write() "non-destructive." Custom elements do not block
+  // document.write() "non-destructive." Custom elements should block
   // non-destructive writes.
   // https://html.spec.whatwg.org/#create-an-element-for-the-token
   // https://html.spec.whatwg.org/#document.write()
   'use strict';
+
+  window.errors = [];
+  window.onerror = function (event, source, lineno, colno, error) {
+    errors.push(error.name);
+    return true; // Cancel the error event.
+  };
 
   window.invocations = [];
   customElements.define('a-a', class extends HTMLElement {
@@ -195,8 +212,13 @@ test_with_content((w) => {
 test_with_content((w) => {
   assert_array_equals(
       w.invocations,
-      ['constructor', 'connected', 'post write', 'written', 'parsed'],
-      'the non-destructive document.write content should have been inserted');
+      ['constructor', 'post write', 'parsed'],
+      'the non-destructive document.write content should have been ignored' +
+      'connectedCallback should not be executed, since the constructor threw');
+  assert_array_equals(
+      w.errors,
+      ['InvalidStateError'],
+      'create an element for the token should report the exception');
 });
 </script>
 

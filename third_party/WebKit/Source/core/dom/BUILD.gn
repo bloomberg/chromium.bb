@@ -271,6 +271,7 @@ blink_core_sources("dom") {
     "Text.cpp",
     "TextLinkColors.cpp",
     "TextLinkColors.h",
+    "ThrowOnDynamicMarkupInsertionCountIncrementer.h",
     "Touch.cpp",
     "Touch.h",
     "TouchList.cpp",

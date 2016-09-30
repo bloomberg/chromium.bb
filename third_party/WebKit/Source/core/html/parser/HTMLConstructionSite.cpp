@@ -39,6 +39,7 @@
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/Text.h"
+#include "core/dom/ThrowOnDynamicMarkupInsertionCountIncrementer.h"
 #include "core/dom/custom/CEReactionsScope.h"
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
@@ -809,28 +810,21 @@ HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token)
     HTMLElement* element;
 
     if (willExecuteScript) {
-        // "6.1 Increment the parser's script nesting level."
-        HTMLParserReentryPermit::ScriptNestingLevelIncrementer incrementScriptNestingLevel = m_reentryPermit->incrementScriptNestingLevel();
-
-        // "6.2 Set the parser pause flag to true."
-        m_reentryPermit->pause();
-
-        // TODO(dominicc): Change this once resolved:
-        // https://github.com/whatwg/html/issues/1630
-        IgnoreDestructiveWriteCountIncrementer ignoreDestructiveWrites(
+        // "6.1 Increment the document's throw-on-dynamic-insertion counter."
+        ThrowOnDynamicMarkupInsertionCountIncrementer throwOnDynamicMarkupInsertions(
             &document);
 
-        // "6.3 If the JavaScript execution context stack is empty,
+        // "6.2 If the JavaScript execution context stack is empty,
         // then perform a microtask checkpoint."
 
         // TODO(dominicc): This is the way the Blink HTML parser
         // performs checkpoints, but note the spec is different--it
         // talks about the JavaScript stack, not the script nesting
         // level.
-        if (1u == m_reentryPermit->scriptNestingLevel())
+        if (0u == m_reentryPermit->scriptNestingLevel())
             Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
 
-        // "6.4 Push a new element queue onto the custom element
+        // "6.3 Push a new element queue onto the custom element
         // reactions stack."
         CEReactionsScope reactions;
 
@@ -845,8 +839,8 @@ HTMLElement* HTMLConstructionSite::createHTMLElement(AtomicHTMLToken* token)
             element->setAttribute(attribute.name(), attribute.value());
 
         // "9. If will execute script is true, then ..." etc. The
-        // CEReactionsScope and ScriptNestingLevelIncrementer
-        // destructors implement steps 9.1-4.
+        // CEReactionsScope and ThrowOnDynamicMarkupInsertionCountIncrementer
+        // destructors implement steps 9.1-3.
     } else {
         // FIXME: This can't use
         // HTMLConstructionSite::createElement because we have to
