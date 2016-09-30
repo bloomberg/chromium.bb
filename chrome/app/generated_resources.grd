@@ -7123,70 +7123,70 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Hide this plugin
       </message>
       <message name="IDS_PLUGIN_UPDATE" desc="The link for updating an outdated plugin.">
-        Update plugin...
+        Update plugin
       </message>
       <if expr="is_macosx">
         <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plugin.">
-          Control-click to play <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
+          Control-click to run <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>
         </message>
       </if>
       <if expr="not is_macosx">
         <message name="IDS_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plugin.">
-          Right-click to play <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
+          Right-click to run <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>
         </message>
       </if>
       <message name="IDS_PLUGIN_BLOCKED_BY_POLICY" desc="The placeholder text for a plugin blocked by enterprise policy.">
-        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is not allowed.
+        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is blocked by enterprise policy
       </message>
       <if expr="chromeos">
         <message name="IDS_NACL_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plugin.">
-          This app is not currently supported on this device but the Chrome gnomes are hard at work to make it work soon.
+          This plugin is not supported on this device
         </message>
       </if>
       <message name="IDS_PLUGIN_OUTDATED" desc="The placeholder text for an outdated plugin.">
-        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is out of date.
+        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is out of date
       </message>
       <message name="IDS_PLUGIN_NOT_AUTHORIZED" desc="The placeholder text for a plugin that requires user permission to run.">
-        <ph name="PLUGIN_NAME">$1<ex>Java</ex></ph> needs your permission to run.
+        <ph name="PLUGIN_NAME">$1<ex>Java</ex></ph> needs your permission to run
       </message>
       <message name="IDS_PLUGIN_NOT_FOUND" desc="The placeholder text for an unknown plugin that is not installed.">
-        No plugin available to display this content.
+        Plugin not found
       </message>
       <message name="IDS_PLUGIN_DOWNLOADING" desc="The placeholder text when downloading a missing plugin.">
         Downloading <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>...
       </message>
       <message name="IDS_PLUGIN_DOWNLOAD_ERROR" desc="The placeholder text when there was an error download a missing plugin.">
-        There was an error (<ph name="ERROR">$1<ex>net::ERR_TOO_MANY_GOATS</ex></ph>) while downloading the plugin.
+        There was an error (<ph name="ERROR">$1<ex>net::ERR_TOO_MANY_GOATS</ex></ph>) while downloading the plugin
       </message>
       <message name="IDS_PLUGIN_DOWNLOAD_ERROR_SHORT" desc="The placeholder text when there was an error download a missing plugin.">
-        <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download failed.
+        <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download failed
       </message>
       <message name="IDS_PLUGIN_DOWNLOAD_CANCELLED" desc="The placeholder text when the user canceled downloading the plugin.">
-        <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> download was canceled.
+        Canceled
       </message>
       <message name="IDS_PLUGIN_INSTALLING" desc="The placeholder text when installing a missing plugin.">
-        When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> has finished installing, reload the page to activate it.
+        When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> finishes installing, reload the page to activate it
       </message>
       <message name="IDS_PLUGIN_UPDATING" desc="The placeholder text when updating an out-of-date plugin.">
-        When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> has finished updating, reload the page to activate it.
+        When <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph> finishes updating, reload the page to activate it
       </message>
       <message name="IDS_PLUGIN_FOUND" desc="The placeholder text for a known plugin that is not installed.">
-        <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> is required to display this content.
+        Install <ph name="PLUGIN_NAME">$1<ex>Quicktime</ex></ph> to display this content
       </message>
       <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_TITLE" desc="Title of the plugin installation confirmation dialog.">
         Install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>
       </message>
       <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_MSG" desc="Message of the plugin installation confirmation dialog.">
-        Are you sure you want to install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>? You should only install plugins that you trust.
+        Install <ph name="PLUGIN_NAME">$1<ex>Realplayer</ex></ph>? Only install plugins that you trust.
       </message>
       <message name="IDS_PLUGIN_CONFIRM_INSTALL_DIALOG_ACCEPT_BUTTON" desc="Button title to install a missing plugin.">
         Install
       </message>
       <message name="IDS_PLUGIN_DISABLED" desc="The placeholder text for a disabled plugin.">
-        Visit <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph> to re-enable <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
+        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> disabled. Visit <ph name="CHROME_PLUGINS_LINK">chrome://plugins</ph> to re-enable.
       </message>
       <message name="IDS_PLUGIN_PREFER_HTML_BY_DEFAULT" desc="The placeholder text for a plugin with no fallback content when Prefer HTML5 By Default is on.">
-        Click to enable <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>.
+        Click to enable <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph>
       </message>
 
       <!-- Session Crashed Info Bar/Bubble-->

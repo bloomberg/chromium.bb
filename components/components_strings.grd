@@ -244,7 +244,7 @@
       </if>
 
       <message name="IDS_PLUGIN_NOT_SUPPORTED" desc="The placeholder text for an unsupported plugin.">
-        This plugin is not supported.
+        This plugin is not supported
       </message>
       <if expr="not is_android">
         <if expr="not use_titlecase">
