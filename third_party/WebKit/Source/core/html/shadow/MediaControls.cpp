@@ -731,6 +731,10 @@ void MediaControls::computeWhichControlsFit()
 
     int usedWidth = 0;
 
+    // TODO(mlamouri): we need a more dynamic way to find out the width of an
+    // element.
+    const int sliderMargin = 36; // Sliders have 18px margin on each side.
+
     // Assume that all controls require 48px, unless we can get the computed
     // style for the play button.  Since the play button or overflow is always
     // shown, one of the two buttons should be available the first time we're
@@ -772,13 +776,18 @@ void MediaControls::computeWhichControlsFit()
     for (MediaControlElement* element : elements) {
         if (!element)
             continue;
+        int width = minimumWidth;
+        if ((element == m_timeline.get()) || (element == m_volumeSlider.get()))
+            width += sliderMargin;
         element->shouldShowButtonInOverflowMenu(false);
         if (element->isWanted()) {
-            if (usedWidth + minimumWidth <= m_panelWidth) {
+            if (usedWidth + width <= m_panelWidth) {
                 element->setDoesFit(true);
-                usedWidth += minimumWidth;
+                usedWidth += width;
             } else {
                 element->setDoesFit(false);
+                // TODO(mlamouri): we should probably no longer mark the cast
+                // button as dropped, it should appear in the overflow menu.
                 if (element == m_castButton.get())
                     droppedCastButton = true;
                 element->shouldShowButtonInOverflowMenu(true);
@@ -798,8 +807,14 @@ void MediaControls::computeWhichControlsFit()
     // overflow menu.
     if (overflowElements.empty()) {
         m_overflowMenu->setIsWanted(false);
-        if (firstDisplacedElement)
-            firstDisplacedElement->setDoesFit(true);
+        usedWidth -= minimumWidth;
+        if (firstDisplacedElement) {
+            int width = minimumWidth;
+            if ((firstDisplacedElement == m_timeline.get()) || (firstDisplacedElement == m_volumeSlider.get()))
+                width += sliderMargin;
+            if (usedWidth + width <= m_panelWidth)
+                firstDisplacedElement->setDoesFit(true);
+        }
     } else if (overflowElements.size() == 1) {
         m_overflowMenu->setIsWanted(false);
         overflowElements.front()->setDoesFit(true);

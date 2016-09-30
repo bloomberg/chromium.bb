@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Test seeking on the media controls timeline 
-Harness: the test ran to completion.
-
