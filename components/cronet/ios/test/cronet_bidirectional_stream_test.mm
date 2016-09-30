@@ -630,6 +630,36 @@ TEST_P(CronetBidirectionalStreamTest, WriteFailsBeforeRequestStarted) {
   cronet_bidirectional_stream_destroy(test.stream);
 }
 
+TEST_P(CronetBidirectionalStreamTest, StreamFailAfterStreamReadyCallback) {
+  class CustomTestBidirectionalStreamCallback
+      : public TestBidirectionalStreamCallback {
+    bool MaybeCancel(cronet_bidirectional_stream* stream,
+                     ResponseStep step) override {
+      if (step == ResponseStep::ON_STREAM_READY) {
+        // Shut down the server, and the stream should error out.
+        // The second call to ShutdownQuicTestServer is no-op.
+        ShutdownQuicTestServer();
+      }
+      return TestBidirectionalStreamCallback::MaybeCancel(stream, step);
+    }
+  };
+
+  CustomTestBidirectionalStreamCallback test;
+  test.AddWriteData("Test String");
+  test.stream =
+      cronet_bidirectional_stream_create(engine(), &test, test.callback());
+  DCHECK(test.stream);
+  cronet_bidirectional_stream_delay_request_headers_until_flush(test.stream,
+                                                                GetParam());
+  cronet_bidirectional_stream_start(test.stream, kTestServerUrl, 0, "POST",
+                                    &kTestHeadersArray, false);
+  test.BlockForDone();
+  ASSERT_EQ(TestBidirectionalStreamCallback::ON_FAILED, test.response_step);
+  ASSERT_TRUE(test.net_error == net::ERR_QUIC_PROTOCOL_ERROR ||
+              test.net_error == net::ERR_QUIC_HANDSHAKE_FAILED);
+  cronet_bidirectional_stream_destroy(test.stream);
+}
+
 TEST_P(CronetBidirectionalStreamTest,
        StreamFailBeforeWriteIsExecutedOnNetworkThread) {
   class CustomTestBidirectionalStreamCallback

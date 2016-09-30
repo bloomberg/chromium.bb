@@ -69,6 +69,8 @@ def main():
                       help='build for physical iphone')
   parser.add_argument('-r', '--release', action='store_true',
                       help='use release configuration')
+  parser.add_argument('-a', '--asan', action='store_true',
+                      help='use address sanitizer')
 
   options, extra_options_list = parser.parse_known_args()
   print options
@@ -86,6 +88,9 @@ def main():
     else:
       gn_args += ' target_cpu="x64" '
       out_dir_suffix = '-iphonesimulator'
+      if options.asan:
+        gn_args += ' is_asan=true use_xcode_clang=true '
+        out_dir_suffix += '-asan'
   else:
     target_os = 'android'
     test_target = 'cronet_test_instrumentation_apk'

@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -73,7 +74,7 @@ class CronetBidirectionalStreamAdapter
  public:
   CronetBidirectionalStreamAdapter(
       cronet_engine* engine,
-      cronet_bidirectional_stream* stream,
+      void* annotation,
       cronet_bidirectional_stream_callback* callback);
 
   virtual ~CronetBidirectionalStreamAdapter();
@@ -95,6 +96,8 @@ class CronetBidirectionalStreamAdapter
 
   void OnCanceled() override;
 
+  cronet_bidirectional_stream* c_stream() const { return c_stream_.get(); }
+
   static cronet::CronetBidirectionalStream* GetCronetStream(
       cronet_bidirectional_stream* stream);
 
@@ -107,69 +110,71 @@ class CronetBidirectionalStreamAdapter
   cronet::CronetEnvironment* cronet_environment_;
   cronet::CronetBidirectionalStream* cronet_bidirectional_stream_;
   // C side
-  cronet_bidirectional_stream* stream_;
-  cronet_bidirectional_stream_callback* callback_;
+  std::unique_ptr<cronet_bidirectional_stream> c_stream_;
+  cronet_bidirectional_stream_callback* c_callback_;
 };
 
 CronetBidirectionalStreamAdapter::CronetBidirectionalStreamAdapter(
     cronet_engine* engine,
-    cronet_bidirectional_stream* stream,
+    void* annotation,
     cronet_bidirectional_stream_callback* callback)
     : cronet_environment_(
           reinterpret_cast<cronet::CronetEnvironment*>(engine->obj)),
-      stream_(stream),
-      callback_(callback) {
+      c_stream_(base::MakeUnique<cronet_bidirectional_stream>()),
+      c_callback_(callback) {
   DCHECK(cronet_environment_);
   cronet_bidirectional_stream_ =
       new cronet::CronetBidirectionalStream(cronet_environment_, this);
+  c_stream_->obj = this;
+  c_stream_->annotation = annotation;
 }
 
 CronetBidirectionalStreamAdapter::~CronetBidirectionalStreamAdapter() {}
 
 void CronetBidirectionalStreamAdapter::OnStreamReady() {
-  DCHECK(callback_->on_response_headers_received);
-  callback_->on_stream_ready(stream_);
+  DCHECK(c_callback_->on_stream_ready);
+  c_callback_->on_stream_ready(c_stream());
 }
 
 void CronetBidirectionalStreamAdapter::OnHeadersReceived(
     const net::SpdyHeaderBlock& headers_block,
     const char* negotiated_protocol) {
-  DCHECK(callback_->on_response_headers_received);
+  DCHECK(c_callback_->on_response_headers_received);
   HeadersArray response_headers(headers_block);
-  callback_->on_response_headers_received(stream_, &response_headers,
-                                          negotiated_protocol);
+  c_callback_->on_response_headers_received(c_stream(), &response_headers,
+                                            negotiated_protocol);
 }
 
 void CronetBidirectionalStreamAdapter::OnDataRead(char* data, int size) {
-  DCHECK(callback_->on_read_completed);
-  callback_->on_read_completed(stream_, data, size);
+  DCHECK(c_callback_->on_read_completed);
+  c_callback_->on_read_completed(c_stream(), data, size);
 }
 
 void CronetBidirectionalStreamAdapter::OnDataSent(const char* data) {
-  DCHECK(callback_->on_write_completed);
-  callback_->on_write_completed(stream_, data);
+  DCHECK(c_callback_->on_write_completed);
+  c_callback_->on_write_completed(c_stream(), data);
 }
 
 void CronetBidirectionalStreamAdapter::OnTrailersReceived(
     const net::SpdyHeaderBlock& trailers_block) {
-  DCHECK(callback_->on_response_trailers_received);
+  DCHECK(c_callback_->on_response_trailers_received);
   HeadersArray response_trailers(trailers_block);
-  callback_->on_response_trailers_received(stream_, &response_trailers);
+  c_callback_->on_response_trailers_received(c_stream(), &response_trailers);
 }
 
 void CronetBidirectionalStreamAdapter::OnSucceeded() {
-  DCHECK(callback_->on_succeded);
-  callback_->on_succeded(stream_);
+  DCHECK(c_callback_->on_succeded);
+  c_callback_->on_succeded(c_stream());
 }
 
 void CronetBidirectionalStreamAdapter::OnFailed(int error) {
-  DCHECK(callback_->on_failed);
-  callback_->on_failed(stream_, error);
+  DCHECK(c_callback_->on_failed);
+  c_callback_->on_failed(c_stream(), error);
 }
 
 void CronetBidirectionalStreamAdapter::OnCanceled() {
-  DCHECK(callback_->on_canceled);
-  callback_->on_canceled(stream_);
+  DCHECK(c_callback_->on_canceled);
+  c_callback_->on_canceled(c_stream());
 }
 
 cronet::CronetBidirectionalStream*
@@ -178,7 +183,7 @@ CronetBidirectionalStreamAdapter::GetCronetStream(
   DCHECK(stream);
   CronetBidirectionalStreamAdapter* adapter =
       static_cast<CronetBidirectionalStreamAdapter*>(stream->obj);
-  DCHECK(adapter->stream_ == stream);
+  DCHECK(adapter->c_stream() == stream);
   DCHECK(adapter->cronet_bidirectional_stream_);
   return adapter->cronet_bidirectional_stream_;
 }
@@ -188,7 +193,7 @@ void CronetBidirectionalStreamAdapter::DestroyAdapterForStream(
   DCHECK(stream);
   CronetBidirectionalStreamAdapter* adapter =
       static_cast<CronetBidirectionalStreamAdapter*>(stream->obj);
-  DCHECK(adapter->stream_ == stream);
+  DCHECK(adapter->c_stream() == stream);
   // Destroy could be called from any thread, including network thread (if
   // posting task to executor throws an exception), but is posted, so |this|
   // is valid until calling task is complete.
@@ -210,17 +215,14 @@ cronet_bidirectional_stream* cronet_bidirectional_stream_create(
     cronet_engine* engine,
     void* annotation,
     cronet_bidirectional_stream_callback* callback) {
-  // Allocate C |stream| object.
-  cronet_bidirectional_stream* stream = new cronet_bidirectional_stream();
   // Allocate new C++ adapter that will invoke |callback|.
-  stream->obj = new CronetBidirectionalStreamAdapter(engine, stream, callback);
-  stream->annotation = annotation;
-  return stream;
+  CronetBidirectionalStreamAdapter* stream_adapter =
+      new CronetBidirectionalStreamAdapter(engine, annotation, callback);
+  return stream_adapter->c_stream();
 }
 
 int cronet_bidirectional_stream_destroy(cronet_bidirectional_stream* stream) {
   CronetBidirectionalStreamAdapter::DestroyAdapterForStream(stream);
-  delete stream;
   return 1;
 }
 
