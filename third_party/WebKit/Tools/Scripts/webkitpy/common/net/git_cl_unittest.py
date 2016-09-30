@@ -23,10 +23,17 @@ class GitCLTest(unittest.TestCase):
         host = MockHost()
         host.executive = MockExecutive2(output='mock-output')
         git_cl = GitCL(host, auth_refresh_token_json='token.json')
-        git_cl.run(['command'])
+        git_cl.run(['upload'])
         self.assertEqual(
             host.executive.calls,
-            [['git', 'cl', 'command', '--auth-refresh-token-json', 'token.json']])
+            [['git', 'cl', 'upload', '--auth-refresh-token-json', 'token.json']])
+
+    def test_some_commands_not_run_with_auth(self):
+        host = MockHost()
+        host.executive = MockExecutive2(output='mock-output')
+        git_cl = GitCL(host, auth_refresh_token_json='token.json')
+        git_cl.run(['issue'])
+        self.assertEqual(host.executive.calls, [['git', 'cl', 'issue']])
 
     def test_get_issue_number(self):
         host = MockHost()
