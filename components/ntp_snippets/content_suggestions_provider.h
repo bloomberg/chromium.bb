@@ -43,8 +43,6 @@ class ContentSuggestionsProvider {
     // that to clear them from the UI immediately, the provider needs to change
     // the status of the respective category. If the given |category| is not
     // known yet, the calling |provider| will be registered as its provider.
-    // IDs for the ContentSuggestions should be generated with
-    // |MakeUniqueID(..)| below.
     virtual void OnNewSuggestions(
         ContentSuggestionsProvider* provider,
         Category category,
