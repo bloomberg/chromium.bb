@@ -101,10 +101,10 @@ class CastRemotingConnector
   // while a remoting route is available, and is owned by CastRemotingConnector.
   class MessageObserver;
 
-  // Main constructor. |route_source_id| is the remoting route source specific
-  // to one tab (WebContents).
+  // Main constructor. |media_source_id| refers to any remoted content managed
+  // by this instance (i.e., any remoted content from one tab/WebContents).
   CastRemotingConnector(media_router::MediaRouter* router,
-                        const media_router::MediaSource::Id& route_source_id);
+                        const media_router::MediaSource::Id& media_source_id);
 
   ~CastRemotingConnector() final;
 
@@ -161,6 +161,10 @@ class CastRemotingConnector
   void OnRoutesUpdated(
       const std::vector<media_router::MediaRoute>& routes,
       const std::vector<media_router::MediaRoute::Id>& ignored) final;
+
+  // The MediaSource ID referring to any remoted content managed by this
+  // CastRemotingConnector.
+  const media_router::MediaSource::Id media_source_id_;
 
   // Set of registered RemotingBridges, maintained by RegisterBridge() and
   // DeregisterBridge(). These pointers are always valid while they are in this

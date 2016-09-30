@@ -175,8 +175,9 @@ void CastRemotingConnector::CreateRemoterFactory(
 
 CastRemotingConnector::CastRemotingConnector(
     media_router::MediaRouter* router,
-    const media_router::MediaSource::Id& route_source_id)
-    : media_router::MediaRoutesObserver(router, route_source_id),
+    const media_router::MediaSource::Id& media_source_id)
+    : media_router::MediaRoutesObserver(router),
+      media_source_id_(media_source_id),
       session_counter_(0),
       active_bridge_(nullptr),
       weak_factory_(this) {}
@@ -494,8 +495,9 @@ void CastRemotingConnector::OnRoutesUpdated(
   // Scan |routes| for a new remoting route. If one is found, begin processing
   // messages on the route, and notify the sources that remoting is now
   // available.
-  if (!routes.empty()) {
-    const media_router::MediaRoute& route = routes.front();
+  for (const media_router::MediaRoute& route : routes) {
+    if (route.media_source().id() != media_source_id_)
+      continue;
     message_observer_.reset(new MessageObserver(
         media_router::MediaRoutesObserver::router(), route.media_route_id(),
         this));
@@ -504,5 +506,6 @@ void CastRemotingConnector::OnRoutesUpdated(
     // notification.
     for (RemotingBridge* notifyee : bridges_)
       notifyee->OnSinkAvailable();
+    break;
   }
 }

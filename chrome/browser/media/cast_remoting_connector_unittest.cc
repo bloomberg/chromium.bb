@@ -49,6 +49,11 @@ constexpr char kRemotingMediaSink[] = "wiggles";
 constexpr char kRemotingMediaRoute[] =
     "urn:x-org.chromium:media:route:garbly_gook_ssi7m4oa8oma7rasd/cast-wiggles";
 
+constexpr char kTabMirroringMediaSource[] =
+    "urn:x-org.chromium.media:source:tab:123";
+constexpr char kTabMirroringMediaRoute[] =
+    "urn:x-org.chromium:media:route:bloopity_blop_ohun48i56nh9oid/cast-wiggles";
+
 // Implements basic functionality of a subset of the MediaRouter for use by the
 // unit tests in this module. Note that MockMediaRouter will complain at runtime
 // if any methods were called that should not have been called.
@@ -66,9 +71,16 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
 
   void OnRemotingRouteExists(bool exists) {
     routes_.clear();
+
+    // Always add a non-remoting route to make sure CastRemotingConnector
+    // ignores non-remoting routes.
+    routes_.push_back(MediaRoute(
+        kTabMirroringMediaRoute, MediaSource(kTabMirroringMediaSource),
+        kRemotingMediaSink, "Cast Tab Mirroring", false, "", false));
+
     if (exists) {
       routes_.push_back(MediaRoute(
-          kRemotingMediaRoute, MediaSource(routes_observer_->source_id()),
+          kRemotingMediaRoute, MediaSource(kRemotingMediaSource),
           kRemotingMediaSink, "Cast Media Remoting", false, "", false));
     } else {
       // Cancel delivery of all messages in both directions.
@@ -79,6 +91,7 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
       }
       outbound_messages_.clear();
     }
+
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&FakeMediaRouter::DoUpdateRoutes,
@@ -225,8 +238,7 @@ class MockRemotingSource : public media::mojom::RemotingSource {
 class CastRemotingConnectorTest : public ::testing::Test {
  public:
   CastRemotingConnectorTest()
-      : remoting_source_(kRemotingMediaSource),
-        connector_(&media_router_, remoting_source_.id()) {}
+      : connector_(&media_router_, kRemotingMediaSource) {}
 
   void TearDown() final {
     // Allow any pending Mojo operations to complete before destruction. For
@@ -316,7 +328,6 @@ class CastRemotingConnectorTest : public ::testing::Test {
  private:
   content::TestBrowserThreadBundle browser_thread_bundle_;
   FakeMediaRouter media_router_;
-  const MediaSource remoting_source_;
   CastRemotingConnector connector_;
 };
 
