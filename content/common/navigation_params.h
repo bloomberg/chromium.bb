@@ -181,9 +181,6 @@ struct CONTENT_EXPORT BeginNavigationParams {
 struct CONTENT_EXPORT StartNavigationParams {
   StartNavigationParams();
   StartNavigationParams(const std::string& extra_headers,
-#if defined(OS_ANDROID)
-                        bool has_user_gesture,
-#endif
                         int transferred_request_child_id,
                         int transferred_request_request_id);
   StartNavigationParams(const StartNavigationParams& other);
@@ -191,10 +188,6 @@ struct CONTENT_EXPORT StartNavigationParams {
 
   // Extra headers (separated by \n) to send during the request.
   std::string extra_headers;
-
-#if defined(OS_ANDROID)
-  bool has_user_gesture;
-#endif
 
   // The following two members identify a previous request that has been
   // created before this navigation is being transferred to a new process.
@@ -236,7 +229,8 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           int current_history_list_offset,
                           int current_history_list_length,
                           bool is_view_source,
-                          bool should_clear_history_list);
+                          bool should_clear_history_list,
+                          bool has_user_gesture);
   RequestNavigationParams(const RequestNavigationParams& other);
   ~RequestNavigationParams();
 
@@ -334,6 +328,9 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // This parameter is not used in the current navigation architecture, where
   // it will always be equal to kInvalidServiceWorkerProviderId.
   int service_worker_provider_id;
+
+  // True if the navigation originated due to a user gesture.
+  bool has_user_gesture;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for

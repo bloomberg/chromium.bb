@@ -4869,6 +4869,12 @@ void RenderFrameImpl::OnCommitNavigation(
   stream_override->stream_url = stream_url;
   stream_override->response = response;
 
+  // If the request was initiated in the context of a user gesture then make
+  // sure that the navigation also executes in the context of a user gesture.
+  std::unique_ptr<blink::WebScopedUserGesture> gesture(
+      request_params.has_user_gesture ? new blink::WebScopedUserGesture
+          : nullptr);
+
   NavigateInternal(common_params, StartNavigationParams(), request_params,
                    std::move(stream_override));
 }
@@ -5536,7 +5542,7 @@ void RenderFrameImpl::NavigateInternal(
   bool has_history_navigation_in_frame = false;
 
 #if defined(OS_ANDROID)
-  request.setHasUserGesture(start_params.has_user_gesture);
+  request.setHasUserGesture(request_params.has_user_gesture);
 #endif
 
   // PlzNavigate: Make sure that Blink's loader will not try to use browser side

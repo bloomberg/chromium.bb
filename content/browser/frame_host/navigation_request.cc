@@ -195,7 +195,8 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       -1,                      // pending_history_list_offset
       current_history_list_offset, current_history_list_length,
       false,                   // is_view_source
-      false);                  // should_clear_history_list
+      false,                   // should_clear_history_list
+      begin_params.has_user_gesture);
   std::unique_ptr<NavigationRequest> navigation_request(
       new NavigationRequest(frame_tree_node, common_params, begin_params,
                             request_params, false, nullptr, nullptr));
@@ -550,6 +551,9 @@ void NavigationRequest::CommitNavigation() {
              frame_tree_node_->render_manager()->speculative_frame_host());
 
   TransferNavigationHandleOwnership(render_frame_host);
+
+  DCHECK_EQ(request_params_.has_user_gesture, begin_params_.has_user_gesture);
+
   render_frame_host->CommitNavigation(response_.get(), std::move(body_),
                                       common_params_, request_params_,
                                       is_view_source_);

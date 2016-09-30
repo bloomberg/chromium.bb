@@ -353,9 +353,6 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::StartNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(extra_headers)
-#if defined(OS_ANDROID)
-  IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
-#endif
   IPC_STRUCT_TRAITS_MEMBER(transferred_request_child_id)
   IPC_STRUCT_TRAITS_MEMBER(transferred_request_request_id)
 IPC_STRUCT_TRAITS_END()
@@ -387,6 +384,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(should_create_service_worker)
   IPC_STRUCT_TRAITS_MEMBER(navigation_timing)
   IPC_STRUCT_TRAITS_MEMBER(service_worker_provider_id)
+  IPC_STRUCT_TRAITS_MEMBER(has_user_gesture)
 #if defined(OS_ANDROID)
   IPC_STRUCT_TRAITS_MEMBER(data_url_as_string)
 #endif
@@ -896,7 +894,7 @@ IPC_MESSAGE_ROUTED4(FrameMsg_CommitNavigation,
                     content::ResourceResponseHead,    /* response */
                     GURL,                             /* stream_url */
                     content::CommonNavigationParams,  /* common_params */
-                    content::RequestNavigationParams) /* request_params */
+                    content::RequestNavigationParams  /* request_params */)
 
 // PlzNavigate
 // Tells the renderer that a navigation failed with the error code |error_code|

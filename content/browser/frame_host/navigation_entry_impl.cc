@@ -684,9 +684,6 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
 StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
     const {
   return StartNavigationParams(extra_headers(),
-#if defined(OS_ANDROID)
-                               has_user_gesture(),
-#endif
                                transferred_global_request_id().child_id,
                                transferred_global_request_id().request_id);
 }
@@ -720,13 +717,17 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
     current_length_to_send = 0;
   }
 
+  bool user_gesture = false;
+#if defined(OS_ANDROID)
+  user_gesture = has_user_gesture();
+#endif
   RequestNavigationParams request_params(
       GetIsOverridingUserAgent(), redirects, GetCanLoadLocalResources(),
       base::Time::Now(), frame_entry.page_state(), GetPageID(), GetUniqueID(),
       is_same_document_history_load, is_history_navigation_in_new_child,
       subframe_unique_names, has_committed_real_load, intended_as_new_entry,
       pending_offset_to_send, current_offset_to_send, current_length_to_send,
-      IsViewSourceMode(), should_clear_history_list());
+      IsViewSourceMode(), should_clear_history_list(), user_gesture);
 #if defined(OS_ANDROID)
   if (GetDataURLAsString() &&
       GetDataURLAsString()->size() <= kMaxLengthOfDataURLString) {
