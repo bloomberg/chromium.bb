@@ -2407,7 +2407,12 @@ bool PaintLayer::backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) 
         return false;
 
     // FIXME: Handle simple transforms.
-    if (paintsWithTransform(GlobalPaintNormalPhase))
+    if (transform() && compositingState() != PaintsIntoOwnBacking)
+        return false;
+
+    if (!RuntimeEnabledFeatures::compositeOpaqueFixedPositionEnabled()
+        && layoutObject()->style()->position() == FixedPosition
+        && compositingState() != PaintsIntoOwnBacking)
         return false;
 
     // This function should not be called when layer-lists are dirty.

@@ -10,6 +10,7 @@
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -619,6 +620,42 @@ TEST_F(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset)
     // The width is 485 pixels due to the size of the scrollbar.
     EXPECT_RECT_EQ(IntRect(0, 0, 500, 7500), recomputeInterestRect(frameDocument.view()->layoutViewItem().enclosingLayer()->graphicsLayerBacking()));
 }
+
+TEST_F(CompositedLayerMappingTest, PromoteOpaqueFixedPosition)
+{
+    const bool preferCompositing = document().frame()->settings()->preferCompositingToLCDTextEnabled();
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(false);
+    ScopedCompositeFixedPositionForTest compositeFixedPosition(true);
+
+    setBodyInnerHTML(
+        "<div id='translucent' style='width: 20px; height: 20px; position: fixed; top: 100px; left: 100px;'></div>"
+        "<div id='opaque' style='width: 20px; height: 20px; position: fixed; top: 100px; left: 200px; background: white;'></div>"
+        "<div id='opaque-with-shadow' style='width: 20px; height: 20px; position: fixed; top: 100px; left: 300px; background: white; box-shadow: 10px 10px 5px #888888;'></div>"
+        "<div id='spacer' style='height: 2000px'></div>");
+
+    document().view()->updateAllLifecyclePhases();
+
+    // The translucent fixed box should not be promoted.
+    Element* element = document().getElementById("translucent");
+    PaintLayer* paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
+    EXPECT_EQ(NotComposited, paintLayer->compositingState());
+
+    // The opaque fixed box should be promoted and be opaque so that text will be drawn
+    // with subpixel anti-aliasing.
+    element = document().getElementById("opaque");
+    paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
+    EXPECT_EQ(PaintsIntoOwnBacking, paintLayer->compositingState());
+    EXPECT_TRUE(paintLayer->graphicsLayerBacking()->contentsOpaque());
+
+    // The opaque fixed box with shadow should not be promoted because the layer will
+    // include the shadow which is not opaque.
+    element = document().getElementById("opaque-with-shadow");
+    paintLayer = toLayoutBoxModelObject(element->layoutObject())->layer();
+    EXPECT_EQ(NotComposited, paintLayer->compositingState());
+
+    document().frame()->settings()->setPreferCompositingToLCDTextEnabled(preferCompositing);
+}
+
 
 TEST_F(CompositedLayerMappingTest, ScrollingContentsAndForegroundLayerPaintingPhase)
 {

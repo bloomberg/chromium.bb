@@ -31,6 +31,7 @@ private:
     bool m_original;
 };
 
+typedef ScopedRuntimeEnabledFeatureForTest<RuntimeEnabledFeatures::compositeOpaqueFixedPositionEnabled, RuntimeEnabledFeatures::setCompositeOpaqueFixedPositionEnabled> ScopedCompositeFixedPositionForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<RuntimeEnabledFeatures::compositorWorkerEnabled, RuntimeEnabledFeatures::setCompositorWorkerEnabled> ScopedCompositorWorkerForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<RuntimeEnabledFeatures::rootLayerScrollingEnabled, RuntimeEnabledFeatures::setRootLayerScrollingEnabled> ScopedRootLayerScrollingForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<RuntimeEnabledFeatures::slimmingPaintV2Enabled, RuntimeEnabledFeatures::setSlimmingPaintV2Enabled> ScopedSlimmingPaintV2ForTest;

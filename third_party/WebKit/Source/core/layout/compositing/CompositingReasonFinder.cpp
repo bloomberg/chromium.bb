@@ -168,8 +168,15 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(const ComputedStyl
 
 bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(const PaintLayer* layer) const
 {
-    if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger))
+    if (layer->layoutObject()->style()->position() != FixedPosition
+        && layer->layoutObject()->style()->position() != StickyPosition)
         return false;
+
+    if (!(m_compositingTriggers & ViewportConstrainedPositionedTrigger)
+        && (!RuntimeEnabledFeatures::compositeOpaqueFixedPositionEnabled()
+            || !layer->backgroundIsKnownToBeOpaqueInRect(LayoutRect(layer->boundingBoxForCompositing())))) {
+        return false;
+    }
     // Don't promote fixed position elements that are descendants of a non-view container, e.g. transformed elements.
     // They will stay fixed wrt the container rather than the enclosing frame.
     if (layer->scrollsWithViewport())
