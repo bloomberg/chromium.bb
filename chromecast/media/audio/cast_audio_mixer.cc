@@ -4,8 +4,10 @@
 
 #include "chromecast/media/audio/cast_audio_mixer.h"
 
+#include "base/logging.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/channel_layout.h"
 
 namespace {
@@ -140,8 +142,9 @@ class CastAudioMixer::MixerProxyStream
                       uint32_t frames_delayed) override {
     DCHECK(source_callback_);
 
-    uint32_t bytes_delay = frames_delayed * input_params_.GetBytesPerFrame();
-    source_callback_->OnMoreData(audio_bus, bytes_delay, 0);
+    const base::TimeDelta delay = ::media::AudioTimestampHelper::FramesToTime(
+        frames_delayed, input_params_.sample_rate());
+    source_callback_->OnMoreData(delay, base::TimeTicks::Now(), 0, audio_bus);
     return volume_;
   }
 
@@ -245,13 +248,14 @@ void CastAudioMixer::RemoveInput(
     output_stream_->Stop();
 }
 
-int CastAudioMixer::OnMoreData(::media::AudioBus* dest,
-                               uint32_t total_bytes_delay,
-                               uint32_t frames_skipped) {
+int CastAudioMixer::OnMoreData(base::TimeDelta delay,
+                               base::TimeTicks /* delay_timestamp */,
+                               int /* prior_frames_skipped */,
+                               ::media::AudioBus* dest) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  uint32_t frames_delayed =
-      total_bytes_delay / output_params_.GetBytesPerFrame();
+  uint32_t frames_delayed = ::media::AudioTimestampHelper::TimeToFrames(
+      delay, output_params_.sample_rate());
   mixer_->ConvertWithDelay(frames_delayed, dest);
   return dest->frames();
 }

@@ -108,9 +108,10 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
   }
 
   // AudioOutputStream::AudioSourceCallback implementation.
-  int OnMoreData(AudioBus* audio_bus,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override {
+  int OnMoreData(base::TimeDelta /* delay */,
+                 base::TimeTicks /* delay_timestamp */,
+                 int /* prior_frames_skipped */,
+                 AudioBus* dest) override {
     // Store time difference between two successive callbacks in an array.
     // These values will be written to a file in the destructor.
     const base::TimeTicks now_time = base::TimeTicks::Now();
@@ -121,17 +122,15 @@ class ReadFromFileAudioSource : public AudioOutputStream::AudioSourceCallback {
       ++elements_to_write_;
     }
 
-    int max_size =
-        audio_bus->frames() * audio_bus->channels() * kBitsPerSample / 8;
+    int max_size = dest->frames() * dest->channels() * kBitsPerSample / 8;
 
     // Use samples read from a data file and fill up the audio buffer
     // provided to us in the callback.
     if (pos_ + static_cast<int>(max_size) > file_size())
       max_size = file_size() - pos_;
-    int frames = max_size / (audio_bus->channels() * kBitsPerSample / 8);
+    int frames = max_size / (dest->channels() * kBitsPerSample / 8);
     if (max_size) {
-      audio_bus->FromInterleaved(
-          file_->data() + pos_, frames, kBitsPerSample / 8);
+      dest->FromInterleaved(file_->data() + pos_, frames, kBitsPerSample / 8);
       pos_ += max_size;
     }
     return frames;
@@ -390,13 +389,14 @@ TEST_F(WASAPIAudioOutputStreamTest, ValidPacketSize) {
   AudioOutputStream* aos = aosw.Create();
   EXPECT_TRUE(aos->Open());
 
-  // Derive the expected size in bytes of each packet.
-  uint32_t bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
-                              (aosw.bits_per_sample() / 8);
+  // Derive the expected duration of each packet.
+  base::TimeDelta packet_duration = base::TimeDelta::FromSecondsD(
+      static_cast<double>(aosw.samples_per_packet()) / aosw.sample_rate());
 
   // Wait for the first callback and verify its parameters.  Ignore any
   // subsequent callbacks that might arrive.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet), 0))
+  EXPECT_CALL(source,
+              OnMoreData(HasValidDelay(packet_duration), _, 0, NotNull()))
       .WillOnce(DoAll(QuitLoop(message_loop_.task_runner()),
                       Return(aosw.samples_per_packet())))
       .WillRepeatedly(Return(0));
@@ -582,11 +582,12 @@ TEST_F(WASAPIAudioOutputStreamTest,
   EXPECT_TRUE(aos->Open());
 
   // Derive the expected size in bytes of each packet.
-  uint32_t bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
-                              (aosw.bits_per_sample() / 8);
+  base::TimeDelta packet_duration = base::TimeDelta::FromSecondsD(
+      static_cast<double>(aosw.samples_per_packet()) / aosw.sample_rate());
 
- // Wait for the first callback and verify its parameters.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet), 0))
+  // Wait for the first callback and verify its parameters.
+  EXPECT_CALL(source,
+              OnMoreData(HasValidDelay(packet_duration), _, 0, NotNull()))
       .WillOnce(DoAll(QuitLoop(message_loop_.task_runner()),
                       Return(aosw.samples_per_packet())))
       .WillRepeatedly(Return(aosw.samples_per_packet()));
@@ -615,11 +616,12 @@ TEST_F(WASAPIAudioOutputStreamTest,
   EXPECT_TRUE(aos->Open());
 
   // Derive the expected size in bytes of each packet.
-  uint32_t bytes_per_packet = aosw.channels() * aosw.samples_per_packet() *
-                              (aosw.bits_per_sample() / 8);
+  base::TimeDelta packet_duration = base::TimeDelta::FromSecondsD(
+      static_cast<double>(aosw.samples_per_packet()) / aosw.sample_rate());
 
   // Wait for the first callback and verify its parameters.
-  EXPECT_CALL(source, OnMoreData(NotNull(), HasValidDelay(bytes_per_packet), 0))
+  EXPECT_CALL(source,
+              OnMoreData(HasValidDelay(packet_duration), _, 0, NotNull()))
       .WillOnce(DoAll(QuitLoop(message_loop_.task_runner()),
                       Return(aosw.samples_per_packet())))
       .WillRepeatedly(Return(aosw.samples_per_packet()));

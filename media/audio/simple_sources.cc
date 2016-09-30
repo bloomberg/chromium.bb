@@ -14,6 +14,7 @@
 #include "base/files/file.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "media/audio/sounds/wav_audio_handler.h"
 #include "media/base/audio_bus.h"
 
@@ -115,9 +116,10 @@ SineWaveAudioSource::~SineWaveAudioSource() {
 
 // The implementation could be more efficient if a lookup table is constructed
 // but it is efficient enough for our simple needs.
-int SineWaveAudioSource::OnMoreData(AudioBus* audio_bus,
-                                    uint32_t total_bytes_delay,
-                                    uint32_t frames_skipped) {
+int SineWaveAudioSource::OnMoreData(base::TimeDelta /* delay */,
+                                    base::TimeTicks /* delay_timestamp */,
+                                    int /* prior_frames_skipped */,
+                                    AudioBus* dest) {
   base::AutoLock auto_lock(time_lock_);
   callbacks_++;
 
@@ -125,13 +127,13 @@ int SineWaveAudioSource::OnMoreData(AudioBus* audio_bus,
   // where Theta = 2*PI*fs.
   // We store the discrete time value |t| in a member to ensure that the
   // next pass starts at a correct state.
-  int max_frames = cap_ > 0 ?
-      std::min(audio_bus->frames(), cap_ - time_state_) : audio_bus->frames();
+  int max_frames =
+      cap_ > 0 ? std::min(dest->frames(), cap_ - time_state_) : dest->frames();
   for (int i = 0; i < max_frames; ++i)
-    audio_bus->channel(0)[i] = sin(2.0 * M_PI * f_ * time_state_++);
-  for (int i = 1; i < audio_bus->channels(); ++i) {
-    memcpy(audio_bus->channel(i), audio_bus->channel(0),
-           max_frames * sizeof(*audio_bus->channel(i)));
+    dest->channel(0)[i] = sin(2.0 * M_PI * f_ * time_state_++);
+  for (int i = 1; i < dest->channels(); ++i) {
+    memcpy(dest->channel(i), dest->channel(0),
+           max_frames * sizeof(*dest->channel(i)));
   }
   return max_frames;
 }
@@ -201,9 +203,10 @@ void FileSource::LoadWavFile(const base::FilePath& path_to_wav_file) {
   file_audio_converter_->AddInput(this);
 }
 
-int FileSource::OnMoreData(AudioBus* audio_bus,
-                           uint32_t total_bytes_delay,
-                           uint32_t frames_skipped) {
+int FileSource::OnMoreData(base::TimeDelta /* delay */,
+                           base::TimeTicks /* delay_timestamp */,
+                           int /* prior_frames_skipped */,
+                           AudioBus* dest) {
   // Load the file if we haven't already. This load needs to happen on the
   // audio thread, otherwise we'll run on the UI thread on Mac for instance.
   // This will massively delay the first OnMoreData, but we'll catch up.
@@ -222,8 +225,8 @@ int FileSource::OnMoreData(AudioBus* audio_bus,
   }
 
   // This pulls data from ProvideInput.
-  file_audio_converter_->Convert(audio_bus);
-  return audio_bus->frames();
+  file_audio_converter_->Convert(dest);
+  return dest->frames();
 }
 
 void FileSource::Rewind() {
@@ -258,9 +261,10 @@ BeepingSource::BeepingSource(const AudioParameters& params)
 BeepingSource::~BeepingSource() {
 }
 
-int BeepingSource::OnMoreData(AudioBus* audio_bus,
-                              uint32_t total_bytes_delay,
-                              uint32_t frames_skipped) {
+int BeepingSource::OnMoreData(base::TimeDelta /* delay */,
+                              base::TimeTicks /* delay_timestamp */,
+                              int /* prior_frames_skipped */,
+                              AudioBus* dest) {
   // Accumulate the time from the last beep.
   interval_from_last_beep_ += base::TimeTicks::Now() - last_callback_time_;
 
@@ -304,9 +308,9 @@ int BeepingSource::OnMoreData(AudioBus* audio_bus,
   }
 
   last_callback_time_ = base::TimeTicks::Now();
-  audio_bus->FromInterleaved(
-      buffer_.get(), audio_bus->frames(), params_.bits_per_sample() / 8);
-  return audio_bus->frames();
+  dest->FromInterleaved(buffer_.get(), dest->frames(),
+                        params_.bits_per_sample() / 8);
+  return dest->frames();
 }
 
 void BeepingSource::OnError(AudioOutputStream* stream) {

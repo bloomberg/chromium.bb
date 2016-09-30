@@ -25,7 +25,7 @@ using testing::Return;
 namespace media {
 
 ACTION(ZeroBuffer) {
-  arg0->Zero();
+  arg3->Zero();
 }
 
 ACTION_P3(MaybeSignalEvent, counter, signal_at_count, event) {
@@ -98,7 +98,7 @@ TEST_F(AUHALStreamTest, CreateOpenStartStopClose) {
                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   int callback_counter = 0;
   const int number_of_callbacks = 2;
-  EXPECT_CALL(source_, OnMoreData(_, _, _))
+  EXPECT_CALL(source_, OnMoreData(_, _, _, _))
       .Times(number_of_callbacks)
       .WillRepeatedly(DoAll(
           ZeroBuffer(),

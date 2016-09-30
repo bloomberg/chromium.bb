@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <memory>
 #include <set>
+#include <string>
+#include <utility>
 
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
@@ -163,9 +165,10 @@ class MEDIA_EXPORT AudioOutputController
                           const base::Closure& callback);
 
   // AudioSourceCallback implementation.
-  int OnMoreData(AudioBus* dest,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override;
+  int OnMoreData(base::TimeDelta delay,
+                 base::TimeTicks delay_timestamp,
+                 int prior_frames_skipped,
+                 AudioBus* dest) override;
   void OnError(AudioOutputStream* stream) override;
 
   // AudioDeviceListener implementation.  When called AudioOutputController will

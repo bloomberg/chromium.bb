@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/audio/pulse/pulse_util.h"
@@ -132,10 +133,9 @@ void PulseAudioOutputStream::FulfillWriteRequest(size_t requested_bytes) {
 
     int frames_filled = 0;
     if (source_callback_) {
-      const uint32_t hardware_delay = pulse::GetHardwareLatencyInBytes(
-          pa_stream_, params_.sample_rate(), params_.GetBytesPerFrame());
-      frames_filled =
-          source_callback_->OnMoreData(audio_bus_.get(), hardware_delay, 0);
+      const base::TimeDelta delay = pulse::GetHardwareLatency(pa_stream_);
+      frames_filled = source_callback_->OnMoreData(
+          delay, base::TimeTicks::Now(), 0, audio_bus_.get());
 
       // Zero any unfilled data so it plays back as silence.
       if (frames_filled < audio_bus_->frames()) {

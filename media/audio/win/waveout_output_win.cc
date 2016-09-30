@@ -6,6 +6,7 @@
 
 #include "base/atomicops.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/win/audio_manager_win.h"
@@ -322,10 +323,12 @@ void PCMWaveOutAudioOutputStream::QueueNextPacket(WAVEHDR *buffer) {
   // return to us how many bytes were used.
   // TODO(fbarchard): Handle used 0 by queueing more.
 
-  // TODO(sergeyu): Specify correct hardware delay for |total_delay_bytes|.
-  uint32_t total_delay_bytes = pending_bytes_;
+  // TODO(sergeyu): Specify correct hardware delay for |delay|.
+  const base::TimeDelta delay = base::TimeDelta::FromMicroseconds(
+      pending_bytes_ * base::Time::kMicrosecondsPerSecond /
+      format_.Format.nAvgBytesPerSec);
   int frames_filled =
-      callback_->OnMoreData(audio_bus_.get(), total_delay_bytes, 0);
+      callback_->OnMoreData(delay, base::TimeTicks::Now(), 0, audio_bus_.get());
   uint32_t used = frames_filled * audio_bus_->channels() *
                   format_.Format.wBitsPerSample / 8;
 

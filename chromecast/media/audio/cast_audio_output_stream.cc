@@ -4,6 +4,9 @@
 
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 
+#include <algorithm>
+#include <string>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
@@ -270,11 +273,9 @@ void CastAudioOutputStream::PushBuffer() {
   const base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta queue_delay =
       std::max(base::TimeDelta(), next_push_time_ - now);
-  uint32_t bytes_delay = queue_delay.InMicroseconds() *
-                         audio_params_.GetBytesPerSecond() / 1000000;
   int frame_count =
-      source_callback_->OnMoreData(audio_bus_.get(), bytes_delay, 0);
-  VLOG(3) << "frames_filled=" << frame_count << " with latency=" << bytes_delay;
+      source_callback_->OnMoreData(queue_delay, now, 0, audio_bus_.get());
+  VLOG(3) << "frames_filled=" << frame_count << " with latency=" << queue_delay;
 
   DCHECK_EQ(frame_count, audio_bus_->frames());
   DCHECK_EQ(static_cast<int>(decoder_buffer_->data_size()),

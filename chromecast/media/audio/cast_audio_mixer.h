@@ -5,11 +5,13 @@
 #ifndef CHROMECAST_MEDIA_AUDIO_CAST_AUDIO_MIXER_H_
 #define CHROMECAST_MEDIA_AUDIO_CAST_AUDIO_MIXER_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_converter.h"
 #include "media/base/audio_parameters.h"
@@ -27,7 +29,7 @@ class CastAudioMixer : public ::media::AudioOutputStream::AudioSourceCallback {
   using RealStreamFactory = base::Callback<::media::AudioOutputStream*(
       const ::media::AudioParameters&)>;
 
-  CastAudioMixer(const RealStreamFactory& real_stream_factory);
+  explicit CastAudioMixer(const RealStreamFactory& real_stream_factory);
   ~CastAudioMixer() override;
 
   virtual ::media::AudioOutputStream* MakeStream(
@@ -38,9 +40,11 @@ class CastAudioMixer : public ::media::AudioOutputStream::AudioSourceCallback {
   class MixerProxyStream;
 
   // ::media::AudioOutputStream::AudioSourceCallback implementation
-  int OnMoreData(::media::AudioBus* dest,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override;
+  int OnMoreData(base::TimeDelta delay,
+                 base::TimeTicks delay_timestamp,
+                 int prior_frames_skipped,
+                 ::media::AudioBus* dest) override;
+
   void OnError(::media::AudioOutputStream* stream) override;
 
   // MixedAudioOutputStreams call Register on opening and AddInput on starting.

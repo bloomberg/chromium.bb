@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,22 +39,21 @@ class MockAudioSourceCallback
     : public ::media::AudioOutputStream::AudioSourceCallback {
  public:
   MockAudioSourceCallback() {
-    ON_CALL(*this, OnMoreData(_, _, _))
+    ON_CALL(*this, OnMoreData(_, _, _, _))
         .WillByDefault(Invoke(this, &MockAudioSourceCallback::OnMoreDataImpl));
   }
 
-  MOCK_METHOD3(OnMoreData,
-               int(::media::AudioBus* audio_bus,
-                   uint32_t total_bytes_delay,
-                   uint32_t frames_skipped));
+  MOCK_METHOD4(OnMoreData,
+               int(base::TimeDelta, base::TimeTicks, int, ::media::AudioBus*));
   MOCK_METHOD1(OnError, void(::media::AudioOutputStream* stream));
 
  private:
-  int OnMoreDataImpl(::media::AudioBus* audio_bus,
-                     uint32_t total_bytes_delay,
-                     uint32_t frames_skipped) {
-    audio_bus->Zero();
-    return audio_bus->frames();
+  int OnMoreDataImpl(base::TimeDelta /* delay */,
+                     base::TimeTicks /* delay_timestamp */,
+                     int /* prior_frames_skipped */,
+                     ::media::AudioBus* dest) {
+    dest->Zero();
+    return dest->frames();
   }
 };
 
@@ -70,11 +70,11 @@ class MockCastAudioOutputStream : public CastAudioOutputStream {
   MOCK_METHOD1(SetVolume, void(double volume));
   MOCK_METHOD1(GetVolume, void(double* volume));
 
-  void SignalPull(AudioSourceCallback* source_callback,
-                  uint32_t total_bytes_delay) {
+  void SignalPull(AudioSourceCallback* source_callback, base::TimeDelta delay) {
     std::unique_ptr<::media::AudioBus> audio_bus =
         ::media::AudioBus::Create(GetAudioParams());
-    source_callback->OnMoreData(audio_bus.get(), total_bytes_delay, 0);
+    source_callback->OnMoreData(delay, base::TimeTicks::Now(), 0,
+                                audio_bus.get());
   }
 
   void SignalError(AudioSourceCallback* source_callback) {
@@ -109,7 +109,7 @@ class MockCastAudioManager : public CastAudioManager {
 
 class MockCastAudioMixer : public CastAudioMixer {
  public:
-  MockCastAudioMixer(const RealStreamFactory& real_stream_factory)
+  explicit MockCastAudioMixer(const RealStreamFactory& real_stream_factory)
       : CastAudioMixer(real_stream_factory) {
     ON_CALL(*this, MakeStream(_, _))
         .WillByDefault(Invoke(this, &MockCastAudioMixer::MakeStreamConcrete));
@@ -295,8 +295,8 @@ TEST_F(CastAudioMixerTest, MultiStreamCycle) {
     sources.erase(sources.begin());
 
     for (auto& source : sources)
-      EXPECT_CALL(*source, OnMoreData(_, _, _));
-    mock_mixer_stream().SignalPull(&mock_mixer(), 0);
+      EXPECT_CALL(*source, OnMoreData(_, _, _, _));
+    mock_mixer_stream().SignalPull(&mock_mixer(), base::TimeDelta());
 
     EXPECT_CALL(mock_manager(), ReleaseOutputStream(stream));
     stream->Close();
@@ -434,7 +434,7 @@ TEST_F(CastAudioMixerTest, OnErrorNoRecovery) {
   streams.front()->Close();
 }
 
-TEST_F(CastAudioMixerTest, ByteDelays) {
+TEST_F(CastAudioMixerTest, Delay) {
   MockAudioSourceCallback source;
   ::media::AudioOutputStream* stream = CreateMixerStream();
 
@@ -446,10 +446,11 @@ TEST_F(CastAudioMixerTest, ByteDelays) {
   EXPECT_CALL(mock_mixer_stream(), Start(&mock_mixer()));
   stream->Start(&source);
 
-  // The |total_bytes_delay| is the same because the Mixer and stream are
+  // |delay| is the same because the Mixer and stream are
   // using the same AudioParameters.
-  EXPECT_CALL(source, OnMoreData(_, 100, 0));
-  mock_mixer_stream().SignalPull(&mock_mixer(), 100);
+  base::TimeDelta delay = base::TimeDelta::FromMicroseconds(1000);
+  EXPECT_CALL(source, OnMoreData(delay, _, 0, _));
+  mock_mixer_stream().SignalPull(&mock_mixer(), delay);
 
   EXPECT_CALL(mock_mixer_stream(), Stop());
   EXPECT_CALL(mock_mixer_stream(), Close());

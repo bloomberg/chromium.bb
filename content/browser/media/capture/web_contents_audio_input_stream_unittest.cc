@@ -7,6 +7,8 @@
 #include <stdint.h>
 
 #include <list>
+#include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -15,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "base/time/time.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
 #include "content/public/browser/browser_thread.h"
@@ -308,7 +311,8 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
       // 20 Audio buses are enough for all test cases.
       const int kAudioBusesNumber = 20;
       for (int i = 0; i < kAudioBusesNumber; i++) {
-        int frames = source->OnMoreData(audio_data.get(), 0, 0);
+        int frames = source->OnMoreData(
+            base::TimeDelta(), base::TimeTicks::Now(), 0, audio_data.get());
         std::unique_ptr<media::AudioBus> copy = AudioBus::Create(params);
         audio_data->CopyTo(copy.get());
         out->OnData(std::move(copy), now);

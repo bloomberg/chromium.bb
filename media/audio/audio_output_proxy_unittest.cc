@@ -141,11 +141,12 @@ class MockAudioManager : public AudioManagerBase {
 
 class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
  public:
-  int OnMoreData(AudioBus* audio_bus,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) {
-    audio_bus->Zero();
-    return audio_bus->frames();
+  int OnMoreData(base::TimeDelta /* delay */,
+                 base::TimeTicks /* delay_timestamp */,
+                 int /* prior_frames_skipped */,
+                 AudioBus* dest) override {
+    dest->Zero();
+    return dest->frames();
   }
   MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
 };

@@ -6,16 +6,19 @@
 
 #include <CoreServices/CoreServices.h>
 
+#include <algorithm>
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_pull_fifo.h"
+#include "media/base/audio_timestamp_helper.h"
 
 namespace media {
 
@@ -51,9 +54,7 @@ AUHALStream::AUHALStream(AudioManagerMac* manager,
       device_(device),
       audio_unit_(0),
       volume_(1),
-      hardware_latency_frames_(0),
       stopped_(true),
-      current_hardware_pending_bytes_(0),
       current_lost_frames_(0),
       last_sample_time_(0.0),
       last_number_of_frames_(0),
@@ -117,7 +118,7 @@ bool AUHALStream::Open() {
 
   bool configured = ConfigureAUHAL();
   if (configured)
-    hardware_latency_frames_ = GetHardwareLatency();
+    hardware_latency_ = GetHardwareLatency();
 
   return configured;
 }
@@ -237,10 +238,7 @@ OSStatus AUHALStream::Render(
   // Make |output_bus_| wrap the output AudioBufferList.
   WrapBufferList(data, output_bus_.get(), number_of_frames);
 
-  // Update the playout latency.
-  const double playout_latency_frames = GetPlayoutLatency(output_time_stamp);
-  current_hardware_pending_bytes_ = static_cast<uint32_t>(
-      (playout_latency_frames + 0.5) * params_.GetBytesPerFrame());
+  current_playout_time_ = GetPlayoutTime(output_time_stamp);
 
   if (audio_fifo_)
     audio_fifo_->Consume(output_bus_.get(), output_bus_->frames());
@@ -259,10 +257,14 @@ void AUHALStream::ProvideInput(int frame_delay, AudioBus* dest) {
     return;
   }
 
+  const base::TimeTicks playout_time =
+      current_playout_time_ +
+      AudioTimestampHelper::FramesToTime(frame_delay, params_.sample_rate());
+  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeDelta delay = playout_time - now;
+
   // Supply the input data and render the output data.
-  source_->OnMoreData(dest, current_hardware_pending_bytes_ +
-                                frame_delay * params_.GetBytesPerFrame(),
-                      current_lost_frames_);
+  source_->OnMoreData(delay, now, current_lost_frames_, dest);
   dest->Scale(volume_);
   current_lost_frames_ = 0;
 }
@@ -289,10 +291,10 @@ OSStatus AUHALStream::InputProc(
       io_data);
 }
 
-double AUHALStream::GetHardwareLatency() {
+base::TimeDelta AUHALStream::GetHardwareLatency() {
   if (!audio_unit_ || device_ == kAudioObjectUnknown) {
     DLOG(WARNING) << "AudioUnit is NULL or device ID is unknown";
-    return 0.0;
+    return base::TimeDelta();
   }
 
   // Get audio unit latency.
@@ -307,7 +309,7 @@ double AUHALStream::GetHardwareLatency() {
       &size);
   if (result != noErr) {
     OSSTATUS_DLOG(WARNING, result) << "Could not get AudioUnit latency";
-    return 0.0;
+    return base::TimeDelta();
   }
 
   // Get output audio device latency.
@@ -328,34 +330,29 @@ double AUHALStream::GetHardwareLatency() {
       &device_latency_frames);
   if (result != noErr) {
     OSSTATUS_DLOG(WARNING, result) << "Could not get audio device latency";
-    return 0.0;
+    return base::TimeDelta();
   }
 
-  return static_cast<double>((audio_unit_latency_sec *
-      output_format_.mSampleRate) + device_latency_frames);
+  int latency_frames = audio_unit_latency_sec * output_format_.mSampleRate +
+                       device_latency_frames;
+
+  return AudioTimestampHelper::FramesToTime(latency_frames,
+                                            params_.sample_rate());
 }
 
-double AUHALStream::GetPlayoutLatency(
+base::TimeTicks AUHALStream::GetPlayoutTime(
     const AudioTimeStamp* output_time_stamp) {
-  // Ensure mHostTime is valid.
+  // A platform bug has been observed where the platform sometimes reports that
+  // the next frames will be output at an invalid time or a time in the past.
+  // Because the target playout time cannot be invalid or in the past, return
+  // "now" in these cases.
   if ((output_time_stamp->mFlags & kAudioTimeStampHostTimeValid) == 0)
-    return 0;
+    return base::TimeTicks::Now();
 
-  // Get the delay between the moment getting the callback and the scheduled
-  // time stamp that tells when the data is going to be played out.
-  UInt64 output_time_ns = AudioConvertHostTimeToNanos(
-      output_time_stamp->mHostTime);
-  UInt64 now_ns = AudioConvertHostTimeToNanos(AudioGetCurrentHostTime());
-
-  // Prevent overflow leading to huge delay information; occurs regularly on
-  // the bots, probably less so in the wild.
-  if (now_ns > output_time_ns)
-    return 0;
-
-  double delay_frames = static_cast<double>
-      (1e-9 * (output_time_ns - now_ns) * output_format_.mSampleRate);
-
-  return (delay_frames + hardware_latency_frames_);
+  return std::max(base::TimeTicks::FromMachAbsoluteTime(
+                      output_time_stamp->mHostTime),
+                  base::TimeTicks::Now()) +
+         hardware_latency_;
 }
 
 void AUHALStream::UpdatePlayoutTimestamp(const AudioTimeStamp* timestamp) {

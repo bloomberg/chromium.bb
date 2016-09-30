@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/environment.h"
@@ -18,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_source_diverter.h"
 #include "media/base/audio_bus.h"
@@ -199,8 +201,8 @@ class AudioOutputControllerTest : public testing::Test {
   void ReadDivertedAudioData() {
     std::unique_ptr<AudioBus> dest = AudioBus::Create(params_);
     ASSERT_TRUE(mock_stream_.callback());
-    const int frames_read =
-        mock_stream_.callback()->OnMoreData(dest.get(), 0, 0);
+    const int frames_read = mock_stream_.callback()->OnMoreData(
+        base::TimeDelta(), base::TimeTicks::Now(), 0, dest.get());
     EXPECT_LT(0, frames_read);
     EXPECT_EQ(kBufferNonZeroData, dest->channel(0)[0]);
   }
@@ -213,7 +215,8 @@ class AudioOutputControllerTest : public testing::Test {
     std::unique_ptr<AudioBus> dest = AudioBus::Create(params_);
 
     // It is this OnMoreData() call that triggers |sink|'s OnData().
-    const int frames_read = controller_->OnMoreData(dest.get(), 0, 0);
+    const int frames_read = controller_->OnMoreData(
+        base::TimeDelta(), base::TimeTicks::Now(), 0, dest.get());
 
     EXPECT_LT(0, frames_read);
     EXPECT_EQ(kBufferNonZeroData, dest->channel(0)[0]);

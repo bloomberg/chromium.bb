@@ -37,16 +37,19 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/alsa/alsa_util.h"
 #include "media/audio/alsa/alsa_wrapper.h"
 #include "media/audio/alsa/audio_manager_alsa.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/channel_mixer.h"
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
@@ -125,7 +128,7 @@ std::ostream& operator<<(std::ostream& os,
     case AlsaPcmOutputStream::kIsClosed:
       os << "kIsClosed";
       break;
-  };
+  }
   return os;
 }
 
@@ -151,7 +154,8 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
       packet_size_(params.GetBytesPerBuffer()),
       latency_(std::max(
           base::TimeDelta::FromMicroseconds(kMinLatencyMicros),
-          FramesToTimeDelta(params.frames_per_buffer() * 2, sample_rate_))),
+          AudioTimestampHelper::FramesToTime(params.frames_per_buffer() * 2,
+                                             sample_rate_))),
       bytes_per_output_frame_(bytes_per_frame_),
       alsa_buffer_frames_(0),
       stop_stream_(false),
@@ -164,6 +168,7 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
       volume_(1.0f),
       source_callback_(NULL),
       audio_bus_(AudioBus::Create(params)),
+      tick_clock_(new base::DefaultTickClock()),
       weak_factory_(this) {
   DCHECK(manager_->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK_EQ(audio_bus_->frames() * bytes_per_frame_, packet_size_);
@@ -345,6 +350,12 @@ void AlsaPcmOutputStream::GetVolume(double* volume) {
   *volume = volume_;
 }
 
+void AlsaPcmOutputStream::SetTickClockForTesting(
+    std::unique_ptr<base::TickClock> tick_clock) {
+  DCHECK(tick_clock);
+  tick_clock_ = std::move(tick_clock);
+}
+
 void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
   DCHECK(CalledOnValidThread());
 
@@ -361,13 +372,14 @@ void AlsaPcmOutputStream::BufferPacket(bool* source_exhausted) {
   // WritePacket() consumes only the current chunk of data.
   if (!buffer_->forward_bytes()) {
     // Before making a request to source for data we need to determine the
-    // delay (in bytes) for the requested data to be played.
-    const uint32_t hardware_delay = GetCurrentDelay() * bytes_per_frame_;
+    // delay for the requested data to be played.
+    const base::TimeDelta delay =
+        AudioTimestampHelper::FramesToTime(GetCurrentDelay(), sample_rate_);
 
     scoped_refptr<media::DataBuffer> packet =
         new media::DataBuffer(packet_size_);
-    int frames_filled = RunDataCallback(
-        audio_bus_.get(), hardware_delay);
+    int frames_filled =
+        RunDataCallback(delay, tick_clock_->NowTicks(), audio_bus_.get());
 
     size_t packet_size = frames_filled * bytes_per_frame_;
     DCHECK_LE(packet_size, packet_size_);
@@ -516,7 +528,7 @@ void AlsaPcmOutputStream::ScheduleNextWrite(bool source_exhausted) {
   } else if (available_frames < kTargetFramesAvailable) {
     // Schedule the next write for the moment when the available buffer of the
     // sound card hits |kTargetFramesAvailable|.
-    next_fill_time = FramesToTimeDelta(
+    next_fill_time = AudioTimestampHelper::FramesToTime(
         kTargetFramesAvailable - available_frames, sample_rate_);
   } else if (!source_exhausted) {
     // The sound card has |kTargetFramesAvailable| or more frames available.
@@ -532,13 +544,6 @@ void AlsaPcmOutputStream::ScheduleNextWrite(bool source_exhausted) {
       FROM_HERE,
       base::Bind(&AlsaPcmOutputStream::WriteTask, weak_factory_.GetWeakPtr()),
       next_fill_time);
-}
-
-// static
-base::TimeDelta AlsaPcmOutputStream::FramesToTimeDelta(int frames,
-                                                       double sample_rate) {
-  return base::TimeDelta::FromMicroseconds(
-      frames * base::Time::kMicrosecondsPerSecond / sample_rate);
 }
 
 std::string AlsaPcmOutputStream::FindDeviceForChannels(uint32_t channels) {
@@ -777,12 +782,13 @@ AlsaPcmOutputStream::InternalState AlsaPcmOutputStream::state() {
   return state_;
 }
 
-int AlsaPcmOutputStream::RunDataCallback(AudioBus* audio_bus,
-                                         uint32_t total_bytes_delay) {
+int AlsaPcmOutputStream::RunDataCallback(base::TimeDelta delay,
+                                         base::TimeTicks delay_timestamp,
+                                         AudioBus* audio_bus) {
   TRACE_EVENT0("audio", "AlsaPcmOutputStream::RunDataCallback");
 
   if (source_callback_)
-    return source_callback_->OnMoreData(audio_bus, total_bytes_delay, 0);
+    return source_callback_->OnMoreData(delay, delay_timestamp, 0, audio_bus);
 
   return 0;
 }

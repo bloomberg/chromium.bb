@@ -29,6 +29,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
@@ -127,12 +128,11 @@ class AUHALStream : public AudioOutputStream {
   // Creates the input and output busses.
   void CreateIOBusses();
 
-  // Gets the fixed playout device hardware latency and stores it. Returns 0
-  // if not available.
-  double GetHardwareLatency();
+  // Returns the fixed hardware latency, or zero if not available.
+  base::TimeDelta GetHardwareLatency();
 
-  // Gets the current playout latency value.
-  double GetPlayoutLatency(const AudioTimeStamp* output_time_stamp);
+  // Returns the playout time for a given AudioTimeStamp.
+  base::TimeTicks GetPlayoutTime(const AudioTimeStamp* output_time_stamp);
 
   // Updates playout timestamp, current lost frames, and total lost frames and
   // glitches.
@@ -178,8 +178,8 @@ class AUHALStream : public AudioOutputStream {
   // Volume level from 0 to 1.
   float volume_;
 
-  // Fixed playout hardware latency in frames.
-  double hardware_latency_frames_;
+  // Fixed playout hardware latency.
+  base::TimeDelta hardware_latency_;
 
   // This flag will be set to false while we're actively receiving callbacks.
   bool stopped_;
@@ -191,8 +191,8 @@ class AUHALStream : public AudioOutputStream {
   // sizes.
   std::unique_ptr<AudioPullFifo> audio_fifo_;
 
-  // Current buffer delay.  Set by Render().
-  uint32_t current_hardware_pending_bytes_;
+  // Current playout time.  Set by Render().
+  base::TimeTicks current_playout_time_;
 
   // Lost frames not yet reported to the provider. Increased in
   // UpdatePlayoutTimestamp() if any lost frame since last time. Forwarded to

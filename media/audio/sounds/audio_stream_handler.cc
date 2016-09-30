@@ -112,9 +112,10 @@ class AudioStreamHandler::AudioStreamContainer
  private:
   // AudioOutputStream::AudioSourceCallback overrides:
   // Following methods could be called from *ANY* thread.
-  int OnMoreData(AudioBus* dest,
-                 uint32_t /* total_bytes_delay */,
-                 uint32_t /* frames_skipped */) override {
+  int OnMoreData(base::TimeDelta /* delay */,
+                 base::TimeTicks /* delay_timestamp */,
+                 int /* prior_frames_skipped */,
+                 AudioBus* dest) override {
     base::AutoLock al(state_lock_);
     size_t bytes_written = 0;
 

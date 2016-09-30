@@ -6,11 +6,14 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "media/audio/simple_sources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -154,7 +157,8 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
         first_params_.channels(), first_params_.sample_rate() *
                                       kMediaStreamAudioTrackBufferDurationMs /
                                       base::Time::kMillisecondsPerSecond));
-    first_source_.OnMoreData(bus.get(), 0, 0);
+    first_source_.OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
+                             bus.get());
     return bus;
   }
   std::unique_ptr<media::AudioBus> GetSecondSourceAudioBus() {
@@ -162,7 +166,8 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
         second_params_.channels(), second_params_.sample_rate() *
                                        kMediaStreamAudioTrackBufferDurationMs /
                                        base::Time::kMillisecondsPerSecond));
-    second_source_.OnMoreData(bus.get(), 0, 0);
+    second_source_.OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
+                              bus.get());
     return bus;
   }
 

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_propvariant.h"
 #include "media/audio/audio_device_description.h"
@@ -511,31 +512,35 @@ bool WASAPIAudioOutputStream::RenderAudioFromSource(UINT64 device_frequency) {
     // can typically be utilized by an acoustic echo-control (AEC)
     // unit at the render side.
     UINT64 position = 0;
-    uint32_t audio_delay_bytes = 0;
-    hr = audio_clock_->GetPosition(&position, NULL);
+    UINT64 qpc_position = 0;
+    base::TimeDelta delay;
+    base::TimeTicks delay_timestamp;
+    hr = audio_clock_->GetPosition(&position, &qpc_position);
     if (SUCCEEDED(hr)) {
-      // Stream position of the sample that is currently playing
-      // through the speaker.
-      double pos_sample_playing_frames = format_.Format.nSamplesPerSec *
-          (static_cast<double>(position) / device_frequency);
+      // Number of frames already played out through the speaker.
+      const uint64_t played_out_frames =
+          format_.Format.nSamplesPerSec * position / device_frequency;
 
-      // Stream position of the last sample written to the endpoint
-      // buffer. Note that, the packet we are about to receive in
-      // the upcoming callback is also included.
-      size_t pos_last_sample_written_frames =
-          num_written_frames_ + packet_size_frames_;
+      // Number of frames that have been written to the buffer but not yet
+      // played out.
+      const uint64_t delay_frames = num_written_frames_ - played_out_frames;
 
-      // Derive the actual delay value which will be fed to the
-      // render client using the OnMoreData() callback.
-      audio_delay_bytes = (pos_last_sample_written_frames -
-          pos_sample_playing_frames) *  format_.Format.nBlockAlign;
+      // Convert the delay from frames to time.
+      delay = base::TimeDelta::FromMicroseconds(
+          delay_frames * base::Time::kMicrosecondsPerSecond /
+          format_.Format.nSamplesPerSec);
+
+      delay_timestamp = base::TimeTicks::FromQPCValue(qpc_position);
+    } else {
+      // Use a delay of zero.
+      delay_timestamp = base::TimeTicks::Now();
     }
 
     // Read a data packet from the registered client source and
     // deliver a delay estimate in the same callback to the client.
 
     int frames_filled =
-        source_->OnMoreData(audio_bus_.get(), audio_delay_bytes, 0);
+        source_->OnMoreData(delay, delay_timestamp, 0, audio_bus_.get());
     uint32_t num_filled_bytes = frames_filled * format_.Format.nBlockAlign;
     DCHECK_LE(num_filled_bytes, packet_size_bytes_);
 
@@ -641,7 +646,7 @@ HRESULT WASAPIAudioOutputStream::ExclusiveModeInitialization(
 }
 
 void WASAPIAudioOutputStream::StopThread() {
-  if (render_thread_ ) {
+  if (render_thread_) {
     if (render_thread_->HasBeenStarted()) {
       // Wait until the thread completes and perform cleanup.
       SetEvent(stop_render_event_.Get());

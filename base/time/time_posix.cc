@@ -110,6 +110,12 @@ int64_t ClockNow(clockid_t clk_id) {
 
 namespace base {
 
+// static
+TimeDelta TimeDelta::FromTimeSpec(const timespec& ts) {
+  return TimeDelta(ts.tv_sec * Time::kMicrosecondsPerSecond +
+                   ts.tv_nsec / Time::kNanosecondsPerMicrosecond);
+}
+
 struct timespec TimeDelta::ToTimeSpec() const {
   int64_t microseconds = InMicroseconds();
   time_t seconds = 0;

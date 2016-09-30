@@ -126,9 +126,10 @@ void CheckDeviceNames(const AudioDeviceNames& device_names) {
 }
 
 // We clear the data bus to ensure that the test does not cause noise.
-int RealOnMoreData(AudioBus* dest,
-                   uint32_t total_bytes_delay,
-                   uint32_t frames_skipped) {
+int RealOnMoreData(base::TimeDelta /* delay */,
+                   base::TimeTicks /* delay_timestamp */,
+                   int /* prior_frames_skipped */,
+                   AudioBus* dest) {
   dest->Zero();
   return dest->frames();
 }
@@ -184,12 +185,12 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
 
   // Use samples read from a data file and fill up the audio buffer
   // provided to us in the callback.
-  int OnMoreData(AudioBus* audio_bus,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override {
+  int OnMoreData(base::TimeDelta /* delay */,
+                 base::TimeTicks /* delay_timestamp */,
+                 int /* prior_frames_skipped */,
+                 AudioBus* dest) override {
     bool stop_playing = false;
-    int max_size =
-        audio_bus->frames() * audio_bus->channels() * kBytesPerSample;
+    int max_size = dest->frames() * dest->channels() * kBytesPerSample;
 
     // Adjust data size and prepare for end signal if file has ended.
     if (pos_ + max_size > file_size()) {
@@ -201,9 +202,9 @@ class FileAudioSource : public AudioOutputStream::AudioSourceCallback {
     // the file and deinterleave to match the audio bus format.
     // FromInterleaved() will zero out any unfilled frames when there is not
     // sufficient data remaining in the file to fill up the complete frame.
-    int frames = max_size / (audio_bus->channels() * kBytesPerSample);
+    int frames = max_size / (dest->channels() * kBytesPerSample);
     if (max_size) {
-      audio_bus->FromInterleaved(file_->data() + pos_, frames, kBytesPerSample);
+      dest->FromInterleaved(file_->data() + pos_, frames, kBytesPerSample);
       pos_ += max_size;
     }
 
@@ -361,9 +362,10 @@ class FullDuplexAudioSinkSource
   void OnError(AudioInputStream* stream) override {}
 
   // AudioOutputStream::AudioSourceCallback implementation
-  int OnMoreData(AudioBus* dest,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override {
+  int OnMoreData(base::TimeDelta /* delay */,
+                 base::TimeTicks /* delay_timestamp */,
+                 int /* prior_frames_skipped */,
+                 AudioBus* dest) override {
     const int size_in_bytes =
         (params_.bits_per_sample() / 8) * dest->frames() * dest->channels();
     EXPECT_EQ(size_in_bytes, params_.GetBytesPerBuffer());
@@ -509,7 +511,7 @@ class AudioAndroidOutputTest : public testing::Test {
     MockAudioSourceCallback source;
 
     base::RunLoop run_loop;
-    EXPECT_CALL(source, OnMoreData(NotNull(), _, 0))
+    EXPECT_CALL(source, OnMoreData(_, _, 0, NotNull()))
         .Times(AtLeast(num_callbacks))
         .WillRepeatedly(
             DoAll(CheckCountAndPostQuitTask(&count, num_callbacks,
@@ -921,7 +923,7 @@ TEST_P(AudioAndroidInputTest, DISABLED_RunDuplexInputStreamWithFileAsSink) {
   FileAudioSink sink(&event, in_params, file_name);
   MockAudioSourceCallback source;
 
-  EXPECT_CALL(source, OnMoreData(NotNull(), _, 0))
+  EXPECT_CALL(source, OnMoreData(_, _, 0, NotNull()))
       .WillRepeatedly(Invoke(RealOnMoreData));
   EXPECT_CALL(source, OnError(audio_output_stream_)).Times(0);
 

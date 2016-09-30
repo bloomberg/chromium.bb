@@ -4,9 +4,12 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_recorder_handler.h"
 #include "content/renderer/media/mock_media_stream_registry.h"
@@ -117,7 +120,8 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
     std::unique_ptr<media::AudioBus> bus(media::AudioBus::Create(
         kTestAudioChannels,
         kTestAudioSampleRate * kTestAudioBufferDurationMs / 1000));
-    audio_source_.OnMoreData(bus.get(), 0, 0);
+    audio_source_.OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
+                             bus.get());
     return bus;
   }
 

@@ -4,9 +4,13 @@
 
 #include "content/browser/media/capture/web_contents_audio_muter.h"
 
+#include <memory>
+#include <set>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -50,7 +54,8 @@ class AudioDiscarder : public media::AudioOutputStream {
   ~AudioDiscarder() override {}
 
   void FetchAudioData(AudioSourceCallback* callback) {
-    callback->OnMoreData(audio_bus_.get(), 0, 0);
+    callback->OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
+                         audio_bus_.get());
   }
 
   // Calls FetchAudioData() at regular intervals and discards the data.

@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "base/bind.h"
@@ -225,16 +226,17 @@ class FullDuplexAudioSinkSource
   void OnError(AudioInputStream* stream) override {}
 
   // AudioOutputStream::AudioSourceCallback.
-  int OnMoreData(AudioBus* audio_bus,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override {
+  int OnMoreData(base::TimeDelta delay,
+                 base::TimeTicks /* delay_timestamp */,
+                 int /* prior_frames_skipped */,
+                 AudioBus* dest) override {
     base::AutoLock lock(lock_);
 
     // Update one component in the AudioDelayState for the packet
     // which is about to be played out.
     if (output_elements_to_write_ < kMaxDelayMeasurements) {
       delay_states_[output_elements_to_write_].output_delay_ms =
-          BytesToMilliseconds(total_bytes_delay);
+          delay.InMilliseconds();
       ++output_elements_to_write_;
     }
 
@@ -243,11 +245,11 @@ class FullDuplexAudioSinkSource
     // Read the data from the seekable media buffer which contains
     // captured data at the same size and sample rate as the output side.
     if (buffer_->GetCurrentChunk(&source, &size) && size > 0) {
-      EXPECT_EQ(channels_, audio_bus->channels());
-      size = std::min(audio_bus->frames() * frame_size_, size);
-      EXPECT_EQ(static_cast<size_t>(size) % sizeof(*audio_bus->channel(0)), 0U);
-      audio_bus->FromInterleaved(
-          source, size / frame_size_, frame_size_ / channels_);
+      EXPECT_EQ(channels_, dest->channels());
+      size = std::min(dest->frames() * frame_size_, size);
+      EXPECT_EQ(static_cast<size_t>(size) % sizeof(*dest->channel(0)), 0U);
+      dest->FromInterleaved(source, size / frame_size_,
+                            frame_size_ / channels_);
       buffer_->Seek(size);
       return size / frame_size_;
     }

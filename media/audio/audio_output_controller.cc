@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <limits>
 
 #include "base/bind.h"
@@ -292,9 +293,10 @@ void AudioOutputController::DoReportError() {
     handler_->OnError();
 }
 
-int AudioOutputController::OnMoreData(AudioBus* dest,
-                                      uint32_t total_bytes_delay,
-                                      uint32_t frames_skipped) {
+int AudioOutputController::OnMoreData(base::TimeDelta delay,
+                                      base::TimeTicks delay_timestamp,
+                                      int prior_frames_skipped,
+                                      AudioBus* dest) {
   TRACE_EVENT0("audio", "AudioOutputController::OnMoreData");
 
   // Indicate that we haven't wedged (at least not indefinitely, WedgeCheck()
@@ -306,9 +308,12 @@ int AudioOutputController::OnMoreData(AudioBus* dest,
 
   sync_reader_->Read(dest);
 
+  const int total_bytes_delay =
+      delay.InSecondsF() * params_.GetBytesPerSecond();
   const int frames = dest->frames();
   sync_reader_->UpdatePendingBytes(
-      total_bytes_delay + frames * params_.GetBytesPerFrame(), frames_skipped);
+      total_bytes_delay + frames * params_.GetBytesPerFrame(),
+      prior_frames_skipped);
 
   bool need_to_duplicate = false;
   {
@@ -316,11 +321,7 @@ int AudioOutputController::OnMoreData(AudioBus* dest,
     need_to_duplicate = !duplication_targets_.empty();
   }
   if (need_to_duplicate) {
-    const base::TimeTicks reference_time =
-        base::TimeTicks::Now() +
-        base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond *
-                                          total_bytes_delay /
-                                          params_.GetBytesPerSecond());
+    const base::TimeTicks reference_time = delay_timestamp + delay;
     std::unique_ptr<AudioBus> copy(AudioBus::Create(params_));
     dest->CopyTo(copy.get());
     message_loop_->PostTask(

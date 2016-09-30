@@ -6,6 +6,9 @@
 
 #include <stdint.h>
 
+#include <algorithm>
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -19,6 +22,7 @@
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/sample_rates.h"
 #include "media/base/audio_converter.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/limits.h"
 
 namespace media {
@@ -32,9 +36,10 @@ class OnMoreDataConverter
   ~OnMoreDataConverter() override;
 
   // AudioSourceCallback interface.
-  int OnMoreData(AudioBus* dest,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override;
+  int OnMoreData(base::TimeDelta delay,
+                 base::TimeTicks delay_timestamp,
+                 int prior_frames_skipped,
+                 AudioBus* dest) override;
   void OnError(AudioOutputStream* stream) override;
 
   // Sets |source_callback_|.  If this is not a new object, then Stop() must be
@@ -59,11 +64,12 @@ class OnMoreDataConverter
   // Source callback.
   AudioOutputStream::AudioSourceCallback* source_callback_;
 
-  // Last |total_bytes_delay| received via OnMoreData(), used to correct
-  // playback delay by ProvideInput() and passed on to |source_callback_|.
-  uint32_t current_total_bytes_delay_;
+  // Last |delay| and |delay_timestamp| received via OnMoreData(). Used to
+  // correct playback delay in ProvideInput() before calling |source_callback_|.
+  base::TimeDelta current_delay_;
+  base::TimeTicks current_delay_timestamp_;
 
-  const int input_bytes_per_frame_;
+  const int input_samples_per_second_;
 
   // Handles resampling, buffering, and channel mixing between input and output
   // parameters.
@@ -401,7 +407,7 @@ OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
     : io_ratio_(static_cast<double>(input_params.GetBytesPerSecond()) /
                 output_params.GetBytesPerSecond()),
       source_callback_(nullptr),
-      input_bytes_per_frame_(input_params.GetBytesPerFrame()),
+      input_samples_per_second_(input_params.sample_rate()),
       audio_converter_(input_params, output_params, false),
       error_occurred_(false),
       input_buffer_size_(input_params.frames_per_buffer()),
@@ -432,12 +438,14 @@ void OnMoreDataConverter::Stop() {
   audio_converter_.RemoveInput(this);
 }
 
-int OnMoreDataConverter::OnMoreData(AudioBus* dest,
-                                    uint32_t total_bytes_delay,
-                                    uint32_t frames_skipped) {
+int OnMoreDataConverter::OnMoreData(base::TimeDelta delay,
+                                    base::TimeTicks delay_timestamp,
+                                    int /* prior_frames_skipped */,
+                                    AudioBus* dest) {
   TRACE_EVENT2("audio", "OnMoreDataConverter::OnMoreData", "input buffer size",
                input_buffer_size_, "output buffer size", output_buffer_size_);
-  current_total_bytes_delay_ = total_bytes_delay;
+  current_delay_ = delay;
+  current_delay_timestamp_ = delay_timestamp;
   audio_converter_.Convert(dest);
 
   // Always return the full number of frames requested, ProvideInput()
@@ -447,16 +455,12 @@ int OnMoreDataConverter::OnMoreData(AudioBus* dest,
 
 double OnMoreDataConverter::ProvideInput(AudioBus* dest,
                                          uint32_t frames_delayed) {
-  // Adjust playback delay to include |frames_delayed|.
-  // TODO(dalecurtis): Stop passing bytes around, it doesn't make sense since
-  // AudioBus is just float data.  Use TimeDelta instead.
-  uint32_t new_total_bytes_delay = base::saturated_cast<uint32_t>(
-      io_ratio_ *
-      (current_total_bytes_delay_ + frames_delayed * input_bytes_per_frame_));
-
+  base::TimeDelta new_delay =
+      current_delay_ + AudioTimestampHelper::FramesToTime(
+                           frames_delayed, input_samples_per_second_);
   // Retrieve data from the original callback.
-  const int frames =
-      source_callback_->OnMoreData(dest, new_total_bytes_delay, 0);
+  const int frames = source_callback_->OnMoreData(
+      new_delay, current_delay_timestamp_, 0, dest);
 
   // Zero any unfilled frames if anything was filled, otherwise we'll just
   // return a volume of zero and let AudioConverter drop the output.

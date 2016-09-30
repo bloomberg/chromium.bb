@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <cmath>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/time/time.h"
@@ -35,7 +36,7 @@ std::unique_ptr<AudioBus> TestAudioBusFactory::NextAudioBus(
   const int num_samples = static_cast<int>((sample_rate_ * duration) /
                                            base::TimeDelta::FromSeconds(1));
   std::unique_ptr<AudioBus> bus(AudioBus::Create(num_channels_, num_samples));
-  source_.OnMoreData(bus.get(), 0, 0);
+  source_.OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0, bus.get());
   bus->Scale(volume_);
   return bus;
 }

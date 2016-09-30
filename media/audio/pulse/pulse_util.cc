@@ -8,9 +8,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/time/time.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/audio_timestamp_helper.h"
 
 namespace media {
 
@@ -136,20 +136,26 @@ void WaitForOperationCompletion(pa_threaded_mainloop* pa_mainloop,
   pa_operation_unref(operation);
 }
 
-int GetHardwareLatencyInBytes(pa_stream* stream,
-                              int sample_rate,
-                              int bytes_per_frame) {
+base::TimeDelta GetHardwareLatency(pa_stream* stream) {
   DCHECK(stream);
   int negative = 0;
   pa_usec_t latency_micros = 0;
   if (pa_stream_get_latency(stream, &latency_micros, &negative) != 0)
-    return 0;
+    return base::TimeDelta();
 
   if (negative)
-    return 0;
+    return base::TimeDelta();
 
-  return latency_micros * sample_rate * bytes_per_frame /
-      base::Time::kMicrosecondsPerSecond;
+  return base::TimeDelta::FromMicroseconds(latency_micros);
+}
+
+int GetHardwareLatencyInBytes(pa_stream* stream,
+                              int sample_rate,
+                              int bytes_per_frame) {
+  DCHECK(stream);
+  return AudioTimestampHelper::TimeToFrames(GetHardwareLatency(stream),
+                                            sample_rate) *
+         bytes_per_frame;
 }
 
 // Helper macro for CreateInput/OutputStream() to avoid code spam and

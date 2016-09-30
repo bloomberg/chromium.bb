@@ -4,6 +4,9 @@
 
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "chromecast/base/metrics/cast_metrics_test_helper.h"
@@ -152,11 +155,12 @@ class FakeAudioSourceCallback
   bool error() const { return error_; }
 
   // ::media::AudioOutputStream::AudioSourceCallback overrides.
-  int OnMoreData(::media::AudioBus* audio_bus,
-                 uint32_t total_bytes_delay,
-                 uint32_t frames_skipped) override {
-    audio_bus->Zero();
-    return audio_bus->frames();
+  int OnMoreData(base::TimeDelta /* delay */,
+                 base::TimeTicks /* delay_timestamp */,
+                 int /* prior_frames_skipped */,
+                 ::media::AudioBus* dest) override {
+    dest->Zero();
+    return dest->frames();
   }
   void OnError(::media::AudioOutputStream* stream) override { error_ = true; }
 
@@ -166,7 +170,8 @@ class FakeAudioSourceCallback
 
 class FakeAudioManager : public CastAudioManager {
  public:
-  FakeAudioManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+  explicit FakeAudioManager(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : CastAudioManager(task_runner, task_runner, nullptr, nullptr, nullptr),
         media_pipeline_backend_(nullptr) {}
   ~FakeAudioManager() override {}

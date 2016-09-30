@@ -7,7 +7,10 @@
 
 #include <pulse/pulseaudio.h>
 
+#include <string>
+
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "media/audio/audio_device_name.h"
 #include "media/base/channel_layout.h"
 
@@ -44,6 +47,8 @@ pa_channel_map ChannelLayoutToPAChannelMap(ChannelLayout channel_layout);
 
 void WaitForOperationCompletion(pa_threaded_mainloop* mainloop,
                                 pa_operation* operation);
+
+base::TimeDelta GetHardwareLatency(pa_stream* stream);
 
 int GetHardwareLatencyInBytes(pa_stream* stream,
                               int sample_rate,

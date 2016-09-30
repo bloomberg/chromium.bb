@@ -4,12 +4,14 @@
 
 #include "media/audio/audio_output_stream_sink.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "media/audio/audio_manager.h"
+#include "media/base/audio_timestamp_helper.h"
 
 namespace media {
 
@@ -82,18 +84,20 @@ bool AudioOutputStreamSink::CurrentThreadIsRenderingThread() {
   return false;
 }
 
-int AudioOutputStreamSink::OnMoreData(AudioBus* dest,
-                                      uint32_t total_bytes_delay,
-                                      uint32_t frames_skipped) {
+int AudioOutputStreamSink::OnMoreData(base::TimeDelta delay,
+                                      base::TimeTicks /* delay_timestamp */,
+                                      int prior_frames_skipped,
+                                      AudioBus* dest) {
   // Note: Runs on the audio thread created by the OS.
   base::AutoLock al(callback_lock_);
   if (!active_render_callback_)
     return 0;
 
-  uint32_t frames_delayed = std::round(static_cast<double>(total_bytes_delay) /
-                                       active_params_.GetBytesPerFrame());
+  uint32_t frames_delayed =
+      AudioTimestampHelper::TimeToFrames(delay, active_params_.sample_rate());
 
-  return active_render_callback_->Render(dest, frames_delayed, frames_skipped);
+  return active_render_callback_->Render(dest, frames_delayed,
+                                         prior_frames_skipped);
 }
 
 void AudioOutputStreamSink::OnError(AudioOutputStream* stream) {
@@ -154,4 +158,4 @@ void AudioOutputStreamSink::ClearCallback() {
   active_render_callback_ = NULL;
 }
 
-}  // namepace media
+}  // namespace media

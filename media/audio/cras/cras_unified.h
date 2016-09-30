@@ -18,6 +18,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
 
@@ -49,9 +50,6 @@ class MEDIA_EXPORT CrasUnifiedStream : public AudioOutputStream {
   void GetVolume(double* volume) override;
 
  private:
-  // Convert Latency in time to bytes.
-  uint32_t GetBytesLatency(const struct timespec& latency);
-
   // Handles captured audio and fills the ouput with audio to be played.
   static int UnifiedCallback(cras_client* client,
                              cras_stream_id_t stream_id,

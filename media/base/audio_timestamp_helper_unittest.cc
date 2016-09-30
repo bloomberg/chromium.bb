@@ -12,6 +12,12 @@
 
 namespace media {
 
+namespace {
+
+const int k48kHz = 48000;
+
+}  // namespace
+
 static const int kDefaultSampleRate = 44100;
 
 class AudioTimestampHelperTest : public ::testing::Test {
@@ -42,8 +48,54 @@ class AudioTimestampHelperTest : public ::testing::Test {
  protected:
   AudioTimestampHelper helper_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(AudioTimestampHelperTest);
 };
+
+TEST_F(AudioTimestampHelperTest, FramesToTime) {
+  // Negative value.
+  EXPECT_EQ(base::TimeDelta::FromSeconds(-1),
+            AudioTimestampHelper::FramesToTime(-48000, k48kHz));
+  // Zero.
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(0),
+            AudioTimestampHelper::FramesToTime(0, k48kHz));
+  // One frame.
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(20),
+            AudioTimestampHelper::FramesToTime(1, k48kHz));
+  // Exact value with maximum precision of TimeDelta.
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(15625),
+            AudioTimestampHelper::FramesToTime(750, k48kHz));
+  // One second.
+  EXPECT_EQ(base::TimeDelta::FromSeconds(1),
+            AudioTimestampHelper::FramesToTime(48000, k48kHz));
+  // Argument and return value exceeding 32 bits.
+  EXPECT_EQ(base::TimeDelta::FromSeconds(1000000),
+            AudioTimestampHelper::FramesToTime(48000000000, k48kHz));
+}
+
+TEST_F(AudioTimestampHelperTest, TimeToFrames) {
+  // Negative value.
+  EXPECT_EQ(-48000, AudioTimestampHelper::TimeToFrames(
+                        base::TimeDelta::FromSeconds(-1), k48kHz));
+  // Zero.
+  EXPECT_EQ(0, AudioTimestampHelper::TimeToFrames(
+                   base::TimeDelta::FromMicroseconds(0), k48kHz));
+  // Any duration less than 21 microseconds will return zero frames at 48 kHz
+  // because each frame is 20.833 microseconds.
+  EXPECT_EQ(0, AudioTimestampHelper::TimeToFrames(
+                   base::TimeDelta::FromMicroseconds(20), k48kHz));
+  EXPECT_EQ(1, AudioTimestampHelper::TimeToFrames(
+                   base::TimeDelta::FromMicroseconds(21), k48kHz));
+  // Exact value with maximum precision of TimeDelta.
+  EXPECT_EQ(750, AudioTimestampHelper::TimeToFrames(
+                     base::TimeDelta::FromMicroseconds(15625), k48kHz));
+  // One second.
+  EXPECT_EQ(48000, AudioTimestampHelper::TimeToFrames(
+                       base::TimeDelta::FromSeconds(1), k48kHz));
+  // Argument and return value exceeding 32 bits.
+  EXPECT_EQ(48000000000, AudioTimestampHelper::TimeToFrames(
+                             base::TimeDelta::FromSeconds(1000000), k48kHz));
+}
 
 TEST_F(AudioTimestampHelperTest, Basic) {
   EXPECT_EQ(0, helper_.GetTimestamp().InMicroseconds());

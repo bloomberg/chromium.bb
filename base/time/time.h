@@ -115,6 +115,9 @@ class BASE_EXPORT TimeDelta {
   static constexpr TimeDelta FromSecondsD(double secs);
   static constexpr TimeDelta FromMillisecondsD(double ms);
   static constexpr TimeDelta FromMicroseconds(int64_t us);
+#if defined(OS_POSIX)
+  static TimeDelta FromTimeSpec(const timespec& ts);
+#endif
 #if defined(OS_WIN)
   static TimeDelta FromQPCValue(LONGLONG qpc_value);
 #endif
@@ -729,6 +732,10 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
   // IsHighResolution() returns false.
   static TimeTicks FromQPCValue(LONGLONG qpc_value);
 #endif
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  static TimeTicks FromMachAbsoluteTime(uint64_t mach_absolute_time);
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
   // Get an estimate of the TimeTick value at the time of the UnixEpoch. Because
   // Time and TimeTicks respond differently to user-set time and NTP

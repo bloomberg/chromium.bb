@@ -4,6 +4,8 @@
 
 #include "media/audio/cras/cras_unified.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "media/audio/cras/audio_manager_cras.h"
@@ -61,7 +63,7 @@ CrasUnifiedStream::CrasUnifiedStream(const AudioParameters& params,
       source_callback_(NULL),
       stream_direction_(CRAS_STREAM_OUTPUT) {
   DCHECK(manager_);
-  DCHECK(params_.channels()  > 0);
+  DCHECK_GT(params_.channels(), 0);
 
   output_bus_ = AudioBus::Create(params);
 }
@@ -233,23 +235,6 @@ void CrasUnifiedStream::GetVolume(double* volume) {
   *volume = volume_;
 }
 
-uint32_t CrasUnifiedStream::GetBytesLatency(const struct timespec& latency_ts) {
-  uint32_t latency_usec;
-
-  // Treat negative latency (if we are too slow to render) as 0.
-  if (latency_ts.tv_sec < 0 || latency_ts.tv_nsec < 0) {
-    latency_usec = 0;
-  } else {
-    latency_usec = (latency_ts.tv_sec * base::Time::kMicrosecondsPerSecond) +
-        latency_ts.tv_nsec / base::Time::kNanosecondsPerMicrosecond;
-  }
-
-  double frames_latency =
-      latency_usec * params_.sample_rate() / base::Time::kMicrosecondsPerSecond;
-
-  return static_cast<unsigned int>(frames_latency * bytes_per_frame_);
-}
-
 // Static callback asking for samples.
 int CrasUnifiedStream::UnifiedCallback(cras_client* client,
                                        cras_stream_id_t stream_id,
@@ -305,8 +290,12 @@ uint32_t CrasUnifiedStream::WriteAudio(size_t frames,
   timespec latency_ts  = {0, 0};
   cras_client_calc_playback_latency(sample_ts, &latency_ts);
 
+  // Treat negative latency (if we are too slow to render) as 0.
+  const base::TimeDelta delay =
+      std::max(base::TimeDelta::FromTimeSpec(latency_ts), base::TimeDelta());
+
   int frames_filled = source_callback_->OnMoreData(
-      output_bus_.get(), GetBytesLatency(latency_ts), 0);
+      delay, base::TimeTicks::Now(), 0, output_bus_.get());
 
   // Note: If this ever changes to output raw float the data must be clipped and
   // sanitized since it may come from an untrusted source such as NaCl.

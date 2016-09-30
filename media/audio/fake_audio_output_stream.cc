@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "media/audio/audio_manager_base.h"
 
 namespace media {
@@ -55,15 +56,16 @@ void FakeAudioOutputStream::Close() {
   audio_manager_->ReleaseOutputStream(this);
 }
 
-void FakeAudioOutputStream::SetVolume(double volume) {};
+void FakeAudioOutputStream::SetVolume(double volume) {}
 
 void FakeAudioOutputStream::GetVolume(double* volume) {
   *volume = 0;
-};
+}
 
 void FakeAudioOutputStream::CallOnMoreData() {
   DCHECK(audio_manager_->GetWorkerTaskRunner()->BelongsToCurrentThread());
-  callback_->OnMoreData(audio_bus_.get(), 0, 0);
+  callback_->OnMoreData(base::TimeDelta(), base::TimeTicks::Now(), 0,
+                        audio_bus_.get());
 }
 
 }  // namespace media

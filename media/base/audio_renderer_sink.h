@@ -30,6 +30,8 @@ class AudioRendererSink
     // Attempts to completely fill all channels of |dest|, returns actual
     // number of frames filled. |frames_skipped| contains the number of frames
     // the consumer has skipped, if any.
+    // TODO(jameswest): Change to use the same signature as
+    // AudioOutputStream::AudioSourceCallback::OnMoreData.
     virtual int Render(AudioBus* dest,
                        uint32_t frames_delayed,
                        uint32_t frames_skipped) = 0;
