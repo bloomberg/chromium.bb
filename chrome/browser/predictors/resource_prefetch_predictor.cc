@@ -584,11 +584,18 @@ void ResourcePrefetchPredictor::StartInitialization() {
   auto url_redirect_data_map = base::MakeUnique<RedirectDataMap>();
   auto host_redirect_data_map = base::MakeUnique<RedirectDataMap>();
 
+  // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
+  // will be passed to the reply task.
+  auto url_data_map_ptr = url_data_map.get();
+  auto host_data_map_ptr = host_data_map.get();
+  auto url_redirect_data_map_ptr = url_redirect_data_map.get();
+  auto host_redirect_data_map_ptr = host_redirect_data_map.get();
+
   BrowserThread::PostTaskAndReply(
       BrowserThread::DB, FROM_HERE,
       base::Bind(&ResourcePrefetchPredictorTables::GetAllData, tables_,
-                 url_data_map.get(), host_data_map.get(),
-                 url_redirect_data_map.get(), host_redirect_data_map.get()),
+                 url_data_map_ptr, host_data_map_ptr, url_redirect_data_map_ptr,
+                 host_redirect_data_map_ptr),
       base::Bind(&ResourcePrefetchPredictor::CreateCaches, AsWeakPtr(),
                  base::Passed(&url_data_map), base::Passed(&host_data_map),
                  base::Passed(&url_redirect_data_map),
