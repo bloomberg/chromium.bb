@@ -24,19 +24,20 @@
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
+namespace printing {
+
 namespace {
 
 // 1 inch in mils.
 const int kInchToMil = 1000;
 
-inline int Round(double x) {
+int Round(double x) {
   return static_cast<int>(x + 0.5);
 }
 
 // Sets the page sizes for a |PrintSettings| object.  |width| and |height|
 // arguments should be in device units.
-void SetSizes(
-    printing::PrintSettings* settings, int dpi, int width, int height) {
+void SetSizes(PrintSettings* settings, int dpi, int width, int height) {
   gfx::Size physical_size_device_units(width, height);
   // Assume full page is printable for now.
   gfx::Rect printable_area_device_units(0, 0, width, height);
@@ -47,24 +48,18 @@ void SetSizes(
                                     false);
 }
 
-void GetPageRanges(JNIEnv* env,
-                   jintArray int_arr,
-                   printing::PageRanges& range_vector) {
+void GetPageRanges(JNIEnv* env, jintArray int_arr, PageRanges* range_vector) {
   std::vector<int> pages;
   base::android::JavaIntArrayToIntVector(env, int_arr, &pages);
-  for (std::vector<int>::const_iterator it = pages.begin();
-      it != pages.end();
-      ++it) {
-    printing::PageRange range;
-    range.from = *it;
-    range.to = *it;
-    range_vector.push_back(range);
+  for (int page : pages) {
+    PageRange range;
+    range.from = page;
+    range.to = page;
+    range_vector->push_back(range);
   }
 }
 
 }  // namespace
-
-namespace printing {
 
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
@@ -126,9 +121,9 @@ void PrintingContextAndroid::AskUserForSettingsReply(
 
   ScopedJavaLocalRef<jintArray> intArr =
       Java_PrintingContext_getPages(env, j_printing_context_);
-  if (intArr.obj() != NULL) {
+  if (intArr.obj()) {
     PageRanges range_vector;
-    GetPageRanges(env, intArr.obj(), range_vector);
+    GetPageRanges(env, intArr.obj(), &range_vector);
     settings_.set_ranges(range_vector);
   }
 
@@ -198,15 +193,6 @@ PrintingContext::Result PrintingContextAndroid::UpdatePrinterSettings(
   return OK;
 }
 
-PrintingContext::Result PrintingContextAndroid::InitWithSettings(
-    const PrintSettings& settings) {
-  DCHECK(!in_print_job_);
-
-  settings_ = settings;
-
-  return OK;
-}
-
 PrintingContext::Result PrintingContextAndroid::NewDocument(
     const base::string16& document_name) {
   DCHECK(!in_print_job_);
@@ -255,12 +241,12 @@ void PrintingContextAndroid::ReleaseContext() {
 
 gfx::NativeDrawingContext PrintingContextAndroid::context() const {
   // Intentional No-op.
-  return NULL;
+  return nullptr;
 }
 
 // static
 bool PrintingContextAndroid::RegisterPrintingContext(JNIEnv* env) {
-   return RegisterNativesImpl(env);
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace printing

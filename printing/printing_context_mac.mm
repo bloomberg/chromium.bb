@@ -412,17 +412,6 @@ PageRanges PrintingContextMac::GetPageRangesFromPrintInfo() {
   return page_ranges;
 }
 
-PrintingContext::Result PrintingContextMac::InitWithSettings(
-    const PrintSettings& settings) {
-  DCHECK(!in_print_job_);
-
-  settings_ = settings;
-
-  NOTIMPLEMENTED();
-
-  return FAILED;
-}
-
 PrintingContext::Result PrintingContextMac::NewDocument(
     const base::string16& document_name) {
   DCHECK(!in_print_job_);

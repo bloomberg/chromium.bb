@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/win/scoped_hdc.h"
 #include "printing/printing_context.h"
+#include "printing/printing_context_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
@@ -33,7 +34,7 @@ class EmfPrintingTest : public testing::Test, public PrintingContext::Delegate {
   typedef testing::Test Parent;
   static bool IsTestCaseDisabled() {
     // It is assumed this printer is a HP Color LaserJet 4550 PCL or 4700.
-    HDC hdc = CreateDC(L"WINSPOOL", L"UnitTest Printer", NULL, NULL);
+    HDC hdc = CreateDC(L"WINSPOOL", L"UnitTest Printer", nullptr, nullptr);
     if (!hdc)
       return true;
     DeleteDC(hdc);
@@ -41,7 +42,7 @@ class EmfPrintingTest : public testing::Test, public PrintingContext::Delegate {
   }
 
   // PrintingContext::Delegate methods.
-  gfx::NativeView GetParentView() override { return NULL; }
+  gfx::NativeView GetParentView() override { return nullptr; }
   std::string GetAppLocale() override { return std::string(); }
 };
 
@@ -70,7 +71,7 @@ TEST(EmfTest, DC) {
   // Playback the data.
   Emf emf;
   EXPECT_TRUE(emf.InitFromData(&data.front(), size));
-  HDC hdc = CreateCompatibleDC(NULL);
+  HDC hdc = CreateCompatibleDC(nullptr);
   EXPECT_TRUE(hdc);
   RECT output_rect = {0, 0, 10, 10};
   EXPECT_TRUE(emf.Playback(hdc, &output_rect));
@@ -88,8 +89,8 @@ TEST_F(EmfPrintingTest, Enumerate) {
   settings.set_device_name(L"UnitTest Printer");
 
   // Initialize it.
-  std::unique_ptr<PrintingContext> context(PrintingContext::Create(this));
-  EXPECT_EQ(context->InitWithSettings(settings), PrintingContext::OK);
+  PrintingContextWin context(this);
+  EXPECT_EQ(PrintingContext::OK, context.InitWithSettingsForTest(settings));
 
   base::FilePath emf_file;
   EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &emf_file));
@@ -108,11 +109,11 @@ TEST_F(EmfPrintingTest, Enumerate) {
   // unit_test, PrintingContext automatically dumps its files to the
   // current directory.
   // TODO(maruel):  Clean the .PRN file generated in current directory.
-  context->NewDocument(L"EmfTest.Enumerate");
-  context->NewPage();
+  context.NewDocument(L"EmfTest.Enumerate");
+  context.NewPage();
   // Process one at a time.
   RECT page_bounds = emf.GetPageBounds(1).ToRECT();
-  Emf::Enumerator emf_enum(emf, context->context(), &page_bounds);
+  Emf::Enumerator emf_enum(emf, context.context(), &page_bounds);
   for (Emf::Enumerator::const_iterator itr = emf_enum.begin();
        itr != emf_enum.end();
        ++itr) {
@@ -124,14 +125,14 @@ TEST_F(EmfPrintingTest, Enumerate) {
     EXPECT_TRUE(itr->SafePlayback(&emf_enum.context_)) <<
         " index: " << index << " type: " << itr->record()->iType;
   }
-  context->PageDone();
-  context->DocumentDone();
+  context.PageDone();
+  context.DocumentDone();
 }
 
 // Disabled if no "UnitTest printer" exists.
 TEST_F(EmfPrintingTest, PageBreak) {
   base::win::ScopedCreateDC dc(
-      CreateDC(L"WINSPOOL", L"UnitTest Printer", NULL, NULL));
+      CreateDC(L"WINSPOOL", L"UnitTest Printer", nullptr, nullptr));
   if (!dc.Get())
     return;
   uint32_t size;
@@ -165,9 +166,10 @@ TEST_F(EmfPrintingTest, PageBreak) {
   ::EndDoc(dc.Get());
   // Since presumably the printer is not real, let us just delete the job from
   // the queue.
-  HANDLE printer = NULL;
-  if (::OpenPrinter(const_cast<LPTSTR>(L"UnitTest Printer"), &printer, NULL)) {
-    ::SetJob(printer, job_id, 0, NULL, JOB_CONTROL_DELETE);
+  HANDLE printer = nullptr;
+  if (::OpenPrinter(const_cast<LPTSTR>(L"UnitTest Printer"), &printer,
+                    nullptr)) {
+    ::SetJob(printer, job_id, 0, nullptr, JOB_CONTROL_DELETE);
     ClosePrinter(printer);
   }
 }
@@ -198,7 +200,7 @@ TEST(EmfTest, FileBackedEmf) {
   EXPECT_EQ(size, file_size);
 
   // Playback the data.
-  HDC hdc = CreateCompatibleDC(NULL);
+  HDC hdc = CreateCompatibleDC(nullptr);
   EXPECT_TRUE(hdc);
   Emf emf;
   EXPECT_TRUE(emf.InitFromFile(metafile_path));

@@ -37,6 +37,9 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   // Prints the document contained in |metafile|.
   void PrintDocument(const MetafilePlayer& metafile);
 
+  // Initializes with predefined settings.
+  void InitWithSettings(const PrintSettings& settings);
+
   // PrintingContext implementation.
   void AskUserForSettings(int max_pages,
                           bool has_selection,
@@ -47,7 +50,6 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   Result UpdatePrinterSettings(bool external_preview,
                                bool show_system_dialog,
                                int page_count) override;
-  Result InitWithSettings(const PrintSettings& settings) override;
   Result NewDocument(const base::string16& document_name) override;
   Result NewPage() override;
   Result PageDone() override;

@@ -216,7 +216,7 @@ PrintingContext::Result PrintingContextWin::UpdatePrinterSettings(
   return InitializeSettings(settings_.device_name(), scoped_dev_mode.get());
 }
 
-PrintingContext::Result PrintingContextWin::InitWithSettings(
+PrintingContext::Result PrintingContextWin::InitWithSettingsForTest(
     const PrintSettings& settings) {
   DCHECK(!in_print_job_);
 

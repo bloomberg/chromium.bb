@@ -21,6 +21,9 @@ class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
   explicit PrintingContextWin(Delegate* delegate);
   ~PrintingContextWin() override;
 
+  // Initializes with predefined settings.
+  Result InitWithSettingsForTest(const PrintSettings& settings);
+
   // PrintingContext implementation.
   void AskUserForSettings(
       int max_pages,
@@ -32,7 +35,6 @@ class PRINTING_EXPORT PrintingContextWin : public PrintingContext {
   Result UpdatePrinterSettings(bool external_preview,
                                bool show_system_dialog,
                                int page_count) override;
-  Result InitWithSettings(const PrintSettings& settings) override;
   Result NewDocument(const base::string16& document_name) override;
   Result NewPage() override;
   Result PageDone() override;

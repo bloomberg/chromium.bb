@@ -128,13 +128,10 @@ PrintingContext::Result PrintingContextLinux::UpdatePrinterSettings(
   return OK;
 }
 
-PrintingContext::Result PrintingContextLinux::InitWithSettings(
-    const PrintSettings& settings) {
+void PrintingContextLinux::InitWithSettings(const PrintSettings& settings) {
   DCHECK(!in_print_job_);
 
   settings_ = settings;
-
-  return OK;
 }
 
 PrintingContext::Result PrintingContextLinux::NewDocument(
