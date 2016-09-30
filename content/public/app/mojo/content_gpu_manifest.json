@@ -4,9 +4,10 @@
   "display_name": "Content Gpu",
   "capabilities": {
     "provided": {
-      // TODO(beng): Temporary.
-      "all_interfaces": [ "*" ],
-      "browser": [ "IPC::mojom::ChannelBootstrap" ]
+      "browser": [
+        "IPC::mojom::ChannelBootstrap",
+        "shell::mojom::ServiceFactory"
+      ]
     },
     "required": {
       "exe:content_browser": {

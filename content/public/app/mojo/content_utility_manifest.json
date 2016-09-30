@@ -4,7 +4,10 @@
   "display_name": "Content Utility",
   "capabilities": {
     "provided": {
-      "browser": [ "IPC::mojom::ChannelBootstrap" ]
+      "browser": [
+        "IPC::mojom::ChannelBootstrap",
+        "shell::mojom::ServiceFactory"
+      ]
     }
   }
 }

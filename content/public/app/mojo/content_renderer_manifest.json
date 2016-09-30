@@ -4,7 +4,6 @@
   "display_name": "Content Renderer",
   "capabilities": {
     "provided": {
-      "all_interfaces": [ "*" ],
       "browser": [
         "content::mojom::EmbeddedWorkerInstanceClient",
         "content::mojom::EmbeddedWorkerSetup",
@@ -18,7 +17,7 @@
     "required": {
       // Remove this once http://crbug.com/632818 is fixed.
       "exe:content_browser": {
-        "classes":  [ "web" ]
+        "classes":  [ "renderer" ]
       },
       "mojo:ui": {
         "interfaces": [

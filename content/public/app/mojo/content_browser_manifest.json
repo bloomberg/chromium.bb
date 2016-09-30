@@ -6,10 +6,9 @@
   "capabilities": {
     // Remove this once http://crbug.com/632818 is fixed.
     "provided": {
-      "all_interfaces": [ "*" ],
       "gpu": [ ],
       "plugin":  [ ],
-      "web": [
+      "renderer": [
         "blink::mojom::BackgroundSyncService",
         "blink::mojom::BroadcastChannelProvider",
         "blink::mojom::BudgetService",
@@ -36,7 +35,7 @@
 
       // We allow the browser to connect to any interfaces exposed by its child
       // processes in the "browser" class.
-      "exe:content_gpu": { "classes": [ "all_interfaces" ] },
+      "exe:content_gpu": { "classes": [ "browser" ] },
       "exe:content_plugin": { "classes": [ "browser" ] },
       "exe:content_renderer": { "classes": [ "browser" ] },
       "exe:content_utility": { "classes": [ "browser" ] },
