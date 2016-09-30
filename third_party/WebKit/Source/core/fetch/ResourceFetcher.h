@@ -224,7 +224,7 @@ class ResourceCacheValidationSuppressor {
     WTF_MAKE_NONCOPYABLE(ResourceCacheValidationSuppressor);
     STACK_ALLOCATED();
 public:
-    ResourceCacheValidationSuppressor(ResourceFetcher* loader)
+    explicit ResourceCacheValidationSuppressor(ResourceFetcher* loader)
         : m_loader(loader)
         , m_previousState(false)
     {

@@ -101,7 +101,7 @@ public:
     }
 
 private:
-    DOMWebSocketWithMockChannel(ExecutionContext* context)
+    explicit DOMWebSocketWithMockChannel(ExecutionContext* context)
         : DOMWebSocket(context)
         , m_channel(MockWebSocketChannel::create())
         , m_hasCreatedChannel(false) { }

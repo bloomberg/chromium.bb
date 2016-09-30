@@ -38,7 +38,7 @@ public:
     }
 
 private:
-    SinkDocumentParser(SinkDocument* document)
+    explicit SinkDocumentParser(SinkDocument* document)
         : RawDataDocumentParser(document)
     {
     }

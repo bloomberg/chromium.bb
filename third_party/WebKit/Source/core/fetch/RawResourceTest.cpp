@@ -357,7 +357,7 @@ TEST(RawResourceTest, AddClientDuringCallback)
 class RemovingClient : public GarbageCollectedFinalized<RemovingClient>, public RawResourceClient {
     USING_GARBAGE_COLLECTED_MIXIN(RemovingClient);
 public:
-    RemovingClient(DummyClient* client)
+    explicit RemovingClient(DummyClient* client)
         : m_dummyClient(client) {}
 
     ~RemovingClient() override {}

@@ -110,7 +110,7 @@ public:
 private:
     FormSubmission(SubmitMethod, const KURL& action, const AtomicString& target, const AtomicString& contentType, HTMLFormElement*, PassRefPtr<EncodedFormData>, const String& boundary, Event*);
     // FormSubmission for DialogMethod
-    FormSubmission(const String& result);
+    explicit FormSubmission(const String& result);
 
     // FIXME: Hold an instance of Attributes instead of individual members.
     SubmitMethod m_method;

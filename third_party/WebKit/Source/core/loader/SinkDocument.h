@@ -38,7 +38,7 @@ public:
     }
 
 private:
-    SinkDocument(const DocumentInit&);
+    explicit SinkDocument(const DocumentInit&);
 
     DocumentParser* createParser() override;
 };

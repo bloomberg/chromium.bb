@@ -24,7 +24,7 @@ public:
 private:
     class LinkResourceFactory : public ResourceFactory {
     public:
-        LinkResourceFactory(Resource::Type type)
+        explicit LinkResourceFactory(Resource::Type type)
             : ResourceFactory(type) { }
 
         Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override

@@ -395,7 +395,7 @@ public:
     Resource::Type type() const { return m_type; }
 
 protected:
-    ResourceFactory(Resource::Type type) : m_type(type) { }
+    explicit ResourceFactory(Resource::Type type) : m_type(type) { }
 
     Resource::Type m_type;
 };

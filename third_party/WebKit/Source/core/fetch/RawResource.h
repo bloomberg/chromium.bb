@@ -64,7 +64,7 @@ public:
 private:
     class RawResourceFactory : public ResourceFactory {
     public:
-        RawResourceFactory(Resource::Type type)
+        explicit RawResourceFactory(Resource::Type type)
             : ResourceFactory(type) { }
 
         Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override

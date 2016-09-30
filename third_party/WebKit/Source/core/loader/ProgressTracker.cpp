@@ -56,7 +56,7 @@ struct ProgressItem {
     WTF_MAKE_NONCOPYABLE(ProgressItem);
     USING_FAST_MALLOC(ProgressItem);
 public:
-    ProgressItem(long long length)
+    explicit ProgressItem(long long length)
         : bytesReceived(0)
         , estimatedLength(length) { }
 

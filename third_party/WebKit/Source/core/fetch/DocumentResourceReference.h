@@ -35,7 +35,7 @@ class DocumentResourceReference final : public GarbageCollectedFinalized<Documen
     USING_GARBAGE_COLLECTED_MIXIN(DocumentResourceReference);
     USING_PRE_FINALIZER(DocumentResourceReference, removeSelf);
 public:
-    DocumentResourceReference(DocumentResource* document)
+    explicit DocumentResourceReference(DocumentResource* document)
         : m_document(document)
     {
         ThreadState::current()->registerPreFinalizer(this);

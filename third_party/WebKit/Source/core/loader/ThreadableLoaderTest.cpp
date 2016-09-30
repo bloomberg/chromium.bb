@@ -163,7 +163,7 @@ private:
 
 class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper, public WorkerLoaderProxyProvider {
 public:
-    WorkerThreadableLoaderTestHelper(BlinkGC::ThreadHeapMode threadHeapMode)
+    explicit WorkerThreadableLoaderTestHelper(BlinkGC::ThreadHeapMode threadHeapMode)
         : m_dummyPageHolder(DummyPageHolder::create(IntSize(1, 1)))
         , m_threadHeapMode(threadHeapMode)
     {

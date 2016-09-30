@@ -43,7 +43,7 @@ class CrossOriginPreflightResultCacheItem {
     WTF_MAKE_NONCOPYABLE(CrossOriginPreflightResultCacheItem);
     USING_FAST_MALLOC(CrossOriginPreflightResultCacheItem);
 public:
-    CrossOriginPreflightResultCacheItem(StoredCredentials credentials)
+    explicit CrossOriginPreflightResultCacheItem(StoredCredentials credentials)
         : m_absoluteExpiryTime(0)
         , m_credentials(credentials)
     {

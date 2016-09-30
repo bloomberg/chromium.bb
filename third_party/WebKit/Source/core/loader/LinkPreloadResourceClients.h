@@ -30,7 +30,7 @@ public:
     }
 
 protected:
-    LinkPreloadResourceClient(LinkLoader* loader)
+    explicit LinkPreloadResourceClient(LinkLoader* loader)
         : m_loader(loader)
     {
         DCHECK(loader);

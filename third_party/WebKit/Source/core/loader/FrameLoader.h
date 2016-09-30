@@ -73,7 +73,7 @@ class CORE_EXPORT FrameLoader final {
 public:
     static ResourceRequest resourceRequestFromHistoryItem(HistoryItem*, WebCachePolicy);
 
-    FrameLoader(LocalFrame*);
+    explicit FrameLoader(LocalFrame*);
     ~FrameLoader();
 
     void init();

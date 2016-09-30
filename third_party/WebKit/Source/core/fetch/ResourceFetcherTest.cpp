@@ -105,7 +105,7 @@ class ResourceFetcherTest : public ::testing::Test {
 
 class TestResourceFactory : public ResourceFactory {
 public:
-    TestResourceFactory(Resource::Type type = Resource::Raw)
+    explicit TestResourceFactory(Resource::Type type = Resource::Raw)
         : ResourceFactory(type) { }
 
     Resource* create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
