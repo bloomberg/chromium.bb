@@ -418,8 +418,7 @@ TEST_P(WebNotificationTrayTest, PopupAndFullscreen) {
   WmLookup::Get()
       ->GetWindowForWidget(widget.get())
       ->GetWindowState()
-      ->set_shelf_mode_in_fullscreen(
-          ash::wm::WindowState::SHELF_AUTO_HIDE_VISIBLE);
+      ->set_hide_shelf_when_fullscreen(false);
   widget->SetFullscreen(true);
   RunAllPendingInMessageLoop();
 

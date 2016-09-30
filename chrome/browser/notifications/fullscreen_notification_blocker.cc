@@ -38,8 +38,7 @@ bool DoesFullscreenModeBlockNotifications() {
     if (!fullscreen_window)
       return false;
     return ash::wm::GetWindowState(fullscreen_window)
-               ->shelf_mode_in_fullscreen() ==
-           ash::wm::WindowState::SHELF_HIDDEN;
+        ->hide_shelf_when_fullscreen();
   }
 #endif
 

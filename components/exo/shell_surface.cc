@@ -5,11 +5,12 @@
 #include "components/exo/shell_surface.h"
 
 #include "ash/aura/wm_window_aura.h"
+#include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/window_state_delegate.h"
-#include "ash/shell.h"
+#include "ash/common/wm_shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
@@ -53,9 +54,9 @@ const struct Accelerator {
 void UpdateShelfStateForFullscreenChange(views::Widget* widget) {
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(widget->GetNativeWindow());
-  window_state->set_shelf_mode_in_fullscreen(
-      ash::wm::WindowState::SHELF_AUTO_HIDE_INVISIBLE);
-  ash::Shell::GetInstance()->UpdateShelfVisibility();
+  window_state->set_hide_shelf_when_fullscreen(false);
+  for (ash::WmWindow* root_window : ash::WmShell::Get()->GetAllRootWindows())
+    ash::WmShelf::ForWindow(root_window)->UpdateVisibilityState();
 }
 
 class CustomFrameView : public views::NonClientFrameView {
@@ -401,7 +402,6 @@ void ShellSurface::SetFullscreen(bool fullscreen) {
   // state doesn't change.
   ScopedConfigure scoped_configure(this, true);
   widget_->SetFullscreen(fullscreen);
-  UpdateShelfStateForFullscreenChange(widget_);
 }
 
 void ShellSurface::SetPinned(bool pinned, bool trusted) {

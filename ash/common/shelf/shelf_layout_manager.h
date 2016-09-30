@@ -15,7 +15,6 @@
 #include "ash/common/wm/background_animator.h"
 #include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/common/wm/lock_state_observer.h"
-#include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_types.h"
 #include "ash/common/wm_activation_observer.h"
@@ -294,15 +293,12 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns true if there is a fullscreen window open that causes the shelf
   // to be hidden.
   bool IsShelfHiddenForFullscreen() const;
-  ash::wm::WindowState::FullscreenShelfMode GetShelfModeForFullscreen() const;
 
   // Gesture related functions:
   void StartGestureDrag(const ui::GestureEvent& gesture);
   void UpdateGestureDrag(const ui::GestureEvent& gesture);
   void CompleteGestureDrag(const ui::GestureEvent& gesture);
   void CancelGestureDrag();
-
-  int GetShelfInsetsForAutoHide() const;
 
   // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
   // UpdateBoundsAndOpacity() again from SetChildBounds().
@@ -368,10 +364,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // The show hide animation duration override or 0 for default.
   int duration_override_in_ms_;
-
-  // The flag to enforce invisible shelf (as in MD-experiemntal).
-  // TODO(oshima): Remove this when MD immersive is launched.
-  bool invisible_auto_hide_shelf_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLayoutManager);
 };

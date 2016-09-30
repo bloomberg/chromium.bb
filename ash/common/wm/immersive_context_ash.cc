@@ -32,10 +32,7 @@ void ImmersiveContextAsh::OnEnteringOrExitingImmersive(
   WmWindow* window = WmLookup::Get()->GetWindowForWidget(controller->widget());
   wm::WindowState* window_state = window->GetWindowState();
   // Auto hide the shelf in immersive fullscreen instead of hiding it.
-  window_state->set_shelf_mode_in_fullscreen(
-      entering ? ash::wm::WindowState::SHELF_AUTO_HIDE_VISIBLE
-               : ash::wm::WindowState::SHELF_HIDDEN);
-
+  window_state->set_hide_shelf_when_fullscreen(!entering);
   // Update the window's immersive mode state for the window manager.
   window_state->set_in_immersive_fullscreen(entering);
 
