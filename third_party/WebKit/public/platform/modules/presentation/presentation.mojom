@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(crbug.com/647290): Rename "Session" to "Connection"
+
 module blink.mojom;
 
 import "url/mojo/url.mojom";
@@ -139,4 +141,7 @@ interface PresentationServiceClient {
 
   // See PresentationService::SetDefaultPresentationURL.
   OnDefaultSessionStarted(PresentationSessionInfo sessionInfo);
+
+  // See PresentationService::ListeningForReceiverPageRendered.
+  OnReceiverConnectionAvailable(PresentationSessionInfo sessionInfo);
 };

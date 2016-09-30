@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationError.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationReceiver.h"
 #include "third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "url/gurl.h"
@@ -298,6 +299,12 @@ void PresentationDispatcher::setDefaultPresentationUrls(
   presentation_service_->SetDefaultPresentationUrls(urls);
 }
 
+void PresentationDispatcher::setReceiver(
+    blink::WebPresentationReceiver* receiver) {
+  ConnectToPresentationServiceIfNeeded();
+  receiver_ = receiver;
+}
+
 void PresentationDispatcher::DidCommitProvisionalLoad(
     bool is_new_navigation,
     bool is_same_page_navigation) {
@@ -389,6 +396,14 @@ void PresentationDispatcher::OnSessionCreated(
   presentation_service_->ListenForSessionMessages(session_info.Clone());
   callback->onSuccess(
       base::MakeUnique<PresentationConnectionClient>(std::move(session_info)));
+}
+
+void PresentationDispatcher::OnReceiverConnectionAvailable(
+    blink::mojom::PresentationSessionInfoPtr session_info) {
+  if (receiver_) {
+    receiver_->onReceiverConnectionAvailable(
+        new PresentationConnectionClient(std::move(session_info)));
+  }
 }
 
 void PresentationDispatcher::OnConnectionStateChanged(

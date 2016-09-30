@@ -10,6 +10,7 @@
 #include "core/testing/DummyPageHolder.h"
 #include "modules/presentation/PresentationConnectionList.h"
 #include "platform/testing/URLTestHelpers.h"
+#include "public/platform/modules/presentation/WebPresentationClient.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,6 +31,48 @@ public:
     }
 
     MOCK_METHOD2(handleEvent, void(ExecutionContext* executionContext, Event*));
+};
+
+class MockWebPresentationClient : public WebPresentationClient {
+public:
+    MOCK_METHOD1(setController,
+        void(WebPresentationController*));
+
+    MOCK_METHOD1(setReceiver,
+        void(WebPresentationReceiver*));
+
+    MOCK_METHOD2(startSession,
+        void(const WebVector<WebURL>& presentationUrls, WebPresentationConnectionClientCallbacks*));
+
+    MOCK_METHOD3(joinSession,
+        void(const WebVector<WebURL>& presentationUrls, const WebString& presentationId, WebPresentationConnectionClientCallbacks*));
+
+    MOCK_METHOD3(sendString,
+        void(const WebURL& presentationUrl, const WebString& presentationId, const WebString& message));
+
+    MOCK_METHOD4(sendArrayBuffer,
+        void(const WebURL& presentationUrl, const WebString& presentationId, const uint8_t* data, size_t length));
+
+    MOCK_METHOD4(sendBlobData,
+        void(const WebURL& presentationUrl, const WebString& presentationId, const uint8_t* data, size_t length));
+
+    MOCK_METHOD2(closeSession,
+        void(const WebURL& presentationUrl, const WebString& presentationId));
+
+    MOCK_METHOD2(terminateSession,
+        void(const WebURL& presentationUrl, const WebString& presentationId));
+
+    MOCK_METHOD2(getAvailability,
+        void(const WebURL& availabilityUrl, WebPresentationAvailabilityCallbacks*));
+
+    MOCK_METHOD1(startListening,
+        void(WebPresentationAvailabilityObserver*));
+
+    MOCK_METHOD1(stopListening,
+        void(WebPresentationAvailabilityObserver*));
+
+    MOCK_METHOD1(setDefaultPresentationUrls,
+        void(const WebVector<WebURL>&));
 };
 
 class TestWebPresentationConnectionClient : public WebPresentationConnectionClient {
@@ -74,7 +117,7 @@ using ::testing::StrictMock;
 TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList)
 {
     V8TestingScope scope;
-    auto receiver = new PresentationReceiver(&scope.frame());
+    auto receiver = new PresentationReceiver(&scope.frame(), nullptr);
 
     auto eventHandler = new StrictMock<MockEventListener>();
     addConnectionavailableEventListener(eventHandler, receiver);
@@ -89,7 +132,7 @@ TEST_F(PresentationReceiverTest, NoConnectionUnresolvedConnectionList)
 TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent)
 {
     V8TestingScope scope;
-    auto receiver = new PresentationReceiver(&scope.frame());
+    auto receiver = new PresentationReceiver(&scope.frame(), nullptr);
 
     auto eventHandler = new StrictMock<MockEventListener>();
     addConnectionavailableEventListener(eventHandler, receiver);
@@ -99,7 +142,7 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent)
 
     // Receive first connection.
     auto connectionClient = new TestWebPresentationConnectionClient();
-    receiver->onConnectionReceived(connectionClient);
+    receiver->onReceiverConnectionAvailable(connectionClient);
 
     verifyConnectionListPropertyState(ScriptPromisePropertyBase::Resolved, receiver);
     verifyConnectionListSize(1, receiver);
@@ -108,7 +151,7 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent)
 TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent)
 {
     V8TestingScope scope;
-    auto receiver = new PresentationReceiver(&scope.frame());
+    auto receiver = new PresentationReceiver(&scope.frame(), nullptr);
 
     StrictMock<MockEventListener>* eventHandler = new StrictMock<MockEventListener>();
     addConnectionavailableEventListener(eventHandler, receiver);
@@ -117,11 +160,11 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent)
     receiver->connectionList(scope.getScriptState());
     // Receive first connection.
     auto connectionClient1 = new TestWebPresentationConnectionClient();
-    receiver->onConnectionReceived(connectionClient1);
+    receiver->onReceiverConnectionAvailable(connectionClient1);
 
     // Receive second connection.
     auto connectionClient2 = new TestWebPresentationConnectionClient();
-    receiver->onConnectionReceived(connectionClient2);
+    receiver->onReceiverConnectionAvailable(connectionClient2);
 
     verifyConnectionListSize(2, receiver);
 }
@@ -129,7 +172,7 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent)
 TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent)
 {
     V8TestingScope scope;
-    auto receiver = new PresentationReceiver(&scope.frame());
+    auto receiver = new PresentationReceiver(&scope.frame(), nullptr);
 
     StrictMock<MockEventListener>* eventHandler = new StrictMock<MockEventListener>();
     addConnectionavailableEventListener(eventHandler, receiver);
@@ -137,15 +180,24 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent)
 
     // Receive first connection.
     auto connectionClient1 = new TestWebPresentationConnectionClient();
-    receiver->onConnectionReceived(connectionClient1);
+    receiver->onReceiverConnectionAvailable(connectionClient1);
 
     // Receive second connection.
     auto connectionClient2 = new TestWebPresentationConnectionClient();
-    receiver->onConnectionReceived(connectionClient2);
+    receiver->onReceiverConnectionAvailable(connectionClient2);
 
     receiver->connectionList(scope.getScriptState());
     verifyConnectionListPropertyState(ScriptPromisePropertyBase::Resolved, receiver);
     verifyConnectionListSize(2, receiver);
+}
+
+TEST_F(PresentationReceiverTest, CreateReceiver)
+{
+    MockWebPresentationClient client;
+    EXPECT_CALL(client, setReceiver(testing::_));
+
+    V8TestingScope scope;
+    new PresentationReceiver(&scope.frame(), &client);
 }
 
 } // namespace blink

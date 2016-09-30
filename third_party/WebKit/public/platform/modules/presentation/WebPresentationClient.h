@@ -15,6 +15,7 @@ namespace blink {
 class WebPresentationAvailabilityObserver;
 class WebPresentationController;
 class WebPresentationConnectionClient;
+class WebPresentationReceiver;
 class WebString;
 class WebURL;
 struct WebPresentationError;
@@ -36,6 +37,9 @@ public:
 
     // Passes the Blink-side delegate to the embedder.
     virtual void setController(WebPresentationController*) = 0;
+
+    // Passes the Blink-side delegate to the embedder.
+    virtual void setReceiver(WebPresentationReceiver*) = 0;
 
     // Called when the frame requests to start a new session.
     // The ownership of the |callbacks| argument is transferred to the embedder.

@@ -12,13 +12,17 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/presentation/PresentationConnection.h"
 #include "modules/presentation/PresentationConnectionList.h"
+#include "public/platform/modules/presentation/WebPresentationClient.h"
 
 namespace blink {
 
-PresentationReceiver::PresentationReceiver(LocalFrame* frame)
+PresentationReceiver::PresentationReceiver(LocalFrame* frame, WebPresentationClient* client)
     : DOMWindowProperty(frame)
 {
     m_connectionList = new PresentationConnectionList(frame->document());
+
+    if (client)
+        client->setReceiver(this);
 }
 
 ScriptPromise PresentationReceiver::connectionList(ScriptState* scriptState)
@@ -32,7 +36,7 @@ ScriptPromise PresentationReceiver::connectionList(ScriptState* scriptState)
     return m_connectionListProperty->promise(scriptState->world());
 }
 
-void PresentationReceiver::onConnectionReceived(WebPresentationConnectionClient* connectionClient)
+void PresentationReceiver::onReceiverConnectionAvailable(WebPresentationConnectionClient* connectionClient)
 {
     DCHECK(connectionClient);
     // take() will call PresentationReceiver::registerConnection()

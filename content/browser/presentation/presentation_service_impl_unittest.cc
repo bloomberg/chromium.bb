@@ -197,6 +197,13 @@ class MockPresentationServiceClient
   MOCK_METHOD1(OnDefaultSessionStarted,
                void(const blink::mojom::PresentationSessionInfo& session_info));
 
+  void OnReceiverConnectionAvailable(
+      blink::mojom::PresentationSessionInfoPtr session_info) override {
+    OnReceiverConnectionAvailable(*session_info);
+  }
+  MOCK_METHOD1(OnReceiverConnectionAvailable,
+               void(const blink::mojom::PresentationSessionInfo& session_info));
+
   std::vector<blink::mojom::SessionMessagePtr> messages_received_;
 };
 

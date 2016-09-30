@@ -527,6 +527,7 @@ component("platform") {
     "exported/WebPrerenderingSupport.cpp",
     "exported/WebPresentationAvailabilityObserver.cpp",
     "exported/WebPresentationController.cpp",
+    "exported/WebPresentationReceiver.cpp",
     "exported/WebRTCAnswerOptions.cpp",
     "exported/WebRTCConfiguration.cpp",
     "exported/WebRTCICECandidate.cpp",

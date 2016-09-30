@@ -24,6 +24,7 @@
 
 namespace blink {
 class WebPresentationAvailabilityObserver;
+class WebPresentationReceiver;
 class WebString;
 class WebURL;
 template <typename T>
@@ -65,6 +66,8 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // WebPresentationClient implementation.
   void setController(blink::WebPresentationController* controller) override;
+  void setReceiver(blink::WebPresentationReceiver*) override;
+
   void startSession(
       const blink::WebVector<blink::WebURL>& presentationUrls,
       blink::WebPresentationConnectionClientCallbacks* callback) override;
@@ -121,6 +124,8 @@ class CONTENT_EXPORT PresentationDispatcher
       blink::WebPresentationConnectionClientCallbacks* callback,
       blink::mojom::PresentationSessionInfoPtr session_info,
       blink::mojom::PresentationErrorPtr error);
+  void OnReceiverConnectionAvailable(
+      blink::mojom::PresentationSessionInfoPtr) override;
 
   // Call to PresentationService to send the message in |request|.
   // |session_info| and |message| of |reuqest| will be consumed.
@@ -134,6 +139,7 @@ class CONTENT_EXPORT PresentationDispatcher
 
   // Used as a weak reference. Can be null since lifetime is bound to the frame.
   blink::WebPresentationController* controller_;
+  blink::WebPresentationReceiver* receiver_;
   blink::mojom::PresentationServicePtr presentation_service_;
   mojo::Binding<blink::mojom::PresentationServiceClient> binding_;
 
